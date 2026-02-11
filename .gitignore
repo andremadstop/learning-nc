@@ -1,0 +1,45 @@
+# Docker volumes
+docker-data/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build output
+app/js/
+app/css/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env.local
+.env.production
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Environment (contains passwords)
+.env
+
+# Infrastructure / VM setup (not app-related)
+install-automated.exp
+auto-setup.sh
+INSTALL_NOW.txt
+FRITZBOX_GUIDE.md
+VM_INFO.md
+SETUP.md
+nixos/

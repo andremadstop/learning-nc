@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>learning</id>
+    <name>Learning</name>
+    <summary>Spaced Repetition Learning with Leitner System</summary>
+    <description><![CDATA[
+**Learning** is a powerful flashcard and quiz app for Nextcloud with built-in Leitner spaced repetition system.
+
+Features:
+- 📚 Multiple Choice Quizzes
+- 🧠 Leitner 5-Box Spaced Repetition
+- 👥 Share Pools with Nextcloud Groups
+- 📊 Progress Tracking & Statistics
+- 📁 Import from CSV/JSON
+- 📱 Mobile Optimized
+
+Perfect for:
+- Employee Onboarding
+- Compliance Training (DSGVO, ISO)
+- IT Certification Prep (CompTIA, Cisco)
+- University Courses
+- Knowledge Retention
+    ]]></description>
+    
+    <version>0.1.0</version>
+    <licence>agpl</licence>
+    <author mail="dev@quizdojo.com">Andre</author>
+    <namespace>Learning</namespace>
+    <category>organization</category>
+    <category>tools</category>
+    
+    <website>https://github.com/andremadstop/quizdojo</website>
+    <bugs>https://github.com/andremadstop/quizdojo/issues</bugs>
+    <repository type="git">https://github.com/andremadstop/quizdojo.git</repository>
+    
+    <dependencies>
+        <nextcloud min-version="29" max-version="31"/>
+        <php min-version="8.1" max-version="8.3"/>
+        <database min-version="13">pgsql</database>
+    </dependencies>
+    
+    <navigations>
+        <navigation>
+            <name>Learning</name>
+            <route>learning.page.index</route>
+            <order>10</order>
+        </navigation>
+    </navigations>
+</info>
