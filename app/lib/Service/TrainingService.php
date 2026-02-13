@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\QuestionMapper;
+use OCA\Learning\Db\AnswerMapper;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
@@ -11,17 +12,20 @@ use OCP\IDBConnection;
 class TrainingService {
     private $db;
     private $questionMapper;
+    private $answerMapper;
     private $poolMapper;
     private $shareMapper;
 
     public function __construct(
         IDBConnection $db,
         QuestionMapper $questionMapper,
+        AnswerMapper $answerMapper,
         PoolMapper $poolMapper,
         PoolShareMapper $shareMapper
     ) {
         $this->db = $db;
         $this->questionMapper = $questionMapper;
+        $this->answerMapper = $answerMapper;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
     }
@@ -77,15 +81,22 @@ class TrainingService {
         $sessionId = $qb->getLastInsertId();
         shuffle($questions);
 
+        $questionsWithAnswers = [];
+        foreach ($questions as $q) {
+            $qData = $q->jsonSerialize();
+            $answers = $this->answerMapper->findByQuestion($q->getId());
+            $qData['answers'] = array_map(fn($a) => $a->jsonSerialize(), $answers);
+            $questionsWithAnswers[] = $qData;
+        }
+
         return [
             'session_id' => $sessionId,
             'total_questions' => count($questions),
-            'questions' => array_map(fn($q) => $q->jsonSerialize(), $questions)
+            'questions' => $questionsWithAnswers
         ];
     }
 
     public function submitAnswer(int $sessionId, int $questionId, int $answerId, string $userId): array {
-        // Verify session belongs to this user
         $this->verifySessionOwnership($sessionId, $userId);
 
         $qb = $this->db->getQueryBuilder();
@@ -126,7 +137,6 @@ class TrainingService {
     }
 
     public function completeSession(int $sessionId, string $userId): array {
-        // Verify session belongs to this user
         $this->verifySessionOwnership($sessionId, $userId);
 
         $qb = $this->db->getQueryBuilder();
