@@ -1,6 +1,31 @@
 /* Learning App - Global Styles */
 
-/* Touch-friendly targets */
+/* ========== LAYOUT ========== */
+#app-learning {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 40px;
+}
+
+#content-vue #app-learning,
+#content #app-learning {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ========== TYPOGRAPHY ========== */
+#app-learning h2 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+#app-learning h3 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* ========== TOUCH TARGETS ========== */
 #app-learning button,
 #app-learning .answer-btn,
 #app-learning .tab-btn,
@@ -10,17 +35,17 @@
   min-width: 44px;
 }
 
-/* Global error banner */
+/* ========== ERROR / INFO BANNERS ========== */
 .error-banner {
-  padding: 12px 16px;
+  padding: 12px 20px;
   background: #fee2e2;
   border: 1px solid #fca5a5;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #991b1b;
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .error-banner button {
@@ -28,24 +53,29 @@
   white-space: nowrap;
 }
 
-/* Read-only indicator */
 .readonly-banner {
-  padding: 8px 16px;
+  padding: 10px 20px;
   background: #dbeafe;
   border: 1px solid #93c5fd;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #1e40af;
-  font-size: 13px;
-  margin-bottom: 16px;
+  font-size: 14px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-/* Mobile: Global overrides */
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  #app-learning {
+    padding: 20px 24px;
+  }
+}
+
 @media (max-width: 768px) {
   #app-learning {
-    padding: 12px !important;
+    padding: 16px !important;
   }
 
   #app-learning .mode-selector {
@@ -67,7 +97,7 @@
 
 @media (max-width: 480px) {
   #app-learning {
-    padding: 8px !important;
+    padding: 10px !important;
   }
 
   #app-learning .mode-selector {

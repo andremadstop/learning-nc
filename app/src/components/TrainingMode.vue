@@ -191,13 +191,18 @@ export default {
 </script>
 
 <style scoped>
-.training-start {
-  text-align: center;
-  padding: 60px 20px;
+.training-mode {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.training-start h3 { font-size: 24px; margin-bottom: 12px; }
-.training-start p { font-size: 16px; color: var(--color-text-lighter); margin-bottom: 24px; }
+.training-start {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.training-start h3 { font-size: 28px; margin-bottom: 12px; font-weight: 700; }
+.training-start p { font-size: 16px; color: var(--color-text-lighter); margin-bottom: 28px; }
 .empty-hint { font-style: italic; }
 
 .start-actions {
@@ -208,53 +213,76 @@ export default {
 }
 
 .progress-bar {
-  height: 8px;
+  height: 6px;
   background: var(--color-background-hover);
-  border-radius: 4px;
-  margin-bottom: 16px;
+  border-radius: 3px;
+  margin-bottom: 12px;
   overflow: hidden;
 }
 
-.progress-fill { height: 100%; background: var(--color-primary); transition: width 0.3s; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), #00a0f0);
+  transition: width 0.3s;
+  border-radius: 3px;
+}
 
 .question-counter {
   text-align: center;
   font-size: 14px;
   color: var(--color-text-lighter);
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  font-weight: 500;
 }
 
-.question-card { max-width: 800px; margin: 0 auto; }
+.question-card {
+  background: var(--color-main-background);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
 
 .question-text {
   font-size: 20px;
   font-weight: 500;
-  margin-bottom: 24px;
-  line-height: 1.5;
+  margin-bottom: 28px;
+  line-height: 1.6;
 }
 
-.answers-grid { display: grid; gap: 12px; }
+.answers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
 
 .answer-btn {
-  padding: 16px;
+  padding: 16px 20px;
   border: 2px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--color-main-background);
   cursor: pointer;
   text-align: left;
   font-size: 15px;
-  transition: all 0.2s;
-  min-height: 52px;
+  transition: all 0.15s;
+  min-height: 56px;
+  line-height: 1.5;
 }
 
-.answer-btn:hover:not(:disabled) { border-color: var(--color-primary); background: var(--color-background-hover); }
+.answer-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: rgba(0,130,201,0.04);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
 .answer-btn:disabled { opacity: 0.7; cursor: wait; }
 
-.answer-feedback { margin-top: 24px; }
+.answer-feedback { margin-top: 28px; }
 
 .feedback-banner {
-  padding: 16px;
-  border-radius: 8px;
+  padding: 18px 24px;
+  border-radius: 12px;
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 16px;
@@ -268,46 +296,63 @@ export default {
 .feedback-icon { font-size: 24px; }
 
 .correct-answer {
-  padding: 12px;
+  padding: 14px 18px;
   background: var(--color-background-hover);
-  border-radius: 6px;
+  border-radius: 10px;
   margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .explanation {
-  padding: 12px;
-  background: #fef3c7;
-  border-radius: 6px;
-  margin-bottom: 16px;
+  padding: 14px 18px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-.next-btn { width: 100%; padding: 14px; font-size: 16px; }
+.next-btn {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  border-radius: 12px;
+}
 
-.training-results { text-align: center; padding: 40px 20px; }
-.training-results h3 { font-size: 28px; margin-bottom: 32px; }
-.score-display { margin-bottom: 32px; }
+.training-results {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.training-results h3 { font-size: 32px; margin-bottom: 36px; font-weight: 700; }
+.score-display { margin-bottom: 36px; }
 
 .score-circle {
-  width: 160px;
-  height: 160px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
-  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary), #0060a0);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 24px rgba(0, 100, 180, 0.3);
 }
 
-.score-number { font-size: 40px; font-weight: 700; }
-.result-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.score-number { font-size: 48px; font-weight: 700; }
+
+.score-display p { font-size: 16px; color: var(--color-text-lighter); }
+
+.result-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
 
 .error-banner {
-  padding: 12px 16px;
+  padding: 12px 20px;
   background: #fee2e2;
   border: 1px solid #fca5a5;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #991b1b;
   display: flex;
   align-items: center;
@@ -317,23 +362,26 @@ export default {
 .error-banner button { margin-left: auto; }
 
 .button {
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 10px;
   background: var(--color-main-background);
   cursor: pointer;
   font-size: 14px;
   min-height: 44px;
+  font-weight: 500;
 }
 
 .button:hover { background: var(--color-background-hover); }
 .button.primary { background: var(--color-primary); color: white; border-color: var(--color-primary); }
 
-@media (max-width: 600px) {
-  .training-start { padding: 30px 12px; }
-  .question-text { font-size: 17px !important; }
-  .score-circle { width: 120px; height: 120px; }
-  .score-number { font-size: 32px; }
-  .answer-btn { padding: 14px 12px; }
+@media (max-width: 768px) {
+  .training-start { padding: 40px 16px; }
+  .question-card { padding: 20px; border-radius: 12px; }
+  .question-text { font-size: 17px; }
+  .answers-grid { grid-template-columns: 1fr; }
+  .score-circle { width: 140px; height: 140px; }
+  .score-number { font-size: 36px; }
+  .answer-btn { padding: 14px 16px; }
 }
 </style>

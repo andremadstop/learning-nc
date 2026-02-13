@@ -130,55 +130,64 @@ export default {
 
 <style scoped>
 #app-learning {
-  padding: 20px;
-  max-width: 1200px;
+  padding: 24px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .app-content-header {
-  margin-bottom: 20px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .app-content-header h2 {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  margin: 0;
 }
 
 .pool-view-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .pool-title {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 600;
   margin: 0;
 }
 
 .back-btn {
   white-space: nowrap;
+  padding: 8px 16px;
+  border-radius: 6px;
 }
 
 .mode-selector {
   display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  padding: 4px;
+  gap: 6px;
+  margin-bottom: 28px;
+  padding: 5px;
   background: var(--color-background-hover);
-  border-radius: 8px;
+  border-radius: 10px;
+  max-width: 560px;
 }
 
 .mode-btn {
   flex: 1;
-  padding: 12px 16px;
+  padding: 12px 20px;
   border: none;
   background: transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s;
   font-size: 14px;
+  text-align: center;
 }
 
 .mode-btn:hover {
@@ -188,16 +197,12 @@ export default {
 .mode-btn.active {
   background: var(--color-primary);
   color: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
-@media (max-width: 600px) {
-  .pool-view-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .mode-selector {
-    flex-direction: column;
-  }
+@media (max-width: 768px) {
+  #app-learning { padding: 16px; }
+  .pool-view-header { flex-direction: column; align-items: flex-start; }
+  .mode-selector { flex-direction: column; max-width: 100%; }
 }
 </style>

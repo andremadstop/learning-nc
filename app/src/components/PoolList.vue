@@ -211,28 +211,28 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.pool-list-header h3 { font-size: 20px; font-weight: 600; margin: 0; }
+.pool-list-header h3 { font-size: 22px; font-weight: 600; margin: 0; }
 
 /* Tabs */
 .pool-tabs {
   display: flex;
   gap: 4px;
-  margin-bottom: 20px;
-  padding: 4px;
+  margin-bottom: 24px;
+  padding: 5px;
   background: var(--color-background-hover);
-  border-radius: 8px;
-  max-width: 400px;
+  border-radius: 10px;
+  max-width: 440px;
 }
 
 .tab-btn {
   flex: 1;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: none;
   background: transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
   font-size: 14px;
@@ -240,26 +240,26 @@ export default {
 }
 
 .tab-btn:hover { background: var(--color-background-dark); }
-.tab-btn.active { background: var(--color-primary); color: white; }
+.tab-btn.active { background: var(--color-primary); color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
 
-/* Grid */
+/* Grid - wider cards, more columns */
 .pool-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 20px;
 }
 
 .pool-card {
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 20px 24px;
   background: var(--color-main-background);
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: box-shadow 0.2s, transform 0.15s;
   cursor: pointer;
 }
 
 .pool-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
   transform: translateY(-2px);
 }
 
@@ -269,36 +269,53 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
-.pool-card-header h4 { font-size: 16px; font-weight: 600; margin: 0; flex: 1; }
+.pool-card-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+  line-height: 1.4;
+}
 
-.pool-actions { display: flex; gap: 4px; }
+.pool-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
 .action-btn {
   background: none;
   border: none;
   cursor: pointer;
-  opacity: 0.6;
+  opacity: 0.5;
   font-size: 14px;
-  padding: 4px;
-  transition: opacity 0.2s;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: opacity 0.2s, background 0.2s;
 }
 
-.action-btn:hover { opacity: 1; }
+.action-btn:hover { opacity: 1; background: var(--color-background-hover); }
 
 .permission-badge {
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
+  flex-shrink: 0;
 }
 
 .permission-badge.read { background: #dbeafe; color: #1d4ed8; }
 .permission-badge.edit { background: #d1fae5; color: #065f46; }
 
-.pool-description { color: var(--color-text-lighter); font-size: 14px; margin: 8px 0; }
+.pool-description {
+  color: var(--color-text-lighter);
+  font-size: 13px;
+  margin: 6px 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 .pool-meta {
   font-size: 12px;
@@ -306,11 +323,13 @@ export default {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-dark, #eee);
 }
 
-.loading-indicator { text-align: center; padding: 40px; color: var(--color-text-lighter); }
-.empty-content { text-align: center; padding: 60px 20px; color: var(--color-text-lighter); }
+.loading-indicator { text-align: center; padding: 60px; color: var(--color-text-lighter); }
+.empty-content { text-align: center; padding: 80px 20px; color: var(--color-text-lighter); }
 
 /* Dialog */
 .dialog-overlay {
@@ -325,31 +344,37 @@ export default {
 
 .dialog-content {
   background: var(--color-main-background);
-  border-radius: 8px;
-  padding: 24px;
+  border-radius: 12px;
+  padding: 28px;
   width: 90%;
-  max-width: 500px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  max-width: 540px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
 }
 
-.dialog-content h3 { margin: 0 0 20px 0; font-size: 20px; font-weight: 600; }
+.dialog-content h3 { margin: 0 0 24px 0; font-size: 20px; font-weight: 600; }
 
-.form-group { margin-bottom: 16px; }
-.form-group label { display: block; margin-bottom: 4px; font-weight: 500; font-size: 14px; }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
 .form-group input, .form-group textarea {
   width: 100%;
-  padding: 8px;
+  padding: 10px 12px;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 14px;
+  transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0,130,201,0.15);
 }
 
-.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 
 .button {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--color-main-background);
   cursor: pointer;
   font-size: 14px;
@@ -358,4 +383,9 @@ export default {
 .button:hover { background: var(--color-background-hover); }
 .button.primary { background: var(--color-primary); color: white; border-color: var(--color-primary); }
 .button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 768px) {
+  .pool-grid { grid-template-columns: 1fr; }
+  .pool-card { padding: 16px; }
+}
 </style>
