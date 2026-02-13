@@ -22,12 +22,29 @@ class QuestionMapper extends QBMapper {
         return $this->findEntities($qb);
     }
 
+    public function findByPoolId(int $poolId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)))
+           ->orderBy('created_at', 'DESC');
+        return $this->findEntities($qb);
+    }
+
     public function find(int $id, string $userId): Question {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
            ->from($this->getTableName())
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))
            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+        return $this->findEntity($qb);
+    }
+
+    public function findById(int $id): Question {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)));
         return $this->findEntity($qb);
     }
 

@@ -3,30 +3,54 @@ return [
     'routes' => [
         // Pages
         ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
-        
+
         // Pools
         ['name' => 'pool#index', 'url' => '/api/pools', 'verb' => 'GET'],
         ['name' => 'pool#show', 'url' => '/api/pools/{id}', 'verb' => 'GET'],
         ['name' => 'pool#create', 'url' => '/api/pools', 'verb' => 'POST'],
         ['name' => 'pool#update', 'url' => '/api/pools/{id}', 'verb' => 'PUT'],
         ['name' => 'pool#destroy', 'url' => '/api/pools/{id}', 'verb' => 'DELETE'],
-        
+
         // Questions
         ['name' => 'question#index', 'url' => '/api/pools/{poolId}/questions', 'verb' => 'GET'],
         ['name' => 'question#show', 'url' => '/api/questions/{id}', 'verb' => 'GET'],
         ['name' => 'question#create', 'url' => '/api/questions', 'verb' => 'POST'],
         ['name' => 'question#update', 'url' => '/api/questions/{id}', 'verb' => 'PUT'],
         ['name' => 'question#destroy', 'url' => '/api/questions/{id}', 'verb' => 'DELETE'],
-        
+
         // Training
         ['name' => 'training#start', 'url' => '/api/training/start', 'verb' => 'POST'],
         ['name' => 'training#answer', 'url' => '/api/training/answer', 'verb' => 'POST'],
         ['name' => 'training#complete', 'url' => '/api/training/complete', 'verb' => 'POST'],
-        
+
         // Leitner
         ['name' => 'leitner#initialize', 'url' => '/api/leitner/initialize', 'verb' => 'POST'],
         ['name' => 'leitner#due', 'url' => '/api/leitner/due', 'verb' => 'GET'],
         ['name' => 'leitner#answer', 'url' => '/api/leitner/answer', 'verb' => 'POST'],
         ['name' => 'leitner#stats', 'url' => '/api/leitner/stats', 'verb' => 'GET'],
+
+        // Sharing
+        ['name' => 'share#index', 'url' => '/api/pools/{poolId}/shares', 'verb' => 'GET'],
+        ['name' => 'share#sharedWithMe', 'url' => '/api/shared', 'verb' => 'GET'],
+        ['name' => 'share#create', 'url' => '/api/pools/{poolId}/shares', 'verb' => 'POST'],
+        ['name' => 'share#update', 'url' => '/api/pools/{poolId}/shares/{sharedWith}', 'verb' => 'PUT'],
+        ['name' => 'share#destroy', 'url' => '/api/pools/{poolId}/shares/{sharedWith}', 'verb' => 'DELETE'],
+
+        // Images
+        ['name' => 'image#upload', 'url' => '/api/questions/{questionId}/image', 'verb' => 'POST'],
+        ['name' => 'image#serve', 'url' => '/api/questions/{questionId}/image', 'verb' => 'GET'],
+        ['name' => 'image#delete', 'url' => '/api/questions/{questionId}/image', 'verb' => 'DELETE'],
+
+        // Translations
+        ['name' => 'translation#questionTranslations', 'url' => '/api/questions/{questionId}/translations', 'verb' => 'GET'],
+        ['name' => 'translation#setQuestionTranslation', 'url' => '/api/questions/{questionId}/translations/{lang}', 'verb' => 'PUT'],
+        ['name' => 'translation#deleteQuestionTranslation', 'url' => '/api/questions/{questionId}/translations/{lang}', 'verb' => 'DELETE'],
+        ['name' => 'translation#answerTranslations', 'url' => '/api/answers/{answerId}/translations', 'verb' => 'GET'],
+        ['name' => 'translation#setAnswerTranslation', 'url' => '/api/answers/{answerId}/translations/{lang}', 'verb' => 'PUT'],
+        ['name' => 'translation#deleteAnswerTranslation', 'url' => '/api/answers/{answerId}/translations/{lang}', 'verb' => 'DELETE'],
+
+        // Import
+        ['name' => 'import#importCsv', 'url' => '/api/pools/{poolId}/import/csv', 'verb' => 'POST'],
+        ['name' => 'import#importJson', 'url' => '/api/pools/{poolId}/import/json', 'verb' => 'POST'],
     ]
 ];

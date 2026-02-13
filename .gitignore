@@ -7,8 +7,8 @@ npm-debug.log
 yarn-error.log
 
 # Build output
-app/js/
-app/css/
+app/js/*.map
+#app/css/
 
 # IDE
 .vscode/

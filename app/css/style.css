@@ -1,0 +1,80 @@
+/* Learning App - Global Styles */
+
+/* Touch-friendly targets */
+#app-learning button,
+#app-learning .answer-btn,
+#app-learning .tab-btn,
+#app-learning .mode-btn,
+#app-learning .action-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Global error banner */
+.error-banner {
+  padding: 12px 16px;
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  color: #991b1b;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.error-banner button {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Read-only indicator */
+.readonly-banner {
+  padding: 8px 16px;
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  border-radius: 8px;
+  color: #1e40af;
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Mobile: Global overrides */
+@media (max-width: 768px) {
+  #app-learning {
+    padding: 12px !important;
+  }
+
+  #app-learning .mode-selector {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  #app-learning .dialog-content {
+    width: 95%;
+    padding: 16px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  #app-learning .question-text {
+    font-size: 17px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #app-learning {
+    padding: 8px !important;
+  }
+
+  #app-learning .mode-selector {
+    flex-direction: column;
+  }
+
+  #app-learning .mode-btn {
+    padding: 12px;
+  }
+}

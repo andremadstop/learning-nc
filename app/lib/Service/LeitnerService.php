@@ -2,18 +2,39 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Db\PoolMapper;
+use OCA\Learning\Db\PoolShareMapper;
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IDBConnection;
 
 class LeitnerService {
     private $db;
+    private $poolMapper;
+    private $shareMapper;
 
-    public function __construct(IDBConnection $db) {
+    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper) {
         $this->db = $db;
+        $this->poolMapper = $poolMapper;
+        $this->shareMapper = $shareMapper;
+    }
+
+    private function hasPoolAccess(int $poolId, string $userId): bool {
+        try {
+            $this->poolMapper->find($poolId, $userId);
+            return true;
+        } catch (DoesNotExistException $e) {
+            $share = $this->shareMapper->findByPoolAndUser($poolId, $userId);
+            return $share !== null;
+        }
     }
 
     public function getDueQuestions(int $poolId, string $userId, int $limit = 10): array {
+        if (!$this->hasPoolAccess($poolId, $userId)) {
+            throw new \Exception('Pool not found or no access');
+        }
+
         $now = time();
-        
+
         $qb = $this->db->getQueryBuilder();
         $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty')
            ->from('learning_leitner_items', 'l')
@@ -23,16 +44,26 @@ class LeitnerService {
            ->andWhere($qb->expr()->lte('l.next_review', $qb->createNamedParameter($now)))
            ->orderBy('l.next_review', 'ASC')
            ->setMaxResults($limit);
-        
+
         $result = $qb->execute();
         $items = $result->fetchAll();
         $result->closeCursor();
-        
+
+        foreach ($items as &$item) {
+            $aqb = $this->db->getQueryBuilder();
+            $aqb->select('id', 'text', 'is_correct', 'position')
+               ->from('learning_answers')
+               ->where($aqb->expr()->eq('question_id', $aqb->createNamedParameter($item['question_id'])))
+               ->orderBy('position', 'ASC');
+            $aResult = $aqb->execute();
+            $item['answers'] = $aResult->fetchAll();
+            $aResult->closeCursor();
+        }
+
         return $items;
     }
 
     public function answerQuestion(int $itemId, bool $correct, string $userId): array {
-        // Get current item
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
            ->from('learning_leitner_items')
@@ -48,48 +79,53 @@ class LeitnerService {
 
         $currentBox = (int)$item['box'];
         $newBox = $correct ? min(5, $currentBox + 1) : 1;
-        
-        // Calculate next review date
+
         $intervals = [
-            1 => 0,      // Immediate review
-            2 => 86400,  // 1 day
-            3 => 259200, // 3 days
-            4 => 604800, // 7 days
-            5 => 1209600 // 14 days
+            1 => 0,
+            2 => 86400,
+            3 => 259200,
+            4 => 604800,
+            5 => 1209600
         ];
         $nextReview = time() + $intervals[$newBox];
 
-        // Update item
+        $correctCount = (int)$item['correct_count'] + ($correct ? 1 : 0);
+        $incorrectCount = (int)$item['incorrect_count'] + ($correct ? 0 : 1);
+
         $qb = $this->db->getQueryBuilder();
         $qb->update('learning_leitner_items')
            ->set('box', $qb->createNamedParameter($newBox))
            ->set('next_review', $qb->createNamedParameter($nextReview))
            ->set('last_reviewed', $qb->createNamedParameter(time()))
-           ->set('correct_count', $correct ? 'correct_count + 1' : 'correct_count')
-           ->set('incorrect_count', $correct ? 'incorrect_count' : 'incorrect_count + 1')
+           ->set('correct_count', $qb->createNamedParameter($correctCount))
+           ->set('incorrect_count', $qb->createNamedParameter($incorrectCount))
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($itemId)));
         $qb->execute();
 
         return [
             'old_box' => $currentBox,
             'new_box' => $newBox,
-            'next_review' => $nextReview
+            'next_review' => $nextReview,
+            'correct' => $correct
         ];
     }
 
     public function initializePool(int $poolId, string $userId): int {
-        // Get all questions not yet in Leitner
+        if (!$this->hasPoolAccess($poolId, $userId)) {
+            throw new \Exception('Pool not found or no access');
+        }
+
         $qb = $this->db->getQueryBuilder();
         $qb->select('q.id')
            ->from('learning_questions', 'q')
-           ->leftJoin('q', 'learning_leitner_items', 'l', 
+           ->leftJoin('q', 'learning_leitner_items', 'l',
                       $qb->expr()->andX(
                           $qb->expr()->eq('l.question_id', 'q.id'),
                           $qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId))
                       ))
            ->where($qb->expr()->eq('q.pool_id', $qb->createNamedParameter($poolId)))
            ->andWhere($qb->expr()->isNull('l.id'));
-        
+
         $result = $qb->execute();
         $questions = $result->fetchAll();
         $result->closeCursor();
@@ -103,7 +139,9 @@ class LeitnerService {
                    'pool_id' => $qb->createNamedParameter($poolId),
                    'question_id' => $qb->createNamedParameter($question['id']),
                    'box' => $qb->createNamedParameter(1),
-                   'next_review' => $qb->createNamedParameter(time())
+                   'next_review' => $qb->createNamedParameter(time()),
+                   'correct_count' => $qb->createNamedParameter(0),
+                   'incorrect_count' => $qb->createNamedParameter(0)
                ]);
             $qb->execute();
             $count++;
@@ -113,13 +151,17 @@ class LeitnerService {
     }
 
     public function getStats(int $poolId, string $userId): array {
+        if (!$this->hasPoolAccess($poolId, $userId)) {
+            throw new \Exception('Pool not found or no access');
+        }
+
         $qb = $this->db->getQueryBuilder();
         $qb->select('box', $qb->createFunction('COUNT(*) as count'))
            ->from('learning_leitner_items')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
            ->groupBy('box');
-        
+
         $result = $qb->execute();
         $boxes = $result->fetchAll();
         $result->closeCursor();
@@ -133,6 +175,34 @@ class LeitnerService {
         $stats['total'] = $total;
         $stats['mastered'] = $stats['box_5'];
         $stats['mastery_percentage'] = $total > 0 ? round($stats['box_5'] / $total * 100) : 0;
+
+        $now = time();
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as due_count'))
+           ->from('learning_leitner_items')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+           ->andWhere($qb->expr()->lte('next_review', $qb->createNamedParameter($now)));
+        $result = $qb->execute();
+        $stats['due_count'] = (int)$result->fetch()['due_count'];
+        $result->closeCursor();
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select(
+               $qb->createFunction('COALESCE(SUM(correct_count), 0) as total_correct'),
+               $qb->createFunction('COALESCE(SUM(correct_count + incorrect_count), 0) as total_answered')
+           )
+           ->from('learning_leitner_items')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)));
+        $result = $qb->execute();
+        $accRow = $result->fetch();
+        $result->closeCursor();
+        $stats['total_correct'] = (int)$accRow['total_correct'];
+        $stats['total_answered'] = (int)$accRow['total_answered'];
+        $stats['accuracy'] = $stats['total_answered'] > 0
+            ? round($stats['total_correct'] / $stats['total_answered'] * 100)
+            : 0;
 
         return $stats;
     }

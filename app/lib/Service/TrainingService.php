@@ -3,25 +3,66 @@ declare(strict_types=1);
 namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\QuestionMapper;
+use OCA\Learning\Db\PoolMapper;
+use OCA\Learning\Db\PoolShareMapper;
+use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IDBConnection;
 
 class TrainingService {
     private $db;
     private $questionMapper;
+    private $poolMapper;
+    private $shareMapper;
 
-    public function __construct(IDBConnection $db, QuestionMapper $questionMapper) {
+    public function __construct(
+        IDBConnection $db,
+        QuestionMapper $questionMapper,
+        PoolMapper $poolMapper,
+        PoolShareMapper $shareMapper
+    ) {
         $this->db = $db;
         $this->questionMapper = $questionMapper;
+        $this->poolMapper = $poolMapper;
+        $this->shareMapper = $shareMapper;
+    }
+
+    private function hasPoolAccess(int $poolId, string $userId): bool {
+        try {
+            $this->poolMapper->find($poolId, $userId);
+            return true;
+        } catch (DoesNotExistException $e) {
+            $share = $this->shareMapper->findByPoolAndUser($poolId, $userId);
+            return $share !== null;
+        }
+    }
+
+    private function verifySessionOwnership(int $sessionId, string $userId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)))
+           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+        $result = $qb->execute();
+        $session = $result->fetch();
+        $result->closeCursor();
+
+        if (!$session) {
+            throw new \Exception('Session not found');
+        }
+        return $session;
     }
 
     public function startSession(int $poolId, string $userId): array {
-        $questions = $this->questionMapper->findByPool($poolId, $userId);
-        
+        if (!$this->hasPoolAccess($poolId, $userId)) {
+            throw new \Exception('Pool not found or no access');
+        }
+
+        $questions = $this->questionMapper->findByPoolId($poolId);
+
         if (empty($questions)) {
             throw new \Exception('No questions in this pool');
         }
 
-        // Create session
         $qb = $this->db->getQueryBuilder();
         $qb->insert('learning_sessions')
            ->values([
@@ -32,12 +73,10 @@ class TrainingService {
                'correct_answers' => $qb->createNamedParameter(0)
            ]);
         $qb->execute();
-        
+
         $sessionId = $qb->getLastInsertId();
-        
-        // Shuffle questions
         shuffle($questions);
-        
+
         return [
             'session_id' => $sessionId,
             'total_questions' => count($questions),
@@ -46,17 +85,24 @@ class TrainingService {
     }
 
     public function submitAnswer(int $sessionId, int $questionId, int $answerId, string $userId): array {
-        // Get correct answer
+        // Verify session belongs to this user
+        $this->verifySessionOwnership($sessionId, $userId);
+
         $qb = $this->db->getQueryBuilder();
         $qb->select('is_correct')
            ->from('learning_answers')
-           ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId)));
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId)))
+           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
         $result = $qb->execute();
         $row = $result->fetch();
-        $isCorrect = $row ? (bool)$row['is_correct'] : false;
         $result->closeCursor();
 
-        // Record user answer
+        if (!$row) {
+            throw new \Exception('Answer not found for this question');
+        }
+
+        $isCorrect = (bool)$row['is_correct'];
+
         $qb = $this->db->getQueryBuilder();
         $qb->insert('learning_user_answers')
            ->values([
@@ -68,7 +114,6 @@ class TrainingService {
            ]);
         $qb->execute();
 
-        // Update session correct count
         if ($isCorrect) {
             $qb = $this->db->getQueryBuilder();
             $qb->update('learning_sessions')
@@ -81,6 +126,9 @@ class TrainingService {
     }
 
     public function completeSession(int $sessionId, string $userId): array {
+        // Verify session belongs to this user
+        $this->verifySessionOwnership($sessionId, $userId);
+
         $qb = $this->db->getQueryBuilder();
         $qb->update('learning_sessions')
            ->set('completed_at', $qb->createNamedParameter(time()))
@@ -88,11 +136,11 @@ class TrainingService {
            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
         $qb->execute();
 
-        // Get session stats
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
            ->from('learning_sessions')
-           ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)))
+           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
         $result = $qb->execute();
         $session = $result->fetch();
         $result->closeCursor();

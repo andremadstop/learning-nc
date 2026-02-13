@@ -11,6 +11,7 @@ class Pool extends Entity implements JsonSerializable {
     protected $description;
     protected $createdAt;
     protected $updatedAt;
+    protected $visibility;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -19,6 +20,7 @@ class Pool extends Entity implements JsonSerializable {
         $this->addType('description', 'string');
         $this->addType('createdAt', 'integer');
         $this->addType('updatedAt', 'integer');
+        $this->addType('visibility', 'string');
     }
 
     public function jsonSerialize(): array {
@@ -29,6 +31,7 @@ class Pool extends Entity implements JsonSerializable {
             'description' => $this->getDescription(),
             'created_at' => $this->getCreatedAt(),
             'updated_at' => $this->getUpdatedAt(),
+            'visibility' => $this->getVisibility() ?? 'private',
         ];
     }
 }

@@ -23,7 +23,12 @@ class PoolController extends Controller {
      * @NoAdminRequired
      */
     public function index(): DataResponse {
-        return new DataResponse($this->service->findAll($this->userId));
+        $own = $this->service->findAll($this->userId);
+        $shared = $this->service->findSharedWithMe($this->userId);
+        return new DataResponse([
+            'own' => $own,
+            'shared' => $shared,
+        ]);
     }
 
     /**
@@ -31,7 +36,7 @@ class PoolController extends Controller {
      */
     public function show(int $id): DataResponse {
         try {
-            return new DataResponse($this->service->find($id, $this->userId));
+            return new DataResponse($this->service->findByIdWithShareAccess($id, $this->userId));
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
         }

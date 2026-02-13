@@ -6,8 +6,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'js'),
     filename: 'learning.js',
-    chunkFilename: 'chunks/[name]-[hash].js',
-    publicPath: '/js/'
+    publicPath: '/apps/learning/js/'
   },
   module: {
     rules: [
@@ -39,8 +38,7 @@ module.exports = {
       string_decoder: false
     }
   },
-  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
-  devtool: process.env.NODE_ENV === 'production' ? false : 'source-map',
+  devtool: false,
   externals: {
     linkifyjs: 'linkifyjs'
   }

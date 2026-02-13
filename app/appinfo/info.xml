@@ -4,46 +4,60 @@
     <id>learning</id>
     <name>Learning</name>
     <summary>Spaced Repetition Learning with Leitner System</summary>
-    <description><![CDATA[
-**Learning** is a powerful flashcard and quiz app for Nextcloud with built-in Leitner spaced repetition system.
+    <description><![CDATA[**Learning** is a powerful flashcard and quiz app for Nextcloud with a built-in Leitner 5-box spaced repetition system.
 
-Features:
-- 📚 Multiple Choice Quizzes
-- 🧠 Leitner 5-Box Spaced Repetition
-- 👥 Share Pools with Nextcloud Groups
-- 📊 Progress Tracking & Statistics
-- 📁 Import from CSV/JSON
-- 📱 Mobile Optimized
+Create question pools, share them with your team, and study efficiently using scientifically-proven spaced repetition.
 
-Perfect for:
-- Employee Onboarding
-- Compliance Training (DSGVO, ISO)
-- IT Certification Prep (CompTIA, Cisco)
-- University Courses
-- Knowledge Retention
+## Features
+
+- **Multiple Choice Quizzes** — Create pools with questions and multiple answers
+- **Leitner Spaced Repetition** — 5-box system with automatic scheduling (1d, 3d, 7d, 14d intervals)
+- **Pool Sharing** — Share pools with other users (read or edit permissions)
+- **CSV/JSON Import** — Bulk import questions from CSV or JSON files
+- **Dashboard Widget** — See due questions at a glance from the Nextcloud Dashboard
+- **Progress Tracking** — Stats, accuracy, mastery percentage per pool
+- **Mobile Optimized** — Touch-friendly responsive design
+
+## Use Cases
+
+- Employee Onboarding & Compliance Training
+- IT Certification Prep (CompTIA, Cisco, AWS)
+- University Courses & Exam Preparation
+- Language Learning Vocabulary
+- General Knowledge Retention
+
+## Requirements
+
+- Nextcloud 29, 30, or 31
+- PHP 8.1+
+- PostgreSQL 13+ or MySQL 8+
     ]]></description>
-    
-    <version>0.1.0</version>
+
+    <version>1.0.0</version>
     <licence>agpl</licence>
-    <author mail="dev@quizdojo.com">Andre</author>
+    <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>
     <category>organization</category>
     <category>tools</category>
-    
-    <website>https://github.com/andremadstop/quizdojo</website>
-    <bugs>https://github.com/andremadstop/quizdojo/issues</bugs>
-    <repository type="git">https://github.com/andremadstop/quizdojo.git</repository>
-    
+
+    <website>https://github.com/andremadstop/learning-nc</website>
+    <bugs>https://github.com/andremadstop/learning-nc/issues</bugs>
+    <repository type="git">https://github.com/andremadstop/learning-nc.git</repository>
+
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/pool-list.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/training-mode.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/leitner-boxes.png</screenshot>
+
     <dependencies>
         <nextcloud min-version="29" max-version="31"/>
-        <php min-version="8.1" max-version="8.3"/>
-        <database min-version="13">pgsql</database>
+        <php min-version="8.1"/>
     </dependencies>
-    
+
     <navigations>
         <navigation>
             <name>Learning</name>
             <route>learning.page.index</route>
+            <icon>app.svg</icon>
             <order>10</order>
         </navigation>
     </navigations>

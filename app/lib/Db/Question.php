@@ -13,6 +13,8 @@ class Question extends Entity implements JsonSerializable {
     protected $difficulty;
     protected $createdAt;
     protected $updatedAt;
+    protected $imagePath;
+    protected $lang;
 
     public function __construct() {
         $this->addType('poolId', 'integer');
@@ -22,6 +24,8 @@ class Question extends Entity implements JsonSerializable {
         $this->addType('difficulty', 'string');
         $this->addType('createdAt', 'integer');
         $this->addType('updatedAt', 'integer');
+        $this->addType('imagePath', 'string');
+        $this->addType('lang', 'string');
     }
 
     public function jsonSerialize(): array {
@@ -34,6 +38,8 @@ class Question extends Entity implements JsonSerializable {
             'difficulty' => $this->difficulty,
             'created_at' => $this->createdAt,
             'updated_at' => $this->updatedAt,
+            'image_path' => $this->imagePath,
+            'lang' => $this->lang ?? 'de',
         ];
     }
 }
