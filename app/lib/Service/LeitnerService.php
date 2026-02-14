@@ -33,6 +33,9 @@ class LeitnerService {
             throw new \Exception('Pool not found or no access');
         }
 
+        // FIX #9: Cap limit
+        $limit = max(1, min($limit, 100));
+
         $now = time();
 
         $qb = $this->db->getQueryBuilder();
@@ -51,7 +54,8 @@ class LeitnerService {
 
         foreach ($items as &$item) {
             $aqb = $this->db->getQueryBuilder();
-            $aqb->select('id', 'text', 'is_correct', 'position')
+            // FIX: Don't select is_correct — never leak answer key to client
+            $aqb->select('id', 'text', 'position')
                ->from('learning_answers')
                ->where($aqb->expr()->eq('question_id', $aqb->createNamedParameter($item['question_id'])))
                ->orderBy('position', 'ASC');

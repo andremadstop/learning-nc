@@ -39,14 +39,21 @@ class ImageController extends Controller {
                 return new DataResponse(['error' => 'No file uploaded'], Http::STATUS_BAD_REQUEST);
             }
 
+            // FIX #7 MEDIUM: Upload file, then try to set path — rollback file on failure
             $imagePath = $this->imageService->upload($this->userId, $file);
-            $this->questionService->setImagePath($questionId, $imagePath, $this->userId);
+            try {
+                $this->questionService->setImagePath($questionId, $imagePath, $this->userId);
+            } catch (\Throwable $e) {
+                $this->imageService->delete($imagePath); // rollback orphan file
+                throw $e;
+            }
 
             return new DataResponse(['image_path' => $imagePath], Http::STATUS_OK);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            // FIX #8 MEDIUM: Don't leak exception internals
+            return new DataResponse(['error' => 'Image upload failed'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -70,7 +77,7 @@ class ImageController extends Controller {
                 $file->getMimeType()
             );
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Image not found'], Http::STATUS_NOT_FOUND);
         }
     }
 
@@ -87,9 +94,10 @@ class ImageController extends Controller {
                 $this->questionService->setImagePath($questionId, null, $this->userId);
             }
 
-            return new DataResponse([], Http::STATUS_NO_CONTENT);
+            // FIX #12 LOW: 204 should not have a body
+            return new DataResponse(null, Http::STATUS_NO_CONTENT);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Image not found'], Http::STATUS_NOT_FOUND);
         }
     }
 }

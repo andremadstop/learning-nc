@@ -85,7 +85,12 @@ class TrainingService {
         foreach ($questions as $q) {
             $qData = $q->jsonSerialize();
             $answers = $this->answerMapper->findByQuestion($q->getId());
-            $qData['answers'] = array_map(fn($a) => $a->jsonSerialize(), $answers);
+            // FIX #1 CRITICAL: Strip is_correct from answers — never leak answer key to client
+            $qData['answers'] = array_map(static function ($a) {
+                $row = $a->jsonSerialize();
+                unset($row['is_correct']);
+                return $row;
+            }, $answers);
             $questionsWithAnswers[] = $qData;
         }
 
@@ -97,8 +102,35 @@ class TrainingService {
     }
 
     public function submitAnswer(int $sessionId, int $questionId, int $answerId, string $userId): array {
-        $this->verifySessionOwnership($sessionId, $userId);
+        $session = $this->verifySessionOwnership($sessionId, $userId);
 
+        // FIX #2 HIGH: Validate questionId belongs to this session's pool (IDOR prevention)
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+           ->from('learning_questions')
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)))
+           ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter((int)$session['pool_id'])));
+        $checkResult = $qb->execute();
+        $questionRow = $checkResult->fetch();
+        $checkResult->closeCursor();
+        if (!$questionRow) {
+            throw new \Exception('Question not in this session pool');
+        }
+
+        // FIX #3 HIGH: Prevent duplicate answer submissions for same session/question
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+           ->from('learning_user_answers')
+           ->where($qb->expr()->eq('session_id', $qb->createNamedParameter($sessionId)))
+           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+        $dupResult = $qb->execute();
+        $dupRow = $dupResult->fetch();
+        $dupResult->closeCursor();
+        if ($dupRow) {
+            throw new \Exception('Question already answered in this session');
+        }
+
+        // Validate answer belongs to question
         $qb = $this->db->getQueryBuilder();
         $qb->select('is_correct')
            ->from('learning_answers')
@@ -133,7 +165,21 @@ class TrainingService {
             $qb->execute();
         }
 
-        return ['is_correct' => $isCorrect];
+        // Return correct answer info so frontend doesn't need is_correct in question data
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id', 'text')
+           ->from('learning_answers')
+           ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+           ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)));
+        $correctResult = $qb->execute();
+        $correctRow = $correctResult->fetch();
+        $correctResult->closeCursor();
+
+        return [
+            'is_correct' => $isCorrect,
+            'correct_answer_id' => $correctRow ? (int)$correctRow['id'] : null,
+            'correct_answer_text' => $correctRow ? $correctRow['text'] : '',
+        ];
     }
 
     public function completeSession(int $sessionId, string $userId): array {

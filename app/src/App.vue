@@ -1,128 +1,263 @@
 <template>
-  <div id="app-learning">
+  <NcAppContent id="app-learning">
     <div class="app-content-header">
-      <h2>Learning - Spaced Repetition</h2>
+      <h2>{{ t('learning', 'Learning - Spaced Repetition') }}</h2>
     </div>
 
-    <PoolList
-      v-if="currentView === 'pools'"
-      @selectPool="selectPool"
-    />
-
-    <div v-else-if="currentView === 'questions'" class="pool-view">
-      <div class="pool-view-header">
-        <button @click="backToPools" class="button back-btn">
-          ← Back to Pools
-        </button>
-        <h3 class="pool-title">{{ selectedPool.name }}</h3>
-      </div>
-
-      <!-- Read-only banner for shared pools -->
-      <div v-if="poolPermission === 'read'" class="readonly-banner">
-        🔒 This pool is shared with you (view only)
-      </div>
-
-      <div class="mode-selector">
-        <button @click="setMode('manage')" :class="['mode-btn', { active: mode === 'manage' }]">
-          {{ poolPermission === 'read' ? 'View Questions' : 'Manage Questions' }}
-        </button>
-        <button @click="setMode('train')" :class="['mode-btn', { active: mode === 'train' }]">
-          Training Mode
-        </button>
-        <button @click="setMode('leitner')" :class="['mode-btn', { active: mode === 'leitner' }]">
-          Leitner System
-        </button>
-      </div>
-
-      <!-- Error banner -->
-      <div v-if="error" class="error-banner">
-        <span>{{ error }}</span>
-        <button @click="error = null" class="button">Dismiss</button>
-      </div>
-
-      <QuestionList
-        v-if="mode === 'manage'"
-        :poolId="selectedPool.id"
-        :poolName="selectedPool.name"
-        :readonly="poolPermission === 'read'"
-        @back="backToPools"
-      />
-
-      <TrainingMode
-        v-else-if="mode === 'train'"
-        :poolId="selectedPool.id"
-        :totalQuestions="questionCount"
-        @back="setMode('manage')"
-      />
-
-      <LeitnerMode
-        v-else-if="mode === 'leitner'"
-        :poolId="selectedPool.id"
-        @back="setMode('manage')"
-      />
+    <!-- Top-level navigation: Pools | Courses -->
+    <div class="main-nav" role="tablist">
+      <button
+        :class="['main-nav-btn', { active: mainView === 'pools' }]"
+        role="tab"
+        :aria-selected="mainView === 'pools' ? 'true' : 'false'"
+        @click="switchMainView('pools')"
+      >
+        {{ t('learning', 'Pools') }}
+      </button>
+      <button
+        :class="['main-nav-btn', { active: mainView === 'courses' }]"
+        role="tab"
+        :aria-selected="mainView === 'courses' ? 'true' : 'false'"
+        @click="switchMainView('courses')"
+      >
+        {{ t('learning', 'Courses') }}
+      </button>
     </div>
-  </div>
+
+    <!-- ==================== POOLS VIEW ==================== -->
+    <template v-if="mainView === 'pools'">
+      <PoolList
+        v-if="currentView === 'pools'"
+        @selectPool="selectPool"
+      />
+
+      <div v-else-if="currentView === 'questions'" class="pool-view">
+        <div class="pool-view-header">
+          <NcButton type="tertiary" @click="backToPools" :aria-label="t('learning', 'Back to Pools')">
+            {{ t('learning', '← Back to Pools') }}
+          </NcButton>
+          <h3 class="pool-title">{{ selectedPool.name }}</h3>
+        </div>
+
+        <!-- Read-only banner for shared pools -->
+        <NcNoteCard v-if="poolPermission === 'read'" type="info">
+          {{ t('learning', 'This pool is shared with you (view only)') }}
+        </NcNoteCard>
+
+        <div class="mode-selector" role="tablist">
+          <button
+            v-for="m in modes"
+            :key="m.id"
+            @click="setMode(m.id)"
+            :class="['mode-btn', { active: mode === m.id }]"
+            role="tab"
+            :aria-selected="mode === m.id ? 'true' : 'false'"
+          >
+            {{ m.label }}
+          </button>
+        </div>
+
+        <!-- Error banner -->
+        <NcNoteCard v-if="error" type="error">
+          {{ error }}
+          <template #icon>
+            <span></span>
+          </template>
+        </NcNoteCard>
+
+        <TrainingMode
+          v-if="mode === 'train'"
+          :poolId="selectedPool.id"
+          :totalQuestions="questionCount"
+          @back="setMode('train')"
+        />
+
+        <LeitnerMode
+          v-else-if="mode === 'leitner'"
+          :poolId="selectedPool.id"
+          @back="setMode('train')"
+        />
+
+        <SwipeMode
+          v-else-if="mode === 'swipe'"
+          :poolId="selectedPool.id"
+          :totalQuestions="questionCount"
+          @back="setMode('train')"
+        />
+
+        <ExamMode
+          v-else-if="mode === 'exam'"
+          :poolId="selectedPool.id"
+          :totalQuestions="questionCount"
+          @back="setMode('train')"
+        />
+
+        <AnalyticsDashboard
+          v-else-if="mode === 'stats'"
+          :poolId="selectedPool.id"
+          @back="setMode('train')"
+        />
+
+        <QuestionList
+          v-else-if="mode === 'manage'"
+          :poolId="selectedPool.id"
+          :poolName="selectedPool.name"
+          :readonly="poolPermission === 'read'"
+          @back="backToPools"
+        />
+      </div>
+    </template>
+
+    <!-- ==================== COURSES VIEW ==================== -->
+    <template v-if="mainView === 'courses'">
+      <InstructorDashboard
+        v-if="userRole === 'instructor' && !selectedCourse && courseView === 'dashboard'"
+        @selectCourse="selectCourse"
+      />
+
+      <CourseList
+        v-else-if="!selectedCourse"
+        :userRole="userRole"
+        @selectCourse="selectCourse"
+      />
+
+      <CourseDetail
+        v-else
+        :courseId="selectedCourse.id"
+        :userRole="userRole"
+        @back="selectedCourse = null"
+        @openPool="openPoolFromCourse"
+      />
+    </template>
+  </NcAppContent>
 </template>
 
 <script>
+import NcAppContent from '@nextcloud/vue/dist/Components/NcAppContent.js';
+import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
+import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import PoolList from './components/PoolList.vue';
 import QuestionList from './components/QuestionList.vue';
 import TrainingMode from './components/TrainingMode.vue';
 import LeitnerMode from './components/LeitnerMode.vue';
+import SwipeMode from './components/SwipeMode.vue';
+import ExamMode from './components/ExamMode.vue';
+import AnalyticsDashboard from './components/AnalyticsDashboard.vue';
+import CourseList from './components/CourseList.vue';
+import CourseDetail from './components/CourseDetail.vue';
+import InstructorDashboard from './components/InstructorDashboard.vue';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 
 export default {
   name: 'App',
   components: {
+    NcAppContent,
+    NcButton,
+    NcNoteCard,
     PoolList,
     QuestionList,
     TrainingMode,
-    LeitnerMode
+    LeitnerMode,
+    SwipeMode,
+    ExamMode,
+    AnalyticsDashboard,
+    CourseList,
+    CourseDetail,
+    InstructorDashboard
   },
   data() {
     return {
+      // Top-level navigation
+      mainView: 'pools',
+      userRole: 'student',
+
+      // Pools view state
       currentView: 'pools',
       selectedPool: null,
-      mode: 'manage',
+      mode: 'train',
       questionCount: 0,
       poolPermission: 'owner',
-      error: null
+      error: null,
+
+      // Courses view state
+      selectedCourse: null,
+      courseView: 'list'
     };
   },
+  computed: {
+    modes() {
+      return [
+        { id: 'train', label: t('learning', 'Training') },
+        { id: 'leitner', label: t('learning', 'Leitner') },
+        { id: 'swipe', label: t('learning', 'Swipe') },
+        { id: 'exam', label: t('learning', 'Exam') },
+        { id: 'stats', label: t('learning', 'Stats') },
+        { id: 'manage', label: this.poolPermission === 'read' ? t('learning', 'View Questions') : t('learning', 'Manage') }
+      ];
+    }
+  },
+  created() {
+    this.fetchRole();
+  },
   methods: {
+    async fetchRole() {
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/role'));
+        this.userRole = response.data.role || 'student';
+      } catch (err) {
+        // Default to student if role check fails
+        this.userRole = 'student';
+      }
+    },
+
+    switchMainView(view) {
+      this.mainView = view;
+      if (view === 'pools') {
+        this.selectedCourse = null;
+        this.courseView = 'list';
+      } else if (view === 'courses') {
+        this.backToPools();
+      }
+    },
+
+    // --- Pools methods ---
     async selectPool(pool) {
       this.selectedPool = pool;
       this.currentView = 'questions';
       this.error = null;
-
-      // Determine permission level
-      if (pool.is_shared) {
-        this.poolPermission = pool.permission || 'read';
-      } else {
-        this.poolPermission = 'owner';
-      }
-
+      this.poolPermission = pool.is_shared ? (pool.permission || 'read') : 'owner';
       try {
         const response = await axios.get(
-          generateUrl(`/apps/learning/api/pools/${pool.id}/questions`)
+          generateUrl('/apps/learning/api/pools/' + pool.id + '/questions')
         );
         this.questionCount = response.data.length;
       } catch (err) {
-        this.error = 'Failed to load question count';
+        this.error = t('learning', 'Failed to load question count');
         this.questionCount = 0;
       }
     },
     backToPools() {
       this.currentView = 'pools';
       this.selectedPool = null;
-      this.mode = 'manage';
+      this.mode = 'train';
       this.poolPermission = 'owner';
       this.error = null;
     },
     setMode(newMode) {
       this.mode = newMode;
       this.error = null;
+    },
+
+    // --- Courses methods ---
+    selectCourse(course) {
+      this.selectedCourse = course;
+    },
+    openPoolFromCourse(poolId) {
+      // Switch to pools view and open the specific pool
+      this.mainView = 'pools';
+      this.selectedCourse = null;
+      this.selectPool({ id: poolId, name: '...', is_shared: false });
     }
   }
 };
@@ -136,8 +271,8 @@ export default {
 }
 
 .app-content-header {
-  margin-bottom: 28px;
-  padding-bottom: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -146,8 +281,41 @@ export default {
   font-weight: 700;
   letter-spacing: -0.3px;
   margin: 0;
+  color: var(--color-main-text);
 }
 
+/* Top-level navigation */
+.main-nav {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--color-border);
+  max-width: 300px;
+}
+
+.main-nav-btn {
+  padding: 10px 28px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--color-text-maxcontrast);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.main-nav-btn:hover {
+  color: var(--color-main-text);
+}
+
+.main-nav-btn.active {
+  color: var(--color-primary-element);
+  border-bottom-color: var(--color-primary-element);
+}
+
+/* Pool view styles */
 .pool-view-header {
   display: flex;
   align-items: center;
@@ -159,12 +327,7 @@ export default {
   font-size: 22px;
   font-weight: 600;
   margin: 0;
-}
-
-.back-btn {
-  white-space: nowrap;
-  padding: 8px 16px;
-  border-radius: 6px;
+  color: var(--color-main-text);
 }
 
 .mode-selector {
@@ -174,12 +337,12 @@ export default {
   padding: 5px;
   background: var(--color-background-hover);
   border-radius: 10px;
-  max-width: 560px;
+  max-width: 900px;
 }
 
 .mode-btn {
   flex: 1;
-  padding: 12px 20px;
+  padding: 12px 16px;
   border: none;
   background: transparent;
   border-radius: 8px;
@@ -188,6 +351,7 @@ export default {
   transition: all 0.2s;
   font-size: 14px;
   text-align: center;
+  color: var(--color-main-text);
 }
 
 .mode-btn:hover {
@@ -195,8 +359,8 @@ export default {
 }
 
 .mode-btn.active {
-  background: var(--color-primary);
-  color: white;
+  background: var(--color-primary-element);
+  color: var(--color-primary-element-text);
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
@@ -204,5 +368,6 @@ export default {
   #app-learning { padding: 16px; }
   .pool-view-header { flex-direction: column; align-items: flex-start; }
   .mode-selector { flex-direction: column; max-width: 100%; }
+  .main-nav { max-width: 100%; }
 }
 </style>

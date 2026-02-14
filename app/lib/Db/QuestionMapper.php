@@ -31,6 +31,29 @@ class QuestionMapper extends QBMapper {
         return $this->findEntities($qb);
     }
 
+    // FIX #10: Paginated query for large pools
+    public function findByPoolIdPaged(int $poolId, int $limit = 50, int $offset = 0): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)))
+           ->orderBy('created_at', 'DESC')
+           ->setMaxResults($limit)
+           ->setFirstResult($offset);
+        return $this->findEntities($qb);
+    }
+
+    public function countByPoolId(int $poolId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)));
+        $result = $qb->execute();
+        $row = $result->fetch();
+        $result->closeCursor();
+        return (int)($row['cnt'] ?? 0);
+    }
+
     public function find(int $id, string $userId): Question {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
@@ -67,5 +90,17 @@ class QuestionMapper extends QBMapper {
         } catch (DoesNotExistException $e) {
             // Already deleted or doesn't exist
         }
+    }
+
+    public function searchByText(string $query, string $userId, int $limit = 50): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select("q.*", "p.name as pool_name")
+           ->from($this->getTableName(), "q")
+           ->innerJoin("q", "learning_pools", "p", $qb->expr()->eq("q.pool_id", "p.id"))
+           ->where($qb->expr()->eq("q.user_id", $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->iLike("q.text", $qb->createNamedParameter("%" . $this->db->escapeLikeParameter($query) . "%")))
+           ->orderBy("q.created_at", "DESC")
+           ->setMaxResults($limit);
+        return $qb->executeQuery()->fetchAll();
     }
 }

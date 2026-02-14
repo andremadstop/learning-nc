@@ -25,7 +25,8 @@ class LeitnerController extends Controller {
             $count = $this->service->initializePool($poolId, $this->userId);
             return new DataResponse(['initialized' => $count]);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], 400);
+            // FIX #8 MEDIUM: Generic error message
+            return new DataResponse(['error' => 'Failed to initialize pool'], 400);
         }
     }
 
@@ -34,9 +35,12 @@ class LeitnerController extends Controller {
      */
     public function due(int $poolId, int $limit = 10): DataResponse {
         try {
+            // FIX #9 MEDIUM: Cap limit to prevent unbounded responses
+            $limit = max(1, min($limit, 100));
             return new DataResponse($this->service->getDueQuestions($poolId, $this->userId, $limit));
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], 400);
+            // FIX #8 MEDIUM: Generic error message
+            return new DataResponse(['error' => 'Failed to load due questions'], 400);
         }
     }
 
@@ -47,7 +51,8 @@ class LeitnerController extends Controller {
         try {
             return new DataResponse($this->service->answerQuestion($itemId, $correct, $this->userId));
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], 400);
+            // FIX #8 MEDIUM: Generic error message
+            return new DataResponse(['error' => 'Failed to submit answer'], 400);
         }
     }
 
@@ -58,7 +63,8 @@ class LeitnerController extends Controller {
         try {
             return new DataResponse($this->service->getStats($poolId, $this->userId));
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], 400);
+            // FIX #8 MEDIUM: Generic error message
+            return new DataResponse(['error' => 'Failed to load stats'], 400);
         }
     }
 }

@@ -21,10 +21,13 @@ class ImageService {
             throw new \InvalidArgumentException('File too large (max 5MB)');
         }
 
-        $mimeType = $fileData['type'] ?? '';
-        if (!in_array($mimeType, self::ALLOWED_TYPES)) {
+        // FIX #6 HIGH: Server-side MIME validation instead of trusting client
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $realMime = $finfo->file($fileData['tmp_name']) ?: '';
+        if (!in_array($realMime, self::ALLOWED_TYPES, true)) {
             throw new \InvalidArgumentException('Invalid file type. Allowed: JPEG, PNG, GIF, WebP');
         }
+        $mimeType = $realMime;
 
         $userFolder = $this->rootFolder->getUserFolder($userId);
 

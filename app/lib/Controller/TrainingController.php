@@ -24,7 +24,8 @@ class TrainingController extends Controller {
         try {
             return new DataResponse($this->service->startSession($poolId, $this->userId), 201);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], 400);
+            // FIX #8 MEDIUM: Generic error message
+            return new DataResponse(['error' => 'Failed to start training session'], 400);
         }
     }
 
@@ -35,7 +36,8 @@ class TrainingController extends Controller {
         try {
             return new DataResponse($this->service->submitAnswer($sessionId, $questionId, $answerId, $this->userId));
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], 400);
+            // FIX #8 MEDIUM: Generic error message
+            return new DataResponse(['error' => 'Failed to submit answer'], 400);
         }
     }
 
@@ -46,7 +48,8 @@ class TrainingController extends Controller {
         try {
             return new DataResponse($this->service->completeSession($sessionId, $this->userId));
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], 400);
+            // FIX #8 MEDIUM: Generic error message
+            return new DataResponse(['error' => 'Failed to complete session'], 400);
         }
     }
 }

@@ -12,6 +12,7 @@ return [
         ['name' => 'pool#destroy', 'url' => '/api/pools/{id}', 'verb' => 'DELETE'],
 
         // Questions
+        ["name" => "question#search", "url" => "/api/questions/search", "verb" => "GET"],
         ['name' => 'question#index', 'url' => '/api/pools/{poolId}/questions', 'verb' => 'GET'],
         ['name' => 'question#show', 'url' => '/api/questions/{id}', 'verb' => 'GET'],
         ['name' => 'question#create', 'url' => '/api/questions', 'verb' => 'POST'],
@@ -52,5 +53,22 @@ return [
         // Import
         ['name' => 'import#importCsv', 'url' => '/api/pools/{poolId}/import/csv', 'verb' => 'POST'],
         ['name' => 'import#importJson', 'url' => '/api/pools/{poolId}/import/json', 'verb' => 'POST'],
+
+        // Course Management
+        ['name' => 'course#role', 'url' => '/api/role', 'verb' => 'GET'],
+        ['name' => 'course#index', 'url' => '/api/courses', 'verb' => 'GET'],
+        ['name' => 'course#show', 'url' => '/api/courses/{courseId}', 'verb' => 'GET'],
+        ['name' => 'course#create', 'url' => '/api/courses', 'verb' => 'POST'],
+        ['name' => 'course#update', 'url' => '/api/courses/{courseId}', 'verb' => 'PUT'],
+        ['name' => 'course#destroy', 'url' => '/api/courses/{courseId}', 'verb' => 'DELETE'],
+        ['name' => 'course#listPools', 'url' => '/api/courses/{courseId}/pools', 'verb' => 'GET'],
+        ['name' => 'course#addPool', 'url' => '/api/courses/{courseId}/pools', 'verb' => 'POST'],
+        ['name' => 'course#removePool', 'url' => '/api/courses/{courseId}/pools/{poolId}', 'verb' => 'DELETE'],
+        ['name' => 'course#listMembers', 'url' => '/api/courses/{courseId}/members', 'verb' => 'GET'],
+        ['name' => 'course#addMember', 'url' => '/api/courses/{courseId}/members', 'verb' => 'POST'],
+        ['name' => 'course#removeMember', 'url' => '/api/courses/{courseId}/members/{memberId}', 'verb' => 'DELETE'],
+        ['name' => 'course#enroll', 'url' => '/api/courses/{courseId}/enroll', 'verb' => 'POST'],
+        ['name' => 'course#progress', 'url' => '/api/courses/{courseId}/progress', 'verb' => 'GET'],
+        ['name' => 'course#dashboard', 'url' => '/api/instructor/dashboard', 'verb' => 'GET'],
     ]
 ];

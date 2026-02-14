@@ -11,23 +11,27 @@ use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Db\PoolMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
+use OCP\IDBConnection;
 
 class QuestionService {
     private $questionMapper;
     private $answerMapper;
     private $shareMapper;
     private $poolMapper;
+    private $db;
 
     public function __construct(
         QuestionMapper $questionMapper,
         AnswerMapper $answerMapper,
         PoolShareMapper $shareMapper,
-        PoolMapper $poolMapper
+        PoolMapper $poolMapper,
+        IDBConnection $db
     ) {
         $this->questionMapper = $questionMapper;
         $this->answerMapper = $answerMapper;
         $this->shareMapper = $shareMapper;
         $this->poolMapper = $poolMapper;
+        $this->db = $db;
     }
 
     private function hasPoolAccess(int $poolId, string $userId): bool {
@@ -50,6 +54,31 @@ class QuestionService {
         }
     }
 
+    // FIX #11 MEDIUM: Input validation for question text and answers
+    private function validateQuestionInput(string $text, array $answers): void {
+        if (mb_strlen($text) < 1 || mb_strlen($text) > 5000) {
+            throw new \InvalidArgumentException('Question text must be 1-5000 characters');
+        }
+        if (count($answers) < 2 || count($answers) > 8) {
+            throw new \InvalidArgumentException('Must have 2-8 answers');
+        }
+        $correctCount = 0;
+        foreach ($answers as $a) {
+            if (!isset($a['text']) || !is_string($a['text']) || trim($a['text']) === '') {
+                throw new \InvalidArgumentException('Each answer needs non-empty text');
+            }
+            if (mb_strlen($a['text']) > 2000) {
+                throw new \InvalidArgumentException('Answer text must be max 2000 characters');
+            }
+            if (!empty($a['is_correct'])) {
+                $correctCount++;
+            }
+        }
+        if ($correctCount < 1) {
+            throw new \InvalidArgumentException('At least one correct answer required');
+        }
+    }
+
     public function findByPool(int $poolId, string $userId): array {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new Exception('Pool not found or no access');
@@ -66,6 +95,26 @@ class QuestionService {
         }
 
         return $result;
+    }
+
+    // FIX #10: Paginated version for large pools
+    public function findByPoolPaged(int $poolId, string $userId, int $limit = 50, int $offset = 0): array {
+        if (!$this->hasPoolAccess($poolId, $userId)) {
+            throw new Exception('Pool not found or no access');
+        }
+
+        $questions = $this->questionMapper->findByPoolIdPaged($poolId, $limit, $offset);
+        $total = $this->questionMapper->countByPoolId($poolId);
+        $result = [];
+
+        foreach ($questions as $question) {
+            $answers = $this->answerMapper->findByQuestion($question->getId());
+            $questionData = $question->jsonSerialize();
+            $questionData['answers'] = array_map(fn($a) => $a->jsonSerialize(), $answers);
+            $result[] = $questionData;
+        }
+
+        return ['questions' => $result, 'total' => $total, 'limit' => $limit, 'offset' => $offset];
     }
 
     public function find(int $id, string $userId): array {
@@ -106,23 +155,35 @@ class QuestionService {
             throw new Exception('No edit access to this pool');
         }
 
-        $question = new Question();
-        $question->setPoolId($poolId);
-        $question->setUserId($userId);
-        $question->setText($text);
-        $question->setExplanation($explanation);
-        $question->setDifficulty($difficulty);
+        // FIX #11: Validate input
+        $this->validateQuestionInput($text, $answers);
 
-        $question = $this->questionMapper->createOrUpdate($question);
+        // FIX #4 HIGH: Wrap in transaction
+        $this->db->beginTransaction();
+        try {
+            $question = new Question();
+            $question->setPoolId($poolId);
+            $question->setUserId($userId);
+            $question->setText($text);
+            $question->setExplanation($explanation);
+            $question->setDifficulty($difficulty);
 
-        $savedAnswers = [];
-        foreach ($answers as $index => $answerData) {
-            $answer = new Answer();
-            $answer->setQuestionId($question->getId());
-            $answer->setText($answerData['text']);
-            $answer->setIsCorrect($answerData['is_correct'] ?? false);
-            $answer->setPosition($index);
-            $savedAnswers[] = $this->answerMapper->createOrUpdate($answer);
+            $question = $this->questionMapper->createOrUpdate($question);
+
+            $savedAnswers = [];
+            foreach ($answers as $index => $answerData) {
+                $answer = new Answer();
+                $answer->setQuestionId($question->getId());
+                $answer->setText($answerData['text']);
+                $answer->setIsCorrect($answerData['is_correct'] ?? false);
+                $answer->setPosition($index);
+                $savedAnswers[] = $this->answerMapper->createOrUpdate($answer);
+            }
+
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
         }
 
         $result = $question->jsonSerialize();
@@ -139,22 +200,34 @@ class QuestionService {
                 throw new Exception('No edit access to this pool');
             }
 
-            $question->setText($text);
-            $question->setExplanation($explanation);
-            $question->setDifficulty($difficulty);
+            // FIX #11: Validate input
+            $this->validateQuestionInput($text, $answers);
 
-            $question = $this->questionMapper->createOrUpdate($question);
+            // FIX #4 HIGH: Wrap in transaction
+            $this->db->beginTransaction();
+            try {
+                $question->setText($text);
+                $question->setExplanation($explanation);
+                $question->setDifficulty($difficulty);
 
-            $this->answerMapper->deleteByQuestion($question->getId());
+                $question = $this->questionMapper->createOrUpdate($question);
 
-            $savedAnswers = [];
-            foreach ($answers as $index => $answerData) {
-                $answer = new Answer();
-                $answer->setQuestionId($question->getId());
-                $answer->setText($answerData['text']);
-                $answer->setIsCorrect($answerData['is_correct'] ?? false);
-                $answer->setPosition($index);
-                $savedAnswers[] = $this->answerMapper->createOrUpdate($answer);
+                $this->answerMapper->deleteByQuestion($question->getId());
+
+                $savedAnswers = [];
+                foreach ($answers as $index => $answerData) {
+                    $answer = new Answer();
+                    $answer->setQuestionId($question->getId());
+                    $answer->setText($answerData['text']);
+                    $answer->setIsCorrect($answerData['is_correct'] ?? false);
+                    $answer->setPosition($index);
+                    $savedAnswers[] = $this->answerMapper->createOrUpdate($answer);
+                }
+
+                $this->db->commit();
+            } catch (\Throwable $e) {
+                $this->db->rollBack();
+                throw $e;
             }
 
             $result = $question->jsonSerialize();
@@ -171,7 +244,21 @@ class QuestionService {
         if (!$this->canEditPool($question->getPoolId(), $userId)) {
             throw new Exception('No edit access to this pool');
         }
-        $this->answerMapper->deleteByQuestion($id);
-        $this->questionMapper->delete($question);
+        // FIX #4: Transaction for delete (answers + question)
+        $this->db->beginTransaction();
+        try {
+            $this->answerMapper->deleteByQuestion($id);
+            $this->questionMapper->delete($question);
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    public function search(string $query, string $userId, int $limit = 50): array {
+        // FIX #11: Cap search limit
+        $limit = max(1, min($limit, 100));
+        return $this->questionMapper->searchByText($query, $userId, $limit);
     }
 }

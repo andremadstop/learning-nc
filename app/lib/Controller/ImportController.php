@@ -12,6 +12,7 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\IDBConnection;
 use OCP\IRequest;
 
 class ImportController extends Controller {
@@ -19,6 +20,7 @@ class ImportController extends Controller {
     private AnswerMapper $answerMapper;
     private PoolMapper $poolMapper;
     private PoolShareMapper $shareMapper;
+    private IDBConnection $db;
     private ?string $userId;
 
     public function __construct(
@@ -28,6 +30,7 @@ class ImportController extends Controller {
         AnswerMapper $answerMapper,
         PoolMapper $poolMapper,
         PoolShareMapper $shareMapper,
+        IDBConnection $db,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
@@ -35,6 +38,7 @@ class ImportController extends Controller {
         $this->answerMapper = $answerMapper;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
+        $this->db = $db;
         $this->userId = $userId;
     }
 
@@ -61,6 +65,11 @@ class ImportController extends Controller {
             return new DataResponse(['error' => 'No data to import'], Http::STATUS_BAD_REQUEST);
         }
 
+        // FIX #11: Batch size cap
+        if (count($lines) > 500) {
+            return new DataResponse(['error' => 'Maximum 500 items per import'], Http::STATUS_BAD_REQUEST);
+        }
+
         // Check if first line is a header
         $firstLine = strtolower($lines[0]);
         if (strpos($firstLine, 'question') !== false && strpos($firstLine, 'answer') !== false) {
@@ -70,102 +79,113 @@ class ImportController extends Controller {
         $imported = 0;
         $errors = [];
 
-        foreach ($lines as $lineNum => $line) {
-            $fields = str_getcsv($line);
-            
-            // Minimum: question + 2 answers + correct index
-            if (count($fields) < 4) {
-                $errors[] = 'Line ' . ($lineNum + 1) . ': Not enough fields (need at least question, answer1, answer2, correct)';
-                continue;
-            }
+        // FIX #4: Wrap in transaction
+        $this->db->beginTransaction();
+        try {
+            foreach ($lines as $lineNum => $line) {
+                $fields = str_getcsv($line);
 
-            $questionText = trim($fields[0]);
-            if (empty($questionText)) {
-                $errors[] = 'Line ' . ($lineNum + 1) . ': Empty question text';
-                continue;
-            }
+                // Minimum: question + 2 answers + correct index
+                if (count($fields) < 4) {
+                    $errors[] = 'Line ' . ($lineNum + 1) . ': Not enough fields';
+                    continue;
+                }
 
-            // Detect format: last field might be explanation, second-to-last is correct index
-            // Format A: question,a1,a2,a3,a4,correct_index,explanation
-            // Format B: question,a1,a2,a3,a4,correct_index
-            // Format C: question,a1,a2,correct_index
-            $answerTexts = [];
-            $correctIndex = null;
-            $explanation = null;
+                $questionText = trim($fields[0]);
+                if (empty($questionText)) {
+                    $errors[] = 'Line ' . ($lineNum + 1) . ': Empty question text';
+                    continue;
+                }
 
-            // Find the correct answer indicator (number 1-4 or answer text)
-            $lastIdx = count($fields) - 1;
-            $secondLastIdx = $lastIdx - 1;
+                // FIX #11: Validate question text length
+                if (mb_strlen($questionText) > 5000) {
+                    $errors[] = 'Line ' . ($lineNum + 1) . ': Question text too long (max 5000)';
+                    continue;
+                }
 
-            // Try to detect correct answer column
-            // Check if second-to-last or last field is a small integer (1-based correct index)
-            if ($lastIdx >= 2) {
-                $possibleCorrect = trim($fields[$lastIdx]);
-                $possibleExplanation = null;
+                $answerTexts = [];
+                $correctIndex = null;
+                $explanation = null;
 
-                // If last field is a number 1-6, it's the correct index
-                if (is_numeric($possibleCorrect) && (int)$possibleCorrect >= 1 && (int)$possibleCorrect <= 6) {
-                    $correctIndex = (int)$possibleCorrect - 1; // Convert to 0-based
-                    $answerTexts = array_slice($fields, 1, $lastIdx - 1);
-                } else if ($secondLastIdx >= 2) {
-                    // Last might be explanation, second-to-last is correct index
-                    $possibleCorrect2 = trim($fields[$secondLastIdx]);
-                    if (is_numeric($possibleCorrect2) && (int)$possibleCorrect2 >= 1 && (int)$possibleCorrect2 <= 6) {
-                        $correctIndex = (int)$possibleCorrect2 - 1;
-                        $answerTexts = array_slice($fields, 1, $secondLastIdx - 1);
-                        $explanation = trim($fields[$lastIdx]);
-                        if (empty($explanation)) $explanation = null;
-                    } else {
-                        // Assume last field is correct answer TEXT
-                        $answerTexts = array_slice($fields, 1, $lastIdx);
-                        $correctText = strtolower(trim($possibleCorrect));
-                        foreach ($answerTexts as $i => $at) {
-                            if (strtolower(trim($at)) === $correctText) {
-                                $correctIndex = $i;
-                                break;
+                $lastIdx = count($fields) - 1;
+                $secondLastIdx = $lastIdx - 1;
+
+                if ($lastIdx >= 2) {
+                    $possibleCorrect = trim($fields[$lastIdx]);
+
+                    if (is_numeric($possibleCorrect) && (int)$possibleCorrect >= 1 && (int)$possibleCorrect <= 6) {
+                        $correctIndex = (int)$possibleCorrect - 1;
+                        $answerTexts = array_slice($fields, 1, $lastIdx - 1);
+                    } else if ($secondLastIdx >= 2) {
+                        $possibleCorrect2 = trim($fields[$secondLastIdx]);
+                        if (is_numeric($possibleCorrect2) && (int)$possibleCorrect2 >= 1 && (int)$possibleCorrect2 <= 6) {
+                            $correctIndex = (int)$possibleCorrect2 - 1;
+                            $answerTexts = array_slice($fields, 1, $secondLastIdx - 1);
+                            $explanation = trim($fields[$lastIdx]);
+                            if (empty($explanation)) $explanation = null;
+                        } else {
+                            $answerTexts = array_slice($fields, 1, $lastIdx);
+                            $correctText = strtolower(trim($possibleCorrect));
+                            foreach ($answerTexts as $i => $at) {
+                                if (strtolower(trim($at)) === $correctText) {
+                                    $correctIndex = $i;
+                                    break;
+                                }
                             }
-                        }
-                        // Remove the last "answer" which is the correct indicator
-                        if ($correctIndex !== null) {
-                            array_pop($answerTexts);
+                            if ($correctIndex !== null) {
+                                array_pop($answerTexts);
+                            }
                         }
                     }
                 }
+
+                $answerTexts = array_map('trim', $answerTexts);
+                $answerTexts = array_filter($answerTexts, function($t) { return $t !== ''; });
+                $answerTexts = array_values($answerTexts);
+
+                if (count($answerTexts) < 2) {
+                    $errors[] = 'Line ' . ($lineNum + 1) . ': Need at least 2 answers';
+                    continue;
+                }
+
+                // FIX #11: Cap answer count
+                if (count($answerTexts) > 8) {
+                    $errors[] = 'Line ' . ($lineNum + 1) . ': Maximum 8 answers';
+                    continue;
+                }
+
+                if ($correctIndex === null || $correctIndex >= count($answerTexts)) {
+                    $errors[] = 'Line ' . ($lineNum + 1) . ': Could not determine correct answer';
+                    continue;
+                }
+
+                $question = new Question();
+                $question->setPoolId($poolId);
+                $question->setUserId($this->userId);
+                $question->setText($questionText);
+                $question->setExplanation($explanation);
+                $question = $this->questionMapper->createOrUpdate($question);
+
+                foreach ($answerTexts as $i => $answerText) {
+                    // FIX #11: Validate answer text length
+                    if (mb_strlen($answerText) > 2000) {
+                        $answerText = mb_substr($answerText, 0, 2000);
+                    }
+                    $answer = new Answer();
+                    $answer->setQuestionId($question->getId());
+                    $answer->setText($answerText);
+                    $answer->setIsCorrect($i === $correctIndex);
+                    $answer->setPosition($i);
+                    $this->answerMapper->createOrUpdate($answer);
+                }
+
+                $imported++;
             }
 
-            $answerTexts = array_map('trim', $answerTexts);
-            $answerTexts = array_filter($answerTexts, function($t) { return $t !== ''; });
-            $answerTexts = array_values($answerTexts);
-
-            if (count($answerTexts) < 2) {
-                $errors[] = 'Line ' . ($lineNum + 1) . ': Need at least 2 answers';
-                continue;
-            }
-
-            if ($correctIndex === null || $correctIndex >= count($answerTexts)) {
-                $errors[] = 'Line ' . ($lineNum + 1) . ': Could not determine correct answer';
-                continue;
-            }
-
-            // Create question
-            $question = new Question();
-            $question->setPoolId($poolId);
-            $question->setUserId($this->userId);
-            $question->setText($questionText);
-            $question->setExplanation($explanation);
-            $question = $this->questionMapper->createOrUpdate($question);
-
-            // Create answers
-            foreach ($answerTexts as $i => $answerText) {
-                $answer = new Answer();
-                $answer->setQuestionId($question->getId());
-                $answer->setText($answerText);
-                $answer->setIsCorrect($i === $correctIndex);
-                $answer->setPosition($i);
-                $this->answerMapper->createOrUpdate($answer);
-            }
-
-            $imported++;
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            return new DataResponse(['error' => 'Import failed'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
         return new DataResponse([
@@ -193,50 +213,79 @@ class ImportController extends Controller {
             $data = $data['questions'];
         }
 
+        // FIX #11: Batch size cap
+        if (count($data) > 500) {
+            return new DataResponse(['error' => 'Maximum 500 items per import'], Http::STATUS_BAD_REQUEST);
+        }
+
         $imported = 0;
         $errors = [];
 
-        foreach ($data as $idx => $item) {
-            $num = $idx + 1;
+        // FIX #4: Wrap in transaction
+        $this->db->beginTransaction();
+        try {
+            foreach ($data as $idx => $item) {
+                $num = $idx + 1;
 
-            if (!isset($item['text']) || empty(trim($item['text']))) {
-                $errors[] = "Item $num: Missing question text";
-                continue;
+                if (!isset($item['text']) || empty(trim($item['text']))) {
+                    $errors[] = "Item $num: Missing question text";
+                    continue;
+                }
+
+                // FIX #11: Validate lengths
+                if (mb_strlen(trim($item['text'])) > 5000) {
+                    $errors[] = "Item $num: Question text too long (max 5000)";
+                    continue;
+                }
+
+                if (!isset($item['answers']) || !is_array($item['answers']) || count($item['answers']) < 2) {
+                    $errors[] = "Item $num: Need at least 2 answers";
+                    continue;
+                }
+
+                if (count($item['answers']) > 8) {
+                    $errors[] = "Item $num: Maximum 8 answers";
+                    continue;
+                }
+
+                $hasCorrect = false;
+                foreach ($item['answers'] as $a) {
+                    if (!empty($a['is_correct'])) $hasCorrect = true;
+                }
+
+                if (!$hasCorrect) {
+                    $errors[] = "Item $num: No correct answer marked";
+                    continue;
+                }
+
+                $question = new Question();
+                $question->setPoolId($poolId);
+                $question->setUserId($this->userId);
+                $question->setText(trim($item['text']));
+                $question->setExplanation(isset($item['explanation']) ? trim($item['explanation']) : null);
+                $question->setDifficulty(isset($item['difficulty']) ? trim($item['difficulty']) : null);
+                $question = $this->questionMapper->createOrUpdate($question);
+
+                foreach ($item['answers'] as $i => $answerData) {
+                    $answerText = trim($answerData['text'] ?? '');
+                    if (mb_strlen($answerText) > 2000) {
+                        $answerText = mb_substr($answerText, 0, 2000);
+                    }
+                    $answer = new Answer();
+                    $answer->setQuestionId($question->getId());
+                    $answer->setText($answerText);
+                    $answer->setIsCorrect(!empty($answerData['is_correct']));
+                    $answer->setPosition($i);
+                    $this->answerMapper->createOrUpdate($answer);
+                }
+
+                $imported++;
             }
 
-            if (!isset($item['answers']) || !is_array($item['answers']) || count($item['answers']) < 2) {
-                $errors[] = "Item $num: Need at least 2 answers";
-                continue;
-            }
-
-            $hasCorrect = false;
-            foreach ($item['answers'] as $a) {
-                if (!empty($a['is_correct'])) $hasCorrect = true;
-            }
-
-            if (!$hasCorrect) {
-                $errors[] = "Item $num: No correct answer marked";
-                continue;
-            }
-
-            $question = new Question();
-            $question->setPoolId($poolId);
-            $question->setUserId($this->userId);
-            $question->setText(trim($item['text']));
-            $question->setExplanation(isset($item['explanation']) ? trim($item['explanation']) : null);
-            $question->setDifficulty(isset($item['difficulty']) ? trim($item['difficulty']) : null);
-            $question = $this->questionMapper->createOrUpdate($question);
-
-            foreach ($item['answers'] as $i => $answerData) {
-                $answer = new Answer();
-                $answer->setQuestionId($question->getId());
-                $answer->setText(trim($answerData['text']));
-                $answer->setIsCorrect(!empty($answerData['is_correct']));
-                $answer->setPosition($i);
-                $this->answerMapper->createOrUpdate($answer);
-            }
-
-            $imported++;
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            return new DataResponse(['error' => 'Import failed'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
         return new DataResponse([
