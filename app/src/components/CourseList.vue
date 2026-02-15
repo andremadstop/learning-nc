@@ -82,7 +82,7 @@
 						</p>
 						<div class="course-meta">
 							<span v-if="course.instructor_id" class="meta-item">
-								{{ t('learning', 'Instructor: {name}', { name: course.instructor_id }) }}
+								{{ t('learning', 'by {name}', { name: course.instructor_id }) }}
 							</span>
 							<span class="meta-item">
 								{{ t('learning', '{n} pools', { n: course.pool_count || 0 }) }}

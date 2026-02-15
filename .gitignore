@@ -32,6 +32,10 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Ralph autonomous agent
+.ralph/logs/
+.ralphrc
+
 # Environment (contains passwords)
 .env
 

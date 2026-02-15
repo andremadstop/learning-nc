@@ -24,7 +24,7 @@ class Version000500Date20260213120000 extends SimpleMigrationStep {
             $table->addColumn('created_at', Types::BIGINT, ['notnull' => true, 'length' => 8]);
             $table->addColumn('updated_at', Types::BIGINT, ['notnull' => true, 'length' => 8]);
             $table->setPrimaryKey(['id']);
-            $table->addIndex(['instructor_id'], 'learning_courses_instructor');
+            $table->addIndex(['instructor_id'], 'learn_crs_instructor');
             $table->addIndex(['nc_group_id'], 'learning_courses_group');
         }
 

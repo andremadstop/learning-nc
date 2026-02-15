@@ -12,8 +12,14 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 - **Multiple Choice** — Questions with 2-6 answers, explanations, difficulty levels
 - **Leitner System** — 5-box spaced repetition with automatic scheduling
 - **Training Mode** — Quick quiz sessions with immediate feedback
+- **Exam Mode** — Timed exams with configurable question count
+- **Swipe Mode** — Touch-friendly swipe-based flashcard review
+- **Course Management** — Instructors create courses, assign pools, track student progress
 - **Pool Sharing** — Share with users (read-only or edit permissions)
 - **CSV/JSON Import** — Bulk import questions from files
+- **Multi-Language** — Translate questions and answers into any language
+- **Search** — Full-text search across all question pools
+- **Analytics** — Per-pool statistics with accuracy trends
 - **Dashboard Widget** — See due questions from the Nextcloud Dashboard
 - **Mobile Friendly** — Responsive touch-optimized design
 
@@ -94,6 +100,16 @@ What is 2+2?,3,4,5,2,Basic math
 | Box 3 | 3 days |
 | Box 4 | 7 days |
 | Box 5 | 14 days (mastered) |
+
+### Course Management (for Instructors)
+
+1. Switch to the **Courses** tab
+2. Click **New Course** and add a title and description
+3. Assign question pools to the course
+4. Add students by Nextcloud username
+5. Track student progress from the **Instructor Dashboard**
+
+Students can self-enroll in courses and see their progress across all assigned pools.
 
 ### Sharing Pools
 

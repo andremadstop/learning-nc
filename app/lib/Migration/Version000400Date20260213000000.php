@@ -100,7 +100,7 @@ class Version000400Date20260213000000 extends SimpleMigrationStep {
         if ($schema->hasTable('learning_user_answers')) {
             $table = $schema->getTable('learning_user_answers');
             if (!$table->hasIndex('learn_ua_session_question_uniq')) {
-                $table->addUniqueIndex(['session_id', 'question_id'], 'learn_ua_session_question_uniq');
+                $table->addUniqueIndex(['session_id', 'question_id'], 'learn_ua_sq_uniq');
             }
         }
 

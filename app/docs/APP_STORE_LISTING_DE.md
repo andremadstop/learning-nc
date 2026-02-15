@@ -36,8 +36,26 @@ Importiere hunderte Fragen auf einmal aus CSV- oder JSON-Dateien. Ideal zum Konv
 **Dashboard-Widget**
 Sieh auf einen Blick, wie viele Fragen faellig sind — direkt auf deinem Nextcloud-Dashboard.
 
+**Pruefungsmodus**
+Zeitgesteuerte Pruefungen mit konfigurierbarer Fragenanzahl und strikter Bewertung. Simuliere echte Testbedingungen.
+
+**Swipe-Modus**
+Wisch-basierte Karteikarten-Wiederholung fuer Mobilgeraete. Nach rechts wischen fuer richtig, nach links fuer falsch.
+
+**Kurs-Management**
+Dozenten koennen Kurse erstellen, Fragenpools zuweisen, Studierende einschreiben und deren Fortschritt im Instructor-Dashboard verfolgen. Studierende sehen ihren Kursfortschritt und faellige Aufgaben.
+
+**Mehrsprachigkeit**
+Uebersetze Fragen und Antworten in beliebige Sprachen. Filtere nach Sprache waehrend des Trainings.
+
+**Fragen-Suche**
+Volltextsuche ueber alle Pools. Finde jede Frage sofort.
+
+**Analyse-Dashboard**
+Detaillierte Statistiken pro Pool mit Genauigkeitstrends und Lernhistorie.
+
 **Mobilfreundlich**
-Vollstaendig responsives Design mit Touch-optimierten Buttons. Lerne unterwegs auf dem Handy.
+Vollstaendig responsives Design mit Touch-optimierten Buttons und Wischgesten. Lerne unterwegs auf dem Handy.
 
 #### Einsatzgebiete
 
@@ -56,4 +74,4 @@ Vollstaendig responsives Design mit Touch-optimierten Buttons. Lerne unterwegs a
 ---
 
 ## Tags
-lernen, karteikarten, spaced-repetition, leitner, quiz, training, bildung, studium
+lernen, karteikarten, spaced-repetition, leitner, quiz, training, bildung, studium, kurse, pruefung, dozent

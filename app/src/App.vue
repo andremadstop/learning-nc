@@ -69,7 +69,7 @@
           v-if="mode === 'train'"
           :poolId="selectedPool.id"
           :totalQuestions="questionCount"
-          @back="setMode('train')"
+          @back="backToPools"
         />
 
         <LeitnerMode
@@ -253,11 +253,20 @@ export default {
     selectCourse(course) {
       this.selectedCourse = course;
     },
-    openPoolFromCourse(poolId) {
+    async openPoolFromCourse(poolId) {
       // Switch to pools view and open the specific pool
       this.mainView = 'pools';
       this.selectedCourse = null;
-      this.selectPool({ id: poolId, name: '...', is_shared: false });
+      try {
+        const response = await axios.get(
+          generateUrl('/apps/learning/api/pools/' + poolId)
+        );
+        const pool = response.data;
+        this.selectPool({ id: pool.id, name: pool.name, is_shared: !!pool.is_shared, permission: pool.permission });
+      } catch {
+        // Fallback: open with poolId and let selectPool fetch the details
+        this.selectPool({ id: poolId, name: '', is_shared: false });
+      }
     }
   }
 };

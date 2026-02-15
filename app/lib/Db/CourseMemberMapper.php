@@ -45,6 +45,14 @@ class CourseMemberMapper extends QBMapper {
         return $this->findEntities($qb);
     }
 
+    public function findById(int $id): CourseMember {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter($id)));
+        return $this->findEntity($qb);
+    }
+
     public function countByCourse(int $courseId): int {
         $qb = $this->db->getQueryBuilder();
         $qb->select($qb->createFunction('COUNT(*)'))

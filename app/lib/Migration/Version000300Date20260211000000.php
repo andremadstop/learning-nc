@@ -22,8 +22,8 @@ class Version000300Date20260211000000 extends SimpleMigrationStep {
             $table->addColumn('total_questions', Types::INTEGER, ['notnull' => true]);
             $table->addColumn('correct_answers', Types::INTEGER, ['notnull' => true, 'default' => 0]);
             $table->setPrimaryKey(['id']);
-            $table->addIndex(['pool_id'], 'learning_sessions_pool_id');
-            $table->addIndex(['user_id'], 'learning_sessions_user_id');
+            $table->addIndex(['pool_id'], 'learn_s_pool_idx');
+            $table->addIndex(['user_id'], 'learn_s_user_idx');
         }
 
         // User answers
@@ -33,11 +33,11 @@ class Version000300Date20260211000000 extends SimpleMigrationStep {
             $table->addColumn('session_id', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
             $table->addColumn('question_id', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
             $table->addColumn('answer_id', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
-            $table->addColumn('is_correct', Types::BOOLEAN, ['notnull' => true]);
+            $table->addColumn('is_correct', Types::BOOLEAN, ['notnull' => false, 'default' => false]);
             $table->addColumn('answered_at', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
             $table->setPrimaryKey(['id']);
-            $table->addIndex(['session_id'], 'learning_user_answers_session_id');
-            $table->addIndex(['question_id'], 'learning_user_answers_question_id');
+            $table->addIndex(['session_id'], 'learn_ua_session_idx');
+            $table->addIndex(['question_id'], 'learn_ua_question_idx');
         }
 
         // Leitner boxes
@@ -53,9 +53,9 @@ class Version000300Date20260211000000 extends SimpleMigrationStep {
             $table->addColumn('incorrect_count', Types::INTEGER, ['notnull' => true, 'default' => 0]);
             $table->addColumn('last_reviewed', Types::BIGINT, ['notnull' => false, 'unsigned' => true]);
             $table->setPrimaryKey(['id']);
-            $table->addIndex(['user_id', 'pool_id'], 'learning_leitner_user_pool');
-            $table->addIndex(['next_review'], 'learning_leitner_next_review');
-            $table->addUniqueIndex(['user_id', 'question_id'], 'learning_leitner_user_question');
+            $table->addIndex(['user_id', 'pool_id'], 'learn_lt_user_pool');
+            $table->addIndex(['next_review'], 'learn_lt_next_review');
+            $table->addUniqueIndex(['user_id', 'question_id'], 'learn_lt_user_quest');
         }
 
         return $schema;

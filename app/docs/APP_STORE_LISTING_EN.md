@@ -36,8 +36,26 @@ Import hundreds of questions at once from CSV or JSON files. Great for convertin
 **Dashboard Widget**
 See how many questions are due at a glance, right from your Nextcloud Dashboard.
 
+**Exam Mode**
+Timed exams with configurable question count and strict scoring. Simulate real test conditions.
+
+**Swipe Mode**
+Swipe-based flashcard review optimized for mobile. Swipe right for correct, left for wrong.
+
+**Course Management**
+Instructors can create courses, assign question pools, enroll students, and track their progress from a dedicated dashboard. Students see their course progress and due assignments.
+
+**Multi-Language Support**
+Translate questions and answers into any language. Filter by language during training sessions.
+
+**Question Search**
+Full-text search across all your pools. Find any question instantly.
+
+**Analytics Dashboard**
+Detailed per-pool statistics with accuracy trends and study history.
+
 **Mobile-Friendly**
-Fully responsive design with touch-optimized buttons. Study on your phone during your commute.
+Fully responsive design with touch-optimized buttons and swipe gestures. Study on your phone during your commute.
 
 #### Use Cases
 
@@ -56,4 +74,4 @@ Fully responsive design with touch-optimized buttons. Study on your phone during
 ---
 
 ## Tags
-learning, flashcards, spaced-repetition, leitner, quiz, training, education, study
+learning, flashcards, spaced-repetition, leitner, quiz, training, education, study, courses, exam, instructor

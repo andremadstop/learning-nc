@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-02-15
+
+### Added
+- **Course Management** — Instructors can create courses, assign question pools, enroll students, and track progress (15 new API endpoints)
+- **Instructor Dashboard** — Overview of all courses with enrollment stats and student progress
+- **Role System** — Automatic instructor/student detection based on Nextcloud group membership
+- **Exam Mode** — Timed exams with configurable question count and strict scoring
+- **Swipe Mode** — Touch-friendly swipe-based flashcard review (mobile-optimized)
+- **Analytics Dashboard** — Detailed per-pool statistics with accuracy trends and study history
+- **Question Search** — Full-text search across all question pools
+- **Multi-Language Support** — Translate questions and answers into any language (6 translation endpoints)
+- **Language Filter** — Filter questions by translation language during training
+
+### Changed
+- **UI Overhaul** — Centered layout, wider grids, consistent spacing, @nextcloud/vue components throughout
+- **PoolList** — Redesigned with card layout, search bar, and better empty states
+- **TrainingMode** — Streamlined answer flow, clearer score display
+- **LeitnerMode** — Simplified box visualization, improved due-card handling
+- **ImportDialog** — Cleaner preview table, better error messages
+- **ShareDialog** — Autocomplete user search, permission badges
+- **QuestionForm** — Inline answer editing, drag reorder
+
+### Fixed
+- Training sessions now include answers per question (not just question IDs)
+- Image upload service handles missing files gracefully
+- Leitner answer endpoint validates pool access
+
+### Security
+- 12 Codex audit findings resolved (input validation, access control, error handling)
+- All course endpoints enforce ownership/enrollment checks
+- Translation endpoints verify pool access before allowing modifications
+
+### Technical
+- 51 API endpoints (up from 35), 13 database tables (up from 10)
+- 2 new database migrations (course tables, question search index)
+- 6 new Vue components: CourseList, CourseDetail, InstructorDashboard, ExamMode, SwipeMode, AnalyticsDashboard
+- 4 new PHP services: CourseService, RoleService + enhanced QuestionService, TrainingService
+
 ## [1.0.0] - 2026-02-13
 
 ### Added

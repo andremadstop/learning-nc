@@ -16,7 +16,11 @@ Create question pools, share them with your team, and study efficiently using sc
 - **CSV/JSON Import** — Bulk import questions from CSV or JSON files
 - **Dashboard Widget** — See due questions at a glance from the Nextcloud Dashboard
 - **Progress Tracking** — Stats, accuracy, mastery percentage per pool
-- **Mobile Optimized** — Touch-friendly responsive design
+- **Mobile Optimized** — Touch-friendly responsive design with swipe gestures
+- **Course Management** — Instructors can create courses, assign pools, and track student progress
+- **Multi-Language Support** — Translate questions and answers into any language
+- **Exam Mode** — Timed exams with configurable question count
+- **Search** — Full-text search across all your question pools
 
 ## Use Cases
 
@@ -33,7 +37,7 @@ Create question pools, share them with your team, and study efficiently using sc
 - PostgreSQL 13+ or MySQL 8+
     ]]></description>
 
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>

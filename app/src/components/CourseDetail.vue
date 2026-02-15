@@ -53,9 +53,7 @@
 						:key="pool.id"
 						class="pool-item"
 						@click="$emit('openPool', pool.pool_id)">
-						<div class="pool-drag-handle" v-if="isInstructor">
-							<span class="drag-icon">::</span>
-						</div>
+						<span v-if="isInstructor" class="pool-sort-order">{{ (pool.sort_order || 0) + 1 }}.</span>
 						<div class="pool-info">
 							<span class="pool-name">{{ pool.pool_name }}</span>
 							<span class="pool-questions">
@@ -651,19 +649,24 @@ export default {
 			return 'mastery-low'
 		},
 
-		formatDate(dateStr) {
-			if (!dateStr) {
+		formatDate(timestamp) {
+			if (!timestamp) {
 				return ''
 			}
 			try {
-				const date = new Date(dateStr)
+				// Backend returns Unix timestamps in seconds
+				const ts = typeof timestamp === 'number' ? timestamp * 1000 : Date.parse(timestamp)
+				const date = new Date(ts)
+				if (isNaN(date.getTime())) {
+					return String(timestamp)
+				}
 				return date.toLocaleDateString(undefined, {
 					year: 'numeric',
 					month: 'short',
 					day: 'numeric',
 				})
 			} catch {
-				return dateStr
+				return String(timestamp)
 			}
 		},
 	},
@@ -816,17 +819,12 @@ export default {
 	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
-.pool-drag-handle {
-	cursor: grab;
+.pool-sort-order {
 	color: var(--color-text-maxcontrast);
-	font-size: 1.2em;
-	padding: 0 4px;
-	user-select: none;
-}
-
-.drag-icon {
-	letter-spacing: 2px;
-	font-weight: bold;
+	font-size: 0.9em;
+	font-weight: 600;
+	min-width: 24px;
+	flex-shrink: 0;
 }
 
 .pool-info {

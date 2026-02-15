@@ -23,8 +23,8 @@ class Version000200Date20260211000000 extends SimpleMigrationStep {
             $table->addColumn('created_at', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
             $table->addColumn('updated_at', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
             $table->setPrimaryKey(['id']);
-            $table->addIndex(['pool_id'], 'learning_questions_pool_id');
-            $table->addIndex(['user_id'], 'learning_questions_user_id');
+            $table->addIndex(['pool_id'], 'learn_q_pool_idx');
+            $table->addIndex(['user_id'], 'learn_q_user_idx');
         }
 
         // Answers table
@@ -33,10 +33,10 @@ class Version000200Date20260211000000 extends SimpleMigrationStep {
             $table->addColumn('id', Types::BIGINT, ['autoincrement' => true, 'notnull' => true, 'unsigned' => true]);
             $table->addColumn('question_id', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
             $table->addColumn('text', Types::TEXT, ['notnull' => true]);
-            $table->addColumn('is_correct', Types::BOOLEAN, ['notnull' => true, 'default' => false]);
+            $table->addColumn('is_correct', Types::BOOLEAN, ['notnull' => false, 'default' => false]);
             $table->addColumn('position', Types::INTEGER, ['notnull' => true, 'default' => 0]);
             $table->setPrimaryKey(['id']);
-            $table->addIndex(['question_id'], 'learning_answers_question_id');
+            $table->addIndex(['question_id'], 'learn_a_question_idx');
         }
 
         return $schema;

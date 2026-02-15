@@ -329,6 +329,7 @@ class CourseService {
 
     /**
      * Remove a member from a course (instructor only)
+     * $memberId can be a numeric row ID or a username string
      */
     public function removeMember(int $courseId, string $memberId, string $userId): void {
         $course = $this->courseMapper->findById($courseId);
@@ -337,7 +338,16 @@ class CourseService {
             throw new \Exception('No permission');
         }
 
-        $member = $this->courseMemberMapper->findByCourseAndUser($courseId, $memberId);
+        // Try numeric row ID first (frontend sends member.id), then fall back to username
+        if (ctype_digit($memberId)) {
+            $member = $this->courseMemberMapper->findById((int)$memberId);
+            if ($member->getCourseId() !== $courseId) {
+                throw new DoesNotExistException('Member not found in this course');
+            }
+        } else {
+            $member = $this->courseMemberMapper->findByCourseAndUser($courseId, $memberId);
+        }
+
         $this->courseMemberMapper->delete($member);
     }
 
