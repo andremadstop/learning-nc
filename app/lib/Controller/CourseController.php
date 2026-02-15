@@ -43,7 +43,7 @@ class CourseController extends Controller {
         try {
             return new JSONResponse($this->courseService->findAll($this->userId));
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new JSONResponse(['error' => 'Failed to list courses'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -56,7 +56,7 @@ class CourseController extends Controller {
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_FORBIDDEN);
+            return new JSONResponse(['error' => 'Failed to load course'], Http::STATUS_FORBIDDEN);
         }
     }
 
@@ -68,7 +68,7 @@ class CourseController extends Controller {
             $course = $this->courseService->create($title, $description, $ncGroupId, $this->userId);
             return new JSONResponse($course, Http::STATUS_CREATED);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return new JSONResponse(['error' => 'Failed to create course'], Http::STATUS_BAD_REQUEST);
         }
     }
 
@@ -82,7 +82,7 @@ class CourseController extends Controller {
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return new JSONResponse(['error' => 'Failed to update course'], Http::STATUS_BAD_REQUEST);
         }
     }
 
@@ -96,7 +96,7 @@ class CourseController extends Controller {
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_FORBIDDEN);
+            return new JSONResponse(['error' => 'Failed to delete course'], Http::STATUS_FORBIDDEN);
         }
     }
 
@@ -108,7 +108,7 @@ class CourseController extends Controller {
             $data = $this->courseService->findById($courseId, $this->userId);
             return new JSONResponse($data['pools'] ?? []);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return new JSONResponse(['error' => 'Failed to list pools'], Http::STATUS_BAD_REQUEST);
         }
     }
 
@@ -120,7 +120,7 @@ class CourseController extends Controller {
             $cp = $this->courseService->addPool($courseId, $poolId, $sortOrder, $required, $this->userId);
             return new JSONResponse($cp, Http::STATUS_CREATED);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return new JSONResponse(['error' => 'Failed to add pool'], Http::STATUS_BAD_REQUEST);
         }
     }
 
@@ -132,7 +132,7 @@ class CourseController extends Controller {
             $this->courseService->removePool($courseId, $poolId, $this->userId);
             return new JSONResponse([], Http::STATUS_NO_CONTENT);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return new JSONResponse(['error' => 'Failed to remove pool'], Http::STATUS_BAD_REQUEST);
         }
     }
 
@@ -143,7 +143,7 @@ class CourseController extends Controller {
         try {
             return new JSONResponse($this->courseService->getMembers($courseId, $this->userId));
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_FORBIDDEN);
+            return new JSONResponse(['error' => 'No permission to view members'], Http::STATUS_FORBIDDEN);
         }
     }
 
@@ -155,7 +155,7 @@ class CourseController extends Controller {
             $member = $this->courseService->addMember($courseId, $userId, $role, $this->userId);
             return new JSONResponse($member, Http::STATUS_CREATED);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return new JSONResponse(['error' => 'Failed to add member'], Http::STATUS_BAD_REQUEST);
         }
     }
 
@@ -167,7 +167,7 @@ class CourseController extends Controller {
             $this->courseService->removeMember($courseId, $memberId, $this->userId);
             return new JSONResponse([], Http::STATUS_NO_CONTENT);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return new JSONResponse(['error' => 'Failed to remove member'], Http::STATUS_BAD_REQUEST);
         }
     }
 
@@ -179,7 +179,7 @@ class CourseController extends Controller {
             $member = $this->courseService->enroll($courseId, $this->userId);
             return new JSONResponse($member, Http::STATUS_CREATED);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return new JSONResponse(['error' => 'Failed to enroll in course'], Http::STATUS_BAD_REQUEST);
         }
     }
 
@@ -190,7 +190,7 @@ class CourseController extends Controller {
         try {
             return new JSONResponse($this->courseService->getCourseProgress($courseId, $this->userId));
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_FORBIDDEN);
+            return new JSONResponse(['error' => 'No permission to view progress'], Http::STATUS_FORBIDDEN);
         }
     }
 
@@ -201,7 +201,7 @@ class CourseController extends Controller {
         try {
             return new JSONResponse($this->courseService->getDashboard($this->userId));
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_FORBIDDEN);
+            return new JSONResponse(['error' => 'Not authorized for dashboard'], Http::STATUS_FORBIDDEN);
         }
     }
 }

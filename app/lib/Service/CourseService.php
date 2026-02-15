@@ -9,6 +9,7 @@ use OCA\Learning\Db\CourseMember;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IDBConnection;
+use OCP\IGroupManager;
 
 class CourseService {
     private CourseMapper $courseMapper;
@@ -16,19 +17,22 @@ class CourseService {
     private CourseMemberMapper $courseMemberMapper;
     private RoleService $roleService;
     private IDBConnection $db;
+    private IGroupManager $groupManager;
 
     public function __construct(
         CourseMapper $courseMapper,
         CoursePoolMapper $coursePoolMapper,
         CourseMemberMapper $courseMemberMapper,
         RoleService $roleService,
-        IDBConnection $db
+        IDBConnection $db,
+        IGroupManager $groupManager
     ) {
         $this->courseMapper = $courseMapper;
         $this->coursePoolMapper = $coursePoolMapper;
         $this->courseMemberMapper = $courseMemberMapper;
         $this->roleService = $roleService;
         $this->db = $db;
+        $this->groupManager = $groupManager;
     }
 
     /**
@@ -130,7 +134,8 @@ class CourseService {
     public function findById(int $courseId, string $userId): array {
         $course = $this->courseMapper->findById($courseId);
 
-        if (!$this->hasAccess($course, $userId) && !$this->roleService->isInstructor($userId)) {
+        // SEC-HIGH-2: Only allow access if user is member/instructor OF THIS course (no global instructor fallback)
+        if (!$this->hasAccess($course, $userId)) {
             throw new \OCP\AppFramework\Db\DoesNotExistException('Course not found');
         }
 
@@ -181,14 +186,21 @@ class CourseService {
         }
 
         $title = trim($title);
-        if (strlen($title) < 1 || strlen($title) > 255) {
+        // SEC-MED-3: Use mb_strlen for multibyte-safe length check
+        if (mb_strlen($title) < 1 || mb_strlen($title) > 255) {
             throw new \Exception('Course title must be 1-255 characters');
+        }
+
+        // SEC-MED-3: Limit description length to prevent DB bloat
+        $descTrimmed = $description ? trim($description) : null;
+        if ($descTrimmed !== null && mb_strlen($descTrimmed) > 5000) {
+            throw new \Exception('Course description must not exceed 5000 characters');
         }
 
         $now = time();
         $course = new Course();
         $course->setTitle($title);
-        $course->setDescription($description ? trim($description) : null);
+        $course->setDescription($descTrimmed);
         $course->setInstructorId($userId);
         $course->setNcGroupId($ncGroupId ?: null);
         $course->setStatus('active');
@@ -210,13 +222,19 @@ class CourseService {
 
         if ($title !== null) {
             $title = trim($title);
-            if (strlen($title) < 1 || strlen($title) > 255) {
+            // SEC-MED-3: Use mb_strlen for multibyte-safe length check
+            if (mb_strlen($title) < 1 || mb_strlen($title) > 255) {
                 throw new \Exception('Course title must be 1-255 characters');
             }
             $course->setTitle($title);
         }
         if ($description !== null) {
-            $course->setDescription(trim($description));
+            $descTrimmed = trim($description);
+            // SEC-MED-3: Limit description length
+            if (mb_strlen($descTrimmed) > 5000) {
+                throw new \Exception('Course description must not exceed 5000 characters');
+            }
+            $course->setDescription($descTrimmed);
         }
         if ($status !== null && in_array($status, ['active', 'archived'])) {
             $course->setStatus($status);
@@ -352,10 +370,18 @@ class CourseService {
     }
 
     /**
-     * Self-enroll in a course (if it has an NC group and user is in that group)
+     * Self-enroll in a course (if it has an NC group, user must be in that group)
      */
     public function enroll(int $courseId, string $userId): CourseMember {
         $course = $this->courseMapper->findById($courseId);
+
+        // SEC-HIGH-1: If course has an NC group restriction, verify membership
+        $ncGroupId = $course->getNcGroupId();
+        if ($ncGroupId !== null && $ncGroupId !== '') {
+            if (!$this->groupManager->isInGroup($userId, $ncGroupId)) {
+                throw new \Exception('You are not in the required group for this course');
+            }
+        }
 
         // Check if already enrolled
         try {

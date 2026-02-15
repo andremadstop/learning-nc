@@ -39,7 +39,9 @@ class TranslationController extends Controller {
      */
     public function setQuestionTranslation(int $questionId, string $lang, string $text, ?string $explanation = null): DataResponse {
         try {
-            $this->questionService->find($questionId, $this->userId);
+            // SEC-MED-2: Require edit access, not just read access
+            $question = $this->questionService->findEntity($questionId, $this->userId);
+            $this->questionService->verifyEditAccess($question->getPoolId(), $this->userId);
             $trans = $this->service->setQuestionTranslation($questionId, $lang, $text, $explanation);
             return new DataResponse($trans, Http::STATUS_OK);
         } catch (\InvalidArgumentException $e) {
@@ -54,7 +56,9 @@ class TranslationController extends Controller {
      */
     public function deleteQuestionTranslation(int $questionId, string $lang): DataResponse {
         try {
-            $this->questionService->find($questionId, $this->userId);
+            // SEC-MED-2: Require edit access, not just read access
+            $question = $this->questionService->findEntity($questionId, $this->userId);
+            $this->questionService->verifyEditAccess($question->getPoolId(), $this->userId);
             $this->service->deleteQuestionTranslation($questionId, $lang);
             return new DataResponse([], Http::STATUS_NO_CONTENT);
         } catch (\Exception $e) {
@@ -80,7 +84,8 @@ class TranslationController extends Controller {
      */
     public function setAnswerTranslation(int $answerId, string $lang, string $text): DataResponse {
         try {
-            $this->service->verifyAnswerAccess($answerId, $this->userId);
+            // SEC-MED-2: Require edit access, not just read access
+            $this->service->verifyAnswerEditAccess($answerId, $this->userId);
             $trans = $this->service->setAnswerTranslation($answerId, $lang, $text);
             return new DataResponse($trans, Http::STATUS_OK);
         } catch (\InvalidArgumentException $e) {
@@ -95,7 +100,8 @@ class TranslationController extends Controller {
      */
     public function deleteAnswerTranslation(int $answerId, string $lang): DataResponse {
         try {
-            $this->service->verifyAnswerAccess($answerId, $this->userId);
+            // SEC-MED-2: Require edit access, not just read access
+            $this->service->verifyAnswerEditAccess($answerId, $this->userId);
             $this->service->deleteAnswerTranslation($answerId, $lang);
             return new DataResponse([], Http::STATUS_NO_CONTENT);
         } catch (\Exception $e) {

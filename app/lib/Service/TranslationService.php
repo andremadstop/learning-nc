@@ -48,6 +48,38 @@ class TranslationService {
         }
     }
 
+    private function canEditPool(int $poolId, string $userId): bool {
+        try {
+            $this->poolMapper->find($poolId, $userId);
+            return true; // Owner always has edit access
+        } catch (DoesNotExistException $e) {
+            $share = $this->shareMapper->findByPoolAndUser($poolId, $userId);
+            return $share !== null && $share->getPermission() === 'edit';
+        }
+    }
+
+    /**
+     * SEC-MED-2: Verify user has edit access to the pool containing this answer
+     */
+    public function verifyAnswerEditAccess(int $answerId, string $userId): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('a.question_id', 'q.pool_id')
+           ->from('learning_answers', 'a')
+           ->innerJoin('a', 'learning_questions', 'q', 'a.question_id = q.id')
+           ->where($qb->expr()->eq('a.id', $qb->createNamedParameter($answerId)));
+        $result = $qb->execute();
+        $row = $result->fetch();
+        $result->closeCursor();
+
+        if (!$row) {
+            throw new \Exception('Answer not found');
+        }
+
+        if (!$this->canEditPool((int)$row['pool_id'], $userId)) {
+            throw new \Exception('No edit access to this answer');
+        }
+    }
+
     public function verifyAnswerAccess(int $answerId, string $userId): void {
         $qb = $this->db->getQueryBuilder();
         $qb->select('a.question_id', 'q.pool_id')

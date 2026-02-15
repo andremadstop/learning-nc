@@ -1,6 +1,14 @@
 # Fix Plan — Learning-NC
 
-## High Priority
+## High Priority — Security Fixes (2026-02-15 Audit, alle gefixt 2026-02-15)
+
+- [x] SEC-HIGH-1: Open Enrollment ohne Group-Check. IGroupManager injected, `enroll()` prueft jetzt `isInGroup()` wenn `nc_group_id` gesetzt. `CourseService.php`.
+- [x] SEC-HIGH-2: Instructor Cross-Visibility. `findById()` globaler `isInstructor()` Fallback entfernt — nur noch Zugriff fuer Mitglieder des eigenen Kurses. `CourseService.php`.
+- [x] SEC-MED-1: Exception-Messages an Client geleakt. Alle catch-Bloecke in `CourseController.php` geben jetzt generische Fehlermeldungen zurueck.
+- [x] SEC-MED-2: Translation Write-Access fuer Read-Only User. `TranslationController.php` nutzt jetzt `verifyEditAccess()` / `verifyAnswerEditAccess()` mit `canEditPool()` fuer set/delete-Operationen.
+- [x] SEC-MED-3: Course Description Laengenbegrenzung + mb_strlen. `CourseService.php:create/update` — Title nutzt jetzt `mb_strlen()`, Description max 5000 chars.
+
+## High Priority (erledigt)
 
 - [x] Frontend Smoke-Test: 4 Bugs gefixed (2026-02-15). App.vue: TrainingMode @back → backToPools; openPoolFromCourse fetches real pool name statt hardcoded '...'. CourseDetail: formatDate multipliziert jetzt Unix-Timestamps *1000; Drag-Handle durch Sort-Order-Nummer ersetzt. CourseList: "Instructor:" → "by" Label. NcTextField :value.sync = korrekt für @nextcloud/vue 8.x. Build + Deploy erfolgreich, HTTP 200.
 - [x] API Smoke-Test: 51/51 Endpoints passing (2026-02-15). Minor findings: search param=`query` not `q`, removeMember uses userId string not numeric ID.

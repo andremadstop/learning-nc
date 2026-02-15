@@ -142,6 +142,15 @@ class QuestionService {
         return $question;
     }
 
+    /**
+     * SEC-MED-2: Public wrapper for canEditPool, used by TranslationController
+     */
+    public function verifyEditAccess(int $poolId, string $userId): void {
+        if (!$this->canEditPool($poolId, $userId)) {
+            throw new Exception('No edit access to this pool');
+        }
+    }
+
     public function setImagePath(int $questionId, ?string $imagePath, string $userId): Question {
         $question = $this->questionMapper->find($questionId, $userId);
         $question->setImagePath($imagePath);
