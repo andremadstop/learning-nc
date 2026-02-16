@@ -48,6 +48,7 @@ class AnalyticsMapper extends QBMapper {
         $analytics->setPoolId($poolId);
         $analytics->setMetricType($metricType);
         $analytics->setMetricValue($metricValueJson);
+        $analytics->setRecordedAt(date('c'));
         return $this->insert($analytics);
     }
 }

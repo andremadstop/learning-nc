@@ -44,6 +44,17 @@ class TrainingController extends Controller {
     /**
      * @NoAdminRequired
      */
+    public function submitBatch(int $sessionId, array $answers): DataResponse {
+        try {
+            return new DataResponse($this->service->submitBatch($sessionId, $answers, $this->userId));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to submit answers'], 400);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
     public function complete(int $sessionId): DataResponse {
         try {
             return new DataResponse($this->service->completeSession($sessionId, $this->userId));

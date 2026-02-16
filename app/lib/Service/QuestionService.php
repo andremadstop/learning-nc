@@ -74,8 +74,8 @@ class QuestionService {
                 $correctCount++;
             }
         }
-        if ($correctCount < 1) {
-            throw new \InvalidArgumentException('At least one correct answer required');
+        if ($correctCount !== 1) {
+            throw new \InvalidArgumentException('Exactly one correct answer required');
         }
     }
 

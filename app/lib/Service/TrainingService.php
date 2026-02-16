@@ -188,6 +188,100 @@ class TrainingService {
         ];
     }
 
+    public function submitBatch(int $sessionId, array $answers, string $userId): array {
+        $session = $this->verifySessionOwnership($sessionId, $userId);
+        $poolId = (int)$session['pool_id'];
+
+        $results = [];
+        foreach ($answers as $entry) {
+            $questionId = (int)$entry['questionId'];
+            $answerId = (int)$entry['answerId'];
+
+            // Validate question belongs to this session's pool
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id')
+               ->from('learning_questions')
+               ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)))
+               ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)));
+            $checkResult = $qb->execute();
+            $questionRow = $checkResult->fetch();
+            $checkResult->closeCursor();
+            if (!$questionRow) {
+                $results[] = ['questionId' => $questionId, 'error' => 'Question not in session pool'];
+                continue;
+            }
+
+            // Skip if already answered
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id')
+               ->from('learning_user_answers')
+               ->where($qb->expr()->eq('session_id', $qb->createNamedParameter($sessionId)))
+               ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+            $dupResult = $qb->execute();
+            $dupRow = $dupResult->fetch();
+            $dupResult->closeCursor();
+            if ($dupRow) {
+                $results[] = ['questionId' => $questionId, 'error' => 'Already answered'];
+                continue;
+            }
+
+            // Validate answer belongs to question
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('is_correct')
+               ->from('learning_answers')
+               ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId)))
+               ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+            $result = $qb->execute();
+            $row = $result->fetch();
+            $result->closeCursor();
+
+            if (!$row) {
+                $results[] = ['questionId' => $questionId, 'error' => 'Answer not found'];
+                continue;
+            }
+
+            $isCorrect = (bool)$row['is_correct'];
+
+            $qb = $this->db->getQueryBuilder();
+            $qb->insert('learning_user_answers')
+               ->values([
+                   'session_id' => $qb->createNamedParameter($sessionId),
+                   'question_id' => $qb->createNamedParameter($questionId),
+                   'answer_id' => $qb->createNamedParameter($answerId),
+                   'is_correct' => $qb->createNamedParameter($isCorrect, \PDO::PARAM_BOOL),
+                   'answered_at' => $qb->createNamedParameter(time())
+               ]);
+            $qb->execute();
+
+            if ($isCorrect) {
+                $qb = $this->db->getQueryBuilder();
+                $qb->update('learning_sessions')
+                   ->set('correct_answers', 'correct_answers + 1')
+                   ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
+                $qb->execute();
+            }
+
+            // Get correct answer text for review
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id', 'text')
+               ->from('learning_answers')
+               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+               ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)));
+            $correctResult = $qb->execute();
+            $correctRow = $correctResult->fetch();
+            $correctResult->closeCursor();
+
+            $results[] = [
+                'questionId' => $questionId,
+                'is_correct' => $isCorrect,
+                'correct_answer_id' => $correctRow ? (int)$correctRow['id'] : null,
+                'correct_answer_text' => $correctRow ? $correctRow['text'] : '',
+            ];
+        }
+
+        return $results;
+    }
+
     public function completeSession(int $sessionId, string $userId): array {
         $this->verifySessionOwnership($sessionId, $userId);
 

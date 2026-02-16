@@ -22,6 +22,7 @@ return [
         // Training
         ['name' => 'training#start', 'url' => '/api/training/start', 'verb' => 'POST'],
         ['name' => 'training#answer', 'url' => '/api/training/answer', 'verb' => 'POST'],
+        ['name' => 'training#submitBatch', 'url' => '/api/training/submitBatch', 'verb' => 'POST'],
         ['name' => 'training#complete', 'url' => '/api/training/complete', 'verb' => 'POST'],
 
         // Leitner

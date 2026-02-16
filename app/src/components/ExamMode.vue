@@ -343,32 +343,42 @@ export default {
       this.screen = 'results';
 
       try {
-        // Submit all answers to server
+        // Collect answered questions into batch
+        const batchAnswers = [];
+        for (const q of this.questions) {
+          const answerId = this.userAnswers[q.id];
+          if (answerId !== null && answerId !== undefined) {
+            batchAnswers.push({ questionId: q.id, answerId });
+          }
+        }
+
+        // Submit all answers in a single request
+        let serverResults = [];
+        if (batchAnswers.length > 0) {
+          const r = await axios.post(generateUrl('/apps/learning/api/training/submitBatch'), {
+            sessionId: this.session,
+            answers: batchAnswers,
+          });
+          serverResults = r.data;
+        }
+
+        // Build detailed results by matching server response
+        const resultMap = {};
+        for (const sr of serverResults) {
+          resultMap[sr.questionId] = sr;
+        }
+
         const results = [];
         for (const q of this.questions) {
           const answerId = this.userAnswers[q.id];
           const userAnswer = answerId ? q.answers.find(a => a.id === answerId) : null;
-          const item = {
+          const sr = resultMap[q.id];
+          results.push({
             questionText: q.text,
             userAnswerText: userAnswer ? userAnswer.text : null,
-            correctAnswerText: '',
-            isCorrect: false,
-          };
-
-          if (answerId !== null && answerId !== undefined) {
-            try {
-              const r = await axios.post(generateUrl('/apps/learning/api/training/answer'), {
-                sessionId: this.session,
-                questionId: q.id,
-                answerId: answerId,
-              });
-              item.isCorrect = r.data.is_correct;
-              item.correctAnswerText = r.data.correct_answer_text || '';
-            } catch (e) {
-              // Already answered or error — skip
-            }
-          }
-          results.push(item);
+            correctAnswerText: sr ? (sr.correct_answer_text || '') : '',
+            isCorrect: sr ? sr.is_correct : false,
+          });
         }
         this.detailedResults = results;
 

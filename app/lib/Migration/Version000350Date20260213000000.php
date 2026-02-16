@@ -29,6 +29,7 @@ class Version000350Date20260213000000 extends SimpleMigrationStep {
             $table->setPrimaryKey(['id']);
             $table->addIndex(['pool_id'], 'learn_ps_pool_idx');
             $table->addIndex(['shared_with'], 'learn_ps_shared_idx');
+            $table->addUniqueIndex(['pool_id', 'shared_with', 'share_type'], 'learn_ps_pool_user_uniq');
         }
 
         // Question translations

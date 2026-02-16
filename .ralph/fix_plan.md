@@ -108,6 +108,27 @@
 - Bild-Upload Fehler-Toast: Nice-to-have, kein Datenverlust.
 - ALLOWED_LANGS hardcoded: Konfigurierbar machen ist Post-Launch.
 
+## v1.2.4 Fixes — Gemini+Codex Review Round 4 (2026-02-16)
+
+### HIGH
+
+- [x] FIX4-HI-1: ExamMode Batch-Submit. Neuer `POST /api/training/submitBatch` Endpoint. Frontend sendet alle Antworten in einem Request statt sequentiell. Backend validiert pro Answer: Pool-Zugehoerigkeit, Duplikat-Check, Answer-Zuordnung. Dateien: TrainingController, TrainingService, routes.php, ExamMode.vue.
+
+### MEDIUM
+
+- [x] FIX4-ME-1: validateQuestionInput erzwingt jetzt `$correctCount !== 1`. Datei: `app/lib/Service/QuestionService.php`.
+- [x] FIX4-ME-2: UNIQUE Index `learn_ps_pool_user_uniq` auf `(pool_id, shared_with, share_type)`. Neue Migration V600 + V350 fuer frische Installs. Verifiziert in DB.
+- [x] FIX4-ME-3: `PoolService::delete()` loescht jetzt `course_pools` vor Pool-Delete. Datei: `app/lib/Service/PoolService.php`.
+
+### LOW
+
+- [x] FIX4-LO-1: `AnalyticsMapper::record()` setzt jetzt `recorded_at` auf `date('c')`. Datei: `app/lib/Db/AnalyticsMapper.php`.
+
+### SKIP (Round 4)
+
+- getCourseProgress N+1: Bekannt seit Round 1 (FIX-ME-1), deferred.
+- Enroll Exception-Parsing: Bekannt seit Round 1 (FIX-LO-1), funktioniert, Custom Exception waere schoener aber kein Bug.
+
 ## Low Priority (MANUELL)
 
 - [ ] Screenshots: 4-6 Screenshots fuer App Store (Pool-Liste, Training, Leitner, Kurs-Uebersicht, Instructor-Dashboard) — MANUELL im Browser

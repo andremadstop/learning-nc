@@ -117,6 +117,12 @@ class PoolService {
 
     public function delete(int $id, string $userId): void {
         try {
+            // FIX4-ME-3: Clean up orphan course_pools before deleting the pool
+            $qb = $this->db->getQueryBuilder();
+            $qb->delete('learning_course_pools')
+               ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($id)));
+            $qb->execute();
+
             $this->mapper->deleteById($id, $userId);
         } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
             throw new NotFoundException('Pool not found');

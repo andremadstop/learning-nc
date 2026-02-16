@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.4] - 2026-02-16
+
+### Fixed
+- **HIGH**: ExamMode batch submit — new `/api/training/submitBatch` endpoint replaces sequential per-question HTTP requests with a single batch request
+- **MEDIUM**: Question validation enforces exactly one correct answer (was: allowed multiple)
+- **MEDIUM**: UNIQUE constraint on `pool_shares(pool_id, shared_with, share_type)` prevents duplicate shares
+- **MEDIUM**: Pool deletion now cleans up orphan `course_pools` records
+- **LOW**: Analytics `recorded_at` timestamp now set on record creation
+
+### Technical
+- 52 API endpoints (up from 51), new migration V600
+
 ## [1.2.3] - 2026-02-16
 
 ### Fixed
