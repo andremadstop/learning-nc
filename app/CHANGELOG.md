@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2026-02-16
+
+### Fixed
+- **CRITICAL**: Schema drift — 4 tables missing from migrations (pool_shares, question_translations, answer_translations, analytics). New migration V350 created
+- **CRITICAL**: Migration 400 hardcoded `oc_` table prefix — now uses dynamic `$this->db->getPrefix()`
+- **CRITICAL**: Migration 400 index name mismatch (`learn_ua_session_question_uniq` → `learn_ua_sq_uniq`)
+- **HIGH**: ExamMode scoring — server-side question limiting instead of client-side slicing
+- **HIGH**: addPool IDOR — ownership/share check before adding pool to course
+- **HIGH**: Course progress frontend/backend data format mismatch
+- **HIGH**: "Add Pool" modal empty — merges own + shared pools
+- **MEDIUM**: setImagePath now allows shared-pool editors (not just owner)
+- **MEDIUM**: QuestionList poolId watcher — reloads on prop change
+- **MEDIUM**: Pool search includes shared pools
+- **MEDIUM**: ShareService rejects group shares (not yet implemented)
+- **MEDIUM**: ImageController delete order — DB reference cleared before file deletion
+- **MEDIUM**: Enroll group-check reordered — membership check first
+- **LOW**: Enroll returns 403 for group authorization errors (was 400)
+- **LOW**: LeitnerService N+1 — batch query for answers
+- **LOW**: CourseService.findAll N+1 — batch pool/member counts
+
 ## [1.2.0] - 2026-02-15
 
 ### Added

@@ -178,7 +178,14 @@ class CourseController extends Controller {
         try {
             $member = $this->courseService->enroll($courseId, $this->userId);
             return new JSONResponse($member, Http::STATUS_CREATED);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
+            // FIX-LO-1: Return 403 for auth/group errors, 400 for others
+            $msg = $e->getMessage();
+            if (strpos($msg, 'not in the required group') !== false) {
+                return new JSONResponse(['error' => 'Not authorized to enroll'], Http::STATUS_FORBIDDEN);
+            }
             return new JSONResponse(['error' => 'Failed to enroll in course'], Http::STATUS_BAD_REQUEST);
         }
     }

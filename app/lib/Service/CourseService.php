@@ -146,13 +146,43 @@ class CourseService {
             }
         }
 
-        // Add counts to own courses
+        // FIX-LO-3: Batch-load pool counts and member counts instead of N+1
         $ownData = [];
-        foreach ($own as $course) {
-            $data = $course->jsonSerialize();
-            $data['pool_count'] = count($this->coursePoolMapper->findByCourse($course->getId()));
-            $data['member_count'] = $this->courseMemberMapper->countByCourse($course->getId());
-            $ownData[] = $data;
+        if (!empty($own)) {
+            $courseIds = array_map(fn($c) => $c->getId(), $own);
+
+            // Batch pool counts
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('course_id', $qb->createFunction('COUNT(*) as cnt'))
+                ->from('learning_course_pools')
+                ->where($qb->expr()->in('course_id', $qb->createNamedParameter($courseIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->groupBy('course_id');
+            $result = $qb->executeQuery();
+            $poolCounts = [];
+            while ($row = $result->fetch()) {
+                $poolCounts[(int)$row['course_id']] = (int)$row['cnt'];
+            }
+            $result->closeCursor();
+
+            // Batch member counts
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('course_id', $qb->createFunction('COUNT(*) as cnt'))
+                ->from('learning_course_members')
+                ->where($qb->expr()->in('course_id', $qb->createNamedParameter($courseIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->groupBy('course_id');
+            $result = $qb->executeQuery();
+            $memberCounts = [];
+            while ($row = $result->fetch()) {
+                $memberCounts[(int)$row['course_id']] = (int)$row['cnt'];
+            }
+            $result->closeCursor();
+
+            foreach ($own as $course) {
+                $data = $course->jsonSerialize();
+                $data['pool_count'] = $poolCounts[$course->getId()] ?? 0;
+                $data['member_count'] = $memberCounts[$course->getId()] ?? 0;
+                $ownData[] = $data;
+            }
         }
 
         return ['own' => $ownData, 'enrolled' => $enrolled];

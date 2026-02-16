@@ -47,11 +47,11 @@
 - [x] FIX-ME-6: ImageController delete-Reihenfolge korrigiert: erst DB-Referenz loeschen, dann File.
 - [x] FIX-ME-7: Enroll Group-Check Reihenfolge korrigiert: Membership-Check zuerst, Group-Check nur fuer neue Enrollments.
 
-### LOW (optional)
+### LOW (alle gefixt 2026-02-16)
 
-- [ ] FIX-LO-1: Enroll 400 statt 403. CourseController gibt 400 fuer Auth-Fehler. **Fix**: Separate Exception-Klasse oder String-Match fuer 403.
-- [ ] FIX-LO-2: LeitnerService N+1 Answers. Z.56-64: Antworten pro Frage einzeln. **Fix**: Batch-Query mit `WHERE question_id IN (...)`.
-- [ ] FIX-LO-3: CourseService.findAll N+1. Z.109/123: Loop-Queries. **Fix**: JOIN-basierte Query. Low Impact (wenige Kurse pro User).
+- [x] FIX-LO-1: Enroll 403 fuer Group-Auth-Fehler. `CourseController::enroll()` prueft Exception-Message auf `not in the required group` und gibt 403 statt 400 zurueck.
+- [x] FIX-LO-2: LeitnerService N+1 Answers. Batch-Query mit `WHERE question_id IN (...)` statt Loop. Answers nach `question_id` gruppiert.
+- [x] FIX-LO-3: CourseService.findAll N+1. Batch-Queries fuer Pool-Counts und Member-Counts mit `GROUP BY course_id` statt Loop-Queries.
 
 ### SKIP (by design)
 

@@ -52,16 +52,27 @@ class LeitnerService {
         $items = $result->fetchAll();
         $result->closeCursor();
 
-        foreach ($items as &$item) {
+        // FIX-LO-2: Batch-load answers for all questions at once instead of N+1
+        if (!empty($items)) {
+            $questionIds = array_unique(array_column($items, 'question_id'));
             $aqb = $this->db->getQueryBuilder();
-            // FIX: Don't select is_correct — never leak answer key to client
-            $aqb->select('id', 'text', 'position')
+            $aqb->select('id', 'question_id', 'text', 'position')
                ->from('learning_answers')
-               ->where($aqb->expr()->eq('question_id', $aqb->createNamedParameter($item['question_id'])))
+               ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
                ->orderBy('position', 'ASC');
             $aResult = $aqb->execute();
-            $item['answers'] = $aResult->fetchAll();
+            $allAnswers = $aResult->fetchAll();
             $aResult->closeCursor();
+
+            // Group answers by question_id
+            $answersByQuestion = [];
+            foreach ($allAnswers as $answer) {
+                $answersByQuestion[$answer['question_id']][] = $answer;
+            }
+
+            foreach ($items as &$item) {
+                $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
+            }
         }
 
         return $items;
