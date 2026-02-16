@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.2] - 2026-02-16
+
+### Fixed
+- **HIGH**: Schema drift — `image_path` and `lang` columns missing from questions table in Migration V200
+- **HIGH**: Instructor Dashboard unreachable — added Course List / Dashboard sub-navigation for instructors
+- **MEDIUM**: CSV import rejected correct_answer index 7-8 (limit was 6, now matches max 8 answers)
+- **MEDIUM**: JSON import accepted empty answer texts — now validates and rejects
+- **MEDIUM**: Course-to-Pool navigation assumed owner permissions on error — now defaults to read-only
+- **MEDIUM**: ShareController leaked exception messages to client — now returns generic errors
+- **LOW**: QuestionForm only loaded questions with exactly 4 answers — now handles 2-8 answers
+- **LOW**: DELETE endpoints returned 204 with response body — changed to 200
+- **LOW**: Added `@nextcloud/l10n` as explicit dependency in package.json
+
 ## [1.2.1] - 2026-02-16
 
 ### Fixed

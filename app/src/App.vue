@@ -110,6 +110,26 @@
 
     <!-- ==================== COURSES VIEW ==================== -->
     <template v-if="mainView === 'courses'">
+      <!-- Instructor sub-navigation: List | Dashboard -->
+      <div v-if="userRole === 'instructor' && !selectedCourse" class="course-sub-nav" role="tablist">
+        <button
+          :class="['mode-btn', { active: courseView === 'list' }]"
+          role="tab"
+          :aria-selected="courseView === 'list' ? 'true' : 'false'"
+          @click="courseView = 'list'"
+        >
+          {{ t('learning', 'Course List') }}
+        </button>
+        <button
+          :class="['mode-btn', { active: courseView === 'dashboard' }]"
+          role="tab"
+          :aria-selected="courseView === 'dashboard' ? 'true' : 'false'"
+          @click="courseView = 'dashboard'"
+        >
+          {{ t('learning', 'Dashboard') }}
+        </button>
+      </div>
+
       <InstructorDashboard
         v-if="userRole === 'instructor' && !selectedCourse && courseView === 'dashboard'"
         @selectCourse="selectCourse"
@@ -264,8 +284,8 @@ export default {
         const pool = response.data;
         this.selectPool({ id: pool.id, name: pool.name, is_shared: !!pool.is_shared, permission: pool.permission });
       } catch {
-        // Fallback: open with poolId and let selectPool fetch the details
-        this.selectPool({ id: poolId, name: '', is_shared: false });
+        // Fallback: assume shared (safer — hides edit UI until ownership confirmed)
+        this.selectPool({ id: poolId, name: '', is_shared: true, permission: 'read' });
       }
     }
   }
@@ -322,6 +342,17 @@ export default {
 .main-nav-btn.active {
   color: var(--color-primary-element);
   border-bottom-color: var(--color-primary-element);
+}
+
+/* Course sub-navigation */
+.course-sub-nav {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 5px;
+  background: var(--color-background-hover);
+  border-radius: 10px;
+  max-width: 300px;
 }
 
 /* Pool view styles */

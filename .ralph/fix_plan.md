@@ -57,6 +57,32 @@
 
 - Translation 404 statt 403: Bewusstes Resource-Hiding Pattern. Kein Fix noetig.
 
+## v1.2.2 Fixes — Gemini+Codex Review Round 2 (2026-02-16)
+
+### HIGH (alle gefixt 2026-02-16)
+
+- [x] FIX2-HI-1: Schema-Drift Migration 200 — `image_path` und `lang` Spalten in `Version000200` hinzugefuegt. Datei: `app/lib/Migration/Version000200Date20260211000000.php`.
+- [x] FIX2-HI-2: Instructor Dashboard unerreichbar — Sub-Navigation (Course List / Dashboard) fuer Instructors im Courses-View hinzugefuegt. Datei: `app/src/App.vue`.
+
+### MEDIUM (alle gefixt 2026-02-16)
+
+- [x] FIX2-ME-1: CSV Import correct-index Limit von `<= 6` auf `<= 8` erhoeht. Datei: `app/lib/Controller/ImportController.php`.
+- [x] FIX2-ME-2: JSON Import validiert jetzt leere Antwort-Texte und lehnt sie ab mit `continue 2`. Datei: `app/lib/Controller/ImportController.php`.
+- [x] FIX2-ME-3: Course-to-Pool Fallback setzt jetzt `is_shared: true, permission: 'read'` (sicherer Default). Datei: `app/src/App.vue`.
+- [x] FIX2-ME-4: ShareController gibt jetzt generische Fehlermeldungen zurueck statt `$e->getMessage()`. Datei: `app/lib/Controller/ShareController.php`.
+
+### LOW (alle gefixt 2026-02-16)
+
+- [x] FIX2-LO-1: QuestionForm laedt jetzt Fragen mit 2-8 Antworten (war: nur exakt 4). Padded auf min. 4 Slots. Datei: `app/src/components/QuestionForm.vue`.
+- [x] FIX2-LO-2: DELETE-Endpoints geben jetzt HTTP 200 statt 204 mit Body zurueck. Betrifft: CourseController, ShareController, TranslationController.
+- [x] FIX2-LO-3: `@nextcloud/l10n` als explizite Dependency in package.json hinzugefuegt. Datei: `app/package.json`.
+
+### FALSE POSITIVES (Round 2, kein Fix noetig)
+
+- Codex C1: "Training session limits not enforced server-side" — FALSE POSITIVE, bereits in FIX-HI-1 gefixt (TrainingService.php Z.59-75).
+- Gemini G2: "ImageController delete-Reihenfolge" — FALSE POSITIVE, bereits in FIX-ME-6 gefixt.
+- Gemini G3: "fetchAllPools Array-Check" — FALSE POSITIVE, bereits in FIX-HI-4 gefixt.
+
 ## Low Priority (MANUELL)
 
 - [ ] Screenshots: 4-6 Screenshots fuer App Store (Pool-Liste, Training, Leitner, Kurs-Uebersicht, Instructor-Dashboard) — MANUELL im Browser

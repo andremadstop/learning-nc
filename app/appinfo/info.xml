@@ -37,7 +37,7 @@ Create question pools, share them with your team, and study efficiently using sc
 - PostgreSQL 13+ or MySQL 8+
     ]]></description>
 
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>

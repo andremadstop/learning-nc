@@ -26,7 +26,7 @@ class ShareController extends Controller {
         try {
             return new DataResponse($this->service->getSharesForPool($poolId, $this->userId));
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Pool not found or no access'], Http::STATUS_NOT_FOUND);
         }
     }
 
@@ -45,9 +45,9 @@ class ShareController extends Controller {
             $share = $this->service->sharePool($poolId, $sharedWith, $shareType, $permission, $this->userId);
             return new DataResponse($share, Http::STATUS_CREATED);
         } catch (\InvalidArgumentException $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'Invalid share parameters'], Http::STATUS_BAD_REQUEST);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Pool not found or no access'], Http::STATUS_NOT_FOUND);
         }
     }
 
@@ -59,9 +59,9 @@ class ShareController extends Controller {
             $share = $this->service->updatePermission($poolId, $sharedWith, $permission, $this->userId);
             return new DataResponse($share);
         } catch (NotFoundException $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Share not found'], Http::STATUS_NOT_FOUND);
         } catch (\InvalidArgumentException $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'Invalid permission value'], Http::STATUS_BAD_REQUEST);
         }
     }
 
@@ -71,9 +71,9 @@ class ShareController extends Controller {
     public function destroy(int $poolId, string $sharedWith): DataResponse {
         try {
             $this->service->unsharePool($poolId, $sharedWith, $this->userId);
-            return new DataResponse([], Http::STATUS_NO_CONTENT);
+            return new DataResponse([], Http::STATUS_OK);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Share not found or no access'], Http::STATUS_NOT_FOUND);
         }
     }
 }

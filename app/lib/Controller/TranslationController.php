@@ -60,7 +60,7 @@ class TranslationController extends Controller {
             $question = $this->questionService->findEntity($questionId, $this->userId);
             $this->questionService->verifyEditAccess($question->getPoolId(), $this->userId);
             $this->service->deleteQuestionTranslation($questionId, $lang);
-            return new DataResponse([], Http::STATUS_NO_CONTENT);
+            return new DataResponse([], Http::STATUS_OK);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Question not found or no access'], Http::STATUS_NOT_FOUND);
         }
@@ -103,7 +103,7 @@ class TranslationController extends Controller {
             // SEC-MED-2: Require edit access, not just read access
             $this->service->verifyAnswerEditAccess($answerId, $this->userId);
             $this->service->deleteAnswerTranslation($answerId, $lang);
-            return new DataResponse([], Http::STATUS_NO_CONTENT);
+            return new DataResponse([], Http::STATUS_OK);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Answer not found or no access'], Http::STATUS_NOT_FOUND);
         }

@@ -22,6 +22,8 @@ class Version000200Date20260211000000 extends SimpleMigrationStep {
             $table->addColumn('difficulty', Types::STRING, ['notnull' => false, 'length' => 20]);
             $table->addColumn('created_at', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
             $table->addColumn('updated_at', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
+            $table->addColumn('image_path', Types::STRING, ['notnull' => false, 'length' => 512]);
+            $table->addColumn('lang', Types::STRING, ['notnull' => false, 'length' => 10]);
             $table->setPrimaryKey(['id']);
             $table->addIndex(['pool_id'], 'learn_q_pool_idx');
             $table->addIndex(['user_id'], 'learn_q_user_idx');

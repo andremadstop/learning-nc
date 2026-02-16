@@ -2,7 +2,7 @@
   <div class="swipe-mode">
     <div v-if="!session && !loadError" class="swipe-start">
       <h3>{{ t('learning', 'Swipe Review') }}</h3>
-      <p v-if="totalQuestions > 0">{{ t('learning', 'Tap an answer \u2014 the card swipes automatically') }}</p>
+      <p v-if="totalQuestions > 0">{{ t('learning', 'Answer questions and swipe cards to continue') }}</p>
       <NcEmptyContent v-else :name="t('learning', 'No questions')" :description="t('learning', 'No questions available for training')" />
       <div class="start-actions">
         <NcButton v-if="totalQuestions > 0" type="primary" @click="startSession" :disabled="starting">{{ starting ? t('learning', 'Starting...') : t('learning', 'Start Swipe Review') }}</NcButton>
@@ -27,10 +27,16 @@
       <div class="card-stack">
         <div
           v-if="currentQuestion"
+          :key="currentIndex"
           class="swipe-card"
-          :class="cardAnimClass"
+          :class="[cardAnimClass, { 'card-dragging': isDragging }]"
+          :style="cardDragStyle"
+          @pointerdown="onPointerDown"
+          @pointermove="onPointerMove"
+          @pointerup="onPointerUp"
+          @pointercancel="onPointerUp"
         >
-          <div v-if="showFeedback" class="feedback-overlay" :class="isCorrect ? 'feedback-correct' : 'feedback-incorrect'">
+          <div v-if="showFeedback && !isDragging" class="feedback-overlay" :class="isCorrect ? 'feedback-correct' : 'feedback-incorrect'">
             <span class="feedback-icon">{{ isCorrect ? '\u2713' : '\u2717' }}</span>
             <span class="feedback-label">{{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Wrong') }}</span>
           </div>
@@ -45,21 +51,30 @@
         </div>
       </div>
 
-      <div v-if="currentQuestion" class="answer-grid">
-        <button
-          v-for="answer in currentQuestion.answers"
-          :key="answer.id"
-          class="answer-btn"
-          :class="{
-            'answer-selected': selectedAnswerId === answer.id,
-            'answer-correct': showFeedback && answer.id === correctAnswerId,
-            'answer-wrong': showFeedback && selectedAnswerId === answer.id && answer.id !== correctAnswerId
-          }"
-          :disabled="animating"
-          @click="selectAnswer(answer)"
-        >
-          {{ answer.text }}
-        </button>
+      <div v-if="currentQuestion && !showFeedback" class="answer-grid">
+        <template v-if="hasAnswers">
+          <button
+            v-for="answer in currentQuestion.answers"
+            :key="answer.id"
+            class="answer-btn"
+            :class="{ 'answer-selected': selectedAnswerId === answer.id }"
+            :disabled="submitting"
+            @click="selectAnswer(answer)"
+          >
+            {{ answer.text }}
+          </button>
+        </template>
+        <div v-else class="no-answers">
+          <p>{{ t('learning', 'This question has no answers yet.') }}</p>
+          <NcButton type="secondary" @click="skipQuestion">{{ t('learning', 'Skip') }}</NcButton>
+        </div>
+      </div>
+
+      <div v-if="showFeedback" class="swipe-hint-area">
+        <p class="swipe-hint">\u2190 {{ t('learning', 'Swipe card or tap Next') }} \u2192</p>
+        <NcButton type="primary" @click="advanceCard">
+          {{ currentIndex < questions.length - 1 ? t('learning', 'Next \u2192') : t('learning', 'See Results') }}
+        </NcButton>
       </div>
     </div>
 
@@ -69,7 +84,7 @@
         <div class="score-circle">
           <span class="score-number">{{ results ? results.score_percentage : 0 }}%</span>
         </div>
-        <p class="score-detail" v-if="results">{{ results.correct_answers }} out of {{ results.total_questions }} correct</p>
+        <p class="score-detail" v-if="results">{{ results.correct_answers }} / {{ results.total_questions }} {{ t('learning', 'correct') }}</p>
       </div>
       <div class="start-actions">
         <NcButton type="primary" @click="restartSession">{{ t('learning', 'Swipe Again') }}</NcButton>
@@ -102,7 +117,7 @@ export default {
       currentIndex: 0,
       selectedAnswerId: null,
       correctAnswerId: null,
-      animating: false,
+      submitting: false,
       showFeedback: false,
       isCorrect: false,
       correctAnswerText: '',
@@ -110,17 +125,44 @@ export default {
       results: null,
       starting: false,
       loadError: null,
-      cardAnimClass: ''
+      cardAnimClass: '',
+      // Swipe / drag state
+      canDrag: false,
+      isDragging: false,
+      pointerDown: false,
+      dragStartX: 0,
+      dragStartY: 0,
+      dragDeltaX: 0,
     };
   },
   computed: {
     currentQuestion() { return this.questions[this.currentIndex] || null; },
-    progressPercent() { return this.questions.length > 0 ? Math.round(((this.currentIndex + (this.showFeedback ? 1 : 0)) / this.questions.length) * 100) : 0; }
+    hasAnswers() {
+      return this.currentQuestion
+        && Array.isArray(this.currentQuestion.answers)
+        && this.currentQuestion.answers.length > 0;
+    },
+    progressPercent() {
+      return this.questions.length > 0
+        ? Math.round(((this.currentIndex + (this.showFeedback ? 1 : 0)) / this.questions.length) * 100)
+        : 0;
+    },
+    cardDragStyle() {
+      if (this.dragDeltaX === 0) return {};
+      const x = this.dragDeltaX;
+      const rotate = Math.min(Math.max(x * 0.06, -15), 15);
+      const opacity = Math.max(0.4, 1 - Math.abs(x) / 500);
+      return {
+        transform: 'translateX(' + x + 'px) rotate(' + rotate + 'deg)',
+        opacity: String(opacity),
+      };
+    },
   },
   methods: {
     questionImageUrl(id) {
       return generateUrl('/apps/learning/api/questions/' + id + '/image');
     },
+
     async startSession() {
       this.starting = true;
       this.loadError = null;
@@ -131,10 +173,13 @@ export default {
         this.currentIndex = 0;
         this.showResults = false;
         this.results = null;
-        this.animating = false;
+        this.submitting = false;
         this.showFeedback = false;
         this.selectedAnswerId = null;
         this.correctAnswerId = null;
+        this.canDrag = false;
+        this.isDragging = false;
+        this.dragDeltaX = 0;
         this.cardAnimClass = 'card-enter';
       } catch (e) {
         this.loadError = e.response?.data?.error || t('learning', 'Failed to start session');
@@ -144,18 +189,67 @@ export default {
       }
     },
 
+    // --- Pointer / touch drag ---
+    onPointerDown(e) {
+      if (!this.canDrag) return;
+      this.pointerDown = true;
+      this.dragStartX = e.clientX;
+      this.dragStartY = e.clientY;
+      this.dragDeltaX = 0;
+      this.isDragging = false;
+    },
+
+    onPointerMove(e) {
+      if (!this.pointerDown) return;
+
+      if (!this.isDragging) {
+        var dx = Math.abs(e.clientX - this.dragStartX);
+        var dy = Math.abs(e.clientY - this.dragStartY);
+        if (dx > dy && dx > 8) {
+          this.isDragging = true;
+          e.preventDefault();
+        } else if (dy > dx && dy > 8) {
+          this.pointerDown = false;
+          return;
+        }
+        return;
+      }
+
+      e.preventDefault();
+      this.dragDeltaX = e.clientX - this.dragStartX;
+    },
+
+    onPointerUp() {
+      if (!this.pointerDown) return;
+      this.pointerDown = false;
+
+      if (!this.isDragging) {
+        this.dragDeltaX = 0;
+        return;
+      }
+      this.isDragging = false;
+
+      var threshold = 80;
+      if (Math.abs(this.dragDeltaX) > threshold) {
+        var direction = this.dragDeltaX > 0 ? 1 : -1;
+        this.dragDeltaX = direction * (window.innerWidth + 100);
+        this.canDrag = false;
+        setTimeout(this.goToNext, 350);
+      } else {
+        this.dragDeltaX = 0;
+      }
+    },
+
+    // --- Answer handling ---
     async selectAnswer(answer) {
-      if (this.animating) return;
-      this.animating = true;
+      if (this.submitting) return;
+      this.submitting = true;
       this.selectedAnswerId = answer.id;
 
-      const question = this.currentQuestion;
-
       try {
-        // Get correct answer info from server response
-        const r = await axios.post(generateUrl('/apps/learning/api/training/answer'), {
+        var r = await axios.post(generateUrl('/apps/learning/api/training/answer'), {
           sessionId: this.session,
-          questionId: question.id,
+          questionId: this.currentQuestion.id,
           answerId: answer.id
         });
         this.isCorrect = r.data.is_correct;
@@ -168,35 +262,45 @@ export default {
         this.correctAnswerId = null;
       }
 
+      this.submitting = false;
       this.showFeedback = true;
+      this.canDrag = true;
+    },
 
-      // Animate card out after brief feedback
-      setTimeout(() => {
-        this.cardAnimClass = this.isCorrect ? 'card-exit-right' : 'card-exit-left';
-      }, 600);
+    advanceCard() {
+      this.canDrag = false;
+      this.dragDeltaX = window.innerWidth + 100;
+      setTimeout(this.goToNext, 380);
+    },
 
-      // Advance to next card
-      setTimeout(() => {
-        this.showFeedback = false;
-        this.selectedAnswerId = null;
-        this.correctAnswerId = null;
-        this.cardAnimClass = '';
-        this.currentIndex++;
+    skipQuestion() {
+      this.dragDeltaX = window.innerWidth + 100;
+      setTimeout(this.goToNext, 380);
+    },
 
-        if (this.currentIndex < this.questions.length) {
-          this.$nextTick(() => {
-            this.cardAnimClass = 'card-enter';
-            this.animating = false;
-          });
-        } else {
-          this.completeSession();
-        }
-      }, 1100);
+    goToNext() {
+      this.showFeedback = false;
+      this.selectedAnswerId = null;
+      this.correctAnswerId = null;
+      this.cardAnimClass = '';
+      this.canDrag = false;
+      this.isDragging = false;
+      this.pointerDown = false;
+      this.dragDeltaX = 0;
+      this.currentIndex++;
+
+      if (this.currentIndex < this.questions.length) {
+        this.$nextTick(function() {
+          this.cardAnimClass = 'card-enter';
+        }.bind(this));
+      } else {
+        this.completeSession();
+      }
     },
 
     async completeSession() {
       try {
-        const r = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session });
+        var r = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session });
         this.results = r.data;
       } catch (e) {
         showError(t('learning', 'Failed to complete session'));
@@ -230,7 +334,18 @@ export default {
 .progress-area { margin-bottom: 20px; }
 .progress-text { text-align: center; font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--color-primary-element); }
 
-.card-stack { position: relative; width: 100%; min-height: 280px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
+.card-stack {
+  position: relative;
+  width: 100%;
+  min-height: 280px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
 
 .swipe-card {
   width: 100%;
@@ -248,6 +363,14 @@ export default {
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  /* Smooth transitions for snap-back and fly-out */
+  transition: transform 0.35s ease-out, opacity 0.35s ease-out;
+  cursor: default;
+}
+
+.swipe-card.card-dragging {
+  transition: none;
+  cursor: grabbing;
 }
 
 .card-content { width: 100%; z-index: 1; }
@@ -310,9 +433,34 @@ export default {
   word-break: break-word;
 }
 .answer-btn:hover:not(:disabled) { border-color: var(--color-primary-element); background: var(--color-background-hover); }
-.answer-btn:disabled { opacity: 0.7; cursor: default; }
-.answer-btn.answer-correct { border-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 12%, var(--color-main-background)); color: var(--color-success); font-weight: 600; }
-.answer-btn.answer-wrong { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 12%, var(--color-main-background)); color: var(--color-error); }
+.answer-btn:disabled { opacity: 0.7; cursor: wait; }
+.answer-btn.answer-selected { border-color: var(--color-primary-element); background: var(--color-primary-element-light); font-weight: 600; }
+
+/* No answers / skip */
+.no-answers {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  color: var(--color-text-maxcontrast);
+}
+.no-answers p { margin-bottom: 12px; }
+
+/* Swipe hint after answering */
+.swipe-hint-area {
+  text-align: center;
+  padding: 16px 0;
+}
+.swipe-hint {
+  font-size: 14px;
+  color: var(--color-text-maxcontrast);
+  margin-bottom: 12px;
+  animation: hintPulse 2s ease-in-out infinite;
+}
+
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
 
 /* Results */
 .swipe-results { text-align: center; padding: 60px 20px; }
@@ -332,18 +480,10 @@ export default {
 
 /* Card animations */
 .card-enter { animation: cardIn 0.3s ease-out; }
-.card-exit-right { animation: flyRight 0.4s ease-out forwards; }
-.card-exit-left { animation: flyLeft 0.4s ease-out forwards; }
 
 @keyframes cardIn {
   from { transform: translateY(30px) scale(0.95); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }
-}
-@keyframes flyRight {
-  to { transform: translateX(150%) rotate(20deg); opacity: 0; }
-}
-@keyframes flyLeft {
-  to { transform: translateX(-150%) rotate(-20deg); opacity: 0; }
 }
 
 /* Responsive */

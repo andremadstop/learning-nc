@@ -90,8 +90,12 @@ export default {
       this.form.explanation = this.question.explanation || '';
       this.form.difficulty = this.question.difficulty || '';
       this.existingImagePath = this.question.image_path || null;
-      if (this.question.answers && this.question.answers.length === 4) {
+      if (this.question.answers && this.question.answers.length >= 2) {
         this.form.answers = this.question.answers.map(a => ({ text: a.text, is_correct: a.is_correct }));
+        // Pad to minimum 4 answer slots for consistency
+        while (this.form.answers.length < 4) {
+          this.form.answers.push({ text: '', is_correct: false });
+        }
         this.correctAnswerIndex = this.form.answers.findIndex(a => a.is_correct);
         if (this.correctAnswerIndex < 0) this.correctAnswerIndex = 0;
       }

@@ -26,7 +26,13 @@
         <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" alt="" class="question-image" />
         <div class="question-text">{{ currentQuestion.text }}</div>
         <div v-if="!answered" class="answers-grid">
-          <button v-for="answer in currentQuestion.answers" :key="answer.id" @click="submitAnswer(answer.id)" class="answer-btn" :disabled="submitting">{{ answer.text }}</button>
+          <template v-if="currentQuestion.answers && currentQuestion.answers.length > 0">
+            <button v-for="answer in currentQuestion.answers" :key="answer.id" @click="submitAnswer(answer.id)" class="answer-btn" :disabled="submitting">{{ answer.text }}</button>
+          </template>
+          <div v-else class="no-answers">
+            <p>{{ t('learning', 'This question has no answers yet.') }}</p>
+            <NcButton type="secondary" @click="skipQuestion">{{ t('learning', 'Skip') }}</NcButton>
+          </div>
         </div>
         <div v-else class="answer-feedback">
           <NcNoteCard :type="isCorrect ? 'success' : 'error'">{{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
@@ -107,6 +113,10 @@ export default {
         this.results = response.data; this.showResults = true;
       } catch (error) { showError(t('learning', 'Failed to complete session')); }
     },
+    skipQuestion() {
+      if (this.currentIndex < this.questions.length - 1) { this.currentIndex++; this.answered = false; }
+      else { this.completeSession(); }
+    },
     restartTraining() {
       this.session = null; this.questions = []; this.currentIndex = 0; this.answered = false;
       this.showResults = false; this.results = null; this.loadError = null; this.startTraining();
@@ -129,6 +139,8 @@ export default {
 .answer-btn { padding: 16px 20px; border: 2px solid var(--color-border); border-radius: 12px; background: var(--color-main-background); cursor: pointer; text-align: left; font-size: 15px; transition: all 0.15s; min-height: 56px; line-height: 1.5; color: var(--color-main-text); }
 .answer-btn:hover:not(:disabled) { border-color: var(--color-primary-element); background: var(--color-primary-element-light); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 .answer-btn:disabled { opacity: 0.7; cursor: wait; }
+.no-answers { grid-column: 1 / -1; text-align: center; padding: 20px; color: var(--color-text-maxcontrast); }
+.no-answers p { margin-bottom: 12px; }
 .answer-feedback { margin-top: 28px; }
 .correct-answer { padding: 14px 18px; background: var(--color-background-hover); border-radius: 10px; margin-bottom: 12px; font-size: 14px; line-height: 1.5; color: var(--color-main-text); }
 .next-btn { margin-top: 20px; }

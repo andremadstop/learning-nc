@@ -92,7 +92,7 @@ class CourseController extends Controller {
     public function destroy(int $courseId): JSONResponse {
         try {
             $this->courseService->delete($courseId, $this->userId);
-            return new JSONResponse([], Http::STATUS_NO_CONTENT);
+            return new JSONResponse([], Http::STATUS_OK);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
@@ -130,7 +130,7 @@ class CourseController extends Controller {
     public function removePool(int $courseId, int $poolId): JSONResponse {
         try {
             $this->courseService->removePool($courseId, $poolId, $this->userId);
-            return new JSONResponse([], Http::STATUS_NO_CONTENT);
+            return new JSONResponse([], Http::STATUS_OK);
         } catch (\Exception $e) {
             return new JSONResponse(['error' => 'Failed to remove pool'], Http::STATUS_BAD_REQUEST);
         }
@@ -165,7 +165,7 @@ class CourseController extends Controller {
     public function removeMember(int $courseId, string $memberId): JSONResponse {
         try {
             $this->courseService->removeMember($courseId, $memberId, $this->userId);
-            return new JSONResponse([], Http::STATUS_NO_CONTENT);
+            return new JSONResponse([], Http::STATUS_OK);
         } catch (\Exception $e) {
             return new JSONResponse(['error' => 'Failed to remove member'], Http::STATUS_BAD_REQUEST);
         }

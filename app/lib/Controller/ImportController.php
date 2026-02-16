@@ -113,12 +113,12 @@ class ImportController extends Controller {
                 if ($lastIdx >= 2) {
                     $possibleCorrect = trim($fields[$lastIdx]);
 
-                    if (is_numeric($possibleCorrect) && (int)$possibleCorrect >= 1 && (int)$possibleCorrect <= 6) {
+                    if (is_numeric($possibleCorrect) && (int)$possibleCorrect >= 1 && (int)$possibleCorrect <= 8) {
                         $correctIndex = (int)$possibleCorrect - 1;
                         $answerTexts = array_slice($fields, 1, $lastIdx - 1);
                     } else if ($secondLastIdx >= 2) {
                         $possibleCorrect2 = trim($fields[$secondLastIdx]);
-                        if (is_numeric($possibleCorrect2) && (int)$possibleCorrect2 >= 1 && (int)$possibleCorrect2 <= 6) {
+                        if (is_numeric($possibleCorrect2) && (int)$possibleCorrect2 >= 1 && (int)$possibleCorrect2 <= 8) {
                             $correctIndex = (int)$possibleCorrect2 - 1;
                             $answerTexts = array_slice($fields, 1, $secondLastIdx - 1);
                             $explanation = trim($fields[$lastIdx]);
@@ -268,6 +268,10 @@ class ImportController extends Controller {
 
                 foreach ($item['answers'] as $i => $answerData) {
                     $answerText = trim($answerData['text'] ?? '');
+                    if ($answerText === '') {
+                        $errors[] = "Item $num: Empty answer text at position " . ($i + 1);
+                        continue 2;
+                    }
                     if (mb_strlen($answerText) > 2000) {
                         $answerText = mb_substr($answerText, 0, 2000);
                     }
