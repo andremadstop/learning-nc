@@ -56,7 +56,7 @@ class TrainingService {
         return $session;
     }
 
-    public function startSession(int $poolId, string $userId): array {
+    public function startSession(int $poolId, string $userId, ?int $limit = null): array {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found or no access');
         }
@@ -65,6 +65,13 @@ class TrainingService {
 
         if (empty($questions)) {
             throw new \Exception('No questions in this pool');
+        }
+
+        shuffle($questions);
+
+        // Apply question limit (for exam mode)
+        if ($limit !== null && $limit > 0 && $limit < count($questions)) {
+            $questions = array_slice($questions, 0, $limit);
         }
 
         $qb = $this->db->getQueryBuilder();
@@ -79,7 +86,6 @@ class TrainingService {
         $qb->execute();
 
         $sessionId = $qb->getLastInsertId();
-        shuffle($questions);
 
         $questionsWithAnswers = [];
         foreach ($questions as $q) {

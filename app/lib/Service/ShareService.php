@@ -28,8 +28,9 @@ class ShareService {
     public function sharePool(int $poolId, string $sharedWith, string $shareType, string $permission, string $userId): PoolShare {
         $this->poolMapper->find($poolId, $userId);
 
-        if (!in_array($shareType, ['user', 'group'])) {
-            throw new \InvalidArgumentException('share_type must be user or group');
+        // FIX-ME-5: Only 'user' shares are enforced in access checks; reject 'group' until implemented
+        if ($shareType !== 'user') {
+            throw new \InvalidArgumentException('Only user shares are currently supported');
         }
         if (!in_array($permission, ['read', 'edit'])) {
             throw new \InvalidArgumentException('permission must be read or edit');

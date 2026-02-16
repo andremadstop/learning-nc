@@ -90,8 +90,9 @@ class ImageController extends Controller {
             $imagePath = $question->getImagePath();
 
             if (!empty($imagePath)) {
-                $this->imageService->delete($imagePath);
+                // FIX-ME-6: Clear DB reference first, then delete file (safer ordering)
                 $this->questionService->setImagePath($questionId, null, $this->userId);
+                $this->imageService->delete($imagePath);
             }
 
             // FIX #12 LOW: 204 should not have a body

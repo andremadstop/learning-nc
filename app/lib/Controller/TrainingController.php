@@ -20,9 +20,9 @@ class TrainingController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function start(int $poolId): DataResponse {
+    public function start(int $poolId, ?int $limit = null): DataResponse {
         try {
-            return new DataResponse($this->service->startSession($poolId, $this->userId), 201);
+            return new DataResponse($this->service->startSession($poolId, $this->userId, $limit), 201);
         } catch (\Exception $e) {
             // FIX #8 MEDIUM: Generic error message
             return new DataResponse(['error' => 'Failed to start training session'], 400);

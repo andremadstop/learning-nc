@@ -257,14 +257,13 @@ export default {
     async startExam() {
       this.isLoading = true;
       try {
-        const r = await axios.post(generateUrl('/apps/learning/api/training/start'), { poolId: this.poolId });
-        this.session = r.data.session_id;
-        let questions = r.data.questions;
-
-        // Client-side question count limiting
-        if (this.selectedQuestionCount > 0 && questions.length > this.selectedQuestionCount) {
-          questions = questions.slice(0, this.selectedQuestionCount);
+        const params = { poolId: this.poolId };
+        if (this.selectedQuestionCount > 0) {
+          params.limit = this.selectedQuestionCount;
         }
+        const r = await axios.post(generateUrl('/apps/learning/api/training/start'), params);
+        this.session = r.data.session_id;
+        const questions = r.data.questions;
 
         if (!questions.length) {
           showError(t('learning', 'No questions available'));

@@ -76,6 +76,9 @@ export default {
   data() {
     return { questions: [], loading: false, loadError: null, showDialog: false, showImportDialog: false, editingQuestion: null };
   },
+  watch: {
+    poolId() { this.loadQuestions(); },
+  },
   mounted() { this.loadQuestions(); },
   methods: {
     questionImageUrl(questionId) {

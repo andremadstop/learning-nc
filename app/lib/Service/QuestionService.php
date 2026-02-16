@@ -152,7 +152,11 @@ class QuestionService {
     }
 
     public function setImagePath(int $questionId, ?string $imagePath, string $userId): Question {
-        $question = $this->questionMapper->find($questionId, $userId);
+        // FIX-ME-2: Use findById + canEditPool so shared-pool editors can set images
+        $question = $this->questionMapper->findById($questionId);
+        if (!$this->canEditPool($question->getPoolId(), $userId)) {
+            throw new Exception('No edit access to this pool');
+        }
         $question->setImagePath($imagePath);
         $question->setUpdatedAt(time());
         return $this->questionMapper->update($question);

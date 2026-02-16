@@ -23,71 +23,73 @@ class Version000400Date20260213000000 extends SimpleMigrationStep {
      * Clean up orphaned records before adding foreign key constraints.
      */
     public function preSchemaChange(IOutput $output, \Closure $schemaClosure, array $options): void {
+        $prefix = $this->db->getPrefix();
+
         // Delete questions referencing non-existent pools
         $this->db->executeStatement(
-            'DELETE FROM oc_learning_questions WHERE pool_id NOT IN (SELECT id FROM oc_learning_pools)'
+            "DELETE FROM {$prefix}learning_questions WHERE pool_id NOT IN (SELECT id FROM {$prefix}learning_pools)"
         );
         $output->info('Cleaned orphaned questions');
 
         // Delete answers referencing non-existent questions
         $this->db->executeStatement(
-            'DELETE FROM oc_learning_answers WHERE question_id NOT IN (SELECT id FROM oc_learning_questions)'
+            "DELETE FROM {$prefix}learning_answers WHERE question_id NOT IN (SELECT id FROM {$prefix}learning_questions)"
         );
         $output->info('Cleaned orphaned answers');
 
         // Delete sessions referencing non-existent pools
         $this->db->executeStatement(
-            'DELETE FROM oc_learning_sessions WHERE pool_id NOT IN (SELECT id FROM oc_learning_pools)'
+            "DELETE FROM {$prefix}learning_sessions WHERE pool_id NOT IN (SELECT id FROM {$prefix}learning_pools)"
         );
         $output->info('Cleaned orphaned sessions');
 
         // Delete user_answers referencing non-existent sessions
         $this->db->executeStatement(
-            'DELETE FROM oc_learning_user_answers WHERE session_id NOT IN (SELECT id FROM oc_learning_sessions)'
+            "DELETE FROM {$prefix}learning_user_answers WHERE session_id NOT IN (SELECT id FROM {$prefix}learning_sessions)"
         );
         $output->info('Cleaned orphaned user_answers (sessions)');
 
         // Delete user_answers referencing non-existent questions
         $this->db->executeStatement(
-            'DELETE FROM oc_learning_user_answers WHERE question_id NOT IN (SELECT id FROM oc_learning_questions)'
+            "DELETE FROM {$prefix}learning_user_answers WHERE question_id NOT IN (SELECT id FROM {$prefix}learning_questions)"
         );
         $output->info('Cleaned orphaned user_answers (questions)');
 
         // Delete leitner_items referencing non-existent pools
         $this->db->executeStatement(
-            'DELETE FROM oc_learning_leitner_items WHERE pool_id NOT IN (SELECT id FROM oc_learning_pools)'
+            "DELETE FROM {$prefix}learning_leitner_items WHERE pool_id NOT IN (SELECT id FROM {$prefix}learning_pools)"
         );
         $output->info('Cleaned orphaned leitner_items (pools)');
 
         // Delete leitner_items referencing non-existent questions
         $this->db->executeStatement(
-            'DELETE FROM oc_learning_leitner_items WHERE question_id NOT IN (SELECT id FROM oc_learning_questions)'
+            "DELETE FROM {$prefix}learning_leitner_items WHERE question_id NOT IN (SELECT id FROM {$prefix}learning_questions)"
         );
         $output->info('Cleaned orphaned leitner_items (questions)');
 
         // Delete pool_shares referencing non-existent pools
         $this->db->executeStatement(
-            'DELETE FROM oc_learning_pool_shares WHERE pool_id NOT IN (SELECT id FROM oc_learning_pools)'
+            "DELETE FROM {$prefix}learning_pool_shares WHERE pool_id NOT IN (SELECT id FROM {$prefix}learning_pools)"
         );
         $output->info('Cleaned orphaned pool_shares');
 
         // Delete question_translations referencing non-existent questions
         $this->db->executeStatement(
-            'DELETE FROM oc_learning_question_translations WHERE question_id NOT IN (SELECT id FROM oc_learning_questions)'
+            "DELETE FROM {$prefix}learning_question_translations WHERE question_id NOT IN (SELECT id FROM {$prefix}learning_questions)"
         );
         $output->info('Cleaned orphaned question_translations');
 
         // Delete answer_translations referencing non-existent answers
         $this->db->executeStatement(
-            'DELETE FROM oc_learning_answer_translations WHERE answer_id NOT IN (SELECT id FROM oc_learning_answers)'
+            "DELETE FROM {$prefix}learning_answer_translations WHERE answer_id NOT IN (SELECT id FROM {$prefix}learning_answers)"
         );
         $output->info('Cleaned orphaned answer_translations');
 
         // Remove duplicate user_answers (keep first, delete rest) for unique index
         $this->db->executeStatement(
-            'DELETE FROM oc_learning_user_answers WHERE id NOT IN (
-                SELECT MIN(id) FROM oc_learning_user_answers GROUP BY session_id, question_id
-            )'
+            "DELETE FROM {$prefix}learning_user_answers WHERE id NOT IN (
+                SELECT MIN(id) FROM {$prefix}learning_user_answers GROUP BY session_id, question_id
+            )"
         );
         $output->info('Cleaned duplicate user_answers');
     }
@@ -99,7 +101,7 @@ class Version000400Date20260213000000 extends SimpleMigrationStep {
         // FIX #3: Unique index on user_answers(session_id, question_id)
         if ($schema->hasTable('learning_user_answers')) {
             $table = $schema->getTable('learning_user_answers');
-            if (!$table->hasIndex('learn_ua_session_question_uniq')) {
+            if (!$table->hasIndex('learn_ua_sq_uniq')) {
                 $table->addUniqueIndex(['session_id', 'question_id'], 'learn_ua_sq_uniq');
             }
         }

@@ -22,7 +22,42 @@
 - [x] Release-Tarball: build/learning-1.2.0.tar.gz gebaut (1.2 MB, 82 Dateien, 0 .map, keine node_modules) (2026-02-15)
 - [x] NC-Kompatibilitaet: NC 29.0.16 + NC 31.0.14 getestet (2026-02-15). 2 Migration-Bugs gefixed: (1) Types::BOOLEAN mit notnull=true → notnull=false (NC-Validator rejects NotNull booleans), (2) 12 Index-Namen zu lang (>27 chars mit oc_-Prefix) → gekuerzt auf learn_*-Schema. App installiert+aktiviert auf allen 3 Versionen, Frontend HTTP 200, Pools/Courses/Leitner APIs OK. Release-Tarball neu gebaut.
 
-## Low Priority
+## v1.2.1 Fixes — Gemini+Codex Review (2026-02-16)
+
+### CRITICAL (alle gefixt 2026-02-16)
+
+- [x] FIX-CR-1: Schema-Drift — 4 Tabellen fehlten in Migrations (`pool_shares`, `question_translations`, `answer_translations`, `analytics`). Neue Migration `Version000350` erstellt (vor V400, damit FK-Constraints funktionieren). Spalten aus Entity-Klassen abgeleitet.
+- [x] FIX-CR-2: Migration 400 hardcoded `oc_` Prefix. `preSchemaChange()` nutzt jetzt `$prefix = $this->db->getPrefix()` — alle Raw SQL Queries verwenden `{$prefix}learning_*`.
+- [x] FIX-CR-3: Migration 400 Index-Name Mismatch. `hasIndex()` Check korrigiert: `learn_ua_session_question_uniq` → `learn_ua_sq_uniq` (passt zum Create-Namen).
+
+### HIGH (alle gefixt 2026-02-16)
+
+- [x] FIX-HI-1: ExamMode Scoring. `TrainingService::startSession()` akzeptiert jetzt optionalen `$limit` Parameter. Server sliced+shuffled und setzt `total_questions` korrekt. Frontend sendet `limit` statt client-seitigem Slicing. Verifiziert: limit=3 → total=3, questions=3.
+- [x] FIX-HI-2: addPool IDOR. Neue `hasPoolAccess($poolId, $userId)` Methode in `CourseService` prüft Ownership ODER edit-Share. `addPool()` nutzt jetzt `hasPoolAccess()` statt `poolExists()`.
+- [x] FIX-HI-3: Course Progress Frontend/Backend Mismatch. `fetchProgress()` parst jetzt `response.data.students` Array. `getPoolMastery()` nutzt `Array.find()` statt Dict-Key-Zugriff. Mastery wird aus `mastered/total_questions*100` berechnet. `overall_mastery` pro Student berechnet.
+- [x] FIX-HI-4: "Add Pool" Modal leer. `fetchAllPools()` mergt jetzt `response.data.own` + `response.data.shared` Arrays.
+
+### MEDIUM (6/7 gefixt 2026-02-16, FIX-ME-1 deferred)
+
+- [ ] FIX-ME-1: getCourseProgress N+1. Performance-Optimierung, deferred (funktional korrekt, nur langsam bei vielen Students).
+- [x] FIX-ME-2: setImagePath Owner-only. Nutzt jetzt `findById()` + `canEditPool()` — Shared-Pool Editors koennen Bilder setzen.
+- [x] FIX-ME-3: QuestionList poolId-Watcher hinzugefuegt. Bei Prop-Wechsel werden Fragen neu geladen.
+- [x] FIX-ME-4: Pool Search inkludiert jetzt `[...this.pools, ...this.sharedPools]`.
+- [x] FIX-ME-5: Group shares abgelehnt. `ShareService` akzeptiert nur noch `shareType='user'` bis Group-Feature implementiert.
+- [x] FIX-ME-6: ImageController delete-Reihenfolge korrigiert: erst DB-Referenz loeschen, dann File.
+- [x] FIX-ME-7: Enroll Group-Check Reihenfolge korrigiert: Membership-Check zuerst, Group-Check nur fuer neue Enrollments.
+
+### LOW (optional)
+
+- [ ] FIX-LO-1: Enroll 400 statt 403. CourseController gibt 400 fuer Auth-Fehler. **Fix**: Separate Exception-Klasse oder String-Match fuer 403.
+- [ ] FIX-LO-2: LeitnerService N+1 Answers. Z.56-64: Antworten pro Frage einzeln. **Fix**: Batch-Query mit `WHERE question_id IN (...)`.
+- [ ] FIX-LO-3: CourseService.findAll N+1. Z.109/123: Loop-Queries. **Fix**: JOIN-basierte Query. Low Impact (wenige Kurse pro User).
+
+### SKIP (by design)
+
+- Translation 404 statt 403: Bewusstes Resource-Hiding Pattern. Kein Fix noetig.
+
+## Low Priority (MANUELL)
 
 - [ ] Screenshots: 4-6 Screenshots fuer App Store (Pool-Liste, Training, Leitner, Kurs-Uebersicht, Instructor-Dashboard) — MANUELL im Browser
 - [ ] Signing Certificate: Bei Nextcloud beantragen — MANUELL

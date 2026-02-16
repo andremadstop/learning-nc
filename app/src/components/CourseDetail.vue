@@ -466,7 +466,29 @@ export default {
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{id}/progress', { id: this.courseId })
 				const response = await axios.get(url)
-				this.progressData = Array.isArray(response.data) ? response.data : []
+				// FIX-HI-3: Backend returns {students: [...]} not a plain array
+				const data = response.data
+				if (Array.isArray(data)) {
+					this.progressData = data
+				} else if (data && Array.isArray(data.students)) {
+					// Compute overall_mastery for each student
+					this.progressData = data.students.map(student => {
+						let totalMastered = 0
+						let totalQuestions = 0
+						if (Array.isArray(student.pools)) {
+							for (const p of student.pools) {
+								totalMastered += p.mastered || 0
+								totalQuestions += p.total_questions || 0
+							}
+						}
+						student.overall_mastery = totalQuestions > 0
+							? Math.round(totalMastered / totalQuestions * 100)
+							: null
+						return student
+					})
+				} else {
+					this.progressData = []
+				}
 			} catch (err) {
 				console.error('Failed to fetch progress:', err)
 				this.error = this.t('learning', 'Failed to load progress data.')
@@ -489,7 +511,14 @@ export default {
 			try {
 				const url = generateUrl('/apps/learning/api/pools')
 				const response = await axios.get(url)
-				this.allPools = Array.isArray(response.data) ? response.data : []
+				// FIX-HI-4: API returns {own:[], shared:[]} not a plain array
+				if (Array.isArray(response.data)) {
+					this.allPools = response.data
+				} else if (response.data && typeof response.data === 'object') {
+					this.allPools = [...(response.data.own || []), ...(response.data.shared || [])]
+				} else {
+					this.allPools = []
+				}
 			} catch (err) {
 				console.error('Failed to fetch pools:', err)
 				this.poolModalError = this.t('learning', 'Failed to load available pools.')
@@ -630,10 +659,18 @@ export default {
 		},
 
 		getPoolMastery(row, poolId) {
-			if (!row.pools || !row.pools[poolId]) {
+			if (!row.pools || !Array.isArray(row.pools)) {
 				return null
 			}
-			return row.pools[poolId].mastery ?? null
+			// FIX-HI-3: pools is an array, find by pool_id; compute mastery from mastered/total_questions
+			const pool = row.pools.find(p => p.pool_id === poolId)
+			if (!pool) {
+				return null
+			}
+			if (pool.total_questions > 0) {
+				return Math.round((pool.mastered || 0) / pool.total_questions * 100)
+			}
+			return 0
 		},
 
 		masteryClass(mastery) {

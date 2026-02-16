@@ -64,6 +64,36 @@ class CourseService {
     }
 
     /**
+     * Check if user owns the pool or has edit-level share access
+     */
+    private function hasPoolAccess(int $poolId, string $userId): bool {
+        // Check ownership
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*)'))
+            ->from('learning_pools')
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter($poolId)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetchOne();
+        $result->closeCursor();
+        if ($count > 0) {
+            return true;
+        }
+
+        // Check share with edit permission
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*)'))
+            ->from('learning_pool_shares')
+            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+            ->andWhere($qb->expr()->eq('shared_with', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->eq('permission', $qb->createNamedParameter('edit')));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetchOne();
+        $result->closeCursor();
+        return $count > 0;
+    }
+
+    /**
      * Check if user is instructor of this course (creator or co-instructor member)
      */
     private function isInstructorOfCourse(Course $course, string $userId): bool {
@@ -267,8 +297,8 @@ class CourseService {
             throw new \Exception('No permission');
         }
 
-        // Verify pool exists
-        if (!$this->poolExists($poolId)) {
+        // FIX-HI-2: Verify pool exists AND user has access (prevents IDOR)
+        if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found');
         }
 
@@ -375,19 +405,19 @@ class CourseService {
     public function enroll(int $courseId, string $userId): CourseMember {
         $course = $this->courseMapper->findById($courseId);
 
-        // SEC-HIGH-1: If course has an NC group restriction, verify membership
+        // FIX-ME-7: Check existing membership first — already-enrolled users should not be blocked
+        try {
+            return $this->courseMemberMapper->findByCourseAndUser($courseId, $userId);
+        } catch (DoesNotExistException $e) {
+            // proceed to new enrollment
+        }
+
+        // SEC-HIGH-1: If course has an NC group restriction, verify membership (only for new enrollments)
         $ncGroupId = $course->getNcGroupId();
         if ($ncGroupId !== null && $ncGroupId !== '') {
             if (!$this->groupManager->isInGroup($userId, $ncGroupId)) {
                 throw new \Exception('You are not in the required group for this course');
             }
-        }
-
-        // Check if already enrolled
-        try {
-            return $this->courseMemberMapper->findByCourseAndUser($courseId, $userId);
-        } catch (DoesNotExistException $e) {
-            // proceed
         }
 
         $member = new CourseMember();

@@ -331,9 +331,9 @@ export default {
       this.poolSearchResults = [];
       this.questionSearchResults = [];
       if (this.searchTerm.length >= 2) {
-        // Client-side pool filtering (instant)
+        // FIX-ME-4: Client-side pool filtering includes shared pools
         const lowerCaseSearchTerm = this.searchTerm.toLowerCase();
-        this.poolSearchResults = this.pools.filter(pool =>
+        this.poolSearchResults = [...this.pools, ...this.sharedPools].filter(pool =>
           pool.name.toLowerCase().includes(lowerCaseSearchTerm) ||
           (pool.description && pool.description.toLowerCase().includes(lowerCaseSearchTerm))
         );
