@@ -1,77 +1,98 @@
-# Learning - Nextcloud Learning App
+# Learning - Nextcloud App
 
-**Enterprise Spaced Repetition Learning with Leitner System**
+Spaced Repetition Learning with Leitner System for Nextcloud.
 
-> 🎯 Goal: Launch in Nextcloud App Store in 12 weeks
+![Nextcloud](https://img.shields.io/badge/Nextcloud-29--31-blue)
+![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple)
+![License](https://img.shields.io/badge/License-AGPL--3.0-green)
 
----
+## Features
 
-## Quick Start
+- **Question Pools** — Organize questions into themed pools
+- **Multiple Choice** — Questions with 2-8 answers, explanations, difficulty levels
+- **Leitner System** — 5-box spaced repetition with automatic scheduling
+- **Training Mode** — Quick quiz sessions with immediate feedback
+- **Exam Mode** — Timed exams with configurable question count and batch submission
+- **Swipe Mode** — Touch-friendly swipe-based flashcard review
+- **Course Management** — Instructors create courses, assign pools, track student progress
+- **Pool Sharing** — Share with users (read-only or edit permissions)
+- **CSV/JSON Import** — Bulk import questions from files
+- **Multi-Language** — Translate questions and answers into any language
+- **Search** — Full-text search across all question pools
+- **Analytics** — Per-pool statistics with accuracy trends
+- **Dashboard Widget** — See due questions from the Nextcloud Dashboard
+- **Mobile Friendly** — Responsive touch-optimized design
+
+## Installation
+
+### From Nextcloud App Store (Recommended)
+
+1. Go to **Apps** in your Nextcloud admin panel
+2. Search for "Learning"
+3. Click **Download and enable**
+
+### Manual Installation
 
 ```bash
-# 1. Start local Nextcloud
-cd /home/andre/AIWorkspace/learning-nc
-docker-compose up -d
-
-# 2. Wait ~60 seconds, then open browser
-# http://localhost:8080
-# Login: admin / admin
-
-# 3. Create app skeleton
-docker-compose exec app php occ app:create learning \
-  --author="Andre" \
-  --email="dev@quizdojo.com" \
-  --license="agpl" \
-  --namespace="Learning"
-
-# 4. Enable app
-docker-compose exec app php occ app:enable learning
+cd /path/to/nextcloud/custom_apps/
+git clone https://github.com/andremadstop/learning-nc.git learning
+cd learning/app
+npm install
+npm run build
 ```
 
----
+Then enable the app:
+```bash
+php occ app:enable learning
+```
 
-## Features (Planned)
+## Usage
 
-- ✅ Multiple Choice Quizzes
-- ✅ Leitner 5-Box Spaced Repetition
-- ✅ Team-Learning (Nextcloud Groups)
-- ✅ Admin Analytics & Reports
-- ✅ CSV/JSON Import
-- ✅ Mobile-Optimized
-- ✅ DSGVO-Compliant (Self-Hosted)
+See the full [User Guide](app/README.md) for detailed instructions on:
 
----
+- Creating and managing question pools
+- Importing questions via CSV/JSON
+- Using Leitner spaced repetition
+- Setting up courses as an instructor
+- Sharing pools with other users
 
-## Documentation
+## Repository Structure
 
-- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Developer guide (setup, workflow, commands)
-- **[ROADMAP.md](ROADMAP.md)** - 12-week implementation plan
-- **[docs/](docs/)** - Architecture, decisions, references
+```
+app/            # The Nextcloud app (this gets installed)
+  appinfo/      # App metadata and routes
+  lib/          # PHP backend (Controllers, Services, Mappers, Migrations)
+  src/          # Vue.js frontend source
+  js/           # Built frontend (webpack output)
+  css/          # Stylesheets
+  img/          # Icons and images
+  l10n/         # Translations
+  templates/    # PHP templates
+docker-compose.yml  # Local development environment
+```
 
----
+## Development
 
-## Tech Stack
+```bash
+# Start local dev environment
+docker-compose up -d
 
-**Backend**: PHP 8.3, Nextcloud Framework 30, PostgreSQL 16
-**Frontend**: Vue 2.7, Vuex 3, @nextcloud/vue, Webpack 5
-**Dev**: Docker Compose, Git
+# Install frontend dependencies
+cd app && npm install
 
----
+# Development build with watch
+npm run dev
 
-## Status
+# Production build
+npm run build
+```
 
-**Week 1 of 12** - Foundation Phase
-**Current Task**: Pool Management CRUD
+## Requirements
 
----
-
-## Related Projects
-
-- **QuizDojo Standalone**: `/home/andre/AIWorkspace/gitfiles/pruefungstrainer/`
-- **GitHub**: https://github.com/andremadstop/quizdojo
-
----
+- Nextcloud 29, 30, or 31
+- PHP 8.1 or higher
+- PostgreSQL 13+ or MySQL 8+
 
 ## License
 
-AGPL-3.0
+AGPL-3.0 — see [LICENSE](app/LICENSE)

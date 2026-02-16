@@ -32,12 +32,29 @@ Thumbs.db
 *.tmp
 *.temp
 
-# Ralph autonomous agent
-.ralph/logs/
+# Ralph autonomous agent (internal workflow)
+.ralph/
 .ralphrc
+
+# Project-specific dev config (internal infra details)
+CLAUDE.md
 
 # Environment (contains passwords)
 .env
+
+# Signing key (NEVER commit)
+PRIVATE-signing-key.txt
+*.key
+*.pem
+
+# Internal dev docs (contain credentials/infra details)
+DONE.md
+FINAL_STATUS.md
+WEEK_*.md
+WEEKS_*.md
+DEVELOPMENT.md
+PROJEKT_STEUERUNG.md
+ROADMAP.md
 
 # Infrastructure / VM setup (not app-related)
 install-automated.exp
