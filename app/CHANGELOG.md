@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.3] - 2026-02-16
+
+### Fixed
+- **HIGH**: JSON import orphan questions — answers validated before question creation (no more orphan questions on empty answer text)
+- **HIGH**: Course deletion cleanup — `course_pools` and `course_members` now explicitly deleted before course record
+- **HIGH**: Student progress access — students can now view their own course progress (not just instructors)
+- **MEDIUM**: N+1 query in QuestionService — batch-loads answers with `WHERE question_id IN (...)` instead of per-question queries
+- **MEDIUM**: CSV import false positive correct-index — numeric values now checked against actual answer count range
+- **MEDIUM**: addMember user validation — `IUserManager::userExists()` check prevents adding non-existent users to courses
+
 ## [1.2.2] - 2026-02-16
 
 ### Fixed

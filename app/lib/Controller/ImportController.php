@@ -112,13 +112,16 @@ class ImportController extends Controller {
 
                 if ($lastIdx >= 2) {
                     $possibleCorrect = trim($fields[$lastIdx]);
+                    // FIX3-ME-2: Also check that index is within actual answer count range
+                    $answerCount = $lastIdx - 1; // fields between question and last field
 
-                    if (is_numeric($possibleCorrect) && (int)$possibleCorrect >= 1 && (int)$possibleCorrect <= 8) {
+                    if (is_numeric($possibleCorrect) && (int)$possibleCorrect >= 1 && (int)$possibleCorrect <= 8 && (int)$possibleCorrect <= $answerCount) {
                         $correctIndex = (int)$possibleCorrect - 1;
                         $answerTexts = array_slice($fields, 1, $lastIdx - 1);
                     } else if ($secondLastIdx >= 2) {
                         $possibleCorrect2 = trim($fields[$secondLastIdx]);
-                        if (is_numeric($possibleCorrect2) && (int)$possibleCorrect2 >= 1 && (int)$possibleCorrect2 <= 8) {
+                        $answerCount2 = $secondLastIdx - 1;
+                        if (is_numeric($possibleCorrect2) && (int)$possibleCorrect2 >= 1 && (int)$possibleCorrect2 <= 8 && (int)$possibleCorrect2 <= $answerCount2) {
                             $correctIndex = (int)$possibleCorrect2 - 1;
                             $answerTexts = array_slice($fields, 1, $secondLastIdx - 1);
                             $explanation = trim($fields[$lastIdx]);
@@ -258,6 +261,29 @@ class ImportController extends Controller {
                     continue;
                 }
 
+                // FIX3-HI-1: Validate ALL answer texts BEFORE creating the question to prevent orphans
+                $validatedAnswers = [];
+                $hasInvalidAnswer = false;
+                foreach ($item['answers'] as $i => $answerData) {
+                    $answerText = trim($answerData['text'] ?? '');
+                    if ($answerText === '') {
+                        $errors[] = "Item $num: Empty answer text at position " . ($i + 1);
+                        $hasInvalidAnswer = true;
+                        break;
+                    }
+                    if (mb_strlen($answerText) > 2000) {
+                        $answerText = mb_substr($answerText, 0, 2000);
+                    }
+                    $validatedAnswers[] = [
+                        'text' => $answerText,
+                        'is_correct' => !empty($answerData['is_correct']),
+                        'position' => $i,
+                    ];
+                }
+                if ($hasInvalidAnswer) {
+                    continue;
+                }
+
                 $question = new Question();
                 $question->setPoolId($poolId);
                 $question->setUserId($this->userId);
@@ -266,20 +292,12 @@ class ImportController extends Controller {
                 $question->setDifficulty(isset($item['difficulty']) ? trim($item['difficulty']) : null);
                 $question = $this->questionMapper->createOrUpdate($question);
 
-                foreach ($item['answers'] as $i => $answerData) {
-                    $answerText = trim($answerData['text'] ?? '');
-                    if ($answerText === '') {
-                        $errors[] = "Item $num: Empty answer text at position " . ($i + 1);
-                        continue 2;
-                    }
-                    if (mb_strlen($answerText) > 2000) {
-                        $answerText = mb_substr($answerText, 0, 2000);
-                    }
+                foreach ($validatedAnswers as $va) {
                     $answer = new Answer();
                     $answer->setQuestionId($question->getId());
-                    $answer->setText($answerText);
-                    $answer->setIsCorrect(!empty($answerData['is_correct']));
-                    $answer->setPosition($i);
+                    $answer->setText($va['text']);
+                    $answer->setIsCorrect($va['is_correct']);
+                    $answer->setPosition($va['position']);
                     $this->answerMapper->createOrUpdate($answer);
                 }
 

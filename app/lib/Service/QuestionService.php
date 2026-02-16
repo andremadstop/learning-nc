@@ -85,11 +85,15 @@ class QuestionService {
         }
 
         $questions = $this->questionMapper->findByPoolId($poolId);
-        $result = [];
 
+        // FIX3-ME-1: Batch-load all answers instead of N+1
+        $questionIds = array_map(fn($q) => $q->getId(), $questions);
+        $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
+
+        $result = [];
         foreach ($questions as $question) {
-            $answers = $this->answerMapper->findByQuestion($question->getId());
             $questionData = $question->jsonSerialize();
+            $answers = $answersGrouped[$question->getId()] ?? [];
             $questionData['answers'] = array_map(fn($a) => $a->jsonSerialize(), $answers);
             $result[] = $questionData;
         }
@@ -105,11 +109,15 @@ class QuestionService {
 
         $questions = $this->questionMapper->findByPoolIdPaged($poolId, $limit, $offset);
         $total = $this->questionMapper->countByPoolId($poolId);
-        $result = [];
 
+        // FIX3-ME-1: Batch-load answers
+        $questionIds = array_map(fn($q) => $q->getId(), $questions);
+        $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
+
+        $result = [];
         foreach ($questions as $question) {
-            $answers = $this->answerMapper->findByQuestion($question->getId());
             $questionData = $question->jsonSerialize();
+            $answers = $answersGrouped[$question->getId()] ?? [];
             $questionData['answers'] = array_map(fn($a) => $a->jsonSerialize(), $answers);
             $result[] = $questionData;
         }

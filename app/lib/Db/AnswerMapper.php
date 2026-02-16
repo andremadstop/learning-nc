@@ -27,6 +27,30 @@ class AnswerMapper extends QBMapper {
         $qb->execute();
     }
 
+    /**
+     * FIX3-ME-1: Batch-load answers for multiple questions at once
+     * @param int[] $questionIds
+     * @return array<int, Answer[]> Grouped by question_id
+     */
+    public function findByQuestions(array $questionIds): array {
+        if (empty($questionIds)) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->in('question_id', $qb->createNamedParameter($questionIds, IQueryBuilder::PARAM_INT_ARRAY)))
+           ->orderBy('question_id', 'ASC')
+           ->addOrderBy('position', 'ASC');
+        $answers = $this->findEntities($qb);
+
+        $grouped = [];
+        foreach ($answers as $answer) {
+            $grouped[$answer->getQuestionId()][] = $answer;
+        }
+        return $grouped;
+    }
+
     public function createOrUpdate(Answer $answer): Answer {
         if ($answer->getId()) {
             return $this->update($answer);

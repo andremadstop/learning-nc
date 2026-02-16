@@ -83,6 +83,31 @@
 - Gemini G2: "ImageController delete-Reihenfolge" — FALSE POSITIVE, bereits in FIX-ME-6 gefixt.
 - Gemini G3: "fetchAllPools Array-Check" — FALSE POSITIVE, bereits in FIX-HI-4 gefixt.
 
+## v1.2.3 Fixes — Gemini+Codex Review Round 3 (2026-02-16)
+
+### HIGH (alle gefixt 2026-02-16)
+
+- [x] FIX3-HI-1: JSON Import orphan Questions. Antworten werden jetzt VOR der Question-Erstellung validiert. Nur wenn alle Answer-Texte gueltig sind, wird die Question erstellt. Kein `continue 2` mehr nach DB-Insert. Datei: `app/lib/Controller/ImportController.php`.
+- [x] FIX3-HI-2: Course Deletion mit Cleanup. `delete()` loescht jetzt explizit `course_pools` und `course_members` per Query Builder BEVOR der Course-Record geloescht wird. Datei: `app/lib/Service/CourseService.php`.
+- [x] FIX3-HI-3: Student Progress freigeschaltet. `getCourseProgress()` erlaubt jetzt Course-Members (Studenten) Zugriff auf eigene Progress-Daten. Instructors sehen weiterhin alle Studenten. Refactored: `getStudentPoolProgress()` Hilfsmethode extrahiert. Datei: `app/lib/Service/CourseService.php`.
+
+### MEDIUM (alle gefixt 2026-02-16)
+
+- [x] FIX3-ME-1: N+1 in QuestionService::findByPool eliminiert. Neue `AnswerMapper::findByQuestions(array $ids)` Batch-Methode mit `WHERE question_id IN (...)`. `findByPool()` und `findByPoolPaged()` nutzen jetzt Batch-Loading. Dateien: `app/lib/Service/QuestionService.php` + `app/lib/Db/AnswerMapper.php`.
+- [x] FIX3-ME-2: CSV Import correct-index Range-Check. `is_numeric()` wird jetzt zusaetzlich gegen die tatsaechliche Antworten-Anzahl geprueft (`<= $answerCount`). Datei: `app/lib/Controller/ImportController.php`.
+- [x] FIX3-ME-3: addMember NC-User-Validierung. `IUserManager` injected, `addMember()` prueft `userExists($memberId)` vor dem Insert. Datei: `app/lib/Service/CourseService.php`.
+
+### DEFERRED (Performance, funktional korrekt)
+
+- [ ] FIX-ME-1 (Round 1): getCourseProgress N+1. Batch-Queries mit GROUP BY statt Schleifen-Queries. Teilweise durch FIX3-HI-3 Refactoring verbessert (extrahierte Methode), aber pro-Student noch Loop-Queries.
+
+### SKIP (Round 3)
+
+- QuestionList Paginierung: Feature-Request, kein Bug.
+- Co-Instructor Course-Delete: Bewusste Design-Entscheidung (nur Creator).
+- Bild-Upload Fehler-Toast: Nice-to-have, kein Datenverlust.
+- ALLOWED_LANGS hardcoded: Konfigurierbar machen ist Post-Launch.
+
 ## Low Priority (MANUELL)
 
 - [ ] Screenshots: 4-6 Screenshots fuer App Store (Pool-Liste, Training, Leitner, Kurs-Uebersicht, Instructor-Dashboard) — MANUELL im Browser
