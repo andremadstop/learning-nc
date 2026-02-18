@@ -23,7 +23,7 @@
     <div v-else class="question-items">
       <div v-for="(question, index) in questions" :key="question.id" class="question-item">
         <div class="question-header">
-          <span class="question-number">Q{{ index + 1 }}</span>
+          <span class="question-number">Q{{ currentPage * pageSize + index + 1 }}</span>
           <span v-if="question.difficulty" class="difficulty-badge" :class="question.difficulty">{{ question.difficulty }}</span>
           <div v-if="!readonly" class="question-actions">
             <NcActions>
@@ -45,6 +45,12 @@
           <strong>{{ t('learning', 'Explanation:') }}</strong> {{ question.explanation }}
         </NcNoteCard>
       </div>
+    </div>
+
+    <div v-if="totalQuestions > pageSize" class="pagination-bar">
+      <NcButton type="tertiary" :disabled="currentPage === 0" @click="prevPage">{{ t('learning', '\u2190 Previous') }}</NcButton>
+      <span class="pagination-info">{{ currentPage * pageSize + 1 }}\u2013{{ Math.min((currentPage + 1) * pageSize, totalQuestions) }} / {{ totalQuestions }}</span>
+      <NcButton type="tertiary" :disabled="(currentPage + 1) * pageSize >= totalQuestions" @click="nextPage">{{ t('learning', 'Next \u2192') }}</NcButton>
     </div>
 
     <QuestionForm v-if="showDialog" :question="editingQuestion" @save="saveQuestion" @close="closeDialog" />
@@ -74,10 +80,10 @@ export default {
     readonly: { type: Boolean, default: false }
   },
   data() {
-    return { questions: [], loading: false, loadError: null, showDialog: false, showImportDialog: false, editingQuestion: null };
+    return { questions: [], loading: false, loadError: null, showDialog: false, showImportDialog: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0 };
   },
   watch: {
-    poolId() { this.loadQuestions(); },
+    poolId() { this.currentPage = 0; this.loadQuestions(); },
   },
   mounted() { this.loadQuestions(); },
   methods: {
@@ -87,12 +93,23 @@ export default {
     async loadQuestions() {
       this.loading = true; this.loadError = null;
       try {
-        const response = await axios.get(generateUrl('/apps/learning/api/pools/' + this.poolId + '/questions'));
-        this.questions = response.data;
+        const offset = this.currentPage * this.pageSize;
+        const response = await axios.get(generateUrl('/apps/learning/api/pools/' + this.poolId + '/questions'), { params: { limit: this.pageSize, offset } });
+        const data = response.data;
+        if (data && Array.isArray(data.questions)) {
+          this.questions = data.questions;
+          this.totalQuestions = data.total || data.questions.length;
+        } else {
+          this.questions = Array.isArray(data) ? data : [];
+          this.totalQuestions = this.questions.length;
+        }
       } catch (error) {
         this.loadError = t('learning', 'Failed to load questions. Check your connection and try again.');
       } finally { this.loading = false; }
     },
+    get totalPages() { return Math.ceil(this.totalQuestions / this.pageSize); },
+    prevPage() { if (this.currentPage > 0) { this.currentPage--; this.loadQuestions(); } },
+    nextPage() { if ((this.currentPage + 1) * this.pageSize < this.totalQuestions) { this.currentPage++; this.loadQuestions(); } },
     showCreateDialog() { this.editingQuestion = null; this.showDialog = true; },
     editQuestion(question) { this.editingQuestion = question; this.showDialog = true; },
     closeDialog() { this.showDialog = false; this.editingQuestion = null; },
@@ -159,6 +176,8 @@ export default {
 .answer-icon { font-weight: bold; flex-shrink: 0; margin-top: 1px; }
 .explanation-card { margin-top: 8px; }
 .loading-center { display: block; margin: 60px auto; }
+.pagination-bar { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 24px; padding: 12px 0; }
+.pagination-info { font-size: 14px; color: var(--color-text-maxcontrast); font-weight: 500; }
 @media (max-width: 768px) {
   .question-list-header { flex-direction: column; align-items: stretch; }
   .header-actions { justify-content: flex-end; }

@@ -47,9 +47,9 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function answer(int $itemId, bool $correct): DataResponse {
+    public function answer(int $itemId, int $answerId): DataResponse {
         try {
-            return new DataResponse($this->service->answerQuestion($itemId, $correct, $this->userId));
+            return new DataResponse($this->service->answerQuestion($itemId, $answerId, $this->userId));
         } catch (\Exception $e) {
             // FIX #8 MEDIUM: Generic error message
             return new DataResponse(['error' => 'Failed to submit answer'], 400);

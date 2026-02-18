@@ -251,13 +251,18 @@ class ImportController extends Controller {
                     continue;
                 }
 
-                $hasCorrect = false;
+                $correctCount = 0;
                 foreach ($item['answers'] as $a) {
-                    if (!empty($a['is_correct'])) $hasCorrect = true;
+                    if (!empty($a['is_correct'])) $correctCount++;
                 }
 
-                if (!$hasCorrect) {
+                if ($correctCount === 0) {
                     $errors[] = "Item $num: No correct answer marked";
+                    continue;
+                }
+
+                if ($correctCount > 1) {
+                    $errors[] = "Item $num: Multiple correct answers (exactly 1 required)";
                     continue;
                 }
 

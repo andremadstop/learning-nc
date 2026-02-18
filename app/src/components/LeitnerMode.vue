@@ -103,7 +103,7 @@ export default {
       initialized: false, initializing: false, initError: null,
       stats: { total: 0, due_count: 0, accuracy: 0, mastery_percentage: 0, total_answered: 0 },
       dueQuestions: [], started: false, currentIndex: 0, answered: false, submitting: false,
-      lastAnswer: false, lastMoveTarget: 0, showResults: false, sessionCorrect: 0, sessionIncorrect: 0,
+      lastAnswer: false, lastMoveTarget: 0, lastCorrectAnswerText: '', showResults: false, sessionCorrect: 0, sessionIncorrect: 0,
       boxLabels: { 1: t('learning', 'New / Reset'), 2: t('learning', 'After 1 day'), 3: t('learning', 'After 3 days'), 4: t('learning', 'After 7 days'), 5: t('learning', 'Mastered (14d)') }
     };
   },
@@ -134,18 +134,16 @@ export default {
     },
     async submitAnswer(answer) {
       this.submitting = true;
-      const isCorrect = answer.is_correct === true || answer.is_correct === 't' || answer.is_correct === '1';
       try {
-        const r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), { itemId: this.currentItem.id, correct: isCorrect });
-        this.lastAnswer = isCorrect; this.lastMoveTarget = r.data.new_box; this.answered = true;
-        if (isCorrect) this.sessionCorrect++; else this.sessionIncorrect++;
+        const r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), { itemId: this.currentItem.id, answerId: answer.id });
+        this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
+        this.lastCorrectAnswerText = r.data.correct_answer_text || '';
+        if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
       } catch (e) { showError(t('learning', 'Failed to record answer')); }
       finally { this.submitting = false; }
     },
     getCorrectAnswer() {
-      if (!this.currentItem?.answers) return '';
-      const c = this.currentItem.answers.find(a => a.is_correct === true || a.is_correct === 't' || a.is_correct === '1');
-      return c ? c.text : '';
+      return this.lastCorrectAnswerText || '';
     },
     nextQuestion() {
       if (this.currentIndex < this.dueQuestions.length - 1) { this.currentIndex++; this.answered = false; }

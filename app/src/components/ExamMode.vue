@@ -50,7 +50,24 @@
       <NcProgressBar :value="progressPercentage" />
       <div class="progress-label">{{ answeredCount }} / {{ questions.length }} {{ t('learning', 'answered') }}</div>
 
-      <div v-if="currentQuestion" class="question-card">
+      <div v-if="currentQuestion" ref="questionCard" class="question-card">
+        <!-- Snake timer border -->
+        <svg v-if="snakeReady"
+             :class="['snake-svg', snakeColorClass]"
+             :width="snakeWidth" :height="snakeHeight">
+          <rect
+            class="snake-line"
+            x="1.5" y="1.5"
+            :width="snakeWidth - 3" :height="snakeHeight - 3"
+            rx="15" ry="15"
+            fill="none"
+            stroke-width="3"
+            stroke-linecap="round"
+            pathLength="1000"
+            stroke-dasharray="1000"
+            :stroke-dashoffset="snakeDashoffset"
+          />
+        </svg>
         <div class="question-number">{{ t('learning', 'Question {n} of {total}', { n: currentQuestionIndex + 1, total: questions.length }) }}</div>
         <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" alt="" class="question-image" />
         <div class="question-text">{{ currentQuestion.text }}</div>
@@ -194,6 +211,9 @@ export default {
       examDurationSeconds: null,
       examStartTime: null,
       examEndTime: null,
+      snakeWidth: 0,
+      snakeHeight: 0,
+      resizeObserver: null,
 
       resultsData: null,
       detailedResults: [],
@@ -212,6 +232,21 @@ export default {
       if (pct > 50) return 'timer-green';
       if (pct > 25) return 'timer-yellow';
       return 'timer-red';
+    },
+    snakeReady() {
+      return this.screen === 'exam' && this.snakeWidth > 0 && this.snakeHeight > 0;
+    },
+    snakeDashoffset() {
+      if (!this.examDurationSeconds || this.timeLeftSeconds === null) return 0;
+      const progress = this.timeLeftSeconds / this.examDurationSeconds;
+      return 1000 * (1 - progress);
+    },
+    snakeColorClass() {
+      if (!this.examDurationSeconds || this.timeLeftSeconds === null) return '';
+      const pct = (this.timeLeftSeconds / this.examDurationSeconds) * 100;
+      if (pct > 50) return '';
+      if (pct > 25) return 'snake-warning';
+      return 'snake-danger';
     },
     currentQuestion() {
       return this.questions[this.currentQuestionIndex] || null;
@@ -254,6 +289,20 @@ export default {
     questionImageUrl(id) {
       return generateUrl('/apps/learning/api/questions/' + id + '/image');
     },
+    updateSnakeDimensions() {
+      if (this.$refs.questionCard) {
+        this.snakeWidth = this.$refs.questionCard.offsetWidth;
+        this.snakeHeight = this.$refs.questionCard.offsetHeight;
+      }
+    },
+    cleanupSnake() {
+      if (this.resizeObserver) {
+        this.resizeObserver.disconnect();
+        this.resizeObserver = null;
+      }
+      this.snakeWidth = 0;
+      this.snakeHeight = 0;
+    },
     async startExam() {
       this.isLoading = true;
       try {
@@ -283,6 +332,15 @@ export default {
 
         this.startTimer();
         this.screen = 'exam';
+        this.$nextTick(() => {
+          this.updateSnakeDimensions();
+          if (typeof ResizeObserver !== 'undefined') {
+            this.resizeObserver = new ResizeObserver(() => this.updateSnakeDimensions());
+            if (this.$refs.questionCard) {
+              this.resizeObserver.observe(this.$refs.questionCard);
+            }
+          }
+        });
       } catch (e) {
         showError(e.response?.data?.error || t('learning', 'Failed to start exam'));
       } finally {
@@ -398,6 +456,7 @@ export default {
     },
 
     retakeExam() {
+      this.cleanupSnake();
       this.screen = 'setup';
       this.session = null;
       this.questions = [];
@@ -412,6 +471,7 @@ export default {
 
   beforeDestroy() {
     if (this.timerInterval) clearInterval(this.timerInterval);
+    this.cleanupSnake();
   },
 };
 </script>
@@ -448,12 +508,45 @@ export default {
 
 /* Question Card */
 .question-card {
+  position: relative;
   background: var(--color-main-background);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 28px;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* Snake Timer */
+.snake-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+  filter: drop-shadow(0 0 3px var(--color-success));
+  transition: filter 0.5s ease;
+}
+.snake-svg.snake-warning {
+  filter: drop-shadow(0 0 3px var(--color-warning));
+}
+.snake-svg.snake-danger {
+  filter: drop-shadow(0 0 4px var(--color-error));
+}
+.snake-line {
+  stroke: var(--color-success);
+  transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+}
+.snake-warning .snake-line {
+  stroke: var(--color-warning);
+}
+.snake-danger .snake-line {
+  stroke: var(--color-error);
+  animation: snakePulse 1.5s ease-in-out infinite;
+}
+@keyframes snakePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 .question-number { text-align: center; font-size: 13px; color: var(--color-text-maxcontrast); margin-bottom: 12px; font-weight: 500; }
 .question-image { max-width: 100%; max-height: 200px; border-radius: 12px; border: 1px solid var(--color-border); margin-bottom: 16px; object-fit: contain; display: block; margin-left: auto; margin-right: auto; }

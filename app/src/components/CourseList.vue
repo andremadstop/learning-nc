@@ -352,7 +352,7 @@ export default {
 				await this.fetchCourses()
 			} catch (err) {
 				console.error('Failed to save course:', err)
-				const message = err.response?.data?.message
+				const message = err.response?.data?.error || err.response?.data?.message
 				this.modalError = message || this.t('learning', 'Failed to save course. Please try again.')
 			} finally {
 				this.saving = false

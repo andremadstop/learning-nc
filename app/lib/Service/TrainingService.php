@@ -150,7 +150,7 @@ class TrainingService {
             throw new \Exception('Answer not found for this question');
         }
 
-        $isCorrect = (bool)$row['is_correct'];
+        $isCorrect = filter_var($row['is_correct'], FILTER_VALIDATE_BOOLEAN);
 
         $qb = $this->db->getQueryBuilder();
         $qb->insert('learning_user_answers')
@@ -166,7 +166,7 @@ class TrainingService {
         if ($isCorrect) {
             $qb = $this->db->getQueryBuilder();
             $qb->update('learning_sessions')
-               ->set('correct_answers', 'correct_answers + 1')
+               ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
                ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
             $qb->execute();
         }
@@ -240,7 +240,7 @@ class TrainingService {
                 continue;
             }
 
-            $isCorrect = (bool)$row['is_correct'];
+            $isCorrect = filter_var($row['is_correct'], FILTER_VALIDATE_BOOLEAN);
 
             $qb = $this->db->getQueryBuilder();
             $qb->insert('learning_user_answers')
@@ -256,7 +256,7 @@ class TrainingService {
             if ($isCorrect) {
                 $qb = $this->db->getQueryBuilder();
                 $qb->update('learning_sessions')
-                   ->set('correct_answers', 'correct_answers + 1')
+                   ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
                    ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
                 $qb->execute();
             }

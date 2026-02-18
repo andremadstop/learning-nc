@@ -71,7 +71,7 @@ class ShareController extends Controller {
     public function destroy(int $poolId, string $sharedWith): DataResponse {
         try {
             $this->service->unsharePool($poolId, $sharedWith, $this->userId);
-            return new DataResponse([], Http::STATUS_OK);
+            return new DataResponse([], Http::STATUS_NO_CONTENT);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Share not found or no access'], Http::STATUS_NOT_FOUND);
         }

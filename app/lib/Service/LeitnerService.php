@@ -78,7 +78,7 @@ class LeitnerService {
         return $items;
     }
 
-    public function answerQuestion(int $itemId, bool $correct, string $userId): array {
+    public function answerQuestion(int $itemId, int $answerId, string $userId): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
            ->from('learning_leitner_items')
@@ -91,6 +91,22 @@ class LeitnerService {
         if (!$item) {
             throw new \Exception('Item not found');
         }
+
+        // Server-side correctness check: look up answer in DB
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('is_correct')
+           ->from('learning_answers')
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId)))
+           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter((int)$item['question_id'])));
+        $ansResult = $qb->execute();
+        $ansRow = $ansResult->fetch();
+        $ansResult->closeCursor();
+
+        if (!$ansRow) {
+            throw new \Exception('Answer not found for this question');
+        }
+
+        $correct = filter_var($ansRow['is_correct'], FILTER_VALIDATE_BOOLEAN);
 
         $currentBox = (int)$item['box'];
         $newBox = $correct ? min(5, $currentBox + 1) : 1;
@@ -117,11 +133,23 @@ class LeitnerService {
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($itemId)));
         $qb->execute();
 
+        // Return correct answer info for frontend display
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id', 'text')
+           ->from('learning_answers')
+           ->where($qb->expr()->eq('question_id', $qb->createNamedParameter((int)$item['question_id'])))
+           ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)));
+        $correctResult = $qb->execute();
+        $correctRow = $correctResult->fetch();
+        $correctResult->closeCursor();
+
         return [
             'old_box' => $currentBox,
             'new_box' => $newBox,
             'next_review' => $nextReview,
-            'correct' => $correct
+            'correct' => $correct,
+            'correct_answer_id' => $correctRow ? (int)$correctRow['id'] : null,
+            'correct_answer_text' => $correctRow ? $correctRow['text'] : '',
         ];
     }
 

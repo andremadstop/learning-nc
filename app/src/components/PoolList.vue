@@ -358,6 +358,7 @@ export default {
       } catch (error) {
         console.error('Failed to search questions:', error);
         this.questionSearchResults = [];
+        showError(t('learning', 'Search failed. Please try again.'));
       } finally {
         this.searchLoading = false;
       }

@@ -454,6 +454,8 @@ export default {
 					this.studentProgress = data
 				} else if (data && data.pools) {
 					this.studentProgress = data.pools
+				} else if (data && Array.isArray(data.students) && data.students.length > 0) {
+					this.studentProgress = data.students[0].pools || []
 				}
 			} catch (err) {
 				// Student progress is optional, do not block the view
@@ -552,7 +554,7 @@ export default {
 				await this.fetchCourseDetail()
 			} catch (err) {
 				console.error('Failed to add pool:', err)
-				const message = err.response?.data?.message
+				const message = err.response?.data?.error || err.response?.data?.message
 				this.poolModalError = message || this.t('learning', 'Failed to add pool to course.')
 			} finally {
 				this.savingPool = false
@@ -602,7 +604,7 @@ export default {
 				await this.fetchCourseDetail()
 			} catch (err) {
 				console.error('Failed to add member:', err)
-				const message = err.response?.data?.message
+				const message = err.response?.data?.error || err.response?.data?.message
 				if (err.response?.status === 404) {
 					this.memberError = this.t('learning', 'User "{name}" not found.', { name: username })
 				} else if (err.response?.status === 409) {
