@@ -119,7 +119,7 @@ export default {
   },
   computed: {
     currentQuestion() { return this.questions[this.currentIndex] || null; },
-    progress() { return ((this.currentIndex + 1) / this.questions.length) * 100; },
+    progress() { return this.questions.length > 0 ? ((this.currentIndex + 1) / this.questions.length) * 100 : 0; },
     isMultiSelect() { return this.currentQuestion && this.currentQuestion.question_type === 'multi'; }
   },
   methods: {

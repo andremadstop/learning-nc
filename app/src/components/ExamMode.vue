@@ -193,9 +193,7 @@
 
 <script>
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js';
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js';
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
@@ -203,7 +201,7 @@ import { showError } from '@nextcloud/dialogs';
 
 export default {
   name: 'ExamMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, NcLoadingIcon },
+  components: { NcButton, NcProgressBar, NcLoadingIcon },
   props: {
     poolId: { type: Number, required: true },
     totalQuestions: { type: Number, required: true }

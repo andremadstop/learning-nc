@@ -46,7 +46,6 @@ class PoolService {
                 'description' => $row['description'],
                 'created_at' => $row['created_at'],
                 'updated_at' => $row['updated_at'],
-                'visibility' => $row['visibility'] ?? 'private',
                 'permission' => $row['permission'],
                 'shared_by' => $row['shared_by'],
                 'is_shared' => true,
@@ -86,8 +85,7 @@ class PoolService {
                         'description' => $row['description'],
                         'created_at' => $row['created_at'],
                         'updated_at' => $row['updated_at'],
-                        'visibility' => $row['visibility'] ?? 'private',
-                        'permission' => $share->getPermission(),
+                                'permission' => $share->getPermission(),
                         'is_shared' => true,
                     ];
                 }
@@ -117,13 +115,16 @@ class PoolService {
 
     public function delete(int $id, string $userId): void {
         try {
-            // FIX4-ME-3: Clean up orphan course_pools before deleting the pool
+            // Verify ownership BEFORE deleting related data
+            $pool = $this->mapper->find($id, $userId);
+
+            // Clean up orphan course_pools
             $qb = $this->db->getQueryBuilder();
             $qb->delete('learning_course_pools')
                ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($id)));
             $qb->execute();
 
-            $this->mapper->deleteById($id, $userId);
+            $this->mapper->delete($pool);
         } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
             throw new NotFoundException('Pool not found');
         }

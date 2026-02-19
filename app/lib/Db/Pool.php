@@ -31,7 +31,6 @@ class Pool extends Entity implements JsonSerializable {
             'description' => $this->getDescription(),
             'created_at' => $this->getCreatedAt(),
             'updated_at' => $this->getUpdatedAt(),
-            'visibility' => $this->getVisibility() ?? 'private',
         ];
     }
 }

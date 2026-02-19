@@ -28,6 +28,25 @@ class LeitnerService {
         }
     }
 
+    /**
+     * Check if user has an active (uncompleted) exam session on a given pool.
+     * Used to suppress correct answers in Leitner responses to prevent exam oracle attacks.
+     */
+    private function hasActiveExamOnPool(int $poolId, string $userId): bool {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+           ->andWhere($qb->expr()->isNull('completed_at'))
+           ->setMaxResults(1);
+        $result = $qb->execute();
+        $hasExam = $result->fetch();
+        $result->closeCursor();
+        return $hasExam !== false;
+    }
+
     public function getDueQuestions(int $poolId, string $userId, int $limit = 10): array {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found or no access');
@@ -169,7 +188,20 @@ class LeitnerService {
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($itemId)));
         $qb->execute();
 
-        // Return all correct answers for frontend display
+        $response = [
+            'old_box' => $currentBox,
+            'new_box' => $newBox,
+            'next_review' => $nextReview,
+            'correct' => $correct,
+        ];
+
+        // SECURITY: Suppress correct answer details during active exam to prevent oracle attack
+        $poolId = (int)$item['pool_id'];
+        if ($this->hasActiveExamOnPool($poolId, $userId)) {
+            return $response;
+        }
+
+        // Return all correct answers for frontend display (only when no active exam)
         $qb = $this->db->getQueryBuilder();
         $qb->select('id', 'text')
            ->from('learning_answers')
@@ -183,16 +215,12 @@ class LeitnerService {
         $allCorrectIds = array_map(fn($r) => (int)$r['id'], $allCorrectRows);
         $allCorrectTexts = array_map(fn($r) => $r['text'], $allCorrectRows);
 
-        return [
-            'old_box' => $currentBox,
-            'new_box' => $newBox,
-            'next_review' => $nextReview,
-            'correct' => $correct,
-            'correct_answer_id' => !empty($allCorrectIds) ? $allCorrectIds[0] : null,
-            'correct_answer_text' => !empty($allCorrectTexts) ? $allCorrectTexts[0] : '',
-            'correct_answer_ids' => $allCorrectIds,
-            'correct_answer_texts' => $allCorrectTexts,
-        ];
+        $response['correct_answer_id'] = !empty($allCorrectIds) ? $allCorrectIds[0] : null;
+        $response['correct_answer_text'] = !empty($allCorrectTexts) ? $allCorrectTexts[0] : '';
+        $response['correct_answer_ids'] = $allCorrectIds;
+        $response['correct_answer_texts'] = $allCorrectTexts;
+
+        return $response;
     }
 
     public function initializePool(int $poolId, string $userId): int {

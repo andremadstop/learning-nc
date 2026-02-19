@@ -6,6 +6,7 @@ use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 
 class CourseController extends Controller {
@@ -63,6 +64,7 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 20, period: 60)]
     public function create(string $title, ?string $description = null, ?string $ncGroupId = null): JSONResponse {
         try {
             $course = $this->courseService->create($title, $description, $ncGroupId, $this->userId);

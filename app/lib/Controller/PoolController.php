@@ -7,6 +7,7 @@ use OCA\Learning\Service\NotFoundException;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 
 class PoolController extends Controller {
@@ -45,6 +46,7 @@ class PoolController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 30, period: 60)]
     public function create(string $name, ?string $description = null): DataResponse {
         try {
             if (mb_strlen($name) < 1 || mb_strlen($name) > 200) {

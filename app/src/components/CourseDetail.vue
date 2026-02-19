@@ -320,8 +320,6 @@ import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
 import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
 import NcModal from '@nextcloud/vue/dist/Components/NcModal.js'
 import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
-import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
 
 export default {
@@ -332,8 +330,6 @@ export default {
 		NcEmptyContent,
 		NcModal,
 		NcTextField,
-		NcActions,
-		NcActionButton,
 		NcNoteCard,
 	},
 

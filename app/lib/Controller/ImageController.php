@@ -9,6 +9,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\Response;
+use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 
 class ImageController extends Controller {
@@ -32,6 +33,7 @@ class ImageController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 20, period: 60)]
     public function upload(int $questionId): DataResponse {
         try {
             $file = $this->request->getUploadedFile('image');

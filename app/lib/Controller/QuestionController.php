@@ -3,10 +3,10 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\QuestionService;
-use OCA\Learning\Service\NotFoundException;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 
 class QuestionController extends Controller {
@@ -46,6 +46,7 @@ class QuestionController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 60, period: 60)]
     public function create(int $poolId, string $text, ?string $explanation, ?string $difficulty, array $answers, ?string $questionType = null): DataResponse {
         try {
             $question = $this->service->create($poolId, $this->userId, $text, $explanation, $difficulty, $answers, $questionType);

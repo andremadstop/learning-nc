@@ -54,6 +54,25 @@ class QuestionService {
         }
     }
 
+    /**
+     * Check if user has an active (uncompleted) exam session on a given pool.
+     * Used to suppress is_correct in question read APIs to prevent exam oracle attacks.
+     */
+    private function hasActiveExamOnPool(int $poolId, string $userId): bool {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+           ->andWhere($qb->expr()->isNull('completed_at'))
+           ->setMaxResults(1);
+        $result = $qb->execute();
+        $hasExam = $result->fetch();
+        $result->closeCursor();
+        return $hasExam !== false;
+    }
+
     private function validateQuestionInput(string $text, array $answers, string $questionType = 'single'): void {
         if (mb_strlen($text) < 1 || mb_strlen($text) > 5000) {
             throw new \InvalidArgumentException('Question text must be 1-5000 characters');
@@ -95,11 +114,20 @@ class QuestionService {
         $questionIds = array_map(fn($q) => $q->getId(), $questions);
         $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
 
+        // SECURITY: Strip is_correct during active exam to prevent oracle attack
+        $stripCorrect = $this->hasActiveExamOnPool($poolId, $userId);
+
         $result = [];
         foreach ($questions as $question) {
             $questionData = $question->jsonSerialize();
             $answers = $answersGrouped[$question->getId()] ?? [];
-            $questionData['answers'] = array_map(fn($a) => $a->jsonSerialize(), $answers);
+            $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
+                $row = $a->jsonSerialize();
+                if ($stripCorrect) {
+                    unset($row['is_correct']);
+                }
+                return $row;
+            }, $answers);
             $result[] = $questionData;
         }
 
@@ -118,11 +146,20 @@ class QuestionService {
         $questionIds = array_map(fn($q) => $q->getId(), $questions);
         $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
 
+        // SECURITY: Strip is_correct during active exam to prevent oracle attack
+        $stripCorrect = $this->hasActiveExamOnPool($poolId, $userId);
+
         $result = [];
         foreach ($questions as $question) {
             $questionData = $question->jsonSerialize();
             $answers = $answersGrouped[$question->getId()] ?? [];
-            $questionData['answers'] = array_map(fn($a) => $a->jsonSerialize(), $answers);
+            $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
+                $row = $a->jsonSerialize();
+                if ($stripCorrect) {
+                    unset($row['is_correct']);
+                }
+                return $row;
+            }, $answers);
             $result[] = $questionData;
         }
 
@@ -137,8 +174,17 @@ class QuestionService {
             }
             $answers = $this->answerMapper->findByQuestion($question->getId());
 
+            // SECURITY: Strip is_correct during active exam to prevent oracle attack
+            $stripCorrect = $this->hasActiveExamOnPool($question->getPoolId(), $userId);
+
             $questionData = $question->jsonSerialize();
-            $questionData['answers'] = array_map(fn($a) => $a->jsonSerialize(), $answers);
+            $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
+                $row = $a->jsonSerialize();
+                if ($stripCorrect) {
+                    unset($row['is_correct']);
+                }
+                return $row;
+            }, $answers);
 
             return $questionData;
         } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
@@ -201,7 +247,7 @@ class QuestionService {
                 $answer = new Answer();
                 $answer->setQuestionId($question->getId());
                 $answer->setText($answerData['text']);
-                $answer->setIsCorrect($answerData['is_correct'] ?? false);
+                $answer->setIsCorrect(filter_var($answerData['is_correct'] ?? false, FILTER_VALIDATE_BOOLEAN));
                 $answer->setPosition($index);
                 $savedAnswers[] = $this->answerMapper->createOrUpdate($answer);
             }
@@ -246,7 +292,7 @@ class QuestionService {
                     $answer = new Answer();
                     $answer->setQuestionId($question->getId());
                     $answer->setText($answerData['text']);
-                    $answer->setIsCorrect($answerData['is_correct'] ?? false);
+                    $answer->setIsCorrect(filter_var($answerData['is_correct'] ?? false, FILTER_VALIDATE_BOOLEAN));
                     $answer->setPosition($index);
                     $savedAnswers[] = $this->answerMapper->createOrUpdate($answer);
                 }

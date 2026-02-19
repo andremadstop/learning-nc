@@ -477,6 +477,10 @@ class TrainingService {
             if (($session['mode'] ?? 'training') === 'exam') {
                 $response['review'] = $this->getSessionReview($sessionId);
             }
+            $totalQ = (int)$session['total_questions'];
+            $response['score_percentage'] = $totalQ > 0
+                ? round((int)$session['correct_answers'] / $totalQ * 100)
+                : 0;
             return $response;
         }
 
@@ -497,20 +501,24 @@ class TrainingService {
         $result->closeCursor();
 
         $response = [
+            'session_id' => (int)$session['id'],
             'total_questions' => (int)$session['total_questions'],
             'correct_answers' => (int)$session['correct_answers'],
-            'score_percentage' => round((int)$session['correct_answers'] / (int)$session['total_questions'] * 100)
+            'completed_at' => (int)$session['completed_at'],
+            'score_percentage' => (int)$session['total_questions'] > 0
+                ? round((int)$session['correct_answers'] / (int)$session['total_questions'] * 100)
+                : 0
         ];
 
         // For exam sessions, include full review data (only available after completion)
         if (($session['mode'] ?? 'training') === 'exam') {
-            $response['review'] = $this->getSessionReview($sessionId, (int)$session['pool_id']);
+            $response['review'] = $this->getSessionReview($sessionId);
         }
 
         return $response;
     }
 
-    private function getSessionReview(int $sessionId, int $poolId): array {
+    private function getSessionReview(int $sessionId): array {
         // Fetch all user answers for this session
         $qb = $this->db->getQueryBuilder();
         $qb->select('ua.*', 'q.text AS question_text', 'q.question_type')
