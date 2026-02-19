@@ -6,14 +6,17 @@ use OCA\Learning\Db\PoolShare;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Db\PoolMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\IUserManager;
 
 class ShareService {
     private PoolShareMapper $shareMapper;
     private PoolMapper $poolMapper;
+    private IUserManager $userManager;
 
-    public function __construct(PoolShareMapper $shareMapper, PoolMapper $poolMapper) {
+    public function __construct(PoolShareMapper $shareMapper, PoolMapper $poolMapper, IUserManager $userManager) {
         $this->shareMapper = $shareMapper;
         $this->poolMapper = $poolMapper;
+        $this->userManager = $userManager;
     }
 
     public function getSharesForPool(int $poolId, string $userId): array {
@@ -28,12 +31,22 @@ class ShareService {
     public function sharePool(int $poolId, string $sharedWith, string $shareType, string $permission, string $userId): PoolShare {
         $this->poolMapper->find($poolId, $userId);
 
-        // FIX-ME-5: Only 'user' shares are enforced in access checks; reject 'group' until implemented
+        // Only 'user' shares are enforced in access checks; reject 'group' until implemented
         if ($shareType !== 'user') {
             throw new \InvalidArgumentException('Only user shares are currently supported');
         }
         if (!in_array($permission, ['read', 'edit'])) {
             throw new \InvalidArgumentException('permission must be read or edit');
+        }
+
+        // S4: Validate that the target user actually exists
+        if (!$this->userManager->userExists($sharedWith)) {
+            throw new \InvalidArgumentException('User does not exist');
+        }
+
+        // Prevent sharing with yourself
+        if ($sharedWith === $userId) {
+            throw new \InvalidArgumentException('Cannot share with yourself');
         }
 
         $existing = $this->shareMapper->findByPoolAndUser($poolId, $sharedWith);

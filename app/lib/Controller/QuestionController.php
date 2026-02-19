@@ -27,7 +27,6 @@ class QuestionController extends Controller {
         if ($limit <= 0) {
             return new DataResponse($this->service->findByPool($poolId, $this->userId));
         }
-        // FIX #10: Paginated response for large pools
         $limit = max(1, min($limit, 200));
         $offset = max(0, $offset);
         return new DataResponse($this->service->findByPoolPaged($poolId, $this->userId, $limit, $offset));
@@ -47,14 +46,13 @@ class QuestionController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function create(int $poolId, string $text, ?string $explanation, ?string $difficulty, array $answers): DataResponse {
+    public function create(int $poolId, string $text, ?string $explanation, ?string $difficulty, array $answers, ?string $questionType = null): DataResponse {
         try {
-            $question = $this->service->create($poolId, $this->userId, $text, $explanation, $difficulty, $answers);
+            $question = $this->service->create($poolId, $this->userId, $text, $explanation, $difficulty, $answers, $questionType);
             return new DataResponse($question, Http::STATUS_CREATED);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         } catch (\Exception $e) {
-            // FIX #8 MEDIUM: Generic error message
             return new DataResponse(['error' => 'Failed to create question'], Http::STATUS_BAD_REQUEST);
         }
     }
@@ -62,13 +60,12 @@ class QuestionController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function update(int $id, string $text, ?string $explanation, ?string $difficulty, array $answers): DataResponse {
+    public function update(int $id, string $text, ?string $explanation, ?string $difficulty, array $answers, ?string $questionType = null): DataResponse {
         try {
-            return new DataResponse($this->service->update($id, $this->userId, $text, $explanation, $difficulty, $answers));
+            return new DataResponse($this->service->update($id, $this->userId, $text, $explanation, $difficulty, $answers, $questionType));
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         } catch (\Exception $e) {
-            // FIX #8 MEDIUM: Generic error message
             return new DataResponse(['error' => 'Failed to update question'], Http::STATUS_BAD_REQUEST);
         }
     }
@@ -79,7 +76,6 @@ class QuestionController extends Controller {
     public function destroy(int $id): DataResponse {
         try {
             $this->service->delete($id, $this->userId);
-            // FIX #12 LOW: 204 should not have a body
             return new DataResponse(null, Http::STATUS_NO_CONTENT);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Question not found'], Http::STATUS_NOT_FOUND);

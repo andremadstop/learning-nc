@@ -33,13 +33,12 @@ class LeitnerService {
             throw new \Exception('Pool not found or no access');
         }
 
-        // FIX #9: Cap limit
         $limit = max(1, min($limit, 100));
 
         $now = time();
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty')
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type')
            ->from('learning_leitner_items', 'l')
            ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
            ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId)))
@@ -78,7 +77,7 @@ class LeitnerService {
         return $items;
     }
 
-    public function answerQuestion(int $itemId, int $answerId, string $userId): array {
+    public function answerQuestion(int $itemId, ?int $answerId, string $userId, ?array $answerIds = null): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
            ->from('learning_leitner_items')
@@ -92,21 +91,58 @@ class LeitnerService {
             throw new \Exception('Item not found');
         }
 
-        // Server-side correctness check: look up answer in DB
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('is_correct')
-           ->from('learning_answers')
-           ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId)))
-           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter((int)$item['question_id'])));
-        $ansResult = $qb->execute();
-        $ansRow = $ansResult->fetch();
-        $ansResult->closeCursor();
+        $questionId = (int)$item['question_id'];
 
-        if (!$ansRow) {
-            throw new \Exception('Answer not found for this question');
+        // Multi-select path
+        if (is_array($answerIds) && count($answerIds) > 0) {
+            // Validate all answer IDs belong to this question
+            foreach ($answerIds as $aid) {
+                $qb = $this->db->getQueryBuilder();
+                $qb->select('id')
+                   ->from('learning_answers')
+                   ->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$aid)))
+                   ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+                $vResult = $qb->execute();
+                $vRow = $vResult->fetch();
+                $vResult->closeCursor();
+                if (!$vRow) {
+                    throw new \Exception('Answer not found for this question');
+                }
+            }
+
+            // Get correct answer IDs
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id', 'text')
+               ->from('learning_answers')
+               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+               ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
+               ->orderBy('position', 'ASC');
+            $cResult = $qb->execute();
+            $correctRows = $cResult->fetchAll();
+            $cResult->closeCursor();
+
+            $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
+            $userIds = array_map('intval', $answerIds);
+            sort($correctIds);
+            sort($userIds);
+            $correct = ($userIds === $correctIds);
+        } else {
+            // Single-select path
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('is_correct')
+               ->from('learning_answers')
+               ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId)))
+               ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+            $ansResult = $qb->execute();
+            $ansRow = $ansResult->fetch();
+            $ansResult->closeCursor();
+
+            if (!$ansRow) {
+                throw new \Exception('Answer not found for this question');
+            }
+
+            $correct = filter_var($ansRow['is_correct'], FILTER_VALIDATE_BOOLEAN);
         }
-
-        $correct = filter_var($ansRow['is_correct'], FILTER_VALIDATE_BOOLEAN);
 
         $currentBox = (int)$item['box'];
         $newBox = $correct ? min(5, $currentBox + 1) : 1;
@@ -133,23 +169,29 @@ class LeitnerService {
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($itemId)));
         $qb->execute();
 
-        // Return correct answer info for frontend display
+        // Return all correct answers for frontend display
         $qb = $this->db->getQueryBuilder();
         $qb->select('id', 'text')
            ->from('learning_answers')
-           ->where($qb->expr()->eq('question_id', $qb->createNamedParameter((int)$item['question_id'])))
-           ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)));
+           ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+           ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
+           ->orderBy('position', 'ASC');
         $correctResult = $qb->execute();
-        $correctRow = $correctResult->fetch();
+        $allCorrectRows = $correctResult->fetchAll();
         $correctResult->closeCursor();
+
+        $allCorrectIds = array_map(fn($r) => (int)$r['id'], $allCorrectRows);
+        $allCorrectTexts = array_map(fn($r) => $r['text'], $allCorrectRows);
 
         return [
             'old_box' => $currentBox,
             'new_box' => $newBox,
             'next_review' => $nextReview,
             'correct' => $correct,
-            'correct_answer_id' => $correctRow ? (int)$correctRow['id'] : null,
-            'correct_answer_text' => $correctRow ? $correctRow['text'] : '',
+            'correct_answer_id' => !empty($allCorrectIds) ? $allCorrectIds[0] : null,
+            'correct_answer_text' => !empty($allCorrectTexts) ? $allCorrectTexts[0] : '',
+            'correct_answer_ids' => $allCorrectIds,
+            'correct_answer_texts' => $allCorrectTexts,
         ];
     }
 

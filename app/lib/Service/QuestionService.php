@@ -54,8 +54,7 @@ class QuestionService {
         }
     }
 
-    // FIX #11 MEDIUM: Input validation for question text and answers
-    private function validateQuestionInput(string $text, array $answers): void {
+    private function validateQuestionInput(string $text, array $answers, string $questionType = 'single'): void {
         if (mb_strlen($text) < 1 || mb_strlen($text) > 5000) {
             throw new \InvalidArgumentException('Question text must be 1-5000 characters');
         }
@@ -70,12 +69,18 @@ class QuestionService {
             if (mb_strlen($a['text']) > 2000) {
                 throw new \InvalidArgumentException('Answer text must be max 2000 characters');
             }
-            if (!empty($a['is_correct'])) {
+            if (filter_var($a['is_correct'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
                 $correctCount++;
             }
         }
-        if ($correctCount !== 1) {
-            throw new \InvalidArgumentException('Exactly one correct answer required');
+        if ($questionType === 'multi') {
+            if ($correctCount < 1) {
+                throw new \InvalidArgumentException('At least one correct answer required');
+            }
+        } else {
+            if ($correctCount !== 1) {
+                throw new \InvalidArgumentException('Exactly one correct answer required');
+            }
         }
     }
 
@@ -86,7 +91,7 @@ class QuestionService {
 
         $questions = $this->questionMapper->findByPoolId($poolId);
 
-        // FIX3-ME-1: Batch-load all answers instead of N+1
+        // TODO: Batch-load all answers instead of N+1
         $questionIds = array_map(fn($q) => $q->getId(), $questions);
         $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
 
@@ -101,7 +106,6 @@ class QuestionService {
         return $result;
     }
 
-    // FIX #10: Paginated version for large pools
     public function findByPoolPaged(int $poolId, string $userId, int $limit = 50, int $offset = 0): array {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new Exception('Pool not found or no access');
@@ -110,7 +114,7 @@ class QuestionService {
         $questions = $this->questionMapper->findByPoolIdPaged($poolId, $limit, $offset);
         $total = $this->questionMapper->countByPoolId($poolId);
 
-        // FIX3-ME-1: Batch-load answers
+        // TODO: Batch-load answers
         $questionIds = array_map(fn($q) => $q->getId(), $questions);
         $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
 
@@ -160,7 +164,7 @@ class QuestionService {
     }
 
     public function setImagePath(int $questionId, ?string $imagePath, string $userId): Question {
-        // FIX-ME-2: Use findById + canEditPool so shared-pool editors can set images
+        // TODO: Use findById + canEditPool so shared-pool editors can set images
         $question = $this->questionMapper->findById($questionId);
         if (!$this->canEditPool($question->getPoolId(), $userId)) {
             throw new Exception('No edit access to this pool');
@@ -171,15 +175,15 @@ class QuestionService {
     }
 
     public function create(int $poolId, string $userId, string $text, ?string $explanation,
-                           ?string $difficulty, array $answers): array {
+                           ?string $difficulty, array $answers, ?string $questionType = null): array {
         if (!$this->canEditPool($poolId, $userId)) {
             throw new Exception('No edit access to this pool');
         }
 
-        // FIX #11: Validate input
-        $this->validateQuestionInput($text, $answers);
+        $questionType = $questionType ?? 'single';
 
-        // FIX #4 HIGH: Wrap in transaction
+        $this->validateQuestionInput($text, $answers, $questionType);
+
         $this->db->beginTransaction();
         try {
             $question = new Question();
@@ -188,6 +192,7 @@ class QuestionService {
             $question->setText($text);
             $question->setExplanation($explanation);
             $question->setDifficulty($difficulty);
+            $question->setQuestionType($questionType);
 
             $question = $this->questionMapper->createOrUpdate($question);
 
@@ -214,22 +219,23 @@ class QuestionService {
     }
 
     public function update(int $id, string $userId, string $text, ?string $explanation,
-                          ?string $difficulty, array $answers): array {
+                          ?string $difficulty, array $answers, ?string $questionType = null): array {
         try {
             $question = $this->questionMapper->findById($id);
             if (!$this->canEditPool($question->getPoolId(), $userId)) {
                 throw new Exception('No edit access to this pool');
             }
 
-            // FIX #11: Validate input
-            $this->validateQuestionInput($text, $answers);
+            $questionType = $questionType ?? ($question->getQuestionType() ?? 'single');
 
-            // FIX #4 HIGH: Wrap in transaction
+            $this->validateQuestionInput($text, $answers, $questionType);
+
             $this->db->beginTransaction();
             try {
                 $question->setText($text);
                 $question->setExplanation($explanation);
                 $question->setDifficulty($difficulty);
+                $question->setQuestionType($questionType);
 
                 $question = $this->questionMapper->createOrUpdate($question);
 
@@ -265,7 +271,6 @@ class QuestionService {
         if (!$this->canEditPool($question->getPoolId(), $userId)) {
             throw new Exception('No edit access to this pool');
         }
-        // FIX #4: Transaction for delete (answers + question)
         $this->db->beginTransaction();
         try {
             $this->answerMapper->deleteByQuestion($id);
@@ -278,7 +283,6 @@ class QuestionService {
     }
 
     public function search(string $query, string $userId, int $limit = 50): array {
-        // FIX #11: Cap search limit
         $limit = max(1, min($limit, 100));
         return $this->questionMapper->searchByText($query, $userId, $limit);
     }

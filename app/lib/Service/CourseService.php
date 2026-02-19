@@ -399,7 +399,7 @@ class CourseService {
             $role = 'student';
         }
 
-        // FIX3-ME-3: Validate that memberId is an existing Nextcloud user
+        // TODO: Validate that memberId is an existing Nextcloud user
         if (!$this->userManager->userExists($memberId)) {
             throw new \Exception('User does not exist');
         }
@@ -456,7 +456,7 @@ class CourseService {
     public function enroll(int $courseId, string $userId): CourseMember {
         $course = $this->courseMapper->findById($courseId);
 
-        // FIX-ME-7: Check existing membership first — already-enrolled users should not be blocked
+        // TODO: Check existing membership first — already-enrolled users should not be blocked
         try {
             return $this->courseMemberMapper->findByCourseAndUser($courseId, $userId);
         } catch (DoesNotExistException $e) {

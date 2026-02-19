@@ -31,7 +31,6 @@ class QuestionMapper extends QBMapper {
         return $this->findEntities($qb);
     }
 
-    // FIX #10: Paginated query for large pools
     public function findByPoolIdPaged(int $poolId, int $limit = 50, int $offset = 0): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')

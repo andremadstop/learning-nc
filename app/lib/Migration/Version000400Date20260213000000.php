@@ -98,7 +98,6 @@ class Version000400Date20260213000000 extends SimpleMigrationStep {
         /** @var ISchemaWrapper $schema */
         $schema = $schemaClosure();
 
-        // FIX #3: Unique index on user_answers(session_id, question_id)
         if ($schema->hasTable('learning_user_answers')) {
             $table = $schema->getTable('learning_user_answers');
             if (!$table->hasIndex('learn_ua_sq_uniq')) {
@@ -106,7 +105,6 @@ class Version000400Date20260213000000 extends SimpleMigrationStep {
             }
         }
 
-        // FIX #5: Foreign keys with CASCADE delete
         // questions → pools
         if ($schema->hasTable('learning_questions') && $schema->hasTable('learning_pools')) {
             $table = $schema->getTable('learning_questions');

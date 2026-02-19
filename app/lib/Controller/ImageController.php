@@ -39,7 +39,6 @@ class ImageController extends Controller {
                 return new DataResponse(['error' => 'No file uploaded'], Http::STATUS_BAD_REQUEST);
             }
 
-            // FIX #7 MEDIUM: Upload file, then try to set path — rollback file on failure
             $imagePath = $this->imageService->upload($this->userId, $file);
             try {
                 $this->questionService->setImagePath($questionId, $imagePath, $this->userId);
@@ -52,7 +51,6 @@ class ImageController extends Controller {
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         } catch (\Exception $e) {
-            // FIX #8 MEDIUM: Don't leak exception internals
             return new DataResponse(['error' => 'Image upload failed'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
@@ -90,12 +88,11 @@ class ImageController extends Controller {
             $imagePath = $question->getImagePath();
 
             if (!empty($imagePath)) {
-                // FIX-ME-6: Clear DB reference first, then delete file (safer ordering)
+                // TODO: Clear DB reference first, then delete file (safer ordering)
                 $this->questionService->setImagePath($questionId, null, $this->userId);
                 $this->imageService->delete($imagePath);
             }
 
-            // FIX #12 LOW: 204 should not have a body
             return new DataResponse(null, Http::STATUS_NO_CONTENT);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Image not found'], Http::STATUS_NOT_FOUND);

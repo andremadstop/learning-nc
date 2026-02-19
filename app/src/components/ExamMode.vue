@@ -72,18 +72,24 @@
         <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" alt="" class="question-image" />
         <div class="question-text">{{ currentQuestion.text }}</div>
 
+        <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
+
         <div class="answer-options">
           <button
             v-for="answer in currentQuestion.answers"
             :key="answer.id"
             class="answer-btn"
-            :class="{ 'answer-selected': userAnswers[currentQuestion.id] === answer.id }"
+            :class="{ 'answer-selected': isAnswerSelected(answer.id) }"
             @click="answerQuestion(answer.id)"
           >
             {{ answer.text }}
           </button>
         </div>
 
+        <NcButton v-if="isCurrentMulti && multiSelections[currentQuestion.id] && multiSelections[currentQuestion.id].length > 0"
+          type="primary" wide @click="confirmMultiAnswer" class="confirm-btn">
+          {{ t('learning', 'Confirm Selection') }}
+        </NcButton>
         <NcButton type="secondary" wide @click="skipQuestion" class="skip-btn">{{ t('learning', 'Skip') }}</NcButton>
       </div>
 
@@ -97,7 +103,12 @@
               'nav-dot-current': index === currentQuestionIndex,
               'nav-dot-answered': userAnswers[q.id] !== undefined && userAnswers[q.id] !== null
             }]"
+            tabindex="0"
+            role="button"
+            :aria-label="t('learning', 'Question {n}', { n: index + 1 })"
             @click="jumpToQuestion(index)"
+            @keydown.enter="jumpToQuestion(index)"
+            @keydown.space.prevent="jumpToQuestion(index)"
           >
             {{ index + 1 }}
           </div>
@@ -143,16 +154,32 @@
           :class="['review-item', res.isCorrect ? 'review-correct' : 'review-wrong']"
         >
           <div class="review-question">{{ index + 1 }}. {{ res.questionText }}</div>
-          <div class="review-answer">
-            <span class="review-label">{{ t('learning', 'Your answer:') }}</span>
-            <span :class="res.isCorrect ? 'text-success' : 'text-error'">
-              {{ res.userAnswerText || t('learning', 'Skipped') }}
-            </span>
-          </div>
-          <div v-if="!res.isCorrect && res.correctAnswerText" class="review-answer">
-            <span class="review-label">{{ t('learning', 'Correct:') }}</span>
-            <span class="text-success">{{ res.correctAnswerText }}</span>
-          </div>
+          <template v-if="res.isMulti && res.answerDetails">
+            <div class="review-answers-detail">
+              <div v-for="(ad, ai) in res.answerDetails" :key="ai"
+                   :class="['review-answer-item', {
+                     'ra-correct-selected': ad.isCorrect && ad.wasSelected,
+                     'ra-wrong-selected': !ad.isCorrect && ad.wasSelected,
+                     'ra-correct-missed': ad.isCorrect && !ad.wasSelected,
+                     'ra-neutral': !ad.isCorrect && !ad.wasSelected
+                   }]">
+                <span class="ra-icon">{{ ad.isCorrect && ad.wasSelected ? '\u2713' : (!ad.isCorrect && ad.wasSelected ? '\u2717' : (ad.isCorrect && !ad.wasSelected ? '\u25CB' : '\u2014')) }}</span>
+                {{ ad.text }}
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <div class="review-answer">
+              <span class="review-label">{{ t('learning', 'Your answer:') }}</span>
+              <span :class="res.isCorrect ? 'text-success' : 'text-error'">
+                {{ res.userAnswerText || t('learning', 'Skipped') }}
+              </span>
+            </div>
+            <div v-if="!res.isCorrect && res.correctAnswerText" class="review-answer">
+              <span class="review-label">{{ t('learning', 'Correct:') }}</span>
+              <span class="text-success">{{ res.correctAnswerText }}</span>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -217,6 +244,7 @@ export default {
 
       resultsData: null,
       detailedResults: [],
+      multiSelections: {},
     };
   },
   computed: {
@@ -252,7 +280,7 @@ export default {
       return this.questions[this.currentQuestionIndex] || null;
     },
     answeredCount() {
-      return Object.values(this.userAnswers).filter(v => v !== null).length;
+      return Object.values(this.userAnswers).filter(v => v !== null && v !== undefined).length;
     },
     progressPercentage() {
       if (!this.questions.length) return 0;
@@ -277,6 +305,9 @@ export default {
       if (s >= 80) return 'score-green';
       if (s >= 50) return 'score-yellow';
       return 'score-red';
+    },
+    isCurrentMulti() {
+      return this.currentQuestion && this.currentQuestion.question_type === 'multi';
     },
     sortedDetailedResults() {
       return [...this.detailedResults].sort((a, b) => {
@@ -306,7 +337,7 @@ export default {
     async startExam() {
       this.isLoading = true;
       try {
-        const params = { poolId: this.poolId };
+        const params = { poolId: this.poolId, mode: 'exam' };
         if (this.selectedQuestionCount > 0) {
           params.limit = this.selectedQuestionCount;
         }
@@ -359,8 +390,35 @@ export default {
       }, 1000);
     },
 
+    isAnswerSelected(answerId) {
+      const qId = this.currentQuestion.id;
+      if (this.isCurrentMulti) {
+        return this.multiSelections[qId] && this.multiSelections[qId].includes(answerId);
+      }
+      return this.userAnswers[qId] === answerId;
+    },
     answerQuestion(answerId) {
+      if (this.isCurrentMulti) {
+        // Toggle multi-select
+        const qId = this.currentQuestion.id;
+        if (!this.multiSelections[qId]) {
+          this.$set(this.multiSelections, qId, []);
+        }
+        const idx = this.multiSelections[qId].indexOf(answerId);
+        if (idx >= 0) {
+          this.multiSelections[qId].splice(idx, 1);
+        } else {
+          this.multiSelections[qId].push(answerId);
+        }
+        return; // Don't auto-advance for multi
+      }
       this.$set(this.userAnswers, this.currentQuestion.id, answerId);
+      this.advanceToNext();
+    },
+    confirmMultiAnswer() {
+      const qId = this.currentQuestion.id;
+      // Store the multi selection as the answer
+      this.$set(this.userAnswers, qId, this.multiSelections[qId].slice());
       this.advanceToNext();
     },
 
@@ -404,45 +462,71 @@ export default {
         // Collect answered questions into batch
         const batchAnswers = [];
         for (const q of this.questions) {
-          const answerId = this.userAnswers[q.id];
-          if (answerId !== null && answerId !== undefined) {
-            batchAnswers.push({ questionId: q.id, answerId });
+          const answer = this.userAnswers[q.id];
+          if (answer !== null && answer !== undefined) {
+            if (Array.isArray(answer)) {
+              batchAnswers.push({ questionId: q.id, answerIds: answer });
+            } else {
+              batchAnswers.push({ questionId: q.id, answerId: answer });
+            }
           }
         }
 
-        // Submit all answers in a single request
-        let serverResults = [];
+        // Submit all answers (exam mode: server won't return correct answers)
         if (batchAnswers.length > 0) {
-          const r = await axios.post(generateUrl('/apps/learning/api/training/submitBatch'), {
+          await axios.post(generateUrl('/apps/learning/api/training/submitBatch'), {
             sessionId: this.session,
             answers: batchAnswers,
           });
-          serverResults = r.data;
         }
 
-        // Build detailed results by matching server response
-        const resultMap = {};
-        for (const sr of serverResults) {
-          resultMap[sr.questionId] = sr;
+        // Complete session — server returns review data for exam sessions
+        const cr = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session });
+        this.resultsData = cr.data;
+
+        // Build detailed results from server review data
+        const reviewMap = {};
+        if (cr.data.review) {
+          for (const r of cr.data.review) {
+            reviewMap[r.questionId] = r;
+          }
         }
 
         const results = [];
         for (const q of this.questions) {
-          const answerId = this.userAnswers[q.id];
-          const userAnswer = answerId ? q.answers.find(a => a.id === answerId) : null;
-          const sr = resultMap[q.id];
+          const answer = this.userAnswers[q.id];
+          const rv = reviewMap[q.id];
+          let userAnswerText = null;
+          if (Array.isArray(answer)) {
+            const texts = answer.map(aid => {
+              const a = q.answers.find(a => a.id === aid);
+              return a ? a.text : '';
+            }).filter(Boolean);
+            userAnswerText = texts.join(', ');
+          } else if (answer) {
+            const userAnswer = q.answers.find(a => a.id === answer);
+            userAnswerText = userAnswer ? userAnswer.text : null;
+          }
+          const correctText = rv ? rv.correct_answer_texts.join(', ') : '';
+
+          let answerDetails = null;
+          if (rv && rv.answers) {
+            answerDetails = rv.answers.map(a => ({
+              text: a.text,
+              isCorrect: a.is_correct,
+              wasSelected: a.was_selected,
+            }));
+          }
           results.push({
-            questionText: q.text,
-            userAnswerText: userAnswer ? userAnswer.text : null,
-            correctAnswerText: sr ? (sr.correct_answer_text || '') : '',
-            isCorrect: sr ? sr.is_correct : false,
+            questionText: rv ? rv.questionText : q.text,
+            userAnswerText: userAnswerText,
+            correctAnswerText: correctText,
+            isCorrect: rv ? rv.is_correct : false,
+            isMulti: rv ? rv.questionType === 'multi' : q.question_type === 'multi',
+            answerDetails: answerDetails,
           });
         }
         this.detailedResults = results;
-
-        // Complete session
-        const cr = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session });
-        this.resultsData = cr.data;
       } catch (e) {
         showError(t('learning', 'Failed to process results'));
         this.resultsData = {
@@ -461,6 +545,7 @@ export default {
       this.session = null;
       this.questions = [];
       this.userAnswers = {};
+      this.multiSelections = {};
       this.resultsData = null;
       this.detailedResults = [];
       if (this.timerInterval) clearInterval(this.timerInterval);
@@ -573,6 +658,8 @@ export default {
   color: var(--color-primary-element);
   font-weight: 600;
 }
+.multi-hint { text-align: center; font-size: 14px; font-weight: 600; color: var(--color-primary-element); margin-bottom: 16px; padding: 8px; background: color-mix(in srgb, var(--color-primary-element) 8%, transparent); border-radius: 8px; }
+.confirm-btn { margin-top: 12px; }
 .skip-btn { margin-top: 8px; }
 
 /* Navigation Bar */
@@ -590,10 +677,10 @@ export default {
 }
 .nav-bar-inner { display: flex; gap: 6px; padding: 0 16px; justify-content: center; flex-wrap: nowrap; }
 .nav-dot {
-  width: 32px; height: 32px;
+  width: 40px; height: 40px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 600;
+  font-size: 12px; font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.15s;
@@ -655,6 +742,15 @@ export default {
 .review-label { font-weight: 500; margin-right: 8px; color: var(--color-text-maxcontrast); }
 .text-success { color: var(--color-success); font-weight: 600; }
 .text-error { color: var(--color-error); font-weight: 600; }
+
+/* Multi-select review visualization */
+.review-answers-detail { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.review-answer-item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 14px; border: 1px solid var(--color-border); }
+.ra-icon { font-weight: 700; flex-shrink: 0; width: 20px; text-align: center; }
+.ra-correct-selected { border-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background)); color: var(--color-success); }
+.ra-wrong-selected { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, var(--color-main-background)); color: var(--color-error); }
+.ra-correct-missed { border-color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 10%, var(--color-main-background)); color: var(--color-warning); }
+.ra-neutral { color: var(--color-text-maxcontrast); }
 
 @media (max-width: 768px) {
   .timer-display { font-size: 36px; }

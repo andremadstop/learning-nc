@@ -35,7 +35,10 @@
           <div v-if="poolSearchResults.length > 0" class="search-results-section">
             <h4 class="section-title">{{ t('learning', 'POOLS') }}</h4>
             <ul class="results-list">
-              <li v-for="pool in poolSearchResults" :key="`pool-res-${pool.id}`" @click="selectPool(pool)">
+              <li v-for="pool in poolSearchResults" :key="`pool-res-${pool.id}`" @click="selectPool(pool)"
+                  tabindex="0" role="button"
+                  @keydown.enter="selectPool(pool)"
+                  @keydown.space.prevent="selectPool(pool)">
                 <span class="result-text">{{ pool.name }}</span>
               </li>
             </ul>
@@ -44,7 +47,10 @@
           <div v-if="questionSearchResults.length > 0" class="search-results-section">
             <h4 class="section-title">{{ t('learning', 'QUESTIONS') }}</h4>
             <ul class="results-list">
-              <li v-for="question in questionSearchResults" :key="`ques-res-${question.id}`" @click="selectQuestion(question)">
+              <li v-for="question in questionSearchResults" :key="`ques-res-${question.id}`" @click="selectQuestion(question)"
+                  tabindex="0" role="button"
+                  @keydown.enter="selectQuestion(question)"
+                  @keydown.space.prevent="selectQuestion(question)">
                 <span class="result-text">"{{ question.text }}"</span>
                 <span class="result-subtext">in {{ question.pool_name }}</span>
               </li>
@@ -89,7 +95,10 @@
       <NcEmptyContent v-if="filteredPools.length === 0 && !searchTerm" :name="t('learning', 'No pools yet')" :description="t('learning', 'Create your first question pool to get started')" />
       <NcEmptyContent v-else-if="filteredPools.length === 0 && searchTerm" :name="t('learning', 'No pools matching \'{searchTerm}\'', { searchTerm: searchTerm })" :description="t('learning', 'Try a different search term')" />
       <div v-else class="pool-grid">
-        <div v-for="pool in filteredPools" :key="pool.id" class="pool-card" @click="selectPool(pool)">
+        <div v-for="pool in filteredPools" :key="pool.id" class="pool-card" @click="selectPool(pool)"
+             tabindex="0" role="button"
+             @keydown.enter="selectPool(pool)"
+             @keydown.space.prevent="selectPool(pool)">
           <div class="pool-card-header">
             <h4>{{ pool.name }}</h4>
             <NcActions @click.native.stop>
@@ -108,7 +117,10 @@
     <div v-else-if="activeTab === 'shared'">
       <NcEmptyContent v-if="sharedPools.length === 0" :name="t('learning', 'No shared pools')" :description="t('learning', 'When someone shares a pool with you, it will appear here')" />
       <div v-else class="pool-grid">
-        <div v-for="pool in sharedPools" :key="'s-' + pool.id" class="pool-card shared" @click="selectPool(pool)">
+        <div v-for="pool in sharedPools" :key="'s-' + pool.id" class="pool-card shared" @click="selectPool(pool)"
+             tabindex="0" role="button"
+             @keydown.enter="selectPool(pool)"
+             @keydown.space.prevent="selectPool(pool)">
           <div class="pool-card-header">
             <h4>{{ pool.name }}</h4>
             <span class="permission-badge" :class="pool.permission">
@@ -139,6 +151,14 @@
           </NcButton>
         </div>
       </form>
+    </NcDialog>
+
+    <NcDialog v-if="showDeleteConfirm" :name="t('learning', 'Delete Pool')" @closing="showDeleteConfirm = false; poolToDelete = null">
+      <p>{{ t('learning', 'Are you sure you want to delete "{name}"? This action cannot be undone.', { name: poolToDelete ? poolToDelete.name : '' }) }}</p>
+      <template #actions>
+        <NcButton type="tertiary" @click="showDeleteConfirm = false; poolToDelete = null">{{ t('learning', 'Cancel') }}</NcButton>
+        <NcButton type="error" @click="confirmDeletePool">{{ t('learning', 'Delete') }}</NcButton>
+      </template>
     </NcDialog>
 
     <ShareDialog v-if="sharingPool" :poolId="sharingPool.id" :poolName="sharingPool.name" @close="sharingPool = null" />
@@ -189,6 +209,8 @@ export default {
       searchLoading: false,
       poolSearchResults: [], // Client-side filtered pools
       questionSearchResults: [], // API results for questions
+      showDeleteConfirm: false,
+      poolToDelete: null,
     };
   },
   computed: {
@@ -303,11 +325,17 @@ export default {
         this.saving = false;
       }
     },
-    async deletePool(pool) {
-      if (!confirm(t('learning', 'Delete "' + pool.name + '"?'))) return;
+    deletePool(pool) {
+      this.poolToDelete = pool;
+      this.showDeleteConfirm = true;
+    },
+    async confirmDeletePool() {
+      if (!this.poolToDelete) return;
       try {
-        await axios.delete(generateUrl('/apps/learning/api/pools/' + pool.id));
+        await axios.delete(generateUrl('/apps/learning/api/pools/' + this.poolToDelete.id));
         showSuccess(t('learning', 'Pool deleted'));
+        this.showDeleteConfirm = false;
+        this.poolToDelete = null;
         this.loadPools();
       } catch (error) {
         showError(t('learning', 'Failed to delete pool'));
@@ -331,7 +359,7 @@ export default {
       this.poolSearchResults = [];
       this.questionSearchResults = [];
       if (this.searchTerm.length >= 2) {
-        // FIX-ME-4: Client-side pool filtering includes shared pools
+        // TODO: Client-side pool filtering includes shared pools
         const lowerCaseSearchTerm = this.searchTerm.toLowerCase();
         this.poolSearchResults = [...this.pools, ...this.sharedPools].filter(pool =>
           pool.name.toLowerCase().includes(lowerCaseSearchTerm) ||

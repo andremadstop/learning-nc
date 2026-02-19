@@ -7,6 +7,7 @@ use OCA\Learning\Service\NotFoundException;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 
 class ShareController extends Controller {
@@ -40,6 +41,7 @@ class ShareController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 20, period: 60)]
     public function create(int $poolId, string $sharedWith, string $shareType = 'user', string $permission = 'read'): DataResponse {
         try {
             $share = $this->service->sharePool($poolId, $sharedWith, $shareType, $permission, $this->userId);

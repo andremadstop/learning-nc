@@ -56,9 +56,29 @@ class TrainingService {
         return $session;
     }
 
-    public function startSession(int $poolId, string $userId, ?int $limit = null): array {
+    public function startSession(int $poolId, string $userId, ?int $limit = null, string $mode = 'training'): array {
+        if (!in_array($mode, ['training', 'exam'], true)) {
+            $mode = 'training';
+        }
+
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found or no access');
+        }
+
+        // Block starting any session while user has an active exam on the same pool
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+           ->andWhere($qb->expr()->isNull('completed_at'))
+           ->setMaxResults(1);
+        $activeExam = $qb->execute();
+        $hasActiveExam = $activeExam->fetch();
+        $activeExam->closeCursor();
+        if ($hasActiveExam) {
+            throw new \Exception('Cannot start session while an exam is active for this pool');
         }
 
         $questions = $this->questionMapper->findByPoolId($poolId);
@@ -81,7 +101,8 @@ class TrainingService {
                'user_id' => $qb->createNamedParameter($userId),
                'started_at' => $qb->createNamedParameter(time()),
                'total_questions' => $qb->createNamedParameter(count($questions)),
-               'correct_answers' => $qb->createNamedParameter(0)
+               'correct_answers' => $qb->createNamedParameter(0),
+               'mode' => $qb->createNamedParameter($mode)
            ]);
         $qb->execute();
 
@@ -91,7 +112,6 @@ class TrainingService {
         foreach ($questions as $q) {
             $qData = $q->jsonSerialize();
             $answers = $this->answerMapper->findByQuestion($q->getId());
-            // FIX #1 CRITICAL: Strip is_correct from answers — never leak answer key to client
             $qData['answers'] = array_map(static function ($a) {
                 $row = $a->jsonSerialize();
                 unset($row['is_correct']);
@@ -107,10 +127,32 @@ class TrainingService {
         ];
     }
 
-    public function submitAnswer(int $sessionId, int $questionId, int $answerId, string $userId): array {
+    private function getAllCorrectAnswers(int $questionId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id', 'text')
+           ->from('learning_answers')
+           ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+           ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
+           ->orderBy('position', 'ASC');
+        $result = $qb->execute();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+        return $rows;
+    }
+
+    public function submitAnswer(int $sessionId, int $questionId, ?int $answerId, string $userId, ?array $answerIds = null): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
 
-        // FIX #2 HIGH: Validate questionId belongs to this session's pool (IDOR prevention)
+        // Block submissions to completed sessions
+        if (!empty($session['completed_at'])) {
+            throw new \Exception('Session already completed');
+        }
+
+        // SECURITY: Block individual answer submission during exams (prevents answer oracle)
+        if (($session['mode'] ?? 'training') === 'exam') {
+            throw new \Exception('Individual answers not allowed during exam');
+        }
+
         $qb = $this->db->getQueryBuilder();
         $qb->select('id')
            ->from('learning_questions')
@@ -123,7 +165,6 @@ class TrainingService {
             throw new \Exception('Question not in this session pool');
         }
 
-        // FIX #3 HIGH: Prevent duplicate answer submissions for same session/question
         $qb = $this->db->getQueryBuilder();
         $qb->select('id')
            ->from('learning_user_answers')
@@ -136,7 +177,63 @@ class TrainingService {
             throw new \Exception('Question already answered in this session');
         }
 
-        // Validate answer belongs to question
+        // Multi-select path
+        if ($answerIds !== null && is_array($answerIds) && count($answerIds) > 0) {
+            // Validate all answer IDs belong to this question
+            foreach ($answerIds as $aid) {
+                $qb = $this->db->getQueryBuilder();
+                $qb->select('id')
+                   ->from('learning_answers')
+                   ->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$aid)))
+                   ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+                $vResult = $qb->execute();
+                $vRow = $vResult->fetch();
+                $vResult->closeCursor();
+                if (!$vRow) {
+                    throw new \Exception('Answer not found for this question');
+                }
+            }
+
+            // Get correct answer IDs
+            $correctRows = $this->getAllCorrectAnswers($questionId);
+            $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
+            $userIds = array_map('intval', $answerIds);
+            sort($correctIds);
+            sort($userIds);
+            $isCorrect = ($userIds === $correctIds);
+
+            // Insert user answer row with answer_ids JSON
+            $qb = $this->db->getQueryBuilder();
+            $qb->insert('learning_user_answers')
+               ->values([
+                   'session_id' => $qb->createNamedParameter($sessionId),
+                   'question_id' => $qb->createNamedParameter($questionId),
+                   'answer_id' => $qb->createNamedParameter(null, \PDO::PARAM_NULL),
+                   'answer_ids' => $qb->createNamedParameter(json_encode($userIds)),
+                   'is_correct' => $qb->createNamedParameter($isCorrect, \PDO::PARAM_BOOL),
+                   'answered_at' => $qb->createNamedParameter(time())
+               ]);
+            $qb->execute();
+
+            if ($isCorrect) {
+                $qb = $this->db->getQueryBuilder();
+                $qb->update('learning_sessions')
+                   ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
+                   ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
+                $qb->execute();
+            }
+
+            $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
+            return [
+                'is_correct' => $isCorrect,
+                'correct_answer_id' => !empty($correctIds) ? $correctIds[0] : null,
+                'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
+                'correct_answer_ids' => $correctIds,
+                'correct_answer_texts' => $correctTexts,
+            ];
+        }
+
+        // Single-select path (original logic)
         $qb = $this->db->getQueryBuilder();
         $qb->select('is_correct')
            ->from('learning_answers')
@@ -171,31 +268,42 @@ class TrainingService {
             $qb->execute();
         }
 
-        // Return correct answer info so frontend doesn't need is_correct in question data
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('id', 'text')
-           ->from('learning_answers')
-           ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
-           ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)));
-        $correctResult = $qb->execute();
-        $correctRow = $correctResult->fetch();
-        $correctResult->closeCursor();
+        // Return all correct answers info
+        $correctRows = $this->getAllCorrectAnswers($questionId);
+        $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
+        $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
 
         return [
             'is_correct' => $isCorrect,
-            'correct_answer_id' => $correctRow ? (int)$correctRow['id'] : null,
-            'correct_answer_text' => $correctRow ? $correctRow['text'] : '',
+            'correct_answer_id' => !empty($correctIds) ? $correctIds[0] : null,
+            'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
+            'correct_answer_ids' => $correctIds,
+            'correct_answer_texts' => $correctTexts,
         ];
     }
 
     public function submitBatch(int $sessionId, array $answers, string $userId): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
+
+        // Block submissions to completed sessions
+        if (!empty($session['completed_at'])) {
+            throw new \Exception('Session already completed');
+        }
+
         $poolId = (int)$session['pool_id'];
+        $isExam = (($session['mode'] ?? 'training') === 'exam');
+
+        // S3: Validate batch size against session's question count
+        $maxAnswers = (int)$session['total_questions'];
+        if (count($answers) > $maxAnswers) {
+            throw new \Exception('Batch size exceeds session question count');
+        }
 
         $results = [];
         foreach ($answers as $entry) {
             $questionId = (int)$entry['questionId'];
-            $answerId = (int)$entry['answerId'];
+            $entryAnswerIds = $entry['answerIds'] ?? null;
+            $answerId = isset($entry['answerId']) ? (int)$entry['answerId'] : null;
 
             // Validate question belongs to this session's pool
             $qb = $this->db->getQueryBuilder();
@@ -225,7 +333,79 @@ class TrainingService {
                 continue;
             }
 
-            // Validate answer belongs to question
+            // Multi-select path
+            if (is_array($entryAnswerIds) && count($entryAnswerIds) > 0) {
+                // Validate all answer IDs
+                $allValid = true;
+                foreach ($entryAnswerIds as $aid) {
+                    $qb = $this->db->getQueryBuilder();
+                    $qb->select('id')
+                       ->from('learning_answers')
+                       ->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$aid)))
+                       ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+                    $vResult = $qb->execute();
+                    $vRow = $vResult->fetch();
+                    $vResult->closeCursor();
+                    if (!$vRow) {
+                        $allValid = false;
+                        break;
+                    }
+                }
+                if (!$allValid) {
+                    $results[] = ['questionId' => $questionId, 'error' => 'Answer not found'];
+                    continue;
+                }
+
+                $correctRows = $this->getAllCorrectAnswers($questionId);
+                $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
+                $userIds = array_map('intval', $entryAnswerIds);
+                sort($correctIds);
+                sort($userIds);
+                $isCorrect = ($userIds === $correctIds);
+
+                $qb = $this->db->getQueryBuilder();
+                $qb->insert('learning_user_answers')
+                   ->values([
+                       'session_id' => $qb->createNamedParameter($sessionId),
+                       'question_id' => $qb->createNamedParameter($questionId),
+                       'answer_id' => $qb->createNamedParameter(null, \PDO::PARAM_NULL),
+                       'answer_ids' => $qb->createNamedParameter(json_encode($userIds)),
+                       'is_correct' => $qb->createNamedParameter($isCorrect, \PDO::PARAM_BOOL),
+                       'answered_at' => $qb->createNamedParameter(time())
+                   ]);
+                $qb->execute();
+
+                if ($isCorrect) {
+                    $qb = $this->db->getQueryBuilder();
+                    $qb->update('learning_sessions')
+                       ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
+                       ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
+                    $qb->execute();
+                }
+
+                // SECURITY: Exam mode — don't leak correct answers
+                if ($isExam) {
+                    $results[] = ['questionId' => $questionId, 'recorded' => true];
+                } else {
+                    $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
+                    $results[] = [
+                        'questionId' => $questionId,
+                        'is_correct' => $isCorrect,
+                        'correct_answer_id' => !empty($correctIds) ? $correctIds[0] : null,
+                        'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
+                        'correct_answer_ids' => $correctIds,
+                        'correct_answer_texts' => $correctTexts,
+                    ];
+                }
+                continue;
+            }
+
+            // Single-select path
+            if ($answerId === null) {
+                $results[] = ['questionId' => $questionId, 'error' => 'No answer provided'];
+                continue;
+            }
+
             $qb = $this->db->getQueryBuilder();
             $qb->select('is_correct')
                ->from('learning_answers')
@@ -261,29 +441,44 @@ class TrainingService {
                 $qb->execute();
             }
 
-            // Get correct answer text for review
-            $qb = $this->db->getQueryBuilder();
-            $qb->select('id', 'text')
-               ->from('learning_answers')
-               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
-               ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)));
-            $correctResult = $qb->execute();
-            $correctRow = $correctResult->fetch();
-            $correctResult->closeCursor();
+            // SECURITY: Exam mode — don't leak correct answers
+            if ($isExam) {
+                $results[] = ['questionId' => $questionId, 'recorded' => true];
+            } else {
+                $correctRows = $this->getAllCorrectAnswers($questionId);
+                $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
+                $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
 
-            $results[] = [
-                'questionId' => $questionId,
-                'is_correct' => $isCorrect,
-                'correct_answer_id' => $correctRow ? (int)$correctRow['id'] : null,
-                'correct_answer_text' => $correctRow ? $correctRow['text'] : '',
-            ];
+                $results[] = [
+                    'questionId' => $questionId,
+                    'is_correct' => $isCorrect,
+                    'correct_answer_id' => !empty($correctIds) ? $correctIds[0] : null,
+                    'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
+                    'correct_answer_ids' => $correctIds,
+                    'correct_answer_texts' => $correctTexts,
+                ];
+            }
         }
 
         return $results;
     }
 
     public function completeSession(int $sessionId, string $userId): array {
-        $this->verifySessionOwnership($sessionId, $userId);
+        $session = $this->verifySessionOwnership($sessionId, $userId);
+
+        // Idempotent: already completed sessions return existing data
+        if (!empty($session['completed_at'])) {
+            $response = [
+                'session_id' => (int)$session['id'],
+                'total_questions' => (int)$session['total_questions'],
+                'correct_answers' => (int)$session['correct_answers'],
+                'completed_at' => (int)$session['completed_at'],
+            ];
+            if (($session['mode'] ?? 'training') === 'exam') {
+                $response['review'] = $this->getSessionReview($sessionId);
+            }
+            return $response;
+        }
 
         $qb = $this->db->getQueryBuilder();
         $qb->update('learning_sessions')
@@ -301,10 +496,81 @@ class TrainingService {
         $session = $result->fetch();
         $result->closeCursor();
 
-        return [
+        $response = [
             'total_questions' => (int)$session['total_questions'],
             'correct_answers' => (int)$session['correct_answers'],
             'score_percentage' => round((int)$session['correct_answers'] / (int)$session['total_questions'] * 100)
         ];
+
+        // For exam sessions, include full review data (only available after completion)
+        if (($session['mode'] ?? 'training') === 'exam') {
+            $response['review'] = $this->getSessionReview($sessionId, (int)$session['pool_id']);
+        }
+
+        return $response;
+    }
+
+    private function getSessionReview(int $sessionId, int $poolId): array {
+        // Fetch all user answers for this session
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('ua.*', 'q.text AS question_text', 'q.question_type')
+           ->from('learning_user_answers', 'ua')
+           ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
+           ->where($qb->expr()->eq('ua.session_id', $qb->createNamedParameter($sessionId)))
+           ->orderBy('ua.id', 'ASC');
+        $result = $qb->execute();
+        $userAnswers = $result->fetchAll();
+        $result->closeCursor();
+
+        $review = [];
+        foreach ($userAnswers as $ua) {
+            $questionId = (int)$ua['question_id'];
+            $isCorrect = filter_var($ua['is_correct'], FILTER_VALIDATE_BOOLEAN);
+
+            // Get correct answers for this question
+            $correctRows = $this->getAllCorrectAnswers($questionId);
+            $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
+            $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
+
+            // Get all answers for this question (for multi-select review)
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id', 'text', 'is_correct')
+               ->from('learning_answers')
+               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+               ->orderBy('position', 'ASC');
+            $aResult = $qb->execute();
+            $allAnswers = $aResult->fetchAll();
+            $aResult->closeCursor();
+
+            // Determine user's selected answer IDs
+            $userAnswerIds = [];
+            if (!empty($ua['answer_ids'])) {
+                $userAnswerIds = json_decode($ua['answer_ids'], true) ?: [];
+            } elseif (!empty($ua['answer_id'])) {
+                $userAnswerIds = [(int)$ua['answer_id']];
+            }
+
+            $entry = [
+                'questionId' => $questionId,
+                'questionText' => $ua['question_text'],
+                'questionType' => $ua['question_type'] ?? 'single',
+                'is_correct' => $isCorrect,
+                'correct_answer_ids' => $correctIds,
+                'correct_answer_texts' => $correctTexts,
+                'user_answer_ids' => $userAnswerIds,
+                'answers' => array_map(function ($a) use ($userAnswerIds) {
+                    return [
+                        'id' => (int)$a['id'],
+                        'text' => $a['text'],
+                        'is_correct' => filter_var($a['is_correct'], FILTER_VALIDATE_BOOLEAN),
+                        'was_selected' => in_array((int)$a['id'], $userAnswerIds, true),
+                    ];
+                }, $allAnswers),
+            ];
+
+            $review[] = $entry;
+        }
+
+        return $review;
     }
 }

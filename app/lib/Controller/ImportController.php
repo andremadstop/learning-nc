@@ -11,6 +11,7 @@ use OCA\Learning\Db\PoolShareMapper;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IDBConnection;
 use OCP\IRequest;
@@ -55,9 +56,15 @@ class ImportController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 5, period: 60)]
     public function importCsv(int $poolId, string $csvData): DataResponse {
         if (!$this->canEditPool($poolId)) {
             return new DataResponse(['error' => 'No edit access to this pool'], Http::STATUS_FORBIDDEN);
+        }
+
+        // S5: Enforce max body size (2 MB) before processing
+        if (strlen($csvData) > 2 * 1024 * 1024) {
+            return new DataResponse(['error' => 'CSV data too large (max 2 MB)'], Http::STATUS_BAD_REQUEST);
         }
 
         $lines = array_filter(array_map('trim', explode("\n", $csvData)));
@@ -65,7 +72,6 @@ class ImportController extends Controller {
             return new DataResponse(['error' => 'No data to import'], Http::STATUS_BAD_REQUEST);
         }
 
-        // FIX #11: Batch size cap
         if (count($lines) > 500) {
             return new DataResponse(['error' => 'Maximum 500 items per import'], Http::STATUS_BAD_REQUEST);
         }
@@ -79,7 +85,6 @@ class ImportController extends Controller {
         $imported = 0;
         $errors = [];
 
-        // FIX #4: Wrap in transaction
         $this->db->beginTransaction();
         try {
             foreach ($lines as $lineNum => $line) {
@@ -97,7 +102,6 @@ class ImportController extends Controller {
                     continue;
                 }
 
-                // FIX #11: Validate question text length
                 if (mb_strlen($questionText) > 5000) {
                     $errors[] = 'Line ' . ($lineNum + 1) . ': Question text too long (max 5000)';
                     continue;
@@ -112,7 +116,6 @@ class ImportController extends Controller {
 
                 if ($lastIdx >= 2) {
                     $possibleCorrect = trim($fields[$lastIdx]);
-                    // FIX3-ME-2: Also check that index is within actual answer count range
                     $answerCount = $lastIdx - 1; // fields between question and last field
 
                     if (is_numeric($possibleCorrect) && (int)$possibleCorrect >= 1 && (int)$possibleCorrect <= 8 && (int)$possibleCorrect <= $answerCount) {
@@ -151,7 +154,6 @@ class ImportController extends Controller {
                     continue;
                 }
 
-                // FIX #11: Cap answer count
                 if (count($answerTexts) > 8) {
                     $errors[] = 'Line ' . ($lineNum + 1) . ': Maximum 8 answers';
                     continue;
@@ -162,22 +164,26 @@ class ImportController extends Controller {
                     continue;
                 }
 
+                // Determine question type based on correct index
+                $csvQuestionType = 'single';
+                $correctIndices = [$correctIndex];
+
                 $question = new Question();
                 $question->setPoolId($poolId);
                 $question->setUserId($this->userId);
                 $question->setText($questionText);
                 $question->setExplanation($explanation);
+                $question->setQuestionType($csvQuestionType);
                 $question = $this->questionMapper->createOrUpdate($question);
 
                 foreach ($answerTexts as $i => $answerText) {
-                    // FIX #11: Validate answer text length
                     if (mb_strlen($answerText) > 2000) {
                         $answerText = mb_substr($answerText, 0, 2000);
                     }
                     $answer = new Answer();
                     $answer->setQuestionId($question->getId());
                     $answer->setText($answerText);
-                    $answer->setIsCorrect($i === $correctIndex);
+                    $answer->setIsCorrect(in_array($i, $correctIndices));
                     $answer->setPosition($i);
                     $this->answerMapper->createOrUpdate($answer);
                 }
@@ -201,9 +207,15 @@ class ImportController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 5, period: 60)]
     public function importJson(int $poolId, string $jsonData): DataResponse {
         if (!$this->canEditPool($poolId)) {
             return new DataResponse(['error' => 'No edit access to this pool'], Http::STATUS_FORBIDDEN);
+        }
+
+        // S5: Enforce max body size (2 MB) before processing
+        if (strlen($jsonData) > 2 * 1024 * 1024) {
+            return new DataResponse(['error' => 'JSON data too large (max 2 MB)'], Http::STATUS_BAD_REQUEST);
         }
 
         $data = json_decode($jsonData, true);
@@ -216,7 +228,6 @@ class ImportController extends Controller {
             $data = $data['questions'];
         }
 
-        // FIX #11: Batch size cap
         if (count($data) > 500) {
             return new DataResponse(['error' => 'Maximum 500 items per import'], Http::STATUS_BAD_REQUEST);
         }
@@ -224,7 +235,6 @@ class ImportController extends Controller {
         $imported = 0;
         $errors = [];
 
-        // FIX #4: Wrap in transaction
         $this->db->beginTransaction();
         try {
             foreach ($data as $idx => $item) {
@@ -235,7 +245,6 @@ class ImportController extends Controller {
                     continue;
                 }
 
-                // FIX #11: Validate lengths
                 if (mb_strlen(trim($item['text'])) > 5000) {
                     $errors[] = "Item $num: Question text too long (max 5000)";
                     continue;
@@ -253,7 +262,7 @@ class ImportController extends Controller {
 
                 $correctCount = 0;
                 foreach ($item['answers'] as $a) {
-                    if (!empty($a['is_correct'])) $correctCount++;
+                    if (filter_var($a['is_correct'] ?? false, FILTER_VALIDATE_BOOLEAN)) $correctCount++;
                 }
 
                 if ($correctCount === 0) {
@@ -261,10 +270,7 @@ class ImportController extends Controller {
                     continue;
                 }
 
-                if ($correctCount > 1) {
-                    $errors[] = "Item $num: Multiple correct answers (exactly 1 required)";
-                    continue;
-                }
+                $questionType = $correctCount > 1 ? 'multi' : 'single';
 
                 // FIX3-HI-1: Validate ALL answer texts BEFORE creating the question to prevent orphans
                 $validatedAnswers = [];
@@ -281,7 +287,7 @@ class ImportController extends Controller {
                     }
                     $validatedAnswers[] = [
                         'text' => $answerText,
-                        'is_correct' => !empty($answerData['is_correct']),
+                        'is_correct' => filter_var($answerData['is_correct'] ?? false, FILTER_VALIDATE_BOOLEAN),
                         'position' => $i,
                     ];
                 }
@@ -295,6 +301,7 @@ class ImportController extends Controller {
                 $question->setText(trim($item['text']));
                 $question->setExplanation(isset($item['explanation']) ? trim($item['explanation']) : null);
                 $question->setDifficulty(isset($item['difficulty']) ? trim($item['difficulty']) : null);
+                $question->setQuestionType($questionType);
                 $question = $this->questionMapper->createOrUpdate($question);
 
                 foreach ($validatedAnswers as $va) {

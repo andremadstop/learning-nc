@@ -52,7 +52,10 @@
 					<div v-for="pool in sortedPools"
 						:key="pool.id"
 						class="pool-item"
-						@click="$emit('openPool', pool.pool_id)">
+						tabindex="0" role="button"
+						@click="$emit('openPool', pool.pool_id)"
+						@keydown.enter="$emit('openPool', pool.pool_id)"
+						@keydown.space.prevent="$emit('openPool', pool.pool_id)">
 						<span v-if="isInstructor" class="pool-sort-order">{{ (pool.sort_order || 0) + 1 }}.</span>
 						<div class="pool-info">
 							<span class="pool-name">{{ pool.pool_name }}</span>
@@ -179,17 +182,18 @@
 					<p>{{ t('learning', 'Loading progress data...') }}</p>
 				</div>
 
-				<div v-else-if="progressData.length > 0" class="progress-table-container">
+				<div v-else-if="progressData.length > 0" class="progress-table-container" role="region" :aria-label="t('learning', 'Student progress')">
 					<table class="progress-table">
 						<thead>
 							<tr>
-								<th class="student-col">{{ t('learning', 'Student') }}</th>
+								<th class="student-col" scope="col">{{ t('learning', 'Student') }}</th>
 								<th v-for="pool in coursePools"
 									:key="'th-' + pool.id"
-									class="pool-col">
+									class="pool-col"
+									scope="col">
 									{{ pool.pool_name }}
 								</th>
-								<th class="overall-col">{{ t('learning', 'Overall') }}</th>
+								<th class="overall-col" scope="col">{{ t('learning', 'Overall') }}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -243,7 +247,10 @@
 							:key="pool.id"
 							class="pool-select-item"
 							:class="{ disabled: isPoolAlreadyAdded(pool.id) }"
-							@click="addPool(pool)">
+							tabindex="0" role="button"
+							@click="addPool(pool)"
+							@keydown.enter="addPool(pool)"
+							@keydown.space.prevent="addPool(pool)">
 							<div class="pool-select-info">
 								<span class="pool-select-name">{{ pool.name }}</span>
 								<span v-if="pool.description" class="pool-select-desc">{{ pool.description }}</span>

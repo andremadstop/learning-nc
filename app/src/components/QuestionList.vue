@@ -24,6 +24,7 @@
       <div v-for="(question, index) in questions" :key="question.id" class="question-item">
         <div class="question-header">
           <span class="question-number">Q{{ currentPage * pageSize + index + 1 }}</span>
+          <span v-if="question.question_type === 'multi'" class="multi-badge">{{ t('learning', 'Multi') }}</span>
           <span v-if="question.difficulty" class="difficulty-badge" :class="question.difficulty">{{ question.difficulty }}</span>
           <div v-if="!readonly" class="question-actions">
             <NcActions>
@@ -53,6 +54,14 @@
       <NcButton type="tertiary" :disabled="(currentPage + 1) * pageSize >= totalQuestions" @click="nextPage">{{ t('learning', 'Next \u2192') }}</NcButton>
     </div>
 
+    <NcDialog v-if="showDeleteConfirm" :name="t('learning', 'Delete Question')" @closing="showDeleteConfirm = false; questionToDelete = null">
+      <p>{{ t('learning', 'Are you sure you want to delete this question? This action cannot be undone.') }}</p>
+      <template #actions>
+        <NcButton type="tertiary" @click="showDeleteConfirm = false; questionToDelete = null">{{ t('learning', 'Cancel') }}</NcButton>
+        <NcButton type="error" @click="confirmDeleteQuestion">{{ t('learning', 'Delete') }}</NcButton>
+      </template>
+    </NcDialog>
+
     <QuestionForm v-if="showDialog" :question="editingQuestion" @save="saveQuestion" @close="closeDialog" />
     <ImportDialog v-if="showImportDialog" :poolId="poolId" @close="showImportDialog = false" @imported="onImported" />
   </div>
@@ -60,6 +69,7 @@
 
 <script>
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
+import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js';
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js';
 import NcActions from '@nextcloud/vue/dist/Components/NcActions.js';
@@ -73,14 +83,14 @@ import ImportDialog from './ImportDialog.vue';
 
 export default {
   name: 'QuestionList',
-  components: { NcButton, NcNoteCard, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, QuestionForm, ImportDialog },
+  components: { NcButton, NcDialog, NcNoteCard, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, QuestionForm, ImportDialog },
   props: {
     poolId: { type: Number, required: true },
     poolName: { type: String, required: true },
     readonly: { type: Boolean, default: false }
   },
   data() {
-    return { questions: [], loading: false, loadError: null, showDialog: false, showImportDialog: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0 };
+    return { questions: [], loading: false, loadError: null, showDialog: false, showImportDialog: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null };
   },
   watch: {
     poolId() { this.currentPage = 0; this.loadQuestions(); },
@@ -116,7 +126,8 @@ export default {
     onImported() { this.showImportDialog = false; this.loadQuestions(); },
     async saveQuestion(questionData) {
       try {
-        const { imageFile, removeImage, ...data } = questionData;
+        const { imageFile, removeImage, questionType, ...data } = questionData;
+        data.questionType = questionType || 'single';
         let questionId;
 
         if (this.editingQuestion) {
@@ -143,11 +154,18 @@ export default {
         this.closeDialog(); this.loadQuestions();
       } catch (error) { showError(error.response?.data?.error || t('learning', 'Failed to save question')); }
     },
-    async deleteQuestion(question) {
-      if (!confirm(t('learning', 'Delete this question?'))) return;
+    deleteQuestion(question) {
+      this.questionToDelete = question;
+      this.showDeleteConfirm = true;
+    },
+    async confirmDeleteQuestion() {
+      if (!this.questionToDelete) return;
       try {
-        await axios.delete(generateUrl('/apps/learning/api/questions/' + question.id));
-        showSuccess(t('learning', 'Question deleted')); this.loadQuestions();
+        await axios.delete(generateUrl('/apps/learning/api/questions/' + this.questionToDelete.id));
+        showSuccess(t('learning', 'Question deleted'));
+        this.showDeleteConfirm = false;
+        this.questionToDelete = null;
+        this.loadQuestions();
       } catch (error) { showError(error.response?.data?.error || t('learning', 'Failed to delete question')); }
     }
   }
@@ -163,6 +181,7 @@ export default {
 .question-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .question-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .question-number { font-weight: 700; color: var(--color-primary-element); font-size: 13px; background: var(--color-primary-element-light); padding: 2px 8px; border-radius: 4px; }
+.multi-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: color-mix(in srgb, var(--color-primary-element) 15%, transparent); color: var(--color-primary-element); border: 1px solid var(--color-primary-element); }
 .difficulty-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
 .difficulty-badge.easy { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); border: 1px solid var(--color-success); }
 .difficulty-badge.medium { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); border: 1px solid var(--color-warning); }

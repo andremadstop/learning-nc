@@ -44,25 +44,46 @@
             <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" alt="" class="question-image" />
             <p class="question-text">{{ currentQuestion.text }}</p>
             <div v-if="showFeedback" class="explanation-area">
-              <p><strong>{{ t('learning', 'Correct:') }}</strong> {{ correctAnswerText }}</p>
+              <p><strong>{{ correctAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct:') }}</strong> {{ correctAnswerTexts.join(', ') || correctAnswerText }}</p>
               <p v-if="currentQuestion.explanation" class="explanation-text">{{ currentQuestion.explanation }}</p>
             </div>
           </div>
         </div>
       </div>
 
+      <div v-if="isMultiSelect && !showFeedback" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
+
       <div v-if="currentQuestion && !showFeedback" class="answer-grid">
         <template v-if="hasAnswers">
-          <button
-            v-for="answer in currentQuestion.answers"
-            :key="answer.id"
-            class="answer-btn"
-            :class="{ 'answer-selected': selectedAnswerId === answer.id }"
-            :disabled="submitting"
-            @click="selectAnswer(answer)"
-          >
-            {{ answer.text }}
-          </button>
+          <template v-if="isMultiSelect">
+            <button
+              v-for="answer in currentQuestion.answers"
+              :key="answer.id"
+              class="answer-btn"
+              :class="{ 'answer-selected': selectedAnswerIds.includes(answer.id) }"
+              :disabled="submitting"
+              @click="toggleMultiAnswer(answer.id)"
+            >
+              {{ answer.text }}
+            </button>
+            <div class="multi-submit-area">
+              <NcButton type="primary" @click="submitMultiAnswer" :disabled="submitting || selectedAnswerIds.length === 0">
+                {{ t('learning', 'Confirm') }}
+              </NcButton>
+            </div>
+          </template>
+          <template v-else>
+            <button
+              v-for="answer in currentQuestion.answers"
+              :key="answer.id"
+              class="answer-btn"
+              :class="{ 'answer-selected': selectedAnswerId === answer.id }"
+              :disabled="submitting"
+              @click="selectAnswer(answer)"
+            >
+              {{ answer.text }}
+            </button>
+          </template>
         </template>
         <div v-else class="no-answers">
           <p>{{ t('learning', 'This question has no answers yet.') }}</p>
@@ -116,7 +137,10 @@ export default {
       questions: [],
       currentIndex: 0,
       selectedAnswerId: null,
+      selectedAnswerIds: [],
+      lastSelectedAnswerIds: [],
       correctAnswerId: null,
+      correctAnswerTexts: [],
       submitting: false,
       showFeedback: false,
       isCorrect: false,
@@ -137,6 +161,7 @@ export default {
   },
   computed: {
     currentQuestion() { return this.questions[this.currentIndex] || null; },
+    isMultiSelect() { return this.currentQuestion && this.currentQuestion.question_type === 'multi'; },
     hasAnswers() {
       return this.currentQuestion
         && Array.isArray(this.currentQuestion.answers)
@@ -241,6 +266,39 @@ export default {
     },
 
     // --- Answer handling ---
+    toggleMultiAnswer(answerId) {
+      var idx = this.selectedAnswerIds.indexOf(answerId);
+      if (idx >= 0) {
+        this.selectedAnswerIds.splice(idx, 1);
+      } else {
+        this.selectedAnswerIds.push(answerId);
+      }
+    },
+    async submitMultiAnswer() {
+      if (this.submitting) return;
+      this.submitting = true;
+      this.lastSelectedAnswerIds = this.selectedAnswerIds.slice();
+      try {
+        var r = await axios.post(generateUrl('/apps/learning/api/training/answer'), {
+          sessionId: this.session,
+          questionId: this.currentQuestion.id,
+          answerIds: this.selectedAnswerIds
+        });
+        this.isCorrect = r.data.is_correct;
+        this.correctAnswerText = r.data.correct_answer_text || '';
+        this.correctAnswerTexts = r.data.correct_answer_texts || [this.correctAnswerText];
+        this.correctAnswerId = null;
+      } catch (e) {
+        showError(t('learning', 'Failed to submit answer'));
+        this.isCorrect = false;
+        this.correctAnswerText = '';
+        this.correctAnswerTexts = [];
+        this.correctAnswerId = null;
+      }
+      this.submitting = false;
+      this.showFeedback = true;
+      this.canDrag = true;
+    },
     async selectAnswer(answer) {
       if (this.submitting) return;
       this.submitting = true;
@@ -255,10 +313,12 @@ export default {
         this.isCorrect = r.data.is_correct;
         this.correctAnswerId = r.data.correct_answer_id;
         this.correctAnswerText = r.data.correct_answer_text || '';
+        this.correctAnswerTexts = r.data.correct_answer_texts || [this.correctAnswerText];
       } catch (e) {
         showError(t('learning', 'Failed to submit answer'));
         this.isCorrect = false;
         this.correctAnswerText = '';
+        this.correctAnswerTexts = [];
         this.correctAnswerId = null;
       }
 
@@ -281,7 +341,10 @@ export default {
     goToNext() {
       this.showFeedback = false;
       this.selectedAnswerId = null;
+      this.selectedAnswerIds = [];
+      this.lastSelectedAnswerIds = [];
       this.correctAnswerId = null;
+      this.correctAnswerTexts = [];
       this.cardAnimClass = '';
       this.canDrag = false;
       this.isDragging = false;
@@ -435,6 +498,9 @@ export default {
 .answer-btn:hover:not(:disabled) { border-color: var(--color-primary-element); background: var(--color-background-hover); }
 .answer-btn:disabled { opacity: 0.7; cursor: wait; }
 .answer-btn.answer-selected { border-color: var(--color-primary-element); background: var(--color-primary-element-light); font-weight: 600; }
+
+.multi-hint { text-align: center; font-size: 14px; font-weight: 600; color: var(--color-primary-element); margin-bottom: 12px; padding: 8px; background: color-mix(in srgb, var(--color-primary-element) 8%, transparent); border-radius: 8px; }
+.multi-submit-area { grid-column: 1 / -1; text-align: center; margin-top: 8px; }
 
 /* No answers / skip */
 .no-answers {

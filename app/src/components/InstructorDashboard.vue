@@ -42,7 +42,10 @@
 				<div v-for="course in courses"
 					:key="course.id"
 					class="dashboard-course-card"
-					@click="$emit('selectCourse', course)">
+					tabindex="0" role="button"
+					@click="$emit('selectCourse', course)"
+					@keydown.enter="$emit('selectCourse', course)"
+					@keydown.space.prevent="$emit('selectCourse', course)">
 					<div class="card-header">
 						<h4>{{ course.title }}</h4>
 						<span class="status-badge" :class="course.status">

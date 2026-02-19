@@ -21,7 +21,6 @@ class ImageService {
             throw new \InvalidArgumentException('File too large (max 5MB)');
         }
 
-        // FIX #6 HIGH: Server-side MIME validation instead of trusting client
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $realMime = $finfo->file($fileData['tmp_name']) ?: '';
         if (!in_array($realMime, self::ALLOWED_TYPES, true)) {

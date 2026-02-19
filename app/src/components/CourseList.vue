@@ -28,7 +28,10 @@
 					<div v-for="course in ownCourses"
 						:key="'own-' + course.id"
 						class="course-card"
-						@click="$emit('selectCourse', course)">
+						tabindex="0" role="button"
+						@click="$emit('selectCourse', course)"
+						@keydown.enter="$emit('selectCourse', course)"
+						@keydown.space.prevent="$emit('selectCourse', course)">
 						<div class="course-card-header">
 							<span class="course-title">{{ course.title }}</span>
 							<div class="course-card-actions" @click.stop>
@@ -70,7 +73,10 @@
 					<div v-for="course in enrolledCourses"
 						:key="'enrolled-' + course.id"
 						class="course-card"
-						@click="$emit('selectCourse', course)">
+						tabindex="0" role="button"
+						@click="$emit('selectCourse', course)"
+						@keydown.enter="$emit('selectCourse', course)"
+						@keydown.space.prevent="$emit('selectCourse', course)">
 						<div class="course-card-header">
 							<span class="course-title">{{ course.title }}</span>
 							<span v-if="course.member_role" class="role-badge">

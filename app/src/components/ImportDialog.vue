@@ -8,13 +8,13 @@
     <NcNoteCard type="info" class="format-help">
       <template v-if="format === 'csv'">
         <strong>{{ t('learning', 'CSV Format:') }}</strong><br/>
-        <code>question,answer1,answer2,answer3,answer4,correct_number,explanation</code><br/>
-        <small>{{ t('learning', 'correct_number = 1-4. Explanation is optional.') }}</small>
+        <code>question,answer1,answer2,...,answerN,correct_number,explanation</code><br/>
+        <small>{{ t('learning', '2-8 answers supported. correct_number = 1-N. Explanation is optional.') }}</small>
       </template>
       <template v-else>
         <strong>{{ t('learning', 'JSON Format:') }}</strong><br/>
         <code>[{"text":"Q?","answers":[{"text":"A","is_correct":true},{"text":"B","is_correct":false}]}]</code><br/>
-        <small>{{ t('learning', 'Optional: difficulty, explanation') }}</small>
+        <small>{{ t('learning', 'Optional: difficulty, explanation, question_type ("single" or "multi")') }}</small>
       </template>
     </NcNoteCard>
 
