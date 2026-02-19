@@ -2,6 +2,73 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.4] - 2026-02-19
+
+### Security
+- **CRITICAL**: Close training-session oracle — startSession(exam) auto-completes open training sessions on same pool
+- **CRITICAL**: Defense-in-depth in submitAnswer/submitBatch — suppress correct_answer fields via cross-session check
+- **HIGH**: Strip explanation field from Question API during active exam to prevent indirect answer leakage
+- Rate-limits on ShareController and TranslationController write endpoints
+
+### Fixed
+- Leitner feedback shows hint when correct answers are suppressed during active exam
+
+## [1.3.3] - 2026-02-19
+
+### Fixed
+- **MEDIUM**: Two-step confirmation when adding pools to courses — select then confirm to prevent accidental bulk-adds
+- Highlighted pool selection in CourseDetail pool-add modal
+
+## [1.3.2] - 2026-02-19
+
+### Security
+- **CRITICAL**: Strip `is_correct` from Question read APIs during active exam session (hasActiveExamOnPool guard)
+- **HIGH**: Suppress Leitner correct answer details during active exam
+- Rate-limits on Pool, Question, Image, Course create endpoints
+
+### Fixed
+- **MEDIUM**: answer_id nullable migration for multi-select on fresh install
+- **MEDIUM**: getSessionReview ArgumentCountError on idempotent exam completion
+- **MEDIUM**: Pool delete IDOR — ownership check before deleting related course_pools
+- **MEDIUM**: is_correct boolean coercion using `filter_var`
+- **LOW**: TrainingMode progress divide-by-zero guard
+
+### Removed
+- Pool.visibility dead code from jsonSerialize()
+
+## [1.3.1] - 2026-02-19
+
+### Security
+- **CRITICAL**: Exam answer oracle prevention — session mode system blocks cheating via training API
+- **HIGH**: Rate-limits on all write endpoints (Pool 30/60s, Question 60/60s, Import 5/60s, Training 120/60s, Leitner 120/60s, Share 20/60s)
+- **HIGH**: Hard cap of 200 answers per submitBatch with session validation
+- **MEDIUM**: Share user existence check and self-share prevention
+- **MEDIUM**: Import body size limit (2 MB) and strict boolean coercion
+
+### Added
+- Multi-select question support across all training modes (Training, Leitner, Exam, Swipe)
+- Dynamic answer fields (2-8) in QuestionForm with add/remove buttons
+
+### UX/A11y
+- Keyboard-accessible exam cards with tabindex, role=button, keydown handlers
+- Keyboard support and 40px touch targets on exam nav-dots
+- Replace native confirm/alert with NcDialog + NcNoteCard patterns
+- Leitner due banner replaced with explicit NcButton
+
+## [1.2.5] - 2026-02-18
+
+### Fixed
+- **HIGH**: PostgreSQL boolean cast in TrainingService — `filter_var` instead of `(bool)` cast
+- **HIGH**: Leitner server-side answer validation instead of trusting client `is_correct`
+- **MEDIUM**: FK constraints migration for course_pools/course_members with ON DELETE CASCADE
+- **MEDIUM**: JSON import enforces exactly 1 correct answer per question
+- **MEDIUM**: CourseDetail handles progress response format correctly
+- **MEDIUM**: QuestionList pagination (50/page) with backend support
+- **LOW**: Delete endpoints return 204 No Content consistently
+
+### Added
+- Snake timer SVG border animation in ExamMode with 3 color phases and pulse effect
+
 ## [1.2.4] - 2026-02-16
 
 ### Fixed

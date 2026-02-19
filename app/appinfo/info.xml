@@ -49,8 +49,13 @@ Create question pools, share them with your team, and study efficiently using sc
     <repository type="git">https://github.com/andremadstop/learning-nc.git</repository>
 
     <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/pool-list.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/training-mode.png</screenshot>
     <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/leitner-boxes.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/swipe-mode.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/exam-mode.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/statistics.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/question-management.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/course-list.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/instructor-dashboard.png</screenshot>
 
     <dependencies>
         <nextcloud min-version="29" max-version="31"/>

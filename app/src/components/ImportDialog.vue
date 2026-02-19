@@ -9,22 +9,27 @@
       <template v-if="format === 'csv'">
         <strong>{{ t('learning', 'CSV Format:') }}</strong><br/>
         <code>question,answer1,answer2,...,answerN,correct_number,explanation</code><br/>
-        <small>{{ t('learning', '2-8 answers supported. correct_number = 1-N. Explanation is optional.') }}</small>
+        <small>
+          {{ t('learning', 'Example:') }}<br/>
+          <code class="example-code">What is 2+2?,3,4,5,6,2,Because math</code><br/>
+          <code class="example-code">Who wrote Hamlet?,Shakespeare,Dickens,Tolkien,1</code><br/><br/>
+          {{ t('learning', '2-8 answers per question. correct_number: which answer is correct (1 = first). Explanation is optional. Header row is auto-detected.') }}
+        </small>
       </template>
       <template v-else>
-        <strong>{{ t('learning', 'JSON Format:') }}</strong><br/>
-        <code>[{"text":"Q?","answers":[{"text":"A","is_correct":true},{"text":"B","is_correct":false}]}]</code><br/>
-        <small>{{ t('learning', 'Optional: difficulty, explanation, question_type ("single" or "multi")') }}</small>
+        <strong>{{ t('learning', 'JSON Format: Array of question objects') }}</strong><br/>
+        <code class="example-code">[{"text":"What is 2+2?","answers":[{"text":"3","is_correct":false},{"text":"4","is_correct":true}],"explanation":"Basic math"}]</code><br/>
+        <small>{{ t('learning', 'Optional fields: difficulty, explanation, question_type ("multi" for multiple correct answers).') }}</small>
       </template>
     </NcNoteCard>
 
     <div class="input-section">
       <div class="file-upload">
-        <label class="file-label">
-          <NcButton type="secondary">{{ t('learning', 'Choose File') }}</NcButton>
-          <input type="file" :accept="format === 'csv' ? '.csv,.txt' : '.json'" @change="handleFile" hidden />
-        </label>
-        <span v-if="fileName" class="file-name">{{ fileName }}</span>
+        <NcButton type="secondary" @click="$refs.fileInput.click()">
+          {{ fileName || t('learning', 'Choose File') }}
+        </NcButton>
+        <input ref="fileInput" type="file" :accept="format === 'csv' ? '.csv,.txt' : '.json'" @change="handleFile" style="display:none" />
+        <NcButton type="tertiary" @click="loadExample">{{ t('learning', 'Load Example') }}</NcButton>
       </div>
       <p class="or-divider">{{ t('learning', '— or paste below —') }}</p>
       <textarea v-model="textData" :placeholder="format === 'csv' ? t('learning', 'Paste CSV data here...') : t('learning', 'Paste JSON data here...')" rows="8" class="nc-input data-input"></textarea>
@@ -62,7 +67,17 @@ import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
-import { showSuccess, showError } from '@nextcloud/dialogs';
+import { showSuccess } from '@nextcloud/dialogs';
+
+const CSV_EXAMPLE = `What is the capital of France?,Berlin,Paris,London,Madrid,2,Paris has been the capital since the 10th century
+What color is the sky?,Green,Blue,Red,Yellow,2
+How many days in a week?,5,6,7,8,3,Seven days from Monday to Sunday`;
+
+const JSON_EXAMPLE = JSON.stringify([
+  {"text":"What is the capital of France?","answers":[{"text":"Berlin","is_correct":false},{"text":"Paris","is_correct":true},{"text":"London","is_correct":false}],"explanation":"Paris has been the capital since the 10th century"},
+  {"text":"What color is the sky?","answers":[{"text":"Green","is_correct":false},{"text":"Blue","is_correct":true},{"text":"Red","is_correct":false}]},
+  {"text":"How many days in a week?","answers":[{"text":"Five","is_correct":false},{"text":"Six","is_correct":false},{"text":"Seven","is_correct":true}]}
+], null, 2);
 
 export default {
   name: 'ImportDialog',
@@ -76,6 +91,10 @@ export default {
     format() { this.updatePreview(); this.result = null; }
   },
   methods: {
+    loadExample() {
+      this.textData = this.format === 'csv' ? CSV_EXAMPLE : JSON_EXAMPLE;
+      this.fileName = '';
+    },
     handleFile(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -112,8 +131,14 @@ export default {
         if (this.result.imported > 0) { showSuccess(t('learning', '{n} questions imported', { n: this.result.imported })); this.$emit('imported', this.result.imported); }
       } catch (error) {
         const data = error.response?.data;
-        if (data && data.errors) { this.result = data; }
-        else { showError(data?.error || t('learning', 'Import failed')); }
+        if (data && data.errors) {
+          this.result = data;
+        } else {
+          this.result = {
+            imported: 0,
+            errors: [data?.error || t('learning', 'Import failed. Check your data format.')]
+          };
+        }
       } finally { this.importing = false; }
     }
   }
@@ -129,8 +154,7 @@ export default {
 .format-help code { display: inline-block; padding: 4px 8px; background: var(--color-background-dark); border-radius: 4px; font-size: 12px; word-break: break-all; margin: 4px 0; }
 .input-section { margin-bottom: 16px; }
 .file-upload { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.file-label { cursor: pointer; }
-.file-name { font-size: 13px; color: var(--color-text-maxcontrast); }
+.example-code { display: block; margin: 2px 0; }
 .or-divider { text-align: center; font-size: 12px; color: var(--color-text-maxcontrast); margin: 8px 0; }
 .nc-input { width: 100%; padding: 10px 12px; border: 2px solid var(--color-border); border-radius: var(--border-radius-large); font-size: 14px; background: var(--color-main-background); color: var(--color-main-text); transition: border-color 0.2s; box-sizing: border-box; }
 .nc-input:focus { border-color: var(--color-primary-element); outline: none; }

@@ -92,7 +92,7 @@ class ImportController extends Controller {
 
                 // Minimum: question + 2 answers + correct index
                 if (count($fields) < 4) {
-                    $errors[] = 'Line ' . ($lineNum + 1) . ': Not enough fields';
+                    $errors[] = 'Line ' . ($lineNum + 1) . ': Not enough fields (need: question, answers, correct number)';
                     continue;
                 }
 
@@ -160,7 +160,7 @@ class ImportController extends Controller {
                 }
 
                 if ($correctIndex === null || $correctIndex >= count($answerTexts)) {
-                    $errors[] = 'Line ' . ($lineNum + 1) . ': Could not determine correct answer';
+                    $errors[] = 'Line ' . ($lineNum + 1) . ': Could not determine correct answer — use a number (1-N) to indicate which answer is correct';
                     continue;
                 }
 
@@ -194,7 +194,8 @@ class ImportController extends Controller {
             $this->db->commit();
         } catch (\Throwable $e) {
             $this->db->rollBack();
-            return new DataResponse(['error' => 'Import failed'], Http::STATUS_INTERNAL_SERVER_ERROR);
+            \OCP\Server::get(\Psr\Log\LoggerInterface::class)->error('CSV import failed: ' . get_class($e) . ': ' . $e->getMessage());
+            return new DataResponse(['error' => 'Import failed due to a server error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
         return new DataResponse([
@@ -220,7 +221,7 @@ class ImportController extends Controller {
 
         $data = json_decode($jsonData, true);
         if (!is_array($data)) {
-            return new DataResponse(['error' => 'Invalid JSON data'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'Invalid JSON — check for missing brackets, commas, or quotes'], Http::STATUS_BAD_REQUEST);
         }
 
         // If wrapped in {"questions": [...]}
@@ -319,7 +320,8 @@ class ImportController extends Controller {
             $this->db->commit();
         } catch (\Throwable $e) {
             $this->db->rollBack();
-            return new DataResponse(['error' => 'Import failed'], Http::STATUS_INTERNAL_SERVER_ERROR);
+            \OCP\Server::get(\Psr\Log\LoggerInterface::class)->error('JSON import failed: ' . get_class($e) . ': ' . $e->getMessage());
+            return new DataResponse(['error' => 'Import failed due to a server error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
         return new DataResponse([
