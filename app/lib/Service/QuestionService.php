@@ -120,6 +120,9 @@ class QuestionService {
         $result = [];
         foreach ($questions as $question) {
             $questionData = $question->jsonSerialize();
+            if ($stripCorrect) {
+                unset($questionData['explanation']);
+            }
             $answers = $answersGrouped[$question->getId()] ?? [];
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
                 $row = $a->jsonSerialize();
@@ -152,6 +155,9 @@ class QuestionService {
         $result = [];
         foreach ($questions as $question) {
             $questionData = $question->jsonSerialize();
+            if ($stripCorrect) {
+                unset($questionData['explanation']);
+            }
             $answers = $answersGrouped[$question->getId()] ?? [];
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
                 $row = $a->jsonSerialize();
@@ -178,6 +184,9 @@ class QuestionService {
             $stripCorrect = $this->hasActiveExamOnPool($question->getPoolId(), $userId);
 
             $questionData = $question->jsonSerialize();
+            if ($stripCorrect) {
+                unset($questionData['explanation']);
+            }
             $questionData['answers'] = array_map(function ($a) use ($stripCorrect) {
                 $row = $a->jsonSerialize();
                 if ($stripCorrect) {

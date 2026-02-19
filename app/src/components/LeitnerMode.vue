@@ -100,8 +100,11 @@
             </div>
           </div>
           <div class="correct-answer-display">
-            <strong>{{ lastCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
-            {{ getCorrectAnswer() }}
+            <template v-if="getCorrectAnswer()">
+              <strong>{{ lastCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
+              {{ getCorrectAnswer() }}
+            </template>
+            <em v-else>{{ t('learning', 'Correct answer hidden during active exam') }}</em>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
           <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>

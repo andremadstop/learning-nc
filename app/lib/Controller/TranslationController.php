@@ -7,6 +7,7 @@ use OCA\Learning\Service\QuestionService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 
 class TranslationController extends Controller {
@@ -37,6 +38,7 @@ class TranslationController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 30, period: 60)]
     public function setQuestionTranslation(int $questionId, string $lang, string $text, ?string $explanation = null): DataResponse {
         try {
             // SEC-MED-2: Require edit access, not just read access
@@ -54,6 +56,7 @@ class TranslationController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 30, period: 60)]
     public function deleteQuestionTranslation(int $questionId, string $lang): DataResponse {
         try {
             // SEC-MED-2: Require edit access, not just read access
@@ -82,6 +85,7 @@ class TranslationController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 30, period: 60)]
     public function setAnswerTranslation(int $answerId, string $lang, string $text): DataResponse {
         try {
             // SEC-MED-2: Require edit access, not just read access
@@ -98,6 +102,7 @@ class TranslationController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 30, period: 60)]
     public function deleteAnswerTranslation(int $answerId, string $lang): DataResponse {
         try {
             // SEC-MED-2: Require edit access, not just read access

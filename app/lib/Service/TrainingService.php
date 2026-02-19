@@ -40,6 +40,25 @@ class TrainingService {
         }
     }
 
+    /**
+     * Check if user has an active (uncompleted) exam session on a given pool.
+     * Used to suppress correct answers even from training sessions during active exam.
+     */
+    private function hasActiveExamOnPool(int $poolId, string $userId): bool {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+           ->andWhere($qb->expr()->isNull('completed_at'))
+           ->setMaxResults(1);
+        $result = $qb->execute();
+        $hasExam = $result->fetch();
+        $result->closeCursor();
+        return $hasExam !== false;
+    }
+
     private function verifySessionOwnership(int $sessionId, string $userId): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
@@ -79,6 +98,18 @@ class TrainingService {
         $activeExam->closeCursor();
         if ($hasActiveExam) {
             throw new \Exception('Cannot start session while an exam is active for this pool');
+        }
+
+        // SECURITY: When starting an exam, auto-complete all open training sessions
+        // on the same pool to prevent using them as answer oracles
+        if ($mode === 'exam') {
+            $qb = $this->db->getQueryBuilder();
+            $qb->update('learning_sessions')
+               ->set('completed_at', $qb->createNamedParameter(time()))
+               ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+               ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+               ->andWhere($qb->expr()->isNull('completed_at'));
+            $qb->execute();
         }
 
         $questions = $this->questionMapper->findByPoolId($poolId);
@@ -153,6 +184,10 @@ class TrainingService {
             throw new \Exception('Individual answers not allowed during exam');
         }
 
+        // SECURITY: Defense-in-depth — suppress correct answers if user has active exam on same pool
+        $poolId = (int)$session['pool_id'];
+        $suppressAnswers = $this->hasActiveExamOnPool($poolId, $userId);
+
         $qb = $this->db->getQueryBuilder();
         $qb->select('id')
            ->from('learning_questions')
@@ -223,6 +258,11 @@ class TrainingService {
                 $qb->execute();
             }
 
+            // SECURITY: Suppress correct answers if active exam on same pool
+            if ($suppressAnswers) {
+                return ['is_correct' => $isCorrect];
+            }
+
             $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
             return [
                 'is_correct' => $isCorrect,
@@ -268,6 +308,11 @@ class TrainingService {
             $qb->execute();
         }
 
+        // SECURITY: Suppress correct answers if active exam on same pool
+        if ($suppressAnswers) {
+            return ['is_correct' => $isCorrect];
+        }
+
         // Return all correct answers info
         $correctRows = $this->getAllCorrectAnswers($questionId);
         $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
@@ -292,6 +337,9 @@ class TrainingService {
 
         $poolId = (int)$session['pool_id'];
         $isExam = (($session['mode'] ?? 'training') === 'exam');
+
+        // SECURITY: Also suppress answers for training sessions if user has active exam on same pool
+        $suppressAnswers = $isExam || $this->hasActiveExamOnPool($poolId, $userId);
 
         // S3: Validate batch size against session's question count
         $maxAnswers = (int)$session['total_questions'];
@@ -383,8 +431,8 @@ class TrainingService {
                     $qb->execute();
                 }
 
-                // SECURITY: Exam mode — don't leak correct answers
-                if ($isExam) {
+                // SECURITY: Suppress correct answers during active exam
+                if ($suppressAnswers) {
                     $results[] = ['questionId' => $questionId, 'recorded' => true];
                 } else {
                     $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
@@ -441,8 +489,8 @@ class TrainingService {
                 $qb->execute();
             }
 
-            // SECURITY: Exam mode — don't leak correct answers
-            if ($isExam) {
+            // SECURITY: Suppress correct answers during active exam
+            if ($suppressAnswers) {
                 $results[] = ['questionId' => $questionId, 'recorded' => true];
             } else {
                 $correctRows = $this->getAllCorrectAnswers($questionId);
