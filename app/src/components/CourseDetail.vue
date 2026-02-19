@@ -246,11 +246,11 @@
 						<div v-for="pool in availablePools"
 							:key="pool.id"
 							class="pool-select-item"
-							:class="{ disabled: isPoolAlreadyAdded(pool.id) }"
+							:class="{ disabled: isPoolAlreadyAdded(pool.id), selected: selectedPoolToAdd && selectedPoolToAdd.id === pool.id }"
 							tabindex="0" role="button"
-							@click="addPool(pool)"
-							@keydown.enter="addPool(pool)"
-							@keydown.space.prevent="addPool(pool)">
+							@click="selectPoolToAdd(pool)"
+							@keydown.enter="selectPoolToAdd(pool)"
+							@keydown.space.prevent="selectPoolToAdd(pool)">
 							<div class="pool-select-info">
 								<span class="pool-select-name">{{ pool.name }}</span>
 								<span v-if="pool.description" class="pool-select-desc">{{ pool.description }}</span>
@@ -258,6 +258,13 @@
 							<span v-if="isPoolAlreadyAdded(pool.id)" class="pool-already-added">
 								{{ t('learning', 'Already added') }}
 							</span>
+						</div>
+						<div v-if="selectedPoolToAdd" class="pool-add-confirm">
+							<NcButton type="primary"
+								:disabled="savingPool"
+								@click="addPool(selectedPoolToAdd)">
+								{{ savingPool ? t('learning', 'Adding...') : t('learning', 'Add "{name}"', { name: selectedPoolToAdd.name }) }}
+							</NcButton>
 						</div>
 					</div>
 
@@ -372,6 +379,8 @@ export default {
 			savingMember: null,
 			showRemoveMemberModal: false,
 			removingMember: null,
+
+			selectedPoolToAdd: null,
 
 			// Progress
 			progressLoading: false,
@@ -505,6 +514,7 @@ export default {
 		async openAddPoolModal() {
 			this.showAddPoolModal = true
 			this.poolModalError = ''
+			this.selectedPoolToAdd = null
 			if (this.allPools.length === 0) {
 				await this.fetchAllPools()
 			}
@@ -536,6 +546,11 @@ export default {
 			return this.coursePools.some(p => p.pool_id === poolId)
 		},
 
+		selectPoolToAdd(pool) {
+			if (this.isPoolAlreadyAdded(pool.id)) return
+			this.selectedPoolToAdd = (this.selectedPoolToAdd && this.selectedPoolToAdd.id === pool.id) ? null : pool
+		},
+
 		async addPool(pool) {
 			if (this.isPoolAlreadyAdded(pool.id)) {
 				return
@@ -553,6 +568,7 @@ export default {
 					sortOrder: nextSortOrder,
 					required: true,
 				})
+				this.selectedPoolToAdd = null
 				this.showAddPoolModal = false
 				await this.fetchCourseDetail()
 			} catch (err) {
@@ -1186,9 +1202,20 @@ td.mastery-low {
 	background: var(--color-background-hover);
 }
 
+.pool-select-item.selected {
+	border-color: var(--color-primary-element);
+	background: var(--color-primary-element-light);
+}
+
 .pool-select-item.disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
+}
+
+.pool-add-confirm {
+	display: flex;
+	justify-content: flex-end;
+	padding-top: 8px;
 }
 
 .pool-select-info {
