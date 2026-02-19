@@ -56,6 +56,14 @@ DEVELOPMENT.md
 PROJEKT_STEUERUNG.md
 ROADMAP.md
 
+# Security review / smoketest reports (vulnerability details)
+CODEX-SMOKETEST*.md
+SMOKETEST*.md
+REVIEW-PROMPT*.md
+REVIEW_REPORT*.md
+GEMINI-DESIGN-REVIEW*.md
+LAUNCH_READINESS_REPORT*.md
+
 # Infrastructure / VM setup (not app-related)
 install-automated.exp
 auto-setup.sh
