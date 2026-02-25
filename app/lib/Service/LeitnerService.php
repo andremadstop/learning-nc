@@ -106,6 +106,7 @@ class LeitnerService {
     }
 
     public function answerQuestion(int $itemId, ?int $answerId, string $userId, ?array $answerIds = null): array {
+        // === Read phase (outside transaction) ===
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
            ->from('learning_leitner_items')
@@ -121,21 +122,19 @@ class LeitnerService {
 
         $questionId = (int)$item['question_id'];
 
-        // Multi-select path
+        // Multi-select path — batch validation (Gemini #3: N+1 fix)
         if (is_array($answerIds) && count($answerIds) > 0) {
-            // Validate all answer IDs belong to this question
-            foreach ($answerIds as $aid) {
-                $qb = $this->db->getQueryBuilder();
-                $qb->select('id')
-                   ->from('learning_answers')
-                   ->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$aid)))
-                   ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
-                $vResult = $qb->execute();
-                $vRow = $vResult->fetch();
-                $vResult->closeCursor();
-                if (!$vRow) {
-                    throw new \Exception('Answer not found for this question');
-                }
+            $intIds = array_map('intval', $answerIds);
+            $qb = $this->db->getQueryBuilder();
+            $qb->select($qb->createFunction('COUNT(*) as cnt'))
+               ->from('learning_answers')
+               ->where($qb->expr()->in('id', $qb->createNamedParameter($intIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+               ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+            $vResult = $qb->execute();
+            $validCount = (int)$vResult->fetch()['cnt'];
+            $vResult->closeCursor();
+            if ($validCount !== count($intIds)) {
+                throw new \Exception('Answer not found for this question');
             }
 
             // Get correct answer IDs
@@ -150,10 +149,9 @@ class LeitnerService {
             $cResult->closeCursor();
 
             $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
-            $userIds = array_map('intval', $answerIds);
             sort($correctIds);
-            sort($userIds);
-            $correct = ($userIds === $correctIds);
+            sort($intIds);
+            $correct = ($intIds === $correctIds);
         } else {
             // Single-select path
             $qb = $this->db->getQueryBuilder();
@@ -175,21 +173,6 @@ class LeitnerService {
         $currentBox = (int)$item['box'];
         $newBox = $correct ? min(5, $currentBox + 1) : 1;
 
-        // Handle Box-5 demotion: decrement total_mastered when card falls out of Box 5
-        if ($currentBox === 5 && $newBox < 5) {
-            $dqb = $this->db->getQueryBuilder();
-            $dqb->update('learning_user_stats')
-                ->set('total_mastered', $dqb->createFunction('CASE WHEN total_mastered > 0 THEN total_mastered - 1 ELSE 0 END'))
-                ->set('updated_at', $dqb->createNamedParameter(time()))
-                ->where($dqb->expr()->eq('user_id', $dqb->createNamedParameter($userId)));
-            $demoted = $dqb->execute();
-
-            // If no stats row exists (Leitner-only user), create one from source of truth
-            if ($demoted === 0) {
-                $this->xpService->updateUserStats($userId);
-            }
-        }
-
         $intervals = [
             1 => 0,
             2 => 86400,
@@ -202,16 +185,6 @@ class LeitnerService {
         $correctCount = (int)$item['correct_count'] + ($correct ? 1 : 0);
         $incorrectCount = (int)$item['incorrect_count'] + ($correct ? 0 : 1);
 
-        $qb = $this->db->getQueryBuilder();
-        $qb->update('learning_leitner_items')
-           ->set('box', $qb->createNamedParameter($newBox))
-           ->set('next_review', $qb->createNamedParameter($nextReview))
-           ->set('last_reviewed', $qb->createNamedParameter(time()))
-           ->set('correct_count', $qb->createNamedParameter($correctCount))
-           ->set('incorrect_count', $qb->createNamedParameter($incorrectCount))
-           ->where($qb->expr()->eq('id', $qb->createNamedParameter($itemId)));
-        $qb->execute();
-
         $response = [
             'old_box' => $currentBox,
             'new_box' => $newBox,
@@ -220,33 +193,84 @@ class LeitnerService {
             'newly_earned_badges' => [],
         ];
 
-        // Award Leitner XP: 5 XP per correct answer
-        if ($correct) {
-            $leitnerXp = 5;
+        // === Write phase (all atomic) ===
+        $this->db->beginTransaction();
+        try {
+            // Optimistic update on Leitner item — guards box AND correct_count for Box-5→5 safety (R2 #1+#2)
+            $qb = $this->db->getQueryBuilder();
+            $qb->update('learning_leitner_items')
+               ->set('box', $qb->createNamedParameter($newBox))
+               ->set('next_review', $qb->createNamedParameter($nextReview))
+               ->set('last_reviewed', $qb->createNamedParameter(time()))
+               ->set('correct_count', $qb->createNamedParameter($correctCount))
+               ->set('incorrect_count', $qb->createNamedParameter($incorrectCount))
+               ->where($qb->expr()->eq('id', $qb->createNamedParameter($itemId)))
+               ->andWhere($qb->expr()->eq('box', $qb->createNamedParameter($currentBox)))
+               ->andWhere($qb->expr()->eq('correct_count', $qb->createNamedParameter((int)$item['correct_count'])))
+               ->andWhere($qb->expr()->eq('incorrect_count', $qb->createNamedParameter((int)$item['incorrect_count'])));
+            $affected = $qb->execute();
 
-            // Check mastery badges and update stats when card reaches Box 5
-            if ($newBox === 5) {
-                $leitnerXp += 25; // Box-5 mastery bonus
-                $response['newly_earned_badges'] = $this->badgeService->checkAndAward($userId, 'leitner_mastery', []);
-
-                // Increment denormalized mastered count
-                // If no stats row exists, incrementLeitnerXp will create one via updateUserStats()
-                $mqb = $this->db->getQueryBuilder();
-                $mqb->update('learning_user_stats')
-                    ->set('total_mastered', $mqb->createFunction('total_mastered + 1'))
-                    ->set('updated_at', $mqb->createNamedParameter(time()))
-                    ->where($mqb->expr()->eq('user_id', $mqb->createNamedParameter($userId)));
-                $mqb->execute();
+            if ($affected === 0) {
+                // R2 #3: single rollback point — let catch handle it
+                throw new \Exception('Concurrent modification — please retry');
             }
 
-            // Sync Leitner XP to denormalized stats
-            $this->xpService->incrementLeitnerXp($userId, $leitnerXp);
-        } elseif ($newBox === 5) {
-            // Edge case: shouldn't happen (wrong answer can't promote to box 5), but defensive
-            $response['newly_earned_badges'] = $this->badgeService->checkAndAward($userId, 'leitner_mastery', []);
+            // Demotion handling AFTER item update (recalc sees correct box value)
+            if ($currentBox === 5 && $newBox < 5) {
+                $dqb = $this->db->getQueryBuilder();
+                $dqb->update('learning_user_stats')
+                    ->set('total_mastered', $dqb->createFunction('CASE WHEN total_mastered > 0 THEN total_mastered - 1 ELSE 0 END'))
+                    ->set('updated_at', $dqb->createNamedParameter(time()))
+                    ->where($dqb->expr()->eq('user_id', $dqb->createNamedParameter($userId)));
+                $demoted = $dqb->execute();
+
+                if ($demoted === 0) {
+                    $this->xpService->updateUserStats($userId);
+                }
+            }
+
+            // Award Leitner XP: 5 XP per correct answer
+            if ($correct) {
+                $leitnerXp = 5;
+
+                // R2 #1: Only award mastery bonus on actual promotion (Box <5 → 5), not Box 5→5
+                if ($currentBox < 5 && $newBox === 5) {
+                    $leitnerXp += 25; // Box-5 mastery bonus
+                    // DB-only badge insert, no notifications (post-commit pattern)
+                    $response['newly_earned_badges'] = $this->badgeService->checkAndAward($userId, 'leitner_mastery', [], false);
+
+                    // Increment denormalized mastered count
+                    $mqb = $this->db->getQueryBuilder();
+                    $mqb->update('learning_user_stats')
+                        ->set('total_mastered', $mqb->createFunction('total_mastered + 1'))
+                        ->set('updated_at', $mqb->createNamedParameter(time()))
+                        ->where($mqb->expr()->eq('user_id', $mqb->createNamedParameter($userId)));
+                    $mqb->execute();
+                }
+
+                // Skip syncLevel inside transaction (defer to after commit)
+                $this->xpService->incrementLeitnerXp($userId, $leitnerXp, true);
+            }
+
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
         }
 
-        // Invalidate cache on every answer (box/progress changes affect user state)
+        // === Post-commit side effects ===
+
+        // Sync level after XP increment (Gemini #2: outside transaction)
+        if ($correct) {
+            $this->xpService->syncLevel($userId);
+        }
+
+        // Dispatch badge notifications after commit (Codex #2)
+        if (!empty($response['newly_earned_badges'])) {
+            $this->badgeService->dispatchNotifications($userId, $response['newly_earned_badges']);
+        }
+
+        // Invalidate cache AFTER commit
         $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);
 
         // SECURITY: Suppress correct answer details during active exam to prevent oracle attack

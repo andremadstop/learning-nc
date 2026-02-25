@@ -257,8 +257,10 @@ class XpService {
     /**
      * Increment Leitner XP in user stats table (correct answer or Box-5 mastery).
      * Level is synced AFTER the atomic XP increment to avoid stale-read races.
+     *
+     * @param bool $skipSync When true, skip syncLevel() — caller must call syncLevel() after commit
      */
-    public function incrementLeitnerXp(string $userId, int $xp): void {
+    public function incrementLeitnerXp(string $userId, int $xp, bool $skipSync = false): void {
         if ($xp <= 0) {
             return;
         }
@@ -277,8 +279,9 @@ class XpService {
             return;
         }
 
-        // Re-read total_xp after atomic increment and sync level
-        $this->syncLevel($userId);
+        if (!$skipSync) {
+            $this->syncLevel($userId);
+        }
     }
 
     /**
@@ -286,7 +289,7 @@ class XpService {
      * Called after atomic total_xp increments to avoid stale-level races.
      * Monotonic: only increases level, never decreases — safe under concurrency.
      */
-    private function syncLevel(string $userId): void {
+    public function syncLevel(string $userId): void {
         $qb = $this->db->getQueryBuilder();
         $qb->select('total_xp')
            ->from('learning_user_stats')

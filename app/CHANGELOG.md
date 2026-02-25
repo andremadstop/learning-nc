@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0] - 2026-02-26
+
+### Added
+- **ConsistencyCheckJob**: Daily background job that reconciles `learning_user_stats` against source-of-truth tables — self-healing for XP, level, sessions, mastered counts, and streaks
+- **Composite Leitner indices**: `(user_id, box)` and `(user_id, next_review)` on `learning_leitner_items` for faster aggregations and due-question queries (Migration Version001300)
+
+### Fixed
+- **HIGH**: `LeitnerService::answerQuestion()` now wraps box update, stats update, XP increment, and badge award in a single DB transaction — prevents partial writes on crashes
+- **HIGH**: Optimistic concurrency control on Leitner item update (`WHERE box = :oldBox AND correct_count = :old AND incorrect_count = :old`) — detects and rejects concurrent modifications including Box-5→5 lost updates
+- **HIGH**: Box-5 mastery bonus (+25 XP, +1 mastered, badge check) now only awarded on actual promotion (Box <5→5), not on repeated correct answers in Box 5 — prevents XP/stats inflation
+- **HIGH**: Badge notifications and Activity events now dispatched after transaction commit — prevents ghost notifications on rollback
+- **MEDIUM**: Demotion fallback (`updateUserStats()`) moved after Leitner item update — recalc now sees correct box value instead of overcounting
+- **MEDIUM**: `syncLevel()` deferred to after transaction commit — eliminates lock contention under concurrent reviews
+- **MEDIUM**: Cache invalidation moved after transaction commit (was inside write sequence, could serve stale data on rollback)
+- **LOW**: Multi-select answer validation uses batch `IN` query instead of N+1 per-answer queries
+
+### Performance
+- Leitner box aggregations (stats, mastery counts) use composite index instead of full table scan
+- Due-question queries benefit from `(user_id, next_review)` index — faster Leitner review loading
+- ConsistencyCheckJob processes max 500 users per run, oldest-updated first — all users eventually reconciled
+- ConsistencyCheckJob logs progress and catches per-user errors without aborting the batch
+
 ## [1.5.0] - 2026-02-26
 
 ### Added

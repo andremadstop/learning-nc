@@ -38,41 +38,82 @@ class BadgeService {
         $this->activityManager = $activityManager;
     }
 
-    public function checkAndAward(string $userId, string $context, array $data): array {
+    /**
+     * @param bool $notify When false, only DB insert — no notifications/activity (for use inside transactions)
+     */
+    public function checkAndAward(string $userId, string $context, array $data, bool $notify = true): array {
         $newBadges = [];
 
         switch ($context) {
             case 'session_complete':
-                $newBadges = array_merge($newBadges, $this->checkSessionBadges($userId, $data));
+                $newBadges = array_merge($newBadges, $this->checkSessionBadges($userId, $data, $notify));
                 break;
             case 'leitner_mastery':
-                $newBadges = array_merge($newBadges, $this->checkMasteryBadges($userId));
+                $newBadges = array_merge($newBadges, $this->checkMasteryBadges($userId, $notify));
                 break;
             case 'share_created':
-                $newBadges = array_merge($newBadges, $this->checkShareBadges($userId));
+                $newBadges = array_merge($newBadges, $this->checkShareBadges($userId, $notify));
                 break;
             case 'streak_update':
-                $newBadges = array_merge($newBadges, $this->checkStreakBadges($userId, $data));
+                $newBadges = array_merge($newBadges, $this->checkStreakBadges($userId, $data, $notify));
                 break;
         }
 
         return $newBadges;
     }
 
-    private function checkSessionBadges(string $userId, array $data): array {
+    /**
+     * Dispatch notifications/activity for badges that were inserted inside a transaction.
+     * Call this AFTER commit.
+     */
+    public function dispatchNotifications(string $userId, array $badges): void {
+        foreach ($badges as $badge) {
+            $badgeId = $badge['badge_id'];
+            $def = self::BADGES[$badgeId] ?? null;
+            if (!$def) {
+                continue;
+            }
+
+            $notification = $this->notificationManager->createNotification();
+            $notification->setApp('learning')
+                ->setUser($userId)
+                ->setDateTime(new \DateTime())
+                ->setObject('badge', $badgeId)
+                ->setSubject('badge_earned', [
+                    'badge_name' => $def['name'],
+                    'badge_emoji' => $def['emoji'],
+                ]);
+            $this->notificationManager->notify($notification);
+
+            $event = $this->activityManager->generateEvent();
+            $event->setApp('learning')
+                ->setType('learning_badge_earned')
+                ->setAffectedUser($userId)
+                ->setAuthor($userId)
+                ->setTimestamp(time())
+                ->setSubject('badge_earned', [
+                    'badge_name' => $def['name'],
+                    'badge_emoji' => $def['emoji'],
+                ])
+                ->setObject('badge', (int)0, $badgeId);
+            $this->activityManager->publish($event);
+        }
+    }
+
+    private function checkSessionBadges(string $userId, array $data, bool $notify = true): array {
         $newBadges = [];
 
         // Count completed sessions
         $sessionCount = $this->getCompletedSessionCount($userId);
 
         if ($sessionCount >= 1) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'first_session'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'first_session', $notify));
         }
         if ($sessionCount >= 10) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'ten_sessions'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'ten_sessions', $notify));
         }
         if ($sessionCount >= 50) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'fifty_sessions'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'fifty_sessions', $notify));
         }
 
         // Perfect training (100%, min 5 questions)
@@ -82,12 +123,12 @@ class BadgeService {
         $scorePct = $totalQ > 0 ? round($correctA / $totalQ * 100) : 0;
 
         if ($mode === 'training' && $scorePct === 100 && $totalQ >= 5) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'perfect_training'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'perfect_training', $notify));
         }
 
         // Exam ace (90%+, min 10 questions)
         if ($mode === 'exam' && $scorePct >= 90 && $totalQ >= 10) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'perfect_exam'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'perfect_exam', $notify));
         }
 
         // Speed demon: exam in <50% of time limit with 80%+ score
@@ -98,7 +139,7 @@ class BadgeService {
             if ($startedAt > 0 && $completedAt > 0 && $timeLimit > 0) {
                 $timeTaken = $completedAt - $startedAt;
                 if ($timeTaken < ($timeLimit * 0.5)) {
-                    $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'speed_demon'));
+                    $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'speed_demon', $notify));
                 }
             }
         }
@@ -113,51 +154,51 @@ class BadgeService {
         }
         $hour = (int)$dt->format('G');
         if ($hour >= 23 || $hour < 5) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'night_owl'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'night_owl', $notify));
         }
         if ($hour >= 5 && $hour < 7) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'early_bird'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'early_bird', $notify));
         }
 
         return $newBadges;
     }
 
-    private function checkMasteryBadges(string $userId): array {
+    private function checkMasteryBadges(string $userId, bool $notify = true): array {
         $newBadges = [];
         $box5Count = $this->getBox5Count($userId);
 
         if ($box5Count >= 10) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastermind_10'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastermind_10', $notify));
         }
         if ($box5Count >= 100) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastermind_100'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastermind_100', $notify));
         }
 
         return $newBadges;
     }
 
-    private function checkShareBadges(string $userId): array {
-        return $this->awardIfNew($userId, 'sharing_caring');
+    private function checkShareBadges(string $userId, bool $notify = true): array {
+        return $this->awardIfNew($userId, 'sharing_caring', $notify);
     }
 
-    private function checkStreakBadges(string $userId, array $data): array {
+    private function checkStreakBadges(string $userId, array $data, bool $notify = true): array {
         $newBadges = [];
         $streak = (int)($data['current_streak'] ?? 0);
 
         if ($streak >= 7) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_7'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_7', $notify));
         }
         if ($streak >= 30) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_30'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_30', $notify));
         }
         if ($streak >= 100) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_100'));
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_100', $notify));
         }
 
         return $newBadges;
     }
 
-    private function awardIfNew(string $userId, string $badgeId): array {
+    private function awardIfNew(string $userId, string $badgeId, bool $notify = true): array {
         // Atomic insert — UNIQUE(user_id, badge_id) prevents duplicates
         try {
             $qb = $this->db->getQueryBuilder();
@@ -173,8 +214,22 @@ class BadgeService {
         }
 
         $def = self::BADGES[$badgeId];
+        $badgeData = [
+            'badge_id' => $badgeId,
+            'name' => $def['name'],
+            'emoji' => $def['emoji'],
+            'description' => $def['description'],
+        ];
 
-        // Send NC notification
+        // When called inside a transaction, skip side-effects — caller dispatches after commit
+        if ($notify) {
+            $this->dispatchSingleNotification($userId, $badgeId, $def);
+        }
+
+        return [$badgeData];
+    }
+
+    private function dispatchSingleNotification(string $userId, string $badgeId, array $def): void {
         $notification = $this->notificationManager->createNotification();
         $notification->setApp('learning')
             ->setUser($userId)
@@ -186,7 +241,6 @@ class BadgeService {
             ]);
         $this->notificationManager->notify($notification);
 
-        // Publish Activity event
         $event = $this->activityManager->generateEvent();
         $event->setApp('learning')
             ->setType('learning_badge_earned')
@@ -199,13 +253,6 @@ class BadgeService {
             ])
             ->setObject('badge', (int)0, $badgeId);
         $this->activityManager->publish($event);
-
-        return [[
-            'badge_id' => $badgeId,
-            'name' => $def['name'],
-            'emoji' => $def['emoji'],
-            'description' => $def['description'],
-        ]];
     }
 
     private function getCompletedSessionCount(string $userId): int {

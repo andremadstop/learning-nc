@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\AppInfo;
 
+use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
 use OCA\Learning\BackgroundJob\NotificationJob;
 use OCA\Learning\Dashboard\LearningWidget;
 use OCA\Learning\Notification\Notifier;
@@ -10,6 +11,7 @@ use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\BackgroundJob\IJobList;
+use Psr\Log\LoggerInterface;
 
 class Application extends App implements IBootstrap {
     public const APP_ID = 'learning';
@@ -26,8 +28,19 @@ class Application extends App implements IBootstrap {
     public function boot(IBootContext $context): void {
         $container = $context->getServerContainer();
         $jobList = $container->get(IJobList::class);
-        if (!$jobList->has(NotificationJob::class, null)) {
-            $jobList->add(NotificationJob::class);
+        try {
+            if (!$jobList->has(NotificationJob::class, null)) {
+                $jobList->add(NotificationJob::class);
+            }
+            if (!$jobList->has(ConsistencyCheckJob::class, null)) {
+                $jobList->add(ConsistencyCheckJob::class);
+            }
+        } catch (\Throwable $e) {
+            // Duplicate entry is harmless (NC deduplicates), but log unexpected errors (R2 #5)
+            $container->get(LoggerInterface::class)->warning(
+                'Learning: job registration failed: ' . $e->getMessage(),
+                ['app' => 'learning']
+            );
         }
     }
 }
