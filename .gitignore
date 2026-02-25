@@ -42,7 +42,8 @@ CLAUDE.md
 # Environment (contains passwords)
 .env
 
-# Signing key (NEVER commit)
+# Signing certificates & keys (NEVER commit)
+certs/
 PRIVATE-signing-key.txt
 *.key
 *.pem
