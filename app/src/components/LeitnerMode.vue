@@ -33,6 +33,7 @@
         <div class="stat-card"><div class="stat-value">{{ stats.accuracy }}%</div><div class="stat-label">{{ t('learning', 'Accuracy') }}</div></div>
         <div class="stat-card"><div class="stat-value">{{ stats.mastery_percentage }}%</div><div class="stat-label">{{ t('learning', 'Mastered') }}</div></div>
         <div class="stat-card"><div class="stat-value">{{ stats.total_answered }}</div><div class="stat-label">{{ t('learning', 'Reviews Done') }}</div></div>
+        <div v-if="streak.current_streak > 0" class="stat-card streak-card" :title="t('learning', 'Longest: {n} days', { n: streak.longest_streak })"><div class="stat-value streak-value">\uD83D\uDD25 {{ streak.current_streak }}</div><div class="stat-label">{{ t('learning', 'Day Streak') }}</div></div>
       </div>
 
       <h4 class="section-title">{{ t('learning', 'Leitner Boxes') }}</h4>
@@ -114,12 +115,14 @@
 
     <div v-else class="review-complete">
       <h3>{{ t('learning', 'Review Complete!') }}</h3>
+      <div v-if="streak.current_streak > 0" class="streak-banner">\uD83D\uDD25 {{ t('learning', 'Day {n}!', { n: streak.current_streak }) }}</div>
       <div class="session-stats">
         <div class="session-stat correct"><div class="session-stat-value">{{ sessionCorrect }}</div><div class="session-stat-label">{{ t('learning', 'Correct') }}</div></div>
         <div class="session-stat incorrect"><div class="session-stat-value">{{ sessionIncorrect }}</div><div class="session-stat-label">{{ t('learning', 'Incorrect') }}</div></div>
-        <div class="session-stat accuracy"><div class="session-stat-value">{{ sessionAccuracy }}%</div><div class="session-stat-label">{{ t('learning', 'Accuracy') }}</div></div>
+        <div class="session-stat accuracy"><div class="session-stat-value" ref="leitnerAccuracy">{{ sessionAccuracy }}%</div><div class="session-stat-label">{{ t('learning', 'Accuracy') }}</div></div>
       </div>
       <NcButton type="primary" @click="finishReview">{{ t('learning', 'Back to Dashboard') }}</NcButton>
+      <BadgeUnlock :badges="newBadges" />
     </div>
   </div>
 </template>
@@ -131,10 +134,13 @@ import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess, showError } from '@nextcloud/dialogs';
+import { celebrateMastery, celebrateStreak, isStreakMilestone } from '../confetti.js';
+import { countUp } from '../countUp.js';
+import BadgeUnlock from './BadgeUnlock.vue';
 
 export default {
   name: 'LeitnerMode',
-  components: { NcButton, NcNoteCard, NcProgressBar },
+  components: { NcButton, NcNoteCard, NcProgressBar, BadgeUnlock },
   props: { poolId: { type: Number, required: true } },
   data() {
     return {
@@ -145,6 +151,8 @@ export default {
       selectedAnswerIds: [],
       lastSelectedAnswerId: null,
       lastSelectedAnswerIds: [],
+      streak: { current_streak: 0, longest_streak: 0, is_active_today: false },
+      newBadges: [],
       boxLabels: { 1: t('learning', 'New / Reset'), 2: t('learning', 'After 1 day'), 3: t('learning', 'After 3 days'), 4: t('learning', 'After 7 days'), 5: t('learning', 'Mastered (14d)') }
     };
   },
@@ -154,7 +162,7 @@ export default {
     reviewProgress() { return ((this.currentIndex + (this.answered ? 1 : 0)) / this.dueQuestions.length) * 100; },
     sessionAccuracy() { const total = this.sessionCorrect + this.sessionIncorrect; return total > 0 ? Math.round(this.sessionCorrect / total * 100) : 0; }
   },
-  mounted() { this.checkInitialized(); },
+  mounted() { this.checkInitialized(); this.fetchStreak(); },
   methods: {
     async checkInitialized() {
       this.initError = null;
@@ -194,6 +202,8 @@ export default {
         this.lastCorrectAnswerText = r.data.correct_answer_text || '';
         this.lastCorrectAnswerTexts = r.data.correct_answer_texts || [this.lastCorrectAnswerText];
         if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
+        if (r.data.new_box === 5) { celebrateMastery(); }
+        if (r.data.newly_earned_badges && r.data.newly_earned_badges.length > 0) { this.newBadges = [...this.newBadges, ...r.data.newly_earned_badges]; }
       } catch (e) { showError(t('learning', 'Failed to record answer')); }
       finally { this.submitting = false; }
     },
@@ -206,6 +216,8 @@ export default {
         this.lastCorrectAnswerText = r.data.correct_answer_text || '';
         this.lastCorrectAnswerTexts = r.data.correct_answer_texts || [this.lastCorrectAnswerText];
         if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
+        if (r.data.new_box === 5) { celebrateMastery(); }
+        if (r.data.newly_earned_badges && r.data.newly_earned_badges.length > 0) { this.newBadges = [...this.newBadges, ...r.data.newly_earned_badges]; }
       } catch (e) { showError(t('learning', 'Failed to record answer')); }
       finally { this.submitting = false; }
     },
@@ -215,12 +227,30 @@ export default {
       }
       return this.lastCorrectAnswerText || '';
     },
-    nextQuestion() {
+    async nextQuestion() {
       if (this.currentIndex < this.dueQuestions.length - 1) { this.currentIndex++; this.answered = false; this.selectedAnswerIds = []; this.lastSelectedAnswerId = null; this.lastSelectedAnswerIds = []; }
-      else { this.showResults = true; }
+      else {
+        const oldStreak = this.streak.current_streak;
+        await this.fetchStreak();
+        if (this.streak.current_streak > 0 && isStreakMilestone(this.streak.current_streak) && this.streak.current_streak > oldStreak) {
+          celebrateStreak(this.streak.current_streak);
+        }
+        this.showResults = true;
+        this.$nextTick(() => {
+          if (this.$refs.leitnerAccuracy) {
+            countUp(this.$refs.leitnerAccuracy, this.sessionAccuracy, 1000, '%');
+          }
+        });
+      }
+    },
+    async fetchStreak() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/streak'));
+        this.streak = r.data;
+      } catch (e) { /* streak is optional, ignore errors */ }
     },
     boxPercentage(n) { return this.stats.total === 0 ? 0 : Math.round((this.stats['box_' + n] || 0) / this.stats.total * 100); },
-    finishReview() { this.started = false; this.currentIndex = 0; this.answered = false; this.showResults = false; this.checkInitialized(); }
+    finishReview() { this.started = false; this.currentIndex = 0; this.answered = false; this.showResults = false; this.checkInitialized(); this.fetchStreak(); }
   }
 };
 </script>
@@ -231,7 +261,7 @@ export default {
 .leitner-init p { color: var(--color-text-maxcontrast); margin-bottom: 24px; }
 .init-actions { display: flex; justify-content: center; gap: 8px; }
 .due-banner { margin-bottom: 24px; }
-.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 24px; }
 .stat-card { text-align: center; padding: 16px 8px; background: var(--color-main-background); border: 1px solid var(--color-border); border-radius: var(--border-radius-large); }
 .stat-value { font-size: 28px; font-weight: 700; color: var(--color-primary-element); }
 .stat-label { font-size: 12px; color: var(--color-text-maxcontrast); margin-top: 4px; }
@@ -290,6 +320,9 @@ export default {
   .leitner-init { padding: 30px 12px; }
 }
 .due-start-btn { margin-top: 8px; }
+.streak-card { border-color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 8%, var(--color-main-background)); }
+.streak-value { color: var(--color-warning); }
+.streak-banner { font-size: 24px; font-weight: 700; color: var(--color-warning); margin-bottom: 16px; }
 .answer-buttons-review { display: grid; gap: 8px; margin-bottom: 12px; }
 .answer-btn-review { padding: 10px 14px; border: 2px solid var(--color-border); border-radius: var(--border-radius-large); font-size: 14px; color: var(--color-main-text); background: var(--color-main-background); }
 .answer-btn-review.answer-correct { border-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background)); }

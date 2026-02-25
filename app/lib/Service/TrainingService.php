@@ -6,6 +6,8 @@ use OCA\Learning\Db\QuestionMapper;
 use OCA\Learning\Db\AnswerMapper;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
+use OCA\Learning\Service\BadgeService;
+use OCA\Learning\Service\StreakService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IDBConnection;
 
@@ -15,19 +17,25 @@ class TrainingService {
     private $answerMapper;
     private $poolMapper;
     private $shareMapper;
+    private $badgeService;
+    private $streakService;
 
     public function __construct(
         IDBConnection $db,
         QuestionMapper $questionMapper,
         AnswerMapper $answerMapper,
         PoolMapper $poolMapper,
-        PoolShareMapper $shareMapper
+        PoolShareMapper $shareMapper,
+        BadgeService $badgeService,
+        StreakService $streakService
     ) {
         $this->db = $db;
         $this->questionMapper = $questionMapper;
         $this->answerMapper = $answerMapper;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
+        $this->badgeService = $badgeService;
+        $this->streakService = $streakService;
     }
 
     private function hasPoolAccess(int $poolId, string $userId): bool {
@@ -563,7 +571,52 @@ class TrainingService {
             $response['review'] = $this->getSessionReview($sessionId);
         }
 
+        // Badge check
+        $sessionData = [
+            'mode' => $session['mode'] ?? 'training',
+            'total_questions' => (int)$session['total_questions'],
+            'correct_answers' => (int)$session['correct_answers'],
+            'completed_at' => (int)$session['completed_at'],
+            'started_at' => (int)$session['started_at'],
+        ];
+        $newBadges = $this->badgeService->checkAndAward($userId, 'session_complete', $sessionData);
+        $response['newly_earned_badges'] = $newBadges;
+
+        // XP for this session
+        $streak = $this->streakService->getStreak($userId);
+        $response['xp_earned'] = $this->badgeService->calculateSessionXp($sessionData, $streak['current_streak']);
+
+        // Streak badge check
+        $streakBadges = $this->badgeService->checkAndAward($userId, 'streak_update', $streak);
+        $response['newly_earned_badges'] = array_merge($newBadges, $streakBadges);
+
+        // Personal best: compare score to user's average for this pool in this mode
+        $poolId = (int)$session['pool_id'];
+        $mode = $session['mode'] ?? 'training';
+        $avgAccuracy = $this->getAverageAccuracy($poolId, $userId, $mode, $sessionId);
+        $response['average_accuracy'] = $avgAccuracy;
+        $response['is_personal_best'] = $response['score_percentage'] > $avgAccuracy && $avgAccuracy > 0;
+        $improvement = $avgAccuracy > 0 ? round($response['score_percentage'] - $avgAccuracy) : 0;
+        $response['improvement'] = $improvement;
+
         return $response;
+    }
+
+    private function getAverageAccuracy(int $poolId, string $userId, string $mode, int $excludeSessionId): float {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select(
+            $qb->createFunction('AVG(CASE WHEN total_questions > 0 THEN (correct_answers * 100.0) / total_questions ELSE 0 END) as avg_pct')
+        )
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter($mode)))
+           ->andWhere($qb->expr()->isNotNull('completed_at'))
+           ->andWhere($qb->expr()->neq('id', $qb->createNamedParameter($excludeSessionId)));
+        $result = $qb->execute();
+        $row = $result->fetch();
+        $result->closeCursor();
+        return round((float)($row['avg_pct'] ?? 0));
     }
 
     private function getSessionReview(int $sessionId): array {

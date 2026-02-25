@@ -79,14 +79,21 @@
 
     <div v-else class="training-results">
       <h3>{{ t('learning', 'Training Complete!') }}</h3>
+      <div v-if="streak.current_streak > 0" class="streak-banner">\uD83D\uDD25 {{ t('learning', 'Day {n}!', { n: streak.current_streak }) }}</div>
+      <div v-if="results.is_personal_best" class="personal-best-banner">{{ t('learning', 'Personal Best!') }}</div>
       <div class="score-display">
-        <div class="score-circle"><span class="score-number">{{ results.score_percentage }}%</span></div>
+        <div class="score-circle"><span class="score-number" ref="scoreNumber">{{ results.score_percentage }}%</span></div>
         <p>{{ t('learning', '{n} out of {total} correct', { n: results.correct_answers, total: results.total_questions }) }}</p>
+        <div v-if="results.improvement && results.improvement !== 0" class="improvement-label" :class="results.improvement > 0 ? 'improvement-up' : 'improvement-down'">
+          {{ results.improvement > 0 ? '+' : '' }}{{ results.improvement }}% {{ t('learning', 'vs average') }}
+        </div>
       </div>
+      <div v-if="results.xp_earned" class="xp-earned">+{{ results.xp_earned }} XP</div>
       <div class="result-actions">
         <NcButton type="primary" @click="restartTraining">{{ t('learning', 'Train Again') }}</NcButton>
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Questions') }}</NcButton>
       </div>
+      <BadgeUnlock :badges="newBadges" />
     </div>
   </div>
 </template>
@@ -99,10 +106,13 @@ import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showError } from '@nextcloud/dialogs';
+import { celebratePerfectSession, celebrateStreak, isStreakMilestone } from '../confetti.js';
+import { countUp } from '../countUp.js';
+import BadgeUnlock from './BadgeUnlock.vue';
 
 export default {
   name: 'TrainingMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent },
+  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock },
   props: {
     poolId: { type: Number, required: true },
     totalQuestions: { type: Number, required: true }
@@ -114,7 +124,9 @@ export default {
       selectedAnswerIds: [],
       lastSelectedAnswerId: null,
       lastSelectedAnswerIds: [],
-      showResults: false, results: null, starting: false, loadError: null
+      showResults: false, results: null, starting: false, loadError: null,
+      streak: { current_streak: 0, longest_streak: 0, is_active_today: false },
+      newBadges: []
     };
   },
   computed: {
@@ -187,7 +199,29 @@ export default {
       try {
         const response = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session });
         this.results = response.data; this.showResults = true;
+        if (this.results.score_percentage === 100) { celebratePerfectSession(); }
+        const oldStreak = this.streak.current_streak;
+        await this.fetchStreak();
+        if (this.streak.current_streak > 0 && isStreakMilestone(this.streak.current_streak) && this.streak.current_streak > oldStreak) {
+          celebrateStreak(this.streak.current_streak);
+        }
+        // Animate score count-up
+        this.$nextTick(() => {
+          if (this.$refs.scoreNumber) {
+            countUp(this.$refs.scoreNumber, this.results.score_percentage, 1200, '%');
+          }
+        });
+        // Show badge unlocks
+        if (response.data.newly_earned_badges && response.data.newly_earned_badges.length > 0) {
+          this.newBadges = response.data.newly_earned_badges;
+        }
       } catch (error) { showError(t('learning', 'Failed to complete session')); }
+    },
+    async fetchStreak() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/streak'));
+        this.streak = r.data;
+      } catch (e) { /* streak is optional */ }
     },
     skipQuestion() {
       if (this.currentIndex < this.questions.length - 1) {
@@ -252,4 +286,12 @@ export default {
 .answer-btn-review.answer-correct { border-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background)); }
 .answer-btn-review.answer-user-selected { border-color: var(--color-primary-element); }
 .answer-btn-review.answer-wrong-selected { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, var(--color-main-background)); }
+.streak-banner { font-size: 24px; font-weight: 700; color: var(--color-warning); margin-bottom: 16px; text-align: center; }
+.personal-best-banner { font-size: 20px; font-weight: 700; color: var(--color-success); margin-bottom: 12px; text-align: center; animation: pbPulse 1s ease-in-out 2; }
+@keyframes pbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.improvement-label { font-size: 14px; font-weight: 600; margin-top: 8px; }
+.improvement-up { color: var(--color-success); }
+.improvement-down { color: var(--color-text-maxcontrast); }
+.xp-earned { font-size: 22px; font-weight: 700; color: var(--color-primary-element); margin-bottom: 24px; text-align: center; animation: xpFadeIn 0.5s ease-out 0.5s both; }
+@keyframes xpFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>

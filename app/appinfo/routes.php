@@ -30,6 +30,9 @@ return [
         ['name' => 'leitner#due', 'url' => '/api/leitner/due', 'verb' => 'GET'],
         ['name' => 'leitner#answer', 'url' => '/api/leitner/answer', 'verb' => 'POST'],
         ['name' => 'leitner#stats', 'url' => '/api/leitner/stats', 'verb' => 'GET'],
+        ['name' => 'leitner#streak', 'url' => '/api/streak', 'verb' => 'GET'],
+        ['name' => 'leitner#badges', 'url' => '/api/badges', 'verb' => 'GET'],
+        ['name' => 'leitner#badgeProgress', 'url' => '/api/badges/progress', 'verb' => 'GET'],
 
         // Sharing
         ['name' => 'share#index', 'url' => '/api/pools/{poolId}/shares', 'verb' => 'GET'],

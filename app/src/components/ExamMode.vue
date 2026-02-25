@@ -122,7 +122,7 @@
 
       <div v-if="resultsData" class="results-summary">
         <div class="score-circle" :class="scoreColorClass">
-          <span class="score-number">{{ resultsData.score_percentage }}%</span>
+          <span class="score-number" ref="examScoreNumber">{{ resultsData.score_percentage }}%</span>
           <span class="score-label">{{ t('learning', 'Score') }}</span>
         </div>
 
@@ -183,10 +183,13 @@
         </div>
       </div>
 
+      <div v-if="resultsData && resultsData.xp_earned" class="xp-earned">+{{ resultsData.xp_earned }} XP</div>
+
       <div class="start-actions">
         <NcButton type="primary" wide @click="retakeExam">{{ t('learning', 'Retake Exam') }}</NcButton>
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
+      <BadgeUnlock :badges="newBadges" />
     </div>
   </div>
 </template>
@@ -198,10 +201,13 @@ import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showError } from '@nextcloud/dialogs';
+import { celebratePerfectSession } from '../confetti.js';
+import { countUp } from '../countUp.js';
+import BadgeUnlock from './BadgeUnlock.vue';
 
 export default {
   name: 'ExamMode',
-  components: { NcButton, NcProgressBar, NcLoadingIcon },
+  components: { NcButton, NcProgressBar, NcLoadingIcon, BadgeUnlock },
   props: {
     poolId: { type: Number, required: true },
     totalQuestions: { type: Number, required: true }
@@ -243,6 +249,7 @@ export default {
       resultsData: null,
       detailedResults: [],
       multiSelections: {},
+      newBadges: [],
     };
   },
   computed: {
@@ -525,6 +532,19 @@ export default {
           });
         }
         this.detailedResults = results;
+        if (this.resultsData && this.resultsData.score_percentage >= 90) {
+          celebratePerfectSession();
+        }
+        // countUp animation
+        this.$nextTick(() => {
+          if (this.$refs.examScoreNumber && this.resultsData) {
+            countUp(this.$refs.examScoreNumber, this.resultsData.score_percentage, 1200, '%');
+          }
+        });
+        // Show badge unlocks
+        if (cr.data.newly_earned_badges && cr.data.newly_earned_badges.length > 0) {
+          this.newBadges = cr.data.newly_earned_badges;
+        }
       } catch (e) {
         showError(t('learning', 'Failed to process results'));
         this.resultsData = {
@@ -749,6 +769,9 @@ export default {
 .ra-wrong-selected { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, var(--color-main-background)); color: var(--color-error); }
 .ra-correct-missed { border-color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 10%, var(--color-main-background)); color: var(--color-warning); }
 .ra-neutral { color: var(--color-text-maxcontrast); }
+
+.xp-earned { font-size: 22px; font-weight: 700; color: var(--color-primary-element); margin: 16px 0 8px; text-align: center; animation: xpFadeIn 0.5s ease-out 0.5s both; }
+@keyframes xpFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 768px) {
   .timer-display { font-size: 36px; }

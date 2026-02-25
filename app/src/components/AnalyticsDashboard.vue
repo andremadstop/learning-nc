@@ -14,8 +14,24 @@
     <div v-else>
       <h2>{{ t('learning', 'Learning Statistics') }}</h2>
 
+      <!-- XP + Level Bar -->
+      <div v-if="xp.total_xp > 0" class="xp-section">
+        <div class="xp-header">
+          <span class="xp-level">{{ t('learning', 'Level {n}', { n: xp.level }) }}</span>
+          <span class="xp-total">{{ xp.total_xp }} XP</span>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-bar-fill" :style="{ width: xp.level_progress_pct + '%' }"></div>
+        </div>
+        <div class="xp-sublabel">{{ xp.xp_in_level }} / {{ xp.xp_to_next_level }} XP {{ t('learning', 'to next level') }}</div>
+      </div>
+
       <!-- Summary Cards Row -->
       <div class="summary-cards">
+        <div v-if="streak.current_streak > 0" class="summary-card streak-card" :title="t('learning', 'Longest: {n} days', { n: streak.longest_streak })">
+          <p class="card-label">{{ t('learning', 'Streak') }}</p>
+          <p class="card-value streak-value">\uD83D\uDD25 {{ streak.current_streak }}</p>
+        </div>
         <div class="summary-card">
           <p class="card-label">{{ t('learning', 'Total Questions') }}</p>
           <p class="card-value">{{ stats.total }}</p>
@@ -97,6 +113,31 @@
           <div class="progress-fill" :style="accuracyProgressStyle"></div>
         </div>
       </div>
+
+      <!-- Achievements Section -->
+      <div v-if="badges.length > 0" class="achievements-section">
+        <h3>{{ t('learning', 'Achievements') }}</h3>
+        <div class="badges-grid">
+          <div
+            v-for="badge in badges"
+            :key="badge.badge_id"
+            :class="['badge-item', { 'badge-locked': !badge.earned }]"
+            :title="badge.earned ? badge.name + ' — ' + formatDate(badge.earned_at) : badge.description"
+          >
+            <span class="badge-emoji">{{ badge.emoji }}</span>
+            <span class="badge-name">{{ badge.name }}</span>
+          </div>
+        </div>
+        <div v-if="badgeProgress.length > 0" class="badge-progress-section">
+          <h4>{{ t('learning', 'Next Achievements') }}</h4>
+          <div v-for="bp in badgeProgress" :key="bp.badge_id" class="badge-progress-item">
+            <span class="bp-emoji">{{ bp.emoji }}</span>
+            <span class="bp-name">{{ bp.name }}</span>
+            <div class="bp-bar"><div class="bp-bar-fill" :style="{ width: bp.percentage + '%' }"></div></div>
+            <span class="bp-label">{{ bp.current }}/{{ bp.target }}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -135,6 +176,10 @@ export default {
         total_answered: 0,
         accuracy: 0,
       },
+      streak: { current_streak: 0, longest_streak: 0, is_active_today: false },
+      badges: [],
+      badgeProgress: [],
+      xp: { total_xp: 0, level: 1, xp_in_level: 0, xp_to_next_level: 100, level_progress_pct: 0 },
     };
   },
   computed: {
@@ -176,6 +221,29 @@ export default {
     goBack() {
       this.$emit('back');
     },
+    async fetchStreak() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/streak'));
+        this.streak = r.data;
+      } catch (e) { /* streak is optional */ }
+    },
+    async fetchBadges() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/badges'));
+        this.badges = r.data.badges || [];
+        this.xp = r.data.xp || this.xp;
+      } catch (e) { /* badges are optional */ }
+    },
+    async fetchBadgeProgress() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/badges/progress'));
+        this.badgeProgress = r.data?.progress || [];
+      } catch (e) { /* progress is optional */ }
+    },
+    formatDate(ts) {
+      if (!ts) return '';
+      return new Date(ts * 1000).toLocaleDateString();
+    },
     boxBarStyle(count, colorName) {
       const total = this.stats.total;
       const width = total > 0 ? (count / total) * 100 : 0;
@@ -188,6 +256,9 @@ export default {
   },
   created() {
     this.fetchStats();
+    this.fetchStreak();
+    this.fetchBadges();
+    this.fetchBadgeProgress();
   },
 };
 </script>
@@ -351,6 +422,36 @@ h2, h3 {
   border-radius: var(--border-radius, 4px);
   transition: width 0.5s ease-in-out;
 }
+
+/* XP Section */
+.xp-section { margin-bottom: 24px; padding: 16px; background: color-mix(in srgb, var(--color-primary-element) 8%, transparent); border-radius: var(--border-radius-large, 8px); border: 1px solid var(--color-border); }
+.xp-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.xp-level { font-size: 1.2em; font-weight: 700; color: var(--color-primary-element); }
+.xp-total { font-size: 0.9em; color: var(--color-text-maxcontrast); font-weight: 600; }
+.xp-bar { width: 100%; height: 12px; background: var(--color-background-dark); border-radius: 6px; overflow: hidden; }
+.xp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--color-primary-element), var(--color-success)); border-radius: 6px; transition: width 0.8s ease-in-out; }
+.xp-sublabel { font-size: 0.8em; color: var(--color-text-maxcontrast); margin-top: 4px; text-align: right; }
+
+/* Achievements Section */
+.achievements-section { margin-bottom: 30px; }
+.badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.badge-item { display: flex; flex-direction: column; align-items: center; padding: 14px 8px; border-radius: var(--border-radius-large, 8px); border: 1px solid var(--color-border); background: var(--color-main-background); text-align: center; transition: transform 0.2s; cursor: default; }
+.badge-item:not(.badge-locked):hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.badge-locked { opacity: 0.35; filter: grayscale(1); }
+.badge-emoji { font-size: 28px; margin-bottom: 6px; }
+.badge-name { font-size: 11px; font-weight: 600; color: var(--color-main-text); line-height: 1.3; }
+
+/* Badge Progress */
+.badge-progress-section h4 { font-size: 14px; margin-bottom: 10px; color: var(--color-text-maxcontrast); }
+.badge-progress-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.bp-emoji { font-size: 20px; flex-shrink: 0; }
+.bp-name { font-size: 13px; font-weight: 500; min-width: 100px; color: var(--color-main-text); }
+.bp-bar { flex: 1; height: 8px; background: var(--color-background-dark); border-radius: 4px; overflow: hidden; }
+.bp-bar-fill { height: 100%; background: var(--color-primary-element); border-radius: 4px; transition: width 0.5s ease; }
+.bp-label { font-size: 12px; color: var(--color-text-maxcontrast); font-weight: 600; min-width: 50px; text-align: right; }
+
+.streak-card { border-color: var(--color-warning); background-color: color-mix(in srgb, var(--color-warning) 10%, transparent); }
+.streak-value { color: var(--color-warning) !important; }
 
 @media (max-width: 480px) {
   .summary-cards { grid-template-columns: repeat(2, 1fr); }

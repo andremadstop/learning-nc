@@ -335,6 +335,32 @@
     "Instructor Dashboard" : "Dozenten-Dashboard",
     "Refresh" : "Aktualisieren",
     "Students" : "Studenten",
-    "Failed to load dashboard." : "Dashboard konnte nicht geladen werden."
+    "Failed to load dashboard." : "Dashboard konnte nicht geladen werden.",
+
+    "Achievement Unlocked!" : "Erfolg freigeschaltet!",
+    "Achievements" : "Erfolge",
+    "Next Achievements" : "Nächste Erfolge",
+    "Level {n}" : "Level {n}",
+    "to next level" : "zum nächsten Level",
+    "Personal Best!" : "Persönlicher Rekord!",
+    "vs average" : "vs. Durchschnitt",
+    "{n} out of {total} correct" : "{n} von {total} richtig",
+    "correct" : "richtig",
+
+    "Achievement unlocked: %s %s" : "Erfolg freigeschaltet: %s %s",
+    "Don't break your %s-day streak! Review some cards today." : "Brich deine %s-Tage-Serie nicht ab! Wiederhole heute einige Karten.",
+    "You have %s cards waiting for review" : "Du hast %s Karten zur Wiederholung bereit",
+
+    "%n day streak" : "%n-Tage-Serie",
+    "Longest: %s days" : "Längste: %s Tage",
+    "%n question due" : "%n Frage fällig",
+    "%n questions due" : "%n Fragen fällig",
+    "%s%% mastered (%s/%s)" : "%s%% gemeistert (%s/%s)",
+    "All caught up! No questions due right now." : "Alles erledigt! Keine Fragen fällig.",
+
+    "Streak" : "Serie",
+    "Day Streak" : "Tage-Serie",
+    "Day {n}!" : "Tag {n}!",
+    "Longest: {n} days" : "Längste: {n} Tage"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

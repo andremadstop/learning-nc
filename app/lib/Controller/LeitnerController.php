@@ -3,6 +3,8 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\LeitnerService;
+use OCA\Learning\Service\StreakService;
+use OCA\Learning\Service\BadgeService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
@@ -10,11 +12,15 @@ use OCP\IRequest;
 
 class LeitnerController extends Controller {
     private $service;
+    private $streakService;
+    private $badgeService;
     private $userId;
 
-    public function __construct($appName, IRequest $request, LeitnerService $service, $userId) {
+    public function __construct($appName, IRequest $request, LeitnerService $service, StreakService $streakService, BadgeService $badgeService, $userId) {
         parent::__construct($appName, $request);
         $this->service = $service;
+        $this->streakService = $streakService;
+        $this->badgeService = $badgeService;
         $this->userId = $userId;
     }
 
@@ -62,6 +68,48 @@ class LeitnerController extends Controller {
             return new DataResponse($this->service->getStats($poolId, $this->userId));
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to load stats'], 400);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function streak(): DataResponse {
+        try {
+            $streakData = $this->streakService->getStreak($this->userId);
+            return new DataResponse($streakData);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to load streak'], 400);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function badges(): DataResponse {
+        try {
+            $badges = $this->badgeService->getUserBadges($this->userId);
+            $xp = $this->badgeService->calculateXp($this->userId);
+            return new DataResponse([
+                'badges' => $badges,
+                'xp' => $xp,
+            ]);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to load badges'], 400);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function badgeProgress(): DataResponse {
+        try {
+            return new DataResponse(['progress' => $this->badgeService->getBadgeProgress($this->userId)]);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to load badge progress'], 400);
         }
     }
 }

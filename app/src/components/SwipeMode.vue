@@ -103,14 +103,16 @@
       <h3>{{ t('learning', 'Session Complete!') }}</h3>
       <div class="score-area">
         <div class="score-circle">
-          <span class="score-number">{{ results ? results.score_percentage : 0 }}%</span>
+          <span class="score-number" ref="swipeScoreNumber">{{ results ? results.score_percentage : 0 }}%</span>
         </div>
         <p class="score-detail" v-if="results">{{ results.correct_answers }} / {{ results.total_questions }} {{ t('learning', 'correct') }}</p>
       </div>
+      <div v-if="results && results.xp_earned" class="xp-earned">+{{ results.xp_earned }} XP</div>
       <div class="start-actions">
         <NcButton type="primary" @click="restartSession">{{ t('learning', 'Swipe Again') }}</NcButton>
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
+      <BadgeUnlock :badges="newBadges" />
     </div>
   </div>
 </template>
@@ -123,10 +125,12 @@ import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showError } from '@nextcloud/dialogs';
+import { countUp } from '../countUp.js';
+import BadgeUnlock from './BadgeUnlock.vue';
 
 export default {
   name: 'SwipeMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent },
+  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock },
   props: {
     poolId: { type: Number, required: true },
     totalQuestions: { type: Number, required: true }
@@ -157,6 +161,7 @@ export default {
       dragStartX: 0,
       dragStartY: 0,
       dragDeltaX: 0,
+      newBadges: [],
     };
   },
   computed: {
@@ -365,11 +370,19 @@ export default {
       try {
         var r = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session });
         this.results = r.data;
+        if (r.data.newly_earned_badges && r.data.newly_earned_badges.length > 0) {
+          this.newBadges = r.data.newly_earned_badges;
+        }
       } catch (e) {
         showError(t('learning', 'Failed to complete session'));
         this.results = { score_percentage: 0, correct_answers: 0, total_questions: this.questions.length };
       }
       this.showResults = true;
+      this.$nextTick(() => {
+        if (this.$refs.swipeScoreNumber && this.results) {
+          countUp(this.$refs.swipeScoreNumber, this.results.score_percentage, 1000, '%');
+        }
+      });
     },
 
     restartSession() {
@@ -543,6 +556,9 @@ export default {
 }
 .score-number { font-size: 42px; font-weight: 700; }
 .score-detail { font-size: 16px; color: var(--color-text-maxcontrast); }
+
+.xp-earned { font-size: 22px; font-weight: 700; color: var(--color-primary-element); margin-bottom: 24px; text-align: center; animation: xpFadeIn 0.5s ease-out 0.5s both; }
+@keyframes xpFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Card animations */
 .card-enter { animation: cardIn 0.3s ease-out; }

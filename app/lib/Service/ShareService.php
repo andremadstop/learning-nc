@@ -5,6 +5,7 @@ namespace OCA\Learning\Service;
 use OCA\Learning\Db\PoolShare;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Db\PoolMapper;
+use OCA\Learning\Service\BadgeService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IUserManager;
 
@@ -12,11 +13,13 @@ class ShareService {
     private PoolShareMapper $shareMapper;
     private PoolMapper $poolMapper;
     private IUserManager $userManager;
+    private BadgeService $badgeService;
 
-    public function __construct(PoolShareMapper $shareMapper, PoolMapper $poolMapper, IUserManager $userManager) {
+    public function __construct(PoolShareMapper $shareMapper, PoolMapper $poolMapper, IUserManager $userManager, BadgeService $badgeService) {
         $this->shareMapper = $shareMapper;
         $this->poolMapper = $poolMapper;
         $this->userManager = $userManager;
+        $this->badgeService = $badgeService;
     }
 
     public function getSharesForPool(int $poolId, string $userId): array {
@@ -61,7 +64,12 @@ class ShareService {
         $share->setShareType($shareType);
         $share->setPermission($permission);
         $share->setCreatedBy($userId);
-        return $this->shareMapper->insert($share);
+        $result = $this->shareMapper->insert($share);
+
+        // Badge check for sharing
+        $this->badgeService->checkAndAward($userId, 'share_created', []);
+
+        return $result;
     }
 
     public function updatePermission(int $poolId, string $sharedWith, string $permission, string $userId): PoolShare {

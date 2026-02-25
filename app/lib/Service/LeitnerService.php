@@ -4,6 +4,7 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
+use OCA\Learning\Service\BadgeService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IDBConnection;
 
@@ -11,11 +12,13 @@ class LeitnerService {
     private $db;
     private $poolMapper;
     private $shareMapper;
+    private $badgeService;
 
-    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper) {
+    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService) {
         $this->db = $db;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
+        $this->badgeService = $badgeService;
     }
 
     private function hasPoolAccess(int $poolId, string $userId): bool {
@@ -193,7 +196,13 @@ class LeitnerService {
             'new_box' => $newBox,
             'next_review' => $nextReview,
             'correct' => $correct,
+            'newly_earned_badges' => [],
         ];
+
+        // Check mastery badges when card reaches Box 5
+        if ($newBox === 5) {
+            $response['newly_earned_badges'] = $this->badgeService->checkAndAward($userId, 'leitner_mastery', []);
+        }
 
         // SECURITY: Suppress correct answer details during active exam to prevent oracle attack
         $poolId = (int)$item['pool_id'];

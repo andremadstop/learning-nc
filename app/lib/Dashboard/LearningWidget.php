@@ -2,20 +2,29 @@
 declare(strict_types=1);
 namespace OCA\Learning\Dashboard;
 
+use OCA\Learning\Service\StreakService;
 use OCP\Dashboard\IAPIWidgetV2;
 use OCP\Dashboard\IIconWidget;
 use OCP\Dashboard\Model\WidgetItem;
 use OCP\Dashboard\Model\WidgetItems;
 use OCP\IDBConnection;
+use OCP\IL10N;
 use OCP\IURLGenerator;
+use OCP\Notification\IManager as INotificationManager;
 
 class LearningWidget implements IAPIWidgetV2, IIconWidget {
     private IDBConnection $db;
     private IURLGenerator $urlGenerator;
+    private IL10N $l10n;
+    private StreakService $streakService;
+    private INotificationManager $notificationManager;
 
-    public function __construct(IDBConnection $db, IURLGenerator $urlGenerator) {
+    public function __construct(IDBConnection $db, IURLGenerator $urlGenerator, IL10N $l10n, StreakService $streakService, INotificationManager $notificationManager) {
         $this->db = $db;
         $this->urlGenerator = $urlGenerator;
+        $this->l10n = $l10n;
+        $this->streakService = $streakService;
+        $this->notificationManager = $notificationManager;
     }
 
     public function getId(): string {
@@ -50,6 +59,19 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
         $items = [];
         $totalDue = 0;
 
+        // Show streak as first item if active
+        $streak = $this->streakService->getStreak($userId);
+        if ($streak['current_streak'] > 0) {
+            $appUrl = $this->urlGenerator->linkToRouteAbsolute('learning.page.index');
+            $items[] = new WidgetItem(
+                "\xF0\x9F\x94\xA5 " . $this->l10n->n('%n day streak', '%n day streak', $streak['current_streak']),
+                $this->l10n->t('Longest: %s days', [(string)$streak['longest_streak']]),
+                $appUrl,
+                '',
+                'streak'
+            );
+        }
+
         $qb = $this->db->getQueryBuilder();
         $qb->select('p.id', 'p.name', $qb->createFunction('COUNT(l.id) as due_count'))
            ->from('learning_leitner_items', 'l')
@@ -72,7 +94,7 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
             $totalDue += $dueCount;
             $items[] = new WidgetItem(
                 $pool['name'],
-                $dueCount . ($dueCount === 1 ? ' question due' : ' questions due'),
+                $this->l10n->n('%n question due', '%n questions due', $dueCount),
                 $appUrl,
                 '',
                 (string)$pool['id']
@@ -107,7 +129,7 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
                 $pct = $total > 0 ? round($mastered / $total * 100) : 0;
                 $items[] = new WidgetItem(
                     $pool['name'],
-                    $pct . '% mastered (' . $mastered . '/' . $total . ')',
+                    $this->l10n->t('%s%% mastered (%s/%s)', [(string)$pct, (string)$mastered, (string)$total]),
                     $appUrl,
                     '',
                     (string)$pool['id']
@@ -115,10 +137,43 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
             }
         }
 
-        $emptyMsg = $totalDue > 0
-            ? ''
-            : 'All caught up! No questions due right now.';
+        if ($totalDue > 0) {
+            $emptyMsg = '';
+        } elseif ($streak['current_streak'] > 0) {
+            $emptyMsg = '';
+        } else {
+            $emptyMsg = $this->l10n->t('All caught up! No questions due right now.');
+        }
+
+        // Streak warning notification: if user has a streak > 3 but hasn't learned today
+        if (!$streak['is_active_today'] && $streak['current_streak'] > 3) {
+            $this->sendNotificationOnce($userId, 'streak_warning', 'streak', gmdate('Y-m-d'), [
+                'streak_days' => $streak['current_streak'],
+            ]);
+        }
+
+        // Due reminder: if more than 10 cards are due and no session today
+        if ($totalDue > 10 && !$streak['is_active_today']) {
+            $this->sendNotificationOnce($userId, 'due_reminder', 'due', gmdate('Y-m-d'), [
+                'due_count' => $totalDue,
+            ]);
+        }
 
         return new WidgetItems($items, $emptyMsg);
+    }
+
+    private function sendNotificationOnce(string $userId, string $subject, string $objectType, string $objectId, array $params): void {
+        // Check if we already sent this notification today (objectType + objectId = unique per day)
+        $notification = $this->notificationManager->createNotification();
+        $notification->setApp('learning')
+            ->setUser($userId)
+            ->setObject($objectType, $objectId);
+
+        // Only send if not already existing
+        if ($this->notificationManager->getCount($notification) === 0) {
+            $notification->setDateTime(new \DateTime())
+                ->setSubject($subject, $params);
+            $this->notificationManager->notify($notification);
+        }
     }
 }

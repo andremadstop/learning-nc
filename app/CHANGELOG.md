@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-02-25
+
+### Added
+- **Achievements / Badges**: 14 badges across 6 categories (sessions, performance, mastery, streak, social, fun)
+- **XP & Levels**: Experience points calculated from sessions, Leitner reviews, accuracy bonuses, and streak multiplier
+- **Badge Unlock Overlay**: Animated full-screen overlay with confetti when earning a badge
+- **Analytics Dashboard**: Achievements grid with earned/locked status, badge progress bars, XP level bar
+- **Session Juice**: Animated score count-up (countUp.js), Personal Best detection, improvement vs. average display
+- **XP display**: "+X XP" shown on all results screens (Training, Exam, Swipe, Leitner)
+- **Nextcloud Notifications**: Badge unlock notifications, streak-at-risk warnings, due card reminders
+- **Badge progress tracking**: API endpoint showing progress towards unearned badges
+- New DB table `learning_user_badges` (Migration Version001100)
+- 2 new API endpoints: `GET /api/badges`, `GET /api/badges/progress`
+
+### Changed
+- Training complete response now includes `newly_earned_badges`, `xp_earned`, `is_personal_best`, `improvement`, `average_accuracy`
+- Leitner answer response now includes `newly_earned_badges` when card reaches Box 5
+- Share creation now triggers badge check for "Sharing is Caring"
+- Streak endpoint now triggers streak badge checks
+- Dashboard widget sends streak warning and due reminder notifications
+
 ## [1.3.4] - 2026-02-19
 
 ### Security
