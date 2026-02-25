@@ -14,6 +14,8 @@ use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IUserManager;
+use OCA\Learning\Service\NotFoundException;
+use OCA\Learning\Service\ForbiddenException;
 
 class CourseService {
     private CourseMapper $courseMapper;
@@ -492,12 +494,20 @@ class CourseService {
         return $this->courseMemberMapper->insert($member);
     }
 
+    /** @var array<string, string> Request-local display name cache */
+    private array $displayNameCache = [];
+
     /**
-     * Resolve display name for a user ID.
+     * Resolve display name for a user ID (cached per request).
      */
     private function getDisplayName(string $userId): string {
+        if (isset($this->displayNameCache[$userId])) {
+            return $this->displayNameCache[$userId];
+        }
         $user = $this->userManager->get($userId);
-        return $user ? $user->getDisplayName() : $userId;
+        $name = $user ? $user->getDisplayName() : $userId;
+        $this->displayNameCache[$userId] = $name;
+        return $name;
     }
 
     /**
@@ -660,8 +670,28 @@ class CourseService {
             $enrolledAtMap[$m->getUserId()] = $m->getEnrolledAt();
         }
 
-        if (empty($studentIds) || empty($poolIds)) {
+        if (empty($studentIds)) {
             return ['students' => []];
+        }
+
+        // Empty pools: return students with stats but no pool progress
+        if (empty($poolIds)) {
+            $userStats = $this->getBatchUserStats($studentIds);
+            $students = [];
+            foreach ($studentIds as $sid) {
+                $stats = $userStats[$sid] ?? null;
+                $students[] = [
+                    'user_id' => $sid,
+                    'display_name' => $this->getDisplayName($sid),
+                    'enrolled_at' => $enrolledAtMap[$sid] ?? null,
+                    'total_xp' => $stats ? $stats['total_xp'] : 0,
+                    'current_level' => $stats ? $stats['current_level'] : 1,
+                    'current_streak' => $stats ? $stats['current_streak'] : 0,
+                    'last_activity_date' => $stats ? $stats['last_activity_date'] : null,
+                    'pools' => [],
+                ];
+            }
+            return ['students' => $students];
         }
 
         // Batch queries (replaces N×4 per student per pool)
@@ -742,7 +772,7 @@ class CourseService {
         $course = $this->courseMapper->findById($courseId);
 
         if (!$this->hasAccess($course, $userId)) {
-            throw new \Exception('No permission');
+            throw new ForbiddenException('No permission');
         }
 
         $isInstructor = $this->isInstructorOfCourse($course, $userId);
@@ -792,19 +822,22 @@ class CourseService {
         }
         unset($entry);
 
-        // Privacy: students see limited fields
+        // Privacy: students see limited fields (no user_id, no streak, no sessions)
         if (!$isInstructor) {
-            $entries = array_map(function ($entry) {
+            $entries = array_map(function ($entry) use ($userId) {
                 return [
                     'rank' => $entry['rank'],
-                    'user_id' => $entry['user_id'],
                     'display_name' => $entry['display_name'],
+                    'is_me' => $entry['user_id'] === $userId,
                     'total_xp' => $entry['total_xp'],
                     'current_level' => $entry['current_level'],
                     'total_mastered' => $entry['total_mastered'],
                 ];
             }, $entries);
         }
+
+        // Limit to top 100 entries
+        $entries = array_slice($entries, 0, 100);
 
         return ['leaderboard' => $entries, 'my_rank' => $myRank];
     }
@@ -818,14 +851,14 @@ class CourseService {
 
         // Access: only instructors of this course
         if (!$this->isInstructorOfCourse($course, $userId)) {
-            throw new \Exception('No permission');
+            throw new ForbiddenException('No permission');
         }
 
         // Verify student is enrolled in this course
         try {
             $member = $this->courseMemberMapper->findByCourseAndUser($courseId, $studentId);
         } catch (DoesNotExistException $e) {
-            throw new \Exception('Student not found in this course');
+            throw new NotFoundException('Student not found in this course');
         }
 
         // Get course pools

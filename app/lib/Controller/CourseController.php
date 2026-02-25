@@ -223,8 +223,11 @@ class CourseController extends Controller {
             return new JSONResponse($this->courseService->getLeaderboard($courseId, $this->userId));
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new JSONResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'No permission to view leaderboard'], Http::STATUS_FORBIDDEN);
+            \OC::$server->getLogger()->error('leaderboard error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new JSONResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -237,12 +240,13 @@ class CourseController extends Controller {
             return new JSONResponse($this->courseService->getStudentDetail($courseId, $studentId, $this->userId));
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
-        } catch (\Exception $e) {
-            $msg = $e->getMessage();
-            if (strpos($msg, 'not found') !== false) {
-                return new JSONResponse(['error' => $msg], Http::STATUS_NOT_FOUND);
-            }
+        } catch (\OCA\Learning\Service\NotFoundException $e) {
+            return new JSONResponse(['error' => 'Student not found in this course'], Http::STATUS_NOT_FOUND);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
             return new JSONResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            \OC::$server->getLogger()->error('studentDetail error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new JSONResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 }

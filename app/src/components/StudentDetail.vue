@@ -159,6 +159,9 @@ export default {
 				this.fetchStudentDetail()
 			},
 		},
+		courseId() {
+			this.fetchStudentDetail()
+		},
 	},
 
 	methods: {

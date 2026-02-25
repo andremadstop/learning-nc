@@ -313,16 +313,16 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="entry in sortedLeaderboardData" :key="entry.user_id"
-								:class="{ 'my-row': entry.user_id === myUserId, 'clickable-row': isInstructor }"
-								@click="isInstructor ? $emit('selectStudent', { userId: entry.user_id, courseId: courseId }) : null">
+							<tr v-for="entry in sortedLeaderboardData" :key="entry.user_id || entry.rank"
+								:class="{ 'my-row': entry.is_me || entry.user_id === myUserId, 'clickable-row': isInstructor }"
+								@click="isInstructor && entry.user_id ? $emit('selectStudent', { userId: entry.user_id, courseId: courseId }) : null">
 								<td class="rank-col">
 									<span v-if="entry.rank === 1" class="rank-medal">&#129351;</span>
 									<span v-else-if="entry.rank === 2" class="rank-medal">&#129352;</span>
 									<span v-else-if="entry.rank === 3" class="rank-medal">&#129353;</span>
 									<span v-else>{{ entry.rank }}</span>
 								</td>
-								<td class="student-col">{{ entry.display_name || entry.user_id }}</td>
+								<td class="student-col">{{ entry.display_name }}</td>
 								<td class="stat-col">
 									<span class="level-pill" :class="levelClass(entry.current_level)">
 										Lv.{{ entry.current_level || 1 }}

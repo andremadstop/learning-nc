@@ -24,6 +24,7 @@ export function formatRelativeDate(timestamp) {
 	const diffMs = now - date
 	const diffDays = Math.floor(diffMs / 86400000)
 
+	if (diffDays < 0) return t('learning', 'today')
 	if (diffDays === 0) return t('learning', 'today')
 	if (diffDays === 1) return t('learning', 'yesterday')
 	if (diffDays < 7) return t('learning', '{n}d ago', { n: diffDays })
@@ -43,6 +44,7 @@ export function formatRelativeDateString(dateStr) {
 	const todayUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
 	const diffDays = Math.floor((todayUtc - date.getTime()) / 86400000)
 
+	if (diffDays < 0) return t('learning', 'today')
 	if (diffDays === 0) return t('learning', 'today')
 	if (diffDays === 1) return t('learning', 'yesterday')
 	if (diffDays < 7) return t('learning', '{n}d ago', { n: diffDays })
