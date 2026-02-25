@@ -221,20 +221,37 @@ export default {
     goBack() {
       this.$emit('back');
     },
-    async fetchStreak() {
+    async fetchUserState() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/v1/user/state'));
+        this.streak = r.data.streak || this.streak;
+        this.badges = r.data.badges || [];
+        this.xp = r.data.xp || this.xp;
+        this.badgeProgress = r.data.progress || [];
+      } catch (e) {
+        // Fallback to individual endpoints (rolling-deploy safety, handles 404 + 5xx)
+        console.warn('User state endpoint failed, falling back to legacy endpoints:', e.response?.status);
+        await Promise.all([
+          this.fetchStreakLegacy(),
+          this.fetchBadgesLegacy(),
+          this.fetchBadgeProgressLegacy(),
+        ]);
+      }
+    },
+    async fetchStreakLegacy() {
       try {
         const r = await axios.get(generateUrl('/apps/learning/api/streak'));
         this.streak = r.data;
       } catch (e) { /* streak is optional */ }
     },
-    async fetchBadges() {
+    async fetchBadgesLegacy() {
       try {
         const r = await axios.get(generateUrl('/apps/learning/api/badges'));
         this.badges = r.data.badges || [];
         this.xp = r.data.xp || this.xp;
       } catch (e) { /* badges are optional */ }
     },
-    async fetchBadgeProgress() {
+    async fetchBadgeProgressLegacy() {
       try {
         const r = await axios.get(generateUrl('/apps/learning/api/badges/progress'));
         this.badgeProgress = r.data?.progress || [];
@@ -256,9 +273,7 @@ export default {
   },
   created() {
     this.fetchStats();
-    this.fetchStreak();
-    this.fetchBadges();
-    this.fetchBadgeProgress();
+    this.fetchUserState();
   },
 };
 </script>

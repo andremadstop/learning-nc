@@ -1,15 +1,20 @@
 <template>
-  <transition name="badge-pop">
-    <div v-if="visible" ref="overlay" class="badge-overlay" role="dialog" aria-modal="true" tabindex="-1" :aria-label="badge.name" @click.self="dismiss" @keydown.escape="dismiss">
-      <div class="badge-card">
-        <div class="badge-glow"></div>
-        <div class="badge-emoji">{{ badge.emoji }}</div>
-        <div class="badge-title">{{ t('learning', 'Achievement Unlocked!') }}</div>
-        <div class="badge-name">{{ badge.name }}</div>
-        <div class="badge-description">{{ badge.description }}</div>
-      </div>
+  <div>
+    <div aria-live="polite" class="sr-only">
+      <span v-if="visible">{{ t('learning', 'Achievement Unlocked!') }}: {{ badge.name }}</span>
     </div>
-  </transition>
+    <transition name="badge-pop">
+      <div v-if="visible" ref="overlay" class="badge-overlay" role="dialog" aria-modal="true" tabindex="-1" :aria-label="badge.name" @click.self="dismiss" @keydown.escape="dismiss">
+        <div class="badge-card">
+          <div class="badge-glow"></div>
+          <div class="badge-emoji">{{ badge.emoji }}</div>
+          <div class="badge-title">{{ t('learning', 'Achievement Unlocked!') }}</div>
+          <div class="badge-name">{{ badge.name }}</div>
+          <div class="badge-description">{{ badge.description }}</div>
+        </div>
+      </div>
+    </transition>
+  </div>
 </template>
 
 <script>
@@ -168,6 +173,18 @@ export default {
   .badge-emoji { animation: none; }
   .badge-pop-enter-active { animation: none; opacity: 1; }
   .badge-pop-leave-active { animation: none; opacity: 0; }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @media (max-width: 480px) {

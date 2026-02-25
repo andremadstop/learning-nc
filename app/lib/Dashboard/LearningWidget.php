@@ -10,21 +10,18 @@ use OCP\Dashboard\Model\WidgetItems;
 use OCP\IDBConnection;
 use OCP\IL10N;
 use OCP\IURLGenerator;
-use OCP\Notification\IManager as INotificationManager;
 
 class LearningWidget implements IAPIWidgetV2, IIconWidget {
     private IDBConnection $db;
     private IURLGenerator $urlGenerator;
     private IL10N $l10n;
     private StreakService $streakService;
-    private INotificationManager $notificationManager;
 
-    public function __construct(IDBConnection $db, IURLGenerator $urlGenerator, IL10N $l10n, StreakService $streakService, INotificationManager $notificationManager) {
+    public function __construct(IDBConnection $db, IURLGenerator $urlGenerator, IL10N $l10n, StreakService $streakService) {
         $this->db = $db;
         $this->urlGenerator = $urlGenerator;
         $this->l10n = $l10n;
         $this->streakService = $streakService;
-        $this->notificationManager = $notificationManager;
     }
 
     public function getId(): string {
@@ -145,35 +142,6 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
             $emptyMsg = $this->l10n->t('All caught up! No questions due right now.');
         }
 
-        // Streak warning notification: if user has a streak > 3 but hasn't learned today
-        if (!$streak['is_active_today'] && $streak['current_streak'] > 3) {
-            $this->sendNotificationOnce($userId, 'streak_warning', 'streak', gmdate('Y-m-d'), [
-                'streak_days' => $streak['current_streak'],
-            ]);
-        }
-
-        // Due reminder: if more than 10 cards are due and no session today
-        if ($totalDue > 10 && !$streak['is_active_today']) {
-            $this->sendNotificationOnce($userId, 'due_reminder', 'due', gmdate('Y-m-d'), [
-                'due_count' => $totalDue,
-            ]);
-        }
-
         return new WidgetItems($items, $emptyMsg);
-    }
-
-    private function sendNotificationOnce(string $userId, string $subject, string $objectType, string $objectId, array $params): void {
-        // Check if we already sent this notification today (objectType + objectId = unique per day)
-        $notification = $this->notificationManager->createNotification();
-        $notification->setApp('learning')
-            ->setUser($userId)
-            ->setObject($objectType, $objectId);
-
-        // Only send if not already existing
-        if ($this->notificationManager->getCount($notification) === 0) {
-            $notification->setDateTime(new \DateTime())
-                ->setSubject($subject, $params);
-            $this->notificationManager->notify($notification);
-        }
     }
 }

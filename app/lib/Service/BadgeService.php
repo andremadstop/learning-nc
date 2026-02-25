@@ -3,12 +3,16 @@ declare(strict_types=1);
 namespace OCA\Learning\Service;
 
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use OCP\Activity\IManager as IActivityManager;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\Notification\IManager as INotificationManager;
 
 class BadgeService {
     private IDBConnection $db;
     private INotificationManager $notificationManager;
+    private IConfig $config;
+    private IActivityManager $activityManager;
 
     private const BADGES = [
         'first_session' => ['name' => 'First Steps', 'emoji' => "\u{2B50}", 'description' => 'Complete your first session', 'category' => 'sessions'],
@@ -27,9 +31,11 @@ class BadgeService {
         'early_bird' => ['name' => 'Early Bird', 'emoji' => "\u{1F426}", 'description' => 'Complete a session between 05:00-07:00', 'category' => 'fun'],
     ];
 
-    public function __construct(IDBConnection $db, INotificationManager $notificationManager) {
+    public function __construct(IDBConnection $db, INotificationManager $notificationManager, IConfig $config, IActivityManager $activityManager) {
         $this->db = $db;
         $this->notificationManager = $notificationManager;
+        $this->config = $config;
+        $this->activityManager = $activityManager;
     }
 
     public function checkAndAward(string $userId, string $context, array $data): array {
@@ -97,8 +103,15 @@ class BadgeService {
             }
         }
 
-        // Time-based badges
-        $hour = (int)gmdate('G', $data['completed_at'] ?? time());
+        // Time-based badges (timezone-aware)
+        $tz = $this->config->getUserValue($userId, 'core', 'timezone', 'UTC');
+        $dt = new \DateTime('@' . ($data['completed_at'] ?? time()));
+        try {
+            $dt->setTimezone(new \DateTimeZone($tz));
+        } catch (\Exception $e) {
+            $dt->setTimezone(new \DateTimeZone('UTC'));
+        }
+        $hour = (int)$dt->format('G');
         if ($hour >= 23 || $hour < 5) {
             $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'night_owl'));
         }
@@ -172,6 +185,20 @@ class BadgeService {
                 'badge_emoji' => $def['emoji'],
             ]);
         $this->notificationManager->notify($notification);
+
+        // Publish Activity event
+        $event = $this->activityManager->generateEvent();
+        $event->setApp('learning')
+            ->setType('learning_badge_earned')
+            ->setAffectedUser($userId)
+            ->setAuthor($userId)
+            ->setTimestamp(time())
+            ->setSubject('badge_earned', [
+                'badge_name' => $def['name'],
+                'badge_emoji' => $def['emoji'],
+            ])
+            ->setObject('badge', (int)0, $badgeId);
+        $this->activityManager->publish($event);
 
         return [[
             'badge_id' => $badgeId,
@@ -281,150 +308,4 @@ class BadgeService {
         return $progress;
     }
 
-    public function calculateXp(string $userId): array {
-        // XP from completed sessions — computed as SQL aggregate for O(1) performance
-        $qb = $this->db->getQueryBuilder();
-        $qb->select($qb->createFunction(
-            'COALESCE(SUM(' .
-                'CASE WHEN total_questions <= 0 THEN 0 ELSE ' .
-                    'ROUND((CASE WHEN mode = \'exam\' THEN 20 + (correct_answers * 10) ELSE 10 + (correct_answers * 5) END)' .
-                    ' * CASE' .
-                        ' WHEN (correct_answers * 1.0) / total_questions >= 1.0 THEN 1.5' .
-                        ' WHEN (correct_answers * 1.0) / total_questions >= 0.8 THEN 1.2' .
-                        ' ELSE 1.0 END)' .
-                ' END' .
-            '), 0) as session_xp'
-        ))
-           ->from('learning_sessions')
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->isNotNull('completed_at'));
-        $result = $qb->execute();
-        $row = $result->fetch();
-        $result->closeCursor();
-
-        $totalXp = (int)round((float)($row['session_xp'] ?? 0));
-
-        // XP from Leitner reviews
-        $qb = $this->db->getQueryBuilder();
-        $qb->select(
-            $qb->createFunction('COALESCE(SUM(correct_count), 0) as total_correct'),
-            $qb->createFunction('SUM(CASE WHEN box = 5 THEN 1 ELSE 0 END) as box5_count')
-        )
-           ->from('learning_leitner_items')
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $result = $qb->execute();
-        $leitnerRow = $result->fetch();
-        $result->closeCursor();
-
-        $leitnerCorrect = (int)($leitnerRow['total_correct'] ?? 0);
-        $box5 = (int)($leitnerRow['box5_count'] ?? 0);
-        $totalXp += $leitnerCorrect * 5;
-        $totalXp += $box5 * 25;
-
-        // Streak multiplier
-        $streakData = $this->getStreakForXp($userId);
-        $streakDays = min((int)($streakData['current_streak'] ?? 0), 30);
-        $multiplier = 1.0 + ($streakDays * 0.01);
-        $totalXp = (int)round($totalXp * $multiplier);
-
-        // Calculate level: threshold(n) = round(50 * n^1.5)
-        $level = 1;
-        $xpForNextLevel = 100; // level 2 threshold
-        $cumulativeXp = 0;
-        while (true) {
-            $nextLevel = $level + 1;
-            $threshold = (int)round(50 * pow($nextLevel, 1.5));
-            if ($totalXp < $threshold) {
-                $prevThreshold = $level <= 1 ? 0 : (int)round(50 * pow($level, 1.5));
-                $xpInLevel = $totalXp - $prevThreshold;
-                $xpToNext = $threshold - $prevThreshold;
-                $levelPct = $xpToNext > 0 ? min(100, (int)round($xpInLevel / $xpToNext * 100)) : 0;
-                return [
-                    'total_xp' => $totalXp,
-                    'level' => $level,
-                    'xp_in_level' => max(0, $xpInLevel),
-                    'xp_to_next_level' => $xpToNext,
-                    'level_progress_pct' => $levelPct,
-                ];
-            }
-            $level++;
-            if ($level > 999) break; // safety
-        }
-
-        return [
-            'total_xp' => $totalXp,
-            'level' => $level,
-            'xp_in_level' => 0,
-            'xp_to_next_level' => 0,
-            'level_progress_pct' => 100,
-        ];
-    }
-
-    public function calculateSessionXp(array $sessionData, int $streakDays = 0): int {
-        $totalQ = (int)($sessionData['total_questions'] ?? 0);
-        if ($totalQ <= 0) {
-            return 0;
-        }
-
-        $mode = $sessionData['mode'] ?? 'training';
-        $correct = (int)($sessionData['correct_answers'] ?? 0);
-        $accuracy = $correct / $totalQ;
-
-        if ($mode === 'exam') {
-            $base = 20 + ($correct * 10);
-        } else {
-            $base = 10 + ($correct * 5);
-        }
-
-        if ($accuracy >= 1.0) {
-            $base = (int)round($base * 1.5);
-        } elseif ($accuracy >= 0.8) {
-            $base = (int)round($base * 1.2);
-        }
-
-        $multiplier = 1.0 + (min($streakDays, 30) * 0.01);
-        return (int)round($base * $multiplier);
-    }
-
-    private function getStreakForXp(string $userId): array {
-        // Lightweight streak check — just need current_streak
-        $qb = $this->db->getQueryBuilder();
-        $platform = $this->db->getDatabasePlatform()->getName();
-        $dateFn = $platform === 'postgresql'
-            ? "TO_CHAR(TO_TIMESTAMP(completed_at), 'YYYY-MM-DD')"
-            : "FROM_UNIXTIME(completed_at, '%Y-%m-%d')";
-        $qb->selectDistinct($qb->createFunction($dateFn . ' as activity_date'))
-           ->from('learning_sessions')
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->isNotNull('completed_at'))
-           ->orderBy('activity_date', 'DESC')
-           ->setMaxResults(100);
-        $result = $qb->execute();
-        $rows = $result->fetchAll();
-        $result->closeCursor();
-
-        if (empty($rows)) {
-            return ['current_streak' => 0];
-        }
-
-        $dates = array_map(fn($r) => $r['activity_date'], $rows);
-        $today = gmdate('Y-m-d');
-
-        if ($dates[0] !== $today && $dates[0] !== gmdate('Y-m-d', strtotime('-1 day', strtotime($today)))) {
-            return ['current_streak' => 0];
-        }
-
-        $currentStreak = 0;
-        $checkDate = $dates[0];
-        foreach ($dates as $date) {
-            if ($date === $checkDate) {
-                $currentStreak++;
-                $checkDate = gmdate('Y-m-d', strtotime('-1 day', strtotime($checkDate)));
-            } else {
-                break;
-            }
-        }
-
-        return ['current_streak' => $currentStreak];
-    }
 }

@@ -8,7 +8,9 @@ use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\StreakService;
+use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\ICacheFactory;
 use OCP\IDBConnection;
 
 class TrainingService {
@@ -19,6 +21,8 @@ class TrainingService {
     private $shareMapper;
     private $badgeService;
     private $streakService;
+    private $xpService;
+    private $cacheFactory;
 
     public function __construct(
         IDBConnection $db,
@@ -27,7 +31,9 @@ class TrainingService {
         PoolMapper $poolMapper,
         PoolShareMapper $shareMapper,
         BadgeService $badgeService,
-        StreakService $streakService
+        StreakService $streakService,
+        XpService $xpService,
+        ICacheFactory $cacheFactory
     ) {
         $this->db = $db;
         $this->questionMapper = $questionMapper;
@@ -36,6 +42,8 @@ class TrainingService {
         $this->shareMapper = $shareMapper;
         $this->badgeService = $badgeService;
         $this->streakService = $streakService;
+        $this->xpService = $xpService;
+        $this->cacheFactory = $cacheFactory;
     }
 
     private function hasPoolAccess(int $poolId, string $userId): bool {
@@ -584,11 +592,18 @@ class TrainingService {
 
         // XP for this session
         $streak = $this->streakService->getStreak($userId);
-        $response['xp_earned'] = $this->badgeService->calculateSessionXp($sessionData, $streak['current_streak']);
+        $sessionXp = $this->xpService->calculateSessionXp($sessionData, $streak['current_streak']);
+        $response['xp_earned'] = $sessionXp;
+
+        // Update denormalized stats
+        $this->xpService->incrementSessionXp($userId, $sessionXp, $streak['current_streak']);
 
         // Streak badge check
         $streakBadges = $this->badgeService->checkAndAward($userId, 'streak_update', $streak);
         $response['newly_earned_badges'] = array_merge($newBadges, $streakBadges);
+
+        // Invalidate cache AFTER all state-changing writes (XP, badges, streak)
+        $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);
 
         // Personal best: compare score to user's average for this pool in this mode
         $poolId = (int)$session['pool_id'];

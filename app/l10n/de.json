@@ -361,6 +361,8 @@
     "Streak" : "Serie",
     "Day Streak" : "Tage-Serie",
     "Day {n}!" : "Tag {n}!",
-    "Longest: {n} days" : "Längste: {n} Tage"
+    "Longest: {n} days" : "Längste: {n} Tage",
+
+    "Learning achievements" : "Lernerfolge"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

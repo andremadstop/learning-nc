@@ -7,6 +7,7 @@ use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Service\BadgeService;
 use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\ICacheFactory;
 use OCP\IUserManager;
 
 class ShareService {
@@ -14,12 +15,14 @@ class ShareService {
     private PoolMapper $poolMapper;
     private IUserManager $userManager;
     private BadgeService $badgeService;
+    private ICacheFactory $cacheFactory;
 
-    public function __construct(PoolShareMapper $shareMapper, PoolMapper $poolMapper, IUserManager $userManager, BadgeService $badgeService) {
+    public function __construct(PoolShareMapper $shareMapper, PoolMapper $poolMapper, IUserManager $userManager, BadgeService $badgeService, ICacheFactory $cacheFactory) {
         $this->shareMapper = $shareMapper;
         $this->poolMapper = $poolMapper;
         $this->userManager = $userManager;
         $this->badgeService = $badgeService;
+        $this->cacheFactory = $cacheFactory;
     }
 
     public function getSharesForPool(int $poolId, string $userId): array {
@@ -66,8 +69,9 @@ class ShareService {
         $share->setCreatedBy($userId);
         $result = $this->shareMapper->insert($share);
 
-        // Badge check for sharing
+        // Badge check for sharing + cache invalidation
         $this->badgeService->checkAndAward($userId, 'share_created', []);
+        $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);
 
         return $result;
     }

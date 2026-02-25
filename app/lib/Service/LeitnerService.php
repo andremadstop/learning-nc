@@ -5,7 +5,9 @@ namespace OCA\Learning\Service;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Service\BadgeService;
+use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\ICacheFactory;
 use OCP\IDBConnection;
 
 class LeitnerService {
@@ -13,12 +15,16 @@ class LeitnerService {
     private $poolMapper;
     private $shareMapper;
     private $badgeService;
+    private $xpService;
+    private $cacheFactory;
 
-    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService) {
+    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, XpService $xpService, ICacheFactory $cacheFactory) {
         $this->db = $db;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
         $this->badgeService = $badgeService;
+        $this->xpService = $xpService;
+        $this->cacheFactory = $cacheFactory;
     }
 
     private function hasPoolAccess(int $poolId, string $userId): bool {
@@ -169,6 +175,21 @@ class LeitnerService {
         $currentBox = (int)$item['box'];
         $newBox = $correct ? min(5, $currentBox + 1) : 1;
 
+        // Handle Box-5 demotion: decrement total_mastered when card falls out of Box 5
+        if ($currentBox === 5 && $newBox < 5) {
+            $dqb = $this->db->getQueryBuilder();
+            $dqb->update('learning_user_stats')
+                ->set('total_mastered', $dqb->createFunction('CASE WHEN total_mastered > 0 THEN total_mastered - 1 ELSE 0 END'))
+                ->set('updated_at', $dqb->createNamedParameter(time()))
+                ->where($dqb->expr()->eq('user_id', $dqb->createNamedParameter($userId)));
+            $demoted = $dqb->execute();
+
+            // If no stats row exists (Leitner-only user), create one from source of truth
+            if ($demoted === 0) {
+                $this->xpService->updateUserStats($userId);
+            }
+        }
+
         $intervals = [
             1 => 0,
             2 => 86400,
@@ -199,10 +220,34 @@ class LeitnerService {
             'newly_earned_badges' => [],
         ];
 
-        // Check mastery badges when card reaches Box 5
-        if ($newBox === 5) {
+        // Award Leitner XP: 5 XP per correct answer
+        if ($correct) {
+            $leitnerXp = 5;
+
+            // Check mastery badges and update stats when card reaches Box 5
+            if ($newBox === 5) {
+                $leitnerXp += 25; // Box-5 mastery bonus
+                $response['newly_earned_badges'] = $this->badgeService->checkAndAward($userId, 'leitner_mastery', []);
+
+                // Increment denormalized mastered count
+                // If no stats row exists, incrementLeitnerXp will create one via updateUserStats()
+                $mqb = $this->db->getQueryBuilder();
+                $mqb->update('learning_user_stats')
+                    ->set('total_mastered', $mqb->createFunction('total_mastered + 1'))
+                    ->set('updated_at', $mqb->createNamedParameter(time()))
+                    ->where($mqb->expr()->eq('user_id', $mqb->createNamedParameter($userId)));
+                $mqb->execute();
+            }
+
+            // Sync Leitner XP to denormalized stats
+            $this->xpService->incrementLeitnerXp($userId, $leitnerXp);
+        } elseif ($newBox === 5) {
+            // Edge case: shouldn't happen (wrong answer can't promote to box 5), but defensive
             $response['newly_earned_badges'] = $this->badgeService->checkAndAward($userId, 'leitner_mastery', []);
         }
+
+        // Invalidate cache on every answer (box/progress changes affect user state)
+        $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);
 
         // SECURITY: Suppress correct answer details during active exam to prevent oracle attack
         $poolId = (int)$item['pool_id'];

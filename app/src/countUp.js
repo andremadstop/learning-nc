@@ -10,6 +10,10 @@ export function countUp(el, target, duration = 1000, suffix = '') {
 		if (el) el.textContent = target + suffix
 		return
 	}
+	if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+		el.textContent = target + suffix
+		return
+	}
 	const start = performance.now()
 	function frame(now) {
 		const elapsed = now - start

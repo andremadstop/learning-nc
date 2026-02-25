@@ -58,6 +58,9 @@ return [
         ['name' => 'import#importCsv', 'url' => '/api/pools/{poolId}/import/csv', 'verb' => 'POST'],
         ['name' => 'import#importJson', 'url' => '/api/pools/{poolId}/import/json', 'verb' => 'POST'],
 
+        // User State (consolidated endpoint)
+        ['name' => 'user_state#state', 'url' => '/api/v1/user/state', 'verb' => 'GET'],
+
         // Course Management
         ['name' => 'course#role', 'url' => '/api/role', 'verb' => 'GET'],
         ['name' => 'course#index', 'url' => '/api/courses', 'verb' => 'GET'],

@@ -5,6 +5,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Service\LeitnerService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\BadgeService;
+use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
@@ -14,13 +15,15 @@ class LeitnerController extends Controller {
     private $service;
     private $streakService;
     private $badgeService;
+    private $xpService;
     private $userId;
 
-    public function __construct($appName, IRequest $request, LeitnerService $service, StreakService $streakService, BadgeService $badgeService, $userId) {
+    public function __construct($appName, IRequest $request, LeitnerService $service, StreakService $streakService, BadgeService $badgeService, XpService $xpService, $userId) {
         parent::__construct($appName, $request);
         $this->service = $service;
         $this->streakService = $streakService;
         $this->badgeService = $badgeService;
+        $this->xpService = $xpService;
         $this->userId = $userId;
     }
 
@@ -91,7 +94,7 @@ class LeitnerController extends Controller {
     public function badges(): DataResponse {
         try {
             $badges = $this->badgeService->getUserBadges($this->userId);
-            $xp = $this->badgeService->calculateXp($this->userId);
+            $xp = $this->xpService->calculateXp($this->userId);
             return new DataResponse([
                 'badges' => $badges,
                 'xp' => $xp,

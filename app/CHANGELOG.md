@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-02-26
+
+### Added
+- **Consolidated User State API**: `GET /api/v1/user/state` — single endpoint replaces 4 separate calls (XP, streak, badges, progress)
+- **Denormalized `learning_user_stats` table**: O(1) reads for XP, level, streak, sessions, mastered counts (Migration Version001200)
+- **Background Notification Job**: `NotificationJob` (TimedJob every 4h) replaces widget-triggered notifications
+- **Activity-App Integration**: Badge unlock events appear in Nextcloud Activity stream with toggle in Activity settings
+- **Timezone-aware badges**: Night Owl and Early Bird badges respect user's Nextcloud timezone setting
+- **XpService**: Dedicated service for XP calculation, session XP increment, level computation
+- **Response caching**: User state endpoint cached for 30s per user via ICacheFactory
+- **Composite index** on `learning_sessions(user_id, completed_at)` for faster XP/streak queries
+- **`time_limit_seconds` column** on `learning_sessions` for Speed Demon badge support
+
+### Changed
+- **BadgeService** refactored from 430 to ~200 lines — XP/streak methods extracted to XpService
+- **Dashboard Widget** is now pure read-only (~140 lines) — no longer sends notifications as side-effect
+- **AnalyticsDashboard.vue**: 4 API calls consolidated to 1, with fallback to legacy endpoints for rolling deploys
+- **countUp.js**: Respects `prefers-reduced-motion` — immediately shows final value without animation
+- **BadgeUnlock.vue**: Added `aria-live="polite"` region for screenreader announcements
+- **LeitnerService**: Box-5 promotion updates denormalized `total_mastered` counter
+- **TrainingService**: Session completion updates denormalized stats via XpService
+
+### Fixed
+- **HIGH**: Leitner XP now synced to `learning_user_stats` — correct answers award 5 XP, Box-5 mastery awards 25 XP bonus
+- **HIGH**: Race condition in stats UPSERT — all INSERT paths wrapped in `UniqueConstraintViolationException` catch with UPDATE retry
+- **HIGH**: SQL injection in `incrementSessionXp` — `$currentStreak` now uses `createNamedParameter()` instead of string concatenation
+- **HIGH**: NotificationJob memory exhaustion — `fetchAll()` replaced with streaming `fetch()` loop; N+1 due-count queries replaced with single batch query
+- **HIGH**: Level-race in XpService — stale `getTotalXpFromStats()` read eliminated; `syncLevel()` is monotonic (`AND current_level < :newLevel`) to prevent concurrent stale-level overwrites
+- **HIGH**: Stats INSERT fallback uses `updateUserStats()` full recalc — preserves historical XP, sessions, and mastered counts for first-write users
+- **HIGH**: `total_mastered` demotion — Box 5→1 transition now decrements `total_mastered` counter with `updateUserStats()` fallback for missing stats rows
+- **MEDIUM**: User state cache invalidated on every Leitner answer (not just correct), after share-badge awards, and at END of `completeSession()` (after all badge/streak writes)
+- **MEDIUM**: Migration backfill is per-step idempotent — each INSERT...SELECT skips existing users via `NOT IN` clause (safe for partial re-runs)
+- **MEDIUM**: Migration backfill includes Leitner-only users (no completed sessions but have reviewed cards)
+- **MEDIUM**: Frontend fallback triggers on any error (not just 404) for rolling-deploy resilience
+- **LOW**: Removed dead `$totalMastered` variable in LeitnerService (computed but never used)
+
+### Performance
+- Dashboard load: 4 XHR → 1 XHR for gamification data
+- XP calculation: O(n) SQL aggregate → O(1) stats table read
+- Notifications: synchronous widget side-effect → async background job
+- NotificationJob: filters to users active in last 30 days (skips dormant accounts on large instances)
+
 ## [1.4.0] - 2026-02-25
 
 ### Added
