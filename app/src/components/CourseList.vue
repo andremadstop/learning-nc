@@ -11,7 +11,7 @@
 
 		<!-- Loading state -->
 		<div v-if="loading" class="loading-container">
-			<div class="icon-loading" />
+			<NcLoadingIcon :size="44" />
 			<p>{{ t('learning', 'Loading courses...') }}</p>
 		</div>
 
@@ -205,6 +205,7 @@ import NcModal from '@nextcloud/vue/dist/Components/NcModal.js'
 import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
 import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
 import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
+import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
 
 export default {
@@ -217,6 +218,7 @@ export default {
 		NcTextField,
 		NcActions,
 		NcActionButton,
+		NcLoadingIcon,
 		NcNoteCard,
 	},
 
@@ -439,21 +441,19 @@ export default {
 	color: var(--color-text-maxcontrast);
 }
 
-.loading-container .icon-loading {
-	width: 44px;
-	height: 44px;
-	margin-bottom: 12px;
-}
+.loading-container p { margin-top: 12px; }
 
 .course-section {
 	margin-bottom: 32px;
 }
 
 .course-section h4 {
-	font-size: 1.1em;
-	font-weight: 600;
-	color: var(--color-main-text);
-	margin: 0 0 16px 0;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	color: var(--color-text-maxcontrast);
+	font-weight: 700;
+	margin: 0 0 14px 0;
 }
 
 .course-grid {
@@ -468,14 +468,15 @@ export default {
 	border-radius: var(--border-radius-large, 12px);
 	padding: 20px;
 	cursor: pointer;
-	transition: box-shadow 0.2s ease, border-color 0.2s ease;
+	transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 }
 
 .course-card:hover {
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px color-mix(in srgb, var(--color-main-text) 8%, transparent);
 	border-color: var(--color-primary-element);
 }
 
@@ -551,8 +552,10 @@ export default {
 }
 
 .meta-item {
-	font-size: 0.8em;
+	font-size: 11px;
+	font-weight: 500;
 	color: var(--color-text-maxcontrast);
+	letter-spacing: 0.3px;
 }
 
 /* Modal styles */
@@ -648,5 +651,9 @@ export default {
 		padding: 16px;
 		min-width: unset;
 	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.course-card:hover { transform: none; }
 }
 </style>

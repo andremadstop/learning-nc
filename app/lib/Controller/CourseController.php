@@ -213,4 +213,36 @@ class CourseController extends Controller {
             return new JSONResponse(['error' => 'Not authorized for dashboard'], Http::STATUS_FORBIDDEN);
         }
     }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function leaderboard(int $courseId): JSONResponse {
+        try {
+            return new JSONResponse($this->courseService->getLeaderboard($courseId, $this->userId));
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            return new JSONResponse(['error' => 'No permission to view leaderboard'], Http::STATUS_FORBIDDEN);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function studentDetail(int $courseId, string $studentId): JSONResponse {
+        try {
+            return new JSONResponse($this->courseService->getStudentDetail($courseId, $studentId, $this->userId));
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            if (strpos($msg, 'not found') !== false) {
+                return new JSONResponse(['error' => $msg], Http::STATUS_NOT_FOUND);
+            }
+            return new JSONResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        }
+    }
 }

@@ -141,12 +141,20 @@
         @selectCourse="selectCourse"
       />
 
+      <StudentDetail
+        v-else-if="selectedStudent"
+        :courseId="selectedStudent.courseId"
+        :studentId="selectedStudent.userId"
+        @back="selectedStudent = null"
+      />
+
       <CourseDetail
         v-else
         :courseId="selectedCourse.id"
         :userRole="userRole"
         @back="selectedCourse = null"
         @openPool="openPoolFromCourse"
+        @selectStudent="selectStudent"
       />
     </template>
   </NcAppContent>
@@ -165,6 +173,7 @@ import ExamMode from './components/ExamMode.vue';
 import AnalyticsDashboard from './components/AnalyticsDashboard.vue';
 import CourseList from './components/CourseList.vue';
 import CourseDetail from './components/CourseDetail.vue';
+import StudentDetail from './components/StudentDetail.vue';
 import InstructorDashboard from './components/InstructorDashboard.vue';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
@@ -184,6 +193,7 @@ export default {
     AnalyticsDashboard,
     CourseList,
     CourseDetail,
+    StudentDetail,
     InstructorDashboard
   },
   data() {
@@ -202,6 +212,7 @@ export default {
 
       // Courses view state
       selectedCourse: null,
+      selectedStudent: null,
       courseView: 'list'
     };
   },
@@ -235,6 +246,7 @@ export default {
       this.mainView = view;
       if (view === 'pools') {
         this.selectedCourse = null;
+        this.selectedStudent = null;
         this.courseView = 'list';
       } else if (view === 'courses') {
         this.backToPools();
@@ -272,6 +284,10 @@ export default {
     // --- Courses methods ---
     selectCourse(course) {
       this.selectedCourse = course;
+      this.selectedStudent = null;
+    },
+    selectStudent(studentInfo) {
+      this.selectedStudent = studentInfo;
     },
     async openPoolFromCourse(poolId) {
       // Switch to pools view and open the specific pool

@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.7.0] - 2026-02-26
+
+### Added
+- **Instructor Intelligence**: Three new features that make the instructor view useful
+- **Progress Table Enhancement**: XP, Level, Last Active columns with sortable headers and display names — replaces N+1 queries with batch aggregation
+- **Course Leaderboard**: New `GET /api/courses/{courseId}/leaderboard` endpoint with privacy-aware responses (students see limited fields, instructors see full data)
+- **Student Detail View**: New `GET /api/courses/{courseId}/students/{studentId}` endpoint — XP, badges, streak, Leitner boxes per pool, recent sessions (instructor-only)
+- **StudentDetail.vue**: New component with XP bar, badge grid, Leitner box visualization, session history
+- **Leaderboard Tab**: Visible for both instructors and students; ranked by XP with medal indicators for top 3
+- **Display Names**: All course views now show Nextcloud display names instead of raw user IDs (privacy improvement)
+- **Composite DB Indices**: Migration V001400 adds `(user_id, pool_id, box)`, `(user_id, pool_id, completed_at)`, `(course_id, role)` for new query patterns
+- **Utility functions**: `src/format.js` with `formatXp()` and `formatRelativeDateString()` used across all course components
+
+### Changed
+- **CourseService**: Refactored `getCourseProgress()` from N×4 queries per student per pool to 4 batch queries total — O(students × pools) → O(4)
+- **CourseDetail.vue**: Tab selector now visible for students too (Pools + Leaderboard); instructor tabs expanded to 4 (+ Leaderboard)
+- **App.vue**: Added `selectedStudent` state for drill-down navigation from leaderboard/progress to student detail
+
+### Security
+- **IDOR Protection**: `studentDetail()` explicitly verifies requesting user is instructor of the specific course
+- **Privacy**: Student leaderboard view strips sensitive fields (streak, sessions, last_activity_date)
+- **Rate Limits**: New endpoints have `UserRateLimit(30/60s)` to prevent scraping
+
 ## [1.6.0] - 2026-02-26
 
 ### Added

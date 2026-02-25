@@ -7,6 +7,9 @@ use OCA\Learning\Db\CoursePool;
 use OCA\Learning\Db\CoursePoolMapper;
 use OCA\Learning\Db\CourseMember;
 use OCA\Learning\Db\CourseMemberMapper;
+use OCA\Learning\Service\BadgeService;
+use OCA\Learning\Service\StreakService;
+use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IDBConnection;
 use OCP\IGroupManager;
@@ -20,6 +23,9 @@ class CourseService {
     private IDBConnection $db;
     private IGroupManager $groupManager;
     private IUserManager $userManager;
+    private XpService $xpService;
+    private BadgeService $badgeService;
+    private StreakService $streakService;
 
     public function __construct(
         CourseMapper $courseMapper,
@@ -28,7 +34,10 @@ class CourseService {
         RoleService $roleService,
         IDBConnection $db,
         IGroupManager $groupManager,
-        IUserManager $userManager
+        IUserManager $userManager,
+        XpService $xpService,
+        BadgeService $badgeService,
+        StreakService $streakService
     ) {
         $this->courseMapper = $courseMapper;
         $this->coursePoolMapper = $coursePoolMapper;
@@ -37,6 +46,9 @@ class CourseService {
         $this->db = $db;
         $this->groupManager = $groupManager;
         $this->userManager = $userManager;
+        $this->xpService = $xpService;
+        $this->badgeService = $badgeService;
+        $this->streakService = $streakService;
     }
 
     /**
@@ -481,117 +493,217 @@ class CourseService {
     }
 
     /**
-     * Get student progress data for a single user across course pools
+     * Resolve display name for a user ID.
      */
-    private function getStudentPoolProgress(string $studentId, array $poolIds, ?int $enrolledAt = null): array {
-        $poolProgress = [];
-
-        foreach ($poolIds as $poolId) {
-            // Get question count
-            $qb = $this->db->getQueryBuilder();
-            $qb->select($qb->createFunction('COUNT(*)'))
-                ->from('learning_questions')
-                ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)));
-            $result = $qb->executeQuery();
-            $totalQuestions = (int)$result->fetchOne();
-            $result->closeCursor();
-
-            // Get Leitner mastery (box 5 = mastered)
-            $qb = $this->db->getQueryBuilder();
-            $qb->select($qb->createFunction('COUNT(*)'))
-                ->from('learning_leitner_items')
-                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($studentId)))
-                ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
-                ->andWhere($qb->expr()->eq('box', $qb->createNamedParameter(5)));
-            $result = $qb->executeQuery();
-            $mastered = (int)$result->fetchOne();
-            $result->closeCursor();
-
-            // Get accuracy from sessions
-            $qb = $this->db->getQueryBuilder();
-            $qb->select(
-                    $qb->createFunction('COALESCE(SUM(total_questions), 0)'),
-                    $qb->createFunction('COALESCE(SUM(correct_answers), 0)')
-                )
-                ->from('learning_sessions')
-                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($studentId)))
-                ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
-                ->andWhere($qb->expr()->isNotNull('completed_at'));
-            $result = $qb->executeQuery();
-            $row = $result->fetch();
-            $result->closeCursor();
-            $totalAnswered = (int)($row[0] ?? 0);
-            $totalCorrect = (int)($row[1] ?? 0);
-            $accuracy = $totalAnswered > 0 ? round($totalCorrect / $totalAnswered * 100) : 0;
-
-            // Get last activity
-            $qb = $this->db->getQueryBuilder();
-            $qb->select($qb->createFunction('MAX(completed_at)'))
-                ->from('learning_sessions')
-                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($studentId)))
-                ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)));
-            $result = $qb->executeQuery();
-            $lastActive = $result->fetchOne();
-            $result->closeCursor();
-
-            $poolName = $this->getPoolName($poolId);
-
-            $poolProgress[] = [
-                'pool_id' => $poolId,
-                'pool_name' => $poolName,
-                'total_questions' => $totalQuestions,
-                'mastered' => $mastered,
-                'accuracy' => $accuracy,
-                'last_active' => $lastActive ? (int)$lastActive : null,
-            ];
-        }
-
-        return [
-            'user_id' => $studentId,
-            'enrolled_at' => $enrolledAt,
-            'pools' => $poolProgress,
-        ];
+    private function getDisplayName(string $userId): string {
+        $user = $this->userManager->get($userId);
+        return $user ? $user->getDisplayName() : $userId;
     }
 
     /**
-     * Get course progress — instructors see all students, students see only their own
-     * FIX3-HI-3: Allow students to view their own progress
+     * Batch-load pool names for a set of pool IDs.
+     */
+    private function getPoolNames(array $poolIds): array {
+        if (empty($poolIds)) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id', 'name')
+            ->from('learning_pools')
+            ->where($qb->expr()->in('id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        $result = $qb->executeQuery();
+        $names = [];
+        while ($row = $result->fetch()) {
+            $names[(int)$row['id']] = $row['name'];
+        }
+        $result->closeCursor();
+        return $names;
+    }
+
+    /**
+     * Batch-load question counts per pool.
+     */
+    private function getQuestionCounts(array $poolIds): array {
+        if (empty($poolIds)) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('pool_id', $qb->createFunction('COUNT(*) as cnt'))
+            ->from('learning_questions')
+            ->where($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+            ->groupBy('pool_id');
+        $result = $qb->executeQuery();
+        $counts = [];
+        while ($row = $result->fetch()) {
+            $counts[(int)$row['pool_id']] = (int)$row['cnt'];
+        }
+        $result->closeCursor();
+        return $counts;
+    }
+
+    /**
+     * Batch-load Leitner mastery (box 5 count) per user per pool.
+     * Returns: [user_id => [pool_id => mastered_count]]
+     */
+    private function getBatchMastery(array $studentIds, array $poolIds): array {
+        if (empty($studentIds) || empty($poolIds)) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('user_id', 'pool_id', $qb->createFunction('COUNT(*) as cnt'))
+            ->from('learning_leitner_items')
+            ->where($qb->expr()->in('user_id', $qb->createNamedParameter($studentIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
+            ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+            ->andWhere($qb->expr()->eq('box', $qb->createNamedParameter(5)))
+            ->groupBy('user_id', 'pool_id');
+        $result = $qb->executeQuery();
+        $data = [];
+        while ($row = $result->fetch()) {
+            $data[$row['user_id']][(int)$row['pool_id']] = (int)$row['cnt'];
+        }
+        $result->closeCursor();
+        return $data;
+    }
+
+    /**
+     * Batch-load session stats (accuracy + last active) per user per pool.
+     * Returns: [user_id => [pool_id => [total_q, correct, last_active]]]
+     */
+    private function getBatchSessionStats(array $studentIds, array $poolIds): array {
+        if (empty($studentIds) || empty($poolIds)) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select(
+                'user_id', 'pool_id',
+                $qb->createFunction('COALESCE(SUM(total_questions), 0) as total_q'),
+                $qb->createFunction('COALESCE(SUM(correct_answers), 0) as correct'),
+                $qb->createFunction('MAX(completed_at) as last_active')
+            )
+            ->from('learning_sessions')
+            ->where($qb->expr()->in('user_id', $qb->createNamedParameter($studentIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
+            ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+            ->andWhere($qb->expr()->isNotNull('completed_at'))
+            ->groupBy('user_id', 'pool_id');
+        $result = $qb->executeQuery();
+        $data = [];
+        while ($row = $result->fetch()) {
+            $data[$row['user_id']][(int)$row['pool_id']] = [
+                'total_q' => (int)$row['total_q'],
+                'correct' => (int)$row['correct'],
+                'last_active' => $row['last_active'] ? (int)$row['last_active'] : null,
+            ];
+        }
+        $result->closeCursor();
+        return $data;
+    }
+
+    /**
+     * Batch-load user stats (XP, level, streak, etc.) for a set of user IDs.
+     * Returns: [user_id => [total_xp, current_level, current_streak, total_sessions, last_activity_date]]
+     */
+    private function getBatchUserStats(array $userIds): array {
+        if (empty($userIds)) {
+            return [];
+        }
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('user_id', 'total_xp', 'current_level', 'current_streak', 'total_sessions', 'total_mastered', 'last_activity_date')
+            ->from('learning_user_stats')
+            ->where($qb->expr()->in('user_id', $qb->createNamedParameter($userIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)));
+        $result = $qb->executeQuery();
+        $data = [];
+        while ($row = $result->fetch()) {
+            $data[$row['user_id']] = [
+                'total_xp' => (int)$row['total_xp'],
+                'current_level' => (int)$row['current_level'],
+                'current_streak' => (int)$row['current_streak'],
+                'total_sessions' => (int)$row['total_sessions'],
+                'total_mastered' => (int)$row['total_mastered'],
+                'last_activity_date' => $row['last_activity_date'],
+            ];
+        }
+        $result->closeCursor();
+        return $data;
+    }
+
+    /**
+     * Get course progress — instructors see all students with stats, students see only their own.
+     * Uses batch queries to avoid N+1 problem.
      */
     public function getCourseProgress(int $courseId, string $userId): array {
         $course = $this->courseMapper->findById($courseId);
-
         $isInstructor = $this->isInstructorOfCourse($course, $userId);
 
-        if (!$isInstructor) {
-            // FIX3-HI-3: Students can see their own progress
-            if (!$this->hasAccess($course, $userId)) {
-                throw new \Exception('No permission');
-            }
-
-            $coursePools = $this->coursePoolMapper->findByCourse($courseId);
-            $poolIds = array_map(fn($cp) => $cp->getPoolId(), $coursePools);
-
-            try {
-                $member = $this->courseMemberMapper->findByCourseAndUser($courseId, $userId);
-                $enrolledAt = $member->getEnrolledAt();
-            } catch (DoesNotExistException $e) {
-                $enrolledAt = null;
-            }
-
-            $studentData = $this->getStudentPoolProgress($userId, $poolIds, $enrolledAt);
-            return ['students' => [$studentData]];
+        if (!$isInstructor && !$this->hasAccess($course, $userId)) {
+            throw new \Exception('No permission');
         }
 
-        $members = $this->courseMemberMapper->findByCourse($courseId);
         $coursePools = $this->coursePoolMapper->findByCourse($courseId);
         $poolIds = array_map(fn($cp) => $cp->getPoolId(), $coursePools);
 
+        // Determine which students to include
+        if ($isInstructor) {
+            $members = $this->courseMemberMapper->findByCourse($courseId);
+            $studentMembers = array_filter($members, fn($m) => $m->getRole() === 'student');
+        } else {
+            try {
+                $member = $this->courseMemberMapper->findByCourseAndUser($courseId, $userId);
+                $studentMembers = [$member];
+            } catch (DoesNotExistException $e) {
+                $studentMembers = [];
+            }
+        }
+
+        $studentIds = array_map(fn($m) => $m->getUserId(), $studentMembers);
+        $enrolledAtMap = [];
+        foreach ($studentMembers as $m) {
+            $enrolledAtMap[$m->getUserId()] = $m->getEnrolledAt();
+        }
+
+        if (empty($studentIds) || empty($poolIds)) {
+            return ['students' => []];
+        }
+
+        // Batch queries (replaces N×4 per student per pool)
+        $poolNames = $this->getPoolNames($poolIds);
+        $questionCounts = $this->getQuestionCounts($poolIds);
+        $masteryData = $this->getBatchMastery($studentIds, $poolIds);
+        $sessionData = $this->getBatchSessionStats($studentIds, $poolIds);
+        $userStats = $this->getBatchUserStats($studentIds);
+
+        // Assemble per-student results
         $students = [];
-        foreach ($members as $member) {
-            if ($member->getRole() !== 'student') continue;
-            $students[] = $this->getStudentPoolProgress(
-                $member->getUserId(), $poolIds, $member->getEnrolledAt()
-            );
+        foreach ($studentIds as $sid) {
+            $poolProgress = [];
+            foreach ($poolIds as $pid) {
+                $totalQ = $questionCounts[$pid] ?? 0;
+                $mastered = $masteryData[$sid][$pid] ?? 0;
+                $sess = $sessionData[$sid][$pid] ?? null;
+                $totalAnswered = $sess ? $sess['total_q'] : 0;
+                $totalCorrect = $sess ? $sess['correct'] : 0;
+                $accuracy = $totalAnswered > 0 ? round($totalCorrect / $totalAnswered * 100) : 0;
+
+                $poolProgress[] = [
+                    'pool_id' => $pid,
+                    'pool_name' => $poolNames[$pid] ?? '(deleted)',
+                    'total_questions' => $totalQ,
+                    'mastered' => $mastered,
+                    'accuracy' => $accuracy,
+                    'last_active' => $sess ? $sess['last_active'] : null,
+                ];
+            }
+
+            $stats = $userStats[$sid] ?? null;
+            $students[] = [
+                'user_id' => $sid,
+                'display_name' => $this->getDisplayName($sid),
+                'enrolled_at' => $enrolledAtMap[$sid] ?? null,
+                'total_xp' => $stats ? $stats['total_xp'] : 0,
+                'current_level' => $stats ? $stats['current_level'] : 1,
+                'current_streak' => $stats ? $stats['current_streak'] : 0,
+                'last_activity_date' => $stats ? $stats['last_activity_date'] : null,
+                'pools' => $poolProgress,
+            ];
         }
 
         return ['students' => $students];
@@ -620,5 +732,209 @@ class CourseService {
         }
 
         return ['courses' => $result];
+    }
+
+    /**
+     * Get course leaderboard — sorted by XP descending.
+     * Instructors see all fields; students see limited fields (privacy).
+     */
+    public function getLeaderboard(int $courseId, string $userId): array {
+        $course = $this->courseMapper->findById($courseId);
+
+        if (!$this->hasAccess($course, $userId)) {
+            throw new \Exception('No permission');
+        }
+
+        $isInstructor = $this->isInstructorOfCourse($course, $userId);
+
+        // Get all students in this course
+        $members = $this->courseMemberMapper->findByCourse($courseId);
+        $studentMembers = array_filter($members, fn($m) => $m->getRole() === 'student');
+        $studentIds = array_map(fn($m) => $m->getUserId(), $studentMembers);
+
+        if (empty($studentIds)) {
+            return ['leaderboard' => [], 'my_rank' => null];
+        }
+
+        $userStats = $this->getBatchUserStats($studentIds);
+
+        // Build leaderboard entries
+        $entries = [];
+        foreach ($studentIds as $sid) {
+            $stats = $userStats[$sid] ?? null;
+            $entries[] = [
+                'user_id' => $sid,
+                'display_name' => $this->getDisplayName($sid),
+                'total_xp' => $stats ? $stats['total_xp'] : 0,
+                'current_level' => $stats ? $stats['current_level'] : 1,
+                'total_mastered' => $stats ? $stats['total_mastered'] : 0,
+                'current_streak' => $stats ? $stats['current_streak'] : 0,
+                'total_sessions' => $stats ? $stats['total_sessions'] : 0,
+                'last_activity_date' => $stats ? $stats['last_activity_date'] : null,
+            ];
+        }
+
+        // Sort by XP descending, then by level descending
+        usort($entries, function ($a, $b) {
+            if ($b['total_xp'] !== $a['total_xp']) {
+                return $b['total_xp'] - $a['total_xp'];
+            }
+            return $b['current_level'] - $a['current_level'];
+        });
+
+        // Assign ranks and find requesting user's rank
+        $myRank = null;
+        foreach ($entries as $i => &$entry) {
+            $entry['rank'] = $i + 1;
+            if ($entry['user_id'] === $userId) {
+                $myRank = $i + 1;
+            }
+        }
+        unset($entry);
+
+        // Privacy: students see limited fields
+        if (!$isInstructor) {
+            $entries = array_map(function ($entry) {
+                return [
+                    'rank' => $entry['rank'],
+                    'user_id' => $entry['user_id'],
+                    'display_name' => $entry['display_name'],
+                    'total_xp' => $entry['total_xp'],
+                    'current_level' => $entry['current_level'],
+                    'total_mastered' => $entry['total_mastered'],
+                ];
+            }, $entries);
+        }
+
+        return ['leaderboard' => $entries, 'my_rank' => $myRank];
+    }
+
+    /**
+     * Get detailed student view for instructors.
+     * Returns XP, badges, streak, Leitner boxes per pool, recent sessions.
+     */
+    public function getStudentDetail(int $courseId, string $studentId, string $userId): array {
+        $course = $this->courseMapper->findById($courseId);
+
+        // Access: only instructors of this course
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new \Exception('No permission');
+        }
+
+        // Verify student is enrolled in this course
+        try {
+            $member = $this->courseMemberMapper->findByCourseAndUser($courseId, $studentId);
+        } catch (DoesNotExistException $e) {
+            throw new \Exception('Student not found in this course');
+        }
+
+        // Get course pools
+        $coursePools = $this->coursePoolMapper->findByCourse($courseId);
+        $poolIds = array_map(fn($cp) => $cp->getPoolId(), $coursePools);
+
+        // 1. XP + Level (global — intentional, shows full gamification profile)
+        $xpData = $this->xpService->calculateXp($studentId);
+
+        // 2. Badges (global)
+        $badges = $this->badgeService->getUserBadges($studentId);
+        $badgeProgress = $this->badgeService->getBadgeProgress($studentId);
+
+        // 3. Streak (global)
+        $streak = $this->streakService->getStreak($studentId);
+
+        // 4. Leitner boxes per course pool (course-scoped)
+        $poolsData = [];
+        if (!empty($poolIds)) {
+            $poolNames = $this->getPoolNames($poolIds);
+            $questionCounts = $this->getQuestionCounts($poolIds);
+
+            // Batch: all boxes per pool for this student
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('pool_id', 'box', $qb->createFunction('COUNT(*) as cnt'))
+                ->from('learning_leitner_items')
+                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($studentId)))
+                ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->groupBy('pool_id', 'box');
+            $result = $qb->executeQuery();
+            $boxData = [];
+            while ($row = $result->fetch()) {
+                $boxData[(int)$row['pool_id']][(int)$row['box']] = (int)$row['cnt'];
+            }
+            $result->closeCursor();
+
+            // Batch: accuracy per pool
+            $sessionStats = $this->getBatchSessionStats([$studentId], $poolIds);
+            $studentSessions = $sessionStats[$studentId] ?? [];
+
+            foreach ($poolIds as $pid) {
+                $boxes = $boxData[$pid] ?? [];
+                $total = array_sum($boxes);
+                $mastered = $boxes[5] ?? 0;
+                $sess = $studentSessions[$pid] ?? null;
+                $totalAnswered = $sess ? $sess['total_q'] : 0;
+                $totalCorrect = $sess ? $sess['correct'] : 0;
+                $accuracy = $totalAnswered > 0 ? (int)round($totalCorrect / $totalAnswered * 100) : 0;
+
+                $poolsData[] = [
+                    'pool_id' => $pid,
+                    'pool_name' => $poolNames[$pid] ?? '(deleted)',
+                    'boxes' => [
+                        'box_1' => $boxes[1] ?? 0,
+                        'box_2' => $boxes[2] ?? 0,
+                        'box_3' => $boxes[3] ?? 0,
+                        'box_4' => $boxes[4] ?? 0,
+                        'box_5' => $boxes[5] ?? 0,
+                    ],
+                    'total' => $total,
+                    'mastered' => $mastered,
+                    'mastery_pct' => $total > 0 ? (int)round($mastered / $total * 100) : 0,
+                    'accuracy' => $accuracy,
+                ];
+            }
+        }
+
+        // 5. Recent sessions (course-scoped, last 10)
+        $recentSessions = [];
+        if (!empty($poolIds)) {
+            $poolNames = $poolNames ?? $this->getPoolNames($poolIds);
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('pool_id', 'mode', 'total_questions', 'correct_answers', 'completed_at')
+                ->from('learning_sessions')
+                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($studentId)))
+                ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->andWhere($qb->expr()->isNotNull('completed_at'))
+                ->orderBy('completed_at', 'DESC')
+                ->setMaxResults(10);
+            $result = $qb->executeQuery();
+            while ($row = $result->fetch()) {
+                $recentSessions[] = [
+                    'pool_name' => $poolNames[(int)$row['pool_id']] ?? '(deleted)',
+                    'mode' => $row['mode'],
+                    'score' => $row['correct_answers'] . '/' . $row['total_questions'],
+                    'completed_at' => (int)$row['completed_at'],
+                ];
+            }
+            $result->closeCursor();
+        }
+
+        // Stats from denormalized table
+        $statsData = $this->getBatchUserStats([$studentId]);
+        $stats = $statsData[$studentId] ?? null;
+
+        return [
+            'user_id' => $studentId,
+            'display_name' => $this->getDisplayName($studentId),
+            'xp' => $xpData,
+            'streak' => $streak,
+            'badges' => $badges,
+            'badge_progress' => $badgeProgress,
+            'pools' => $poolsData,
+            'recent_sessions' => $recentSessions,
+            'stats' => [
+                'total_sessions' => $stats ? $stats['total_sessions'] : 0,
+                'total_mastered' => $stats ? $stats['total_mastered'] : 0,
+                'enrolled_at' => $member->getEnrolledAt(),
+            ],
+        ];
     }
 }

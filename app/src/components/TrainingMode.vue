@@ -294,4 +294,9 @@ export default {
 .improvement-down { color: var(--color-text-maxcontrast); }
 .xp-earned { font-size: 22px; font-weight: 700; color: var(--color-primary-element); margin-bottom: 24px; text-align: center; animation: xpFadeIn 0.5s ease-out 0.5s both; }
 @keyframes xpFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .personal-best-banner { animation: none; }
+  .xp-earned { animation: none; }
+}
 </style>

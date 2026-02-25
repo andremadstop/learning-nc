@@ -18,7 +18,7 @@
 
 		<!-- Loading state -->
 		<div v-if="loading" class="loading-container">
-			<div class="icon-loading" />
+			<NcLoadingIcon :size="44" />
 			<p>{{ t('learning', 'Loading course details...') }}</p>
 		</div>
 
@@ -28,9 +28,9 @@
 		</NcNoteCard>
 
 		<template v-if="!loading && course">
-			<!-- Tab selector (instructor) -->
-			<div v-if="isInstructor" class="tab-selector">
-				<button v-for="tab in instructorTabs"
+			<!-- Tab selector -->
+			<div class="tab-selector">
+				<button v-for="tab in visibleTabs"
 					:key="tab.id"
 					class="tab-button"
 					:class="{ active: currentTab === tab.id }"
@@ -134,6 +134,7 @@
 						:key="member.id"
 						class="member-item">
 						<div class="member-info">
+							<span class="member-avatar">{{ member.user_id.charAt(0).toUpperCase() }}</span>
 							<span class="member-name">{{ member.user_id }}</span>
 							<span class="member-role-badge" :class="member.role">
 								{{ member.role }}
@@ -178,7 +179,7 @@
 				</div>
 
 				<div v-if="progressLoading" class="loading-container">
-					<div class="icon-loading" />
+					<NcLoadingIcon :size="44" />
 					<p>{{ t('learning', 'Loading progress data...') }}</p>
 				</div>
 
@@ -186,19 +187,50 @@
 					<table class="progress-table">
 						<thead>
 							<tr>
-								<th class="student-col" scope="col">{{ t('learning', 'Student') }}</th>
+								<th class="student-col sortable-col" scope="col"
+									@click="setProgressSort('user_id')">
+									{{ t('learning', 'Student') }}
+									<span v-if="progressSortKey === 'user_id'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</th>
+								<th class="stat-col sortable-col" scope="col"
+									@click="setProgressSort('current_level')">
+									{{ t('learning', 'Level') }}
+									<span v-if="progressSortKey === 'current_level'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</th>
+								<th class="stat-col sortable-col" scope="col"
+									@click="setProgressSort('total_xp')">
+									{{ t('learning', 'XP') }}
+									<span v-if="progressSortKey === 'total_xp'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</th>
 								<th v-for="pool in coursePools"
 									:key="'th-' + pool.id"
 									class="pool-col"
 									scope="col">
 									{{ pool.pool_name }}
 								</th>
-								<th class="overall-col" scope="col">{{ t('learning', 'Overall') }}</th>
+								<th class="overall-col sortable-col" scope="col"
+									@click="setProgressSort('overall_mastery')">
+									{{ t('learning', 'Overall') }}
+									<span v-if="progressSortKey === 'overall_mastery'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</th>
+								<th class="stat-col sortable-col" scope="col"
+									@click="setProgressSort('last_activity_date')">
+									{{ t('learning', 'Last Active') }}
+									<span v-if="progressSortKey === 'last_activity_date'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="row in progressData" :key="row.user_id">
-								<td class="student-col">{{ row.user_id }}</td>
+							<tr v-for="row in sortedProgressData" :key="row.user_id"
+								class="clickable-row"
+								@click="$emit('selectStudent', { userId: row.user_id, courseId: courseId })">
+								<td class="student-col">{{ row.display_name || row.user_id }}</td>
+								<td class="stat-col">
+									<span class="level-pill" :class="levelClass(row.current_level)">
+										Lv.{{ row.current_level || 1 }}
+									</span>
+								</td>
+								<td class="stat-col">{{ formatXp(row.total_xp) }}</td>
 								<td v-for="pool in coursePools"
 									:key="'td-' + pool.id"
 									class="pool-col"
@@ -213,6 +245,7 @@
 										? row.overall_mastery + '%'
 										: '-' }}
 								</td>
+								<td class="stat-col last-active-col">{{ formatLastActive(row.last_activity_date) }}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -225,6 +258,100 @@
 					</template>
 				</NcEmptyContent>
 			</div>
+
+			<!-- Leaderboard Tab -->
+			<div v-if="currentTab === 'leaderboard'" class="leaderboard-section">
+				<div class="section-header">
+					<h4>{{ t('learning', 'Leaderboard') }}</h4>
+					<NcButton type="tertiary" @click="fetchLeaderboard">
+						{{ t('learning', 'Refresh') }}
+					</NcButton>
+				</div>
+
+				<div v-if="leaderboardLoading" class="loading-container">
+					<NcLoadingIcon :size="44" />
+					<p>{{ t('learning', 'Loading leaderboard...') }}</p>
+				</div>
+
+				<div v-else-if="leaderboardData.length > 0" class="progress-table-container" role="region" :aria-label="t('learning', 'Course leaderboard')">
+					<table class="progress-table leaderboard-table">
+						<thead>
+							<tr>
+								<th class="rank-col" scope="col">#</th>
+								<th class="student-col sortable-col" scope="col"
+									@click="setLeaderboardSort('display_name')">
+									{{ t('learning', 'Student') }}
+									<span v-if="leaderboardSortKey === 'display_name'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</th>
+								<th class="stat-col sortable-col" scope="col"
+									@click="setLeaderboardSort('current_level')">
+									{{ t('learning', 'Level') }}
+									<span v-if="leaderboardSortKey === 'current_level'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</th>
+								<th class="stat-col sortable-col" scope="col"
+									@click="setLeaderboardSort('total_xp')">
+									{{ t('learning', 'XP') }}
+									<span v-if="leaderboardSortKey === 'total_xp'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</th>
+								<th class="stat-col sortable-col" scope="col"
+									@click="setLeaderboardSort('total_mastered')">
+									{{ t('learning', 'Mastered') }}
+									<span v-if="leaderboardSortKey === 'total_mastered'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+								</th>
+								<template v-if="isInstructor">
+									<th class="stat-col sortable-col" scope="col"
+										@click="setLeaderboardSort('current_streak')">
+										{{ t('learning', 'Streak') }}
+										<span v-if="leaderboardSortKey === 'current_streak'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+									</th>
+									<th class="stat-col sortable-col" scope="col"
+										@click="setLeaderboardSort('total_sessions')">
+										{{ t('learning', 'Sessions') }}
+										<span v-if="leaderboardSortKey === 'total_sessions'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+									</th>
+								</template>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="entry in sortedLeaderboardData" :key="entry.user_id"
+								:class="{ 'my-row': entry.user_id === myUserId, 'clickable-row': isInstructor }"
+								@click="isInstructor ? $emit('selectStudent', { userId: entry.user_id, courseId: courseId }) : null">
+								<td class="rank-col">
+									<span v-if="entry.rank === 1" class="rank-medal">&#129351;</span>
+									<span v-else-if="entry.rank === 2" class="rank-medal">&#129352;</span>
+									<span v-else-if="entry.rank === 3" class="rank-medal">&#129353;</span>
+									<span v-else>{{ entry.rank }}</span>
+								</td>
+								<td class="student-col">{{ entry.display_name || entry.user_id }}</td>
+								<td class="stat-col">
+									<span class="level-pill" :class="levelClass(entry.current_level)">
+										Lv.{{ entry.current_level || 1 }}
+									</span>
+								</td>
+								<td class="stat-col">{{ Number(entry.total_xp || 0).toLocaleString() }}</td>
+								<td class="stat-col">{{ entry.total_mastered || 0 }}</td>
+								<template v-if="isInstructor">
+									<td class="stat-col">
+										<span v-if="entry.current_streak > 0">&#128293; {{ entry.current_streak }}d</span>
+										<span v-else>&mdash;</span>
+									</td>
+									<td class="stat-col">{{ entry.total_sessions || 0 }}</td>
+								</template>
+							</tr>
+						</tbody>
+					</table>
+					<p v-if="myRank !== null" class="my-rank-info">
+						{{ t('learning', 'Your rank: #{rank}', { rank: myRank }) }}
+					</p>
+				</div>
+
+				<NcEmptyContent v-else
+					:name="t('learning', 'No leaderboard data')">
+					<template #description>
+						{{ t('learning', 'The leaderboard will appear once students start learning.') }}
+					</template>
+				</NcEmptyContent>
+			</div>
 		</template>
 
 		<!-- Add Pool Modal -->
@@ -233,7 +360,7 @@
 				<h3>{{ t('learning', 'Add Pool to Course') }}</h3>
 
 				<div v-if="poolsLoading" class="loading-container">
-					<div class="icon-loading" />
+					<NcLoadingIcon :size="44" />
 					<p>{{ t('learning', 'Loading available pools...') }}</p>
 				</div>
 
@@ -323,11 +450,14 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
+import { getCurrentUser } from '@nextcloud/auth'
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
 import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
 import NcModal from '@nextcloud/vue/dist/Components/NcModal.js'
 import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
+import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import { formatXp, formatRelativeDateString } from '../format.js'
 
 export default {
 	name: 'CourseDetail',
@@ -335,6 +465,7 @@ export default {
 	components: {
 		NcButton,
 		NcEmptyContent,
+		NcLoadingIcon,
 		NcModal,
 		NcTextField,
 		NcNoteCard,
@@ -385,9 +516,18 @@ export default {
 			// Progress
 			progressLoading: false,
 			progressData: [],
+			progressSortKey: 'total_xp',
+			progressSortAsc: false,
 
 			// Student's own progress
 			studentProgress: [],
+
+			// Leaderboard
+			leaderboardLoading: false,
+			leaderboardData: [],
+			myRank: null,
+			leaderboardSortKey: null,
+			leaderboardSortAsc: false,
 		}
 	},
 
@@ -395,11 +535,22 @@ export default {
 		isInstructor() {
 			return this.course && this.course.is_instructor
 		},
-		instructorTabs() {
+		myUserId() {
+			const user = getCurrentUser()
+			return user ? user.uid : null
+		},
+		visibleTabs() {
+			if (this.isInstructor) {
+				return [
+					{ id: 'pools', label: this.t('learning', 'Pools') },
+					{ id: 'members', label: this.t('learning', 'Members') },
+					{ id: 'progress', label: this.t('learning', 'Progress') },
+					{ id: 'leaderboard', label: this.t('learning', 'Leaderboard') },
+				]
+			}
 			return [
 				{ id: 'pools', label: this.t('learning', 'Pools') },
-				{ id: 'members', label: this.t('learning', 'Members') },
-				{ id: 'progress', label: this.t('learning', 'Progress') },
+				{ id: 'leaderboard', label: this.t('learning', 'Leaderboard') },
 			]
 		},
 		sortedPools() {
@@ -407,6 +558,40 @@ export default {
 		},
 		availablePools() {
 			return this.allPools
+		},
+		sortedProgressData() {
+			if (!this.progressSortKey) return this.progressData
+			const key = this.progressSortKey
+			const asc = this.progressSortAsc
+			return [...this.progressData].sort((a, b) => {
+				let va = a[key]
+				let vb = b[key]
+				if (key === 'user_id' || key === 'last_activity_date') {
+					va = va || ''
+					vb = vb || ''
+					return asc ? va.localeCompare(vb) : vb.localeCompare(va)
+				}
+				va = va || 0
+				vb = vb || 0
+				return asc ? va - vb : vb - va
+			})
+		},
+		sortedLeaderboardData() {
+			if (!this.leaderboardSortKey) return this.leaderboardData
+			const key = this.leaderboardSortKey
+			const asc = this.leaderboardSortAsc
+			return [...this.leaderboardData].sort((a, b) => {
+				let va = a[key]
+				let vb = b[key]
+				if (key === 'display_name') {
+					va = va || ''
+					vb = vb || ''
+					return asc ? va.localeCompare(vb) : vb.localeCompare(va)
+				}
+				va = va || 0
+				vb = vb || 0
+				return asc ? va - vb : vb - va
+			})
 		},
 	},
 
@@ -422,6 +607,9 @@ export default {
 		currentTab(tab) {
 			if (tab === 'progress' && this.isInstructor && this.progressData.length === 0) {
 				this.fetchProgress()
+			}
+			if (tab === 'leaderboard' && this.leaderboardData.length === 0) {
+				this.fetchLeaderboard()
 			}
 		},
 	},
@@ -460,15 +648,20 @@ export default {
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{id}/progress', { id: this.courseId })
 				const response = await axios.get(url)
-				// For students, the API may return just their own progress
 				const data = response.data
+				let pools = []
 				if (Array.isArray(data)) {
-					this.studentProgress = data
+					pools = data
 				} else if (data && data.pools) {
-					this.studentProgress = data.pools
+					pools = data.pools
 				} else if (data && Array.isArray(data.students) && data.students.length > 0) {
-					this.studentProgress = data.students[0].pools || []
+					pools = data.students[0].pools || []
 				}
+				// Compute mastery percentage from mastered/total_questions
+				this.studentProgress = pools.map(p => ({
+					...p,
+					mastery: p.total_questions > 0 ? Math.round((p.mastered || 0) / p.total_questions * 100) : 0,
+				}))
 			} catch (err) {
 				// Student progress is optional, do not block the view
 				console.error('Failed to fetch student progress:', err)
@@ -707,6 +900,54 @@ export default {
 			return 'mastery-low'
 		},
 
+		levelClass(level) {
+			const l = level || 1
+			if (l >= 10) return 'level-gold'
+			if (l >= 5) return 'level-blue'
+			return 'level-grey'
+		},
+
+		formatXp(value) {
+			return formatXp(value)
+		},
+
+		formatLastActive(dateStr) {
+			return formatRelativeDateString(dateStr)
+		},
+
+		setProgressSort(key) {
+			if (this.progressSortKey === key) {
+				this.progressSortAsc = !this.progressSortAsc
+			} else {
+				this.progressSortKey = key
+				this.progressSortAsc = key === 'user_id' || key === 'last_activity_date'
+			}
+		},
+
+		setLeaderboardSort(key) {
+			if (this.leaderboardSortKey === key) {
+				this.leaderboardSortAsc = !this.leaderboardSortAsc
+			} else {
+				this.leaderboardSortKey = key
+				this.leaderboardSortAsc = key === 'display_name'
+			}
+		},
+
+		async fetchLeaderboard() {
+			this.leaderboardLoading = true
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{id}/leaderboard', { id: this.courseId })
+				const response = await axios.get(url)
+				this.leaderboardData = response.data.leaderboard || []
+				this.myRank = response.data.my_rank
+			} catch (err) {
+				console.error('Failed to fetch leaderboard:', err)
+				this.error = this.t('learning', 'Failed to load leaderboard.')
+			} finally {
+				this.leaderboardLoading = false
+			}
+		},
+
 		formatDate(timestamp) {
 			if (!timestamp) {
 				return ''
@@ -795,11 +1036,7 @@ export default {
 	color: var(--color-text-maxcontrast);
 }
 
-.loading-container .icon-loading {
-	width: 44px;
-	height: 44px;
-	margin-bottom: 12px;
-}
+.loading-container p { margin-top: 12px; }
 
 .detail-error {
 	margin-bottom: 16px;
@@ -848,9 +1085,11 @@ export default {
 
 .section-header h4 {
 	margin: 0;
-	font-size: 1.1em;
-	font-weight: 600;
-	color: var(--color-main-text);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	color: var(--color-text-maxcontrast);
+	font-weight: 700;
 }
 
 /* Pool list */
@@ -869,12 +1108,13 @@ export default {
 	border: 1px solid var(--color-border);
 	border-radius: var(--border-radius-large, 12px);
 	cursor: pointer;
-	transition: background 0.15s, box-shadow 0.15s;
+	transition: transform 0.2s, background 0.15s, box-shadow 0.2s;
 }
 
 .pool-item:hover {
 	background: var(--color-background-hover);
-	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+	transform: translateY(-1px);
+	box-shadow: 0 3px 10px color-mix(in srgb, var(--color-main-text) 6%, transparent);
 }
 
 .pool-sort-order {
@@ -1034,6 +1274,12 @@ export default {
 	background: var(--color-main-background);
 	border: 1px solid var(--color-border);
 	border-radius: var(--border-radius-large, 12px);
+	transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.member-item:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 2px 8px color-mix(in srgb, var(--color-main-text) 6%, transparent);
 }
 
 .member-info {
@@ -1042,6 +1288,20 @@ export default {
 	gap: 10px;
 	flex: 1;
 	min-width: 0;
+}
+
+.member-avatar {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--color-primary-element) 15%, transparent);
+	color: var(--color-primary-element);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 14px;
+	flex-shrink: 0;
 }
 
 .member-name {
@@ -1135,21 +1395,112 @@ export default {
 }
 
 td.mastery-high {
-	background: color-mix(in srgb, var(--color-success) 12%, transparent);
+	background: color-mix(in srgb, var(--color-success) 10%, transparent);
 	color: var(--color-success);
-	font-weight: 600;
+	font-weight: 700;
+	border-left: 3px solid var(--color-success);
 }
 
 td.mastery-medium {
-	background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+	background: color-mix(in srgb, var(--color-warning) 10%, transparent);
 	color: var(--color-warning);
-	font-weight: 600;
+	font-weight: 700;
+	border-left: 3px solid var(--color-warning);
 }
 
 td.mastery-low {
-	background: color-mix(in srgb, var(--color-error) 12%, transparent);
+	background: color-mix(in srgb, var(--color-error) 10%, transparent);
 	color: var(--color-error);
+	font-weight: 700;
+	border-left: 3px solid var(--color-error);
+}
+
+/* Level pills */
+.level-pill {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 0.8em;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.level-grey {
+	background: var(--color-background-dark);
+	color: var(--color-text-maxcontrast);
+}
+
+.level-blue {
+	background: color-mix(in srgb, var(--color-primary-element) 15%, transparent);
+	color: var(--color-primary-element);
+}
+
+.level-gold {
+	background: color-mix(in srgb, var(--color-warning) 20%, transparent);
+	color: var(--color-warning);
+}
+
+/* Sortable columns */
+.sortable-col {
+	cursor: pointer;
+	user-select: none;
+}
+
+.sortable-col:hover {
+	background: color-mix(in srgb, var(--color-primary-element) 8%, var(--color-background-dark));
+}
+
+.sort-arrow {
+	font-size: 0.7em;
+	margin-left: 4px;
+}
+
+/* Stat columns */
+.stat-col {
+	min-width: 70px;
+	text-align: center;
+	white-space: nowrap;
+}
+
+/* Clickable rows */
+.clickable-row {
+	cursor: pointer;
+}
+
+.clickable-row:hover td {
+	background: color-mix(in srgb, var(--color-primary-element) 8%, transparent);
+	transition: background 0.15s;
+}
+
+/* Leaderboard */
+.rank-col {
+	width: 44px;
+	text-align: center !important;
 	font-weight: 600;
+}
+
+.rank-medal {
+	font-size: 1.4em;
+}
+
+/* Top 3 row glow */
+.leaderboard-table .rank-medal { display: inline-block; }
+
+.my-row td {
+	font-weight: 700;
+	background: color-mix(in srgb, var(--color-primary-element) 8%, transparent) !important;
+}
+
+.my-rank-info {
+	margin-top: 12px;
+	text-align: center;
+	font-size: 0.9em;
+	color: var(--color-text-maxcontrast);
+}
+
+.last-active-col {
+	color: var(--color-text-maxcontrast);
+	font-size: 0.85em;
 }
 
 /* Modal styles */
@@ -1295,5 +1646,10 @@ td.mastery-low {
 	.pool-select-list {
 		max-height: 300px;
 	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pool-item:hover,
+	.member-item:hover { transform: none; }
 }
 </style>

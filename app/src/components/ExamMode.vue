@@ -782,4 +782,10 @@ export default {
   .score-number { font-size: 36px; }
   .setup-screen { padding: 24px 12px; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .snake-timer-svg { animation: none; }
+  .xp-earned { animation: none; }
+  .timer-danger .snake-timer-svg { animation: none; }
+}
 </style>

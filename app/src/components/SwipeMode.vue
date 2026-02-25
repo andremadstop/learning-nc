@@ -577,4 +577,10 @@ export default {
   .score-circle { width: 130px; height: 130px; }
   .score-number { font-size: 36px; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .swipe-card { transition: none; }
+  .hint-text { animation: none; }
+  .xp-earned { animation: none; }
+}
 </style>
