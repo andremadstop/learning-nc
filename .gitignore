@@ -64,6 +64,8 @@ REVIEW-PROMPT*.md
 REVIEW_REPORT*.md
 GEMINI-DESIGN-REVIEW*.md
 LAUNCH_READINESS_REPORT*.md
+review-prompt-*.md
+v*-review-*.md
 
 # Infrastructure / VM setup (not app-related)
 install-automated.exp
