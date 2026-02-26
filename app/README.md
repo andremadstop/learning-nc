@@ -8,24 +8,44 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 
 ## Features
 
+### Learning Modes
 - **Smart Queue** — Cross-pool "Jetzt Lernen" button reviews all due cards from every pool in one session, sorted by priority
-- **Question Pools** — Organize questions into themed pools
-- **Multiple Choice** — Questions with 2-8 answers, explanations, difficulty levels, multi-select support
-- **Leitner System** — 5-box spaced repetition with automatic scheduling
+- **Leitner System** — 5-box spaced repetition with automatic scheduling (1d, 3d, 7d, 14d intervals)
 - **Training Mode** — Quick quiz sessions with immediate feedback
 - **Exam Mode** — Timed exams with configurable question count and snake timer
 - **Wahr/Falsch** — Touch-friendly swipe-based true/false flashcard review
-- **Gamification** — XP, levels, 14 achievement badges, daily goals, streak tracking, level-up celebrations
-- **Daily Goal** — Configurable daily review target with visual progress ring
-- **Course Management** — Instructors create courses, assign pools, track student progress with leaderboards
-- **Course Leaderboard** — Ranked by XP with medal indicators and student detail drill-down
+- **Trouble Spots** — Focused practice on your hardest questions (3+ wrong, <30% accuracy)
+- **Daily Challenge** — One random question per day with bonus XP reward
+
+### Question Types
+- **Multiple Choice** — Questions with 2-8 answers, explanations, difficulty levels, multi-select support
+- **Free Text** — Open-ended questions where users type answers, matched against model answers with fuzzy matching (case-insensitive, typo-tolerant via Levenshtein distance)
+- **AI Question Generator** — Paste text (lecture notes, textbook excerpts) and let AI generate multiple-choice questions with editable preview before import
+
+### Gamification
+- **XP & Levels** — Experience points from sessions, reviews, accuracy bonuses
+- **14 Badges** — Achievements across 6 categories (sessions, performance, mastery, streak, social, fun)
+- **XP Streak Multipliers** — Tier-based bonuses: 1.5x at 3-day streak, 2x at 7-day, 3x at 30-day
+- **Daily Goal** — Configurable daily review target with visual progress ring and XP bonus
+- **Level-Up Celebration** — Animated overlay when reaching a new level
+
+### Course Management
+- **Courses** — Instructors create courses, assign pools, enroll students
+- **Leaderboard** — Ranked by XP with medal indicators and student detail drill-down
+- **Student Progress** — Per-student XP, badges, streak, Leitner boxes per pool, session history
+- **At-Risk Warning** — Instructors see which students are falling behind with risk scores and reasons
+
+### Data & Sharing
 - **Pool Sharing** — Share with users (read-only or edit permissions)
 - **CSV/JSON Import** — Bulk import questions from files
+- **CSV/JSON Export** — Download question pools for backup or sharing (roundtrip-compatible with import)
 - **Multi-Language** — Translate questions and answers into any language
 - **Search** — Full-text search across all question pools
-- **Analytics** — Per-pool statistics with accuracy trends
+
+### Integration
 - **Dashboard Widget** — See due questions from the Nextcloud Dashboard
 - **Activity Integration** — Badge unlocks appear in Nextcloud Activity stream
+- **Analytics** — Per-pool statistics with accuracy trends
 - **Mobile Friendly** — Responsive touch-optimized design
 
 ## Installation
@@ -68,10 +88,16 @@ php occ app:enable learning
 4. Paste data or upload a file
 5. Preview and confirm import
 
-**CSV Format:**
+**CSV Format (Multiple Choice):**
 ```csv
 question,answer1,answer2,answer3,correct,explanation
 What is 2+2?,3,4,5,2,Basic math
+```
+
+**CSV Format (Free Text):**
+```csv
+question,model_answer,open
+What is the capital of France?,Paris,open
 ```
 
 **JSON Format:**
@@ -85,9 +111,25 @@ What is 2+2?,3,4,5,2,Basic math
       {"text": "5", "is_correct": false}
     ],
     "explanation": "Basic math"
+  },
+  {
+    "text": "What is the capital of France?",
+    "type": "open",
+    "answers": [
+      {"text": "Paris", "is_correct": true}
+    ]
   }
 ]
 ```
+
+### Exporting Questions
+
+1. Open a pool and go to the question list
+2. Click the **Export** dropdown (next to Import)
+3. Choose **CSV** or **JSON**
+4. The file downloads automatically
+
+Exported files are roundtrip-compatible — you can re-import them into any pool.
 
 ### Leitner Spaced Repetition
 
