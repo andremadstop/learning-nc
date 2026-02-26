@@ -777,50 +777,70 @@ class CourseService {
 
         $isInstructor = $this->isInstructorOfCourse($course, $userId);
 
-        // Get all students in this course
-        $members = $this->courseMemberMapper->findByCourse($courseId);
-        $studentMembers = array_filter($members, fn($m) => $m->getRole() === 'student');
-        $studentIds = array_map(fn($m) => $m->getUserId(), $studentMembers);
+        // Top 100 via SQL — avoids loading all students into PHP
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('cm.user_id')
+            ->addSelect($qb->createFunction('COALESCE(us.total_xp, 0) AS total_xp'))
+            ->addSelect($qb->createFunction('COALESCE(us.current_level, 1) AS current_level'))
+            ->addSelect($qb->createFunction('COALESCE(us.total_mastered, 0) AS total_mastered'))
+            ->addSelect($qb->createFunction('COALESCE(us.current_streak, 0) AS current_streak'))
+            ->addSelect($qb->createFunction('COALESCE(us.total_sessions, 0) AS total_sessions'))
+            ->addSelect('us.last_activity_date')
+            ->from('learning_course_members', 'cm')
+            ->leftJoin('cm', 'learning_user_stats', 'us', $qb->expr()->eq('cm.user_id', 'us.user_id'))
+            ->where($qb->expr()->eq('cm.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')))
+            ->orderBy('total_xp', 'DESC')
+            ->addOrderBy('current_level', 'DESC')
+            ->setMaxResults(100);
+        $result = $qb->executeQuery();
 
-        if (empty($studentIds)) {
-            return ['leaderboard' => [], 'my_rank' => null];
-        }
-
-        $userStats = $this->getBatchUserStats($studentIds);
-
-        // Build leaderboard entries
         $entries = [];
-        foreach ($studentIds as $sid) {
-            $stats = $userStats[$sid] ?? null;
+        $rank = 0;
+        while ($row = $result->fetch()) {
+            $rank++;
             $entries[] = [
-                'user_id' => $sid,
-                'display_name' => $this->getDisplayName($sid),
-                'total_xp' => $stats ? $stats['total_xp'] : 0,
-                'current_level' => $stats ? $stats['current_level'] : 1,
-                'total_mastered' => $stats ? $stats['total_mastered'] : 0,
-                'current_streak' => $stats ? $stats['current_streak'] : 0,
-                'total_sessions' => $stats ? $stats['total_sessions'] : 0,
-                'last_activity_date' => $stats ? $stats['last_activity_date'] : null,
+                'user_id' => $row['user_id'],
+                'display_name' => $this->getDisplayName($row['user_id']),
+                'total_xp' => (int)$row['total_xp'],
+                'current_level' => (int)$row['current_level'],
+                'total_mastered' => (int)$row['total_mastered'],
+                'current_streak' => (int)$row['current_streak'],
+                'total_sessions' => (int)$row['total_sessions'],
+                'last_activity_date' => $row['last_activity_date'],
+                'rank' => $rank,
             ];
         }
+        $result->closeCursor();
 
-        // Sort by XP descending, then by level descending
-        usort($entries, function ($a, $b) {
-            if ($b['total_xp'] !== $a['total_xp']) {
-                return $b['total_xp'] - $a['total_xp'];
-            }
-            return $b['current_level'] - $a['current_level'];
-        });
-
-        // Assign ranks and find requesting user's rank
+        // Calculate requesting user's rank separately (may be outside top 100)
         $myRank = null;
-        foreach ($entries as $i => &$entry) {
-            $entry['rank'] = $i + 1;
+        foreach ($entries as $entry) {
             if ($entry['user_id'] === $userId) {
-                $myRank = $i + 1;
+                $myRank = $entry['rank'];
+                break;
             }
         }
-        unset($entry);
+        if ($myRank === null) {
+            // User not in top 100 — count how many students have more XP
+            $qb2 = $this->db->getQueryBuilder();
+            $qb2->select($qb2->createFunction('COUNT(*) AS cnt'))
+                ->from('learning_course_members', 'cm')
+                ->leftJoin('cm', 'learning_user_stats', 'us', $qb2->expr()->eq('cm.user_id', 'us.user_id'))
+                ->leftJoin('cm', 'learning_user_stats', 'my', $qb2->expr()->andX(
+                    $qb2->expr()->eq('my.user_id', $qb2->createNamedParameter($userId))
+                ))
+                ->where($qb2->expr()->eq('cm.course_id', $qb2->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+                ->andWhere($qb2->expr()->eq('cm.role', $qb2->createNamedParameter('student')))
+                ->andWhere($qb2->expr()->gt(
+                    $qb2->createFunction('COALESCE(us.total_xp, 0)'),
+                    $qb2->createFunction('COALESCE(my.total_xp, 0)')
+                ));
+            $r2 = $qb2->executeQuery();
+            $above = (int)$r2->fetchOne();
+            $r2->closeCursor();
+            $myRank = $above + 1;
+        }
 
         // Privacy: students see limited fields (no user_id, no streak, no sessions)
         if (!$isInstructor) {
@@ -835,9 +855,6 @@ class CourseService {
                 ];
             }, $entries);
         }
-
-        // Limit to top 100 entries
-        $entries = array_slice($entries, 0, 100);
 
         return ['leaderboard' => $entries, 'my_rank' => $myRank];
     }

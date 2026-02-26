@@ -187,18 +187,21 @@
 					<table class="progress-table">
 						<thead>
 							<tr>
-								<th class="student-col sortable-col" scope="col"
-									@click="setProgressSort('user_id')">
+								<th class="student-col sortable-col" scope="col" role="button" tabindex="0"
+									:aria-sort="progressSortKey === 'user_id' ? (progressSortAsc ? 'ascending' : 'descending') : 'none'"
+									@click="setProgressSort('user_id')" @keydown.enter="setProgressSort('user_id')" @keydown.space.prevent="setProgressSort('user_id')">
 									{{ t('learning', 'Student') }}
 									<span v-if="progressSortKey === 'user_id'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</th>
-								<th class="stat-col sortable-col" scope="col"
-									@click="setProgressSort('current_level')">
+								<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+									:aria-sort="progressSortKey === 'current_level' ? (progressSortAsc ? 'ascending' : 'descending') : 'none'"
+									@click="setProgressSort('current_level')" @keydown.enter="setProgressSort('current_level')" @keydown.space.prevent="setProgressSort('current_level')">
 									{{ t('learning', 'Level') }}
 									<span v-if="progressSortKey === 'current_level'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</th>
-								<th class="stat-col sortable-col" scope="col"
-									@click="setProgressSort('total_xp')">
+								<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+									:aria-sort="progressSortKey === 'total_xp' ? (progressSortAsc ? 'ascending' : 'descending') : 'none'"
+									@click="setProgressSort('total_xp')" @keydown.enter="setProgressSort('total_xp')" @keydown.space.prevent="setProgressSort('total_xp')">
 									{{ t('learning', 'XP') }}
 									<span v-if="progressSortKey === 'total_xp'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</th>
@@ -208,13 +211,15 @@
 									scope="col">
 									{{ pool.pool_name }}
 								</th>
-								<th class="overall-col sortable-col" scope="col"
-									@click="setProgressSort('overall_mastery')">
+								<th class="overall-col sortable-col" scope="col" role="button" tabindex="0"
+									:aria-sort="progressSortKey === 'overall_mastery' ? (progressSortAsc ? 'ascending' : 'descending') : 'none'"
+									@click="setProgressSort('overall_mastery')" @keydown.enter="setProgressSort('overall_mastery')" @keydown.space.prevent="setProgressSort('overall_mastery')">
 									{{ t('learning', 'Overall') }}
 									<span v-if="progressSortKey === 'overall_mastery'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</th>
-								<th class="stat-col sortable-col" scope="col"
-									@click="setProgressSort('last_activity_date')">
+								<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+									:aria-sort="progressSortKey === 'last_activity_date' ? (progressSortAsc ? 'ascending' : 'descending') : 'none'"
+									@click="setProgressSort('last_activity_date')" @keydown.enter="setProgressSort('last_activity_date')" @keydown.space.prevent="setProgressSort('last_activity_date')">
 									{{ t('learning', 'Last Active') }}
 									<span v-if="progressSortKey === 'last_activity_date'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</th>
@@ -278,34 +283,40 @@
 						<thead>
 							<tr>
 								<th class="rank-col" scope="col">#</th>
-								<th class="student-col sortable-col" scope="col"
-									@click="setLeaderboardSort('display_name')">
+								<th class="student-col sortable-col" scope="col" role="button" tabindex="0"
+									:aria-sort="leaderboardSortKey === 'display_name' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
+									@click="setLeaderboardSort('display_name')" @keydown.enter="setLeaderboardSort('display_name')" @keydown.space.prevent="setLeaderboardSort('display_name')">
 									{{ t('learning', 'Student') }}
 									<span v-if="leaderboardSortKey === 'display_name'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</th>
-								<th class="stat-col sortable-col" scope="col"
-									@click="setLeaderboardSort('current_level')">
+								<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+									:aria-sort="leaderboardSortKey === 'current_level' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
+									@click="setLeaderboardSort('current_level')" @keydown.enter="setLeaderboardSort('current_level')" @keydown.space.prevent="setLeaderboardSort('current_level')">
 									{{ t('learning', 'Level') }}
 									<span v-if="leaderboardSortKey === 'current_level'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</th>
-								<th class="stat-col sortable-col" scope="col"
-									@click="setLeaderboardSort('total_xp')">
+								<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+									:aria-sort="leaderboardSortKey === 'total_xp' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
+									@click="setLeaderboardSort('total_xp')" @keydown.enter="setLeaderboardSort('total_xp')" @keydown.space.prevent="setLeaderboardSort('total_xp')">
 									{{ t('learning', 'XP') }}
 									<span v-if="leaderboardSortKey === 'total_xp'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</th>
-								<th class="stat-col sortable-col" scope="col"
-									@click="setLeaderboardSort('total_mastered')">
+								<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+									:aria-sort="leaderboardSortKey === 'total_mastered' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
+									@click="setLeaderboardSort('total_mastered')" @keydown.enter="setLeaderboardSort('total_mastered')" @keydown.space.prevent="setLeaderboardSort('total_mastered')">
 									{{ t('learning', 'Mastered') }}
 									<span v-if="leaderboardSortKey === 'total_mastered'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</th>
 								<template v-if="isInstructor">
-									<th class="stat-col sortable-col" scope="col"
-										@click="setLeaderboardSort('current_streak')">
+									<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+										:aria-sort="leaderboardSortKey === 'current_streak' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
+										@click="setLeaderboardSort('current_streak')" @keydown.enter="setLeaderboardSort('current_streak')" @keydown.space.prevent="setLeaderboardSort('current_streak')">
 										{{ t('learning', 'Streak') }}
 										<span v-if="leaderboardSortKey === 'current_streak'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 									</th>
-									<th class="stat-col sortable-col" scope="col"
-										@click="setLeaderboardSort('total_sessions')">
+									<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+										:aria-sort="leaderboardSortKey === 'total_sessions' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
+										@click="setLeaderboardSort('total_sessions')" @keydown.enter="setLeaderboardSort('total_sessions')" @keydown.space.prevent="setLeaderboardSort('total_sessions')">
 										{{ t('learning', 'Sessions') }}
 										<span v-if="leaderboardSortKey === 'total_sessions'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 									</th>
@@ -564,15 +575,20 @@ export default {
 			const key = this.progressSortKey
 			const asc = this.progressSortAsc
 			return [...this.progressData].sort((a, b) => {
-				let va = a[key]
-				let vb = b[key]
-				if (key === 'user_id' || key === 'last_activity_date') {
-					va = va || ''
-					vb = vb || ''
+				let va, vb
+				if (key === 'user_id') {
+					// Sort by display_name (what the user sees), fall back to user_id
+					va = (a.display_name || a.user_id || '').toLowerCase()
+					vb = (b.display_name || b.user_id || '').toLowerCase()
 					return asc ? va.localeCompare(vb) : vb.localeCompare(va)
 				}
-				va = va || 0
-				vb = vb || 0
+				if (key === 'last_activity_date') {
+					va = a[key] || ''
+					vb = b[key] || ''
+					return asc ? va.localeCompare(vb) : vb.localeCompare(va)
+				}
+				va = a[key] || 0
+				vb = b[key] || 0
 				return asc ? va - vb : vb - va
 			})
 		},

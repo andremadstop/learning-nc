@@ -8,10 +8,12 @@ use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
+use Psr\Log\LoggerInterface;
 
 class CourseController extends Controller {
     private CourseService $courseService;
     private RoleService $roleService;
+    private LoggerInterface $logger;
     private ?string $userId;
 
     public function __construct(
@@ -19,11 +21,13 @@ class CourseController extends Controller {
         IRequest $request,
         CourseService $courseService,
         RoleService $roleService,
+        LoggerInterface $logger,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
         $this->courseService = $courseService;
         $this->roleService = $roleService;
+        $this->logger = $logger;
         $this->userId = $userId;
     }
 
@@ -226,7 +230,7 @@ class CourseController extends Controller {
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
             return new JSONResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
-            \OC::$server->getLogger()->error('leaderboard error: ' . $e->getMessage(), ['app' => 'learning']);
+            $this->logger->error('leaderboard error: ' . $e->getMessage(), ['app' => 'learning']);
             return new JSONResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
@@ -245,7 +249,7 @@ class CourseController extends Controller {
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
             return new JSONResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
-            \OC::$server->getLogger()->error('studentDetail error: ' . $e->getMessage(), ['app' => 'learning']);
+            $this->logger->error('studentDetail error: ' . $e->getMessage(), ['app' => 'learning']);
             return new JSONResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
