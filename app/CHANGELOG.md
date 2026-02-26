@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2026-02-26
+
+### Added
+- **Role-Based Navigation**: Students start at Courses view (no Pools tab), instructors keep both tabs. App title simplified to "Lernen" for students
+- **Onboarding Hint System**: 7 dismissible info cards (localStorage-based) explaining Smart Queue, Leitner boxes, Daily Goal, Daily Challenge, and welcome messages for both roles
+- **hintMixin.js**: Reusable Vue mixin for localStorage-backed hint dismiss/check across all components
+- **Mode Descriptions**: One-line explanation shown below the active mode selector (Training, Leitner, Wahr/Falsch, Exam, Stats, Manage)
+- **Pool-from-Course Navigation**: "Back to Course" button when opening a pool from course context (instead of losing context by switching to Pools view)
+
+### Changed
+- **App.vue**: Mode selector filtered by role — students see only Train/Leitner/Wahr-Falsch/Exam (no Stats, no Manage)
+- **PoolList.vue**: Create Pool button, Share/Edit/Delete actions hidden for students. Better empty state text
+- **CourseList.vue**: Student empty state now explains that the instructor enrolls them
+- **LeitnerMode.vue**: Box labels improved — "Neu — taeglich wiederholen", "Lernphase — nach 1 Tag", "Bekannt — nach 3 Tagen", "Gut — nach 7 Tagen", "Gemeistert — nach 14 Tagen"
+- **SmartQueue.vue**: Better empty state ("Open a pool and start the Leitner system"), ready state shows priority sorting info
+- **PoolList.vue**: "Jetzt Lernen" → "Start learning", "Trouble Spots" → "Trouble spots" (consistency)
+- **de.json**: ~60 new German translation keys for all hints, mode descriptions, empty states, and v1.8/v1.9 UI strings
+
 ## [1.9.0] - 2026-02-26
 
 ### Added
