@@ -753,7 +753,7 @@ class CourseService {
         foreach ($courses as $course) {
             $courseId = $course->getId();
             $poolCount = count($this->coursePoolMapper->findByCourse($courseId));
-            $memberCount = $this->courseMemberMapper->countByCourse($courseId);
+            $memberCount = $this->courseMemberMapper->countStudentsByCourse($courseId);
 
             $data = $course->jsonSerialize();
             $data['pool_count'] = $poolCount;
@@ -792,6 +792,7 @@ class CourseService {
             ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')))
             ->orderBy('total_xp', 'DESC')
             ->addOrderBy('current_level', 'DESC')
+            ->addOrderBy('cm.user_id', 'ASC')
             ->setMaxResults(100);
         $result = $qb->executeQuery();
 
@@ -813,33 +814,61 @@ class CourseService {
         }
         $result->closeCursor();
 
-        // Calculate requesting user's rank separately (may be outside top 100)
+        // Calculate requesting user's rank (only for students, not instructors)
         $myRank = null;
-        foreach ($entries as $entry) {
-            if ($entry['user_id'] === $userId) {
-                $myRank = $entry['rank'];
-                break;
+        if (!$isInstructor) {
+            foreach ($entries as $entry) {
+                if ($entry['user_id'] === $userId) {
+                    $myRank = $entry['rank'];
+                    break;
+                }
             }
-        }
-        if ($myRank === null) {
-            // User not in top 100 — count how many students have more XP
-            $qb2 = $this->db->getQueryBuilder();
-            $qb2->select($qb2->createFunction('COUNT(*) AS cnt'))
-                ->from('learning_course_members', 'cm')
-                ->leftJoin('cm', 'learning_user_stats', 'us', $qb2->expr()->eq('cm.user_id', 'us.user_id'))
-                ->leftJoin('cm', 'learning_user_stats', 'my', $qb2->expr()->andX(
-                    $qb2->expr()->eq('my.user_id', $qb2->createNamedParameter($userId))
-                ))
-                ->where($qb2->expr()->eq('cm.course_id', $qb2->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-                ->andWhere($qb2->expr()->eq('cm.role', $qb2->createNamedParameter('student')))
-                ->andWhere($qb2->expr()->gt(
-                    $qb2->createFunction('COALESCE(us.total_xp, 0)'),
-                    $qb2->createFunction('COALESCE(my.total_xp, 0)')
-                ));
-            $r2 = $qb2->executeQuery();
-            $above = (int)$r2->fetchOne();
-            $r2->closeCursor();
-            $myRank = $above + 1;
+            if ($myRank === null) {
+                // User not in top 100 — count students ranked higher (XP DESC, Level DESC, user_id ASC)
+                $qb2 = $this->db->getQueryBuilder();
+                $qb2->select($qb2->createFunction('COUNT(*) AS cnt'))
+                    ->from('learning_course_members', 'cm')
+                    ->leftJoin('cm', 'learning_user_stats', 'us', $qb2->expr()->eq('cm.user_id', 'us.user_id'))
+                    ->leftJoin('cm', 'learning_user_stats', 'my', $qb2->expr()->andX(
+                        $qb2->expr()->eq('my.user_id', $qb2->createNamedParameter($userId))
+                    ))
+                    ->where($qb2->expr()->eq('cm.course_id', $qb2->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+                    ->andWhere($qb2->expr()->eq('cm.role', $qb2->createNamedParameter('student')))
+                    ->andWhere($qb2->expr()->orX(
+                        // Higher XP
+                        $qb2->expr()->gt(
+                            $qb2->createFunction('COALESCE(us.total_xp, 0)'),
+                            $qb2->createFunction('COALESCE(my.total_xp, 0)')
+                        ),
+                        // Same XP, higher level
+                        $qb2->expr()->andX(
+                            $qb2->expr()->eq(
+                                $qb2->createFunction('COALESCE(us.total_xp, 0)'),
+                                $qb2->createFunction('COALESCE(my.total_xp, 0)')
+                            ),
+                            $qb2->expr()->gt(
+                                $qb2->createFunction('COALESCE(us.current_level, 1)'),
+                                $qb2->createFunction('COALESCE(my.current_level, 1)')
+                            )
+                        ),
+                        // Same XP + level, earlier user_id (stable sort)
+                        $qb2->expr()->andX(
+                            $qb2->expr()->eq(
+                                $qb2->createFunction('COALESCE(us.total_xp, 0)'),
+                                $qb2->createFunction('COALESCE(my.total_xp, 0)')
+                            ),
+                            $qb2->expr()->eq(
+                                $qb2->createFunction('COALESCE(us.current_level, 1)'),
+                                $qb2->createFunction('COALESCE(my.current_level, 1)')
+                            ),
+                            $qb2->expr()->lt('cm.user_id', $qb2->createNamedParameter($userId))
+                        )
+                    ));
+                $r2 = $qb2->executeQuery();
+                $above = (int)$r2->fetchOne();
+                $r2->closeCursor();
+                $myRank = $above + 1;
+            }
         }
 
         // Privacy: students see limited fields (no user_id, no streak, no sessions)
@@ -871,10 +900,13 @@ class CourseService {
             throw new ForbiddenException('No permission');
         }
 
-        // Verify student is enrolled in this course
+        // Verify student is enrolled in this course with student role
         try {
             $member = $this->courseMemberMapper->findByCourseAndUser($courseId, $studentId);
         } catch (DoesNotExistException $e) {
+            throw new NotFoundException('Student not found in this course');
+        }
+        if ($member->getRole() !== 'student') {
             throw new NotFoundException('Student not found in this course');
         }
 

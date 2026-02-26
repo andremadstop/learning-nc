@@ -351,7 +351,7 @@
 							</tr>
 						</tbody>
 					</table>
-					<p v-if="myRank !== null" class="my-rank-info">
+					<p v-if="myRank !== null && !isInstructor" class="my-rank-info">
 						{{ t('learning', 'Your rank: #{rank}', { rank: myRank }) }}
 					</p>
 				</div>
