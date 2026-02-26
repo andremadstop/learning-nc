@@ -36,8 +36,14 @@
         <div v-if="streak.current_streak > 0" class="summary-card streak-card" :title="t('learning', 'Longest: {n} days', { n: streak.longest_streak })">
           <span class="card-watermark">&#x1F525;</span>
           <p class="card-label">{{ t('learning', 'Streak') }}</p>
-          <p class="card-value streak-value">&#x1F525; {{ streak.current_streak }}</p>
-          <p class="card-sub">{{ t('learning', 'Longest: {n} days', { n: streak.longest_streak }) }}</p>
+          <p class="card-value streak-value">{{ streak.current_streak }}</p>
+          <p class="card-sub streak-sub">
+            <span class="streak-flame-row">
+              <span v-for="i in Math.min(streak.current_streak, 7)" :key="i" class="streak-flame" :style="{ animationDelay: (i * 0.1) + 's' }">&#x1F525;</span>
+            </span>
+            {{ streak.current_streak === 1 ? t('learning', 'day') : t('learning', 'days') }}
+            &middot; {{ t('learning', 'Best: {n}', { n: streak.longest_streak }) }}
+          </p>
         </div>
         <div class="summary-card card-questions">
           <span class="card-watermark">&#x1F4DA;</span>
@@ -499,7 +505,36 @@ export default {
 
 .streak-value {
   color: var(--color-warning) !important;
-  font-size: 2.4em !important;
+  font-size: 2.8em !important;
+  text-shadow: 0 0 20px color-mix(in srgb, var(--color-warning) 30%, transparent);
+}
+
+.streak-sub {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.streak-flame-row {
+  display: flex;
+  gap: 1px;
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.streak-flame {
+  display: inline-block;
+  animation: flame-dance 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes flame-dance {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-2px) scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .streak-flame { animation: none; }
 }
 
 .card-questions { border-left-color: var(--color-primary-element); }

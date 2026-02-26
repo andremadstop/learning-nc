@@ -343,7 +343,7 @@
 								<td class="stat-col">{{ entry.total_mastered || 0 }}</td>
 								<template v-if="isInstructor">
 									<td class="stat-col">
-										<span v-if="entry.current_streak > 0">&#128293; {{ entry.current_streak }}d</span>
+										<span v-if="entry.current_streak > 0" class="streak-pill"><span v-for="i in Math.min(entry.current_streak, 3)" :key="i" class="streak-flame" :style="{ animationDelay: (i * 0.1) + 's' }">&#x1F525;</span> {{ entry.current_streak }}d</span>
 										<span v-else>&mdash;</span>
 									</td>
 									<td class="stat-col">{{ entry.total_sessions || 0 }}</td>
@@ -1664,8 +1664,28 @@ td.mastery-low {
 	}
 }
 
+.streak-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 1px;
+	color: var(--color-warning);
+	font-weight: 600;
+}
+
+.streak-flame {
+	display: inline-block;
+	animation: flame-dance 0.8s ease-in-out infinite alternate;
+	font-size: 0.85em;
+}
+
+@keyframes flame-dance {
+	0% { transform: translateY(0) scale(1); }
+	100% { transform: translateY(-1px) scale(1.1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.pool-item:hover,
 	.member-item:hover { transform: none; }
+	.streak-flame { animation: none; }
 }
 </style>

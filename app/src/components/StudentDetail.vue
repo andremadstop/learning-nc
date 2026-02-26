@@ -26,7 +26,7 @@
 							Lv.{{ data.xp.level }}
 						</span>
 						<span v-if="data.streak.current_streak > 0" class="streak-badge">
-							&#128293; {{ data.streak.current_streak }}d
+							<span class="streak-flames"><span v-for="i in Math.min(data.streak.current_streak, 5)" :key="i" class="streak-flame" :style="{ animationDelay: (i * 0.1) + 's' }">&#x1F525;</span></span> {{ data.streak.current_streak }}d
 						</span>
 					</div>
 				</div>
@@ -324,8 +324,16 @@ export default {
 .streak-badge {
 	font-size: 0.9em;
 	font-weight: 600;
-	color: var(--color-main-text);
+	color: var(--color-warning);
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
 }
+
+.streak-flames { display: inline-flex; gap: 0; }
+.streak-flame { display: inline-block; animation: flame-dance 0.8s ease-in-out infinite alternate; font-size: 0.9em; }
+@keyframes flame-dance { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-1px) scale(1.1); } }
+@media (prefers-reduced-motion: reduce) { .streak-flame { animation: none; } }
 
 /* XP Bar — Gradient + Shimmer (consistent with AnalyticsDashboard) */
 .xp-bar-container {

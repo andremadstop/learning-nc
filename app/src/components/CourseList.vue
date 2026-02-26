@@ -207,6 +207,7 @@ import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
 import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import { showSuccess } from '@nextcloud/dialogs'
 
 export default {
 	name: 'CourseList',
@@ -351,9 +352,11 @@ export default {
 				if (this.editingCourse) {
 					const url = generateUrl('/apps/learning/api/courses/{id}', { id: this.editingCourse.id })
 					await axios.put(url, payload)
+					showSuccess(this.t('learning', 'Course updated'))
 				} else {
 					const url = generateUrl('/apps/learning/api/courses')
 					await axios.post(url, payload)
+					showSuccess(this.t('learning', 'Course created'))
 				}
 
 				this.closeModal()
@@ -372,6 +375,7 @@ export default {
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{id}', { id: course.id })
 				await axios.put(url, { status: newStatus })
+				showSuccess(this.t('learning', newStatus === 'active' ? 'Course activated' : 'Course archived'))
 				await this.fetchCourses()
 			} catch (err) {
 				console.error('Failed to update course status:', err)
@@ -393,6 +397,7 @@ export default {
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{id}', { id: this.deletingCourse.id })
 				await axios.delete(url)
+				showSuccess(this.t('learning', 'Course deleted'))
 				this.showDeleteModal = false
 				this.deletingCourse = null
 				await this.fetchCourses()

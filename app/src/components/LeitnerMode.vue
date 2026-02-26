@@ -33,7 +33,7 @@
         <div class="stat-card"><div class="stat-value">{{ stats.accuracy }}%</div><div class="stat-label">{{ t('learning', 'Accuracy') }}</div></div>
         <div class="stat-card"><div class="stat-value">{{ stats.mastery_percentage }}%</div><div class="stat-label">{{ t('learning', 'Mastered') }}</div></div>
         <div class="stat-card"><div class="stat-value">{{ stats.total_answered }}</div><div class="stat-label">{{ t('learning', 'Reviews Done') }}</div></div>
-        <div v-if="streak.current_streak > 0" class="stat-card streak-card" :title="t('learning', 'Longest: {n} days', { n: streak.longest_streak })"><div class="stat-value streak-value">\uD83D\uDD25 {{ streak.current_streak }}</div><div class="stat-label">{{ t('learning', 'Day Streak') }}</div></div>
+        <div v-if="streak.current_streak > 0" class="stat-card streak-card" :title="t('learning', 'Longest: {n} days', { n: streak.longest_streak })"><div class="stat-value streak-value">{{ streak.current_streak }}</div><div class="stat-label"><span class="streak-flames"><span v-for="i in Math.min(streak.current_streak, 5)" :key="i" class="streak-flame" :style="{ animationDelay: (i * 0.12) + 's' }">&#x1F525;</span></span> {{ t('learning', 'Day Streak') }}</div></div>
       </div>
 
       <h4 class="section-title">{{ t('learning', 'Leitner Boxes') }}</h4>
@@ -115,7 +115,7 @@
 
     <div v-else class="review-complete">
       <h3>{{ t('learning', 'Review Complete!') }}</h3>
-      <div v-if="streak.current_streak > 0" class="streak-banner">\uD83D\uDD25 {{ t('learning', 'Day {n}!', { n: streak.current_streak }) }}</div>
+      <div v-if="streak.current_streak > 0" class="streak-banner"><span class="streak-flames"><span v-for="i in Math.min(streak.current_streak, 7)" :key="i" class="streak-flame" :style="{ animationDelay: (i * 0.1) + 's' }">&#x1F525;</span></span> {{ t('learning', 'Day {n}!', { n: streak.current_streak }) }}</div>
       <div class="session-stats">
         <div class="session-stat correct"><div class="session-stat-value">{{ sessionCorrect }}</div><div class="session-stat-label">{{ t('learning', 'Correct') }}</div></div>
         <div class="session-stat incorrect"><div class="session-stat-value">{{ sessionIncorrect }}</div><div class="session-stat-label">{{ t('learning', 'Incorrect') }}</div></div>
@@ -321,7 +321,11 @@ export default {
 }
 .due-start-btn { margin-top: 8px; }
 .streak-card { border-color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 8%, var(--color-main-background)); }
-.streak-value { color: var(--color-warning); }
+.streak-value { color: var(--color-warning); font-size: 2em; text-shadow: 0 0 12px color-mix(in srgb, var(--color-warning) 25%, transparent); }
+.streak-flames { display: inline-flex; gap: 1px; }
+.streak-flame { display: inline-block; animation: flame-dance 0.8s ease-in-out infinite alternate; }
+@keyframes flame-dance { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-2px) scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { .streak-flame { animation: none; } }
 .streak-banner { font-size: 24px; font-weight: 700; color: var(--color-warning); margin-bottom: 16px; }
 .answer-buttons-review { display: grid; gap: 8px; margin-bottom: 12px; }
 .answer-btn-review { padding: 10px 14px; border: 2px solid var(--color-border); border-radius: var(--border-radius-large); font-size: 14px; color: var(--color-main-text); background: var(--color-main-background); }

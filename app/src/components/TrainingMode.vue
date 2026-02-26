@@ -79,7 +79,7 @@
 
     <div v-else class="training-results">
       <h3>{{ t('learning', 'Training Complete!') }}</h3>
-      <div v-if="streak.current_streak > 0" class="streak-banner">\uD83D\uDD25 {{ t('learning', 'Day {n}!', { n: streak.current_streak }) }}</div>
+      <div v-if="streak.current_streak > 0" class="streak-banner"><span class="streak-flames"><span v-for="i in Math.min(streak.current_streak, 7)" :key="i" class="streak-flame" :style="{ animationDelay: (i * 0.1) + 's' }">&#x1F525;</span></span> {{ t('learning', 'Day {n}!', { n: streak.current_streak }) }}</div>
       <div v-if="results.is_personal_best" class="personal-best-banner">{{ t('learning', 'Personal Best!') }}</div>
       <div class="score-display">
         <div class="score-circle"><span class="score-number" ref="scoreNumber">{{ results.score_percentage }}%</span></div>
@@ -286,7 +286,11 @@ export default {
 .answer-btn-review.answer-correct { border-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background)); }
 .answer-btn-review.answer-user-selected { border-color: var(--color-primary-element); }
 .answer-btn-review.answer-wrong-selected { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, var(--color-main-background)); }
-.streak-banner { font-size: 24px; font-weight: 700; color: var(--color-warning); margin-bottom: 16px; text-align: center; }
+.streak-banner { font-size: 24px; font-weight: 700; color: var(--color-warning); margin-bottom: 16px; text-align: center; text-shadow: 0 0 16px color-mix(in srgb, var(--color-warning) 25%, transparent); }
+.streak-flames { display: inline-flex; gap: 1px; }
+.streak-flame { display: inline-block; animation: flame-dance 0.8s ease-in-out infinite alternate; }
+@keyframes flame-dance { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-2px) scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { .streak-flame { animation: none; } }
 .personal-best-banner { font-size: 20px; font-weight: 700; color: var(--color-success); margin-bottom: 12px; text-align: center; animation: pbPulse 1s ease-in-out 2; }
 @keyframes pbPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 .improvement-label { font-size: 14px; font-weight: 600; margin-top: 8px; }
