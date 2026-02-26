@@ -8,40 +8,58 @@
 
 Create question pools, share them with your team, and study efficiently using scientifically-proven spaced repetition.
 
-## Features
+## Learning Modes
 
-- **AI Question Generator** — Paste text, let AI generate multiple-choice questions with preview and editing before import
 - **Smart Queue** — One-click "Jetzt Lernen" button reviews all due cards across every pool, prioritized by urgency
-- **Trouble Spots** — Focused practice on your hardest questions (3+ wrong, &lt;30% accuracy)
-- **Daily Challenge** — One question per day with bonus XP reward for correct answers
-- **At-Risk Early Warning** — Instructors see which students are falling behind with risk scores and reasons
-- **Free Text Questions** — Open-ended questions with fuzzy answer matching (case-insensitive, Levenshtein tolerance)
-- **CSV/JSON Export** — Export question pools for backup or sharing, roundtrip-compatible with import
-- **XP Streak Multipliers** — Tier-based XP bonuses: 1.5x at 3-day streak, 2x at 7-day, 3x at 30-day
-- **Multiple Choice Quizzes** — Create pools with questions, multiple answers, and multi-select support
 - **Leitner Spaced Repetition** — 5-box system with automatic scheduling (1d, 3d, 7d, 14d intervals)
 - **Training Mode** — Quick quiz sessions with immediate feedback and score tracking
 - **Exam Mode** — Timed exams with configurable question count and animated snake timer
 - **Wahr/Falsch Mode** — Touch-friendly swipe-based true/false flashcard review
-- **Gamification** — XP, levels, 14 achievement badges, streak tracking, and level-up celebrations
+- **Trouble Spots** — Focused practice on your hardest questions (3+ wrong, &lt;30% accuracy)
+- **Daily Challenge** — One question per day with bonus XP reward for correct answers
+
+## Question Types
+
+- **Multiple Choice** — Questions with 2-8 answers, explanations, difficulty levels, multi-select support
+- **Free Text** — Open-ended questions with fuzzy answer matching (case-insensitive, typo-tolerant via Levenshtein distance)
+- **AI Question Generator** — Paste text (lecture notes, textbook excerpts), let AI generate questions with editable preview before import
+
+## Gamification
+
+- **XP & Levels** — Experience points from sessions, reviews, accuracy bonuses
+- **14 Badges** — Achievements across 6 categories (sessions, performance, mastery, streak, social, fun)
+- **XP Streak Multipliers** — Tier-based XP bonuses: 1.5x at 3-day streak, 2x at 7-day, 3x at 30-day
 - **Daily Goal** — Configurable daily review target with visual progress ring and XP bonus
+- **Level-Up Celebration** — Animated overlay when reaching a new level
+
+## Course Management
+
+- **Courses** — Instructors create courses, assign pools, enroll students
+- **Leaderboard** — Ranked by XP with medal indicators and student detail drill-down
+- **Student Progress** — Per-student XP, badges, streak, Leitner boxes per pool, session history
+- **At-Risk Warning** — Instructors see which students are falling behind with risk scores and reasons
 - **Role-Based UX** — Students start at Courses, instructors at Pools. Each feature has a dismissible explanation hint
-- **Course Management** — Instructors create courses, assign pools, track student progress
-- **Course Leaderboard** — Ranked by XP with medal indicators and student detail drill-down
-- **Pool Sharing** — Share pools with other users (read or edit permissions)
+
+## Data & Sharing
+
 - **CSV/JSON Import** — Bulk import questions from CSV or JSON files
+- **CSV/JSON Export** — Export question pools for backup or sharing, roundtrip-compatible with import
+- **Pool Sharing** — Share pools with other users (read or edit permissions)
+- **Multi-Language Support** — Translate questions and answers into any language
+- **Search** — Full-text search across all your question pools
+
+## Integration
+
 - **Dashboard Widget** — See due questions at a glance from the Nextcloud Dashboard
 - **Activity Integration** — Badge unlocks appear in Nextcloud Activity stream
 - **Progress Tracking** — Stats, accuracy, mastery percentage per pool
-- **Multi-Language Support** — Translate questions and answers into any language
-- **Search** — Full-text search across all your question pools
 - **Mobile Optimized** — Touch-friendly responsive design
 
 ## Use Cases
 
 - Employee Onboarding & Compliance Training
 - IT Certification Prep (CompTIA, Cisco, AWS)
-- University Courses & Exam Preparation
+- University Courses &amp; Exam Preparation
 - Language Learning Vocabulary
 - General Knowledge Retention
 
