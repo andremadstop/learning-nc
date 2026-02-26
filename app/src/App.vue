@@ -221,7 +221,7 @@ export default {
       return [
         { id: 'train', label: t('learning', 'Training') },
         { id: 'leitner', label: t('learning', 'Leitner') },
-        { id: 'swipe', label: t('learning', 'Swipe') },
+        { id: 'swipe', label: t('learning', 'Wahr/Falsch') },
         { id: 'exam', label: t('learning', 'Exam') },
         { id: 'stats', label: t('learning', 'Stats') },
         { id: 'manage', label: this.poolPermission === 'read' ? t('learning', 'View Questions') : t('learning', 'Manage') }

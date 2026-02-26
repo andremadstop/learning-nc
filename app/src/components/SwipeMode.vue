@@ -1,11 +1,11 @@
 <template>
   <div class="swipe-mode">
     <div v-if="!session && !loadError" class="swipe-start">
-      <h3>{{ t('learning', 'Swipe Review') }}</h3>
-      <p v-if="totalQuestions > 0">{{ t('learning', 'Answer questions and swipe cards to continue') }}</p>
+      <h3>{{ t('learning', 'Wahr/Falsch') }}</h3>
+      <p v-if="totalQuestions > 0">{{ t('learning', 'Decide: true or false — swipe or tap to continue') }}</p>
       <NcEmptyContent v-else :name="t('learning', 'No questions')" :description="t('learning', 'No questions available for training')" />
       <div class="start-actions">
-        <NcButton v-if="totalQuestions > 0" type="primary" @click="startSession" :disabled="starting">{{ starting ? t('learning', 'Starting...') : t('learning', 'Start Swipe Review') }}</NcButton>
+        <NcButton v-if="totalQuestions > 0" type="primary" @click="startSession" :disabled="starting">{{ starting ? t('learning', 'Starting...') : t('learning', 'Start') }}</NcButton>
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
@@ -92,7 +92,7 @@
       </div>
 
       <div v-if="showFeedback" class="swipe-hint-area">
-        <p class="swipe-hint">\u2190 {{ t('learning', 'Swipe card or tap Next') }} \u2192</p>
+        <p class="swipe-hint">\u2190 {{ t('learning', 'Swipe or tap Next') }} \u2192</p>
         <NcButton type="primary" @click="advanceCard">
           {{ currentIndex < questions.length - 1 ? t('learning', 'Next \u2192') : t('learning', 'See Results') }}
         </NcButton>
@@ -109,7 +109,7 @@
       </div>
       <div v-if="results && results.xp_earned" class="xp-earned">+{{ results.xp_earned }} XP</div>
       <div class="start-actions">
-        <NcButton type="primary" @click="restartSession">{{ t('learning', 'Swipe Again') }}</NcButton>
+        <NcButton type="primary" @click="restartSession">{{ t('learning', 'Play Again') }}</NcButton>
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
       <BadgeUnlock :badges="newBadges" />
@@ -213,7 +213,7 @@ export default {
         this.cardAnimClass = 'card-enter';
       } catch (e) {
         this.loadError = e.response?.data?.error || t('learning', 'Failed to start session');
-        showError(t('learning', 'Failed to start swipe session'));
+        showError(t('learning', 'Failed to start session'));
       } finally {
         this.starting = false;
       }
