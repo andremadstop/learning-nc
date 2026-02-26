@@ -26,6 +26,8 @@ return [
         ['name' => 'training#complete', 'url' => '/api/training/complete', 'verb' => 'POST'],
 
         // Leitner
+        ['name' => 'leitner#queue', 'url' => '/api/leitner/queue', 'verb' => 'GET'],
+        ['name' => 'leitner#queueCount', 'url' => '/api/leitner/queue/count', 'verb' => 'GET'],
         ['name' => 'leitner#initialize', 'url' => '/api/leitner/initialize', 'verb' => 'POST'],
         ['name' => 'leitner#due', 'url' => '/api/leitner/due', 'verb' => 'GET'],
         ['name' => 'leitner#answer', 'url' => '/api/leitner/answer', 'verb' => 'POST'],
@@ -60,6 +62,7 @@ return [
 
         // User State (consolidated endpoint)
         ['name' => 'user_state#state', 'url' => '/api/v1/user/state', 'verb' => 'GET'],
+        ['name' => 'user_state#updateSettings', 'url' => '/api/v1/user/settings', 'verb' => 'PUT'],
 
         // Course Management
         ['name' => 'course#role', 'url' => '/api/role', 'verb' => 'GET'],

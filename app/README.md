@@ -8,19 +8,24 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 
 ## Features
 
+- **Smart Queue** — Cross-pool "Jetzt Lernen" button reviews all due cards from every pool in one session, sorted by priority
 - **Question Pools** — Organize questions into themed pools
-- **Multiple Choice** — Questions with 2-6 answers, explanations, difficulty levels
+- **Multiple Choice** — Questions with 2-8 answers, explanations, difficulty levels, multi-select support
 - **Leitner System** — 5-box spaced repetition with automatic scheduling
 - **Training Mode** — Quick quiz sessions with immediate feedback
-- **Exam Mode** — Timed exams with configurable question count
-- **Swipe Mode** — Touch-friendly swipe-based flashcard review
-- **Course Management** — Instructors create courses, assign pools, track student progress
+- **Exam Mode** — Timed exams with configurable question count and snake timer
+- **Wahr/Falsch** — Touch-friendly swipe-based true/false flashcard review
+- **Gamification** — XP, levels, 14 achievement badges, daily goals, streak tracking, level-up celebrations
+- **Daily Goal** — Configurable daily review target with visual progress ring
+- **Course Management** — Instructors create courses, assign pools, track student progress with leaderboards
+- **Course Leaderboard** — Ranked by XP with medal indicators and student detail drill-down
 - **Pool Sharing** — Share with users (read-only or edit permissions)
 - **CSV/JSON Import** — Bulk import questions from files
 - **Multi-Language** — Translate questions and answers into any language
 - **Search** — Full-text search across all question pools
 - **Analytics** — Per-pool statistics with accuracy trends
 - **Dashboard Widget** — See due questions from the Nextcloud Dashboard
+- **Activity Integration** — Badge unlocks appear in Nextcloud Activity stream
 - **Mobile Friendly** — Responsive touch-optimized design
 
 ## Installation

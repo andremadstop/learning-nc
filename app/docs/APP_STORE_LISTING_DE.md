@@ -39,11 +39,20 @@ Sieh auf einen Blick, wie viele Fragen faellig sind — direkt auf deinem Nextcl
 **Pruefungsmodus**
 Zeitgesteuerte Pruefungen mit konfigurierbarer Fragenanzahl und strikter Bewertung. Simuliere echte Testbedingungen.
 
-**Swipe-Modus**
-Wisch-basierte Karteikarten-Wiederholung fuer Mobilgeraete. Nach rechts wischen fuer richtig, nach links fuer falsch.
+**Wahr/Falsch-Modus**
+Schnelle Karteikarten-Wiederholung im Swipe-Stil fuer Mobilgeraete. Nach rechts wischen fuer richtig, nach links fuer falsch.
+
+**Smart Queue**
+Ein Klick auf "Jetzt Lernen" — alle faelligen Karten aus allen Pools in einer priorisierten Session. Karten aus niedrigeren Boxen und laenger ueberfaellige werden zuerst gezeigt.
+
+**Gamification**
+XP sammeln, Levels aufsteigen, 14 Achievements freischalten. Level-Up-Feier mit Animation. Tages-Streak motiviert zur taeglichen Wiederholung.
+
+**Tagesziel**
+Konfigurierbares Tagesziel (Standard: 20 Karten) mit visuellem Fortschrittsring. +10 XP Bonus beim Erreichen des Tagesziels.
 
 **Kurs-Management**
-Dozenten koennen Kurse erstellen, Fragenpools zuweisen, Studierende einschreiben und deren Fortschritt im Instructor-Dashboard verfolgen. Studierende sehen ihren Kursfortschritt und faellige Aufgaben.
+Dozenten koennen Kurse erstellen, Fragenpools zuweisen, Studierende einschreiben und deren Fortschritt im Instructor-Dashboard verfolgen. Leaderboard mit XP-Ranking und Student-Detail-Ansicht.
 
 **Mehrsprachigkeit**
 Uebersetze Fragen und Antworten in beliebige Sprachen. Filtere nach Sprache waehrend des Trainings.

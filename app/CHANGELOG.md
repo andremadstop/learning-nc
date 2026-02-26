@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.0] - 2026-02-26
+
+### Added
+- **Smart Queue**: Cross-pool "Jetzt Lernen" button — fetches all due Leitner cards across every pool, sorted by box (lowest first) then overdue time. One click to review everything
+- **Smart Queue API**: `GET /api/leitner/queue` (items) and `GET /api/leitner/queue/count` (lightweight count for button badge)
+- **SmartQueue.vue**: New review component with pool name badges, progress bar, per-pool result breakdown
+- **Daily Goal**: Configurable daily review target (default: 20 cards) with circular SVG progress ring on Pool list
+- **Daily Goal API**: `PUT /api/v1/user/settings` for persistent goal setting (5-200 range), `daily_progress` block in user state endpoint
+- **Daily Goal XP Bonus**: +10 XP awarded when daily goal is reached for the first time each day
+- **Level-Up Celebration**: Animated overlay when user levels up — star zoom, golden glow, auto-dismiss after 2.5s
+- **LevelUpOverlay.vue**: New component with `prefers-reduced-motion` support, integrated into TrainingMode, LeitnerMode, SmartQueue
+- **Level detection in responses**: `level_before`/`level_after` returned by `answerQuestion()` and `completeSession()`
+- **Migration V001500**: Adds `daily_goal` column to `learning_user_stats`
+
+### Changed
+- **PoolList.vue**: Smart Queue button and Daily Goal ring displayed above search bar
+- **UserStateController**: `state()` now includes `daily_progress` with `cards_reviewed_today`, `daily_goal`, `goal_reached`, `sessions_today`
+- **routes.php**: 3 new routes (queue, queueCount, updateSettings) — 57 total
+
 ## [1.7.0] - 2026-02-26
 
 ### Added

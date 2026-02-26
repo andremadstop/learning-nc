@@ -56,6 +56,63 @@ class LeitnerService {
         return $hasExam !== false;
     }
 
+    public function getSmartQueue(string $userId, int $limit = 30): array {
+        $limit = max(1, min($limit, 100));
+        $now = time();
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type',
+                     'p.name AS pool_name')
+           ->from('learning_leitner_items', 'l')
+           ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
+           ->innerJoin('l', 'learning_pools', 'p', 'l.pool_id = p.id')
+           ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->lte('l.next_review', $qb->createNamedParameter($now)))
+           ->orderBy('l.box', 'ASC')
+           ->addOrderBy('l.next_review', 'ASC')
+           ->setMaxResults($limit);
+
+        $result = $qb->execute();
+        $items = $result->fetchAll();
+        $result->closeCursor();
+
+        if (!empty($items)) {
+            $questionIds = array_unique(array_column($items, 'question_id'));
+            $aqb = $this->db->getQueryBuilder();
+            $aqb->select('id', 'question_id', 'text', 'position')
+               ->from('learning_answers')
+               ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+               ->orderBy('position', 'ASC');
+            $aResult = $aqb->execute();
+            $allAnswers = $aResult->fetchAll();
+            $aResult->closeCursor();
+
+            $answersByQuestion = [];
+            foreach ($allAnswers as $answer) {
+                $answersByQuestion[$answer['question_id']][] = $answer;
+            }
+
+            foreach ($items as &$item) {
+                $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
+            }
+        }
+
+        return $items;
+    }
+
+    public function getQueueCount(string $userId): int {
+        $now = time();
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_leitner_items')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->lte('next_review', $qb->createNamedParameter($now)));
+        $result = $qb->execute();
+        $count = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+        return $count;
+    }
+
     public function getDueQuestions(int $poolId, string $userId, int $limit = 10): array {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found or no access');
@@ -185,12 +242,17 @@ class LeitnerService {
         $correctCount = (int)$item['correct_count'] + ($correct ? 1 : 0);
         $incorrectCount = (int)$item['incorrect_count'] + ($correct ? 0 : 1);
 
+        // Read level before XP increment for level-up detection
+        $levelBefore = $this->xpService->calculateXp($userId)['level'];
+
         $response = [
             'old_box' => $currentBox,
             'new_box' => $newBox,
             'next_review' => $nextReview,
             'correct' => $correct,
             'newly_earned_badges' => [],
+            'level_before' => $levelBefore,
+            'level_after' => $levelBefore,
         ];
 
         // === Write phase (all atomic) ===
@@ -263,6 +325,33 @@ class LeitnerService {
         // Sync level after XP increment (Gemini #2: outside transaction)
         if ($correct) {
             $this->xpService->syncLevel($userId);
+            $response['level_after'] = $this->xpService->calculateXp($userId)['level'];
+        }
+
+        // Daily goal XP bonus: +10 XP when daily goal reached for the first time today
+        $todayStart = strtotime('today midnight');
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_leitner_items')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->gte('last_reviewed', $qb->createNamedParameter($todayStart)));
+        $result = $qb->execute();
+        $cardsToday = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+
+        // Check daily goal
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('daily_goal')
+           ->from('learning_user_stats')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+        $result = $qb->execute();
+        $goalRow = $result->fetch();
+        $result->closeCursor();
+        $dailyGoal = (int)($goalRow['daily_goal'] ?? 20);
+
+        // Award bonus exactly when crossing the threshold (cardsToday == dailyGoal)
+        if ($cardsToday === $dailyGoal) {
+            $this->xpService->incrementLeitnerXp($userId, 10);
         }
 
         // Dispatch badge notifications after commit (Codex #2)

@@ -10,18 +10,24 @@ Create question pools, share them with your team, and study efficiently using sc
 
 ## Features
 
-- **Multiple Choice Quizzes** — Create pools with questions and multiple answers
+- **Smart Queue** — One-click "Jetzt Lernen" button reviews all due cards across every pool, prioritized by urgency
+- **Multiple Choice Quizzes** — Create pools with questions, multiple answers, and multi-select support
 - **Leitner Spaced Repetition** — 5-box system with automatic scheduling (1d, 3d, 7d, 14d intervals)
+- **Training Mode** — Quick quiz sessions with immediate feedback and score tracking
+- **Exam Mode** — Timed exams with configurable question count and animated snake timer
+- **Wahr/Falsch Mode** — Touch-friendly swipe-based true/false flashcard review
+- **Gamification** — XP, levels, 14 achievement badges, streak tracking, and level-up celebrations
+- **Daily Goal** — Configurable daily review target with visual progress ring and XP bonus
+- **Course Management** — Instructors create courses, assign pools, track student progress
+- **Course Leaderboard** — Ranked by XP with medal indicators and student detail drill-down
 - **Pool Sharing** — Share pools with other users (read or edit permissions)
 - **CSV/JSON Import** — Bulk import questions from CSV or JSON files
 - **Dashboard Widget** — See due questions at a glance from the Nextcloud Dashboard
+- **Activity Integration** — Badge unlocks appear in Nextcloud Activity stream
 - **Progress Tracking** — Stats, accuracy, mastery percentage per pool
-- **Mobile Optimized** — Touch-friendly responsive design with swipe gestures
-- **Course Management** — Instructors can create courses, assign pools, and track student progress
 - **Multi-Language Support** — Translate questions and answers into any language
-- **Exam Mode** — Timed exams with configurable question count
-- **Achievements & XP** — 14 badges, experience points, and level progression
 - **Search** — Full-text search across all your question pools
+- **Mobile Optimized** — Touch-friendly responsive design
 
 ## Use Cases
 
@@ -38,7 +44,7 @@ Create question pools, share them with your team, and study efficiently using sc
 - PostgreSQL 13+ or MySQL 8+
     ]]></description>
 
-    <version>1.7.0</version>
+    <version>1.8.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>
@@ -49,14 +55,14 @@ Create question pools, share them with your team, and study efficiently using sc
     <bugs>https://github.com/andremadstop/learning-nc/issues</bugs>
     <repository type="git">https://github.com/andremadstop/learning-nc.git</repository>
 
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/pool-list.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/leitner-boxes.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/swipe-mode.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/exam-mode.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/statistics.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/question-management.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/course-list.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/instructor-dashboard.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/01-pool-list.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/02-smart-queue.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/03-leitner-boxes.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/04-training-result.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/05-achievements.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/06-leaderboard.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/07-exam-mode.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/08-course-instructor.png</screenshot>
 
     <dependencies>
         <nextcloud min-version="29" max-version="31"/>

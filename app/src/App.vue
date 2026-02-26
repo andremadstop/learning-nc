@@ -26,9 +26,15 @@
 
     <!-- ==================== POOLS VIEW ==================== -->
     <template v-if="mainView === 'pools'">
+      <SmartQueue
+        v-if="currentView === 'smartQueue'"
+        @back="backToPools"
+      />
+
       <PoolList
-        v-if="currentView === 'pools'"
+        v-else-if="currentView === 'pools'"
         @selectPool="selectPool"
+        @openSmartQueue="openSmartQueue"
       />
 
       <div v-else-if="currentView === 'questions'" class="pool-view">
@@ -175,6 +181,7 @@ import CourseList from './components/CourseList.vue';
 import CourseDetail from './components/CourseDetail.vue';
 import StudentDetail from './components/StudentDetail.vue';
 import InstructorDashboard from './components/InstructorDashboard.vue';
+import SmartQueue from './components/SmartQueue.vue';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 
@@ -194,7 +201,8 @@ export default {
     CourseList,
     CourseDetail,
     StudentDetail,
-    InstructorDashboard
+    InstructorDashboard,
+    SmartQueue
   },
   data() {
     return {
@@ -275,6 +283,9 @@ export default {
       this.mode = 'train';
       this.poolPermission = 'owner';
       this.error = null;
+    },
+    openSmartQueue() {
+      this.currentView = 'smartQueue';
     },
     setMode(newMode) {
       this.mode = newMode;

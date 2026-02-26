@@ -7,6 +7,34 @@
       </NcButton>
     </div>
 
+    <!-- Smart Queue + Daily Goal -->
+    <div class="smart-queue-section">
+      <button v-if="queueCount > 0" class="smart-queue-btn" @click="$emit('openSmartQueue')">
+        <span class="sq-icon">&#x1F4DA;</span>
+        <span class="sq-text">{{ t('learning', 'Jetzt Lernen') }}</span>
+        <span class="sq-count">{{ queueCount }} {{ t('learning', 'due') }}</span>
+      </button>
+
+      <div v-if="dailyProgress" class="daily-goal-widget" :class="{ 'goal-reached': dailyProgress.goal_reached }">
+        <svg class="goal-ring" viewBox="0 0 60 60" width="56" height="56">
+          <circle cx="30" cy="30" r="26" fill="none" stroke="var(--color-border)" stroke-width="4" />
+          <circle cx="30" cy="30" r="26" fill="none" :stroke="dailyProgress.goal_reached ? 'var(--color-warning)' : 'var(--color-primary-element)'" stroke-width="4" stroke-linecap="round" :stroke-dasharray="circumference" :stroke-dashoffset="circumference - (circumference * goalPercent / 100)" transform="rotate(-90 30 30)" class="goal-ring-progress" />
+          <text x="30" y="33" text-anchor="middle" font-size="12" font-weight="700" fill="var(--color-main-text)">{{ dailyProgress.cards_reviewed_today }}/{{ dailyProgress.daily_goal }}</text>
+        </svg>
+        <div class="daily-goal-info">
+          <span class="daily-goal-pct">{{ goalPercent }}%</span>
+          <span class="daily-goal-label">
+            {{ dailyProgress.goal_reached ? t('learning', 'Daily goal reached!') : t('learning', '{n} more cards today', { n: dailyProgress.daily_goal - dailyProgress.cards_reviewed_today }) }}
+          </span>
+          <button class="daily-goal-edit-btn" @click="showGoalEdit = !showGoalEdit">{{ t('learning', 'Change goal') }}</button>
+        </div>
+        <div v-if="showGoalEdit" class="daily-goal-editor">
+          <input type="number" v-model.number="editGoalValue" min="5" max="200" class="nc-input goal-input" />
+          <NcButton type="primary" :disabled="savingGoal" @click="saveGoal">{{ t('learning', 'Save') }}</NcButton>
+        </div>
+      </div>
+    </div>
+
     <!-- Search Input -->
     <div class="search-container" ref="searchContainer">
       <div class="search-input-wrapper">
@@ -211,6 +239,12 @@ export default {
       questionSearchResults: [], // API results for questions
       showDeleteConfirm: false,
       poolToDelete: null,
+      // Smart Queue + Daily Goal
+      queueCount: 0,
+      dailyProgress: null,
+      showGoalEdit: false,
+      editGoalValue: 20,
+      savingGoal: false,
     };
   },
   computed: {
@@ -224,6 +258,11 @@ export default {
       const sorted = Array.from(langs).sort();
       if (this.pools.some(p => !re.test(p.name))) sorted.push('Other');
       return sorted;
+    },
+    circumference() { return 2 * Math.PI * 26; },
+    goalPercent() {
+      if (!this.dailyProgress) return 0;
+      return Math.min(100, Math.round(this.dailyProgress.cards_reviewed_today / this.dailyProgress.daily_goal * 100));
     },
     filteredPools() {
       let list = this.pools;
@@ -246,6 +285,8 @@ export default {
   },
   mounted() {
     this.loadPools();
+    this.loadQueueCount();
+    this.loadDailyProgress();
     document.addEventListener('click', this.handleClickOutside);
     // Restore language filter from localStorage
     try {
@@ -401,7 +442,36 @@ export default {
       if (this.$refs.searchContainer && !this.$refs.searchContainer.contains(event.target)) {
         this.showSearchResults = false;
       }
-    }
+    },
+    async loadQueueCount() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/leitner/queue/count'));
+        this.queueCount = r.data.count || 0;
+      } catch (e) { /* optional */ }
+    },
+    async loadDailyProgress() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/v1/user/state'));
+        if (r.data.daily_progress) {
+          this.dailyProgress = r.data.daily_progress;
+          this.editGoalValue = this.dailyProgress.daily_goal;
+        }
+      } catch (e) { /* optional */ }
+    },
+    async saveGoal() {
+      this.savingGoal = true;
+      try {
+        const goal = Math.max(5, Math.min(200, this.editGoalValue));
+        await axios.put(generateUrl('/apps/learning/api/v1/user/settings'), { daily_goal: goal });
+        this.dailyProgress.daily_goal = goal;
+        this.showGoalEdit = false;
+        showSuccess(t('learning', 'Daily goal updated'));
+      } catch (e) {
+        showError(t('learning', 'Failed to update goal'));
+      } finally {
+        this.savingGoal = false;
+      }
+    },
   }
 };
 </script>
@@ -539,4 +609,86 @@ export default {
   font-size: 14px;
   text-align: center;
 }
+
+/* Smart Queue + Daily Goal */
+.smart-queue-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.smart-queue-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-primary-element);
+  color: var(--color-primary-element-text);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.smart-queue-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.sq-icon { font-size: 20px; }
+.sq-count {
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 13px;
+}
+
+.daily-goal-widget {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--color-background-hover);
+  flex-wrap: wrap;
+}
+
+.daily-goal-widget.goal-reached {
+  background: color-mix(in srgb, var(--color-warning) 10%, var(--color-background-hover));
+}
+
+.daily-goal-widget.goal-reached .goal-ring-progress {
+  filter: drop-shadow(0 0 4px var(--color-warning));
+}
+
+.goal-ring { flex-shrink: 0; }
+.goal-ring-progress { transition: stroke-dashoffset 0.5s ease-out; }
+
+.daily-goal-info { display: flex; flex-direction: column; gap: 2px; }
+.daily-goal-pct { font-size: 14px; font-weight: 700; color: var(--color-primary-element); }
+.daily-goal-label { font-size: 12px; color: var(--color-text-maxcontrast); }
+.daily-goal-edit-btn {
+  background: none;
+  border: none;
+  font-size: 11px;
+  color: var(--color-primary-element);
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+.daily-goal-edit-btn:hover { text-decoration: underline; }
+
+.daily-goal-editor {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  margin-top: 4px;
+}
+.goal-input { width: 80px; padding: 6px 8px; font-size: 14px; }
 </style>

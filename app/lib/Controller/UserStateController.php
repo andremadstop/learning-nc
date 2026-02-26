@@ -42,6 +42,56 @@ class UserStateController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function updateSettings(int $daily_goal): DataResponse {
+        $daily_goal = max(5, min(200, $daily_goal));
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->update('learning_user_stats')
+           ->set('daily_goal', $qb->createNamedParameter($daily_goal))
+           ->set('updated_at', $qb->createNamedParameter(time()))
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)));
+        $affected = $qb->execute();
+
+        if ($affected === 0) {
+            // No stats row yet — create one with defaults
+            try {
+                $qb = $this->db->getQueryBuilder();
+                $qb->insert('learning_user_stats')
+                   ->values([
+                       'user_id' => $qb->createNamedParameter($this->userId),
+                       'total_xp' => $qb->createNamedParameter(0),
+                       'current_level' => $qb->createNamedParameter(1),
+                       'current_streak' => $qb->createNamedParameter(0),
+                       'longest_streak' => $qb->createNamedParameter(0),
+                       'total_sessions' => $qb->createNamedParameter(0),
+                       'total_mastered' => $qb->createNamedParameter(0),
+                       'daily_goal' => $qb->createNamedParameter($daily_goal),
+                       'updated_at' => $qb->createNamedParameter(time()),
+                   ]);
+                $qb->execute();
+            } catch (\OCP\DB\Exception $e) {
+                if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+                    $qb = $this->db->getQueryBuilder();
+                    $qb->update('learning_user_stats')
+                       ->set('daily_goal', $qb->createNamedParameter($daily_goal))
+                       ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)));
+                    $qb->execute();
+                } else {
+                    throw $e;
+                }
+            }
+        }
+
+        // Invalidate cache
+        $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $this->userId);
+
+        return new DataResponse(['daily_goal' => $daily_goal]);
+    }
+
+    /**
+     * @NoAdminRequired
+     */
     #[UserRateLimit(limit: 20, period: 60)]
     public function state(): DataResponse {
         $cache = $this->cacheFactory->createDistributed('learning');
@@ -59,11 +109,35 @@ class UserStateController extends Controller {
 
         // Stats from denormalized table
         $qb = $this->db->getQueryBuilder();
-        $qb->select('total_sessions', 'total_mastered')
+        $qb->select('total_sessions', 'total_mastered', 'daily_goal')
            ->from('learning_user_stats')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)));
         $result = $qb->execute();
         $statsRow = $result->fetch();
+        $result->closeCursor();
+
+        $dailyGoal = (int)($statsRow['daily_goal'] ?? 20);
+
+        // Cards reviewed today (leitner items updated today)
+        $todayStart = strtotime('today midnight');
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_leitner_items')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)))
+           ->andWhere($qb->expr()->gte('last_reviewed', $qb->createNamedParameter($todayStart)));
+        $result = $qb->execute();
+        $cardsToday = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+
+        // Sessions today
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)))
+           ->andWhere($qb->expr()->isNotNull('completed_at'))
+           ->andWhere($qb->expr()->gte('completed_at', $qb->createNamedParameter($todayStart)));
+        $result = $qb->execute();
+        $sessionsToday = (int)$result->fetch()['cnt'];
         $result->closeCursor();
 
         $data = [
@@ -74,6 +148,12 @@ class UserStateController extends Controller {
             'stats' => [
                 'total_sessions' => (int)($statsRow['total_sessions'] ?? 0),
                 'total_mastered' => (int)($statsRow['total_mastered'] ?? 0),
+            ],
+            'daily_progress' => [
+                'cards_reviewed_today' => $cardsToday,
+                'daily_goal' => $dailyGoal,
+                'goal_reached' => $cardsToday >= $dailyGoal,
+                'sessions_today' => $sessionsToday,
             ],
         ];
 

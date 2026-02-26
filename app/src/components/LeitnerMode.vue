@@ -123,6 +123,7 @@
       </div>
       <NcButton type="primary" @click="finishReview">{{ t('learning', 'Back to Dashboard') }}</NcButton>
       <BadgeUnlock :badges="newBadges" />
+      <LevelUpOverlay :levelBefore="levelBefore" :levelAfter="levelAfter" />
     </div>
   </div>
 </template>
@@ -137,10 +138,11 @@ import { showSuccess, showError } from '@nextcloud/dialogs';
 import { celebrateMastery, celebrateStreak, isStreakMilestone } from '../confetti.js';
 import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
+import LevelUpOverlay from './LevelUpOverlay.vue';
 
 export default {
   name: 'LeitnerMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, BadgeUnlock },
+  components: { NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay },
   props: { poolId: { type: Number, required: true } },
   data() {
     return {
@@ -153,6 +155,8 @@ export default {
       lastSelectedAnswerIds: [],
       streak: { current_streak: 0, longest_streak: 0, is_active_today: false },
       newBadges: [],
+      levelBefore: 0,
+      levelAfter: 0,
       boxLabels: { 1: t('learning', 'New / Reset'), 2: t('learning', 'After 1 day'), 3: t('learning', 'After 3 days'), 4: t('learning', 'After 7 days'), 5: t('learning', 'Mastered (14d)') }
     };
   },
@@ -204,6 +208,7 @@ export default {
         if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
         if (r.data.new_box === 5) { celebrateMastery(); }
         if (r.data.newly_earned_badges && r.data.newly_earned_badges.length > 0) { this.newBadges = [...this.newBadges, ...r.data.newly_earned_badges]; }
+        if (r.data.level_before && r.data.level_after) { this.levelBefore = r.data.level_before; this.levelAfter = r.data.level_after; }
       } catch (e) { showError(t('learning', 'Failed to record answer')); }
       finally { this.submitting = false; }
     },
@@ -218,6 +223,7 @@ export default {
         if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
         if (r.data.new_box === 5) { celebrateMastery(); }
         if (r.data.newly_earned_badges && r.data.newly_earned_badges.length > 0) { this.newBadges = [...this.newBadges, ...r.data.newly_earned_badges]; }
+        if (r.data.level_before && r.data.level_after) { this.levelBefore = r.data.level_before; this.levelAfter = r.data.level_after; }
       } catch (e) { showError(t('learning', 'Failed to record answer')); }
       finally { this.submitting = false; }
     },

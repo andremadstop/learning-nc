@@ -579,6 +579,9 @@ class TrainingService {
             $response['review'] = $this->getSessionReview($sessionId);
         }
 
+        // Read level before XP increment for level-up detection
+        $levelBefore = $this->xpService->calculateXp($userId)['level'];
+
         // Badge check
         $sessionData = [
             'mode' => $session['mode'] ?? 'training',
@@ -601,6 +604,11 @@ class TrainingService {
         // Streak badge check
         $streakBadges = $this->badgeService->checkAndAward($userId, 'streak_update', $streak);
         $response['newly_earned_badges'] = array_merge($newBadges, $streakBadges);
+
+        // Level-up detection
+        $levelAfter = $this->xpService->calculateXp($userId)['level'];
+        $response['level_before'] = $levelBefore;
+        $response['level_after'] = $levelAfter;
 
         // Invalidate cache AFTER all state-changing writes (XP, badges, streak)
         $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);

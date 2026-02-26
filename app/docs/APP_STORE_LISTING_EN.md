@@ -39,11 +39,20 @@ See how many questions are due at a glance, right from your Nextcloud Dashboard.
 **Exam Mode**
 Timed exams with configurable question count and strict scoring. Simulate real test conditions.
 
-**Swipe Mode**
+**True/False Mode**
 Swipe-based flashcard review optimized for mobile. Swipe right for correct, left for wrong.
 
+**Smart Queue**
+One click on "Learn Now" — all due cards from every pool in one prioritized session. Lower boxes and oldest overdue cards come first.
+
+**Gamification**
+Earn XP, level up, unlock 14 achievements. Level-up celebrations with animations. Daily streaks keep you motivated.
+
+**Daily Goal**
+Set a configurable daily review target (default: 20 cards) with a visual progress ring. +10 XP bonus when you hit your daily goal.
+
 **Course Management**
-Instructors can create courses, assign question pools, enroll students, and track their progress from a dedicated dashboard. Students see their course progress and due assignments.
+Instructors can create courses, assign question pools, enroll students, and track their progress from a dedicated dashboard. Leaderboard with XP ranking and student detail drill-down.
 
 **Multi-Language Support**
 Translate questions and answers into any language. Filter by language during training sessions.

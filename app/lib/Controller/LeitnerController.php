@@ -30,6 +30,29 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
+    public function queue(int $limit = 30): DataResponse {
+        try {
+            $limit = max(1, min($limit, 100));
+            return new DataResponse($this->service->getSmartQueue($this->userId, $limit));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to load smart queue'], 400);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    public function queueCount(): DataResponse {
+        try {
+            return new DataResponse(['count' => $this->service->getQueueCount($this->userId)]);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to load queue count'], 400);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
     public function initialize(int $poolId): DataResponse {
         try {
             $count = $this->service->initializePool($poolId, $this->userId);

@@ -94,6 +94,7 @@
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Questions') }}</NcButton>
       </div>
       <BadgeUnlock :badges="newBadges" />
+      <LevelUpOverlay :levelBefore="levelBefore" :levelAfter="levelAfter" />
     </div>
   </div>
 </template>
@@ -109,10 +110,11 @@ import { showError } from '@nextcloud/dialogs';
 import { celebratePerfectSession, celebrateStreak, isStreakMilestone } from '../confetti.js';
 import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
+import LevelUpOverlay from './LevelUpOverlay.vue';
 
 export default {
   name: 'TrainingMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock },
+  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay },
   props: {
     poolId: { type: Number, required: true },
     totalQuestions: { type: Number, required: true }
@@ -126,7 +128,9 @@ export default {
       lastSelectedAnswerIds: [],
       showResults: false, results: null, starting: false, loadError: null,
       streak: { current_streak: 0, longest_streak: 0, is_active_today: false },
-      newBadges: []
+      newBadges: [],
+      levelBefore: 0,
+      levelAfter: 0
     };
   },
   computed: {
@@ -211,6 +215,11 @@ export default {
             countUp(this.$refs.scoreNumber, this.results.score_percentage, 1200, '%');
           }
         });
+        // Level-up detection
+        if (response.data.level_before && response.data.level_after) {
+          this.levelBefore = response.data.level_before;
+          this.levelAfter = response.data.level_after;
+        }
         // Show badge unlocks
         if (response.data.newly_earned_badges && response.data.newly_earned_badges.length > 0) {
           this.newBadges = response.data.newly_earned_badges;
