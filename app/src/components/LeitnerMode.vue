@@ -3,6 +3,10 @@
     <div v-if="!initialized && !initError" class="leitner-init">
       <h3>{{ t('learning', 'Leitner System - Spaced Repetition') }}</h3>
       <p>{{ t('learning', 'Initialize this pool for spaced repetition learning') }}</p>
+      <NcNoteCard v-if="!hintDismissed('leitner-init')" type="info" class="onboarding-hint">
+        {{ t('learning', 'Cards start in Box 1. Correct answer → next box (reviewed less often). Wrong → back to Box 1. This way you practice difficult cards more often.') }}
+        <NcButton type="tertiary" @click="dismissHint('leitner-init')">{{ t('learning', 'Got it') }}</NcButton>
+      </NcNoteCard>
       <div class="init-actions">
         <NcButton type="primary" @click="initialize" :disabled="initializing">{{ initializing ? t('learning', 'Initializing...') : t('learning', 'Initialize Leitner System') }}</NcButton>
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
@@ -139,10 +143,12 @@ import { celebrateMastery, celebrateStreak, isStreakMilestone } from '../confett
 import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
+import hintMixin from '../hintMixin.js';
 
 export default {
   name: 'LeitnerMode',
   components: { NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay },
+  mixins: [hintMixin],
   props: { poolId: { type: Number, required: true } },
   data() {
     return {
@@ -157,7 +163,7 @@ export default {
       newBadges: [],
       levelBefore: 0,
       levelAfter: 0,
-      boxLabels: { 1: t('learning', 'New / Reset'), 2: t('learning', 'After 1 day'), 3: t('learning', 'After 3 days'), 4: t('learning', 'After 7 days'), 5: t('learning', 'Mastered (14d)') }
+      boxLabels: { 1: t('learning', 'New — review daily'), 2: t('learning', 'Learning — after 1 day'), 3: t('learning', 'Familiar — after 3 days'), 4: t('learning', 'Good — after 7 days'), 5: t('learning', 'Mastered — after 14 days') }
     };
   },
   computed: {
@@ -338,4 +344,5 @@ export default {
 .answer-btn-review.answer-correct { border-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background)); }
 .answer-btn-review.answer-user-selected { border-color: var(--color-primary-element); }
 .answer-btn-review.answer-wrong-selected { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, var(--color-main-background)); }
+.onboarding-hint { margin-bottom: 16px; }
 </style>

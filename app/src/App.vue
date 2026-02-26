@@ -1,11 +1,11 @@
 <template>
   <NcAppContent id="app-learning">
     <div class="app-content-header">
-      <h2>{{ t('learning', 'Learning - Spaced Repetition') }}</h2>
+      <h2>{{ userRole === 'student' ? t('learning', 'Learning') : t('learning', 'Learning - Spaced Repetition') }}</h2>
     </div>
 
-    <!-- Top-level navigation: Pools | Courses -->
-    <div class="main-nav" role="tablist">
+    <!-- Top-level navigation: Pools | Courses (Instructor only) -->
+    <div v-if="userRole === 'instructor'" class="main-nav" role="tablist">
       <button
         :class="['main-nav-btn', { active: mainView === 'pools' }]"
         role="tab"
@@ -34,6 +34,7 @@
 
       <PoolList
         v-else-if="currentView === 'pools'"
+        :userRole="userRole"
         @selectPool="selectPool"
         @openSmartQueue="openSmartQueue"
         @openRemediation="openRemediation"
@@ -41,8 +42,8 @@
 
       <div v-else-if="currentView === 'questions'" class="pool-view">
         <div class="pool-view-header">
-          <NcButton type="tertiary" @click="backToPools" :aria-label="t('learning', 'Back to Pools')">
-            {{ t('learning', '← Back to Pools') }}
+          <NcButton type="tertiary" @click="poolFromCourse ? backToCourse() : backToPools()" :aria-label="poolFromCourse ? t('learning', '← Back to Course') : t('learning', 'Back to Pools')">
+            {{ poolFromCourse ? t('learning', '← Back to Course') : t('learning', '← Back to Pools') }}
           </NcButton>
           <h3 class="pool-title">{{ selectedPool.name }}</h3>
         </div>
@@ -54,7 +55,7 @@
 
         <div class="mode-selector" role="tablist">
           <button
-            v-for="m in modes"
+            v-for="m in filteredModes"
             :key="m.id"
             @click="setMode(m.id)"
             :class="['mode-btn', { active: mode === m.id }]"
@@ -64,6 +65,7 @@
             {{ m.label }}
           </button>
         </div>
+        <p v-if="modeDescriptions[mode]" class="mode-description">{{ modeDescriptions[mode] }}</p>
 
         <!-- Error banner -->
         <NcNoteCard v-if="error" type="error">
@@ -220,6 +222,8 @@ export default {
       questionCount: 0,
       poolPermission: 'owner',
       error: null,
+      poolFromCourse: false,
+      poolFromCourseObj: null,
 
       // Courses view state
       selectedCourse: null,
@@ -237,7 +241,23 @@ export default {
         { id: 'stats', label: t('learning', 'Stats') },
         { id: 'manage', label: this.poolPermission === 'read' ? t('learning', 'View Questions') : t('learning', 'Manage') }
       ];
-    }
+    },
+    filteredModes() {
+      if (this.userRole === 'student') {
+        return this.modes.filter(m => ['train', 'leitner', 'swipe', 'exam'].includes(m.id));
+      }
+      return this.modes;
+    },
+    modeDescriptions() {
+      return {
+        train: t('learning', 'Quick quiz — test your knowledge with random questions.'),
+        leitner: t('learning', 'Spaced repetition — difficult questions come back more often. 5 boxes, step by step.'),
+        swipe: t('learning', 'True or false — tap quickly to classify statements.'),
+        exam: t('learning', 'Exam mode — no feedback until the end, like a real exam.'),
+        stats: t('learning', 'Learning statistics and box distribution for this pool.'),
+        manage: t('learning', 'Add, edit, delete and import questions.'),
+      };
+    },
   },
   created() {
     this.fetchRole();
@@ -248,8 +268,10 @@ export default {
         const response = await axios.get(generateUrl('/apps/learning/api/role'));
         this.userRole = response.data.role || 'student';
       } catch (err) {
-        // Default to student if role check fails
         this.userRole = 'student';
+      }
+      if (this.userRole === 'student') {
+        this.mainView = 'courses';
       }
     },
 
@@ -286,6 +308,24 @@ export default {
       this.mode = 'train';
       this.poolPermission = 'owner';
       this.error = null;
+      this.poolFromCourse = false;
+      this.poolFromCourseObj = null;
+    },
+    backToCourse() {
+      const course = this.poolFromCourseObj;
+      this.currentView = 'pools';
+      this.selectedPool = null;
+      this.mode = 'train';
+      this.poolPermission = 'owner';
+      this.error = null;
+      this.poolFromCourse = false;
+      this.poolFromCourseObj = null;
+      if (course) {
+        this.mainView = 'courses';
+        this.selectedCourse = course;
+      } else {
+        this.mainView = 'courses';
+      }
     },
     openSmartQueue() {
       this.smartQueueMode = 'queue';
@@ -309,7 +349,8 @@ export default {
       this.selectedStudent = studentInfo;
     },
     async openPoolFromCourse(poolId) {
-      // Switch to pools view and open the specific pool
+      this.poolFromCourse = true;
+      this.poolFromCourseObj = this.selectedCourse;
       this.mainView = 'pools';
       this.selectedCourse = null;
       try {
@@ -319,7 +360,6 @@ export default {
         const pool = response.data;
         this.selectPool({ id: pool.id, name: pool.name, is_shared: !!pool.is_shared, permission: pool.permission });
       } catch {
-        // Fallback: assume shared (safer — hides edit UI until ownership confirmed)
         this.selectPool({ id: poolId, name: '', is_shared: true, permission: 'read' });
       }
     }
@@ -437,6 +477,14 @@ export default {
   background: var(--color-primary-element);
   color: var(--color-primary-element-text);
   box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.mode-description {
+  font-size: 13px;
+  color: var(--color-text-maxcontrast);
+  margin: -16px 0 20px 0;
+  padding: 0 8px;
+  max-width: 900px;
 }
 
 @media (max-width: 768px) {

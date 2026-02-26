@@ -6,13 +6,13 @@
 
     <div v-else-if="!started && items.length === 0" class="sq-empty">
       <h3>{{ mode === 'remediation' ? t('learning', 'No trouble spots!') : t('learning', 'All caught up!') }}</h3>
-      <p>{{ mode === 'remediation' ? t('learning', 'You have no problem questions right now.') : t('learning', 'No questions due for review right now.') }}</p>
+      <p>{{ mode === 'remediation' ? t('learning', 'You have no problem questions right now.') : t('learning', 'No questions due. Open a pool and start the Leitner system to begin spaced repetition.') }}</p>
       <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Pools') }}</NcButton>
     </div>
 
     <div v-else-if="!started" class="sq-ready">
       <h3>{{ mode === 'remediation' ? t('learning', 'Trouble Spots') : t('learning', 'Smart Queue') }}</h3>
-      <p>{{ mode === 'remediation' ? t('learning', '{n} problem questions to practice', { n: items.length }) : t('learning', '{n} questions due across all pools', { n: items.length }) }}</p>
+      <p>{{ mode === 'remediation' ? t('learning', '{n} problem questions to practice', { n: items.length }) : t('learning', '{n} questions due — sorted by priority: most urgent first.', { n: items.length }) }}</p>
       <NcButton type="primary" @click="started = true">{{ t('learning', 'Start Review') }}</NcButton>
       <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
     </div>
@@ -25,6 +25,10 @@
       <div v-if="currentItem" class="review-card">
         <div class="pool-badge">{{ currentItem.pool_name }}</div>
         <div class="review-box-indicator">Box {{ currentItem.box }}</div>
+        <NcNoteCard v-if="currentIndex === 0 && !hintDismissed('box-movement')" type="info" class="onboarding-hint">
+          {{ t('learning', 'Correct → next box (less often). Wrong → back to Box 1.') }}
+          <NcButton type="tertiary" @click="dismissHint('box-movement')">{{ t('learning', 'Got it') }}</NcButton>
+        </NcNoteCard>
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
         <div v-if="!answered" class="answer-options">
@@ -108,10 +112,12 @@ import { showError } from '@nextcloud/dialogs';
 import { celebrateMastery } from '../confetti.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
+import hintMixin from '../hintMixin.js';
 
 export default {
   name: 'SmartQueue',
   components: { NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay },
+  mixins: [hintMixin],
   props: {
     mode: { type: String, default: 'queue', validator: v => ['queue', 'remediation'].includes(v) },
   },
@@ -288,6 +294,7 @@ export default {
 .pool-breakdown-name { font-weight: 500; color: var(--color-main-text); }
 .pool-breakdown-stats { color: var(--color-text-maxcontrast); font-size: 13px; }
 .result-actions { display: flex; justify-content: center; gap: 14px; }
+.onboarding-hint { margin-bottom: 12px; }
 
 @media (max-width: 768px) {
   .review-card { padding: 20px; }

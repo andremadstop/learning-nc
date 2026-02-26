@@ -2,25 +2,43 @@
   <div class="pool-list">
     <div class="pool-list-header">
       <h3>{{ t('learning', 'Question Pools') }}</h3>
-      <NcButton type="primary" @click="showCreateDialog">
+      <NcButton v-if="userRole === 'instructor'" type="primary" @click="showCreateDialog">
         {{ t('learning', '+ Create Pool') }}
       </NcButton>
     </div>
+
+    <!-- Instructor welcome hint -->
+    <NcNoteCard v-if="userRole === 'instructor' && !hintDismissed('welcome-instructor')" type="info" class="onboarding-hint">
+      {{ t('learning', 'Pools are your question collections. Create a pool, add questions (or import CSV/JSON), and assign it to a course.') }}
+      <NcButton type="tertiary" @click="dismissHint('welcome-instructor')">{{ t('learning', 'Got it') }}</NcButton>
+    </NcNoteCard>
 
     <!-- Smart Queue + Daily Goal -->
     <div class="smart-queue-section">
       <button v-if="queueCount > 0" class="smart-queue-btn" @click="$emit('openSmartQueue')">
         <span class="sq-icon">&#x1F4DA;</span>
-        <span class="sq-text">{{ t('learning', 'Jetzt Lernen') }}</span>
+        <span class="sq-text">{{ t('learning', 'Start learning') }}</span>
         <span class="sq-count">{{ queueCount }} {{ t('learning', 'due') }}</span>
       </button>
 
       <button v-if="remediationCount > 0" class="remediation-btn" @click="$emit('openRemediation')">
         <span class="rem-icon">&#x26A0;</span>
-        <span class="rem-text">{{ t('learning', 'Trouble Spots') }}</span>
+        <span class="rem-text">{{ t('learning', 'Trouble spots') }}</span>
         <span class="rem-count">{{ remediationCount }} {{ t('learning', 'cards') }}</span>
       </button>
     </div>
+
+    <!-- Smart Queue hint -->
+    <NcNoteCard v-if="queueCount > 0 && !hintDismissed('smart-queue')" type="info" class="onboarding-hint">
+      {{ t('learning', 'The Smart Queue picks the most important cards from all your pools — difficult and overdue ones first.') }}
+      <NcButton type="tertiary" @click="dismissHint('smart-queue')">{{ t('learning', 'Got it') }}</NcButton>
+    </NcNoteCard>
+
+    <!-- Daily Challenge hint -->
+    <NcNoteCard v-if="dailyChallenge && dailyChallenge.available && !hintDismissed('daily-challenge')" type="info" class="onboarding-hint">
+      {{ t('learning', 'One question per day for bonus XP — a quick warm-up!') }}
+      <NcButton type="tertiary" @click="dismissHint('daily-challenge')">{{ t('learning', 'Got it') }}</NcButton>
+    </NcNoteCard>
 
     <!-- Daily Challenge -->
     <div v-if="dailyChallenge && dailyChallenge.available" class="daily-challenge-card" :class="{ completed: dailyChallenge.completed }">
@@ -58,6 +76,12 @@
         <div v-if="challengeXpEarned > 0" class="dc-xp-earned">+{{ challengeXpEarned }} XP</div>
       </div>
     </div>
+
+    <!-- Daily Goal hint -->
+    <NcNoteCard v-if="dailyProgress && !hintDismissed('daily-goal')" type="info" class="onboarding-hint">
+      {{ t('learning', 'Set a daily goal. When you reach it, you get +10 bonus XP!') }}
+      <NcButton type="tertiary" @click="dismissHint('daily-goal')">{{ t('learning', 'Got it') }}</NcButton>
+    </NcNoteCard>
 
     <!-- Daily Goal -->
     <div class="smart-queue-section">
@@ -166,7 +190,7 @@
 
     <!-- My Pools -->
     <div v-else-if="activeTab === 'own'">
-      <NcEmptyContent v-if="filteredPools.length === 0 && !searchTerm" :name="t('learning', 'No pools yet')" :description="t('learning', 'Create your first question pool to get started')" />
+      <NcEmptyContent v-if="filteredPools.length === 0 && !searchTerm" :name="t('learning', 'No pools yet')" :description="t('learning', 'Create a pool, add questions (or import CSV/JSON) and assign it to a course.')" />
       <NcEmptyContent v-else-if="filteredPools.length === 0 && searchTerm" :name="t('learning', 'No pools matching \'{searchTerm}\'', { searchTerm: searchTerm })" :description="t('learning', 'Try a different search term')" />
       <div v-else class="pool-grid">
         <div v-for="pool in filteredPools" :key="pool.id" class="pool-card" @click="selectPool(pool)"
@@ -175,7 +199,7 @@
              @keydown.space.prevent="selectPool(pool)">
           <div class="pool-card-header">
             <h4>{{ pool.name }}</h4>
-            <NcActions @click.native.stop>
+            <NcActions v-if="userRole === 'instructor'" @click.native.stop>
               <NcActionButton @click="sharePool(pool)" close-after-click>{{ t('learning', 'Share') }}</NcActionButton>
               <NcActionButton @click="editPool(pool)" close-after-click>{{ t('learning', 'Edit') }}</NcActionButton>
               <NcActionButton @click="deletePool(pool)" close-after-click>{{ t('learning', 'Delete') }}</NcActionButton>
@@ -249,7 +273,9 @@ import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess, showError } from '@nextcloud/dialogs';
+import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import ShareDialog from './ShareDialog.vue';
+import hintMixin from '../hintMixin.js';
 
 // Simple debounce utility
 const debounce = (func, delay) => {
@@ -263,7 +289,11 @@ const debounce = (func, delay) => {
 
 export default {
   name: 'PoolList',
-  components: { NcButton, NcDialog, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, ShareDialog },
+  components: { NcButton, NcDialog, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, NcNoteCard, ShareDialog },
+  mixins: [hintMixin],
+  props: {
+    userRole: { type: String, default: 'student' },
+  },
   data() {
     return {
       pools: [],
@@ -915,5 +945,9 @@ export default {
   font-size: 18px;
   font-weight: 700;
   color: var(--color-success);
+}
+
+.onboarding-hint {
+  margin-bottom: 16px;
 }
 </style>

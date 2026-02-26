@@ -20,6 +20,12 @@
 			{{ error }}
 		</NcNoteCard>
 
+		<!-- Student welcome hint -->
+		<NcNoteCard v-if="userRole === 'student' && !loading && !hintDismissed('welcome-student')" type="info" class="onboarding-hint">
+			{{ t('learning', 'Welcome! Your instructor enrolls you in courses. Open a course, pick a question pool and start learning. Questions you get wrong will come back more often.') }}
+			<NcButton type="tertiary" @click="dismissHint('welcome-student')">{{ t('learning', 'Got it') }}</NcButton>
+		</NcNoteCard>
+
 		<template v-if="!loading">
 			<!-- Instructor: own courses -->
 			<div v-if="userRole === 'instructor' && ownCourses.length > 0" class="course-section">
@@ -208,6 +214,7 @@ import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
 import { showSuccess } from '@nextcloud/dialogs'
+import hintMixin from '../hintMixin.js'
 
 export default {
 	name: 'CourseList',
@@ -222,6 +229,8 @@ export default {
 		NcLoadingIcon,
 		NcNoteCard,
 	},
+
+	mixins: [hintMixin],
 
 	props: {
 		userRole: {
@@ -265,7 +274,7 @@ export default {
 			if (this.userRole === 'instructor') {
 				return this.t('learning', 'Create your first course to get started.')
 			}
-			return this.t('learning', 'You are not enrolled in any courses yet.')
+			return this.t('learning', 'You are not enrolled in any courses yet. Your instructor will add you to a course — check back soon!')
 		},
 	},
 
@@ -660,5 +669,9 @@ export default {
 
 @media (prefers-reduced-motion: reduce) {
 	.course-card:hover { transform: none; }
+}
+
+.onboarding-hint {
+	margin-bottom: 16px;
 }
 </style>
