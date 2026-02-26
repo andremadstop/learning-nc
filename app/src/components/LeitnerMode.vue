@@ -71,7 +71,13 @@
         <div class="review-box-indicator">Box {{ currentItem.box }} &rarr; {{ answered ? (lastAnswer ? 'Box ' + lastMoveTarget : 'Box 1') : '?' }}</div>
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
-        <div v-if="!answered" class="answer-options">
+        <div v-if="!answered && isOpenQuestion" class="open-answer-area">
+          <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
+          <NcButton type="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
+            {{ t('learning', 'Submit Answer') }}
+          </NcButton>
+        </div>
+        <div v-else-if="!answered" class="answer-options">
           <template v-if="isCurrentMulti">
             <button
               v-for="answer in currentItem.answers"
@@ -90,6 +96,15 @@
           <template v-else>
             <button v-for="answer in currentItem.answers" :key="answer.id" @click="submitAnswer(answer)" class="answer-btn" :disabled="submitting">{{ answer.text }}</button>
           </template>
+        </div>
+        <div v-else-if="answered && isOpenQuestion" class="answer-feedback">
+          <NcNoteCard :type="lastAnswer ? 'success' : 'error'">{{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
+          <div class="open-answer-review">
+            <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
+            <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ lastCorrectAnswerTexts.length > 0 ? lastCorrectAnswerTexts[0] : '' }}</div>
+          </div>
+          <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
+          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
         <div v-else class="answer-feedback">
           <NcNoteCard :type="lastAnswer ? 'success' : 'error'">{{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
@@ -159,6 +174,8 @@ export default {
       selectedAnswerIds: [],
       lastSelectedAnswerId: null,
       lastSelectedAnswerIds: [],
+      openAnswer: '',
+      lastOpenAnswer: '',
       streak: { current_streak: 0, longest_streak: 0, is_active_today: false },
       newBadges: [],
       levelBefore: 0,
@@ -169,6 +186,7 @@ export default {
   computed: {
     currentItem() { return this.dueQuestions[this.currentIndex] || null; },
     isCurrentMulti() { return this.currentItem && this.currentItem.question_type === 'multi'; },
+    isOpenQuestion() { return this.currentItem && this.currentItem.question_type === 'open'; },
     reviewProgress() { return ((this.currentIndex + (this.answered ? 1 : 0)) / this.dueQuestions.length) * 100; },
     sessionAccuracy() { const total = this.sessionCorrect + this.sessionIncorrect; return total > 0 ? Math.round(this.sessionCorrect / total * 100) : 0; }
   },
@@ -199,6 +217,24 @@ export default {
       } else {
         this.selectedAnswerIds.push(answerId);
       }
+    },
+    async submitOpenAnswer() {
+      this.submitting = true;
+      this.lastOpenAnswer = this.openAnswer;
+      try {
+        var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
+          itemId: this.currentItem.id,
+          answerText: this.openAnswer
+        });
+        this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
+        this.lastCorrectAnswerText = r.data.correct_answer_text || '';
+        this.lastCorrectAnswerTexts = r.data.correct_answer_texts || [this.lastCorrectAnswerText];
+        if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
+        if (r.data.new_box === 5) { celebrateMastery(); }
+        if (r.data.newly_earned_badges && r.data.newly_earned_badges.length > 0) { this.newBadges = [...this.newBadges, ...r.data.newly_earned_badges]; }
+        if (r.data.level_before && r.data.level_after) { this.levelBefore = r.data.level_before; this.levelAfter = r.data.level_after; }
+      } catch (e) { showError(t('learning', 'Failed to submit answer')); }
+      finally { this.submitting = false; }
     },
     async submitMultiAnswer() {
       this.submitting = true;
@@ -240,7 +276,7 @@ export default {
       return this.lastCorrectAnswerText || '';
     },
     async nextQuestion() {
-      if (this.currentIndex < this.dueQuestions.length - 1) { this.currentIndex++; this.answered = false; this.selectedAnswerIds = []; this.lastSelectedAnswerId = null; this.lastSelectedAnswerIds = []; }
+      if (this.currentIndex < this.dueQuestions.length - 1) { this.currentIndex++; this.answered = false; this.selectedAnswerIds = []; this.lastSelectedAnswerId = null; this.lastSelectedAnswerIds = []; this.openAnswer = ''; this.lastOpenAnswer = ''; }
       else {
         const oldStreak = this.streak.current_streak;
         await this.fetchStreak();
@@ -262,7 +298,7 @@ export default {
       } catch (e) { /* streak is optional, ignore errors */ }
     },
     boxPercentage(n) { return this.stats.total === 0 ? 0 : Math.round((this.stats['box_' + n] || 0) / this.stats.total * 100); },
-    finishReview() { this.started = false; this.currentIndex = 0; this.answered = false; this.showResults = false; this.checkInitialized(); this.fetchStreak(); }
+    finishReview() { this.started = false; this.currentIndex = 0; this.answered = false; this.showResults = false; this.openAnswer = ''; this.lastOpenAnswer = ''; this.checkInitialized(); this.fetchStreak(); }
   }
 };
 </script>
@@ -345,4 +381,9 @@ export default {
 .answer-btn-review.answer-user-selected { border-color: var(--color-primary-element); }
 .answer-btn-review.answer-wrong-selected { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, var(--color-main-background)); }
 .onboarding-hint { margin-bottom: 16px; }
+.open-answer-area { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.open-textarea { width: 100%; padding: 14px; font-size: 15px; border: 2px solid var(--color-border); border-radius: 12px; resize: vertical; min-height: 80px; box-sizing: border-box; }
+.open-textarea:focus { border-color: var(--color-primary-element); outline: none; }
+.open-answer-review { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.open-review-row { padding: 10px 14px; border-radius: 8px; background: var(--color-background-hover); font-size: 14px; line-height: 1.5; }
 </style>

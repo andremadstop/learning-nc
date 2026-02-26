@@ -73,10 +73,61 @@ class QuestionService {
         return $hasExam !== false;
     }
 
+    public static function isOpenAnswerCorrect(string $userAnswer, string $modelAnswer): bool {
+        $user = mb_strtolower(trim($userAnswer));
+        $model = mb_strtolower(trim($modelAnswer));
+        if ($user === $model) return true;
+        if ($user === '' || $model === '') return false;
+
+        // Guard: reject unreasonably long input before expensive comparison
+        if (mb_strlen($user) > 2000) return false;
+
+        $len = mb_strlen($model);
+        // Dynamic threshold: 0 for very short (≤4), 1 for short (≤8), ~20% for medium
+        $maxDist = ($len <= 4) ? 0 : ($len <= 8 ? 1 : (int)floor($len * 0.2));
+
+        // levenshtein() is byte-based and returns -1 for strings >255 bytes.
+        // Use safe wrapper that checks byte length and return value.
+        if ($len <= 255) {
+            $dist = self::safeLevenshtein($user, $model);
+            return $dist !== -1 && $dist <= $maxDist;
+        }
+
+        // Long text (>255 chars): length-ratio check + levenshtein on short prefix
+        $lenUser = mb_strlen($user);
+        if ($lenUser < $len * 0.7 || $lenUser > $len * 1.3) return false;
+        $prefixLen = 100; // Short enough to stay under 255 bytes even with multibyte chars
+        $dist = self::safeLevenshtein(mb_substr($user, 0, $prefixLen), mb_substr($model, 0, $prefixLen));
+        return $dist !== -1 && $dist <= (int)floor($prefixLen * 0.2);
+    }
+
+    private static function safeLevenshtein(string $a, string $b): int {
+        // levenshtein() operates on bytes and returns -1 if either string exceeds 255 bytes
+        if (strlen($a) > 255 || strlen($b) > 255) {
+            return -1;
+        }
+        return levenshtein($a, $b);
+    }
+
     private function validateQuestionInput(string $text, array $answers, string $questionType = 'single'): void {
         if (mb_strlen($text) < 1 || mb_strlen($text) > 5000) {
             throw new \InvalidArgumentException('Question text must be 1-5000 characters');
         }
+
+        if ($questionType === 'open') {
+            if (count($answers) !== 1) {
+                throw new \InvalidArgumentException('Open questions need exactly 1 model answer');
+            }
+            $a = $answers[0];
+            if (!isset($a['text']) || !is_string($a['text']) || trim($a['text']) === '') {
+                throw new \InvalidArgumentException('Model answer text required');
+            }
+            if (mb_strlen($a['text']) > 2000) {
+                throw new \InvalidArgumentException('Model answer max 2000 characters');
+            }
+            return;
+        }
+
         if (count($answers) < 2 || count($answers) > 8) {
             throw new \InvalidArgumentException('Must have 2-8 answers');
         }

@@ -62,6 +62,10 @@ return [
         ['name' => 'import#importCsv', 'url' => '/api/pools/{poolId}/import/csv', 'verb' => 'POST'],
         ['name' => 'import#importJson', 'url' => '/api/pools/{poolId}/import/json', 'verb' => 'POST'],
 
+        // Export
+        ['name' => 'export#exportCsv', 'url' => '/api/pools/{poolId}/export/csv', 'verb' => 'GET'],
+        ['name' => 'export#exportJson', 'url' => '/api/pools/{poolId}/export/json', 'verb' => 'GET'],
+
         // User State (consolidated endpoint)
         ['name' => 'user_state#state', 'url' => '/api/v1/user/state', 'verb' => 'GET'],
         ['name' => 'user_state#updateSettings', 'url' => '/api/v1/user/settings', 'verb' => 'PUT'],

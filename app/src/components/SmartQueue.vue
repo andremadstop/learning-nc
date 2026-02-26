@@ -31,7 +31,13 @@
         </NcNoteCard>
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
-        <div v-if="!answered" class="answer-options">
+        <div v-if="!answered && isOpenQuestion" class="open-answer-area">
+          <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
+          <NcButton type="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
+            {{ t('learning', 'Submit Answer') }}
+          </NcButton>
+        </div>
+        <div v-else-if="!answered" class="answer-options">
           <template v-if="isCurrentMulti">
             <button
               v-for="answer in currentItem.answers"
@@ -50,6 +56,15 @@
           <template v-else>
             <button v-for="answer in currentItem.answers" :key="answer.id" @click="submitAnswer(answer)" class="answer-btn" :disabled="submitting">{{ answer.text }}</button>
           </template>
+        </div>
+        <div v-else-if="answered && isOpenQuestion" class="answer-feedback">
+          <NcNoteCard :type="lastCorrect ? 'success' : 'error'">{{ lastCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
+          <div class="open-answer-review">
+            <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
+            <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ lastCorrectAnswerTexts.length > 0 ? lastCorrectAnswerTexts[0] : '' }}</div>
+          </div>
+          <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
+          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < items.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
         <div v-else class="answer-feedback">
           <NcNoteCard :type="lastCorrect ? 'success' : 'error'">{{ lastCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
@@ -134,6 +149,8 @@ export default {
       selectedAnswerIds: [],
       lastSelectedAnswerId: null,
       lastSelectedAnswerIds: [],
+      openAnswer: '',
+      lastOpenAnswer: '',
       showResults: false,
       sessionCorrect: 0,
       sessionIncorrect: 0,
@@ -146,6 +163,7 @@ export default {
   computed: {
     currentItem() { return this.items[this.currentIndex] || null; },
     isCurrentMulti() { return this.currentItem && this.currentItem.question_type === 'multi'; },
+    isOpenQuestion() { return this.currentItem && this.currentItem.question_type === 'open'; },
     reviewProgress() { return ((this.currentIndex + (this.answered ? 1 : 0)) / this.items.length) * 100; },
     sessionAccuracy() { const total = this.sessionCorrect + this.sessionIncorrect; return total > 0 ? Math.round(this.sessionCorrect / total * 100) : 0; },
   },
@@ -166,6 +184,21 @@ export default {
         showError(t('learning', 'Failed to load smart queue'));
       } finally {
         this.loading = false;
+      }
+    },
+    async submitOpenAnswer() {
+      this.submitting = true;
+      this.lastOpenAnswer = this.openAnswer;
+      try {
+        const r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
+          itemId: this.currentItem.id,
+          answerText: this.openAnswer
+        });
+        this.handleAnswerResponse(r.data);
+      } catch (e) {
+        showError(t('learning', 'Failed to submit answer'));
+      } finally {
+        this.submitting = false;
       }
     },
     toggleMultiAnswer(answerId) {
@@ -235,6 +268,8 @@ export default {
         this.selectedAnswerIds = [];
         this.lastSelectedAnswerId = null;
         this.lastSelectedAnswerIds = [];
+        this.openAnswer = '';
+        this.lastOpenAnswer = '';
       } else {
         this.showResults = true;
       }
@@ -295,6 +330,11 @@ export default {
 .pool-breakdown-stats { color: var(--color-text-maxcontrast); font-size: 13px; }
 .result-actions { display: flex; justify-content: center; gap: 14px; }
 .onboarding-hint { margin-bottom: 12px; }
+.open-answer-area { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.open-textarea { width: 100%; padding: 14px; font-size: 15px; border: 2px solid var(--color-border); border-radius: 12px; resize: vertical; min-height: 80px; box-sizing: border-box; }
+.open-textarea:focus { border-color: var(--color-primary-element); outline: none; }
+.open-answer-review { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.open-review-row { padding: 10px 14px; border-radius: 8px; background: var(--color-background-hover); font-size: 14px; line-height: 1.5; }
 
 @media (max-width: 768px) {
   .review-card { padding: 20px; }

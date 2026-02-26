@@ -90,13 +90,7 @@ class ImportController extends Controller {
             foreach ($lines as $lineNum => $line) {
                 $fields = str_getcsv($line);
 
-                // Minimum: question + 2 answers + correct index
-                if (count($fields) < 4) {
-                    $errors[] = 'Line ' . ($lineNum + 1) . ': Not enough fields (need: question, answers, correct number)';
-                    continue;
-                }
-
-                $questionText = trim($fields[0]);
+                $questionText = trim($fields[0] ?? '');
                 if (empty($questionText)) {
                     $errors[] = 'Line ' . ($lineNum + 1) . ': Empty question text';
                     continue;
@@ -104,6 +98,40 @@ class ImportController extends Controller {
 
                 if (mb_strlen($questionText) > 5000) {
                     $errors[] = 'Line ' . ($lineNum + 1) . ': Question text too long (max 5000)';
+                    continue;
+                }
+
+                // Open-question format: question,model_answer,open (3 fields)
+                if (count($fields) === 3 && mb_strtolower(trim($fields[2])) === 'open') {
+                    $modelAnswer = trim($fields[1]);
+                    if ($modelAnswer === '') {
+                        $errors[] = 'Line ' . ($lineNum + 1) . ': Empty model answer for open question';
+                        continue;
+                    }
+                    if (mb_strlen($modelAnswer) > 2000) {
+                        $modelAnswer = mb_substr($modelAnswer, 0, 2000);
+                    }
+                    $question = new Question();
+                    $question->setPoolId($poolId);
+                    $question->setUserId($this->userId);
+                    $question->setText($questionText);
+                    $question->setQuestionType('open');
+                    $question = $this->questionMapper->createOrUpdate($question);
+
+                    $answer = new Answer();
+                    $answer->setQuestionId($question->getId());
+                    $answer->setText($modelAnswer);
+                    $answer->setIsCorrect(true);
+                    $answer->setPosition(0);
+                    $this->answerMapper->createOrUpdate($answer);
+
+                    $imported++;
+                    continue;
+                }
+
+                // MC format: minimum question + 2 answers + correct index
+                if (count($fields) < 4) {
+                    $errors[] = 'Line ' . ($lineNum + 1) . ': Not enough fields (need: question, answers, correct number)';
                     continue;
                 }
 
@@ -248,6 +276,40 @@ class ImportController extends Controller {
 
                 if (mb_strlen(trim($item['text'])) > 5000) {
                     $errors[] = "Item $num: Question text too long (max 5000)";
+                    continue;
+                }
+
+                // Open-question type
+                $itemType = $item['type'] ?? null;
+                if ($itemType === 'open') {
+                    if (!isset($item['answers']) || !is_array($item['answers']) || count($item['answers']) < 1) {
+                        $errors[] = "Item $num: Open question needs at least 1 answer";
+                        continue;
+                    }
+                    $modelText = trim($item['answers'][0]['text'] ?? '');
+                    if ($modelText === '') {
+                        $errors[] = "Item $num: Empty model answer for open question";
+                        continue;
+                    }
+                    if (mb_strlen($modelText) > 2000) {
+                        $modelText = mb_substr($modelText, 0, 2000);
+                    }
+                    $question = new Question();
+                    $question->setPoolId($poolId);
+                    $question->setUserId($this->userId);
+                    $question->setText(trim($item['text']));
+                    $question->setExplanation(isset($item['explanation']) ? trim($item['explanation']) : null);
+                    $question->setQuestionType('open');
+                    $question = $this->questionMapper->createOrUpdate($question);
+
+                    $answer = new Answer();
+                    $answer->setQuestionId($question->getId());
+                    $answer->setText($modelText);
+                    $answer->setIsCorrect(true);
+                    $answer->setPosition(0);
+                    $this->answerMapper->createOrUpdate($answer);
+
+                    $imported++;
                     continue;
                 }
 

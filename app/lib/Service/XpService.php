@@ -78,6 +78,23 @@ class XpService {
     }
 
     /**
+     * Get streak-based XP multiplier (tier system).
+     */
+    public function getStreakMultiplier(int $streakDays): float {
+        if ($streakDays >= 30) return 3.0;
+        if ($streakDays >= 7) return 2.0;
+        if ($streakDays >= 3) return 1.5;
+        return 1.0;
+    }
+
+    /**
+     * Apply streak multiplier to base XP.
+     */
+    public function applyMultiplier(int $baseXp, int $streakDays): int {
+        return (int)round($baseXp * $this->getStreakMultiplier($streakDays));
+    }
+
+    /**
      * Calculate session XP for a single completed session.
      */
     public function calculateSessionXp(array $sessionData, int $streakDays = 0): int {
@@ -102,7 +119,7 @@ class XpService {
             $base = (int)round($base * 1.2);
         }
 
-        $multiplier = 1.0 + (min($streakDays, 30) * 0.01);
+        $multiplier = $this->getStreakMultiplier($streakDays);
         return (int)round($base * $multiplier);
     }
 

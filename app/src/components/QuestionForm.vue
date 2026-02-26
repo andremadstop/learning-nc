@@ -36,10 +36,18 @@
         <select id="question-type" v-model="form.questionType" class="nc-input" @change="onQuestionTypeChange">
           <option value="single">{{ t('learning', 'Single answer') }}</option>
           <option value="multi">{{ t('learning', 'Multiple answers') }}</option>
+          <option value="open">{{ t('learning', 'Free text') }}</option>
         </select>
       </div>
 
-      <div class="form-group">
+      <!-- Open-question: single model answer -->
+      <div v-if="form.questionType === 'open'" class="form-group">
+        <label for="model-answer">{{ t('learning', 'Model answer') }} *</label>
+        <textarea id="model-answer" v-model="modelAnswer" required rows="2" :placeholder="t('learning', 'The expected correct answer...')" class="nc-input"></textarea>
+      </div>
+
+      <!-- MC answers -->
+      <div v-else class="form-group">
         <label>{{ form.questionType === 'multi' ? t('learning', 'Answers (select all correct) *') : t('learning', 'Answers (select the correct one) *') }}</label>
         <div class="answers-form">
           <div v-for="(answer, index) in form.answers" :key="index" class="answer-row">
@@ -103,6 +111,7 @@ export default {
       imagePreview: null,
       existingImagePath: null,
       removeExistingImage: false,
+      modelAnswer: '',
       form: {
         text: '', explanation: '', difficulty: '',
         questionType: 'single',
@@ -130,6 +139,9 @@ export default {
       this.form.difficulty = this.question.difficulty || '';
       this.form.questionType = this.question.question_type || 'single';
       this.existingImagePath = this.question.image_path || null;
+      if (this.form.questionType === 'open' && this.question.answers && this.question.answers.length >= 1) {
+        this.modelAnswer = this.question.answers[0].text || '';
+      }
       if (this.question.answers && this.question.answers.length >= 2) {
         this.form.answers = this.question.answers.map(a => ({ text: a.text, is_correct: a.is_correct }));
         // Pad to minimum 4 answer slots for consistency
@@ -180,12 +192,14 @@ export default {
       this.correctAnswerIndices = newSet;
     },
     onQuestionTypeChange() {
+      if (this.form.questionType === 'open') {
+        // No action needed — open mode hides the answer list
+        return;
+      }
       if (this.form.questionType === 'single') {
-        // Switching to single: pick first correct or 0
         const first = [...this.correctAnswerIndices].sort((a, b) => a - b)[0];
         this.correctAnswerIndex = first !== undefined ? first : 0;
       } else {
-        // Switching to multi: seed from current single selection
         this.correctAnswerIndices = new Set([this.correctAnswerIndex]);
       }
     },
@@ -216,17 +230,20 @@ export default {
     },
     save() {
       this.saving = true;
-      if (this.form.questionType === 'multi') {
+      let filteredAnswers;
+      if (this.form.questionType === 'open') {
+        filteredAnswers = [{ text: this.modelAnswer, is_correct: true }];
+      } else if (this.form.questionType === 'multi') {
         this.form.answers.forEach((answer, index) => {
           answer.is_correct = this.correctAnswerIndices.has(index);
         });
+        filteredAnswers = this.form.answers.filter(a => a.text.trim() !== '');
       } else {
         this.form.answers.forEach((answer, index) => {
           answer.is_correct = (index === this.correctAnswerIndex);
         });
+        filteredAnswers = this.form.answers.filter(a => a.text.trim() !== '');
       }
-      // Filter out empty answers
-      const filteredAnswers = this.form.answers.filter(a => a.text.trim() !== '');
       this.$emit('save', {
         text: this.form.text,
         explanation: this.form.explanation || null,

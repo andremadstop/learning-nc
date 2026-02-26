@@ -12,14 +12,16 @@
         <small>
           {{ t('learning', 'Example:') }}<br/>
           <code class="example-code">What is 2+2?,3,4,5,6,2,Because math</code><br/>
-          <code class="example-code">Who wrote Hamlet?,Shakespeare,Dickens,Tolkien,1</code><br/><br/>
+          <code class="example-code">Who wrote Hamlet?,Shakespeare,Dickens,Tolkien,1</code><br/>
+          <code class="example-code">What is H2O?,Water,open</code><br/><br/>
           {{ t('learning', '2-8 answers per question. correct_number: which answer is correct (1 = first). Explanation is optional. Header row is auto-detected.') }}
+          {{ t('learning', 'Free text format: question,model_answer,open') }}
         </small>
       </template>
       <template v-else>
         <strong>{{ t('learning', 'JSON Format: Array of question objects') }}</strong><br/>
         <code class="example-code">[{"text":"What is 2+2?","answers":[{"text":"3","is_correct":false},{"text":"4","is_correct":true}],"explanation":"Basic math"}]</code><br/>
-        <small>{{ t('learning', 'Optional fields: difficulty, explanation, question_type ("multi" for multiple correct answers).') }}</small>
+        <small>{{ t('learning', 'Optional fields: difficulty, explanation, question_type ("multi" for multiple correct answers, "open" for free text with one model answer).') }}</small>
       </template>
     </NcNoteCard>
 

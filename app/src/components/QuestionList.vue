@@ -4,6 +4,10 @@
       <h3>{{ poolName }}</h3>
       <div v-if="!readonly" class="header-actions">
         <NcButton v-if="aiAvailable" @click="showAIGenerator = true" type="secondary">{{ t('learning', 'Generate with AI') }}</NcButton>
+        <NcActions v-if="questions.length > 0">
+          <NcActionButton @click="exportCsv" close-after-click>{{ t('learning', 'Export CSV') }}</NcActionButton>
+          <NcActionButton @click="exportJson" close-after-click>{{ t('learning', 'Export JSON') }}</NcActionButton>
+        </NcActions>
         <NcButton @click="showImportDialog = true" type="secondary">{{ t('learning', 'Import') }}</NcButton>
         <NcButton @click="showCreateDialog" type="primary">{{ t('learning', '+ Add Question') }}</NcButton>
       </div>
@@ -26,6 +30,7 @@
         <div class="question-header">
           <span class="question-number">Q{{ currentPage * pageSize + index + 1 }}</span>
           <span v-if="question.question_type === 'multi'" class="multi-badge">{{ t('learning', 'Multi') }}</span>
+          <span v-if="question.question_type === 'open'" class="open-badge">{{ t('learning', 'Free text') }}</span>
           <span v-if="question.difficulty" class="difficulty-badge" :class="question.difficulty">{{ question.difficulty }}</span>
           <div v-if="!readonly" class="question-actions">
             <NcActions>
@@ -37,7 +42,11 @@
         <!-- Image display -->
         <img v-if="question.image_path" :src="questionImageUrl(question.id)" :alt="'Image for: ' + question.text" class="question-image" />
         <div class="question-text">{{ question.text }}</div>
-        <div class="answers-list">
+        <div v-if="question.question_type === 'open'" class="model-answer-display">
+          <span class="model-answer-label">{{ t('learning', 'Model answer') }}:</span>
+          {{ question.answers && question.answers.length > 0 ? question.answers[0].text : '' }}
+        </div>
+        <div v-else class="answers-list">
           <div v-for="answer in question.answers" :key="answer.id" class="answer-item" :class="{ correct: answer.is_correct }">
             <span class="answer-icon">{{ answer.is_correct ? '✓' : '○' }}</span>
             {{ answer.text }}
@@ -164,6 +173,12 @@ export default {
         this.closeDialog(); this.loadQuestions();
       } catch (error) { showError(error.response?.data?.error || t('learning', 'Failed to save question')); }
     },
+    exportCsv() {
+      window.location.href = generateUrl('/apps/learning/api/pools/' + this.poolId + '/export/csv');
+    },
+    exportJson() {
+      window.location.href = generateUrl('/apps/learning/api/pools/' + this.poolId + '/export/json');
+    },
     deleteQuestion(question) {
       this.questionToDelete = question;
       this.showDeleteConfirm = true;
@@ -192,6 +207,9 @@ export default {
 .question-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .question-number { font-weight: 700; color: var(--color-primary-element); font-size: 13px; background: var(--color-primary-element-light); padding: 2px 8px; border-radius: 4px; }
 .multi-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: color-mix(in srgb, var(--color-primary-element) 15%, transparent); color: var(--color-primary-element); border: 1px solid var(--color-primary-element); }
+.open-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); border: 1px solid var(--color-warning); }
+.model-answer-display { padding: 10px 14px; border-radius: 8px; background: color-mix(in srgb, var(--color-warning) 8%, var(--color-main-background)); font-size: 13px; line-height: 1.5; margin-bottom: 12px; border: 1px solid color-mix(in srgb, var(--color-warning) 25%, transparent); color: var(--color-main-text); }
+.model-answer-label { font-weight: 600; color: var(--color-warning); }
 .difficulty-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
 .difficulty-badge.easy { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); border: 1px solid var(--color-success); }
 .difficulty-badge.medium { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); border: 1px solid var(--color-warning); }

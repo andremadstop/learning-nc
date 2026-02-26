@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2026-02-26
+
+### Added
+- **Free Text Questions**: New `open` question type — users type free-text answers instead of selecting from choices. Fuzzy matching (case-insensitive, Levenshtein distance ≤2 for short answers, substring matching for long answers)
+- **CSV/JSON Export**: Download question pools as CSV or JSON files. Roundtrip-compatible with import — export then re-import produces identical questions
+- **ExportController.php**: New controller with `exportCsv()` and `exportJson()` endpoints, `DataDownloadResponse` for browser download
+- **XP Streak Multipliers**: Tier-based XP bonuses replace old linear formula — 1.5x at 3-day streak, 2x at 7-day, 3x at 30-day streak
+- **XP Multiplier Badge**: Visible multiplier indicator (1.5x / 2x / 3x) in Pool List when streak bonus is active
+- **Open Question Import**: CSV format `question,model_answer,open` and JSON `"type": "open"` with single model answer
+- **Open Question in all modes**: Training, Leitner, Smart Queue, Exam (textarea + batch submit), Daily Challenge — SwipeMode filters out open questions
+
+### Changed
+- **XpService**: `getStreakMultiplier()` and `applyMultiplier()` replace linear `1.0 + (streak * 0.01)` formula
+- **LeitnerService**: All XP awards (correct answer, mastery bonus, daily goal) now use streak multiplier via XpService
+- **UserStateController**: `state()` response includes `xp_multiplier` field; `answerChallenge()` applies streak multiplier to challenge XP
+- **QuestionForm.vue**: New "Free text" answer type option with model answer textarea
+- **QuestionList.vue**: "Freitext" badge for open questions, model answer display, Export CSV/JSON dropdown
+- **ImportDialog.vue**: Help text updated with open-question format examples for both CSV and JSON
+- **SwipeMode.vue**: Filters out open questions (not compatible with swipe/tap interaction)
+- **routes.php**: 2 new export routes (71 total)
+
+### Technical
+- 1 new file (`ExportController.php`), 22 changed files
+- No database migration needed — `question_type` VARCHAR(20) already supports `open`, `answer_ids` TEXT stores JSON
+- `QuestionService::isOpenAnswerCorrect()` static helper used by TrainingService, LeitnerService, and UserStateController
+- Rate limit on export endpoints: 10 requests per 60 seconds
+
 ## [2.0.0] - 2026-02-26
 
 ### Added

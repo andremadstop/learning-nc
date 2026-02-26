@@ -187,7 +187,17 @@ class TrainingService {
         return $rows;
     }
 
-    public function submitAnswer(int $sessionId, int $questionId, ?int $answerId, string $userId, ?array $answerIds = null): array {
+    private function getQuestionType(int $questionId): string {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('question_type')->from('learning_questions')
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)));
+        $result = $qb->execute();
+        $row = $result->fetch();
+        $result->closeCursor();
+        return $row ? ($row['question_type'] ?? 'single') : 'single';
+    }
+
+    public function submitAnswer(int $sessionId, int $questionId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
 
         // Block submissions to completed sessions
@@ -226,6 +236,59 @@ class TrainingService {
         $dupResult->closeCursor();
         if ($dupRow) {
             throw new \Exception('Question already answered in this session');
+        }
+
+        // Open-question path
+        $qType = $this->getQuestionType($questionId);
+        if ($qType === 'open') {
+            if ($answerText === null || trim($answerText) === '') {
+                throw new \Exception('Answer text required for open questions');
+            }
+            if ($answerIds !== null || $answerId !== null) {
+                throw new \Exception('Answer IDs not allowed for open questions');
+            }
+            $correctAnswers = $this->getAllCorrectAnswers($questionId);
+            $modelText = $correctAnswers[0]['text'] ?? '';
+            $isCorrect = QuestionService::isOpenAnswerCorrect($answerText, $modelText);
+
+            $qb = $this->db->getQueryBuilder();
+            $qb->insert('learning_user_answers')->values([
+                'session_id' => $qb->createNamedParameter($sessionId),
+                'question_id' => $qb->createNamedParameter($questionId),
+                'answer_id' => $qb->createNamedParameter(null, \PDO::PARAM_NULL),
+                'answer_ids' => $qb->createNamedParameter(json_encode(['text' => $answerText])),
+                'is_correct' => $qb->createNamedParameter($isCorrect, \PDO::PARAM_BOOL),
+                'answered_at' => $qb->createNamedParameter(time())
+            ]);
+            $qb->execute();
+
+            if ($isCorrect) {
+                $qb = $this->db->getQueryBuilder();
+                $qb->update('learning_sessions')
+                   ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
+                   ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
+                $qb->execute();
+            }
+
+            if ($suppressAnswers) {
+                return ['is_correct' => $isCorrect];
+            }
+
+            // Get explanation
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('explanation')
+               ->from('learning_questions')
+               ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)));
+            $result = $qb->execute();
+            $qRow = $result->fetch();
+            $result->closeCursor();
+
+            return [
+                'is_correct' => $isCorrect,
+                'correct_answer_text' => $modelText,
+                'user_answer_text' => $answerText,
+                'explanation' => $qRow ? $qRow['explanation'] : null,
+            ];
         }
 
         // Multi-select path
@@ -367,6 +430,7 @@ class TrainingService {
         foreach ($answers as $entry) {
             $questionId = (int)$entry['questionId'];
             $entryAnswerIds = $entry['answerIds'] ?? null;
+            $entryAnswerText = $entry['answerText'] ?? null;
             $answerId = isset($entry['answerId']) ? (int)$entry['answerId'] : null;
 
             // Validate question belongs to this session's pool
@@ -394,6 +458,57 @@ class TrainingService {
             $dupResult->closeCursor();
             if ($dupRow) {
                 $results[] = ['questionId' => $questionId, 'error' => 'Already answered'];
+                continue;
+            }
+
+            // Open-question path in batch
+            $batchQType = $this->getQuestionType($questionId);
+            if ($batchQType === 'open') {
+                if ($entryAnswerText === null || !is_string($entryAnswerText) || trim($entryAnswerText) === '') {
+                    $results[] = ['questionId' => $questionId, 'error' => 'Answer text required'];
+                    continue;
+                }
+                if ($entryAnswerIds !== null) {
+                    $results[] = ['questionId' => $questionId, 'error' => 'Answer IDs not allowed for open questions'];
+                    continue;
+                }
+                if (mb_strlen($entryAnswerText) > 2000) {
+                    $results[] = ['questionId' => $questionId, 'error' => 'Answer text too long (max 2000 chars)'];
+                    continue;
+                }
+                $correctRows = $this->getAllCorrectAnswers($questionId);
+                $modelText = $correctRows[0]['text'] ?? '';
+                $isCorrect = QuestionService::isOpenAnswerCorrect($entryAnswerText, $modelText);
+
+                $qb = $this->db->getQueryBuilder();
+                $qb->insert('learning_user_answers')->values([
+                    'session_id' => $qb->createNamedParameter($sessionId),
+                    'question_id' => $qb->createNamedParameter($questionId),
+                    'answer_id' => $qb->createNamedParameter(null, \PDO::PARAM_NULL),
+                    'answer_ids' => $qb->createNamedParameter(json_encode(['text' => $entryAnswerText])),
+                    'is_correct' => $qb->createNamedParameter($isCorrect, \PDO::PARAM_BOOL),
+                    'answered_at' => $qb->createNamedParameter(time())
+                ]);
+                $qb->execute();
+
+                if ($isCorrect) {
+                    $qb = $this->db->getQueryBuilder();
+                    $qb->update('learning_sessions')
+                       ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
+                       ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
+                    $qb->execute();
+                }
+
+                if ($suppressAnswers) {
+                    $results[] = ['questionId' => $questionId, 'recorded' => true];
+                } else {
+                    $results[] = [
+                        'questionId' => $questionId,
+                        'is_correct' => $isCorrect,
+                        'correct_answer_text' => $modelText,
+                        'user_answer_text' => $entryAnswerText,
+                    ];
+                }
                 continue;
             }
 

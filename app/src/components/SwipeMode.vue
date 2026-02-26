@@ -199,7 +199,11 @@ export default {
       try {
         const r = await axios.post(generateUrl('/apps/learning/api/training/start'), { poolId: this.poolId });
         this.session = r.data.session_id;
-        this.questions = r.data.questions;
+        this.questions = r.data.questions.filter(q => q.question_type !== 'open');
+        if (this.questions.length === 0) {
+          this.loadError = t('learning', 'All questions in this pool are open-ended and cannot be used in Swipe mode.');
+          return;
+        }
         this.currentIndex = 0;
         this.showResults = false;
         this.results = null;

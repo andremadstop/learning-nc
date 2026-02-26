@@ -5,6 +5,8 @@ namespace OCA\Learning\Service;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Service\BadgeService;
+use OCA\Learning\Service\QuestionService;
+use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\ICacheFactory;
@@ -15,14 +17,16 @@ class LeitnerService {
     private $poolMapper;
     private $shareMapper;
     private $badgeService;
+    private $streakService;
     private $xpService;
     private $cacheFactory;
 
-    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, XpService $xpService, ICacheFactory $cacheFactory) {
+    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, StreakService $streakService, XpService $xpService, ICacheFactory $cacheFactory) {
         $this->db = $db;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
         $this->badgeService = $badgeService;
+        $this->streakService = $streakService;
         $this->xpService = $xpService;
         $this->cacheFactory = $cacheFactory;
     }
@@ -95,6 +99,7 @@ class LeitnerService {
             foreach ($items as &$item) {
                 $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
             }
+            $this->stripOpenAnswers($items);
         }
 
         return $items;
@@ -157,13 +162,18 @@ class LeitnerService {
             foreach ($items as &$item) {
                 $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
             }
+            $this->stripOpenAnswers($items);
         }
 
         return $items;
     }
 
-    public function answerQuestion(int $itemId, ?int $answerId, string $userId, ?array $answerIds = null): array {
+    public function answerQuestion(int $itemId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null): array {
         // === Read phase (outside transaction) ===
+        // Read streak before transaction (read-only, safe outside)
+        $streak = $this->streakService->getStreak($userId);
+        $streakDays = $streak['current_streak'];
+
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
            ->from('learning_leitner_items')
@@ -179,8 +189,26 @@ class LeitnerService {
 
         $questionId = (int)$item['question_id'];
 
+        // Open-question path
+        $qType = $this->getQuestionType($questionId);
+        if ($qType === 'open') {
+            if ($answerText === null || trim($answerText) === '') {
+                throw new \Exception('Answer text required for open questions');
+            }
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id', 'text')
+               ->from('learning_answers')
+               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+               ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
+               ->orderBy('position', 'ASC');
+            $cResult = $qb->execute();
+            $correctRows = $cResult->fetchAll();
+            $cResult->closeCursor();
+            $modelText = $correctRows[0]['text'] ?? '';
+            $correct = QuestionService::isOpenAnswerCorrect($answerText, $modelText);
+        }
         // Multi-select path — batch validation (Gemini #3: N+1 fix)
-        if (is_array($answerIds) && count($answerIds) > 0) {
+        elseif (is_array($answerIds) && count($answerIds) > 0) {
             $intIds = array_map('intval', $answerIds);
             $qb = $this->db->getQueryBuilder();
             $qb->select($qb->createFunction('COUNT(*) as cnt'))
@@ -291,13 +319,13 @@ class LeitnerService {
                 }
             }
 
-            // Award Leitner XP: 5 XP per correct answer
+            // Award Leitner XP: 5 XP per correct answer (with streak multiplier)
             if ($correct) {
-                $leitnerXp = 5;
+                $leitnerXp = $this->xpService->applyMultiplier(5, $streakDays);
 
                 // R2 #1: Only award mastery bonus on actual promotion (Box <5 → 5), not Box 5→5
                 if ($currentBox < 5 && $newBox === 5) {
-                    $leitnerXp += 25; // Box-5 mastery bonus
+                    $leitnerXp += $this->xpService->applyMultiplier(25, $streakDays);
                     // DB-only badge insert, no notifications (post-commit pattern)
                     $response['newly_earned_badges'] = $this->badgeService->checkAndAward($userId, 'leitner_mastery', [], false);
 
@@ -351,7 +379,8 @@ class LeitnerService {
 
         // Award bonus exactly when crossing the threshold (cardsToday == dailyGoal)
         if ($cardsToday === $dailyGoal) {
-            $this->xpService->incrementLeitnerXp($userId, 10);
+            $goalBonus = $this->xpService->applyMultiplier(10, $streakDays);
+            $this->xpService->incrementLeitnerXp($userId, $goalBonus);
         }
 
         // Dispatch badge notifications after commit (Codex #2)
@@ -365,6 +394,21 @@ class LeitnerService {
         // SECURITY: Suppress correct answer details during active exam to prevent oracle attack
         $poolId = (int)$item['pool_id'];
         if ($this->hasActiveExamOnPool($poolId, $userId)) {
+            return $response;
+        }
+
+        // Open-question: return model answer text
+        if ($qType === 'open') {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('text')
+               ->from('learning_answers')
+               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+               ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)));
+            $oResult = $qb->execute();
+            $oRow = $oResult->fetch();
+            $oResult->closeCursor();
+            $response['correct_answer_text'] = $oRow ? $oRow['text'] : '';
+            $response['user_answer_text'] = $answerText;
             return $response;
         }
 
@@ -436,6 +480,7 @@ class LeitnerService {
             foreach ($items as &$item) {
                 $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
             }
+            $this->stripOpenAnswers($items);
         }
 
         return $items;
@@ -498,6 +543,26 @@ class LeitnerService {
         }
 
         return $count;
+    }
+
+    private function getQuestionType(int $questionId): string {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('question_type')->from('learning_questions')
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)));
+        $result = $qb->execute();
+        $row = $result->fetch();
+        $result->closeCursor();
+        return $row ? ($row['question_type'] ?? 'single') : 'single';
+    }
+
+    private function stripOpenAnswers(array &$items): void {
+        foreach ($items as &$item) {
+            if (($item['question_type'] ?? 'single') === 'open') {
+                foreach ($item['answers'] as &$a) {
+                    $a['text'] = '';
+                }
+            }
+        }
     }
 
     public function getStats(int $poolId, string $userId): array {

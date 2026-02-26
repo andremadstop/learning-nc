@@ -157,9 +157,14 @@ class UserStateController extends Controller {
         $answers = $result->fetchAll();
         $result->closeCursor();
 
-        // Strip is_correct if not completed
-        $responseAnswers = array_map(function ($a) use ($completed) {
+        // Strip is_correct if not completed; strip open-question answers if not completed
+        $questionType = $question['question_type'] ?? 'single';
+        $responseAnswers = array_map(function ($a) use ($completed, $questionType) {
             $ans = ['id' => (int)$a['id'], 'text' => $a['text'], 'position' => (int)$a['position']];
+            // Hide model answer for open questions until completed
+            if ($questionType === 'open' && !$completed) {
+                $ans['text'] = '';
+            }
             if ($completed) {
                 $ans['is_correct'] = (bool)$a['is_correct'];
             }
@@ -187,16 +192,12 @@ class UserStateController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]
-    public function answerChallenge(array $answer_ids): DataResponse {
+    public function answerChallenge(?array $answer_ids = null, ?string $answer_text = null): DataResponse {
         $today = gmdate('Y-m-d');
 
-        // Validate answer_ids: non-empty, bounded, no duplicates
-        if (empty($answer_ids) || count($answer_ids) > 8) {
-            return new DataResponse(['error' => 'Invalid answer payload'], 400);
-        }
-        $intIds = array_values(array_unique(array_map('intval', $answer_ids)));
-        if (count($intIds) !== count($answer_ids)) {
-            return new DataResponse(['error' => 'Duplicate answers not allowed'], 400);
+        // Length limit for open answer text
+        if ($answer_text !== null && mb_strlen($answer_text) > 2000) {
+            return new DataResponse(['error' => 'Answer text too long (max 2000 chars)'], 400);
         }
 
         // Reproduce the same question selection (deterministic order)
@@ -218,35 +219,80 @@ class UserStateController extends Controller {
         $index = abs($hash) % count($allItems);
         $questionId = (int)$allItems[$index]['question_id'];
 
-        // Validate answer IDs belong to this question
+        // Determine question type for strict type-gating
         $qb = $this->db->getQueryBuilder();
-        $qb->select($qb->createFunction('COUNT(*) as cnt'))
-           ->from('learning_answers')
-           ->where($qb->expr()->in('id', $qb->createNamedParameter($intIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+        $qb->select('question_type')->from('learning_questions')
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)));
         $result = $qb->execute();
-        $validCount = (int)$result->fetch()['cnt'];
+        $qtRow = $result->fetch();
         $result->closeCursor();
+        $challengeQType = $qtRow ? ($qtRow['question_type'] ?? 'single') : 'single';
 
-        if ($validCount !== count($intIds)) {
-            return new DataResponse(['error' => 'Invalid answers'], 400);
+        // Strict type-gating: open requires answer_text only, MC requires answer_ids only
+        $hasText = $answer_text !== null && trim($answer_text) !== '';
+        $hasIds = !empty($answer_ids);
+
+        if ($challengeQType === 'open') {
+            if (!$hasText) {
+                return new DataResponse(['error' => 'Open questions require answer_text'], 400);
+            }
+            if ($hasIds) {
+                return new DataResponse(['error' => 'Open questions do not accept answer_ids'], 400);
+            }
+            // Open-question: fuzzy-match against model answer
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('text')
+               ->from('learning_answers')
+               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+               ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)));
+            $result = $qb->execute();
+            $modelRow = $result->fetch();
+            $result->closeCursor();
+            $modelText = $modelRow ? $modelRow['text'] : '';
+            $correct = \OCA\Learning\Service\QuestionService::isOpenAnswerCorrect($answer_text, $modelText);
+        } else {
+            // MC-question: must have answer_ids only
+            if (!$hasIds) {
+                return new DataResponse(['error' => 'No answer IDs provided'], 400);
+            }
+            if ($hasText) {
+                return new DataResponse(['error' => 'MC questions do not accept answer_text'], 400);
+            }
+            if (count($answer_ids) > 8) {
+                return new DataResponse(['error' => 'Invalid answer payload'], 400);
+            }
+            $intIds = array_values(array_unique(array_map('intval', $answer_ids)));
+            if (count($intIds) !== count($answer_ids)) {
+                return new DataResponse(['error' => 'Duplicate answers not allowed'], 400);
+            }
+            $qb = $this->db->getQueryBuilder();
+            $qb->select($qb->createFunction('COUNT(*) as cnt'))
+               ->from('learning_answers')
+               ->where($qb->expr()->in('id', $qb->createNamedParameter($intIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+               ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+            $result = $qb->execute();
+            $validCount = (int)$result->fetch()['cnt'];
+            $result->closeCursor();
+
+            if ($validCount !== count($intIds)) {
+                return new DataResponse(['error' => 'Invalid answers'], 400);
+            }
+
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id')
+               ->from('learning_answers')
+               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+               ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
+               ->orderBy('id', 'ASC');
+            $result = $qb->execute();
+            $correctRows = $result->fetchAll();
+            $result->closeCursor();
+
+            $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
+            sort($correctIds);
+            sort($intIds);
+            $correct = ($intIds === $correctIds);
         }
-
-        // Check correctness
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('id')
-           ->from('learning_answers')
-           ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
-           ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
-           ->orderBy('id', 'ASC');
-        $result = $qb->execute();
-        $correctRows = $result->fetchAll();
-        $result->closeCursor();
-
-        $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
-        sort($correctIds);
-        sort($intIds);
-        $correct = ($intIds === $correctIds);
 
         // Atomic claim: UPDATE only if not already completed today
         // This prevents race conditions where parallel requests both pass the check
@@ -318,10 +364,11 @@ class UserStateController extends Controller {
             }
         }
 
-        // Award XP if correct (only reached after successful claim)
+        // Award XP if correct (only reached after successful claim, with streak multiplier)
         $xpEarned = 0;
         if ($correct) {
-            $xpEarned = 15;
+            $streak = $this->streakService->getStreak($this->userId);
+            $xpEarned = $this->xpService->applyMultiplier(15, $streak['current_streak']);
             $this->xpService->incrementLeitnerXp($this->userId, $xpEarned);
         }
 
@@ -360,6 +407,7 @@ class UserStateController extends Controller {
 
         $xp = $this->xpService->calculateXp($this->userId);
         $streak = $this->streakService->getStreak($this->userId);
+        $xpMultiplier = $this->xpService->getStreakMultiplier($streak['current_streak']);
         $badges = $this->badgeService->getUserBadges($this->userId);
         $progress = $this->badgeService->getBadgeProgress($this->userId);
 
@@ -399,6 +447,7 @@ class UserStateController extends Controller {
         $data = [
             'xp' => $xp,
             'streak' => $streak,
+            'xp_multiplier' => $xpMultiplier,
             'badges' => $badges,
             'progress' => $progress,
             'stats' => [

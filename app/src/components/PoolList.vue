@@ -13,6 +13,12 @@
       <NcButton type="tertiary" @click="dismissHint('welcome-instructor')">{{ t('learning', 'Got it') }}</NcButton>
     </NcNoteCard>
 
+    <!-- XP Multiplier Badge -->
+    <div v-if="xpMultiplier > 1" class="xp-multiplier-badge">
+      <span class="xp-mult-value">{{ xpMultiplier }}x</span>
+      <span class="xp-mult-label">{{ t('learning', 'XP Multiplier') }}</span>
+    </div>
+
     <!-- Smart Queue + Daily Goal -->
     <div class="smart-queue-section">
       <button v-if="queueCount > 0" class="smart-queue-btn" @click="$emit('openSmartQueue')">
@@ -50,7 +56,15 @@
       </div>
       <div class="dc-pool-tag">{{ dailyChallenge.pool_name }}</div>
       <div class="dc-question">{{ dailyChallenge.question.text }}</div>
-      <div v-if="!dailyChallenge.completed" class="dc-answers">
+      <div v-if="!dailyChallenge.completed && dailyChallenge.question.question_type === 'open'" class="dc-answers">
+        <textarea v-model="challengeOpenAnswer" :placeholder="t('learning', 'Type your answer...')" rows="2" class="nc-input dc-open-textarea" :disabled="challengeSubmitting"></textarea>
+        <div class="dc-submit-area">
+          <NcButton type="primary" :disabled="challengeSubmitting || !challengeOpenAnswer.trim()" @click="submitChallenge">
+            {{ challengeSubmitting ? t('learning', 'Submitting...') : t('learning', 'Submit') }}
+          </NcButton>
+        </div>
+      </div>
+      <div v-else-if="!dailyChallenge.completed" class="dc-answers">
         <button v-for="answer in dailyChallenge.question.answers" :key="answer.id"
           class="dc-answer-btn" :class="{ selected: challengeSelectedIds.includes(answer.id) }"
           :disabled="challengeSubmitting"
@@ -327,6 +341,10 @@ export default {
       challengeSelectedIds: [],
       challengeSubmitting: false,
       challengeXpEarned: 0,
+      // XP Multiplier
+      xpMultiplier: 1,
+      // Open challenge
+      challengeOpenAnswer: '',
     };
   },
   computed: {
@@ -546,6 +564,9 @@ export default {
           this.dailyProgress = r.data.daily_progress;
           this.editGoalValue = this.dailyProgress.daily_goal;
         }
+        if (r.data.xp_multiplier) {
+          this.xpMultiplier = r.data.xp_multiplier;
+        }
       } catch (e) { /* optional */ }
     },
     async saveGoal() {
@@ -582,9 +603,13 @@ export default {
     async submitChallenge() {
       this.challengeSubmitting = true;
       try {
-        const r = await axios.post(generateUrl('/apps/learning/api/v1/daily-challenge/answer'), {
-          answer_ids: this.challengeSelectedIds,
-        });
+        const payload = {};
+        if (this.dailyChallenge.question.question_type === 'open') {
+          payload.answer_text = this.challengeOpenAnswer;
+        } else {
+          payload.answer_ids = this.challengeSelectedIds;
+        }
+        const r = await axios.post(generateUrl('/apps/learning/api/v1/daily-challenge/answer'), payload);
         this.challengeXpEarned = r.data.xp_earned || 0;
         // Reload challenge to get completed state with answers
         await this.loadDailyChallenge();
@@ -949,5 +974,32 @@ export default {
 
 .onboarding-hint {
   margin-bottom: 16px;
+}
+
+/* XP Multiplier Badge */
+.xp-multiplier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--color-warning) 12%, var(--color-main-background));
+  border: 2px solid var(--color-warning);
+  margin-bottom: 16px;
+}
+.xp-mult-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-warning);
+}
+.xp-mult-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-warning);
+}
+.dc-open-textarea {
+  width: 100%;
+  min-height: 60px;
+  resize: vertical;
 }
 </style>

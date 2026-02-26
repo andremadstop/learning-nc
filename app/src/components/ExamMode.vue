@@ -74,7 +74,19 @@
 
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
 
-        <div class="answer-options">
+        <div v-if="isCurrentOpen" class="open-answer-area">
+          <textarea
+            :value="openAnswerTexts[currentQuestion.id] || ''"
+            @input="$set(openAnswerTexts, currentQuestion.id, $event.target.value)"
+            :placeholder="t('learning', 'Type your answer...')"
+            rows="3"
+            class="nc-input open-textarea"
+          ></textarea>
+          <NcButton type="primary" @click="submitOpenExamAnswer" :disabled="!openAnswerTexts[currentQuestion.id] || !openAnswerTexts[currentQuestion.id].trim()">
+            {{ t('learning', 'Submit Answer') }}
+          </NcButton>
+        </div>
+        <div v-else class="answer-options">
           <button
             v-for="answer in currentQuestion.answers"
             :key="answer.id"
@@ -154,7 +166,13 @@
           :class="['review-item', res.isCorrect ? 'review-correct' : 'review-wrong']"
         >
           <div class="review-question">{{ index + 1 }}. {{ res.questionText }}</div>
-          <template v-if="res.isMulti && res.answerDetails">
+          <template v-if="res.isOpen">
+            <div class="open-answer-review">
+              <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ res.userAnswerText || t('learning', 'Skipped') }}</div>
+              <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ res.correctAnswerText }}</div>
+            </div>
+          </template>
+          <template v-else-if="res.isMulti && res.answerDetails">
             <div class="review-answers-detail">
               <div v-for="(ad, ai) in res.answerDetails" :key="ai"
                    :class="['review-answer-item', {
@@ -249,6 +267,7 @@ export default {
       resultsData: null,
       detailedResults: [],
       multiSelections: {},
+      openAnswerTexts: {},
       newBadges: [],
     };
   },
@@ -285,7 +304,7 @@ export default {
       return this.questions[this.currentQuestionIndex] || null;
     },
     answeredCount() {
-      return Object.values(this.userAnswers).filter(v => v !== null && v !== undefined).length;
+      return Object.values(this.userAnswers).filter(v => v !== null && v !== undefined && v !== false).length;
     },
     progressPercentage() {
       if (!this.questions.length) return 0;
@@ -313,6 +332,9 @@ export default {
     },
     isCurrentMulti() {
       return this.currentQuestion && this.currentQuestion.question_type === 'multi';
+    },
+    isCurrentOpen() {
+      return this.currentQuestion && this.currentQuestion.question_type === 'open';
     },
     sortedDetailedResults() {
       return [...this.detailedResults].sort((a, b) => {
@@ -359,6 +381,7 @@ export default {
         this.questions = questions;
         this.currentQuestionIndex = 0;
         this.userAnswers = {};
+        this.openAnswerTexts = {};
         this.detailedResults = [];
         this.resultsData = null;
         this.examDurationSeconds = this.selectedTimeLimit;
@@ -397,6 +420,7 @@ export default {
 
     isAnswerSelected(answerId) {
       const qId = this.currentQuestion.id;
+      if (this.isCurrentOpen) return false;
       if (this.isCurrentMulti) {
         return this.multiSelections[qId] && this.multiSelections[qId].includes(answerId);
       }
@@ -418,6 +442,13 @@ export default {
         return; // Don't auto-advance for multi
       }
       this.$set(this.userAnswers, this.currentQuestion.id, answerId);
+      this.advanceToNext();
+    },
+    submitOpenExamAnswer() {
+      const qId = this.currentQuestion.id;
+      const text = (this.openAnswerTexts[qId] || '').trim();
+      if (!text) return;
+      this.$set(this.userAnswers, qId, { answerText: text });
       this.advanceToNext();
     },
     confirmMultiAnswer() {
@@ -469,7 +500,9 @@ export default {
         for (const q of this.questions) {
           const answer = this.userAnswers[q.id];
           if (answer !== null && answer !== undefined) {
-            if (Array.isArray(answer)) {
+            if (answer && typeof answer === 'object' && answer.answerText) {
+              batchAnswers.push({ questionId: q.id, answerText: answer.answerText });
+            } else if (Array.isArray(answer)) {
               batchAnswers.push({ questionId: q.id, answerIds: answer });
             } else {
               batchAnswers.push({ questionId: q.id, answerId: answer });
@@ -502,7 +535,10 @@ export default {
           const answer = this.userAnswers[q.id];
           const rv = reviewMap[q.id];
           let userAnswerText = null;
-          if (Array.isArray(answer)) {
+          const isOpen = q.question_type === 'open';
+          if (isOpen && answer && typeof answer === 'object' && answer.answerText) {
+            userAnswerText = answer.answerText;
+          } else if (Array.isArray(answer)) {
             const texts = answer.map(aid => {
               const a = q.answers.find(a => a.id === aid);
               return a ? a.text : '';
@@ -528,6 +564,7 @@ export default {
             correctAnswerText: correctText,
             isCorrect: rv ? rv.is_correct : false,
             isMulti: rv ? rv.questionType === 'multi' : q.question_type === 'multi',
+            isOpen: isOpen,
             answerDetails: answerDetails,
           });
         }
@@ -564,6 +601,7 @@ export default {
       this.questions = [];
       this.userAnswers = {};
       this.multiSelections = {};
+      this.openAnswerTexts = {};
       this.resultsData = null;
       this.detailedResults = [];
       if (this.timerInterval) clearInterval(this.timerInterval);
@@ -769,6 +807,12 @@ export default {
 .ra-wrong-selected { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, var(--color-main-background)); color: var(--color-error); }
 .ra-correct-missed { border-color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 10%, var(--color-main-background)); color: var(--color-warning); }
 .ra-neutral { color: var(--color-text-maxcontrast); }
+
+.open-answer-area { display: flex; flex-direction: column; gap: 12px; align-items: center; margin-bottom: 16px; }
+.open-textarea { width: 100%; padding: 14px; font-size: 15px; border: 2px solid var(--color-border); border-radius: 12px; resize: vertical; min-height: 80px; box-sizing: border-box; }
+.open-textarea:focus { border-color: var(--color-primary-element); outline: none; }
+.open-answer-review { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; margin-bottom: 12px; }
+.open-review-row { padding: 10px 14px; border-radius: 8px; background: var(--color-background-hover); font-size: 14px; line-height: 1.5; }
 
 .xp-earned { font-size: 22px; font-weight: 700; color: var(--color-primary-element); margin: 16px 0 8px; text-align: center; animation: xpFadeIn 0.5s ease-out 0.5s both; }
 @keyframes xpFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

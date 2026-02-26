@@ -15,6 +15,9 @@ Create question pools, share them with your team, and study efficiently using sc
 - **Trouble Spots** — Focused practice on your hardest questions (3+ wrong, &lt;30% accuracy)
 - **Daily Challenge** — One question per day with bonus XP reward for correct answers
 - **At-Risk Early Warning** — Instructors see which students are falling behind with risk scores and reasons
+- **Free Text Questions** — Open-ended questions with fuzzy answer matching (case-insensitive, Levenshtein tolerance)
+- **CSV/JSON Export** — Export question pools for backup or sharing, roundtrip-compatible with import
+- **XP Streak Multipliers** — Tier-based XP bonuses: 1.5x at 3-day streak, 2x at 7-day, 3x at 30-day
 - **Multiple Choice Quizzes** — Create pools with questions, multiple answers, and multi-select support
 - **Leitner Spaced Repetition** — 5-box system with automatic scheduling (1d, 3d, 7d, 14d intervals)
 - **Training Mode** — Quick quiz sessions with immediate feedback and score tracking
@@ -49,7 +52,7 @@ Create question pools, share them with your team, and study efficiently using sc
 - PostgreSQL 13+ or MySQL 8+
     ]]></description>
 
-    <version>2.0.0</version>
+    <version>2.1.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>
