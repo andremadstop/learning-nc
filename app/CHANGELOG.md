@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.0] - 2026-02-26
+
+### Added
+- **AI Question Generator**: Paste text (lecture notes, textbook excerpts) and let AI generate multiple-choice questions. Three-step workflow: input → AI generation → editable preview → bulk import into pool
+- **AIService.php**: NC TaskProcessing API (NC 30+) with TextProcessing fallback (NC 29) — runtime detection, no app-level API key management
+- **AIController.php**: 4 new endpoints — `GET /api/ai/available`, `POST /api/ai/generate`, `GET /api/ai/status/{taskId}`, `POST /api/ai/import/{taskId}`
+- **AIGenerator.vue**: Full wizard with textarea input, question count slider (5-30), language selector, polling progress, editable preview with select/deselect all, inline editing of questions and answers
+- **At-Risk Early Warning**: Instructors see which students are falling behind on the Course Progress tab. Rule-based risk scoring with 5 weighted signals (inactivity >7d, accuracy <50%, box-1 stall >60%, lost streak, <3 sessions in 14d)
+- **At-Risk API**: `GET /api/courses/{courseId}/at-risk` — returns students with risk_level (high/medium), risk_reasons array, last_active, accuracy
+- **Remediation Queue**: Focused practice on hardest questions (≥3 wrong answers, <30% accuracy, box ≤2). "Trouble Spots" button on Pool List with item count
+- **Remediation API**: `GET /api/leitner/remediation` (items), `GET /api/leitner/remediation/count` (lightweight count)
+- **Daily Challenge**: One random question per day from user's pools with +15 XP bonus for correct answers. Deterministic selection via `crc32(userId + date)` — same question per user per day
+- **Daily Challenge API**: `GET /api/v1/daily-challenge`, `POST /api/v1/daily-challenge/answer`
+- **Migration V001600**: Adds `last_challenge_date` (VARCHAR 10) and `last_challenge_correct` (BOOLEAN) to `learning_user_stats`
+
+### Changed
+- **QuestionList.vue**: "Generate with AI" button visible when AI provider is configured (checks `/api/ai/available`)
+- **PoolList.vue**: "Trouble Spots" button (orange, warning style) and inline Daily Challenge card with answer submission
+- **SmartQueue.vue**: New `mode` prop (`queue` | `remediation`) with conditional API endpoint, titles, and empty states
+- **App.vue**: Wires `openRemediation` event from PoolList to SmartQueue with `mode="remediation"`, new `smartQueueMode` state
+- **CourseDetail.vue**: At-Risk section on Progress tab — collapsible card grid with risk badges and reason tags
+- **routes.php**: 9 new routes (ai: 4, leitner: 2, user_state: 2, course: 1) — 69 total
+
+### Security
+- **AI Rate Limits**: `generate` endpoint limited to 5/min, `import` limited to 10/min
+- **AI Input Validation**: Text length 50-50000 chars, word count capped at 3000 for LLM input
+- **AI User Isolation**: Task status checks verify `userId` matches task owner
+- **At-Risk Access Control**: Endpoint restricted to course instructors via `validateInstructor()`
+
 ## [1.8.0] - 2026-02-26
 
 ### Added

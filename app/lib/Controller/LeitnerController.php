@@ -53,6 +53,29 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
+    public function remediation(int $limit = 20): DataResponse {
+        try {
+            $limit = max(1, min($limit, 100));
+            return new DataResponse($this->service->getRemediationQueue($this->userId, $limit));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to load remediation queue'], 400);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    public function remediationCount(): DataResponse {
+        try {
+            return new DataResponse(['count' => $this->service->getRemediationCount($this->userId)]);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to load remediation count'], 400);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
     public function initialize(int $poolId): DataResponse {
         try {
             $count = $this->service->initializePool($poolId, $this->userId);

@@ -15,6 +15,52 @@
         <span class="sq-count">{{ queueCount }} {{ t('learning', 'due') }}</span>
       </button>
 
+      <button v-if="remediationCount > 0" class="remediation-btn" @click="$emit('openRemediation')">
+        <span class="rem-icon">&#x26A0;</span>
+        <span class="rem-text">{{ t('learning', 'Trouble Spots') }}</span>
+        <span class="rem-count">{{ remediationCount }} {{ t('learning', 'cards') }}</span>
+      </button>
+    </div>
+
+    <!-- Daily Challenge -->
+    <div v-if="dailyChallenge && dailyChallenge.available" class="daily-challenge-card" :class="{ completed: dailyChallenge.completed }">
+      <div class="dc-header">
+        <span class="dc-icon">&#x2B50;</span>
+        <span class="dc-title">{{ t('learning', 'Daily Challenge') }}</span>
+        <span v-if="!dailyChallenge.completed" class="dc-xp">+{{ dailyChallenge.xp_reward }} XP</span>
+        <span v-else class="dc-done-badge">{{ dailyChallenge.was_correct ? t('learning', 'Correct!') : t('learning', 'Tried!') }}</span>
+      </div>
+      <div class="dc-pool-tag">{{ dailyChallenge.pool_name }}</div>
+      <div class="dc-question">{{ dailyChallenge.question.text }}</div>
+      <div v-if="!dailyChallenge.completed" class="dc-answers">
+        <button v-for="answer in dailyChallenge.question.answers" :key="answer.id"
+          class="dc-answer-btn" :class="{ selected: challengeSelectedIds.includes(answer.id) }"
+          :disabled="challengeSubmitting"
+          @click="toggleChallengeAnswer(answer.id)">
+          {{ answer.text }}
+        </button>
+        <div class="dc-submit-area">
+          <NcButton type="primary" :disabled="challengeSubmitting || challengeSelectedIds.length === 0" @click="submitChallenge">
+            {{ challengeSubmitting ? t('learning', 'Submitting...') : t('learning', 'Submit') }}
+          </NcButton>
+        </div>
+      </div>
+      <div v-else class="dc-result">
+        <div class="dc-answers-review">
+          <div v-for="answer in dailyChallenge.question.answers" :key="'dcr-' + answer.id"
+            class="dc-answer-review" :class="{ correct: answer.is_correct }">
+            {{ answer.text }}
+          </div>
+        </div>
+        <div v-if="dailyChallenge.question.explanation" class="dc-explanation">
+          {{ dailyChallenge.question.explanation }}
+        </div>
+        <div v-if="challengeXpEarned > 0" class="dc-xp-earned">+{{ challengeXpEarned }} XP</div>
+      </div>
+    </div>
+
+    <!-- Daily Goal -->
+    <div class="smart-queue-section">
       <div v-if="dailyProgress" class="daily-goal-widget" :class="{ 'goal-reached': dailyProgress.goal_reached }">
         <svg class="goal-ring" viewBox="0 0 60 60" width="56" height="56">
           <circle cx="30" cy="30" r="26" fill="none" stroke="var(--color-border)" stroke-width="4" />
@@ -239,12 +285,18 @@ export default {
       questionSearchResults: [], // API results for questions
       showDeleteConfirm: false,
       poolToDelete: null,
-      // Smart Queue + Daily Goal
+      // Smart Queue + Remediation + Daily Goal
       queueCount: 0,
+      remediationCount: 0,
       dailyProgress: null,
       showGoalEdit: false,
       editGoalValue: 20,
       savingGoal: false,
+      // Daily Challenge
+      dailyChallenge: null,
+      challengeSelectedIds: [],
+      challengeSubmitting: false,
+      challengeXpEarned: 0,
     };
   },
   computed: {
@@ -286,7 +338,9 @@ export default {
   mounted() {
     this.loadPools();
     this.loadQueueCount();
+    this.loadRemediationCount();
     this.loadDailyProgress();
+    this.loadDailyChallenge();
     document.addEventListener('click', this.handleClickOutside);
     // Restore language filter from localStorage
     try {
@@ -449,6 +503,12 @@ export default {
         this.queueCount = r.data.count || 0;
       } catch (e) { /* optional */ }
     },
+    async loadRemediationCount() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/leitner/remediation/count'));
+        this.remediationCount = r.data.count || 0;
+      } catch (e) { /* optional */ }
+    },
     async loadDailyProgress() {
       try {
         const r = await axios.get(generateUrl('/apps/learning/api/v1/user/state'));
@@ -470,6 +530,42 @@ export default {
         showError(t('learning', 'Failed to update goal'));
       } finally {
         this.savingGoal = false;
+      }
+    },
+    async loadDailyChallenge() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/v1/daily-challenge'));
+        this.dailyChallenge = r.data;
+        if (r.data.was_correct && r.data.completed) {
+          this.challengeXpEarned = r.data.xp_reward;
+        }
+      } catch (e) { /* optional */ }
+    },
+    toggleChallengeAnswer(answerId) {
+      const idx = this.challengeSelectedIds.indexOf(answerId);
+      if (idx >= 0) {
+        this.challengeSelectedIds.splice(idx, 1);
+      } else {
+        this.challengeSelectedIds.push(answerId);
+      }
+    },
+    async submitChallenge() {
+      this.challengeSubmitting = true;
+      try {
+        const r = await axios.post(generateUrl('/apps/learning/api/v1/daily-challenge/answer'), {
+          answer_ids: this.challengeSelectedIds,
+        });
+        this.challengeXpEarned = r.data.xp_earned || 0;
+        // Reload challenge to get completed state with answers
+        await this.loadDailyChallenge();
+        if (r.data.correct) {
+          showSuccess(t('learning', 'Daily Challenge completed! +{n} XP', { n: r.data.xp_earned }));
+        }
+      } catch (e) {
+        const msg = e.response?.data?.error || t('learning', 'Failed to submit answer');
+        showError(msg);
+      } finally {
+        this.challengeSubmitting = false;
       }
     },
   }
@@ -640,6 +736,32 @@ export default {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
+.remediation-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border: 2px solid var(--color-warning);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-warning) 10%, var(--color-main-background));
+  color: var(--color-warning);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.remediation-btn:hover {
+  background: color-mix(in srgb, var(--color-warning) 20%, var(--color-main-background));
+  transform: translateY(-1px);
+}
+.rem-icon { font-size: 18px; }
+.rem-count {
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-warning) 20%, transparent);
+  font-size: 13px;
+}
+
 .sq-icon { font-size: 20px; }
 .sq-count {
   padding: 2px 10px;
@@ -691,4 +813,107 @@ export default {
   margin-top: 4px;
 }
 .goal-input { width: 80px; padding: 6px 8px; font-size: 14px; }
+
+/* Daily Challenge */
+.daily-challenge-card {
+  border: 2px solid var(--color-primary-element);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  background: color-mix(in srgb, var(--color-primary-element) 4%, var(--color-main-background));
+}
+.daily-challenge-card.completed {
+  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 4%, var(--color-main-background));
+}
+.dc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.dc-icon { font-size: 20px; }
+.dc-title { font-size: 16px; font-weight: 700; color: var(--color-main-text); }
+.dc-xp {
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--color-primary-element);
+  color: var(--color-primary-element-text);
+}
+.dc-done-badge {
+  margin-left: auto;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--color-success);
+  color: #fff;
+}
+.dc-pool-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-background-hover);
+  color: var(--color-text-maxcontrast);
+  margin-bottom: 8px;
+}
+.dc-question {
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--color-main-text);
+  margin-bottom: 12px;
+}
+.dc-answers { display: grid; gap: 8px; }
+.dc-answer-btn {
+  padding: 10px 14px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--border-radius-large);
+  background: var(--color-main-background);
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  transition: all 0.2s;
+  color: var(--color-main-text);
+}
+.dc-answer-btn:hover:not(:disabled) { border-color: var(--color-primary-element); }
+.dc-answer-btn.selected {
+  border-color: var(--color-primary-element);
+  background: color-mix(in srgb, var(--color-primary-element) 12%, var(--color-main-background));
+  font-weight: 600;
+}
+.dc-submit-area { text-align: center; margin-top: 8px; }
+.dc-answers-review { display: grid; gap: 6px; margin-bottom: 10px; }
+.dc-answer-review {
+  padding: 8px 12px;
+  border-radius: var(--border-radius-large);
+  font-size: 13px;
+  border: 2px solid var(--color-border);
+  color: var(--color-text-maxcontrast);
+}
+.dc-answer-review.correct {
+  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background));
+  color: var(--color-success);
+  font-weight: 600;
+}
+.dc-explanation {
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--color-warning) 10%, var(--color-main-background));
+  border-radius: var(--border-radius);
+  font-size: 13px;
+  color: var(--color-main-text);
+  margin-bottom: 8px;
+}
+.dc-xp-earned {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-success);
+}
 </style>

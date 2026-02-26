@@ -28,6 +28,8 @@ return [
         // Leitner
         ['name' => 'leitner#queue', 'url' => '/api/leitner/queue', 'verb' => 'GET'],
         ['name' => 'leitner#queueCount', 'url' => '/api/leitner/queue/count', 'verb' => 'GET'],
+        ['name' => 'leitner#remediation', 'url' => '/api/leitner/remediation', 'verb' => 'GET'],
+        ['name' => 'leitner#remediationCount', 'url' => '/api/leitner/remediation/count', 'verb' => 'GET'],
         ['name' => 'leitner#initialize', 'url' => '/api/leitner/initialize', 'verb' => 'POST'],
         ['name' => 'leitner#due', 'url' => '/api/leitner/due', 'verb' => 'GET'],
         ['name' => 'leitner#answer', 'url' => '/api/leitner/answer', 'verb' => 'POST'],
@@ -63,6 +65,14 @@ return [
         // User State (consolidated endpoint)
         ['name' => 'user_state#state', 'url' => '/api/v1/user/state', 'verb' => 'GET'],
         ['name' => 'user_state#updateSettings', 'url' => '/api/v1/user/settings', 'verb' => 'PUT'],
+        ['name' => 'user_state#dailyChallenge', 'url' => '/api/v1/daily-challenge', 'verb' => 'GET'],
+        ['name' => 'user_state#answerChallenge', 'url' => '/api/v1/daily-challenge/answer', 'verb' => 'POST'],
+
+        // AI Generation
+        ['name' => 'ai#available', 'url' => '/api/ai/available', 'verb' => 'GET'],
+        ['name' => 'ai#generate', 'url' => '/api/ai/generate', 'verb' => 'POST'],
+        ['name' => 'ai#status', 'url' => '/api/ai/status/{taskId}', 'verb' => 'GET'],
+        ['name' => 'ai#import', 'url' => '/api/ai/import/{taskId}', 'verb' => 'POST'],
 
         // Course Management
         ['name' => 'course#role', 'url' => '/api/role', 'verb' => 'GET'],
@@ -80,6 +90,7 @@ return [
         ['name' => 'course#enroll', 'url' => '/api/courses/{courseId}/enroll', 'verb' => 'POST'],
         ['name' => 'course#progress', 'url' => '/api/courses/{courseId}/progress', 'verb' => 'GET'],
         ['name' => 'course#leaderboard', 'url' => '/api/courses/{courseId}/leaderboard', 'verb' => 'GET'],
+        ['name' => 'course#atRisk', 'url' => '/api/courses/{courseId}/at-risk', 'verb' => 'GET'],
         ['name' => 'course#studentDetail', 'url' => '/api/courses/{courseId}/students/{studentId}', 'verb' => 'GET'],
         ['name' => 'course#dashboard', 'url' => '/api/instructor/dashboard', 'verb' => 'GET'],
     ]

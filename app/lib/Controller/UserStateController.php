@@ -93,6 +93,262 @@ class UserStateController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
+    public function dailyChallenge(): DataResponse {
+        $today = gmdate('Y-m-d');
+
+        // Check if already completed today
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('last_challenge_date', 'last_challenge_correct')
+           ->from('learning_user_stats')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)));
+        $result = $qb->execute();
+        $statsRow = $result->fetch();
+        $result->closeCursor();
+
+        $completed = $statsRow && ($statsRow['last_challenge_date'] ?? null) === $today;
+        $wasCorrect = $completed ? (bool)$statsRow['last_challenge_correct'] : null;
+
+        // Get total questions the user has in their Leitner system (deterministic order)
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('l.id', 'l.question_id', 'l.pool_id')
+           ->from('learning_leitner_items', 'l')
+           ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($this->userId)))
+           ->orderBy('l.question_id', 'ASC')
+           ->addOrderBy('l.id', 'ASC');
+        $result = $qb->execute();
+        $allItems = $result->fetchAll();
+        $result->closeCursor();
+
+        if (empty($allItems)) {
+            return new DataResponse([
+                'available' => false,
+                'reason' => 'no_leitner_items',
+            ]);
+        }
+
+        // Deterministic question selection: hash(userId + date) % count
+        $hash = crc32($this->userId . $today);
+        $index = abs($hash) % count($allItems);
+        $selectedItem = $allItems[$index];
+        $questionId = (int)$selectedItem['question_id'];
+        $poolId = (int)$selectedItem['pool_id'];
+
+        // Load question + answers + pool name
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('q.id', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type', 'p.name AS pool_name')
+           ->from('learning_questions', 'q')
+           ->innerJoin('q', 'learning_pools', 'p', 'q.pool_id = p.id')
+           ->where($qb->expr()->eq('q.id', $qb->createNamedParameter($questionId)));
+        $result = $qb->execute();
+        $question = $result->fetch();
+        $result->closeCursor();
+
+        if (!$question) {
+            return new DataResponse(['available' => false, 'reason' => 'question_deleted']);
+        }
+
+        // Load answers (without is_correct for uncompleted challenges)
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id', 'text', 'position', 'is_correct')
+           ->from('learning_answers')
+           ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+           ->orderBy('position', 'ASC');
+        $result = $qb->execute();
+        $answers = $result->fetchAll();
+        $result->closeCursor();
+
+        // Strip is_correct if not completed
+        $responseAnswers = array_map(function ($a) use ($completed) {
+            $ans = ['id' => (int)$a['id'], 'text' => $a['text'], 'position' => (int)$a['position']];
+            if ($completed) {
+                $ans['is_correct'] = (bool)$a['is_correct'];
+            }
+            return $ans;
+        }, $answers);
+
+        return new DataResponse([
+            'available' => true,
+            'question' => [
+                'id' => (int)$question['id'],
+                'text' => $question['text'],
+                'explanation' => $completed ? $question['explanation'] : null,
+                'difficulty' => $question['difficulty'],
+                'question_type' => $question['question_type'],
+                'answers' => $responseAnswers,
+            ],
+            'pool_name' => $question['pool_name'],
+            'completed' => $completed,
+            'was_correct' => $wasCorrect,
+            'xp_reward' => 15,
+        ]);
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function answerChallenge(array $answer_ids): DataResponse {
+        $today = gmdate('Y-m-d');
+
+        // Validate answer_ids: non-empty, bounded, no duplicates
+        if (empty($answer_ids) || count($answer_ids) > 8) {
+            return new DataResponse(['error' => 'Invalid answer payload'], 400);
+        }
+        $intIds = array_values(array_unique(array_map('intval', $answer_ids)));
+        if (count($intIds) !== count($answer_ids)) {
+            return new DataResponse(['error' => 'Duplicate answers not allowed'], 400);
+        }
+
+        // Reproduce the same question selection (deterministic order)
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('l.question_id')
+           ->from('learning_leitner_items', 'l')
+           ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($this->userId)))
+           ->orderBy('l.question_id', 'ASC')
+           ->addOrderBy('l.id', 'ASC');
+        $result = $qb->execute();
+        $allItems = $result->fetchAll();
+        $result->closeCursor();
+
+        if (empty($allItems)) {
+            return new DataResponse(['error' => 'No questions available'], 400);
+        }
+
+        $hash = crc32($this->userId . $today);
+        $index = abs($hash) % count($allItems);
+        $questionId = (int)$allItems[$index]['question_id'];
+
+        // Validate answer IDs belong to this question
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_answers')
+           ->where($qb->expr()->in('id', $qb->createNamedParameter($intIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+        $result = $qb->execute();
+        $validCount = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+
+        if ($validCount !== count($intIds)) {
+            return new DataResponse(['error' => 'Invalid answers'], 400);
+        }
+
+        // Check correctness
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+           ->from('learning_answers')
+           ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+           ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
+           ->orderBy('id', 'ASC');
+        $result = $qb->execute();
+        $correctRows = $result->fetchAll();
+        $result->closeCursor();
+
+        $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
+        sort($correctIds);
+        sort($intIds);
+        $correct = ($intIds === $correctIds);
+
+        // Atomic claim: UPDATE only if not already completed today
+        // This prevents race conditions where parallel requests both pass the check
+        $qb = $this->db->getQueryBuilder();
+        $qb->update('learning_user_stats')
+           ->set('last_challenge_date', $qb->createNamedParameter($today))
+           ->set('last_challenge_correct', $qb->createNamedParameter($correct, \PDO::PARAM_BOOL))
+           ->set('updated_at', $qb->createNamedParameter(time()))
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)))
+           ->andWhere($qb->expr()->orX(
+               $qb->expr()->isNull('last_challenge_date'),
+               $qb->expr()->neq('last_challenge_date', $qb->createNamedParameter($today))
+           ));
+        $claimed = $qb->executeStatement() > 0;
+
+        if (!$claimed) {
+            // Either already completed today (race) or no stats row
+            // Check if stats row exists
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('last_challenge_date')
+               ->from('learning_user_stats')
+               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)));
+            $result = $qb->execute();
+            $statsRow = $result->fetch();
+            $result->closeCursor();
+
+            if ($statsRow) {
+                // Row exists but claim failed → already completed today
+                return new DataResponse(['error' => 'Already completed today'], 400);
+            }
+
+            // No stats row yet — create one with atomic INSERT
+            try {
+                $qb = $this->db->getQueryBuilder();
+                $qb->insert('learning_user_stats')
+                   ->values([
+                       'user_id' => $qb->createNamedParameter($this->userId),
+                       'total_xp' => $qb->createNamedParameter(0),
+                       'current_level' => $qb->createNamedParameter(1),
+                       'current_streak' => $qb->createNamedParameter(0),
+                       'longest_streak' => $qb->createNamedParameter(0),
+                       'total_sessions' => $qb->createNamedParameter(0),
+                       'total_mastered' => $qb->createNamedParameter(0),
+                       'last_challenge_date' => $qb->createNamedParameter($today),
+                       'last_challenge_correct' => $qb->createNamedParameter($correct, \PDO::PARAM_BOOL),
+                       'updated_at' => $qb->createNamedParameter(time()),
+                   ]);
+                $qb->execute();
+            } catch (\OCP\DB\Exception $e) {
+                if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+                    // Race: row was just created, retry atomic claim
+                    $qb = $this->db->getQueryBuilder();
+                    $qb->update('learning_user_stats')
+                       ->set('last_challenge_date', $qb->createNamedParameter($today))
+                       ->set('last_challenge_correct', $qb->createNamedParameter($correct, \PDO::PARAM_BOOL))
+                       ->set('updated_at', $qb->createNamedParameter(time()))
+                       ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)))
+                       ->andWhere($qb->expr()->orX(
+                           $qb->expr()->isNull('last_challenge_date'),
+                           $qb->expr()->neq('last_challenge_date', $qb->createNamedParameter($today))
+                       ));
+                    $retried = $qb->executeStatement() > 0;
+                    if (!$retried) {
+                        return new DataResponse(['error' => 'Already completed today'], 400);
+                    }
+                } else {
+                    throw $e;
+                }
+            }
+        }
+
+        // Award XP if correct (only reached after successful claim)
+        $xpEarned = 0;
+        if ($correct) {
+            $xpEarned = 15;
+            $this->xpService->incrementLeitnerXp($this->userId, $xpEarned);
+        }
+
+        // Invalidate cache
+        $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $this->userId);
+
+        // Get explanation
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('explanation')
+           ->from('learning_questions')
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)));
+        $result = $qb->execute();
+        $qRow = $result->fetch();
+        $result->closeCursor();
+
+        return new DataResponse([
+            'correct' => $correct,
+            'xp_earned' => $xpEarned,
+            'explanation' => $qRow ? $qRow['explanation'] : null,
+            'correct_answer_ids' => $correctIds,
+        ]);
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
     public function state(): DataResponse {
         $cache = $this->cacheFactory->createDistributed('learning');
         $cacheKey = 'user_state_' . $this->userId;

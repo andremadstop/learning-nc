@@ -3,6 +3,7 @@
     <div class="question-list-header">
       <h3>{{ poolName }}</h3>
       <div v-if="!readonly" class="header-actions">
+        <NcButton v-if="aiAvailable" @click="showAIGenerator = true" type="secondary">{{ t('learning', 'Generate with AI') }}</NcButton>
         <NcButton @click="showImportDialog = true" type="secondary">{{ t('learning', 'Import') }}</NcButton>
         <NcButton @click="showCreateDialog" type="primary">{{ t('learning', '+ Add Question') }}</NcButton>
       </div>
@@ -64,6 +65,7 @@
 
     <QuestionForm v-if="showDialog" :question="editingQuestion" @save="saveQuestion" @close="closeDialog" />
     <ImportDialog v-if="showImportDialog" :poolId="poolId" @close="showImportDialog = false" @imported="onImported" />
+    <AIGenerator v-if="showAIGenerator" :poolId="poolId" @close="showAIGenerator = false" @imported="onImported" />
   </div>
 </template>
 
@@ -80,23 +82,31 @@ import { generateUrl } from '@nextcloud/router';
 import { showSuccess, showError } from '@nextcloud/dialogs';
 import QuestionForm from './QuestionForm.vue';
 import ImportDialog from './ImportDialog.vue';
+import AIGenerator from './AIGenerator.vue';
 
 export default {
   name: 'QuestionList',
-  components: { NcButton, NcDialog, NcNoteCard, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, QuestionForm, ImportDialog },
+  components: { NcButton, NcDialog, NcNoteCard, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, QuestionForm, ImportDialog, AIGenerator },
   props: {
     poolId: { type: Number, required: true },
     poolName: { type: String, required: true },
     readonly: { type: Boolean, default: false }
   },
   data() {
-    return { questions: [], loading: false, loadError: null, showDialog: false, showImportDialog: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null };
+    return { questions: [], loading: false, loadError: null, showDialog: false, showImportDialog: false, showAIGenerator: false, aiAvailable: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null };
   },
   watch: {
     poolId() { this.currentPage = 0; this.loadQuestions(); },
   },
-  mounted() { this.loadQuestions(); },
+  mounted() { this.loadQuestions(); this.checkAIAvailable(); },
   methods: {
+    async checkAIAvailable() {
+      if (this.readonly) return;
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/ai/available'));
+        this.aiAvailable = r.data.available === true;
+      } catch (e) { /* optional */ }
+    },
     questionImageUrl(questionId) {
       return generateUrl('/apps/learning/api/questions/' + questionId + '/image');
     },

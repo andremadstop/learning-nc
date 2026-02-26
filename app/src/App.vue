@@ -28,6 +28,7 @@
     <template v-if="mainView === 'pools'">
       <SmartQueue
         v-if="currentView === 'smartQueue'"
+        :mode="smartQueueMode"
         @back="backToPools"
       />
 
@@ -35,6 +36,7 @@
         v-else-if="currentView === 'pools'"
         @selectPool="selectPool"
         @openSmartQueue="openSmartQueue"
+        @openRemediation="openRemediation"
       />
 
       <div v-else-if="currentView === 'questions'" class="pool-view">
@@ -212,6 +214,7 @@ export default {
 
       // Pools view state
       currentView: 'pools',
+      smartQueueMode: 'queue',
       selectedPool: null,
       mode: 'train',
       questionCount: 0,
@@ -285,6 +288,11 @@ export default {
       this.error = null;
     },
     openSmartQueue() {
+      this.smartQueueMode = 'queue';
+      this.currentView = 'smartQueue';
+    },
+    openRemediation() {
+      this.smartQueueMode = 'remediation';
       this.currentView = 'smartQueue';
     },
     setMode(newMode) {

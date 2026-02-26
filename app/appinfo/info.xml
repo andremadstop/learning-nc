@@ -10,7 +10,11 @@ Create question pools, share them with your team, and study efficiently using sc
 
 ## Features
 
+- **AI Question Generator** — Paste text, let AI generate multiple-choice questions with preview and editing before import
 - **Smart Queue** — One-click "Jetzt Lernen" button reviews all due cards across every pool, prioritized by urgency
+- **Trouble Spots** — Focused practice on your hardest questions (3+ wrong, &lt;30% accuracy)
+- **Daily Challenge** — One question per day with bonus XP reward for correct answers
+- **At-Risk Early Warning** — Instructors see which students are falling behind with risk scores and reasons
 - **Multiple Choice Quizzes** — Create pools with questions, multiple answers, and multi-select support
 - **Leitner Spaced Repetition** — 5-box system with automatic scheduling (1d, 3d, 7d, 14d intervals)
 - **Training Mode** — Quick quiz sessions with immediate feedback and score tracking
@@ -44,7 +48,7 @@ Create question pools, share them with your team, and study efficiently using sc
 - PostgreSQL 13+ or MySQL 8+
     ]]></description>
 
-    <version>1.8.0</version>
+    <version>1.9.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>

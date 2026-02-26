@@ -889,6 +889,164 @@ class CourseService {
     }
 
     /**
+     * Get at-risk students for a course (instructor only).
+     * Uses rule-based signals: inactivity, low accuracy, box-1 stall, lost streak, few sessions.
+     */
+    public function getAtRiskStudents(int $courseId, string $userId): array {
+        $course = $this->courseMapper->findById($courseId);
+
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+
+        $members = $this->courseMemberMapper->findByCourse($courseId);
+        $studentMembers = array_filter($members, fn($m) => $m->getRole() === 'student');
+        $studentIds = array_map(fn($m) => $m->getUserId(), $studentMembers);
+
+        if (empty($studentIds)) {
+            return ['at_risk' => []];
+        }
+
+        $coursePools = $this->coursePoolMapper->findByCourse($courseId);
+        $poolIds = array_map(fn($cp) => $cp->getPoolId(), $coursePools);
+
+        // Batch data
+        $userStats = $this->getBatchUserStats($studentIds);
+        $sessionStats = !empty($poolIds) ? $this->getBatchSessionStats($studentIds, $poolIds) : [];
+
+        // Batch: box distribution per student across course pools
+        $boxData = [];
+        if (!empty($poolIds)) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('user_id', 'box', $qb->createFunction('COUNT(*) as cnt'))
+                ->from('learning_leitner_items')
+                ->where($qb->expr()->in('user_id', $qb->createNamedParameter($studentIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
+                ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->groupBy('user_id', 'box');
+            $result = $qb->executeQuery();
+            while ($row = $result->fetch()) {
+                $boxData[$row['user_id']][(int)$row['box']] = (int)$row['cnt'];
+            }
+            $result->closeCursor();
+        }
+
+        // Batch: session count last 14 days per student
+        $recentSessionCounts = [];
+        $fourteenDaysAgo = time() - (14 * 86400);
+        if (!empty($poolIds)) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('user_id', $qb->createFunction('COUNT(*) as cnt'))
+                ->from('learning_sessions')
+                ->where($qb->expr()->in('user_id', $qb->createNamedParameter($studentIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
+                ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->andWhere($qb->expr()->isNotNull('completed_at'))
+                ->andWhere($qb->expr()->gte('completed_at', $qb->createNamedParameter($fourteenDaysAgo)))
+                ->groupBy('user_id');
+            $result = $qb->executeQuery();
+            while ($row = $result->fetch()) {
+                $recentSessionCounts[$row['user_id']] = (int)$row['cnt'];
+            }
+            $result->closeCursor();
+        }
+
+        $atRisk = [];
+        $today = new \DateTime('today', new \DateTimeZone('UTC'));
+
+        foreach ($studentIds as $sid) {
+            $stats = $userStats[$sid] ?? null;
+            $reasons = [];
+            $score = 0;
+
+            // Signal 1: Inactive >7 days (HIGH)
+            $lastActive = $stats ? ($stats['last_activity_date'] ?? null) : null;
+            $daysSinceActive = null;
+            if ($lastActive) {
+                try {
+                    $lastDate = new \DateTime($lastActive, new \DateTimeZone('UTC'));
+                    $daysSinceActive = (int)$today->diff($lastDate)->days;
+                } catch (\Exception $e) {
+                    $daysSinceActive = null;
+                }
+            }
+            if ($lastActive === null || ($daysSinceActive !== null && $daysSinceActive > 7)) {
+                if ($daysSinceActive !== null) {
+                    $reasons[] = "Inaktiv seit {$daysSinceActive} Tagen";
+                } else {
+                    $reasons[] = "Noch nie aktiv gewesen";
+                }
+                $score += 2;
+            }
+
+            // Signal 2: Low accuracy <50% (HIGH)
+            $totalQ = 0;
+            $totalCorrect = 0;
+            if (isset($sessionStats[$sid])) {
+                foreach ($sessionStats[$sid] as $poolStat) {
+                    $totalQ += $poolStat['total_q'];
+                    $totalCorrect += $poolStat['correct'];
+                }
+            }
+            $accuracy = $totalQ > 0 ? round($totalCorrect / $totalQ * 100) : null;
+            if ($accuracy !== null && $accuracy < 50) {
+                $reasons[] = "Accuracy {$accuracy}%";
+                $score += 2;
+            }
+
+            // Signal 3: Box-1 stall >60% (MEDIUM)
+            $boxes = $boxData[$sid] ?? [];
+            $totalCards = array_sum($boxes);
+            $box1Count = $boxes[1] ?? 0;
+            if ($totalCards > 0 && ($box1Count / $totalCards) > 0.6) {
+                $pct = round($box1Count / $totalCards * 100);
+                $reasons[] = "{$pct}% der Karten in Box 1";
+                $score += 1;
+            }
+
+            // Signal 4: Lost streak (was >7, now 0) (MEDIUM)
+            if ($stats && $stats['current_streak'] === 0) {
+                // Check longest_streak from DB for this signal
+                $qb = $this->db->getQueryBuilder();
+                $qb->select('longest_streak')
+                    ->from('learning_user_stats')
+                    ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($sid)));
+                $result = $qb->executeQuery();
+                $row = $result->fetch();
+                $result->closeCursor();
+                $longestStreak = $row ? (int)$row['longest_streak'] : 0;
+                if ($longestStreak > 7) {
+                    $reasons[] = "Streak verloren (war {$longestStreak})";
+                    $score += 1;
+                }
+            }
+
+            // Signal 5: Few sessions last 14 days (LOW)
+            $recentSessions = $recentSessionCounts[$sid] ?? 0;
+            if ($recentSessions < 3) {
+                $reasons[] = "Nur {$recentSessions} Sessions in 14 Tagen";
+                $score += 1;
+            }
+
+            if ($score >= 3) {
+                $riskLevel = $score >= 5 ? 'high' : ($score >= 3 ? 'medium' : 'low');
+                $atRisk[] = [
+                    'user_id' => $sid,
+                    'display_name' => $this->getDisplayName($sid),
+                    'risk_level' => $riskLevel,
+                    'risk_score' => $score,
+                    'risk_reasons' => $reasons,
+                    'last_active' => $lastActive,
+                    'accuracy' => $accuracy,
+                ];
+            }
+        }
+
+        // Sort by risk score descending
+        usort($atRisk, fn($a, $b) => $b['risk_score'] - $a['risk_score']);
+
+        return ['at_risk' => $atRisk];
+    }
+
+    /**
      * Get detailed student view for instructors.
      * Returns XP, badges, streak, Leitner boxes per pool, recent sessions.
      */

@@ -239,6 +239,23 @@ class CourseController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 30, period: 60)]
+    public function atRisk(int $courseId): JSONResponse {
+        try {
+            return new JSONResponse($this->courseService->getAtRiskStudents($courseId, $this->userId));
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new JSONResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            $this->logger->error('atRisk error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new JSONResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
     public function studentDetail(int $courseId, string $studentId): JSONResponse {
         try {
             return new JSONResponse($this->courseService->getStudentDetail($courseId, $studentId, $this->userId));

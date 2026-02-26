@@ -390,6 +390,76 @@ class LeitnerService {
         return $response;
     }
 
+    public function getRemediationQueue(string $userId, int $limit = 20): array {
+        $limit = max(1, min($limit, 100));
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type',
+                     'p.name AS pool_name')
+           ->from('learning_leitner_items', 'l')
+           ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
+           ->innerJoin('l', 'learning_pools', 'p', 'l.pool_id = p.id')
+           ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->gte('l.incorrect_count', $qb->createNamedParameter(3)))
+           ->andWhere($qb->expr()->lte('l.box', $qb->createNamedParameter(2)))
+           ->orderBy('l.incorrect_count', 'DESC')
+           ->addOrderBy('l.last_reviewed', 'ASC')
+           ->setMaxResults($limit);
+
+        $result = $qb->execute();
+        $items = $result->fetchAll();
+        $result->closeCursor();
+
+        // Filter by <30% accuracy in PHP (avoids platform-specific float division in SQL)
+        $items = array_values(array_filter($items, function ($item) {
+            $total = (int)$item['correct_count'] + (int)$item['incorrect_count'];
+            if ($total === 0) return false;
+            return ((int)$item['correct_count'] / $total) < 0.3;
+        }));
+
+        if (!empty($items)) {
+            $questionIds = array_unique(array_column($items, 'question_id'));
+            $aqb = $this->db->getQueryBuilder();
+            $aqb->select('id', 'question_id', 'text', 'position')
+               ->from('learning_answers')
+               ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+               ->orderBy('position', 'ASC');
+            $aResult = $aqb->execute();
+            $allAnswers = $aResult->fetchAll();
+            $aResult->closeCursor();
+
+            $answersByQuestion = [];
+            foreach ($allAnswers as $answer) {
+                $answersByQuestion[$answer['question_id']][] = $answer;
+            }
+
+            foreach ($items as &$item) {
+                $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
+            }
+        }
+
+        return $items;
+    }
+
+    public function getRemediationCount(string $userId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('correct_count', 'incorrect_count')
+           ->from('learning_leitner_items')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->gte('incorrect_count', $qb->createNamedParameter(3)))
+           ->andWhere($qb->expr()->lte('box', $qb->createNamedParameter(2)));
+        $result = $qb->execute();
+        $count = 0;
+        while ($row = $result->fetch()) {
+            $total = (int)$row['correct_count'] + (int)$row['incorrect_count'];
+            if ($total > 0 && ((int)$row['correct_count'] / $total) < 0.3) {
+                $count++;
+            }
+        }
+        $result->closeCursor();
+        return $count;
+    }
+
     public function initializePool(int $poolId, string $userId): int {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found or no access');

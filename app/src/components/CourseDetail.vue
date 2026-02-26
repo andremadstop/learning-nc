@@ -173,9 +173,40 @@
 			<div v-if="currentTab === 'progress' && isInstructor" class="progress-section">
 				<div class="section-header">
 					<h4>{{ t('learning', 'Student Progress') }}</h4>
-					<NcButton type="tertiary" @click="fetchProgress">
+					<NcButton type="tertiary" @click="fetchProgress(); fetchAtRisk()">
 						{{ t('learning', 'Refresh') }}
 					</NcButton>
+				</div>
+
+				<!-- At-Risk Section -->
+				<div v-if="atRiskStudents.length > 0" class="at-risk-section" :class="{ collapsed: atRiskCollapsed }">
+					<div class="at-risk-header" @click="atRiskCollapsed = !atRiskCollapsed">
+						<h4 class="at-risk-title">
+							{{ t('learning', 'At-Risk Students ({n})', { n: atRiskStudents.length }) }}
+						</h4>
+						<button class="at-risk-toggle">{{ atRiskCollapsed ? '\u25BC' : '\u25B2' }}</button>
+					</div>
+					<div v-if="!atRiskCollapsed" class="at-risk-cards">
+						<div v-for="student in atRiskStudents" :key="'risk-' + student.user_id"
+							class="at-risk-card" :class="'risk-' + student.risk_level"
+							@click="$emit('selectStudent', { userId: student.user_id, courseId: courseId })">
+							<div class="at-risk-card-header">
+								<span class="at-risk-name">{{ student.display_name }}</span>
+								<span class="risk-badge" :class="student.risk_level">
+									{{ student.risk_level === 'high' ? t('learning', 'High Risk') : t('learning', 'Medium Risk') }}
+								</span>
+							</div>
+							<div class="at-risk-reasons">
+								<span v-for="(reason, idx) in student.risk_reasons" :key="idx" class="risk-reason-tag">
+									{{ reason }}
+								</span>
+							</div>
+							<div class="at-risk-meta">
+								<span v-if="student.accuracy !== null">{{ t('learning', 'Accuracy: {n}%', { n: student.accuracy }) }}</span>
+								<span v-if="student.last_active">{{ t('learning', 'Last active: {date}', { date: formatLastActive(student.last_active) }) }}</span>
+							</div>
+						</div>
+					</div>
 				</div>
 
 				<div v-if="progressLoading" class="loading-container">
@@ -539,6 +570,10 @@ export default {
 			myRank: null,
 			leaderboardSortKey: null,
 			leaderboardSortAsc: false,
+
+			// At-Risk
+			atRiskStudents: [],
+			atRiskCollapsed: false,
 		}
 	},
 
@@ -623,6 +658,7 @@ export default {
 		currentTab(tab) {
 			if (tab === 'progress' && this.isInstructor && this.progressData.length === 0) {
 				this.fetchProgress()
+				this.fetchAtRisk()
 			}
 			if (tab === 'leaderboard' && this.leaderboardData.length === 0) {
 				this.fetchLeaderboard()
@@ -946,6 +982,17 @@ export default {
 			} else {
 				this.leaderboardSortKey = key
 				this.leaderboardSortAsc = key === 'display_name'
+			}
+		},
+
+		async fetchAtRisk() {
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{id}/at-risk', { id: this.courseId })
+				const response = await axios.get(url)
+				this.atRiskStudents = response.data.at_risk || []
+			} catch (err) {
+				// At-risk is supplementary, don't block the view
+				console.error('Failed to fetch at-risk students:', err)
 			}
 		},
 
@@ -1683,9 +1730,113 @@ td.mastery-low {
 	100% { transform: translateY(-1px) scale(1.1); }
 }
 
+/* At-Risk Section */
+.at-risk-section {
+	margin-bottom: 24px;
+	border: 2px solid var(--color-error);
+	border-radius: 12px;
+	padding: 16px 20px;
+	background: color-mix(in srgb, var(--color-error) 5%, var(--color-main-background));
+}
+.at-risk-section.collapsed {
+	padding-bottom: 16px;
+}
+.at-risk-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	cursor: pointer;
+}
+.at-risk-title {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 700;
+	color: var(--color-error);
+}
+.at-risk-toggle {
+	background: none;
+	border: none;
+	font-size: 14px;
+	color: var(--color-text-maxcontrast);
+	cursor: pointer;
+	padding: 4px 8px;
+}
+.at-risk-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 12px;
+	margin-top: 12px;
+}
+.at-risk-card {
+	border: 1px solid var(--color-border);
+	border-radius: 10px;
+	padding: 14px 16px;
+	background: var(--color-main-background);
+	cursor: pointer;
+	transition: box-shadow 0.2s, transform 0.15s;
+}
+.at-risk-card:hover {
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	transform: translateY(-1px);
+}
+.at-risk-card.risk-high {
+	border-left: 4px solid var(--color-error);
+}
+.at-risk-card.risk-medium {
+	border-left: 4px solid var(--color-warning);
+}
+.at-risk-card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+}
+.at-risk-name {
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--color-main-text);
+}
+.risk-badge {
+	padding: 2px 10px;
+	border-radius: 12px;
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+}
+.risk-badge.high {
+	background: color-mix(in srgb, var(--color-error) 15%, transparent);
+	color: var(--color-error);
+	border: 1px solid var(--color-error);
+}
+.risk-badge.medium {
+	background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+	color: var(--color-warning);
+	border: 1px solid var(--color-warning);
+}
+.at-risk-reasons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+.risk-reason-tag {
+	padding: 2px 8px;
+	border-radius: 6px;
+	font-size: 11px;
+	background: var(--color-background-hover);
+	color: var(--color-text-maxcontrast);
+}
+.at-risk-meta {
+	display: flex;
+	gap: 12px;
+	font-size: 11px;
+	color: var(--color-text-maxcontrast);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.pool-item:hover,
 	.member-item:hover { transform: none; }
 	.streak-flame { animation: none; }
+	.at-risk-card:hover { transform: none; }
 }
 </style>

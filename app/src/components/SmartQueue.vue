@@ -5,14 +5,14 @@
     </div>
 
     <div v-else-if="!started && items.length === 0" class="sq-empty">
-      <h3>{{ t('learning', 'All caught up!') }}</h3>
-      <p>{{ t('learning', 'No questions due for review right now.') }}</p>
+      <h3>{{ mode === 'remediation' ? t('learning', 'No trouble spots!') : t('learning', 'All caught up!') }}</h3>
+      <p>{{ mode === 'remediation' ? t('learning', 'You have no problem questions right now.') : t('learning', 'No questions due for review right now.') }}</p>
       <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Pools') }}</NcButton>
     </div>
 
     <div v-else-if="!started" class="sq-ready">
-      <h3>{{ t('learning', 'Smart Queue') }}</h3>
-      <p>{{ t('learning', '{n} questions due across all pools', { n: items.length }) }}</p>
+      <h3>{{ mode === 'remediation' ? t('learning', 'Trouble Spots') : t('learning', 'Smart Queue') }}</h3>
+      <p>{{ mode === 'remediation' ? t('learning', '{n} problem questions to practice', { n: items.length }) : t('learning', '{n} questions due across all pools', { n: items.length }) }}</p>
       <NcButton type="primary" @click="started = true">{{ t('learning', 'Start Review') }}</NcButton>
       <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
     </div>
@@ -112,6 +112,9 @@ import LevelUpOverlay from './LevelUpOverlay.vue';
 export default {
   name: 'SmartQueue',
   components: { NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay },
+  props: {
+    mode: { type: String, default: 'queue', validator: v => ['queue', 'remediation'].includes(v) },
+  },
   data() {
     return {
       loading: false,
@@ -147,7 +150,8 @@ export default {
     async loadQueue() {
       this.loading = true;
       try {
-        const r = await axios.get(generateUrl('/apps/learning/api/leitner/queue'), { params: { limit: 30 } });
+        const endpoint = this.mode === 'remediation' ? '/apps/learning/api/leitner/remediation' : '/apps/learning/api/leitner/queue';
+        const r = await axios.get(generateUrl(endpoint), { params: { limit: 30 } });
         this.items = r.data;
         if (this.items.length > 0) {
           this.started = true;
