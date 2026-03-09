@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0] - 2026-03-09
+
+### Fixed
+- **Course Pool Access**: Course members and instructors can now access pools assigned to their courses. Previously only pool owners and explicitly shared users had access, causing "Pool not found" errors for enrolled students.
+
+### Changed
+- **PoolService**: Extracted `findPoolRow()` helper, added `hasCoursePoolAccess()` fallback in `find()` method
+- **5 Services updated**: LeitnerService, PoolService, QuestionService, TrainingService, TranslationService — all `hasPoolAccess()` methods now check course membership as a third access path
+
+### Technical
+- 5 changed files, 165 insertions, 12 deletions
+- No database migration needed — uses existing `learning_course_pools` and `learning_course_members` tables
+- Course pool access grants read-only permission (`permission: 'read'`)
+
 ## [2.1.0] - 2026-02-26
 
 ### Added

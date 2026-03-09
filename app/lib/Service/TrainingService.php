@@ -52,8 +52,35 @@ class TrainingService {
             return true;
         } catch (DoesNotExistException $e) {
             $share = $this->shareMapper->findByPoolAndUser($poolId, $userId);
-            return $share !== null;
+            if ($share !== null) {
+                return true;
+            }
+            return $this->hasCoursePoolAccess($poolId, $userId);
         }
+    }
+
+    private function hasCoursePoolAccess(int $poolId, string $userId): bool {
+        $qb = $this->db->getQueryBuilder();
+        $expr = $qb->expr();
+        $qb->select('cp.id')
+           ->from('learning_course_pools', 'cp')
+           ->innerJoin('cp', 'learning_courses', 'c', $expr->eq('cp.course_id', 'c.id'))
+           ->leftJoin('c', 'learning_course_members', 'cm', $expr->andX(
+               $expr->eq('cm.course_id', 'c.id'),
+               $expr->eq('cm.user_id', $qb->createNamedParameter($userId))
+           ))
+           ->where($expr->eq('cp.pool_id', $qb->createNamedParameter($poolId)))
+           ->andWhere($expr->orX(
+               $expr->eq('c.instructor_id', $qb->createNamedParameter($userId)),
+               $expr->isNotNull('cm.id')
+           ))
+           ->setMaxResults(1);
+
+        $result = $qb->execute();
+        $row = $result->fetch();
+        $result->closeCursor();
+
+        return $row !== false;
     }
 
     /**

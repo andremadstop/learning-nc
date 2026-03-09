@@ -53,6 +53,39 @@ class PoolService {
         }, $rows);
     }
 
+    private function findPoolRow(int $id): ?array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from('learning_pools')
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($id)));
+        $result = $qb->execute();
+        $row = $result->fetch();
+        $result->closeCursor();
+        return $row ?: null;
+    }
+
+    private function hasCoursePoolAccess(int $poolId, string $userId): bool {
+        $qb = $this->db->getQueryBuilder();
+        $expr = $qb->expr();
+        $qb->select('cp.id')
+           ->from('learning_course_pools', 'cp')
+           ->innerJoin('cp', 'learning_courses', 'c', $expr->eq('cp.course_id', 'c.id'))
+           ->leftJoin('c', 'learning_course_members', 'cm', $expr->andX(
+               $expr->eq('cm.course_id', 'c.id'),
+               $expr->eq('cm.user_id', $qb->createNamedParameter($userId))
+           ))
+           ->where($expr->eq('cp.pool_id', $qb->createNamedParameter($poolId)))
+           ->andWhere($expr->orX(
+               $expr->eq('c.instructor_id', $qb->createNamedParameter($userId)),
+               $expr->isNotNull('cm.id')
+           ))
+           ->setMaxResults(1);
+        $result = $qb->execute();
+        $row = $result->fetch();
+        $result->closeCursor();
+        return $row !== false;
+    }
+
     public function find(int $id, string $userId): Pool {
         try {
             return $this->mapper->find($id, $userId);
@@ -70,13 +103,7 @@ class PoolService {
             // Check if shared
             $share = $this->shareMapper->findByPoolAndUser($id, $userId);
             if ($share !== null) {
-                $qb = $this->db->getQueryBuilder();
-                $qb->select('*')
-                   ->from('learning_pools')
-                   ->where($qb->expr()->eq('id', $qb->createNamedParameter($id)));
-                $result = $qb->execute();
-                $row = $result->fetch();
-                $result->closeCursor();
+                $row = $this->findPoolRow($id);
                 if ($row) {
                     return [
                         'id' => (int)$row['id'],
@@ -85,11 +112,29 @@ class PoolService {
                         'description' => $row['description'],
                         'created_at' => $row['created_at'],
                         'updated_at' => $row['updated_at'],
-                                'permission' => $share->getPermission(),
+                        'permission' => $share->getPermission(),
                         'is_shared' => true,
                     ];
                 }
             }
+
+            // Course members and course instructors can read assigned pools
+            if ($this->hasCoursePoolAccess($id, $userId)) {
+                $row = $this->findPoolRow($id);
+                if ($row) {
+                    return [
+                        'id' => (int)$row['id'],
+                        'user_id' => $row['user_id'],
+                        'name' => $row['name'],
+                        'description' => $row['description'],
+                        'created_at' => $row['created_at'],
+                        'updated_at' => $row['updated_at'],
+                        'permission' => 'read',
+                        'is_shared' => true,
+                    ];
+                }
+            }
+
             throw new NotFoundException('Pool not found');
         }
     }
