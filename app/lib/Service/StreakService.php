@@ -3,12 +3,19 @@ declare(strict_types=1);
 namespace OCA\Learning\Service;
 
 use OCP\IDBConnection;
+use OCP\IConfig;
 
 class StreakService {
     private IDBConnection $db;
+    private IConfig $config;
 
-    public function __construct(IDBConnection $db) {
+    public function __construct(IDBConnection $db, IConfig $config) {
         $this->db = $db;
+        $this->config = $config;
+    }
+
+    private function isGamificationEnabled(): bool {
+        return $this->config->getAppValue('learning', 'gamification_enabled', 'yes') === 'yes';
     }
 
     /**
@@ -17,6 +24,15 @@ class StreakService {
      * @return array{current_streak: int, longest_streak: int, last_activity_date: ?string, is_active_today: bool}
      */
     public function getStreak(string $userId): array {
+        if (!$this->isGamificationEnabled()) {
+            return [
+                'current_streak' => 0,
+                'longest_streak' => 0,
+                'last_activity_date' => null,
+                'is_active_today' => false,
+            ];
+        }
+
         // Get distinct dates with completed sessions (UTC)
         $qb = $this->db->getQueryBuilder();
         // Portable: multiply by 1.0 ensures no int truncation; works on PG, MySQL, SQLite

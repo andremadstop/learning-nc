@@ -24,7 +24,7 @@
       </div>
       <div v-if="currentItem" class="review-card">
         <div class="pool-badge">{{ currentItem.pool_name }}</div>
-        <div class="review-box-indicator">Box {{ currentItem.box }}</div>
+        <div class="review-box-indicator">{{ t('learning', 'Box {n}', { n: currentItem.box }) }}</div>
         <NcNoteCard v-if="currentIndex === 0 && !hintDismissed('box-movement')" type="info" class="onboarding-hint">
           {{ t('learning', 'Correct → next box (less often). Wrong → back to Box 1.') }}
           <NcButton type="tertiary" @click="dismissHint('box-movement')">{{ t('learning', 'Got it') }}</NcButton>

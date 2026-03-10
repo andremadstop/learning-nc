@@ -466,6 +466,30 @@
     "Wrong" : "Falsch",
     "Next →" : "Weiter →",
     "Question {n}" : "Frage {n}",
-    "Confirm Selection" : "Auswahl bestätigen"
+    "Confirm Selection" : "Auswahl bestätigen",
+    "Admin Settings" : "Admin-Einstellungen",
+    "Personal Settings" : "Persönliche Einstellungen",
+    "These settings apply to all users of Learning." : "Diese Einstellungen gelten für alle Learning-Nutzer.",
+    "Daily Challenge enabled" : "Tägliche Herausforderung aktiviert",
+    "Default language" : "Standardsprache",
+    "Max import file size (MB)" : "Max. Import-Dateigröße (MB)",
+    "Gamification enabled" : "Gamification aktiviert",
+    "Notifications enabled" : "Benachrichtigungen aktiviert",
+    "UI Language" : "Oberflächensprache",
+    "System default" : "Systemstandard",
+    "German (Deutsch)" : "Deutsch",
+    "English" : "Englisch",
+    "Settings saved" : "Einstellungen gespeichert",
+    "Failed to save settings" : "Einstellungen konnten nicht gespeichert werden",
+    "Failed to load settings" : "Einstellungen konnten nicht geladen werden",
+
+    "in {pool}" : "in {pool}",
+    "Box {n}" : "Box {n}",
+    "Overview" : "Übersicht",
+    "Your Courses" : "Deine Kurse",
+    "Trouble Spots" : "Problemkarten",
+    "Easy" : "Leicht",
+    "Medium" : "Mittel",
+    "Hard" : "Schwer"
 },"pluralForm" :"nplurals=2; plural=(n != 1);"
 }

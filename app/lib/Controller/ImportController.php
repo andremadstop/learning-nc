@@ -13,6 +13,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IRequest;
 
@@ -21,6 +22,7 @@ class ImportController extends Controller {
     private AnswerMapper $answerMapper;
     private PoolMapper $poolMapper;
     private PoolShareMapper $shareMapper;
+    private IConfig $config;
     private IDBConnection $db;
     private ?string $userId;
 
@@ -31,6 +33,7 @@ class ImportController extends Controller {
         AnswerMapper $answerMapper,
         PoolMapper $poolMapper,
         PoolShareMapper $shareMapper,
+        IConfig $config,
         IDBConnection $db,
         ?string $userId
     ) {
@@ -39,8 +42,15 @@ class ImportController extends Controller {
         $this->answerMapper = $answerMapper;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
+        $this->config = $config;
         $this->db = $db;
         $this->userId = $userId;
+    }
+
+    private function getMaxImportBytes(): int {
+        $maxMb = (int)$this->config->getAppValue('learning', 'max_import_size_mb', '2');
+        $maxMb = max(1, min(10, $maxMb));
+        return $maxMb * 1024 * 1024;
     }
 
     private function canEditPool(int $poolId): bool {
@@ -148,9 +158,9 @@ class ImportController extends Controller {
 
         $csvData = $this->normalizeText($csvData);
 
-        // S5: Enforce max body size (2 MB) before processing
-        if (strlen($csvData) > 2 * 1024 * 1024) {
-            return new DataResponse(['error' => 'CSV data too large (max 2 MB)'], Http::STATUS_BAD_REQUEST);
+        $maxBytes = $this->getMaxImportBytes();
+        if (strlen($csvData) > $maxBytes) {
+            return new DataResponse(['error' => 'CSV data too large (max ' . (int)($maxBytes / 1024 / 1024) . ' MB)'], Http::STATUS_BAD_REQUEST);
         }
 
         $lines = array_filter(array_map('trim', explode("\n", $csvData)), function($l) { return $l !== ''; });
@@ -341,9 +351,9 @@ class ImportController extends Controller {
 
         $jsonData = $this->normalizeText($jsonData);
 
-        // S5: Enforce max body size (2 MB) before processing
-        if (strlen($jsonData) > 2 * 1024 * 1024) {
-            return new DataResponse(['error' => 'JSON data too large (max 2 MB)'], Http::STATUS_BAD_REQUEST);
+        $maxBytes = $this->getMaxImportBytes();
+        if (strlen($jsonData) > $maxBytes) {
+            return new DataResponse(['error' => 'JSON data too large (max ' . (int)($maxBytes / 1024 / 1024) . ' MB)'], Http::STATUS_BAD_REQUEST);
         }
 
         $data = json_decode($jsonData, true);
@@ -522,8 +532,9 @@ class ImportController extends Controller {
             return new DataResponse(['error' => 'No file uploaded or upload error'], Http::STATUS_BAD_REQUEST);
         }
 
-        if ($file['size'] > 2 * 1024 * 1024) {
-            return new DataResponse(['error' => 'File too large (max 2 MB)'], Http::STATUS_BAD_REQUEST);
+        $maxBytes = $this->getMaxImportBytes();
+        if ($file['size'] > $maxBytes) {
+            return new DataResponse(['error' => 'File too large (max ' . (int)($maxBytes / 1024 / 1024) . ' MB)'], Http::STATUS_BAD_REQUEST);
         }
 
         $content = file_get_contents($file['tmp_name']);

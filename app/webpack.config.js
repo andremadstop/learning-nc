@@ -3,10 +3,14 @@ const { VueLoaderPlugin } = require('vue-loader');
 const webpack = require('webpack');
 
 module.exports = {
-  entry: './src/main.js',
+  entry: {
+    learning: './src/main.js',
+    'learning-admin-settings': './src/admin-settings.js',
+    'learning-personal-settings': './src/personal-settings.js',
+  },
   output: {
     path: path.resolve(__dirname, 'js'),
-    filename: 'learning.js',
+    filename: '[name].js',
     publicPath: '/apps/learning/js/'
   },
   module: {

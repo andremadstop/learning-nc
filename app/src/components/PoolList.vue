@@ -164,7 +164,7 @@
                   @keydown.enter="selectQuestion(question)"
                   @keydown.space.prevent="selectQuestion(question)">
                 <span class="result-text">"{{ question.text }}"</span>
-                <span class="result-subtext">in {{ question.pool_name }}</span>
+                <span class="result-subtext">{{ t('learning', 'in {pool}', { pool: question.pool_name }) }}</span>
               </li>
             </ul>
           </div>
@@ -220,7 +220,7 @@
             </NcActions>
           </div>
           <p v-if="pool.description" class="pool-description">{{ pool.description }}</p>
-          <div class="pool-meta">Created {{ formatDate(pool.created_at) }}</div>
+          <div class="pool-meta">{{ t('learning', 'Created {date}', { date: formatDate(pool.created_at) }) }}</div>
         </div>
       </div>
     </div>

@@ -20,7 +20,7 @@
 
     <div v-else-if="!showResults" class="training-active">
       <NcProgressBar :value="progress" />
-      <div class="question-counter">Question {{ currentIndex + 1 }} of {{ questions.length }}</div>
+      <div class="question-counter">{{ t('learning', 'Question {n} of {total}', { n: currentIndex + 1, total: questions.length }) }}</div>
 
       <div v-if="currentQuestion" class="question-card">
         <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" alt="" class="question-image" />

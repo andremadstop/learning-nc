@@ -9,6 +9,7 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\ICacheFactory;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IRequest;
 
@@ -18,6 +19,7 @@ class UserStateController extends Controller {
     private XpService $xpService;
     private IDBConnection $db;
     private ICacheFactory $cacheFactory;
+    private IConfig $config;
     private ?string $userId;
 
     public function __construct(
@@ -28,6 +30,7 @@ class UserStateController extends Controller {
         XpService $xpService,
         IDBConnection $db,
         ICacheFactory $cacheFactory,
+        IConfig $config,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
@@ -36,6 +39,7 @@ class UserStateController extends Controller {
         $this->xpService = $xpService;
         $this->db = $db;
         $this->cacheFactory = $cacheFactory;
+        $this->config = $config;
         $this->userId = $userId;
     }
 
@@ -94,6 +98,15 @@ class UserStateController extends Controller {
      */
     #[UserRateLimit(limit: 20, period: 60)]
     public function dailyChallenge(): DataResponse {
+        $globalEnabled = $this->config->getAppValue('learning', 'daily_challenge_enabled', 'yes');
+        $userEnabled = $this->config->getUserValue((string)$this->userId, 'learning', 'daily_challenge', 'yes');
+        if ($globalEnabled !== 'yes' || $userEnabled !== 'yes') {
+            return new DataResponse([
+                'available' => false,
+                'reason' => 'disabled',
+            ]);
+        }
+
         $today = gmdate('Y-m-d');
 
         // Check if already completed today
@@ -184,7 +197,7 @@ class UserStateController extends Controller {
             'pool_name' => $question['pool_name'],
             'completed' => $completed,
             'was_correct' => $wasCorrect,
-            'xp_reward' => 15,
+            'xp_reward' => $this->xpService->isGamificationEnabled() ? 15 : 0,
         ]);
     }
 
@@ -193,6 +206,12 @@ class UserStateController extends Controller {
      */
     #[UserRateLimit(limit: 10, period: 60)]
     public function answerChallenge(?array $answer_ids = null, ?string $answer_text = null): DataResponse {
+        $globalEnabled = $this->config->getAppValue('learning', 'daily_challenge_enabled', 'yes');
+        $userEnabled = $this->config->getUserValue((string)$this->userId, 'learning', 'daily_challenge', 'yes');
+        if ($globalEnabled !== 'yes' || $userEnabled !== 'yes') {
+            return new DataResponse(['error' => 'Daily challenge disabled'], 400);
+        }
+
         $today = gmdate('Y-m-d');
 
         // Length limit for open answer text

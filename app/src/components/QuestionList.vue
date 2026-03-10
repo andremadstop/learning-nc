@@ -31,7 +31,7 @@
           <span class="question-number">Q{{ currentPage * pageSize + index + 1 }}</span>
           <span v-if="question.question_type === 'multi'" class="multi-badge">{{ t('learning', 'Multi') }}</span>
           <span v-if="question.question_type === 'open'" class="open-badge">{{ t('learning', 'Free text') }}</span>
-          <span v-if="question.difficulty" class="difficulty-badge" :class="question.difficulty">{{ question.difficulty }}</span>
+          <span v-if="question.difficulty" class="difficulty-badge" :class="question.difficulty">{{ t('learning', question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)) }}</span>
           <div v-if="!readonly" class="question-actions">
             <NcActions>
               <NcActionButton @click="editQuestion(question)" close-after-click>{{ t('learning', 'Edit') }}</NcActionButton>
@@ -40,7 +40,7 @@
           </div>
         </div>
         <!-- Image display -->
-        <img v-if="question.image_path" :src="questionImageUrl(question.id)" :alt="'Image for: ' + question.text" class="question-image" />
+        <img v-if="question.image_path" :src="questionImageUrl(question.id)" :alt="question.text" class="question-image" />
         <div class="question-text">{{ question.text }}</div>
         <div v-if="question.question_type === 'open'" class="model-answer-display">
           <span class="model-answer-label">{{ t('learning', 'Model answer') }}:</span>

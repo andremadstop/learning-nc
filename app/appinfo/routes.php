@@ -73,6 +73,12 @@ return [
         ['name' => 'user_state#dailyChallenge', 'url' => '/api/v1/daily-challenge', 'verb' => 'GET'],
         ['name' => 'user_state#answerChallenge', 'url' => '/api/v1/daily-challenge/answer', 'verb' => 'POST'],
 
+        // Settings
+        ['name' => 'settings#getAdmin', 'url' => '/api/settings/admin', 'verb' => 'GET'],
+        ['name' => 'settings#saveAdmin', 'url' => '/api/settings/admin', 'verb' => 'PUT'],
+        ['name' => 'settings#getPersonal', 'url' => '/api/settings/personal', 'verb' => 'GET'],
+        ['name' => 'settings#savePersonal', 'url' => '/api/settings/personal', 'verb' => 'PUT'],
+
         // AI Generation
         ['name' => 'ai#available', 'url' => '/api/ai/available', 'verb' => 'GET'],
         ['name' => 'ai#generate', 'url' => '/api/ai/generate', 'verb' => 'POST'],

@@ -3,12 +3,19 @@ declare(strict_types=1);
 namespace OCA\Learning\Service;
 
 use OCP\IDBConnection;
+use OCP\IConfig;
 
 class XpService {
     private IDBConnection $db;
+    private IConfig $config;
 
-    public function __construct(IDBConnection $db) {
+    public function __construct(IDBConnection $db, IConfig $config) {
         $this->db = $db;
+        $this->config = $config;
+    }
+
+    public function isGamificationEnabled(): bool {
+        return $this->config->getAppValue('learning', 'gamification_enabled', 'yes') === 'yes';
     }
 
     /**
@@ -16,6 +23,10 @@ class XpService {
      * Reads from learning_user_stats first (O(1)), falls back to full SQL aggregate.
      */
     public function calculateXp(string $userId): array {
+        if (!$this->isGamificationEnabled()) {
+            return $this->getLevelFromXp(0);
+        }
+
         // Try stats table first
         $qb = $this->db->getQueryBuilder();
         $qb->select('total_xp', 'current_level')
@@ -91,6 +102,10 @@ class XpService {
      * Apply streak multiplier to base XP.
      */
     public function applyMultiplier(int $baseXp, int $streakDays): int {
+        if (!$this->isGamificationEnabled()) {
+            return 0;
+        }
+
         return (int)round($baseXp * $this->getStreakMultiplier($streakDays));
     }
 
@@ -98,6 +113,10 @@ class XpService {
      * Calculate session XP for a single completed session.
      */
     public function calculateSessionXp(array $sessionData, int $streakDays = 0): int {
+        if (!$this->isGamificationEnabled()) {
+            return 0;
+        }
+
         $totalQ = (int)($sessionData['total_questions'] ?? 0);
         if ($totalQ <= 0) {
             return 0;
@@ -128,6 +147,10 @@ class XpService {
      * Level is synced AFTER the atomic XP increment to avoid stale-read races.
      */
     public function incrementSessionXp(string $userId, int $sessionXp, int $currentStreak): void {
+        if (!$this->isGamificationEnabled()) {
+            return;
+        }
+
         $today = gmdate('Y-m-d');
 
         // Atomic UPDATE first (no pre-read of total_xp)
@@ -278,6 +301,10 @@ class XpService {
      * @param bool $skipSync When true, skip syncLevel() — caller must call syncLevel() after commit
      */
     public function incrementLeitnerXp(string $userId, int $xp, bool $skipSync = false): void {
+        if (!$this->isGamificationEnabled()) {
+            return;
+        }
+
         if ($xp <= 0) {
             return;
         }

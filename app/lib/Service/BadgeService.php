@@ -42,6 +42,10 @@ class BadgeService {
      * @param bool $notify When false, only DB insert — no notifications/activity (for use inside transactions)
      */
     public function checkAndAward(string $userId, string $context, array $data, bool $notify = true): array {
+        if ($this->config->getAppValue('learning', 'gamification_enabled', 'yes') !== 'yes') {
+            return [];
+        }
+
         $newBadges = [];
 
         switch ($context) {
@@ -67,6 +71,10 @@ class BadgeService {
      * Call this AFTER commit.
      */
     public function dispatchNotifications(string $userId, array $badges): void {
+        if ($this->config->getAppValue('learning', 'gamification_enabled', 'yes') !== 'yes') {
+            return;
+        }
+
         foreach ($badges as $badge) {
             $badgeId = $badge['badge_id'];
             $def = self::BADGES[$badgeId] ?? null;
@@ -280,6 +288,22 @@ class BadgeService {
     }
 
     public function getUserBadges(string $userId): array {
+        if ($this->config->getAppValue('learning', 'gamification_enabled', 'yes') !== 'yes') {
+            $badges = [];
+            foreach (self::BADGES as $badgeId => $def) {
+                $badges[] = [
+                    'badge_id' => $badgeId,
+                    'name' => $def['name'],
+                    'emoji' => $def['emoji'],
+                    'description' => $def['description'],
+                    'category' => $def['category'],
+                    'earned' => false,
+                    'earned_at' => null,
+                ];
+            }
+            return $badges;
+        }
+
         $qb = $this->db->getQueryBuilder();
         $qb->select('badge_id', 'earned_at', 'pool_id')
            ->from('learning_user_badges')
@@ -312,6 +336,10 @@ class BadgeService {
     }
 
     public function getBadgeProgress(string $userId): array {
+        if ($this->config->getAppValue('learning', 'gamification_enabled', 'yes') !== 'yes') {
+            return [];
+        }
+
         $sessionCount = $this->getCompletedSessionCount($userId);
         $box5Count = $this->getBox5Count($userId);
 

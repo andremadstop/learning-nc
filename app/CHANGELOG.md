@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.0] - 2026-03-10
+
+### Added
+- **Admin Settings Page**: NC-native settings under Administration > Learning — toggle Daily Challenge globally, set default language, configure max import size (1-10 MB), toggle Gamification (XP/Badges/Streaks)
+- **Personal Settings Page**: NC-native settings under Personal > Learning — toggle Daily Challenge per user, set UI language (System/DE/EN), toggle notifications
+- **Settings API**: `GET/PUT /api/settings/admin` and `GET/PUT /api/settings/personal` endpoints
+- **Gamification Toggle**: XpService, BadgeService, StreakService respect `gamification_enabled` app config
+- **Configurable Import Size**: ImportController reads `max_import_size_mb` from app config instead of hardcoded 2 MB
+
+### Fixed
+- **i18n Consistency**: Translated all remaining hardcoded English strings — pool creation dates, training question counter, difficulty badges (Easy/Medium/Hard), Leitner box indicator, search result pool names
+- **Daily Challenge Global/User Toggle**: UserStateController checks both global (`daily_challenge_enabled`) and per-user (`daily_challenge`) setting before showing challenges
+
+### Changed
+- **Webpack**: Multi-entry build with separate bundles for admin-settings and personal-settings
+- **info.xml**: Registered AdminSettings, AdminSection, PersonalSettings via `<settings>` block
+
 ## [2.2.0] - 2026-03-09
 
 ### Fixed
