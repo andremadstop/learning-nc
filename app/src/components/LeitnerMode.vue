@@ -68,7 +68,7 @@
         <NcProgressBar :value="reviewProgress" />
       </div>
       <div v-if="currentItem" class="review-card">
-        <div class="review-box-indicator">Box {{ currentItem.box }} &rarr; {{ answered ? (lastAnswer ? 'Box ' + lastMoveTarget : 'Box 1') : '?' }}</div>
+        <div class="review-box-indicator">{{ t('learning', 'Box') }} {{ currentItem.box }} &rarr; {{ answered ? (lastAnswer ? t('learning', 'Box') + ' ' + lastMoveTarget : t('learning', 'Box') + ' 1') : '?' }}</div>
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
         <div v-if="!answered && isOpenQuestion" class="open-answer-area">

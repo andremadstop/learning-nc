@@ -178,11 +178,11 @@ export default {
 			} catch (err) {
 				console.error('Failed to fetch student detail:', err)
 				if (err.response?.status === 403) {
-					this.error = this.t('learning', 'You do not have permission to view this student.')
+					this.error = t('learning', 'You do not have permission to view this student.')
 				} else if (err.response?.status === 404) {
-					this.error = this.t('learning', 'Student not found in this course.')
+					this.error = t('learning', 'Student not found in this course.')
 				} else {
-					this.error = this.t('learning', 'Failed to load student details.')
+					this.error = t('learning', 'Failed to load student details.')
 				}
 			} finally {
 				this.loading = false

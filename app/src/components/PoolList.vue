@@ -388,7 +388,9 @@ export default {
     this.loadQueueCount();
     this.loadRemediationCount();
     this.loadDailyProgress();
-    this.loadDailyChallenge();
+    if (this.userRole !== 'instructor') {
+      this.loadDailyChallenge();
+    }
     document.addEventListener('click', this.handleClickOutside);
     // Restore language filter from localStorage
     try {

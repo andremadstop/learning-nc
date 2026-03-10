@@ -140,7 +140,7 @@ export default {
 				this.courses = response.data.courses || []
 			} catch (err) {
 				console.error('Failed to load dashboard:', err)
-				this.error = this.t('learning', 'Failed to load dashboard.')
+				this.error = t('learning', 'Failed to load dashboard.')
 			} finally {
 				this.loading = false
 			}

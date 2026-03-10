@@ -588,15 +588,15 @@ export default {
 		visibleTabs() {
 			if (this.isInstructor) {
 				return [
-					{ id: 'pools', label: this.t('learning', 'Pools') },
-					{ id: 'members', label: this.t('learning', 'Members') },
-					{ id: 'progress', label: this.t('learning', 'Progress') },
-					{ id: 'leaderboard', label: this.t('learning', 'Leaderboard') },
+					{ id: 'pools', label: t('learning', 'Pools') },
+					{ id: 'members', label: t('learning', 'Members') },
+					{ id: 'progress', label: t('learning', 'Progress') },
+					{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
 				]
 			}
 			return [
-				{ id: 'pools', label: this.t('learning', 'Pools') },
-				{ id: 'leaderboard', label: this.t('learning', 'Leaderboard') },
+				{ id: 'pools', label: t('learning', 'Pools') },
+				{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
 			]
 		},
 		sortedPools() {
@@ -685,11 +685,11 @@ export default {
 			} catch (err) {
 				console.error('Failed to fetch course detail:', err)
 				if (err.response?.status === 404) {
-					this.error = this.t('learning', 'Course not found.')
+					this.error = t('learning', 'Course not found.')
 				} else if (err.response?.status === 403) {
-					this.error = this.t('learning', 'You do not have access to this course.')
+					this.error = t('learning', 'You do not have access to this course.')
 				} else {
-					this.error = this.t('learning', 'Failed to load course details. Please try again.')
+					this.error = t('learning', 'Failed to load course details. Please try again.')
 				}
 			} finally {
 				this.loading = false
@@ -750,7 +750,7 @@ export default {
 				}
 			} catch (err) {
 				console.error('Failed to fetch progress:', err)
-				this.error = this.t('learning', 'Failed to load progress data.')
+				this.error = t('learning', 'Failed to load progress data.')
 			} finally {
 				this.progressLoading = false
 			}
@@ -781,7 +781,7 @@ export default {
 				}
 			} catch (err) {
 				console.error('Failed to fetch pools:', err)
-				this.poolModalError = this.t('learning', 'Failed to load available pools.')
+				this.poolModalError = t('learning', 'Failed to load available pools.')
 			} finally {
 				this.poolsLoading = false
 			}
@@ -819,7 +819,7 @@ export default {
 			} catch (err) {
 				console.error('Failed to add pool:', err)
 				const message = err.response?.data?.error || err.response?.data?.message
-				this.poolModalError = message || this.t('learning', 'Failed to add pool to course.')
+				this.poolModalError = message || t('learning', 'Failed to add pool to course.')
 			} finally {
 				this.savingPool = false
 			}
@@ -847,7 +847,7 @@ export default {
 				await this.fetchCourseDetail()
 			} catch (err) {
 				console.error('Failed to remove pool:', err)
-				this.error = this.t('learning', 'Failed to remove pool from course.')
+				this.error = t('learning', 'Failed to remove pool from course.')
 			} finally {
 				this.savingPool = false
 			}
@@ -870,11 +870,11 @@ export default {
 				console.error('Failed to add member:', err)
 				const message = err.response?.data?.error || err.response?.data?.message
 				if (err.response?.status === 404) {
-					this.memberError = this.t('learning', 'User "{name}" not found.', { name: username })
+					this.memberError = t('learning', 'User "{name}" not found.', { name: username })
 				} else if (err.response?.status === 409) {
-					this.memberError = this.t('learning', 'User "{name}" is already a member.', { name: username })
+					this.memberError = t('learning', 'User "{name}" is already a member.', { name: username })
 				} else {
-					this.memberError = message || this.t('learning', 'Failed to add member.')
+					this.memberError = message || t('learning', 'Failed to add member.')
 				}
 			} finally {
 				this.addingMember = false
@@ -890,7 +890,7 @@ export default {
 				await this.fetchCourseDetail()
 			} catch (err) {
 				console.error('Failed to update member role:', err)
-				this.memberError = this.t('learning', 'Failed to update member role.')
+				this.memberError = t('learning', 'Failed to update member role.')
 			} finally {
 				this.savingMember = null
 			}
@@ -918,7 +918,7 @@ export default {
 				await this.fetchCourseDetail()
 			} catch (err) {
 				console.error('Failed to remove member:', err)
-				this.memberError = this.t('learning', 'Failed to remove member.')
+				this.memberError = t('learning', 'Failed to remove member.')
 			} finally {
 				this.savingMember = null
 			}
@@ -1005,7 +1005,7 @@ export default {
 				this.myRank = response.data.my_rank
 			} catch (err) {
 				console.error('Failed to fetch leaderboard:', err)
-				this.error = this.t('learning', 'Failed to load leaderboard.')
+				this.error = t('learning', 'Failed to load leaderboard.')
 			} finally {
 				this.leaderboardLoading = false
 			}

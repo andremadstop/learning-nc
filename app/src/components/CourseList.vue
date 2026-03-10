@@ -266,15 +266,15 @@ export default {
 	computed: {
 		emptyStateTitle() {
 			if (this.userRole === 'instructor') {
-				return this.t('learning', 'No courses yet')
+				return t('learning', 'No courses yet')
 			}
-			return this.t('learning', 'No enrolled courses')
+			return t('learning', 'No enrolled courses')
 		},
 		emptyStateDescription() {
 			if (this.userRole === 'instructor') {
-				return this.t('learning', 'Create your first course to get started.')
+				return t('learning', 'Create your first course to get started.')
 			}
-			return this.t('learning', 'You are not enrolled in any courses yet. Your instructor will add you to a course — check back soon!')
+			return t('learning', 'You are not enrolled in any courses yet. Your instructor will add you to a course — check back soon!')
 		},
 	},
 
@@ -293,7 +293,7 @@ export default {
 				this.enrolledCourses = response.data.enrolled || []
 			} catch (err) {
 				console.error('Failed to fetch courses:', err)
-				this.error = this.t('learning', 'Failed to load courses. Please try again.')
+				this.error = t('learning', 'Failed to load courses. Please try again.')
 			} finally {
 				this.loading = false
 			}
@@ -361,11 +361,11 @@ export default {
 				if (this.editingCourse) {
 					const url = generateUrl('/apps/learning/api/courses/{id}', { id: this.editingCourse.id })
 					await axios.put(url, payload)
-					showSuccess(this.t('learning', 'Course updated'))
+					showSuccess(t('learning', 'Course updated'))
 				} else {
 					const url = generateUrl('/apps/learning/api/courses')
 					await axios.post(url, payload)
-					showSuccess(this.t('learning', 'Course created'))
+					showSuccess(t('learning', 'Course created'))
 				}
 
 				this.closeModal()
@@ -373,7 +373,7 @@ export default {
 			} catch (err) {
 				console.error('Failed to save course:', err)
 				const message = err.response?.data?.error || err.response?.data?.message
-				this.modalError = message || this.t('learning', 'Failed to save course. Please try again.')
+				this.modalError = message || t('learning', 'Failed to save course. Please try again.')
 			} finally {
 				this.saving = false
 			}
@@ -384,11 +384,11 @@ export default {
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{id}', { id: course.id })
 				await axios.put(url, { status: newStatus })
-				showSuccess(this.t('learning', newStatus === 'active' ? 'Course activated' : 'Course archived'))
+				showSuccess(t('learning', newStatus === 'active' ? 'Course activated' : 'Course archived'))
 				await this.fetchCourses()
 			} catch (err) {
 				console.error('Failed to update course status:', err)
-				this.error = this.t('learning', 'Failed to update course status.')
+				this.error = t('learning', 'Failed to update course status.')
 			}
 		},
 
@@ -406,13 +406,13 @@ export default {
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{id}', { id: this.deletingCourse.id })
 				await axios.delete(url)
-				showSuccess(this.t('learning', 'Course deleted'))
+				showSuccess(t('learning', 'Course deleted'))
 				this.showDeleteModal = false
 				this.deletingCourse = null
 				await this.fetchCourses()
 			} catch (err) {
 				console.error('Failed to delete course:', err)
-				this.error = this.t('learning', 'Failed to delete course.')
+				this.error = t('learning', 'Failed to delete course.')
 			} finally {
 				this.saving = false
 			}

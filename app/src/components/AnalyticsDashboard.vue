@@ -72,11 +72,11 @@
       <div class="leitner-tower-desktop">
         <div class="tower-chart">
           <div class="tower-col" v-for="(box, idx) in [
-            { count: stats.box_1, label: 'Box 1', sub: '1d', cls: 'tower-1' },
-            { count: stats.box_2, label: 'Box 2', sub: '3d', cls: 'tower-2' },
-            { count: stats.box_3, label: 'Box 3', sub: '7d', cls: 'tower-3' },
-            { count: stats.box_4, label: 'Box 4', sub: '14d', cls: 'tower-4' },
-            { count: stats.box_5, label: 'Box 5', sub: '30d', cls: 'tower-5' },
+            { count: stats.box_1, label: t('learning', 'Box 1'), sub: '1d', cls: 'tower-1' },
+            { count: stats.box_2, label: t('learning', 'Box 2'), sub: '3d', cls: 'tower-2' },
+            { count: stats.box_3, label: t('learning', 'Box 3'), sub: '7d', cls: 'tower-3' },
+            { count: stats.box_4, label: t('learning', 'Box 4'), sub: '14d', cls: 'tower-4' },
+            { count: stats.box_5, label: t('learning', 'Box 5'), sub: '30d', cls: 'tower-5' },
           ]" :key="idx">
             <span class="tower-count">{{ box.count }}</span>
             <div class="tower-bar-wrapper">
