@@ -61,6 +61,7 @@ return [
         // Import
         ['name' => 'import#importCsv', 'url' => '/api/pools/{poolId}/import/csv', 'verb' => 'POST'],
         ['name' => 'import#importJson', 'url' => '/api/pools/{poolId}/import/json', 'verb' => 'POST'],
+        ['name' => 'import#importFile', 'url' => '/api/pools/{poolId}/import/file', 'verb' => 'POST'],
 
         // Export
         ['name' => 'export#exportCsv', 'url' => '/api/pools/{poolId}/export/csv', 'verb' => 'GET'],

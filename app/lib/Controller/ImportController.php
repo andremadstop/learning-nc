@@ -54,6 +54,90 @@ class ImportController extends Controller {
     }
 
     /**
+     * Strip UTF-8 BOM and normalize encoding.
+     */
+    private function normalizeText(string $text): string {
+        // Strip UTF-8 BOM
+        if (substr($text, 0, 3) === "\xEF\xBB\xBF") {
+            $text = substr($text, 3);
+        }
+        // Try to fix Latin1/Windows-1252 → UTF-8
+        if (!mb_check_encoding($text, 'UTF-8')) {
+            $converted = mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
+            if ($converted !== false) {
+                $text = $converted;
+            }
+        }
+        return $text;
+    }
+
+    /**
+     * Detect CSV delimiter (comma or semicolon).
+     */
+    private function detectDelimiter(string $firstLine): string {
+        $semicolons = substr_count($firstLine, ';');
+        $commas = substr_count($firstLine, ',');
+        return $semicolons > $commas ? ';' : ',';
+    }
+
+    /**
+     * Normalize a JSON question item from various formats to our canonical format.
+     * Accepts: frage/question/text, antworten/answers, korrekt/correct/richtig/is_correct, erklaerung/explanation
+     */
+    private function normalizeJsonItem(array $item): ?array {
+        // Question text: text > frage > question
+        $text = trim($item['text'] ?? $item['frage'] ?? $item['question'] ?? '');
+        if ($text === '') {
+            return null;
+        }
+
+        // Explanation: explanation > erklaerung
+        $explanation = $item['explanation'] ?? $item['erklaerung'] ?? null;
+        if ($explanation !== null) {
+            $explanation = trim($explanation);
+            if ($explanation === '') {
+                $explanation = null;
+            }
+        }
+
+        // Difficulty
+        $difficulty = $item['difficulty'] ?? $item['schwierigkeit'] ?? null;
+
+        // Type: type > typ
+        $type = $item['type'] ?? $item['typ'] ?? null;
+
+        // Answers: answers > antworten
+        $rawAnswers = $item['answers'] ?? $item['antworten'] ?? [];
+        if (!is_array($rawAnswers)) {
+            return null;
+        }
+
+        $answers = [];
+        foreach ($rawAnswers as $a) {
+            if (!is_array($a)) continue;
+            $aText = trim($a['text'] ?? '');
+            if ($aText === '') continue;
+
+            // is_correct > korrekt > correct > richtig
+            $isCorrect = $a['is_correct'] ?? $a['korrekt'] ?? $a['correct'] ?? $a['richtig'] ?? false;
+            $isCorrect = filter_var($isCorrect, FILTER_VALIDATE_BOOLEAN);
+
+            $answers[] = [
+                'text' => $aText,
+                'is_correct' => $isCorrect,
+            ];
+        }
+
+        return [
+            'text' => $text,
+            'answers' => $answers,
+            'explanation' => $explanation,
+            'difficulty' => $difficulty,
+            'type' => $type,
+        ];
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 5, period: 60)]
@@ -62,12 +146,15 @@ class ImportController extends Controller {
             return new DataResponse(['error' => 'No edit access to this pool'], Http::STATUS_FORBIDDEN);
         }
 
+        $csvData = $this->normalizeText($csvData);
+
         // S5: Enforce max body size (2 MB) before processing
         if (strlen($csvData) > 2 * 1024 * 1024) {
             return new DataResponse(['error' => 'CSV data too large (max 2 MB)'], Http::STATUS_BAD_REQUEST);
         }
 
-        $lines = array_filter(array_map('trim', explode("\n", $csvData)));
+        $lines = array_filter(array_map('trim', explode("\n", $csvData)), function($l) { return $l !== ''; });
+        $lines = array_values($lines);
         if (empty($lines)) {
             return new DataResponse(['error' => 'No data to import'], Http::STATUS_BAD_REQUEST);
         }
@@ -80,15 +167,21 @@ class ImportController extends Controller {
         $firstLine = strtolower($lines[0]);
         if (strpos($firstLine, 'question') !== false && strpos($firstLine, 'answer') !== false) {
             array_shift($lines);
+        } elseif (strpos($firstLine, 'frage') !== false && strpos($firstLine, 'antwort') !== false) {
+            array_shift($lines);
         }
+
+        // Auto-detect delimiter from first data line
+        $delimiter = $this->detectDelimiter($lines[0] ?? '');
 
         $imported = 0;
         $errors = [];
+        $warnings = [];
 
         $this->db->beginTransaction();
         try {
             foreach ($lines as $lineNum => $line) {
-                $fields = str_getcsv($line);
+                $fields = str_getcsv($line, $delimiter);
 
                 $questionText = trim($fields[0] ?? '');
                 if (empty($questionText)) {
@@ -226,11 +319,15 @@ class ImportController extends Controller {
             return new DataResponse(['error' => 'Import failed due to a server error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
-        return new DataResponse([
+        $response = [
             'imported' => $imported,
             'errors' => $errors,
             'total_lines' => count($lines)
-        ], $imported > 0 ? Http::STATUS_CREATED : Http::STATUS_BAD_REQUEST);
+        ];
+        if (!empty($warnings)) {
+            $response['warnings'] = $warnings;
+        }
+        return new DataResponse($response, $imported > 0 ? Http::STATUS_CREATED : Http::STATUS_BAD_REQUEST);
     }
 
     /**
@@ -242,6 +339,8 @@ class ImportController extends Controller {
             return new DataResponse(['error' => 'No edit access to this pool'], Http::STATUS_FORBIDDEN);
         }
 
+        $jsonData = $this->normalizeText($jsonData);
+
         // S5: Enforce max body size (2 MB) before processing
         if (strlen($jsonData) > 2 * 1024 * 1024) {
             return new DataResponse(['error' => 'JSON data too large (max 2 MB)'], Http::STATUS_BAD_REQUEST);
@@ -252,9 +351,13 @@ class ImportController extends Controller {
             return new DataResponse(['error' => 'Invalid JSON — check for missing brackets, commas, or quotes'], Http::STATUS_BAD_REQUEST);
         }
 
-        // If wrapped in {"questions": [...]}
+        // Accept various wrapper formats: {questions:[...]}, {fragen:[...]}, or bare array
         if (isset($data['questions']) && is_array($data['questions'])) {
             $data = $data['questions'];
+        } elseif (isset($data['fragen']) && is_array($data['fragen'])) {
+            $data = $data['fragen'];
+        } elseif (isset($data['items']) && is_array($data['items'])) {
+            $data = $data['items'];
         }
 
         if (count($data) > 500) {
@@ -263,42 +366,45 @@ class ImportController extends Controller {
 
         $imported = 0;
         $errors = [];
+        $warnings = [];
 
         $this->db->beginTransaction();
         try {
-            foreach ($data as $idx => $item) {
+            foreach ($data as $idx => $rawItem) {
                 $num = $idx + 1;
 
-                if (!isset($item['text']) || empty(trim($item['text']))) {
+                if (!is_array($rawItem)) {
+                    $errors[] = "Item $num: Not a valid object";
+                    continue;
+                }
+
+                // Normalize field names from any supported format
+                $item = $this->normalizeJsonItem($rawItem);
+                if ($item === null) {
                     $errors[] = "Item $num: Missing question text";
                     continue;
                 }
 
-                if (mb_strlen(trim($item['text'])) > 5000) {
-                    $errors[] = "Item $num: Question text too long (max 5000)";
-                    continue;
+                if (mb_strlen($item['text']) > 5000) {
+                    $item['text'] = mb_substr($item['text'], 0, 5000);
+                    $warnings[] = "Item $num: Question text truncated to 5000 chars";
                 }
 
                 // Open-question type
-                $itemType = $item['type'] ?? null;
-                if ($itemType === 'open') {
-                    if (!isset($item['answers']) || !is_array($item['answers']) || count($item['answers']) < 1) {
+                if ($item['type'] === 'open') {
+                    if (empty($item['answers'])) {
                         $errors[] = "Item $num: Open question needs at least 1 answer";
                         continue;
                     }
-                    $modelText = trim($item['answers'][0]['text'] ?? '');
-                    if ($modelText === '') {
-                        $errors[] = "Item $num: Empty model answer for open question";
-                        continue;
-                    }
+                    $modelText = $item['answers'][0]['text'];
                     if (mb_strlen($modelText) > 2000) {
                         $modelText = mb_substr($modelText, 0, 2000);
                     }
                     $question = new Question();
                     $question->setPoolId($poolId);
                     $question->setUserId($this->userId);
-                    $question->setText(trim($item['text']));
-                    $question->setExplanation(isset($item['explanation']) ? trim($item['explanation']) : null);
+                    $question->setText($item['text']);
+                    $question->setExplanation($item['explanation']);
                     $question->setQuestionType('open');
                     $question = $this->questionMapper->createOrUpdate($question);
 
@@ -313,33 +419,35 @@ class ImportController extends Controller {
                     continue;
                 }
 
-                if (!isset($item['answers']) || !is_array($item['answers']) || count($item['answers']) < 2) {
+                if (count($item['answers']) < 2) {
                     $errors[] = "Item $num: Need at least 2 answers";
                     continue;
                 }
 
                 if (count($item['answers']) > 8) {
-                    $errors[] = "Item $num: Maximum 8 answers";
-                    continue;
+                    $item['answers'] = array_slice($item['answers'], 0, 8);
+                    $warnings[] = "Item $num: Truncated to 8 answers";
                 }
 
                 $correctCount = 0;
                 foreach ($item['answers'] as $a) {
-                    if (filter_var($a['is_correct'] ?? false, FILTER_VALIDATE_BOOLEAN)) $correctCount++;
+                    if ($a['is_correct']) $correctCount++;
                 }
 
                 if ($correctCount === 0) {
-                    $errors[] = "Item $num: No correct answer marked";
-                    continue;
+                    // Best-effort: mark first answer as correct + warn
+                    $item['answers'][0]['is_correct'] = true;
+                    $correctCount = 1;
+                    $warnings[] = "Item $num: No correct answer marked — defaulted to first answer";
                 }
 
                 $questionType = $correctCount > 1 ? 'multi' : 'single';
 
-                // FIX3-HI-1: Validate ALL answer texts BEFORE creating the question to prevent orphans
+                // Validate ALL answer texts BEFORE creating the question to prevent orphans
                 $validatedAnswers = [];
                 $hasInvalidAnswer = false;
                 foreach ($item['answers'] as $i => $answerData) {
-                    $answerText = trim($answerData['text'] ?? '');
+                    $answerText = $answerData['text'];
                     if ($answerText === '') {
                         $errors[] = "Item $num: Empty answer text at position " . ($i + 1);
                         $hasInvalidAnswer = true;
@@ -350,7 +458,7 @@ class ImportController extends Controller {
                     }
                     $validatedAnswers[] = [
                         'text' => $answerText,
-                        'is_correct' => filter_var($answerData['is_correct'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                        'is_correct' => $answerData['is_correct'],
                         'position' => $i,
                     ];
                 }
@@ -361,9 +469,9 @@ class ImportController extends Controller {
                 $question = new Question();
                 $question->setPoolId($poolId);
                 $question->setUserId($this->userId);
-                $question->setText(trim($item['text']));
-                $question->setExplanation(isset($item['explanation']) ? trim($item['explanation']) : null);
-                $question->setDifficulty(isset($item['difficulty']) ? trim($item['difficulty']) : null);
+                $question->setText($item['text']);
+                $question->setExplanation($item['explanation']);
+                $question->setDifficulty($item['difficulty'] !== null ? trim($item['difficulty']) : null);
                 $question->setQuestionType($questionType);
                 $question = $this->questionMapper->createOrUpdate($question);
 
@@ -386,10 +494,61 @@ class ImportController extends Controller {
             return new DataResponse(['error' => 'Import failed due to a server error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
 
-        return new DataResponse([
+        $response = [
             'imported' => $imported,
             'errors' => $errors,
             'total_items' => count($data)
-        ], $imported > 0 ? Http::STATUS_CREATED : Http::STATUS_BAD_REQUEST);
+        ];
+        if (!empty($warnings)) {
+            $response['warnings'] = $warnings;
+        }
+        return new DataResponse($response, $imported > 0 ? Http::STATUS_CREATED : Http::STATUS_BAD_REQUEST);
+    }
+
+    /**
+     * @NoAdminRequired
+     *
+     * File upload endpoint — accepts multipart/form-data with a CSV or JSON file.
+     * Auto-detects format from file extension and content.
+     */
+    #[UserRateLimit(limit: 5, period: 60)]
+    public function importFile(int $poolId): DataResponse {
+        if (!$this->canEditPool($poolId)) {
+            return new DataResponse(['error' => 'No edit access to this pool'], Http::STATUS_FORBIDDEN);
+        }
+
+        $file = $this->request->getUploadedFile('file');
+        if ($file === null || $file['error'] !== UPLOAD_ERR_OK) {
+            return new DataResponse(['error' => 'No file uploaded or upload error'], Http::STATUS_BAD_REQUEST);
+        }
+
+        if ($file['size'] > 2 * 1024 * 1024) {
+            return new DataResponse(['error' => 'File too large (max 2 MB)'], Http::STATUS_BAD_REQUEST);
+        }
+
+        $content = file_get_contents($file['tmp_name']);
+        if ($content === false || $content === '') {
+            return new DataResponse(['error' => 'Could not read uploaded file'], Http::STATUS_BAD_REQUEST);
+        }
+
+        $content = $this->normalizeText($content);
+
+        // Auto-detect format: try JSON first, fall back to CSV
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $isJson = $ext === 'json';
+
+        if (!$isJson) {
+            // Try to detect JSON by content
+            $trimmed = ltrim($content);
+            if ($trimmed !== '' && ($trimmed[0] === '[' || $trimmed[0] === '{')) {
+                $isJson = true;
+            }
+        }
+
+        if ($isJson) {
+            return $this->importJson($poolId, $content);
+        } else {
+            return $this->importCsv($poolId, $content);
+        }
     }
 }

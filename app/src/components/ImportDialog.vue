@@ -26,15 +26,29 @@
     </NcNoteCard>
 
     <div class="input-section">
-      <div class="file-upload">
-        <NcButton type="secondary" @click="$refs.fileInput.click()">
-          {{ fileName || t('learning', 'Choose File') }}
-        </NcButton>
-        <input ref="fileInput" type="file" :accept="format === 'csv' ? '.csv,.txt' : '.json'" @change="handleFile" style="display:none" />
+      <div
+        class="dropzone"
+        :class="{ 'dropzone--active': dragging }"
+        @dragover.prevent="dragging = true"
+        @dragleave.prevent="dragging = false"
+        @drop.prevent="handleDrop"
+        @click="$refs.fileInput.click()"
+      >
+        <input ref="fileInput" type="file" accept=".csv,.txt,.json" @change="handleFile" style="display:none" />
+        <div v-if="fileName" class="dropzone-file">
+          <strong>{{ fileName }}</strong>
+          <small v-if="textData">({{ Math.round(textData.length / 1024) }} KB)</small>
+        </div>
+        <div v-else class="dropzone-hint">
+          {{ t('learning', 'Drop CSV or JSON file here — or click to browse') }}
+        </div>
+      </div>
+      <div class="input-actions">
         <NcButton type="tertiary" @click="loadExample">{{ t('learning', 'Load Example') }}</NcButton>
+        <NcButton v-if="fileName" type="tertiary" @click="clearFile">{{ t('learning', 'Clear') }}</NcButton>
       </div>
       <p class="or-divider">{{ t('learning', '— or paste below —') }}</p>
-      <textarea v-model="textData" :placeholder="format === 'csv' ? t('learning', 'Paste CSV data here...') : t('learning', 'Paste JSON data here...')" rows="8" class="nc-input data-input"></textarea>
+      <textarea v-model="textData" :placeholder="format === 'csv' ? t('learning', 'Paste CSV data here...') : t('learning', 'Paste JSON data here...')" rows="6" class="nc-input data-input"></textarea>
     </div>
 
     <div v-if="preview.length > 0" class="preview-section">
@@ -45,11 +59,19 @@
     </div>
 
     <NcNoteCard v-if="result && result.imported > 0" type="success">
-      <strong>{{ t('learning', '{n} questions imported', { n: result.imported }) }}</strong>
-      <span v-if="result.errors && result.errors.length > 0"> ({{ result.errors.length }} {{ t('learning', 'errors') }})</span>
+      <strong>{{ t('learning', '{imported} of {total} questions imported', { imported: result.imported, total: result.total_items || result.total_lines || result.imported }) }}</strong>
+      <div v-if="result.warnings && result.warnings.length > 0" class="warning-list">
+        <div v-for="(w, i) in result.warnings.slice(0, 5)" :key="'w'+i" class="warning-item">{{ w }}</div>
+        <div v-if="result.warnings.length > 5">{{ t('learning', '...and {n} more warnings', { n: result.warnings.length - 5 }) }}</div>
+      </div>
+      <div v-if="result.errors && result.errors.length > 0" class="error-list">
+        <strong>{{ t('learning', '{n} skipped:', { n: result.errors.length }) }}</strong>
+        <div v-for="(err, i) in result.errors.slice(0, 5)" :key="'e'+i">{{ err }}</div>
+        <div v-if="result.errors.length > 5">{{ t('learning', '...and {n} more', { n: result.errors.length - 5 }) }}</div>
+      </div>
     </NcNoteCard>
     <NcNoteCard v-if="result && result.imported === 0" type="error">
-      {{ t('learning', 'Import failed') }}
+      {{ t('learning', 'Import failed — no questions could be imported') }}
       <div v-if="result.errors" class="error-list">
         <div v-for="(err, i) in result.errors.slice(0, 5)" :key="i">{{ err }}</div>
         <div v-if="result.errors.length > 5">{{ t('learning', '...and {n} more', { n: result.errors.length - 5 }) }}</div>
@@ -86,7 +108,7 @@ export default {
   components: { NcDialog, NcButton, NcNoteCard },
   props: { poolId: { type: Number, required: true } },
   data() {
-    return { format: 'csv', textData: '', fileName: '', importing: false, result: null, preview: [] };
+    return { format: 'csv', textData: '', fileName: '', importing: false, result: null, preview: [], dragging: false };
   },
   watch: {
     textData() { this.updatePreview(); this.result = null; },
@@ -100,10 +122,41 @@ export default {
     handleFile(e) {
       const file = e.target.files[0];
       if (!file) return;
+      this.loadFile(file);
+    },
+    handleDrop(e) {
+      this.dragging = false;
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      this.loadFile(file);
+    },
+    loadFile(file) {
       this.fileName = file.name;
+      // Auto-detect format from extension
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (ext === 'json') {
+        this.format = 'json';
+      } else if (ext === 'csv' || ext === 'txt') {
+        this.format = 'csv';
+      }
       const reader = new FileReader();
-      reader.onload = (ev) => { this.textData = ev.target.result; };
+      reader.onload = (ev) => {
+        let text = ev.target.result;
+        // Auto-detect JSON content even for .txt/.csv files
+        const trimmed = text.trimStart();
+        if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+          this.format = 'json';
+        }
+        this.textData = text;
+      };
       reader.readAsText(file);
+    },
+    clearFile() {
+      this.fileName = '';
+      this.textData = '';
+      this.preview = [];
+      this.result = null;
+      if (this.$refs.fileInput) this.$refs.fileInput.value = '';
     },
     updatePreview() {
       if (!this.textData.trim()) { this.preview = []; return; }
@@ -111,7 +164,12 @@ export default {
         if (this.format === 'json') {
           let data = JSON.parse(this.textData);
           if (data.questions) data = data.questions;
-          this.preview = data.slice(0, 3).map(item => ({ text: (item.text || '').substring(0, 80), answerCount: (item.answers || []).length }));
+          else if (data.fragen) data = data.fragen;
+          else if (data.items) data = data.items;
+          this.preview = data.slice(0, 3).map(item => ({
+            text: (item.text || item.frage || item.question || '').substring(0, 80),
+            answerCount: (item.answers || item.antworten || []).length,
+          }));
         } else {
           const lines = this.textData.trim().split('\n').filter(l => l.trim());
           let start = 0;
@@ -155,9 +213,16 @@ export default {
 .format-help { margin-bottom: 16px; }
 .format-help code { display: inline-block; padding: 4px 8px; background: var(--color-background-dark); border-radius: 4px; font-size: 12px; word-break: break-all; margin: 4px 0; }
 .input-section { margin-bottom: 16px; }
-.file-upload { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.dropzone { border: 2px dashed var(--color-border); border-radius: var(--border-radius-large); padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--color-background-hover); }
+.dropzone:hover, .dropzone--active { border-color: var(--color-primary-element); background: var(--color-primary-element-light); }
+.dropzone-hint { color: var(--color-text-maxcontrast); font-size: 14px; }
+.dropzone-file { font-size: 14px; }
+.dropzone-file small { color: var(--color-text-maxcontrast); margin-left: 8px; }
+.input-actions { display: flex; gap: 8px; margin-top: 8px; }
 .example-code { display: block; margin: 2px 0; }
 .or-divider { text-align: center; font-size: 12px; color: var(--color-text-maxcontrast); margin: 8px 0; }
+.warning-list { margin-top: 8px; font-size: 12px; color: var(--color-warning-text); }
+.warning-item { margin-bottom: 2px; }
 .nc-input { width: 100%; padding: 10px 12px; border: 2px solid var(--color-border); border-radius: var(--border-radius-large); font-size: 14px; background: var(--color-main-background); color: var(--color-main-text); transition: border-color 0.2s; box-sizing: border-box; }
 .nc-input:focus { border-color: var(--color-primary-element); outline: none; }
 .data-input { font-family: monospace; font-size: 13px; resize: vertical; }
