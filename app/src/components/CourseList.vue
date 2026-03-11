@@ -114,7 +114,7 @@
 		</template>
 
 		<!-- Create/Edit Modal -->
-		<NcModal v-if="showCreateModal" @close="closeModal">
+		<NcModal v-if="showCreateModal" @close="closeModal" @closing="closeModal">
 			<div class="modal-content">
 				<h3>{{ editingCourse ? t('learning', 'Edit Course') : t('learning', 'Create Course') }}</h3>
 
@@ -176,7 +176,7 @@
 		</NcModal>
 
 		<!-- Delete confirmation modal -->
-		<NcModal v-if="showDeleteModal" @close="showDeleteModal = false" size="small">
+		<NcModal v-if="showDeleteModal" @close="showDeleteModal = false" @closing="showDeleteModal = false" size="small">
 			<div class="modal-content">
 				<h3>{{ t('learning', 'Delete Course') }}</h3>
 				<p>{{ t('learning', 'Are you sure you want to delete "{title}"? This action cannot be undone.', { title: deletingCourse ? deletingCourse.title : '' }) }}</p>
@@ -331,6 +331,8 @@ export default {
 		},
 
 		closeModal() {
+			// Keep close behavior robust across nc-vue modal event variants
+			// and avoid stale form state when reopening quickly.
 			this.showCreateModal = false
 			this.editingCourse = null
 			this.formSubmitted = false
