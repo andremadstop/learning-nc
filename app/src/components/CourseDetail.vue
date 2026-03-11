@@ -88,7 +88,23 @@
 
 				<!-- Student progress per pool (student view) -->
 				<div v-if="studentProgress.length > 0" class="student-own-progress">
-					<h4>{{ t('learning', 'My Progress') }}</h4>
+					<div class="student-progress-header">
+						<h4>{{ t('learning', 'My Progress') }}</h4>
+						<div class="progress-mode-switch" role="group" :aria-label="t('learning', 'Progress mode')">
+							<button
+								class="progress-mode-btn"
+								:class="{ active: myProgressMode === 'mastery' }"
+								@click="myProgressMode = 'mastery'">
+								{{ t('learning', 'Mastery') }}
+							</button>
+							<button
+								class="progress-mode-btn"
+								:class="{ active: myProgressMode === 'answered' }"
+								@click="myProgressMode = 'answered'">
+								{{ t('learning', 'Answered') }}
+							</button>
+						</div>
+					</div>
 					<div class="progress-bars">
 						<div v-for="prog in studentProgress"
 							:key="prog.pool_id"
@@ -96,11 +112,11 @@
 							<span class="progress-pool-name">{{ prog.pool_name }}</span>
 							<div class="progress-bar-container">
 								<div class="progress-bar-fill"
-									:class="masteryClass(prog.mastery)"
-									:style="{ width: prog.mastery + '%' }" />
+									:class="masteryClass(progressPercent(prog))"
+									:style="{ width: progressPercent(prog) + '%' }" />
 							</div>
-							<span class="progress-percent">{{ prog.mastery }}%</span>
-							<span class="progress-meta">{{ t('learning', '{n} answered', { n: prog.answered || 0 }) }}</span>
+							<span class="progress-percent">{{ progressPercent(prog) }}%</span>
+							<span class="progress-meta">{{ progressMetaText(prog) }}</span>
 						</div>
 					</div>
 				</div>
@@ -567,8 +583,9 @@ export default {
 			progressSortKey: 'total_xp',
 			progressSortAsc: false,
 
-			// Student's own progress
-			studentProgress: [],
+				// Student's own progress
+				studentProgress: [],
+				myProgressMode: 'mastery',
 
 			// Leaderboard
 			leaderboardLoading: false,
@@ -672,8 +689,25 @@ export default {
 		},
 	},
 
-	methods: {
-		async fetchCourseDetail() {
+		methods: {
+			progressPercent(prog) {
+				const total = prog.total_questions || 0
+				const answered = prog.answered || 0
+				const mastered = prog.mastered || 0
+				if (this.myProgressMode === 'answered') {
+					return total > 0 ? Math.round(Math.min(answered, total) / total * 100) : 0
+				}
+				return total > 0 ? Math.round(Math.min(mastered, total) / total * 100) : 0
+			},
+
+			progressMetaText(prog) {
+				if (this.myProgressMode === 'answered') {
+					return t('learning', '{n} mastered', { n: prog.mastered || 0 })
+				}
+				return t('learning', '{n} answered', { n: prog.answered || 0 })
+			},
+
+			async fetchCourseDetail() {
 			this.loading = true
 			this.error = ''
 			try {
@@ -1256,11 +1290,45 @@ export default {
 	margin-top: 32px;
 }
 
+.student-progress-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
 .student-own-progress h4 {
-	margin: 0 0 16px 0;
+	margin: 0;
 	font-size: 1.1em;
 	font-weight: 600;
 	color: var(--color-main-text);
+}
+
+.progress-mode-switch {
+	display: inline-flex;
+	border: 1px solid var(--color-border);
+	border-radius: 10px;
+	overflow: hidden;
+}
+
+.progress-mode-btn {
+	border: 0;
+	background: var(--color-main-background);
+	color: var(--color-text-maxcontrast);
+	padding: 6px 10px;
+	font-size: 0.78em;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.progress-mode-btn + .progress-mode-btn {
+	border-left: 1px solid var(--color-border);
+}
+
+.progress-mode-btn.active {
+	background: color-mix(in srgb, var(--color-primary-element) 15%, transparent);
+	color: var(--color-primary-element);
 }
 
 .progress-bars {
