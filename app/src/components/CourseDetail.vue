@@ -338,9 +338,18 @@
 			<div v-if="currentTab === 'leaderboard'" class="leaderboard-section">
 				<div class="section-header">
 					<h4>{{ t('learning', 'Leaderboard') }}</h4>
-					<NcButton type="tertiary" @click="fetchLeaderboard">
-						{{ t('learning', 'Refresh') }}
-					</NcButton>
+					<div class="leaderboard-header-actions">
+						<label class="leaderboard-active-toggle">
+							<input
+								type="checkbox"
+								:checked="leaderboardActiveOnly"
+								@change="toggleLeaderboardActiveOnly($event.target.checked)">
+							<span>{{ t('learning', 'Only active ({n}d)', { n: leaderboardActiveDays }) }}</span>
+						</label>
+						<NcButton type="tertiary" @click="fetchLeaderboard">
+							{{ t('learning', 'Refresh') }}
+						</NcButton>
+					</div>
 				</div>
 
 				<div v-if="leaderboardLoading" class="loading-container">
@@ -354,10 +363,10 @@
 							<tr>
 								<th class="rank-col" scope="col">#</th>
 								<th class="student-col sortable-col" scope="col" role="button" tabindex="0"
-									:aria-sort="leaderboardSortKey === 'display_name' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
-									@click="setLeaderboardSort('display_name')" @keydown.enter="setLeaderboardSort('display_name')" @keydown.space.prevent="setLeaderboardSort('display_name')">
+									:aria-sort="leaderboardSortKey === 'user_id' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
+									@click="setLeaderboardSort('user_id')" @keydown.enter="setLeaderboardSort('user_id')" @keydown.space.prevent="setLeaderboardSort('user_id')">
 									{{ t('learning', 'Student') }}
-									<span v-if="leaderboardSortKey === 'display_name'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
+									<span v-if="leaderboardSortKey === 'user_id'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 								</th>
 								<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
 									:aria-sort="leaderboardSortKey === 'current_level' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
@@ -421,6 +430,23 @@
 							</tr>
 						</tbody>
 					</table>
+					<div class="progress-pagination">
+						<div class="progress-pagination-meta">
+							{{ t('learning', 'Showing {start}-{end} of {total}', {
+								start: leaderboardPageStart,
+								end: leaderboardPageEnd,
+								total: leaderboardMeta.total,
+							}) }}
+						</div>
+						<div class="progress-pagination-actions">
+							<NcButton type="tertiary" :disabled="!canLeaderboardPagePrev || leaderboardLoading" @click="pageLeaderboardPrev">
+								{{ t('learning', 'Previous') }}
+							</NcButton>
+							<NcButton type="tertiary" :disabled="!canLeaderboardPageNext || leaderboardLoading" @click="pageLeaderboardNext">
+								{{ t('learning', 'Next') }}
+							</NcButton>
+						</div>
+					</div>
 					<p v-if="myRank !== null && !isInstructor" class="my-rank-info">
 						{{ t('learning', 'Your rank: #{rank}', { rank: myRank }) }}
 					</p>
@@ -619,8 +645,16 @@ export default {
 			leaderboardLoading: false,
 			leaderboardData: [],
 			myRank: null,
-			leaderboardSortKey: null,
+			leaderboardSortKey: 'total_xp',
 			leaderboardSortAsc: false,
+			leaderboardPageSize: 25,
+			leaderboardActiveOnly: false,
+			leaderboardActiveDays: 30,
+			leaderboardMeta: {
+				total: 0,
+				limit: 25,
+				offset: 0,
+			},
 
 			// At-Risk
 			atRiskStudents: [],
@@ -674,21 +708,21 @@ export default {
 			return this.progressMeta.offset + this.progressData.length
 		},
 		sortedLeaderboardData() {
-			if (!this.leaderboardSortKey) return this.leaderboardData
-			const key = this.leaderboardSortKey
-			const asc = this.leaderboardSortAsc
-			return [...this.leaderboardData].sort((a, b) => {
-				let va = a[key]
-				let vb = b[key]
-				if (key === 'display_name') {
-					va = va || ''
-					vb = vb || ''
-					return asc ? va.localeCompare(vb) : vb.localeCompare(va)
-				}
-				va = va || 0
-				vb = vb || 0
-				return asc ? va - vb : vb - va
-			})
+			return this.leaderboardData
+		},
+		canLeaderboardPagePrev() {
+			return (this.leaderboardMeta.offset || 0) > 0
+		},
+		canLeaderboardPageNext() {
+			return (this.leaderboardMeta.offset + this.leaderboardMeta.limit) < this.leaderboardMeta.total
+		},
+		leaderboardPageStart() {
+			if (this.leaderboardMeta.total === 0 || this.leaderboardData.length === 0) return 0
+			return this.leaderboardMeta.offset + 1
+		},
+		leaderboardPageEnd() {
+			if (this.leaderboardMeta.total === 0 || this.leaderboardData.length === 0) return 0
+			return this.leaderboardMeta.offset + this.leaderboardData.length
 		},
 	},
 
@@ -1074,8 +1108,28 @@ export default {
 				this.leaderboardSortAsc = !this.leaderboardSortAsc
 			} else {
 				this.leaderboardSortKey = key
-				this.leaderboardSortAsc = key === 'display_name'
+				this.leaderboardSortAsc = key === 'user_id' || key === 'last_activity_date'
 			}
+			this.leaderboardMeta.offset = 0
+			this.fetchLeaderboard()
+		},
+
+		toggleLeaderboardActiveOnly(checked) {
+			this.leaderboardActiveOnly = !!checked
+			this.leaderboardMeta.offset = 0
+			this.fetchLeaderboard()
+		},
+
+		pageLeaderboardPrev() {
+			if (!this.canLeaderboardPagePrev || this.leaderboardLoading) return
+			this.leaderboardMeta.offset = Math.max(0, this.leaderboardMeta.offset - this.leaderboardMeta.limit)
+			this.fetchLeaderboard()
+		},
+
+		pageLeaderboardNext() {
+			if (!this.canLeaderboardPageNext || this.leaderboardLoading) return
+			this.leaderboardMeta.offset += this.leaderboardMeta.limit
+			this.fetchLeaderboard()
 		},
 
 		async fetchAtRisk() {
@@ -1093,9 +1147,23 @@ export default {
 			this.leaderboardLoading = true
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{id}/leaderboard', { id: this.courseId })
-				const response = await axios.get(url)
+				const response = await axios.get(url, {
+					params: {
+						limit: this.leaderboardMeta.limit || this.leaderboardPageSize,
+						offset: this.leaderboardMeta.offset || 0,
+						sortKey: this.leaderboardSortKey || 'total_xp',
+						sortDir: this.leaderboardSortAsc ? 'asc' : 'desc',
+						activeOnly: this.leaderboardActiveOnly ? 1 : 0,
+						activeWithinDays: this.leaderboardActiveDays,
+					},
+				})
 				this.leaderboardData = response.data.leaderboard || []
 				this.myRank = response.data.my_rank
+				this.leaderboardMeta = {
+					total: Number(response.data?.meta?.total || this.leaderboardData.length || 0),
+					limit: Number(response.data?.meta?.limit || this.leaderboardPageSize),
+					offset: Number(response.data?.meta?.offset || 0),
+				}
 			} catch (err) {
 				console.error('Failed to fetch leaderboard:', err)
 				this.error = t('learning', 'Failed to load leaderboard.')
@@ -1246,6 +1314,20 @@ export default {
 	letter-spacing: 1px;
 	color: var(--color-text-maxcontrast);
 	font-weight: 700;
+}
+
+.leaderboard-header-actions {
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.leaderboard-active-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.9em;
+	color: var(--color-text-maxcontrast);
 }
 
 /* Pool list */

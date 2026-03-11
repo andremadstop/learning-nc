@@ -47,6 +47,44 @@ Response:
 }
 ```
 
+## `GET /apps/learning/api/courses/{courseId}/leaderboard`
+
+Purpose:
+- Returns leaderboard rows (paged, sortable, optional active-only filter).
+
+Query params:
+- `limit` (int, optional, default `25`, max `100`)
+- `offset` (int, optional, default `0`)
+- `sortKey` (`user_id|total_xp|current_level|total_mastered|current_streak|total_sessions|last_activity_date`)
+- `sortDir` (`asc|desc`)
+- `activeOnly` (`0|1`, optional, default `0`)
+- `activeWithinDays` (int, optional, default `30`)
+
+Response:
+```json
+{
+  "leaderboard": [
+    {
+      "rank": 1,
+      "display_name": "Student 01",
+      "total_xp": 2500,
+      "current_level": 9,
+      "total_mastered": 180
+    }
+  ],
+  "my_rank": 14,
+  "meta": {
+    "total": 87,
+    "limit": 25,
+    "offset": 0,
+    "sort_key": "total_xp",
+    "sort_dir": "desc",
+    "active_only": false,
+    "active_within_days": 30
+  }
+}
+```
+
 ## `GET /apps/learning/api/courses/{courseId}/my-progress`
 
 Purpose:

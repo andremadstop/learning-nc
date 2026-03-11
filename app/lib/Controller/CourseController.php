@@ -246,9 +246,26 @@ class CourseController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 30, period: 60)]
-    public function leaderboard(int $courseId): JSONResponse {
+    public function leaderboard(
+        int $courseId,
+        int $limit = 25,
+        int $offset = 0,
+        ?string $sortKey = null,
+        ?string $sortDir = null,
+        bool $activeOnly = false,
+        int $activeWithinDays = 30
+    ): JSONResponse {
         try {
-            return new JSONResponse($this->courseService->getLeaderboard($courseId, $this->userId));
+            return new JSONResponse($this->courseService->getLeaderboard(
+                $courseId,
+                $this->userId,
+                $limit,
+                $offset,
+                $sortKey,
+                $sortDir,
+                $activeOnly,
+                $activeWithinDays
+            ));
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\OCA\Learning\Service\ForbiddenException $e) {

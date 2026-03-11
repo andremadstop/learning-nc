@@ -902,10 +902,51 @@ class CourseService {
     }
 
     /**
-     * Get course leaderboard — sorted by XP descending.
+     * Build ORDER BY for leaderboard based on allowed sort keys.
+     */
+    private function applyLeaderboardSorting($qb, string $sortKey, string $sortDir): void {
+        $dir = strtoupper($sortDir) === 'ASC' ? 'ASC' : 'DESC';
+
+        switch ($sortKey) {
+            case 'user_id':
+                $qb->orderBy('cm.user_id', $dir);
+                break;
+            case 'current_level':
+                $qb->orderBy('current_level', $dir)->addOrderBy('total_xp', 'DESC')->addOrderBy('cm.user_id', 'ASC');
+                break;
+            case 'total_mastered':
+                $qb->orderBy('total_mastered', $dir)->addOrderBy('total_xp', 'DESC')->addOrderBy('cm.user_id', 'ASC');
+                break;
+            case 'current_streak':
+                $qb->orderBy('current_streak', $dir)->addOrderBy('total_xp', 'DESC')->addOrderBy('cm.user_id', 'ASC');
+                break;
+            case 'total_sessions':
+                $qb->orderBy('total_sessions', $dir)->addOrderBy('total_xp', 'DESC')->addOrderBy('cm.user_id', 'ASC');
+                break;
+            case 'last_activity_date':
+                $qb->orderBy('us.last_activity_date', $dir)->addOrderBy('total_xp', 'DESC')->addOrderBy('cm.user_id', 'ASC');
+                break;
+            case 'total_xp':
+            default:
+                $qb->orderBy('total_xp', $dir)->addOrderBy('current_level', 'DESC')->addOrderBy('cm.user_id', 'ASC');
+                break;
+        }
+    }
+
+    /**
+     * Get course leaderboard — paged and server-side sorted.
      * Instructors see all fields; students see limited fields (privacy).
      */
-    public function getLeaderboard(int $courseId, string $userId): array {
+    public function getLeaderboard(
+        int $courseId,
+        string $userId,
+        int $limit = 25,
+        int $offset = 0,
+        ?string $sortKey = null,
+        ?string $sortDir = null,
+        bool $activeOnly = false,
+        int $activeWithinDays = 30
+    ): array {
         $course = $this->courseMapper->findById($courseId);
 
         if (!$this->hasAccess($course, $userId)) {
@@ -913,8 +954,30 @@ class CourseService {
         }
 
         $isInstructor = $this->isInstructorOfCourse($course, $userId);
+        $limit = max(1, min(100, $limit));
+        $offset = max(0, $offset);
+        $activeWithinDays = max(1, min(365, $activeWithinDays));
+        $allowedSortKeys = ['user_id', 'total_xp', 'current_level', 'total_mastered', 'current_streak', 'total_sessions', 'last_activity_date'];
+        $sortKey = in_array($sortKey, $allowedSortKeys, true) ? $sortKey : 'total_xp';
+        $sortDir = strtolower((string)$sortDir) === 'asc' ? 'asc' : 'desc';
+        $activeSince = gmdate('Y-m-d H:i:s', time() - ($activeWithinDays * 86400));
 
-        // Top 100 via SQL — avoids loading all students into PHP
+        // Count total with the same filter.
+        $qbCount = $this->db->getQueryBuilder();
+        $qbCount->select($qbCount->createFunction('COUNT(*) AS cnt'))
+            ->from('learning_course_members', 'cm')
+            ->leftJoin('cm', 'learning_user_stats', 'us', $qbCount->expr()->eq('cm.user_id', 'us.user_id'))
+            ->where($qbCount->expr()->eq('cm.course_id', $qbCount->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qbCount->expr()->eq('cm.role', $qbCount->createNamedParameter('student')));
+        if ($activeOnly) {
+            $qbCount->andWhere($qbCount->expr()->isNotNull('us.last_activity_date'))
+                ->andWhere($qbCount->expr()->gte('us.last_activity_date', $qbCount->createNamedParameter($activeSince)));
+        }
+        $countResult = $qbCount->executeQuery();
+        $total = (int)$countResult->fetchOne();
+        $countResult->closeCursor();
+
+        // Paged rows via SQL — avoids loading all students into PHP.
         $qb = $this->db->getQueryBuilder();
         $qb->select('cm.user_id')
             ->addSelect($qb->createFunction('COALESCE(us.total_xp, 0) AS total_xp'))
@@ -926,15 +989,17 @@ class CourseService {
             ->from('learning_course_members', 'cm')
             ->leftJoin('cm', 'learning_user_stats', 'us', $qb->expr()->eq('cm.user_id', 'us.user_id'))
             ->where($qb->expr()->eq('cm.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')))
-            ->orderBy('total_xp', 'DESC')
-            ->addOrderBy('current_level', 'DESC')
-            ->addOrderBy('cm.user_id', 'ASC')
-            ->setMaxResults(100);
+            ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')));
+        if ($activeOnly) {
+            $qb->andWhere($qb->expr()->isNotNull('us.last_activity_date'))
+                ->andWhere($qb->expr()->gte('us.last_activity_date', $qb->createNamedParameter($activeSince)));
+        }
+        $this->applyLeaderboardSorting($qb, $sortKey, $sortDir);
+        $qb->setFirstResult($offset)->setMaxResults($limit);
         $result = $qb->executeQuery();
 
         $entries = [];
-        $rank = 0;
+        $rank = $offset;
         while ($row = $result->fetch()) {
             $rank++;
             $entries[] = [
@@ -951,9 +1016,14 @@ class CourseService {
         }
         $result->closeCursor();
 
-        // Calculate requesting user's rank (only for students, not instructors)
+        // Calculate requesting user's rank only for default leaderboard mode.
         $myRank = null;
-        if (!$isInstructor) {
+        if (
+            !$isInstructor
+            && !$activeOnly
+            && $sortKey === 'total_xp'
+            && $sortDir === 'desc'
+        ) {
             foreach ($entries as $entry) {
                 if ($entry['user_id'] === $userId) {
                     $myRank = $entry['rank'];
@@ -961,7 +1031,7 @@ class CourseService {
                 }
             }
             if ($myRank === null) {
-                // User not in top 100 — count students ranked higher (XP DESC, Level DESC, user_id ASC)
+                // User not in current page — count students ranked higher (XP DESC, Level DESC, user_id ASC)
                 $qb2 = $this->db->getQueryBuilder();
                 $qb2->select($qb2->createFunction('COUNT(*) AS cnt'))
                     ->from('learning_course_members', 'cm')
@@ -1022,7 +1092,19 @@ class CourseService {
             }, $entries);
         }
 
-        return ['leaderboard' => $entries, 'my_rank' => $myRank];
+        return [
+            'leaderboard' => $entries,
+            'my_rank' => $myRank,
+            'meta' => [
+                'total' => $total,
+                'limit' => $limit,
+                'offset' => $offset,
+                'sort_key' => $sortKey,
+                'sort_dir' => $sortDir,
+                'active_only' => $activeOnly,
+                'active_within_days' => $activeWithinDays,
+            ],
+        ];
     }
 
     /**
