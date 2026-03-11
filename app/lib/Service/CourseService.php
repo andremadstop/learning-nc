@@ -640,13 +640,27 @@ class CourseService {
      * Get course progress — instructors see all students with stats, students see only their own.
      * Uses batch queries to avoid N+1 problem.
      */
-    public function getCourseProgress(int $courseId, string $userId): array {
+    public function getCourseProgress(
+        int $courseId,
+        string $userId,
+        int $limit = 25,
+        int $offset = 0,
+        ?string $sortKey = null,
+        ?string $sortDir = null
+    ): array {
         $course = $this->courseMapper->findById($courseId);
         $isInstructor = $this->isInstructorOfCourse($course, $userId);
 
         if (!$isInstructor && !$this->hasAccess($course, $userId)) {
             throw new \Exception('No permission');
         }
+
+        // Normalize pagination/sorting inputs.
+        $limit = max(1, min(100, $limit));
+        $offset = max(0, $offset);
+        $allowedSortKeys = ['user_id', 'current_level', 'total_xp', 'overall_mastery', 'last_activity_date'];
+        $sortKey = in_array($sortKey, $allowedSortKeys, true) ? $sortKey : 'total_xp';
+        $sortDir = strtolower((string)$sortDir) === 'asc' ? 'asc' : 'desc';
 
         $coursePools = $this->coursePoolMapper->findByCourse($courseId);
         $poolIds = array_map(fn($cp) => $cp->getPoolId(), $coursePools);
@@ -671,7 +685,16 @@ class CourseService {
         }
 
         if (empty($studentIds)) {
-            return ['students' => []];
+            return [
+                'students' => [],
+                'meta' => [
+                    'total' => 0,
+                    'limit' => $limit,
+                    'offset' => $offset,
+                    'sort_key' => $sortKey,
+                    'sort_dir' => $sortDir,
+                ],
+            ];
         }
 
         // Empty pools: return students with stats but no pool progress
@@ -688,10 +711,23 @@ class CourseService {
                     'current_level' => $stats ? $stats['current_level'] : 1,
                     'current_streak' => $stats ? $stats['current_streak'] : 0,
                     'last_activity_date' => $stats ? $stats['last_activity_date'] : null,
+                    'overall_mastery' => null,
                     'pools' => [],
                 ];
             }
-            return ['students' => $students];
+            $students = $this->sortCourseProgressStudents($students, $sortKey, $sortDir);
+            $total = count($students);
+            $students = array_slice($students, $offset, $limit);
+            return [
+                'students' => $students,
+                'meta' => [
+                    'total' => $total,
+                    'limit' => $limit,
+                    'offset' => $offset,
+                    'sort_key' => $sortKey,
+                    'sort_dir' => $sortDir,
+                ],
+            ];
         }
 
         // Batch queries (replaces N×4 per student per pool)
@@ -724,6 +760,9 @@ class CourseService {
                 ];
             }
 
+            $overallMastery = $totalQuestions > 0
+                ? (int)round($totalMastered / $totalQuestions * 100)
+                : null;
             $stats = $userStats[$sid] ?? null;
             $students[] = [
                 'user_id' => $sid,
@@ -733,11 +772,62 @@ class CourseService {
                 'current_level' => $stats ? $stats['current_level'] : 1,
                 'current_streak' => $stats ? $stats['current_streak'] : 0,
                 'last_activity_date' => $stats ? $stats['last_activity_date'] : null,
+                'overall_mastery' => $overallMastery,
                 'pools' => $poolProgress,
             ];
         }
 
-        return ['students' => $students];
+        $students = $this->sortCourseProgressStudents($students, $sortKey, $sortDir);
+        $total = count($students);
+        $students = array_slice($students, $offset, $limit);
+
+        return [
+            'students' => $students,
+            'meta' => [
+                'total' => $total,
+                'limit' => $limit,
+                'offset' => $offset,
+                'sort_key' => $sortKey,
+                'sort_dir' => $sortDir,
+            ],
+        ];
+    }
+
+    /**
+     * Sort course progress students by supported columns.
+     */
+    private function sortCourseProgressStudents(array $students, string $sortKey, string $sortDir): array {
+        $isAsc = $sortDir === 'asc';
+
+        usort($students, function (array $a, array $b) use ($sortKey, $isAsc): int {
+            switch ($sortKey) {
+                case 'user_id':
+                    // UX: "Student" column sorts by visible display name first.
+                    $va = mb_strtolower((string)($a['display_name'] ?? $a['user_id'] ?? ''));
+                    $vb = mb_strtolower((string)($b['display_name'] ?? $b['user_id'] ?? ''));
+                    $cmp = strcmp($va, $vb);
+                    break;
+                case 'last_activity_date':
+                    $va = (string)($a['last_activity_date'] ?? '');
+                    $vb = (string)($b['last_activity_date'] ?? '');
+                    $cmp = strcmp($va, $vb);
+                    break;
+                default:
+                    $va = (int)($a[$sortKey] ?? 0);
+                    $vb = (int)($b[$sortKey] ?? 0);
+                    $cmp = $va <=> $vb;
+                    break;
+            }
+
+            if ($cmp === 0) {
+                // Stable-ish fallback to deterministic order.
+                $cmp = strcmp((string)($a['user_id'] ?? ''), (string)($b['user_id'] ?? ''));
+            }
+
+            return $isAsc ? $cmp : -$cmp;
+        });
+
+        return $students;
     }
 
     /**

@@ -307,6 +307,23 @@
 							</tr>
 						</tbody>
 					</table>
+					<div class="progress-pagination">
+						<div class="progress-pagination-meta">
+							{{ t('learning', 'Showing {start}-{end} of {total}', {
+								start: progressPageStart,
+								end: progressPageEnd,
+								total: progressMeta.total,
+							}) }}
+						</div>
+						<div class="progress-pagination-actions">
+							<NcButton type="tertiary" :disabled="!canPagePrev || progressLoading" @click="pageProgressPrev">
+								{{ t('learning', 'Previous') }}
+							</NcButton>
+							<NcButton type="tertiary" :disabled="!canPageNext || progressLoading" @click="pageProgressNext">
+								{{ t('learning', 'Next') }}
+							</NcButton>
+						</div>
+					</div>
 				</div>
 
 				<NcEmptyContent v-else
@@ -587,6 +604,12 @@ export default {
 			progressData: [],
 			progressSortKey: 'total_xp',
 			progressSortAsc: false,
+			progressPageSize: 25,
+			progressMeta: {
+				total: 0,
+				limit: 25,
+				offset: 0,
+			},
 
 				// Student's own progress
 				studentProgress: [],
@@ -634,26 +657,21 @@ export default {
 			return this.allPools
 		},
 		sortedProgressData() {
-			if (!this.progressSortKey) return this.progressData
-			const key = this.progressSortKey
-			const asc = this.progressSortAsc
-			return [...this.progressData].sort((a, b) => {
-				let va, vb
-				if (key === 'user_id') {
-					// Sort by display_name (what the user sees), fall back to user_id
-					va = (a.display_name || a.user_id || '').toLowerCase()
-					vb = (b.display_name || b.user_id || '').toLowerCase()
-					return asc ? va.localeCompare(vb) : vb.localeCompare(va)
-				}
-				if (key === 'last_activity_date') {
-					va = a[key] || ''
-					vb = b[key] || ''
-					return asc ? va.localeCompare(vb) : vb.localeCompare(va)
-				}
-				va = a[key] || 0
-				vb = b[key] || 0
-				return asc ? va - vb : vb - va
-			})
+			return this.progressData
+		},
+		canPagePrev() {
+			return (this.progressMeta.offset || 0) > 0
+		},
+		canPageNext() {
+			return (this.progressMeta.offset + this.progressMeta.limit) < this.progressMeta.total
+		},
+		progressPageStart() {
+			if (this.progressMeta.total === 0 || this.progressData.length === 0) return 0
+			return this.progressMeta.offset + 1
+		},
+		progressPageEnd() {
+			if (this.progressMeta.total === 0 || this.progressData.length === 0) return 0
+			return this.progressMeta.offset + this.progressData.length
 		},
 		sortedLeaderboardData() {
 			if (!this.leaderboardSortKey) return this.leaderboardData
@@ -767,29 +785,37 @@ export default {
 			this.progressLoading = true
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{id}/progress', { id: this.courseId })
-				const response = await axios.get(url)
+				const response = await axios.get(url, {
+					params: {
+						limit: this.progressMeta.limit || this.progressPageSize,
+						offset: this.progressMeta.offset || 0,
+						sortKey: this.progressSortKey || 'total_xp',
+						sortDir: this.progressSortAsc ? 'asc' : 'desc',
+					},
+				})
 				// FIX-HI-3: Backend returns {students: [...]} not a plain array
 				const data = response.data
 				if (Array.isArray(data)) {
 					this.progressData = data
+					this.progressMeta = {
+						total: data.length,
+						limit: this.progressPageSize,
+						offset: 0,
+					}
 				} else if (data && Array.isArray(data.students)) {
-					// Compute overall_mastery for each student
-					this.progressData = data.students.map(student => {
-						let totalMastered = 0
-						let totalQuestions = 0
-						if (Array.isArray(student.pools)) {
-							for (const p of student.pools) {
-								totalMastered += p.mastered || 0
-								totalQuestions += p.total_questions || 0
-							}
-						}
-						student.overall_mastery = totalQuestions > 0
-							? Math.round(totalMastered / totalQuestions * 100)
-							: null
-						return student
-					})
+					this.progressData = data.students
+					this.progressMeta = {
+						total: Number(data.meta?.total || data.students.length || 0),
+						limit: Number(data.meta?.limit || this.progressPageSize),
+						offset: Number(data.meta?.offset || 0),
+					}
 				} else {
 					this.progressData = []
+					this.progressMeta = {
+						total: 0,
+						limit: this.progressPageSize,
+						offset: 0,
+					}
 				}
 			} catch (err) {
 				console.error('Failed to fetch progress:', err)
@@ -1027,6 +1053,20 @@ export default {
 				this.progressSortKey = key
 				this.progressSortAsc = key === 'user_id' || key === 'last_activity_date'
 			}
+			this.progressMeta.offset = 0
+			this.fetchProgress()
+		},
+
+		pageProgressPrev() {
+			if (!this.canPagePrev || this.progressLoading) return
+			this.progressMeta.offset = Math.max(0, this.progressMeta.offset - this.progressMeta.limit)
+			this.fetchProgress()
+		},
+
+		pageProgressNext() {
+			if (!this.canPageNext || this.progressLoading) return
+			this.progressMeta.offset += this.progressMeta.limit
+			this.fetchProgress()
 		},
 
 		setLeaderboardSort(key) {
@@ -1541,6 +1581,24 @@ export default {
 
 .progress-table tbody tr:last-child td {
 	border-bottom: none;
+}
+
+.progress-pagination {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 4px 0;
+}
+
+.progress-pagination-meta {
+	font-size: 0.9em;
+	color: var(--color-text-maxcontrast);
+}
+
+.progress-pagination-actions {
+	display: inline-flex;
+	gap: 8px;
 }
 
 .student-col {

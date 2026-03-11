@@ -2,6 +2,51 @@
 
 This document defines stable response shapes used by the frontend.
 
+## `GET /apps/learning/api/courses/{courseId}/progress`
+
+Purpose:
+- Returns course progress rows for instructors (paged and sortable), or own row for students.
+
+Query params:
+- `limit` (int, optional, default `25`, max `100`)
+- `offset` (int, optional, default `0`)
+- `sortKey` (`user_id|current_level|total_xp|overall_mastery|last_activity_date`)
+- `sortDir` (`asc|desc`)
+
+Response:
+```json
+{
+  "students": [
+    {
+      "user_id": "student01",
+      "display_name": "Student 01",
+      "total_xp": 345,
+      "current_level": 3,
+      "overall_mastery": 42,
+      "last_activity_date": "2026-03-10 14:22:00",
+      "pools": [
+        {
+          "pool_id": 123,
+          "pool_name": "CompTIA Network+ (DE)",
+          "total_questions": 100,
+          "mastered": 25,
+          "answered": 62,
+          "accuracy": 74,
+          "last_active": 1710176400
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "total": 87,
+    "limit": 25,
+    "offset": 0,
+    "sort_key": "total_xp",
+    "sort_dir": "desc"
+  }
+}
+```
+
 ## `GET /apps/learning/api/courses/{courseId}/my-progress`
 
 Purpose:
