@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.5.0] - 2026-03-11
+
+### Added
+- **Daily missions**: mission progress model plus claim endpoint (`GET /api/v1/missions`, `POST /api/v1/missions/{missionKey}/claim`).
+- **Mission XP claims table**: Migration `Version002000` adds `learning_user_mission_claims` with one-claim-per-mission-per-day guarantee.
+- **Streak freeze tokens**: weekly reset token support in streak calculation (`streak_freeze_tokens`, `last_freeze_reset_week` in `learning_user_stats`).
+- **Badge tiers**: new bronze/silver/gold/platinum tiers for session count, mastery count, and streak milestones.
+- **Analytics UI updates**: Daily mission cards with claim action and freeze-token visibility.
+
+### Changed
+- **Streak handling**: streak computation can bridge one missed day when freeze token is available; token is consumed on activity-side calls.
+- **App version**: bumped to `2.5.0`.
+
 ## [2.4.0] - 2026-03-11
 
 ### Added

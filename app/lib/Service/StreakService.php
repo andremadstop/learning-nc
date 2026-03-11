@@ -18,18 +18,60 @@ class StreakService {
         return $this->config->getAppValue('learning', 'gamification_enabled', 'yes') === 'yes';
     }
 
+    private function currentWeekKey(): string {
+        return gmdate('o-\WW');
+    }
+
+    private function getFreezeState(string $userId): array {
+        $fallback = ['tokens' => 1, 'week' => $this->currentWeekKey(), 'row_exists' => false];
+        try {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('streak_freeze_tokens', 'last_freeze_reset_week')
+               ->from('learning_user_stats')
+               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+               ->setMaxResults(1);
+            $result = $qb->execute();
+            $row = $result->fetch();
+            $result->closeCursor();
+        } catch (\Throwable $e) {
+            return $fallback;
+        }
+
+        if (!$row) {
+            return $fallback;
+        }
+
+        $week = $this->currentWeekKey();
+        $storedWeek = (string)($row['last_freeze_reset_week'] ?? '');
+        $tokens = max(0, (int)($row['streak_freeze_tokens'] ?? 1));
+        if ($storedWeek !== $week) {
+            $tokens = 1;
+            $qb = $this->db->getQueryBuilder();
+            $qb->update('learning_user_stats')
+               ->set('streak_freeze_tokens', $qb->createNamedParameter($tokens))
+               ->set('last_freeze_reset_week', $qb->createNamedParameter($week))
+               ->set('updated_at', $qb->createNamedParameter(time()))
+               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+            $qb->execute();
+        }
+
+        return ['tokens' => $tokens, 'week' => $week, 'row_exists' => true];
+    }
+
     /**
      * Calculate daily learning streak from completed sessions.
      *
      * @return array{current_streak: int, longest_streak: int, last_activity_date: ?string, is_active_today: bool}
      */
-    public function getStreak(string $userId): array {
+    public function getStreak(string $userId, bool $consumeFreeze = false): array {
         if (!$this->isGamificationEnabled()) {
             return [
                 'current_streak' => 0,
                 'longest_streak' => 0,
                 'last_activity_date' => null,
                 'is_active_today' => false,
+                'freeze_tokens' => 0,
+                'freeze_used' => false,
             ];
         }
 
@@ -54,33 +96,46 @@ class StreakService {
         $result->closeCursor();
 
         if (empty($rows)) {
+            $freezeState = $this->getFreezeState($userId);
             return [
                 'current_streak' => 0,
                 'longest_streak' => 0,
                 'last_activity_date' => null,
                 'is_active_today' => false,
+                'freeze_tokens' => (int)$freezeState['tokens'],
+                'freeze_used' => false,
             ];
         }
 
         $dates = array_map(fn($r) => $r['activity_date'], $rows);
         $today = gmdate('Y-m-d');
+        $yesterday = gmdate('Y-m-d', strtotime('-1 day', strtotime($today)));
+        $twoDaysAgo = gmdate('Y-m-d', strtotime('-2 day', strtotime($today)));
+        $freezeState = $this->getFreezeState($userId);
+        $freezeTokens = (int)$freezeState['tokens'];
+        $canUseFreeze = $freezeTokens > 0;
 
-        // Calculate current streak: count consecutive days backwards from today/yesterday
         $currentStreak = 0;
-        $checkDate = $today;
-
-        // If the most recent activity is not today or yesterday, streak is 0
-        if ($dates[0] !== $today && $dates[0] !== gmdate('Y-m-d', strtotime('-1 day', strtotime($today)))) {
-            $currentStreak = 0;
-        } else {
-            $checkDate = $dates[0];
+        $freezeUsed = false;
+        if ($dates[0] === $today || $dates[0] === $yesterday || ($dates[0] === $twoDaysAgo && $canUseFreeze)) {
+            $expected = $dates[0];
             foreach ($dates as $date) {
-                if ($date === $checkDate) {
+                if ($date === $expected) {
                     $currentStreak++;
-                    $checkDate = gmdate('Y-m-d', strtotime('-1 day', strtotime($checkDate)));
-                } else {
-                    break;
+                    $expected = gmdate('Y-m-d', strtotime('-1 day', strtotime($expected)));
+                    continue;
                 }
+
+                if ($canUseFreeze && !$freezeUsed) {
+                    $skipDay = gmdate('Y-m-d', strtotime('-1 day', strtotime($expected)));
+                    if ($date === $skipDay) {
+                        $freezeUsed = true;
+                        $expected = gmdate('Y-m-d', strtotime('-1 day', strtotime($skipDay)));
+                        $currentStreak++;
+                        continue;
+                    }
+                }
+                break;
             }
         }
 
@@ -98,11 +153,24 @@ class StreakService {
         }
         $longestStreak = max($longestStreak, $tempStreak, $currentStreak);
 
+        if ($consumeFreeze && $freezeUsed && $freezeTokens > 0 && $freezeState['row_exists']) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->update('learning_user_stats')
+               ->set('streak_freeze_tokens', $qb->createNamedParameter($freezeTokens - 1))
+               ->set('last_freeze_reset_week', $qb->createNamedParameter($freezeState['week']))
+               ->set('updated_at', $qb->createNamedParameter(time()))
+               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+            $qb->execute();
+            $freezeTokens--;
+        }
+
         return [
             'current_streak' => $currentStreak,
             'longest_streak' => $longestStreak,
             'last_activity_date' => $dates[0],
             'is_active_today' => $dates[0] === $today,
+            'freeze_tokens' => max(0, $freezeTokens),
+            'freeze_used' => $freezeUsed,
         ];
     }
 }

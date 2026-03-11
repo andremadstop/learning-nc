@@ -872,7 +872,7 @@ class TrainingService {
         $awardImmediateXp = !$suppressAnswers && !$isExam;
         $xpPerCorrect = 0;
         if ($awardImmediateXp) {
-            $streak = $this->streakService->getStreak($userId);
+            $streak = $this->streakService->getStreak($userId, true);
             $xpPerCorrect = $this->xpService->applyMultiplier(5, (int)$streak['current_streak']);
         }
         $batchXpEarned = 0;
@@ -1129,7 +1129,7 @@ class TrainingService {
      * Award immediate XP for a correctly answered question in training/exam sessions.
      */
     private function awardPerQuestionXp(string $userId, string $mode): int {
-        $streak = $this->streakService->getStreak($userId);
+        $streak = $this->streakService->getStreak($userId, true);
         $baseXp = $mode === 'exam' ? 10 : 5;
         $xpEarned = $this->xpService->applyMultiplier($baseXp, (int)$streak['current_streak']);
         if ($xpEarned > 0) {
@@ -1216,7 +1216,7 @@ class TrainingService {
         $response['newly_earned_badges'] = $newBadges;
 
         // XP for this session
-        $streak = $this->streakService->getStreak($userId);
+        $streak = $this->streakService->getStreak($userId, true);
         $sessionXp = $this->xpService->calculateSessionXp($sessionData, $streak['current_streak']);
         $response['xp_earned'] = $sessionXp;
 

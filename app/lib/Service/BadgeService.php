@@ -29,6 +29,18 @@ class BadgeService {
         'sharing_caring' => ['name' => 'Sharing is Caring', 'emoji' => "\u{1F91D}", 'description' => 'Share your first pool', 'category' => 'social'],
         'night_owl' => ['name' => 'Night Owl', 'emoji' => "\u{1F989}", 'description' => 'Complete a session between 23:00-05:00', 'category' => 'fun'],
         'early_bird' => ['name' => 'Early Bird', 'emoji' => "\u{1F426}", 'description' => 'Complete a session between 05:00-07:00', 'category' => 'fun'],
+        'sessions_bronze' => ['name' => 'Session Tier Bronze', 'emoji' => "\u{1F949}", 'description' => 'Complete 5 sessions', 'category' => 'sessions'],
+        'sessions_silver' => ['name' => 'Session Tier Silver', 'emoji' => "\u{1F948}", 'description' => 'Complete 25 sessions', 'category' => 'sessions'],
+        'sessions_gold' => ['name' => 'Session Tier Gold', 'emoji' => "\u{1F947}", 'description' => 'Complete 75 sessions', 'category' => 'sessions'],
+        'sessions_platinum' => ['name' => 'Session Tier Platinum', 'emoji' => "\u{1F48E}", 'description' => 'Complete 150 sessions', 'category' => 'sessions'],
+        'mastery_bronze' => ['name' => 'Mastery Tier Bronze', 'emoji' => "\u{1F949}", 'description' => 'Master 25 cards (Box 5)', 'category' => 'mastery'],
+        'mastery_silver' => ['name' => 'Mastery Tier Silver', 'emoji' => "\u{1F948}", 'description' => 'Master 100 cards (Box 5)', 'category' => 'mastery'],
+        'mastery_gold' => ['name' => 'Mastery Tier Gold', 'emoji' => "\u{1F947}", 'description' => 'Master 250 cards (Box 5)', 'category' => 'mastery'],
+        'mastery_platinum' => ['name' => 'Mastery Tier Platinum', 'emoji' => "\u{1F48E}", 'description' => 'Master 500 cards (Box 5)', 'category' => 'mastery'],
+        'streak_bronze' => ['name' => 'Streak Tier Bronze', 'emoji' => "\u{1F949}", 'description' => 'Reach a 3-day streak', 'category' => 'streak'],
+        'streak_silver' => ['name' => 'Streak Tier Silver', 'emoji' => "\u{1F948}", 'description' => 'Reach a 14-day streak', 'category' => 'streak'],
+        'streak_gold' => ['name' => 'Streak Tier Gold', 'emoji' => "\u{1F947}", 'description' => 'Reach a 45-day streak', 'category' => 'streak'],
+        'streak_platinum' => ['name' => 'Streak Tier Platinum', 'emoji' => "\u{1F48E}", 'description' => 'Reach a 120-day streak', 'category' => 'streak'],
     ];
 
     public function __construct(IDBConnection $db, INotificationManager $notificationManager, IConfig $config, IActivityManager $activityManager) {
@@ -123,6 +135,18 @@ class BadgeService {
         if ($sessionCount >= 50) {
             $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'fifty_sessions', $notify));
         }
+        if ($sessionCount >= 5) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'sessions_bronze', $notify));
+        }
+        if ($sessionCount >= 25) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'sessions_silver', $notify));
+        }
+        if ($sessionCount >= 75) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'sessions_gold', $notify));
+        }
+        if ($sessionCount >= 150) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'sessions_platinum', $notify));
+        }
 
         // Perfect training (100%, min 5 questions)
         $mode = $data['mode'] ?? 'training';
@@ -181,6 +205,18 @@ class BadgeService {
         if ($box5Count >= 100) {
             $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastermind_100', $notify));
         }
+        if ($box5Count >= 25) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastery_bronze', $notify));
+        }
+        if ($box5Count >= 100) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastery_silver', $notify));
+        }
+        if ($box5Count >= 250) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastery_gold', $notify));
+        }
+        if ($box5Count >= 500) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastery_platinum', $notify));
+        }
 
         return $newBadges;
     }
@@ -201,6 +237,18 @@ class BadgeService {
         }
         if ($streak >= 100) {
             $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_100', $notify));
+        }
+        if ($streak >= 3) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_bronze', $notify));
+        }
+        if ($streak >= 14) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_silver', $notify));
+        }
+        if ($streak >= 45) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_gold', $notify));
+        }
+        if ($streak >= 120) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_platinum', $notify));
         }
 
         return $newBadges;
@@ -342,6 +390,16 @@ class BadgeService {
 
         $sessionCount = $this->getCompletedSessionCount($userId);
         $box5Count = $this->getBox5Count($userId);
+        $currentStreak = 0;
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('current_streak')
+           ->from('learning_user_stats')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->setMaxResults(1);
+        $result = $qb->execute();
+        $streakRow = $result->fetch();
+        $result->closeCursor();
+        $currentStreak = (int)($streakRow['current_streak'] ?? 0);
 
         $progress = [];
 
@@ -349,8 +407,20 @@ class BadgeService {
             'first_session' => ['current' => $sessionCount, 'target' => 1],
             'ten_sessions' => ['current' => min($sessionCount, 10), 'target' => 10],
             'fifty_sessions' => ['current' => min($sessionCount, 50), 'target' => 50],
+            'sessions_bronze' => ['current' => min($sessionCount, 5), 'target' => 5],
+            'sessions_silver' => ['current' => min($sessionCount, 25), 'target' => 25],
+            'sessions_gold' => ['current' => min($sessionCount, 75), 'target' => 75],
+            'sessions_platinum' => ['current' => min($sessionCount, 150), 'target' => 150],
             'mastermind_10' => ['current' => min($box5Count, 10), 'target' => 10],
             'mastermind_100' => ['current' => min($box5Count, 100), 'target' => 100],
+            'mastery_bronze' => ['current' => min($box5Count, 25), 'target' => 25],
+            'mastery_silver' => ['current' => min($box5Count, 100), 'target' => 100],
+            'mastery_gold' => ['current' => min($box5Count, 250), 'target' => 250],
+            'mastery_platinum' => ['current' => min($box5Count, 500), 'target' => 500],
+            'streak_bronze' => ['current' => min($currentStreak, 3), 'target' => 3],
+            'streak_silver' => ['current' => min($currentStreak, 14), 'target' => 14],
+            'streak_gold' => ['current' => min($currentStreak, 45), 'target' => 45],
+            'streak_platinum' => ['current' => min($currentStreak, 120), 'target' => 120],
         ];
 
         // Check which are already earned

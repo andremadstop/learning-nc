@@ -181,6 +181,44 @@ Response:
 }
 ```
 
+## `GET /apps/learning/api/v1/missions`
+
+Purpose:
+- Returns daily mission progress and claim state for the current user.
+
+Response excerpt:
+```json
+{
+  "date": "2026-03-11",
+  "missions": [
+    {
+      "key": "daily_sessions_1",
+      "name": "Daily Warmup",
+      "xp": 20,
+      "current": 1,
+      "target": 1,
+      "completed": true,
+      "claimed": false,
+      "claimable": true
+    }
+  ]
+}
+```
+
+## `POST /apps/learning/api/v1/missions/{missionKey}/claim`
+
+Purpose:
+- Claims one completed mission for today and awards mission XP once.
+
+Response excerpt:
+```json
+{
+  "mission_key": "daily_sessions_1",
+  "xp_earned": 20,
+  "date": "2026-03-11"
+}
+```
+
 Notes:
 - `mastered` = count of Leitner items in box 5 for that pool.
 - `answered` = sum of `total_questions` from completed sessions in that pool.

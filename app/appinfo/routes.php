@@ -72,6 +72,8 @@ return [
 
         // User State (consolidated endpoint)
         ['name' => 'user_state#state', 'url' => '/api/v1/user/state', 'verb' => 'GET'],
+        ['name' => 'user_state#missions', 'url' => '/api/v1/missions', 'verb' => 'GET'],
+        ['name' => 'user_state#claimMission', 'url' => '/api/v1/missions/{missionKey}/claim', 'verb' => 'POST'],
         ['name' => 'user_state#updateSettings', 'url' => '/api/v1/user/settings', 'verb' => 'PUT'],
         ['name' => 'user_state#dailyChallenge', 'url' => '/api/v1/daily-challenge', 'verb' => 'GET'],
         ['name' => 'user_state#answerChallenge', 'url' => '/api/v1/daily-challenge/answer', 'verb' => 'POST'],

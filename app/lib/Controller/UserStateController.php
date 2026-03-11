@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\BadgeService;
+use OCA\Learning\Service\MissionService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Controller;
@@ -17,6 +18,7 @@ class UserStateController extends Controller {
     private BadgeService $badgeService;
     private StreakService $streakService;
     private XpService $xpService;
+    private MissionService $missionService;
     private IDBConnection $db;
     private ICacheFactory $cacheFactory;
     private IConfig $config;
@@ -28,6 +30,7 @@ class UserStateController extends Controller {
         BadgeService $badgeService,
         StreakService $streakService,
         XpService $xpService,
+        MissionService $missionService,
         IDBConnection $db,
         ICacheFactory $cacheFactory,
         IConfig $config,
@@ -37,6 +40,7 @@ class UserStateController extends Controller {
         $this->badgeService = $badgeService;
         $this->streakService = $streakService;
         $this->xpService = $xpService;
+        $this->missionService = $missionService;
         $this->db = $db;
         $this->cacheFactory = $cacheFactory;
         $this->config = $config;
@@ -429,6 +433,7 @@ class UserStateController extends Controller {
         $xpMultiplier = $this->xpService->getStreakMultiplier($streak['current_streak']);
         $badges = $this->badgeService->getUserBadges($this->userId);
         $progress = $this->badgeService->getBadgeProgress($this->userId);
+        $missions = $this->missionService->getMissions((string)$this->userId);
 
         // Stats from denormalized table
         $qb = $this->db->getQueryBuilder();
@@ -469,6 +474,7 @@ class UserStateController extends Controller {
             'xp_multiplier' => $xpMultiplier,
             'badges' => $badges,
             'progress' => $progress,
+            'missions' => $missions,
             'stats' => [
                 'total_sessions' => (int)($statsRow['total_sessions'] ?? 0),
                 'total_mastered' => (int)($statsRow['total_mastered'] ?? 0),
@@ -484,5 +490,33 @@ class UserStateController extends Controller {
         $cache->set($cacheKey, $data, 30);
 
         return new DataResponse($data);
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function missions(): DataResponse {
+        try {
+            return new DataResponse($this->missionService->getMissions((string)$this->userId));
+        } catch (\Throwable $e) {
+            return new DataResponse(['error' => 'Failed to load missions'], 400);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function claimMission(string $missionKey): DataResponse {
+        try {
+            $result = $this->missionService->claimMission((string)$this->userId, $missionKey);
+            $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $this->userId);
+            return new DataResponse($result);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], 400);
+        } catch (\Throwable $e) {
+            return new DataResponse(['error' => 'Failed to claim mission'], 400);
+        }
     }
 }

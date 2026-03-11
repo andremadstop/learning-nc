@@ -44,6 +44,7 @@
             {{ streak.current_streak === 1 ? t('learning', 'day') : t('learning', 'days') }}
             &middot; {{ t('learning', 'Best: {n}', { n: streak.longest_streak }) }}
           </p>
+          <p class="card-sub">{{ t('learning', 'Freeze Tokens: {n}', { n: streak.freeze_tokens || 0 }) }}</p>
         </div>
         <div class="summary-card card-questions">
           <span class="card-watermark">&#x1F4DA;</span>
@@ -64,6 +65,26 @@
           <span class="card-watermark">&#x1F3AF;</span>
           <p class="card-label">{{ t('learning', 'Accuracy') }}</p>
           <p class="card-value">{{ stats.accuracy }}%</p>
+        </div>
+      </div>
+
+      <div class="missions-section" v-if="missionsData.missions && missionsData.missions.length > 0">
+        <h3 class="section-heading">{{ t('learning', 'Daily Missions') }}</h3>
+        <div class="missions-grid">
+          <div v-for="m in missionsData.missions" :key="m.key" class="mission-card" :class="{ done: m.completed, claimed: m.claimed }">
+            <div class="mission-title">{{ m.name }}</div>
+            <div class="mission-desc">{{ m.description }}</div>
+            <div class="mission-progress">{{ m.current }}/{{ m.target }}</div>
+            <div class="mission-actions">
+              <span class="mission-xp">+{{ m.xp }} XP</span>
+              <NcButton v-if="m.claimable" type="primary" :disabled="claimingMissionKey === m.key" @click="claimMission(m.key)">
+                {{ claimingMissionKey === m.key ? t('learning', 'Claiming...') : t('learning', 'Claim') }}
+              </NcButton>
+              <span v-else class="mission-status">
+                {{ m.claimed ? t('learning', 'Claimed') : (m.completed ? t('learning', 'Ready') : t('learning', 'In Progress')) }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -195,10 +216,12 @@ export default {
         total_answered: 0,
         accuracy: 0,
       },
-      streak: { current_streak: 0, longest_streak: 0, is_active_today: false },
+      streak: { current_streak: 0, longest_streak: 0, is_active_today: false, freeze_tokens: 0 },
       badges: [],
       badgeProgress: [],
       xp: { total_xp: 0, level: 1, xp_in_level: 0, xp_to_next_level: 100, level_progress_pct: 0 },
+      missionsData: { date: null, missions: [] },
+      claimingMissionKey: null,
     };
   },
   computed: {
@@ -247,6 +270,7 @@ export default {
         this.badges = r.data.badges || [];
         this.xp = r.data.xp || this.xp;
         this.badgeProgress = r.data.progress || [];
+        this.missionsData = r.data.missions || this.missionsData;
       } catch (e) {
         // Fallback to individual endpoints (rolling-deploy safety, handles 404 + 5xx)
         console.warn('User state endpoint failed, falling back to legacy endpoints:', e.response?.status);
@@ -275,6 +299,17 @@ export default {
         const r = await axios.get(generateUrl('/apps/learning/api/badges/progress'));
         this.badgeProgress = r.data?.progress || [];
       } catch (e) { /* progress is optional */ }
+    },
+    async claimMission(missionKey) {
+      this.claimingMissionKey = missionKey;
+      try {
+        await axios.post(generateUrl('/apps/learning/api/v1/missions/{missionKey}/claim', { missionKey }), {});
+        await this.fetchUserState();
+      } catch (e) {
+        // ignore toast spam
+      } finally {
+        this.claimingMissionKey = null;
+      }
     },
     formatDate(ts) {
       if (!ts) return '';
@@ -361,6 +396,59 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.missions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.mission-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 12px;
+  background: color-mix(in srgb, var(--color-background-dark) 20%, transparent);
+}
+
+.mission-card.done {
+  border-color: var(--color-success);
+}
+
+.mission-card.claimed {
+  opacity: 0.8;
+}
+
+.mission-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.mission-desc {
+  font-size: 12px;
+  color: var(--color-text-maxcontrast);
+  min-height: 32px;
+}
+
+.mission-progress {
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.mission-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.mission-xp {
+  font-weight: 700;
+}
+
+.mission-status {
+  font-size: 12px;
+  color: var(--color-text-maxcontrast);
 }
 
 .xp-hero-level {
