@@ -4,8 +4,8 @@
       <h2>{{ userRole === 'student' ? t('learning', 'Learning') : t('learning', 'Learning - Spaced Repetition') }}</h2>
     </div>
 
-    <!-- Top-level navigation: Pools | Courses (Instructor only) -->
-    <div v-if="userRole === 'instructor'" class="main-nav" role="tablist">
+    <!-- Top-level navigation: Pools | Courses -->
+    <div class="main-nav" role="tablist">
       <button
         :class="['main-nav-btn', { active: mainView === 'pools' }]"
         role="tab"

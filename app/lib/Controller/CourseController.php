@@ -4,7 +4,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Controller;
-use OCP\AppFramework\Http\JSONResponse;
+use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
@@ -34,8 +34,8 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function role(): JSONResponse {
-        return new JSONResponse([
+    public function role(): DataResponse {
+        return new DataResponse([
             'role' => $this->roleService->getRole($this->userId),
             'group' => $this->roleService->getInstructorGroup(),
         ]);
@@ -44,24 +44,24 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function index(): JSONResponse {
+    public function index(): DataResponse {
         try {
-            return new JSONResponse($this->courseService->findAll($this->userId));
+            return new DataResponse($this->courseService->findAll($this->userId));
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'Failed to list courses'], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Failed to list courses'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function show(int $courseId): JSONResponse {
+    public function show(int $courseId): DataResponse {
         try {
-            return new JSONResponse($this->courseService->findById($courseId, $this->userId));
+            return new DataResponse($this->courseService->findById($courseId, $this->userId));
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
-            return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'Failed to load course'], Http::STATUS_FORBIDDEN);
+            return new DataResponse(['error' => 'Failed to load course'], Http::STATUS_FORBIDDEN);
         }
     }
 
@@ -69,130 +69,130 @@ class CourseController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function create(string $title, ?string $description = null, ?string $ncGroupId = null): JSONResponse {
+    public function create(string $title, ?string $description = null, ?string $ncGroupId = null): DataResponse {
         try {
             $course = $this->courseService->create($title, $description, $ncGroupId, $this->userId);
-            return new JSONResponse($course, Http::STATUS_CREATED);
+            return new DataResponse($course, Http::STATUS_CREATED);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'Failed to create course'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'Failed to create course'], Http::STATUS_BAD_REQUEST);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function update(int $courseId, ?string $title = null, ?string $description = null, ?string $status = null): JSONResponse {
+    public function update(int $courseId, ?string $title = null, ?string $description = null, ?string $status = null): DataResponse {
         try {
             $course = $this->courseService->update($courseId, $title, $description, $status, $this->userId);
-            return new JSONResponse($course);
+            return new DataResponse($course);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
-            return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'Failed to update course'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'Failed to update course'], Http::STATUS_BAD_REQUEST);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function destroy(int $courseId): JSONResponse {
+    public function destroy(int $courseId): DataResponse {
         try {
             $this->courseService->delete($courseId, $this->userId);
-            return new JSONResponse([], Http::STATUS_NO_CONTENT);
+            return new DataResponse([], Http::STATUS_NO_CONTENT);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
-            return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'Failed to delete course'], Http::STATUS_FORBIDDEN);
+            return new DataResponse(['error' => 'Failed to delete course'], Http::STATUS_FORBIDDEN);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function listPools(int $courseId): JSONResponse {
+    public function listPools(int $courseId): DataResponse {
         try {
             $data = $this->courseService->findById($courseId, $this->userId);
-            return new JSONResponse($data['pools'] ?? []);
+            return new DataResponse($data['pools'] ?? []);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'Failed to list pools'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'Failed to list pools'], Http::STATUS_BAD_REQUEST);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function addPool(int $courseId, int $poolId, int $sortOrder = 0, bool $required = true): JSONResponse {
+    public function addPool(int $courseId, int $poolId, int $sortOrder = 0, bool $required = true): DataResponse {
         try {
             $cp = $this->courseService->addPool($courseId, $poolId, $sortOrder, $required, $this->userId);
-            return new JSONResponse($cp, Http::STATUS_CREATED);
+            return new DataResponse($cp, Http::STATUS_CREATED);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'Failed to add pool'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'Failed to add pool'], Http::STATUS_BAD_REQUEST);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function removePool(int $courseId, int $poolId): JSONResponse {
+    public function removePool(int $courseId, int $poolId): DataResponse {
         try {
             $this->courseService->removePool($courseId, $poolId, $this->userId);
-            return new JSONResponse([], Http::STATUS_NO_CONTENT);
+            return new DataResponse([], Http::STATUS_NO_CONTENT);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'Failed to remove pool'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'Failed to remove pool'], Http::STATUS_BAD_REQUEST);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function listMembers(int $courseId): JSONResponse {
+    public function listMembers(int $courseId): DataResponse {
         try {
-            return new JSONResponse($this->courseService->getMembers($courseId, $this->userId));
+            return new DataResponse($this->courseService->getMembers($courseId, $this->userId));
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'No permission to view members'], Http::STATUS_FORBIDDEN);
+            return new DataResponse(['error' => 'No permission to view members'], Http::STATUS_FORBIDDEN);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function addMember(int $courseId, string $userId, string $role = 'student'): JSONResponse {
+    public function addMember(int $courseId, string $userId, string $role = 'student'): DataResponse {
         try {
             $member = $this->courseService->addMember($courseId, $userId, $role, $this->userId);
-            return new JSONResponse($member, Http::STATUS_CREATED);
+            return new DataResponse($member, Http::STATUS_CREATED);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'Failed to add member'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'Failed to add member'], Http::STATUS_BAD_REQUEST);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function removeMember(int $courseId, string $memberId): JSONResponse {
+    public function removeMember(int $courseId, string $memberId): DataResponse {
         try {
             $this->courseService->removeMember($courseId, $memberId, $this->userId);
-            return new JSONResponse([], Http::STATUS_NO_CONTENT);
+            return new DataResponse([], Http::STATUS_NO_CONTENT);
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'Failed to remove member'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'Failed to remove member'], Http::STATUS_BAD_REQUEST);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function enroll(int $courseId): JSONResponse {
+    public function enroll(int $courseId): DataResponse {
         try {
             $member = $this->courseService->enroll($courseId, $this->userId);
-            return new JSONResponse($member, Http::STATUS_CREATED);
+            return new DataResponse($member, Http::STATUS_CREATED);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
-            return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
             // FIX-LO-1: Return 403 for auth/group errors, 400 for others
             $msg = $e->getMessage();
             if (strpos($msg, 'not in the required group') !== false) {
-                return new JSONResponse(['error' => 'Not authorized to enroll'], Http::STATUS_FORBIDDEN);
+                return new DataResponse(['error' => 'Not authorized to enroll'], Http::STATUS_FORBIDDEN);
             }
-            return new JSONResponse(['error' => 'Failed to enroll in course'], Http::STATUS_BAD_REQUEST);
+            return new DataResponse(['error' => 'Failed to enroll in course'], Http::STATUS_BAD_REQUEST);
         }
     }
 
@@ -205,9 +205,9 @@ class CourseController extends Controller {
         int $offset = 0,
         ?string $sortKey = null,
         ?string $sortDir = null
-    ): JSONResponse {
+    ): DataResponse {
         try {
-            return new JSONResponse($this->courseService->getCourseProgress(
+            return new DataResponse($this->courseService->getCourseProgress(
                 $courseId,
                 $this->userId,
                 $limit,
@@ -216,29 +216,29 @@ class CourseController extends Controller {
                 $sortDir
             ));
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'No permission to view progress'], Http::STATUS_FORBIDDEN);
+            return new DataResponse(['error' => 'No permission to view progress'], Http::STATUS_FORBIDDEN);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function myProgress(int $courseId): JSONResponse {
+    public function myProgress(int $courseId): DataResponse {
         try {
-            return new JSONResponse($this->courseService->getMyCourseProgress($courseId, $this->userId));
+            return new DataResponse($this->courseService->getMyCourseProgress($courseId, $this->userId));
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'No permission to view progress'], Http::STATUS_FORBIDDEN);
+            return new DataResponse(['error' => 'No permission to view progress'], Http::STATUS_FORBIDDEN);
         }
     }
 
     /**
      * @NoAdminRequired
      */
-    public function dashboard(): JSONResponse {
+    public function dashboard(): DataResponse {
         try {
-            return new JSONResponse($this->courseService->getDashboard($this->userId));
+            return new DataResponse($this->courseService->getDashboard($this->userId));
         } catch (\Exception $e) {
-            return new JSONResponse(['error' => 'Not authorized for dashboard'], Http::STATUS_FORBIDDEN);
+            return new DataResponse(['error' => 'Not authorized for dashboard'], Http::STATUS_FORBIDDEN);
         }
     }
 
@@ -254,9 +254,9 @@ class CourseController extends Controller {
         ?string $sortDir = null,
         bool $activeOnly = false,
         int $activeWithinDays = 30
-    ): JSONResponse {
+    ): DataResponse {
         try {
-            return new JSONResponse($this->courseService->getLeaderboard(
+            return new DataResponse($this->courseService->getLeaderboard(
                 $courseId,
                 $this->userId,
                 $limit,
@@ -267,12 +267,12 @@ class CourseController extends Controller {
                 $activeWithinDays
             ));
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
-            return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
-            return new JSONResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
             $this->logger->error('leaderboard error: ' . $e->getMessage(), ['app' => 'learning']);
-            return new JSONResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -280,16 +280,16 @@ class CourseController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 30, period: 60)]
-    public function atRisk(int $courseId): JSONResponse {
+    public function atRisk(int $courseId): DataResponse {
         try {
-            return new JSONResponse($this->courseService->getAtRiskStudents($courseId, $this->userId));
+            return new DataResponse($this->courseService->getAtRiskStudents($courseId, $this->userId));
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
-            return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
-            return new JSONResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
             $this->logger->error('atRisk error: ' . $e->getMessage(), ['app' => 'learning']);
-            return new JSONResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -297,18 +297,18 @@ class CourseController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 30, period: 60)]
-    public function studentDetail(int $courseId, string $studentId): JSONResponse {
+    public function studentDetail(int $courseId, string $studentId): DataResponse {
         try {
-            return new JSONResponse($this->courseService->getStudentDetail($courseId, $studentId, $this->userId));
+            return new DataResponse($this->courseService->getStudentDetail($courseId, $studentId, $this->userId));
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
-            return new JSONResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\OCA\Learning\Service\NotFoundException $e) {
-            return new JSONResponse(['error' => 'Student not found in this course'], Http::STATUS_NOT_FOUND);
+            return new DataResponse(['error' => 'Student not found in this course'], Http::STATUS_NOT_FOUND);
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
-            return new JSONResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
             $this->logger->error('studentDetail error: ' . $e->getMessage(), ['app' => 'learning']);
-            return new JSONResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 }

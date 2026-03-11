@@ -93,10 +93,27 @@ class QuestionMapper extends QBMapper {
 
     public function searchByText(string $query, string $userId, int $limit = 50): array {
         $qb = $this->db->getQueryBuilder();
-        $qb->select("q.*", "p.name as pool_name")
+        $expr = $qb->expr();
+        $qb->selectDistinct("q.*", "p.name as pool_name")
            ->from($this->getTableName(), "q")
            ->innerJoin("q", "learning_pools", "p", $qb->expr()->eq("q.pool_id", "p.id"))
-           ->where($qb->expr()->eq("q.user_id", $qb->createNamedParameter($userId)))
+           ->leftJoin("p", "learning_pool_shares", "s", $expr->andX(
+               $expr->eq("s.pool_id", "p.id"),
+               $expr->eq("s.shared_with", $qb->createNamedParameter($userId)),
+               $expr->eq("s.share_type", $qb->createNamedParameter("user"))
+           ))
+           ->leftJoin("p", "learning_course_pools", "cp", $expr->eq("cp.pool_id", "p.id"))
+           ->leftJoin("cp", "learning_courses", "c", $expr->eq("cp.course_id", "c.id"))
+           ->leftJoin("c", "learning_course_members", "cm", $expr->andX(
+               $expr->eq("cm.course_id", "c.id"),
+               $expr->eq("cm.user_id", $qb->createNamedParameter($userId))
+           ))
+           ->where($expr->orX(
+               $expr->eq("q.user_id", $qb->createNamedParameter($userId)),
+               $expr->isNotNull("s.id"),
+               $expr->eq("c.instructor_id", $qb->createNamedParameter($userId)),
+               $expr->isNotNull("cm.id")
+           ))
            ->andWhere($qb->expr()->iLike("q.text", $qb->createNamedParameter("%" . $this->db->escapeLikeParameter($query) . "%")))
            ->orderBy("q.created_at", "DESC")
            ->setMaxResults($limit);

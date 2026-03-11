@@ -54,6 +54,9 @@
         <span v-if="!dailyChallenge.completed" class="dc-xp">+{{ dailyChallenge.xp_reward }} XP</span>
         <span v-else class="dc-done-badge">{{ dailyChallenge.was_correct ? t('learning', 'Correct!') : t('learning', 'Tried!') }}</span>
       </div>
+      <div v-if="dailyChallenge.completed" class="dc-next-time">
+        {{ t('learning', 'Next challenge in {time}', { time: formatCountdown(challengeCountdownSec) }) }}
+      </div>
       <div class="dc-pool-tag">{{ dailyChallenge.pool_name }}</div>
       <div class="dc-question">{{ dailyChallenge.question.text }}</div>
       <div v-if="!dailyChallenge.completed && dailyChallenge.question.question_type === 'open'" class="dc-answers">
@@ -345,6 +348,8 @@ export default {
       xpMultiplier: 1,
       // Open challenge
       challengeOpenAnswer: '',
+      challengeCountdownSec: 0,
+      challengeCountdownTimer: null,
     };
   },
   computed: {
@@ -397,11 +402,36 @@ export default {
       const saved = localStorage.getItem('learning-lang-filter');
       if (saved) this.activeLangs = JSON.parse(saved);
     } catch (e) { /* ignore */ }
+    this.startChallengeCountdown();
   },
   beforeDestroy() {
     document.removeEventListener('click', this.handleClickOutside);
+    this.stopChallengeCountdown();
   },
   methods: {
+    startChallengeCountdown() {
+      this.updateChallengeCountdown();
+      if (this.challengeCountdownTimer) clearInterval(this.challengeCountdownTimer);
+      this.challengeCountdownTimer = setInterval(() => this.updateChallengeCountdown(), 1000);
+    },
+    stopChallengeCountdown() {
+      if (this.challengeCountdownTimer) {
+        clearInterval(this.challengeCountdownTimer);
+        this.challengeCountdownTimer = null;
+      }
+    },
+    updateChallengeCountdown() {
+      const now = new Date();
+      const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
+      this.challengeCountdownSec = Math.max(0, Math.floor((next.getTime() - now.getTime()) / 1000));
+    },
+    formatCountdown(seconds) {
+      const s = Math.max(0, Number(seconds || 0));
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    },
     async loadPools() {
       this.loading = true;
       try {
@@ -504,7 +534,6 @@ export default {
       this.poolSearchResults = [];
       this.questionSearchResults = [];
       if (this.searchTerm.length >= 2) {
-        // TODO: Client-side pool filtering includes shared pools
         const lowerCaseSearchTerm = this.searchTerm.toLowerCase();
         this.poolSearchResults = [...this.pools, ...this.sharedPools].filter(pool =>
           pool.name.toLowerCase().includes(lowerCaseSearchTerm) ||
@@ -908,6 +937,11 @@ export default {
   font-weight: 700;
   background: var(--color-success);
   color: #fff;
+}
+.dc-next-time {
+  font-size: 12px;
+  color: var(--color-text-maxcontrast);
+  margin-bottom: 8px;
 }
 .dc-pool-tag {
   display: inline-block;

@@ -184,7 +184,10 @@ class PoolService {
     }
 
     public function setReviewStatus(int $id, string $reviewStatus, string $reviewerId, string $userId): Pool {
-        $pool = $this->mapper->find($id, $userId);
+        if (!$this->canEditPool($id, $userId)) {
+            throw new NotFoundException('Pool not found');
+        }
+        $pool = $this->mapper->findById($id);
         $pool->setReviewStatus($this->normalizeReviewStatus($reviewStatus));
         $pool->setReviewerId($reviewerId);
         $pool->setReviewedAt(time());

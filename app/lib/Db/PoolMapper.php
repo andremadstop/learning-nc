@@ -29,6 +29,15 @@ class PoolMapper extends QBMapper {
         return $this->findEntity($qb);
     }
 
+    public function findById(int $id): Pool {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))
+           ->setMaxResults(1);
+        return $this->findEntity($qb);
+    }
+
     public function createOrUpdate(Pool $pool): Pool {
         $now = time();
         if ($pool->getId() === null) {
