@@ -23,11 +23,11 @@ class TrainingController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function start(int $poolId, ?int $limit = null, string $mode = 'training'): DataResponse {
+    public function start(int $poolId, ?int $limit = null, string $mode = 'training', ?int $timeLimitSeconds = null): DataResponse {
         try {
-            return new DataResponse($this->service->startSession($poolId, $this->userId, $limit, $mode), 201);
+            return new DataResponse($this->service->startSession($poolId, $this->userId, $limit, $mode, $timeLimitSeconds), 201);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => 'Failed to start training session'], 400);
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to start training session'], 400);
         }
     }
 
@@ -58,7 +58,10 @@ class TrainingController extends Controller {
         try {
             return new DataResponse($this->service->submitBatch($sessionId, $answers, $this->userId));
         } catch (\Exception $e) {
-            return new DataResponse(['error' => 'Failed to submit answers'], 400);
+            if ($e->getMessage() === 'Exam timed out') {
+                return new DataResponse(['error' => 'Exam timed out', 'timed_out' => true], Http::STATUS_CONFLICT);
+            }
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to submit answers'], 400);
         }
     }
 
@@ -70,7 +73,7 @@ class TrainingController extends Controller {
         try {
             return new DataResponse($this->service->completeSession($sessionId, $this->userId));
         } catch (\Exception $e) {
-            return new DataResponse(['error' => 'Failed to complete session'], 400);
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to complete session'], 400);
         }
     }
 }

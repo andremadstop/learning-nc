@@ -54,6 +54,87 @@ class TrainingService {
         $this->logger->info('learning.training.security.' . $event, array_merge(['app' => 'learning'], $context));
     }
 
+    private function logAuditEvent(string $event, array $context = []): void {
+        $this->logger->info('learning.training.audit.' . $event, array_merge(['app' => 'learning'], $context));
+    }
+
+    private function getExamAttemptNo(int $poolId, string $userId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*)'))
+            ->from('learning_sessions')
+            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')));
+        $result = $qb->execute();
+        $count = (int)$result->fetchOne();
+        $result->closeCursor();
+        return $count + 1;
+    }
+
+    private function getExamDeadlineAt(array $session): ?int {
+        if (($session['mode'] ?? 'training') !== 'exam') {
+            return null;
+        }
+        $timeLimit = isset($session['time_limit_seconds']) ? (int)$session['time_limit_seconds'] : 0;
+        $startedAt = isset($session['started_at']) ? (int)$session['started_at'] : 0;
+        if ($timeLimit <= 0 || $startedAt <= 0) {
+            return null;
+        }
+        return $startedAt + $timeLimit;
+    }
+
+    /**
+     * Auto-close expired exam sessions server-side.
+     * Returns updated session plus timeout flag.
+     */
+    private function closeExpiredExamSessionIfNeeded(array $session, string $userId, string $trigger): array {
+        $deadlineAt = $this->getExamDeadlineAt($session);
+        if ($deadlineAt === null) {
+            return ['session' => $session, 'timed_out' => false];
+        }
+
+        if (!empty($session['completed_at'])) {
+            return ['session' => $session, 'timed_out' => ((int)$session['completed_at'] > $deadlineAt)];
+        }
+
+        $now = time();
+        if ($now <= $deadlineAt) {
+            return ['session' => $session, 'timed_out' => false];
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->update('learning_sessions')
+            ->set('completed_at', $qb->createNamedParameter($now))
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$session['id'])))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->isNull('completed_at'));
+        $qb->execute();
+        $session['completed_at'] = $now;
+
+        $this->logAuditEvent('exam_timeout_auto_complete', [
+            'user_id' => $userId,
+            'session_id' => (int)$session['id'],
+            'pool_id' => (int)$session['pool_id'],
+            'trigger' => $trigger,
+            'deadline_at' => $deadlineAt,
+            'now' => $now,
+        ]);
+
+        return ['session' => $session, 'timed_out' => true];
+    }
+
+    /**
+     * Deterministic answer ordering per session/question to prevent shared answer position patterns.
+     */
+    private function shuffleAnswersForSession(array $answers, int $sessionId, int $questionId): array {
+        usort($answers, function ($a, $b) use ($sessionId, $questionId): int {
+            $sa = hash('sha256', $sessionId . ':' . $questionId . ':' . (string)$a->getId());
+            $sb = hash('sha256', $sessionId . ':' . $questionId . ':' . (string)$b->getId());
+            return strcmp($sa, $sb);
+        });
+        return $answers;
+    }
+
     private function hasPoolAccess(int $poolId, string $userId): bool {
         try {
             $this->poolMapper->find($poolId, $userId);
@@ -97,17 +178,22 @@ class TrainingService {
      */
     private function hasActiveExamOnPool(int $poolId, string $userId): bool {
         $qb = $this->db->getQueryBuilder();
-        $qb->select('id')
+        $qb->select('*')
            ->from('learning_sessions')
            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
-           ->andWhere($qb->expr()->isNull('completed_at'))
-           ->setMaxResults(1);
+           ->andWhere($qb->expr()->isNull('completed_at'));
         $result = $qb->execute();
-        $hasExam = $result->fetch();
+        $rows = $result->fetchAll();
         $result->closeCursor();
-        return $hasExam !== false;
+        foreach ($rows as $row) {
+            $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($row, $userId, 'active_exam_check');
+            if (!$timeoutInfo['timed_out']) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function verifySessionOwnership(int $sessionId, string $userId): array {
@@ -126,7 +212,13 @@ class TrainingService {
         return $session;
     }
 
-    public function startSession(int $poolId, string $userId, ?int $limit = null, string $mode = 'training'): array {
+    public function startSession(
+        int $poolId,
+        string $userId,
+        ?int $limit = null,
+        string $mode = 'training',
+        ?int $timeLimitSeconds = null
+    ): array {
         if (!in_array($mode, ['training', 'exam'], true)) {
             $mode = 'training';
         }
@@ -137,7 +229,7 @@ class TrainingService {
 
         // Block starting any session while user has an active exam on the same pool
         $qb = $this->db->getQueryBuilder();
-        $qb->select('id')
+        $qb->select('*')
            ->from('learning_sessions')
            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
@@ -148,7 +240,10 @@ class TrainingService {
         $hasActiveExam = $activeExam->fetch();
         $activeExam->closeCursor();
         if ($hasActiveExam) {
-            throw new \Exception('Cannot start session while an exam is active for this pool');
+            $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($hasActiveExam, $userId, 'start_session_guard');
+            if (!$timeoutInfo['timed_out']) {
+                throw new \Exception('Cannot start session while an exam is active for this pool');
+            }
         }
 
         // SECURITY: When starting an exam, auto-complete all open training sessions
@@ -176,24 +271,37 @@ class TrainingService {
             $questions = array_slice($questions, 0, $limit);
         }
 
+        $startedAt = time();
+        $examAttemptNo = null;
+        $effectiveTimeLimit = null;
+        if ($mode === 'exam') {
+            $examAttemptNo = $this->getExamAttemptNo($poolId, $userId);
+            $requestedLimit = $timeLimitSeconds ?? 600;
+            $effectiveTimeLimit = max(60, min(7200, (int)$requestedLimit));
+        }
+
         $qb = $this->db->getQueryBuilder();
         $qb->insert('learning_sessions')
            ->values([
                'pool_id' => $qb->createNamedParameter($poolId),
                'user_id' => $qb->createNamedParameter($userId),
-               'started_at' => $qb->createNamedParameter(time()),
+               'started_at' => $qb->createNamedParameter($startedAt),
                'total_questions' => $qb->createNamedParameter(count($questions)),
                'correct_answers' => $qb->createNamedParameter(0),
-               'mode' => $qb->createNamedParameter($mode)
+               'mode' => $qb->createNamedParameter($mode),
+               'time_limit_seconds' => $qb->createNamedParameter($effectiveTimeLimit, $effectiveTimeLimit === null ? \PDO::PARAM_NULL : \PDO::PARAM_INT),
+               'attempt_no' => $qb->createNamedParameter($examAttemptNo, $examAttemptNo === null ? \PDO::PARAM_NULL : \PDO::PARAM_INT),
            ]);
         $qb->execute();
 
-        $sessionId = $qb->getLastInsertId();
+        $sessionId = (int)$qb->getLastInsertId();
+        $deadlineAt = ($mode === 'exam' && $effectiveTimeLimit !== null) ? ($startedAt + $effectiveTimeLimit) : null;
 
         $questionsWithAnswers = [];
         foreach ($questions as $q) {
             $qData = $q->jsonSerialize();
             $answers = $this->answerMapper->findByQuestion($q->getId());
+            $answers = $this->shuffleAnswersForSession($answers, $sessionId, (int)$q->getId());
             $qData['answers'] = array_map(static function ($a) {
                 $row = $a->jsonSerialize();
                 unset($row['is_correct']);
@@ -202,10 +310,26 @@ class TrainingService {
             $questionsWithAnswers[] = $qData;
         }
 
+        $this->logAuditEvent('session_started', [
+            'user_id' => $userId,
+            'session_id' => $sessionId,
+            'pool_id' => $poolId,
+            'mode' => $mode,
+            'question_count' => count($questions),
+            'time_limit_seconds' => $effectiveTimeLimit,
+            'exam_deadline_at' => $deadlineAt,
+            'attempt_no' => $examAttemptNo,
+        ]);
+
         return [
             'session_id' => $sessionId,
             'total_questions' => count($questions),
-            'questions' => $questionsWithAnswers
+            'questions' => $questionsWithAnswers,
+            'mode' => $mode,
+            'server_time' => $startedAt,
+            'time_limit_seconds' => $effectiveTimeLimit,
+            'exam_deadline_at' => $deadlineAt,
+            'attempt_no' => $examAttemptNo,
         ];
     }
 
@@ -234,6 +358,11 @@ class TrainingService {
 
     public function submitAnswer(int $sessionId, int $questionId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
+        $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'submit_answer');
+        $session = $timeoutInfo['session'];
+        if ($timeoutInfo['timed_out']) {
+            throw new \Exception('Exam timed out');
+        }
         $mode = $session['mode'] ?? 'training';
 
         // Block submissions to completed sessions
@@ -468,6 +597,11 @@ class TrainingService {
 
     public function submitBatch(int $sessionId, array $answers, string $userId): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
+        $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'submit_batch');
+        $session = $timeoutInfo['session'];
+        if ($timeoutInfo['timed_out']) {
+            throw new \Exception('Exam timed out');
+        }
 
         // Block submissions to completed sessions
         if (!empty($session['completed_at'])) {
@@ -739,6 +873,16 @@ class TrainingService {
             $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);
         }
 
+        $this->logAuditEvent('batch_submitted', [
+            'user_id' => $userId,
+            'session_id' => $sessionId,
+            'pool_id' => $poolId,
+            'mode' => $session['mode'] ?? 'training',
+            'submitted_count' => count($answers),
+            'processed_count' => count($results),
+            'batch_xp_earned' => $batchXpEarned,
+        ]);
+
         return $results;
     }
 
@@ -758,6 +902,10 @@ class TrainingService {
 
     public function completeSession(int $sessionId, string $userId): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
+        $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'complete');
+        $session = $timeoutInfo['session'];
+        $timedOut = $timeoutInfo['timed_out'];
+        $deadlineAt = $this->getExamDeadlineAt($session);
 
         // Idempotent: already completed sessions return existing data
         if (!empty($session['completed_at'])) {
@@ -774,6 +922,9 @@ class TrainingService {
             $response['score_percentage'] = $totalQ > 0
                 ? round((int)$session['correct_answers'] / $totalQ * 100)
                 : 0;
+            $response['timed_out'] = $timedOut;
+            $response['exam_deadline_at'] = $deadlineAt;
+            $response['attempt_no'] = isset($session['attempt_no']) ? (int)$session['attempt_no'] : null;
             return $response;
         }
 
@@ -802,6 +953,9 @@ class TrainingService {
                 ? round((int)$session['correct_answers'] / (int)$session['total_questions'] * 100)
                 : 0
         ];
+        $response['timed_out'] = $timedOut;
+        $response['exam_deadline_at'] = $deadlineAt;
+        $response['attempt_no'] = isset($session['attempt_no']) ? (int)$session['attempt_no'] : null;
 
         // For exam sessions, include full review data (only available after completion)
         if (($session['mode'] ?? 'training') === 'exam') {
@@ -850,6 +1004,19 @@ class TrainingService {
         $response['is_personal_best'] = $response['score_percentage'] > $avgAccuracy && $avgAccuracy > 0;
         $improvement = $avgAccuracy > 0 ? round($response['score_percentage'] - $avgAccuracy) : 0;
         $response['improvement'] = $improvement;
+
+        $this->logAuditEvent('session_completed', [
+            'user_id' => $userId,
+            'session_id' => $sessionId,
+            'pool_id' => $poolId,
+            'mode' => $mode,
+            'timed_out' => $timedOut,
+            'score_percentage' => $response['score_percentage'],
+            'correct_answers' => (int)$session['correct_answers'],
+            'total_questions' => (int)$session['total_questions'],
+            'xp_earned' => $sessionXp,
+            'attempt_no' => isset($session['attempt_no']) ? (int)$session['attempt_no'] : null,
+        ]);
 
         return $response;
     }

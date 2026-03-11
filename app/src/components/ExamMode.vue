@@ -46,6 +46,9 @@
       <div :class="['timer-display', timerColorClass]">
         {{ formattedTimeLeft }}
       </div>
+      <div class="exam-meta-line">
+        <span v-if="attemptNo">{{ t('learning', 'Attempt #{n}', { n: attemptNo }) }}</span>
+      </div>
 
       <NcProgressBar :value="progressPercentage" />
       <div class="progress-label">{{ answeredCount }} / {{ questions.length }} {{ t('learning', 'answered') }}</div>
@@ -131,6 +134,9 @@
     <!-- Results Screen -->
     <div v-else-if="screen === 'results'" class="results-screen">
       <h3 class="exam-title">{{ t('learning', 'Exam Results') }}</h3>
+      <p v-if="resultsData && resultsData.timed_out" class="timeout-note">
+        {{ t('learning', 'Time limit reached. The exam was auto-submitted.') }}
+      </p>
 
       <div v-if="resultsData" class="results-summary">
         <div class="score-circle" :class="scoreColorClass">
@@ -260,6 +266,8 @@ export default {
       examDurationSeconds: null,
       examStartTime: null,
       examEndTime: null,
+      examDeadlineAt: null,
+      attemptNo: null,
       snakeWidth: 0,
       snakeHeight: 0,
       resizeObserver: null,
@@ -368,6 +376,7 @@ export default {
         if (this.selectedQuestionCount > 0) {
           params.limit = this.selectedQuestionCount;
         }
+        params.timeLimitSeconds = this.selectedTimeLimit;
         const r = await axios.post(generateUrl('/apps/learning/api/training/start'), params);
         this.session = r.data.session_id;
         const questions = r.data.questions;
@@ -384,10 +393,15 @@ export default {
         this.openAnswerTexts = {};
         this.detailedResults = [];
         this.resultsData = null;
-        this.examDurationSeconds = this.selectedTimeLimit;
-        this.timeLeftSeconds = this.selectedTimeLimit;
-        this.examStartTime = Math.floor(Date.now() / 1000);
+        this.examDurationSeconds = Number(r.data.time_limit_seconds || this.selectedTimeLimit);
+        this.examDeadlineAt = Number(r.data.exam_deadline_at || 0) || null;
+        const serverNow = Number(r.data.server_time || Math.floor(Date.now() / 1000));
+        this.timeLeftSeconds = this.examDeadlineAt
+          ? Math.max(0, this.examDeadlineAt - serverNow)
+          : this.examDurationSeconds;
+        this.examStartTime = serverNow;
         this.examEndTime = null;
+        this.attemptNo = Number(r.data.attempt_no || 0) || null;
 
         this.startTimer();
         this.screen = 'exam';
@@ -410,10 +424,17 @@ export default {
     startTimer() {
       if (this.timerInterval) clearInterval(this.timerInterval);
       this.timerInterval = setInterval(() => {
-        if (this.timeLeftSeconds > 0) {
-          this.timeLeftSeconds--;
+        if (this.examDeadlineAt) {
+          const now = Math.floor(Date.now() / 1000);
+          this.timeLeftSeconds = Math.max(0, this.examDeadlineAt - now);
+        } else if (this.timeLeftSeconds > 0) {
+          this.timeLeftSeconds -= 1;
+        }
+
+        if (this.timeLeftSeconds <= 0) {
+          this.finishExam({ forceTimedOut: true });
         } else {
-          this.finishExam();
+          this.timeLeftSeconds = Math.max(0, this.timeLeftSeconds);
         }
       }, 1000);
     },
@@ -485,7 +506,8 @@ export default {
       this.currentQuestionIndex = index;
     },
 
-    async finishExam() {
+    async finishExam({ forceTimedOut = false } = {}) {
+      if (this.isLoading) return;
       if (this.timerInterval) {
         clearInterval(this.timerInterval);
         this.timerInterval = null;
@@ -511,16 +533,26 @@ export default {
         }
 
         // Submit all answers (exam mode: server won't return correct answers)
+        let batchTimedOut = false;
         if (batchAnswers.length > 0) {
-          await axios.post(generateUrl('/apps/learning/api/training/submitBatch'), {
-            sessionId: this.session,
-            answers: batchAnswers,
-          });
+          try {
+            await axios.post(generateUrl('/apps/learning/api/training/submitBatch'), {
+              sessionId: this.session,
+              answers: batchAnswers,
+            });
+          } catch (submitErr) {
+            if (submitErr.response?.status === 409 && submitErr.response?.data?.timed_out) {
+              batchTimedOut = true;
+            } else {
+              throw submitErr;
+            }
+          }
         }
 
         // Complete session — server returns review data for exam sessions
         const cr = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session });
         this.resultsData = cr.data;
+        this.resultsData.timed_out = !!(cr.data.timed_out || batchTimedOut || forceTimedOut);
 
         // Build detailed results from server review data
         const reviewMap = {};
@@ -588,6 +620,8 @@ export default {
           total_questions: this.questions.length,
           correct_answers: this.detailedResults.filter(r => r.isCorrect).length,
           score_percentage: Math.round(this.detailedResults.filter(r => r.isCorrect).length / this.questions.length * 100),
+          timed_out: !!forceTimedOut,
+          attempt_no: this.attemptNo,
         };
       } finally {
         this.isLoading = false;
@@ -604,6 +638,8 @@ export default {
       this.openAnswerTexts = {};
       this.resultsData = null;
       this.detailedResults = [];
+      this.examDeadlineAt = null;
+      this.attemptNo = null;
       if (this.timerInterval) clearInterval(this.timerInterval);
       this.timerInterval = null;
       this.timeLeftSeconds = null;
@@ -644,6 +680,7 @@ export default {
 .timer-green { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
 .timer-yellow { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
 .timer-red { background: color-mix(in srgb, var(--color-error) 15%, transparent); color: var(--color-error); }
+.exam-meta-line { text-align: center; color: var(--color-text-maxcontrast); font-size: 13px; margin: -4px 0 12px; }
 
 .progress-label { text-align: center; font-size: 13px; color: var(--color-text-maxcontrast); margin: 8px 0 24px; }
 
@@ -788,6 +825,7 @@ export default {
 
 /* Review */
 .review-title { font-size: 18px; font-weight: 600; margin: 28px 0 16px; color: var(--color-main-text); }
+.timeout-note { margin: 0 0 14px; text-align: center; color: var(--color-error); font-weight: 600; }
 .review-list { border: 1px solid var(--color-border); border-radius: 12px; overflow: hidden; margin-bottom: 28px; }
 .review-item { padding: 16px; border-bottom: 1px solid var(--color-border); }
 .review-item:last-child { border-bottom: none; }

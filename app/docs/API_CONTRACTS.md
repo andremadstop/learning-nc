@@ -2,6 +2,46 @@
 
 This document defines stable response shapes used by the frontend.
 
+## `POST /apps/learning/api/training/start`
+
+Purpose:
+- Starts training or exam sessions and returns question payload.
+
+Request payload keys:
+- `poolId` (int, required)
+- `mode` (`training|exam`, optional, default `training`)
+- `limit` (int, optional)
+- `timeLimitSeconds` (int, optional, exam only)
+
+Response excerpt:
+```json
+{
+  "session_id": 321,
+  "mode": "exam",
+  "total_questions": 20,
+  "server_time": 1741700000,
+  "time_limit_seconds": 600,
+  "exam_deadline_at": 1741700600,
+  "attempt_no": 2,
+  "questions": []
+}
+```
+
+## `POST /apps/learning/api/training/complete`
+
+Response excerpt:
+```json
+{
+  "session_id": 321,
+  "total_questions": 20,
+  "correct_answers": 15,
+  "score_percentage": 75,
+  "timed_out": false,
+  "exam_deadline_at": 1741700600,
+  "attempt_no": 2
+}
+```
+
 ## `GET /apps/learning/api/courses/{courseId}/progress`
 
 Purpose:
