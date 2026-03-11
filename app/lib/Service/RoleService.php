@@ -33,7 +33,13 @@ class RoleService {
             return true;
         }
 
-        // Fallback: treat users as instructor if they are instructor in any course
+        // Security default: global instructor privileges are group-based only.
+        // Optional fallback can be enabled explicitly for legacy setups.
+        if ($this->config->getAppValue($this->appName, 'allow_course_instructor_fallback', '0') !== '1') {
+            return false;
+        }
+
+        // Optional fallback: treat users as instructor if they are instructor in any course
         // (owner via courses.instructor_id or member role "instructor").
         try {
             $qb = $this->db->getQueryBuilder();

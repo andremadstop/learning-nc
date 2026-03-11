@@ -297,12 +297,12 @@ class TrainingService {
                    ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
                 $qb->execute();
             }
-            $xpEarned = $isCorrect ? $this->awardPerQuestionXp($userId, $mode) : 0;
+            $xpEarned = ($isCorrect && !$suppressAnswers) ? $this->awardPerQuestionXp($userId, $mode) : 0;
 
             if ($suppressAnswers) {
                 return [
-                    'is_correct' => $isCorrect,
-                    'xp_earned' => $xpEarned,
+                    'recorded' => true,
+                    'suppressed' => true,
                 ];
             }
 
@@ -369,13 +369,13 @@ class TrainingService {
                    ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
                 $qb->execute();
             }
-            $xpEarned = $isCorrect ? $this->awardPerQuestionXp($userId, $mode) : 0;
+            $xpEarned = ($isCorrect && !$suppressAnswers) ? $this->awardPerQuestionXp($userId, $mode) : 0;
 
             // SECURITY: Suppress correct answers if active exam on same pool
             if ($suppressAnswers) {
                 return [
-                    'is_correct' => $isCorrect,
-                    'xp_earned' => $xpEarned,
+                    'recorded' => true,
+                    'suppressed' => true,
                 ];
             }
 
@@ -424,13 +424,13 @@ class TrainingService {
                ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
             $qb->execute();
         }
-        $xpEarned = $isCorrect ? $this->awardPerQuestionXp($userId, $mode) : 0;
+        $xpEarned = ($isCorrect && !$suppressAnswers) ? $this->awardPerQuestionXp($userId, $mode) : 0;
 
         // SECURITY: Suppress correct answers if active exam on same pool
         if ($suppressAnswers) {
             return [
-                'is_correct' => $isCorrect,
-                'xp_earned' => $xpEarned,
+                'recorded' => true,
+                'suppressed' => true,
             ];
         }
 
@@ -470,8 +470,12 @@ class TrainingService {
         }
 
         $results = [];
-        $streak = $this->streakService->getStreak($userId);
-        $xpPerCorrect = $this->xpService->applyMultiplier($isExam ? 10 : 5, (int)$streak['current_streak']);
+        $awardImmediateXp = !$suppressAnswers && !$isExam;
+        $xpPerCorrect = 0;
+        if ($awardImmediateXp) {
+            $streak = $this->streakService->getStreak($userId);
+            $xpPerCorrect = $this->xpService->applyMultiplier(5, (int)$streak['current_streak']);
+        }
         $batchXpEarned = 0;
         foreach ($answers as $entry) {
             $questionId = (int)$entry['questionId'];
@@ -550,7 +554,7 @@ class TrainingService {
                     $results[] = [
                         'questionId' => $questionId,
                         'recorded' => true,
-                        'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
+                        'suppressed' => true,
                     ];
                 } else {
                     $results[] = [
@@ -558,7 +562,7 @@ class TrainingService {
                         'is_correct' => $isCorrect,
                         'correct_answer_text' => $modelText,
                         'user_answer_text' => $entryAnswerText,
-                        'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
+                        'xp_earned' => ($awardImmediateXp && $isCorrect) ? $xpPerCorrect : 0,
                     ];
                 }
                 continue;
@@ -620,7 +624,7 @@ class TrainingService {
                     $results[] = [
                         'questionId' => $questionId,
                         'recorded' => true,
-                        'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
+                        'suppressed' => true,
                     ];
                 } else {
                     $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
@@ -631,7 +635,7 @@ class TrainingService {
                         'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
                         'correct_answer_ids' => $correctIds,
                         'correct_answer_texts' => $correctTexts,
-                        'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
+                        'xp_earned' => ($awardImmediateXp && $isCorrect) ? $xpPerCorrect : 0,
                     ];
                 }
                 continue;
@@ -684,7 +688,7 @@ class TrainingService {
                 $results[] = [
                     'questionId' => $questionId,
                     'recorded' => true,
-                    'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
+                    'suppressed' => true,
                 ];
             } else {
                 $correctRows = $this->getAllCorrectAnswers($questionId);
@@ -698,7 +702,7 @@ class TrainingService {
                     'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
                     'correct_answer_ids' => $correctIds,
                     'correct_answer_texts' => $correctTexts,
-                    'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
+                    'xp_earned' => ($awardImmediateXp && $isCorrect) ? $xpPerCorrect : 0,
                 ];
             }
         }
