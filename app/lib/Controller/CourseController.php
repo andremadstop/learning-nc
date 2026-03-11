@@ -210,6 +210,17 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
+    public function myProgress(int $courseId): JSONResponse {
+        try {
+            return new JSONResponse($this->courseService->getMyCourseProgress($courseId, $this->userId));
+        } catch (\Exception $e) {
+            return new JSONResponse(['error' => 'No permission to view progress'], Http::STATUS_FORBIDDEN);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
     public function dashboard(): JSONResponse {
         try {
             return new JSONResponse($this->courseService->getDashboard($this->userId));

@@ -718,6 +718,7 @@ class CourseService {
                     'pool_name' => $poolNames[$pid] ?? '(deleted)',
                     'total_questions' => $totalQ,
                     'mastered' => $mastered,
+                    'answered' => $totalAnswered,
                     'accuracy' => $accuracy,
                     'last_active' => $sess ? $sess['last_active'] : null,
                 ];
@@ -737,6 +738,52 @@ class CourseService {
         }
 
         return ['students' => $students];
+    }
+
+    /**
+     * Get progress for the current user in a course (role-independent).
+     * Used for "My Progress" card in the course view.
+     */
+    public function getMyCourseProgress(int $courseId, string $userId): array {
+        $course = $this->courseMapper->findById($courseId);
+
+        if (!$this->hasAccess($course, $userId)) {
+            throw new \Exception('No permission');
+        }
+
+        $coursePools = $this->coursePoolMapper->findByCourse($courseId);
+        $poolIds = array_map(fn($cp) => $cp->getPoolId(), $coursePools);
+
+        if (empty($poolIds)) {
+            return ['pools' => []];
+        }
+
+        $poolNames = $this->getPoolNames($poolIds);
+        $questionCounts = $this->getQuestionCounts($poolIds);
+        $masteryData = $this->getBatchMastery([$userId], $poolIds);
+        $sessionData = $this->getBatchSessionStats([$userId], $poolIds);
+
+        $pools = [];
+        foreach ($poolIds as $pid) {
+            $totalQ = $questionCounts[$pid] ?? 0;
+            $mastered = $masteryData[$userId][$pid] ?? 0;
+            $sess = $sessionData[$userId][$pid] ?? null;
+            $totalAnswered = $sess ? $sess['total_q'] : 0;
+            $totalCorrect = $sess ? $sess['correct'] : 0;
+            $accuracy = $totalAnswered > 0 ? round($totalCorrect / $totalAnswered * 100) : 0;
+
+            $pools[] = [
+                'pool_id' => $pid,
+                'pool_name' => $poolNames[$pid] ?? '(deleted)',
+                'total_questions' => $totalQ,
+                'mastered' => $mastered,
+                'answered' => $totalAnswered,
+                'accuracy' => $accuracy,
+                'last_active' => $sess ? $sess['last_active'] : null,
+            ];
+        }
+
+        return ['pools' => $pools];
     }
 
     /**

@@ -87,7 +87,7 @@
 				</NcEmptyContent>
 
 				<!-- Student progress per pool (student view) -->
-				<div v-if="!isInstructor && studentProgress.length > 0" class="student-own-progress">
+				<div v-if="studentProgress.length > 0" class="student-own-progress">
 					<h4>{{ t('learning', 'My Progress') }}</h4>
 					<div class="progress-bars">
 						<div v-for="prog in studentProgress"
@@ -100,6 +100,7 @@
 									:style="{ width: prog.mastery + '%' }" />
 							</div>
 							<span class="progress-percent">{{ prog.mastery }}%</span>
+							<span class="progress-meta">{{ t('learning', '{n} answered', { n: prog.answered || 0 }) }}</span>
 						</div>
 					</div>
 				</div>
@@ -397,7 +398,12 @@
 		</template>
 
 		<!-- Add Pool Modal -->
-		<NcModal v-if="showAddPoolModal" @close="showAddPoolModal = false">
+		<NcModal
+			v-if="showAddPoolModal"
+			:show="showAddPoolModal"
+			@update:show="onAddPoolModalShowChanged"
+			@close="closeAddPoolModal"
+			@closing="closeAddPoolModal">
 			<div class="modal-content">
 				<h3>{{ t('learning', 'Add Pool to Course') }}</h3>
 
@@ -448,7 +454,7 @@
 		</NcModal>
 
 		<!-- Remove pool confirmation modal -->
-		<NcModal v-if="showRemovePoolModal" @close="showRemovePoolModal = false" size="small">
+		<NcModal v-if="showRemovePoolModal" @close="showRemovePoolModal = false" @closing="showRemovePoolModal = false" size="small">
 			<div class="modal-content">
 				<h3>{{ t('learning', 'Remove Pool') }}</h3>
 				<p>{{ t('learning', 'Remove "{name}" from this course? Students will lose access to these questions.', { name: removingPool ? removingPool.pool_name : '' }) }}</p>
@@ -468,7 +474,7 @@
 		</NcModal>
 
 		<!-- Remove member confirmation modal -->
-		<NcModal v-if="showRemoveMemberModal" @close="showRemoveMemberModal = false" size="small">
+		<NcModal v-if="showRemoveMemberModal" @close="showRemoveMemberModal = false" @closing="showRemoveMemberModal = false" size="small">
 			<div class="modal-content">
 				<h3>{{ t('learning', 'Remove Member') }}</h3>
 				<p>{{ t('learning', 'Remove "{name}" from this course?', { name: removingMember ? removingMember.user_id : '' }) }}</p>
@@ -698,7 +704,7 @@ export default {
 
 		async fetchStudentProgress() {
 			try {
-				const url = generateUrl('/apps/learning/api/courses/{id}/progress', { id: this.courseId })
+				const url = generateUrl('/apps/learning/api/courses/{id}/my-progress', { id: this.courseId })
 				const response = await axios.get(url)
 				const data = response.data
 				let pools = []
@@ -706,8 +712,6 @@ export default {
 					pools = data
 				} else if (data && data.pools) {
 					pools = data.pools
-				} else if (data && Array.isArray(data.students) && data.students.length > 0) {
-					pools = data.students[0].pools || []
 				}
 				// Compute mastery percentage from mastered/total_questions
 				this.studentProgress = pools.map(p => ({
@@ -763,6 +767,16 @@ export default {
 			if (this.allPools.length === 0) {
 				await this.fetchAllPools()
 			}
+		},
+
+		onAddPoolModalShowChanged(show) {
+			if (!show) {
+				this.closeAddPoolModal()
+			}
+		},
+
+		closeAddPoolModal() {
+			this.showAddPoolModal = false
 		},
 
 		async fetchAllPools() {
@@ -1304,6 +1318,14 @@ export default {
 	font-size: 0.85em;
 	font-weight: 600;
 	color: var(--color-main-text);
+}
+
+.progress-meta {
+	width: 96px;
+	flex-shrink: 0;
+	text-align: right;
+	font-size: 0.8em;
+	color: var(--color-text-maxcontrast);
 }
 
 /* Members section */
