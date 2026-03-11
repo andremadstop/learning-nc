@@ -75,3 +75,9 @@ FRITZBOX_GUIDE.md
 VM_INFO.md
 SETUP.md
 nixos/
+
+# Local work artifacts
+.tmpq/
+.tmpq_upgrade2/
+AGENTS.md
+PLAN-settings-pages.md
