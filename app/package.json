@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "webpack --mode development --watch",
     "build": "webpack --mode production",
-    "watch": "webpack --mode development --watch"
+    "watch": "webpack --mode development --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
     "@nextcloud/axios": "^2.5.0",
@@ -18,6 +20,7 @@
     "vue": "^2.7.16"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.1",
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
     "babel-loader": "^9.2.1",

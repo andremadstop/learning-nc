@@ -60,6 +60,21 @@ class TrainingService {
 
     private function logAuditEvent(string $event, array $context = []): void {
         $this->logger->info('learning.training.audit.' . $event, array_merge(['app' => 'learning'], $context));
+        try {
+            $qb = $this->db->getQueryBuilder();
+            $qb->insert('learning_audit_events')
+                ->values([
+                    'event_key' => $qb->createNamedParameter($event),
+                    'user_id' => $qb->createNamedParameter($context['user_id'] ?? null, isset($context['user_id']) ? \PDO::PARAM_STR : \PDO::PARAM_NULL),
+                    'session_id' => $qb->createNamedParameter($context['session_id'] ?? null, isset($context['session_id']) ? \PDO::PARAM_INT : \PDO::PARAM_NULL),
+                    'pool_id' => $qb->createNamedParameter($context['pool_id'] ?? null, isset($context['pool_id']) ? \PDO::PARAM_INT : \PDO::PARAM_NULL),
+                    'context_json' => $qb->createNamedParameter(json_encode($context)),
+                    'created_at' => $qb->createNamedParameter(time()),
+                ]);
+            $qb->execute();
+        } catch (\Throwable $e) {
+            // Keep main flow resilient even if audit storage is not available.
+        }
     }
 
     private function getExamAttemptNo(int $poolId, string $userId): int {
@@ -268,6 +283,65 @@ class TrainingService {
         return $map;
     }
 
+    private function difficultyBucket($rawDifficulty): string {
+        $val = is_string($rawDifficulty) ? trim(mb_strtolower($rawDifficulty)) : (string)$rawDifficulty;
+        if ($val === '') {
+            return 'medium';
+        }
+        if (is_numeric($val)) {
+            $n = (int)$val;
+            if ($n <= 2) return 'easy';
+            if ($n >= 4) return 'hard';
+            return 'medium';
+        }
+        if (strpos($val, 'easy') !== false || strpos($val, 'leicht') !== false) return 'easy';
+        if (strpos($val, 'hard') !== false || strpos($val, 'schwer') !== false) return 'hard';
+        return 'medium';
+    }
+
+    private function pickExamQuestionsByBlueprint(array $questions, ?int $limit): array {
+        if (empty($questions)) {
+            return $questions;
+        }
+        if ($limit === null || $limit <= 0 || $limit >= count($questions)) {
+            $limit = count($questions);
+        }
+
+        $buckets = ['easy' => [], 'medium' => [], 'hard' => []];
+        foreach ($questions as $q) {
+            $bucket = $this->difficultyBucket($q->getDifficulty());
+            $buckets[$bucket][] = $q;
+        }
+
+        shuffle($buckets['easy']);
+        shuffle($buckets['medium']);
+        shuffle($buckets['hard']);
+
+        $targets = [
+            'easy' => (int)floor($limit * 0.3),
+            'medium' => (int)floor($limit * 0.4),
+            'hard' => (int)floor($limit * 0.3),
+        ];
+        $selected = [];
+        foreach (['easy', 'medium', 'hard'] as $k) {
+            $take = min($targets[$k], count($buckets[$k]));
+            if ($take > 0) {
+                $selected = array_merge($selected, array_slice($buckets[$k], 0, $take));
+                $buckets[$k] = array_slice($buckets[$k], $take);
+            }
+        }
+
+        if (count($selected) < $limit) {
+            $remaining = array_merge($buckets['easy'], $buckets['medium'], $buckets['hard']);
+            shuffle($remaining);
+            $need = $limit - count($selected);
+            $selected = array_merge($selected, array_slice($remaining, 0, $need));
+        }
+
+        shuffle($selected);
+        return $selected;
+    }
+
     private function buildSessionStartPayload(array $session, bool $resumed = false): array {
         $sessionId = (int)$session['id'];
         $startedAt = (int)$session['started_at'];
@@ -432,11 +506,13 @@ class TrainingService {
             throw new \Exception('No questions in this pool');
         }
 
-        shuffle($questions);
-
-        // Apply question limit (for exam mode)
-        if ($limit !== null && $limit > 0 && $limit < count($questions)) {
-            $questions = array_slice($questions, 0, $limit);
+        if ($mode === 'exam') {
+            $questions = $this->pickExamQuestionsByBlueprint($questions, $limit);
+        } else {
+            shuffle($questions);
+            if ($limit !== null && $limit > 0 && $limit < count($questions)) {
+                $questions = array_slice($questions, 0, $limit);
+            }
         }
 
         $startedAt = time();
@@ -565,7 +641,8 @@ class TrainingService {
         $qb->select('id')
            ->from('learning_user_answers')
            ->where($qb->expr()->eq('session_id', $qb->createNamedParameter($sessionId)))
-           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+           ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+           ->setMaxResults(1);
         $dupResult = $qb->execute();
         $dupRow = $dupResult->fetch();
         $dupResult->closeCursor();
@@ -824,7 +901,8 @@ class TrainingService {
             $qb->select('id')
                ->from('learning_user_answers')
                ->where($qb->expr()->eq('session_id', $qb->createNamedParameter($sessionId)))
-               ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
+               ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
+               ->setMaxResults(1);
             $dupResult = $qb->execute();
             $dupRow = $dupResult->fetch();
             $dupResult->closeCursor();
@@ -1180,6 +1258,34 @@ class TrainingService {
         ]);
 
         return $response;
+    }
+
+    public function getSessionStatus(int $sessionId, string $userId): array {
+        $session = $this->verifySessionOwnership($sessionId, $userId);
+        $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'status');
+        $session = $timeoutInfo['session'];
+
+        $deadlineAt = $this->getExamDeadlineAt($session);
+        $now = time();
+        $remaining = $deadlineAt !== null ? max(0, $deadlineAt - $now) : null;
+
+        return [
+            'session_id' => (int)$session['id'],
+            'pool_id' => (int)$session['pool_id'],
+            'mode' => $session['mode'] ?? 'training',
+            'server_time' => $now,
+            'started_at' => (int)$session['started_at'],
+            'completed_at' => $session['completed_at'] !== null ? (int)$session['completed_at'] : null,
+            'completed' => !empty($session['completed_at']),
+            'timed_out' => $timeoutInfo['timed_out'],
+            'time_limit_seconds' => isset($session['time_limit_seconds']) ? (int)$session['time_limit_seconds'] : null,
+            'exam_deadline_at' => $deadlineAt,
+            'remaining_seconds' => $remaining,
+            'attempt_no' => isset($session['attempt_no']) ? (int)$session['attempt_no'] : null,
+            'total_questions' => (int)$session['total_questions'],
+            'correct_answers' => (int)$session['correct_answers'],
+            'answered' => $this->getSessionUserAnswersMap((int)$session['id']),
+        ];
     }
 
     private function getAverageAccuracy(int $poolId, string $userId, string $mode, int $excludeSessionId): float {

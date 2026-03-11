@@ -50,6 +50,7 @@
         <span v-if="attemptNo">{{ t('learning', 'Attempt #{n}', { n: attemptNo }) }}</span>
       </div>
       <p v-if="resumedFromServer" class="resume-note">{{ t('learning', 'Active exam resumed from server state.') }}</p>
+      <p v-if="lockDenied" class="lock-note">{{ t('learning', 'This exam is active in another tab. This tab is read-only.') }}</p>
 
       <NcProgressBar :value="progressPercentage" />
       <div class="progress-label">{{ answeredCount }} / {{ questions.length }} {{ t('learning', 'answered') }}</div>
@@ -86,7 +87,7 @@
             rows="3"
             class="nc-input open-textarea"
           ></textarea>
-          <NcButton type="primary" @click="submitOpenExamAnswer" :disabled="!openAnswerTexts[currentQuestion.id] || !openAnswerTexts[currentQuestion.id].trim()">
+          <NcButton type="primary" @click="submitOpenExamAnswer" :disabled="lockDenied || !openAnswerTexts[currentQuestion.id] || !openAnswerTexts[currentQuestion.id].trim()">
             {{ t('learning', 'Submit Answer') }}
           </NcButton>
         </div>
@@ -96,6 +97,7 @@
             :key="answer.id"
             class="answer-btn"
             :class="{ 'answer-selected': isAnswerSelected(answer.id) }"
+            :disabled="lockDenied"
             @click="answerQuestion(answer.id)"
           >
             {{ answer.text }}
@@ -103,10 +105,10 @@
         </div>
 
         <NcButton v-if="isCurrentMulti && multiSelections[currentQuestion.id] && multiSelections[currentQuestion.id].length > 0"
-          type="primary" wide @click="confirmMultiAnswer" class="confirm-btn">
+          type="primary" wide @click="confirmMultiAnswer" class="confirm-btn" :disabled="lockDenied">
           {{ t('learning', 'Confirm Selection') }}
         </NcButton>
-        <NcButton type="secondary" wide @click="skipQuestion" class="skip-btn">{{ t('learning', 'Skip') }}</NcButton>
+        <NcButton type="secondary" wide @click="skipQuestion" class="skip-btn" :disabled="lockDenied">{{ t('learning', 'Skip') }}</NcButton>
       </div>
 
       <!-- Question navigation bar -->
@@ -270,6 +272,10 @@ export default {
       examDeadlineAt: null,
       attemptNo: null,
       resumedFromServer: false,
+      lockDenied: false,
+      tabLockId: null,
+      lockHeartbeat: null,
+      statusPollTimer: null,
       snakeWidth: 0,
       snakeHeight: 0,
       resizeObserver: null,
@@ -410,8 +416,10 @@ export default {
           this.restoreAnsweredState(r.data.answered);
         }
         this.currentQuestionIndex = this.findFirstUnansweredIndex();
+        this.startExamLock();
 
         this.startTimer();
+        this.startStatusPolling();
         this.screen = 'exam';
         this.$nextTick(() => {
           this.updateSnakeDimensions();
@@ -486,6 +494,92 @@ export default {
         }
       }, 1000);
     },
+    lockKey() {
+      return this.session ? `learning_exam_lock_${this.session}` : null
+    },
+    claimLock() {
+      const key = this.lockKey()
+      if (!key || !this.tabLockId) return true
+      const now = Date.now()
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw)
+          if (parsed.tabId !== this.tabLockId && (now - Number(parsed.ts || 0)) < 15000) {
+            this.lockDenied = true
+            return false
+          }
+        } catch {}
+      }
+      localStorage.setItem(key, JSON.stringify({ tabId: this.tabLockId, ts: now }))
+      this.lockDenied = false
+      return true
+    },
+    startExamLock() {
+      this.tabLockId = this.tabLockId || `tab_${Math.random().toString(36).slice(2)}_${Date.now()}`
+      this.claimLock()
+      if (this.lockHeartbeat) clearInterval(this.lockHeartbeat)
+      this.lockHeartbeat = setInterval(() => this.claimLock(), 5000)
+    },
+    releaseExamLock() {
+      if (this.lockHeartbeat) {
+        clearInterval(this.lockHeartbeat)
+        this.lockHeartbeat = null
+      }
+      const key = this.lockKey()
+      if (!key || !this.tabLockId) return
+      const raw = localStorage.getItem(key)
+      if (!raw) return
+      try {
+        const parsed = JSON.parse(raw)
+        if (parsed.tabId === this.tabLockId) {
+          localStorage.removeItem(key)
+        }
+      } catch {}
+    },
+    startStatusPolling() {
+      if (this.statusPollTimer) clearInterval(this.statusPollTimer)
+      this.statusPollTimer = setInterval(() => this.refreshSessionStatus(), 15000)
+    },
+    stopStatusPolling() {
+      if (this.statusPollTimer) {
+        clearInterval(this.statusPollTimer)
+        this.statusPollTimer = null
+      }
+    },
+    async refreshSessionStatus() {
+      if (!this.session || this.screen !== 'exam') return
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/training/session/{id}', { id: this.session }))
+        const s = r.data || {}
+        if (typeof s.remaining_seconds === 'number') {
+          this.timeLeftSeconds = s.remaining_seconds
+        }
+        if (s.completed) {
+          await this.fetchCompletedResultOnly(!!s.timed_out)
+        }
+      } catch {}
+    },
+    async fetchCompletedResultOnly(forceTimedOut = false) {
+      if (this.timerInterval) {
+        clearInterval(this.timerInterval)
+        this.timerInterval = null
+      }
+      this.stopStatusPolling()
+      this.releaseExamLock()
+      this.examEndTime = Math.floor(Date.now() / 1000)
+      this.screen = 'results'
+      this.isLoading = true
+      try {
+        const cr = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session })
+        this.resultsData = cr.data
+        this.resultsData.timed_out = !!(cr.data.timed_out || forceTimedOut)
+      } catch {
+        this.resultsData = { total_questions: this.questions.length, correct_answers: 0, score_percentage: 0, timed_out: !!forceTimedOut }
+      } finally {
+        this.isLoading = false
+      }
+    },
 
     isAnswerSelected(answerId) {
       const qId = this.currentQuestion.id;
@@ -497,6 +591,7 @@ export default {
     },
     answerQuestion(answerId) {
       if (this.isCurrentMulti) {
+        if (this.lockDenied) return
         // Toggle multi-select
         const qId = this.currentQuestion.id;
         if (!this.multiSelections[qId]) {
@@ -514,6 +609,7 @@ export default {
       this.advanceToNext();
     },
     submitOpenExamAnswer() {
+      if (this.lockDenied) return;
       const qId = this.currentQuestion.id;
       const text = (this.openAnswerTexts[qId] || '').trim();
       if (!text) return;
@@ -521,6 +617,7 @@ export default {
       this.advanceToNext();
     },
     confirmMultiAnswer() {
+      if (this.lockDenied) return;
       const qId = this.currentQuestion.id;
       // Store the multi selection as the answer
       this.$set(this.userAnswers, qId, this.multiSelections[qId].slice());
@@ -528,6 +625,7 @@ export default {
     },
 
     skipQuestion() {
+      if (this.lockDenied) return;
       if (this.userAnswers[this.currentQuestion.id] === undefined) {
         this.$set(this.userAnswers, this.currentQuestion.id, null);
       }
@@ -560,6 +658,8 @@ export default {
         clearInterval(this.timerInterval);
         this.timerInterval = null;
       }
+      this.stopStatusPolling();
+      this.releaseExamLock();
       this.examEndTime = Math.floor(Date.now() / 1000);
       this.isLoading = true;
       this.screen = 'results';
@@ -689,6 +789,9 @@ export default {
       this.examDeadlineAt = null;
       this.attemptNo = null;
       this.resumedFromServer = false;
+      this.lockDenied = false;
+      this.stopStatusPolling();
+      this.releaseExamLock();
       if (this.timerInterval) clearInterval(this.timerInterval);
       this.timerInterval = null;
       this.timeLeftSeconds = null;
@@ -697,6 +800,8 @@ export default {
 
   beforeDestroy() {
     if (this.timerInterval) clearInterval(this.timerInterval);
+    this.stopStatusPolling();
+    this.releaseExamLock();
     this.cleanupSnake();
   },
 };
@@ -731,6 +836,7 @@ export default {
 .timer-red { background: color-mix(in srgb, var(--color-error) 15%, transparent); color: var(--color-error); }
 .exam-meta-line { text-align: center; color: var(--color-text-maxcontrast); font-size: 13px; margin: -4px 0 12px; }
 .resume-note { text-align: center; color: var(--color-primary-element); font-size: 13px; margin: -4px 0 12px; }
+.lock-note { text-align: center; color: var(--color-warning); font-size: 13px; margin: -4px 0 12px; font-weight: 600; }
 
 .progress-label { text-align: center; font-size: 13px; color: var(--color-text-maxcontrast); margin: 8px 0 24px; }
 

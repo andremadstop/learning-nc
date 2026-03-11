@@ -85,6 +85,19 @@ class PoolController extends Controller {
     /**
      * @NoAdminRequired
      */
+    public function review(int $id, string $reviewStatus, ?string $reviewerId = null): DataResponse {
+        try {
+            $reviewer = $reviewerId ?: (string)$this->userId;
+            $pool = $this->service->setReviewStatus($id, $reviewStatus, $reviewer, (string)$this->userId);
+            return new DataResponse($pool);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to update pool review status'], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
     public function destroy(int $id): DataResponse {
         try {
             $this->service->delete($id, $this->userId);

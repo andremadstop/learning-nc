@@ -74,6 +74,18 @@ class QuestionController extends Controller {
     /**
      * @NoAdminRequired
      */
+    public function review(int $id, string $reviewStatus, ?string $reviewerId = null): DataResponse {
+        try {
+            $reviewer = $reviewerId ?: (string)$this->userId;
+            return new DataResponse($this->service->setReviewStatus($id, $reviewStatus, $reviewer, (string)$this->userId));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to update review status'], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
     public function destroy(int $id): DataResponse {
         try {
             $this->service->delete($id, $this->userId);

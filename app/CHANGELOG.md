@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.4.0] - 2026-03-11
+
+### Added
+- **Exam status endpoint**: `GET /api/training/session/{sessionId}` for authoritative remaining-time/completion state polling.
+- **Admin Audit API + UI**: `GET /api/settings/admin/audit` and "Recent Audit Events" block in admin settings.
+- **Review workflow API**: `PUT /api/pools/{id}/review` and `PUT /api/questions/{id}/review` with review states `draft|reviewed|published`.
+- **Blueprint exam selection**: Exam mode now samples by difficulty buckets (target 30/40/30 easy/medium/hard) with fallback fill.
+- **Migration V001900**: New `learning_audit_events` table, review columns on pools/questions, and additional query indexes.
+- **Deploy verification helper**: `examples/verify_deploy_integrity.sh` for migration/route integrity checks.
+- **E2E scaffold**: Playwright config and initial exam-mode smoke test.
+- **Parallel-tab soft-lock (frontend)**: Secondary tabs become read-only while an exam is active in another tab.
+
+### Fixed
+- **Duplicate answer race guard**: Added max-result constraints in duplicate-answer checks to reduce write contention under retries.
+- **Exam synchronization robustness**: UI now polls server status and transitions cleanly when session is completed remotely.
+
+### Changed
+- **App version**: bumped to `2.4.0`.
+
 ## [2.3.0] - 2026-03-10
 
 ### Added

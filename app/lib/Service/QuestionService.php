@@ -326,6 +326,9 @@ class QuestionService {
             $question->setExplanation($explanation);
             $question->setDifficulty($difficulty);
             $question->setQuestionType($questionType);
+            if (!$question->getReviewStatus()) {
+                $question->setReviewStatus('published');
+            }
 
             $question = $this->questionMapper->createOrUpdate($question);
 
@@ -397,6 +400,23 @@ class QuestionService {
         } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function normalizeReviewStatus(string $status): string {
+        $allowed = ['draft', 'reviewed', 'published'];
+        return in_array($status, $allowed, true) ? $status : 'draft';
+    }
+
+    public function setReviewStatus(int $id, string $reviewStatus, string $reviewerId, string $userId): array {
+        $question = $this->questionMapper->findById($id);
+        if (!$this->canEditPool($question->getPoolId(), $userId)) {
+            throw new Exception('No edit access to this pool');
+        }
+        $status = $this->normalizeReviewStatus($reviewStatus);
+        $question->setReviewStatus($status);
+        $question->setReviewerId($reviewerId);
+        $question->setReviewedAt(time());
+        return $this->questionMapper->createOrUpdate($question)->jsonSerialize();
     }
 
     public function delete(int $id, string $userId): void {

@@ -48,6 +48,34 @@ Response excerpt:
 }
 ```
 
+## `GET /apps/learning/api/training/session/{sessionId}`
+
+Purpose:
+- Returns live server status for a running session (used for exam timeout synchronization and multi-tab resilience).
+
+Response excerpt:
+```json
+{
+  "session_id": 321,
+  "pool_id": 77,
+  "mode": "exam",
+  "server_time": 1741700100,
+  "started_at": 1741700000,
+  "completed_at": null,
+  "completed": false,
+  "timed_out": false,
+  "time_limit_seconds": 600,
+  "exam_deadline_at": 1741700600,
+  "remaining_seconds": 500,
+  "attempt_no": 2,
+  "total_questions": 20,
+  "correct_answers": 0,
+  "answered": {
+    "101": 4
+  }
+}
+```
+
 ## `GET /apps/learning/api/courses/{courseId}/progress`
 
 Purpose:
@@ -226,6 +254,30 @@ Response includes:
 }
 ```
 
+## `GET /apps/learning/api/settings/admin/audit`
+
+Purpose:
+- Returns persisted audit events for admins.
+
+Response excerpt:
+```json
+{
+  "events": [
+    {
+      "id": 1,
+      "event_key": "exam.start",
+      "user_id": "student01",
+      "session_id": 321,
+      "pool_id": 77,
+      "created_at": 1741700000,
+      "context": {}
+    }
+  ],
+  "limit": 100,
+  "offset": 0
+}
+```
+
 ## `PUT /apps/learning/api/settings/admin`
 
 Accepted payload keys:
@@ -239,6 +291,16 @@ Accepted payload keys:
 
 Values:
 - booleans are represented as `"yes"` / `"no"` for compatibility.
+
+## `PUT /apps/learning/api/pools/{id}/review`
+## `PUT /apps/learning/api/questions/{id}/review`
+
+Purpose:
+- Updates editorial review state (`draft|reviewed|published`) for pool/question content.
+
+Accepted payload keys:
+- `reviewStatus` (string, required)
+- `reviewerId` (string, optional; defaults to current user)
 
 ## `POST /apps/learning/api/pools/{poolId}/import/json`
 

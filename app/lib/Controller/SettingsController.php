@@ -6,15 +6,18 @@ namespace OCA\Learning\Controller;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IConfig;
+use OCP\IDBConnection;
 use OCP\IRequest;
 
 class SettingsController extends Controller {
     private IConfig $config;
+    private IDBConnection $db;
     private ?string $userId;
 
-    public function __construct(string $appName, IRequest $request, IConfig $config, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, IConfig $config, IDBConnection $db, ?string $userId) {
         parent::__construct($appName, $request);
         $this->config = $config;
+        $this->db = $db;
         $this->userId = $userId;
     }
 
@@ -30,6 +33,38 @@ class SettingsController extends Controller {
             'allow_course_instructor_fallback' => $this->config->getAppValue('learning', 'allow_course_instructor_fallback', 'no'),
             'exam_attempt_limit_per_day' => (int)$this->config->getAppValue('learning', 'exam_attempt_limit_per_day', '5'),
             'exam_attempt_cooldown_minutes' => (int)$this->config->getAppValue('learning', 'exam_attempt_cooldown_minutes', '10'),
+        ]);
+    }
+
+    /**
+     * @AdminRequired
+     */
+    public function getAdminAudit(int $limit = 100, int $offset = 0): DataResponse {
+        $limit = max(1, min(500, $limit));
+        $offset = max(0, $offset);
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from('learning_audit_events')
+            ->orderBy('created_at', 'DESC')
+            ->setMaxResults($limit)
+            ->setFirstResult($offset);
+        $result = $qb->execute();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+        return new DataResponse([
+            'events' => array_map(static function ($r) {
+                return [
+                    'id' => (int)$r['id'],
+                    'event_key' => $r['event_key'],
+                    'user_id' => $r['user_id'],
+                    'session_id' => $r['session_id'] !== null ? (int)$r['session_id'] : null,
+                    'pool_id' => $r['pool_id'] !== null ? (int)$r['pool_id'] : null,
+                    'created_at' => (int)$r['created_at'],
+                    'context' => !empty($r['context_json']) ? (json_decode((string)$r['context_json'], true) ?: []) : [],
+                ];
+            }, $rows),
+            'limit' => $limit,
+            'offset' => $offset,
         ]);
     }
 

@@ -76,4 +76,16 @@ class TrainingController extends Controller {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to complete session'], 400);
         }
     }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 60, period: 60)]
+    public function status(int $sessionId): DataResponse {
+        try {
+            return new DataResponse($this->service->getSessionStatus($sessionId, $this->userId));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to load session status'], 400);
+        }
+    }
 }

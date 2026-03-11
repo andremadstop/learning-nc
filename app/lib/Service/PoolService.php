@@ -144,6 +144,9 @@ class PoolService {
         $pool->setName($name);
         $pool->setDescription($description);
         $pool->setUserId($userId);
+        if (!$pool->getReviewStatus()) {
+            $pool->setReviewStatus('published');
+        }
         return $this->mapper->createOrUpdate($pool);
     }
 
@@ -173,6 +176,19 @@ class PoolService {
         } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
             throw new NotFoundException('Pool not found');
         }
+    }
+
+    private function normalizeReviewStatus(string $status): string {
+        $allowed = ['draft', 'reviewed', 'published'];
+        return in_array($status, $allowed, true) ? $status : 'draft';
+    }
+
+    public function setReviewStatus(int $id, string $reviewStatus, string $reviewerId, string $userId): Pool {
+        $pool = $this->mapper->find($id, $userId);
+        $pool->setReviewStatus($this->normalizeReviewStatus($reviewStatus));
+        $pool->setReviewerId($reviewerId);
+        $pool->setReviewedAt(time());
+        return $this->mapper->createOrUpdate($pool);
     }
 }
 

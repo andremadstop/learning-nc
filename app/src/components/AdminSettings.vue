@@ -88,6 +88,40 @@
           {{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}
         </NcButton>
       </div>
+
+      <div class="audit-section">
+        <div class="audit-header">
+          <h3>{{ t('learning', 'Recent Audit Events') }}</h3>
+          <NcButton type="tertiary" @click="loadAudit">{{ t('learning', 'Refresh') }}</NcButton>
+        </div>
+        <div v-if="auditLoading" class="loading">
+          <NcLoadingIcon :size="24" />
+          <span>{{ t('learning', 'Loading...') }}</span>
+        </div>
+        <div v-else-if="auditEvents.length === 0" class="field-help">
+          {{ t('learning', 'No audit events yet.') }}
+        </div>
+        <table v-else class="audit-table">
+          <thead>
+            <tr>
+              <th>{{ t('learning', 'Time') }}</th>
+              <th>{{ t('learning', 'Event') }}</th>
+              <th>{{ t('learning', 'User') }}</th>
+              <th>{{ t('learning', 'Session') }}</th>
+              <th>{{ t('learning', 'Pool') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="e in auditEvents" :key="e.id">
+              <td>{{ formatTime(e.created_at) }}</td>
+              <td>{{ e.event_key }}</td>
+              <td>{{ e.user_id || '-' }}</td>
+              <td>{{ e.session_id || '-' }}</td>
+              <td>{{ e.pool_id || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
@@ -109,6 +143,8 @@ export default {
       saving: false,
       error: '',
       saved: false,
+      auditLoading: false,
+      auditEvents: [],
       form: {
         dailyChallengeEnabled: true,
         defaultLanguage: 'de',
@@ -122,6 +158,7 @@ export default {
   },
   mounted() {
     this.load()
+    this.loadAudit()
   },
   methods: {
     async load() {
@@ -162,6 +199,25 @@ export default {
         this.error = t('learning', 'Failed to save settings')
       } finally {
         this.saving = false
+      }
+    },
+    async loadAudit() {
+      this.auditLoading = true
+      try {
+        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/audit'), { params: { limit: 100, offset: 0 } })
+        this.auditEvents = Array.isArray(res.data?.events) ? res.data.events : []
+      } catch (e) {
+        this.auditEvents = []
+      } finally {
+        this.auditLoading = false
+      }
+    },
+    formatTime(ts) {
+      if (!ts) return '-'
+      try {
+        return new Date(ts * 1000).toLocaleString()
+      } catch {
+        return String(ts)
       }
     },
   },
@@ -212,5 +268,29 @@ export default {
 
 .actions {
   padding-top: 4px;
+}
+
+.audit-section {
+  margin-top: 20px;
+}
+
+.audit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.audit-table th,
+.audit-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
 }
 </style>

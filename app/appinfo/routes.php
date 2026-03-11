@@ -9,6 +9,7 @@ return [
         ['name' => 'pool#show', 'url' => '/api/pools/{id}', 'verb' => 'GET'],
         ['name' => 'pool#create', 'url' => '/api/pools', 'verb' => 'POST'],
         ['name' => 'pool#update', 'url' => '/api/pools/{id}', 'verb' => 'PUT'],
+        ['name' => 'pool#review', 'url' => '/api/pools/{id}/review', 'verb' => 'PUT'],
         ['name' => 'pool#destroy', 'url' => '/api/pools/{id}', 'verb' => 'DELETE'],
 
         // Questions
@@ -17,6 +18,7 @@ return [
         ['name' => 'question#show', 'url' => '/api/questions/{id}', 'verb' => 'GET'],
         ['name' => 'question#create', 'url' => '/api/questions', 'verb' => 'POST'],
         ['name' => 'question#update', 'url' => '/api/questions/{id}', 'verb' => 'PUT'],
+        ['name' => 'question#review', 'url' => '/api/questions/{id}/review', 'verb' => 'PUT'],
         ['name' => 'question#destroy', 'url' => '/api/questions/{id}', 'verb' => 'DELETE'],
 
         // Training
@@ -24,6 +26,7 @@ return [
         ['name' => 'training#answer', 'url' => '/api/training/answer', 'verb' => 'POST'],
         ['name' => 'training#submitBatch', 'url' => '/api/training/submitBatch', 'verb' => 'POST'],
         ['name' => 'training#complete', 'url' => '/api/training/complete', 'verb' => 'POST'],
+        ['name' => 'training#status', 'url' => '/api/training/session/{sessionId}', 'verb' => 'GET'],
 
         // Leitner
         ['name' => 'leitner#queue', 'url' => '/api/leitner/queue', 'verb' => 'GET'],
@@ -75,6 +78,7 @@ return [
 
         // Settings
         ['name' => 'settings#getAdmin', 'url' => '/api/settings/admin', 'verb' => 'GET'],
+        ['name' => 'settings#getAdminAudit', 'url' => '/api/settings/admin/audit', 'verb' => 'GET'],
         ['name' => 'settings#saveAdmin', 'url' => '/api/settings/admin', 'verb' => 'PUT'],
         ['name' => 'settings#getPersonal', 'url' => '/api/settings/personal', 'verb' => 'GET'],
         ['name' => 'settings#savePersonal', 'url' => '/api/settings/personal', 'verb' => 'PUT'],
