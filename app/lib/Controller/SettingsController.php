@@ -27,6 +27,7 @@ class SettingsController extends Controller {
             'default_language' => $this->config->getAppValue('learning', 'default_language', 'de'),
             'max_import_size_mb' => (int)$this->config->getAppValue('learning', 'max_import_size_mb', '2'),
             'gamification_enabled' => $this->config->getAppValue('learning', 'gamification_enabled', 'yes'),
+            'allow_course_instructor_fallback' => $this->config->getAppValue('learning', 'allow_course_instructor_fallback', 'no'),
         ]);
     }
 
@@ -37,12 +38,14 @@ class SettingsController extends Controller {
         string $daily_challenge_enabled,
         string $default_language,
         int $max_import_size_mb,
-        string $gamification_enabled
+        string $gamification_enabled,
+        string $allow_course_instructor_fallback = 'no'
     ): DataResponse {
         $this->config->setAppValue('learning', 'daily_challenge_enabled', $daily_challenge_enabled === 'yes' ? 'yes' : 'no');
         $this->config->setAppValue('learning', 'default_language', in_array($default_language, ['de', 'en'], true) ? $default_language : 'de');
         $this->config->setAppValue('learning', 'max_import_size_mb', (string)max(1, min(10, $max_import_size_mb)));
         $this->config->setAppValue('learning', 'gamification_enabled', $gamification_enabled === 'yes' ? 'yes' : 'no');
+        $this->config->setAppValue('learning', 'allow_course_instructor_fallback', $allow_course_instructor_fallback === 'yes' ? 'yes' : 'no');
 
         return new DataResponse(['status' => 'ok']);
     }

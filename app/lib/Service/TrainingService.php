@@ -12,6 +12,7 @@ use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\ICacheFactory;
 use OCP\IDBConnection;
+use Psr\Log\LoggerInterface;
 
 class TrainingService {
     private $db;
@@ -23,6 +24,7 @@ class TrainingService {
     private $streakService;
     private $xpService;
     private $cacheFactory;
+    private LoggerInterface $logger;
 
     public function __construct(
         IDBConnection $db,
@@ -33,7 +35,8 @@ class TrainingService {
         BadgeService $badgeService,
         StreakService $streakService,
         XpService $xpService,
-        ICacheFactory $cacheFactory
+        ICacheFactory $cacheFactory,
+        LoggerInterface $logger
     ) {
         $this->db = $db;
         $this->questionMapper = $questionMapper;
@@ -44,6 +47,11 @@ class TrainingService {
         $this->streakService = $streakService;
         $this->xpService = $xpService;
         $this->cacheFactory = $cacheFactory;
+        $this->logger = $logger;
+    }
+
+    private function logSecurityEvent(string $event, array $context = []): void {
+        $this->logger->info('learning.training.security.' . $event, array_merge(['app' => 'learning'], $context));
     }
 
     private function hasPoolAccess(int $poolId, string $userId): bool {
@@ -241,6 +249,15 @@ class TrainingService {
         // SECURITY: Defense-in-depth — suppress correct answers if user has active exam on same pool
         $poolId = (int)$session['pool_id'];
         $suppressAnswers = $this->hasActiveExamOnPool($poolId, $userId);
+        if ($suppressAnswers) {
+            $this->logSecurityEvent('suppressed_single_submit', [
+                'user_id' => $userId,
+                'session_id' => $sessionId,
+                'pool_id' => $poolId,
+                'question_id' => $questionId,
+                'mode' => $mode,
+            ]);
+        }
 
         $qb = $this->db->getQueryBuilder();
         $qb->select('id')
@@ -462,6 +479,16 @@ class TrainingService {
 
         // SECURITY: Also suppress answers for training sessions if user has active exam on same pool
         $suppressAnswers = $isExam || $this->hasActiveExamOnPool($poolId, $userId);
+        if ($suppressAnswers) {
+            $this->logSecurityEvent('suppressed_batch_submit', [
+                'user_id' => $userId,
+                'session_id' => $sessionId,
+                'pool_id' => $poolId,
+                'answers_count' => count($answers),
+                'mode' => $session['mode'] ?? 'training',
+                'exam_mode' => $isExam,
+            ]);
+        }
 
         // S3: Validate batch size against session's question count
         $maxAnswers = (int)$session['total_questions'];

@@ -35,7 +35,7 @@ class RoleService {
 
         // Security default: global instructor privileges are group-based only.
         // Optional fallback can be enabled explicitly for legacy setups.
-        if ($this->config->getAppValue($this->appName, 'allow_course_instructor_fallback', '0') !== '1') {
+        if ($this->config->getAppValue($this->appName, 'allow_course_instructor_fallback', 'no') !== 'yes') {
             return false;
         }
 

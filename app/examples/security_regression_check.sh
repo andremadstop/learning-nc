@@ -6,7 +6,7 @@ ROLE_FILE="$ROOT_DIR/lib/Service/RoleService.php"
 TRAINING_FILE="$ROOT_DIR/lib/Service/TrainingService.php"
 
 echo "[1/4] Checking instructor fallback default..."
-grep -q "allow_course_instructor_fallback', '0'" "$ROLE_FILE"
+grep -q "allow_course_instructor_fallback', 'no'" "$ROLE_FILE"
 
 echo "[2/4] Checking instructor fallback gate..."
 grep -q "allow_course_instructor_fallback" "$ROLE_FILE"

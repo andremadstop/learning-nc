@@ -47,6 +47,17 @@
           @update:checked="form.gamificationEnabled = !!$event" />
       </div>
 
+      <div class="field-row">
+        <label>{{ t('learning', 'Allow course-based instructor fallback') }}</label>
+        <NcCheckboxRadioSwitch
+          :checked="form.allowCourseInstructorFallback"
+          type="switch"
+          @update:checked="form.allowCourseInstructorFallback = !!$event" />
+        <small class="field-help">
+          {{ t('learning', 'If disabled (recommended), only members of the configured instructor group get global instructor privileges.') }}
+        </small>
+      </div>
+
       <NcNoteCard v-if="error" type="error">{{ error }}</NcNoteCard>
       <NcNoteCard v-if="saved" type="success">{{ t('learning', 'Settings saved') }}</NcNoteCard>
 
@@ -81,6 +92,7 @@ export default {
         defaultLanguage: 'de',
         maxImportSizeMb: 2,
         gamificationEnabled: true,
+        allowCourseInstructorFallback: false,
       },
     }
   },
@@ -98,6 +110,7 @@ export default {
         this.form.defaultLanguage = data.default_language === 'en' ? 'en' : 'de'
         this.form.maxImportSizeMb = Math.max(1, Math.min(10, Number(data.max_import_size_mb || 2)))
         this.form.gamificationEnabled = (data.gamification_enabled || 'yes') === 'yes'
+        this.form.allowCourseInstructorFallback = (data.allow_course_instructor_fallback || 'no') === 'yes'
       } catch (e) {
         this.error = t('learning', 'Failed to load settings')
       } finally {
@@ -114,6 +127,7 @@ export default {
           default_language: this.form.defaultLanguage === 'en' ? 'en' : 'de',
           max_import_size_mb: Math.max(1, Math.min(10, Number(this.form.maxImportSizeMb || 2))),
           gamification_enabled: this.form.gamificationEnabled ? 'yes' : 'no',
+          allow_course_instructor_fallback: this.form.allowCourseInstructorFallback ? 'yes' : 'no',
         })
         this.saved = true
       } catch (e) {
@@ -157,6 +171,11 @@ export default {
 
 .field-row label {
   font-weight: 600;
+}
+
+.field-help {
+  color: var(--color-text-maxcontrast);
+  font-size: 0.85em;
 }
 
 .nc-input {

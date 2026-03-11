@@ -148,6 +148,29 @@ class ImportController extends Controller {
     }
 
     /**
+     * Extract optional import metadata from JSON wrapper.
+     */
+    private function extractImportMeta(array $data): array {
+        if (!isset($data['_meta']) || !is_array($data['_meta'])) {
+            return [];
+        }
+        $meta = [];
+        if (isset($data['_meta']['source'])) {
+            $source = trim((string)$data['_meta']['source']);
+            if ($source !== '') {
+                $meta['source'] = mb_substr($source, 0, 255);
+            }
+        }
+        if (isset($data['_meta']['license'])) {
+            $license = trim((string)$data['_meta']['license']);
+            if ($license !== '') {
+                $meta['license'] = mb_substr($license, 0, 120);
+            }
+        }
+        return $meta;
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 5, period: 60)]
@@ -361,6 +384,8 @@ class ImportController extends Controller {
             return new DataResponse(['error' => 'Invalid JSON — check for missing brackets, commas, or quotes'], Http::STATUS_BAD_REQUEST);
         }
 
+        $importMeta = $this->extractImportMeta($data);
+
         // Accept various wrapper formats: {questions:[...]}, {fragen:[...]}, or bare array
         if (isset($data['questions']) && is_array($data['questions'])) {
             $data = $data['questions'];
@@ -509,6 +534,9 @@ class ImportController extends Controller {
             'errors' => $errors,
             'total_items' => count($data)
         ];
+        if (!empty($importMeta)) {
+            $response['meta'] = $importMeta;
+        }
         if (!empty($warnings)) {
             $response['warnings'] = $warnings;
         }

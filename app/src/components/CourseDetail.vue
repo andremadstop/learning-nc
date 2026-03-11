@@ -94,17 +94,22 @@
 							<button
 								class="progress-mode-btn"
 								:class="{ active: myProgressMode === 'mastery' }"
+								:aria-pressed="myProgressMode === 'mastery' ? 'true' : 'false'"
 								@click="myProgressMode = 'mastery'">
 								{{ t('learning', 'Mastery') }}
 							</button>
 							<button
 								class="progress-mode-btn"
 								:class="{ active: myProgressMode === 'answered' }"
+								:aria-pressed="myProgressMode === 'answered' ? 'true' : 'false'"
 								@click="myProgressMode = 'answered'">
 								{{ t('learning', 'Answered') }}
 							</button>
 						</div>
 					</div>
+					<p class="progress-mode-help">
+						{{ t('learning', 'Mastery = Box 5 cards. Answered = questions answered in completed sessions.') }}
+					</p>
 					<div class="progress-bars">
 						<div v-for="prog in studentProgress"
 							:key="prog.pool_id"
@@ -1329,6 +1334,12 @@ export default {
 .progress-mode-btn.active {
 	background: color-mix(in srgb, var(--color-primary-element) 15%, transparent);
 	color: var(--color-primary-element);
+}
+
+.progress-mode-help {
+	margin: 0 0 10px 0;
+	color: var(--color-text-maxcontrast);
+	font-size: 0.82em;
 }
 
 .progress-bars {
