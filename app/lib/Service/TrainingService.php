@@ -226,6 +226,7 @@ class TrainingService {
 
     public function submitAnswer(int $sessionId, int $questionId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
+        $mode = $session['mode'] ?? 'training';
 
         // Block submissions to completed sessions
         if (!empty($session['completed_at'])) {
@@ -296,9 +297,13 @@ class TrainingService {
                    ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
                 $qb->execute();
             }
+            $xpEarned = $isCorrect ? $this->awardPerQuestionXp($userId, $mode) : 0;
 
             if ($suppressAnswers) {
-                return ['is_correct' => $isCorrect];
+                return [
+                    'is_correct' => $isCorrect,
+                    'xp_earned' => $xpEarned,
+                ];
             }
 
             // Get explanation
@@ -315,6 +320,7 @@ class TrainingService {
                 'correct_answer_text' => $modelText,
                 'user_answer_text' => $answerText,
                 'explanation' => $qRow ? $qRow['explanation'] : null,
+                'xp_earned' => $xpEarned,
             ];
         }
 
@@ -363,10 +369,14 @@ class TrainingService {
                    ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
                 $qb->execute();
             }
+            $xpEarned = $isCorrect ? $this->awardPerQuestionXp($userId, $mode) : 0;
 
             // SECURITY: Suppress correct answers if active exam on same pool
             if ($suppressAnswers) {
-                return ['is_correct' => $isCorrect];
+                return [
+                    'is_correct' => $isCorrect,
+                    'xp_earned' => $xpEarned,
+                ];
             }
 
             $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
@@ -376,6 +386,7 @@ class TrainingService {
                 'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
                 'correct_answer_ids' => $correctIds,
                 'correct_answer_texts' => $correctTexts,
+                'xp_earned' => $xpEarned,
             ];
         }
 
@@ -413,10 +424,14 @@ class TrainingService {
                ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
             $qb->execute();
         }
+        $xpEarned = $isCorrect ? $this->awardPerQuestionXp($userId, $mode) : 0;
 
         // SECURITY: Suppress correct answers if active exam on same pool
         if ($suppressAnswers) {
-            return ['is_correct' => $isCorrect];
+            return [
+                'is_correct' => $isCorrect,
+                'xp_earned' => $xpEarned,
+            ];
         }
 
         // Return all correct answers info
@@ -430,6 +445,7 @@ class TrainingService {
             'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
             'correct_answer_ids' => $correctIds,
             'correct_answer_texts' => $correctTexts,
+            'xp_earned' => $xpEarned,
         ];
     }
 
@@ -454,6 +470,9 @@ class TrainingService {
         }
 
         $results = [];
+        $streak = $this->streakService->getStreak($userId);
+        $xpPerCorrect = $this->xpService->applyMultiplier($isExam ? 10 : 5, (int)$streak['current_streak']);
+        $batchXpEarned = 0;
         foreach ($answers as $entry) {
             $questionId = (int)$entry['questionId'];
             $entryAnswerIds = $entry['answerIds'] ?? null;
@@ -524,16 +543,22 @@ class TrainingService {
                        ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
                        ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
                     $qb->execute();
+                    $batchXpEarned += $xpPerCorrect;
                 }
 
                 if ($suppressAnswers) {
-                    $results[] = ['questionId' => $questionId, 'recorded' => true];
+                    $results[] = [
+                        'questionId' => $questionId,
+                        'recorded' => true,
+                        'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
+                    ];
                 } else {
                     $results[] = [
                         'questionId' => $questionId,
                         'is_correct' => $isCorrect,
                         'correct_answer_text' => $modelText,
                         'user_answer_text' => $entryAnswerText,
+                        'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
                     ];
                 }
                 continue;
@@ -587,11 +612,16 @@ class TrainingService {
                        ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
                        ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
                     $qb->execute();
+                    $batchXpEarned += $xpPerCorrect;
                 }
 
                 // SECURITY: Suppress correct answers during active exam
                 if ($suppressAnswers) {
-                    $results[] = ['questionId' => $questionId, 'recorded' => true];
+                    $results[] = [
+                        'questionId' => $questionId,
+                        'recorded' => true,
+                        'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
+                    ];
                 } else {
                     $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
                     $results[] = [
@@ -601,6 +631,7 @@ class TrainingService {
                         'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
                         'correct_answer_ids' => $correctIds,
                         'correct_answer_texts' => $correctTexts,
+                        'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
                     ];
                 }
                 continue;
@@ -645,11 +676,16 @@ class TrainingService {
                    ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
                    ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
                 $qb->execute();
+                $batchXpEarned += $xpPerCorrect;
             }
 
             // SECURITY: Suppress correct answers during active exam
             if ($suppressAnswers) {
-                $results[] = ['questionId' => $questionId, 'recorded' => true];
+                $results[] = [
+                    'questionId' => $questionId,
+                    'recorded' => true,
+                    'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
+                ];
             } else {
                 $correctRows = $this->getAllCorrectAnswers($questionId);
                 $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
@@ -662,11 +698,31 @@ class TrainingService {
                     'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
                     'correct_answer_ids' => $correctIds,
                     'correct_answer_texts' => $correctTexts,
+                    'xp_earned' => $isCorrect ? $xpPerCorrect : 0,
                 ];
             }
         }
 
+        if ($batchXpEarned > 0) {
+            $this->xpService->incrementLeitnerXp($userId, $batchXpEarned);
+            $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);
+        }
+
         return $results;
+    }
+
+    /**
+     * Award immediate XP for a correctly answered question in training/exam sessions.
+     */
+    private function awardPerQuestionXp(string $userId, string $mode): int {
+        $streak = $this->streakService->getStreak($userId);
+        $baseXp = $mode === 'exam' ? 10 : 5;
+        $xpEarned = $this->xpService->applyMultiplier($baseXp, (int)$streak['current_streak']);
+        if ($xpEarned > 0) {
+            $this->xpService->incrementLeitnerXp($userId, $xpEarned);
+            $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);
+        }
+        return $xpEarned;
     }
 
     public function completeSession(int $sessionId, string $userId): array {
