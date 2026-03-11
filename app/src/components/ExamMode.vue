@@ -49,6 +49,7 @@
       <div class="exam-meta-line">
         <span v-if="attemptNo">{{ t('learning', 'Attempt #{n}', { n: attemptNo }) }}</span>
       </div>
+      <p v-if="resumedFromServer" class="resume-note">{{ t('learning', 'Active exam resumed from server state.') }}</p>
 
       <NcProgressBar :value="progressPercentage" />
       <div class="progress-label">{{ answeredCount }} / {{ questions.length }} {{ t('learning', 'answered') }}</div>
@@ -268,6 +269,7 @@ export default {
       examEndTime: null,
       examDeadlineAt: null,
       attemptNo: null,
+      resumedFromServer: false,
       snakeWidth: 0,
       snakeHeight: 0,
       resizeObserver: null,
@@ -391,17 +393,23 @@ export default {
         this.currentQuestionIndex = 0;
         this.userAnswers = {};
         this.openAnswerTexts = {};
+        this.multiSelections = {};
         this.detailedResults = [];
         this.resultsData = null;
+        this.resumedFromServer = !!r.data.resumed;
         this.examDurationSeconds = Number(r.data.time_limit_seconds || this.selectedTimeLimit);
         this.examDeadlineAt = Number(r.data.exam_deadline_at || 0) || null;
         const serverNow = Number(r.data.server_time || Math.floor(Date.now() / 1000));
         this.timeLeftSeconds = this.examDeadlineAt
           ? Math.max(0, this.examDeadlineAt - serverNow)
           : this.examDurationSeconds;
-        this.examStartTime = serverNow;
+        this.examStartTime = Number(r.data.started_at || serverNow);
         this.examEndTime = null;
         this.attemptNo = Number(r.data.attempt_no || 0) || null;
+        if (r.data.answered && typeof r.data.answered === 'object') {
+          this.restoreAnsweredState(r.data.answered);
+        }
+        this.currentQuestionIndex = this.findFirstUnansweredIndex();
 
         this.startTimer();
         this.screen = 'exam';
@@ -419,6 +427,46 @@ export default {
       } finally {
         this.isLoading = false;
       }
+    },
+    restoreAnsweredState(answeredMap) {
+      const normalized = {};
+      const restoredOpenTexts = {};
+      const restoredMulti = {};
+
+      for (const [qIdRaw, value] of Object.entries(answeredMap)) {
+        const qId = Number(qIdRaw);
+        if (value === null || value === undefined) {
+          normalized[qId] = null;
+          continue;
+        }
+        if (Array.isArray(value)) {
+          const ids = value.map(v => Number(v)).filter(v => Number.isInteger(v));
+          normalized[qId] = ids;
+          restoredMulti[qId] = ids.slice();
+          continue;
+        }
+        if (typeof value === 'object' && value.answerText) {
+          const text = String(value.answerText);
+          normalized[qId] = { answerText: text };
+          restoredOpenTexts[qId] = text;
+          continue;
+        }
+        normalized[qId] = Number(value);
+      }
+
+      this.userAnswers = normalized;
+      this.openAnswerTexts = restoredOpenTexts;
+      this.multiSelections = restoredMulti;
+    },
+    findFirstUnansweredIndex() {
+      if (!Array.isArray(this.questions) || this.questions.length === 0) return 0;
+      for (let i = 0; i < this.questions.length; i++) {
+        const qId = this.questions[i].id;
+        if (this.userAnswers[qId] === undefined) {
+          return i;
+        }
+      }
+      return 0;
     },
 
     startTimer() {
@@ -640,6 +688,7 @@ export default {
       this.detailedResults = [];
       this.examDeadlineAt = null;
       this.attemptNo = null;
+      this.resumedFromServer = false;
       if (this.timerInterval) clearInterval(this.timerInterval);
       this.timerInterval = null;
       this.timeLeftSeconds = null;
@@ -681,6 +730,7 @@ export default {
 .timer-yellow { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
 .timer-red { background: color-mix(in srgb, var(--color-error) 15%, transparent); color: var(--color-error); }
 .exam-meta-line { text-align: center; color: var(--color-text-maxcontrast); font-size: 13px; margin: -4px 0 12px; }
+.resume-note { text-align: center; color: var(--color-primary-element); font-size: 13px; margin: -4px 0 12px; }
 
 .progress-label { text-align: center; font-size: 13px; color: var(--color-text-maxcontrast); margin: 8px 0 24px; }
 

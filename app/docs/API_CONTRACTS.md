@@ -23,6 +23,12 @@ Response excerpt:
   "time_limit_seconds": 600,
   "exam_deadline_at": 1741700600,
   "attempt_no": 2,
+  "resumed": false,
+  "answered": {
+    "101": 4,
+    "102": [10, 12],
+    "103": { "answerText": "example" }
+  },
   "questions": []
 }
 ```
@@ -214,7 +220,9 @@ Response includes:
   "default_language": "de|en",
   "max_import_size_mb": 2,
   "gamification_enabled": "yes|no",
-  "allow_course_instructor_fallback": "yes|no"
+  "allow_course_instructor_fallback": "yes|no",
+  "exam_attempt_limit_per_day": 5,
+  "exam_attempt_cooldown_minutes": 10
 }
 ```
 
@@ -226,6 +234,8 @@ Accepted payload keys:
 - `max_import_size_mb`
 - `gamification_enabled`
 - `allow_course_instructor_fallback`
+- `exam_attempt_limit_per_day`
+- `exam_attempt_cooldown_minutes`
 
 Values:
 - booleans are represented as `"yes"` / `"no"` for compatibility.

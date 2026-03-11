@@ -58,6 +58,28 @@
         </small>
       </div>
 
+      <div class="field-row">
+        <label for="exam-attempt-limit">{{ t('learning', 'Exam attempts per 24h (per pool/user)') }}</label>
+        <input
+          id="exam-attempt-limit"
+          v-model.number="form.examAttemptLimitPerDay"
+          class="nc-input"
+          type="number"
+          min="1"
+          max="50" />
+      </div>
+
+      <div class="field-row">
+        <label for="exam-cooldown">{{ t('learning', 'Exam cooldown (minutes)') }}</label>
+        <input
+          id="exam-cooldown"
+          v-model.number="form.examAttemptCooldownMinutes"
+          class="nc-input"
+          type="number"
+          min="0"
+          max="1440" />
+      </div>
+
       <NcNoteCard v-if="error" type="error">{{ error }}</NcNoteCard>
       <NcNoteCard v-if="saved" type="success">{{ t('learning', 'Settings saved') }}</NcNoteCard>
 
@@ -93,6 +115,8 @@ export default {
         maxImportSizeMb: 2,
         gamificationEnabled: true,
         allowCourseInstructorFallback: false,
+        examAttemptLimitPerDay: 5,
+        examAttemptCooldownMinutes: 10,
       },
     }
   },
@@ -111,6 +135,8 @@ export default {
         this.form.maxImportSizeMb = Math.max(1, Math.min(10, Number(data.max_import_size_mb || 2)))
         this.form.gamificationEnabled = (data.gamification_enabled || 'yes') === 'yes'
         this.form.allowCourseInstructorFallback = (data.allow_course_instructor_fallback || 'no') === 'yes'
+        this.form.examAttemptLimitPerDay = Math.max(1, Math.min(50, Number(data.exam_attempt_limit_per_day || 5)))
+        this.form.examAttemptCooldownMinutes = Math.max(0, Math.min(1440, Number(data.exam_attempt_cooldown_minutes || 10)))
       } catch (e) {
         this.error = t('learning', 'Failed to load settings')
       } finally {
@@ -128,6 +154,8 @@ export default {
           max_import_size_mb: Math.max(1, Math.min(10, Number(this.form.maxImportSizeMb || 2))),
           gamification_enabled: this.form.gamificationEnabled ? 'yes' : 'no',
           allow_course_instructor_fallback: this.form.allowCourseInstructorFallback ? 'yes' : 'no',
+          exam_attempt_limit_per_day: Math.max(1, Math.min(50, Number(this.form.examAttemptLimitPerDay || 5))),
+          exam_attempt_cooldown_minutes: Math.max(0, Math.min(1440, Number(this.form.examAttemptCooldownMinutes || 10))),
         })
         this.saved = true
       } catch (e) {

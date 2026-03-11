@@ -11,6 +11,7 @@ use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\ICacheFactory;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
@@ -24,6 +25,7 @@ class TrainingService {
     private $streakService;
     private $xpService;
     private $cacheFactory;
+    private IConfig $config;
     private LoggerInterface $logger;
 
     public function __construct(
@@ -36,6 +38,7 @@ class TrainingService {
         StreakService $streakService,
         XpService $xpService,
         ICacheFactory $cacheFactory,
+        IConfig $config,
         LoggerInterface $logger
     ) {
         $this->db = $db;
@@ -47,6 +50,7 @@ class TrainingService {
         $this->streakService = $streakService;
         $this->xpService = $xpService;
         $this->cacheFactory = $cacheFactory;
+        $this->config = $config;
         $this->logger = $logger;
     }
 
@@ -133,6 +137,158 @@ class TrainingService {
             return strcmp($sa, $sb);
         });
         return $answers;
+    }
+
+    private function getExamAttemptLimitPerDay(): int {
+        return max(1, min(50, (int)$this->config->getAppValue('learning', 'exam_attempt_limit_per_day', '5')));
+    }
+
+    private function getExamAttemptCooldownMinutes(): int {
+        return max(0, min(1440, (int)$this->config->getAppValue('learning', 'exam_attempt_cooldown_minutes', '10')));
+    }
+
+    private function enforceExamStartPolicy(int $poolId, string $userId): void {
+        $now = time();
+        $limitPerDay = $this->getExamAttemptLimitPerDay();
+        $cooldownMinutes = $this->getExamAttemptCooldownMinutes();
+
+        $sinceDay = $now - 86400;
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*)'))
+            ->from('learning_sessions')
+            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+            ->andWhere($qb->expr()->gte('started_at', $qb->createNamedParameter($sinceDay)));
+        $result = $qb->execute();
+        $attemptsLast24h = (int)$result->fetchOne();
+        $result->closeCursor();
+        if ($attemptsLast24h >= $limitPerDay) {
+            throw new \Exception('Exam attempt limit reached for the last 24 hours');
+        }
+
+        if ($cooldownMinutes > 0) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('started_at')
+                ->from('learning_sessions')
+                ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+                ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+                ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+                ->orderBy('started_at', 'DESC')
+                ->setMaxResults(1);
+            $result = $qb->execute();
+            $lastStartedAt = (int)($result->fetchOne() ?: 0);
+            $result->closeCursor();
+
+            if ($lastStartedAt > 0) {
+                $cooldownUntil = $lastStartedAt + ($cooldownMinutes * 60);
+                if ($now < $cooldownUntil) {
+                    throw new \Exception('Exam cooldown active');
+                }
+            }
+        }
+    }
+
+    private function getSessionQuestionIds(array $session): array {
+        if (!empty($session['question_order_json'])) {
+            $decoded = json_decode((string)$session['question_order_json'], true);
+            if (is_array($decoded) && !empty($decoded)) {
+                return array_values(array_map('intval', $decoded));
+            }
+        }
+        return [];
+    }
+
+    private function getSessionQuestionsWithAnswers(array $session): array {
+        $poolId = (int)$session['pool_id'];
+        $sessionId = (int)$session['id'];
+        $questionIds = $this->getSessionQuestionIds($session);
+        $byId = [];
+        foreach ($this->questionMapper->findByPoolId($poolId) as $q) {
+            $byId[(int)$q->getId()] = $q;
+        }
+
+        if (empty($questionIds)) {
+            $questionIds = array_keys($byId);
+            sort($questionIds);
+        }
+
+        $questionsWithAnswers = [];
+        foreach ($questionIds as $qid) {
+            if (!isset($byId[$qid])) {
+                continue;
+            }
+            $q = $byId[$qid];
+            $qData = $q->jsonSerialize();
+            $answers = $this->answerMapper->findByQuestion($q->getId());
+            $answers = $this->shuffleAnswersForSession($answers, $sessionId, (int)$q->getId());
+            $qData['answers'] = array_map(static function ($a) {
+                $row = $a->jsonSerialize();
+                unset($row['is_correct']);
+                return $row;
+            }, $answers);
+            $questionsWithAnswers[] = $qData;
+        }
+
+        return $questionsWithAnswers;
+    }
+
+    private function getSessionUserAnswersMap(int $sessionId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('question_id', 'answer_id', 'answer_ids')
+            ->from('learning_user_answers')
+            ->where($qb->expr()->eq('session_id', $qb->createNamedParameter($sessionId)))
+            ->orderBy('id', 'ASC');
+        $result = $qb->execute();
+
+        $map = [];
+        while ($row = $result->fetch()) {
+            $questionId = (int)$row['question_id'];
+            $answerId = $row['answer_id'] !== null ? (int)$row['answer_id'] : null;
+            $answerIds = [];
+            if (!empty($row['answer_ids'])) {
+                $parsed = json_decode((string)$row['answer_ids'], true);
+                if (is_array($parsed)) {
+                    $answerIds = $parsed;
+                }
+            }
+
+            if (isset($answerIds['text']) && is_string($answerIds['text'])) {
+                $map[$questionId] = ['answerText' => $answerIds['text']];
+            } elseif (!empty($answerIds)) {
+                $map[$questionId] = array_values(array_map('intval', $answerIds));
+            } elseif ($answerId !== null) {
+                $map[$questionId] = $answerId;
+            } else {
+                $map[$questionId] = null;
+            }
+        }
+        $result->closeCursor();
+
+        return $map;
+    }
+
+    private function buildSessionStartPayload(array $session, bool $resumed = false): array {
+        $sessionId = (int)$session['id'];
+        $startedAt = (int)$session['started_at'];
+        $timeLimit = isset($session['time_limit_seconds']) ? (int)$session['time_limit_seconds'] : null;
+        $deadlineAt = $this->getExamDeadlineAt($session);
+        $questionsWithAnswers = $this->getSessionQuestionsWithAnswers($session);
+        $answeredMap = $resumed ? $this->getSessionUserAnswersMap($sessionId) : [];
+
+        return [
+            'session_id' => $sessionId,
+            'total_questions' => count($questionsWithAnswers),
+            'questions' => $questionsWithAnswers,
+            'mode' => $session['mode'] ?? 'training',
+            'server_time' => time(),
+            'started_at' => $startedAt,
+            'time_limit_seconds' => $timeLimit,
+            'exam_deadline_at' => $deadlineAt,
+            'attempt_no' => isset($session['attempt_no']) ? (int)$session['attempt_no'] : null,
+            'resumed' => $resumed,
+            'answered' => $answeredMap,
+        ];
     }
 
     private function hasPoolAccess(int $poolId, string $userId): bool {
@@ -227,21 +383,33 @@ class TrainingService {
             throw new \Exception('Pool not found or no access');
         }
 
-        // Block starting any session while user has an active exam on the same pool
+        // Resume existing active exam first.
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
-           ->from('learning_sessions')
-           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
-           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
-           ->andWhere($qb->expr()->isNull('completed_at'))
-           ->setMaxResults(1);
-        $activeExam = $qb->execute();
-        $hasActiveExam = $activeExam->fetch();
-        $activeExam->closeCursor();
-        if ($hasActiveExam) {
-            $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($hasActiveExam, $userId, 'start_session_guard');
+            ->from('learning_sessions')
+            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+            ->andWhere($qb->expr()->isNull('completed_at'))
+            ->orderBy('started_at', 'DESC')
+            ->setMaxResults(1);
+        $activeExamResult = $qb->execute();
+        $activeExam = $activeExamResult->fetch();
+        $activeExamResult->closeCursor();
+
+        if ($activeExam) {
+            $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($activeExam, $userId, 'start_session_guard');
             if (!$timeoutInfo['timed_out']) {
+                if ($mode === 'exam') {
+                    $payload = $this->buildSessionStartPayload($timeoutInfo['session'], true);
+                    $this->logAuditEvent('session_resumed', [
+                        'user_id' => $userId,
+                        'session_id' => (int)$timeoutInfo['session']['id'],
+                        'pool_id' => $poolId,
+                        'mode' => $mode,
+                    ]);
+                    return $payload;
+                }
                 throw new \Exception('Cannot start session while an exam is active for this pool');
             }
         }
@@ -275,11 +443,13 @@ class TrainingService {
         $examAttemptNo = null;
         $effectiveTimeLimit = null;
         if ($mode === 'exam') {
+            $this->enforceExamStartPolicy($poolId, $userId);
             $examAttemptNo = $this->getExamAttemptNo($poolId, $userId);
             $requestedLimit = $timeLimitSeconds ?? 600;
             $effectiveTimeLimit = max(60, min(7200, (int)$requestedLimit));
         }
 
+        $questionOrder = array_map(static fn($q) => (int)$q->getId(), $questions);
         $qb = $this->db->getQueryBuilder();
         $qb->insert('learning_sessions')
            ->values([
@@ -291,46 +461,37 @@ class TrainingService {
                'mode' => $qb->createNamedParameter($mode),
                'time_limit_seconds' => $qb->createNamedParameter($effectiveTimeLimit, $effectiveTimeLimit === null ? \PDO::PARAM_NULL : \PDO::PARAM_INT),
                'attempt_no' => $qb->createNamedParameter($examAttemptNo, $examAttemptNo === null ? \PDO::PARAM_NULL : \PDO::PARAM_INT),
+               'question_order_json' => $qb->createNamedParameter(json_encode($questionOrder)),
            ]);
         $qb->execute();
 
         $sessionId = (int)$qb->getLastInsertId();
         $deadlineAt = ($mode === 'exam' && $effectiveTimeLimit !== null) ? ($startedAt + $effectiveTimeLimit) : null;
 
-        $questionsWithAnswers = [];
-        foreach ($questions as $q) {
-            $qData = $q->jsonSerialize();
-            $answers = $this->answerMapper->findByQuestion($q->getId());
-            $answers = $this->shuffleAnswersForSession($answers, $sessionId, (int)$q->getId());
-            $qData['answers'] = array_map(static function ($a) {
-                $row = $a->jsonSerialize();
-                unset($row['is_correct']);
-                return $row;
-            }, $answers);
-            $questionsWithAnswers[] = $qData;
-        }
+        $sessionForPayload = [
+            'id' => $sessionId,
+            'pool_id' => $poolId,
+            'user_id' => $userId,
+            'started_at' => $startedAt,
+            'time_limit_seconds' => $effectiveTimeLimit,
+            'attempt_no' => $examAttemptNo,
+            'mode' => $mode,
+            'question_order_json' => json_encode($questionOrder),
+        ];
+        $payload = $this->buildSessionStartPayload($sessionForPayload, false);
 
         $this->logAuditEvent('session_started', [
             'user_id' => $userId,
             'session_id' => $sessionId,
             'pool_id' => $poolId,
             'mode' => $mode,
-            'question_count' => count($questions),
+            'question_count' => count($questionOrder),
             'time_limit_seconds' => $effectiveTimeLimit,
             'exam_deadline_at' => $deadlineAt,
             'attempt_no' => $examAttemptNo,
         ]);
 
-        return [
-            'session_id' => $sessionId,
-            'total_questions' => count($questions),
-            'questions' => $questionsWithAnswers,
-            'mode' => $mode,
-            'server_time' => $startedAt,
-            'time_limit_seconds' => $effectiveTimeLimit,
-            'exam_deadline_at' => $deadlineAt,
-            'attempt_no' => $examAttemptNo,
-        ];
+        return $payload;
     }
 
     private function getAllCorrectAnswers(int $questionId): array {
