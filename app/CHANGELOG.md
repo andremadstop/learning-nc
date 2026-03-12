@@ -457,3 +457,16 @@ All notable changes to this project will be documented in this file.
 - Vue 2.7 frontend with @nextcloud/vue components
 - 35 API endpoints, 10 database tables
 - 3 database migrations
+
+## [2.5.1] - 2026-03-12
+
+### Added
+- **Exam hotkeys**: In Exam mode, `1-8` selects answer options and `Enter` confirms/advances depending on question type.
+
+### Changed
+- **Swipe mode UX**: Improved mobile touch targets (larger answer buttons), clearer start/retry/submission states, and improved next-action button behavior on small screens.
+- **Daily Challenge refresh behavior**: Pool list now auto-refreshes completed challenges when the UTC reset countdown reaches zero to avoid stale post-midnight UI state.
+
+### Technical
+- Files changed: `src/components/ExamMode.vue`, `src/components/SwipeMode.vue`, `src/components/PoolList.vue`
+- Git commit: `b1d1a42`
