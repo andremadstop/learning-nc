@@ -81,3 +81,7 @@ nixos/
 .tmpq_upgrade2/
 AGENTS.md
 PLAN-settings-pages.md
+
+# E2E generated auth/fixture env
+app/tests/e2e/.auth/
+app/tests/e2e/.env.generated

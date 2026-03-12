@@ -1,0 +1,70 @@
+name: E2E
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      APP_CONTAINER: learning-app
+      DB_CONTAINER: learning-db
+      E2E_BASE_URL: http://localhost:8080/apps/learning
+      E2E_USERNAME: admin
+      E2E_PASSWORD: admin
+      CI: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Start Nextcloud stack
+        run: docker compose up -d
+
+      - name: Wait for Nextcloud
+        run: bash scripts/e2e/wait-nextcloud.sh
+
+      - name: Install app dependencies
+        run: npm --prefix app ci
+
+      - name: Build frontend
+        run: npm --prefix app run build
+
+      - name: Install Playwright browser
+        run: npx --prefix app playwright install --with-deps chromium
+
+      - name: Seed E2E fixtures
+        run: bash scripts/e2e/seed-fixtures.sh
+
+      - name: Run E2E tests
+        run: |
+          set -a
+          source app/tests/e2e/.env.generated
+          set +a
+          npm --prefix app run test:e2e -- --project=chromium
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: app/playwright-report
+          retention-days: 7
+
+      - name: Dump container logs on failure
+        if: failure()
+        run: |
+          docker logs learning-app || true
+          docker logs learning-db || true
+

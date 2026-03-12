@@ -7,7 +7,8 @@
     "build": "webpack --mode production",
     "watch": "webpack --mode development --watch",
     "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ci": "playwright test --project=chromium"
   },
   "dependencies": {
     "@nextcloud/axios": "^2.5.0",
