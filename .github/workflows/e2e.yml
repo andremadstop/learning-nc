@@ -62,6 +62,18 @@ jobs:
             chown -R www-data:www-data /var/www/html/apps
             chmod -R u+rwX,g+rwX /var/www/html/apps
           '
+
+      - name: Disable App Store in CI (avoid apps write check in occ)
+        run: |
+          docker exec learning-app php -r '
+            $cfgFile = "/var/www/html/config/config.php";
+            if (!file_exists($cfgFile)) { exit(0); }
+            $CONFIG = include $cfgFile;
+            if (!is_array($CONFIG)) { $CONFIG = []; }
+            $CONFIG["appstoreenabled"] = false;
+            $out = "<?php\n\\$CONFIG = " . var_export($CONFIG, true) . ";\n";
+            file_put_contents($cfgFile, $out);
+          '
           docker exec learning-app php occ status --output=json
 
       - name: Install app dependencies
