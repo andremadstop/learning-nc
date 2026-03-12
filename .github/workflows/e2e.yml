@@ -31,10 +31,10 @@ jobs:
       CI: "true"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -67,16 +67,6 @@ jobs:
             --exclude=playwright-report \
             -C app -cf - . | docker exec -i learning-app tar -xf - -C /var/www/html/custom_apps/learning
           docker exec learning-app sh -lc 'chown -R www-data:www-data /var/www/html/custom_apps/learning'
-          docker exec learning-app php -r '
-            $cfgFile = "/var/www/html/config/config.php";
-            if (!file_exists($cfgFile)) { fwrite(STDERR, "config.php missing\n"); exit(1); }
-            $CONFIG = [];
-            include $cfgFile;
-            if (!is_array($CONFIG)) { $CONFIG = []; }
-            $CONFIG["appstoreenabled"] = false;
-            $out = "<?php\n\\$CONFIG = " . var_export($CONFIG, true) . ";\n";
-            file_put_contents($cfgFile, $out);
-          '
           docker exec learning-app php occ app:enable learning
           docker exec learning-app php occ upgrade
           docker exec learning-app php occ status --output=json
@@ -96,11 +86,12 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-report
           path: app/playwright-report
           retention-days: 7
+          if-no-files-found: ignore
 
       - name: Dump container logs on failure
         if: failure()

@@ -14,13 +14,15 @@ bash scripts/e2e/wait-nextcloud.sh
 docker exec learning-app sh -lc 'mkdir -p /var/www/html/custom_apps/learning'
 tar --exclude=node_modules -C app -cf - . | docker exec -i learning-app tar -xf - -C /var/www/html/custom_apps/learning
 docker exec learning-app sh -lc 'chown -R www-data:www-data /var/www/html/custom_apps/learning'
-docker exec learning-app php -r '$cfgFile="/var/www/html/config/config.php"; $CONFIG=[]; include $cfgFile; $CONFIG["appstoreenabled"]=false; file_put_contents($cfgFile, "<?php\n\\$CONFIG = " . var_export($CONFIG, true) . ";\n");'
 docker exec learning-app php occ app:enable learning
 npx --prefix app playwright install chromium
 bash scripts/e2e/seed-fixtures.sh
 set -a; source app/tests/e2e/.env.generated; set +a
 npm --prefix app run test:e2e:ci
 ```
+
+`docker-compose.e2e.yml` mounts `scripts/e2e/nextcloud-config/zz-e2e.config.php`
+into the container so the Nextcloud App Store is disabled during bootstrap.
 
 ## Seeded Fixtures
 
