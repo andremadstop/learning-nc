@@ -32,6 +32,11 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
 
+      - name: Verify Node runtime
+        run: |
+          node -v
+          npm -v
+
       - name: Start Nextcloud stack
         run: docker compose up -d
 
@@ -41,6 +46,11 @@ jobs:
             mkdir -p /var/www/html/apps /var/www/html/config /var/www/html/data
             chown -R www-data:www-data /var/www/html/apps /var/www/html/config /var/www/html/data
           '
+
+      - name: Fix workspace permissions for npm
+        run: |
+          sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
+          chmod -R u+rwX "$GITHUB_WORKSPACE/app"
 
       - name: Wait for Nextcloud
         run: bash scripts/e2e/wait-nextcloud.sh
