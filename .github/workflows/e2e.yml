@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: npm
           cache-dependency-path: app/package-lock.json
 
@@ -38,8 +38,8 @@ jobs:
       - name: Fix Nextcloud permissions
         run: |
           docker exec learning-app sh -lc '
-            mkdir -p /var/www/html/apps /var/www/html/custom_apps /var/www/html/custom_apps/learning /var/www/html/config /var/www/html/data
-            chown -R www-data:www-data /var/www/html/apps /var/www/html/custom_apps /var/www/html/config /var/www/html/data
+            mkdir -p /var/www/html/apps /var/www/html/config /var/www/html/data
+            chown -R www-data:www-data /var/www/html/apps /var/www/html/config /var/www/html/data
           '
 
       - name: Wait for Nextcloud
