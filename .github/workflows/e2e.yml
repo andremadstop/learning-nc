@@ -68,7 +68,8 @@ jobs:
           docker exec learning-app php -r '
             $cfgFile = "/var/www/html/config/config.php";
             if (!file_exists($cfgFile)) { exit(0); }
-            $CONFIG = include $cfgFile;
+            $CONFIG = [];
+            include $cfgFile;
             if (!is_array($CONFIG)) { $CONFIG = []; }
             $CONFIG["appstoreenabled"] = false;
             $out = "<?php\n\\$CONFIG = " . var_export($CONFIG, true) . ";\n";
