@@ -7,6 +7,9 @@ on:
   push:
     branches: [ main ]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   e2e:
     runs-on: ubuntu-latest
@@ -31,6 +34,13 @@ jobs:
 
       - name: Start Nextcloud stack
         run: docker compose up -d
+
+      - name: Fix Nextcloud permissions
+        run: |
+          docker exec learning-app sh -lc '
+            mkdir -p /var/www/html/apps /var/www/html/custom_apps /var/www/html/custom_apps/learning /var/www/html/config /var/www/html/data
+            chown -R www-data:www-data /var/www/html/apps /var/www/html/custom_apps /var/www/html/config /var/www/html/data
+          '
 
       - name: Wait for Nextcloud
         run: bash scripts/e2e/wait-nextcloud.sh
