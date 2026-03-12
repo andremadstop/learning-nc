@@ -52,7 +52,7 @@ jobs:
           set -a
           source app/tests/e2e/.env.generated
           set +a
-          npm --prefix app run test:e2e -- --project=chromium
+          npm --prefix app run test:e2e:ci
 
       - name: Upload Playwright report
         if: always()
@@ -67,4 +67,3 @@ jobs:
         run: |
           docker logs learning-app || true
           docker logs learning-db || true
-
