@@ -350,6 +350,7 @@ export default {
       challengeOpenAnswer: '',
       challengeCountdownSec: 0,
       challengeCountdownTimer: null,
+      challengeRefreshInFlight: false,
     };
   },
   computed: {
@@ -421,9 +422,25 @@ export default {
       }
     },
     updateChallengeCountdown() {
+      const previous = this.challengeCountdownSec;
       const now = new Date();
       const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, 0, 0, 0));
       this.challengeCountdownSec = Math.max(0, Math.floor((next.getTime() - now.getTime()) / 1000));
+      if (
+        previous > 0 &&
+        this.challengeCountdownSec === 0 &&
+        this.dailyChallenge &&
+        this.dailyChallenge.completed &&
+        !this.challengeRefreshInFlight &&
+        this.userRole !== 'instructor'
+      ) {
+        this.challengeRefreshInFlight = true;
+        this.loadDailyChallenge().finally(() => {
+          this.challengeSelectedIds = [];
+          this.challengeOpenAnswer = '';
+          this.challengeRefreshInFlight = false;
+        });
+      }
     },
     formatCountdown(seconds) {
       const s = Math.max(0, Number(seconds || 0));

@@ -51,6 +51,7 @@
       </div>
       <p v-if="resumedFromServer" class="resume-note">{{ t('learning', 'Active exam resumed from server state.') }}</p>
       <p v-if="lockDenied" class="lock-note">{{ t('learning', 'This exam is active in another tab. This tab is read-only.') }}</p>
+      <p class="hotkey-note">{{ t('learning', 'Hotkeys: 1-8 select answer, Enter confirms/next') }}</p>
 
       <NcProgressBar :value="progressPercentage" />
       <div class="progress-label">{{ answeredCount }} / {{ questions.length }} {{ t('learning', 'answered') }}</div>
@@ -360,6 +361,51 @@ export default {
     }
   },
   methods: {
+    isEditableTarget(event) {
+      const target = event && event.target ? event.target : null;
+      if (!target || !target.tagName) return false;
+      const tag = String(target.tagName).toLowerCase();
+      return tag === 'input' || tag === 'textarea' || target.isContentEditable;
+    },
+    handleExamHotkeys(event) {
+      if (this.screen !== 'exam' || !this.currentQuestion || this.isLoading) return;
+      if (this.isEditableTarget(event)) return;
+
+      const key = String(event.key || '');
+      if (key === 'Enter') {
+        event.preventDefault();
+        if (this.lockDenied) return;
+        if (this.isCurrentOpen) {
+          this.submitOpenExamAnswer();
+          return;
+        }
+        if (this.isCurrentMulti) {
+          const qId = this.currentQuestion.id;
+          const selected = this.multiSelections[qId] || [];
+          if (selected.length > 0) {
+            this.confirmMultiAnswer();
+          } else {
+            this.skipQuestion();
+          }
+          return;
+        }
+
+        const currentValue = this.userAnswers[this.currentQuestion.id];
+        if (currentValue === undefined) {
+          this.skipQuestion();
+        } else {
+          this.advanceToNext();
+        }
+        return;
+      }
+
+      if (!/^[1-8]$/.test(key) || this.isCurrentOpen || this.lockDenied) return;
+      const answerIndex = Number(key) - 1;
+      const answers = Array.isArray(this.currentQuestion.answers) ? this.currentQuestion.answers : [];
+      if (answerIndex < 0 || answerIndex >= answers.length) return;
+      event.preventDefault();
+      this.answerQuestion(answers[answerIndex].id);
+    },
     questionImageUrl(id) {
       return generateUrl('/apps/learning/api/questions/' + id + '/image');
     },
@@ -797,8 +843,12 @@ export default {
       this.timeLeftSeconds = null;
     },
   },
+  mounted() {
+    window.addEventListener('keydown', this.handleExamHotkeys);
+  },
 
   beforeDestroy() {
+    window.removeEventListener('keydown', this.handleExamHotkeys);
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.stopStatusPolling();
     this.releaseExamLock();
@@ -837,6 +887,12 @@ export default {
 .exam-meta-line { text-align: center; color: var(--color-text-maxcontrast); font-size: 13px; margin: -4px 0 12px; }
 .resume-note { text-align: center; color: var(--color-primary-element); font-size: 13px; margin: -4px 0 12px; }
 .lock-note { text-align: center; color: var(--color-warning); font-size: 13px; margin: -4px 0 12px; font-weight: 600; }
+.hotkey-note {
+  text-align: center;
+  color: var(--color-text-maxcontrast);
+  font-size: 12px;
+  margin: -4px 0 12px;
+}
 
 .progress-label { text-align: center; font-size: 13px; color: var(--color-text-maxcontrast); margin: 8px 0 24px; }
 

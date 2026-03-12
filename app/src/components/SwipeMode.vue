@@ -3,17 +3,18 @@
     <div v-if="!session && !loadError" class="swipe-start">
       <h3>{{ t('learning', 'Wahr/Falsch') }}</h3>
       <p v-if="totalQuestions > 0">{{ t('learning', 'Decide: true or false — swipe or tap to continue') }}</p>
+      <NcNoteCard v-if="starting" type="info" class="status-note">{{ t('learning', 'Session is starting...') }}</NcNoteCard>
       <NcEmptyContent v-else :name="t('learning', 'No questions')" :description="t('learning', 'No questions available for training')" />
       <div class="start-actions">
         <NcButton v-if="totalQuestions > 0" type="primary" @click="startSession" :disabled="starting">{{ starting ? t('learning', 'Starting...') : t('learning', 'Start') }}</NcButton>
-        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
+        <NcButton type="tertiary" @click="$emit('back')" :disabled="starting">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
 
     <div v-else-if="loadError" class="swipe-start">
       <NcNoteCard type="error">{{ loadError }}</NcNoteCard>
       <div class="start-actions">
-        <NcButton type="primary" @click="startSession">{{ t('learning', 'Retry') }}</NcButton>
+        <NcButton type="primary" @click="startSession" :disabled="starting">{{ starting ? t('learning', 'Retrying...') : t('learning', 'Retry') }}</NcButton>
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
@@ -93,10 +94,12 @@
 
       <div v-if="showFeedback" class="swipe-hint-area">
         <p class="swipe-hint">\u2190 {{ t('learning', 'Swipe or tap Next') }} \u2192</p>
-        <NcButton type="primary" @click="advanceCard">
+        <NcButton type="primary" class="next-btn" @click="advanceCard">
           {{ currentIndex < questions.length - 1 ? t('learning', 'Next \u2192') : t('learning', 'See Results') }}
         </NcButton>
       </div>
+
+      <div v-if="submitting" class="submission-status">{{ t('learning', 'Submitting answer...') }}</div>
     </div>
 
     <div v-else class="swipe-results">
@@ -408,6 +411,7 @@ export default {
 .swipe-start h3 { font-size: 28px; font-weight: 700; margin-bottom: 12px; color: var(--color-main-text); }
 .swipe-start p { font-size: 16px; color: var(--color-text-maxcontrast); margin-bottom: 24px; }
 .start-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.status-note { margin: 0 auto 16px; max-width: 420px; text-align: left; }
 
 .swipe-active { width: 100%; }
 
@@ -499,7 +503,7 @@ export default {
 .answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 .answer-btn {
-  padding: 14px 16px;
+  padding: 16px 16px;
   border: 2px solid var(--color-border);
   border-radius: var(--border-radius-large);
   background: var(--color-main-background);
@@ -507,7 +511,7 @@ export default {
   text-align: center;
   font-size: 14px;
   transition: all 0.15s;
-  min-height: 52px;
+  min-height: 58px;
   color: var(--color-main-text);
   line-height: 1.4;
   word-break: break-word;
@@ -533,11 +537,18 @@ export default {
   text-align: center;
   padding: 16px 0;
 }
+.next-btn { min-width: 240px; }
 .swipe-hint {
   font-size: 14px;
   color: var(--color-text-maxcontrast);
   margin-bottom: 12px;
   animation: hintPulse 2s ease-in-out infinite;
+}
+.submission-status {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--color-text-maxcontrast);
 }
 
 @keyframes hintPulse {
@@ -578,6 +589,8 @@ export default {
   .swipe-card { padding: 20px 16px; min-height: 220px; }
   .question-text { font-size: 17px; }
   .answer-grid { grid-template-columns: 1fr; }
+  .answer-btn { min-height: 66px; font-size: 15px; }
+  .next-btn { width: 100%; }
   .score-circle { width: 130px; height: 130px; }
   .score-number { font-size: 36px; }
 }
