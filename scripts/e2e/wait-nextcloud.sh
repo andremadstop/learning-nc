@@ -2,6 +2,7 @@
 set -euo pipefail
 
 APP_CONTAINER="${APP_CONTAINER:-learning-app}"
+BASE_URL="${BASE_URL:-http://localhost:8080}"
 MAX_WAIT_SECONDS="${MAX_WAIT_SECONDS:-900}"
 SLEEP_SECONDS="${SLEEP_SECONDS:-5}"
 
@@ -9,16 +10,16 @@ echo "[e2e] waiting for Nextcloud container '${APP_CONTAINER}' to become ready..
 start_ts="$(date +%s)"
 
 while true; do
-  status_json="$(docker exec "${APP_CONTAINER}" php occ status --output=json 2>/dev/null || true)"
+  status_json="$(curl -fsS "${BASE_URL}/status.php" 2>/dev/null || true)"
   if printf '%s' "${status_json}" | grep -q '"installed":true'; then
-    echo "[e2e] Nextcloud is installed and reachable."
+    echo "[e2e] Nextcloud HTTP status ready: ${status_json}"
     break
   fi
 
   if [ -n "${status_json}" ]; then
-    echo "[e2e] waiting... occ status: ${status_json}"
+    echo "[e2e] waiting... status.php: ${status_json}"
   else
-    echo "[e2e] waiting... container not ready for occ yet"
+    echo "[e2e] waiting... HTTP endpoint not ready yet"
   fi
 
   now_ts="$(date +%s)"

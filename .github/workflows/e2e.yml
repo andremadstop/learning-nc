@@ -55,6 +55,15 @@ jobs:
       - name: Wait for Nextcloud
         run: bash scripts/e2e/wait-nextcloud.sh
 
+      - name: Re-apply app dir permissions after init
+        run: |
+          docker exec learning-app sh -lc '
+            mkdir -p /var/www/html/apps
+            chown -R www-data:www-data /var/www/html/apps
+            chmod -R u+rwX,g+rwX /var/www/html/apps
+          '
+          docker exec learning-app php occ status --output=json
+
       - name: Install app dependencies
         run: npm --prefix app ci
 
