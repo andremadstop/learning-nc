@@ -156,12 +156,17 @@ class StreakService {
         if ($consumeFreeze && $freezeUsed && $freezeTokens > 0 && $freezeState['row_exists']) {
             $qb = $this->db->getQueryBuilder();
             $qb->update('learning_user_stats')
-               ->set('streak_freeze_tokens', $qb->createNamedParameter($freezeTokens - 1))
+               ->set('streak_freeze_tokens', $qb->createFunction('streak_freeze_tokens - 1'))
                ->set('last_freeze_reset_week', $qb->createNamedParameter($freezeState['week']))
                ->set('updated_at', $qb->createNamedParameter(time()))
-               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-            $qb->execute();
-            $freezeTokens--;
+               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+               ->andWhere($qb->expr()->gt('streak_freeze_tokens', $qb->createNamedParameter(0)));
+            $updated = $qb->execute();
+            if ($updated > 0) {
+                $freezeTokens--;
+            } else {
+                $freezeUsed = false;
+            }
         }
 
         return [

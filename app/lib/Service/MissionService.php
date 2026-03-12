@@ -92,6 +92,7 @@ class MissionService {
         }
 
         $xp = (int)self::DAILY_MISSIONS[$missionKey]['xp'];
+        $this->db->beginTransaction();
         try {
             $qb = $this->db->getQueryBuilder();
             $qb->insert('learning_user_mission_claims')
@@ -103,11 +104,16 @@ class MissionService {
                    'claimed_at' => $qb->createNamedParameter(time()),
                ]);
             $qb->execute();
+            $this->xpService->incrementLeitnerXp($userId, $xp, true);
+            $this->db->commit();
         } catch (UniqueConstraintViolationException $e) {
+            $this->db->rollBack();
             throw new \InvalidArgumentException('Mission already claimed');
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
         }
-
-        $this->xpService->incrementLeitnerXp($userId, $xp);
+        $this->xpService->syncLevel($userId);
 
         return [
             'mission_key' => $missionKey,
@@ -182,4 +188,3 @@ class MissionService {
         return $progress;
     }
 }
-

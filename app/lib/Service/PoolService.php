@@ -86,6 +86,16 @@ class PoolService {
         return $row !== false;
     }
 
+    private function canEditPool(int $poolId, string $userId): bool {
+        try {
+            $this->mapper->find($poolId, $userId);
+            return true;
+        } catch (DoesNotExistException $e) {
+            $share = $this->shareMapper->findByPoolAndUser($poolId, $userId);
+            return $share !== null && $share->getPermission() === 'edit';
+        }
+    }
+
     public function find(int $id, string $userId): Pool {
         try {
             return $this->mapper->find($id, $userId);
