@@ -51,7 +51,11 @@ class StreakService {
                ->set('streak_freeze_tokens', $qb->createNamedParameter($tokens))
                ->set('last_freeze_reset_week', $qb->createNamedParameter($week))
                ->set('updated_at', $qb->createNamedParameter(time()))
-               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+               ->andWhere($qb->expr()->orX(
+                   $qb->expr()->isNull('last_freeze_reset_week'),
+                   $qb->expr()->neq('last_freeze_reset_week', $qb->createNamedParameter($week))
+               ));
             $qb->execute();
         }
 
