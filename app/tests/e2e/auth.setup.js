@@ -18,8 +18,8 @@ setup('authenticate as e2e user', async ({ page }) => {
 
   await page.waitForURL(/\/apps\/(dashboard|files|learning)/, { timeout: 60_000 })
   await page.goto(`${origin}/apps/learning/`)
-  await expect(page.getByText('Learning')).toBeVisible()
+  await page.waitForURL(/\/apps\/learning\/?/, { timeout: 60_000 })
+  await expect(page.locator('#app-content')).toBeVisible()
 
   await page.context().storageState({ path: stateFile })
 })
-
