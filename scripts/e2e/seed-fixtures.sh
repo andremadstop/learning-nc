@@ -17,7 +17,13 @@ echo "[e2e] enabling learning app and running migrations"
 docker exec "${APP_CONTAINER}" php occ app:enable learning >/dev/null 2>&1 || true
 docker exec "${APP_CONTAINER}" php occ upgrade >/dev/null 2>&1 || true
 
-TABLE_PREFIX="$(docker exec "${APP_CONTAINER}" php occ config:system:get dbtableprefix | tr -d '\r\n')"
+TABLE_PREFIX="${NC_TABLE_PREFIX:-}"
+if [ -z "${TABLE_PREFIX}" ]; then
+  TABLE_PREFIX="$(docker exec "${APP_CONTAINER}" php occ config:system:get dbtableprefix 2>/dev/null | tr -d '\r\n' || true)"
+fi
+if [ -z "${TABLE_PREFIX}" ]; then
+  TABLE_PREFIX="oc_"
+fi
 if [ -z "${TABLE_PREFIX}" ]; then
   echo "[e2e] failed to detect db table prefix"
   exit 1
@@ -131,4 +137,3 @@ EOF
 
 echo "[e2e] fixture env written to ${OUT_ENV_FILE}"
 echo "[e2e] pool=${POOL_ID} question=${QUESTION_ID} examSession=${EXAM_SESSION_ID}"
-

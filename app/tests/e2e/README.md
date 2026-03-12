@@ -7,10 +7,15 @@ This folder contains Playwright E2E tests for critical app flows.
 From repo root:
 
 ```bash
-docker compose up -d
-bash scripts/e2e/wait-nextcloud.sh
 npm --prefix app ci
 npm --prefix app run build
+docker compose -f docker-compose.e2e.yml up -d
+bash scripts/e2e/wait-nextcloud.sh
+docker exec learning-app sh -lc 'mkdir -p /var/www/html/custom_apps/learning'
+tar --exclude=node_modules -C app -cf - . | docker exec -i learning-app tar -xf - -C /var/www/html/custom_apps/learning
+docker exec learning-app sh -lc 'chown -R www-data:www-data /var/www/html/custom_apps/learning'
+docker exec learning-app php -r '$cfgFile="/var/www/html/config/config.php"; $CONFIG=[]; include $cfgFile; $CONFIG["appstoreenabled"]=false; file_put_contents($cfgFile, "<?php\n\\$CONFIG = " . var_export($CONFIG, true) . ";\n");'
+docker exec learning-app php occ app:enable learning
 npx --prefix app playwright install chromium
 bash scripts/e2e/seed-fixtures.sh
 set -a; source app/tests/e2e/.env.generated; set +a
@@ -41,4 +46,3 @@ Common vars:
 - `E2E_PASSWORD` (default: `admin`)
 - `APP_CONTAINER` (default: `learning-app`)
 - `DB_CONTAINER` (default: `learning-db`)
-

@@ -37,37 +37,31 @@ jobs:
           node -v
           npm -v
 
+      - name: Install app dependencies
+        run: npm --prefix app ci
+
+      - name: Build frontend
+        run: npm --prefix app run build
+
       - name: Start Nextcloud stack
-        run: docker compose up -d
-
-      - name: Fix Nextcloud permissions
-        run: |
-          docker exec learning-app sh -lc '
-            mkdir -p /var/www/html/apps /var/www/html/config /var/www/html/data
-            chown -R www-data:www-data /var/www/html/apps /var/www/html/config /var/www/html/data
-          '
-
-      - name: Fix workspace permissions for npm
-        run: |
-          sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
-          chmod -R u+rwX "$GITHUB_WORKSPACE/app"
+        run: docker compose -f docker-compose.e2e.yml up -d
 
       - name: Wait for Nextcloud
         run: bash scripts/e2e/wait-nextcloud.sh
 
-      - name: Re-apply app dir permissions after init
+      - name: Install learning app into CI container
         run: |
-          docker exec learning-app sh -lc '
-            mkdir -p /var/www/html/apps
-            chown -R www-data:www-data /var/www/html/apps
-            chmod -R u+rwX,g+rwX /var/www/html/apps
-          '
-
-      - name: Disable App Store in CI (avoid apps write check in occ)
-        run: |
+          docker exec learning-app sh -lc 'mkdir -p /var/www/html/custom_apps/learning'
+          tar \
+            --exclude=node_modules \
+            --exclude=tests/e2e/.auth \
+            --exclude=tests/e2e/.env.generated \
+            --exclude=playwright-report \
+            -C app -cf - . | docker exec -i learning-app tar -xf - -C /var/www/html/custom_apps/learning
+          docker exec learning-app sh -lc 'chown -R www-data:www-data /var/www/html/custom_apps/learning'
           docker exec learning-app php -r '
             $cfgFile = "/var/www/html/config/config.php";
-            if (!file_exists($cfgFile)) { exit(0); }
+            if (!file_exists($cfgFile)) { fwrite(STDERR, "config.php missing\n"); exit(1); }
             $CONFIG = [];
             include $cfgFile;
             if (!is_array($CONFIG)) { $CONFIG = []; }
@@ -75,13 +69,9 @@ jobs:
             $out = "<?php\n\\$CONFIG = " . var_export($CONFIG, true) . ";\n";
             file_put_contents($cfgFile, $out);
           '
+          docker exec learning-app php occ app:enable learning
+          docker exec learning-app php occ upgrade
           docker exec learning-app php occ status --output=json
-
-      - name: Install app dependencies
-        run: npm --prefix app ci
-
-      - name: Build frontend
-        run: npm --prefix app run build
 
       - name: Install Playwright browser
         run: npx --prefix app playwright install --with-deps chromium
