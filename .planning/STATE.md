@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: planning
-stopped_at: Completed 01-cli-state-machine-01-PLAN.md
-last_updated: "2026-03-16T21:16:09.789Z"
+stopped_at: Completed 01-cli-state-machine-02-PLAN.md
+last_updated: "2026-03-16T21:24:45.364Z"
 last_activity: 2026-03-16 — .planning initialisiert, ROADMAP + REQUIREMENTS erstellt
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 50
 ---
 
@@ -49,6 +49,8 @@ Progress: [█████░░░░░] 50%
 - [Phase 01-cli-state-machine]: cliStateMachine.js is a pure ES module (no Vue dep) for reuse in Author Tool live preview
 - [Phase 01-cli-state-machine]: Dynamic transitions use original trimmed cmd for capture groups to preserve interface name casing
 - [Phase 01-cli-state-machine]: errorMsg is string or function — function receives cmd.trim() for domain-specific error messages (bash, windows)
+- [Phase 01-cli-state-machine]: termModes and termContexts keyed by terminal name — allows multi-terminal questions each with independent state
+- [Phase 01-cli-state-machine]: No v-html anywhere — all output lines pushed as plain strings into history array, rendered via {{ line }} with white-space: pre-wrap
 
 ### Pending Todos
 
@@ -60,6 +62,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-16T21:16:09.775Z
-Stopped at: Completed 01-cli-state-machine-01-PLAN.md
+Last session: 2026-03-16T21:24:45.353Z
+Stopped at: Completed 01-cli-state-machine-02-PLAN.md
 Resume file: None

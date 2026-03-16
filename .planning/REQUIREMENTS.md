@@ -8,10 +8,10 @@
 ### CLI State Machine
 
 - [x] **CLI-01**: PbqCli unterstützt domain-Feld (cisco_ios/linux/windows/sql/generic) zur Bestimmung des Prompt-Schemas
-- [ ] **CLI-02**: Cisco IOS: `conf t` wechselt zu config-Modus, `interface X` zu config-if-Modus, `exit` zurück
-- [ ] **CLI-03**: Unbekannte Befehle zeigen kontextgerechte Fehlermeldung (z.B. `% Invalid command`)
+- [x] **CLI-02**: Cisco IOS: `conf t` wechselt zu config-Modus, `interface X` zu config-if-Modus, `exit` zurück
+- [x] **CLI-03**: Unbekannte Befehle zeigen kontextgerechte Fehlermeldung (z.B. `% Invalid command`)
 - [x] **CLI-04**: `command_outputs` Dict ermöglicht konfigurierte Feedback-Texte pro Befehl
-- [ ] **CLI-05**: State Machine persistiert Modus zwischen Befehlen innerhalb einer Frage-Session
+- [x] **CLI-05**: State Machine persistiert Modus zwischen Befehlen innerhalb einer Frage-Session
 
 ### SVG Topology Renderer
 
@@ -58,10 +58,10 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CLI-01 | Phase 1 | Complete |
-| CLI-02 | Phase 1 | Pending |
-| CLI-03 | Phase 1 | Pending |
+| CLI-02 | Phase 1 | Complete |
+| CLI-03 | Phase 1 | Complete |
 | CLI-04 | Phase 1 | Complete |
-| CLI-05 | Phase 1 | Pending |
+| CLI-05 | Phase 1 | Complete |
 | SVG-01 | Phase 2 | Pending |
 | SVG-02 | Phase 2 | Pending |
 | SVG-03 | Phase 2 | Pending |
