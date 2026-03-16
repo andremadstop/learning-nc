@@ -152,9 +152,12 @@ export function evaluateCommand(cmd, domain, currentMode, context, commandOutput
   }
 
   // Step 2 — Dynamic transition lookup
+  // Match against normalized for case-insensitive trigger detection, but use the
+  // original trimmed command for capture groups so interface names preserve case.
+  const cmdTrimmed = cmd.trim()
   for (const dt of (schema.dynamicTransitions || [])) {
     if (dt.mode === currentMode) {
-      const m = normalized.match(dt.pattern)
+      const m = cmdTrimmed.match(dt.pattern)
       if (m) {
         const newContext = { ...ctx, [dt.contextKey]: dt.contextFn(m) }
         return {
