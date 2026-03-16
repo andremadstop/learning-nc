@@ -114,6 +114,13 @@ VALUES (${POOL_ID}, '${E2E_USER}', ${STARTED_TRAINING}, NULL, 1, 0, 'training', 
 RETURNING id;
 " | grep -E '^[0-9]+$')"
 
+# separate training session for anti-oracle suppression test (isolates from duplicate-submission test)
+SUPPRESS_SESSION_ID="$(docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -At -v ON_ERROR_STOP=1 -c "
+INSERT INTO ${TABLE_PREFIX}learning_sessions (pool_id, user_id, started_at, completed_at, total_questions, correct_answers, mode, time_limit_seconds, question_order_json)
+VALUES (${POOL_ID}, '${E2E_USER}', ${STARTED_TRAINING}, NULL, 1, 0, 'training', NULL, '[${QUESTION_ID}]')
+RETURNING id;
+" | grep -E '^[0-9]+$')"
+
 # completed session to satisfy at least one daily mission claim (daily_sessions_1)
 docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -v ON_ERROR_STOP=1 -c "
 INSERT INTO ${TABLE_PREFIX}learning_sessions (pool_id, user_id, started_at, completed_at, total_questions, correct_answers, mode, time_limit_seconds, question_order_json)
@@ -133,6 +140,7 @@ E2E_TIMEOUT_SESSION_ID=${TIMEOUT_SESSION_ID}
 E2E_TRAIN_SESSION_ID=${TRAIN_SESSION_ID}
 E2E_TRAIN_QUESTION_ID=${QUESTION_ID}
 E2E_TRAIN_ANSWER_ID=${CORRECT_ANSWER_ID}
+E2E_SUPPRESS_SESSION_ID=${SUPPRESS_SESSION_ID}
 E2E_MISSION_KEY=daily_sessions_1
 E2E_UNCOMPLETED_MISSION_KEY=daily_cards_20
 EOF

@@ -37,7 +37,7 @@ test.describe('Critical Learning Flows', () => {
     //   → answer details are suppressed (suppressed: true, no is_correct/correct_answer_ids)
     // Note: submitting directly to an exam session via this endpoint is blocked (400).
     const res = await api(page, 'POST', '/apps/learning/api/training/answer', {
-      sessionId: Number(process.env.E2E_TRAIN_SESSION_ID || 0),
+      sessionId: Number(process.env.E2E_SUPPRESS_SESSION_ID || 0),
       questionId: Number(process.env.E2E_TRAIN_QUESTION_ID || 0),
       answerId: Number(process.env.E2E_TRAIN_ANSWER_ID || 0),
     })
