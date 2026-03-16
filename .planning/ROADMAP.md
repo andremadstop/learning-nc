@@ -55,10 +55,10 @@ Plans:
   2. scoring_mode=strict: nur exakte Treffer geben Punkte
   3. scoring_mode=partial: Teilpunkte bei Teiltreffern
   4. Auswahl wird korrekt gespeichert und gewertet
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 03-01: Inline-Dropdown Positionierung + scoring_mode
+- [ ] 03-01-PLAN.md — PbqPlacement inline picker + pbqScoringMode utility + browser verify
 
 #### Phase 4: Multi-Panel Layout
 
