@@ -6,6 +6,8 @@
     "dev": "webpack --mode development --watch",
     "build": "webpack --mode production",
     "watch": "webpack --mode development --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ci": "playwright test --project=chromium"
@@ -21,12 +23,13 @@
     "vue": "^2.7.16"
   },
   "devDependencies": {
-    "@playwright/test": "^1.53.1",
     "@babel/core": "^7.26.0",
     "@babel/preset-env": "^7.26.0",
+    "@playwright/test": "^1.53.1",
     "babel-loader": "^9.2.1",
     "css-loader": "^7.1.2",
     "style-loader": "^4.0.0",
+    "vitest": "^4.1.0",
     "vue-loader": "^15.11.1",
     "vue-template-compiler": "^2.7.16",
     "webpack": "^5.97.1",
