@@ -42,5 +42,12 @@ class Version002100Date20260316000000 extends SimpleMigrationStep {
             );
             $output->info('Renamed learning_answer_translations → learning_ans_translations');
         }
+
+        if ($schema->hasTable('learning_user_mission_claims') && !$schema->hasTable('learning_mission_claims')) {
+            $this->db->executeStatement(
+                "ALTER TABLE {$prefix}learning_user_mission_claims RENAME TO {$prefix}learning_mission_claims"
+            );
+            $output->info('Renamed learning_user_mission_claims → learning_mission_claims');
+        }
     }
 }

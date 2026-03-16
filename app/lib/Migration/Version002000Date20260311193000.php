@@ -29,8 +29,8 @@ class Version002000Date20260311193000 extends SimpleMigrationStep {
             }
         }
 
-        if (!$schema->hasTable('learning_user_mission_claims')) {
-            $table = $schema->createTable('learning_user_mission_claims');
+        if (!$schema->hasTable('learning_mission_claims')) {
+            $table = $schema->createTable('learning_mission_claims');
             $table->addColumn('id', Types::BIGINT, [
                 'autoincrement' => true,
                 'notnull' => true,

@@ -95,7 +95,7 @@ class MissionService {
         $this->db->beginTransaction();
         try {
             $qb = $this->db->getQueryBuilder();
-            $qb->insert('learning_user_mission_claims')
+            $qb->insert('learning_mission_claims')
                ->values([
                    'user_id' => $qb->createNamedParameter($userId),
                    'mission_key' => $qb->createNamedParameter($missionKey),
@@ -125,7 +125,7 @@ class MissionService {
     private function getClaimedMap(string $userId, string $date): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('mission_key')
-           ->from('learning_user_mission_claims')
+           ->from('learning_mission_claims')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('mission_date', $qb->createNamedParameter($date)));
         $result = $qb->execute();
