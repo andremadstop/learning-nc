@@ -22,7 +22,6 @@ services:
       - "8080:80"
     volumes:
       - nextcloud_data:/var/www/html
-      - ./scripts/e2e/nextcloud-config/zz-e2e.config.php:/var/www/html/config/zz-e2e.config.php:ro
     environment:
       POSTGRES_HOST: db
       POSTGRES_DB: nextcloud
