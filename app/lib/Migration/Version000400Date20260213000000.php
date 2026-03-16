@@ -75,13 +75,13 @@ class Version000400Date20260213000000 extends SimpleMigrationStep {
 
         // Delete question_translations referencing non-existent questions
         $this->db->executeStatement(
-            "DELETE FROM {$prefix}learning_question_translations WHERE question_id NOT IN (SELECT id FROM {$prefix}learning_questions)"
+            "DELETE FROM {$prefix}learning_qst_translations WHERE question_id NOT IN (SELECT id FROM {$prefix}learning_questions)"
         );
         $output->info('Cleaned orphaned question_translations');
 
         // Delete answer_translations referencing non-existent answers
         $this->db->executeStatement(
-            "DELETE FROM {$prefix}learning_answer_translations WHERE answer_id NOT IN (SELECT id FROM {$prefix}learning_answers)"
+            "DELETE FROM {$prefix}learning_ans_translations WHERE answer_id NOT IN (SELECT id FROM {$prefix}learning_answers)"
         );
         $output->info('Cleaned orphaned answer_translations');
 
@@ -210,8 +210,8 @@ class Version000400Date20260213000000 extends SimpleMigrationStep {
         }
 
         // question_translations → questions
-        if ($schema->hasTable('learning_question_translations') && $schema->hasTable('learning_questions')) {
-            $table = $schema->getTable('learning_question_translations');
+        if ($schema->hasTable('learning_qst_translations') && $schema->hasTable('learning_questions')) {
+            $table = $schema->getTable('learning_qst_translations');
             if (!$this->hasForeignKey($table, 'learn_qtrans_question_fk')) {
                 $table->addForeignKeyConstraint(
                     $schema->getTable('learning_questions'),
@@ -223,8 +223,8 @@ class Version000400Date20260213000000 extends SimpleMigrationStep {
         }
 
         // answer_translations → answers
-        if ($schema->hasTable('learning_answer_translations') && $schema->hasTable('learning_answers')) {
-            $table = $schema->getTable('learning_answer_translations');
+        if ($schema->hasTable('learning_ans_translations') && $schema->hasTable('learning_answers')) {
+            $table = $schema->getTable('learning_ans_translations');
             if (!$this->hasForeignKey($table, 'learn_atrans_answer_fk')) {
                 $table->addForeignKeyConstraint(
                     $schema->getTable('learning_answers'),

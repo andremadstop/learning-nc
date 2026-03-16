@@ -33,8 +33,8 @@ class Version000350Date20260213000000 extends SimpleMigrationStep {
         }
 
         // Question translations
-        if (!$schema->hasTable('learning_question_translations')) {
-            $table = $schema->createTable('learning_question_translations');
+        if (!$schema->hasTable('learning_qst_translations')) {
+            $table = $schema->createTable('learning_qst_translations');
             $table->addColumn('id', Types::BIGINT, ['autoincrement' => true, 'notnull' => true, 'unsigned' => true]);
             $table->addColumn('question_id', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
             $table->addColumn('lang', Types::STRING, ['notnull' => true, 'length' => 10]);
@@ -47,8 +47,8 @@ class Version000350Date20260213000000 extends SimpleMigrationStep {
         }
 
         // Answer translations
-        if (!$schema->hasTable('learning_answer_translations')) {
-            $table = $schema->createTable('learning_answer_translations');
+        if (!$schema->hasTable('learning_ans_translations')) {
+            $table = $schema->createTable('learning_ans_translations');
             $table->addColumn('id', Types::BIGINT, ['autoincrement' => true, 'notnull' => true, 'unsigned' => true]);
             $table->addColumn('answer_id', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
             $table->addColumn('lang', Types::STRING, ['notnull' => true, 'length' => 10]);

@@ -8,7 +8,7 @@ use OCP\IDBConnection;
 
 class AnswerTranslationMapper extends QBMapper {
     public function __construct(IDBConnection $db) {
-        parent::__construct($db, 'learning_answer_translations', AnswerTranslation::class);
+        parent::__construct($db, 'learning_ans_translations', AnswerTranslation::class);
     }
 
     public function findByAnswer(int $answerId): array {
