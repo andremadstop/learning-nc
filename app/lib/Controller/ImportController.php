@@ -413,6 +413,12 @@ class ImportController extends Controller {
                     continue;
                 }
 
+                // PBQ items have their own import path
+                if (isset($rawItem['type']) && $rawItem['type'] === 'pbq') {
+                    $imported += $this->importPbqItem($poolId, $rawItem, $num, $errors, $warnings);
+                    continue;
+                }
+
                 // Normalize field names from any supported format
                 $item = $this->normalizeJsonItem($rawItem);
                 if ($item === null) {
@@ -541,6 +547,40 @@ class ImportController extends Controller {
             $response['warnings'] = $warnings;
         }
         return new DataResponse($response, $imported > 0 ? Http::STATUS_CREATED : Http::STATUS_BAD_REQUEST);
+    }
+
+    private function importPbqItem(int $poolId, array $item, int $num, array &$errors, array &$warnings): int {
+        $text = trim($item['question_text'] ?? $item['text'] ?? '');
+        if ($text === '') {
+            $errors[] = "PBQ #$num: missing question_text";
+            return 0;
+        }
+
+        $subtype = $item['subtype'] ?? null;
+        if (!in_array($subtype, ['dropdown', 'placement', 'cli', 'cable'], true)) {
+            $errors[] = "PBQ #$num: invalid subtype '$subtype'";
+            return 0;
+        }
+
+        $pbqConfig = $item['pbq_config'] ?? null;
+        if (!is_array($pbqConfig)) {
+            $errors[] = "PBQ #$num: pbq_config must be an object";
+            return 0;
+        }
+
+        $question = new \OCA\Learning\Db\Question();
+        $question->setPoolId($poolId);
+        $question->setUserId($this->userId);
+        $question->setText($text);
+        $question->setExplanation($item['explanation'] ?? null);
+        $question->setQuestionType('pbq');
+        $question->setPbqSubtype($subtype);
+        $question->setPbqConfig(json_encode($pbqConfig));
+        $question->setDifficulty($item['difficulty'] ?? 'medium');
+        $question->setReviewStatus('published');
+
+        $this->questionMapper->createOrUpdate($question);
+        return 1;
     }
 
     /**

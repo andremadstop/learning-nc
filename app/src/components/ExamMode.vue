@@ -78,9 +78,18 @@
         <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" alt="" class="question-image" />
         <div class="question-text">{{ currentQuestion.text }}</div>
 
-        <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
+        <div v-if="isCurrentMulti && currentQuestion.question_type !== 'pbq'" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
 
-        <div v-if="isCurrentOpen" class="open-answer-area">
+        <PbqRenderer
+          v-if="currentQuestion && currentQuestion.question_type === 'pbq'"
+          :question="currentQuestion"
+          :initial-value="pbqAnswers[currentQuestion.id] || null"
+          :disabled="screen !== 'exam' || lockDenied"
+          @change="(ans) => $set(pbqAnswers, currentQuestion.id, ans)"
+          @submit="(ans) => { $set(pbqAnswers, currentQuestion.id, ans); $set(userAnswers, currentQuestion.id, 'pbq_submitted'); advanceToNext() }"
+          @skip="advanceToNext()"
+        />
+        <div v-else-if="isCurrentOpen" class="open-answer-area">
           <textarea
             :value="openAnswerTexts[currentQuestion.id] || ''"
             @input="$set(openAnswerTexts, currentQuestion.id, $event.target.value)"
@@ -109,7 +118,7 @@
           type="primary" wide @click="confirmMultiAnswer" class="confirm-btn" :disabled="lockDenied">
           {{ t('learning', 'Confirm Selection') }}
         </NcButton>
-        <NcButton type="secondary" wide @click="skipQuestion" class="skip-btn" :disabled="lockDenied">{{ t('learning', 'Skip') }}</NcButton>
+        <NcButton v-if="currentQuestion && currentQuestion.question_type !== 'pbq'" type="secondary" wide @click="skipQuestion" class="skip-btn" :disabled="lockDenied">{{ t('learning', 'Skip') }}</NcButton>
       </div>
 
       <!-- Question navigation bar -->
@@ -232,10 +241,11 @@ import { showError } from '@nextcloud/dialogs';
 import { celebratePerfectSession } from '../confetti.js';
 import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
+import PbqRenderer from './PbqRenderer.vue';
 
 export default {
   name: 'ExamMode',
-  components: { NcButton, NcProgressBar, NcLoadingIcon, BadgeUnlock },
+  components: { NcButton, NcProgressBar, NcLoadingIcon, BadgeUnlock, PbqRenderer },
   props: {
     poolId: { type: Number, required: true },
     totalQuestions: { type: Number, required: true }
@@ -285,6 +295,7 @@ export default {
       detailedResults: [],
       multiSelections: {},
       openAnswerTexts: {},
+      pbqAnswers: {},
       newBadges: [],
     };
   },
@@ -441,11 +452,15 @@ export default {
           return;
         }
 
-        this.questions = questions;
+        this.questions = [
+          ...questions.filter(q => q.question_type === 'pbq'),
+          ...questions.filter(q => q.question_type !== 'pbq'),
+        ];
         this.currentQuestionIndex = 0;
         this.userAnswers = {};
         this.openAnswerTexts = {};
         this.multiSelections = {};
+        this.pbqAnswers = {};
         this.detailedResults = [];
         this.resultsData = null;
         this.resumedFromServer = !!r.data.resumed;
@@ -714,6 +729,11 @@ export default {
         // Collect answered questions into batch
         const batchAnswers = [];
         for (const q of this.questions) {
+          if (q.question_type === 'pbq') {
+            const pbqAns = this.pbqAnswers[q.id];
+            if (pbqAns) batchAnswers.push({ questionId: q.id, pbqAnswers: pbqAns });
+            continue;
+          }
           const answer = this.userAnswers[q.id];
           if (answer !== null && answer !== undefined) {
             if (answer && typeof answer === 'object' && answer.answerText) {
@@ -830,6 +850,7 @@ export default {
       this.userAnswers = {};
       this.multiSelections = {};
       this.openAnswerTexts = {};
+      this.pbqAnswers = {};
       this.resultsData = null;
       this.detailedResults = [];
       this.examDeadlineAt = null;

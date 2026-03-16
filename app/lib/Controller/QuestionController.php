@@ -47,9 +47,9 @@ class QuestionController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 60, period: 60)]
-    public function create(int $poolId, string $text, ?string $explanation, ?string $difficulty, array $answers, ?string $questionType = null): DataResponse {
+    public function create(int $poolId, string $text, ?string $explanation, ?string $difficulty, array $answers, ?string $questionType = null, ?string $pbqSubtype = null, ?array $pbqConfig = null): DataResponse {
         try {
-            $question = $this->service->create($poolId, $this->userId, $text, $explanation, $difficulty, $answers, $questionType);
+            $question = $this->service->create($poolId, $this->userId, $text, $explanation, $difficulty, $answers, $questionType, pbqSubtype: $pbqSubtype, pbqConfig: $pbqConfig ? json_encode($pbqConfig) : null);
             return new DataResponse($question, Http::STATUS_CREATED);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
@@ -61,9 +61,9 @@ class QuestionController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function update(int $id, string $text, ?string $explanation, ?string $difficulty, array $answers, ?string $questionType = null): DataResponse {
+    public function update(int $id, string $text, ?string $explanation, ?string $difficulty, array $answers, ?string $questionType = null, ?string $pbqSubtype = null, ?array $pbqConfig = null): DataResponse {
         try {
-            return new DataResponse($this->service->update($id, $this->userId, $text, $explanation, $difficulty, $answers, $questionType));
+            return new DataResponse($this->service->update($id, $this->userId, $text, $explanation, $difficulty, $answers, $questionType, pbqSubtype: $pbqSubtype, pbqConfig: $pbqConfig ? json_encode($pbqConfig) : null));
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         } catch (\Exception $e) {

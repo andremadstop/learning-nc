@@ -968,6 +968,62 @@ class TrainingService {
                 continue;
             }
 
+            // PBQ path
+            if ($batchQType === 'pbq') {
+                $pbqUserAnswers = $entry['pbqAnswers'] ?? [];
+                if (is_string($pbqUserAnswers)) {
+                    $pbqUserAnswers = json_decode($pbqUserAnswers, true) ?? [];
+                }
+
+                // Fetch pbq_subtype and pbq_config for scoring
+                $qb2 = $this->db->getQueryBuilder();
+                $qb2->select('pbq_subtype', 'pbq_config')
+                    ->from('learning_questions')
+                    ->where($qb2->expr()->eq('id', $qb2->createNamedParameter($questionId, \PDO::PARAM_INT)));
+                $qRow = $qb2->executeQuery()->fetchAssociative();
+
+                [$isCorrect, $points, $maxPoints] = $this->scorePbqAnswer(
+                    $qRow['pbq_subtype'] ?? '',
+                    json_decode($qRow['pbq_config'] ?? '{}', true) ?: [],
+                    is_array($pbqUserAnswers) ? $pbqUserAnswers : []
+                );
+
+                $pbqMeta = json_encode([
+                    'pbq' => true,
+                    'answers' => $pbqUserAnswers,
+                    'points' => $points,
+                    'max_points' => $maxPoints,
+                ]);
+                $pbqIsCorrect = $maxPoints > 0 && ($points / $maxPoints) >= 0.5;
+
+                $qb = $this->db->getQueryBuilder();
+                $qb->insert('learning_user_answers')->values([
+                    'session_id' => $qb->createNamedParameter($sessionId),
+                    'question_id' => $qb->createNamedParameter($questionId),
+                    'answer_id' => $qb->createNamedParameter(null, \PDO::PARAM_NULL),
+                    'answer_ids' => $qb->createNamedParameter($pbqMeta),
+                    'is_correct' => $qb->createNamedParameter($pbqIsCorrect, \PDO::PARAM_BOOL),
+                    'answered_at' => $qb->createNamedParameter(time()),
+                ]);
+                $qb->execute();
+
+                if ($pbqIsCorrect) {
+                    $qb = $this->db->getQueryBuilder();
+                    $qb->update('learning_sessions')
+                       ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
+                       ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
+                    $qb->execute();
+                    $batchXpEarned += $xpPerCorrect;
+                }
+
+                $results[] = [
+                    'questionId' => $questionId,
+                    'recorded' => true,
+                    'suppressed' => true,
+                ];
+                continue;
+            }
+
             // Multi-select path
             if (is_array($entryAnswerIds) && count($entryAnswerIds) > 0) {
                 // Validate all answer IDs
@@ -1123,6 +1179,56 @@ class TrainingService {
         ]);
 
         return $results;
+    }
+
+    private function scorePbqAnswer(string $subtype, array $config, array $userAnswers): array {
+        $points = 0;
+        $maxPoints = 0;
+        switch ($subtype) {
+            case 'dropdown':
+                foreach (($config['questions'] ?? []) as $q) {
+                    $maxPoints++;
+                    if (isset($userAnswers[$q['id']]) && $userAnswers[$q['id']] === $q['correct']) {
+                        $points++;
+                    }
+                }
+                break;
+            case 'placement':
+                foreach (($config['positions'] ?? []) as $pos) {
+                    $maxPoints++;
+                    if (isset($userAnswers[$pos['id']]) && $userAnswers[$pos['id']] === $pos['correct']) {
+                        $points++;
+                    }
+                }
+                break;
+            case 'cli':
+                foreach (($config['evaluation'] ?? []) as $ev) {
+                    $maxPoints += ($ev['points'] ?? 1);
+                    $history = $userAnswers[$ev['terminal']] ?? [];
+                    $allCmds = is_array($history) ? implode("\n", $history) : (string)$history;
+                    try {
+                        if (@preg_match('/' . addcslashes($ev['required_pattern'], '/') . '/i', $allCmds)) {
+                            $points += ($ev['points'] ?? 1);
+                        }
+                    } catch (\Throwable $e) {
+                        // invalid pattern, skip
+                    }
+                }
+                break;
+            case 'cable':
+                foreach (($config['questions'] ?? []) as $q) {
+                    $maxPoints += 2;
+                    if (isset($userAnswers[$q['cable_id'] . '_problem']) && $userAnswers[$q['cable_id'] . '_problem'] === $q['correct_problem']) {
+                        $points++;
+                    }
+                    if (isset($userAnswers[$q['cable_id'] . '_solution']) && $userAnswers[$q['cable_id'] . '_solution'] === $q['correct_solution']) {
+                        $points++;
+                    }
+                }
+                break;
+        }
+        $isCorrect = $maxPoints > 0 && ($points / $maxPoints) >= 0.5;
+        return [$isCorrect, $points, $maxPoints];
     }
 
     /**
@@ -1362,6 +1468,14 @@ class TrainingService {
                     ];
                 }, $allAnswers),
             ];
+
+            if (($ua['question_type'] ?? '') === 'pbq') {
+                $pbqData = json_decode($ua['answer_ids'] ?? '{}', true) ?: [];
+                $entry['is_pbq'] = true;
+                $entry['pbq_points'] = $pbqData['points'] ?? 0;
+                $entry['pbq_max_points'] = $pbqData['max_points'] ?? 1;
+                $entry['pbq_user_answers'] = $pbqData['answers'] ?? [];
+            }
 
             $review[] = $entry;
         }

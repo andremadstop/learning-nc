@@ -141,6 +141,11 @@ class QuestionService {
             throw new \InvalidArgumentException('Question text must be 1-5000 characters');
         }
 
+        if ($questionType === 'pbq') {
+            // PBQ questions only need valid text; answers and config are managed separately
+            return;
+        }
+
         if ($questionType === 'open') {
             if (count($answers) !== 1) {
                 throw new \InvalidArgumentException('Open questions need exactly 1 model answer');
@@ -308,7 +313,8 @@ class QuestionService {
     }
 
     public function create(int $poolId, string $userId, string $text, ?string $explanation,
-                           ?string $difficulty, array $answers, ?string $questionType = null): array {
+                           ?string $difficulty, array $answers, ?string $questionType = null,
+                           ?string $pbqSubtype = null, ?string $pbqConfig = null): array {
         if (!$this->canEditPool($poolId, $userId)) {
             throw new Exception('No edit access to this pool');
         }
@@ -326,6 +332,8 @@ class QuestionService {
             $question->setExplanation($explanation);
             $question->setDifficulty($difficulty);
             $question->setQuestionType($questionType);
+            if ($pbqSubtype !== null) { $question->setPbqSubtype($pbqSubtype); }
+            if ($pbqConfig !== null) { $question->setPbqConfig($pbqConfig); }
             if (!$question->getReviewStatus()) {
                 $question->setReviewStatus('published');
             }
@@ -355,7 +363,8 @@ class QuestionService {
     }
 
     public function update(int $id, string $userId, string $text, ?string $explanation,
-                          ?string $difficulty, array $answers, ?string $questionType = null): array {
+                          ?string $difficulty, array $answers, ?string $questionType = null,
+                          ?string $pbqSubtype = null, ?string $pbqConfig = null): array {
         try {
             $question = $this->questionMapper->findById($id);
             if (!$this->canEditPool($question->getPoolId(), $userId)) {
@@ -372,6 +381,8 @@ class QuestionService {
                 $question->setExplanation($explanation);
                 $question->setDifficulty($difficulty);
                 $question->setQuestionType($questionType);
+                if ($pbqSubtype !== null) { $question->setPbqSubtype($pbqSubtype); }
+                if ($pbqConfig !== null) { $question->setPbqConfig($pbqConfig); }
 
                 $question = $this->questionMapper->createOrUpdate($question);
 
