@@ -39,11 +39,11 @@ Plans:
   3. Klickbare Hotspots auf Nodes positioniert via `getScreenCTM()` nach viewBox-Skalierung
   4. PbqPlacement kann SVG-Topologie statt Bild nutzen
   5. Keine `v-html` Nutzung (NC CSP-konform)
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: NetworkTopologySvg.vue Komponente + Icon-Bibliothek
-- [ ] 02-02: PbqPlacement Integration + Koordinaten-Mapping
+- [ ] 02-01-PLAN.md — networkTopologyIcons.js + NetworkTopologySvg.vue Komponente + Unit Tests
+- [ ] 02-02-PLAN.md — PbqPlacement Integration + PbqRenderer Wiring + Deploy + Verify
 
 #### Phase 3: Inline-Dropdown auf Diagramm
 
