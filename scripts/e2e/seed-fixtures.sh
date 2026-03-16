@@ -69,48 +69,50 @@ WHERE user_id = '${E2E_USER}' AND name = '${POOL_NAME}';
 "
 
 echo "[e2e] creating fixture pool/question/answers"
+# psql sometimes emits a command tag ("INSERT 0 1") before the RETURNING value even with -At.
+# Pipe through grep to extract only the numeric ID line.
 POOL_ID="$(docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -At -v ON_ERROR_STOP=1 -c "
 INSERT INTO ${TABLE_PREFIX}learning_pools (user_id, name, description, created_at, updated_at, review_status)
 VALUES ('${E2E_USER}', '${POOL_NAME}', 'Seeded fixtures for E2E', ${NOW}, ${NOW}, 'published')
 RETURNING id;
-")"
+" | grep -E '^[0-9]+$')"
 
 QUESTION_ID="$(docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -At -v ON_ERROR_STOP=1 -c "
 INSERT INTO ${TABLE_PREFIX}learning_questions (pool_id, user_id, text, explanation, difficulty, created_at, updated_at, question_type, review_status)
 VALUES (${POOL_ID}, '${E2E_USER}', '${QUESTION_TEXT}', 'E2E explanation', 'easy', ${NOW}, ${NOW}, 'single', 'published')
 RETURNING id;
-")"
+" | grep -E '^[0-9]+$')"
 
 CORRECT_ANSWER_ID="$(docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -At -v ON_ERROR_STOP=1 -c "
 INSERT INTO ${TABLE_PREFIX}learning_answers (question_id, text, is_correct, position)
 VALUES (${QUESTION_ID}, '4', true, 0)
 RETURNING id;
-")"
+" | grep -E '^[0-9]+$')"
 
 WRONG_ANSWER_ID="$(docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -At -v ON_ERROR_STOP=1 -c "
 INSERT INTO ${TABLE_PREFIX}learning_answers (question_id, text, is_correct, position)
 VALUES (${QUESTION_ID}, '5', false, 1)
 RETURNING id;
-")"
+" | grep -E '^[0-9]+$')"
 
 echo "[e2e] creating exam/training fixture sessions"
 EXAM_SESSION_ID="$(docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -At -v ON_ERROR_STOP=1 -c "
 INSERT INTO ${TABLE_PREFIX}learning_sessions (pool_id, user_id, started_at, completed_at, total_questions, correct_answers, mode, time_limit_seconds, attempt_no, question_order_json)
 VALUES (${POOL_ID}, '${E2E_USER}', ${STARTED_RECENT}, NULL, 1, 0, 'exam', 1800, 1, '[${QUESTION_ID}]')
 RETURNING id;
-")"
+" | grep -E '^[0-9]+$')"
 
 TIMEOUT_SESSION_ID="$(docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -At -v ON_ERROR_STOP=1 -c "
 INSERT INTO ${TABLE_PREFIX}learning_sessions (pool_id, user_id, started_at, completed_at, total_questions, correct_answers, mode, time_limit_seconds, attempt_no, question_order_json)
 VALUES (${POOL_ID}, '${E2E_USER}', ${STARTED_TIMEOUT}, NULL, 1, 0, 'exam', 60, 1, '[${QUESTION_ID}]')
 RETURNING id;
-")"
+" | grep -E '^[0-9]+$')"
 
 TRAIN_SESSION_ID="$(docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -At -v ON_ERROR_STOP=1 -c "
 INSERT INTO ${TABLE_PREFIX}learning_sessions (pool_id, user_id, started_at, completed_at, total_questions, correct_answers, mode, time_limit_seconds, question_order_json)
 VALUES (${POOL_ID}, '${E2E_USER}', ${STARTED_TRAINING}, NULL, 1, 0, 'training', NULL, '[${QUESTION_ID}]')
 RETURNING id;
-")"
+" | grep -E '^[0-9]+$')"
 
 # completed session to satisfy at least one daily mission claim (daily_sessions_1)
 docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -v ON_ERROR_STOP=1 -c "
