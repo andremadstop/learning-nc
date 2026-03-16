@@ -11,7 +11,6 @@ module.exports = defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:8080/apps/learning',
     headless: true,
-    storageState: path.join(__dirname, 'tests/e2e/.auth/admin.json'),
   },
   projects: [
     {
@@ -22,6 +21,7 @@ module.exports = defineConfig({
       name: 'chromium',
       dependencies: ['setup'],
       testIgnore: /auth\.setup\.js/,
+      use: { storageState: path.join(__dirname, 'tests/e2e/.auth/admin.json') },
     },
   ],
 })
