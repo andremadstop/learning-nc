@@ -17,6 +17,7 @@
       :value="localAnswer"
       :disabled="disabled"
       :scenario-image="configImage"
+      :topology-config="topologyConfig"
       @update="onUpdate"
     />
     <PbqCli
@@ -69,6 +70,7 @@ export default {
     subtype()  { return this.question.pbq_subtype || '' },
     config()   { return this.question.pbq_config || {} },
     configImage() { return this.config.scenario_image || null },
+    topologyConfig() { return this.config.topology || null },
     scenarioImageUrl() {
       if (this.config.scenario_image) return this.config.scenario_image  // base64 data URI
       if (this.question.image_path) return generateUrl('/apps/learning/api/questions/' + this.question.id + '/image')
