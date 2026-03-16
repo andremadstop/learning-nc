@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
-status: in-progress
-stopped_at: Completed 02-svg-topology-renderer-01-PLAN.md
-last_updated: "2026-03-16T21:49:23.123Z"
-last_activity: 2026-03-16 — Phase 02 Plan 01 completed: NetworkTopologySvg.vue + DEVICE_ICONS
+status: executing
+stopped_at: Completed 02-svg-topology-renderer-02-PLAN.md
+last_updated: "2026-03-16T21:55:33.826Z"
+last_activity: "2026-03-16 — Phase 02 Plan 01 executed: NetworkTopologySvg.vue + DEVICE_ICONS + unit tests"
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 75
 ---
 
@@ -41,6 +41,7 @@ Progress: [████████░░] 75%
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 02-svg-topology-renderer | 01 | 2min | 3 | 4 |
+| Phase 02-svg-topology-renderer P02 | 10min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,8 @@ Progress: [████████░░] 75%
 - [Phase 02-svg-topology-renderer]: DEVICE_ICONS is pure ES module (no Vue dep) — reusable in Author Tool
 - [Phase 02-svg-topology-renderer]: Unknown device type falls back to <circle> silently — no throw, graceful degradation
 - [Phase 02-svg-topology-renderer]: viewBox auto-computed from node bounds + 40px padding; empty nodes use 0 0 400 300
+- [Phase 02-svg-topology-renderer]: topologyConfig prop takes priority over scenarioImage in v-if chain; hotspot divs gated on scenarioImage && !topologyConfig
+- [Phase 02-svg-topology-renderer]: openPicker signature unchanged — node-click passes node.id matching config.positions[].id by schema contract
 
 ### Pending Todos
 
@@ -70,6 +73,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-16T21:48:32Z
-Stopped at: Completed 02-svg-topology-renderer-01-PLAN.md
+Last session: 2026-03-16T21:55:33.818Z
+Stopped at: Completed 02-svg-topology-renderer-02-PLAN.md
 Resume file: None

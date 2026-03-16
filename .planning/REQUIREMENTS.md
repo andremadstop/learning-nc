@@ -17,8 +17,8 @@
 
 - [x] **SVG-01**: NetworkTopologySvg.vue rendert JSON node-link Schema ohne raw SVG / v-html
 - [x] **SVG-02**: Icon-Bibliothek mit 8 Gerätetypen: router, switch, firewall, server, cloud, workstation, ap, wre
-- [ ] **SVG-03**: Hotspot-Koordinaten werden via getScreenCTM() nach viewBox-Skalierung korrekt berechnet
-- [ ] **SVG-04**: PbqPlacement kann SVG-Topologie als Hintergrund statt Bild-URL nutzen
+- [x] **SVG-03**: Hotspot-Koordinaten werden via getScreenCTM() nach viewBox-Skalierung korrekt berechnet
+- [x] **SVG-04**: PbqPlacement kann SVG-Topologie als Hintergrund statt Bild-URL nutzen
 
 ### Inline-Dropdown
 
@@ -64,8 +64,8 @@
 | CLI-05 | Phase 1 | Complete |
 | SVG-01 | Phase 2 | Complete |
 | SVG-02 | Phase 2 | Complete |
-| SVG-03 | Phase 2 | Pending |
-| SVG-04 | Phase 2 | Pending |
+| SVG-03 | Phase 2 | Complete |
+| SVG-04 | Phase 2 | Complete |
 | DROP-01 | Phase 3 | Pending |
 | DROP-02 | Phase 3 | Pending |
 | DROP-03 | Phase 3 | Pending |
