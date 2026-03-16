@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.5.2] - 2026-03-16
+
+### Added
+- **ICS Calendar Feed**: `GET /api/leitner/schedule.ics` — iCal export of all due Leitner items, grouped by pool, for the next 30 days. Compatible with any calendar app (Apple Calendar, Thunderbird, Google Calendar via URL). Overdue items appear as today's events.
+
+### Fixed
+- **Dashboard unique student count**: `GET /api/instructor/dashboard` now returns `unique_student_count` via `COUNT(DISTINCT user_id)` — prevents multi-enrollment double-counting.
+- **Notification icon absolute URL**: `Notifier.php` wraps `imagePath()` with `getAbsoluteURL()` — fixes icon display in mobile/desktop clients.
+- **LeitnerController null safety**: `stats` and `due` endpoints return `{"error":"poolId is required"}` instead of HTTP 500 when called without `poolId`.
+
 ## [2.5.0] - 2026-03-11
 
 ### Added

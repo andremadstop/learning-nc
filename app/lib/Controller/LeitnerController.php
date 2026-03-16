@@ -88,7 +88,10 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function due(int $poolId, int $limit = 10): DataResponse {
+    public function due(?int $poolId = null, int $limit = 10): DataResponse {
+        if ($poolId === null) {
+            return new DataResponse(['error' => 'poolId is required'], 400);
+        }
         try {
             $limit = max(1, min($limit, 100));
             return new DataResponse($this->service->getDueQuestions($poolId, $this->userId, $limit));
@@ -115,7 +118,10 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function stats(int $poolId): DataResponse {
+    public function stats(?int $poolId = null): DataResponse {
+        if ($poolId === null) {
+            return new DataResponse(['error' => 'poolId is required'], 400);
+        }
         try {
             return new DataResponse($this->service->getStats($poolId, $this->userId));
         } catch (\Exception $e) {

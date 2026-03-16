@@ -69,6 +69,7 @@ return [
         // Export
         ['name' => 'export#exportCsv', 'url' => '/api/pools/{poolId}/export/csv', 'verb' => 'GET'],
         ['name' => 'export#exportJson', 'url' => '/api/pools/{poolId}/export/json', 'verb' => 'GET'],
+        ['name' => 'export#exportIcs', 'url' => '/api/leitner/schedule.ics', 'verb' => 'GET'],
 
         // User State (consolidated endpoint)
         ['name' => 'user_state#state', 'url' => '/api/v1/user/state', 'verb' => 'GET'],

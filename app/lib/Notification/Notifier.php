@@ -41,7 +41,7 @@ class Notifier implements INotifier {
                     $l->t('Achievement unlocked: %s %s', [$badgeEmoji, $badgeName])
                 );
                 $notification->setLink($appUrl);
-                $notification->setIcon($this->urlGenerator->imagePath('learning', 'app.svg'));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
                 break;
 
             case 'streak_warning':
@@ -51,7 +51,7 @@ class Notifier implements INotifier {
                     $l->t('Don\'t break your %s-day streak! Review some cards today.', [(string)$days])
                 );
                 $notification->setLink($appUrl);
-                $notification->setIcon($this->urlGenerator->imagePath('learning', 'app.svg'));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
                 break;
 
             case 'due_reminder':
@@ -61,7 +61,7 @@ class Notifier implements INotifier {
                     $l->t('You have %s cards waiting for review', [(string)$dueCount])
                 );
                 $notification->setLink($appUrl);
-                $notification->setIcon($this->urlGenerator->imagePath('learning', 'app.svg'));
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
                 break;
 
             default:
