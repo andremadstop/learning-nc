@@ -108,6 +108,7 @@ export default {
 			loading: false,
 			error: '',
 			courses: [],
+			uniqueStudentCount: 0,
 		}
 	},
 
@@ -119,7 +120,7 @@ export default {
 			return this.courses.filter(c => c.status === 'active').length
 		},
 		totalStudents() {
-			return this.courses.reduce((sum, c) => sum + (c.student_count || 0), 0)
+			return this.uniqueStudentCount
 		},
 		totalPools() {
 			return this.courses.reduce((sum, c) => sum + (c.pool_count || 0), 0)
@@ -138,6 +139,7 @@ export default {
 				const url = generateUrl('/apps/learning/api/instructor/dashboard')
 				const response = await axios.get(url)
 				this.courses = response.data.courses || []
+				this.uniqueStudentCount = response.data.unique_student_count || 0
 			} catch (err) {
 				console.error('Failed to load dashboard:', err)
 				this.error = t('learning', 'Failed to load dashboard.')

@@ -75,4 +75,17 @@ class CourseMemberMapper extends QBMapper {
         $result->closeCursor();
         return $count;
     }
+
+    public function countUniqueStudentsByInstructor(string $instructorId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(DISTINCT cm.user_id)'))
+            ->from($this->getTableName(), 'cm')
+            ->join('cm', 'learning_courses', 'c', $qb->expr()->eq('cm.course_id', 'c.id'))
+            ->where($qb->expr()->eq('c.instructor_id', $qb->createNamedParameter($instructorId)))
+            ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetchOne();
+        $result->closeCursor();
+        return $count;
+    }
 }

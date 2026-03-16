@@ -898,7 +898,8 @@ class CourseService {
             $result[] = $data;
         }
 
-        return ['courses' => $result];
+        $uniqueStudents = $this->courseMemberMapper->countUniqueStudentsByInstructor($userId);
+        return ['courses' => $result, 'unique_student_count' => $uniqueStudents];
     }
 
     /**
