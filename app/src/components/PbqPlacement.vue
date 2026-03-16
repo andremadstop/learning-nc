@@ -1,10 +1,35 @@
 <template>
   <div class="pbq-placement">
     <div class="pbq-diagram-wrapper">
-      <img v-if="scenarioImage" :src="scenarioImage" class="pbq-diagram-img" alt="Network diagram" />
+      <!-- SVG topology mode: takes priority over image -->
+      <NetworkTopologySvg
+        v-if="topologyConfig"
+        ref="topologySvg"
+        :topology="topologyConfig"
+        :disabled="disabled"
+        @node-click="openPicker"
+      />
+      <!-- Image mode: existing behavior unchanged -->
+      <img v-else-if="scenarioImage" :src="scenarioImage" class="pbq-diagram-img" alt="Network diagram" />
+      <!-- Fallback topology grid when no diagram image is available -->
+      <div v-else class="pbq-topology-grid">
+        <div
+          v-for="pos in config.positions"
+          :key="pos.id"
+          class="pbq-topology-node"
+          :class="{ 'pbq-topology-node--assigned': !!value[pos.id] }"
+          @click="!disabled && openPicker(pos.id)"
+        >
+          <div class="pbq-topology-icon">{{ value[pos.id] ? '✓' : '?' }}</div>
+          <div class="pbq-topology-label">{{ pos.label }}</div>
+          <div v-if="value[pos.id]" class="pbq-topology-assigned">{{ value[pos.id] }}</div>
+        </div>
+      </div>
+      <!-- Hotspot overlays: only in image mode, not SVG topology mode -->
       <div
+        v-if="scenarioImage && !topologyConfig"
         v-for="pos in config.positions"
-        :key="pos.id"
+        :key="'hs-' + pos.id"
         class="pbq-hotspot"
         :style="{ left: pos.x_pct + '%', top: pos.y_pct + '%' }"
         :class="{ 'pbq-hotspot--assigned': !!value[pos.id] }"
@@ -40,13 +65,17 @@
 </template>
 
 <script>
+import NetworkTopologySvg from './NetworkTopologySvg.vue'
+
 export default {
   name: 'PbqPlacement',
+  components: { NetworkTopologySvg },
   props: {
     config: { type: Object, required: true },
     value: { type: Object, default: () => ({}) },
     disabled: { type: Boolean, default: false },
     scenarioImage: { type: String, default: null },
+    topologyConfig: { type: Object, default: null },
   },
   data() { return { activePosId: null } },
   methods: {
@@ -65,8 +94,33 @@ export default {
 
 <style scoped>
 .pbq-placement { position: relative; }
-.pbq-diagram-wrapper { position: relative; display: inline-block; max-width: 100%; }
+.pbq-diagram-wrapper { position: relative; display: inline-block; max-width: 100%; width: 100%; }
 .pbq-diagram-img { max-width: 100%; border-radius: 8px; border: 1px solid var(--color-border); }
+.pbq-topology-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-background-hover);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  width: 100%;
+  box-sizing: border-box;
+}
+.pbq-topology-node {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 16px 12px; border-radius: 10px;
+  border: 2px dashed var(--color-border);
+  cursor: pointer; transition: border-color .15s, background .15s;
+  background: var(--color-main-background);
+  gap: 6px;
+}
+.pbq-topology-node:hover { border-color: var(--color-primary-element); background: var(--color-background-hover); }
+.pbq-topology-node--assigned { border-style: solid; border-color: var(--color-success); }
+.pbq-topology-icon { font-size: 22px; font-weight: 700; color: var(--color-text-maxcontrast); }
+.pbq-topology-node--assigned .pbq-topology-icon { color: var(--color-success); }
+.pbq-topology-label { font-size: 12px; font-weight: 600; text-align: center; color: var(--color-main-text); }
+.pbq-topology-assigned { font-size: 11px; color: var(--color-success); font-weight: 500; text-align: center; }
 .pbq-hotspot {
   position: absolute; transform: translate(-50%, -50%);
   width: 36px; height: 36px; border-radius: 50%;
