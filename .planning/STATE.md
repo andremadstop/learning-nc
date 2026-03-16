@@ -4,7 +4,7 @@ milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: planning
 stopped_at: Completed 01-cli-state-machine-02-PLAN.md
-last_updated: "2026-03-16T21:24:45.364Z"
+last_updated: "2026-03-16T21:28:13.969Z"
 last_activity: 2026-03-16 — .planning initialisiert, ROADMAP + REQUIREMENTS erstellt
 progress:
   total_phases: 6
