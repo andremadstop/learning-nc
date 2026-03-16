@@ -15,8 +15,8 @@
 
 ### SVG Topology Renderer
 
-- [ ] **SVG-01**: NetworkTopologySvg.vue rendert JSON node-link Schema ohne raw SVG / v-html
-- [ ] **SVG-02**: Icon-Bibliothek mit 8 Gerätetypen: router, switch, firewall, server, cloud, workstation, ap, wre
+- [x] **SVG-01**: NetworkTopologySvg.vue rendert JSON node-link Schema ohne raw SVG / v-html
+- [x] **SVG-02**: Icon-Bibliothek mit 8 Gerätetypen: router, switch, firewall, server, cloud, workstation, ap, wre
 - [ ] **SVG-03**: Hotspot-Koordinaten werden via getScreenCTM() nach viewBox-Skalierung korrekt berechnet
 - [ ] **SVG-04**: PbqPlacement kann SVG-Topologie als Hintergrund statt Bild-URL nutzen
 
@@ -62,8 +62,8 @@
 | CLI-03 | Phase 1 | Complete |
 | CLI-04 | Phase 1 | Complete |
 | CLI-05 | Phase 1 | Complete |
-| SVG-01 | Phase 2 | Pending |
-| SVG-02 | Phase 2 | Pending |
+| SVG-01 | Phase 2 | Complete |
+| SVG-02 | Phase 2 | Complete |
 | SVG-03 | Phase 2 | Pending |
 | SVG-04 | Phase 2 | Pending |
 | DROP-01 | Phase 3 | Pending |

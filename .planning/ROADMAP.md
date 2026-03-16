@@ -111,7 +111,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. CLI State Machine | 2/2 | Complete   | 2026-03-16 |
-| 2. SVG Topology Renderer | 0/2 | Not started | - |
+| 2. SVG Topology Renderer | 1/2 | In Progress|  |
 | 3. Inline-Dropdown | 0/1 | Not started | - |
 | 4. Multi-Panel Layout | 0/1 | Not started | - |
 | 5. PBQ Author Tool | 0/2 | Not started | - |
