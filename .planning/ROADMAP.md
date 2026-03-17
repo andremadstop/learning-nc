@@ -69,10 +69,10 @@ Plans:
   1. multi_panel=true zeigt CLI links, Topologie rechts nebeneinander
   2. Responsive: auf kleinen Screens untereinander
   3. Beide Panels funktional und interaktiv gleichzeitig
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 04-01: Multi-Panel Layout + Responsive Breakpoints
+- [ ] 04-01-PLAN.md — PbqMultiPanel.vue + PbqRenderer Erweiterung + responsive layout + browser verify
 
 #### Phase 5: PBQ Author Tool
 
