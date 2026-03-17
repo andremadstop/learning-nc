@@ -40,8 +40,8 @@
 ### Instructor Notes
 
 - [x] **NOTE-01**: DB-Migration fügt instructor_note (TEXT) und note_visible (BOOLEAN) zu oc_learning_questions hinzu
-- [ ] **NOTE-02**: QuestionForm bietet Texteditor für instructor_note + Visibility-Toggle
-- [ ] **NOTE-03**: TrainingMode, ExamMode, LeitnerMode, SmartQueue zeigen Notiz wenn note_visible=true
+- [x] **NOTE-02**: QuestionForm bietet Texteditor für instructor_note + Visibility-Toggle
+- [x] **NOTE-03**: TrainingMode, ExamMode, LeitnerMode, SmartQueue zeigen Notiz wenn note_visible=true
 - [x] **NOTE-04**: Instructor sieht eigene Notiz unabhängig von note_visible immer (im Bearbeitungsmodus)
 
 ## Out of Scope
@@ -75,8 +75,8 @@
 | AUTHOR-02 | Phase 5 | Complete |
 | AUTHOR-03 | Phase 5 | Complete |
 | NOTE-01 | Phase 6 | Complete |
-| NOTE-02 | Phase 6 | Pending |
-| NOTE-03 | Phase 6 | Pending |
+| NOTE-02 | Phase 6 | Complete |
+| NOTE-03 | Phase 6 | Complete |
 | NOTE-04 | Phase 6 | Complete |
 
 **Coverage:**

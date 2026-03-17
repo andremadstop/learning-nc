@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: completed
-stopped_at: Completed 06-instructor-notes 06-01-PLAN.md
-last_updated: "2026-03-17T08:37:54.079Z"
+stopped_at: Completed 06-instructor-notes 06-02-PLAN.md
+last_updated: "2026-03-17T09:11:42.335Z"
 last_activity: "2026-03-17 — Phase 05 Plan 02 executed: PbqRenderer live preview + QuestionForm PBQ integration, browser-verified"
 progress:
   total_phases: 6
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 100
 ---
 
@@ -48,6 +48,7 @@ Progress: [██████████] 100%
 | Phase 05-pbq-author-tool P01 | 8min | 2 tasks | 2 files |
 | Phase 05-pbq-author-tool P02 | 6min | 3 tasks | 2 files |
 | Phase 06-instructor-notes P01 | 10min | 3 tasks | 5 files |
+| Phase 06-instructor-notes P02 | 15min | 4 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,9 @@ Progress: [██████████] 100%
 - [Phase 06-instructor-notes]: instructor_note NOT stripped during exam (unlike explanation) — frontend-gated via note_visible boolean only
 - [Phase 06-instructor-notes]: noteVisible always set without null guard — ensures DB never stores NULL, clean false default
 - [Phase 06-instructor-notes]: appinfo/info.xml must be present in container to trigger NC migrations via occ app:enable
+- [Phase 06-instructor-notes]: NcNoteCard type='info' (blue) used for instructor notes — distinct from type='warning' for explanations
+- [Phase 06-instructor-notes]: ExamMode enriches detailedResults from this.questions array at build time — not from derived sortedDetailedResults
+- [Phase 06-instructor-notes]: Double-guard v-if: note_visible && instructor_note — both truthy required to show NcNoteCard
 
 ### Pending Todos
 
@@ -94,6 +98,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T08:37:54.061Z
-Stopped at: Completed 06-instructor-notes 06-01-PLAN.md
+Last session: 2026-03-17T09:11:42.321Z
+Stopped at: Completed 06-instructor-notes 06-02-PLAN.md
 Resume file: None
