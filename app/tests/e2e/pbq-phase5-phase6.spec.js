@@ -9,12 +9,14 @@ const { test, expect } = require('@playwright/test')
 async function goToAdmin(page) {
   await page.goto('/apps/learning/')
   await page.waitForSelector('#app-content, .app-learning', { timeout: 30_000 })
+  // Wait for Vue app bootstrap + initial API call to finish
+  await page.waitForLoadState('networkidle')
 }
 
 async function openFirstPool(page) {
   await goToAdmin(page)
   // Wait for pool grid to render, then click first pool card
-  await page.waitForSelector('.pool-card', { timeout: 15_000 })
+  await page.waitForSelector('.pool-card', { timeout: 30_000 })
   await page.locator('.pool-card').first().click()
   await page.waitForLoadState('networkidle')
 }
