@@ -9,20 +9,30 @@ const { test, expect } = require('@playwright/test')
 async function goToAdmin(page) {
   await page.goto('/apps/learning/')
   await page.waitForSelector('#app-content, .app-learning', { timeout: 30_000 })
-  // Wait for Vue app bootstrap + role API call to finish
+  // Wait for initial API calls (role + pools) to settle
   await page.waitForLoadState('networkidle')
-  // App may redirect to courses view if user has student role — force Pools tab
-  const poolsTab = page.locator('button[role="tab"]').filter({ hasText: /^Pools$/ })
-  if (await poolsTab.isVisible({ timeout: 5_000 }).catch(() => false)) {
-    await poolsTab.click()
-    await page.waitForLoadState('networkidle')
-  }
 }
 
 async function openFirstPool(page) {
+  // Navigate and wait for the app to boot (may redirect to courses view for student role)
   await goToAdmin(page)
-  // Wait for pool grid to render, then click first pool card
-  await page.waitForSelector('.pool-card', { timeout: 30_000 })
+
+  // App may show courses view if user has student role — explicitly switch to Pools tab
+  const poolsTab = page.locator('[role="tablist"] button[role="tab"]').filter({ hasText: /^Pools$/ }).first()
+  if (await poolsTab.isVisible({ timeout: 5_000 }).catch(() => false)) {
+    // Wait for the pools API response before clicking (so PoolList is already mounted)
+    const [poolsResponse] = await Promise.all([
+      page.waitForResponse(resp => resp.url().includes('/api/pools') && resp.status() === 200, { timeout: 10_000 }).catch(() => null),
+      poolsTab.click(),
+    ])
+    if (poolsResponse) {
+      // Give Vue a tick to render the response into pool cards
+      await page.waitForTimeout(500)
+    }
+  }
+
+  // Wait for pool card to appear (up to 20s; pool data was already fetched)
+  await page.waitForSelector('.pool-card', { timeout: 20_000 })
   await page.locator('.pool-card').first().click()
   await page.waitForLoadState('networkidle')
 }
