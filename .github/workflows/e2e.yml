@@ -65,6 +65,11 @@ jobs:
           docker exec ${{ env.APP_CONTAINER }} php occ app:disable firstrunwizard || true
           docker exec ${{ env.APP_CONTAINER }} php occ app:disable notifications || true
 
+      - name: Grant admin instructor role in CI
+        run: |
+          docker exec ${{ env.APP_CONTAINER }} php occ group:add learning-instructors || true
+          docker exec ${{ env.APP_CONTAINER }} php occ group:adduser learning-instructors admin || true
+
       - name: Install learning app into CI container
         run: |
           docker exec learning-app sh -lc 'mkdir -p /var/www/html/custom_apps/learning'

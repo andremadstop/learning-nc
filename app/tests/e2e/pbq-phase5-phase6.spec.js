@@ -8,41 +8,13 @@ const { test, expect } = require('@playwright/test')
 
 async function goToAdmin(page) {
   await page.goto('/apps/learning/')
-  await page.waitForSelector('#app-content, .app-learning', { timeout: 30_000 })
-  // Wait for initial API calls (role + pools) to settle
   await page.waitForLoadState('networkidle')
 }
 
 async function openFirstPool(page) {
-  // Navigate and wait for the app to boot (may redirect to courses view for student role)
   await goToAdmin(page)
-
-  // App may show courses view if user has student role — explicitly switch to Pools tab
-  const poolsTab = page.locator('[role="tablist"] button[role="tab"]').filter({ hasText: /^Pools$/ }).first()
-  if (await poolsTab.isVisible({ timeout: 5_000 }).catch(() => false)) {
-    // Wait for the pools API response before clicking
-    const poolsResponse = page.waitForResponse(
-      resp => resp.url().includes('/api/pools') && resp.status() === 200,
-      { timeout: 15_000 }
-    ).catch(() => null)
-    await poolsTab.click()
-    await poolsResponse
-    // Give Vue a render tick after pool data arrives
-    await page.waitForTimeout(1000)
-  }
-
-  // Debug: screenshot to see current state if pool-card not found
-  const hasCard = await page.locator('.pool-card').count()
-  if (hasCard === 0) {
-    await page.screenshot({ path: 'app/test-results/debug-no-pool-card.png', fullPage: true })
-    // Try reloading in case of race condition
-    await page.reload()
-    await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(2000)
-  }
-
-  // Wait for pool card (up to 25s)
-  await page.waitForSelector('.pool-card', { timeout: 25_000 })
+  // Admin has instructor role in CI (learning-instructors group) so mainView stays 'pools'
+  await page.waitForSelector('.pool-card', { timeout: 30_000 })
   await page.locator('.pool-card').first().click()
   await page.waitForLoadState('networkidle')
 }
