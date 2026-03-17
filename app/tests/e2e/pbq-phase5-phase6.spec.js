@@ -54,9 +54,8 @@ test.describe('Phase 5 — PBQ Author Tool', () => {
     await expect(builderBtn).toBeVisible({ timeout: 10_000 })
     await builderBtn.click()
 
-    // NcDialog should open with Author Tool content
-    await expect(page.locator('.modal-container, [class*="dialog"], [role="dialog"]')).toBeVisible({ timeout: 10_000 })
-    await expect(page.locator('select, [class*="subtype"]').first()).toBeVisible({ timeout: 10_000 })
+    // PbqAuthorTool content should appear (NcDialog renders it)
+    await expect(page.locator('.pbq-author-tool, .author-select').first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('P5-2: Live preview updates when subtype and fields change', async ({ page }) => {
