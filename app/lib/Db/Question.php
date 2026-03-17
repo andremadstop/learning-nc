@@ -21,6 +21,8 @@ class Question extends Entity implements JsonSerializable {
     protected $reviewedAt;
     protected $pbqSubtype;
     protected $pbqConfig;
+    protected $instructorNote;
+    protected $noteVisible;
 
     public function __construct() {
         $this->addType('poolId', 'integer');
@@ -38,6 +40,8 @@ class Question extends Entity implements JsonSerializable {
         $this->addType('reviewedAt', 'integer');
         $this->addType('pbqSubtype', 'string');
         $this->addType('pbqConfig', 'string');
+        $this->addType('instructorNote', 'string');
+        $this->addType('noteVisible', 'boolean');
     }
 
     public function jsonSerialize(): array {
@@ -58,6 +62,8 @@ class Question extends Entity implements JsonSerializable {
             'reviewed_at' => $this->reviewedAt,
             'pbq_subtype' => $this->pbqSubtype,
             'pbq_config' => $this->pbqConfig ? json_decode($this->pbqConfig, true) : null,
+            'instructor_note' => $this->instructorNote,
+            'note_visible' => $this->noteVisible ?? false,
         ];
     }
 
@@ -77,5 +83,17 @@ class Question extends Entity implements JsonSerializable {
     public function setPbqConfig(?string $pbqConfig): void {
         $this->pbqConfig = $pbqConfig;
         $this->markFieldUpdated('pbqConfig');
+    }
+
+    public function getInstructorNote(): ?string { return $this->instructorNote; }
+    public function setInstructorNote(?string $v): void {
+        $this->instructorNote = $v;
+        $this->markFieldUpdated('instructorNote');
+    }
+
+    public function getNoteVisible(): bool { return (bool)($this->noteVisible ?? false); }
+    public function setNoteVisible(bool $v): void {
+        $this->noteVisible = $v;
+        $this->markFieldUpdated('noteVisible');
     }
 }
