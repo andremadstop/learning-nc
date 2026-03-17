@@ -314,7 +314,8 @@ class QuestionService {
 
     public function create(int $poolId, string $userId, string $text, ?string $explanation,
                            ?string $difficulty, array $answers, ?string $questionType = null,
-                           ?string $pbqSubtype = null, ?string $pbqConfig = null): array {
+                           ?string $pbqSubtype = null, ?string $pbqConfig = null,
+                           ?string $instructorNote = null, bool $noteVisible = false): array {
         if (!$this->canEditPool($poolId, $userId)) {
             throw new Exception('No edit access to this pool');
         }
@@ -334,6 +335,8 @@ class QuestionService {
             $question->setQuestionType($questionType);
             if ($pbqSubtype !== null) { $question->setPbqSubtype($pbqSubtype); }
             if ($pbqConfig !== null) { $question->setPbqConfig($pbqConfig); }
+            $question->setInstructorNote($instructorNote);
+            $question->setNoteVisible($noteVisible);
             if (!$question->getReviewStatus()) {
                 $question->setReviewStatus('published');
             }
@@ -364,7 +367,8 @@ class QuestionService {
 
     public function update(int $id, string $userId, string $text, ?string $explanation,
                           ?string $difficulty, array $answers, ?string $questionType = null,
-                          ?string $pbqSubtype = null, ?string $pbqConfig = null): array {
+                          ?string $pbqSubtype = null, ?string $pbqConfig = null,
+                          ?string $instructorNote = null, bool $noteVisible = false): array {
         try {
             $question = $this->questionMapper->findById($id);
             if (!$this->canEditPool($question->getPoolId(), $userId)) {
@@ -383,6 +387,8 @@ class QuestionService {
                 $question->setQuestionType($questionType);
                 if ($pbqSubtype !== null) { $question->setPbqSubtype($pbqSubtype); }
                 if ($pbqConfig !== null) { $question->setPbqConfig($pbqConfig); }
+                $question->setInstructorNote($instructorNote);
+                $question->setNoteVisible($noteVisible);
 
                 $question = $this->questionMapper->createOrUpdate($question);
 
