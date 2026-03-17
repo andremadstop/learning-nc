@@ -43,7 +43,13 @@ test.describe('Phase 5 — PBQ Author Tool', () => {
     await openFirstPool(page)
     await openQuestionForm(page)
 
-    // PBQ Config Builder button should exist
+    // Select a PBQ subtype to reveal the Config Builder button
+    const subtypeSelect = page.locator('#pbq-subtype')
+    if (await subtypeSelect.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await subtypeSelect.selectOption('cli')
+    }
+
+    // PBQ Config Builder button should now be visible
     const builderBtn = page.locator('button').filter({ hasText: /PBQ Config Builder|Config Builder/i })
     await expect(builderBtn).toBeVisible({ timeout: 10_000 })
     await builderBtn.click()
@@ -148,7 +154,7 @@ test.describe('Phase 6 — Instructor Notes', () => {
     // Enable note_visible toggle (last checkbox in dialog)
     const lastCheckbox = page.locator('.nc-dialog input[type="checkbox"], [role="dialog"] input[type="checkbox"]').last()
     if (await lastCheckbox.count() > 0 && !(await lastCheckbox.isChecked())) {
-      await lastCheckbox.check()
+      await lastCheckbox.check({ force: true })
     }
 
     // Save
