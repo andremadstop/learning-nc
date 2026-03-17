@@ -84,11 +84,11 @@ Plans:
   2. Formularfelder erzeugen gültiges PBQ-JSON
   3. Live-Vorschau der resultierenden Simulation
   4. Generiertes JSON kann in QuestionForm eingefügt werden
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: PBQ Author Tool UI + JSON-Generator
-- [ ] 05-02: Live-Vorschau Integration
+- [ ] 05-01-PLAN.md — PbqAuthorTool.vue: subtype selector, per-subtype form fields, generatedConfig/generatedJson computed, unit tests
+- [ ] 05-02-PLAN.md — Live preview via PbqRenderer + QuestionForm PBQ integration (subtype select, config textarea, NcDialog)
 
 #### Phase 6: Instructor Notes
 
