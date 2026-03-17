@@ -81,6 +81,44 @@
         <label for="explanation">{{ t('learning', 'Explanation (optional)') }}</label>
         <textarea id="explanation" v-model="form.explanation" rows="2" :placeholder="t('learning', 'Explain why the answer is correct...')" class="nc-input"></textarea>
       </div>
+      <!-- PBQ Config Section -->
+      <div class="form-group">
+        <label for="pbq-subtype">{{ t('learning', 'PBQ Type (optional)') }}</label>
+        <select id="pbq-subtype" v-model="form.pbqSubtype" class="nc-input">
+          <option value="">{{ t('learning', 'None (standard question)') }}</option>
+          <option value="cli">CLI Terminal</option>
+          <option value="placement">Device Placement</option>
+          <option value="dropdown">Inline Dropdown</option>
+          <option value="cable">Cable Mapping</option>
+          <option value="multi_panel">Multi-Panel</option>
+        </select>
+      </div>
+
+      <div v-if="form.pbqSubtype" class="form-group">
+        <label for="pbq-config">{{ t('learning', 'PBQ Config (JSON)') }}</label>
+        <div class="pbq-config-actions">
+          <NcButton type="secondary" @click="showAuthorTool = true">
+            {{ t('learning', 'PBQ Config Builder') }}
+          </NcButton>
+        </div>
+        <textarea
+          id="pbq-config"
+          v-model="form.pbqConfig"
+          rows="6"
+          :placeholder="t('learning', 'Paste JSON from PBQ Config Builder or enter manually...')"
+          class="nc-input pbq-config-textarea"
+        ></textarea>
+      </div>
+
+      <NcDialog
+        v-if="showAuthorTool"
+        :name="t('learning', 'PBQ Config Builder')"
+        size="large"
+        @closing="showAuthorTool = false"
+      >
+        <PbqAuthorTool />
+      </NcDialog>
+
       <div class="dialog-actions">
         <NcButton type="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
         <NcButton type="primary" native-type="submit" :disabled="saving">{{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}</NcButton>
@@ -96,10 +134,11 @@ import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadi
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
+import PbqAuthorTool from './PbqAuthorTool.vue';
 
 export default {
   name: 'QuestionForm',
-  components: { NcDialog, NcButton, NcCheckboxRadioSwitch, NcNoteCard },
+  components: { NcDialog, NcButton, NcCheckboxRadioSwitch, NcNoteCard, PbqAuthorTool },
   props: { question: { type: Object, default: null } },
   data() {
     return {
@@ -112,13 +151,16 @@ export default {
       existingImagePath: null,
       removeExistingImage: false,
       modelAnswer: '',
+      showAuthorTool: false,
       form: {
         text: '', explanation: '', difficulty: '',
         questionType: 'single',
         answers: [
           { text: '', is_correct: false }, { text: '', is_correct: false },
           { text: '', is_correct: false }, { text: '', is_correct: false }
-        ]
+        ],
+        pbqSubtype: '',
+        pbqConfig: '',
       }
     };
   },
@@ -156,6 +198,10 @@ export default {
         this.correctAnswerIndex = this.form.answers.findIndex(a => a.is_correct);
         if (this.correctAnswerIndex < 0) this.correctAnswerIndex = 0;
       }
+      this.form.pbqSubtype = this.question.pbq_subtype || ''
+      this.form.pbqConfig  = this.question.pbq_config
+        ? JSON.stringify(this.question.pbq_config, null, 2)
+        : ''
     }
   },
   methods: {
@@ -252,6 +298,8 @@ export default {
         answers: filteredAnswers,
         imageFile: this.imageFile,
         removeImage: this.removeExistingImage,
+        pbqSubtype: this.form.pbqSubtype || null,
+        pbqConfig:  this.form.pbqConfig ? this.form.pbqConfig.trim() : null,
       });
       this.saving = false;
     }
@@ -288,4 +336,6 @@ export default {
 .remove-answer-btn:hover { color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, transparent); }
 .image-error { margin-top: 8px; }
 .multi-warning { margin-top: 8px; }
+.pbq-config-actions { margin-bottom: 8px; }
+.pbq-config-textarea { font-family: monospace; font-size: 12px; }
 </style>
