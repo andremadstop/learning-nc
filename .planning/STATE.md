@@ -4,7 +4,7 @@ milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: executing
 stopped_at: Completed 03-inline-dropdown-auf-diagramm-03-01-PLAN.md — browser-verified and approved
-last_updated: "2026-03-17T04:48:41.820Z"
+last_updated: "2026-03-17T04:51:10.504Z"
 last_activity: "2026-03-16 — Phase 02 Plan 01 executed: NetworkTopologySvg.vue + DEVICE_ICONS + unit tests"
 progress:
   total_phases: 6
