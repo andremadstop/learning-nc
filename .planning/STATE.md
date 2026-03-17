@@ -4,7 +4,7 @@ milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: completed
 stopped_at: Completed 06-instructor-notes 06-02-PLAN.md
-last_updated: "2026-03-17T09:11:42.335Z"
+last_updated: "2026-03-17T09:15:48.697Z"
 last_activity: "2026-03-17 — Phase 05 Plan 02 executed: PbqRenderer live preview + QuestionForm PBQ integration, browser-verified"
 progress:
   total_phases: 6
