@@ -114,5 +114,5 @@ Plans:
 | 2. SVG Topology Renderer | 2/2 | Complete   | 2026-03-16 |
 | 3. Inline-Dropdown | 1/1 | Complete   | 2026-03-17 |
 | 4. Multi-Panel Layout | 1/1 | Complete   | 2026-03-17 |
-| 5. PBQ Author Tool | 0/2 | Not started | - |
+| 5. PBQ Author Tool | 2/2 | Complete   | 2026-03-17 |
 | 6. Instructor Notes | 0/2 | Not started | - |

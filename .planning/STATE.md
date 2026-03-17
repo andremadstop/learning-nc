@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: completed
-stopped_at: "CHECKPOINT: 05-pbq-author-tool 05-02 Task 3 — browser verify pending"
-last_updated: "2026-03-17T07:44:46.790Z"
+stopped_at: Completed 05-pbq-author-tool 05-02-PLAN.md
+last_updated: "2026-03-17T07:47:43.437Z"
 last_activity: "2026-03-17 — Phase 04 Plan 01 executed: PbqMultiPanel.vue + PbqRenderer extension, browser-verified"
 progress:
   total_phases: 6
@@ -20,14 +20,14 @@ progress:
 
 **Project:** Learning-NC — Nextcloud Spaced Repetition App
 **Core value:** PBQ-Simulationen auf OnVUE-Niveau (CLI State Machine + SVG Topologie + Instructor Notes)
-**Current focus:** Phase 5 — PBQ Author Tool (Phase 4 complete)
+**Current focus:** Phase 6 — Instructor Notes (Phase 5 complete)
 
 ## Current Position
 
-Phase: 4 of 6 complete (Multi-Panel Layout done)
-Plan: All 6 plans complete across phases 1-4
-Status: Phases 1-4 complete — Phase 5 (Author Tool) and Phase 6 (Instructor Notes) pending
-Last activity: 2026-03-17 — Phase 04 Plan 01 executed: PbqMultiPanel.vue + PbqRenderer extension, browser-verified
+Phase: 5 of 6 complete (PBQ Author Tool done)
+Plan: All 8 plans complete across phases 1-5
+Status: Phases 1-5 complete — Phase 6 (Instructor Notes) pending
+Last activity: 2026-03-17 — Phase 05 Plan 02 executed: PbqRenderer live preview + QuestionForm PBQ integration, browser-verified
 
 Progress: [██████████] 100%
 
@@ -46,6 +46,7 @@ Progress: [██████████] 100%
 | Phase 03-inline-dropdown-auf-diagramm P01 | 5min | 3 tasks | 3 files |
 | Phase 04-multi-panel-layout P01 | 10min | 3 tasks | 3 files |
 | Phase 05-pbq-author-tool P01 | 8min | 2 tasks | 2 files |
+| Phase 05-pbq-author-tool P02 | 6min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,9 @@ Progress: [██████████] 100%
 - [Phase 05-pbq-author-tool]: PbqAuthorTool: topology null (not {}) when useTopology=false or nodes=[] — matches PbqRenderer null-check contract
 - [Phase 05-pbq-author-tool]: PbqAuthorTool: command_outputs keys lowercased in computed to match evaluateCommand case-insensitive lookup
 - [Phase 05-pbq-author-tool]: PbqAuthorTool: all state internal (no props) — Plan 02 wires it into admin UI
+- [Phase 05-pbq-author-tool]: PbqRenderer @submit/@skip wired to empty arrow functions — prevents Vue Unhandled event warnings in live preview
+- [Phase 05-pbq-author-tool]: Clipboard-as-bridge: no direct component binding between PbqAuthorTool JSON and QuestionForm textarea — instructor copies JSON and pastes manually
+- [Phase 05-pbq-author-tool]: showAuthorTool boolean flag in QuestionForm data() toggles NcDialog v-if for PbqAuthorTool
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T07:44:46.775Z
-Stopped at: CHECKPOINT: 05-pbq-author-tool 05-02 Task 3 — browser verify pending
+Last session: 2026-03-17T07:47:43.422Z
+Stopped at: Completed 05-pbq-author-tool 05-02-PLAN.md
 Resume file: None
