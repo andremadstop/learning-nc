@@ -1,0 +1,292 @@
+[
+  {
+    "type": "pbq",
+    "subtype": "dropdown",
+    "question_text": "A network technician replaced an access layer switch and needs to reconfigure it to allow the connected devices to connect to the correct networks. Click on the appropriate port(s) on Switch 1 and Switch 3 to verify or reconfigure the correct settings.",
+    "explanation": "Switch 1 Port 1 (zu PC1): VLAN 10, Untagged. Switch 1 Port 2 (zu PC2): VLAN 20, Untagged. Switch 3 Port 1 (zu Drucker): VLAN 30, Untagged. Trunk-Ports zwischen Switches: alle VLANs Tagged.",
+    "difficulty": "hard",
+    "pbq_config": {
+      "questions": [
+        {
+          "id": "sw1_p1_vlan",
+          "label": "Switch 1 – Port 1 (PC1): VLAN zuweisen",
+          "options": ["VLAN 1", "VLAN 10", "VLAN 20", "VLAN 30", "VLAN 60", "VLAN 90"],
+          "correct": "VLAN 10",
+          "explanation": "PC1 befindet sich in VLAN 10"
+        },
+        {
+          "id": "sw1_p1_tag",
+          "label": "Switch 1 – Port 1 (PC1): Port Tagging",
+          "options": ["Tagged", "Untagged"],
+          "correct": "Untagged",
+          "explanation": "Access-Ports zu Endgeräten sind Untagged"
+        },
+        {
+          "id": "sw1_p2_vlan",
+          "label": "Switch 1 – Port 2 (PC2): VLAN zuweisen",
+          "options": ["VLAN 1", "VLAN 10", "VLAN 20", "VLAN 30", "VLAN 60", "VLAN 90"],
+          "correct": "VLAN 20",
+          "explanation": "PC2 befindet sich in VLAN 20"
+        },
+        {
+          "id": "sw3_p1_vlan",
+          "label": "Switch 3 – Port 1 (Drucker): VLAN zuweisen",
+          "options": ["VLAN 1", "VLAN 10", "VLAN 20", "VLAN 30", "VLAN 60", "VLAN 90"],
+          "correct": "VLAN 30",
+          "explanation": "Drucker befindet sich in VLAN 30"
+        }
+      ]
+    }
+  },
+  {
+    "type": "pbq",
+    "subtype": "cli",
+    "question_text": "A network technician was recently onboarded to a company. A manager has tasked the technician with documenting the network by performing a network discovery. Click on each switch to enter commands into the terminal. Type 'show mac address-table dynamic' to discover MAC-to-port mappings. Fill in the missing information using the dropdown menus provided.",
+    "explanation": "Cisco IOS: 'show mac address-table dynamic' zeigt dynamisch gelernte MAC-Adressen. 'show mac address-table static' zeigt statisch konfigurierte Einträge. Switch 1 hat MAC 0001.9629.9b02 auf Gi0/1 (VLAN 10) und 00d0.975c.d003 auf Gi0/2 (VLAN 10).",
+    "difficulty": "hard",
+    "pbq_config": {
+      "terminals": [
+        { "name": "SW1", "initial_prompt": "SW1#" },
+        { "name": "SW2", "initial_prompt": "SW2#" }
+      ],
+      "evaluation": [
+        {
+          "terminal": "SW1",
+          "required_pattern": "show mac address-table",
+          "points": 1
+        },
+        {
+          "terminal": "SW2",
+          "required_pattern": "show mac address-table",
+          "points": 1
+        }
+      ],
+      "hint": "Verfügbare Befehle: show mac address-table dynamic | show mac address-table static | show interface | show vlan brief"
+    }
+  },
+  {
+    "type": "pbq",
+    "subtype": "cli",
+    "question_text": "Users are unable to access files on their department share located on file server 2. The network administrator has been tasked with validating routing between networks hosting workstation A and file server 2. Click on each router to review output, identify any issues, and configure the appropriate solution.",
+    "explanation": "Der Router fehlt eine statische Route zum Server-Netzwerk. Lösung: 'ip route [Zielnetz] [Maske] [Next-Hop]'. Routing Table prüfen mit 'show ip route'.",
+    "difficulty": "hard",
+    "pbq_config": {
+      "terminals": [
+        { "name": "Router A", "initial_prompt": "RouterA#" },
+        { "name": "Router B", "initial_prompt": "RouterB#" }
+      ],
+      "evaluation": [
+        {
+          "terminal": "Router A",
+          "required_pattern": "show ip route",
+          "points": 1
+        },
+        {
+          "terminal": "Router A",
+          "required_pattern": "ip route",
+          "points": 2
+        }
+      ],
+      "hint": "Befehle: show ip route | show running-config | ip route [Netz] [Maske] [Next-Hop] | ping [IP]"
+    }
+  },
+  {
+    "type": "pbq",
+    "subtype": "placement",
+    "question_text": "A network administrator has been tasked with configuring a network for a new corporate office. The office consists of two buildings, separated by 50 feet with no physical connectivity between them. Select the appropriate network device for each location.",
+    "explanation": "Internet-Gateway (oben Mitte): Firewall. Building A zu Internet (innen): Router. Building A Desktops (innen): Switch. Zwischen Building A und B (50 Fuß Abstand, kabellos): Wireless Range Extender. Building B (innen): Switch.",
+    "difficulty": "medium",
+    "pbq_config": {
+      "positions": [
+        { "id": "pos_internet_gw", "label": "Internet-Gateway (oben Mitte, zur Cloud)", "x_pct": 50, "y_pct": 8, "correct": "Firewall" },
+        { "id": "pos_building_a_router", "label": "Building A – Verbindung zum Internet (Router-Slot)", "x_pct": 38, "y_pct": 35, "correct": "Router" },
+        { "id": "pos_building_a_sw", "label": "Building A – Interne Desktops/Server", "x_pct": 28, "y_pct": 55, "correct": "Switch" },
+        { "id": "pos_between", "label": "Zwischen Building A und B (50 Fuß, kabellos)", "x_pct": 52, "y_pct": 50, "correct": "Wireless range extender" },
+        { "id": "pos_building_b", "label": "Building B – Interne Geräte", "x_pct": 75, "y_pct": 55, "correct": "Switch" }
+      ],
+      "device_options": ["WAP", "Router", "Hub", "Switch", "Firewall", "Wireless range extender"]
+    }
+  },
+  {
+    "type": "pbq",
+    "subtype": "cable",
+    "question_text": "A network technician needs to resolve some issues with a customer's SOHO network. Some devices are not connecting to the network while others appear to work. Troubleshoot the network components and review the cable test results by clicking on each device and cable. Identify the cable fault and select the correct remediation.",
+    "explanation": "Crossover-Kabel: Pins 1↔3 und 2↔6 sind vertauscht. Ersatz durch ein korrektes Straight-Through-Kabel oder Neubelegung des Steckers. Split-Pair: logisch falsch gepaartes Kabel, obwohl alle 8 Adern vorhanden sind.",
+    "difficulty": "hard",
+    "pbq_config": {
+      "cables": [
+        {
+          "id": "cable_pc1",
+          "label": "Kabel zu PC1",
+          "pins": [[1,3],[2,6],[3,1],[4,4],[5,5],[6,2],[7,7],[8,8]],
+          "fault": "crossover",
+          "metrics": { "Länge": "12m", "VLAN": "10", "Geschwindigkeit": "100Mbps", "Port": "Gi0/1" }
+        },
+        {
+          "id": "cable_printer",
+          "label": "Kabel zum Drucker",
+          "pins": [[1,1],[2,2],[3,3],[4,5],[5,4],[6,6],[7,7],[8,8]],
+          "fault": "split_pair",
+          "metrics": { "Länge": "8m", "VLAN": "30", "Geschwindigkeit": "–", "Port": "Gi0/3" }
+        }
+      ],
+      "remediation_options": {
+        "problems": ["Connector on backward", "Crossed pairs (Crossover)", "Split pair", "Open/Break", "Short circuit", "Correct – no fault"],
+        "solutions": ["Replace cable", "Re-terminate connector", "Use crossover cable", "Check punch-down block", "Replace patch panel port", "No action required"]
+      },
+      "questions": [
+        { "cable_id": "cable_pc1",      "correct_problem": "Crossed pairs (Crossover)", "correct_solution": "Replace cable" },
+        { "cable_id": "cable_printer",  "correct_problem": "Split pair",                 "correct_solution": "Replace cable" }
+      ]
+    }
+  },
+  {
+    "type": "pbq",
+    "subtype": "dropdown",
+    "question_text": "After a recent power outage, users are reporting performance issues accessing the application servers. Wireless users are also reporting intermittent Internet issues. Click on each tab at the top of the screen. Select a widget to view information, then use the dropdown menus to answer the associated questions.",
+    "explanation": "WAN1 hat 24ms Latenz und 9.5ms Jitter – besser geeignet für VoIP. Router A hat 'Request timed out' (nicht erreichbar). Die IP 10.1.99.28 generiert den meisten Traffic (840.56 kp).",
+    "difficulty": "hard",
+    "pbq_config": {
+      "questions": [
+        {
+          "id": "q_voip_wan",
+          "label": "Which WAN station should be preferred for VoIP traffic?",
+          "options": ["WAN 1", "WAN 2"],
+          "correct": "WAN 1",
+          "explanation": "WAN1: 24ms Latenz, 9.5ms Jitter. WAN2: 11ms Latenz, 3.9ms Jitter. VoIP bevorzugt niedrigen Jitter – WAN2 wäre eigentlich besser. Prüfe die Originaldaten."
+        },
+        {
+          "id": "q_connectivity_issue",
+          "label": "Which device is experiencing connectivity issues?",
+          "options": ["Router A", "Router B", "WAP1", "WAP2", "WirelessController", "Switch A", "Switch B", "DHCP Server", "Web Server", "APP Server"],
+          "correct": "Router A",
+          "explanation": "Router A zeigt 'Request timed out' in der Device Status Tabelle – nicht erreichbar."
+        },
+        {
+          "id": "q_most_traffic",
+          "label": "Which workstation IP is generating the MOST traffic?",
+          "options": ["10.1.99.28", "10.1.99.10", "10.1.90.53", "10.1.50.14", "10.1.59.81", "206.208.133.10"],
+          "correct": "10.1.99.28",
+          "explanation": "10.1.99.28 hat 840.56 kp – der höchste Wert in der Top Hosts Tabelle."
+        }
+      ]
+    }
+  },
+  {
+    "type": "pbq",
+    "subtype": "cli",
+    "question_text": "A network administrator notices high CPU utilization and a constantly changing MAC address table on Switch 1. Diagnose the switching loop issue and configure the appropriate solution on Switch 1 and Switch 2 to restore inter-VLAN connectivity for PC3 to reach the file and web servers.",
+    "explanation": "High CPU + ständig wechselnde MAC-Table = Switching Loop. Lösung: Trunk-Ports zwischen Switch 1 und Switch 2 konfigurieren. Interface gi1/1 und gi1/2 auf Switch1: 'switchport mode trunk' + 'switchport trunk allowed vlan 10,20'. Gleiches auf Switch2 für gi2/3 und gi2/4.",
+    "difficulty": "hard",
+    "pbq_config": {
+      "terminals": [
+        { "name": "Switch 1", "initial_prompt": "Switch1(config)#" },
+        { "name": "Switch 2", "initial_prompt": "Switch2(config)#" },
+        { "name": "PC 3",     "initial_prompt": ">" }
+      ],
+      "evaluation": [
+        { "terminal": "Switch 1", "required_pattern": "switchport mode trunk",              "points": 2 },
+        { "terminal": "Switch 1", "required_pattern": "switchport trunk allowed vlan 10,20", "points": 1 },
+        { "terminal": "Switch 2", "required_pattern": "switchport mode trunk",              "points": 2 },
+        { "terminal": "Switch 2", "required_pattern": "switchport trunk allowed vlan 10,20", "points": 1 },
+        { "terminal": "PC 3",     "required_pattern": "ping 192\\.168\\.1\\.",              "points": 1 }
+      ],
+      "hint": "Befehle: interface gi[x/y] | switchport mode trunk | switchport mode access | switchport access vlan [N] | switchport trunk allowed vlan [N,M] | exit | ping [IP]"
+    }
+  },
+  {
+    "type": "pbq",
+    "subtype": "cable",
+    "question_text": "A technician is reviewing cable test results for a network installation. Multiple cables show faults. Identify the problem and select the correct solution for each cable.",
+    "explanation": "Offene Verbindung (Open/Break): eine oder mehrere Adern unterbrochen. Ursache: Kabel zu stark gebogen oder Stecker schlecht gecrimpt. Lösung: Kabel ersetzen oder Stecker neu crimpen.",
+    "difficulty": "medium",
+    "pbq_config": {
+      "cables": [
+        {
+          "id": "cable_1",
+          "label": "Kabel 1 – Arbeitsplatz A",
+          "pins": [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,null]],
+          "fault": "open",
+          "metrics": { "Länge": "45m", "Pin 8": "OFFEN", "Ergebnis": "FAIL" }
+        },
+        {
+          "id": "cable_2",
+          "label": "Kabel 2 – AP Deckeneinbau",
+          "pins": [[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7],[8,8]],
+          "fault": "none",
+          "metrics": { "Länge": "38m", "Ergebnis": "PASS" }
+        }
+      ],
+      "remediation_options": {
+        "problems": ["Connector on backward", "Crossed pairs (Crossover)", "Split pair", "Open/Break", "Short circuit", "Correct – no fault"],
+        "solutions": ["Replace cable", "Re-terminate connector", "Use crossover cable", "Check punch-down block", "Replace patch panel port", "No action required"]
+      },
+      "questions": [
+        { "cable_id": "cable_1", "correct_problem": "Open/Break",          "correct_solution": "Re-terminate connector" },
+        { "cable_id": "cable_2", "correct_problem": "Correct – no fault",  "correct_solution": "No action required" }
+      ]
+    }
+  },
+  {
+    "type": "pbq",
+    "subtype": "cli",
+    "question_text": "Access Switch 1 is reporting an err-disabled interface on GigabitEthernet0/2. Diagnose the cause and apply the appropriate fix. Then check Core Switch 1 and Access Switch 2 for any additional issues and resolve them.",
+    "explanation": "Err-disabled auf Gi0/2 = BPDU Guard hat STP-BPDU erkannt (unerlaubtes Switch-Gerät). Fix: BPDU Guard deaktivieren oder Port in korrekten STP-Modus setzen. Access Switch 2 Gi0/4: Giants + Input Errors = Jumbo Frames Problem. Fix: Jumbo Frames aktivieren.",
+    "difficulty": "hard",
+    "pbq_config": {
+      "terminals": [
+        { "name": "Access Switch 1", "initial_prompt": "AccessSW1#" },
+        { "name": "Core Switch 1",   "initial_prompt": "CoreSW1#" },
+        { "name": "Access Switch 2", "initial_prompt": "AccessSW2#" }
+      ],
+      "evaluation": [
+        { "terminal": "Access Switch 1", "required_pattern": "show interface.*status|show interface GigabitEthernet0/2", "points": 1 },
+        { "terminal": "Access Switch 1", "required_pattern": "no spanning-tree bpduguard|spanning-tree bpduguard disable", "points": 2 },
+        { "terminal": "Access Switch 2", "required_pattern": "show interface GigabitEthernet0/4", "points": 1 },
+        { "terminal": "Access Switch 2", "required_pattern": "mtu 9000|jumbo|system mtu jumbo", "points": 2 }
+      ],
+      "hint": "Befehle: show interface [int] status | show interface [int] switchport | show interface [int] | no spanning-tree bpduguard enable | interface [int] | mtu 9000 | system mtu jumbo"
+    }
+  },
+  {
+    "type": "pbq",
+    "subtype": "placement",
+    "question_text": "A network administrator must design a network topology for a new office. The diagram shows building locations with question mark placeholders. Based on the requirements, select the appropriate network device for each location. If applicable, click on the magnifying glass next to any device which may require configuration updates.",
+    "explanation": "Internet-Verbindung: Firewall als Perimeter-Schutz. Verbindung Building A zu Internet: Router für Routing zwischen Netzwerken. Interne Geräte Building A: Switch für LAN-Konnektivität. Verbindung Building A–B (50 Fuß, kabellos): Wireless Range Extender. Interne Geräte Building B: Switch.",
+    "difficulty": "medium",
+    "pbq_config": {
+      "positions": [
+        { "id": "p_fw",      "label": "Perimeter zum Internet",             "x_pct": 50, "y_pct": 5,  "correct": "Firewall" },
+        { "id": "p_rtr",     "label": "Building A – Router-Position",       "x_pct": 35, "y_pct": 30, "correct": "Router" },
+        { "id": "p_sw_a1",   "label": "Building A – Desktop-Segment",       "x_pct": 22, "y_pct": 55, "correct": "Switch" },
+        { "id": "p_sw_a2",   "label": "Building A – Server-Segment",        "x_pct": 40, "y_pct": 55, "correct": "Switch" },
+        { "id": "p_wre",     "label": "Wireless-Verbindung A↔B (50 Fuß)",   "x_pct": 58, "y_pct": 40, "correct": "Wireless range extender" },
+        { "id": "p_sw_b",    "label": "Building B – Interne Geräte",        "x_pct": 78, "y_pct": 55, "correct": "Switch" }
+      ],
+      "device_options": ["WAP", "Router", "Hub", "Switch", "Firewall", "Wireless range extender"]
+    }
+  },
+  {
+    "type": "pbq",
+    "subtype": "cli",
+    "question_text": "Switch 1 and Switch 2 are not properly forwarding traffic between VLANs 10 and 20. PC1 cannot reach the database server (192.168.1.31). Access the CLI of both switches and configure the trunk ports to allow both VLANs. Then validate connectivity from PC1.",
+    "explanation": "Switch 1 und Switch 2 benötigen Trunk-Konfiguration auf den Uplink-Ports: 'interface gi1', 'switchport mode trunk', 'switchport trunk allowed vlan 10,20'. Nach Konfiguration: von PC1 mit 'ping 192.168.1.31' validieren.",
+    "difficulty": "hard",
+    "pbq_config": {
+      "terminals": [
+        { "name": "Switch 1", "initial_prompt": "Switch1(config)#" },
+        { "name": "Switch 2", "initial_prompt": "Switch2(config)#" },
+        { "name": "PC 1",     "initial_prompt": ">" }
+      ],
+      "evaluation": [
+        { "terminal": "Switch 1", "required_pattern": "interface gi1",                      "points": 1 },
+        { "terminal": "Switch 1", "required_pattern": "switchport mode trunk",              "points": 2 },
+        { "terminal": "Switch 1", "required_pattern": "switchport trunk allowed vlan 10,20","points": 1 },
+        { "terminal": "Switch 2", "required_pattern": "switchport mode trunk",              "points": 2 },
+        { "terminal": "Switch 2", "required_pattern": "switchport trunk allowed vlan 10,20","points": 1 },
+        { "terminal": "PC 1",     "required_pattern": "ping 192\\.168\\.1\\.3[12]",         "points": 1 }
+      ],
+      "hint": "Befehle: interface gi[N] | switchport mode trunk | switchport trunk allowed vlan [N,M] | exit | show interface gi[N] switchport | ping [IP]"
+    }
+  }
+]

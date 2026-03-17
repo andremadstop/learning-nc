@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: executing
-stopped_at: Completed 03-inline-dropdown-auf-diagramm-03-01-PLAN.md — browser-verified and approved
-last_updated: "2026-03-17T04:51:10.504Z"
+stopped_at: Completed 04-multi-panel-layout-04-01-PLAN.md — awaiting browser checkpoint Task 4
+last_updated: "2026-03-17T07:04:35.140Z"
 last_activity: "2026-03-16 — Phase 02 Plan 01 executed: NetworkTopologySvg.vue + DEVICE_ICONS + unit tests"
 progress:
   total_phases: 6
-  completed_phases: 3
-  total_plans: 5
-  completed_plans: 5
+  completed_phases: 4
+  total_plans: 6
+  completed_plans: 6
   percent: 75
 ---
 
@@ -44,6 +44,7 @@ Progress: [████████░░] 75%
 | Phase 02-svg-topology-renderer P02 | 10min | 3 tasks | 2 files |
 | Phase 03-inline-dropdown-auf-diagramm P01 | 4min | 2 tasks | 3 files |
 | Phase 03-inline-dropdown-auf-diagramm P01 | 5min | 3 tasks | 3 files |
+| Phase 04-multi-panel-layout P01 | 10min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Progress: [████████░░] 75%
 - [Phase 03-inline-dropdown-auf-diagramm]: overflow:visible added inline to .pbq-diagram-wrapper rule; closePicker() extracted as named method for addEventListener symmetry
 - [Phase 03-inline-dropdown-auf-diagramm]: overflow:visible added inline to .pbq-diagram-wrapper rule; closePicker() extracted as named method for addEventListener symmetry
 - [Phase 03-inline-dropdown-auf-diagramm]: Inline picker gated on pickerPos && topologyConfig; below-diagram picker gated on !topologyConfig — clean mode separation without code duplication
+- [Phase 04-multi-panel-layout]: No overflow:hidden on .pbq-multi-panel — inline-picker needs visible overflow for absolute positioning
+- [Phase 04-multi-panel-layout]: Multi-panel answeredCount sums cli + placement sub-keys (not top-level keys)
+- [Phase 04-multi-panel-layout]: min-width:0 on flex children prevents horizontal overflow from monospace terminal content
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T04:48:41.807Z
-Stopped at: Completed 03-inline-dropdown-auf-diagramm-03-01-PLAN.md — browser-verified and approved
+Last session: 2026-03-17T07:04:35.126Z
+Stopped at: Completed 04-multi-panel-layout-04-01-PLAN.md — awaiting browser checkpoint Task 4
 Resume file: None

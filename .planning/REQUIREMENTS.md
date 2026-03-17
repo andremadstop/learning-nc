@@ -28,8 +28,8 @@
 
 ### Multi-Panel Layout
 
-- [ ] **PANEL-01**: multi_panel=true zeigt CLI und Topologie nebeneinander
-- [ ] **PANEL-02**: Responsive Fallback: untereinander auf kleinen Screens (<768px)
+- [x] **PANEL-01**: multi_panel=true zeigt CLI und Topologie nebeneinander
+- [x] **PANEL-02**: Responsive Fallback: untereinander auf kleinen Screens (<768px)
 
 ### PBQ Author Tool
 
@@ -69,8 +69,8 @@
 | DROP-01 | Phase 3 | Complete |
 | DROP-02 | Phase 3 | Complete |
 | DROP-03 | Phase 3 | Complete |
-| PANEL-01 | Phase 4 | Pending |
-| PANEL-02 | Phase 4 | Pending |
+| PANEL-01 | Phase 4 | Complete |
+| PANEL-02 | Phase 4 | Complete |
 | AUTHOR-01 | Phase 5 | Pending |
 | AUTHOR-02 | Phase 5 | Pending |
 | AUTHOR-03 | Phase 5 | Pending |
