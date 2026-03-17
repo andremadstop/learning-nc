@@ -100,11 +100,11 @@ Plans:
   2. Toggle schaltet Sichtbarkeit für Schüler ein/aus
   3. Schüler sehen Notiz in TrainingMode, ExamMode, LeitnerMode, SmartQueue (wenn sichtbar)
   4. DB-Migration läuft ohne Datenverlust durch
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: DB Migration + Backend (instructor_note + note_visible)
-- [ ] 06-02: Frontend — QuestionForm Editor + Anzeige in allen Modi
+- [ ] 06-01-PLAN.md — DB Migration + Backend (instructor_note + note_visible, Entity/Service/Controller, unit tests)
+- [ ] 06-02-PLAN.md — Frontend: QuestionForm Editor + note display in TrainingMode/LeitnerMode/SmartQueue/ExamMode
 
 ## Progress
 
