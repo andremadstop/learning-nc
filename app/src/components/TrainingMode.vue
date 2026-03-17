@@ -67,6 +67,15 @@
             <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ correctAnswerTexts[0] || '' }}</div>
           </div>
           <NcNoteCard v-if="currentQuestion.explanation" type="warning"><strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
+            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
+          </NcNoteCard>
+          <div v-if="aiAvailable" class="ai-explain-row">
+            <NcButton v-if="!explainTaskId && !explainText" type="tertiary" :disabled="explainLoading" @click="requestExplain">
+              {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
+            </NcButton>
+            <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+          </div>
           <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
         <div v-else class="answer-feedback">
@@ -87,6 +96,15 @@
             {{ correctAnswerTexts.join(', ') }}
           </div>
           <NcNoteCard v-if="currentQuestion.explanation" type="warning"><strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
+            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
+          </NcNoteCard>
+          <div v-if="aiAvailable" class="ai-explain-row">
+            <NcButton v-if="!explainTaskId && !explainText" type="tertiary" :disabled="explainLoading" @click="requestExplain">
+              {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
+            </NcButton>
+            <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+          </div>
           <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
       </div>
@@ -147,9 +165,16 @@ export default {
       streak: { current_streak: 0, longest_streak: 0, is_active_today: false },
       newBadges: [],
       levelBefore: 0,
-      levelAfter: 0
+      levelAfter: 0,
+      // AI explain
+      aiAvailable: false,
+      explainLoading: false,
+      explainTaskId: null,
+      explainText: '',
+      explainPollTimer: null,
     };
   },
+  mounted() { this.checkAiAvailable(); },
   computed: {
     currentQuestion() { return this.questions[this.currentIndex] || null; },
     progress() { return this.questions.length > 0 ? ((this.currentIndex + 1) / this.questions.length) * 100 : 0; },
@@ -221,7 +246,52 @@ export default {
       } catch (error) { showError(t('learning', 'Failed to submit answer')); }
       finally { this.submitting = false; }
     },
+    async checkAiAvailable() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/ai/available'));
+        this.aiAvailable = !!r.data.available;
+      } catch (e) { this.aiAvailable = false; }
+    },
+    async requestExplain() {
+      if (!this.currentQuestion) return;
+      this.explainLoading = true;
+      this.explainText = '';
+      this.explainTaskId = null;
+      clearInterval(this.explainPollTimer);
+      try {
+        const payload = { questionId: this.currentQuestion.id };
+        if (this.isOpenQuestion) payload.answerText = this.lastOpenAnswer;
+        else if (this.isMultiSelect) payload.selectedAnswerIds = this.lastSelectedAnswerIds;
+        else if (this.lastSelectedAnswerId) payload.selectedAnswerId = this.lastSelectedAnswerId;
+        const r = await axios.post(generateUrl('/apps/learning/api/ai/explain'), payload);
+        this.explainTaskId = r.data.taskId;
+        this.pollExplain();
+      } catch (e) {
+        this.explainLoading = false;
+      }
+    },
+    pollExplain() {
+      if (!this.explainTaskId) return;
+      this.explainPollTimer = setInterval(async () => {
+        try {
+          const r = await axios.get(generateUrl('/apps/learning/api/ai/status/{taskId}', { taskId: this.explainTaskId }));
+          if (r.data.status === 'completed') {
+            clearInterval(this.explainPollTimer);
+            this.explainText = r.data.output || t('learning', 'No explanation available');
+            this.explainLoading = false;
+          } else if (r.data.status === 'failed') {
+            clearInterval(this.explainPollTimer);
+            this.explainLoading = false;
+          }
+        } catch (e) {
+          clearInterval(this.explainPollTimer);
+          this.explainLoading = false;
+        }
+      }, 1500);
+    },
     async nextQuestion() {
+      clearInterval(this.explainPollTimer);
+      this.explainTaskId = null; this.explainText = ''; this.explainLoading = false;
       if (this.currentIndex < this.questions.length - 1) {
         this.currentIndex++;
         this.answered = false;
@@ -317,6 +387,8 @@ export default {
 .answer-feedback { margin-top: 28px; }
 .correct-answer { padding: 14px 18px; background: var(--color-background-hover); border-radius: 10px; margin-bottom: 12px; font-size: 14px; line-height: 1.5; color: var(--color-main-text); }
 .next-btn { margin-top: 20px; }
+.ai-explain-row { margin: 10px 0; }
+.ai-explain-box { background: color-mix(in srgb, var(--color-primary-element) 8%, transparent); border-left: 3px solid var(--color-primary-element); border-radius: var(--border-radius); padding: 10px 14px; font-size: 0.92em; color: var(--color-main-text); line-height: 1.5; }
 .training-results { text-align: center; padding: 60px 20px; }
 .training-results h3 { font-size: 32px; margin-bottom: 36px; font-weight: 700; color: var(--color-main-text); }
 .score-display { margin-bottom: 36px; }

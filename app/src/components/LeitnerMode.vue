@@ -104,6 +104,15 @@
             <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ lastCorrectAnswerTexts.length > 0 ? lastCorrectAnswerTexts[0] : '' }}</div>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
+            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
+          </NcNoteCard>
+          <div v-if="aiAvailable" class="ai-explain-row">
+            <NcButton v-if="!explainTaskId && !explainText" type="tertiary" :disabled="explainLoading" @click="requestExplain">
+              {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
+            </NcButton>
+            <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+          </div>
           <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
         <div v-else class="answer-feedback">
@@ -127,6 +136,15 @@
             <em v-else>{{ t('learning', 'Correct answer hidden during active exam') }}</em>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
+            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
+          </NcNoteCard>
+          <div v-if="aiAvailable" class="ai-explain-row">
+            <NcButton v-if="!explainTaskId && !explainText" type="tertiary" :disabled="explainLoading" @click="requestExplain">
+              {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
+            </NcButton>
+            <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+          </div>
           <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
       </div>
@@ -180,7 +198,13 @@ export default {
       newBadges: [],
       levelBefore: 0,
       levelAfter: 0,
-      boxLabels: { 1: t('learning', 'New — review daily'), 2: t('learning', 'Learning — after 1 day'), 3: t('learning', 'Familiar — after 3 days'), 4: t('learning', 'Good — after 7 days'), 5: t('learning', 'Mastered — after 14 days') }
+      boxLabels: { 1: t('learning', 'New — review daily'), 2: t('learning', 'Learning — after 1 day'), 3: t('learning', 'Familiar — after 3 days'), 4: t('learning', 'Good — after 7 days'), 5: t('learning', 'Mastered — after 14 days') },
+      // AI explain
+      aiAvailable: false,
+      explainLoading: false,
+      explainTaskId: null,
+      explainText: '',
+      explainPollTimer: null,
     };
   },
   computed: {
@@ -190,7 +214,7 @@ export default {
     reviewProgress() { return ((this.currentIndex + (this.answered ? 1 : 0)) / this.dueQuestions.length) * 100; },
     sessionAccuracy() { const total = this.sessionCorrect + this.sessionIncorrect; return total > 0 ? Math.round(this.sessionCorrect / total * 100) : 0; }
   },
-  mounted() { this.checkInitialized(); this.fetchStreak(); },
+  mounted() { this.checkInitialized(); this.fetchStreak(); this.checkAiAvailable(); },
   methods: {
     async checkInitialized() {
       this.initError = null;
@@ -275,7 +299,54 @@ export default {
       }
       return this.lastCorrectAnswerText || '';
     },
+    async checkAiAvailable() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/ai/available'));
+        this.aiAvailable = !!r.data.available;
+      } catch (e) { this.aiAvailable = false; }
+    },
+    async requestExplain() {
+      if (!this.currentItem) return;
+      this.explainLoading = true;
+      this.explainText = '';
+      this.explainTaskId = null;
+      clearInterval(this.explainPollTimer);
+      try {
+        const payload = { questionId: this.currentItem.question_id || this.currentItem.id };
+        if (this.isOpenQuestion) payload.answerText = this.lastOpenAnswer;
+        else if (this.isCurrentMulti) payload.selectedAnswerIds = this.lastSelectedAnswerIds;
+        else if (this.lastSelectedAnswerId) payload.selectedAnswerId = this.lastSelectedAnswerId;
+        const r = await axios.post(generateUrl('/apps/learning/api/ai/explain'), payload);
+        this.explainTaskId = r.data.taskId;
+        this.pollExplain();
+      } catch (e) {
+        this.explainLoading = false;
+      }
+    },
+    pollExplain() {
+      if (!this.explainTaskId) return;
+      this.explainPollTimer = setInterval(async () => {
+        try {
+          const r = await axios.get(generateUrl('/apps/learning/api/ai/status/{taskId}', { taskId: this.explainTaskId }));
+          if (r.data.status === 'completed') {
+            clearInterval(this.explainPollTimer);
+            const questions = r.data.questions || [];
+            // For explain, the output text is in the raw task output
+            this.explainText = r.data.output || (questions.length > 0 ? JSON.stringify(questions[0]) : t('learning', 'No explanation available'));
+            this.explainLoading = false;
+          } else if (r.data.status === 'failed') {
+            clearInterval(this.explainPollTimer);
+            this.explainLoading = false;
+          }
+        } catch (e) {
+          clearInterval(this.explainPollTimer);
+          this.explainLoading = false;
+        }
+      }, 1500);
+    },
     async nextQuestion() {
+      clearInterval(this.explainPollTimer);
+      this.explainTaskId = null; this.explainText = ''; this.explainLoading = false;
       if (this.currentIndex < this.dueQuestions.length - 1) { this.currentIndex++; this.answered = false; this.selectedAnswerIds = []; this.lastSelectedAnswerId = null; this.lastSelectedAnswerIds = []; this.openAnswer = ''; this.lastOpenAnswer = ''; }
       else {
         const oldStreak = this.streak.current_streak;
@@ -345,6 +416,8 @@ export default {
 .answer-feedback { margin-top: 20px; }
 .correct-answer-display { padding: 12px; background: var(--color-background-hover); border-radius: var(--border-radius); margin-bottom: 12px; color: var(--color-main-text); }
 .next-btn { margin-top: 16px; }
+.ai-explain-row { margin: 10px 0; }
+.ai-explain-box { background: color-mix(in srgb, var(--color-primary-element) 8%, transparent); border-left: 3px solid var(--color-primary-element); border-radius: var(--border-radius); padding: 10px 14px; font-size: 0.92em; color: var(--color-main-text); line-height: 1.5; }
 .review-complete { text-align: center; padding: 40px 20px; }
 .review-complete h3 { font-size: 28px; margin-bottom: 32px; color: var(--color-main-text); }
 .session-stats { display: flex; justify-content: center; gap: 32px; margin-bottom: 32px; }

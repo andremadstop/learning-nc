@@ -64,6 +64,9 @@
             <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ lastCorrectAnswerTexts.length > 0 ? lastCorrectAnswerTexts[0] : '' }}</div>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
+            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
+          </NcNoteCard>
           <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < items.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
         <div v-else class="answer-feedback">
@@ -86,6 +89,9 @@
             </template>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
+            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
+          </NcNoteCard>
           <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < items.length - 1 ? t('learning', 'Next Question →') : t('learning', 'See Results') }}</NcButton>
         </div>
       </div>

@@ -141,8 +141,23 @@
             {{ index + 1 }}
           </div>
         </div>
+        <NcButton type="error" class="end-exam-btn" @click="showEndExamModal = true">
+          {{ t('learning', 'End Exam') }}
+        </NcButton>
       </div>
     </div>
+
+    <!-- End Exam confirmation modal -->
+    <NcModal v-if="showEndExamModal" @close="showEndExamModal = false" @closing="showEndExamModal = false" size="small">
+      <div class="modal-content">
+        <h3>{{ t('learning', 'End Exam') }}</h3>
+        <p>{{ t('learning', '{answered} of {total} questions answered. End the exam now?', { answered: answeredCount, total: questions.length }) }}</p>
+        <div class="modal-actions">
+          <NcButton type="tertiary" @click="showEndExamModal = false">{{ t('learning', 'Cancel') }}</NcButton>
+          <NcButton type="error" @click="showEndExamModal = false; finishExam()">{{ t('learning', 'End Exam') }}</NcButton>
+        </div>
+      </div>
+    </NcModal>
 
     <!-- Results Screen -->
     <div v-else-if="screen === 'results'" class="results-screen">
@@ -217,6 +232,9 @@
               <span class="text-success">{{ res.correctAnswerText }}</span>
             </div>
           </template>
+          <NcNoteCard v-if="res.noteVisible && res.instructorNote" type="info">
+            <strong>{{ t('learning', 'Note:') }}</strong> {{ res.instructorNote }}
+          </NcNoteCard>
         </div>
       </div>
 
@@ -240,12 +258,14 @@ import { generateUrl } from '@nextcloud/router';
 import { showError } from '@nextcloud/dialogs';
 import { celebratePerfectSession } from '../confetti.js';
 import { countUp } from '../countUp.js';
+import NcModal from '@nextcloud/vue/dist/Components/NcModal.js';
+import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import PbqRenderer from './PbqRenderer.vue';
 
 export default {
   name: 'ExamMode',
-  components: { NcButton, NcProgressBar, NcLoadingIcon, BadgeUnlock, PbqRenderer },
+  components: { NcButton, NcProgressBar, NcLoadingIcon, NcModal, NcNoteCard, BadgeUnlock, PbqRenderer },
   props: {
     poolId: { type: Number, required: true },
     totalQuestions: { type: Number, required: true }
@@ -297,6 +317,7 @@ export default {
       openAnswerTexts: {},
       pbqAnswers: {},
       newBadges: [],
+      showEndExamModal: false,
     };
   },
   computed: {
@@ -812,6 +833,8 @@ export default {
             isMulti: rv ? rv.questionType === 'multi' : q.question_type === 'multi',
             isOpen: isOpen,
             answerDetails: answerDetails,
+            instructorNote: q.instructor_note || null,
+            noteVisible: q.note_visible || false,
           });
         }
         this.detailedResults = results;
@@ -996,12 +1019,16 @@ export default {
   width: 100%;
   background: var(--color-background-dark);
   box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-  padding: 10px 0;
+  padding: 10px 16px;
   z-index: 5;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.nav-bar-inner { display: flex; gap: 6px; padding: 0 16px; justify-content: center; flex-wrap: nowrap; }
+.nav-bar-inner { display: flex; gap: 6px; flex: 1; justify-content: center; flex-wrap: nowrap; }
+.end-exam-btn { flex-shrink: 0; }
 .nav-dot {
   width: 40px; height: 40px;
   border-radius: 50%;
@@ -1103,4 +1130,8 @@ export default {
   .xp-earned { animation: none; }
   .timer-danger .snake-timer-svg { animation: none; }
 }
+.modal-content { padding: 24px; min-width: 280px; }
+.modal-content h3 { margin: 0 0 12px 0; font-size: 1.1em; font-weight: 700; }
+.modal-content p { margin: 0 0 20px 0; color: var(--color-text-maxcontrast); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
 </style>
