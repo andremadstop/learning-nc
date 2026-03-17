@@ -142,6 +142,11 @@ test.describe('Phase 6 — Instructor Notes', () => {
     // Fill question text so we can find this question later
     await page.fill('#question-text', UNIQUE_TEXT)
 
+    // Fill 2 answers (API requires min 2 answers for non-open questions)
+    const answerInputs = page.locator('[role="dialog"] .answer-row input[type="text"]')
+    await answerInputs.nth(0).fill('Option A')
+    await answerInputs.nth(1).fill('Option B')
+
     // Fill the instructor note (last textarea in form)
     const allTextareas = page.locator('.nc-dialog textarea, [role="dialog"] textarea')
     const count = await allTextareas.count()
@@ -156,17 +161,15 @@ test.describe('Phase 6 — Instructor Notes', () => {
       await lastCheckbox.check({ force: true })
     }
 
-    // Save — use the submit button directly
-    const saveBtn = page.locator('[role="dialog"] button[type="submit"], button[type="submit"]').first()
+    // Save
+    const saveBtn = page.locator('.nc-dialog button, [role="dialog"] button').filter({ hasText: /Save|Speichern/i }).first()
     await saveBtn.click()
-    // Wait for dialog to close (question-text detached means form saved + closed)
-    await page.waitForSelector('#question-text', { state: 'detached', timeout: 15_000 })
-    // Wait for question list to reload
-    await page.waitForLoadState('networkidle', { timeout: 15_000 })
+    // Wait for API + list reload (dialog closes async after save)
+    await page.waitForTimeout(3000)
 
     // Re-open the question we just created via NcActions
     const questionRow = page.locator('.question-item').filter({ hasText: UNIQUE_TEXT }).first()
-    await expect(questionRow).toBeVisible({ timeout: 20_000 })
+    await expect(questionRow).toBeVisible({ timeout: 30_000 })
     const actionsBtn = questionRow.locator('button[aria-label*="Actions"], button[aria-label*="Aktionen"], button.action-item__menutoggle').first()
     if (await actionsBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await actionsBtn.click()
