@@ -60,6 +60,11 @@ jobs:
       - name: Disable App Store in CI
         run: docker exec ${{ env.APP_CONTAINER }} php occ config:system:set appstoreenabled --value=false --type=boolean
 
+      - name: Disable first-run wizard and notifications in CI
+        run: |
+          docker exec ${{ env.APP_CONTAINER }} php occ app:disable firstrunwizard || true
+          docker exec ${{ env.APP_CONTAINER }} php occ app:disable notifications || true
+
       - name: Install learning app into CI container
         run: |
           docker exec learning-app sh -lc 'mkdir -p /var/www/html/custom_apps/learning'
