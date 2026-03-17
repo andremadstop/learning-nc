@@ -230,6 +230,19 @@
       <button class="author-btn-add" @click="addLink">+ Link</button>
     </div>
 
+    <!-- Live Preview -->
+    <div v-if="selectedSubtype" class="author-preview-section">
+      <h4 class="author-preview-title">Vorschau</h4>
+      <div class="author-preview-wrapper">
+        <PbqRenderer
+          :question="previewQuestion"
+          :disabled="false"
+          @submit="() => {}"
+          @skip="() => {}"
+        />
+      </div>
+    </div>
+
     <!-- JSON Output -->
     <div class="author-section author-output-section">
       <h3 class="author-heading">Generiertes JSON</h3>
@@ -244,11 +257,12 @@
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
 import { DOMAIN_SCHEMAS } from '../utils/cliStateMachine.js'
 import { DEVICE_ICONS } from '../utils/networkTopologyIcons.js'
+import PbqRenderer from './PbqRenderer.vue'
 
 export default {
   name: 'PbqAuthorTool',
 
-  components: { NcButton },
+  components: { NcButton, PbqRenderer },
 
   data() {
     return {
@@ -371,6 +385,13 @@ export default {
         pbq_subtype: this.selectedSubtype,
         pbq_config: this.generatedConfig,
       }, null, 2)
+    },
+
+    previewQuestion() {
+      return {
+        pbq_subtype: this.selectedSubtype,
+        pbq_config: this.generatedConfig,
+      }
     },
   },
 
@@ -667,4 +688,8 @@ export default {
   background: var(--color-main-background);
   resize: vertical;
 }
+
+.author-preview-section { margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 16px; }
+.author-preview-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--color-main-text); }
+.author-preview-wrapper { border: 1px solid var(--color-border); border-radius: var(--border-radius-large); padding: 16px; overflow-y: auto; max-height: 450px; }
 </style>
