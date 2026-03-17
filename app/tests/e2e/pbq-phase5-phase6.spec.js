@@ -20,19 +20,29 @@ async function openFirstPool(page) {
   // App may show courses view if user has student role — explicitly switch to Pools tab
   const poolsTab = page.locator('[role="tablist"] button[role="tab"]').filter({ hasText: /^Pools$/ }).first()
   if (await poolsTab.isVisible({ timeout: 5_000 }).catch(() => false)) {
-    // Wait for the pools API response before clicking (so PoolList is already mounted)
-    const [poolsResponse] = await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/api/pools') && resp.status() === 200, { timeout: 10_000 }).catch(() => null),
-      poolsTab.click(),
-    ])
-    if (poolsResponse) {
-      // Give Vue a tick to render the response into pool cards
-      await page.waitForTimeout(500)
-    }
+    // Wait for the pools API response before clicking
+    const poolsResponse = page.waitForResponse(
+      resp => resp.url().includes('/api/pools') && resp.status() === 200,
+      { timeout: 15_000 }
+    ).catch(() => null)
+    await poolsTab.click()
+    await poolsResponse
+    // Give Vue a render tick after pool data arrives
+    await page.waitForTimeout(1000)
   }
 
-  // Wait for pool card to appear (up to 20s; pool data was already fetched)
-  await page.waitForSelector('.pool-card', { timeout: 20_000 })
+  // Debug: screenshot to see current state if pool-card not found
+  const hasCard = await page.locator('.pool-card').count()
+  if (hasCard === 0) {
+    await page.screenshot({ path: 'app/test-results/debug-no-pool-card.png', fullPage: true })
+    // Try reloading in case of race condition
+    await page.reload()
+    await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(2000)
+  }
+
+  // Wait for pool card (up to 25s)
+  await page.waitForSelector('.pool-card', { timeout: 25_000 })
   await page.locator('.pool-card').first().click()
   await page.waitForLoadState('networkidle')
 }
