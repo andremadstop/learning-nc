@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: completed
-stopped_at: Completed 05-pbq-author-tool 05-02-PLAN.md
-last_updated: "2026-03-17T08:01:26.898Z"
+stopped_at: Completed 06-instructor-notes 06-01-PLAN.md
+last_updated: "2026-03-17T08:37:54.079Z"
 last_activity: "2026-03-17 — Phase 05 Plan 02 executed: PbqRenderer live preview + QuestionForm PBQ integration, browser-verified"
 progress:
   total_phases: 6
   completed_phases: 5
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 10
+  completed_plans: 9
   percent: 100
 ---
 
@@ -47,6 +47,7 @@ Progress: [██████████] 100%
 | Phase 04-multi-panel-layout P01 | 10min | 3 tasks | 3 files |
 | Phase 05-pbq-author-tool P01 | 8min | 2 tasks | 2 files |
 | Phase 05-pbq-author-tool P02 | 6min | 3 tasks | 2 files |
+| Phase 06-instructor-notes P01 | 10min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,9 @@ Progress: [██████████] 100%
 - [Phase 05-pbq-author-tool]: PbqRenderer @submit/@skip wired to empty arrow functions — prevents Vue Unhandled event warnings in live preview
 - [Phase 05-pbq-author-tool]: Clipboard-as-bridge: no direct component binding between PbqAuthorTool JSON and QuestionForm textarea — instructor copies JSON and pastes manually
 - [Phase 05-pbq-author-tool]: showAuthorTool boolean flag in QuestionForm data() toggles NcDialog v-if for PbqAuthorTool
+- [Phase 06-instructor-notes]: instructor_note NOT stripped during exam (unlike explanation) — frontend-gated via note_visible boolean only
+- [Phase 06-instructor-notes]: noteVisible always set without null guard — ensures DB never stores NULL, clean false default
+- [Phase 06-instructor-notes]: appinfo/info.xml must be present in container to trigger NC migrations via occ app:enable
 
 ### Pending Todos
 
@@ -90,6 +94,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T07:47:43.422Z
-Stopped at: Completed 05-pbq-author-tool 05-02-PLAN.md
+Last session: 2026-03-17T08:37:54.061Z
+Stopped at: Completed 06-instructor-notes 06-01-PLAN.md
 Resume file: None
