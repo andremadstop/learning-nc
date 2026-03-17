@@ -151,18 +151,42 @@ class CourseService {
         $enrolled = [];
         $ownIds = array_map(fn($c) => $c->getId(), $own);
 
+        $enrolledCourses = [];
         foreach ($memberEntries as $member) {
             if (!in_array($member->getCourseId(), $ownIds)) {
                 try {
                     $course = $this->courseMapper->findById($member->getCourseId());
                     $courseData = $course->jsonSerialize();
                     $courseData['member_role'] = $member->getRole();
-                    $enrolled[] = $courseData;
+                    $enrolledCourses[] = $courseData;
                 } catch (DoesNotExistException $e) {
                     // orphaned membership, skip
                 }
             }
         }
+
+        // Batch-load pool counts for enrolled courses
+        if (!empty($enrolledCourses)) {
+            $enrolledIds = array_column($enrolledCourses, 'id');
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('course_id', $qb->createFunction('COUNT(*) as cnt'))
+                ->from('learning_course_pools')
+                ->where($qb->expr()->in('course_id', $qb->createNamedParameter($enrolledIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->groupBy('course_id');
+            $result = $qb->executeQuery();
+            $enrolledPoolCounts = [];
+            while ($row = $result->fetch()) {
+                $enrolledPoolCounts[(int)$row['course_id']] = (int)$row['cnt'];
+            }
+            $result->closeCursor();
+
+            foreach ($enrolledCourses as &$courseData) {
+                $courseData['pool_count'] = $enrolledPoolCounts[$courseData['id']] ?? 0;
+            }
+            unset($courseData);
+        }
+
+        $enrolled = $enrolledCourses;
 
         // FIX-LO-3: Batch-load pool counts and member counts instead of N+1
         $ownData = [];
@@ -741,6 +765,8 @@ class CourseService {
         $students = [];
         foreach ($studentIds as $sid) {
             $poolProgress = [];
+            $totalQuestions = 0;
+            $totalMastered = 0;
             foreach ($poolIds as $pid) {
                 $totalQ = $questionCounts[$pid] ?? 0;
                 $mastered = $masteryData[$sid][$pid] ?? 0;
@@ -748,6 +774,9 @@ class CourseService {
                 $totalAnswered = $sess ? $sess['total_q'] : 0;
                 $totalCorrect = $sess ? $sess['correct'] : 0;
                 $accuracy = $totalAnswered > 0 ? round($totalCorrect / $totalAnswered * 100) : 0;
+
+                $totalQuestions += $totalQ;
+                $totalMastered += $mastered;
 
                 $poolProgress[] = [
                     'pool_id' => $pid,
@@ -1273,8 +1302,8 @@ class CourseService {
     public function getStudentDetail(int $courseId, string $studentId, string $userId): array {
         $course = $this->courseMapper->findById($courseId);
 
-        // Access: only instructors of this course
-        if (!$this->isInstructorOfCourse($course, $userId)) {
+        // Access: instructors of this course, or the student viewing their own detail
+        if (!$this->isInstructorOfCourse($course, $userId) && $userId !== $studentId) {
             throw new ForbiddenException('No permission');
         }
 

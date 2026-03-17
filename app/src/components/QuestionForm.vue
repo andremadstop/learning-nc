@@ -2,8 +2,8 @@
   <NcDialog :name="question ? t('learning', 'Edit Question') : t('learning', 'Create Question')" @closing="$emit('close')" size="normal">
     <form @submit.prevent="save">
       <div class="form-group">
-        <label for="question-text">{{ t('learning', 'Question *') }}</label>
-        <textarea id="question-text" v-model="form.text" required rows="3" :placeholder="t('learning', 'Enter your question...')" class="nc-input"></textarea>
+        <label for="question-text">{{ t('learning', 'Question') }} <span aria-hidden="true">*</span></label>
+        <textarea id="question-text" v-model="form.text" aria-required="true" required rows="3" :placeholder="t('learning', 'Enter your question...')" class="nc-input"></textarea>
       </div>
 
       <!-- Image Upload -->
@@ -42,13 +42,13 @@
 
       <!-- Open-question: single model answer -->
       <div v-if="form.questionType === 'open'" class="form-group">
-        <label for="model-answer">{{ t('learning', 'Model answer') }} *</label>
-        <textarea id="model-answer" v-model="modelAnswer" required rows="2" :placeholder="t('learning', 'The expected correct answer...')" class="nc-input"></textarea>
+        <label for="model-answer">{{ t('learning', 'Model answer') }} <span aria-hidden="true">*</span></label>
+        <textarea id="model-answer" v-model="modelAnswer" aria-required="true" required rows="2" :placeholder="t('learning', 'The expected correct answer...')" class="nc-input"></textarea>
       </div>
 
       <!-- MC answers -->
       <div v-else class="form-group">
-        <label>{{ form.questionType === 'multi' ? t('learning', 'Answers (select all correct) *') : t('learning', 'Answers (select the correct one) *') }}</label>
+        <label>{{ form.questionType === 'multi' ? t('learning', 'Answers (select all correct)') : t('learning', 'Answers (select the correct one)') }} <span aria-hidden="true">*</span></label>
         <div class="answers-form">
           <div v-for="(answer, index) in form.answers" :key="index" class="answer-row">
             <NcCheckboxRadioSwitch
@@ -64,7 +64,7 @@
               @update:checked="toggleCorrectIndex(index)"
               type="checkbox"
             />
-            <input type="text" v-model="answer.text" :placeholder="t('learning', 'Answer {n}', { n: index + 1 })" required class="nc-input" />
+            <input type="text" v-model="answer.text" :placeholder="t('learning', 'Answer {n}', { n: index + 1 })" aria-required="true" required class="nc-input" />
             <button v-if="form.answers.length > 2" type="button" class="remove-answer-btn" @click="removeAnswer(index)" :aria-label="t('learning', 'Remove answer')">&#215;</button>
           </div>
         </div>

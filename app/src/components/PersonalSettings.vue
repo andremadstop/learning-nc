@@ -41,6 +41,38 @@
           {{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}
         </NcButton>
       </div>
+
+      <hr class="section-divider" />
+
+      <h3>{{ t('learning', 'Calendar Sync') }}</h3>
+      <p class="section-desc">{{ t('learning', 'Subscribe to your due cards in any calendar app (Google Calendar, Thunderbird, iOS, etc.).') }}</p>
+
+      <div v-if="calTokenLoading" class="loading">
+        <NcLoadingIcon :size="20" />
+        <span>{{ t('learning', 'Loading...') }}</span>
+      </div>
+
+      <template v-else>
+        <div class="ics-url-row">
+          <input
+            ref="icsUrlInput"
+            class="nc-input ics-url-input"
+            type="text"
+            readonly
+            :value="icsUrl"
+            @click="copyIcsUrl" />
+          <NcButton type="secondary" :disabled="copyingUrl" @click="copyIcsUrl">
+            {{ copyingUrl ? t('learning', 'Copied!') : t('learning', 'Copy URL') }}
+          </NcButton>
+        </div>
+        <NcNoteCard v-if="icsUrlCopied" type="success">{{ t('learning', 'URL copied to clipboard') }}</NcNoteCard>
+        <div class="regenerate-row">
+          <NcButton type="tertiary" :disabled="regenerating" @click="regenerateToken">
+            {{ regenerating ? t('learning', 'Regenerating...') : t('learning', 'Regenerate token') }}
+          </NcButton>
+          <span class="regenerate-hint">{{ t('learning', 'This will invalidate the current URL.') }}</span>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -67,12 +99,54 @@ export default {
         uiLanguage: '',
         notificationsEnabled: true,
       },
+      // Calendar token
+      calTokenLoading: true,
+      icsUrl: '',
+      copyingUrl: false,
+      icsUrlCopied: false,
+      regenerating: false,
     }
   },
   mounted() {
     this.load()
+    this.loadCalendarToken()
   },
   methods: {
+    async loadCalendarToken() {
+      this.calTokenLoading = true
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/v1/user/calendar-token'))
+        this.icsUrl = response.data.url || ''
+      } catch (e) {
+        // non-critical, ignore
+      } finally {
+        this.calTokenLoading = false
+      }
+    },
+    async copyIcsUrl() {
+      if (!this.icsUrl) return
+      try {
+        await navigator.clipboard.writeText(this.icsUrl)
+        this.copyingUrl = true
+        this.icsUrlCopied = true
+        setTimeout(() => { this.copyingUrl = false; this.icsUrlCopied = false }, 2000)
+      } catch (e) {
+        // Fallback: select the input
+        this.$refs.icsUrlInput?.select()
+      }
+    },
+    async regenerateToken() {
+      this.regenerating = true
+      try {
+        const response = await axios.post(generateUrl('/apps/learning/api/v1/user/calendar-token/regenerate'))
+        this.icsUrl = response.data.url || ''
+        this.icsUrlCopied = false
+      } catch (e) {
+        // non-critical
+      } finally {
+        this.regenerating = false
+      }
+    },
     async load() {
       this.loading = true
       this.error = ''
@@ -144,5 +218,42 @@ export default {
 
 .actions {
   padding-top: 4px;
+}
+
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 20px 0 16px;
+}
+
+.section-desc {
+  color: var(--color-text-maxcontrast);
+  margin: 0 0 12px;
+  font-size: 0.9em;
+}
+
+.ics-url-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ics-url-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+.regenerate-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.regenerate-hint {
+  font-size: 0.85em;
+  color: var(--color-text-maxcontrast);
 }
 </style>

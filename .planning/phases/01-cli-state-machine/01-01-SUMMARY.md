@@ -111,3 +111,11 @@ None - no external service configuration required.
 ---
 *Phase: 01-cli-state-machine*
 *Completed: 2026-03-16*
+
+## Self-Check: PASSED
+
+- FOUND: app/src/utils/cliStateMachine.js
+- FOUND: .planning/phases/01-cli-state-machine/01-01-SUMMARY.md
+- FOUND commit: ac38571 (feat: DOMAIN_SCHEMAS + getPrompt + evaluateCommand)
+- FOUND commit: dc0d290 (fix: interface name case preservation)
+- FOUND commit: e079380 (docs: SUMMARY + STATE + ROADMAP + REQUIREMENTS)

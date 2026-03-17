@@ -255,6 +255,7 @@ class UserStateController extends Controller {
         $hasText = $answer_text !== null && trim($answer_text) !== '';
         $hasIds = !empty($answer_ids);
 
+        $correctIds = [];
         if ($challengeQType === 'open') {
             if (!$hasText) {
                 return new DataResponse(['error' => 'Open questions require answer_text'], 400);

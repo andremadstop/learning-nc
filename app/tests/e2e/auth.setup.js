@@ -12,14 +12,21 @@ setup('authenticate as e2e user', async ({ page }) => {
   fs.mkdirSync(path.dirname(stateFile), { recursive: true })
 
   await page.goto(`${origin}/login`)
-  await page.locator('input[name="user"]').fill(user)
-  await page.locator('input[name="password"]').fill(password)
-  await page.locator('input[type="submit"], button[type="submit"]').first().click()
 
-  await page.waitForURL(/\/apps\/(dashboard|files|learning)/, { timeout: 60_000 })
+  // NC30 login is a Vue SPA — wait for fields to render
+  await page.waitForSelector('input[name="user"], #user, input[autocomplete="username"]', { timeout: 30_000 })
+
+  await page.locator('input[name="user"], #user, input[autocomplete="username"]').first().fill(user)
+  await page.locator('input[type="password"]').first().fill(password)
+
+  // Submit — NC30 "Log in" button
+  await page.getByRole('button', { name: /log in|anmelden/i }).click()
+
+  // Wait for URL to leave /login (any redirect target is fine)
+  await page.waitForURL(url => !String(url).includes('/login'), { timeout: 60_000 })
+
   await page.goto(`${origin}/apps/learning/`)
-  await page.waitForURL(/\/apps\/learning\/?/, { timeout: 60_000 })
-  await page.waitForSelector('#app-content, #app, .app-learning', { timeout: 30_000 })
+  await page.waitForSelector('#app-content, #app, [id="app-learning"], .app-learning', { timeout: 30_000 })
 
   await page.context().storageState({ path: stateFile })
 })

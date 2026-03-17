@@ -85,6 +85,78 @@ class AIController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function explain(int $questionId, ?int $selectedAnswerId = null, ?array $selectedAnswerIds = null, ?string $answerText = null): JSONResponse {
+        if ($this->userId === null) {
+            return new JSONResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        try {
+            $question = $this->questionService->find($questionId, $this->userId);
+        } catch (\Exception $e) {
+            return new JSONResponse(['error' => 'Question not found or no access'], Http::STATUS_NOT_FOUND);
+        }
+
+        // Block explain during active exam on same pool (prevents oracle bypass)
+        $poolId = (int)($question['pool_id'] ?? 0);
+        if ($poolId > 0) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id')
+               ->from('learning_sessions')
+               ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+               ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($this->userId)))
+               ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+               ->andWhere($qb->expr()->isNull('completed_at'));
+            $examResult = $qb->executeQuery();
+            $hasActiveExam = (bool)$examResult->fetch();
+            $examResult->closeCursor();
+            if ($hasActiveExam) {
+                return new JSONResponse(['error' => 'Not available during active exam'], Http::STATUS_FORBIDDEN);
+            }
+        }
+
+        // Build explain prompt
+        $qText = $question['text'] ?? '';
+        $answers = $question['answers'] ?? [];
+        $explanation = $question['explanation'] ?? '';
+
+        $correctAnswers = array_filter($answers, fn($a) => !empty($a['is_correct']));
+        $correctTexts = array_map(fn($a) => $a['text'], array_values($correctAnswers));
+
+        // What the user selected
+        $selectedText = '';
+        if ($answerText !== null && $answerText !== '') {
+            $selectedText = $answerText;
+        } elseif ($selectedAnswerIds !== null) {
+            $selected = array_filter($answers, fn($a) => in_array($a['id'] ?? 0, $selectedAnswerIds, true));
+            $selectedText = implode(', ', array_map(fn($a) => $a['text'], array_values($selected)));
+        } elseif ($selectedAnswerId !== null) {
+            $selected = array_filter($answers, fn($a) => ($a['id'] ?? 0) === $selectedAnswerId);
+            $selectedText = implode('', array_map(fn($a) => $a['text'], array_values($selected)));
+        }
+
+        $prompt  = "Question: {$qText}\n";
+        $prompt .= "Correct answer: " . implode(', ', $correctTexts) . "\n";
+        if ($selectedText !== '') {
+            $prompt .= "User's answer: {$selectedText}\n";
+        }
+        if ($explanation !== '') {
+            $prompt .= "Hint: {$explanation}\n";
+        }
+        $prompt .= "\nPlease explain in 2-3 sentences why the correct answer is right. If the user chose a wrong answer, briefly explain why theirs is incorrect. Be concise and educational.";
+
+        try {
+            $taskId = $this->aiService->schedulePrompt($prompt, $this->userId);
+            return new JSONResponse(['taskId' => $taskId]);
+        } catch (\Exception $e) {
+            $this->logger->error('AI explain error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new JSONResponse(['error' => $e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
     #[UserRateLimit(limit: 10, period: 60)]
     public function import(int $taskId, int $poolId, array $questions): JSONResponse {
         // Verify edit access (403 on failure)

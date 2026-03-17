@@ -70,6 +70,9 @@ return [
         ['name' => 'export#exportCsv', 'url' => '/api/pools/{poolId}/export/csv', 'verb' => 'GET'],
         ['name' => 'export#exportJson', 'url' => '/api/pools/{poolId}/export/json', 'verb' => 'GET'],
         ['name' => 'export#exportIcs', 'url' => '/api/leitner/schedule.ics', 'verb' => 'GET'],
+        ['name' => 'export#getCalendarToken', 'url' => '/api/v1/user/calendar-token', 'verb' => 'GET'],
+        ['name' => 'export#regenerateCalendarToken', 'url' => '/api/v1/user/calendar-token/regenerate', 'verb' => 'POST'],
+        ['name' => 'export#exportIcsPublic', 'url' => '/api/v1/calendar/{token}.ics', 'verb' => 'GET'],
 
         // User State (consolidated endpoint)
         ['name' => 'user_state#state', 'url' => '/api/v1/user/state', 'verb' => 'GET'],
@@ -91,6 +94,7 @@ return [
         ['name' => 'ai#generate', 'url' => '/api/ai/generate', 'verb' => 'POST'],
         ['name' => 'ai#status', 'url' => '/api/ai/status/{taskId}', 'verb' => 'GET'],
         ['name' => 'ai#import', 'url' => '/api/ai/import/{taskId}', 'verb' => 'POST'],
+        ['name' => 'ai#explain', 'url' => '/api/ai/explain', 'verb' => 'POST'],
 
         // Course Management
         ['name' => 'course#role', 'url' => '/api/role', 'verb' => 'GET'],
@@ -110,6 +114,7 @@ return [
         ['name' => 'course#myProgress', 'url' => '/api/courses/{courseId}/my-progress', 'verb' => 'GET'],
         ['name' => 'course#leaderboard', 'url' => '/api/courses/{courseId}/leaderboard', 'verb' => 'GET'],
         ['name' => 'course#atRisk', 'url' => '/api/courses/{courseId}/at-risk', 'verb' => 'GET'],
+        ['name' => 'course#exportAtRiskCsv', 'url' => '/api/courses/{courseId}/at-risk/export/csv', 'verb' => 'GET'],
         ['name' => 'course#studentDetail', 'url' => '/api/courses/{courseId}/students/{studentId}', 'verb' => 'GET'],
         ['name' => 'course#dashboard', 'url' => '/api/instructor/dashboard', 'verb' => 'GET'],
     ]

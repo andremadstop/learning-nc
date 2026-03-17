@@ -51,6 +51,9 @@
       </div>
       <p v-if="resumedFromServer" class="resume-note">{{ t('learning', 'Active exam resumed from server state.') }}</p>
       <p v-if="lockDenied" class="lock-note">{{ t('learning', 'This exam is active in another tab. This tab is read-only.') }}</p>
+      <NcNoteCard type="info" class="exam-mode-banner">
+        {{ t('learning', 'Exam mode active — no feedback until the end') }}
+      </NcNoteCard>
       <p class="hotkey-note">{{ t('learning', 'Hotkeys: 1-8 select answer, Enter confirms/next') }}</p>
 
       <NcProgressBar :value="progressPercentage" />
@@ -931,6 +934,7 @@ export default {
 .exam-meta-line { text-align: center; color: var(--color-text-maxcontrast); font-size: 13px; margin: -4px 0 12px; }
 .resume-note { text-align: center; color: var(--color-primary-element); font-size: 13px; margin: -4px 0 12px; }
 .lock-note { text-align: center; color: var(--color-warning); font-size: 13px; margin: -4px 0 12px; font-weight: 600; }
+.exam-mode-banner { margin: 0 0 12px; }
 .hotkey-note {
   text-align: center;
   color: var(--color-text-maxcontrast);

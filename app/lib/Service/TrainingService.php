@@ -10,6 +10,7 @@ use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\ICacheFactory;
 use OCP\IConfig;
 use OCP\IDBConnection;
@@ -303,12 +304,32 @@ class TrainingService {
         if (empty($questions)) {
             return $questions;
         }
+
+        // PBQs are always included — separate them first
+        $pbqs = array_values(array_filter($questions, fn($q) => $q->getQuestionType() === 'pbq'));
+        $mcqs = array_values(array_filter($questions, fn($q) => $q->getQuestionType() !== 'pbq'));
+
+        $pbqCount = count($pbqs);
+        $mcqTotal = count($mcqs);
+
         if ($limit === null || $limit <= 0 || $limit >= count($questions)) {
             $limit = count($questions);
         }
 
+        // After reserving slots for all PBQs, fill remaining with blueprint MCQs
+        $mcqLimit = max(0, $limit - $pbqCount);
+
+        if ($mcqLimit === 0 || $mcqTotal === 0) {
+            return $pbqs;
+        }
+
+        if ($mcqLimit >= $mcqTotal) {
+            shuffle($mcqs);
+            return array_merge($pbqs, $mcqs);
+        }
+
         $buckets = ['easy' => [], 'medium' => [], 'hard' => []];
-        foreach ($questions as $q) {
+        foreach ($mcqs as $q) {
             $bucket = $this->difficultyBucket($q->getDifficulty());
             $buckets[$bucket][] = $q;
         }
@@ -318,9 +339,9 @@ class TrainingService {
         shuffle($buckets['hard']);
 
         $targets = [
-            'easy' => (int)floor($limit * 0.3),
-            'medium' => (int)floor($limit * 0.4),
-            'hard' => (int)floor($limit * 0.3),
+            'easy'   => (int)floor($mcqLimit * 0.3),
+            'medium' => (int)floor($mcqLimit * 0.4),
+            'hard'   => (int)floor($mcqLimit * 0.3),
         ];
         $selected = [];
         foreach (['easy', 'medium', 'hard'] as $k) {
@@ -331,15 +352,16 @@ class TrainingService {
             }
         }
 
-        if (count($selected) < $limit) {
+        if (count($selected) < $mcqLimit) {
             $remaining = array_merge($buckets['easy'], $buckets['medium'], $buckets['hard']);
             shuffle($remaining);
-            $need = $limit - count($selected);
+            $need = $mcqLimit - count($selected);
             $selected = array_merge($selected, array_slice($remaining, 0, $need));
         }
 
         shuffle($selected);
-        return $selected;
+        // PBQs prepended — ExamMode frontend also sorts them first, so ordering is consistent
+        return array_merge($pbqs, $selected);
     }
 
     private function buildSessionStartPayload(array $session, bool $resumed = false): array {
@@ -593,7 +615,7 @@ class TrainingService {
         return $row ? ($row['question_type'] ?? 'single') : 'single';
     }
 
-    public function submitAnswer(int $sessionId, int $questionId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null): array {
+    public function submitAnswer(int $sessionId, int $questionId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
         $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'submit_answer');
         $session = $timeoutInfo['session'];
@@ -610,6 +632,11 @@ class TrainingService {
         // SECURITY: Block individual answer submission during exams (prevents answer oracle)
         if (($session['mode'] ?? 'training') === 'exam') {
             throw new \Exception('Individual answers not allowed during exam');
+        }
+
+        $sessionQuestionIds = $this->getSessionQuestionIds($session);
+        if (!empty($sessionQuestionIds) && !in_array((int)$questionId, $sessionQuestionIds, true)) {
+            return ['error' => 'Question not part of this session'];
         }
 
         // SECURITY: Defense-in-depth — suppress correct answers if user has active exam on same pool
@@ -675,11 +702,7 @@ class TrainingService {
             $qb->execute();
 
             if ($isCorrect) {
-                $qb = $this->db->getQueryBuilder();
-                $qb->update('learning_sessions')
-                   ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
-                   ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
-                $qb->execute();
+                $this->incrementSessionCorrectAnswers($sessionId);
             }
             $xpEarned = ($isCorrect && !$suppressAnswers) ? $this->awardPerQuestionXp($userId, $mode) : 0;
 
@@ -704,6 +727,65 @@ class TrainingService {
                 'correct_answer_text' => $modelText,
                 'user_answer_text' => $answerText,
                 'explanation' => $qRow ? $qRow['explanation'] : null,
+                'xp_earned' => $xpEarned,
+            ];
+        }
+
+        // PBQ path
+        if ($qType === 'pbq') {
+            $pbqAnswers = $pbqAnswers ?? [];
+            $qb2 = $this->db->getQueryBuilder();
+            $qb2->select('pbq_subtype', 'pbq_config', 'explanation')
+                ->from('learning_questions')
+                ->where($qb2->expr()->eq('id', $qb2->createNamedParameter($questionId, \PDO::PARAM_INT)));
+            $qRes2 = $qb2->execute();
+            $qRow2 = $qRes2->fetch();
+            $qRes2->closeCursor();
+
+            [$isCorrect, $points, $maxPoints] = $this->scorePbqAnswer(
+                $qRow2['pbq_subtype'] ?? '',
+                json_decode($qRow2['pbq_config'] ?? '{}', true) ?: [],
+                $pbqAnswers
+            );
+            $pbqIsCorrect = $maxPoints > 0 && ($points / $maxPoints) >= 0.5;
+
+            $pbqMeta = json_encode([
+                'pbq' => true,
+                'answers' => $pbqAnswers,
+                'points' => $points,
+                'max_points' => $maxPoints,
+            ]);
+
+            $qb = $this->db->getQueryBuilder();
+            $qb->insert('learning_user_answers')->values([
+                'session_id' => $qb->createNamedParameter($sessionId),
+                'question_id' => $qb->createNamedParameter($questionId),
+                'answer_id' => $qb->createNamedParameter(null, \PDO::PARAM_NULL),
+                'answer_ids' => $qb->createNamedParameter($pbqMeta),
+                'is_correct' => $qb->createNamedParameter($pbqIsCorrect, \PDO::PARAM_BOOL),
+                'answered_at' => $qb->createNamedParameter(time()),
+            ]);
+            $qb->execute();
+
+            if ($suppressAnswers) {
+                return [
+                    'recorded' => true,
+                    'suppressed' => true,
+                    'pbq_points' => null,
+                    'pbq_max_points' => null,
+                ];
+            }
+
+            if ($pbqIsCorrect) {
+                $this->incrementSessionCorrectAnswers($sessionId);
+            }
+            $xpEarned = $pbqIsCorrect ? $this->awardPerQuestionXp($userId, $mode) : 0;
+
+            return [
+                'is_correct' => $pbqIsCorrect,
+                'pbq_points' => $points,
+                'pbq_max_points' => $maxPoints,
+                'explanation' => $qRow2['explanation'] ?? null,
                 'xp_earned' => $xpEarned,
             ];
         }
@@ -747,11 +829,7 @@ class TrainingService {
             $qb->execute();
 
             if ($isCorrect) {
-                $qb = $this->db->getQueryBuilder();
-                $qb->update('learning_sessions')
-                   ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
-                   ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
-                $qb->execute();
+                $this->incrementSessionCorrectAnswers($sessionId);
             }
             $xpEarned = ($isCorrect && !$suppressAnswers) ? $this->awardPerQuestionXp($userId, $mode) : 0;
 
@@ -802,11 +880,7 @@ class TrainingService {
         $qb->execute();
 
         if ($isCorrect) {
-            $qb = $this->db->getQueryBuilder();
-            $qb->update('learning_sessions')
-               ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
-               ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
-            $qb->execute();
+            $this->incrementSessionCorrectAnswers($sessionId);
         }
         $xpEarned = ($isCorrect && !$suppressAnswers) ? $this->awardPerQuestionXp($userId, $mode) : 0;
 
@@ -848,6 +922,7 @@ class TrainingService {
 
         $poolId = (int)$session['pool_id'];
         $isExam = (($session['mode'] ?? 'training') === 'exam');
+        $sessionQuestionIds = $this->getSessionQuestionIds($session);
 
         // SECURITY: Also suppress answers for training sessions if user has active exam on same pool
         $suppressAnswers = $isExam || $this->hasActiveExamOnPool($poolId, $userId);
@@ -881,6 +956,11 @@ class TrainingService {
             $entryAnswerIds = $entry['answerIds'] ?? null;
             $entryAnswerText = $entry['answerText'] ?? null;
             $answerId = isset($entry['answerId']) ? (int)$entry['answerId'] : null;
+
+            if (!empty($sessionQuestionIds) && !in_array($questionId, $sessionQuestionIds, true)) {
+                $results[] = ['questionId' => $questionId, 'error' => 'Question not part of this session'];
+                continue;
+            }
 
             // Validate question belongs to this session's pool
             $qb = $this->db->getQueryBuilder();
@@ -942,11 +1022,7 @@ class TrainingService {
                 $qb->execute();
 
                 if ($isCorrect) {
-                    $qb = $this->db->getQueryBuilder();
-                    $qb->update('learning_sessions')
-                       ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
-                       ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
-                    $qb->execute();
+                    $this->incrementSessionCorrectAnswers($sessionId);
                     $batchXpEarned += $xpPerCorrect;
                 }
 
@@ -980,7 +1056,9 @@ class TrainingService {
                 $qb2->select('pbq_subtype', 'pbq_config')
                     ->from('learning_questions')
                     ->where($qb2->expr()->eq('id', $qb2->createNamedParameter($questionId, \PDO::PARAM_INT)));
-                $qRow = $qb2->executeQuery()->fetchAssociative();
+                $qRes2 = $qb2->executeQuery();
+                $qRow = $qRes2->fetch();
+                $qRes2->closeCursor();
 
                 [$isCorrect, $points, $maxPoints] = $this->scorePbqAnswer(
                     $qRow['pbq_subtype'] ?? '',
@@ -1007,20 +1085,25 @@ class TrainingService {
                 ]);
                 $qb->execute();
 
-                if ($pbqIsCorrect) {
-                    $qb = $this->db->getQueryBuilder();
-                    $qb->update('learning_sessions')
-                       ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
-                       ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
-                    $qb->execute();
+                if ($pbqIsCorrect && !$suppressAnswers) {
+                    $this->incrementSessionCorrectAnswers($sessionId);
                     $batchXpEarned += $xpPerCorrect;
                 }
 
-                $results[] = [
-                    'questionId' => $questionId,
-                    'recorded' => true,
-                    'suppressed' => true,
-                ];
+                if ($suppressAnswers) {
+                    $results[] = [
+                        'questionId' => $questionId,
+                        'recorded' => true,
+                        'suppressed' => true,
+                    ];
+                } else {
+                    $results[] = [
+                        'questionId' => $questionId,
+                        'is_correct' => $pbqIsCorrect,
+                        'pbq_points' => $points,
+                        'pbq_max_points' => $maxPoints,
+                    ];
+                }
                 continue;
             }
 
@@ -1067,11 +1150,7 @@ class TrainingService {
                 $qb->execute();
 
                 if ($isCorrect) {
-                    $qb = $this->db->getQueryBuilder();
-                    $qb->update('learning_sessions')
-                       ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
-                       ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
-                    $qb->execute();
+                    $this->incrementSessionCorrectAnswers($sessionId);
                     $batchXpEarned += $xpPerCorrect;
                 }
 
@@ -1131,11 +1210,7 @@ class TrainingService {
             $qb->execute();
 
             if ($isCorrect) {
-                $qb = $this->db->getQueryBuilder();
-                $qb->update('learning_sessions')
-                   ->set('correct_answers', $qb->createFunction('correct_answers + 1'))
-                   ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)));
-                $qb->execute();
+                $this->incrementSessionCorrectAnswers($sessionId);
                 $batchXpEarned += $xpPerCorrect;
             }
 
@@ -1206,12 +1281,15 @@ class TrainingService {
                     $maxPoints += ($ev['points'] ?? 1);
                     $history = $userAnswers[$ev['terminal']] ?? [];
                     $allCmds = is_array($history) ? implode("\n", $history) : (string)$history;
-                    try {
-                        if (@preg_match('/' . addcslashes($ev['required_pattern'], '/') . '/i', $allCmds)) {
-                            $points += ($ev['points'] ?? 1);
+                    $pattern = $ev['required_pattern'] ?? '';
+                    if (strlen($pattern) > 0 && strlen($pattern) <= 200) {
+                        try {
+                            if (@preg_match('/' . addcslashes($pattern, '/') . '/i', $allCmds) === 1) {
+                                $points += ($ev['points'] ?? 1);
+                            }
+                        } catch (\Throwable $e) {
+                            // invalid pattern, skip
                         }
-                    } catch (\Throwable $e) {
-                        // invalid pattern, skip
                     }
                 }
                 break;
@@ -1273,12 +1351,18 @@ class TrainingService {
             return $response;
         }
 
+        $now = time();
         $qb = $this->db->getQueryBuilder();
-        $qb->update('learning_sessions')
-           ->set('completed_at', $qb->createNamedParameter(time()))
-           ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)))
-           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $qb->execute();
+        $affected = $qb->update('learning_sessions')
+            ->set('completed_at', $qb->createNamedParameter($now))
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->isNull('completed_at'))
+            ->executeStatement();
+
+        if ($affected === 0) {
+            return $this->getExistingCompletionResult($sessionId, $userId);
+        }
 
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
@@ -1362,6 +1446,32 @@ class TrainingService {
             'xp_earned' => $sessionXp,
             'attempt_no' => isset($session['attempt_no']) ? (int)$session['attempt_no'] : null,
         ]);
+
+        return $response;
+    }
+
+    private function getExistingCompletionResult(int $sessionId, string $userId): array {
+        $session = $this->verifySessionOwnership($sessionId, $userId);
+        $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'complete_existing');
+        $session = $timeoutInfo['session'];
+        $deadlineAt = $this->getExamDeadlineAt($session);
+
+        $response = [
+            'session_id' => (int)$session['id'],
+            'total_questions' => (int)$session['total_questions'],
+            'correct_answers' => (int)$session['correct_answers'],
+            'completed_at' => $session['completed_at'] !== null ? (int)$session['completed_at'] : null,
+            'score_percentage' => (int)$session['total_questions'] > 0
+                ? round((int)$session['correct_answers'] / (int)$session['total_questions'] * 100)
+                : 0,
+            'timed_out' => $timeoutInfo['timed_out'],
+            'exam_deadline_at' => $deadlineAt,
+            'attempt_no' => isset($session['attempt_no']) ? (int)$session['attempt_no'] : null,
+        ];
+
+        if (($session['mode'] ?? 'training') === 'exam') {
+            $response['review'] = $this->getSessionReview($sessionId);
+        }
 
         return $response;
     }
@@ -1481,5 +1591,18 @@ class TrainingService {
         }
 
         return $review;
+    }
+
+    /**
+     * Atomically increment correct_answers for a session.
+     * Uses raw executeStatement to avoid PostgreSQL quoting bug with QB createFunction().
+     */
+    private function incrementSessionCorrectAnswers(int $sessionId): void {
+        $inner = method_exists($this->db, 'getInner') ? $this->db->getInner() : $this->db;
+        $prefix = method_exists($inner, 'getPrefix') ? $inner->getPrefix() : 'oc_';
+        $this->db->executeStatement(
+            'UPDATE ' . $prefix . 'learning_sessions SET correct_answers = correct_answers + 1 WHERE id = :id',
+            ['id' => $sessionId]
+        );
     }
 }

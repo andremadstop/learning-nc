@@ -29,15 +29,12 @@ test.describe('Critical Learning Flows', () => {
   test.skip(!hasAuthContext, 'Requires authenticated seeded Nextcloud test environment (E2E_AUTH_READY=1)')
 
   test('P1: anti-oracle guard hides correctness data during active exam', async ({ page, request }) => {
+    const suppressSessionId = Number(process.env.E2E_SUPPRESS_SESSION_ID || 0)
+    test.skip(suppressSessionId === 0, 'Requires E2E_SUPPRESS_SESSION_ID + E2E_TRAIN_QUESTION_ID + E2E_TRAIN_ANSWER_ID')
     await page.goto('/')
 
-    // This test expects a seeded pool and authenticated session.
-    // The backend contract is:
-    // - submitting to a TRAINING session while an exam is active on the same pool
-    //   → answer details are suppressed (suppressed: true, no is_correct/correct_answer_ids)
-    // Note: submitting directly to an exam session via this endpoint is blocked (400).
     const res = await api(page, 'POST', '/apps/learning/api/training/answer', {
-      sessionId: Number(process.env.E2E_SUPPRESS_SESSION_ID || 0),
+      sessionId: suppressSessionId,
       questionId: Number(process.env.E2E_TRAIN_QUESTION_ID || 0),
       answerId: Number(process.env.E2E_TRAIN_ANSWER_ID || 0),
     })
@@ -49,9 +46,11 @@ test.describe('Critical Learning Flows', () => {
   })
 
   test('P1: exam timeout blocks batch submit', async ({ page }) => {
+    const timeoutSessionId = Number(process.env.E2E_TIMEOUT_SESSION_ID || 0)
+    test.skip(timeoutSessionId === 0, 'Requires E2E_TIMEOUT_SESSION_ID of an expired exam session')
     await page.goto('/')
     const res = await api(page, 'POST', '/apps/learning/api/training/submitBatch', {
-      sessionId: Number(process.env.E2E_TIMEOUT_SESSION_ID || 0),
+      sessionId: timeoutSessionId,
       answers: [],
     })
     const body = res.json || {}
@@ -60,9 +59,11 @@ test.describe('Critical Learning Flows', () => {
   })
 
   test('P1: duplicate answer submissions stay idempotent', async ({ page }) => {
+    const trainSessionId = Number(process.env.E2E_TRAIN_SESSION_ID || 0)
+    test.skip(trainSessionId === 0, 'Requires E2E_TRAIN_SESSION_ID + E2E_TRAIN_QUESTION_ID + E2E_TRAIN_ANSWER_ID')
     await page.goto('/')
     const payload = {
-      sessionId: Number(process.env.E2E_TRAIN_SESSION_ID || 0),
+      sessionId: trainSessionId,
       questionId: Number(process.env.E2E_TRAIN_QUESTION_ID || 0),
       answerId: Number(process.env.E2E_TRAIN_ANSWER_ID || 0),
     }
@@ -79,8 +80,9 @@ test.describe('Critical Learning Flows', () => {
   })
 
   test('P1: completed daily mission can be claimed exactly once', async ({ page }) => {
+    const missionKey = process.env.E2E_MISSION_KEY
+    test.skip(!missionKey, 'Requires E2E_MISSION_KEY of an already-completed mission')
     await page.goto('/')
-    const missionKey = process.env.E2E_MISSION_KEY || 'daily_sessions_1'
     const first = await api(page, 'POST', `/apps/learning/api/v1/missions/${missionKey}/claim`, {})
     expect(first.status).toBe(200)
     expect(Number(first.json?.xp_earned || 0)).toBeGreaterThan(0)
@@ -91,8 +93,9 @@ test.describe('Critical Learning Flows', () => {
   })
 
   test('P1: uncompleted mission claim is rejected', async ({ page }) => {
+    const missionKey = process.env.E2E_UNCOMPLETED_MISSION_KEY
+    test.skip(!missionKey, 'Requires E2E_UNCOMPLETED_MISSION_KEY of a known-incomplete mission')
     await page.goto('/')
-    const missionKey = process.env.E2E_UNCOMPLETED_MISSION_KEY || 'daily_cards_20'
     const response = await api(page, 'POST', `/apps/learning/api/v1/missions/${missionKey}/claim`, {})
     expect(response.status).toBeGreaterThanOrEqual(400)
     expect(String(response.json?.error || '')).toMatch(/not completed|completed yet|mission/i)

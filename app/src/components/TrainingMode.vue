@@ -23,12 +23,37 @@
       <div class="question-counter">{{ t('learning', 'Question {n} of {total}', { n: currentIndex + 1, total: questions.length }) }}</div>
 
       <div v-if="currentQuestion" class="question-card">
-        <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" alt="" class="question-image" />
+        <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" :alt="currentQuestion.image_alt || t('learning', 'Diagram for question')" class="question-image" />
         <div class="question-text">{{ currentQuestion.text }}</div>
 
         <div v-if="isMultiSelect" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
 
-        <div v-if="!answered && isOpenQuestion" class="open-answer-area">
+        <!-- PBQ block -->
+        <div v-if="!answered && isPbq" class="pbq-answer-area">
+          <PbqRenderer
+            :question="currentQuestion"
+            :disabled="submitting"
+            @submit="submitPbqAnswer"
+            @skip="skipQuestion"
+          />
+        </div>
+        <div v-else-if="answered && isPbq" class="answer-feedback">
+          <NcNoteCard :type="isCorrect ? 'success' : 'error'">
+            {{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}
+            — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
+          </NcNoteCard>
+          <NcNoteCard v-if="currentQuestion.explanation" type="warning">
+            <strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}
+          </NcNoteCard>
+          <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
+            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
+          </NcNoteCard>
+          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">
+            {{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}
+          </NcButton>
+        </div>
+
+        <div v-else-if="!answered && isOpenQuestion" class="open-answer-area">
           <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
           <NcButton type="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
             {{ t('learning', 'Submit Answer') }}
@@ -43,6 +68,7 @@
                 @click="toggleMultiAnswer(answer.id)"
                 class="answer-btn"
                 :class="{ 'answer-selected': selectedAnswerIds.includes(answer.id) }"
+                :aria-pressed="selectedAnswerIds.includes(answer.id) ? 'true' : 'false'"
                 :disabled="submitting"
               >{{ answer.text }}</button>
               <div class="multi-submit-area">
@@ -52,7 +78,7 @@
               </div>
             </template>
             <template v-else>
-              <button v-for="answer in currentQuestion.answers" :key="answer.id" @click="submitAnswer(answer.id)" class="answer-btn" :disabled="submitting">{{ answer.text }}</button>
+              <button v-for="answer in currentQuestion.answers" :key="answer.id" @click="submitAnswer(answer.id)" class="answer-btn" :aria-pressed="selectedAnswerId === answer.id ? 'true' : 'false'" :disabled="submitting">{{ answer.text }}</button>
             </template>
           </template>
           <div v-else class="no-answers">
@@ -144,10 +170,11 @@ import { celebratePerfectSession, celebrateStreak, isStreakMilestone } from '../
 import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
+import PbqRenderer from './PbqRenderer.vue';
 
 export default {
   name: 'TrainingMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay },
+  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer },
   props: {
     poolId: { type: Number, required: true },
     totalQuestions: { type: Number, required: true }
@@ -156,6 +183,8 @@ export default {
     return {
       session: null, questions: [], currentIndex: 0, answered: false, submitting: false,
       isCorrect: false, correctAnswerText: '', correctAnswerTexts: [],
+      pbqPoints: 0, pbqMaxPoints: 1,
+      selectedAnswerId: null,
       selectedAnswerIds: [],
       lastSelectedAnswerId: null,
       lastSelectedAnswerIds: [],
@@ -179,7 +208,8 @@ export default {
     currentQuestion() { return this.questions[this.currentIndex] || null; },
     progress() { return this.questions.length > 0 ? ((this.currentIndex + 1) / this.questions.length) * 100 : 0; },
     isMultiSelect() { return this.currentQuestion && this.currentQuestion.question_type === 'multi'; },
-    isOpenQuestion() { return this.currentQuestion && this.currentQuestion.question_type === 'open'; }
+    isOpenQuestion() { return this.currentQuestion && this.currentQuestion.question_type === 'open'; },
+    isPbq() { return this.currentQuestion && this.currentQuestion.question_type === 'pbq'; }
   },
   methods: {
     questionImageUrl(id) {
@@ -200,6 +230,22 @@ export default {
       } else {
         this.selectedAnswerIds.push(answerId);
       }
+    },
+    async submitPbqAnswer(pbqAnswers) {
+      this.submitting = true;
+      try {
+        const response = await axios.post(generateUrl('/apps/learning/api/training/answer'), {
+          sessionId: this.session,
+          questionId: this.currentQuestion.id,
+          pbqAnswers,
+        });
+        this.isCorrect = response.data.is_correct;
+        this.pbqPoints = response.data.pbq_points ?? 0;
+        this.pbqMaxPoints = response.data.pbq_max_points ?? 1;
+        this.correctAnswerTexts = [];
+        this.answered = true;
+      } catch (error) { showError(t('learning', 'Failed to submit answer')); }
+      finally { this.submitting = false; }
     },
     async submitOpenAnswer() {
       this.submitting = true;
@@ -232,6 +278,7 @@ export default {
       finally { this.submitting = false; }
     },
     async submitAnswer(answerId) {
+      this.selectedAnswerId = answerId;
       this.lastSelectedAnswerId = answerId;
       this.submitting = true;
       try {
@@ -296,10 +343,12 @@ export default {
         this.currentIndex++;
         this.answered = false;
         this.selectedAnswerIds = [];
+        this.selectedAnswerId = null;
         this.lastSelectedAnswerId = null;
         this.lastSelectedAnswerIds = [];
         this.openAnswer = '';
         this.lastOpenAnswer = '';
+        this.pbqPoints = 0; this.pbqMaxPoints = 1;
       } else {
         await this.completeSession();
       }
@@ -341,6 +390,7 @@ export default {
       if (this.currentIndex < this.questions.length - 1) {
         this.currentIndex++;
         this.answered = false;
+        this.selectedAnswerId = null;
         this.selectedAnswerIds = [];
       } else {
         this.completeSession();
@@ -350,6 +400,7 @@ export default {
       this.session = null; this.questions = []; this.currentIndex = 0; this.answered = false;
       this.showResults = false; this.results = null; this.loadError = null;
       this.selectedAnswerIds = [];
+      this.selectedAnswerId = null;
       this.lastSelectedAnswerId = null;
       this.lastSelectedAnswerIds = [];
       this.openAnswer = '';
@@ -423,6 +474,13 @@ export default {
 @keyframes xpFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (prefers-reduced-motion: reduce) {
+  .answer-btn,
+  .streak-flame,
+  .personal-best-banner,
+  .xp-earned {
+    animation: none;
+    transition: none;
+  }
   .personal-best-banner { animation: none; }
   .xp-earned { animation: none; }
 }

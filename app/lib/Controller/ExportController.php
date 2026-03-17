@@ -7,13 +7,20 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\Attributes\NoAdminRequired;
+use OCP\AppFramework\Http\Attributes\NoCSRFRequired;
+use OCP\AppFramework\Http\Attributes\PublicPage;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IRequest;
+use OCP\IURLGenerator;
 
 class ExportController extends Controller {
     private QuestionService $questionService;
     private IDBConnection $db;
+    private IConfig $config;
+    private IURLGenerator $urlGenerator;
     private ?string $userId;
 
     public function __construct(
@@ -21,11 +28,15 @@ class ExportController extends Controller {
         IRequest $request,
         QuestionService $questionService,
         IDBConnection $db,
+        IConfig $config,
+        IURLGenerator $urlGenerator,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
         $this->questionService = $questionService;
         $this->db = $db;
+        $this->config = $config;
+        $this->urlGenerator = $urlGenerator;
         $this->userId = $userId;
     }
 
@@ -112,18 +123,81 @@ class ExportController extends Controller {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
+        $cal = $this->buildIcsBody($this->userId);
+        return new DataDownloadResponse($cal, 'learning-nc.ics', 'text/calendar; charset=utf-8');
+    }
 
+    /**
+     * @NoAdminRequired
+     */
+    public function getCalendarToken(): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        $token = $this->config->getUserValue($this->userId, 'learning', 'ics_token', '');
+        if ($token === '') {
+            $token = $this->generateToken();
+            $this->config->setUserValue($this->userId, 'learning', 'ics_token', $token);
+        }
+        $url = $this->urlGenerator->linkToRouteAbsolute('learning.export.exportIcsPublic', ['token' => $token]);
+        return new DataResponse(['token' => $token, 'url' => $url]);
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    public function regenerateCalendarToken(): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        $token = $this->generateToken();
+        $this->config->setUserValue($this->userId, 'learning', 'ics_token', $token);
+        $url = $this->urlGenerator->linkToRouteAbsolute('learning.export.exportIcsPublic', ['token' => $token]);
+        return new DataResponse(['token' => $token, 'url' => $url]);
+    }
+
+    /**
+     * @PublicPage
+     * @NoCSRFRequired
+     */
+    public function exportIcsPublic(string $token): Http\Response {
+        if (strlen($token) < 32) {
+            return new DataResponse(['error' => 'Invalid token'], Http::STATUS_FORBIDDEN);
+        }
+
+        // TODO: store SHA-256(token) instead of plaintext in a future migration for hardened deployments
+
+        // Find user by token in oc_preferences
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('userid')
+            ->from('preferences')
+            ->where($qb->expr()->eq('appid', $qb->createNamedParameter('learning')))
+            ->andWhere($qb->expr()->eq('configkey', $qb->createNamedParameter('ics_token')))
+            ->andWhere($qb->expr()->eq('configvalue', $qb->createNamedParameter($token)));
+
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+
+        if (!$row) {
+            return new DataResponse(['error' => 'Invalid token'], Http::STATUS_FORBIDDEN);
+        }
+
+        $cal = $this->buildIcsBody((string)$row['userid']);
+        return new DataDownloadResponse($cal, 'learning-nc.ics', 'text/calendar; charset=utf-8');
+    }
+
+    private function buildIcsBody(string $userId): string {
         $now = time();
         $horizon = $now + (30 * 24 * 3600); // 30 days ahead
 
-        // Load all due + upcoming items with pool name, grouped by (pool_id, day)
         $qb = $this->db->getQueryBuilder();
         $qb->select('l.pool_id', 'p.name AS pool_name',
                     $qb->createFunction('COUNT(l.id) AS card_count'),
                     $qb->createFunction('MIN(l.next_review) AS earliest_due'))
             ->from('learning_leitner_items', 'l')
             ->join('l', 'learning_pools', 'p', $qb->expr()->eq('l.pool_id', 'p.id'))
-            ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($this->userId)))
+            ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->lte('l.next_review', $qb->createNamedParameter($horizon)))
             ->groupBy('l.pool_id', 'p.name')
             ->orderBy('earliest_due', 'ASC');
@@ -131,6 +205,9 @@ class ExportController extends Controller {
         $result = $qb->executeQuery();
         $rows = $result->fetchAll();
         $result->closeCursor();
+
+        // Use NC hostname for UIDs
+        $host = parse_url($this->urlGenerator->getBaseUrl(), PHP_URL_HOST) ?: 'nextcloud';
 
         $dtstamp = gmdate('Ymd\THis\Z', $now);
         $events = [];
@@ -146,7 +223,7 @@ class ExportController extends Controller {
             $dateStr  = gmdate('Ymd', $eventDay);
             $nextDay  = gmdate('Ymd', $eventDay + 86400);
 
-            $uid     = 'learning-nc-' . $this->userId . '-' . $poolId . '-' . $dateStr . '@nextcloud';
+            $uid     = 'learning-nc-' . md5($userId . '-' . $poolId) . '-' . $dateStr . '@' . $host;
             $summary = '📚 ' . $count . ' ' . ($count === 1 ? 'Karte' : 'Karten') . ' fällig — ' . $poolName;
             $desc    = $count . ' ' . ($count === 1 ? 'Karte wartet' : 'Karten warten') . ' auf Wiederholung in: ' . $poolName;
 
@@ -163,7 +240,9 @@ class ExportController extends Controller {
             ]);
         }
 
-        $cal = implode("\r\n", [
+        $eventBlock = count($events) > 0 ? "\r\n" . implode("\r\n", $events) : '';
+
+        return implode("\r\n", [
             'BEGIN:VCALENDAR',
             'VERSION:2.0',
             'PRODID:-//Learning-NC//Nextcloud//DE',
@@ -172,30 +251,11 @@ class ExportController extends Controller {
             'X-WR-CALNAME:Learning-NC Lernplan',
             'X-WR-CALDESC:Deine fälligen Karteikarten im Überblick',
             'X-WR-TIMEZONE:UTC',
-        ]) . "\r\n" . implode("\r\n", $events) . "\r\nEND:VCALENDAR\r\n";
+        ]) . $eventBlock . "\r\nEND:VCALENDAR\r\n";
+    }
 
-        $response = new Http\Response();
-        $response->setHeaders([
-            'Content-Type'        => 'text/calendar; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename="learning-nc.ics"',
-            'Cache-Control'       => 'no-cache, no-store',
-        ]);
-        $response->setStatus(Http::STATUS_OK);
-
-        // Inject body via render — use a plain string response
-        return new class($cal) extends Http\Response {
-            private string $body;
-            public function __construct(string $body) {
-                parent::__construct();
-                $this->body = $body;
-                $this->setHeaders([
-                    'Content-Type'        => 'text/calendar; charset=utf-8',
-                    'Content-Disposition' => 'attachment; filename="learning-nc.ics"',
-                    'Cache-Control'       => 'no-cache, no-store',
-                ]);
-            }
-            public function render(): string { return $this->body; }
-        };
+    private function generateToken(): string {
+        return bin2hex(random_bytes(32));
     }
 
     private function icsEscape(string $value): string {

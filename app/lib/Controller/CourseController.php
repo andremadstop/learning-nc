@@ -4,6 +4,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
@@ -291,6 +292,39 @@ class CourseController extends Controller {
             $this->logger->error('atRisk error: ' . $e->getMessage(), ['app' => 'learning']);
             return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function exportAtRiskCsv(int $courseId): Http\Response {
+        try {
+            $students = $this->courseService->getAtRiskStudents($courseId, $this->userId);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+
+        $handle = fopen('php://temp', 'r+');
+        fputcsv($handle, ['Name', 'Risk Level', 'Risk Reasons', 'Accuracy (%)', 'Last Active']);
+        foreach ($students as $s) {
+            fputcsv($handle, [
+                $s['display_name'] ?? $s['user_id'] ?? '',
+                $s['risk_level'] ?? '',
+                implode('; ', $s['risk_reasons'] ?? []),
+                $s['accuracy'] ?? '',
+                $s['last_active'] ?? '',
+            ]);
+        }
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return new DataDownloadResponse($csv, 'at-risk-course-' . $courseId . '.csv', 'text/csv');
     }
 
     /**

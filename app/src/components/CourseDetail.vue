@@ -206,6 +206,9 @@
 						<h4 class="at-risk-title">
 							{{ t('learning', 'At-Risk Students ({n})', { n: atRiskStudents.length }) }}
 						</h4>
+						<NcButton type="tertiary" size="small" @click.stop="exportAtRiskCsv">
+							{{ t('learning', 'Export CSV') }}
+						</NcButton>
 						<button class="at-risk-toggle">{{ atRiskCollapsed ? '\u25BC' : '\u25B2' }}</button>
 					</div>
 					<div v-if="!atRiskCollapsed" class="at-risk-cards">
@@ -332,6 +335,14 @@
 						{{ t('learning', 'Progress will appear once students start working on course pools.') }}
 					</template>
 				</NcEmptyContent>
+			</div>
+
+			<!-- My Progress Tab (student self-view) -->
+			<div v-if="currentTab === 'my-progress' && !isInstructor" class="my-progress-section">
+				<StudentDetail
+					:courseId="courseId"
+					:studentId="myUserId"
+					@back="currentTab = 'pools'" />
 			</div>
 
 			<!-- Leaderboard Tab -->
@@ -485,11 +496,12 @@
 						<div v-for="pool in availablePools"
 							:key="pool.id"
 							class="pool-select-item"
-							:class="{ disabled: isPoolAlreadyAdded(pool.id), selected: selectedPoolToAdd && selectedPoolToAdd.id === pool.id }"
-							tabindex="0" role="button"
-							@click="selectPoolToAdd(pool)"
-							@keydown.enter="selectPoolToAdd(pool)"
-							@keydown.space.prevent="selectPoolToAdd(pool)">
+							:class="{ disabled: isPoolAlreadyAdded(pool.id), selected: selectedPoolIds.includes(pool.id) }"
+							tabindex="0" role="checkbox"
+							:aria-checked="selectedPoolIds.includes(pool.id)"
+							@click="togglePoolSelection(pool)"
+							@keydown.enter="togglePoolSelection(pool)"
+							@keydown.space.prevent="togglePoolSelection(pool)">
 							<div class="pool-select-info">
 								<span class="pool-select-name">{{ pool.name }}</span>
 								<span v-if="pool.description" class="pool-select-desc">{{ pool.description }}</span>
@@ -497,12 +509,15 @@
 							<span v-if="isPoolAlreadyAdded(pool.id)" class="pool-already-added">
 								{{ t('learning', 'Already added') }}
 							</span>
+							<span v-else-if="selectedPoolIds.includes(pool.id)" class="pool-check">✓</span>
 						</div>
-						<div v-if="selectedPoolToAdd" class="pool-add-confirm">
+						<div v-if="selectedPoolIds.length > 0" class="pool-add-confirm">
 							<NcButton type="primary"
 								:disabled="savingPool"
-								@click="addPool(selectedPoolToAdd)">
-								{{ savingPool ? t('learning', 'Adding...') : t('learning', 'Add "{name}"', { name: selectedPoolToAdd.name }) }}
+								@click="addSelectedPools">
+								{{ savingPool
+									? t('learning', 'Adding...')
+									: t('learning', 'Add {n} pool(s)', { n: selectedPoolIds.length }) }}
 							</NcButton>
 						</div>
 					</div>
@@ -570,6 +585,7 @@ import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
 import { formatXp, formatRelativeDateString } from '../format.js'
+import StudentDetail from './StudentDetail.vue'
 
 export default {
 	name: 'CourseDetail',
@@ -581,6 +597,7 @@ export default {
 		NcModal,
 		NcTextField,
 		NcNoteCard,
+		StudentDetail,
 	},
 
 	props: {
@@ -624,6 +641,7 @@ export default {
 			removingMember: null,
 
 			selectedPoolToAdd: null,
+			selectedPoolIds: [],
 
 			// Progress
 			progressLoading: false,
@@ -681,6 +699,7 @@ export default {
 			}
 			return [
 				{ id: 'pools', label: t('learning', 'Pools') },
+				{ id: 'my-progress', label: t('learning', 'My Progress') },
 				{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
 			]
 		},
@@ -740,7 +759,7 @@ export default {
 				this.fetchProgress()
 				this.fetchAtRisk()
 			}
-			if (tab === 'leaderboard' && this.leaderboardData.length === 0) {
+			if (tab === 'leaderboard') {
 				this.fetchLeaderboard()
 			}
 		},
@@ -863,6 +882,7 @@ export default {
 			this.showAddPoolModal = true
 			this.poolModalError = ''
 			this.selectedPoolToAdd = null
+			this.selectedPoolIds = []
 			if (this.allPools.length === 0) {
 				await this.fetchAllPools()
 			}
@@ -904,38 +924,54 @@ export default {
 			return this.coursePools.some(p => p.pool_id === poolId)
 		},
 
-		selectPoolToAdd(pool) {
+		togglePoolSelection(pool) {
 			if (this.isPoolAlreadyAdded(pool.id)) return
-			this.selectedPoolToAdd = (this.selectedPoolToAdd && this.selectedPoolToAdd.id === pool.id) ? null : pool
+			const idx = this.selectedPoolIds.indexOf(pool.id)
+			if (idx >= 0) {
+				this.selectedPoolIds.splice(idx, 1)
+			} else {
+				this.selectedPoolIds.push(pool.id)
+			}
 		},
 
-		async addPool(pool) {
-			if (this.isPoolAlreadyAdded(pool.id)) {
-				return
-			}
-
+		async addSelectedPools() {
+			if (this.selectedPoolIds.length === 0) return
 			this.savingPool = true
 			this.poolModalError = ''
+			const url = generateUrl('/apps/learning/api/courses/{id}/pools', { id: this.courseId })
+			const baseSortOrder = this.coursePools.length > 0
+				? Math.max(...this.coursePools.map(p => p.sort_order || 0)) + 1
+				: 0
 			try {
-				const url = generateUrl('/apps/learning/api/courses/{id}/pools', { id: this.courseId })
-				const nextSortOrder = this.coursePools.length > 0
-					? Math.max(...this.coursePools.map(p => p.sort_order || 0)) + 1
-					: 0
-				await axios.post(url, {
-					poolId: pool.id,
-					sortOrder: nextSortOrder,
-					required: true,
-				})
+				for (let i = 0; i < this.selectedPoolIds.length; i++) {
+					await axios.post(url, {
+						poolId: this.selectedPoolIds[i],
+						sortOrder: baseSortOrder + i,
+						required: true,
+					})
+				}
+				this.selectedPoolIds = []
 				this.selectedPoolToAdd = null
 				this.showAddPoolModal = false
 				await this.fetchCourseDetail()
 			} catch (err) {
-				console.error('Failed to add pool:', err)
+				console.error('Failed to add pools:', err)
 				const message = err.response?.data?.error || err.response?.data?.message
 				this.poolModalError = message || t('learning', 'Failed to add pool to course.')
 			} finally {
 				this.savingPool = false
 			}
+		},
+
+		async addPool(pool) {
+			if (this.isPoolAlreadyAdded(pool.id)) return
+			this.selectedPoolIds = [pool.id]
+			await this.addSelectedPools()
+		},
+
+		exportAtRiskCsv() {
+			const url = generateUrl('/apps/learning/api/courses/{courseId}/at-risk/export/csv', { courseId: this.courseId })
+			window.location.href = url
 		},
 
 		confirmRemovePool(pool) {
@@ -1029,6 +1065,9 @@ export default {
 				this.showRemoveMemberModal = false
 				this.removingMember = null
 				await this.fetchCourseDetail()
+				if (this.currentTab === 'leaderboard') {
+					await this.fetchLeaderboard()
+				}
 			} catch (err) {
 				console.error('Failed to remove member:', err)
 				this.memberError = t('learning', 'Failed to remove member.')
@@ -1897,6 +1936,13 @@ td.mastery-low {
 	font-size: 0.8em;
 	color: var(--color-text-maxcontrast);
 	font-style: italic;
+	flex-shrink: 0;
+}
+
+.pool-check {
+	font-size: 1.1em;
+	color: var(--color-primary-element);
+	font-weight: 700;
 	flex-shrink: 0;
 }
 

@@ -110,6 +110,14 @@ None - no external service configuration required.
 - Plan 02 wires it into the admin question editor UI
 - All success criteria met: tests green, component exists, no v-html, all 5 subtypes present
 
+## Self-Check: PASSED
+
+- FOUND: app/tests/unit/pbqAuthorTool.test.js
+- FOUND: app/src/components/PbqAuthorTool.vue
+- FOUND: .planning/phases/05-pbq-author-tool/05-01-SUMMARY.md
+- FOUND: commit f5cb761 (test)
+- FOUND: commit adb031c (feat)
+
 ---
 *Phase: 05-pbq-author-tool*
 *Completed: 2026-03-17*

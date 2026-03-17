@@ -5,7 +5,7 @@
     </div>
 
     <!-- Top-level navigation: Pools | Courses -->
-    <div class="main-nav" role="tablist">
+    <div class="main-nav" role="tablist" @keydown="handleTablistKeydown">
       <button
         :class="['main-nav-btn', { active: mainView === 'pools' }]"
         role="tab"
@@ -21,6 +21,14 @@
         @click="switchMainView('courses')"
       >
         {{ t('learning', 'Courses') }}
+      </button>
+      <button
+        :class="['main-nav-btn', { active: mainView === 'settings' }]"
+        role="tab"
+        :aria-selected="mainView === 'settings' ? 'true' : 'false'"
+        @click="switchMainView('settings')"
+      >
+        {{ t('learning', 'Settings') }}
       </button>
     </div>
 
@@ -53,7 +61,7 @@
           {{ t('learning', 'This pool is shared with you (view only)') }}
         </NcNoteCard>
 
-        <div class="mode-selector" role="tablist">
+        <div class="mode-selector" role="tablist" @keydown="handleTablistKeydown">
           <button
             v-for="m in filteredModes"
             :key="m.id"
@@ -118,10 +126,16 @@
       </div>
     </template>
 
+    <!-- ==================== SETTINGS VIEW ==================== -->
+    <template v-if="mainView === 'settings'">
+      <AdminSettings v-if="userRole !== 'student'" />
+      <PersonalSettings v-else />
+    </template>
+
     <!-- ==================== COURSES VIEW ==================== -->
     <template v-if="mainView === 'courses'">
       <!-- Instructor sub-navigation: List | Dashboard -->
-      <div v-if="userRole === 'instructor' && !selectedCourse" class="course-sub-nav" role="tablist">
+      <div v-if="userRole === 'instructor' && !selectedCourse" class="course-sub-nav" role="tablist" @keydown="handleTablistKeydown">
         <button
           :class="['mode-btn', { active: courseView === 'list' }]"
           role="tab"
@@ -186,6 +200,8 @@ import CourseDetail from './components/CourseDetail.vue';
 import StudentDetail from './components/StudentDetail.vue';
 import InstructorDashboard from './components/InstructorDashboard.vue';
 import SmartQueue from './components/SmartQueue.vue';
+import AdminSettings from './components/AdminSettings.vue';
+import PersonalSettings from './components/PersonalSettings.vue';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 
@@ -206,7 +222,9 @@ export default {
     CourseDetail,
     StudentDetail,
     InstructorDashboard,
-    SmartQueue
+    SmartQueue,
+    AdminSettings,
+    PersonalSettings
   },
   data() {
     return {
@@ -263,6 +281,26 @@ export default {
     this.fetchRole();
   },
   methods: {
+    handleTablistKeydown(event) {
+      const tabs = [...event.currentTarget.querySelectorAll('[role="tab"]')];
+      const currentIndex = tabs.indexOf(document.activeElement);
+      if (currentIndex === -1) {
+        return;
+      }
+
+      let nextIndex;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+        nextIndex = (currentIndex + 1) % tabs.length;
+      } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+        nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+      } else {
+        return;
+      }
+
+      event.preventDefault();
+      tabs[nextIndex].focus();
+    },
+
     async fetchRole() {
       try {
         const response = await axios.get(generateUrl('/apps/learning/api/role'));
@@ -284,6 +322,7 @@ export default {
       } else if (view === 'courses') {
         this.backToPools();
       }
+      // settings: no state reset needed
     },
 
     // --- Pools methods ---

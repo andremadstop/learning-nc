@@ -61,6 +61,16 @@ class AIService {
         return false;
     }
 
+    public function schedulePrompt(string $prompt, string $userId): int {
+        if ($this->taskProcessingManager !== null) {
+            return $this->scheduleTaskProcessing($prompt, $userId);
+        }
+        if ($this->textProcessingManager !== null) {
+            return $this->scheduleTextProcessing($prompt, $userId);
+        }
+        throw new \Exception('No AI provider configured');
+    }
+
     public function generateQuestions(string $text, int $count, string $lang, string $userId): int {
         $count = max(1, min(30, $count));
 
@@ -161,6 +171,7 @@ TEXT:
                 if ($statusStr === 'completed') {
                     $output = $task->getOutput();
                     $text = $output['output'] ?? '';
+                    $result['output'] = $text;
                     $result['questions'] = $this->parseGeneratedQuestions($text);
                 }
                 if ($statusStr === 'failed') {
@@ -191,6 +202,7 @@ TEXT:
                 $result = ['status' => $statusStr, 'questions' => []];
                 if ($statusStr === 'completed') {
                     $text = $task->getOutput() ?? '';
+                    $result['output'] = $text;
                     $result['questions'] = $this->parseGeneratedQuestions($text);
                 }
                 return $result;

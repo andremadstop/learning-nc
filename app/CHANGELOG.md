@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.6.0] - 2026-03-16
+
+### Added
+- **Calendar Token**: Per-user ICS subscription token for external calendar apps. `GET /api/v1/user/calendar-token` returns token + subscription URL. `POST /api/v1/user/calendar-token/regenerate` invalidates old token. Token stored in NC preferences (never expires until regenerated).
+- **Public ICS Feed**: `GET /api/v1/calendar/{token}.ics` — unauthenticated ICS endpoint for calendar subscriptions. Uses token-to-user reverse lookup via `oc_preferences`.
+- **Calendar Sync in Personal Settings**: ICS URL field with one-click copy and regenerate button.
+- **ICS UID domain fix**: `UID` fields now use actual NC hostname (`parse_url(getBaseUrl(), PHP_URL_HOST)`) instead of literal `@nextcloud`.
+- **AI Explain button**: `POST /api/ai/explain` schedules a text2text task explaining why an answer is correct/incorrect. "💡 Explain this" button appears after answering in LeitnerMode and TrainingMode (only shown when AI is available).
+- **At-Risk CSV Export**: `GET /api/courses/{courseId}/at-risk/export/csv` — downloads at-risk student list as CSV (Name, Risk Level, Risk Reasons, Accuracy, Last Active). Export button in course progress tab.
+- **Batch Pool Assignment**: Add-pool modal in CourseDetail now supports multi-select (checkboxes) — select multiple pools and add them all with one click.
+
+### Changed
+- `ExportController`: Replaced anonymous class with `DataDownloadResponse` for ICS response (cleaner code, no custom `render()` override needed). ICS body extracted to `buildIcsBody()` — shared by authenticated and token-based endpoints.
+- `AIService::getTaskStatus()` now includes `output` (raw text) in status response alongside `questions` array — needed for explain results.
+
 ## [2.5.2] - 2026-03-16
 
 ### Added

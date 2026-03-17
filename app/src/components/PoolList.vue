@@ -19,8 +19,8 @@
       <span class="xp-mult-label">{{ t('learning', 'XP Multiplier') }}</span>
     </div>
 
-    <!-- Smart Queue + Daily Goal -->
-    <div class="smart-queue-section">
+    <!-- Smart Queue + Daily Goal (only for students) -->
+    <div v-if="userRole !== 'instructor'" class="smart-queue-section">
       <button v-if="queueCount > 0" class="smart-queue-btn" @click="$emit('openSmartQueue')">
         <span class="sq-icon">&#x1F4DA;</span>
         <span class="sq-text">{{ t('learning', 'Start learning') }}</span>
@@ -34,20 +34,20 @@
       </button>
     </div>
 
-    <!-- Smart Queue hint -->
-    <NcNoteCard v-if="queueCount > 0 && !hintDismissed('smart-queue')" type="info" class="onboarding-hint">
+    <!-- Smart Queue hint (only for students) -->
+    <NcNoteCard v-if="userRole !== 'instructor' && queueCount > 0 && !hintDismissed('smart-queue')" type="info" class="onboarding-hint">
       {{ t('learning', 'The Smart Queue picks the most important cards from all your pools — difficult and overdue ones first.') }}
       <NcButton type="tertiary" @click="dismissHint('smart-queue')">{{ t('learning', 'Got it') }}</NcButton>
     </NcNoteCard>
 
-    <!-- Daily Challenge hint -->
-    <NcNoteCard v-if="dailyChallenge && dailyChallenge.available && !hintDismissed('daily-challenge')" type="info" class="onboarding-hint">
+    <!-- Daily Challenge hint (only for students) -->
+    <NcNoteCard v-if="userRole !== 'instructor' && dailyChallenge && dailyChallenge.available && !hintDismissed('daily-challenge')" type="info" class="onboarding-hint">
       {{ t('learning', 'One question per day for bonus XP — a quick warm-up!') }}
       <NcButton type="tertiary" @click="dismissHint('daily-challenge')">{{ t('learning', 'Got it') }}</NcButton>
     </NcNoteCard>
 
-    <!-- Daily Challenge -->
-    <div v-if="dailyChallenge && dailyChallenge.available" class="daily-challenge-card" :class="{ completed: dailyChallenge.completed }">
+    <!-- Daily Challenge (only for students) -->
+    <div v-if="userRole !== 'instructor' && dailyChallenge && dailyChallenge.available" class="daily-challenge-card" :class="{ completed: dailyChallenge.completed }">
       <div class="dc-header">
         <span class="dc-icon">&#x2B50;</span>
         <span class="dc-title">{{ t('learning', 'Daily Challenge') }}</span>
@@ -94,16 +94,16 @@
       </div>
     </div>
 
-    <!-- Daily Goal hint -->
-    <NcNoteCard v-if="dailyProgress && !hintDismissed('daily-goal')" type="info" class="onboarding-hint">
+    <!-- Daily Goal hint (only for students) -->
+    <NcNoteCard v-if="userRole !== 'instructor' && dailyProgress && !hintDismissed('daily-goal')" type="info" class="onboarding-hint">
       {{ t('learning', 'Set a daily goal. When you reach it, you get +10 bonus XP!') }}
       <NcButton type="tertiary" @click="dismissHint('daily-goal')">{{ t('learning', 'Got it') }}</NcButton>
     </NcNoteCard>
 
-    <!-- Daily Goal -->
-    <div class="smart-queue-section">
+    <!-- Daily Goal (only for students) -->
+    <div v-if="userRole !== 'instructor'" class="smart-queue-section">
       <div v-if="dailyProgress" class="daily-goal-widget" :class="{ 'goal-reached': dailyProgress.goal_reached }">
-        <svg class="goal-ring" viewBox="0 0 60 60" width="56" height="56">
+        <svg class="goal-ring" viewBox="0 0 60 60" width="56" height="56" role="img" :aria-label="t('learning', 'Daily goal progress: {pct}%', { pct: goalPercent })">
           <circle cx="30" cy="30" r="26" fill="none" stroke="var(--color-border)" stroke-width="4" />
           <circle cx="30" cy="30" r="26" fill="none" :stroke="dailyProgress.goal_reached ? 'var(--color-warning)' : 'var(--color-primary-element)'" stroke-width="4" stroke-linecap="round" :stroke-dasharray="circumference" :stroke-dashoffset="circumference - (circumference * goalPercent / 100)" transform="rotate(-90 30 30)" class="goal-ring-progress" />
           <text x="30" y="33" text-anchor="middle" font-size="12" font-weight="700" fill="var(--color-main-text)">{{ dailyProgress.cards_reviewed_today }}/{{ dailyProgress.daily_goal }}</text>
