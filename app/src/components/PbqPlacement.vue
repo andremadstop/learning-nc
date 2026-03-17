@@ -39,9 +39,28 @@
         <span v-if="!value[pos.id]">?</span>
         <span v-else class="pbq-hotspot-label">{{ value[pos.id].substring(0,4) }}</span>
       </div>
+
+      <!-- Inline picker overlay: only in SVG topology mode, positioned above clicked node -->
+      <div
+        v-if="activePosId && pickerPos && topologyConfig"
+        class="pbq-inline-picker"
+        :style="{ left: pickerPos.left + 'px', top: pickerPos.top + 'px' }"
+        @click.stop
+      >
+        <p class="pbq-picker-title"><strong>{{ labelFor(activePosId) }}</strong></p>
+        <button
+          v-for="device in config.device_options"
+          :key="device"
+          class="pbq-device-btn"
+          :class="{ 'pbq-device-btn--selected': value[activePosId] === device }"
+          @click="assignDevice(activePosId, device)"
+        >{{ device }}</button>
+        <button class="pbq-device-btn pbq-device-btn--cancel" @click="closePicker">Cancel</button>
+      </div>
     </div>
 
-    <div v-if="activePosId" class="pbq-device-picker">
+    <!-- Below-diagram picker: only in non-SVG mode (image or grid) -->
+    <div v-if="activePosId && !topologyConfig" class="pbq-device-picker">
       <p class="pbq-picker-title"><strong>{{ labelFor(activePosId) }}</strong></p>
       <button
         v-for="device in config.device_options"
@@ -50,22 +69,29 @@
         :class="{ 'pbq-device-btn--selected': value[activePosId] === device }"
         @click="assignDevice(activePosId, device)"
       >{{ device }}</button>
-      <button class="pbq-device-btn pbq-device-btn--cancel" @click="activePosId = null">Cancel</button>
+      <button class="pbq-device-btn pbq-device-btn--cancel" @click="closePicker">Cancel</button>
     </div>
 
     <div class="pbq-placement-summary">
       <span v-for="pos in config.positions" :key="pos.id" class="pbq-summary-item">
         <span class="pbq-summary-label">{{ pos.label }}:</span>
-        <span class="pbq-summary-value" :class="value[pos.id] ? '' : 'pbq-unset'">
-          {{ value[pos.id] || '—' }}
-        </span>
+        <span
+          class="pbq-summary-value"
+          :class="[
+            !value[pos.id] ? 'pbq-unset' : '',
+            disabled && pos.correct !== undefined && value[pos.id] !== pos.correct ? 'pbq-summary-value--wrong' : '',
+            disabled && pos.correct !== undefined && value[pos.id] === pos.correct ? 'pbq-summary-value--correct' : '',
+          ]"
+        >{{ value[pos.id] || '—' }}</span>
       </span>
+      <div v-if="disabled && scoringSummaryText" class="pbq-scoring-summary">{{ scoringSummaryText }}</div>
     </div>
   </div>
 </template>
 
 <script>
 import NetworkTopologySvg from './NetworkTopologySvg.vue'
+import { scoringSummary } from '../utils/pbqScoringMode.js'
 
 export default {
   name: 'PbqPlacement',
@@ -77,16 +103,52 @@ export default {
     scenarioImage: { type: String, default: null },
     topologyConfig: { type: Object, default: null },
   },
-  data() { return { activePosId: null } },
+  data() {
+    return {
+      activePosId: null,
+      pickerPos: null,
+    }
+  },
+  computed: {
+    scoringSummaryText() {
+      const mode = this.config.scoring_mode || 'strict'
+      return scoringSummary(this.config.positions || [], this.value, mode)
+    },
+  },
+  mounted() {
+    window.addEventListener('scroll', this.closePicker, { passive: true })
+  },
+  beforeDestroy() {
+    window.removeEventListener('scroll', this.closePicker)
+  },
   methods: {
-    openPicker(posId) { this.activePosId = posId },
+    openPicker(posId) {
+      this.activePosId = posId
+      this.pickerPos = null
+      if (!this.topologyConfig || !this.$refs.topologySvg) return
+      this.$nextTick(() => {
+        const screenPos = this.$refs.topologySvg.getNodeScreenPosition(posId)
+        if (!screenPos) return
+        const wrapper = this.$el.querySelector('.pbq-diagram-wrapper')
+        if (!wrapper) return
+        const wRect = wrapper.getBoundingClientRect()
+        this.pickerPos = {
+          left: screenPos.x - wRect.left,
+          top: screenPos.y - wRect.top,
+        }
+      })
+    },
+    closePicker() {
+      this.activePosId = null
+      this.pickerPos = null
+    },
     labelFor(posId) {
       const pos = (this.config.positions || []).find(p => p.id === posId)
       return pos ? pos.label : posId
     },
     assignDevice(posId, device) {
       this.$emit('update', posId, device)
-      this.activePosId = null
+      this.closePicker()
     },
   },
 }
@@ -94,7 +156,7 @@ export default {
 
 <style scoped>
 .pbq-placement { position: relative; }
-.pbq-diagram-wrapper { position: relative; display: inline-block; max-width: 100%; width: 100%; }
+.pbq-diagram-wrapper { position: relative; display: inline-block; max-width: 100%; width: 100%; overflow: visible; }
 .pbq-diagram-img { max-width: 100%; border-radius: 8px; border: 1px solid var(--color-border); }
 .pbq-topology-grid {
   display: grid;
@@ -148,4 +210,25 @@ export default {
 .pbq-summary-item { background: var(--color-background-hover); padding: 4px 10px; border-radius: 12px; font-size: 13px; }
 .pbq-summary-label { font-weight: 500; margin-right: 4px; }
 .pbq-unset { color: var(--color-text-maxcontrast); font-style: italic; }
+.pbq-summary-value--correct { color: var(--color-success); font-weight: 600; }
+.pbq-summary-value--wrong { color: var(--color-error); text-decoration: line-through; }
+.pbq-scoring-summary {
+  width: 100%;
+  margin-top: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-main-text);
+}
+.pbq-inline-picker {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 8px));
+  background: var(--color-main-background);
+  border: 1px solid var(--color-border-dark);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.18);
+  padding: 10px 12px;
+  z-index: 100;
+  min-width: 160px;
+  max-width: 240px;
+}
 </style>
