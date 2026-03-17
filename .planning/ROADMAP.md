@@ -113,6 +113,6 @@ Plans:
 | 1. CLI State Machine | 2/2 | Complete   | 2026-03-16 |
 | 2. SVG Topology Renderer | 2/2 | Complete   | 2026-03-16 |
 | 3. Inline-Dropdown | 1/1 | Complete   | 2026-03-17 |
-| 4. Multi-Panel Layout | 0/1 | Not started | - |
+| 4. Multi-Panel Layout | 1/1 | Complete   | 2026-03-17 |
 | 5. PBQ Author Tool | 0/2 | Not started | - |
 | 6. Instructor Notes | 0/2 | Not started | - |
