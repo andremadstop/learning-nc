@@ -156,14 +156,17 @@ test.describe('Phase 6 — Instructor Notes', () => {
       await lastCheckbox.check({ force: true })
     }
 
-    // Save
-    const saveBtn = page.locator('.nc-dialog button, [role="dialog"] button').filter({ hasText: /Save|Speichern/i }).first()
+    // Save — use the submit button directly
+    const saveBtn = page.locator('[role="dialog"] button[type="submit"], button[type="submit"]').first()
     await saveBtn.click()
-    await page.waitForTimeout(1000)
+    // Wait for dialog to close (question-text detached means form saved + closed)
+    await page.waitForSelector('#question-text', { state: 'detached', timeout: 15_000 })
+    // Wait for question list to reload
+    await page.waitForLoadState('networkidle', { timeout: 15_000 })
 
     // Re-open the question we just created via NcActions
-    const questionRow = page.locator('li, .question-item').filter({ hasText: UNIQUE_TEXT }).first()
-    await expect(questionRow).toBeVisible({ timeout: 10_000 })
+    const questionRow = page.locator('.question-item').filter({ hasText: UNIQUE_TEXT }).first()
+    await expect(questionRow).toBeVisible({ timeout: 20_000 })
     const actionsBtn = questionRow.locator('button[aria-label*="Actions"], button[aria-label*="Aktionen"], button.action-item__menutoggle').first()
     if (await actionsBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await actionsBtn.click()
