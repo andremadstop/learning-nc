@@ -22,9 +22,9 @@
 
 ### Inline-Dropdown
 
-- [ ] **DROP-01**: Dropdown-Picker erscheint direkt am angeklickten Node (positioniert)
-- [ ] **DROP-02**: scoring_mode=strict: nur exakte Gerätezuordnung wird gewertet
-- [ ] **DROP-03**: scoring_mode=partial: anteilige Punkte bei Teiltreffern
+- [x] **DROP-01**: Dropdown-Picker erscheint direkt am angeklickten Node (positioniert)
+- [x] **DROP-02**: scoring_mode=strict: nur exakte Gerätezuordnung wird gewertet
+- [x] **DROP-03**: scoring_mode=partial: anteilige Punkte bei Teiltreffern
 
 ### Multi-Panel Layout
 
@@ -66,9 +66,9 @@
 | SVG-02 | Phase 2 | Complete |
 | SVG-03 | Phase 2 | Complete |
 | SVG-04 | Phase 2 | Complete |
-| DROP-01 | Phase 3 | Pending |
-| DROP-02 | Phase 3 | Pending |
-| DROP-03 | Phase 3 | Pending |
+| DROP-01 | Phase 3 | Complete |
+| DROP-02 | Phase 3 | Complete |
+| DROP-03 | Phase 3 | Complete |
 | PANEL-01 | Phase 4 | Pending |
 | PANEL-02 | Phase 4 | Pending |
 | AUTHOR-01 | Phase 5 | Pending |
