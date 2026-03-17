@@ -34,6 +34,13 @@
       :disabled="disabled"
       @update="onUpdate"
     />
+    <PbqMultiPanel
+      v-else-if="subtype === 'multi_panel'"
+      :config="config"
+      :value="localAnswer"
+      :disabled="disabled"
+      @update="onUpdate"
+    />
 
     <div class="pbq-footer">
       <span class="pbq-progress">{{ answeredCount }} / {{ totalCount }} beantwortet</span>
@@ -51,11 +58,12 @@ import { generateUrl } from '@nextcloud/router'
 import PbqDropdown  from './PbqDropdown.vue'
 import PbqPlacement from './PbqPlacement.vue'
 import PbqCli       from './PbqCli.vue'
-import PbqCable     from './PbqCable.vue'
+import PbqCable      from './PbqCable.vue'
+import PbqMultiPanel from './PbqMultiPanel.vue'
 
 export default {
   name: 'PbqRenderer',
-  components: { NcButton, PbqDropdown, PbqPlacement, PbqCli, PbqCable },
+  components: { NcButton, PbqDropdown, PbqPlacement, PbqCli, PbqCable, PbqMultiPanel },
   props: {
     question:     { type: Object, required: true },
     initialValue: { type: Object, default: null },
@@ -83,10 +91,21 @@ export default {
         case 'placement': return (cfg.positions || []).length
         case 'cli':       return (cfg.terminals || []).length
         case 'cable':     return (cfg.questions || []).length * 2
+        case 'multi_panel': {
+          const cliTerms = (cfg.cli && cfg.cli.terminals || []).length
+          const placementPos = (cfg.placement && cfg.placement.positions || []).length
+          return cliTerms + placementPos
+        }
         default: return 0
       }
     },
-    answeredCount() { return Object.keys(this.localAnswer).length },
+    answeredCount() {
+      if (this.subtype === 'multi_panel') {
+        return Object.keys(this.localAnswer.cli || {}).length
+          + Object.keys(this.localAnswer.placement || {}).length
+      }
+      return Object.keys(this.localAnswer).length
+    },
   },
   methods: {
     onUpdate(key, value) {
