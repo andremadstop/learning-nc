@@ -51,8 +51,20 @@ Earn XP, level up, unlock 14 achievements. Level-up celebrations with animations
 **Daily Goal**
 Set a configurable daily review target (default: 20 cards) with a visual progress ring. +10 XP bonus when you hit your daily goal.
 
+**AI Explanations**
+After every answer in Training or Leitner mode, a 💡 button explains why the correct answer is right — and why a wrong choice missed the mark. Uses the configured Nextcloud AI provider. Disabled during active exams to prevent cheating.
+
+**ICS Calendar Subscription**
+Export your due flashcards as a calendar feed. Generate a personal URL in settings and subscribe from any calendar app (Thunderbird, iOS, Android). Due cards appear automatically as all-day events.
+
+**Daily Missions**
+New learning objectives each day (e.g. "master 5 cards", "complete a Trouble Spots session") with bonus XP. Missions adapt to your progress and give a fresh daily incentive.
+
+**Streak Freeze Token**
+No time to study every day? One freeze token per week protects your streak even if you miss a day.
+
 **Course Management**
-Instructors can create courses, assign question pools, enroll students, and track their progress from a dedicated dashboard. Leaderboard with XP ranking and student detail drill-down.
+Instructors can create courses, assign question pools (including batch assignment), enroll students, and track their progress from a dedicated dashboard. Leaderboard with XP ranking, student detail drill-down, and CSV export of at-risk students. Students can view their own progress in the **"My Progress"** tab.
 
 **Multi-Language Support**
 Translate questions and answers into any language. Filter by language during training sessions.

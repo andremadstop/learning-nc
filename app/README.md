@@ -27,13 +27,16 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 - **14 Badges** — Achievements across 6 categories (sessions, performance, mastery, streak, social, fun)
 - **XP Streak Multipliers** — Tier-based bonuses: 1.5x at 3-day streak, 2x at 7-day, 3x at 30-day
 - **Daily Goal** — Configurable daily review target with visual progress ring and XP bonus
+- **Daily Missions** — Fresh bonus-XP objectives each day (master cards, start sessions, clear trouble spots)
+- **Streak Freeze Tokens** — One free token per week to protect streak when you miss a day
 - **Level-Up Celebration** — Animated overlay when reaching a new level
 
 ### Course Management
-- **Courses** — Instructors create courses, assign pools, enroll students
-- **Leaderboard** — Ranked by XP with medal indicators and student detail drill-down
+- **Courses** — Instructors create courses, assign pools (single or batch), enroll students
+- **Leaderboard** — Ranked by XP with medal indicators and student detail drill-down; refreshes on tab switch and member changes
 - **Student Progress** — Per-student XP, badges, streak, Leitner boxes per pool, session history
-- **At-Risk Warning** — Instructors see which students are falling behind with risk scores and reasons
+- **My Progress Tab** — Students can view their own detailed progress inside any enrolled course
+- **At-Risk Warning** — Instructors see which students are falling behind with risk scores, reasons, and CSV export
 
 ### Data & Sharing
 - **Pool Sharing** — Share with users (read-only or edit permissions)
@@ -44,6 +47,8 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 
 ### Integration
 - **Dashboard Widget** — See due questions from the Nextcloud Dashboard
+- **ICS Calendar Subscription** — Subscribe to your due cards as a calendar feed (personal token URL, works with Thunderbird, iOS, Android)
+- **AI Explanations** — 💡 button after each answer explains correct/wrong choices; uses Nextcloud AI provider; blocked during exams
 - **Activity Integration** — Badge unlocks appear in Nextcloud Activity stream
 - **Analytics** — Per-pool statistics with accuracy trends
 - **Mobile Friendly** — Responsive touch-optimized design
