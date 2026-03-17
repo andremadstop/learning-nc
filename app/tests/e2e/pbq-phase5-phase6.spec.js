@@ -9,8 +9,14 @@ const { test, expect } = require('@playwright/test')
 async function goToAdmin(page) {
   await page.goto('/apps/learning/')
   await page.waitForSelector('#app-content, .app-learning', { timeout: 30_000 })
-  // Wait for Vue app bootstrap + initial API call to finish
+  // Wait for Vue app bootstrap + role API call to finish
   await page.waitForLoadState('networkidle')
+  // App may redirect to courses view if user has student role — force Pools tab
+  const poolsTab = page.locator('button[role="tab"]').filter({ hasText: /^Pools$/ })
+  if (await poolsTab.isVisible({ timeout: 5_000 }).catch(() => false)) {
+    await poolsTab.click()
+    await page.waitForLoadState('networkidle')
+  }
 }
 
 async function openFirstPool(page) {
