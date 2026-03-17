@@ -119,6 +119,25 @@
         <PbqAuthorTool />
       </NcDialog>
 
+      <!-- Instructor Note -->
+      <div class="form-group">
+        <label for="instructor-note">{{ t('learning', 'Instructor Note (optional)') }}</label>
+        <textarea
+          id="instructor-note"
+          v-model="form.instructorNote"
+          rows="3"
+          :placeholder="t('learning', 'Private note for instructors...')"
+          class="nc-input"
+        ></textarea>
+        <NcCheckboxRadioSwitch
+          :checked="form.noteVisible"
+          @update:checked="form.noteVisible = $event"
+          type="checkbox"
+        >
+          {{ t('learning', 'Visible to students') }}
+        </NcCheckboxRadioSwitch>
+      </div>
+
       <div class="dialog-actions">
         <NcButton type="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
         <NcButton type="primary" native-type="submit" :disabled="saving">{{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}</NcButton>
@@ -161,6 +180,8 @@ export default {
         ],
         pbqSubtype: '',
         pbqConfig: '',
+        instructorNote: '',
+        noteVisible: false,
       }
     };
   },
@@ -202,6 +223,8 @@ export default {
       this.form.pbqConfig  = this.question.pbq_config
         ? JSON.stringify(this.question.pbq_config, null, 2)
         : ''
+      this.form.instructorNote = this.question.instructor_note || ''
+      this.form.noteVisible = this.question.note_visible || false
     }
   },
   methods: {
@@ -300,6 +323,8 @@ export default {
         removeImage: this.removeExistingImage,
         pbqSubtype: this.form.pbqSubtype || null,
         pbqConfig:  this.form.pbqConfig ? this.form.pbqConfig.trim() : null,
+        instructorNote: this.form.instructorNote || null,
+        noteVisible: this.form.noteVisible,
       });
       this.saving = false;
     }
