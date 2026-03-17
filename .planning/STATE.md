@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: completed
-stopped_at: Completed 04-multi-panel-layout 04-01-PLAN.md — all tasks including browser checkpoint approved
-last_updated: "2026-03-17T07:10:44.293Z"
+stopped_at: Completed 05-pbq-author-tool 05-01-PLAN.md
+last_updated: "2026-03-17T07:37:06.974Z"
 last_activity: "2026-03-17 — Phase 04 Plan 01 executed: PbqMultiPanel.vue + PbqRenderer extension, browser-verified"
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
   percent: 100
 ---
 
@@ -45,6 +45,7 @@ Progress: [██████████] 100%
 | Phase 03-inline-dropdown-auf-diagramm P01 | 4min | 2 tasks | 3 files |
 | Phase 03-inline-dropdown-auf-diagramm P01 | 5min | 3 tasks | 3 files |
 | Phase 04-multi-panel-layout P01 | 10min | 3 tasks | 3 files |
+| Phase 05-pbq-author-tool P01 | 8min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,9 @@ Progress: [██████████] 100%
 - [Phase 04-multi-panel-layout]: No overflow:hidden on .pbq-multi-panel — inline-picker needs visible overflow for absolute positioning
 - [Phase 04-multi-panel-layout]: Multi-panel answeredCount sums cli + placement sub-keys (not top-level keys)
 - [Phase 04-multi-panel-layout]: min-width:0 on flex children prevents horizontal overflow from monospace terminal content
+- [Phase 05-pbq-author-tool]: PbqAuthorTool: topology null (not {}) when useTopology=false or nodes=[] — matches PbqRenderer null-check contract
+- [Phase 05-pbq-author-tool]: PbqAuthorTool: command_outputs keys lowercased in computed to match evaluateCommand case-insensitive lookup
+- [Phase 05-pbq-author-tool]: PbqAuthorTool: all state internal (no props) — Plan 02 wires it into admin UI
 
 ### Pending Todos
 
@@ -82,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T07:06:25.086Z
-Stopped at: Completed 04-multi-panel-layout 04-01-PLAN.md — all tasks including browser checkpoint approved
+Last session: 2026-03-17T07:37:06.959Z
+Stopped at: Completed 05-pbq-author-tool 05-01-PLAN.md
 Resume file: None

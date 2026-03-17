@@ -33,8 +33,8 @@
 
 ### PBQ Author Tool
 
-- [ ] **AUTHOR-01**: Visueller Editor zur Auswahl des PBQ-Typs und Eingabe der Config-Felder
-- [ ] **AUTHOR-02**: Automatische Generierung von gültigem PBQ-JSON aus Formulareingaben
+- [x] **AUTHOR-01**: Visueller Editor zur Auswahl des PBQ-Typs und Eingabe der Config-Felder
+- [x] **AUTHOR-02**: Automatische Generierung von gültigem PBQ-JSON aus Formulareingaben
 - [ ] **AUTHOR-03**: Live-Vorschau der resultierenden PBQ-Simulation im Editor
 
 ### Instructor Notes
@@ -71,8 +71,8 @@
 | DROP-03 | Phase 3 | Complete |
 | PANEL-01 | Phase 4 | Complete |
 | PANEL-02 | Phase 4 | Complete |
-| AUTHOR-01 | Phase 5 | Pending |
-| AUTHOR-02 | Phase 5 | Pending |
+| AUTHOR-01 | Phase 5 | Complete |
+| AUTHOR-02 | Phase 5 | Complete |
 | AUTHOR-03 | Phase 5 | Pending |
 | NOTE-01 | Phase 6 | Pending |
 | NOTE-02 | Phase 6 | Pending |
