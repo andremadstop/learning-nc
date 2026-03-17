@@ -20,10 +20,11 @@ decisions:
   - overflow:visible added inline to .pbq-diagram-wrapper rule (not separate rule) to avoid specificity conflict
   - closePicker() extracted as named method (not inline) to allow addEventListener/removeEventListener symmetry
   - Below-diagram picker Cancel button updated from activePosId=null to closePicker() for consistency
+requirements_completed: [DROP-01, DROP-02, DROP-03]
 metrics:
-  duration: ~4min
+  duration: ~5min
   completed: 2026-03-17
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
   files_created: 2
   files_modified: 1
@@ -39,7 +40,7 @@ metrics:
 |------|--------|--------|-------------|
 | 1 - RED: Failing unit tests | Done | 8e30528 | pbqScoringMode.test.js, 7 tests, Cannot find module RED |
 | 2 - GREEN: Implementation | Done | d00baa6 | pbqScoringMode.js + PbqPlacement.vue full implementation |
-| 3 - Browser verify | Pending checkpoint | — | Awaiting human browser verification |
+| 3 - Browser verify | Done | approved | All 10 browser verification steps passed — user approved |
 
 ## What Was Built
 
@@ -95,6 +96,20 @@ All 7 new pbqScoringMode tests GREEN. All 40 pre-existing tests still pass.
 
 - rsync + `npm run build` (webpack 5, 70s) + docker cp complete on learning-dev
 - Build compiled with 2 warnings (pre-existing bundle size warnings, not new)
+
+### Browser Verification (Task 3 — Approved)
+
+All 10 steps verified and approved by user:
+1. Clicking a node opens picker ABOVE the node (not below diagram)
+2. Picker centered horizontally on the node
+3. Picker does not appear at viewport top-left (wrapper-relative coords confirmed)
+4. Select device → picker closes, summary updates
+5. Clicking different node → picker moves to that node
+6. Cancel → picker closes without assignment
+7. Scroll → picker auto-closes
+8. All positions correct + submit → summary shows 'Alle korrekt' (strict mode)
+9. Partial correct with scoring_mode=partial → 'X / Y korrekt (Z%)'
+10. IMAGE-mode placement questions → below-diagram picker still works (no regression)
 
 ## Deviations from Plan
 
