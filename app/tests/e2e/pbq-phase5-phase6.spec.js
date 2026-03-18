@@ -161,11 +161,14 @@ test.describe('Phase 6 — Instructor Notes', () => {
       await lastCheckbox.check({ force: true })
     }
 
-    // Save
-    const saveBtn = page.locator('.nc-dialog button, [role="dialog"] button').filter({ hasText: /Save|Speichern/i }).first()
+    // Save — click the form's submit button
+    const saveBtn = page.locator('[role="dialog"] button[type="submit"]').first()
+    await expect(saveBtn).toBeVisible({ timeout: 5_000 })
     await saveBtn.click()
-    // Wait for API + list reload (dialog closes async after save)
-    await page.waitForTimeout(3000)
+    // Dialog must close (proves save succeeded)
+    await expect(page.locator('#question-text')).not.toBeVisible({ timeout: 20_000 })
+    // Wait for list reload
+    await page.waitForTimeout(2000)
 
     // Re-open the question we just created via NcActions
     const questionRow = page.locator('.question-item').filter({ hasText: UNIQUE_TEXT }).first()
