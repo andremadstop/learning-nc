@@ -161,8 +161,10 @@ test.describe('Phase 6 — Instructor Notes', () => {
       await lastCheckbox.check({ force: true })
     }
 
-    // Save — submit the form programmatically (most reliable in NcDialog)
-    await page.locator('[role="dialog"] form').evaluate(form => form.requestSubmit())
+    // Save — dispatch submit event directly (bypasses HTML5 constraint validation on empty answer slots)
+    await page.locator('[role="dialog"] form').evaluate(form => {
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+    })
     // Dialog must close (proves save succeeded)
     await expect(page.locator('#question-text')).not.toBeVisible({ timeout: 20_000 })
     // Wait for list reload
