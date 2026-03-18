@@ -177,7 +177,7 @@ test.describe('Phase 6 — Instructor Notes', () => {
     if (await actionsBtn.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await actionsBtn.click()
       await page.waitForTimeout(300)
-      await page.locator('button').filter({ hasText: /^Edit$|^Bearbeiten$/ }).first().click()
+      await page.locator('button').filter({ hasText: /Edit|Bearbeiten/i }).first().click({ timeout: 10_000 })
     } else {
       // Fallback: double-click the row
       await questionRow.dblclick()
