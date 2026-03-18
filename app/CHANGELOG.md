@@ -2,14 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.6.0] - 2026-03-16
+## [2.6.0] - 2026-03-18
 
 ### Added
+- **Live-Duell**: Two authenticated Nextcloud users can challenge each other to a real-time True/False quiz duel using Short Polling (500ms)
+- New `duel_sessions` and `duel_answers` DB tables with scoring matrix (correct+first=+4, both correct=+3/+2, both wrong=-1)
+- **DuelMode.vue**: New component with join/lobby/question/feedback/results phases and 30-second inactivity timeout (inactive player forfeits)
+- **"Duell" navigation tab** in App.vue for all authenticated users — Back button returns to Pools (instructor) or Courses (student)
+- **6 new API endpoints**: `POST /api/duels`, join, ready, state, answer, rematch
 - **Calendar Token**: Per-user ICS subscription token for external calendar apps. `GET /api/v1/user/calendar-token` returns token + subscription URL. `POST /api/v1/user/calendar-token/regenerate` invalidates old token. Token stored in NC preferences (never expires until regenerated).
 - **Public ICS Feed**: `GET /api/v1/calendar/{token}.ics` — unauthenticated ICS endpoint for calendar subscriptions. Uses token-to-user reverse lookup via `oc_preferences`.
 - **Calendar Sync in Personal Settings**: ICS URL field with one-click copy and regenerate button.
 - **ICS UID domain fix**: `UID` fields now use actual NC hostname (`parse_url(getBaseUrl(), PHP_URL_HOST)`) instead of literal `@nextcloud`.
-- **AI Explain button**: `POST /api/ai/explain` schedules a text2text task explaining why an answer is correct/incorrect. "💡 Explain this" button appears after answering in LeitnerMode and TrainingMode (only shown when AI is available).
+- **AI Explain button**: `POST /api/ai/explain` schedules a text2text task explaining why an answer is correct/incorrect. "Explain this" button appears after answering in LeitnerMode and TrainingMode (only shown when AI is available).
 - **At-Risk CSV Export**: `GET /api/courses/{courseId}/at-risk/export/csv` — downloads at-risk student list as CSV (Name, Risk Level, Risk Reasons, Accuracy, Last Active). Export button in course progress tab.
 - **Batch Pool Assignment**: Add-pool modal in CourseDetail now supports multi-select (checkboxes) — select multiple pools and add them all with one click.
 

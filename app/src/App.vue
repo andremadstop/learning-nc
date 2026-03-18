@@ -30,6 +30,14 @@
       >
         {{ t('learning', 'Settings') }}
       </button>
+      <button
+        :class="['main-nav-btn', { active: mainView === 'duel' }]"
+        role="tab"
+        :aria-selected="mainView === 'duel' ? 'true' : 'false'"
+        @click="switchMainView('duel')"
+      >
+        {{ t('learning', 'Duell') }}
+      </button>
     </div>
 
     <!-- ==================== POOLS VIEW ==================== -->
@@ -40,12 +48,18 @@
         @back="backToPools"
       />
 
+      <SwipeMode
+        v-else-if="currentView === 'swipeMode'"
+        @back="backToPools"
+      />
+
       <PoolList
         v-else-if="currentView === 'pools'"
         :userRole="userRole"
         @selectPool="selectPool"
         @openSmartQueue="openSmartQueue"
         @openRemediation="openRemediation"
+        @openSwipeMode="openSwipeMode"
       />
 
       <div v-else-if="currentView === 'questions'" class="pool-view">
@@ -132,6 +146,11 @@
       <PersonalSettings v-else />
     </template>
 
+    <!-- ==================== DUEL VIEW ==================== -->
+    <template v-if="mainView === 'duel'">
+      <DuelMode @back="backFromDuel" />
+    </template>
+
     <!-- ==================== COURSES VIEW ==================== -->
     <template v-if="mainView === 'courses'">
       <!-- Instructor sub-navigation: List | Dashboard -->
@@ -202,6 +221,7 @@ import InstructorDashboard from './components/InstructorDashboard.vue';
 import SmartQueue from './components/SmartQueue.vue';
 import AdminSettings from './components/AdminSettings.vue';
 import PersonalSettings from './components/PersonalSettings.vue';
+import DuelMode from './components/DuelMode.vue';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 
@@ -224,7 +244,8 @@ export default {
     InstructorDashboard,
     SmartQueue,
     AdminSettings,
-    PersonalSettings
+    PersonalSettings,
+    DuelMode,
   },
   data() {
     return {
@@ -323,6 +344,16 @@ export default {
         this.backToPools();
       }
       // settings: no state reset needed
+      // duel: no state reset needed — DuelMode is self-contained
+    },
+
+    backFromDuel() {
+      // Return to appropriate view based on role
+      if (this.userRole === 'student') {
+        this.switchMainView('courses');
+      } else {
+        this.switchMainView('pools');
+      }
     },
 
     // --- Pools methods ---
@@ -369,6 +400,9 @@ export default {
     openSmartQueue() {
       this.smartQueueMode = 'queue';
       this.currentView = 'smartQueue';
+    },
+    openSwipeMode() {
+      this.currentView = 'swipeMode';
     },
     openRemediation() {
       this.smartQueueMode = 'remediation';
