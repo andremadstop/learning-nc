@@ -139,4 +139,4 @@ Plans:
 | 4. Multi-Panel Layout | 1/1 | Complete   | 2026-03-17 |
 | 5. PBQ Author Tool | 2/2 | Complete   | 2026-03-17 |
 | 6. Instructor Notes | 2/2 | Complete   | 2026-03-17 |
-| 7. Live-Duell | 1/3 | In Progress|  |
+| 7. Live-Duell | 2/3 | In Progress|  |

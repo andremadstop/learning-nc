@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: completed
-stopped_at: Completed 07-live-duell 07-01-PLAN.md
-last_updated: "2026-03-18T11:08:27.350Z"
+stopped_at: Completed 07-live-duell 07-02-PLAN.md
+last_updated: "2026-03-18T11:13:51.225Z"
 last_activity: "2026-03-17 — Phase 05 Plan 02 executed: PbqRenderer live preview + QuestionForm PBQ integration, browser-verified"
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
   percent: 100
 ---
 
@@ -50,6 +50,7 @@ Progress: [██████████] 100%
 | Phase 06-instructor-notes P01 | 10min | 3 tasks | 5 files |
 | Phase 06-instructor-notes P02 | 15min | 4 tasks | 5 files |
 | Phase 07-live-duell P01 | 8min | 2 tasks | 9 files |
+| Phase 07-live-duell P02 | 4min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,7 @@ Progress: [██████████] 100%
 - [Phase 07-live-duell]: Scoring matrix from CONTEXT.md: correct+steal=+4, both correct faster/slower=+3/+2, tied within 50ms=+3/+3, both wrong=-1
 - [Phase 07-live-duell]: Boolean NC migration columns must use notnull:false due to NC/Doctrine Bool+NotNull constraint limitation
 - [Phase 07-live-duell]: learning_questions: question_type (not type), text (not question) column names confirmed
+- [Phase 07-live-duell]: applyStateTransitions() extracted as shared helper — avoids duplicate phase-switch logic in pollState() and direct API responses
 
 ### Pending Todos
 
@@ -102,6 +104,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T11:08:27.334Z
-Stopped at: Completed 07-live-duell 07-01-PLAN.md
+Last session: 2026-03-18T11:13:51.211Z
+Stopped at: Completed 07-live-duell 07-02-PLAN.md
 Resume file: None
