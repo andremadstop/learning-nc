@@ -27,6 +27,7 @@ return [
         ['name' => 'training#submitBatch', 'url' => '/api/training/submitBatch', 'verb' => 'POST'],
         ['name' => 'training#complete', 'url' => '/api/training/complete', 'verb' => 'POST'],
         ['name' => 'training#status', 'url' => '/api/training/session/{sessionId}', 'verb' => 'GET'],
+        ['name' => 'training#abort', 'url' => '/api/training/abort', 'verb' => 'POST'],
 
         // Leitner
         ['name' => 'leitner#queue', 'url' => '/api/leitner/queue', 'verb' => 'GET'],
@@ -95,6 +96,14 @@ return [
         ['name' => 'ai#status', 'url' => '/api/ai/status/{taskId}', 'verb' => 'GET'],
         ['name' => 'ai#import', 'url' => '/api/ai/import/{taskId}', 'verb' => 'POST'],
         ['name' => 'ai#explain', 'url' => '/api/ai/explain', 'verb' => 'POST'],
+
+        // Duels
+        ['name' => 'duel#create', 'url' => '/api/duels', 'verb' => 'POST'],
+        ['name' => 'duel#join', 'url' => '/api/duels/{code}/join', 'verb' => 'POST'],
+        ['name' => 'duel#ready', 'url' => '/api/duels/{code}/ready', 'verb' => 'POST'],
+        ['name' => 'duel#state', 'url' => '/api/duels/{code}/state', 'verb' => 'GET'],
+        ['name' => 'duel#answer', 'url' => '/api/duels/{code}/answer', 'verb' => 'POST'],
+        ['name' => 'duel#rematch', 'url' => '/api/duels/{code}/rematch', 'verb' => 'POST'],
 
         // Course Management
         ['name' => 'course#role', 'url' => '/api/role', 'verb' => 'GET'],
