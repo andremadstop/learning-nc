@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: completed
-stopped_at: Completed 07-live-duell 07-02-PLAN.md
-last_updated: "2026-03-18T11:13:51.225Z"
+stopped_at: "Checkpoint: 07-live-duell 07-03 human-verify"
+last_updated: "2026-03-18T11:18:45.191Z"
 last_activity: "2026-03-17 — Phase 05 Plan 02 executed: PbqRenderer live preview + QuestionForm PBQ integration, browser-verified"
 progress:
   total_phases: 7
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
   percent: 100
 ---
 
@@ -51,6 +51,7 @@ Progress: [██████████] 100%
 | Phase 06-instructor-notes P02 | 15min | 4 tasks | 5 files |
 | Phase 07-live-duell P01 | 8min | 2 tasks | 9 files |
 | Phase 07-live-duell P02 | 4min | 1 tasks | 1 files |
+| Phase 07-live-duell P03 | 8min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,8 @@ Progress: [██████████] 100%
 - [Phase 07-live-duell]: Boolean NC migration columns must use notnull:false due to NC/Doctrine Bool+NotNull constraint limitation
 - [Phase 07-live-duell]: learning_questions: question_type (not type), text (not question) column names confirmed
 - [Phase 07-live-duell]: applyStateTransitions() extracted as shared helper — avoids duplicate phase-switch logic in pollState() and direct API responses
+- [Phase 07-live-duell]: DuelMode self-contained: no extra state reset in switchMainView for 'duel' — same pattern as settings
+- [Phase 07-live-duell]: backFromDuel() role-aware: instructor→pools, student→courses
 
 ### Pending Todos
 
@@ -104,6 +107,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T11:13:51.211Z
-Stopped at: Completed 07-live-duell 07-02-PLAN.md
+Last session: 2026-03-18T11:18:36.190Z
+Stopped at: Checkpoint: 07-live-duell 07-03 human-verify
 Resume file: None
