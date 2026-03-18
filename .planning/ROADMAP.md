@@ -3,6 +3,7 @@
 ## Milestones
 
 - 📋 **v2.3 PBQ OnVUE-Niveau Upgrade** — Phases 1–6 (planned)
+- 📋 **v2.6 Live-Duell** — Phase 7 (planned)
 
 ## Phases
 
@@ -106,6 +107,28 @@ Plans:
 - [ ] 06-01-PLAN.md — DB Migration + Backend (instructor_note + note_visible, Entity/Service/Controller, unit tests)
 - [ ] 06-02-PLAN.md — Frontend: QuestionForm Editor + note display in TrainingMode/LeitnerMode/SmartQueue/ExamMode
 
+### 📋 v2.6 Live-Duell (Planned)
+
+**Milestone Goal:** Echtzeit-Duell-Modus im Wahr/Falsch-Stil für zwei Spieler — schnell antworten, Punkte stehlen, Rückkampf anfordern.
+
+#### Phase 7: Live-Duell
+
+**Goal**: Zwei Benutzer können ein Echtzeit-Duell im Wahr/Falsch-Stil starten — 10 Fragen aus dem aktiven Pool, Steal-Mechanik für Punkte, eigener Nav-Eintrag.
+**Depends on**: Nothing
+**Requirements**: DUEL-01, DUEL-02, DUEL-03, DUEL-04, DUEL-05
+**Success Criteria** (what must be TRUE):
+  1. Spieler A kann ein Duell erstellen und einen Link/Code teilen, Spieler B tritt bei
+  2. Beide sehen dieselbe Frage gleichzeitig — wer zuerst antwortet, bekommt Vorrang
+  3. Scoring: korrekt+zuerst = +3, beide korrekt (schneller +3, langsamer +2), falsch wenn Gegner korrekt = Gegner bekommt +1 Steal-Bonus, beide falsch = -1 je
+  4. 10 Fragen aus aktivem Pool, bei Rematch neue Auswahl
+  5. Live-Duell hat eigenen Nav-Eintrag in der App
+**Plans**: 3 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Backend: DB-Schema (duel_sessions, duel_answers), API-Endpoints (create/join/answer/state), Short Polling
+- [ ] 07-02-PLAN.md — Frontend: DuelMode.vue Komponente (Lobby, Frage-Anzeige, Scoring, Ergebnis), Nav-Eintrag
+- [ ] 07-03-PLAN.md — Integration: App.vue Routing, Pool-Auswahl, Rematch-Flow, Deploy + E2E Verify
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -116,3 +139,4 @@ Plans:
 | 4. Multi-Panel Layout | 1/1 | Complete   | 2026-03-17 |
 | 5. PBQ Author Tool | 2/2 | Complete   | 2026-03-17 |
 | 6. Instructor Notes | 2/2 | Complete   | 2026-03-17 |
+| 7. Live-Duell | 1/3 | In Progress|  |

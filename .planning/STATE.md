@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: PBQ OnVUE-Niveau Upgrade
 status: completed
-stopped_at: Completed 06-instructor-notes 06-02-PLAN.md
-last_updated: "2026-03-17T09:15:48.697Z"
+stopped_at: Completed 07-live-duell 07-01-PLAN.md
+last_updated: "2026-03-18T11:08:27.350Z"
 last_activity: "2026-03-17 — Phase 05 Plan 02 executed: PbqRenderer live preview + QuestionForm PBQ integration, browser-verified"
 progress:
-  total_phases: 6
+  total_phases: 7
   completed_phases: 6
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 13
+  completed_plans: 11
   percent: 100
 ---
 
@@ -49,6 +49,7 @@ Progress: [██████████] 100%
 | Phase 05-pbq-author-tool P02 | 6min | 3 tasks | 2 files |
 | Phase 06-instructor-notes P01 | 10min | 3 tasks | 5 files |
 | Phase 06-instructor-notes P02 | 15min | 4 tasks | 5 files |
+| Phase 07-live-duell P01 | 8min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,9 @@ Progress: [██████████] 100%
 - [Phase 06-instructor-notes]: NcNoteCard type='info' (blue) used for instructor notes — distinct from type='warning' for explanations
 - [Phase 06-instructor-notes]: ExamMode enriches detailedResults from this.questions array at build time — not from derived sortedDetailedResults
 - [Phase 06-instructor-notes]: Double-guard v-if: note_visible && instructor_note — both truthy required to show NcNoteCard
+- [Phase 07-live-duell]: Scoring matrix from CONTEXT.md: correct+steal=+4, both correct faster/slower=+3/+2, tied within 50ms=+3/+3, both wrong=-1
+- [Phase 07-live-duell]: Boolean NC migration columns must use notnull:false due to NC/Doctrine Bool+NotNull constraint limitation
+- [Phase 07-live-duell]: learning_questions: question_type (not type), text (not question) column names confirmed
 
 ### Pending Todos
 
@@ -98,6 +102,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-17T09:11:42.321Z
-Stopped at: Completed 06-instructor-notes 06-02-PLAN.md
+Last session: 2026-03-18T11:08:27.334Z
+Stopped at: Completed 07-live-duell 07-01-PLAN.md
 Resume file: None
