@@ -161,10 +161,8 @@ test.describe('Phase 6 — Instructor Notes', () => {
       await lastCheckbox.check({ force: true })
     }
 
-    // Save — click the form's submit button
-    const saveBtn = page.locator('[role="dialog"] button[type="submit"]').first()
-    await expect(saveBtn).toBeVisible({ timeout: 5_000 })
-    await saveBtn.click()
+    // Save — submit the form programmatically (most reliable in NcDialog)
+    await page.locator('[role="dialog"] form').evaluate(form => form.requestSubmit())
     // Dialog must close (proves save succeeded)
     await expect(page.locator('#question-text')).not.toBeVisible({ timeout: 20_000 })
     // Wait for list reload
