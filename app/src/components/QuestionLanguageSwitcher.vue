@@ -45,23 +45,23 @@ export default {
 <style scoped>
 .question-language-switcher {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 10px;
+  right: 10px;
   display: inline-flex;
-  gap: 6px;
+  gap: 4px;
   z-index: 3;
-  padding: 6px;
+  padding: 4px;
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.82);
   backdrop-filter: blur(8px);
 }
 
 .lang-btn {
-  min-width: 38px;
+  min-width: 32px;
   border: 0;
   border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 11px;
+  padding: 5px 8px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: #d7e7ff;
