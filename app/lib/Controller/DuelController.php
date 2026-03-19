@@ -96,7 +96,7 @@ class DuelController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function invite(int $poolId, string $inviteeUid, int $numQuestions = 10, int $courseId = 0): DataResponse {
+    public function invite(?int $poolId = null, string $inviteeUid = '', int $numQuestions = 10, int $courseId = 0): DataResponse {
         try {
             $numQuestions = max(5, min(50, $numQuestions));
             if ($courseId <= 0) {

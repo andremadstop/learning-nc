@@ -1,8 +1,10 @@
 <template>
   <div
-    class="virtuprof-avatar"
-    :class="[`animation-${animation}`, { 'has-message': hasMessage }]"
+    class="virtuprof-avatar-wrapper"
     @click="$emit('click')">
+    <div
+      class="virtuprof-avatar"
+      :class="[`animation-${animation}`, { 'has-message': hasMessage }]">
     <svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect x="15" y="40" width="30" height="30" rx="6" fill="#2c6c9f" />
       <circle cx="30" cy="28" r="16" fill="#f3c7a6" />
@@ -14,6 +16,10 @@
       <line x1="38" y1="10" x2="42" y2="6" stroke="#f2c230" stroke-width="1.5" />
       <circle cx="42" cy="6" r="2" fill="#f2c230" />
     </svg>
+    </div>
+    <div v-if="inviteCount > 0" class="invite-badge" :aria-label="`${inviteCount} Duel-Einladung(en)`">
+      {{ inviteCount > 9 ? '9+' : inviteCount }}
+    </div>
   </div>
 </template>
 
@@ -29,15 +35,24 @@ export default {
       type: Boolean,
       default: false,
     },
+    inviteCount: {
+      type: Number,
+      default: 0,
+    },
   },
 }
 </script>
 
 <style scoped>
+.virtuprof-avatar-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
 .virtuprof-avatar {
   width: 64px;
   height: 84px;
-  cursor: pointer;
   transition: transform 0.2s ease;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
 }
@@ -48,8 +63,26 @@ export default {
   display: block;
 }
 
-.virtuprof-avatar:hover {
+.virtuprof-avatar-wrapper:hover .virtuprof-avatar {
   transform: scale(1.05);
+}
+
+.invite-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: #e53935;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  padding: 0 4px;
+  pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 
 .virtuprof-avatar.has-message {

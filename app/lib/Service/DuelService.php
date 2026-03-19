@@ -81,7 +81,7 @@ class DuelService {
         return $this->buildState($session, $userId);
     }
 
-    public function createInvite(int $poolId, string $userId, string $inviteeUid, int $numQuestions, int $courseId): array {
+    public function createInvite(?int $poolId, string $userId, string $inviteeUid, int $numQuestions, int $courseId): array {
         if ($inviteeUid === $userId) {
             throw new \RuntimeException('You cannot invite yourself');
         }
@@ -464,9 +464,9 @@ class DuelService {
         throw new \RuntimeException('Could not generate unique duel code after 10 attempts');
     }
 
-    private function selectQuestions(int $poolId, int $numQuestions = 10, string $userId = '', ?int $courseId = null): array {
+    private function selectQuestions(?int $poolId, int $numQuestions = 10, string $userId = '', ?int $courseId = null): array {
         $allowedQuestionIds = null;
-        if ($courseId !== null) {
+        if ($courseId !== null && $poolId !== null) {
             $allowedQuestionIds = $this->courseService->resolveCoursePoolContext($courseId, $poolId, $userId)['question_ids'];
             if ($allowedQuestionIds === []) {
                 throw new \RuntimeException('No questions available for this course pool filter');
@@ -477,8 +477,27 @@ class DuelService {
         $qb = $this->db->getQueryBuilder();
         $qb->selectDistinct('q.id')
            ->from('learning_questions', 'q')
-           ->innerJoin('q', 'learning_answers', 'a', $qb->expr()->eq('a.question_id', 'q.id'))
-           ->where($qb->expr()->eq('q.pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)));
+           ->innerJoin('q', 'learning_answers', 'a', $qb->expr()->eq('a.question_id', 'q.id'));
+        if ($poolId !== null) {
+            $qb->where($qb->expr()->eq('q.pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)));
+        } elseif ($courseId !== null) {
+            // No pool specified: draw from all pools in the course
+            $cpQb = $this->db->getQueryBuilder();
+            $cpQb->select('pool_id')->from('learning_course_pools')
+                 ->where($cpQb->expr()->eq('course_id', $cpQb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)));
+            $cpRes = $cpQb->executeQuery();
+            $coursePools = [];
+            while ($cpRow = $cpRes->fetch()) {
+                $coursePools[] = (int)$cpRow['pool_id'];
+            }
+            $cpRes->closeCursor();
+            if (empty($coursePools)) {
+                throw new \RuntimeException('No pools available in this course');
+            }
+            $qb->where($qb->expr()->in('q.pool_id', $qb->createNamedParameter($coursePools, IQueryBuilder::PARAM_INT_ARRAY)));
+        } else {
+            throw new \RuntimeException('Either poolId or courseId is required');
+        }
         if (is_array($allowedQuestionIds)) {
             $qb->andWhere($qb->expr()->in('q.id', $qb->createNamedParameter($allowedQuestionIds, IQueryBuilder::PARAM_INT_ARRAY)));
         }

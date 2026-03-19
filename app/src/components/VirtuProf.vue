@@ -25,6 +25,7 @@
       <VirtuProfAvatar
         :animation="currentAnimation"
         :has-message="visible && !isMinimized"
+        :invite-count="duelInvites.incoming.length"
         @click="handleAvatarClick" />
     </div>
   </transition>

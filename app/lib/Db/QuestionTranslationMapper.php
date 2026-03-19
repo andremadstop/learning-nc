@@ -41,13 +41,16 @@ class QuestionTranslationMapper extends QBMapper {
             return [];
         }
 
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
-           ->from($this->getTableName())
-           ->where($qb->expr()->in('question_id', $qb->createNamedParameter($questionIds, IQueryBuilder::PARAM_INT_ARRAY)))
-           ->andWhere($qb->expr()->eq('lang', $qb->createNamedParameter($lang)));
-
-        return $this->findEntities($qb);
+        $results = [];
+        foreach (array_chunk($questionIds, 999) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('*')
+               ->from($this->getTableName())
+               ->where($qb->expr()->in('question_id', $qb->createNamedParameter($chunk, IQueryBuilder::PARAM_INT_ARRAY)))
+               ->andWhere($qb->expr()->eq('lang', $qb->createNamedParameter($lang)));
+            $results = array_merge($results, $this->findEntities($qb));
+        }
+        return $results;
     }
 
     public function deleteByQuestion(int $questionId): void {
