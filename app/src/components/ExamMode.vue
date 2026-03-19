@@ -145,38 +145,14 @@
             {{ index + 1 }}
           </div>
         </div>
-        <NcButton type="error" class="end-exam-btn" @click="showEndExamModal = true">
+        <NcButton type="error" class="end-exam-btn" @click="confirmEndExam">
           {{ t('learning', 'End Exam') }}
         </NcButton>
-        <NcButton type="tertiary" class="abort-exam-btn" @click="showAbortExamModal = true">
+        <NcButton type="tertiary" class="abort-exam-btn" @click="confirmAbortExam">
           {{ t('learning', 'Abort') }}
         </NcButton>
       </div>
     </div>
-
-    <!-- End Exam confirmation modal -->
-    <NcModal v-if="showEndExamModal" @close="showEndExamModal = false" @closing="showEndExamModal = false" size="small">
-      <div class="modal-content">
-        <h3>{{ t('learning', 'End Exam') }}</h3>
-        <p>{{ t('learning', '{answered} of {total} questions answered. End the exam now?', { answered: answeredCount, total: questions.length }) }}</p>
-        <div class="modal-actions">
-          <NcButton type="tertiary" @click="showEndExamModal = false">{{ t('learning', 'Cancel') }}</NcButton>
-          <NcButton type="error" @click="showEndExamModal = false; finishExam()">{{ t('learning', 'End Exam') }}</NcButton>
-        </div>
-      </div>
-    </NcModal>
-
-    <!-- Abort Exam confirmation modal -->
-    <NcModal v-if="showAbortExamModal" @close="showAbortExamModal = false" @closing="showAbortExamModal = false" size="small">
-      <div class="modal-content">
-        <h3>{{ t('learning', 'Abort Exam') }}</h3>
-        <p>{{ t('learning', 'Abort the exam? Your progress will be discarded and no result will be saved.') }}</p>
-        <div class="modal-actions">
-          <NcButton type="tertiary" @click="showAbortExamModal = false">{{ t('learning', 'Cancel') }}</NcButton>
-          <NcButton type="error" @click="showAbortExamModal = false; abortExam()">{{ t('learning', 'Abort Exam') }}</NcButton>
-        </div>
-      </div>
-    </NcModal>
 
     <!-- Results Screen -->
     <div v-else-if="screen === 'results'" class="results-screen">
@@ -277,7 +253,6 @@ import { generateUrl } from '@nextcloud/router';
 import { showError } from '@nextcloud/dialogs';
 import { celebratePerfectSession } from '../confetti.js';
 import { countUp } from '../countUp.js';
-import NcModal from '@nextcloud/vue/dist/Components/NcModal.js';
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import PbqRenderer from './PbqRenderer.vue';
@@ -285,7 +260,7 @@ import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 
 export default {
   name: 'ExamMode',
-  components: { NcButton, NcProgressBar, NcLoadingIcon, NcModal, NcNoteCard, BadgeUnlock, PbqRenderer, QuestionLanguageSwitcher },
+  components: { NcButton, NcProgressBar, NcLoadingIcon, NcNoteCard, BadgeUnlock, PbqRenderer, QuestionLanguageSwitcher },
   props: {
     poolId: { type: Number, required: true },
     courseId: { type: Number, default: null },
@@ -339,8 +314,6 @@ export default {
       openAnswerTexts: {},
       pbqAnswers: {},
       newBadges: [],
-      showEndExamModal: false,
-      showAbortExamModal: false,
       questionLanguage: this.contentLanguage || '',
     };
   },
@@ -825,6 +798,33 @@ export default {
       this.currentQuestionIndex = index;
     },
 
+    confirmEndExam() {
+      if (this.isLoading) {
+        return;
+      }
+      const shouldEnd = window.confirm(
+        t('learning', '{answered} of {total} questions answered. End the exam now?', {
+          answered: this.answeredCount,
+          total: this.questions.length,
+        })
+      );
+      if (shouldEnd) {
+        this.finishExam();
+      }
+    },
+
+    confirmAbortExam() {
+      if (this.isLoading) {
+        return;
+      }
+      const shouldAbort = window.confirm(
+        t('learning', 'Abort the exam? Your progress will be discarded and no result will be saved.')
+      );
+      if (shouldAbort) {
+        this.abortExam();
+      }
+    },
+
     async finishExam({ forceTimedOut = false } = {}) {
       if (this.isLoading) return;
       if (this.timerInterval) {
@@ -1244,8 +1244,4 @@ export default {
   .xp-earned { animation: none; }
   .timer-danger .snake-timer-svg { animation: none; }
 }
-.modal-content { padding: 24px; min-width: 280px; }
-.modal-content h3 { margin: 0 0 12px 0; font-size: 1.1em; font-weight: 700; }
-.modal-content p { margin: 0 0 20px 0; color: var(--color-text-maxcontrast); }
-.modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
 </style>
