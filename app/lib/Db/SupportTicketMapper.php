@@ -37,4 +37,25 @@ class SupportTicketMapper extends QBMapper {
             ->setMaxResults($limit);
         return $this->findEntities($qb);
     }
+
+    public function findByRoutingTarget(string $targetType, int $limit = 100): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('routing_target_type', $qb->createNamedParameter($targetType)))
+            ->orderBy('created_at', 'DESC')
+            ->setMaxResults($limit);
+        return $this->findEntities($qb);
+    }
+
+    public function findByInstructorCourse(int $courseId, int $limit = 100): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('routing_target_type', $qb->createNamedParameter('course_instructor')))
+            ->andWhere($qb->expr()->eq('routing_course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->orderBy('created_at', 'DESC')
+            ->setMaxResults($limit);
+        return $this->findEntities($qb);
+    }
 }

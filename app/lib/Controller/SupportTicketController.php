@@ -8,15 +8,18 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\IGroupManager;
 use OCP\IRequest;
 
 class SupportTicketController extends Controller {
     private SupportTicketService $service;
+    private IGroupManager $groupManager;
     private ?string $userId;
 
-    public function __construct(string $appName, IRequest $request, SupportTicketService $service, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, SupportTicketService $service, IGroupManager $groupManager, ?string $userId) {
         parent::__construct($appName, $request);
         $this->service = $service;
+        $this->groupManager = $groupManager;
         $this->userId = $userId;
     }
 
@@ -24,12 +27,12 @@ class SupportTicketController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]
-    public function create(?string $subject = null, string $message = '', array $context = []): DataResponse {
+    public function create(?string $subject = null, string $message = '', array $context = [], ?string $category = null): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
         try {
-            $ticket = $this->service->create($this->userId, $subject, $message, $context);
+            $ticket = $this->service->create($this->userId, $subject, $message, $context, $category);
             return new DataResponse(['ticket' => $ticket->jsonSerialize()], Http::STATUS_CREATED);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
@@ -52,11 +55,11 @@ class SupportTicketController extends Controller {
      */
     #[UserRateLimit(limit: 20, period: 60)]
     public function adminList(int $limit = 100): DataResponse {
-        return new DataResponse(['tickets' => $this->service->listRecent($limit)]);
+        return new DataResponse(['tickets' => $this->service->listAdmin($limit)]);
     }
 
     /**
-     * @AdminRequired
+     * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
     public function answer(int $id, string $answerText = ''): DataResponse {
@@ -64,9 +67,23 @@ class SupportTicketController extends Controller {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
         try {
-            return new DataResponse(['ticket' => $this->service->answer($id, $answerText, $this->userId)]);
+            $isAdmin = $this->groupManager->isAdmin($this->userId);
+            return new DataResponse(['ticket' => $this->service->answer($id, $answerText, $this->userId, $isAdmin, null)]);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_FORBIDDEN);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function instructorList(int $courseId, int $limit = 50): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        return new DataResponse(['tickets' => $this->service->listInstructorForCourse($courseId, $limit)]);
     }
 }

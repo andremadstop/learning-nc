@@ -5,6 +5,7 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\SupportTicket;
 use OCA\Learning\Db\SupportTicketMapper;
+use OCA\Learning\Service\ForbiddenException;
 
 class SupportTicketService {
     private SupportTicketMapper $ticketMapper;
@@ -13,7 +14,7 @@ class SupportTicketService {
         $this->ticketMapper = $ticketMapper;
     }
 
-    public function create(string $userId, ?string $subject, string $message, array $context = []): SupportTicket {
+    public function create(string $userId, ?string $subject, string $message, array $context = [], ?string $category = null): SupportTicket {
         $subject = trim((string)$subject);
         $message = trim($message);
         if ($subject === '') {
@@ -47,6 +48,11 @@ class SupportTicketService {
         $ticket->setAnsweredAt(null);
         $ticket->setAnswerText(null);
 
+        $routing = $this->resolveRouting($category, $ticket->getCourseId());
+        $ticket->setCategory($routing['category']);
+        $ticket->setRoutingTargetType($routing['routing_target_type']);
+        $ticket->setRoutingCourseId($routing['routing_course_id']);
+
         return $this->ticketMapper->insert($ticket);
     }
 
@@ -58,7 +64,7 @@ class SupportTicketService {
         return array_map([$this, 'serializeTicket'], $this->ticketMapper->findRecent(max(1, min(200, $limit))));
     }
 
-    public function answer(int $ticketId, string $answerText, string $answeredBy): array {
+    public function answer(int $ticketId, string $answerText, string $answeredBy, bool $isAdmin = false, ?int $instructorCourseId = null): array {
         $answerText = trim($answerText);
         if ($answerText === '') {
             throw new \InvalidArgumentException('Answer text is required');
@@ -68,6 +74,15 @@ class SupportTicketService {
         }
 
         $ticket = $this->ticketMapper->findById($ticketId);
+
+        if (!$isAdmin) {
+            if ($ticket->getRoutingTargetType() === 'course_instructor' && $instructorCourseId !== null && $instructorCourseId === $ticket->getRoutingCourseId()) {
+                // allowed
+            } else {
+                throw new ForbiddenException('Not authorized to answer this ticket');
+            }
+        }
+
         $ticket->setStatus('answered');
         $ticket->setAnswerText($answerText);
         $ticket->setAnsweredBy($answeredBy);
@@ -75,6 +90,21 @@ class SupportTicketService {
         $ticket->setUpdatedAt(time());
 
         return $this->serializeTicket($this->ticketMapper->update($ticket));
+    }
+
+    public function listAdmin(int $limit = 100): array {
+        return array_map([$this, 'serializeTicket'], $this->ticketMapper->findByRoutingTarget('admin', max(1, min(200, $limit))));
+    }
+
+    public function listInstructorForCourse(int $courseId, int $limit = 100): array {
+        return array_map([$this, 'serializeTicket'], $this->ticketMapper->findByInstructorCourse($courseId, max(1, min(200, $limit))));
+    }
+
+    private function resolveRouting(?string $category, ?int $courseId): array {
+        if ($category === 'course_content' && $courseId !== null) {
+            return ['routing_target_type' => 'course_instructor', 'routing_course_id' => $courseId, 'category' => $category];
+        }
+        return ['routing_target_type' => 'admin', 'routing_course_id' => null, 'category' => $category ?? 'technical'];
     }
 
     private function serializeTicket(SupportTicket $ticket): array {

@@ -21,6 +21,9 @@ class SupportTicket extends Entity {
     protected $answeredBy;
     protected $answeredAt;
     protected $answerText;
+    protected $category;
+    protected $routingTargetType;
+    protected $routingCourseId;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -31,6 +34,7 @@ class SupportTicket extends Entity {
         $this->addType('createdAt', 'integer');
         $this->addType('updatedAt', 'integer');
         $this->addType('answeredAt', 'integer');
+        $this->addType('routingCourseId', 'integer');
     }
 
     public function jsonSerialize(): array {
@@ -51,6 +55,9 @@ class SupportTicket extends Entity {
             'answered_by' => $this->answeredBy,
             'answered_at' => $this->answeredAt,
             'answer_text' => $this->answerText,
+            'category' => $this->category,
+            'routing_target_type' => $this->routingTargetType,
+            'routing_course_id' => $this->routingCourseId,
         ];
     }
 }

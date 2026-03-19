@@ -1911,6 +1911,540 @@ class CourseService {
         return $chapters;
     }
 
+    // ─── Instructor Course Tools ──────────────────────────────────────────────
+
+    /**
+     * Check if the given user can manage (is instructor of) a course.
+     */
+    public function canManageCourse(int $courseId, string $userId): bool {
+        try {
+            $course = $this->courseMapper->findById($courseId);
+            return $this->isInstructorOfCourse($course, $userId);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get per-chapter answer stats for a course (instructor only).
+     */
+    public function getChapterHeatmap(int $courseId, string $userId): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select(
+            'q.chapter_key',
+            'q.chapter_title',
+            'q.chapter_order',
+            $qb->createFunction('COUNT(ua.id) AS total_answers'),
+            $qb->createFunction('SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) AS correct_answers'),
+            $qb->createFunction('COUNT(DISTINCT ua.user_id) AS unique_learners')
+        )
+        ->from('learning_user_answers', 'ua')
+        ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
+        ->innerJoin('q', 'learning_course_pools', 'cp', $qb->expr()->eq('cp.pool_id', 'q.pool_id'))
+        ->innerJoin('ua', 'learning_course_members', 'cm', $qb->expr()->andX(
+            $qb->expr()->eq('cm.course_id', 'cp.course_id'),
+            $qb->expr()->eq('cm.user_id', 'ua.user_id')
+        ))
+        ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+        ->andWhere($qb->expr()->in('cm.role', $qb->createNamedParameter(['student', 'co_instructor'], \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
+        ->groupBy('q.chapter_key', 'q.chapter_title', 'q.chapter_order')
+        ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC');
+
+        $result = $qb->executeQuery();
+        $chapters = [];
+        while ($row = $result->fetch()) {
+            $chapters[] = $row;
+        }
+        $result->closeCursor();
+
+        // Top worst questions (batched)
+        $qb2 = $this->db->getQueryBuilder();
+        $qb2->select(
+            'q.id',
+            'q.question',
+            'q.chapter_key',
+            $qb2->createFunction('COUNT(ua.id) AS total'),
+            $qb2->createFunction('SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) AS correct')
+        )
+        ->from('learning_user_answers', 'ua')
+        ->innerJoin('ua', 'learning_questions', 'q', $qb2->expr()->eq('ua.question_id', 'q.id'))
+        ->innerJoin('q', 'learning_course_pools', 'cp', $qb2->expr()->eq('cp.pool_id', 'q.pool_id'))
+        ->where($qb2->expr()->eq('cp.course_id', $qb2->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+        ->groupBy('q.id', 'q.question', 'q.chapter_key')
+        ->having($qb2->createFunction('COUNT(ua.id) >= 5'))
+        ->orderBy($qb2->createFunction('(SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
+        ->setMaxResults(50);
+
+        $result2 = $qb2->executeQuery();
+        $worstByChapter = [];
+        while ($row = $result2->fetch()) {
+            $chapterKey = $row['chapter_key'] ?? '';
+            $total = (int)$row['total'];
+            $correct = (int)$row['correct'];
+            $wrongRate = $total > 0 ? round((1 - $correct / $total) * 100, 1) : 0.0;
+            $worstByChapter[$chapterKey][] = [
+                'id' => (int)$row['id'],
+                'text' => mb_substr((string)$row['question'], 0, 120),
+                'wrong_rate' => $wrongRate,
+            ];
+        }
+        $result2->closeCursor();
+
+        $output = [];
+        foreach ($chapters as $row) {
+            $total = (int)$row['total_answers'];
+            $correct = (int)$row['correct_answers'];
+            $successRate = $total > 0 ? round($correct / $total * 100, 1) : 0.0;
+            $chapterKey = $row['chapter_key'] ?? '';
+            $topWrong = array_slice($worstByChapter[$chapterKey] ?? [], 0, 5);
+            if ($successRate < 50) {
+                $severity = 'red';
+            } elseif ($successRate < 70) {
+                $severity = 'yellow';
+            } else {
+                $severity = 'green';
+            }
+            $output[] = [
+                'chapter_key' => $chapterKey,
+                'chapter_title' => $row['chapter_title'] ?? $chapterKey,
+                'chapter_order' => isset($row['chapter_order']) ? (int)$row['chapter_order'] : null,
+                'total_answers' => $total,
+                'correct_answers' => $correct,
+                'success_rate' => $successRate,
+                'unique_learners' => (int)$row['unique_learners'],
+                'severity' => $severity,
+                'top_wrong_questions' => $topWrong,
+            ];
+        }
+
+        return $output;
+    }
+
+    /**
+     * Get weakest questions for a course (instructor only).
+     */
+    public function getWeakQuestions(int $courseId, string $userId, int $limit = 10): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select(
+            'q.id AS question_id',
+            'q.question AS question_text',
+            'q.chapter_key',
+            'q.chapter_title',
+            $qb->createFunction('COUNT(ua.id) AS total_answers'),
+            $qb->createFunction('SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) AS correct_answers')
+        )
+        ->from('learning_user_answers', 'ua')
+        ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
+        ->innerJoin('q', 'learning_course_pools', 'cp', $qb->expr()->eq('cp.pool_id', 'q.pool_id'))
+        ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+        ->groupBy('q.id', 'q.question', 'q.chapter_key', 'q.chapter_title')
+        ->having($qb->createFunction('COUNT(ua.id) >= 5'))
+        ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
+        ->setMaxResults(max(1, min(100, $limit)));
+
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+
+        if (empty($rows)) {
+            return [];
+        }
+
+        // Fetch override status for these questions
+        $questionIds = array_map(fn($r) => (int)$r['question_id'], $rows);
+        $overrides = [];
+        $qbO = $this->db->getQueryBuilder();
+        $qbO->select('question_id', 'paused')
+            ->from('learning_course_question_overrides')
+            ->where($qbO->expr()->eq('course_id', $qbO->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qbO->expr()->in('question_id', $qbO->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        $resultO = $qbO->executeQuery();
+        while ($row = $resultO->fetch()) {
+            $overrides[(int)$row['question_id']] = (bool)$row['paused'];
+        }
+        $resultO->closeCursor();
+
+        $output = [];
+        foreach ($rows as $row) {
+            $qid = (int)$row['question_id'];
+            $total = (int)$row['total_answers'];
+            $correct = (int)$row['correct_answers'];
+            $wrongRate = $total > 0 ? round((1 - $correct / $total) * 100, 1) : 0.0;
+            $output[] = [
+                'question_id' => $qid,
+                'question_text' => mb_substr((string)$row['question_text'], 0, 120),
+                'chapter_key' => $row['chapter_key'] ?? null,
+                'chapter_title' => $row['chapter_title'] ?? null,
+                'total_answers' => $total,
+                'wrong_rate' => $wrongRate,
+                'is_paused' => $overrides[$qid] ?? false,
+            ];
+        }
+
+        return $output;
+    }
+
+    /**
+     * Set (upsert) a question override for a course.
+     */
+    public function setQuestionOverride(int $courseId, int $questionId, bool $paused, bool $highlight, string $userId): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+
+        $now = time();
+
+        // Try UPDATE first
+        $qbU = $this->db->getQueryBuilder();
+        $qbU->update('learning_course_question_overrides')
+            ->set('paused', $qbU->createNamedParameter($paused, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL))
+            ->set('highlight', $qbU->createNamedParameter($highlight, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL))
+            ->set('updated_at', $qbU->createNamedParameter($now))
+            ->where($qbU->expr()->eq('course_id', $qbU->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qbU->expr()->eq('question_id', $qbU->createNamedParameter($questionId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        $affected = $qbU->executeStatement();
+
+        if ($affected === 0) {
+            $qbI = $this->db->getQueryBuilder();
+            $qbI->insert('learning_course_question_overrides')
+                ->values([
+                    'course_id' => $qbI->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT),
+                    'question_id' => $qbI->createNamedParameter($questionId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT),
+                    'paused' => $qbI->createNamedParameter($paused, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL),
+                    'highlight' => $qbI->createNamedParameter($highlight, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL),
+                    'created_at' => $qbI->createNamedParameter($now),
+                    'updated_at' => $qbI->createNamedParameter($now),
+                ]);
+            $qbI->executeStatement();
+        }
+
+        return ['question_id' => $questionId, 'paused' => $paused, 'highlight' => $highlight];
+    }
+
+    /**
+     * Get per-course instructor dashboard with activity stats.
+     */
+    public function getCourseDashboard(int $courseId, string $userId): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+
+        $sevenDaysAgo = time() - 7 * 86400;
+        $fourteenDaysAgo = time() - 14 * 86400;
+
+        // Get pool IDs for this course
+        $coursePools = $this->coursePoolMapper->findByCourse($courseId);
+        $poolIds = array_map(fn($cp) => $cp->getPoolId(), $coursePools);
+
+        // Query 1: Active learners in last 7 days
+        $activeLearners = 0;
+        if (!empty($poolIds)) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select($qb->createFunction('COUNT(DISTINCT user_id) AS cnt'))
+                ->from('learning_sessions')
+                ->where($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->andWhere($qb->expr()->gte('created_at', $qb->createNamedParameter($sevenDaysAgo)));
+            $r = $qb->executeQuery();
+            $activeLearners = (int)$r->fetchOne();
+            $r->closeCursor();
+        }
+
+        // Query 2: Total members (students)
+        $qb2 = $this->db->getQueryBuilder();
+        $qb2->select($qb2->createFunction('COUNT(*) AS cnt'))
+            ->from('learning_course_members')
+            ->where($qb2->expr()->eq('course_id', $qb2->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb2->expr()->eq('role', $qb2->createNamedParameter('student')));
+        $r2 = $qb2->executeQuery();
+        $totalMembers = (int)$r2->fetchOne();
+        $r2->closeCursor();
+
+        // Query 3: New answers in last 7 days
+        $newAnswers = 0;
+        $avgSuccessRate = null;
+        if (!empty($poolIds)) {
+            $qb3 = $this->db->getQueryBuilder();
+            $qb3->select(
+                $qb3->createFunction('COUNT(ua.id) AS total'),
+                $qb3->createFunction('SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) AS correct')
+            )
+            ->from('learning_user_answers', 'ua')
+            ->innerJoin('ua', 'learning_questions', 'q', $qb3->expr()->eq('ua.question_id', 'q.id'))
+            ->innerJoin('q', 'learning_course_pools', 'cp', $qb3->expr()->eq('cp.pool_id', 'q.pool_id'))
+            ->where($qb3->expr()->eq('cp.course_id', $qb3->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb3->expr()->gte('ua.created_at', $qb3->createNamedParameter($sevenDaysAgo)));
+            $r3 = $qb3->executeQuery();
+            $row3 = $r3->fetch();
+            $r3->closeCursor();
+            $newAnswers = (int)($row3['total'] ?? 0);
+            $avgSuccessRate = $newAnswers > 0 ? round((int)($row3['correct'] ?? 0) / $newAnswers * 100, 1) : null;
+        }
+
+        // Query 4: Recent activity — last 20 sessions
+        $recentActivity = [];
+        if (!empty($poolIds)) {
+            $qb4 = $this->db->getQueryBuilder();
+            $qb4->select('pool_id', 'mode', 'user_id', 'completed_at')
+                ->from('learning_sessions')
+                ->where($qb4->expr()->in('pool_id', $qb4->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                ->andWhere($qb4->expr()->isNotNull('completed_at'))
+                ->orderBy('completed_at', 'DESC')
+                ->setMaxResults(20);
+            $r4 = $qb4->executeQuery();
+            while ($row = $r4->fetch()) {
+                $recentActivity[] = [
+                    'pool_id' => (int)$row['pool_id'],
+                    'mode' => $row['mode'],
+                    'user_id' => $row['user_id'],
+                    'completed_at' => (int)$row['completed_at'],
+                ];
+            }
+            $r4->closeCursor();
+        }
+
+        // Warnings: members with no sessions in last 14 days
+        $warnings = [];
+        if ($totalMembers > 0) {
+            $allMembers = $this->courseMemberMapper->findByCourse($courseId);
+            $studentIds = array_map(fn($m) => $m->getUserId(), array_filter($allMembers, fn($m) => $m->getRole() === 'student'));
+            if (!empty($studentIds) && !empty($poolIds)) {
+                $qbW = $this->db->getQueryBuilder();
+                $qbW->selectDistinct('user_id')
+                    ->from('learning_sessions')
+                    ->where($qbW->expr()->in('pool_id', $qbW->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+                    ->andWhere($qbW->expr()->gte('created_at', $qbW->createNamedParameter($fourteenDaysAgo)))
+                    ->andWhere($qbW->expr()->in('user_id', $qbW->createNamedParameter($studentIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)));
+                $rW = $qbW->executeQuery();
+                $activeUserIds = array_column($rW->fetchAll(), 'user_id');
+                $rW->closeCursor();
+                $inactiveIds = array_diff($studentIds, $activeUserIds);
+                if (!empty($inactiveIds)) {
+                    $warnings[] = ['type' => 'inactive_14d', 'count' => count($inactiveIds), 'user_ids' => array_values($inactiveIds)];
+                }
+            }
+        }
+
+        return [
+            'course_id' => $courseId,
+            'active_learners_7d' => $activeLearners,
+            'total_members' => $totalMembers,
+            'new_answers_7d' => $newAnswers,
+            'avg_success_rate_7d' => $avgSuccessRate,
+            'recent_activity' => $recentActivity,
+            'warnings' => $warnings,
+        ];
+    }
+
+    /**
+     * Get active (non-expired) announcements for a course.
+     */
+    public function getAnnouncements(int $courseId, string $userId): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->hasAccess($course, $userId)) {
+            throw new ForbiddenException('No access');
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from('learning_course_announcements')
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->orX(
+                $qb->expr()->isNull('expires_at'),
+                $qb->expr()->gt('expires_at', $qb->createNamedParameter(time()))
+            ))
+            ->orderBy('created_at', 'DESC');
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+
+        return array_map(fn($r) => [
+            'id' => (int)$r['id'],
+            'course_id' => (int)$r['course_id'],
+            'instructor_id' => $r['instructor_id'],
+            'title' => $r['title'],
+            'body' => $r['body'],
+            'created_at' => (int)$r['created_at'],
+            'expires_at' => $r['expires_at'] !== null ? (int)$r['expires_at'] : null,
+        ], $rows);
+    }
+
+    /**
+     * Create a course announcement (instructor only).
+     */
+    public function createAnnouncement(int $courseId, string $userId, string $title, string $body, ?int $expiresAt = null): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+
+        $now = time();
+        $qb = $this->db->getQueryBuilder();
+        $qb->insert('learning_course_announcements')
+            ->values([
+                'course_id' => $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT),
+                'instructor_id' => $qb->createNamedParameter($userId),
+                'title' => $qb->createNamedParameter(mb_substr($title, 0, 255)),
+                'body' => $qb->createNamedParameter($body),
+                'created_at' => $qb->createNamedParameter($now),
+                'expires_at' => $qb->createNamedParameter($expiresAt),
+            ]);
+        $qb->executeStatement();
+        $newId = $this->db->lastInsertId('oc_learning_course_announcements');
+
+        return [
+            'id' => (int)$newId,
+            'course_id' => $courseId,
+            'instructor_id' => $userId,
+            'title' => $title,
+            'body' => $body,
+            'created_at' => $now,
+            'expires_at' => $expiresAt,
+        ];
+    }
+
+    /**
+     * Delete a course announcement (instructor only).
+     */
+    public function deleteAnnouncement(int $courseId, int $announcementId, string $userId): void {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete('learning_course_announcements')
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter($announcementId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        $qb->executeStatement();
+    }
+
+    /**
+     * Get the active exam slot for a course (if any).
+     */
+    public function getActiveExamSlot(int $courseId, string $userId): ?array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->hasAccess($course, $userId)) {
+            throw new ForbiddenException('No access');
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from('learning_course_exam_slots')
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('status', $qb->createNamedParameter('active')))
+            ->andWhere($qb->expr()->gt('ends_at', $qb->createNamedParameter(time())))
+            ->setMaxResults(1);
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+
+        if (!$row) {
+            return null;
+        }
+
+        return [
+            'id' => (int)$row['id'],
+            'course_id' => (int)$row['course_id'],
+            'instructor_id' => $row['instructor_id'],
+            'started_at' => (int)$row['started_at'],
+            'duration_minutes' => (int)$row['duration_minutes'],
+            'ends_at' => (int)$row['ends_at'],
+            'scope_mode' => $row['scope_mode'],
+            'status' => $row['status'],
+        ];
+    }
+
+    /**
+     * Create a new exam slot for a course (instructor only), closing any existing active slot.
+     */
+    public function createExamSlot(int $courseId, string $userId, int $durationMinutes = 90, string $scopeMode = 'all'): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+
+        $now = time();
+        $endsAt = $now + ($durationMinutes * 60);
+
+        // Close any existing active slots
+        $qbClose = $this->db->getQueryBuilder();
+        $qbClose->update('learning_course_exam_slots')
+            ->set('status', $qbClose->createNamedParameter('closed'))
+            ->where($qbClose->expr()->eq('course_id', $qbClose->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qbClose->expr()->eq('status', $qbClose->createNamedParameter('active')));
+        $qbClose->executeStatement();
+
+        // Build question_ids_json
+        $coursePools = $this->coursePoolMapper->findByCourse($courseId);
+        $questionIds = [];
+        foreach ($coursePools as $cp) {
+            $ids = $this->getFilteredQuestionIdsForCoursePoolEntity($cp);
+            $questionIds = array_merge($questionIds, $ids);
+        }
+        if ($scopeMode === 'curriculum') {
+            $questionIds = $this->applyCurriculumScope($courseId, $questionIds);
+        }
+        $questionIds = array_values(array_unique($questionIds));
+        $questionIdsJson = json_encode($questionIds);
+
+        // Insert new slot
+        $qb = $this->db->getQueryBuilder();
+        $qb->insert('learning_course_exam_slots')
+            ->values([
+                'course_id' => $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT),
+                'instructor_id' => $qb->createNamedParameter($userId),
+                'started_at' => $qb->createNamedParameter($now),
+                'duration_minutes' => $qb->createNamedParameter($durationMinutes),
+                'ends_at' => $qb->createNamedParameter($endsAt),
+                'scope_mode' => $qb->createNamedParameter($scopeMode),
+                'question_ids_json' => $qb->createNamedParameter($questionIdsJson),
+                'status' => $qb->createNamedParameter('active'),
+            ]);
+        $qb->executeStatement();
+        $newId = $this->db->lastInsertId('oc_learning_course_exam_slots');
+
+        return [
+            'id' => (int)$newId,
+            'course_id' => $courseId,
+            'instructor_id' => $userId,
+            'started_at' => $now,
+            'duration_minutes' => $durationMinutes,
+            'ends_at' => $endsAt,
+            'scope_mode' => $scopeMode,
+            'question_count' => count($questionIds),
+            'status' => 'active',
+        ];
+    }
+
+    /**
+     * Close the active exam slot for a course (instructor only).
+     */
+    public function closeExamSlot(int $courseId, string $userId): void {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->update('learning_course_exam_slots')
+            ->set('status', $qb->createNamedParameter('closed'))
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('status', $qb->createNamedParameter('active')));
+        $qb->executeStatement();
+    }
+
     /**
      * Filter question IDs by the active curriculum scope of a course.
      * Returns the original array unchanged if scope is disabled or not set.

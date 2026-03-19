@@ -158,5 +158,16 @@ return [
         ['name' => 'course#getCurriculumScope', 'url' => '/api/courses/{courseId}/curriculum-scope', 'verb' => 'GET'],
         ['name' => 'course#updateCurriculumScope', 'url' => '/api/courses/{courseId}/curriculum-scope', 'verb' => 'PUT'],
         ['name' => 'course#dashboard', 'url' => '/api/instructor/dashboard', 'verb' => 'GET'],
+        ['name' => 'course#chapterHeatmap', 'url' => '/api/courses/{courseId}/chapter-heatmap', 'verb' => 'GET'],
+        ['name' => 'course#weakQuestions', 'url' => '/api/courses/{courseId}/weak-questions', 'verb' => 'GET'],
+        ['name' => 'course#setQuestionOverride', 'url' => '/api/courses/{courseId}/questions/{questionId}/override', 'verb' => 'POST'],
+        ['name' => 'course#courseDashboard', 'url' => '/api/courses/{courseId}/dashboard', 'verb' => 'GET'],
+        ['name' => 'course#getAnnouncements', 'url' => '/api/courses/{courseId}/announcements', 'verb' => 'GET'],
+        ['name' => 'course#createAnnouncement', 'url' => '/api/courses/{courseId}/announcements', 'verb' => 'POST'],
+        ['name' => 'course#deleteAnnouncement', 'url' => '/api/courses/{courseId}/announcements/{announcementId}', 'verb' => 'DELETE'],
+        ['name' => 'course#getActiveExamSlot', 'url' => '/api/courses/{courseId}/exam-slot/active', 'verb' => 'GET'],
+        ['name' => 'course#createExamSlot', 'url' => '/api/courses/{courseId}/exam-slot', 'verb' => 'POST'],
+        ['name' => 'course#closeExamSlot', 'url' => '/api/courses/{courseId}/exam-slot/close', 'verb' => 'POST'],
+        ['name' => 'supportTicket#instructorList', 'url' => '/api/courses/{courseId}/support-tickets', 'verb' => 'GET'],
     ]
 ];
