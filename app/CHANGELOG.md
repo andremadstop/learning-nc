@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.6.0] - 2026-03-19
+## [2.6.1] - 2026-03-19
 
 ### Added
 - **VirtuProf Ticket-Routing**: Support tickets can now be routed to course instructors (subject questions) or admins (technical issues). Ticket form in VirtuProf shows a category selector ("Course question", "Technical issue", "Usage question"). Backend stores `category`, `routing_target_type`, `routing_course_id` on each ticket.
