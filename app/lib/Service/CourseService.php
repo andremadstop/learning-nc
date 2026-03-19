@@ -103,80 +103,13 @@ class CourseService {
             return [];
         }
 
-        $poolTotals = [];
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('pool_id')
-            ->selectAlias('COUNT(*)', 'question_count')
-            ->from('learning_questions')
-            ->where($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-            ->groupBy('pool_id');
-        $result = $qb->executeQuery();
-        while ($row = $result->fetch()) {
-            $poolId = (int)$row['pool_id'];
-            $poolTotals[$poolId] = [
-                'questions' => (int)$row['question_count'],
-                'answers' => 0,
-            ];
-        }
-        $result->closeCursor();
-
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('q.pool_id')
-            ->selectAlias('COUNT(*)', 'answer_count')
-            ->from('learning_answers', 'a')
-            ->innerJoin('a', 'learning_questions', 'q', 'a.question_id = q.id')
-            ->where($qb->expr()->in('q.pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-            ->groupBy('q.pool_id');
-        $result = $qb->executeQuery();
-        while ($row = $result->fetch()) {
-            $poolId = (int)$row['pool_id'];
-            if (!isset($poolTotals[$poolId])) {
-                $poolTotals[$poolId] = ['questions' => 0, 'answers' => 0];
-            }
-            $poolTotals[$poolId]['answers'] = (int)$row['answer_count'];
-        }
-        $result->closeCursor();
-
-        $questionLangCounts = [];
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('q.pool_id', 'qt.lang')
-            ->selectAlias('COUNT(DISTINCT qt.question_id)', 'translated_questions')
-            ->from('learning_qst_translations', 'qt')
-            ->innerJoin('qt', 'learning_questions', 'q', 'qt.question_id = q.id')
-            ->where($qb->expr()->in('q.pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-            ->groupBy('q.pool_id', 'qt.lang');
-        $result = $qb->executeQuery();
-        while ($row = $result->fetch()) {
-            $questionLangCounts[(int)$row['pool_id']][(string)$row['lang']] = (int)$row['translated_questions'];
-        }
-        $result->closeCursor();
-
-        $answerLangCounts = [];
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('q.pool_id', 'at.lang')
-            ->selectAlias('COUNT(DISTINCT at.answer_id)', 'translated_answers')
-            ->from('learning_ans_translations', 'at')
-            ->innerJoin('at', 'learning_answers', 'a', 'at.answer_id = a.id')
-            ->innerJoin('a', 'learning_questions', 'q', 'a.question_id = q.id')
-            ->where($qb->expr()->in('q.pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-            ->groupBy('q.pool_id', 'at.lang');
-        $result = $qb->executeQuery();
-        while ($row = $result->fetch()) {
-            $answerLangCounts[(int)$row['pool_id']][(string)$row['lang']] = (int)$row['translated_answers'];
-        }
-        $result->closeCursor();
-
         $languageOrder = ['de', 'en', 'ru', 'ar'];
         $available = [];
         foreach ($poolIds as $poolId) {
-            $totals = $poolTotals[$poolId] ?? ['questions' => 0, 'answers' => 0];
+            $totalQuestions = $this->countQuestionsInPool($poolId);
             $langs = ['de'];
             foreach (['en', 'ru', 'ar'] as $lang) {
-                $questionCount = $questionLangCounts[$poolId][$lang] ?? 0;
-                $answerCount = $answerLangCounts[$poolId][$lang] ?? 0;
-                $hasQuestions = $totals['questions'] > 0 && $questionCount >= $totals['questions'];
-                $hasAnswers = $totals['answers'] === 0 || $answerCount >= $totals['answers'];
-                if ($hasQuestions && $hasAnswers) {
+                if ($this->hasPoolQuestionTranslations($poolId, $lang, $totalQuestions)) {
                     $langs[] = $lang;
                 }
             }
@@ -185,6 +118,24 @@ class CourseService {
         }
 
         return $available;
+    }
+
+    private function hasPoolQuestionTranslations(int $poolId, string $lang, int $totalQuestions): bool {
+        if ($totalQuestions <= 0) {
+            return false;
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->selectAlias('COUNT(DISTINCT qt.question_id)', 'translated_questions')
+            ->from('learning_qst_translations', 'qt')
+            ->innerJoin('qt', 'learning_questions', 'q', 'qt.question_id = q.id')
+            ->where($qb->expr()->eq('q.pool_id', $qb->createNamedParameter($poolId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('qt.lang', $qb->createNamedParameter($lang)));
+        $result = $qb->executeQuery();
+        $translatedQuestions = (int)$result->fetchOne();
+        $result->closeCursor();
+
+        return $translatedQuestions >= $totalQuestions;
     }
 
     private function normalizeCoursePoolFilterValue(?string $value, int $maxLength): ?string {
