@@ -155,6 +155,8 @@ return [
         ['name' => 'course#atRisk', 'url' => '/api/courses/{courseId}/at-risk', 'verb' => 'GET'],
         ['name' => 'course#exportAtRiskCsv', 'url' => '/api/courses/{courseId}/at-risk/export/csv', 'verb' => 'GET'],
         ['name' => 'course#studentDetail', 'url' => '/api/courses/{courseId}/students/{studentId}', 'verb' => 'GET'],
+        ['name' => 'course#getCurriculumScope', 'url' => '/api/courses/{courseId}/curriculum-scope', 'verb' => 'GET'],
+        ['name' => 'course#updateCurriculumScope', 'url' => '/api/courses/{courseId}/curriculum-scope', 'verb' => 'PUT'],
         ['name' => 'course#dashboard', 'url' => '/api/instructor/dashboard', 'verb' => 'GET'],
     ]
 ];

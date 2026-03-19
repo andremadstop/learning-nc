@@ -7,6 +7,8 @@ use OCA\Learning\Db\CoursePool;
 use OCA\Learning\Db\CoursePoolMapper;
 use OCA\Learning\Db\CourseMember;
 use OCA\Learning\Db\CourseMemberMapper;
+use OCA\Learning\Db\CurriculumScope;
+use OCA\Learning\Db\CurriculumScopeMapper;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
@@ -28,6 +30,7 @@ class CourseService {
     private XpService $xpService;
     private BadgeService $badgeService;
     private StreakService $streakService;
+    private CurriculumScopeMapper $curriculumScopeMapper;
 
     public function __construct(
         CourseMapper $courseMapper,
@@ -39,7 +42,8 @@ class CourseService {
         IUserManager $userManager,
         XpService $xpService,
         BadgeService $badgeService,
-        StreakService $streakService
+        StreakService $streakService,
+        CurriculumScopeMapper $curriculumScopeMapper
     ) {
         $this->courseMapper = $courseMapper;
         $this->coursePoolMapper = $coursePoolMapper;
@@ -51,6 +55,7 @@ class CourseService {
         $this->xpService = $xpService;
         $this->badgeService = $badgeService;
         $this->streakService = $streakService;
+        $this->curriculumScopeMapper = $curriculumScopeMapper;
     }
 
     /**
@@ -1800,5 +1805,146 @@ class CourseService {
                 'enrolled_at' => $member->getEnrolledAt(),
             ],
         ];
+    }
+
+    // ─── Curriculum Scope ────────────────────────────────────────────────────
+
+    /**
+     * Return the curriculum scope for a course together with available chapters.
+     */
+    public function getCurriculumScope(int $courseId, string $userId): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->hasAccess($course, $userId)) {
+            throw new DoesNotExistException('Course not found');
+        }
+
+        $scope = $this->curriculumScopeMapper->findByCourse($courseId);
+        $available = $this->getAvailableCurriculumChapters($courseId);
+
+        return [
+            'enabled'          => $scope ? $scope->getEnabled() : false,
+            'handbook_key'     => $scope ? $scope->getHandbookKey() : null,
+            'handbook_title'   => $scope ? $scope->getHandbookTitle() : null,
+            'selected_chapter_keys' => $scope ? $scope->getChapterKeys() : [],
+            'available_chapters'    => $available,
+        ];
+    }
+
+    /**
+     * Save curriculum scope (instructor only).
+     */
+    public function saveCurriculumScope(
+        int $courseId,
+        string $userId,
+        bool $enabled,
+        array $chapterKeys,
+        ?string $handbookKey = null,
+        ?string $handbookTitle = null
+    ): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('Only instructors can update the curriculum scope');
+        }
+
+        $scope = $this->curriculumScopeMapper->findByCourse($courseId);
+        $now = time();
+
+        if ($scope === null) {
+            $scope = new CurriculumScope();
+            $scope->setCourseId($courseId);
+            $scope->setCreatedAt($now);
+        }
+
+        $scope->setEnabled($enabled);
+        $scope->setChapterKeys($chapterKeys);
+        $scope->setHandbookKey($handbookKey);
+        $scope->setHandbookTitle($handbookTitle);
+        $scope->setUpdatedAt($now);
+
+        if ($scope->getId() === null) {
+            $scope = $this->curriculumScopeMapper->insert($scope);
+        } else {
+            $scope = $this->curriculumScopeMapper->update($scope);
+        }
+
+        return $this->getCurriculumScope($courseId, $userId);
+    }
+
+    /**
+     * Aggregate all distinct chapters from questions in all pools of this course.
+     * Groups by handbook_key.
+     */
+    public function getAvailableCurriculumChapters(int $courseId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->selectDistinct(['q.chapter_key', 'q.chapter_title', 'q.chapter_order', 'q.handbook_key', 'q.handbook_title'])
+           ->from('learning_questions', 'q')
+           ->innerJoin('q', 'learning_course_pools', 'cp', $qb->expr()->eq('cp.pool_id', 'q.pool_id'))
+           ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+           ->andWhere($qb->expr()->isNotNull('q.chapter_key'))
+           ->andWhere($qb->expr()->neq('q.chapter_key', $qb->createNamedParameter('')))
+           ->orderBy('q.handbook_key')
+           ->addOrderBy('q.chapter_order')
+           ->addOrderBy('q.chapter_key');
+
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+
+        // Deduplicate and group by handbook
+        $seen = [];
+        $chapters = [];
+        foreach ($rows as $row) {
+            $key = $row['chapter_key'];
+            if (isset($seen[$key])) {
+                continue;
+            }
+            $seen[$key] = true;
+            $chapters[] = [
+                'chapter_key'    => $row['chapter_key'],
+                'chapter_title'  => $row['chapter_title'] ?? $row['chapter_key'],
+                'chapter_order'  => (int)($row['chapter_order'] ?? 0),
+                'handbook_key'   => $row['handbook_key'] ?? null,
+                'handbook_title' => $row['handbook_title'] ?? null,
+            ];
+        }
+
+        return $chapters;
+    }
+
+    /**
+     * Filter question IDs by the active curriculum scope of a course.
+     * Returns the original array unchanged if scope is disabled or not set.
+     */
+    public function applyCurriculumScope(int $courseId, array $questionIds): array {
+        if (empty($questionIds)) {
+            return $questionIds;
+        }
+
+        $scope = $this->curriculumScopeMapper->findByCourse($courseId);
+        if ($scope === null || !$scope->getEnabled()) {
+            return $questionIds;
+        }
+
+        $activeKeys = $scope->getChapterKeys();
+        if (empty($activeKeys)) {
+            return $questionIds;
+        }
+
+        // Keep only questions whose chapter_key is in the active set
+        $filtered = [];
+        foreach (array_chunk($questionIds, 999) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id')
+               ->from('learning_questions')
+               ->where($qb->expr()->in('id', $qb->createNamedParameter($chunk, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+               ->andWhere($qb->expr()->in('chapter_key', $qb->createNamedParameter($activeKeys, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)));
+            $res = $qb->executeQuery();
+            while ($row = $res->fetch()) {
+                $filtered[] = (int)$row['id'];
+            }
+            $res->closeCursor();
+        }
+
+        return $filtered;
     }
 }

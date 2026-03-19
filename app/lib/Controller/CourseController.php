@@ -384,4 +384,44 @@ class CourseController extends Controller {
             return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function getCurriculumScope(int $courseId): DataResponse {
+        try {
+            return new DataResponse($this->courseService->getCurriculumScope($courseId, $this->userId));
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('getCurriculumScope error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function updateCurriculumScope(
+        int $courseId,
+        bool $enabled = false,
+        array $chapterKeys = [],
+        ?string $handbookKey = null,
+        ?string $handbookTitle = null
+    ): DataResponse {
+        try {
+            return new DataResponse(
+                $this->courseService->saveCurriculumScope($courseId, $this->userId, $enabled, $chapterKeys, $handbookKey, $handbookTitle)
+            );
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('updateCurriculumScope error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
 }

@@ -595,6 +595,57 @@
 					@preset-consumed="$emit('clearPresetDuel')"
 					@back="currentTab = isInstructor ? 'pools' : 'training'" />
 			</div>
+		<!-- Curriculum Scope Tab (instructor only) -->
+		<div v-if="currentTab === 'curriculum' && isInstructor" class="curriculum-section">
+			<div class="curriculum-header">
+				<h3>{{ t('learning', 'Themensteuerung') }}</h3>
+				<p class="curriculum-desc">{{ t('learning', 'Lege fest, welche Kapitel aktuell im Kurs aktiv sind. Bei aktivem Filter werden Kurs-Duelle automatisch auf diese Kapitel eingeschränkt.') }}</p>
+			</div>
+
+			<div v-if="loadingCurriculum" class="curriculum-loading">
+				<NcLoadingIcon :size="32" />
+			</div>
+			<template v-else>
+				<div class="curriculum-toggle">
+					<NcCheckboxRadioSwitch
+						:checked="curriculumEnabled"
+						@update:checked="curriculumEnabled = $event">
+						{{ t('learning', 'Kapitel-Filter aktiv') }}
+					</NcCheckboxRadioSwitch>
+				</div>
+
+				<div v-if="curriculumEnabled" class="curriculum-chapters">
+					<div v-if="curriculumAvailableChapters.length === 0" class="curriculum-empty">
+						{{ t('learning', 'Keine Kapitelmetadaten gefunden. Importiere Fragen mit chapter_key-Werten, um diesen Filter zu nutzen.') }}
+					</div>
+					<template v-else>
+						<div class="curriculum-select-actions">
+							<NcButton size="small" @click="selectAllChapters">{{ t('learning', 'Alle') }}</NcButton>
+							<NcButton size="small" @click="selectedChapterKeys = []">{{ t('learning', 'Keine') }}</NcButton>
+						</div>
+						<div
+							v-for="chapter in curriculumAvailableChapters"
+							:key="chapter.chapter_key"
+							class="curriculum-chapter-row">
+							<NcCheckboxRadioSwitch
+								:checked="selectedChapterKeys.includes(chapter.chapter_key)"
+								@update:checked="toggleChapter(chapter.chapter_key, $event)">
+								<span class="chapter-title">{{ chapter.chapter_title || chapter.chapter_key }}</span>
+								<span v-if="chapter.chapter_order" class="chapter-order">{{ t('learning', 'Kap. {n}', { n: chapter.chapter_order }) }}</span>
+							</NcCheckboxRadioSwitch>
+						</div>
+					</template>
+				</div>
+
+				<div class="curriculum-actions">
+					<NcButton type="primary" :disabled="savingCurriculum" @click="saveCurriculumScope">
+						{{ savingCurriculum ? t('learning', 'Speichere…') : t('learning', 'Speichern') }}
+					</NcButton>
+					<span v-if="curriculumSaved" class="curriculum-saved-hint">✓ {{ t('learning', 'Gespeichert') }}</span>
+				</div>
+			</template>
+		</div>
+
 		</template>
 
 		<!-- Add Pool Modal -->
@@ -770,6 +821,7 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { getCurrentUser } from '@nextcloud/auth'
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
 import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
 import NcModal from '@nextcloud/vue/dist/Components/NcModal.js'
 import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
@@ -789,6 +841,7 @@ export default {
 
 	components: {
 		NcButton,
+		NcCheckboxRadioSwitch,
 		NcEmptyContent,
 		NcLoadingIcon,
 		NcModal,
@@ -858,6 +911,14 @@ export default {
 				filterQuestionIdsText: '',
 			},
 
+			// Curriculum scope
+			loadingCurriculum: false,
+			savingCurriculum: false,
+			curriculumSaved: false,
+			curriculumEnabled: false,
+			selectedChapterKeys: [],
+			curriculumAvailableChapters: [],
+
 			// Members
 			newMemberUsername: '',
 			addingMember: false,
@@ -926,6 +987,7 @@ export default {
 					{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
 					{ id: 'league', label: t('learning', 'Liga') },
 					{ id: 'duel', label: t('learning', 'Duell') },
+					{ id: 'curriculum', label: t('learning', 'Themen') },
 				]
 			}
 			return [
@@ -1029,6 +1091,9 @@ export default {
 			}
 			if (tab === 'leaderboard') {
 				this.fetchLeaderboard()
+			}
+			if (tab === 'curriculum' && this.isInstructor) {
+				this.fetchCurriculumScope()
 			}
 			this.emitVirtuProfContext()
 		},
@@ -1644,6 +1709,53 @@ export default {
 			} finally {
 				this.leaderboardLoading = false
 			}
+		},
+
+		async fetchCurriculumScope() {
+			this.loadingCurriculum = true
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/curriculum-scope', { courseId: this.courseId })
+				const response = await axios.get(url)
+				this.curriculumEnabled = response.data.enabled || false
+				this.selectedChapterKeys = response.data.selected_chapter_keys || []
+				this.curriculumAvailableChapters = response.data.available_chapters || []
+			} catch (err) {
+				console.error('Failed to fetch curriculum scope:', err)
+			} finally {
+				this.loadingCurriculum = false
+			}
+		},
+
+		async saveCurriculumScope() {
+			this.savingCurriculum = true
+			this.curriculumSaved = false
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/curriculum-scope', { courseId: this.courseId })
+				await axios.put(url, {
+					enabled: this.curriculumEnabled,
+					chapterKeys: this.selectedChapterKeys,
+				})
+				this.curriculumSaved = true
+				setTimeout(() => { this.curriculumSaved = false }, 2500)
+			} catch (err) {
+				console.error('Failed to save curriculum scope:', err)
+			} finally {
+				this.savingCurriculum = false
+			}
+		},
+
+		toggleChapter(chapterKey, checked) {
+			if (checked) {
+				if (!this.selectedChapterKeys.includes(chapterKey)) {
+					this.selectedChapterKeys = [...this.selectedChapterKeys, chapterKey]
+				}
+			} else {
+				this.selectedChapterKeys = this.selectedChapterKeys.filter(k => k !== chapterKey)
+			}
+		},
+
+		selectAllChapters() {
+			this.selectedChapterKeys = this.curriculumAvailableChapters.map(c => c.chapter_key)
 		},
 
 		formatDate(timestamp) {
@@ -2641,4 +2753,20 @@ td.mastery-low {
 	.streak-flame { animation: none; }
 	.at-risk-card:hover { transform: none; }
 }
+
+/* Curriculum Scope */
+.curriculum-section { padding: 24px 0; max-width: 720px; }
+.curriculum-header h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+.curriculum-desc { color: var(--color-text-maxcontrast); margin-bottom: 20px; font-size: 14px; line-height: 1.5; }
+.curriculum-loading { display: flex; justify-content: center; padding: 40px; }
+.curriculum-toggle { margin-bottom: 20px; }
+.curriculum-chapters { border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+.curriculum-empty { color: var(--color-text-maxcontrast); font-size: 14px; text-align: center; padding: 20px; }
+.curriculum-select-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+.curriculum-chapter-row { padding: 6px 0; border-bottom: 1px solid var(--color-border-dark); }
+.curriculum-chapter-row:last-child { border-bottom: none; }
+.chapter-title { font-size: 14px; }
+.chapter-order { font-size: 12px; color: var(--color-text-maxcontrast); margin-inline-start: 8px; }
+.curriculum-actions { display: flex; align-items: center; gap: 12px; }
+.curriculum-saved-hint { font-size: 13px; color: var(--color-success); font-weight: 600; }
 </style>
