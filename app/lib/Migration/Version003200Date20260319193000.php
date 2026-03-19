@@ -19,7 +19,7 @@ class Version003200Date20260319193000 extends SimpleMigrationStep {
     public function postSchemaChange(IOutput $output, \Closure $schemaClosure, array $options): void {
         /** @var ISchemaWrapper $schema */
         $schema = $schemaClosure();
-        $prefix = $this->db->getTablePrefix();
+        $prefix = method_exists($this->db, 'getPrefix') ? $this->db->getPrefix() : 'oc_';
         $allowed = "ARRAY['de'::character varying, 'en'::character varying, 'ru'::character varying, 'ar'::character varying]";
 
         if ($schema->hasTable('learning_qst_translations')) {

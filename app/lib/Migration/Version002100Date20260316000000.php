@@ -27,7 +27,7 @@ class Version002100Date20260316000000 extends SimpleMigrationStep {
     public function postSchemaChange(IOutput $output, \Closure $schemaClosure, array $options): void {
         /** @var ISchemaWrapper $schema */
         $schema = $schemaClosure();
-        $prefix = $this->db->getTablePrefix();
+        $prefix = method_exists($this->db, 'getPrefix') ? $this->db->getPrefix() : 'oc_';
 
         if ($schema->hasTable('learning_question_translations') && !$schema->hasTable('learning_qst_translations')) {
             $this->db->executeStatement(
