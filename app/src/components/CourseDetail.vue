@@ -788,6 +788,24 @@
 		</div>
 	</div>
 
+	<!-- Mode Config Tab (instructor only) -->
+	<div v-if="currentTab === 'mode-config' && isInstructor" class="tab-content mode-config-section">
+		<h3>{{ t('learning', 'Kursregeln — Lernmodi') }}</h3>
+		<p class="mode-config-hint">{{ t('learning', 'Deaktivierte Modi werden Studierenden nicht angezeigt. Training ist immer aktiv.') }}</p>
+		<div class="mode-toggles">
+			<div v-for="mode in modeConfigKeys" :key="mode.key" class="mode-toggle-row">
+				<label class="mode-toggle-label">
+					<input type="checkbox" :checked="modeConfigLocal[mode.key] !== false" @change="toggleMode(mode.key, $event.target.checked)" :disabled="mode.key === 'training'" />
+					{{ mode.label }}
+				</label>
+			</div>
+		</div>
+		<NcButton type="primary" :disabled="savingModeConfig" @click="saveModeConfig">
+			{{ savingModeConfig ? t('learning', 'Saving...') : t('learning', 'Save') }}
+		</NcButton>
+		<NcNoteCard v-if="modeConfigSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
+	</div>
+
 		</template>
 
 		<!-- Add Pool Modal -->
@@ -1132,6 +1150,10 @@ export default {
 			loadingRequests: false,
 			courseTickets: [],
 			ticketReplies: {},
+			// Mode Config
+			modeConfigLocal: {},
+			savingModeConfig: false,
+			modeConfigSaved: false,
 		}
 	},
 
@@ -1145,6 +1167,16 @@ export default {
 		},
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'swipe', 'exam'].includes(this.currentTab)
+		},
+		modeConfigKeys() {
+			return [
+				{ key: 'training', label: t('learning', 'Training (immer aktiv)') },
+				{ key: 'leitner', label: t('learning', 'Leitner') },
+				{ key: 'swipe', label: t('learning', 'Wahr/Falsch (Swipe)') },
+				{ key: 'exam', label: t('learning', 'Exam') },
+				{ key: 'duel', label: t('learning', 'Duell') },
+				{ key: 'league', label: t('learning', 'Liga') },
+			]
 		},
 		visibleTabs() {
 			if (this.isInstructor) {
@@ -1161,18 +1193,22 @@ export default {
 					{ id: 'announcements', label: t('learning', 'Ankündigungen') },
 					{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot') },
 					{ id: 'requests', label: t('learning', 'Anfragen') },
+					{ id: 'mode-config', label: t('learning', 'Kursregeln') },
 				]
 			}
-			return [
+			const mc = this.course?.mode_config || {}
+			const enabled = (key) => mc[key] !== false
+			const tabs = [
 				{ id: 'training', label: t('learning', 'Training') },
-				{ id: 'leitner', label: t('learning', 'Leitner') },
-				{ id: 'swipe', label: t('learning', 'Wahr/Falsch') },
-				{ id: 'exam', label: t('learning', 'Exam') },
-				{ id: 'my-progress', label: t('learning', 'Mein Fortschritt') },
-				{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
-				{ id: 'league', label: t('learning', 'Liga') },
-				{ id: 'duel', label: t('learning', 'Duell') },
 			]
+			if (enabled('leitner')) tabs.push({ id: 'leitner', label: t('learning', 'Leitner') })
+			if (enabled('swipe')) tabs.push({ id: 'swipe', label: t('learning', 'Wahr/Falsch') })
+			if (enabled('exam')) tabs.push({ id: 'exam', label: t('learning', 'Exam') })
+			tabs.push({ id: 'my-progress', label: t('learning', 'Mein Fortschritt') })
+			tabs.push({ id: 'leaderboard', label: t('learning', 'Leaderboard') })
+			if (enabled('league')) tabs.push({ id: 'league', label: t('learning', 'Liga') })
+			if (enabled('duel')) tabs.push({ id: 'duel', label: t('learning', 'Duell') })
+			return tabs
 		},
 		activeLearningModeLabel() {
 			const labels = {
@@ -1282,6 +1318,10 @@ export default {
 			}
 			if (tab === 'requests' && this.isInstructor) {
 				this.fetchCourseTickets()
+			}
+			if (tab === 'mode-config' && this.isInstructor) {
+				this.modeConfigLocal = Object.assign({}, this.course?.mode_config || {})
+				this.modeConfigSaved = false
 			}
 			this.emitVirtuProfContext()
 		},
@@ -2117,6 +2157,28 @@ export default {
 				this.$delete(this.ticketReplies, ticketId)
 			} catch (e) {
 				console.error('Failed to answer ticket', e)
+			}
+		},
+
+		toggleMode(key, value) {
+			this.$set(this.modeConfigLocal, key, value)
+		},
+
+		async saveModeConfig() {
+			this.savingModeConfig = true
+			try {
+				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
+					modeConfig: this.modeConfigLocal,
+				})
+				if (this.course) {
+					this.course.mode_config = res.data?.mode_config || this.modeConfigLocal
+				}
+				this.modeConfigSaved = true
+				setTimeout(() => { this.modeConfigSaved = false }, 3000)
+			} catch (e) {
+				console.error('Failed to save mode config', e)
+			} finally {
+				this.savingModeConfig = false
 			}
 		},
 	},
@@ -3176,4 +3238,14 @@ td.mastery-low {
 
 /* AdminSettings ticket filter note */
 .ticket-filter-note { margin-bottom: 8px; }
+
+/* Mode Config */
+.mode-config-section { padding: 16px 0; }
+.mode-config-hint { color: var(--color-text-maxcontrast); margin-bottom: 16px; font-size: 0.9em; }
+.mode-toggles { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.mode-toggle-row { display: flex; align-items: center; }
+.mode-toggle-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1em; }
+.mode-toggle-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+.mode-toggle-label input[type="checkbox"]:disabled { opacity: 0.5; cursor: not-allowed; }
+.mode-config-saved { margin-top: 12px; }
 </style>

@@ -169,5 +169,8 @@ return [
         ['name' => 'course#createExamSlot', 'url' => '/api/courses/{courseId}/exam-slot', 'verb' => 'POST'],
         ['name' => 'course#closeExamSlot', 'url' => '/api/courses/{courseId}/exam-slot/close', 'verb' => 'POST'],
         ['name' => 'supportTicket#instructorList', 'url' => '/api/courses/{courseId}/support-tickets', 'verb' => 'GET'],
+
+        // Mode Config
+        ['name' => 'course#updateModeConfig', 'url' => '/api/courses/{courseId}/mode-config', 'verb' => 'PUT'],
     ]
 ];

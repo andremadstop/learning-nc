@@ -562,6 +562,24 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function updateModeConfig(int $courseId, array $modeConfig = []): DataResponse {
+        try {
+            $config = $this->courseService->updateModeConfig($courseId, $this->userId, $modeConfig);
+            return new DataResponse(['mode_config' => $config]);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('updateModeConfig error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
     #[UserRateLimit(limit: 30, period: 60)]
     public function getCurriculumScope(int $courseId): DataResponse {
         try {

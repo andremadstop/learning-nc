@@ -368,11 +368,24 @@ class CourseService {
             unset($progressMap);
         }
 
+        $questionIds = $this->getFilteredQuestionIdsForCoursePoolEntity($coursePool);
+
+        // Apply curriculum scope filter (chapter-level, instructor-configured)
+        $questionIds = $this->applyCurriculumScope($courseId, $questionIds);
+
+        // Filter out questions paused in this course context
+        if (!empty($questionIds)) {
+            $paused = $this->getPausedQuestionIds($courseId);
+            if (!empty($paused)) {
+                $questionIds = array_values(array_diff($questionIds, $paused));
+            }
+        }
+
         return [
             'course' => $course,
             'course_pool' => $coursePool,
             'is_instructor' => $isInstructor,
-            'question_ids' => $this->getFilteredQuestionIdsForCoursePoolEntity($coursePool),
+            'question_ids' => $questionIds,
         ];
     }
 
@@ -1805,6 +1818,49 @@ class CourseService {
                 'enrolled_at' => $member->getEnrolledAt(),
             ],
         ];
+    }
+
+    // ─── Mode Config ─────────────────────────────────────────────────────────
+
+    /**
+     * Update the mode configuration for a course (instructor only).
+     * $modeConfig keys: training, leitner, swipe, exam, duel, league (bool each)
+     */
+    public function updateModeConfig(int $courseId, string $userId, array $modeConfig): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('Only instructors can update course mode config');
+        }
+
+        $allowed = ['training', 'leitner', 'swipe', 'exam', 'duel', 'league'];
+        $clean = [];
+        foreach ($allowed as $key) {
+            $clean[$key] = isset($modeConfig[$key]) ? (bool)$modeConfig[$key] : true;
+        }
+
+        $course->setModeConfig(json_encode($clean));
+        $course->setUpdatedAt(time());
+        $this->courseMapper->update($course);
+
+        return $clean;
+    }
+
+    /**
+     * Get IDs of questions paused for a specific course.
+     */
+    private function getPausedQuestionIds(int $courseId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('question_id')
+            ->from('learning_course_question_overrides')
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('paused', $qb->createNamedParameter(true, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)));
+        $result = $qb->executeQuery();
+        $ids = [];
+        while ($row = $result->fetch()) {
+            $ids[] = (int)$row['question_id'];
+        }
+        $result->closeCursor();
+        return $ids;
     }
 
     // ─── Curriculum Scope ────────────────────────────────────────────────────
