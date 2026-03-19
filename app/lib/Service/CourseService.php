@@ -137,7 +137,8 @@ class CourseService {
         $translatedQuestions = (int)$result->fetchOne();
         $result->closeCursor();
 
-        return $translatedQuestions >= $totalQuestions;
+        $requiredForVisibility = max(1, (int)ceil($totalQuestions * 0.95));
+        return $translatedQuestions >= $requiredForVisibility;
     }
 
     private function normalizeCoursePoolFilterValue(?string $value, int $maxLength): ?string {
