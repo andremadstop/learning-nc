@@ -125,7 +125,8 @@ class CourseService {
             return false;
         }
 
-        $prefix = $this->db->getTablePrefix();
+        $inner = method_exists($this->db, 'getInner') ? $this->db->getInner() : $this->db;
+        $prefix = method_exists($inner, 'getPrefix') ? $inner->getPrefix() : 'oc_';
         $result = $this->db->executeQuery(
             "SELECT COUNT(DISTINCT qt.question_id) AS translated_questions
              FROM {$prefix}learning_qst_translations qt
