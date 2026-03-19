@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\SupportTicketService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -13,12 +14,14 @@ use OCP\IRequest;
 
 class SupportTicketController extends Controller {
     private SupportTicketService $service;
+    private CourseService $courseService;
     private IGroupManager $groupManager;
     private ?string $userId;
 
-    public function __construct(string $appName, IRequest $request, SupportTicketService $service, IGroupManager $groupManager, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, SupportTicketService $service, CourseService $courseService, IGroupManager $groupManager, ?string $userId) {
         parent::__construct($appName, $request);
         $this->service = $service;
+        $this->courseService = $courseService;
         $this->groupManager = $groupManager;
         $this->userId = $userId;
     }
@@ -68,7 +71,9 @@ class SupportTicketController extends Controller {
         }
         try {
             $isAdmin = $this->groupManager->isAdmin($this->userId);
-            return new DataResponse(['ticket' => $this->service->answer($id, $answerText, $this->userId, $isAdmin, null)]);
+            // For instructor routing: resolve which course this ticket belongs to for permission check
+            $managedCourseId = $isAdmin ? null : $this->service->getManagedCourseIdForTicket($id, $this->userId);
+            return new DataResponse(['ticket' => $this->service->answer($id, $answerText, $this->userId, $isAdmin, $managedCourseId)]);
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_FORBIDDEN);
         } catch (\InvalidArgumentException $e) {
@@ -83,6 +88,9 @@ class SupportTicketController extends Controller {
     public function instructorList(int $courseId, int $limit = 50): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        if (!$this->courseService->canManageCourse($courseId, $this->userId)) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
         }
         return new DataResponse(['tickets' => $this->service->listInstructorForCourse($courseId, $limit)]);
     }

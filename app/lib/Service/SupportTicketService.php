@@ -5,13 +5,16 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\SupportTicket;
 use OCA\Learning\Db\SupportTicketMapper;
+use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\ForbiddenException;
 
 class SupportTicketService {
     private SupportTicketMapper $ticketMapper;
+    private CourseService $courseService;
 
-    public function __construct(SupportTicketMapper $ticketMapper) {
+    public function __construct(SupportTicketMapper $ticketMapper, CourseService $courseService) {
         $this->ticketMapper = $ticketMapper;
+        $this->courseService = $courseService;
     }
 
     public function create(string $userId, ?string $subject, string $message, array $context = [], ?string $category = null): SupportTicket {
@@ -98,6 +101,26 @@ class SupportTicketService {
 
     public function listInstructorForCourse(int $courseId, int $limit = 100): array {
         return array_map([$this, 'serializeTicket'], $this->ticketMapper->findByInstructorCourse($courseId, max(1, min(200, $limit))));
+    }
+
+    /**
+     * Returns the routing_course_id of a ticket if the given user is instructor
+     * of that course, or null otherwise. Used by the answer endpoint.
+     */
+    public function getManagedCourseIdForTicket(int $ticketId, string $userId): ?int {
+        try {
+            $ticket = $this->ticketMapper->findById($ticketId);
+            if ($ticket->getRoutingTargetType() !== 'course_instructor') {
+                return null;
+            }
+            $courseId = $ticket->getRoutingCourseId();
+            if ($courseId === null) {
+                return null;
+            }
+            return $this->courseService->canManageCourse($courseId, $userId) ? $courseId : null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     private function resolveRouting(?string $category, ?int $courseId): array {
