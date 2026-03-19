@@ -85,3 +85,13 @@ PLAN-settings-pages.md
 # E2E generated auth/fixture env
 app/tests/e2e/.auth/
 app/tests/e2e/.env.generated
+
+# Local/generated artifacts that should stay outside Git history
+app/test-results/
+app/js/*.bak
+translations/
+questions_*.json
+comptia_n10_009_batch_*.json
+merge_batch.py
+backups/
+learning-*.tar.gz
