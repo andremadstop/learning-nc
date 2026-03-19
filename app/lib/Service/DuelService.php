@@ -90,6 +90,21 @@ class DuelService {
         $this->assertInviteeIsEligible($courseId, $inviteeUid);
         $this->assertNoActiveInvite($courseId, $userId, $inviteeUid);
 
+        // Resolve pool: if not specified, pick first available pool in course
+        if ($poolId === null) {
+            $cpQb = $this->db->getQueryBuilder();
+            $cpQb->select('pool_id')->from('learning_course_pools')
+                 ->where($cpQb->expr()->eq('course_id', $cpQb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+                 ->setMaxResults(1);
+            $cpRes = $cpQb->executeQuery();
+            $row = $cpRes->fetch();
+            $cpRes->closeCursor();
+            if (!$row) {
+                throw new \RuntimeException('No pools available in this course');
+            }
+            $poolId = (int)$row['pool_id'];
+        }
+
         $questionIds = $this->selectQuestions($poolId, $numQuestions, $userId, $courseId);
         $code = $this->generateCode();
         $now = time();
