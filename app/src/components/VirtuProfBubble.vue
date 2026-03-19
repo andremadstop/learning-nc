@@ -294,7 +294,21 @@ export default {
 }
 
 .bubble-actions.stacked :deep(button) {
+  width: 100%;
   justify-content: flex-start;
+  white-space: normal;
+  text-align: left;
+  line-height: 1.35;
+  height: auto;
+  min-height: 36px;
+  overflow-wrap: anywhere;
+}
+
+.bubble-actions.stacked :deep(.button-vue__text) {
+  display: block;
+  width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .bubble-arrow {
