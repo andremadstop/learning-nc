@@ -63,9 +63,14 @@
 						<span v-if="isInstructor" class="pool-sort-order">{{ (pool.sort_order || 0) + 1 }}.</span>
 						<div class="pool-info">
 							<span class="pool-name">{{ pool.pool_name }}</span>
-							<span class="pool-questions">
-								{{ t('learning', '{n} questions', { n: pool.question_count || 0 }) }}
-							</span>
+							<div class="pool-meta-row">
+								<span class="pool-questions">
+									{{ t('learning', '{n} questions', { n: pool.question_count || 0 }) }}
+								</span>
+								<span v-if="poolLanguageSummary(pool)" class="pool-language-summary">
+									{{ poolLanguageSummary(pool) }}
+								</span>
+							</div>
 						</div>
 						<div class="pool-badges">
 							<span v-if="pool.required" class="required-badge">
@@ -372,9 +377,14 @@
 							@keydown.space.prevent="selectLearningPool(pool)">
 							<div class="pool-info">
 								<span class="pool-name">{{ pool.pool_name }}</span>
-								<span class="pool-questions">
-									{{ t('learning', '{n} questions', { n: getLearningPoolQuestionCount(pool) }) }}
-								</span>
+								<div class="pool-meta-row">
+									<span class="pool-questions">
+										{{ t('learning', '{n} questions', { n: getLearningPoolQuestionCount(pool) }) }}
+									</span>
+									<span v-if="poolLanguageSummary(pool)" class="pool-language-summary">
+										{{ poolLanguageSummary(pool) }}
+									</span>
+								</div>
 							</div>
 							<div class="pool-badges">
 								<span v-if="pool.required" class="required-badge">
@@ -1056,6 +1066,16 @@ export default {
 
 			getLearningPoolQuestionCount(pool) {
 				return this.poolQuestionCounts[pool.pool_id] ?? pool.question_count ?? 0
+			},
+			poolLanguageCodes(pool) {
+				const langs = Array.isArray(pool.available_content_languages) ? pool.available_content_languages : ['de']
+				return langs
+					.filter(code => ['de', 'en', 'ru', 'ar'].includes(code))
+					.map(code => code.toUpperCase())
+			},
+			poolLanguageSummary(pool) {
+				const codes = this.poolLanguageCodes(pool)
+				return codes.length > 1 ? codes.join(' | ') : ''
 			},
 			poolRuleSummary(pool) {
 				const summary = []
@@ -1833,6 +1853,21 @@ export default {
 .pool-questions {
 	font-size: 0.85em;
 	color: var(--color-text-maxcontrast);
+}
+
+.pool-meta-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.pool-language-summary {
+	font-size: 0.76em;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	color: var(--color-primary-element);
+	white-space: nowrap;
 }
 
 .pool-badges {
