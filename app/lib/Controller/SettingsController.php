@@ -102,6 +102,8 @@ class SettingsController extends Controller {
         return new DataResponse([
             'daily_challenge' => $this->config->getUserValue($this->userId, 'learning', 'daily_challenge', 'yes'),
             'ui_language' => $this->config->getUserValue($this->userId, 'learning', 'ui_language', ''),
+            'content_language' => $this->config->getUserValue($this->userId, 'learning', 'content_language', ''),
+            'virtuprof_enabled' => $this->config->getUserValue($this->userId, 'learning', 'virtuprof_enabled', 'yes'),
             'notifications_enabled' => $this->config->getUserValue($this->userId, 'learning', 'notifications_enabled', 'yes'),
         ]);
     }
@@ -109,13 +111,21 @@ class SettingsController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function savePersonal(string $daily_challenge, string $ui_language, string $notifications_enabled): DataResponse {
+    public function savePersonal(
+        string $daily_challenge,
+        string $ui_language,
+        string $notifications_enabled,
+        string $content_language = '',
+        string $virtuprof_enabled = 'yes'
+    ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], 401);
         }
 
         $this->config->setUserValue($this->userId, 'learning', 'daily_challenge', $daily_challenge === 'yes' ? 'yes' : 'no');
         $this->config->setUserValue($this->userId, 'learning', 'ui_language', in_array($ui_language, ['de', 'en', ''], true) ? $ui_language : '');
+        $this->config->setUserValue($this->userId, 'learning', 'content_language', in_array($content_language, ['de', 'en', 'ru', ''], true) ? $content_language : '');
+        $this->config->setUserValue($this->userId, 'learning', 'virtuprof_enabled', $virtuprof_enabled === 'no' ? 'no' : 'yes');
         $this->config->setUserValue($this->userId, 'learning', 'notifications_enabled', $notifications_enabled === 'yes' ? 'yes' : 'no');
 
         return new DataResponse(['status' => 'ok']);

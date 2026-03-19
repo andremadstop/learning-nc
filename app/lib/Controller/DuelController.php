@@ -23,9 +23,10 @@ class DuelController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function create(int $poolId): DataResponse {
+    public function create(int $poolId, int $numQuestions = 10, ?int $courseId = null): DataResponse {
         try {
-            return new DataResponse($this->service->createDuel($poolId, $this->userId), Http::STATUS_CREATED);
+            $numQuestions = max(5, min(50, $numQuestions));
+            return new DataResponse($this->service->createDuel($poolId, $this->userId, $numQuestions, $courseId), Http::STATUS_CREATED);
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to create duel'], Http::STATUS_BAD_REQUEST);
         }
@@ -47,9 +48,9 @@ class DuelController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function ready(string $code): DataResponse {
+    public function ready(string $code, ?string $lang = null): DataResponse {
         try {
-            return new DataResponse($this->service->setReady($code, $this->userId));
+            return new DataResponse($this->service->setReady($code, $this->userId, $lang));
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to set ready'], Http::STATUS_BAD_REQUEST);
         }
@@ -59,9 +60,9 @@ class DuelController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 60, period: 60)]
-    public function state(string $code): DataResponse {
+    public function state(string $code, ?string $lang = null): DataResponse {
         try {
-            return new DataResponse($this->service->getState($code, $this->userId));
+            return new DataResponse($this->service->getState($code, $this->userId, $lang));
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to get duel state'], Http::STATUS_BAD_REQUEST);
         }
@@ -71,9 +72,9 @@ class DuelController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]
-    public function answer(string $code, bool $answerCorrect, int $answeredAt): DataResponse {
+    public function answer(string $code, int $answerId, int $answeredAt, ?string $lang = null): DataResponse {
         try {
-            return new DataResponse($this->service->submitAnswer($code, $this->userId, $answerCorrect, $answeredAt));
+            return new DataResponse($this->service->submitAnswer($code, $this->userId, $answerId, $answeredAt, $lang));
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to submit answer'], Http::STATUS_BAD_REQUEST);
         }

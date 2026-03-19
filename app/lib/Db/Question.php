@@ -23,6 +23,12 @@ class Question extends Entity implements JsonSerializable {
     protected $pbqConfig;
     protected $instructorNote;
     protected $noteVisible;
+    protected $handbookKey;
+    protected $handbookTitle;
+    protected $examKey;
+    protected $chapterKey;
+    protected $chapterTitle;
+    protected $chapterOrder;
 
     public function __construct() {
         $this->addType('poolId', 'integer');
@@ -42,6 +48,12 @@ class Question extends Entity implements JsonSerializable {
         $this->addType('pbqConfig', 'string');
         $this->addType('instructorNote', 'string');
         $this->addType('noteVisible', 'boolean');
+        $this->addType('handbookKey', 'string');
+        $this->addType('handbookTitle', 'string');
+        $this->addType('examKey', 'string');
+        $this->addType('chapterKey', 'string');
+        $this->addType('chapterTitle', 'string');
+        $this->addType('chapterOrder', 'integer');
     }
 
     public function jsonSerialize(): array {
@@ -64,6 +76,12 @@ class Question extends Entity implements JsonSerializable {
             'pbq_config' => $this->pbqConfig ? json_decode($this->pbqConfig, true) : null,
             'instructor_note' => $this->instructorNote,
             'note_visible' => $this->noteVisible ?? false,
+            'handbook_key' => $this->handbookKey,
+            'handbook_title' => $this->handbookTitle,
+            'exam_key' => $this->examKey,
+            'chapter_key' => $this->chapterKey,
+            'chapter_title' => $this->chapterTitle,
+            'chapter_order' => $this->chapterOrder,
         ];
     }
 

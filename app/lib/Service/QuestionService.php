@@ -186,6 +186,44 @@ class QuestionService {
         }
     }
 
+    private function normalizeOptional(?string $value, int $maxLength): ?string {
+        $value = trim((string)$value);
+        if ($value === '') {
+            return null;
+        }
+        if (mb_strlen($value) > $maxLength) {
+            throw new \InvalidArgumentException('Question metadata field exceeds maximum length');
+        }
+        return $value;
+    }
+
+    private function normalizeChapterOrder(?int $chapterOrder): ?int {
+        if ($chapterOrder === null) {
+            return null;
+        }
+        if ($chapterOrder < 1 || $chapterOrder > 9999) {
+            throw new \InvalidArgumentException('Chapter order must be between 1 and 9999');
+        }
+        return $chapterOrder;
+    }
+
+    private function applyQuestionMetadata(
+        Question $question,
+        ?string $handbookKey,
+        ?string $handbookTitle,
+        ?string $examKey,
+        ?string $chapterKey,
+        ?string $chapterTitle,
+        ?int $chapterOrder
+    ): void {
+        $question->setHandbookKey($this->normalizeOptional($handbookKey, 64));
+        $question->setHandbookTitle($this->normalizeOptional($handbookTitle, 255));
+        $question->setExamKey($this->normalizeOptional($examKey, 64));
+        $question->setChapterKey($this->normalizeOptional($chapterKey, 64));
+        $question->setChapterTitle($this->normalizeOptional($chapterTitle, 255));
+        $question->setChapterOrder($this->normalizeChapterOrder($chapterOrder));
+    }
+
     public function findByPool(int $poolId, string $userId): array {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new Exception('Pool not found or no access');
@@ -315,7 +353,10 @@ class QuestionService {
     public function create(int $poolId, string $userId, string $text, ?string $explanation,
                            ?string $difficulty, array $answers, ?string $questionType = null,
                            ?string $pbqSubtype = null, ?string $pbqConfig = null,
-                           ?string $instructorNote = null, bool $noteVisible = false): array {
+                           ?string $instructorNote = null, bool $noteVisible = false,
+                           ?string $handbookKey = null, ?string $handbookTitle = null,
+                           ?string $examKey = null, ?string $chapterKey = null,
+                           ?string $chapterTitle = null, ?int $chapterOrder = null): array {
         if (!$this->canEditPool($poolId, $userId)) {
             throw new Exception('No edit access to this pool');
         }
@@ -337,6 +378,7 @@ class QuestionService {
             if ($pbqConfig !== null) { $question->setPbqConfig($pbqConfig); }
             $question->setInstructorNote($instructorNote);
             $question->setNoteVisible($noteVisible);
+            $this->applyQuestionMetadata($question, $handbookKey, $handbookTitle, $examKey, $chapterKey, $chapterTitle, $chapterOrder);
             if (!$question->getReviewStatus()) {
                 $question->setReviewStatus('published');
             }
@@ -368,7 +410,10 @@ class QuestionService {
     public function update(int $id, string $userId, string $text, ?string $explanation,
                           ?string $difficulty, array $answers, ?string $questionType = null,
                           ?string $pbqSubtype = null, ?string $pbqConfig = null,
-                          ?string $instructorNote = null, bool $noteVisible = false): array {
+                          ?string $instructorNote = null, bool $noteVisible = false,
+                          ?string $handbookKey = null, ?string $handbookTitle = null,
+                          ?string $examKey = null, ?string $chapterKey = null,
+                          ?string $chapterTitle = null, ?int $chapterOrder = null): array {
         try {
             $question = $this->questionMapper->findById($id);
             if (!$this->canEditPool($question->getPoolId(), $userId)) {
@@ -389,6 +434,7 @@ class QuestionService {
                 if ($pbqConfig !== null) { $question->setPbqConfig($pbqConfig); }
                 $question->setInstructorNote($instructorNote);
                 $question->setNoteVisible($noteVisible);
+                $this->applyQuestionMetadata($question, $handbookKey, $handbookTitle, $examKey, $chapterKey, $chapterTitle, $chapterOrder);
 
                 $question = $this->questionMapper->createOrUpdate($question);
 

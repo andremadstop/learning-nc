@@ -21,7 +21,7 @@
       <template v-else>
         <strong>{{ t('learning', 'JSON Format: Array of question objects') }}</strong><br/>
         <code class="example-code">[{"text":"What is 2+2?","answers":[{"text":"3","is_correct":false},{"text":"4","is_correct":true}],"explanation":"Basic math"}]</code><br/>
-        <small>{{ t('learning', 'Optional fields: difficulty, explanation, question_type ("multi" for multiple correct answers, "open" for free text with one model answer).') }}</small>
+        <small>{{ t('learning', 'Optional fields: difficulty, explanation, question_type ("multi" for multiple correct answers, "open" for free text with one model answer), exam_key, handbook_key, handbook_title, chapter_key, chapter_title, chapter_order.') }}</small>
       </template>
     </NcNoteCard>
 

@@ -67,6 +67,291 @@ class CourseService {
         return $name ?: '(deleted)';
     }
 
+    private function getPoolSnapshot(int $poolId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select(
+            'name',
+            'handbook_key',
+            'handbook_title',
+            'chapter_key',
+            'chapter_title',
+            'chapter_order'
+        )
+            ->from('learning_pools')
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter($poolId)));
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+
+        if ($row === false) {
+            throw new DoesNotExistException('Pool not found');
+        }
+
+        return [
+            'pool_name' => $row['name'] ?: '(deleted)',
+            'handbook_key' => $row['handbook_key'] ?? null,
+            'handbook_title' => $row['handbook_title'] ?? null,
+            'chapter_key' => $row['chapter_key'] ?? null,
+            'chapter_title' => $row['chapter_title'] ?? null,
+            'chapter_order' => isset($row['chapter_order']) ? (int)$row['chapter_order'] : null,
+        ];
+    }
+
+    private function normalizeCoursePoolFilterValue(?string $value, int $maxLength): ?string {
+        $value = trim((string)$value);
+        if ($value === '') {
+            return null;
+        }
+        if (mb_strlen($value) > $maxLength) {
+            throw new \InvalidArgumentException('Course pool filter exceeds maximum length');
+        }
+        return $value;
+    }
+
+    private function normalizeCoursePoolQuestionIds(?array $questionIds, int $poolId): ?string {
+        if ($questionIds === null) {
+            return null;
+        }
+
+        $normalized = [];
+        foreach ($questionIds as $questionId) {
+            $questionId = (int)$questionId;
+            if ($questionId > 0) {
+                $normalized[] = $questionId;
+            }
+        }
+        $normalized = array_values(array_unique($normalized));
+
+        if ($normalized === []) {
+            return null;
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id')
+            ->from('learning_questions')
+            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+            ->andWhere($qb->expr()->in('id', $qb->createNamedParameter($normalized, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        $result = $qb->executeQuery();
+        $validIds = array_map('intval', array_column($result->fetchAll(), 'id'));
+        $result->closeCursor();
+        sort($validIds);
+
+        if (count($validIds) !== count($normalized)) {
+            throw new \InvalidArgumentException('Question filter contains IDs outside this pool');
+        }
+
+        return json_encode($validIds);
+    }
+
+    private function decodeCoursePoolQuestionIds(?string $json): array {
+        if (!$json) {
+            return [];
+        }
+        $decoded = json_decode($json, true);
+        if (!is_array($decoded)) {
+            return [];
+        }
+        return array_values(array_filter(array_map('intval', $decoded), static fn(int $id): bool => $id > 0));
+    }
+
+    private function getFilteredQuestionIdsForCoursePoolEntity(CoursePool $coursePool): array {
+        $qb = $this->db->getQueryBuilder();
+        $expr = $qb->expr();
+        $qb->select('id')
+            ->from('learning_questions')
+            ->where($expr->eq('pool_id', $qb->createNamedParameter($coursePool->getPoolId())));
+
+        $filterExamKey = $coursePool->getFilterExamKey();
+        if ($filterExamKey !== null && $filterExamKey !== '') {
+            $qb->andWhere($expr->eq('exam_key', $qb->createNamedParameter($filterExamKey)));
+        }
+
+        $filterChapterKey = $coursePool->getFilterChapterKey();
+        if ($filterChapterKey !== null && $filterChapterKey !== '') {
+            $qb->andWhere($expr->eq('chapter_key', $qb->createNamedParameter($filterChapterKey)));
+        }
+
+        $questionIds = $this->decodeCoursePoolQuestionIds($coursePool->getFilterQuestionIds());
+        if ($questionIds !== []) {
+            $qb->andWhere($expr->in('id', $qb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        }
+
+        $qb->orderBy('created_at', 'DESC');
+        $result = $qb->executeQuery();
+        $ids = array_map('intval', array_column($result->fetchAll(), 'id'));
+        $result->closeCursor();
+        return $ids;
+    }
+
+    private function getFilterOptionsForPool(int $poolId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->selectDistinct('exam_key')
+            ->from('learning_questions')
+            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+            ->andWhere($qb->expr()->isNotNull('exam_key'))
+            ->orderBy('exam_key', 'ASC');
+        $result = $qb->executeQuery();
+        $examKeys = array_values(array_filter(array_column($result->fetchAll(), 'exam_key')));
+        $result->closeCursor();
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('chapter_key', 'chapter_title', 'chapter_order')
+            ->from('learning_questions')
+            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
+            ->andWhere($qb->expr()->isNotNull('chapter_key'))
+            ->groupBy('chapter_key')
+            ->addGroupBy('chapter_title')
+            ->addGroupBy('chapter_order')
+            ->orderBy('chapter_order', 'ASC')
+            ->addOrderBy('chapter_title', 'ASC');
+        $result = $qb->executeQuery();
+        $chapters = [];
+        while ($row = $result->fetch()) {
+            $chapterKey = trim((string)($row['chapter_key'] ?? ''));
+            if ($chapterKey === '') {
+                continue;
+            }
+            $chapters[] = [
+                'key' => $chapterKey,
+                'title' => $row['chapter_title'] ?: $chapterKey,
+                'order' => isset($row['chapter_order']) ? (int)$row['chapter_order'] : null,
+            ];
+        }
+        $result->closeCursor();
+
+        return [
+            'exam_keys' => $examKeys,
+            'chapters' => $chapters,
+        ];
+    }
+
+    private function getTouchedQuestionIdsForUser(array $questionIds, string $userId): array {
+        if ($questionIds === []) {
+            return [];
+        }
+
+        $touched = [];
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->selectDistinct('question_id')
+            ->from('learning_user_answers', 'ua')
+            ->innerJoin('ua', 'learning_sessions', 's', $qb->expr()->eq('ua.session_id', 's.id'))
+            ->where($qb->expr()->in('question_id', $qb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        $qb->andWhere($qb->expr()->eq('s.user_id', $qb->createNamedParameter($userId)));
+        $result = $qb->executeQuery();
+        foreach ($result->fetchAll() as $row) {
+            $touched[(int)$row['question_id']] = true;
+        }
+        $result->closeCursor();
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->selectDistinct('question_id')
+            ->from('learning_leitner_items')
+            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->in('question_id', $qb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+            ->andWhere($qb->expr()->orX(
+                $qb->expr()->gt('correct_count', $qb->createNamedParameter(0)),
+                $qb->expr()->gt('incorrect_count', $qb->createNamedParameter(0))
+            ));
+        $result = $qb->executeQuery();
+        foreach ($result->fetchAll() as $row) {
+            $touched[(int)$row['question_id']] = true;
+        }
+        $result->closeCursor();
+
+        return array_keys($touched);
+    }
+
+    private function buildRequiredProgressMap(array $coursePools, string $userId): array {
+        $progressMap = [];
+        foreach ($coursePools as $coursePool) {
+            $questionIds = $this->getFilteredQuestionIdsForCoursePoolEntity($coursePool);
+            $touchedCount = count($this->getTouchedQuestionIdsForUser($questionIds, $userId));
+            $totalCount = count($questionIds);
+            $completed = $totalCount === 0 ? true : $touchedCount >= $totalCount;
+            $progressMap[$coursePool->getPoolId()] = [
+                'filtered_question_count' => $totalCount,
+                'required_progress_count' => $touchedCount,
+                'required_progress_percent' => $totalCount === 0 ? 100 : (int)floor(($touchedCount / max(1, $totalCount)) * 100),
+                'required_completed' => $completed,
+            ];
+        }
+        return $progressMap;
+    }
+
+    private function getOutstandingRequiredPools(array $coursePools, string $userId): array {
+        $progressMap = $this->buildRequiredProgressMap($coursePools, $userId);
+        $outstanding = [];
+        foreach ($coursePools as $coursePool) {
+            if (!$coursePool->getRequired() || !$coursePool->getRequiredEnforced()) {
+                continue;
+            }
+            $poolProgress = $progressMap[$coursePool->getPoolId()] ?? null;
+            if ($poolProgress !== null && !$poolProgress['required_completed']) {
+                $outstanding[$coursePool->getPoolId()] = $poolProgress;
+            }
+        }
+        return [$progressMap, $outstanding];
+    }
+
+    public function resolveCoursePoolContext(int $courseId, int $poolId, string $userId): array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->hasAccess($course, $userId)) {
+            throw new \OCP\AppFramework\Db\DoesNotExistException('Course not found');
+        }
+
+        $coursePool = $this->coursePoolMapper->findByCourseAndPool($courseId, $poolId);
+        $isInstructor = $this->isInstructorOfCourse($course, $userId);
+
+        if (!$isInstructor) {
+            [$progressMap, $outstanding] = $this->getOutstandingRequiredPools([$coursePool, ...array_filter(
+                $this->coursePoolMapper->findByCourse($courseId),
+                static fn(CoursePool $cp): bool => $cp->getPoolId() !== $poolId
+            )], $userId);
+            $blockers = array_keys($outstanding);
+            if ($blockers !== [] && !in_array($poolId, $blockers, true)) {
+                $blockerNames = [];
+                foreach ($outstanding as $blockerPoolId => $_meta) {
+                    $blockerNames[] = $this->getPoolName($blockerPoolId);
+                }
+                throw new \Exception('Required pools must be completed first: ' . implode(', ', $blockerNames));
+            }
+            unset($progressMap);
+        }
+
+        return [
+            'course' => $course,
+            'course_pool' => $coursePool,
+            'is_instructor' => $isInstructor,
+            'question_ids' => $this->getFilteredQuestionIdsForCoursePoolEntity($coursePool),
+        ];
+    }
+
+    public function updatePoolRules(
+        int $courseId,
+        int $poolId,
+        bool $required,
+        bool $requiredEnforced,
+        ?string $filterExamKey,
+        ?string $filterChapterKey,
+        ?array $filterQuestionIds,
+        string $userId
+    ): CoursePool {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new \Exception('No permission');
+        }
+
+        $coursePool = $this->coursePoolMapper->findByCourseAndPool($courseId, $poolId);
+        $coursePool->setRequired($required);
+        $coursePool->setRequiredEnforced($required && $requiredEnforced);
+        $coursePool->setFilterExamKey($this->normalizeCoursePoolFilterValue($filterExamKey, 64));
+        $coursePool->setFilterChapterKey($this->normalizeCoursePoolFilterValue($filterChapterKey, 64));
+        $coursePool->setFilterQuestionIds($this->normalizeCoursePoolQuestionIds($filterQuestionIds, $poolId));
+
+        return $this->coursePoolMapper->update($coursePool);
+    }
+
     /**
      * Check pool exists
      */
@@ -79,6 +364,17 @@ class CourseService {
         $count = (int)$result->fetchOne();
         $result->closeCursor();
         return $count > 0;
+    }
+
+    private function countQuestionsInPool(int $poolId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*)'))
+            ->from('learning_questions')
+            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetchOne();
+        $result->closeCursor();
+        return $count;
     }
 
     /**
@@ -243,24 +539,52 @@ class CourseService {
 
         $isInstructor = $this->isInstructorOfCourse($course, $userId);
         $coursePools = $this->coursePoolMapper->findByCourse($courseId);
+        $requiredProgressMap = $isInstructor ? [] : $this->buildRequiredProgressMap($coursePools, $userId);
+        $outstandingRequiredPoolIds = [];
+        if (!$isInstructor) {
+            foreach ($coursePools as $coursePool) {
+                if (!$coursePool->getRequired() || !$coursePool->getRequiredEnforced()) {
+                    continue;
+                }
+                $poolProgress = $requiredProgressMap[$coursePool->getPoolId()] ?? null;
+                if ($poolProgress !== null && !$poolProgress['required_completed']) {
+                    $outstandingRequiredPoolIds[] = $coursePool->getPoolId();
+                }
+            }
+        }
 
         // Enrich pools with pool name and question count
         $poolsData = [];
         foreach ($coursePools as $cp) {
             $cpData = $cp->jsonSerialize();
             try {
-                $cpData['pool_name'] = $this->getPoolName($cp->getPoolId());
-                // Count questions via direct query
-                $qb = $this->db->getQueryBuilder();
-                $qb->select($qb->createFunction('COUNT(*)'))
-                    ->from('learning_questions')
-                    ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($cp->getPoolId())));
-                $result = $qb->executeQuery();
-                $cpData['question_count'] = (int)$result->fetchOne();
-                $result->closeCursor();
+                $cpData = array_merge($cpData, $this->getPoolSnapshot($cp->getPoolId()));
+                $filteredQuestionIds = $this->getFilteredQuestionIdsForCoursePoolEntity($cp);
+                $cpData['question_count'] = count($filteredQuestionIds);
+                $cpData['total_question_count'] = $this->countQuestionsInPool($cp->getPoolId());
+                $cpData['available_filters'] = $this->getFilterOptionsForPool($cp->getPoolId());
             } catch (DoesNotExistException $e) {
                 $cpData['pool_name'] = '(deleted)';
                 $cpData['question_count'] = 0;
+                $cpData['total_question_count'] = 0;
+                $cpData['handbook_key'] = null;
+                $cpData['handbook_title'] = null;
+                $cpData['chapter_key'] = null;
+                $cpData['chapter_title'] = null;
+                $cpData['chapter_order'] = null;
+                $cpData['available_filters'] = ['exam_keys' => [], 'chapters' => []];
+            }
+
+            if (!$isInstructor) {
+                $poolProgress = $requiredProgressMap[$cp->getPoolId()] ?? [
+                    'filtered_question_count' => $cpData['question_count'],
+                    'required_progress_count' => 0,
+                    'required_progress_percent' => 0,
+                    'required_completed' => false,
+                ];
+                $cpData = array_merge($cpData, $poolProgress);
+                $cpData['locked_for_student'] = $outstandingRequiredPoolIds !== [] && !in_array($cp->getPoolId(), $outstandingRequiredPoolIds, true);
+                $cpData['locked_by_required_pools'] = $cpData['locked_for_student'] ? $outstandingRequiredPoolIds : [];
             }
             $poolsData[] = $cpData;
         }
@@ -391,6 +715,10 @@ class CourseService {
         $cp->setPoolId($poolId);
         $cp->setSortOrder($sortOrder);
         $cp->setRequired($required);
+        $cp->setRequiredEnforced(false);
+        $cp->setFilterExamKey(null);
+        $cp->setFilterChapterKey(null);
+        $cp->setFilterQuestionIds(null);
 
         return $this->coursePoolMapper->insert($cp);
     }

@@ -130,15 +130,17 @@ class ExportController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 10, period: 60)]
     public function getCalendarToken(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
-        $token = $this->config->getUserValue($this->userId, 'learning', 'ics_token', '');
-        if ($token === '') {
-            $token = $this->generateToken();
-            $this->config->setUserValue($this->userId, 'learning', 'ics_token', $token);
+        $nonce = $this->config->getUserValue($this->userId, 'learning', 'ics_nonce', '');
+        if ($nonce === '') {
+            $nonce = bin2hex(random_bytes(16));
+            $this->config->setUserValue($this->userId, 'learning', 'ics_nonce', $nonce);
         }
+        $token = $this->buildIcsToken($this->userId, $nonce);
         $url = $this->urlGenerator->linkToRouteAbsolute('learning.export.exportIcsPublic', ['token' => $token]);
         return new DataResponse(['token' => $token, 'url' => $url]);
     }
@@ -146,12 +148,16 @@ class ExportController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 5, period: 60)]
     public function regenerateCalendarToken(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
-        $token = $this->generateToken();
-        $this->config->setUserValue($this->userId, 'learning', 'ics_token', $token);
+        $nonce = bin2hex(random_bytes(16));
+        $this->config->setUserValue($this->userId, 'learning', 'ics_nonce', $nonce);
+        // Remove old plaintext token if present from previous version
+        $this->config->deleteUserValue($this->userId, 'learning', 'ics_token');
+        $token = $this->buildIcsToken($this->userId, $nonce);
         $url = $this->urlGenerator->linkToRouteAbsolute('learning.export.exportIcsPublic', ['token' => $token]);
         return new DataResponse(['token' => $token, 'url' => $url]);
     }
@@ -161,29 +167,11 @@ class ExportController extends Controller {
      * @NoCSRFRequired
      */
     public function exportIcsPublic(string $token): Http\Response {
-        if (strlen($token) < 32) {
+        $userId = $this->validateIcsToken($token);
+        if ($userId === null) {
             return new DataResponse(['error' => 'Invalid token'], Http::STATUS_FORBIDDEN);
         }
-
-        // TODO: store SHA-256(token) instead of plaintext in a future migration for hardened deployments
-
-        // Find user by token in oc_preferences
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('userid')
-            ->from('preferences')
-            ->where($qb->expr()->eq('appid', $qb->createNamedParameter('learning')))
-            ->andWhere($qb->expr()->eq('configkey', $qb->createNamedParameter('ics_token')))
-            ->andWhere($qb->expr()->eq('configvalue', $qb->createNamedParameter($token)));
-
-        $result = $qb->executeQuery();
-        $row = $result->fetch();
-        $result->closeCursor();
-
-        if (!$row) {
-            return new DataResponse(['error' => 'Invalid token'], Http::STATUS_FORBIDDEN);
-        }
-
-        $cal = $this->buildIcsBody((string)$row['userid']);
+        $cal = $this->buildIcsBody($userId);
         return new DataDownloadResponse($cal, 'learning-nc.ics', 'text/calendar; charset=utf-8');
     }
 
@@ -254,8 +242,38 @@ class ExportController extends Controller {
         ]) . $eventBlock . "\r\nEND:VCALENDAR\r\n";
     }
 
-    private function generateToken(): string {
-        return bin2hex(random_bytes(32));
+    private function getOrCreateAppSecret(): string {
+        $secret = $this->config->getAppValue('learning', 'ics_secret', '');
+        if ($secret === '') {
+            $secret = bin2hex(random_bytes(32));
+            $this->config->setAppValue('learning', 'ics_secret', $secret);
+        }
+        return $secret;
+    }
+
+    private function buildIcsToken(string $userId, string $nonce): string {
+        $sig = hash_hmac('sha256', $userId . ':' . $nonce, $this->getOrCreateAppSecret());
+        return rtrim(strtr(base64_encode($userId), '+/', '-_'), '=') . '.' . $sig;
+    }
+
+    private function validateIcsToken(string $token): ?string {
+        $parts = explode('.', $token, 2);
+        if (count($parts) !== 2 || strlen($parts[1]) !== 64) {
+            return null;
+        }
+        $userId = base64_decode(strtr($parts[0], '-_', '+/'));
+        if ($userId === false || $userId === '') {
+            return null;
+        }
+        $nonce = $this->config->getUserValue($userId, 'learning', 'ics_nonce', '');
+        if ($nonce === '') {
+            return null;
+        }
+        $expected = hash_hmac('sha256', $userId . ':' . $nonce, $this->getOrCreateAppSecret());
+        if (!hash_equals($expected, $parts[1])) {
+            return null;
+        }
+        return $userId;
     }
 
     private function icsEscape(string $value): string {

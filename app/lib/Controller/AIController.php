@@ -206,7 +206,15 @@ class AIController extends Controller {
                         $q['explanation'] ?? null,
                         $q['difficulty'] ?? 'medium',
                         $answers,
-                        'single'
+                        'single',
+                        handbookKey: $q['handbook_key'] ?? $q['handbookKey'] ?? null,
+                        handbookTitle: $q['handbook_title'] ?? $q['handbookTitle'] ?? null,
+                        examKey: $q['exam_key'] ?? $q['examKey'] ?? null,
+                        chapterKey: $q['chapter_key'] ?? $q['chapterKey'] ?? null,
+                        chapterTitle: $q['chapter_title'] ?? $q['chapterTitle'] ?? null,
+                        chapterOrder: isset($q['chapter_order']) && is_numeric($q['chapter_order'])
+                            ? (int)$q['chapter_order']
+                            : (isset($q['chapterOrder']) && is_numeric($q['chapterOrder']) ? (int)$q['chapterOrder'] : null)
                     );
                     $imported++;
                 }

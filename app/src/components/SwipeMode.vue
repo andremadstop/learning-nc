@@ -2,11 +2,23 @@
   <div class="swipe-mode">
     <div v-if="!session && !loadError" class="swipe-start">
       <h3>{{ t('learning', 'Wahr/Falsch') }}</h3>
-      <p v-if="totalQuestions > 0">{{ t('learning', 'Decide: true or false — swipe or tap to continue') }}</p>
+
+      <!-- Pool picker: only shown in standalone mode with multiple pools -->
+      <div v-if="pools.length > 1" class="pool-picker">
+        <label class="pool-picker-label">{{ t('learning', 'Pool') }}</label>
+        <select v-model="activePoolId" class="pool-select">
+          <option :value="0" disabled>{{ t('learning', '— Pool auswählen —') }}</option>
+          <option v-for="p in pools" :key="p.id" :value="p.id">{{ p.name }}</option>
+        </select>
+      </div>
+      <div v-else-if="pools.length === 1" class="pool-name-chip">{{ pools[0].name }}</div>
+
+      <p v-if="activePoolId > 0">{{ t('learning', 'Decide: true or false — swipe or tap to continue') }}</p>
       <NcNoteCard v-if="starting" type="info" class="status-note">{{ t('learning', 'Session is starting...') }}</NcNoteCard>
-      <NcEmptyContent v-else :name="t('learning', 'No questions')" :description="t('learning', 'No questions available for training')" />
+      <NcNoteCard v-else-if="poolsLoading" type="info" class="status-note">{{ t('learning', 'Loading pools...') }}</NcNoteCard>
+      <NcEmptyContent v-else-if="!poolsLoading && pools.length === 0 && !activePoolId" :name="t('learning', 'No pools available')" :description="t('learning', 'Create a pool with questions first')" />
       <div class="start-actions">
-        <NcButton v-if="totalQuestions > 0" type="primary" @click="startSession" :disabled="starting">{{ starting ? t('learning', 'Starting...') : t('learning', 'Start') }}</NcButton>
+        <NcButton v-if="activePoolId > 0" type="primary" @click="startSession" :disabled="starting || poolsLoading">{{ starting ? t('learning', 'Starting...') : t('learning', 'Start') }}</NcButton>
         <NcButton type="tertiary" @click="$emit('back')" :disabled="starting">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
@@ -135,11 +147,16 @@ export default {
   name: 'SwipeMode',
   components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock },
   props: {
-    poolId: { type: Number, required: true },
-    totalQuestions: { type: Number, required: true }
+    poolId: { type: Number, default: 0 },
+    courseId: { type: Number, default: null },
+    totalQuestions: { type: Number, default: 0 },
+    contentLanguage: { type: String, default: '' }
   },
   data() {
     return {
+      pools: [],
+      activePoolId: 0,
+      poolsLoading: false,
       session: null,
       questions: [],
       currentIndex: 0,
@@ -191,7 +208,79 @@ export default {
       };
     },
   },
+  mounted() {
+    if (this.poolId > 0) {
+      this.activePoolId = this.poolId;
+    } else {
+      this.fetchPools();
+    }
+  },
+  watch: {
+    contentLanguage() {
+      this.refreshQuestionsForLanguage();
+    },
+  },
   methods: {
+    requestPayload(payload = {}) {
+      const basePayload = this.courseId ? { ...payload, courseId: this.courseId } : payload;
+      return this.contentLanguage ? { ...basePayload, lang: this.contentLanguage } : basePayload;
+    },
+    buildStatusParams(includeQuestions = false) {
+      const params = {};
+      if (this.contentLanguage) {
+        params.lang = this.contentLanguage;
+      }
+      if (includeQuestions) {
+        params.includeQuestions = true;
+      }
+      return params;
+    },
+    mergeFutureQuestions(translatedQuestions) {
+      if (!Array.isArray(translatedQuestions) || translatedQuestions.length === 0) {
+        return this.questions;
+      }
+      if (!Array.isArray(this.questions) || this.questions.length === 0) {
+        return translatedQuestions;
+      }
+      const merged = translatedQuestions.slice();
+      if (this.currentIndex < merged.length && this.questions[this.currentIndex]) {
+        merged[this.currentIndex] = this.questions[this.currentIndex];
+      }
+      return merged;
+    },
+    async refreshQuestionsForLanguage() {
+      if (!this.session || this.showResults) {
+        return;
+      }
+      try {
+        const response = await axios.get(
+          generateUrl('/apps/learning/api/training/session/' + this.session),
+          { params: this.buildStatusParams(true) }
+        );
+        if (Array.isArray(response.data?.questions)) {
+          this.questions = this.mergeFutureQuestions(
+            response.data.questions.filter(q => q.question_type !== 'open')
+          );
+        }
+      } catch (error) {
+        // Language refresh is best-effort only.
+      }
+    },
+    async fetchPools() {
+      this.poolsLoading = true;
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/pools'));
+        this.pools = r.data || [];
+        if (this.pools.length === 1) {
+          this.activePoolId = this.pools[0].id;
+        }
+      } catch (e) {
+        this.loadError = t('learning', 'Failed to load pools');
+      } finally {
+        this.poolsLoading = false;
+      }
+    },
+
     questionImageUrl(id) {
       return generateUrl('/apps/learning/api/questions/' + id + '/image');
     },
@@ -200,7 +289,7 @@ export default {
       this.starting = true;
       this.loadError = null;
       try {
-        const r = await axios.post(generateUrl('/apps/learning/api/training/start'), { poolId: this.poolId });
+        const r = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload({ poolId: this.activePoolId }));
         this.session = r.data.session_id;
         this.questions = r.data.questions.filter(q => q.question_type !== 'open');
         if (this.questions.length === 0) {
@@ -294,7 +383,8 @@ export default {
         var r = await axios.post(generateUrl('/apps/learning/api/training/answer'), {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
-          answerIds: this.selectedAnswerIds
+          answerIds: this.selectedAnswerIds,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
         });
         this.isCorrect = r.data.is_correct;
         this.correctAnswerText = r.data.correct_answer_text || '';
@@ -320,7 +410,8 @@ export default {
         var r = await axios.post(generateUrl('/apps/learning/api/training/answer'), {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
-          answerId: answer.id
+          answerId: answer.id,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
         });
         this.isCorrect = r.data.is_correct;
         this.correctAnswerId = r.data.correct_answer_id;
@@ -375,7 +466,7 @@ export default {
 
     async completeSession() {
       try {
-        var r = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session });
+        var r = await axios.post(generateUrl('/apps/learning/api/training/complete'), this.requestPayload({ sessionId: this.session }));
         this.results = r.data;
         if (r.data.newly_earned_badges && r.data.newly_earned_badges.length > 0) {
           this.newBadges = r.data.newly_earned_badges;
@@ -412,6 +503,11 @@ export default {
 .swipe-start p { font-size: 16px; color: var(--color-text-maxcontrast); margin-bottom: 24px; }
 .start-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
 .status-note { margin: 0 auto 16px; max-width: 420px; text-align: left; }
+.pool-picker { margin: 0 auto 24px; max-width: 360px; text-align: left; }
+.pool-picker-label { display: block; font-size: 13px; font-weight: 600; color: var(--color-text-maxcontrast); margin-bottom: 6px; }
+.pool-select { width: 100%; padding: 10px 12px; border: 2px solid var(--color-border); border-radius: var(--border-radius-large); background: var(--color-main-background); color: var(--color-main-text); font-size: 15px; cursor: pointer; }
+.pool-select:focus { border-color: var(--color-primary-element); outline: none; }
+.pool-name-chip { display: inline-block; background: var(--color-background-hover); border: 1px solid var(--color-border); border-radius: 20px; padding: 4px 14px; font-size: 14px; color: var(--color-text-maxcontrast); margin-bottom: 16px; }
 
 .swipe-active { width: 100%; }
 

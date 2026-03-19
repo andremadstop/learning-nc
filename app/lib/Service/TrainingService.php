@@ -26,8 +26,10 @@ class TrainingService {
     private $streakService;
     private $xpService;
     private $cacheFactory;
+    private TranslationService $translationService;
     private IConfig $config;
     private LoggerInterface $logger;
+    private CourseService $courseService;
 
     public function __construct(
         IDBConnection $db,
@@ -39,8 +41,10 @@ class TrainingService {
         StreakService $streakService,
         XpService $xpService,
         ICacheFactory $cacheFactory,
+        TranslationService $translationService,
         IConfig $config,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        CourseService $courseService
     ) {
         $this->db = $db;
         $this->questionMapper = $questionMapper;
@@ -51,8 +55,18 @@ class TrainingService {
         $this->streakService = $streakService;
         $this->xpService = $xpService;
         $this->cacheFactory = $cacheFactory;
+        $this->translationService = $translationService;
         $this->config = $config;
         $this->logger = $logger;
+        $this->courseService = $courseService;
+    }
+
+    private function applyNullableCourseFilter($qb, ?int $courseId): void {
+        if ($courseId === null) {
+            $qb->andWhere($qb->expr()->isNull('course_id'));
+            return;
+        }
+        $qb->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId)));
     }
 
     private function logSecurityEvent(string $event, array $context = []): void {
@@ -215,7 +229,18 @@ class TrainingService {
         return [];
     }
 
-    private function getSessionQuestionsWithAnswers(array $session): array {
+    private function resolveContentLanguage(?string $lang, string $userId): ?string {
+        $requestedLang = $this->translationService->normalizeLang($lang);
+        if ($requestedLang !== null) {
+            return $requestedLang;
+        }
+
+        return $this->translationService->normalizeLang(
+            $this->config->getUserValue($userId, 'learning', 'content_language', '')
+        );
+    }
+
+    private function getSessionQuestionsWithAnswers(array $session, ?string $lang = null): array {
         $poolId = (int)$session['pool_id'];
         $sessionId = (int)$session['id'];
         $questionIds = $this->getSessionQuestionIds($session);
@@ -229,6 +254,11 @@ class TrainingService {
             sort($questionIds);
         }
 
+        // Compute 1-based pool position (rank by id ascending)
+        $sortedPoolIds = array_keys($byId);
+        sort($sortedPoolIds);
+        $poolPositions = array_flip($sortedPoolIds); // id => 0-based index
+
         $questionsWithAnswers = [];
         foreach ($questionIds as $qid) {
             if (!isset($byId[$qid])) {
@@ -236,6 +266,7 @@ class TrainingService {
             }
             $q = $byId[$qid];
             $qData = $q->jsonSerialize();
+            $qData['pool_position'] = ($poolPositions[$qid] ?? 0) + 1;
             $answers = $this->answerMapper->findByQuestion($q->getId());
             $answers = $this->shuffleAnswersForSession($answers, $sessionId, (int)$q->getId());
             $qData['answers'] = array_map(static function ($a) {
@@ -246,7 +277,7 @@ class TrainingService {
             $questionsWithAnswers[] = $qData;
         }
 
-        return $questionsWithAnswers;
+        return $this->translationService->translateQuestions($questionsWithAnswers, $lang);
     }
 
     private function getSessionUserAnswersMap(int $sessionId): array {
@@ -364,12 +395,12 @@ class TrainingService {
         return array_merge($pbqs, $selected);
     }
 
-    private function buildSessionStartPayload(array $session, bool $resumed = false): array {
+    private function buildSessionStartPayload(array $session, bool $resumed = false, ?string $lang = null): array {
         $sessionId = (int)$session['id'];
         $startedAt = (int)$session['started_at'];
         $timeLimit = isset($session['time_limit_seconds']) ? (int)$session['time_limit_seconds'] : null;
         $deadlineAt = $this->getExamDeadlineAt($session);
-        $questionsWithAnswers = $this->getSessionQuestionsWithAnswers($session);
+        $questionsWithAnswers = $this->getSessionQuestionsWithAnswers($session, $lang);
         $answeredMap = $resumed ? $this->getSessionUserAnswersMap($sessionId) : [];
 
         return [
@@ -469,8 +500,12 @@ class TrainingService {
         string $userId,
         ?int $limit = null,
         string $mode = 'training',
-        ?int $timeLimitSeconds = null
+        ?int $timeLimitSeconds = null,
+        ?string $lang = null,
+        ?int $courseId = null
     ): array {
+        $contentLanguage = $this->resolveContentLanguage($lang, $userId);
+
         if (!in_array($mode, ['training', 'exam'], true)) {
             $mode = 'training';
         }
@@ -486,7 +521,9 @@ class TrainingService {
             ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
-            ->andWhere($qb->expr()->isNull('completed_at'))
+            ->andWhere($qb->expr()->isNull('completed_at'));
+        $this->applyNullableCourseFilter($qb, $courseId);
+        $qb
             ->orderBy('started_at', 'DESC')
             ->setMaxResults(1);
         $activeExamResult = $qb->execute();
@@ -497,7 +534,7 @@ class TrainingService {
             $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($activeExam, $userId, 'start_session_guard');
             if (!$timeoutInfo['timed_out']) {
                 if ($mode === 'exam') {
-                    $payload = $this->buildSessionStartPayload($timeoutInfo['session'], true);
+                    $payload = $this->buildSessionStartPayload($timeoutInfo['session'], true, $contentLanguage);
                     $this->logAuditEvent('session_resumed', [
                         'user_id' => $userId,
                         'session_id' => (int)$timeoutInfo['session']['id'],
@@ -522,7 +559,13 @@ class TrainingService {
             $qb->execute();
         }
 
-        $questions = $this->questionMapper->findByPoolId($poolId);
+        if ($courseId !== null) {
+            $context = $this->courseService->resolveCoursePoolContext($courseId, $poolId, $userId);
+            $questionIds = $context['question_ids'];
+            $questions = $this->questionMapper->findByIds($questionIds);
+        } else {
+            $questions = $this->questionMapper->findByPoolId($poolId);
+        }
 
         if (empty($questions)) {
             throw new \Exception('No questions in this pool');
@@ -552,6 +595,7 @@ class TrainingService {
         $qb->insert('learning_sessions')
            ->values([
                'pool_id' => $qb->createNamedParameter($poolId),
+               'course_id' => $qb->createNamedParameter($courseId, $courseId === null ? \PDO::PARAM_NULL : \PDO::PARAM_INT),
                'user_id' => $qb->createNamedParameter($userId),
                'started_at' => $qb->createNamedParameter($startedAt),
                'total_questions' => $qb->createNamedParameter(count($questions)),
@@ -569,6 +613,7 @@ class TrainingService {
         $sessionForPayload = [
             'id' => $sessionId,
             'pool_id' => $poolId,
+            'course_id' => $courseId,
             'user_id' => $userId,
             'started_at' => $startedAt,
             'time_limit_seconds' => $effectiveTimeLimit,
@@ -576,12 +621,13 @@ class TrainingService {
             'mode' => $mode,
             'question_order_json' => json_encode($questionOrder),
         ];
-        $payload = $this->buildSessionStartPayload($sessionForPayload, false);
+        $payload = $this->buildSessionStartPayload($sessionForPayload, false, $contentLanguage);
 
         $this->logAuditEvent('session_started', [
             'user_id' => $userId,
             'session_id' => $sessionId,
             'pool_id' => $poolId,
+            'course_id' => $courseId,
             'mode' => $mode,
             'question_count' => count($questionOrder),
             'time_limit_seconds' => $effectiveTimeLimit,
@@ -615,13 +661,14 @@ class TrainingService {
         return $row ? ($row['question_type'] ?? 'single') : 'single';
     }
 
-    public function submitAnswer(int $sessionId, int $questionId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null): array {
+    public function submitAnswer(int $sessionId, int $questionId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?string $lang = null): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
         $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'submit_answer');
         $session = $timeoutInfo['session'];
         if ($timeoutInfo['timed_out']) {
             throw new \Exception('Exam timed out');
         }
+        $contentLanguage = $this->resolveContentLanguage($lang, $userId);
         $mode = $session['mode'] ?? 'training';
 
         // Block submissions to completed sessions
@@ -687,6 +734,7 @@ class TrainingService {
                 throw new \Exception('Answer IDs not allowed for open questions');
             }
             $correctAnswers = $this->getAllCorrectAnswers($questionId);
+            $correctAnswers = $this->translationService->translateAnswerRows($correctAnswers, $contentLanguage);
             $modelText = $correctAnswers[0]['text'] ?? '';
             $isCorrect = QuestionService::isOpenAnswerCorrect($answerText, $modelText);
 
@@ -809,6 +857,7 @@ class TrainingService {
 
             // Get correct answer IDs
             $correctRows = $this->getAllCorrectAnswers($questionId);
+            $translatedCorrectRows = $this->translationService->translateAnswerRows($correctRows, $contentLanguage);
             $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
             $userIds = array_map('intval', $answerIds);
             sort($correctIds);
@@ -841,7 +890,7 @@ class TrainingService {
                 ];
             }
 
-            $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
+            $correctTexts = array_map(fn($r) => $r['text'], $translatedCorrectRows);
             return [
                 'is_correct' => $isCorrect,
                 'correct_answer_id' => !empty($correctIds) ? $correctIds[0] : null,
@@ -894,8 +943,9 @@ class TrainingService {
 
         // Return all correct answers info
         $correctRows = $this->getAllCorrectAnswers($questionId);
+        $translatedCorrectRows = $this->translationService->translateAnswerRows($correctRows, $contentLanguage);
         $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
-        $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
+        $correctTexts = array_map(fn($r) => $r['text'], $translatedCorrectRows);
 
         return [
             'is_correct' => $isCorrect,
@@ -907,13 +957,14 @@ class TrainingService {
         ];
     }
 
-    public function submitBatch(int $sessionId, array $answers, string $userId): array {
+    public function submitBatch(int $sessionId, array $answers, string $userId, ?string $lang = null): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
         $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'submit_batch');
         $session = $timeoutInfo['session'];
         if ($timeoutInfo['timed_out']) {
             throw new \Exception('Exam timed out');
         }
+        $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
         // Block submissions to completed sessions
         if (!empty($session['completed_at'])) {
@@ -1007,7 +1058,8 @@ class TrainingService {
                     continue;
                 }
                 $correctRows = $this->getAllCorrectAnswers($questionId);
-                $modelText = $correctRows[0]['text'] ?? '';
+                $translatedCorrectRows = $this->translationService->translateAnswerRows($correctRows, $contentLanguage);
+                $modelText = $translatedCorrectRows[0]['text'] ?? '';
                 $isCorrect = QuestionService::isOpenAnswerCorrect($entryAnswerText, $modelText);
 
                 $qb = $this->db->getQueryBuilder();
@@ -1131,6 +1183,7 @@ class TrainingService {
                 }
 
                 $correctRows = $this->getAllCorrectAnswers($questionId);
+                $translatedCorrectRows = $this->translationService->translateAnswerRows($correctRows, $contentLanguage);
                 $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
                 $userIds = array_map('intval', $entryAnswerIds);
                 sort($correctIds);
@@ -1162,7 +1215,7 @@ class TrainingService {
                         'suppressed' => true,
                     ];
                 } else {
-                    $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
+                    $correctTexts = array_map(fn($r) => $r['text'], $translatedCorrectRows);
                     $results[] = [
                         'questionId' => $questionId,
                         'is_correct' => $isCorrect,
@@ -1223,8 +1276,9 @@ class TrainingService {
                 ];
             } else {
                 $correctRows = $this->getAllCorrectAnswers($questionId);
+                $translatedCorrectRows = $this->translationService->translateAnswerRows($correctRows, $contentLanguage);
                 $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
-                $correctTexts = array_map(fn($r) => $r['text'], $correctRows);
+                $correctTexts = array_map(fn($r) => $r['text'], $translatedCorrectRows);
 
                 $results[] = [
                     'questionId' => $questionId,
@@ -1323,12 +1377,13 @@ class TrainingService {
         return $xpEarned;
     }
 
-    public function completeSession(int $sessionId, string $userId): array {
+    public function completeSession(int $sessionId, string $userId, ?string $lang = null): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
         $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'complete');
         $session = $timeoutInfo['session'];
         $timedOut = $timeoutInfo['timed_out'];
         $deadlineAt = $this->getExamDeadlineAt($session);
+        $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
         // Idempotent: already completed sessions return existing data
         if (!empty($session['completed_at'])) {
@@ -1339,7 +1394,7 @@ class TrainingService {
                 'completed_at' => (int)$session['completed_at'],
             ];
             if (($session['mode'] ?? 'training') === 'exam') {
-                $response['review'] = $this->getSessionReview($sessionId);
+                $response['review'] = $this->getSessionReview($sessionId, $contentLanguage);
             }
             $totalQ = (int)$session['total_questions'];
             $response['score_percentage'] = $totalQ > 0
@@ -1361,7 +1416,7 @@ class TrainingService {
             ->executeStatement();
 
         if ($affected === 0) {
-            return $this->getExistingCompletionResult($sessionId, $userId);
+            return $this->getExistingCompletionResult($sessionId, $userId, $contentLanguage);
         }
 
         $qb = $this->db->getQueryBuilder();
@@ -1388,7 +1443,7 @@ class TrainingService {
 
         // For exam sessions, include full review data (only available after completion)
         if (($session['mode'] ?? 'training') === 'exam') {
-            $response['review'] = $this->getSessionReview($sessionId);
+            $response['review'] = $this->getSessionReview($sessionId, $contentLanguage);
         }
 
         // Read level before XP increment for level-up detection
@@ -1450,11 +1505,12 @@ class TrainingService {
         return $response;
     }
 
-    private function getExistingCompletionResult(int $sessionId, string $userId): array {
+    private function getExistingCompletionResult(int $sessionId, string $userId, ?string $lang = null): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
         $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'complete_existing');
         $session = $timeoutInfo['session'];
         $deadlineAt = $this->getExamDeadlineAt($session);
+        $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
         $response = [
             'session_id' => (int)$session['id'],
@@ -1470,22 +1526,23 @@ class TrainingService {
         ];
 
         if (($session['mode'] ?? 'training') === 'exam') {
-            $response['review'] = $this->getSessionReview($sessionId);
+            $response['review'] = $this->getSessionReview($sessionId, $contentLanguage);
         }
 
         return $response;
     }
 
-    public function getSessionStatus(int $sessionId, string $userId): array {
+    public function getSessionStatus(int $sessionId, string $userId, ?string $lang = null, bool $includeQuestions = false): array {
         $session = $this->verifySessionOwnership($sessionId, $userId);
         $timeoutInfo = $this->closeExpiredExamSessionIfNeeded($session, $userId, 'status');
         $session = $timeoutInfo['session'];
+        $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
         $deadlineAt = $this->getExamDeadlineAt($session);
         $now = time();
         $remaining = $deadlineAt !== null ? max(0, $deadlineAt - $now) : null;
 
-        return [
+        $response = [
             'session_id' => (int)$session['id'],
             'pool_id' => (int)$session['pool_id'],
             'mode' => $session['mode'] ?? 'training',
@@ -1502,6 +1559,12 @@ class TrainingService {
             'correct_answers' => (int)$session['correct_answers'],
             'answered' => $this->getSessionUserAnswersMap((int)$session['id']),
         ];
+
+        if ($includeQuestions) {
+            $response['questions'] = $this->getSessionQuestionsWithAnswers($session, $contentLanguage);
+        }
+
+        return $response;
     }
 
     private function getAverageAccuracy(int $poolId, string $userId, string $mode, int $excludeSessionId): float {
@@ -1521,7 +1584,7 @@ class TrainingService {
         return round((float)($row['avg_pct'] ?? 0));
     }
 
-    private function getSessionReview(int $sessionId): array {
+    private function getSessionReview(int $sessionId, ?string $lang = null): array {
         // Fetch all user answers for this session
         $qb = $this->db->getQueryBuilder();
         $qb->select('ua.*', 'q.text AS question_text', 'q.question_type')
@@ -1590,7 +1653,7 @@ class TrainingService {
             $review[] = $entry;
         }
 
-        return $review;
+        return $this->translationService->translateReviewEntries($review, $lang);
     }
 
     /**
@@ -1604,5 +1667,25 @@ class TrainingService {
             'UPDATE ' . $prefix . 'learning_sessions SET correct_answers = correct_answers + 1 WHERE id = :id',
             ['id' => $sessionId]
         );
+    }
+
+    public function abortSession(int $sessionId, string $userId): void {
+        $session = $this->verifySessionOwnership($sessionId, $userId);
+
+        // Only incomplete sessions can be aborted
+        if (!empty($session['completed_at'])) {
+            return;
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete('learning_user_answers')
+           ->where($qb->expr()->eq('session_id', $qb->createNamedParameter($sessionId, IQueryBuilder::PARAM_INT)))
+           ->executeStatement();
+
+        $qb2 = $this->db->getQueryBuilder();
+        $qb2->delete('learning_sessions')
+            ->where($qb2->expr()->eq('id', $qb2->createNamedParameter($sessionId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb2->expr()->eq('user_id', $qb2->createNamedParameter($userId)))
+            ->executeStatement();
     }
 }

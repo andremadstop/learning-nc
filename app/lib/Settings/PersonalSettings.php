@@ -21,6 +21,7 @@ class PersonalSettings implements ISettings {
         $params = [
             'daily_challenge' => $this->config->getUserValue($userId, 'learning', 'daily_challenge', 'yes'),
             'ui_language' => $this->config->getUserValue($userId, 'learning', 'ui_language', ''),
+            'content_language' => $this->config->getUserValue($userId, 'learning', 'content_language', ''),
             'notifications_enabled' => $this->config->getUserValue($userId, 'learning', 'notifications_enabled', 'yes'),
         ];
 

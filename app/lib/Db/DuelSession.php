@@ -9,6 +9,7 @@ class DuelSession extends Entity {
     protected $creatorUid;
     protected $opponentUid;
     protected $poolId;
+    protected $courseId;
     protected $questionIds;
     protected $status;
     protected $currentQuestionIndex;
@@ -19,6 +20,8 @@ class DuelSession extends Entity {
     protected $creatorLastPoll;
     protected $opponentLastPoll;
     protected $createdAt;
+    protected $leagueSeasonId;
+    protected $leagueChallengeId;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -26,6 +29,7 @@ class DuelSession extends Entity {
         $this->addType('creatorUid', 'string');
         $this->addType('opponentUid', 'string');
         $this->addType('poolId', 'integer');
+        $this->addType('courseId', 'integer');
         $this->addType('questionIds', 'string');
         $this->addType('status', 'string');
         $this->addType('currentQuestionIndex', 'integer');
@@ -36,5 +40,7 @@ class DuelSession extends Entity {
         $this->addType('creatorLastPoll', 'integer');
         $this->addType('opponentLastPoll', 'integer');
         $this->addType('createdAt', 'integer');
+        $this->addType('leagueSeasonId', 'integer');
+        $this->addType('leagueChallengeId', 'integer');
     }
 }

@@ -26,6 +26,24 @@
       </div>
 
       <div class="field-row">
+        <label for="content-language">{{ t('learning', 'Content Language') }}</label>
+        <select id="content-language" v-model="form.contentLanguage" class="nc-input">
+          <option value="">{{ t('learning', 'Original content') }}</option>
+          <option value="de">{{ t('learning', 'German (Deutsch)') }}</option>
+          <option value="en">{{ t('learning', 'English') }}</option>
+          <option value="ru">{{ t('learning', 'Russian') }}</option>
+        </select>
+      </div>
+
+      <div class="field-row">
+        <label>{{ t('learning', 'Virtual assistant') }}</label>
+        <NcCheckboxRadioSwitch
+          :checked="form.virtuProfEnabled"
+          type="switch"
+          @update:checked="form.virtuProfEnabled = !!$event" />
+      </div>
+
+      <div class="field-row">
         <label>{{ t('learning', 'Notifications enabled') }}</label>
         <NcCheckboxRadioSwitch
           :checked="form.notificationsEnabled"
@@ -97,6 +115,8 @@ export default {
       form: {
         dailyChallengeEnabled: true,
         uiLanguage: '',
+        contentLanguage: '',
+        virtuProfEnabled: true,
         notificationsEnabled: true,
       },
       // Calendar token
@@ -155,6 +175,8 @@ export default {
         const data = response.data || {}
         this.form.dailyChallengeEnabled = (data.daily_challenge || 'yes') === 'yes'
         this.form.uiLanguage = ['de', 'en', ''].includes(data.ui_language) ? data.ui_language : ''
+        this.form.contentLanguage = ['de', 'en', 'ru', ''].includes(data.content_language) ? data.content_language : ''
+        this.form.virtuProfEnabled = (data.virtuprof_enabled || 'yes') !== 'no'
         this.form.notificationsEnabled = (data.notifications_enabled || 'yes') === 'yes'
       } catch (e) {
         this.error = t('learning', 'Failed to load settings')
@@ -170,9 +192,13 @@ export default {
         await axios.put(generateUrl('/apps/learning/api/settings/personal'), {
           daily_challenge: this.form.dailyChallengeEnabled ? 'yes' : 'no',
           ui_language: ['de', 'en'].includes(this.form.uiLanguage) ? this.form.uiLanguage : '',
+          content_language: ['de', 'en', 'ru'].includes(this.form.contentLanguage) ? this.form.contentLanguage : '',
+          virtuprof_enabled: this.form.virtuProfEnabled ? 'yes' : 'no',
           notifications_enabled: this.form.notificationsEnabled ? 'yes' : 'no',
         })
         this.saved = true
+        this.$emit('content-language-changed', this.form.contentLanguage)
+        this.$emit('virtuprof-enabled-changed', this.form.virtuProfEnabled)
       } catch (e) {
         this.error = t('learning', 'Failed to save settings')
       } finally {

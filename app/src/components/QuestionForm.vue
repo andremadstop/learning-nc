@@ -40,6 +40,38 @@
         </select>
       </div>
 
+      <div class="metadata-grid">
+        <div class="form-group">
+          <label for="exam-key">{{ t('learning', 'Exam Key (optional)') }}</label>
+          <input id="exam-key" v-model.trim="form.examKey" type="text" :placeholder="t('learning', 'e.g., n10-009 or 220-1101')" class="nc-input" />
+        </div>
+        <div class="form-group">
+          <label for="handbook-key">{{ t('learning', 'Handbook Key (optional)') }}</label>
+          <input id="handbook-key" v-model.trim="form.handbookKey" type="text" :placeholder="t('learning', 'e.g., kammermann-network-plus-9ed-2024')" class="nc-input" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="handbook-title">{{ t('learning', 'Handbook Title (optional)') }}</label>
+        <input id="handbook-title" v-model.trim="form.handbookTitle" type="text" :placeholder="t('learning', 'e.g., Kammermann CompTIA Network+ (9. Auflage, 2024)')" class="nc-input" />
+      </div>
+
+      <div class="metadata-grid">
+        <div class="form-group">
+          <label for="chapter-key">{{ t('learning', 'Chapter Key (optional)') }}</label>
+          <input id="chapter-key" v-model.trim="form.chapterKey" type="text" :placeholder="t('learning', 'e.g., chapter-09-ip')" class="nc-input" />
+        </div>
+        <div class="form-group">
+          <label for="chapter-order">{{ t('learning', 'Chapter Number (optional)') }}</label>
+          <input id="chapter-order" v-model.number="form.chapterOrder" type="number" min="1" max="9999" :placeholder="t('learning', 'e.g., 9')" class="nc-input" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="chapter-title">{{ t('learning', 'Chapter Title (optional)') }}</label>
+        <input id="chapter-title" v-model.trim="form.chapterTitle" type="text" :placeholder="t('learning', 'e.g., Mein Name ist IP – Internet Protocol')" class="nc-input" />
+      </div>
+
       <!-- Open-question: single model answer -->
       <div v-if="form.questionType === 'open'" class="form-group">
         <label for="model-answer">{{ t('learning', 'Model answer') }} <span aria-hidden="true">*</span></label>
@@ -182,6 +214,12 @@ export default {
         pbqConfig: '',
         instructorNote: '',
         noteVisible: false,
+        examKey: '',
+        handbookKey: '',
+        handbookTitle: '',
+        chapterKey: '',
+        chapterTitle: '',
+        chapterOrder: null,
       }
     };
   },
@@ -225,6 +263,12 @@ export default {
         : ''
       this.form.instructorNote = this.question.instructor_note || ''
       this.form.noteVisible = this.question.note_visible || false
+      this.form.examKey = this.question.exam_key || ''
+      this.form.handbookKey = this.question.handbook_key || ''
+      this.form.handbookTitle = this.question.handbook_title || ''
+      this.form.chapterKey = this.question.chapter_key || ''
+      this.form.chapterTitle = this.question.chapter_title || ''
+      this.form.chapterOrder = this.question.chapter_order || null
     }
   },
   methods: {
@@ -325,6 +369,12 @@ export default {
         pbqConfig:  this.form.pbqConfig ? this.form.pbqConfig.trim() : null,
         instructorNote: this.form.instructorNote || null,
         noteVisible: this.form.noteVisible,
+        examKey: this.form.examKey || null,
+        handbookKey: this.form.handbookKey || null,
+        handbookTitle: this.form.handbookTitle || null,
+        chapterKey: this.form.chapterKey || null,
+        chapterTitle: this.form.chapterTitle || null,
+        chapterOrder: this.form.chapterOrder || null,
       });
       this.saving = false;
     }
@@ -339,6 +389,7 @@ export default {
 
 <style scoped>
 .form-group { margin-bottom: 18px; }
+.metadata-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; color: var(--color-main-text); }
 .nc-input { width: 100%; padding: 10px 12px; border: 2px solid var(--color-border); border-radius: var(--border-radius-large); font-size: 14px; background: var(--color-main-background); color: var(--color-main-text); transition: border-color 0.2s; box-sizing: border-box; }
 .nc-input:focus { border-color: var(--color-primary-element); outline: none; }

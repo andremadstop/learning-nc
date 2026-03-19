@@ -34,10 +34,18 @@
           <span v-if="question.difficulty" class="difficulty-badge" :class="question.difficulty">{{ t('learning', question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)) }}</span>
           <div v-if="!readonly" class="question-actions">
             <NcActions>
+              <NcActionButton @click="openTranslationDialog(question)" close-after-click>{{ t('learning', 'Translate') }}</NcActionButton>
               <NcActionButton @click="editQuestion(question)" close-after-click>{{ t('learning', 'Edit') }}</NcActionButton>
               <NcActionButton @click="deleteQuestion(question)" close-after-click>{{ t('learning', 'Delete') }}</NcActionButton>
             </NcActions>
           </div>
+        </div>
+        <div v-if="question.exam_key || question.chapter_title || question.handbook_title" class="question-meta-row">
+          <span v-if="question.exam_key" class="meta-badge exam">{{ question.exam_key }}</span>
+          <span v-if="question.handbook_title" class="meta-badge handbook">{{ question.handbook_title }}</span>
+          <span v-if="question.chapter_title" class="meta-badge chapter">
+            {{ formatChapterLabel(question) }}
+          </span>
         </div>
         <!-- Image display -->
         <img v-if="question.image_path" :src="questionImageUrl(question.id)" :alt="question.text" class="question-image" />
@@ -73,6 +81,7 @@
     </NcDialog>
 
     <QuestionForm v-if="showDialog" :question="editingQuestion" @save="saveQuestion" @close="closeDialog" />
+    <TranslationDialog v-if="showTranslationDialog" :question="translationQuestion" @close="closeTranslationDialog" @saved="closeTranslationDialog" />
     <ImportDialog v-if="showImportDialog" :poolId="poolId" @close="showImportDialog = false" @imported="onImported" />
     <AIGenerator v-if="showAIGenerator" :poolId="poolId" @close="showAIGenerator = false" @imported="onImported" />
   </div>
@@ -90,25 +99,34 @@ import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess, showError } from '@nextcloud/dialogs';
 import QuestionForm from './QuestionForm.vue';
+import TranslationDialog from './TranslationDialog.vue';
 import ImportDialog from './ImportDialog.vue';
 import AIGenerator from './AIGenerator.vue';
 
 export default {
   name: 'QuestionList',
-  components: { NcButton, NcDialog, NcNoteCard, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, QuestionForm, ImportDialog, AIGenerator },
+  components: { NcButton, NcDialog, NcNoteCard, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, QuestionForm, TranslationDialog, ImportDialog, AIGenerator },
   props: {
     poolId: { type: Number, required: true },
     poolName: { type: String, required: true },
     readonly: { type: Boolean, default: false }
   },
   data() {
-    return { questions: [], loading: false, loadError: null, showDialog: false, showImportDialog: false, showAIGenerator: false, aiAvailable: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null };
+    return { questions: [], loading: false, loadError: null, showDialog: false, showTranslationDialog: false, translationQuestion: null, showImportDialog: false, showAIGenerator: false, aiAvailable: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null };
   },
   watch: {
     poolId() { this.currentPage = 0; this.loadQuestions(); },
   },
   mounted() { this.loadQuestions(); this.checkAIAvailable(); },
   methods: {
+    formatChapterLabel(question) {
+      if (!question.chapter_title) {
+        return ''
+      }
+      return question.chapter_order
+        ? t('learning', 'Chapter {n}: {title}', { n: question.chapter_order, title: question.chapter_title })
+        : question.chapter_title
+    },
     async checkAIAvailable() {
       if (this.readonly) return;
       try {
@@ -140,6 +158,8 @@ export default {
     prevPage() { if (this.currentPage > 0) { this.currentPage--; this.loadQuestions(); } },
     nextPage() { if ((this.currentPage + 1) * this.pageSize < this.totalQuestions) { this.currentPage++; this.loadQuestions(); } },
     showCreateDialog() { this.editingQuestion = null; this.showDialog = true; },
+    openTranslationDialog(question) { this.translationQuestion = question; this.showTranslationDialog = true; },
+    closeTranslationDialog() { this.showTranslationDialog = false; this.translationQuestion = null; },
     editQuestion(question) { this.editingQuestion = question; this.showDialog = true; },
     closeDialog() { this.showDialog = false; this.editingQuestion = null; },
     onImported() { this.showImportDialog = false; this.loadQuestions(); },
@@ -205,9 +225,14 @@ export default {
 .question-item { border: 1px solid var(--color-border); border-radius: 12px; padding: 20px 24px; background: var(--color-main-background); transition: transform 0.2s, box-shadow 0.2s; }
 .question-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px color-mix(in srgb, var(--color-main-text) 8%, transparent); }
 .question-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.question-meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .question-number { font-weight: 700; color: var(--color-primary-element); font-size: 13px; background: var(--color-primary-element-light); padding: 2px 8px; border-radius: 4px; }
 .multi-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: color-mix(in srgb, var(--color-primary-element) 15%, transparent); color: var(--color-primary-element); border: 1px solid var(--color-primary-element); }
 .open-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); border: 1px solid var(--color-warning); }
+.meta-badge { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.meta-badge.exam { background: color-mix(in srgb, var(--color-primary-element) 14%, transparent); color: var(--color-primary-element); }
+.meta-badge.handbook { background: color-mix(in srgb, var(--color-success) 10%, transparent); color: var(--color-success); }
+.meta-badge.chapter { background: color-mix(in srgb, var(--color-warning) 14%, transparent); color: var(--color-warning); }
 .model-answer-display { padding: 10px 14px; border-radius: 8px; background: color-mix(in srgb, var(--color-warning) 8%, var(--color-main-background)); font-size: 13px; line-height: 1.5; margin-bottom: 12px; border: 1px solid color-mix(in srgb, var(--color-warning) 25%, transparent); color: var(--color-main-text); }
 .model-answer-label { font-weight: 600; color: var(--color-warning); }
 .difficulty-badge { padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }

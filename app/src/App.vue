@@ -4,23 +4,15 @@
       <h2>{{ userRole === 'student' ? t('learning', 'Learning') : t('learning', 'Learning - Spaced Repetition') }}</h2>
     </div>
 
-    <!-- Top-level navigation: Pools | Courses -->
+    <!-- Top-level navigation: Kurse | Settings -->
     <div class="main-nav" role="tablist" @keydown="handleTablistKeydown">
       <button
-        :class="['main-nav-btn', { active: mainView === 'pools' }]"
+        :class="['main-nav-btn', { active: mainView === 'courses' || mainView === 'pools' }]"
         role="tab"
-        :aria-selected="mainView === 'pools' ? 'true' : 'false'"
-        @click="switchMainView('pools')"
-      >
-        {{ t('learning', 'Pools') }}
-      </button>
-      <button
-        :class="['main-nav-btn', { active: mainView === 'courses' }]"
-        role="tab"
-        :aria-selected="mainView === 'courses' ? 'true' : 'false'"
+        :aria-selected="(mainView === 'courses' || mainView === 'pools') ? 'true' : 'false'"
         @click="switchMainView('courses')"
       >
-        {{ t('learning', 'Courses') }}
+        {{ t('learning', 'Kurse') }}
       </button>
       <button
         :class="['main-nav-btn', { active: mainView === 'settings' }]"
@@ -30,14 +22,6 @@
       >
         {{ t('learning', 'Settings') }}
       </button>
-      <button
-        :class="['main-nav-btn', { active: mainView === 'duel' }]"
-        role="tab"
-        :aria-selected="mainView === 'duel' ? 'true' : 'false'"
-        @click="switchMainView('duel')"
-      >
-        {{ t('learning', 'Duell') }}
-      </button>
     </div>
 
     <!-- ==================== POOLS VIEW ==================== -->
@@ -45,11 +29,13 @@
       <SmartQueue
         v-if="currentView === 'smartQueue'"
         :mode="smartQueueMode"
+        :contentLanguage="contentLanguage"
         @back="backToPools"
       />
 
       <SwipeMode
         v-else-if="currentView === 'swipeMode'"
+        :contentLanguage="contentLanguage"
         @back="backToPools"
       />
 
@@ -101,12 +87,14 @@
           v-if="mode === 'train'"
           :poolId="selectedPool.id"
           :totalQuestions="questionCount"
+          :contentLanguage="contentLanguage"
           @back="backToPools"
         />
 
         <LeitnerMode
           v-else-if="mode === 'leitner'"
           :poolId="selectedPool.id"
+          :contentLanguage="contentLanguage"
           @back="setMode('train')"
         />
 
@@ -114,6 +102,7 @@
           v-else-if="mode === 'swipe'"
           :poolId="selectedPool.id"
           :totalQuestions="questionCount"
+          :contentLanguage="contentLanguage"
           @back="setMode('train')"
         />
 
@@ -121,6 +110,7 @@
           v-else-if="mode === 'exam'"
           :poolId="selectedPool.id"
           :totalQuestions="questionCount"
+          :contentLanguage="contentLanguage"
           @back="setMode('train')"
         />
 
@@ -143,12 +133,10 @@
     <!-- ==================== SETTINGS VIEW ==================== -->
     <template v-if="mainView === 'settings'">
       <AdminSettings v-if="userRole !== 'student'" />
-      <PersonalSettings v-else />
-    </template>
-
-    <!-- ==================== DUEL VIEW ==================== -->
-    <template v-if="mainView === 'duel'">
-      <DuelMode @back="backFromDuel" />
+      <PersonalSettings
+        v-else
+        @content-language-changed="updateContentLanguage"
+        @virtuprof-enabled-changed="updateVirtuProfEnabled" />
     </template>
 
     <!-- ==================== COURSES VIEW ==================== -->
@@ -195,11 +183,18 @@
         v-else
         :courseId="selectedCourse.id"
         :userRole="userRole"
+        :contentLanguage="contentLanguage"
         @back="selectedCourse = null"
         @openPool="openPoolFromCourse"
         @selectStudent="selectStudent"
       />
     </template>
+
+    <VirtuProf
+      v-if="appInitialized && userRole === 'student'"
+      :enabled="virtuProfEnabled"
+      @ready="triggerInitialVirtuProfHints"
+      @enabled-change="handleVirtuProfEnabledChange" />
   </NcAppContent>
 </template>
 
@@ -221,7 +216,7 @@ import InstructorDashboard from './components/InstructorDashboard.vue';
 import SmartQueue from './components/SmartQueue.vue';
 import AdminSettings from './components/AdminSettings.vue';
 import PersonalSettings from './components/PersonalSettings.vue';
-import DuelMode from './components/DuelMode.vue';
+import VirtuProf from './components/VirtuProf.vue';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 
@@ -245,12 +240,12 @@ export default {
     SmartQueue,
     AdminSettings,
     PersonalSettings,
-    DuelMode,
+    VirtuProf,
   },
   data() {
     return {
       // Top-level navigation
-      mainView: 'pools',
+      mainView: 'courses',
       userRole: 'student',
 
       // Pools view state
@@ -267,7 +262,11 @@ export default {
       // Courses view state
       selectedCourse: null,
       selectedStudent: null,
-      courseView: 'list'
+      courseView: 'list',
+      contentLanguage: '',
+      virtuProfEnabled: true,
+      appInitialized: false,
+      initialVirtuProfHintsTriggered: false,
     };
   },
   computed: {
@@ -298,10 +297,131 @@ export default {
       };
     },
   },
-  created() {
-    this.fetchRole();
+  async created() {
+    await Promise.all([this.fetchRole(), this.fetchPersonalSettings()]);
+    this.appInitialized = true;
+    this.$nextTick(() => {
+      this.emitVirtuProfContext();
+    });
+  },
+  watch: {
+    mainView() {
+      this.emitVirtuProfContext();
+    },
+    currentView() {
+      this.emitVirtuProfContext();
+    },
+    mode() {
+      this.emitVirtuProfContext();
+    },
+    selectedPool() {
+      this.emitVirtuProfContext();
+    },
+    selectedCourse() {
+      this.emitVirtuProfContext();
+    },
+    selectedStudent() {
+      this.emitVirtuProfContext();
+    },
   },
   methods: {
+    async fetchPersonalSettings() {
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/settings/personal'));
+        const lang = response.data?.content_language || '';
+        this.contentLanguage = ['de', 'en', 'ru'].includes(lang) ? lang : '';
+        this.virtuProfEnabled = (response.data?.virtuprof_enabled || 'yes') !== 'no';
+      } catch (err) {
+        this.contentLanguage = '';
+        this.virtuProfEnabled = true;
+      }
+    },
+
+    updateContentLanguage(lang) {
+      this.contentLanguage = ['de', 'en', 'ru'].includes(lang) ? lang : '';
+    },
+    updateVirtuProfEnabled(enabled) {
+      this.virtuProfEnabled = enabled !== false;
+    },
+    handleVirtuProfEnabledChange(enabled) {
+      this.virtuProfEnabled = enabled !== false;
+    },
+    emitVirtuProf(triggerId, context = {}) {
+      if (!this.appInitialized || this.userRole !== 'student') {
+        return;
+      }
+      this.$root.$emit('virtuprof:trigger', triggerId, context);
+    },
+    emitVirtuProfContext(context = null) {
+      if (!this.appInitialized || this.userRole !== 'student') {
+        return;
+      }
+      this.$root.$emit('virtuprof:context', context || this.virtuprofContextPayload());
+    },
+    virtuprofContextPayload() {
+      if (this.mainView === 'settings') {
+        return { area: 'settings' };
+      }
+      if (this.mainView === 'pools') {
+        if (this.currentView === 'questions') {
+          return {
+            area: `pool-${this.mode}`,
+            poolName: this.selectedPool?.name || '',
+          };
+        }
+        if (this.currentView === 'smartQueue') {
+          return { area: 'smartqueue' };
+        }
+        if (this.currentView === 'swipeMode') {
+          return { area: 'pool-swipe' };
+        }
+        return { area: 'pools' };
+      }
+      if (this.mainView === 'courses') {
+        if (this.selectedStudent) {
+          return {
+            area: 'course-my-progress',
+            courseTitle: this.selectedCourse?.title || '',
+          };
+        }
+        if (this.selectedCourse) {
+          return {
+            area: 'course-detail',
+            courseTitle: this.selectedCourse.title || '',
+          };
+        }
+        return { area: 'courses' };
+      }
+      return { area: 'courses' };
+    },
+    currentUserId() {
+      if (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function') {
+        return OC.getCurrentUser()?.uid || 'user';
+      }
+      return 'user';
+    },
+    lastActiveStorageKey() {
+      return `learning:virtuprof:last-active:${this.currentUserId()}`;
+    },
+    triggerInitialVirtuProfHints() {
+      if (this.userRole !== 'student' || this.initialVirtuProfHintsTriggered) {
+        return;
+      }
+      this.initialVirtuProfHintsTriggered = true;
+      this.emitVirtuProf('app-first-visit');
+      try {
+        const lastActiveRaw = window.localStorage.getItem(this.lastActiveStorageKey());
+        const lastActive = lastActiveRaw ? Number(lastActiveRaw) : 0;
+        const absenceMs = 7 * 24 * 60 * 60 * 1000;
+        if (lastActive > 0 && (Date.now() - lastActive) >= absenceMs) {
+          this.emitVirtuProf('return-after-absence');
+        }
+        window.localStorage.setItem(this.lastActiveStorageKey(), String(Date.now()));
+      } catch (e) {
+        // Ignore local storage failures.
+      }
+    },
+
     handleTablistKeydown(event) {
       const tabs = [...event.currentTarget.querySelectorAll('[role="tab"]')];
       const currentIndex = tabs.indexOf(document.activeElement);
@@ -329,31 +449,19 @@ export default {
       } catch (err) {
         this.userRole = 'student';
       }
-      if (this.userRole === 'student') {
-        this.mainView = 'courses';
-      }
+      // Both students and instructors start on Kurse view
     },
 
     switchMainView(view) {
       this.mainView = view;
-      if (view === 'pools') {
+      if (view === 'courses') {
         this.selectedCourse = null;
         this.selectedStudent = null;
         this.courseView = 'list';
-      } else if (view === 'courses') {
         this.backToPools();
       }
       // settings: no state reset needed
       // duel: no state reset needed — DuelMode is self-contained
-    },
-
-    backFromDuel() {
-      // Return to appropriate view based on role
-      if (this.userRole === 'student') {
-        this.switchMainView('courses');
-      } else {
-        this.switchMainView('pools');
-      }
     },
 
     // --- Pools methods ---
@@ -467,7 +575,7 @@ export default {
   gap: 0;
   margin-bottom: 24px;
   border-bottom: 2px solid var(--color-border);
-  max-width: 300px;
+  max-width: 500px;
 }
 
 .main-nav-btn {

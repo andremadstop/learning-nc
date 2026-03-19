@@ -42,6 +42,33 @@ class QuestionMapper extends QBMapper {
         return $this->findEntities($qb);
     }
 
+    public function findByIds(array $questionIds): array {
+        $questionIds = array_values(array_unique(array_filter(array_map('intval', $questionIds), static fn(int $id): bool => $id > 0)));
+        if ($questionIds === []) {
+            return [];
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->in('id', $qb->createNamedParameter($questionIds, IQueryBuilder::PARAM_INT_ARRAY)));
+        $entities = $this->findEntities($qb);
+
+        $byId = [];
+        foreach ($entities as $entity) {
+            $byId[$entity->getId()] = $entity;
+        }
+
+        $ordered = [];
+        foreach ($questionIds as $questionId) {
+            if (isset($byId[$questionId])) {
+                $ordered[] = $byId[$questionId];
+            }
+        }
+
+        return $ordered;
+    }
+
     public function countByPoolId(int $poolId): int {
         $qb = $this->db->getQueryBuilder();
         $qb->select($qb->createFunction('COUNT(*) as cnt'))

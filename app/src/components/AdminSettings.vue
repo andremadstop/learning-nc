@@ -122,6 +122,57 @@
           </tbody>
         </table>
       </div>
+
+      <div class="ticket-section">
+        <div class="audit-header">
+          <h3>{{ t('learning', 'Support tickets') }}</h3>
+          <NcButton type="tertiary" @click="loadSupportTickets">{{ t('learning', 'Refresh') }}</NcButton>
+        </div>
+        <div v-if="ticketLoading" class="loading">
+          <NcLoadingIcon :size="24" />
+          <span>{{ t('learning', 'Loading...') }}</span>
+        </div>
+        <NcNoteCard v-else-if="ticketError" type="error">{{ ticketError }}</NcNoteCard>
+        <div v-else-if="supportTickets.length === 0" class="field-help">
+          {{ t('learning', 'No support tickets yet.') }}
+        </div>
+        <div v-else class="ticket-list">
+          <div v-for="ticket in supportTickets" :key="ticket.id" class="ticket-card">
+            <div class="ticket-card-header">
+              <div>
+                <strong>{{ ticket.subject }}</strong>
+                <div class="ticket-meta">
+                  {{ ticket.user_id }} · {{ formatTime(ticket.updated_at || ticket.created_at) }}
+                </div>
+              </div>
+              <span class="ticket-status" :class="'status-' + ticket.status">{{ ticket.status }}</span>
+            </div>
+            <div class="ticket-context">{{ formatTicketContext(ticket) }}</div>
+            <p class="ticket-message">{{ ticket.message }}</p>
+            <div v-if="ticket.answer_text" class="ticket-existing-answer">
+              <strong>{{ t('learning', 'Current answer') }}:</strong> {{ ticket.answer_text }}
+            </div>
+            <label class="field-row">
+              <span>{{ t('learning', 'Answer') }}</span>
+              <textarea
+                class="ticket-answer-input"
+                rows="4"
+                :value="ticketAnswers[ticket.id] || ''"
+                :placeholder="t('learning', 'Write the admin reply here...')"
+                @input="setTicketAnswer(ticket.id, $event.target.value)" />
+            </label>
+            <div class="ticket-actions">
+              <NcButton
+                type="primary"
+                :disabled="answeringId === ticket.id"
+                @click="submitTicketAnswer(ticket.id)">
+                {{ answeringId === ticket.id ? t('learning', 'Saving...') : t('learning', 'Save answer') }}
+              </NcButton>
+            </div>
+          </div>
+        </div>
+        <NcNoteCard v-if="ticketSuccess" type="success">{{ ticketSuccess }}</NcNoteCard>
+      </div>
     </div>
   </div>
 </template>
@@ -145,6 +196,12 @@ export default {
       saved: false,
       auditLoading: false,
       auditEvents: [],
+      ticketLoading: false,
+      ticketError: '',
+      ticketSuccess: '',
+      answeringId: null,
+      supportTickets: [],
+      ticketAnswers: {},
       form: {
         dailyChallengeEnabled: true,
         defaultLanguage: 'de',
@@ -159,6 +216,7 @@ export default {
   mounted() {
     this.load()
     this.loadAudit()
+    this.loadSupportTickets()
   },
   methods: {
     async load() {
@@ -211,6 +269,68 @@ export default {
       } finally {
         this.auditLoading = false
       }
+    },
+    async loadSupportTickets() {
+      this.ticketLoading = true
+      this.ticketError = ''
+      this.ticketSuccess = ''
+      try {
+        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/support-tickets'), { params: { limit: 100 } })
+        this.supportTickets = Array.isArray(res.data?.tickets) ? res.data.tickets : []
+        const nextAnswers = {}
+        this.supportTickets.forEach(ticket => {
+          nextAnswers[ticket.id] = ticket.answer_text || ''
+        })
+        this.ticketAnswers = nextAnswers
+      } catch (e) {
+        this.supportTickets = []
+        this.ticketError = t('learning', 'Failed to load support tickets')
+      } finally {
+        this.ticketLoading = false
+      }
+    },
+    setTicketAnswer(ticketId, value) {
+      this.$set(this.ticketAnswers, ticketId, value)
+    },
+    async submitTicketAnswer(ticketId) {
+      this.answeringId = ticketId
+      this.ticketError = ''
+      this.ticketSuccess = ''
+      try {
+        await axios.post(generateUrl(`/apps/learning/api/settings/admin/support-tickets/${ticketId}/answer`), {
+          answerText: this.ticketAnswers[ticketId] || '',
+        })
+        this.ticketSuccess = t('learning', 'Support ticket answer saved')
+        await this.loadSupportTickets()
+      } catch (e) {
+        this.ticketError = e?.response?.data?.error || t('learning', 'Failed to save support ticket answer')
+      } finally {
+        this.answeringId = null
+      }
+    },
+    formatTicketContext(ticket) {
+      const parts = []
+      const context = ticket.context || {}
+      if (context.courseTitle) {
+        parts.push(context.courseTitle)
+      } else if (ticket.course_id) {
+        parts.push(`${t('learning', 'Course')} #${ticket.course_id}`)
+      }
+      if (context.poolName) {
+        parts.push(context.poolName)
+      } else if (ticket.pool_id) {
+        parts.push(`${t('learning', 'Pool')} #${ticket.pool_id}`)
+      }
+      if (context.area) {
+        parts.push(context.area)
+      }
+      if (ticket.question_id) {
+        parts.push(`${t('learning', 'Question')} #${ticket.question_id}`)
+      }
+      if (ticket.duel_code) {
+        parts.push(`${t('learning', 'Duel')} ${ticket.duel_code}`)
+      }
+      return parts.join(' · ') || t('learning', 'No context available')
     },
     formatTime(ts) {
       if (!ts) return '-'
@@ -274,6 +394,10 @@ export default {
   margin-top: 20px;
 }
 
+.ticket-section {
+  margin-top: 20px;
+}
+
 .audit-header {
   display: flex;
   justify-content: space-between;
@@ -292,5 +416,67 @@ export default {
   padding: 6px 8px;
   border-bottom: 1px solid var(--color-border);
   text-align: left;
+}
+
+.ticket-list {
+  display: grid;
+  gap: 12px;
+}
+
+.ticket-card {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 14px;
+  background: var(--color-main-background);
+  display: grid;
+  gap: 10px;
+}
+
+.ticket-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ticket-meta,
+.ticket-context {
+  color: var(--color-text-maxcontrast);
+  font-size: 0.85em;
+}
+
+.ticket-status {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-maxcontrast);
+}
+
+.ticket-status.status-answered {
+  color: var(--color-success);
+}
+
+.ticket-message,
+.ticket-existing-answer {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ticket-answer-input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 110px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--color-main-background);
+  color: var(--color-main-text);
+  resize: vertical;
+  font: inherit;
+}
+
+.ticket-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

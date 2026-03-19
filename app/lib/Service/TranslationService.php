@@ -184,9 +184,212 @@ class TranslationService {
         }
     }
 
+    public function normalizeLang(?string $lang): ?string {
+        $lang = trim((string)$lang);
+        if ($lang === '') {
+            return null;
+        }
+        return in_array($lang, self::ALLOWED_LANGS, true) ? $lang : null;
+    }
+
+    public function translateQuestion(array $questionData, string $lang): array {
+        $translated = $this->translateQuestions([$questionData], $lang);
+        return $translated[0] ?? $questionData;
+    }
+
+    public function translateQuestions(array $questions, ?string $lang): array {
+        $lang = $this->normalizeLang($lang);
+        if ($lang === null || empty($questions)) {
+            return $questions;
+        }
+
+        $questionIds = [];
+        $answerIds = [];
+        foreach ($questions as $questionData) {
+            if (!$this->isTranslatableQuestion($questionData)) {
+                continue;
+            }
+            $questionId = $this->extractQuestionId($questionData);
+            if ($questionId > 0) {
+                $questionIds[] = $questionId;
+            }
+            foreach ($questionData['answers'] ?? [] as $answerData) {
+                $answerId = (int)($answerData['id'] ?? 0);
+                if ($answerId > 0) {
+                    $answerIds[] = $answerId;
+                }
+            }
+        }
+
+        $questionTranslations = $this->getQuestionTranslationMap(array_values(array_unique($questionIds)), $lang);
+        $answerTranslations = $this->getAnswerTranslationMap(array_values(array_unique($answerIds)), $lang);
+
+        return array_map(function (array $questionData) use ($questionTranslations, $answerTranslations) {
+            return $this->applyTranslationsToQuestion($questionData, $questionTranslations, $answerTranslations);
+        }, $questions);
+    }
+
+    public function translateAnswerRows(array $answerRows, ?string $lang): array {
+        $lang = $this->normalizeLang($lang);
+        if ($lang === null || empty($answerRows)) {
+            return $answerRows;
+        }
+
+        $answerIds = [];
+        foreach ($answerRows as $answerRow) {
+            $answerId = (int)($answerRow['id'] ?? 0);
+            if ($answerId > 0) {
+                $answerIds[] = $answerId;
+            }
+        }
+
+        $answerTranslations = $this->getAnswerTranslationMap(array_values(array_unique($answerIds)), $lang);
+
+        return array_map(function (array $answerRow) use ($answerTranslations) {
+            $answerId = (int)($answerRow['id'] ?? 0);
+            if ($answerId > 0 && isset($answerTranslations[$answerId]) && $answerTranslations[$answerId] !== '') {
+                $answerRow['text'] = $answerTranslations[$answerId];
+            }
+            return $answerRow;
+        }, $answerRows);
+    }
+
+    public function translateReviewEntries(array $reviewEntries, ?string $lang): array {
+        $lang = $this->normalizeLang($lang);
+        if ($lang === null || empty($reviewEntries)) {
+            return $reviewEntries;
+        }
+
+        $questionIds = [];
+        $answerIds = [];
+        foreach ($reviewEntries as $entry) {
+            $questionId = (int)($entry['questionId'] ?? 0);
+            if ($questionId > 0 && (($entry['questionType'] ?? '') !== 'pbq')) {
+                $questionIds[] = $questionId;
+            }
+            foreach (($entry['correct_answer_ids'] ?? []) as $answerId) {
+                $answerId = (int)$answerId;
+                if ($answerId > 0) {
+                    $answerIds[] = $answerId;
+                }
+            }
+            foreach (($entry['answers'] ?? []) as $answerRow) {
+                $answerId = (int)($answerRow['id'] ?? 0);
+                if ($answerId > 0) {
+                    $answerIds[] = $answerId;
+                }
+            }
+        }
+
+        $questionTranslations = $this->getQuestionTranslationMap(array_values(array_unique($questionIds)), $lang);
+        $answerTranslations = $this->getAnswerTranslationMap(array_values(array_unique($answerIds)), $lang);
+
+        return array_map(function (array $entry) use ($questionTranslations, $answerTranslations) {
+            $questionId = (int)($entry['questionId'] ?? 0);
+            $isPbq = ($entry['questionType'] ?? '') === 'pbq';
+
+            if (!$isPbq && $questionId > 0 && isset($questionTranslations[$questionId])) {
+                $translation = $questionTranslations[$questionId];
+                if (($translation['text'] ?? '') !== '') {
+                    $entry['questionText'] = $translation['text'];
+                }
+            }
+
+            if (!empty($entry['answers']) && is_array($entry['answers'])) {
+                $entry['answers'] = array_map(function (array $answerRow) use ($answerTranslations) {
+                    $answerId = (int)($answerRow['id'] ?? 0);
+                    if ($answerId > 0 && isset($answerTranslations[$answerId]) && $answerTranslations[$answerId] !== '') {
+                        $answerRow['text'] = $answerTranslations[$answerId];
+                    }
+                    return $answerRow;
+                }, $entry['answers']);
+            }
+
+            if (!empty($entry['correct_answer_ids']) && is_array($entry['correct_answer_ids'])) {
+                $translatedTexts = [];
+                foreach ($entry['correct_answer_ids'] as $index => $answerId) {
+                    $answerId = (int)$answerId;
+                    if ($answerId > 0 && isset($answerTranslations[$answerId]) && $answerTranslations[$answerId] !== '') {
+                        $translatedTexts[] = $answerTranslations[$answerId];
+                    } elseif (isset($entry['correct_answer_texts'][$index])) {
+                        $translatedTexts[] = $entry['correct_answer_texts'][$index];
+                    }
+                }
+                if (!empty($translatedTexts)) {
+                    $entry['correct_answer_texts'] = $translatedTexts;
+                }
+            }
+
+            return $entry;
+        }, $reviewEntries);
+    }
+
     private function validateLang(string $lang): void {
         if (!in_array($lang, self::ALLOWED_LANGS)) {
             throw new \InvalidArgumentException('Language must be one of: ' . implode(', ', self::ALLOWED_LANGS));
         }
+    }
+
+    private function extractQuestionId(array $questionData): int {
+        return (int)($questionData['question_id'] ?? $questionData['id'] ?? 0);
+    }
+
+    private function isTranslatableQuestion(array $questionData): bool {
+        if (($questionData['question_type'] ?? '') === 'pbq') {
+            return false;
+        }
+
+        $pbqSubtype = $questionData['pbq_subtype'] ?? null;
+        return $pbqSubtype === null || $pbqSubtype === '';
+    }
+
+    private function getQuestionTranslationMap(array $questionIds, string $lang): array {
+        $translations = $this->questionTransMapper->findByQuestionsAndLang($questionIds, $lang);
+        $map = [];
+        foreach ($translations as $translation) {
+            $map[(int)$translation->getQuestionId()] = [
+                'text' => (string)$translation->getText(),
+                'explanation' => $translation->getExplanation(),
+            ];
+        }
+        return $map;
+    }
+
+    private function getAnswerTranslationMap(array $answerIds, string $lang): array {
+        $translations = $this->answerTransMapper->findByAnswersAndLang($answerIds, $lang);
+        $map = [];
+        foreach ($translations as $translation) {
+            $map[(int)$translation->getAnswerId()] = (string)$translation->getText();
+        }
+        return $map;
+    }
+
+    private function applyTranslationsToQuestion(array $questionData, array $questionTranslations, array $answerTranslations): array {
+        if (!$this->isTranslatableQuestion($questionData)) {
+            return $questionData;
+        }
+
+        $questionId = $this->extractQuestionId($questionData);
+        if ($questionId > 0 && isset($questionTranslations[$questionId])) {
+            $translation = $questionTranslations[$questionId];
+            if (($translation['text'] ?? '') !== '') {
+                $questionData['text'] = $translation['text'];
+            }
+            if (($translation['explanation'] ?? null) !== null && $translation['explanation'] !== '') {
+                $questionData['explanation'] = $translation['explanation'];
+            }
+        }
+
+        if (!empty($questionData['answers']) && is_array($questionData['answers'])) {
+            $questionData['answers'] = array_map(function (array $answerData) use ($answerTranslations) {
+                $answerId = (int)($answerData['id'] ?? 0);
+                if ($answerId > 0 && isset($answerTranslations[$answerId]) && $answerTranslations[$answerId] !== '') {
+                    $answerData['text'] = $answerTranslations[$answerId];
+                }
+                return $answerData;
+            }, $questionData['answers']);
+        }
+
+        return $questionData;
     }
 }

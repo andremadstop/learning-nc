@@ -39,18 +39,66 @@ class PoolService {
         $result->closeCursor();
 
         return array_map(function ($row) {
-            return [
-                'id' => (int)$row['id'],
-                'user_id' => $row['user_id'],
-                'name' => $row['name'],
-                'description' => $row['description'],
-                'created_at' => $row['created_at'],
-                'updated_at' => $row['updated_at'],
+            return array_merge($this->serializePoolRow($row), [
                 'permission' => $row['permission'],
                 'shared_by' => $row['shared_by'],
                 'is_shared' => true,
-            ];
+            ]);
         }, $rows);
+    }
+
+    private function serializePoolRow(array $row): array {
+        return [
+            'id' => (int)$row['id'],
+            'user_id' => $row['user_id'],
+            'name' => $row['name'],
+            'description' => $row['description'],
+            'created_at' => $row['created_at'],
+            'updated_at' => $row['updated_at'],
+            'handbook_key' => $row['handbook_key'] ?? null,
+            'handbook_title' => $row['handbook_title'] ?? null,
+            'chapter_key' => $row['chapter_key'] ?? null,
+            'chapter_title' => $row['chapter_title'] ?? null,
+            'chapter_order' => isset($row['chapter_order']) ? (int)$row['chapter_order'] : null,
+        ];
+    }
+
+    private function normalizeOptional(?string $value, int $maxLength): ?string {
+        $value = trim((string)$value);
+        if ($value === '') {
+            return null;
+        }
+
+        if (mb_strlen($value) > $maxLength) {
+            throw new \InvalidArgumentException('Field exceeds maximum length');
+        }
+
+        return $value;
+    }
+
+    private function normalizeChapterOrder(?int $chapterOrder): ?int {
+        if ($chapterOrder === null) {
+            return null;
+        }
+        if ($chapterOrder < 1 || $chapterOrder > 9999) {
+            throw new \InvalidArgumentException('Chapter order must be between 1 and 9999');
+        }
+        return $chapterOrder;
+    }
+
+    private function applyPoolMetadata(
+        Pool $pool,
+        ?string $handbookKey,
+        ?string $handbookTitle,
+        ?string $chapterKey,
+        ?string $chapterTitle,
+        ?int $chapterOrder
+    ): void {
+        $pool->setHandbookKey($this->normalizeOptional($handbookKey, 64));
+        $pool->setHandbookTitle($this->normalizeOptional($handbookTitle, 255));
+        $pool->setChapterKey($this->normalizeOptional($chapterKey, 64));
+        $pool->setChapterTitle($this->normalizeOptional($chapterTitle, 255));
+        $pool->setChapterOrder($this->normalizeChapterOrder($chapterOrder));
     }
 
     private function findPoolRow(int $id): ?array {
@@ -115,16 +163,10 @@ class PoolService {
             if ($share !== null) {
                 $row = $this->findPoolRow($id);
                 if ($row) {
-                    return [
-                        'id' => (int)$row['id'],
-                        'user_id' => $row['user_id'],
-                        'name' => $row['name'],
-                        'description' => $row['description'],
-                        'created_at' => $row['created_at'],
-                        'updated_at' => $row['updated_at'],
+                    return array_merge($this->serializePoolRow($row), [
                         'permission' => $share->getPermission(),
                         'is_shared' => true,
-                    ];
+                    ]);
                 }
             }
 
@@ -132,16 +174,10 @@ class PoolService {
             if ($this->hasCoursePoolAccess($id, $userId)) {
                 $row = $this->findPoolRow($id);
                 if ($row) {
-                    return [
-                        'id' => (int)$row['id'],
-                        'user_id' => $row['user_id'],
-                        'name' => $row['name'],
-                        'description' => $row['description'],
-                        'created_at' => $row['created_at'],
-                        'updated_at' => $row['updated_at'],
+                    return array_merge($this->serializePoolRow($row), [
                         'permission' => 'read',
                         'is_shared' => true,
-                    ];
+                    ]);
                 }
             }
 
@@ -149,22 +185,43 @@ class PoolService {
         }
     }
 
-    public function create(string $name, ?string $description, string $userId): Pool {
+    public function create(
+        string $name,
+        ?string $description,
+        string $userId,
+        ?string $handbookKey = null,
+        ?string $handbookTitle = null,
+        ?string $chapterKey = null,
+        ?string $chapterTitle = null,
+        ?int $chapterOrder = null
+    ): Pool {
         $pool = new Pool();
         $pool->setName($name);
         $pool->setDescription($description);
         $pool->setUserId($userId);
+        $this->applyPoolMetadata($pool, $handbookKey, $handbookTitle, $chapterKey, $chapterTitle, $chapterOrder);
         if (!$pool->getReviewStatus()) {
             $pool->setReviewStatus('published');
         }
         return $this->mapper->createOrUpdate($pool);
     }
 
-    public function update(int $id, string $name, ?string $description, string $userId): Pool {
+    public function update(
+        int $id,
+        string $name,
+        ?string $description,
+        string $userId,
+        ?string $handbookKey = null,
+        ?string $handbookTitle = null,
+        ?string $chapterKey = null,
+        ?string $chapterTitle = null,
+        ?int $chapterOrder = null
+    ): Pool {
         try {
             $pool = $this->mapper->find($id, $userId);
             $pool->setName($name);
             $pool->setDescription($description);
+            $this->applyPoolMetadata($pool, $handbookKey, $handbookTitle, $chapterKey, $chapterTitle, $chapterOrder);
             return $this->mapper->createOrUpdate($pool);
         } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
             throw new NotFoundException('Pool not found');

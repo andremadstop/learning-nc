@@ -82,6 +82,7 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 20, period: 60)]
     public function update(int $courseId, ?string $title = null, ?string $description = null, ?string $status = null): DataResponse {
         try {
             $course = $this->courseService->update($courseId, $title, $description, $status, $this->userId);
@@ -96,6 +97,7 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 10, period: 60)]
     public function destroy(int $courseId): DataResponse {
         try {
             $this->courseService->delete($courseId, $this->userId);
@@ -122,6 +124,7 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 20, period: 60)]
     public function addPool(int $courseId, int $poolId, int $sortOrder = 0, bool $required = true): DataResponse {
         try {
             $cp = $this->courseService->addPool($courseId, $poolId, $sortOrder, $required, $this->userId);
@@ -134,6 +137,39 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function updatePool(
+        int $courseId,
+        int $poolId,
+        bool $required = true,
+        bool $requiredEnforced = false,
+        ?string $filterExamKey = null,
+        ?string $filterChapterKey = null,
+        ?array $filterQuestionIds = null
+    ): DataResponse {
+        try {
+            $cp = $this->courseService->updatePoolRules(
+                $courseId,
+                $poolId,
+                $required,
+                $requiredEnforced,
+                $filterExamKey,
+                $filterChapterKey,
+                $filterQuestionIds,
+                $this->userId
+            );
+            return new DataResponse($cp);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to update pool rules'], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
     public function removePool(int $courseId, int $poolId): DataResponse {
         try {
             $this->courseService->removePool($courseId, $poolId, $this->userId);
@@ -157,6 +193,7 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 20, period: 60)]
     public function addMember(int $courseId, string $userId, string $role = 'student'): DataResponse {
         try {
             $member = $this->courseService->addMember($courseId, $userId, $role, $this->userId);
@@ -169,6 +206,7 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 20, period: 60)]
     public function removeMember(int $courseId, string $memberId): DataResponse {
         try {
             $this->courseService->removeMember($courseId, $memberId, $this->userId);
@@ -181,6 +219,7 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 10, period: 60)]
     public function enroll(int $courseId): DataResponse {
         try {
             $member = $this->courseService->enroll($courseId, $this->userId);

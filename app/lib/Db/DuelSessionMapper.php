@@ -12,6 +12,14 @@ class DuelSessionMapper extends QBMapper {
         parent::__construct($db, 'learning_duel_sessions', DuelSession::class);
     }
 
+    public function findById(int $id): DuelSession {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)));
+        return $this->findEntity($qb);
+    }
+
     public function findByCode(string $code): DuelSession {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')

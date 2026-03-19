@@ -141,6 +141,7 @@ export default {
   mixins: [hintMixin],
   props: {
     mode: { type: String, default: 'queue', validator: v => ['queue', 'remediation'].includes(v) },
+    contentLanguage: { type: String, default: '' },
   },
   data() {
     return {
@@ -176,12 +177,51 @@ export default {
   mounted() {
     this.loadQueue();
   },
+  watch: {
+    contentLanguage() {
+      this.refreshQueueForLanguage();
+    },
+  },
   methods: {
+    queueParams() {
+      const params = { limit: 30 };
+      if (this.contentLanguage) {
+        params.lang = this.contentLanguage;
+      }
+      return params;
+    },
+    mergeFutureItems(translatedItems) {
+      if (!Array.isArray(translatedItems) || translatedItems.length === 0) {
+        return this.items;
+      }
+      if (!Array.isArray(this.items) || this.items.length === 0) {
+        return translatedItems;
+      }
+      const merged = translatedItems.slice();
+      if (this.currentIndex < merged.length && this.items[this.currentIndex]) {
+        merged[this.currentIndex] = this.items[this.currentIndex];
+      }
+      return merged;
+    },
+    async refreshQueueForLanguage() {
+      if (this.showResults || this.items.length === 0) {
+        return;
+      }
+      try {
+        const endpoint = this.mode === 'remediation' ? '/apps/learning/api/leitner/remediation' : '/apps/learning/api/leitner/queue';
+        const r = await axios.get(generateUrl(endpoint), { params: this.queueParams() });
+        if (Array.isArray(r.data)) {
+          this.items = this.mergeFutureItems(r.data);
+        }
+      } catch (e) {
+        // Language refresh is best-effort only.
+      }
+    },
     async loadQueue() {
       this.loading = true;
       try {
         const endpoint = this.mode === 'remediation' ? '/apps/learning/api/leitner/remediation' : '/apps/learning/api/leitner/queue';
-        const r = await axios.get(generateUrl(endpoint), { params: { limit: 30 } });
+        const r = await axios.get(generateUrl(endpoint), { params: this.queueParams() });
         this.items = r.data;
         if (this.items.length > 0) {
           this.started = true;
@@ -198,7 +238,8 @@ export default {
       try {
         const r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
-          answerText: this.openAnswer
+          answerText: this.openAnswer,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
         });
         this.handleAnswerResponse(r.data);
       } catch (e) {
@@ -222,6 +263,7 @@ export default {
         const r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
           answerIds: this.selectedAnswerIds,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
         });
         this.handleAnswerResponse(r.data);
       } catch (e) {
@@ -237,6 +279,7 @@ export default {
         const r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
           answerId: answer.id,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
         });
         this.handleAnswerResponse(r.data);
       } catch (e) {

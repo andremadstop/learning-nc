@@ -20,7 +20,10 @@
 
     <div v-else-if="!showResults" class="training-active">
       <NcProgressBar :value="progress" />
-      <div class="question-counter">{{ t('learning', 'Question {n} of {total}', { n: currentIndex + 1, total: questions.length }) }}</div>
+      <div class="question-counter">
+        {{ t('learning', 'Question {n} of {total}', { n: currentIndex + 1, total: questions.length }) }}
+        <span v-if="currentQuestion && currentQuestion.pool_position" class="question-db-id">#{{ currentQuestion.pool_position }}</span>
+      </div>
 
       <div v-if="currentQuestion" class="question-card">
         <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" :alt="currentQuestion.image_alt || t('learning', 'Diagram for question')" class="question-image" />
@@ -177,7 +180,9 @@ export default {
   components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer },
   props: {
     poolId: { type: Number, required: true },
-    totalQuestions: { type: Number, required: true }
+    courseId: { type: Number, default: null },
+    totalQuestions: { type: Number, required: true },
+    contentLanguage: { type: String, default: '' }
   },
   data() {
     return {
@@ -203,7 +208,15 @@ export default {
       explainPollTimer: null,
     };
   },
-  mounted() { this.checkAiAvailable(); },
+  mounted() {
+    this.checkAiAvailable();
+    this.emitVirtuProf('training-first-start');
+  },
+  watch: {
+    contentLanguage() {
+      this.refreshQuestionsForLanguage();
+    },
+  },
   computed: {
     currentQuestion() { return this.questions[this.currentIndex] || null; },
     progress() { return this.questions.length > 0 ? ((this.currentIndex + 1) / this.questions.length) * 100 : 0; },
@@ -212,13 +225,67 @@ export default {
     isPbq() { return this.currentQuestion && this.currentQuestion.question_type === 'pbq'; }
   },
   methods: {
+    emitVirtuProf(triggerId, context = {}) {
+      this.$root.$emit('virtuprof:trigger', triggerId, context);
+    },
+    badgeDisplayName(badge) {
+      return badge?.badge_name || badge?.name || badge?.title || t('learning', 'New badge');
+    },
+    emitBadgeTrigger(badges) {
+      if (Array.isArray(badges) && badges.length > 0) {
+        this.emitVirtuProf('badge-earned', { badgeName: this.badgeDisplayName(badges[0]) });
+      }
+    },
+    requestPayload(payload = {}) {
+      const basePayload = this.courseId ? { ...payload, courseId: this.courseId } : payload;
+      return this.contentLanguage ? { ...basePayload, lang: this.contentLanguage } : basePayload;
+    },
+    buildStatusParams(includeQuestions = false) {
+      const params = {};
+      if (this.contentLanguage) {
+        params.lang = this.contentLanguage;
+      }
+      if (includeQuestions) {
+        params.includeQuestions = true;
+      }
+      return params;
+    },
+    mergeFutureQuestions(translatedQuestions) {
+      if (!Array.isArray(translatedQuestions) || translatedQuestions.length === 0) {
+        return this.questions;
+      }
+      if (!Array.isArray(this.questions) || this.questions.length === 0) {
+        return translatedQuestions;
+      }
+      const merged = translatedQuestions.slice();
+      if (this.currentIndex < merged.length && this.questions[this.currentIndex]) {
+        merged[this.currentIndex] = this.questions[this.currentIndex];
+      }
+      return merged;
+    },
+    async refreshQuestionsForLanguage() {
+      if (!this.session || this.showResults) {
+        return;
+      }
+      try {
+        const response = await axios.get(
+          generateUrl('/apps/learning/api/training/session/' + this.session),
+          { params: this.buildStatusParams(true) }
+        );
+        if (Array.isArray(response.data?.questions)) {
+          this.questions = this.mergeFutureQuestions(response.data.questions);
+        }
+      } catch (error) {
+        // Language refresh is best-effort only.
+      }
+    },
     questionImageUrl(id) {
       return generateUrl('/apps/learning/api/questions/' + id + '/image');
     },
     async startTraining() {
       this.starting = true; this.loadError = null;
       try {
-        const response = await axios.post(generateUrl('/apps/learning/api/training/start'), { poolId: this.poolId });
+        const response = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload({ poolId: this.poolId }));
         this.session = response.data.session_id; this.questions = response.data.questions;
       } catch (error) { this.loadError = error.response?.data?.error || t('learning', 'Failed to start training.'); }
       finally { this.starting = false; }
@@ -238,6 +305,7 @@ export default {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
           pbqAnswers,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
         });
         this.isCorrect = response.data.is_correct;
         this.pbqPoints = response.data.pbq_points ?? 0;
@@ -254,7 +322,8 @@ export default {
         const response = await axios.post(generateUrl('/apps/learning/api/training/answer'), {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
-          answerText: this.openAnswer
+          answerText: this.openAnswer,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
         });
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = [response.data.correct_answer_text || ''];
@@ -269,7 +338,8 @@ export default {
         const response = await axios.post(generateUrl('/apps/learning/api/training/answer'), {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
-          answerIds: this.selectedAnswerIds
+          answerIds: this.selectedAnswerIds,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
         });
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
@@ -285,7 +355,8 @@ export default {
         const response = await axios.post(generateUrl('/apps/learning/api/training/answer'), {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
-          answerId: answerId
+          answerId: answerId,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
         });
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
@@ -355,13 +426,14 @@ export default {
     },
     async completeSession() {
       try {
-        const response = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session });
+        const response = await axios.post(generateUrl('/apps/learning/api/training/complete'), this.requestPayload({ sessionId: this.session }));
         this.results = response.data; this.showResults = true;
         if (this.results.score_percentage === 100) { celebratePerfectSession(); }
         const oldStreak = this.streak.current_streak;
         await this.fetchStreak();
         if (this.streak.current_streak > 0 && isStreakMilestone(this.streak.current_streak) && this.streak.current_streak > oldStreak) {
           celebrateStreak(this.streak.current_streak);
+          this.emitVirtuProf('streak-milestone', { days: this.streak.current_streak });
         }
         // Animate score count-up
         this.$nextTick(() => {
@@ -377,6 +449,7 @@ export default {
         // Show badge unlocks
         if (response.data.newly_earned_badges && response.data.newly_earned_badges.length > 0) {
           this.newBadges = response.data.newly_earned_badges;
+          this.emitBadgeTrigger(response.data.newly_earned_badges);
         }
       } catch (error) { showError(t('learning', 'Failed to complete session')); }
     },
@@ -417,7 +490,8 @@ export default {
 .training-start h3 { font-size: 28px; margin-bottom: 12px; font-weight: 700; color: var(--color-main-text); }
 .training-start p { font-size: 16px; color: var(--color-text-maxcontrast); margin-bottom: 28px; }
 .start-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-.question-counter { text-align: center; font-size: 14px; color: var(--color-text-maxcontrast); margin: 12px 0 28px; font-weight: 500; }
+.question-counter { text-align: center; font-size: 14px; color: var(--color-text-maxcontrast); margin: 12px 0 28px; font-weight: 500; display: flex; justify-content: center; align-items: center; gap: 8px; }
+.question-db-id { font-size: 11px; font-weight: 400; color: var(--color-text-maxcontrast); opacity: 0.6; font-family: monospace; background: var(--color-background-hover); padding: 1px 5px; border-radius: 4px; }
 .question-card { background: var(--color-main-background); border: 1px solid var(--color-border); border-radius: 16px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
 .question-image { max-width: 100%; max-height: 240px; border-radius: 12px; border: 1px solid var(--color-border); margin-bottom: 16px; object-fit: contain; display: block; }
 .question-text { font-size: 20px; font-weight: 500; margin-bottom: 28px; line-height: 1.6; color: var(--color-main-text); }

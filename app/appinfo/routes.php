@@ -90,6 +90,17 @@ return [
         ['name' => 'settings#getPersonal', 'url' => '/api/settings/personal', 'verb' => 'GET'],
         ['name' => 'settings#savePersonal', 'url' => '/api/settings/personal', 'verb' => 'PUT'],
 
+        // VirtuProf
+        ['name' => 'virtuProf#getState', 'url' => '/api/virtuprof/state', 'verb' => 'GET'],
+        ['name' => 'virtuProf#dismiss', 'url' => '/api/virtuprof/dismiss', 'verb' => 'POST'],
+        ['name' => 'virtuProf#setEnabled', 'url' => '/api/virtuprof/enabled', 'verb' => 'PUT'],
+
+        // Support Tickets
+        ['name' => 'supportTicket#create', 'url' => '/api/support-tickets', 'verb' => 'POST'],
+        ['name' => 'supportTicket#mine', 'url' => '/api/support-tickets', 'verb' => 'GET'],
+        ['name' => 'supportTicket#adminList', 'url' => '/api/settings/admin/support-tickets', 'verb' => 'GET'],
+        ['name' => 'supportTicket#answer', 'url' => '/api/settings/admin/support-tickets/{id}/answer', 'verb' => 'POST'],
+
         // AI Generation
         ['name' => 'ai#available', 'url' => '/api/ai/available', 'verb' => 'GET'],
         ['name' => 'ai#generate', 'url' => '/api/ai/generate', 'verb' => 'POST'],
@@ -105,6 +116,16 @@ return [
         ['name' => 'duel#answer', 'url' => '/api/duels/{code}/answer', 'verb' => 'POST'],
         ['name' => 'duel#rematch', 'url' => '/api/duels/{code}/rematch', 'verb' => 'POST'],
 
+        // Leagues
+        ['name' => 'league#create', 'url' => '/api/courses/{courseId}/leagues', 'verb' => 'POST'],
+        ['name' => 'league#active', 'url' => '/api/courses/{courseId}/leagues/active', 'verb' => 'GET'],
+        ['name' => 'league#start', 'url' => '/api/courses/{courseId}/leagues/{id}/start', 'verb' => 'POST'],
+        ['name' => 'league#finish', 'url' => '/api/courses/{courseId}/leagues/{id}/finish', 'verb' => 'POST'],
+        ['name' => 'league#challenge', 'url' => '/api/courses/{courseId}/leagues/{id}/challenge/{opponentUid}', 'verb' => 'POST'],
+        ['name' => 'league#accept', 'url' => '/api/courses/{courseId}/leagues/{id}/challenges/{challengeId}/accept', 'verb' => 'POST'],
+        ['name' => 'league#table', 'url' => '/api/courses/{courseId}/leagues/{id}/table', 'verb' => 'GET'],
+        ['name' => 'league#cl', 'url' => '/api/courses/{courseId}/leagues/{id}/cl', 'verb' => 'GET'],
+
         // Course Management
         ['name' => 'course#role', 'url' => '/api/role', 'verb' => 'GET'],
         ['name' => 'course#index', 'url' => '/api/courses', 'verb' => 'GET'],
@@ -114,6 +135,7 @@ return [
         ['name' => 'course#destroy', 'url' => '/api/courses/{courseId}', 'verb' => 'DELETE'],
         ['name' => 'course#listPools', 'url' => '/api/courses/{courseId}/pools', 'verb' => 'GET'],
         ['name' => 'course#addPool', 'url' => '/api/courses/{courseId}/pools', 'verb' => 'POST'],
+        ['name' => 'course#updatePool', 'url' => '/api/courses/{courseId}/pools/{poolId}', 'verb' => 'PUT'],
         ['name' => 'course#removePool', 'url' => '/api/courses/{courseId}/pools/{poolId}', 'verb' => 'DELETE'],
         ['name' => 'course#listMembers', 'url' => '/api/courses/{courseId}/members', 'verb' => 'GET'],
         ['name' => 'course#addMember', 'url' => '/api/courses/{courseId}/members', 'verb' => 'POST'],

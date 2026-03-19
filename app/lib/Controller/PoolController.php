@@ -47,7 +47,15 @@ class PoolController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 30, period: 60)]
-    public function create(string $name, ?string $description = null): DataResponse {
+    public function create(
+        string $name,
+        ?string $description = null,
+        ?string $handbookKey = null,
+        ?string $handbookTitle = null,
+        ?string $chapterKey = null,
+        ?string $chapterTitle = null,
+        ?int $chapterOrder = null
+    ): DataResponse {
         try {
             if (mb_strlen($name) < 1 || mb_strlen($name) > 200) {
                 return new DataResponse(['error' => 'Pool name must be 1-200 characters'], Http::STATUS_BAD_REQUEST);
@@ -55,7 +63,16 @@ class PoolController extends Controller {
             if ($description !== null && mb_strlen($description) > 2000) {
                 return new DataResponse(['error' => 'Description must be max 2000 characters'], Http::STATUS_BAD_REQUEST);
             }
-            $pool = $this->service->create($name, $description, $this->userId);
+            $pool = $this->service->create(
+                $name,
+                $description,
+                $this->userId,
+                $handbookKey,
+                $handbookTitle,
+                $chapterKey,
+                $chapterTitle,
+                $chapterOrder
+            );
             return new DataResponse($pool, Http::STATUS_CREATED);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to create pool'], Http::STATUS_BAD_REQUEST);
@@ -65,7 +82,16 @@ class PoolController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function update(int $id, string $name, ?string $description = null): DataResponse {
+    public function update(
+        int $id,
+        string $name,
+        ?string $description = null,
+        ?string $handbookKey = null,
+        ?string $handbookTitle = null,
+        ?string $chapterKey = null,
+        ?string $chapterTitle = null,
+        ?int $chapterOrder = null
+    ): DataResponse {
         try {
             if (mb_strlen($name) < 1 || mb_strlen($name) > 200) {
                 return new DataResponse(['error' => 'Pool name must be 1-200 characters'], Http::STATUS_BAD_REQUEST);
@@ -73,7 +99,17 @@ class PoolController extends Controller {
             if ($description !== null && mb_strlen($description) > 2000) {
                 return new DataResponse(['error' => 'Description must be max 2000 characters'], Http::STATUS_BAD_REQUEST);
             }
-            $pool = $this->service->update($id, $name, $description, $this->userId);
+            $pool = $this->service->update(
+                $id,
+                $name,
+                $description,
+                $this->userId,
+                $handbookKey,
+                $handbookTitle,
+                $chapterKey,
+                $chapterTitle,
+                $chapterOrder
+            );
             return new DataResponse($pool);
         } catch (NotFoundException $e) {
             return new DataResponse(['error' => 'Pool not found'], Http::STATUS_NOT_FOUND);

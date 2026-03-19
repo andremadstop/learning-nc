@@ -32,6 +32,11 @@
         <span class="rem-text">{{ t('learning', 'Trouble spots') }}</span>
         <span class="rem-count">{{ remediationCount }} {{ t('learning', 'cards') }}</span>
       </button>
+
+      <button class="swipe-mode-btn" @click="$emit('openSwipeMode')">
+        <span class="sq-icon">&#x1F500;</span>
+        <span class="sq-text">{{ t('learning', 'Wahr/Falsch') }}</span>
+      </button>
     </div>
 
     <!-- Smart Queue hint (only for students) -->
@@ -222,6 +227,12 @@
               <NcActionButton @click="deletePool(pool)" close-after-click>{{ t('learning', 'Delete') }}</NcActionButton>
             </NcActions>
           </div>
+          <div v-if="pool.chapter_title || pool.handbook_title" class="pool-chapter-meta">
+            <span v-if="pool.handbook_title" class="pool-meta-badge handbook">{{ pool.handbook_title }}</span>
+            <span v-if="pool.chapter_title" class="pool-meta-badge chapter">
+              {{ formatChapterLabel(pool) }}
+            </span>
+          </div>
           <p v-if="pool.description" class="pool-description">{{ pool.description }}</p>
           <div class="pool-meta">{{ t('learning', 'Created {date}', { date: formatDate(pool.created_at) }) }}</div>
         </div>
@@ -231,8 +242,8 @@
     <!-- Shared Pools -->
     <div v-else-if="activeTab === 'shared'">
       <NcEmptyContent v-if="sharedPools.length === 0" :name="t('learning', 'No shared pools')" :description="t('learning', 'When someone shares a pool with you, it will appear here')" />
-      <div v-else class="pool-grid">
-        <div v-for="pool in sharedPools" :key="'s-' + pool.id" class="pool-card shared" @click="selectPool(pool)"
+        <div v-else class="pool-grid">
+          <div v-for="pool in sharedPools" :key="'s-' + pool.id" class="pool-card shared" @click="selectPool(pool)"
              tabindex="0" role="button"
              @keydown.enter="selectPool(pool)"
              @keydown.space.prevent="selectPool(pool)">
@@ -240,6 +251,12 @@
             <h4>{{ pool.name }}</h4>
             <span class="permission-badge" :class="pool.permission">
               {{ pool.permission === 'edit' ? t('learning', 'Can edit') : t('learning', 'View only') }}
+            </span>
+          </div>
+          <div v-if="pool.chapter_title || pool.handbook_title" class="pool-chapter-meta">
+            <span v-if="pool.handbook_title" class="pool-meta-badge handbook">{{ pool.handbook_title }}</span>
+            <span v-if="pool.chapter_title" class="pool-meta-badge chapter">
+              {{ formatChapterLabel(pool) }}
             </span>
           </div>
           <p v-if="pool.description" class="pool-description">{{ pool.description }}</p>
@@ -258,6 +275,28 @@
         <div class="form-group">
           <label for="pool-description">{{ t('learning', 'Description') }}</label>
           <textarea id="pool-description" v-model="form.description" rows="4" :placeholder="t('learning', 'Optional description')" class="nc-input"></textarea>
+        </div>
+        <div class="chapter-form-grid">
+          <div class="form-group">
+            <label for="pool-handbook-key">{{ t('learning', 'Handbook Key') }}</label>
+            <input id="pool-handbook-key" v-model.trim="form.handbookKey" type="text" :placeholder="t('learning', 'e.g., kammermann-network-plus')" class="nc-input" />
+          </div>
+          <div class="form-group">
+            <label for="pool-handbook-title">{{ t('learning', 'Handbook Title') }}</label>
+            <input id="pool-handbook-title" v-model.trim="form.handbookTitle" type="text" :placeholder="t('learning', 'e.g., Kammermann Network+')" class="nc-input" />
+          </div>
+          <div class="form-group">
+            <label for="pool-chapter-key">{{ t('learning', 'Chapter Key') }}</label>
+            <input id="pool-chapter-key" v-model.trim="form.chapterKey" type="text" :placeholder="t('learning', 'e.g., chapter-03')" class="nc-input" />
+          </div>
+          <div class="form-group">
+            <label for="pool-chapter-order">{{ t('learning', 'Chapter Number') }}</label>
+            <input id="pool-chapter-order" v-model.number="form.chapterOrder" type="number" min="1" max="9999" :placeholder="t('learning', 'e.g., 3')" class="nc-input" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="pool-chapter-title">{{ t('learning', 'Chapter Title') }}</label>
+          <input id="pool-chapter-title" v-model.trim="form.chapterTitle" type="text" :placeholder="t('learning', 'e.g., Switching Grundlagen')" class="nc-input" />
         </div>
         <div class="dialog-actions">
           <NcButton type="tertiary" @click="closeDialog">{{ t('learning', 'Cancel') }}</NcButton>
@@ -321,7 +360,15 @@ export default {
       editingPool: null,
       sharingPool: null,
       saving: false,
-      form: { name: '', description: '' },
+      form: {
+        name: '',
+        description: '',
+        handbookKey: '',
+        handbookTitle: '',
+        chapterKey: '',
+        chapterTitle: '',
+        chapterOrder: null,
+      },
       // Language filter
       activeLangs: [],
       // Search related data
@@ -384,7 +431,13 @@ export default {
       // Search filter
       if (this.searchTerm) {
         const q = this.searchTerm.toLowerCase();
-        list = list.filter(p => p.name.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q)));
+        list = list.filter(p =>
+          p.name.toLowerCase().includes(q) ||
+          (p.description && p.description.toLowerCase().includes(q)) ||
+          (p.handbook_title && p.handbook_title.toLowerCase().includes(q)) ||
+          (p.chapter_title && p.chapter_title.toLowerCase().includes(q)) ||
+          (p.chapter_key && p.chapter_key.toLowerCase().includes(q))
+        );
       }
       return list;
     }
@@ -410,6 +463,36 @@ export default {
     this.stopChallengeCountdown();
   },
   methods: {
+    emptyForm() {
+      return {
+        name: '',
+        description: '',
+        handbookKey: '',
+        handbookTitle: '',
+        chapterKey: '',
+        chapterTitle: '',
+        chapterOrder: null,
+      };
+    },
+    normalizeFormPayload() {
+      return {
+        name: this.form.name,
+        description: this.form.description,
+        handbookKey: this.form.handbookKey || null,
+        handbookTitle: this.form.handbookTitle || null,
+        chapterKey: this.form.chapterKey || null,
+        chapterTitle: this.form.chapterTitle || null,
+        chapterOrder: this.form.chapterOrder || null,
+      };
+    },
+    formatChapterLabel(pool) {
+      if (!pool.chapter_title) {
+        return '';
+      }
+      return pool.chapter_order
+        ? t('learning', 'Chapter {n}: {title}', { n: pool.chapter_order, title: pool.chapter_title })
+        : pool.chapter_title
+    },
     startChallengeCountdown() {
       this.updateChallengeCountdown();
       if (this.challengeCountdownTimer) clearInterval(this.challengeCountdownTimer);
@@ -485,28 +568,37 @@ export default {
     },
     showCreateDialog() {
       this.editingPool = null;
-      this.form = { name: '', description: '' };
+      this.form = this.emptyForm();
       this.showDialog = true;
     },
     editPool(pool) {
       this.editingPool = pool;
-      this.form = { name: pool.name, description: pool.description || '' };
+      this.form = {
+        name: pool.name,
+        description: pool.description || '',
+        handbookKey: pool.handbook_key || '',
+        handbookTitle: pool.handbook_title || '',
+        chapterKey: pool.chapter_key || '',
+        chapterTitle: pool.chapter_title || '',
+        chapterOrder: pool.chapter_order || null,
+      };
       this.showDialog = true;
     },
     sharePool(pool) { this.sharingPool = pool; },
     closeDialog() {
       this.showDialog = false;
       this.editingPool = null;
-      this.form = { name: '', description: '' };
+      this.form = this.emptyForm();
     },
     async savePool() {
       this.saving = true;
+      const payload = this.normalizeFormPayload();
       try {
         if (this.editingPool) {
-          await axios.put(generateUrl('/apps/learning/api/pools/' + this.editingPool.id), this.form);
+          await axios.put(generateUrl('/apps/learning/api/pools/' + this.editingPool.id), payload);
           showSuccess(t('learning', 'Pool updated'));
         } else {
-          await axios.post(generateUrl('/apps/learning/api/pools'), this.form);
+          await axios.post(generateUrl('/apps/learning/api/pools'), payload);
           showSuccess(t('learning', 'Pool created'));
         }
         this.closeDialog();
@@ -554,7 +646,10 @@ export default {
         const lowerCaseSearchTerm = this.searchTerm.toLowerCase();
         this.poolSearchResults = [...this.pools, ...this.sharedPools].filter(pool =>
           pool.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-          (pool.description && pool.description.toLowerCase().includes(lowerCaseSearchTerm))
+          (pool.description && pool.description.toLowerCase().includes(lowerCaseSearchTerm)) ||
+          (pool.handbook_title && pool.handbook_title.toLowerCase().includes(lowerCaseSearchTerm)) ||
+          (pool.chapter_title && pool.chapter_title.toLowerCase().includes(lowerCaseSearchTerm)) ||
+          (pool.chapter_key && pool.chapter_key.toLowerCase().includes(lowerCaseSearchTerm))
         );
         this.searchQuestions();
         this.showSearchResults = true;
@@ -692,9 +787,14 @@ export default {
 .permission-badge.read { background: var(--color-background-hover); color: var(--color-primary-element); border: 1px solid var(--color-primary-element); }
 .permission-badge.edit { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); border: 1px solid var(--color-success); }
 .pool-description { color: var(--color-text-maxcontrast); font-size: 13px; margin: 6px 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pool-chapter-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.pool-meta-badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
+.pool-meta-badge.handbook { background: color-mix(in srgb, var(--color-primary-element) 10%, var(--color-main-background)); color: var(--color-primary-element); }
+.pool-meta-badge.chapter { background: color-mix(in srgb, var(--color-success) 12%, var(--color-main-background)); color: var(--color-success); }
 .pool-meta { font-size: 12px; color: var(--color-text-maxcontrast); margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--color-border); }
 .loading-center { display: block; margin: 60px auto; }
 .form-group { margin-bottom: 18px; }
+.chapter-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
 .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; color: var(--color-main-text); }
 .nc-input { width: 100%; padding: 10px 12px; border: 2px solid var(--color-border); border-radius: var(--border-radius-large); font-size: 14px; background: var(--color-main-background); color: var(--color-main-text); transition: border-color 0.2s; box-sizing: border-box; }
 .nc-input:focus { border-color: var(--color-primary-element); outline: none; }
@@ -863,6 +963,25 @@ export default {
   border-radius: 12px;
   background: color-mix(in srgb, var(--color-warning) 20%, transparent);
   font-size: 13px;
+}
+.swipe-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  background: var(--color-main-background);
+  border: 2px solid var(--color-border);
+  border-radius: var(--border-radius-large);
+  color: var(--color-main-text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.swipe-mode-btn:hover {
+  border-color: var(--color-primary-element);
+  background: var(--color-background-hover);
+  transform: translateY(-1px);
 }
 
 .sq-icon { font-size: 20px; }

@@ -147,6 +147,9 @@
         <NcButton type="error" class="end-exam-btn" @click="showEndExamModal = true">
           {{ t('learning', 'End Exam') }}
         </NcButton>
+        <NcButton type="tertiary" class="abort-exam-btn" @click="showAbortExamModal = true">
+          {{ t('learning', 'Abort') }}
+        </NcButton>
       </div>
     </div>
 
@@ -158,6 +161,18 @@
         <div class="modal-actions">
           <NcButton type="tertiary" @click="showEndExamModal = false">{{ t('learning', 'Cancel') }}</NcButton>
           <NcButton type="error" @click="showEndExamModal = false; finishExam()">{{ t('learning', 'End Exam') }}</NcButton>
+        </div>
+      </div>
+    </NcModal>
+
+    <!-- Abort Exam confirmation modal -->
+    <NcModal v-if="showAbortExamModal" @close="showAbortExamModal = false" @closing="showAbortExamModal = false" size="small">
+      <div class="modal-content">
+        <h3>{{ t('learning', 'Abort Exam') }}</h3>
+        <p>{{ t('learning', 'Abort the exam? Your progress will be discarded and no result will be saved.') }}</p>
+        <div class="modal-actions">
+          <NcButton type="tertiary" @click="showAbortExamModal = false">{{ t('learning', 'Cancel') }}</NcButton>
+          <NcButton type="error" @click="showAbortExamModal = false; abortExam()">{{ t('learning', 'Abort Exam') }}</NcButton>
         </div>
       </div>
     </NcModal>
@@ -271,7 +286,9 @@ export default {
   components: { NcButton, NcProgressBar, NcLoadingIcon, NcModal, NcNoteCard, BadgeUnlock, PbqRenderer },
   props: {
     poolId: { type: Number, required: true },
-    totalQuestions: { type: Number, required: true }
+    courseId: { type: Number, default: null },
+    totalQuestions: { type: Number, required: true },
+    contentLanguage: { type: String, default: '' }
   },
   data() {
     return {
@@ -321,6 +338,7 @@ export default {
       pbqAnswers: {},
       newBadges: [],
       showEndExamModal: false,
+      showAbortExamModal: false,
     };
   },
   computed: {
@@ -395,7 +413,70 @@ export default {
       });
     }
   },
+  watch: {
+    contentLanguage() {
+      this.refreshExamQuestionsForLanguage();
+    },
+  },
   methods: {
+    emitVirtuProf(triggerId, context = {}) {
+      this.$root.$emit('virtuprof:trigger', triggerId, context);
+    },
+    badgeDisplayName(badge) {
+      return badge?.badge_name || badge?.name || badge?.title || t('learning', 'New badge');
+    },
+    emitBadgeTrigger(badges) {
+      if (Array.isArray(badges) && badges.length > 0) {
+        this.emitVirtuProf('badge-earned', { badgeName: this.badgeDisplayName(badges[0]) });
+      }
+    },
+    requestPayload(payload = {}) {
+      const basePayload = this.courseId ? { ...payload, courseId: this.courseId } : payload;
+      return this.contentLanguage ? { ...basePayload, lang: this.contentLanguage } : basePayload;
+    },
+    buildStatusParams(includeQuestions = false) {
+      const params = {};
+      if (this.contentLanguage) {
+        params.lang = this.contentLanguage;
+      }
+      if (includeQuestions) {
+        params.includeQuestions = true;
+      }
+      return params;
+    },
+    mergeFutureQuestions(translatedQuestions) {
+      if (!Array.isArray(translatedQuestions) || translatedQuestions.length === 0) {
+        return this.questions;
+      }
+      if (!Array.isArray(this.questions) || this.questions.length === 0) {
+        return translatedQuestions;
+      }
+      const merged = translatedQuestions.slice();
+      if (this.currentQuestionIndex < merged.length && this.questions[this.currentQuestionIndex]) {
+        merged[this.currentQuestionIndex] = this.questions[this.currentQuestionIndex];
+      }
+      return merged;
+    },
+    async refreshExamQuestionsForLanguage() {
+      if (!this.session || this.screen !== 'exam') {
+        return;
+      }
+      try {
+        const r = await axios.get(
+          generateUrl('/apps/learning/api/training/session/{id}', { id: this.session }),
+          { params: this.buildStatusParams(true) }
+        );
+        if (Array.isArray(r.data?.questions)) {
+          const orderedQuestions = [
+            ...r.data.questions.filter(q => q.question_type === 'pbq'),
+            ...r.data.questions.filter(q => q.question_type !== 'pbq'),
+          ];
+          this.questions = this.mergeFutureQuestions(orderedQuestions);
+        }
+      } catch (e) {
+        // Language refresh is best-effort only.
+      }
+    },
     isEditableTarget(event) {
       const target = event && event.target ? event.target : null;
       if (!target || !target.tagName) return false;
@@ -466,7 +547,7 @@ export default {
           params.limit = this.selectedQuestionCount;
         }
         params.timeLimitSeconds = this.selectedTimeLimit;
-        const r = await axios.post(generateUrl('/apps/learning/api/training/start'), params);
+        const r = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload(params));
         this.session = r.data.session_id;
         const questions = r.data.questions;
 
@@ -635,7 +716,10 @@ export default {
     async refreshSessionStatus() {
       if (!this.session || this.screen !== 'exam') return
       try {
-        const r = await axios.get(generateUrl('/apps/learning/api/training/session/{id}', { id: this.session }))
+        const r = await axios.get(
+          generateUrl('/apps/learning/api/training/session/{id}', { id: this.session }),
+          { params: this.buildStatusParams(false) }
+        )
         const s = r.data || {}
         if (typeof s.remaining_seconds === 'number') {
           this.timeLeftSeconds = s.remaining_seconds
@@ -656,7 +740,7 @@ export default {
       this.screen = 'results'
       this.isLoading = true
       try {
-        const cr = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session })
+        const cr = await axios.post(generateUrl('/apps/learning/api/training/complete'), this.requestPayload({ sessionId: this.session }))
         this.resultsData = cr.data
         this.resultsData.timed_out = !!(cr.data.timed_out || forceTimedOut)
       } catch {
@@ -777,6 +861,7 @@ export default {
             await axios.post(generateUrl('/apps/learning/api/training/submitBatch'), {
               sessionId: this.session,
               answers: batchAnswers,
+              ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
             });
           } catch (submitErr) {
             if (submitErr.response?.status === 409 && submitErr.response?.data?.timed_out) {
@@ -788,7 +873,7 @@ export default {
         }
 
         // Complete session — server returns review data for exam sessions
-        const cr = await axios.post(generateUrl('/apps/learning/api/training/complete'), { sessionId: this.session });
+        const cr = await axios.post(generateUrl('/apps/learning/api/training/complete'), this.requestPayload({ sessionId: this.session }));
         this.resultsData = cr.data;
         this.resultsData.timed_out = !!(cr.data.timed_out || batchTimedOut || forceTimedOut);
 
@@ -844,6 +929,9 @@ export default {
         if (this.resultsData && this.resultsData.score_percentage >= 90) {
           celebratePerfectSession();
         }
+        if (this.resultsData && this.resultsData.score_percentage < 60) {
+          this.emitVirtuProf('exam-low-score');
+        }
         // countUp animation
         this.$nextTick(() => {
           if (this.$refs.examScoreNumber && this.resultsData) {
@@ -853,6 +941,7 @@ export default {
         // Show badge unlocks
         if (cr.data.newly_earned_badges && cr.data.newly_earned_badges.length > 0) {
           this.newBadges = cr.data.newly_earned_badges;
+          this.emitBadgeTrigger(cr.data.newly_earned_badges);
         }
       } catch (e) {
         showError(t('learning', 'Failed to process results'));
@@ -866,6 +955,21 @@ export default {
       } finally {
         this.isLoading = false;
       }
+    },
+
+    async abortExam() {
+      if (this.timerInterval) {
+        clearInterval(this.timerInterval);
+        this.timerInterval = null;
+      }
+      this.stopStatusPolling();
+      this.releaseExamLock();
+      if (this.session) {
+        try {
+          await axios.post(generateUrl('/apps/learning/api/training/abort'), { sessionId: this.session });
+        } catch {}
+      }
+      this.$emit('back');
     },
 
     retakeExam() {
@@ -892,6 +996,7 @@ export default {
   },
   mounted() {
     window.addEventListener('keydown', this.handleExamHotkeys);
+    this.emitVirtuProf('exam-first-start');
   },
 
   beforeDestroy() {
@@ -1033,6 +1138,7 @@ export default {
 }
 .nav-bar-inner { display: flex; gap: 6px; flex: 1; justify-content: center; flex-wrap: nowrap; }
 .end-exam-btn { flex-shrink: 0; }
+.abort-exam-btn { flex-shrink: 0; }
 .nav-dot {
   width: 40px; height: 40px;
   border-radius: 50%;

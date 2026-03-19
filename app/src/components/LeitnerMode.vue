@@ -71,7 +71,30 @@
         <div class="review-box-indicator">{{ t('learning', 'Box') }} {{ currentItem.box }} &rarr; {{ answered ? (lastAnswer ? t('learning', 'Box') + ' ' + lastMoveTarget : t('learning', 'Box') + ' 1') : '?' }}</div>
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
-        <div v-if="!answered && isOpenQuestion" class="open-answer-area">
+
+        <!-- PBQ block -->
+        <div v-if="!answered && isPbq" class="pbq-answer-area">
+          <PbqRenderer
+            :question="currentItem"
+            :disabled="submitting"
+            @submit="submitPbqAnswer"
+            @skip="nextQuestion"
+          />
+        </div>
+        <div v-else-if="answered && isPbq" class="answer-feedback">
+          <NcNoteCard :type="lastAnswer ? 'success' : 'error'">
+            {{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}
+            — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
+          </NcNoteCard>
+          <NcNoteCard v-if="currentItem.explanation" type="warning">
+            <strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentItem.explanation }}
+          </NcNoteCard>
+          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">
+            {{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}
+          </NcButton>
+        </div>
+
+        <div v-else-if="!answered && isOpenQuestion" class="open-answer-area">
           <textarea v-model="openAnswer" :placeholder="t('learning', 'Type your answer...')" rows="3" class="nc-input open-textarea" :disabled="submitting"></textarea>
           <NcButton type="primary" @click="submitOpenAnswer" :disabled="submitting || !openAnswer.trim()">
             {{ t('learning', 'Submit Answer') }}
@@ -176,13 +199,18 @@ import { celebrateMastery, celebrateStreak, isStreakMilestone } from '../confett
 import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
+import PbqRenderer from './PbqRenderer.vue';
 import hintMixin from '../hintMixin.js';
 
 export default {
   name: 'LeitnerMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay },
+  components: { NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer },
   mixins: [hintMixin],
-  props: { poolId: { type: Number, required: true } },
+  props: {
+    poolId: { type: Number, required: true },
+    courseId: { type: Number, default: null },
+    contentLanguage: { type: String, default: '' },
+  },
   data() {
     return {
       initialized: false, initializing: false, initError: null,
@@ -194,6 +222,7 @@ export default {
       lastSelectedAnswerIds: [],
       openAnswer: '',
       lastOpenAnswer: '',
+      pbqPoints: 0, pbqMaxPoints: 1,
       streak: { current_streak: 0, longest_streak: 0, is_active_today: false },
       newBadges: [],
       levelBefore: 0,
@@ -211,25 +240,101 @@ export default {
     currentItem() { return this.dueQuestions[this.currentIndex] || null; },
     isCurrentMulti() { return this.currentItem && this.currentItem.question_type === 'multi'; },
     isOpenQuestion() { return this.currentItem && this.currentItem.question_type === 'open'; },
+    isPbq() { return this.currentItem && this.currentItem.question_type === 'pbq'; },
     reviewProgress() { return ((this.currentIndex + (this.answered ? 1 : 0)) / this.dueQuestions.length) * 100; },
     sessionAccuracy() { const total = this.sessionCorrect + this.sessionIncorrect; return total > 0 ? Math.round(this.sessionCorrect / total * 100) : 0; }
   },
-  mounted() { this.checkInitialized(); this.fetchStreak(); this.checkAiAvailable(); },
+  mounted() {
+    this.checkInitialized();
+    this.fetchStreak();
+    this.checkAiAvailable();
+    this.emitVirtuProf('leitner-first-start');
+  },
+  watch: {
+    contentLanguage() {
+      this.refreshDueQuestionsForLanguage();
+    },
+  },
   methods: {
+    emitVirtuProf(triggerId, context = {}) {
+      this.$root.$emit('virtuprof:trigger', triggerId, context);
+    },
+    badgeDisplayName(badge) {
+      return badge?.badge_name || badge?.name || badge?.title || t('learning', 'New badge');
+    },
+    appendNewBadges(badges) {
+      if (!Array.isArray(badges) || badges.length === 0) {
+        return;
+      }
+      this.newBadges = [...this.newBadges, ...badges];
+      this.emitVirtuProf('badge-earned', { badgeName: this.badgeDisplayName(badges[0]) });
+    },
+    dueParams() {
+      const params = { poolId: this.poolId, limit: 20 };
+      if (this.courseId) {
+        params.courseId = this.courseId;
+      }
+      if (this.contentLanguage) {
+        params.lang = this.contentLanguage;
+      }
+      return params;
+    },
+    mergeFutureDueQuestions(translatedQuestions) {
+      if (!Array.isArray(translatedQuestions) || translatedQuestions.length === 0) {
+        return this.dueQuestions;
+      }
+      if (!Array.isArray(this.dueQuestions) || this.dueQuestions.length === 0) {
+        return translatedQuestions;
+      }
+      const merged = translatedQuestions.slice();
+      if (this.currentIndex < merged.length && this.dueQuestions[this.currentIndex]) {
+        merged[this.currentIndex] = this.dueQuestions[this.currentIndex];
+      }
+      return merged;
+    },
+    async refreshDueQuestionsForLanguage() {
+      if (!this.started || this.showResults || this.dueQuestions.length === 0) {
+        return;
+      }
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/leitner/due'), { params: this.dueParams() });
+        if (Array.isArray(r.data)) {
+          this.dueQuestions = this.mergeFutureDueQuestions(r.data);
+        }
+      } catch (e) {
+        // Language refresh is best-effort only.
+      }
+    },
     async checkInitialized() {
       this.initError = null;
-      try { const r = await axios.get(generateUrl('/apps/learning/api/leitner/stats'), { params: { poolId: this.poolId } }); this.stats = r.data; this.initialized = this.stats.total > 0; }
+      try {
+        const params = { poolId: this.poolId }
+        if (this.courseId) {
+          params.courseId = this.courseId
+        }
+        const r = await axios.get(generateUrl('/apps/learning/api/leitner/stats'), { params })
+        this.stats = r.data
+        this.initialized = this.stats.total > 0
+      }
       catch (e) { this.initError = t('learning', 'Failed to load Leitner stats.'); }
     },
     async initialize() {
       this.initializing = true;
-      try { await axios.post(generateUrl('/apps/learning/api/leitner/initialize'), { poolId: this.poolId }); showSuccess(t('learning', 'Leitner system initialized')); await this.checkInitialized(); }
+      try {
+        const payload = { poolId: this.poolId }
+        if (this.courseId) {
+          payload.courseId = this.courseId
+        }
+        await axios.post(generateUrl('/apps/learning/api/leitner/initialize'), payload)
+        showSuccess(t('learning', 'Leitner system initialized'))
+        await this.checkInitialized()
+      }
       catch (e) { showError(e.response?.data?.error || t('learning', 'Failed to initialize')); }
       finally { this.initializing = false; }
     },
     async startReview() {
       try {
-        const r = await axios.get(generateUrl('/apps/learning/api/leitner/due'), { params: { poolId: this.poolId, limit: 20 } });
+        const r = await axios.get(generateUrl('/apps/learning/api/leitner/due'), { params: this.dueParams() });
         this.dueQuestions = r.data;
         if (this.dueQuestions.length > 0) { this.started = true; this.currentIndex = 0; this.answered = false; this.sessionCorrect = 0; this.sessionIncorrect = 0; }
       } catch (e) { showError(t('learning', 'Failed to load review questions')); }
@@ -248,14 +353,33 @@ export default {
       try {
         var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
-          answerText: this.openAnswer
+          answerText: this.openAnswer,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
         });
         this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
         this.lastCorrectAnswerText = r.data.correct_answer_text || '';
         this.lastCorrectAnswerTexts = r.data.correct_answer_texts || [this.lastCorrectAnswerText];
         if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
         if (r.data.new_box === 5) { celebrateMastery(); }
-        if (r.data.newly_earned_badges && r.data.newly_earned_badges.length > 0) { this.newBadges = [...this.newBadges, ...r.data.newly_earned_badges]; }
+        this.appendNewBadges(r.data.newly_earned_badges);
+        if (r.data.level_before && r.data.level_after) { this.levelBefore = r.data.level_before; this.levelAfter = r.data.level_after; }
+      } catch (e) { showError(t('learning', 'Failed to submit answer')); }
+      finally { this.submitting = false; }
+    },
+    async submitPbqAnswer(pbqAnswers) {
+      this.submitting = true;
+      try {
+        var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
+          itemId: this.currentItem.id,
+          pbqAnswers,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+        });
+        this.pbqPoints = r.data.pbq_points ?? 0;
+        this.pbqMaxPoints = r.data.pbq_max_points ?? 1;
+        this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
+        if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
+        if (r.data.new_box === 5) { celebrateMastery(); }
+        this.appendNewBadges(r.data.newly_earned_badges);
         if (r.data.level_before && r.data.level_after) { this.levelBefore = r.data.level_before; this.levelAfter = r.data.level_after; }
       } catch (e) { showError(t('learning', 'Failed to submit answer')); }
       finally { this.submitting = false; }
@@ -266,14 +390,15 @@ export default {
       try {
         var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
-          answerIds: this.selectedAnswerIds
+          answerIds: this.selectedAnswerIds,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
         });
         this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
         this.lastCorrectAnswerText = r.data.correct_answer_text || '';
         this.lastCorrectAnswerTexts = r.data.correct_answer_texts || [this.lastCorrectAnswerText];
         if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
         if (r.data.new_box === 5) { celebrateMastery(); }
-        if (r.data.newly_earned_badges && r.data.newly_earned_badges.length > 0) { this.newBadges = [...this.newBadges, ...r.data.newly_earned_badges]; }
+        this.appendNewBadges(r.data.newly_earned_badges);
         if (r.data.level_before && r.data.level_after) { this.levelBefore = r.data.level_before; this.levelAfter = r.data.level_after; }
       } catch (e) { showError(t('learning', 'Failed to record answer')); }
       finally { this.submitting = false; }
@@ -282,13 +407,17 @@ export default {
       this.submitting = true;
       this.lastSelectedAnswerId = answer.id;
       try {
-        var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), { itemId: this.currentItem.id, answerId: answer.id });
+        var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
+          itemId: this.currentItem.id,
+          answerId: answer.id,
+          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+        });
         this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
         this.lastCorrectAnswerText = r.data.correct_answer_text || '';
         this.lastCorrectAnswerTexts = r.data.correct_answer_texts || [this.lastCorrectAnswerText];
         if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
         if (r.data.new_box === 5) { celebrateMastery(); }
-        if (r.data.newly_earned_badges && r.data.newly_earned_badges.length > 0) { this.newBadges = [...this.newBadges, ...r.data.newly_earned_badges]; }
+        this.appendNewBadges(r.data.newly_earned_badges);
         if (r.data.level_before && r.data.level_after) { this.levelBefore = r.data.level_before; this.levelAfter = r.data.level_after; }
       } catch (e) { showError(t('learning', 'Failed to record answer')); }
       finally { this.submitting = false; }
@@ -353,6 +482,7 @@ export default {
         await this.fetchStreak();
         if (this.streak.current_streak > 0 && isStreakMilestone(this.streak.current_streak) && this.streak.current_streak > oldStreak) {
           celebrateStreak(this.streak.current_streak);
+          this.emitVirtuProf('streak-milestone', { days: this.streak.current_streak });
         }
         this.showResults = true;
         this.$nextTick(() => {

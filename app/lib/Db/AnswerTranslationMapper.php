@@ -32,6 +32,24 @@ class AnswerTranslationMapper extends QBMapper {
         }
     }
 
+    /**
+     * @param int[] $answerIds
+     * @return AnswerTranslation[]
+     */
+    public function findByAnswersAndLang(array $answerIds, string $lang): array {
+        if (empty($answerIds)) {
+            return [];
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->in('answer_id', $qb->createNamedParameter($answerIds, IQueryBuilder::PARAM_INT_ARRAY)))
+           ->andWhere($qb->expr()->eq('lang', $qb->createNamedParameter($lang)));
+
+        return $this->findEntities($qb);
+    }
+
     public function deleteByAnswer(int $answerId): void {
         $qb = $this->db->getQueryBuilder();
         $qb->delete($this->getTableName())

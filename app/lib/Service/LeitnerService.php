@@ -10,6 +10,7 @@ use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\ICacheFactory;
+use OCP\IConfig;
 use OCP\IDBConnection;
 
 class LeitnerService {
@@ -20,8 +21,11 @@ class LeitnerService {
     private $streakService;
     private $xpService;
     private $cacheFactory;
+    private TranslationService $translationService;
+    private IConfig $config;
+    private CourseService $courseService;
 
-    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, StreakService $streakService, XpService $xpService, ICacheFactory $cacheFactory) {
+    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, StreakService $streakService, XpService $xpService, ICacheFactory $cacheFactory, TranslationService $translationService, IConfig $config, CourseService $courseService) {
         $this->db = $db;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
@@ -29,6 +33,16 @@ class LeitnerService {
         $this->streakService = $streakService;
         $this->xpService = $xpService;
         $this->cacheFactory = $cacheFactory;
+        $this->translationService = $translationService;
+        $this->config = $config;
+        $this->courseService = $courseService;
+    }
+
+    private function resolveCourseQuestionIds(?int $courseId, int $poolId, string $userId): ?array {
+        if ($courseId === null) {
+            return null;
+        }
+        return $this->courseService->resolveCoursePoolContext($courseId, $poolId, $userId)['question_ids'];
     }
 
     private function hasPoolAccess(int $poolId, string $userId): bool {
@@ -87,13 +101,29 @@ class LeitnerService {
         return $hasExam !== false;
     }
 
-    public function getSmartQueue(string $userId, int $limit = 30): array {
+    private function resolveContentLanguage(?string $lang, string $userId): ?string {
+        $requestedLang = $this->translationService->normalizeLang($lang);
+        if ($requestedLang !== null) {
+            return $requestedLang;
+        }
+
+        return $this->translationService->normalizeLang(
+            $this->config->getUserValue($userId, 'learning', 'content_language', '')
+        );
+    }
+
+    private function translateQueueItems(array $items, ?string $lang): array {
+        return $this->translationService->translateQuestions($items, $lang);
+    }
+
+    public function getSmartQueue(string $userId, int $limit = 30, ?string $lang = null): array {
         $limit = max(1, min($limit, 100));
         $now = time();
+        $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
         $qb = $this->db->getQueryBuilder();
         $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type',
-                     'p.name AS pool_name')
+                     'q.pbq_subtype', 'q.pbq_config', 'p.name AS pool_name')
            ->from('learning_leitner_items', 'l')
            ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
            ->innerJoin('l', 'learning_pools', 'p', 'l.pool_id = p.id')
@@ -110,7 +140,7 @@ class LeitnerService {
         if (!empty($items)) {
             $questionIds = array_unique(array_column($items, 'question_id'));
             $aqb = $this->db->getQueryBuilder();
-            $aqb->select('id', 'question_id', 'text', 'position')
+            $aqb->select('id', 'question_id', 'text', 'is_correct', 'position')
                ->from('learning_answers')
                ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
                ->orderBy('position', 'ASC');
@@ -125,11 +155,14 @@ class LeitnerService {
 
             foreach ($items as &$item) {
                 $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
+                if (isset($item['pbq_config']) && is_string($item['pbq_config'])) {
+                    $item['pbq_config'] = json_decode($item['pbq_config'], true) ?: null;
+                }
             }
             $this->stripOpenAnswers($items);
         }
 
-        return $items;
+        return $this->translateQueueItems($items, $contentLanguage);
     }
 
     public function getQueueCount(string $userId): int {
@@ -145,17 +178,23 @@ class LeitnerService {
         return $count;
     }
 
-    public function getDueQuestions(int $poolId, string $userId, int $limit = 10): array {
+    public function getDueQuestions(int $poolId, string $userId, int $limit = 10, ?string $lang = null, ?int $courseId = null): array {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found or no access');
         }
 
         $limit = max(1, min($limit, 100));
+        $contentLanguage = $this->resolveContentLanguage($lang, $userId);
+        $courseQuestionIds = $this->resolveCourseQuestionIds($courseId, $poolId, $userId);
+        if ($courseQuestionIds === []) {
+            return [];
+        }
 
         $now = time();
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type')
+        $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type',
+                     'q.pbq_subtype', 'q.pbq_config')
            ->from('learning_leitner_items', 'l')
            ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
            ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId)))
@@ -163,6 +202,9 @@ class LeitnerService {
            ->andWhere($qb->expr()->lte('l.next_review', $qb->createNamedParameter($now)))
            ->orderBy('l.next_review', 'ASC')
            ->setMaxResults($limit);
+        if (is_array($courseQuestionIds)) {
+            $qb->andWhere($qb->expr()->in('l.question_id', $qb->createNamedParameter($courseQuestionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        }
 
         $result = $qb->execute();
         $items = $result->fetchAll();
@@ -172,7 +214,7 @@ class LeitnerService {
         if (!empty($items)) {
             $questionIds = array_unique(array_column($items, 'question_id'));
             $aqb = $this->db->getQueryBuilder();
-            $aqb->select('id', 'question_id', 'text', 'position')
+            $aqb->select('id', 'question_id', 'text', 'is_correct', 'position')
                ->from('learning_answers')
                ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
                ->orderBy('position', 'ASC');
@@ -188,18 +230,22 @@ class LeitnerService {
 
             foreach ($items as &$item) {
                 $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
+                if (isset($item['pbq_config']) && is_string($item['pbq_config'])) {
+                    $item['pbq_config'] = json_decode($item['pbq_config'], true) ?: null;
+                }
             }
             $this->stripOpenAnswers($items);
         }
 
-        return $items;
+        return $this->translateQueueItems($items, $contentLanguage);
     }
 
-    public function answerQuestion(int $itemId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null): array {
+    public function answerQuestion(int $itemId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?string $lang = null): array {
         // === Read phase (outside transaction) ===
         // Read streak before transaction (read-only, safe outside)
         $streak = $this->streakService->getStreak($userId);
         $streakDays = $streak['current_streak'];
+        $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
@@ -218,7 +264,21 @@ class LeitnerService {
 
         // Open-question path
         $qType = $this->getQuestionType($questionId);
-        if ($qType === 'open') {
+        if ($qType === 'pbq') {
+            $pbqAnswers = $pbqAnswers ?? [];
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('pbq_subtype', 'pbq_config')
+               ->from('learning_questions')
+               ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)));
+            $pResult = $qb->execute();
+            $pRow = $pResult->fetch();
+            $pResult->closeCursor();
+            [$correct, $pbqPoints, $pbqMaxPoints] = $this->scorePbqAnswer(
+                $pRow['pbq_subtype'] ?? '',
+                json_decode($pRow['pbq_config'] ?? '{}', true) ?: [],
+                $pbqAnswers
+            );
+        } elseif ($qType === 'open') {
             if ($answerText === null || trim($answerText) === '') {
                 throw new \Exception('Answer text required for open questions');
             }
@@ -308,6 +368,8 @@ class LeitnerService {
             'newly_earned_badges' => [],
             'level_before' => $levelBefore,
             'level_after' => $levelBefore,
+            'pbq_points' => $pbqPoints ?? null,
+            'pbq_max_points' => $pbqMaxPoints ?? null,
         ];
 
         // === Write phase (all atomic) ===
@@ -432,9 +494,10 @@ class LeitnerService {
                ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
                ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)));
             $oResult = $qb->execute();
-            $oRow = $oResult->fetch();
+            $oRows = $oResult->fetchAll();
             $oResult->closeCursor();
-            $response['correct_answer_text'] = $oRow ? $oRow['text'] : '';
+            $oRows = $this->translationService->translateAnswerRows($oRows, $contentLanguage);
+            $response['correct_answer_text'] = $oRows[0]['text'] ?? '';
             $response['user_answer_text'] = $answerText;
             return $response;
         }
@@ -449,9 +512,10 @@ class LeitnerService {
         $correctResult = $qb->execute();
         $allCorrectRows = $correctResult->fetchAll();
         $correctResult->closeCursor();
+        $translatedCorrectRows = $this->translationService->translateAnswerRows($allCorrectRows, $contentLanguage);
 
         $allCorrectIds = array_map(fn($r) => (int)$r['id'], $allCorrectRows);
-        $allCorrectTexts = array_map(fn($r) => $r['text'], $allCorrectRows);
+        $allCorrectTexts = array_map(fn($r) => $r['text'], $translatedCorrectRows);
 
         $response['correct_answer_id'] = !empty($allCorrectIds) ? $allCorrectIds[0] : null;
         $response['correct_answer_text'] = !empty($allCorrectTexts) ? $allCorrectTexts[0] : '';
@@ -461,12 +525,13 @@ class LeitnerService {
         return $response;
     }
 
-    public function getRemediationQueue(string $userId, int $limit = 20): array {
+    public function getRemediationQueue(string $userId, int $limit = 20, ?string $lang = null): array {
         $limit = max(1, min($limit, 100));
+        $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
         $qb = $this->db->getQueryBuilder();
         $qb->select('l.*', 'q.text', 'q.explanation', 'q.difficulty', 'q.question_type',
-                     'p.name AS pool_name')
+                     'q.pbq_subtype', 'q.pbq_config', 'p.name AS pool_name')
            ->from('learning_leitner_items', 'l')
            ->innerJoin('l', 'learning_questions', 'q', 'l.question_id = q.id')
            ->innerJoin('l', 'learning_pools', 'p', 'l.pool_id = p.id')
@@ -491,7 +556,7 @@ class LeitnerService {
         if (!empty($items)) {
             $questionIds = array_unique(array_column($items, 'question_id'));
             $aqb = $this->db->getQueryBuilder();
-            $aqb->select('id', 'question_id', 'text', 'position')
+            $aqb->select('id', 'question_id', 'text', 'is_correct', 'position')
                ->from('learning_answers')
                ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
                ->orderBy('position', 'ASC');
@@ -506,11 +571,14 @@ class LeitnerService {
 
             foreach ($items as &$item) {
                 $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
+                if (isset($item['pbq_config']) && is_string($item['pbq_config'])) {
+                    $item['pbq_config'] = json_decode($item['pbq_config'], true) ?: null;
+                }
             }
             $this->stripOpenAnswers($items);
         }
 
-        return $items;
+        return $this->translateQueueItems($items, $contentLanguage);
     }
 
     public function getRemediationCount(string $userId): int {
@@ -532,9 +600,14 @@ class LeitnerService {
         return $count;
     }
 
-    public function initializePool(int $poolId, string $userId): int {
+    public function initializePool(int $poolId, string $userId, ?int $courseId = null): int {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found or no access');
+        }
+
+        $courseQuestionIds = $this->resolveCourseQuestionIds($courseId, $poolId, $userId);
+        if ($courseQuestionIds === []) {
+            return 0;
         }
 
         $qb = $this->db->getQueryBuilder();
@@ -547,6 +620,9 @@ class LeitnerService {
                       ))
            ->where($qb->expr()->eq('q.pool_id', $qb->createNamedParameter($poolId)))
            ->andWhere($qb->expr()->isNull('l.id'));
+        if (is_array($courseQuestionIds)) {
+            $qb->andWhere($qb->expr()->in('q.id', $qb->createNamedParameter($courseQuestionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        }
 
         $result = $qb->execute();
         $questions = $result->fetchAll();
@@ -592,9 +668,27 @@ class LeitnerService {
         }
     }
 
-    public function getStats(int $poolId, string $userId): array {
+    public function getStats(int $poolId, string $userId, ?int $courseId = null): array {
         if (!$this->hasPoolAccess($poolId, $userId)) {
             throw new \Exception('Pool not found or no access');
+        }
+
+        $courseQuestionIds = $this->resolveCourseQuestionIds($courseId, $poolId, $userId);
+        if ($courseQuestionIds === []) {
+            return [
+                'box_1' => 0,
+                'box_2' => 0,
+                'box_3' => 0,
+                'box_4' => 0,
+                'box_5' => 0,
+                'total' => 0,
+                'mastered' => 0,
+                'mastery_percentage' => 0,
+                'due_count' => 0,
+                'total_correct' => 0,
+                'total_answered' => 0,
+                'accuracy' => 0,
+            ];
         }
 
         $qb = $this->db->getQueryBuilder();
@@ -603,6 +697,9 @@ class LeitnerService {
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
            ->groupBy('box');
+        if (is_array($courseQuestionIds)) {
+            $qb->andWhere($qb->expr()->in('question_id', $qb->createNamedParameter($courseQuestionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        }
 
         $result = $qb->execute();
         $boxes = $result->fetchAll();
@@ -625,6 +722,9 @@ class LeitnerService {
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
            ->andWhere($qb->expr()->lte('next_review', $qb->createNamedParameter($now)));
+        if (is_array($courseQuestionIds)) {
+            $qb->andWhere($qb->expr()->in('question_id', $qb->createNamedParameter($courseQuestionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        }
         $result = $qb->execute();
         $stats['due_count'] = (int)$result->fetch()['due_count'];
         $result->closeCursor();
@@ -637,6 +737,9 @@ class LeitnerService {
            ->from('learning_leitner_items')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)));
+        if (is_array($courseQuestionIds)) {
+            $qb->andWhere($qb->expr()->in('question_id', $qb->createNamedParameter($courseQuestionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
+        }
         $result = $qb->execute();
         $accRow = $result->fetch();
         $result->closeCursor();
@@ -647,5 +750,56 @@ class LeitnerService {
             : 0;
 
         return $stats;
+    }
+
+    private function scorePbqAnswer(string $subtype, array $config, array $userAnswers): array {
+        $points = 0;
+        $maxPoints = 0;
+        switch ($subtype) {
+            case 'dropdown':
+                foreach (($config['questions'] ?? []) as $q) {
+                    $maxPoints++;
+                    if (isset($userAnswers[$q['id']]) && $userAnswers[$q['id']] === $q['correct']) {
+                        $points++;
+                    }
+                }
+                break;
+            case 'placement':
+                foreach (($config['positions'] ?? []) as $pos) {
+                    $maxPoints++;
+                    if (isset($userAnswers[$pos['id']]) && $userAnswers[$pos['id']] === $pos['correct']) {
+                        $points++;
+                    }
+                }
+                break;
+            case 'cli':
+                foreach (($config['evaluation'] ?? []) as $ev) {
+                    $maxPoints += ($ev['points'] ?? 1);
+                    $history = $userAnswers[$ev['terminal']] ?? [];
+                    $allCmds = is_array($history) ? implode("\n", $history) : (string)$history;
+                    $pattern = $ev['required_pattern'] ?? '';
+                    if (strlen($pattern) > 0 && strlen($pattern) <= 200) {
+                        try {
+                            if (@preg_match('/' . addcslashes($pattern, '/') . '/i', $allCmds) === 1) {
+                                $points += ($ev['points'] ?? 1);
+                            }
+                        } catch (\Throwable $e) {}
+                    }
+                }
+                break;
+            case 'cable':
+                foreach (($config['questions'] ?? []) as $q) {
+                    $maxPoints += 2;
+                    if (isset($userAnswers[$q['cable_id'] . '_problem']) && $userAnswers[$q['cable_id'] . '_problem'] === $q['correct_problem']) {
+                        $points++;
+                    }
+                    if (isset($userAnswers[$q['cable_id'] . '_solution']) && $userAnswers[$q['cable_id'] . '_solution'] === $q['correct_solution']) {
+                        $points++;
+                    }
+                }
+                break;
+        }
+        $isCorrect = $maxPoints > 0 && ($points / $maxPoints) >= 0.5;
+        return [$isCorrect, $points, $maxPoints];
     }
 }

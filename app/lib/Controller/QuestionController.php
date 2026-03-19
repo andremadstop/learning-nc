@@ -47,9 +47,44 @@ class QuestionController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 60, period: 60)]
-    public function create(int $poolId, string $text, ?string $explanation, ?string $difficulty, array $answers, ?string $questionType = null, ?string $pbqSubtype = null, ?array $pbqConfig = null, ?string $instructorNote = null, bool $noteVisible = false): DataResponse {
+    public function create(
+        int $poolId,
+        string $text,
+        ?string $explanation,
+        ?string $difficulty,
+        array $answers,
+        ?string $questionType = null,
+        ?string $pbqSubtype = null,
+        ?array $pbqConfig = null,
+        ?string $instructorNote = null,
+        bool $noteVisible = false,
+        ?string $handbookKey = null,
+        ?string $handbookTitle = null,
+        ?string $examKey = null,
+        ?string $chapterKey = null,
+        ?string $chapterTitle = null,
+        ?int $chapterOrder = null
+    ): DataResponse {
         try {
-            $question = $this->service->create($poolId, $this->userId, $text, $explanation, $difficulty, $answers, $questionType, pbqSubtype: $pbqSubtype, pbqConfig: $pbqConfig ? json_encode($pbqConfig) : null, instructorNote: $instructorNote, noteVisible: $noteVisible);
+            $question = $this->service->create(
+                $poolId,
+                $this->userId,
+                $text,
+                $explanation,
+                $difficulty,
+                $answers,
+                $questionType,
+                pbqSubtype: $pbqSubtype,
+                pbqConfig: $pbqConfig ? json_encode($pbqConfig) : null,
+                instructorNote: $instructorNote,
+                noteVisible: $noteVisible,
+                handbookKey: $handbookKey,
+                handbookTitle: $handbookTitle,
+                examKey: $examKey,
+                chapterKey: $chapterKey,
+                chapterTitle: $chapterTitle,
+                chapterOrder: $chapterOrder
+            );
             return new DataResponse($question, Http::STATUS_CREATED);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
@@ -61,9 +96,44 @@ class QuestionController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function update(int $id, string $text, ?string $explanation, ?string $difficulty, array $answers, ?string $questionType = null, ?string $pbqSubtype = null, ?array $pbqConfig = null, ?string $instructorNote = null, bool $noteVisible = false): DataResponse {
+    public function update(
+        int $id,
+        string $text,
+        ?string $explanation,
+        ?string $difficulty,
+        array $answers,
+        ?string $questionType = null,
+        ?string $pbqSubtype = null,
+        ?array $pbqConfig = null,
+        ?string $instructorNote = null,
+        bool $noteVisible = false,
+        ?string $handbookKey = null,
+        ?string $handbookTitle = null,
+        ?string $examKey = null,
+        ?string $chapterKey = null,
+        ?string $chapterTitle = null,
+        ?int $chapterOrder = null
+    ): DataResponse {
         try {
-            return new DataResponse($this->service->update($id, $this->userId, $text, $explanation, $difficulty, $answers, $questionType, pbqSubtype: $pbqSubtype, pbqConfig: $pbqConfig ? json_encode($pbqConfig) : null, instructorNote: $instructorNote, noteVisible: $noteVisible));
+            return new DataResponse($this->service->update(
+                $id,
+                $this->userId,
+                $text,
+                $explanation,
+                $difficulty,
+                $answers,
+                $questionType,
+                pbqSubtype: $pbqSubtype,
+                pbqConfig: $pbqConfig ? json_encode($pbqConfig) : null,
+                instructorNote: $instructorNote,
+                noteVisible: $noteVisible,
+                handbookKey: $handbookKey,
+                handbookTitle: $handbookTitle,
+                examKey: $examKey,
+                chapterKey: $chapterKey,
+                chapterTitle: $chapterTitle,
+                chapterOrder: $chapterOrder
+            ));
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         } catch (\Exception $e) {

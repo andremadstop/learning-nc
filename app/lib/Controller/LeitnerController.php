@@ -30,10 +30,10 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function queue(int $limit = 30): DataResponse {
+    public function queue(int $limit = 30, ?string $lang = null): DataResponse {
         try {
             $limit = max(1, min($limit, 100));
-            return new DataResponse($this->service->getSmartQueue($this->userId, $limit));
+            return new DataResponse($this->service->getSmartQueue($this->userId, $limit, $lang));
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to load smart queue'], 400);
         }
@@ -53,10 +53,10 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function remediation(int $limit = 20): DataResponse {
+    public function remediation(int $limit = 20, ?string $lang = null): DataResponse {
         try {
             $limit = max(1, min($limit, 100));
-            return new DataResponse($this->service->getRemediationQueue($this->userId, $limit));
+            return new DataResponse($this->service->getRemediationQueue($this->userId, $limit, $lang));
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to load remediation queue'], 400);
         }
@@ -76,9 +76,9 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function initialize(int $poolId): DataResponse {
+    public function initialize(int $poolId, ?int $courseId = null): DataResponse {
         try {
-            $count = $this->service->initializePool($poolId, $this->userId);
+            $count = $this->service->initializePool($poolId, $this->userId, $courseId);
             return new DataResponse(['initialized' => $count]);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to initialize pool'], 400);
@@ -88,13 +88,13 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function due(?int $poolId = null, int $limit = 10): DataResponse {
+    public function due(?int $poolId = null, int $limit = 10, ?string $lang = null, ?int $courseId = null): DataResponse {
         if ($poolId === null) {
             return new DataResponse(['error' => 'poolId is required'], 400);
         }
         try {
             $limit = max(1, min($limit, 100));
-            return new DataResponse($this->service->getDueQuestions($poolId, $this->userId, $limit));
+            return new DataResponse($this->service->getDueQuestions($poolId, $this->userId, $limit, $lang, $courseId));
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to load due questions'], 400);
         }
@@ -104,12 +104,12 @@ class LeitnerController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 120, period: 60)]
-    public function answer(int $itemId, ?int $answerId = null, ?array $answerIds = null, ?string $answerText = null): DataResponse {
+    public function answer(int $itemId, ?int $answerId = null, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?string $lang = null): DataResponse {
         if ($answerText !== null && mb_strlen($answerText) > 2000) {
             return new DataResponse(['error' => 'Answer text too long (max 2000 chars)'], 400);
         }
         try {
-            return new DataResponse($this->service->answerQuestion($itemId, $answerId, $this->userId, $answerIds, $answerText));
+            return new DataResponse($this->service->answerQuestion($itemId, $answerId, $this->userId, $answerIds, $answerText, $pbqAnswers, $lang));
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to submit answer'], 400);
         }
@@ -118,12 +118,12 @@ class LeitnerController extends Controller {
     /**
      * @NoAdminRequired
      */
-    public function stats(?int $poolId = null): DataResponse {
+    public function stats(?int $poolId = null, ?int $courseId = null): DataResponse {
         if ($poolId === null) {
             return new DataResponse(['error' => 'poolId is required'], 400);
         }
         try {
-            return new DataResponse($this->service->getStats($poolId, $this->userId));
+            return new DataResponse($this->service->getStats($poolId, $this->userId, $courseId));
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to load stats'], 400);
         }

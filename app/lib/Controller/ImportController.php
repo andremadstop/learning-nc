@@ -116,6 +116,9 @@ class ImportController extends Controller {
         // Type: type > typ
         $type = $item['type'] ?? $item['typ'] ?? null;
 
+        $chapterOrder = $item['chapter_order'] ?? $item['chapterOrder'] ?? $item['kapitel_nummer'] ?? null;
+        $chapterOrder = is_numeric($chapterOrder) ? (int)$chapterOrder : null;
+
         // Answers: answers > antworten
         $rawAnswers = $item['answers'] ?? $item['antworten'] ?? [];
         if (!is_array($rawAnswers)) {
@@ -144,7 +147,22 @@ class ImportController extends Controller {
             'explanation' => $explanation,
             'difficulty' => $difficulty,
             'type' => $type,
+            'handbook_key' => $item['handbook_key'] ?? $item['handbookKey'] ?? $item['buch_key'] ?? null,
+            'handbook_title' => $item['handbook_title'] ?? $item['handbookTitle'] ?? $item['buch_titel'] ?? null,
+            'exam_key' => $item['exam_key'] ?? $item['examKey'] ?? $item['pruefung_key'] ?? null,
+            'chapter_key' => $item['chapter_key'] ?? $item['chapterKey'] ?? $item['kapitel_key'] ?? null,
+            'chapter_title' => $item['chapter_title'] ?? $item['chapterTitle'] ?? $item['kapitel_titel'] ?? null,
+            'chapter_order' => $chapterOrder,
         ];
+    }
+
+    private function applyQuestionMetadata(Question $question, array $item): void {
+        $question->setHandbookKey(isset($item['handbook_key']) && trim((string)$item['handbook_key']) !== '' ? mb_substr(trim((string)$item['handbook_key']), 0, 64) : null);
+        $question->setHandbookTitle(isset($item['handbook_title']) && trim((string)$item['handbook_title']) !== '' ? mb_substr(trim((string)$item['handbook_title']), 0, 255) : null);
+        $question->setExamKey(isset($item['exam_key']) && trim((string)$item['exam_key']) !== '' ? mb_substr(trim((string)$item['exam_key']), 0, 64) : null);
+        $question->setChapterKey(isset($item['chapter_key']) && trim((string)$item['chapter_key']) !== '' ? mb_substr(trim((string)$item['chapter_key']), 0, 64) : null);
+        $question->setChapterTitle(isset($item['chapter_title']) && trim((string)$item['chapter_title']) !== '' ? mb_substr(trim((string)$item['chapter_title']), 0, 255) : null);
+        $question->setChapterOrder(isset($item['chapter_order']) && is_numeric($item['chapter_order']) ? (int)$item['chapter_order'] : null);
     }
 
     /**
@@ -447,6 +465,7 @@ class ImportController extends Controller {
                     $question->setText($item['text']);
                     $question->setExplanation($item['explanation']);
                     $question->setQuestionType('open');
+                    $this->applyQuestionMetadata($question, $item);
                     $question = $this->questionMapper->createOrUpdate($question);
 
                     $answer = new Answer();
@@ -514,6 +533,7 @@ class ImportController extends Controller {
                 $question->setExplanation($item['explanation']);
                 $question->setDifficulty($item['difficulty'] !== null ? trim($item['difficulty']) : null);
                 $question->setQuestionType($questionType);
+                $this->applyQuestionMetadata($question, $item);
                 $question = $this->questionMapper->createOrUpdate($question);
 
                 foreach ($validatedAnswers as $va) {
@@ -578,6 +598,14 @@ class ImportController extends Controller {
         $question->setPbqConfig(json_encode($pbqConfig));
         $question->setDifficulty($item['difficulty'] ?? 'medium');
         $question->setReviewStatus('published');
+        $this->applyQuestionMetadata($question, [
+            'handbook_key' => $item['handbook_key'] ?? $item['handbookKey'] ?? null,
+            'handbook_title' => $item['handbook_title'] ?? $item['handbookTitle'] ?? null,
+            'exam_key' => $item['exam_key'] ?? $item['examKey'] ?? null,
+            'chapter_key' => $item['chapter_key'] ?? $item['chapterKey'] ?? null,
+            'chapter_title' => $item['chapter_title'] ?? $item['chapterTitle'] ?? null,
+            'chapter_order' => $item['chapter_order'] ?? $item['chapterOrder'] ?? null,
+        ]);
 
         $this->questionMapper->createOrUpdate($question);
         return 1;
