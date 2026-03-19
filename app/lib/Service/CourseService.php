@@ -125,13 +125,14 @@ class CourseService {
             return false;
         }
 
-        $qb = $this->db->getQueryBuilder();
-        $qb->selectAlias('COUNT(DISTINCT qt.question_id)', 'translated_questions')
-            ->from('learning_qst_translations', 'qt')
-            ->innerJoin('qt', 'learning_questions', 'q', 'qt.question_id = q.id')
-            ->where($qb->expr()->eq('q.pool_id', $qb->createNamedParameter($poolId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->eq('qt.lang', $qb->createNamedParameter($lang)));
-        $result = $qb->executeQuery();
+        $prefix = $this->db->getTablePrefix();
+        $result = $this->db->executeQuery(
+            "SELECT COUNT(DISTINCT qt.question_id) AS translated_questions
+             FROM {$prefix}learning_qst_translations qt
+             INNER JOIN {$prefix}learning_questions q ON qt.question_id = q.id
+             WHERE q.pool_id = ? AND qt.lang = ?",
+            [$poolId, $lang]
+        );
         $translatedQuestions = (int)$result->fetchOne();
         $result->closeCursor();
 
