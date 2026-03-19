@@ -95,3 +95,4 @@ comptia_n10_009_batch_*.json
 merge_batch.py
 backups/
 learning-*.tar.gz
+scripts/__pycache__/
