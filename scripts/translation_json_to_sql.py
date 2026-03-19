@@ -32,10 +32,10 @@ def build_question_rows(questions, lang, created_at):
 
 
 def build_answer_rows(questions, lang, created_at):
-    rows = []
+    rows_by_key = {}
     for question in questions:
         for answer in question.get('answers', []):
-            rows.append(
+            rows_by_key[(int(answer['answer_id']), lang)] = (
                 "(" + ", ".join([
                     str(int(answer['answer_id'])),
                     sql_literal(lang),
@@ -43,7 +43,7 @@ def build_answer_rows(questions, lang, created_at):
                     str(created_at),
                 ]) + ")"
             )
-    return rows
+    return list(rows_by_key.values())
 
 
 def emit_upserts(table, columns, conflict_columns, update_columns, rows):
