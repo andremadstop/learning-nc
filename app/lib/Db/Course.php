@@ -18,6 +18,14 @@ use OCP\AppFramework\Db\Entity;
  * @method void setCreatedAt(int $createdAt)
  * @method int getUpdatedAt()
  * @method void setUpdatedAt(int $updatedAt)
+ * @method string|null getModeConfig()
+ * @method void setModeConfig(?string $modeConfig)
+ * @method int|null getExamAvailableFrom()
+ * @method void setExamAvailableFrom(?int $examAvailableFrom)
+ * @method int|null getExamAttemptsPerDay()
+ * @method void setExamAttemptsPerDay(?int $examAttemptsPerDay)
+ * @method bool getExamRequiresTraining()
+ * @method void setExamRequiresTraining(bool $examRequiresTraining)
  */
 class Course extends Entity {
     protected $title;
@@ -27,11 +35,18 @@ class Course extends Entity {
     protected $status;
     protected $createdAt;
     protected $updatedAt;
+    protected $modeConfig;
+    protected $examAvailableFrom;
+    protected $examAttemptsPerDay;
+    protected $examRequiresTraining;
 
     public function __construct() {
         $this->addType('id', 'integer');
         $this->addType('createdAt', 'integer');
         $this->addType('updatedAt', 'integer');
+        $this->addType('examAvailableFrom', 'integer');
+        $this->addType('examAttemptsPerDay', 'integer');
+        $this->addType('examRequiresTraining', 'boolean');
     }
 
     public function jsonSerialize(): array {
@@ -44,6 +59,10 @@ class Course extends Entity {
             'status' => $this->status,
             'created_at' => $this->createdAt,
             'updated_at' => $this->updatedAt,
+            'mode_config' => $this->modeConfig ? json_decode($this->modeConfig, true) : null,
+            'exam_available_from' => $this->examAvailableFrom,
+            'exam_attempts_per_day' => $this->examAttemptsPerDay,
+            'exam_requires_training' => $this->examRequiresTraining ?? false,
         ];
     }
 }

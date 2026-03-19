@@ -1934,26 +1934,29 @@ class CourseService {
             throw new ForbiddenException('No permission');
         }
 
+        // user_answers has no user_id; get it via sessions.
+        // Join order: ua → s (user_id) first, then ua → q → cp → cm (cm references s.user_id)
         $qb = $this->db->getQueryBuilder();
         $qb->select(
             'q.chapter_key',
             'q.chapter_title',
             'q.chapter_order',
             $qb->createFunction('COUNT(ua.id) AS total_answers'),
-            $qb->createFunction('SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) AS correct_answers'),
-            $qb->createFunction('COUNT(DISTINCT ua.user_id) AS unique_learners')
+            $qb->createFunction('SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) AS correct_answers'),
+            $qb->createFunction('COUNT(DISTINCT s.user_id) AS unique_learners')
         )
         ->from('learning_user_answers', 'ua')
+        ->innerJoin('ua', 'learning_sessions', 's', $qb->expr()->eq('s.id', 'ua.session_id'))
         ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
         ->innerJoin('q', 'learning_course_pools', 'cp', $qb->expr()->eq('cp.pool_id', 'q.pool_id'))
-        ->innerJoin('ua', 'learning_course_members', 'cm', $qb->expr()->andX(
+        ->innerJoin('cp', 'learning_course_members', 'cm', $qb->expr()->andX(
             $qb->expr()->eq('cm.course_id', 'cp.course_id'),
-            $qb->expr()->eq('cm.user_id', 'ua.user_id')
+            $qb->expr()->eq('cm.user_id', 's.user_id')
         ))
         ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
         ->andWhere($qb->expr()->in('cm.role', $qb->createNamedParameter(['student', 'co_instructor'], \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
         ->groupBy('q.chapter_key', 'q.chapter_title', 'q.chapter_order')
-        ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC');
+        ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC');
 
         $result = $qb->executeQuery();
         $chapters = [];
@@ -1962,22 +1965,22 @@ class CourseService {
         }
         $result->closeCursor();
 
-        // Top worst questions (batched)
+        // Top worst questions (batched): use q.text (not q.question)
         $qb2 = $this->db->getQueryBuilder();
         $qb2->select(
             'q.id',
-            'q.question',
+            'q.text AS question_text',
             'q.chapter_key',
             $qb2->createFunction('COUNT(ua.id) AS total'),
-            $qb2->createFunction('SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) AS correct')
+            $qb2->createFunction('SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) AS correct')
         )
         ->from('learning_user_answers', 'ua')
         ->innerJoin('ua', 'learning_questions', 'q', $qb2->expr()->eq('ua.question_id', 'q.id'))
         ->innerJoin('q', 'learning_course_pools', 'cp', $qb2->expr()->eq('cp.pool_id', 'q.pool_id'))
         ->where($qb2->expr()->eq('cp.course_id', $qb2->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-        ->groupBy('q.id', 'q.question', 'q.chapter_key')
+        ->groupBy('q.id', 'q.text', 'q.chapter_key')
         ->having($qb2->createFunction('COUNT(ua.id) >= 5'))
-        ->orderBy($qb2->createFunction('(SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
+        ->orderBy($qb2->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
         ->setMaxResults(50);
 
         $result2 = $qb2->executeQuery();
@@ -1989,7 +1992,7 @@ class CourseService {
             $wrongRate = $total > 0 ? round((1 - $correct / $total) * 100, 1) : 0.0;
             $worstByChapter[$chapterKey][] = [
                 'id' => (int)$row['id'],
-                'text' => mb_substr((string)$row['question'], 0, 120),
+                'text' => mb_substr((string)$row['question_text'], 0, 120),
                 'wrong_rate' => $wrongRate,
             ];
         }
@@ -2037,19 +2040,19 @@ class CourseService {
         $qb = $this->db->getQueryBuilder();
         $qb->select(
             'q.id AS question_id',
-            'q.question AS question_text',
+            'q.text AS question_text',
             'q.chapter_key',
             'q.chapter_title',
             $qb->createFunction('COUNT(ua.id) AS total_answers'),
-            $qb->createFunction('SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) AS correct_answers')
+            $qb->createFunction('SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) AS correct_answers')
         )
         ->from('learning_user_answers', 'ua')
         ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
         ->innerJoin('q', 'learning_course_pools', 'cp', $qb->expr()->eq('cp.pool_id', 'q.pool_id'))
         ->where($qb->expr()->eq('cp.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-        ->groupBy('q.id', 'q.question', 'q.chapter_key', 'q.chapter_title')
+        ->groupBy('q.id', 'q.text', 'q.chapter_key', 'q.chapter_title')
         ->having($qb->createFunction('COUNT(ua.id) >= 5'))
-        ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
+        ->orderBy($qb->createFunction('(SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) * 1.0 / NULLIF(COUNT(ua.id), 0))'), 'ASC')
         ->setMaxResults(max(1, min(100, $limit)));
 
         $result = $qb->executeQuery();
@@ -2155,7 +2158,7 @@ class CourseService {
             $qb->select($qb->createFunction('COUNT(DISTINCT user_id) AS cnt'))
                 ->from('learning_sessions')
                 ->where($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-                ->andWhere($qb->expr()->gte('created_at', $qb->createNamedParameter($sevenDaysAgo)));
+                ->andWhere($qb->expr()->gte('started_at', $qb->createNamedParameter($sevenDaysAgo)));
             $r = $qb->executeQuery();
             $activeLearners = (int)$r->fetchOne();
             $r->closeCursor();
@@ -2178,13 +2181,13 @@ class CourseService {
             $qb3 = $this->db->getQueryBuilder();
             $qb3->select(
                 $qb3->createFunction('COUNT(ua.id) AS total'),
-                $qb3->createFunction('SUM(CASE WHEN ua.correct THEN 1 ELSE 0 END) AS correct')
+                $qb3->createFunction('SUM(CASE WHEN ua.is_correct THEN 1 ELSE 0 END) AS correct')
             )
             ->from('learning_user_answers', 'ua')
             ->innerJoin('ua', 'learning_questions', 'q', $qb3->expr()->eq('ua.question_id', 'q.id'))
             ->innerJoin('q', 'learning_course_pools', 'cp', $qb3->expr()->eq('cp.pool_id', 'q.pool_id'))
             ->where($qb3->expr()->eq('cp.course_id', $qb3->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb3->expr()->gte('ua.created_at', $qb3->createNamedParameter($sevenDaysAgo)));
+            ->andWhere($qb3->expr()->gte('ua.answered_at', $qb3->createNamedParameter($sevenDaysAgo)));
             $r3 = $qb3->executeQuery();
             $row3 = $r3->fetch();
             $r3->closeCursor();
@@ -2224,7 +2227,7 @@ class CourseService {
                 $qbW->selectDistinct('user_id')
                     ->from('learning_sessions')
                     ->where($qbW->expr()->in('pool_id', $qbW->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-                    ->andWhere($qbW->expr()->gte('created_at', $qbW->createNamedParameter($fourteenDaysAgo)))
+                    ->andWhere($qbW->expr()->gte('started_at', $qbW->createNamedParameter($fourteenDaysAgo)))
                     ->andWhere($qbW->expr()->in('user_id', $qbW->createNamedParameter($studentIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)));
                 $rW = $qbW->executeQuery();
                 $activeUserIds = array_column($rW->fetchAll(), 'user_id');
