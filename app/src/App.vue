@@ -329,7 +329,7 @@ export default {
       try {
         const response = await axios.get(generateUrl('/apps/learning/api/settings/personal'));
         const lang = response.data?.content_language || '';
-        this.contentLanguage = ['de', 'en', 'ru'].includes(lang) ? lang : '';
+        this.contentLanguage = ['de', 'en', 'ru', 'ar'].includes(lang) ? lang : '';
         this.virtuProfEnabled = (response.data?.virtuprof_enabled || 'yes') !== 'no';
       } catch (err) {
         this.contentLanguage = '';
@@ -338,7 +338,7 @@ export default {
     },
 
     updateContentLanguage(lang) {
-      this.contentLanguage = ['de', 'en', 'ru'].includes(lang) ? lang : '';
+      this.contentLanguage = ['de', 'en', 'ru', 'ar'].includes(lang) ? lang : '';
     },
     updateVirtuProfEnabled(enabled) {
       this.virtuProfEnabled = enabled !== false;

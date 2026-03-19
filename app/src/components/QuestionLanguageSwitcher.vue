@@ -28,6 +28,7 @@ export default {
         { value: '', label: 'DE' },
         { value: 'en', label: 'EN' },
         { value: 'ru', label: 'RU' },
+        { value: 'ar', label: 'AR' },
       ]),
     },
   },

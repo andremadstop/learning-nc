@@ -20,7 +20,7 @@ class TranslationService {
     private PoolShareMapper $shareMapper;
     private IDBConnection $db;
 
-    private const ALLOWED_LANGS = ['de', 'en', 'ru'];
+    private const ALLOWED_LANGS = ['de', 'en', 'ru', 'ar'];
 
     public function __construct(
         QuestionTranslationMapper $questionTransMapper,

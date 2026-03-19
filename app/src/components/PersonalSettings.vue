@@ -32,6 +32,7 @@
           <option value="de">{{ t('learning', 'German (Deutsch)') }}</option>
           <option value="en">{{ t('learning', 'English') }}</option>
           <option value="ru">{{ t('learning', 'Russian') }}</option>
+          <option value="ar">{{ t('learning', 'Arabic') }}</option>
         </select>
       </div>
 
@@ -175,7 +176,7 @@ export default {
         const data = response.data || {}
         this.form.dailyChallengeEnabled = (data.daily_challenge || 'yes') === 'yes'
         this.form.uiLanguage = ['de', 'en', ''].includes(data.ui_language) ? data.ui_language : ''
-        this.form.contentLanguage = ['de', 'en', 'ru', ''].includes(data.content_language) ? data.content_language : ''
+        this.form.contentLanguage = ['de', 'en', 'ru', 'ar', ''].includes(data.content_language) ? data.content_language : ''
         this.form.virtuProfEnabled = (data.virtuprof_enabled || 'yes') !== 'no'
         this.form.notificationsEnabled = (data.notifications_enabled || 'yes') === 'yes'
       } catch (e) {
@@ -192,7 +193,7 @@ export default {
         await axios.put(generateUrl('/apps/learning/api/settings/personal'), {
           daily_challenge: this.form.dailyChallengeEnabled ? 'yes' : 'no',
           ui_language: ['de', 'en'].includes(this.form.uiLanguage) ? this.form.uiLanguage : '',
-          content_language: ['de', 'en', 'ru'].includes(this.form.contentLanguage) ? this.form.contentLanguage : '',
+          content_language: ['de', 'en', 'ru', 'ar'].includes(this.form.contentLanguage) ? this.form.contentLanguage : '',
           virtuprof_enabled: this.form.virtuProfEnabled ? 'yes' : 'no',
           notifications_enabled: this.form.notificationsEnabled ? 'yes' : 'no',
         })

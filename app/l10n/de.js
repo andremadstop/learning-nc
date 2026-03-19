@@ -388,6 +388,7 @@ OC.L10N.register(
     "Content Language" : "Inhaltssprache",
     "Original content" : "Originalinhalt",
     "Russian" : "Russisch",
+    "Arabic" : "Arabisch",
     "Translate" : "Übersetzen",
     "Translate Question" : "Frage übersetzen",
     "Loading translations..." : "Übersetzungen werden geladen…",
