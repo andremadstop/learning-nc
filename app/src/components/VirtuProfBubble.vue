@@ -1,25 +1,38 @@
 <template>
   <div class="virtuprof-bubble">
     <div class="bubble-content">
+      <div class="bubble-toolbar">
+        <div class="bubble-language-toggle" role="group" aria-label="VirtuProf language">
+          <button
+            v-for="option in languageOptions"
+            :key="option"
+            type="button"
+            class="bubble-language-btn"
+            :class="{ active: option === effectiveLanguage }"
+            @click="$emit('language-change', option)">
+            {{ option.toUpperCase() }}
+          </button>
+        </div>
+      </div>
       <p v-if="step.title" class="bubble-title">{{ step.title }}</p>
       <p v-if="step.text" class="bubble-text">{{ step.text }}</p>
 
       <div v-if="step.kind === 'ticket-form'" class="ticket-form">
-        <label class="ticket-label" for="virtuprof-ticket-subject">{{ t('learning', 'Subject') }}</label>
+        <label class="ticket-label" for="virtuprof-ticket-subject">{{ vt('Subject') }}</label>
         <input
           id="virtuprof-ticket-subject"
           class="ticket-input"
           type="text"
           :value="ticketSubject"
-          :placeholder="t('learning', 'Short summary')"
+          :placeholder="vt('Short summary')"
           @input="$emit('update:ticketSubject', $event.target.value)">
-        <label class="ticket-label" for="virtuprof-ticket-message">{{ t('learning', 'Message') }}</label>
+        <label class="ticket-label" for="virtuprof-ticket-message">{{ vt('Message') }}</label>
         <textarea
           id="virtuprof-ticket-message"
           class="ticket-textarea"
           rows="5"
           :value="ticketDraft"
-          :placeholder="step.placeholder || t('learning', 'Describe your question or problem...')"
+          :placeholder="step.placeholder || vt('Describe your question or problem...')"
           @input="$emit('update:ticketDraft', $event.target.value)" />
         <p v-if="ticketError" class="ticket-error">{{ ticketError }}</p>
         <p v-if="ticketSuccess" class="ticket-success">{{ ticketSuccess }}</p>
@@ -27,7 +40,7 @@
 
       <div v-if="step.kind === 'ticket-list'" class="ticket-list">
         <div v-if="tickets.length === 0" class="ticket-empty">
-          {{ t('learning', 'No support tickets yet.') }}
+          {{ vt('No support tickets yet.') }}
         </div>
         <div v-for="ticket in tickets" :key="ticket.id" class="ticket-item">
           <div class="ticket-header">
@@ -37,7 +50,7 @@
           <div class="ticket-meta">{{ formatTimestamp(ticket.updated_at || ticket.created_at) }}</div>
           <div class="ticket-message">{{ ticket.message }}</div>
           <div v-if="ticket.answer_text" class="ticket-answer">
-            <strong>{{ t('learning', 'Answer') }}:</strong> {{ ticket.answer_text }}
+            <strong>{{ vt('Answer') }}:</strong> {{ ticket.answer_text }}
           </div>
         </div>
       </div>
@@ -70,14 +83,14 @@
             type="primary"
             size="small"
             @click="$emit('next')">
-            {{ t('learning', 'Next') }}
+            {{ vt('Next') }}
           </NcButton>
           <NcButton
             v-else
             type="secondary"
             size="small"
             @click="$emit('dismiss')">
-            {{ t('learning', 'Ok, got it') }}
+            {{ vt('Ok, got it') }}
           </NcButton>
         </template>
       </div>
@@ -88,6 +101,7 @@
 
 <script>
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import { translateVirtuProf, VIRTUPROF_LANGUAGE_OPTIONS } from '../utils/virtuprof-i18n.js'
 
 export default {
   name: 'VirtuProfBubble',
@@ -129,8 +143,23 @@ export default {
       type: Array,
       default: () => [],
     },
+    language: {
+      type: String,
+      default: '',
+    },
+  },
+  computed: {
+    effectiveLanguage() {
+      return this.language || 'de'
+    },
+    languageOptions() {
+      return VIRTUPROF_LANGUAGE_OPTIONS
+    },
   },
   methods: {
+    vt(key, params = {}) {
+      return translateVirtuProf(this.effectiveLanguage, key, params)
+    },
     formatTimestamp(value) {
       if (!value) {
         return ''
@@ -162,6 +191,34 @@ export default {
 .bubble-content {
   position: relative;
   z-index: 1;
+}
+
+.bubble-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: -2px 0 8px;
+}
+
+.bubble-language-toggle {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.bubble-language-btn {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-maxcontrast);
+  border-radius: 999px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.bubble-language-btn.active {
+  border-color: var(--color-primary-element);
+  color: var(--color-primary-element);
 }
 
 .bubble-title {

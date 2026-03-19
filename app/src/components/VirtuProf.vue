@@ -15,9 +15,11 @@
         :ticket-error="ticketError"
         :ticket-success="ticketSuccess"
         :tickets="myTickets"
+        :language="language"
         @next="nextStep"
         @dismiss="dismiss"
         @action="handleAction"
+        @language-change="setLanguage"
         @update:ticketSubject="ticketSubject = $event"
         @update:ticketDraft="ticketDraft = $event" />
       <VirtuProfAvatar
@@ -34,6 +36,12 @@ import { generateUrl } from '@nextcloud/router'
 import VirtuProfAvatar from './VirtuProfAvatar.vue'
 import VirtuProfBubble from './VirtuProfBubble.vue'
 import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
+import {
+  detectVirtuProfLanguage,
+  normalizeVirtuProfLanguage,
+  persistVirtuProfLanguagePreference,
+  translateVirtuProf,
+} from '../utils/virtuprof-i18n.js'
 
 export default {
   name: 'VirtuProf',
@@ -51,8 +59,10 @@ export default {
       currentScriptId: null,
       currentScript: null,
       currentScriptMeta: null,
+      currentScriptContext: {},
       stepIndex: 0,
       currentAnimation: 'idle',
+      language: detectVirtuProfLanguage(),
       dismissedTriggers: [],
       queue: [],
       processing: false,
@@ -87,7 +97,7 @@ export default {
       if (this.isHelpOpen) {
         return this.buildHelpStep()
       }
-      return this.currentStep
+      return this.translateScriptStep(this.currentStep)
     },
     currentBubbleStepIndex() {
       return this.isHelpOpen ? 0 : this.stepIndex
@@ -102,7 +112,7 @@ export default {
         }
         return FAQS[id].category === this.activeFaqCategoryId
       })
-      return ids.sort((left, right) => FAQS[left].label.localeCompare(FAQS[right].label))
+      return ids.sort((left, right) => this.vt(FAQS[left].label).localeCompare(this.vt(FAQS[right].label)))
     },
     orderedFaqCategoryIds() {
       const ids = Object.keys(FAQ_CATEGORIES)
@@ -139,11 +149,26 @@ export default {
       try {
         const response = await axios.get(generateUrl('/apps/learning/api/virtuprof/state'))
         this.dismissedTriggers = Array.isArray(response.data?.dismissed) ? response.data.dismissed : []
+        this.language = normalizeVirtuProfLanguage(response.data?.language) || detectVirtuProfLanguage()
         if (typeof response.data?.enabled === 'boolean') {
           this.$emit('enabled-change', response.data.enabled)
         }
       } catch (e) {
         this.dismissedTriggers = []
+        this.language = detectVirtuProfLanguage()
+      }
+    },
+    vt(key, params = {}) {
+      return translateVirtuProf(this.language, key, params)
+    },
+    translateScriptStep(step) {
+      if (!step) {
+        return null
+      }
+      return {
+        ...step,
+        title: step.title ? this.vt(step.title, this.currentScriptContext) : '',
+        text: step.text ? this.vt(step.text, this.currentScriptContext) : '',
       }
     },
     enqueue(triggerId, context = {}) {
@@ -209,16 +234,6 @@ export default {
         : 'user'
       return `learning:virtuprof:daily:${uid}:${triggerId}`
     },
-    interpolateScript(script, context) {
-      const clone = JSON.parse(JSON.stringify(script))
-      clone.steps = (clone.steps || []).map(step => ({
-        ...step,
-        text: String(step.text || '').replace(/\{(\w+)\}/g, (match, key) => {
-          return context[key] !== undefined && context[key] !== null ? String(context[key]) : match
-        }),
-      }))
-      return clone
-    },
     processNext() {
       if (!this.enabled || this.queue.length === 0 || this.isHelpOpen) {
         this.processing = false
@@ -229,7 +244,8 @@ export default {
       const nextItem = this.queue.shift()
       this.currentScriptId = nextItem.id
       this.currentScriptMeta = nextItem.script
-      this.currentScript = this.interpolateScript(nextItem.script, nextItem.context || {})
+      this.currentScript = JSON.parse(JSON.stringify(nextItem.script))
+      this.currentScriptContext = nextItem.context || {}
       this.stepIndex = 0
       this.currentAnimation = this.currentScript.steps?.[0]?.animation || 'talk'
 
@@ -304,6 +320,11 @@ export default {
       }
       this.dismiss()
     },
+    async setLanguage(language) {
+      const normalized = normalizeVirtuProfLanguage(language) || detectVirtuProfLanguage()
+      this.language = normalized
+      persistVirtuProfLanguagePreference(normalized)
+    },
     async markHandled(triggerId, script) {
       if (!triggerId || !script) {
         return
@@ -327,6 +348,7 @@ export default {
       this.currentScriptId = null
       this.currentScript = null
       this.currentScriptMeta = null
+      this.currentScriptContext = {}
       this.stepIndex = 0
       this.currentAnimation = 'idle'
       setTimeout(() => {
@@ -346,6 +368,7 @@ export default {
       this.currentScriptId = null
       this.currentScript = null
       this.currentScriptMeta = null
+      this.currentScriptContext = {}
       this.stepIndex = 0
       this.currentAnimation = 'idle'
       this.helpView = null
@@ -479,30 +502,30 @@ export default {
     },
     buildHelpHomeStep() {
       return {
-        title: t('learning', 'VirtuProf'),
-        text: t('learning', 'I stay in the corner now. Open me any time for short explanations or quick FAQs.'),
+        title: this.vt('VirtuProf'),
+        text: this.vt('I stay in the corner now. Open me any time for short explanations or quick FAQs.'),
         actions: [
-          { label: t('learning', 'What can I do here?'), type: 'open-context-help' },
-          { label: t('learning', 'Top questions for this area'), type: 'open-faq-category', categoryId: this.recommendedFaqCategoryId() },
-          { label: t('learning', 'Browse all topics'), type: 'open-faq-list' },
-          { label: t('learning', 'Send a question'), type: 'open-ticket-form' },
-          { label: t('learning', 'My requests'), type: 'open-ticket-list' },
-          { label: t('learning', 'Close'), type: 'close-help' },
+          { label: this.vt('What can I do here?'), type: 'open-context-help' },
+          { label: this.vt('Top questions for this area'), type: 'open-faq-category', categoryId: this.recommendedFaqCategoryId() },
+          { label: this.vt('Browse all topics'), type: 'open-faq-list' },
+          { label: this.vt('Send a question'), type: 'open-ticket-form' },
+          { label: this.vt('My requests'), type: 'open-ticket-list' },
+          { label: this.vt('Close'), type: 'close-help' },
         ],
       }
     },
     buildFaqListStep() {
       return {
-        title: t('learning', 'FAQs'),
-        text: t('learning', 'Choose a topic first. Then I will show the most common questions inside it.'),
+        title: this.vt('FAQs'),
+        text: this.vt('Choose a topic first. Then I will show the most common questions inside it.'),
         actionLayout: 'stacked',
         actions: [
           ...this.orderedFaqCategoryIds.map(categoryId => ({
-            label: FAQ_CATEGORIES[categoryId].label,
+            label: this.vt(FAQ_CATEGORIES[categoryId].label),
             type: 'open-faq-category',
             categoryId,
           })),
-          { label: t('learning', 'Back'), type: 'open-help-home' },
+          { label: this.vt('Back'), type: 'open-help-home' },
         ],
       }
     },
@@ -512,17 +535,17 @@ export default {
         return this.buildFaqListStep()
       }
       return {
-        title: category.title,
-        text: category.description,
+        title: this.vt(category.title),
+        text: this.vt(category.description),
         actionLayout: 'stacked',
         actions: [
           ...this.orderedFaqIds.map(faqId => ({
-            label: FAQS[faqId].label,
+            label: this.vt(FAQS[faqId].label),
             type: 'open-faq',
             faqId,
           })),
-          { label: t('learning', 'All topics'), type: 'open-faq-list' },
-          { label: t('learning', 'Back'), type: 'open-help-home' },
+          { label: this.vt('All topics'), type: 'open-faq-list' },
+          { label: this.vt('Back'), type: 'open-help-home' },
         ],
       }
     },
@@ -532,13 +555,13 @@ export default {
         return this.buildFaqListStep()
       }
       return {
-        title: faq.title,
-        text: faq.text,
+        title: this.vt(faq.title),
+        text: this.vt(faq.text),
         actions: [
-          { label: t('learning', 'Ask about this'), type: 'open-ticket-form' },
-          { label: t('learning', 'More in this topic'), type: 'open-faq-category', categoryId: faq.category },
-          { label: t('learning', 'All topics'), type: 'open-faq-list' },
-          { label: t('learning', 'Back'), type: 'open-help-home' },
+          { label: this.vt('Ask about this'), type: 'open-ticket-form' },
+          { label: this.vt('More in this topic'), type: 'open-faq-category', categoryId: faq.category },
+          { label: this.vt('All topics'), type: 'open-faq-list' },
+          { label: this.vt('Back'), type: 'open-help-home' },
         ],
       }
     },
@@ -548,35 +571,35 @@ export default {
         title: entry.title,
         text: entry.text,
         actions: [
-          { label: t('learning', 'Top questions for this area'), type: 'open-faq-category', categoryId: this.recommendedFaqCategoryId() },
-          { label: t('learning', 'Browse all topics'), type: 'open-faq-list' },
-          { label: t('learning', 'Send a question'), type: 'open-ticket-form' },
-          { label: t('learning', 'Back'), type: 'open-help-home' },
+          { label: this.vt('Top questions for this area'), type: 'open-faq-category', categoryId: this.recommendedFaqCategoryId() },
+          { label: this.vt('Browse all topics'), type: 'open-faq-list' },
+          { label: this.vt('Send a question'), type: 'open-ticket-form' },
+          { label: this.vt('Back'), type: 'open-help-home' },
         ],
       }
     },
     buildTicketFormStep() {
       return {
         kind: 'ticket-form',
-        title: t('learning', 'Send a question'),
-        text: t('learning', 'Your message will be stored as a support ticket with context, so an admin can answer it manually later.'),
-        placeholder: t('learning', 'Describe your question or problem...'),
+        title: this.vt('Send a question'),
+        text: this.vt('Your message will be stored as a support ticket with context, so an admin can answer it manually later.'),
+        placeholder: this.vt('Describe your question or problem...'),
         actions: [
-          { label: this.ticketSending ? t('learning', 'Sending...') : t('learning', 'Send ticket'), type: 'submit-ticket' },
-          { label: t('learning', 'My requests'), type: 'open-ticket-list' },
-          { label: t('learning', 'Back'), type: 'open-help-home' },
+          { label: this.ticketSending ? this.vt('Sending...') : this.vt('Send ticket'), type: 'submit-ticket' },
+          { label: this.vt('My requests'), type: 'open-ticket-list' },
+          { label: this.vt('Back'), type: 'open-help-home' },
         ],
       }
     },
     buildTicketListStep() {
       return {
         kind: 'ticket-list',
-        title: t('learning', 'My support tickets'),
-        text: t('learning', 'Open tickets wait for an admin reply. Answered tickets keep the latest response here.'),
+        title: this.vt('My support tickets'),
+        text: this.vt('Open tickets wait for an admin reply. Answered tickets keep the latest response here.'),
         actions: [
-          { label: t('learning', 'New ticket'), type: 'open-ticket-form' },
-          { label: t('learning', 'Refresh'), type: 'open-ticket-list' },
-          { label: t('learning', 'Back'), type: 'open-help-home' },
+          { label: this.vt('New ticket'), type: 'open-ticket-form' },
+          { label: this.vt('Refresh'), type: 'open-ticket-list' },
+          { label: this.vt('Back'), type: 'open-help-home' },
         ],
       }
     },
@@ -612,115 +635,115 @@ export default {
 
       if (area === 'courses') {
         return {
-          title: t('learning', 'Courses'),
-          text: t('learning', 'Choose a course to open its learning modes, leaderboard, league and duels. Each course can have its own assigned pools and rules.'),
+          title: this.vt('Courses'),
+          text: this.vt('Choose a course to open its learning modes, leaderboard, league and duels. Each course can have its own assigned pools and rules.'),
         }
       }
       if (area === 'course-training-pool-select') {
         return {
-          title: t('learning', 'Training in {course}', { course: courseTitle || t('learning', 'this course') }),
-          text: t('learning', 'Pick a pool to start Training. You will get direct feedback after each answer, and required enforced pools may lock the optional ones until you finish them once.'),
+          title: this.vt('Training in {course}', { course: courseTitle || this.vt('this course') }),
+          text: this.vt('Pick a pool to start Training. You will get direct feedback after each answer, and required enforced pools may lock the optional ones until you finish them once.'),
         }
       }
       if (area === 'course-leitner-pool-select') {
         return {
-          title: t('learning', 'Leitner in {course}', { course: courseTitle || t('learning', 'this course') }),
-          text: t('learning', 'Pick a pool to review cards with spaced repetition. The system will show difficult cards more often and mastered cards less often.'),
+          title: this.vt('Leitner in {course}', { course: courseTitle || this.vt('this course') }),
+          text: this.vt('Pick a pool to review cards with spaced repetition. The system will show difficult cards more often and mastered cards less often.'),
         }
       }
       if (area === 'course-swipe-pool-select') {
         return {
-          title: t('learning', 'Wahr/Falsch in {course}', { course: courseTitle || t('learning', 'this course') }),
-          text: t('learning', 'Pick a pool for fast true-or-false practice. This mode is good for quick repetition and recognition.'),
+          title: this.vt('Wahr/Falsch in {course}', { course: courseTitle || this.vt('this course') }),
+          text: this.vt('Pick a pool for fast true-or-false practice. This mode is good for quick repetition and recognition.'),
         }
       }
       if (area === 'course-exam-pool-select') {
         return {
-          title: t('learning', 'Exam in {course}', { course: courseTitle || t('learning', 'this course') }),
-          text: t('learning', 'Pick a pool to simulate an exam. You will finish the whole session first and only then see the full review.'),
+          title: this.vt('Exam in {course}', { course: courseTitle || this.vt('this course') }),
+          text: this.vt('Pick a pool to simulate an exam. You will finish the whole session first and only then see the full review.'),
         }
       }
       if (area === 'course-training-active') {
         return {
-          title: t('learning', 'Training: {pool}', { pool: poolName || t('learning', 'selected pool') }),
-          text: t('learning', 'You are inside an active training pool. Start the session to answer mixed questions with direct feedback after every answer.'),
+          title: this.vt('Training: {pool}', { pool: poolName || this.vt('selected pool') }),
+          text: this.vt('You are inside an active training pool. Start the session to answer mixed questions with direct feedback after every answer.'),
         }
       }
       if (area === 'course-leitner-active') {
         return {
-          title: t('learning', 'Leitner: {pool}', { pool: poolName || t('learning', 'selected pool') }),
-          text: t('learning', 'You are inside an active Leitner pool. Review the due cards first; new or difficult questions will come back sooner than mastered ones.'),
+          title: this.vt('Leitner: {pool}', { pool: poolName || this.vt('selected pool') }),
+          text: this.vt('You are inside an active Leitner pool. Review the due cards first; new or difficult questions will come back sooner than mastered ones.'),
         }
       }
       if (area === 'course-swipe-active') {
         return {
-          title: t('learning', 'Wahr/Falsch: {pool}', { pool: poolName || t('learning', 'selected pool') }),
-          text: t('learning', 'You are inside a true-or-false session. Use it for fast repetition when you want to classify many statements quickly.'),
+          title: this.vt('Wahr/Falsch: {pool}', { pool: poolName || this.vt('selected pool') }),
+          text: this.vt('You are inside a true-or-false session. Use it for fast repetition when you want to classify many statements quickly.'),
         }
       }
       if (area === 'course-exam-active') {
         return {
-          title: t('learning', 'Exam: {pool}', { pool: poolName || t('learning', 'selected pool') }),
-          text: t('learning', 'You are inside an exam pool. Work through the whole run first; explanations and correct answers are shown at the end.'),
+          title: this.vt('Exam: {pool}', { pool: poolName || this.vt('selected pool') }),
+          text: this.vt('You are inside an exam pool. Work through the whole run first; explanations and correct answers are shown at the end.'),
         }
       }
       if (area === 'course-my-progress') {
         return {
-          title: t('learning', 'My Progress'),
-          text: t('learning', 'This area shows your own progress in the course, including mastery and answered questions. Use it to see where you still have gaps.'),
+          title: this.vt('My Progress'),
+          text: this.vt('This area shows your own progress in the course, including mastery and answered questions. Use it to see where you still have gaps.'),
         }
       }
       if (area === 'course-leaderboard') {
         return {
-          title: t('learning', 'Leaderboard'),
-          text: t('learning', 'The leaderboard compares learners in the same course. XP, mastery and other activity indicators show who is currently ahead.'),
+          title: this.vt('Leaderboard'),
+          text: this.vt('The leaderboard compares learners in the same course. XP, mastery and other activity indicators show who is currently ahead.'),
         }
       }
       if (area === 'course-league') {
         return {
-          title: t('learning', 'Liga'),
-          text: t('learning', 'The league is course-specific. Challenge classmates, collect points and watch the standings change after each finished duel.'),
+          title: this.vt('Liga'),
+          text: this.vt('The league is course-specific. Challenge classmates, collect points and watch the standings change after each finished duel.'),
         }
       }
       if (area === 'course-duel') {
         return {
-          title: t('learning', 'Duell'),
-          text: t('learning', 'Here you can accept or start direct duels. Once the duel starts, every answer counts and speed can break ties.'),
+          title: this.vt('Duell'),
+          text: this.vt('Here you can accept or start direct duels. Once the duel starts, every answer counts and speed can break ties.'),
         }
       }
       if (area === 'pool-training') {
         return {
-          title: t('learning', 'Training'),
-          text: t('learning', 'You are viewing a regular pool in Training mode. This is the fastest way to practice the pool with immediate feedback.'),
+          title: this.vt('Training'),
+          text: this.vt('You are viewing a regular pool in Training mode. This is the fastest way to practice the pool with immediate feedback.'),
         }
       }
       if (area === 'pool-leitner') {
         return {
-          title: t('learning', 'Leitner'),
-          text: t('learning', 'You are viewing a regular pool in Leitner mode. Use it to keep difficult questions coming back until they stick.'),
+          title: this.vt('Leitner'),
+          text: this.vt('You are viewing a regular pool in Leitner mode. Use it to keep difficult questions coming back until they stick.'),
         }
       }
       if (area === 'pool-swipe') {
         return {
-          title: t('learning', 'Wahr/Falsch'),
-          text: t('learning', 'You are viewing a regular pool in true-or-false mode. This is useful for fast recall training.'),
+          title: this.vt('Wahr/Falsch'),
+          text: this.vt('You are viewing a regular pool in true-or-false mode. This is useful for fast recall training.'),
         }
       }
       if (area === 'pool-exam') {
         return {
-          title: t('learning', 'Exam'),
-          text: t('learning', 'You are viewing a regular pool in exam mode. Treat it like a test run without instant correction.'),
+          title: this.vt('Exam'),
+          text: this.vt('You are viewing a regular pool in exam mode. Treat it like a test run without instant correction.'),
         }
       }
       return {
-        title: t('learning', 'This area'),
-        text: t('learning', 'You can keep learning here, and I can explain the most important modes and rules whenever you need a quick reminder.'),
+        title: this.vt('This area'),
+        text: this.vt('You can keep learning here, and I can explain the most important modes and rules whenever you need a quick reminder.'),
       }
     },
     defaultTicketSubject() {
       const faq = this.activeFaqId && FAQS[this.activeFaqId] ? FAQS[this.activeFaqId] : null
       if (faq?.title) {
-        return faq.title
+        return this.vt(faq.title)
       }
       const parts = []
       if (this.currentContext?.courseTitle) {
@@ -747,7 +770,7 @@ export default {
         this.myTickets = Array.isArray(response.data?.tickets) ? response.data.tickets : []
       } catch (e) {
         this.myTickets = []
-        this.ticketError = t('learning', 'Failed to load support tickets')
+        this.ticketError = this.vt('Failed to load support tickets')
       }
     },
     async submitTicket() {
@@ -771,10 +794,10 @@ export default {
         })
         this.ticketDraft = ''
         this.ticketSubject = this.defaultTicketSubject()
-        this.ticketSuccess = t('learning', 'Support ticket sent')
+        this.ticketSuccess = this.vt('Support ticket sent')
         await this.loadMyTickets()
       } catch (e) {
-        this.ticketError = e?.response?.data?.error || t('learning', 'Failed to send support ticket')
+        this.ticketError = e?.response?.data?.error || this.vt('Failed to send support ticket')
       } finally {
         this.ticketSending = false
       }
