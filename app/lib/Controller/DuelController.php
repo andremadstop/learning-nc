@@ -91,4 +91,83 @@ class DuelController extends Controller {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to create rematch'], Http::STATUS_BAD_REQUEST);
         }
     }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function invite(int $poolId, string $inviteeUid, int $numQuestions = 10, int $courseId = 0): DataResponse {
+        try {
+            $numQuestions = max(5, min(50, $numQuestions));
+            if ($courseId <= 0) {
+                throw new \RuntimeException('Course context is required for duel invitations');
+            }
+            return new DataResponse(
+                $this->service->createInvite($poolId, $this->userId, $inviteeUid, $numQuestions, $courseId),
+                Http::STATUS_CREATED
+            );
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to create duel invite'], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function invites(): DataResponse {
+        try {
+            return new DataResponse($this->service->listInvites($this->userId));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to load duel invites'], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function acceptInvite(int $id): DataResponse {
+        try {
+            return new DataResponse($this->service->acceptInvite($id, $this->userId));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to accept duel invite'], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function declineInvite(int $id): DataResponse {
+        try {
+            return new DataResponse($this->service->declineInvite($id, $this->userId));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to decline duel invite'], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function cancelInvite(int $id): DataResponse {
+        try {
+            return new DataResponse($this->service->cancelInvite($id, $this->userId));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to cancel duel invite'], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function opponents(int $courseId): DataResponse {
+        try {
+            return new DataResponse($this->service->getInviteCandidates($courseId, $this->userId));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to load duel opponents'], Http::STATUS_BAD_REQUEST);
+        }
+    }
 }

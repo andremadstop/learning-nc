@@ -25,6 +25,19 @@
         </select>
       </div>
 
+      <div v-if="courseId" class="pool-picker">
+        <label class="pool-picker-label">{{ t('learning', 'Directly challenge an opponent') }}</label>
+        <select v-model="selectedOpponentUid" class="pool-select">
+          <option value="">{{ t('learning', 'Create duel code only') }}</option>
+          <option v-for="opponent in opponents" :key="opponent.user_id" :value="opponent.user_id">
+            {{ opponent.display_name || opponent.user_id }}
+          </option>
+        </select>
+        <p v-if="courseId && opponents.length === 0" class="invite-help">
+          {{ t('learning', 'No direct opponents are available in this course.') }}
+        </p>
+      </div>
+
       <div class="join-section">
         <input
           v-model="joinCode"
@@ -43,7 +56,7 @@
 
       <div class="start-actions">
         <NcButton type="primary" :disabled="loading || selectedPoolId === 0" @click="createDuel">
-          {{ loading ? t('learning', 'Erstelle...') : t('learning', 'Neues Duell erstellen') }}
+          {{ createButtonLabel }}
         </NcButton>
         <NcButton type="tertiary" :disabled="loading" @click="$emit('back')">
           {{ t('learning', 'Zurück') }}
@@ -86,10 +99,10 @@
         </div>
       </div>
 
-      <p class="lobby-status">{{ t('learning', 'Warte bis beide bereit sind...') }}</p>
+      <p class="lobby-status">{{ lobbyStatusText }}</p>
 
       <div class="start-actions">
-        <NcButton type="primary" :disabled="loading || readyClicked" @click="setReady">
+        <NcButton type="primary" :disabled="loading || readyClicked || !canSetReady" @click="setReady">
           {{ readyClicked ? t('learning', 'Bereit!') : t('learning', 'Bereit!') }}
         </NcButton>
         <NcButton type="tertiary" @click="cancelDuel">{{ t('learning', 'Abbrechen') }}</NcButton>
@@ -262,6 +275,8 @@ export default {
       numQuestions: 10,
       loading: false,
       error: null,
+      opponents: [],
+      selectedOpponentUid: '',
       pollingInterval: null,
       hasAnswered: false,
       lastPoints: 0,
@@ -320,6 +335,31 @@ export default {
       const iWon = (isCreator && cs > os) || (!isCreator && os > cs);
       return iWon ? t('learning', 'Du hast gewonnen!') : t('learning', 'Gegner gewinnt');
     },
+    createButtonLabel() {
+      if (this.loading) {
+        return this.selectedOpponentUid
+          ? t('learning', 'Challenging...')
+          : t('learning', 'Erstelle...');
+      }
+      return this.selectedOpponentUid
+        ? t('learning', 'Challenge opponent')
+        : t('learning', 'Neues Duell erstellen');
+    },
+    canSetReady() {
+      return !!this.duelState && ['ready', 'active'].includes(this.duelState.status);
+    },
+    lobbyStatusText() {
+      if (!this.duelState) {
+        return t('learning', 'Warte bis beide bereit sind...');
+      }
+      if (this.duelState.status === 'invited') {
+        return t('learning', 'Invite sent. Waiting for the opponent to accept...')
+      }
+      if (this.duelState.status === 'ready' && !this.readyClicked) {
+        return t('learning', 'Invite accepted. Both players can mark themselves ready now.')
+      }
+      return t('learning', 'Warte bis beide bereit sind...');
+    },
     effectiveContentLanguage() {
       return this.questionLanguage || '';
     },
@@ -337,6 +377,10 @@ export default {
       }
     } else {
       this.fetchPools();
+    }
+
+    if (this.courseId) {
+      this.fetchOpponents();
     }
 
     if (this.presetDuelCode) {
@@ -449,6 +493,7 @@ export default {
         } else {
           this.phase = 'lobby';
         }
+        this.$emit('preset-consumed');
         this.emitVirtuProf('duel-first-start');
         this.startPolling();
       } catch (e) {
@@ -477,6 +522,19 @@ export default {
       }
     },
 
+    async fetchOpponents() {
+      if (!this.courseId) {
+        this.opponents = [];
+        return;
+      }
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/courses/' + this.courseId + '/duel-opponents'));
+        this.opponents = Array.isArray(r.data) ? r.data : [];
+      } catch (e) {
+        this.opponents = [];
+      }
+    },
+
     questionImageUrl(id) {
       return generateUrl('/apps/learning/api/questions/' + id + '/image');
     },
@@ -488,17 +546,24 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        const r = await axios.post(generateUrl('/apps/learning/api/duels'), {
+        const isInvite = !!this.selectedOpponentUid && !!this.courseId;
+        const endpoint = isInvite
+          ? generateUrl('/apps/learning/api/duel-invites')
+          : generateUrl('/apps/learning/api/duels');
+        const payload = {
           poolId: this.selectedPoolId,
           numQuestions: this.numQuestions,
           ...(this.courseId ? { courseId: this.courseId } : {}),
-        });
-        this.duelCode = r.data.code;
-        this.duelState = r.data;
+          ...(isInvite ? { inviteeUid: this.selectedOpponentUid } : {}),
+        };
+        const r = await axios.post(endpoint, payload);
+        this.duelCode = r.data.code || r.data.state?.code || '';
+        this.duelState = r.data.state || r.data;
         this.lastQuestionIndex = -1;
         this.resetRoundState();
         this.readyClicked = false;
         this.phase = 'lobby';
+        this.$root.$emit('virtuprof:refresh-duel-invites');
         this.emitVirtuProf('duel-first-start');
         this.startPolling();
       } catch (e) {
@@ -565,6 +630,7 @@ export default {
       this.duelState = null;
       this.error = null;
       this.readyClicked = false;
+      this.selectedOpponentUid = '';
       this.resetRoundState();
       this.$emit('back');
     },
@@ -681,12 +747,38 @@ export default {
       if (state.status === 'finished') {
         this.stopPolling();
         this.phase = 'finished';
+        this.$root.$emit('virtuprof:refresh-duel-invites');
         return;
       }
 
       if (state.status === 'expired') {
         this.stopPolling();
         this.phase = 'expired';
+        this.$root.$emit('virtuprof:refresh-duel-invites');
+        return;
+      }
+
+      if (state.status === 'declined') {
+        this.stopPolling();
+        this.phase = 'join';
+        this.error = t('learning', 'The duel invite was declined.');
+        this.duelCode = '';
+        this.duelState = null;
+        this.readyClicked = false;
+        this.resetRoundState();
+        this.$root.$emit('virtuprof:refresh-duel-invites');
+        return;
+      }
+
+      if (state.status === 'canceled') {
+        this.stopPolling();
+        this.phase = 'join';
+        this.error = t('learning', 'The duel invite was canceled.');
+        this.duelCode = '';
+        this.duelState = null;
+        this.readyClicked = false;
+        this.resetRoundState();
+        this.$root.$emit('virtuprof:refresh-duel-invites');
         return;
       }
 
@@ -716,7 +808,7 @@ export default {
         return;
       }
 
-      // status === 'ready' or 'waiting' — stay in lobby
+      // status === 'ready', 'waiting' or 'invited' — stay in lobby
       if (this.phase === 'join') {
         this.phase = 'lobby';
       }
@@ -756,6 +848,12 @@ export default {
   font-weight: 600;
   color: var(--color-text-maxcontrast);
   margin-bottom: 6px;
+}
+
+.invite-help {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--color-text-maxcontrast);
 }
 
 .pool-select {

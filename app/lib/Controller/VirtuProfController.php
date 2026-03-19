@@ -37,6 +37,7 @@ class VirtuProfController extends Controller {
         return new DataResponse([
             'dismissed' => is_array($dismissed) ? array_values($dismissed) : [],
             'enabled' => $this->config->getUserValue($this->userId, 'learning', 'virtuprof_enabled', 'yes') === 'yes',
+            'language' => $this->config->getUserValue($this->userId, 'learning', 'virtuprof_language', ''),
         ]);
     }
 
@@ -83,5 +84,24 @@ class VirtuProfController extends Controller {
         $this->config->setUserValue($this->userId, 'learning', 'virtuprof_enabled', $enabled ? 'yes' : 'no');
 
         return new DataResponse(['ok' => true, 'enabled' => $enabled]);
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function setLanguage(string $language): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        $normalized = strtolower(trim($language));
+        if (!in_array($normalized, ['', 'de', 'en', 'ru', 'ar'], true)) {
+            $normalized = '';
+        }
+
+        $this->config->setUserValue($this->userId, 'learning', 'virtuprof_language', $normalized);
+
+        return new DataResponse(['ok' => true, 'language' => $normalized]);
     }
 }

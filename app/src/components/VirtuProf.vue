@@ -76,6 +76,15 @@ export default {
       ticketError: '',
       ticketSuccess: '',
       myTickets: [],
+      duelInvites: {
+        incoming: [],
+        outgoing: [],
+      },
+      inviteError: '',
+      inviteNotificationsInitialized: false,
+      notifiedInviteIds: [],
+      invitePollingInterval: null,
+      activeInviteFilter: 'incoming',
       currentContext: {
         area: 'courses',
         courseTitle: '',
@@ -133,16 +142,21 @@ export default {
   async mounted() {
     this.$root.$on('virtuprof:trigger', this.enqueue)
     this.$root.$on('virtuprof:context', this.updateContext)
+    this.$root.$on('virtuprof:refresh-duel-invites', this.handleInviteRefreshRequest)
     await this.loadState()
+    await this.refreshDuelInvites(false)
+    this.startInvitePolling()
     this.$emit('ready')
   },
   beforeDestroy() {
     this.$root.$off('virtuprof:trigger', this.enqueue)
     this.$root.$off('virtuprof:context', this.updateContext)
+    this.$root.$off('virtuprof:refresh-duel-invites', this.handleInviteRefreshRequest)
     if (this.pendingTimer) {
       clearTimeout(this.pendingTimer)
       this.pendingTimer = null
     }
+    this.stopInvitePolling()
   },
   methods: {
     async loadState() {
@@ -150,6 +164,7 @@ export default {
         const response = await axios.get(generateUrl('/apps/learning/api/virtuprof/state'))
         this.dismissedTriggers = Array.isArray(response.data?.dismissed) ? response.data.dismissed : []
         this.language = normalizeVirtuProfLanguage(response.data?.language) || detectVirtuProfLanguage()
+        persistVirtuProfLanguagePreference(this.language)
         if (typeof response.data?.enabled === 'boolean') {
           this.$emit('enabled-change', response.data.enabled)
         }
@@ -307,8 +322,32 @@ export default {
         await this.openTicketList()
         return
       }
+      if (action?.type === 'open-invite-list') {
+        await this.openInviteList(action.filter || 'incoming')
+        return
+      }
       if (action?.type === 'submit-ticket') {
         await this.submitTicket()
+        return
+      }
+      if (action?.type === 'refresh-invites') {
+        await this.refreshDuelInvites(false)
+        return
+      }
+      if (action?.type === 'accept-invite') {
+        await this.acceptInvite(action.inviteId)
+        return
+      }
+      if (action?.type === 'decline-invite') {
+        await this.declineInvite(action.inviteId)
+        return
+      }
+      if (action?.type === 'cancel-invite') {
+        await this.cancelInvite(action.inviteId)
+        return
+      }
+      if (action?.type === 'open-duel') {
+        this.openDuel(action.courseId, action.duelCode)
         return
       }
       if (action?.type === 'close-help') {
@@ -324,6 +363,11 @@ export default {
       const normalized = normalizeVirtuProfLanguage(language) || detectVirtuProfLanguage()
       this.language = normalized
       persistVirtuProfLanguagePreference(normalized)
+      try {
+        await axios.put(generateUrl('/apps/learning/api/virtuprof/language'), { language: normalized })
+      } catch (e) {
+        // Local fallback already persisted.
+      }
     },
     async markHandled(triggerId, script) {
       if (!triggerId || !script) {
@@ -380,6 +424,8 @@ export default {
       this.ticketError = ''
       this.ticketSuccess = ''
       this.myTickets = []
+      this.inviteError = ''
+      this.activeInviteFilter = 'incoming'
     },
     handleAvatarClick() {
       if (!this.enabled) {
@@ -466,6 +512,18 @@ export default {
       this.ticketSuccess = ''
       await this.loadMyTickets()
     },
+    async openInviteList(filter = 'incoming') {
+      this.resetTicketFeedback()
+      this.helpView = 'invite-list'
+      this.activeFaqId = null
+      this.activeFaqCategoryId = null
+      this.activeInviteFilter = filter
+      this.visible = true
+      this.isMinimized = false
+      this.currentAnimation = 'wave'
+      this.inviteError = ''
+      await this.refreshDuelInvites(false)
+    },
     closeHelp() {
       this.helpView = null
       this.activeFaqId = null
@@ -498,13 +556,34 @@ export default {
       if (this.helpView === 'ticket-list') {
         return this.buildTicketListStep()
       }
+      if (this.helpView === 'invite-list') {
+        return this.buildInviteListStep()
+      }
       return this.buildHelpHomeStep()
     },
     buildHelpHomeStep() {
+      const incomingCount = this.duelInvites.incoming.length
+      const outgoingCount = this.duelInvites.outgoing.length
+      const inviteActions = []
+      if (incomingCount > 0) {
+        inviteActions.push({
+          label: this.vt('Incoming duel invites ({n})', { n: incomingCount }),
+          type: 'open-invite-list',
+          filter: 'incoming',
+        })
+      }
+      if (outgoingCount > 0) {
+        inviteActions.push({
+          label: this.vt('Outgoing duel invites ({n})', { n: outgoingCount }),
+          type: 'open-invite-list',
+          filter: 'outgoing',
+        })
+      }
       return {
         title: this.vt('VirtuProf'),
         text: this.vt('I stay in the corner now. Open me any time for short explanations or quick FAQs.'),
         actions: [
+          ...inviteActions,
           { label: this.vt('What can I do here?'), type: 'open-context-help' },
           { label: this.vt('Top questions for this area'), type: 'open-faq-category', categoryId: this.recommendedFaqCategoryId() },
           { label: this.vt('Browse all topics'), type: 'open-faq-list' },
@@ -602,6 +681,165 @@ export default {
           { label: this.vt('Back'), type: 'open-help-home' },
         ],
       }
+    },
+    buildInviteListStep() {
+      return {
+        kind: 'invite-list',
+        title: this.vt('Duel invites'),
+        text: this.inviteError || this.vt('Open invites stay here until they are declined, canceled or the duel has been played.'),
+        inviteGroups: this.buildInviteGroups(),
+        actions: [
+          { label: this.vt('Incoming duel invites ({n})', { n: this.duelInvites.incoming.length }), type: 'open-invite-list', filter: 'incoming' },
+          { label: this.vt('Outgoing duel invites ({n})', { n: this.duelInvites.outgoing.length }), type: 'open-invite-list', filter: 'outgoing' },
+          { label: this.vt('Refresh'), type: 'refresh-invites' },
+          { label: this.vt('Back'), type: 'open-help-home' },
+        ],
+      }
+    },
+    buildInviteGroups() {
+      const groups = []
+      const includeIncoming = this.activeInviteFilter === 'incoming' || this.activeInviteFilter === 'all'
+      const includeOutgoing = this.activeInviteFilter === 'outgoing' || this.activeInviteFilter === 'all'
+
+      if (includeIncoming) {
+        groups.push({
+          id: 'incoming',
+          title: this.vt('Incoming duel invites'),
+          invites: this.duelInvites.incoming.map(invite => this.mapInviteCard(invite)),
+        })
+      }
+      if (includeOutgoing) {
+        groups.push({
+          id: 'outgoing',
+          title: this.vt('Outgoing duel invites'),
+          invites: this.duelInvites.outgoing.map(invite => this.mapInviteCard(invite)),
+        })
+      }
+      return groups.filter(group => group.invites.length > 0)
+    },
+    mapInviteCard(invite) {
+      const isIncoming = invite.direction === 'incoming'
+      const partnerUid = isIncoming ? invite.inviter_uid : invite.invitee_uid
+      const itemActions = []
+
+      if (invite.can_accept) {
+        itemActions.push({ label: this.vt('Accept'), type: 'accept-invite', inviteId: invite.id })
+      }
+      if (invite.can_decline) {
+        itemActions.push({ label: this.vt('Decline'), type: 'decline-invite', inviteId: invite.id })
+      }
+      if (invite.can_cancel) {
+        itemActions.push({ label: this.vt('Cancel invite'), type: 'cancel-invite', inviteId: invite.id })
+      }
+      if (invite.can_open_duel) {
+        itemActions.push({
+          label: this.vt('Open duel'),
+          type: 'open-duel',
+          courseId: invite.course_id,
+          duelCode: invite.duel_code,
+        })
+      }
+
+      return {
+        id: invite.id,
+        status: invite.status,
+        statusLabel: this.vt(this.inviteStatusLabel(invite)),
+        title: isIncoming
+          ? this.vt('Challenge from {user}', { user: partnerUid })
+          : this.vt('Challenge to {user}', { user: partnerUid }),
+        subtitle: this.vt('Pool: {pool}', { pool: invite.pool_name || ('#' + invite.pool_id) }),
+        updatedAt: invite.updated_at || invite.created_at,
+        message: invite.can_open_duel
+          ? this.vt('This duel is ready. Open it from here and play it inside the course duel tab.')
+          : isIncoming
+            ? this.vt('A classmate challenged you to a duel. Accept it to jump straight into the duel lobby.')
+            : this.vt('Your duel invite is waiting for a response from the opponent.'),
+        itemActions,
+      }
+    },
+    inviteStatusLabel(invite) {
+      if (invite.can_open_duel) {
+        return 'Ready'
+      }
+      return String(invite.status || 'open')
+        .charAt(0).toUpperCase() + String(invite.status || 'open').slice(1)
+    },
+    handleInviteRefreshRequest() {
+      this.refreshDuelInvites(false)
+    },
+    startInvitePolling() {
+      if (this.invitePollingInterval) {
+        return
+      }
+      this.invitePollingInterval = setInterval(() => {
+        this.refreshDuelInvites(true)
+      }, 15000)
+    },
+    stopInvitePolling() {
+      if (this.invitePollingInterval) {
+        clearInterval(this.invitePollingInterval)
+        this.invitePollingInterval = null
+      }
+    },
+    async refreshDuelInvites(triggerPopup = false) {
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/duel-invites'))
+        const incoming = Array.isArray(response.data?.incoming) ? response.data.incoming : []
+        const outgoing = Array.isArray(response.data?.outgoing) ? response.data.outgoing : []
+        this.duelInvites = { incoming, outgoing }
+        this.inviteError = ''
+
+        const openIncomingIds = incoming
+          .filter(invite => invite.status === 'open')
+          .map(invite => invite.id)
+
+        if (!this.inviteNotificationsInitialized) {
+          this.notifiedInviteIds = [...openIncomingIds]
+          this.inviteNotificationsInitialized = true
+          return
+        }
+
+        const newInviteIds = openIncomingIds.filter(id => !this.notifiedInviteIds.includes(id))
+        if (newInviteIds.length > 0) {
+          this.notifiedInviteIds = [...new Set([...this.notifiedInviteIds, ...newInviteIds])]
+          if (triggerPopup && !this.isHelpOpen && (!this.visible || this.isMinimized)) {
+            await this.openInviteList('incoming')
+          }
+        }
+      } catch (e) {
+        this.duelInvites = { incoming: [], outgoing: [] }
+        this.inviteError = this.vt('Failed to load duel invites')
+      }
+    },
+    async acceptInvite(inviteId) {
+      try {
+        const response = await axios.post(generateUrl('/apps/learning/api/duel-invites/' + inviteId + '/accept'))
+        await this.refreshDuelInvites(false)
+        const invite = response.data?.invite || response.data
+        this.openDuel(invite.course_id, invite.duel_code)
+      } catch (e) {
+        this.inviteError = e?.response?.data?.error || this.vt('Failed to accept duel invite')
+      }
+    },
+    async declineInvite(inviteId) {
+      try {
+        await axios.post(generateUrl('/apps/learning/api/duel-invites/' + inviteId + '/decline'))
+        await this.refreshDuelInvites(false)
+      } catch (e) {
+        this.inviteError = e?.response?.data?.error || this.vt('Failed to decline duel invite')
+      }
+    },
+    async cancelInvite(inviteId) {
+      try {
+        await axios.post(generateUrl('/apps/learning/api/duel-invites/' + inviteId + '/cancel'))
+        await this.refreshDuelInvites(false)
+      } catch (e) {
+        this.inviteError = e?.response?.data?.error || this.vt('Failed to cancel duel invite')
+      }
+    },
+    openDuel(courseId, duelCode) {
+      this.closeHelp()
+      this.$emit('open-duel', { courseId, duelCode })
     },
     recommendedFaqCategoryId() {
       const area = String(this.currentContext?.area || '')

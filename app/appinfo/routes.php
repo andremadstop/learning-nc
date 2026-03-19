@@ -95,6 +95,7 @@ return [
         ['name' => 'virtuProf#getState', 'url' => '/api/virtuprof/state', 'verb' => 'GET'],
         ['name' => 'virtuProf#dismiss', 'url' => '/api/virtuprof/dismiss', 'verb' => 'POST'],
         ['name' => 'virtuProf#setEnabled', 'url' => '/api/virtuprof/enabled', 'verb' => 'PUT'],
+        ['name' => 'virtuProf#setLanguage', 'url' => '/api/virtuprof/language', 'verb' => 'PUT'],
 
         // Support Tickets
         ['name' => 'supportTicket#create', 'url' => '/api/support-tickets', 'verb' => 'POST'],
@@ -111,6 +112,12 @@ return [
 
         // Duels
         ['name' => 'duel#create', 'url' => '/api/duels', 'verb' => 'POST'],
+        ['name' => 'duel#invite', 'url' => '/api/duel-invites', 'verb' => 'POST'],
+        ['name' => 'duel#invites', 'url' => '/api/duel-invites', 'verb' => 'GET'],
+        ['name' => 'duel#acceptInvite', 'url' => '/api/duel-invites/{id}/accept', 'verb' => 'POST'],
+        ['name' => 'duel#declineInvite', 'url' => '/api/duel-invites/{id}/decline', 'verb' => 'POST'],
+        ['name' => 'duel#cancelInvite', 'url' => '/api/duel-invites/{id}/cancel', 'verb' => 'POST'],
+        ['name' => 'duel#opponents', 'url' => '/api/courses/{courseId}/duel-opponents', 'verb' => 'GET'],
         ['name' => 'duel#join', 'url' => '/api/duels/{code}/join', 'verb' => 'POST'],
         ['name' => 'duel#ready', 'url' => '/api/duels/{code}/ready', 'verb' => 'POST'],
         ['name' => 'duel#state', 'url' => '/api/duels/{code}/state', 'verb' => 'GET'],

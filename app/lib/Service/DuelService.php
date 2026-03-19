@@ -4,6 +4,8 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\DuelAnswer;
 use OCA\Learning\Db\DuelAnswerMapper;
+use OCA\Learning\Db\DuelInvite;
+use OCA\Learning\Db\DuelInviteMapper;
 use OCA\Learning\Db\DuelSession;
 use OCA\Learning\Db\DuelSessionMapper;
 use OCA\Learning\Service\LeagueService;
@@ -16,6 +18,7 @@ use Psr\Log\LoggerInterface;
 class DuelService {
     private DuelSessionMapper $sessionMapper;
     private DuelAnswerMapper $answerMapper;
+    private DuelInviteMapper $inviteMapper;
     private IDBConnection $db;
     private LoggerInterface $logger;
     private LeagueService $leagueService;
@@ -32,6 +35,7 @@ class DuelService {
     public function __construct(
         DuelSessionMapper $sessionMapper,
         DuelAnswerMapper $answerMapper,
+        DuelInviteMapper $inviteMapper,
         IDBConnection $db,
         LoggerInterface $logger,
         LeagueService $leagueService,
@@ -41,6 +45,7 @@ class DuelService {
     ) {
         $this->sessionMapper = $sessionMapper;
         $this->answerMapper = $answerMapper;
+        $this->inviteMapper = $inviteMapper;
         $this->db = $db;
         $this->logger = $logger;
         $this->leagueService = $leagueService;
@@ -76,6 +81,57 @@ class DuelService {
         return $this->buildState($session, $userId);
     }
 
+    public function createInvite(int $poolId, string $userId, string $inviteeUid, int $numQuestions, int $courseId): array {
+        if ($inviteeUid === $userId) {
+            throw new \RuntimeException('You cannot invite yourself');
+        }
+
+        $this->courseService->findById($courseId, $userId);
+        $this->assertInviteeIsEligible($courseId, $inviteeUid);
+        $this->assertNoActiveInvite($courseId, $userId, $inviteeUid);
+
+        $questionIds = $this->selectQuestions($poolId, $numQuestions, $userId, $courseId);
+        $code = $this->generateCode();
+        $now = time();
+
+        $session = new DuelSession();
+        $session->setCode($code);
+        $session->setCreatorUid($userId);
+        $session->setOpponentUid($inviteeUid);
+        $session->setPoolId($poolId);
+        $session->setCourseId($courseId);
+        $session->setQuestionIds(json_encode($questionIds));
+        $session->setStatus('invited');
+        $session->setCurrentQuestionIndex(0);
+        $session->setCreatorScore(0);
+        $session->setOpponentScore(0);
+        $session->setCreatorReady(false);
+        $session->setOpponentReady(false);
+        $session->setCreatorLastPoll(null);
+        $session->setOpponentLastPoll(null);
+        $session->setCreatedAt($now);
+        $session = $this->sessionMapper->insert($session);
+
+        $invite = new DuelInvite();
+        $invite->setDuelSessionId((int)$session->getId());
+        $invite->setCourseId($courseId);
+        $invite->setPoolId($poolId);
+        $invite->setInviterUid($userId);
+        $invite->setInviteeUid($inviteeUid);
+        $invite->setStatus('open');
+        $invite->setCreatedAt($now);
+        $invite->setUpdatedAt($now);
+        $invite->setAcceptedAt(null);
+        $invite->setRespondedAt(null);
+        $invite = $this->inviteMapper->insert($invite);
+
+        return [
+            'invite' => $this->buildInviteCard($invite, $session, $userId),
+            'code' => $code,
+            'state' => $this->buildState($session, $userId),
+        ];
+    }
+
     public function joinDuel(string $code, string $userId): array {
         $session = $this->sessionMapper->findByCode($code);
 
@@ -99,6 +155,9 @@ class DuelService {
     public function setReady(string $code, string $userId, ?string $lang = null): array {
         $session = $this->sessionMapper->findByCode($code);
         $this->assertParticipant($session, $userId);
+        if (!in_array($session->getStatus(), ['ready', 'active'], true)) {
+            throw new \RuntimeException('Duel is not ready yet');
+        }
 
         if ($session->getCreatorUid() === $userId) {
             $session->setCreatorReady(true);
@@ -250,6 +309,127 @@ class DuelService {
 
         $newSession = $this->sessionMapper->insert($newSession);
         return ['new_code' => $newCode] + $this->buildState($newSession, $userId);
+    }
+
+    public function listInvites(string $userId): array {
+        $invites = $this->inviteMapper->findActiveForUser($userId);
+        $incoming = [];
+        $outgoing = [];
+
+        foreach ($invites as $invite) {
+            $session = $this->sessionMapper->findById((int)$invite->getDuelSessionId());
+            if (!$this->shouldExposeInvite($invite, $session)) {
+                continue;
+            }
+
+            $card = $this->buildInviteCard($invite, $session, $userId);
+            if ($card['direction'] === 'incoming') {
+                $incoming[] = $card;
+            } else {
+                $outgoing[] = $card;
+            }
+        }
+
+        return [
+            'incoming' => $incoming,
+            'outgoing' => $outgoing,
+        ];
+    }
+
+    public function acceptInvite(int $inviteId, string $userId): array {
+        $invite = $this->inviteMapper->findById($inviteId);
+        if ($invite->getInviteeUid() !== $userId) {
+            throw new \RuntimeException('Only the invited learner can accept this duel');
+        }
+        if ($invite->getStatus() !== 'open') {
+            throw new \RuntimeException('This duel invite is no longer open');
+        }
+
+        $session = $this->sessionMapper->findById((int)$invite->getDuelSessionId());
+        if ($session->getStatus() === 'invited') {
+            $session->setStatus('ready');
+            $session = $this->sessionMapper->update($session);
+        }
+
+        $now = time();
+        $invite->setStatus('accepted');
+        $invite->setAcceptedAt($now);
+        $invite->setRespondedAt($now);
+        $invite->setUpdatedAt($now);
+        $invite = $this->inviteMapper->update($invite);
+
+        return [
+            'invite' => $this->buildInviteCard($invite, $session, $userId),
+            'state' => $this->buildState($session, $userId),
+        ];
+    }
+
+    public function declineInvite(int $inviteId, string $userId): array {
+        $invite = $this->inviteMapper->findById($inviteId);
+        if ($invite->getInviteeUid() !== $userId) {
+            throw new \RuntimeException('Only the invited learner can decline this duel');
+        }
+        if ($invite->getStatus() !== 'open') {
+            throw new \RuntimeException('This duel invite is no longer open');
+        }
+
+        $session = $this->sessionMapper->findById((int)$invite->getDuelSessionId());
+        $session->setStatus('declined');
+        $this->sessionMapper->update($session);
+
+        $now = time();
+        $invite->setStatus('declined');
+        $invite->setRespondedAt($now);
+        $invite->setUpdatedAt($now);
+        $invite = $this->inviteMapper->update($invite);
+
+        return ['ok' => true, 'invite_id' => $invite->getId()];
+    }
+
+    public function cancelInvite(int $inviteId, string $userId): array {
+        $invite = $this->inviteMapper->findById($inviteId);
+        if ($invite->getInviterUid() !== $userId) {
+            throw new \RuntimeException('Only the inviter can cancel this duel');
+        }
+        if ($invite->getStatus() !== 'open') {
+            throw new \RuntimeException('This duel invite can no longer be cancelled');
+        }
+
+        $session = $this->sessionMapper->findById((int)$invite->getDuelSessionId());
+        $session->setStatus('canceled');
+        $this->sessionMapper->update($session);
+
+        $now = time();
+        $invite->setStatus('canceled');
+        $invite->setRespondedAt($now);
+        $invite->setUpdatedAt($now);
+        $this->inviteMapper->update($invite);
+
+        return ['ok' => true, 'invite_id' => $invite->getId()];
+    }
+
+    public function getInviteCandidates(int $courseId, string $userId): array {
+        $this->courseService->findById($courseId, $userId);
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('user_id')
+            ->from('learning_course_members')
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('role', $qb->createNamedParameter('student')))
+            ->andWhere($qb->expr()->neq('user_id', $qb->createNamedParameter($userId)))
+            ->orderBy('user_id', 'ASC');
+
+        $result = $qb->executeQuery();
+        $users = [];
+        while ($row = $result->fetch()) {
+            $users[] = [
+                'user_id' => (string)$row['user_id'],
+                'display_name' => (string)$row['user_id'],
+            ];
+        }
+        $result->closeCursor();
+
+        return $users;
     }
 
     // ---------- Private helpers ----------
@@ -501,5 +681,79 @@ class DuelService {
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    private function shouldExposeInvite(DuelInvite $invite, DuelSession $session): bool {
+        if (!in_array($invite->getStatus(), ['open', 'accepted'], true)) {
+            return false;
+        }
+
+        return !in_array($session->getStatus(), ['finished', 'expired', 'declined', 'canceled'], true);
+    }
+
+    private function buildInviteCard(DuelInvite $invite, DuelSession $session, string $viewerUid): array {
+        $direction = $invite->getInviteeUid() === $viewerUid ? 'incoming' : 'outgoing';
+        $sessionStatus = (string)$session->getStatus();
+        $poolName = $this->loadPoolName((int)$invite->getPoolId());
+
+        return [
+            'id' => (int)$invite->getId(),
+            'duel_session_id' => (int)$invite->getDuelSessionId(),
+            'duel_code' => (string)$session->getCode(),
+            'course_id' => (int)$invite->getCourseId(),
+            'pool_id' => (int)$invite->getPoolId(),
+            'pool_name' => $poolName,
+            'inviter_uid' => (string)$invite->getInviterUid(),
+            'invitee_uid' => (string)$invite->getInviteeUid(),
+            'status' => (string)$invite->getStatus(),
+            'session_status' => $sessionStatus,
+            'direction' => $direction,
+            'created_at' => (int)$invite->getCreatedAt(),
+            'updated_at' => (int)$invite->getUpdatedAt(),
+            'accepted_at' => $invite->getAcceptedAt(),
+            'can_accept' => $direction === 'incoming' && $invite->getStatus() === 'open',
+            'can_decline' => $direction === 'incoming' && $invite->getStatus() === 'open',
+            'can_cancel' => $direction === 'outgoing' && $invite->getStatus() === 'open',
+            'can_open_duel' => $invite->getStatus() === 'accepted' && in_array($sessionStatus, ['ready', 'active'], true),
+        ];
+    }
+
+    private function assertInviteeIsEligible(int $courseId, string $inviteeUid): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('user_id')
+            ->from('learning_course_members')
+            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($inviteeUid)))
+            ->andWhere($qb->expr()->eq('role', $qb->createNamedParameter('student')))
+            ->setMaxResults(1);
+
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+
+        if ($row === false) {
+            throw new \RuntimeException('Selected opponent is not available for course duels');
+        }
+    }
+
+    private function assertNoActiveInvite(int $courseId, string $userId, string $inviteeUid): void {
+        foreach ($this->inviteMapper->findActiveBetweenUsers($courseId, $userId, $inviteeUid) as $invite) {
+            $session = $this->sessionMapper->findById((int)$invite->getDuelSessionId());
+            if ($this->shouldExposeInvite($invite, $session)) {
+                throw new \RuntimeException('There is already an active duel invitation between these learners');
+            }
+        }
+    }
+
+    private function loadPoolName(int $poolId): string {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('name')
+            ->from('learning_pools')
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)))
+            ->setMaxResults(1);
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+        return $row ? (string)$row['name'] : ('Pool #' . $poolId);
     }
 }

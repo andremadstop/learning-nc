@@ -586,7 +586,14 @@
 			</div>
 			<!-- Duel Tab -->
 			<div v-if="currentTab === 'duel'" class="duel-section">
-				<DuelMode :courseId="courseId" :coursePools="coursePools" :contentLanguage="contentLanguage" @back="currentTab = isInstructor ? 'pools' : 'training'" />
+				<DuelMode
+					:courseId="courseId"
+					:coursePools="coursePools"
+					:presetDuelCode="presetDuelCode"
+					:hideJoinScreen="Boolean(presetDuelCode)"
+					:contentLanguage="contentLanguage"
+					@preset-consumed="$emit('clearPresetDuel')"
+					@back="currentTab = isInstructor ? 'pools' : 'training'" />
 			</div>
 		</template>
 
@@ -812,6 +819,10 @@ export default {
 			type: String,
 			default: '',
 		},
+		presetDuelCode: {
+			type: String,
+			default: '',
+		},
 	},
 
 	data() {
@@ -1030,6 +1041,11 @@ export default {
 		course() {
 			this.emitVirtuProfContext()
 		},
+		presetDuelCode(newCode) {
+			if (newCode) {
+				this.currentTab = 'duel'
+			}
+		},
 	},
 
 		methods: {
@@ -1207,10 +1223,12 @@ export default {
 
 				// Default tab for students
 				if (!this.course.is_instructor) {
-					this.currentTab = 'training'
+					this.currentTab = this.presetDuelCode ? 'duel' : 'training'
 					this.activeLearningMode = 'training'
 					this.selectedLearningPool = null
 					this.fetchStudentProgress()
+				} else if (this.presetDuelCode) {
+					this.currentTab = 'duel'
 				}
 				this.$nextTick(() => {
 					this.emitVirtuProfContext()

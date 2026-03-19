@@ -184,8 +184,10 @@
         :courseId="selectedCourse.id"
         :userRole="userRole"
         :contentLanguage="contentLanguage"
+        :presetDuelCode="pendingVirtuProfDuel.courseId === selectedCourse.id ? pendingVirtuProfDuel.duelCode : ''"
         @back="selectedCourse = null"
         @openPool="openPoolFromCourse"
+        @clearPresetDuel="clearVirtuProfDuel"
         @selectStudent="selectStudent"
       />
     </template>
@@ -193,6 +195,7 @@
     <VirtuProf
       v-if="appInitialized && userRole === 'student'"
       :enabled="virtuProfEnabled"
+      @open-duel="openVirtuProfDuel"
       @ready="triggerInitialVirtuProfHints"
       @enabled-change="handleVirtuProfEnabledChange" />
   </NcAppContent>
@@ -267,6 +270,10 @@ export default {
       virtuProfEnabled: true,
       appInitialized: false,
       initialVirtuProfHintsTriggered: false,
+      pendingVirtuProfDuel: {
+        courseId: null,
+        duelCode: '',
+      },
     };
   },
   computed: {
@@ -419,6 +426,40 @@ export default {
         window.localStorage.setItem(this.lastActiveStorageKey(), String(Date.now()));
       } catch (e) {
         // Ignore local storage failures.
+      }
+    },
+    clearVirtuProfDuel() {
+      this.pendingVirtuProfDuel = {
+        courseId: null,
+        duelCode: '',
+      };
+    },
+    async openVirtuProfDuel(payload) {
+      const courseId = Number(payload?.courseId || 0);
+      const duelCode = String(payload?.duelCode || '').trim();
+      if (!courseId || !duelCode) {
+        return;
+      }
+
+      this.mainView = 'courses';
+      this.selectedStudent = null;
+      this.courseView = 'list';
+      this.pendingVirtuProfDuel = {
+        courseId,
+        duelCode,
+      };
+
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/courses/' + courseId));
+        this.selectedCourse = {
+          id: courseId,
+          title: response.data?.title || '',
+        };
+      } catch (e) {
+        this.selectedCourse = {
+          id: courseId,
+          title: '',
+        };
       }
     },
 

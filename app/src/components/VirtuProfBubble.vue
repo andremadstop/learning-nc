@@ -1,5 +1,5 @@
 <template>
-  <div class="virtuprof-bubble">
+  <div class="virtuprof-bubble" :dir="textDirection">
     <div class="bubble-content">
       <div class="bubble-toolbar">
         <div class="bubble-language-toggle" role="group" aria-label="VirtuProf language">
@@ -45,12 +45,40 @@
         <div v-for="ticket in tickets" :key="ticket.id" class="ticket-item">
           <div class="ticket-header">
             <strong>{{ ticket.subject }}</strong>
-            <span class="ticket-status" :class="'status-' + ticket.status">{{ ticket.status }}</span>
+            <span class="ticket-status" :class="'status-' + ticket.status">{{ statusLabel(ticket.status) }}</span>
           </div>
           <div class="ticket-meta">{{ formatTimestamp(ticket.updated_at || ticket.created_at) }}</div>
           <div class="ticket-message">{{ ticket.message }}</div>
           <div v-if="ticket.answer_text" class="ticket-answer">
             <strong>{{ vt('Answer') }}:</strong> {{ ticket.answer_text }}
+          </div>
+        </div>
+      </div>
+
+      <div v-if="step.kind === 'invite-list'" class="invite-list">
+        <div v-if="!hasInviteGroups" class="ticket-empty">
+          {{ vt('No active duel invites right now.') }}
+        </div>
+        <div v-for="group in step.inviteGroups || []" :key="group.id" class="invite-group">
+          <p class="invite-group-title">{{ group.title }}</p>
+          <div v-for="invite in group.invites" :key="group.id + '-' + invite.id" class="invite-item">
+            <div class="ticket-header">
+              <strong>{{ invite.title }}</strong>
+              <span class="ticket-status" :class="'status-' + invite.status">{{ invite.statusLabel || statusLabel(invite.status) }}</span>
+            </div>
+            <div v-if="invite.subtitle" class="ticket-meta">{{ invite.subtitle }}</div>
+            <div v-if="invite.updatedAt" class="ticket-meta">{{ formatTimestamp(invite.updatedAt) }}</div>
+            <div class="ticket-message">{{ invite.message }}</div>
+            <div v-if="invite.itemActions && invite.itemActions.length" class="invite-item-actions">
+              <NcButton
+                v-for="action in invite.itemActions"
+                :key="invite.id + '-' + action.type"
+                type="secondary"
+                size="small"
+                @click="$emit('action', action)">
+                {{ action.label }}
+              </NcButton>
+            </div>
           </div>
         </div>
       </div>
@@ -155,6 +183,12 @@ export default {
     languageOptions() {
       return VIRTUPROF_LANGUAGE_OPTIONS
     },
+    textDirection() {
+      return this.effectiveLanguage === 'ar' ? 'rtl' : 'ltr'
+    },
+    hasInviteGroups() {
+      return Array.isArray(this.step?.inviteGroups) && this.step.inviteGroups.some(group => Array.isArray(group.invites) && group.invites.length > 0)
+    },
   },
   methods: {
     vt(key, params = {}) {
@@ -165,10 +199,32 @@ export default {
         return ''
       }
       try {
-        return new Date(Number(value) * 1000).toLocaleString()
+        const locale = this.effectiveLanguage === 'ar'
+          ? 'ar'
+          : this.effectiveLanguage === 'ru'
+            ? 'ru'
+            : this.effectiveLanguage === 'de'
+              ? 'de'
+              : 'en'
+        return new Date(Number(value) * 1000).toLocaleString(locale)
       } catch (e) {
         return String(value)
       }
+    },
+    statusLabel(status) {
+      const normalized = String(status || '').toLowerCase()
+      const labels = {
+        open: 'Open',
+        answered: 'Answered',
+        closed: 'Closed',
+        accepted: 'Accepted',
+        declined: 'Declined',
+        canceled: 'Canceled',
+        invited: 'Invited',
+        ready: 'Ready',
+        active: 'Active',
+      }
+      return this.vt(labels[normalized] || status)
     },
   },
 }
@@ -238,10 +294,23 @@ export default {
 }
 
 .ticket-form,
-.ticket-list {
+.ticket-list,
+.invite-list {
   display: grid;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+.invite-group {
+  display: grid;
+  gap: 8px;
+}
+
+.invite-group-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-maxcontrast);
 }
 
 .ticket-label {
@@ -291,6 +360,13 @@ export default {
   background: color-mix(in srgb, var(--color-main-background) 92%, var(--color-background-hover));
 }
 
+.invite-item {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--color-main-background) 92%, var(--color-background-hover));
+}
+
 .ticket-header {
   display: flex;
   justify-content: space-between;
@@ -319,6 +395,13 @@ export default {
   font-size: 13px;
   line-height: 1.5;
   color: var(--color-main-text);
+}
+
+.invite-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .step-dots {
