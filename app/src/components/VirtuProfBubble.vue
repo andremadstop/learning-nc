@@ -437,7 +437,7 @@ export default {
   width: 100%;
   justify-content: flex-start;
   white-space: normal;
-  text-align: left;
+  text-align: start;
   line-height: 1.35;
   height: auto;
   min-height: 36px;
@@ -453,12 +453,12 @@ export default {
 
 .bubble-arrow {
   position: absolute;
-  right: 22px;
+  inset-inline-end: 22px;
   bottom: -8px;
   width: 16px;
   height: 16px;
   background: var(--color-main-background);
-  border-right: 1px solid var(--color-border);
+  border-inline-end: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
   transform: rotate(45deg);
 }

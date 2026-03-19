@@ -512,7 +512,7 @@ export default {
 .question-text { font-size: 20px; font-weight: 500; margin-bottom: 28px; line-height: 1.6; color: var(--color-main-text); }
 .multi-hint { text-align: center; font-size: 14px; font-weight: 600; color: var(--color-primary-element); margin-bottom: 16px; padding: 8px; background: color-mix(in srgb, var(--color-primary-element) 8%, transparent); border-radius: 8px; }
 .answers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
-.answer-btn { padding: 16px 20px; border: 2px solid var(--color-border); border-radius: 12px; background: var(--color-main-background); cursor: pointer; text-align: left; font-size: 15px; transition: all 0.15s; min-height: 56px; line-height: 1.5; color: var(--color-main-text); }
+.answer-btn { padding: 16px 20px; border: 2px solid var(--color-border); border-radius: 12px; background: var(--color-main-background); cursor: pointer; text-align: start; font-size: 15px; transition: all 0.15s; min-height: 56px; line-height: 1.5; color: var(--color-main-text); }
 .answer-btn:hover:not(:disabled) { border-color: var(--color-primary-element); background: var(--color-primary-element-light); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 .answer-btn:disabled { opacity: 0.7; cursor: wait; }
 .answer-btn.answer-selected { border-color: var(--color-primary-element); background: color-mix(in srgb, var(--color-primary-element) 12%, var(--color-main-background)); color: var(--color-primary-element); font-weight: 600; }
@@ -528,7 +528,7 @@ export default {
 .correct-answer { padding: 14px 18px; background: var(--color-background-hover); border-radius: 10px; margin-bottom: 12px; font-size: 14px; line-height: 1.5; color: var(--color-main-text); }
 .next-btn { margin-top: 20px; }
 .ai-explain-row { margin: 10px 0; }
-.ai-explain-box { background: color-mix(in srgb, var(--color-primary-element) 8%, transparent); border-left: 3px solid var(--color-primary-element); border-radius: var(--border-radius); padding: 10px 14px; font-size: 0.92em; color: var(--color-main-text); line-height: 1.5; }
+.ai-explain-box { background: color-mix(in srgb, var(--color-primary-element) 8%, transparent); border-inline-start: 3px solid var(--color-primary-element); border-radius: var(--border-radius); padding: 10px 14px; font-size: 0.92em; color: var(--color-main-text); line-height: 1.5; }
 .training-results { text-align: center; padding: 60px 20px; }
 .training-results h3 { font-size: 32px; margin-bottom: 36px; font-weight: 700; color: var(--color-main-text); }
 .score-display { margin-bottom: 36px; }
@@ -545,7 +545,7 @@ export default {
   .score-number { font-size: 36px; }
 }
 .answer-buttons-review { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; margin-bottom: 12px; }
-.answer-btn-review { padding: 12px 16px; border: 2px solid var(--color-border); border-radius: 12px; font-size: 14px; color: var(--color-main-text); background: var(--color-main-background); text-align: left; }
+.answer-btn-review { padding: 12px 16px; border: 2px solid var(--color-border); border-radius: 12px; font-size: 14px; color: var(--color-main-text); background: var(--color-main-background); text-align: start; }
 .answer-btn-review.answer-correct { border-color: var(--color-success); background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background)); }
 .answer-btn-review.answer-user-selected { border-color: var(--color-primary-element); }
 .answer-btn-review.answer-wrong-selected { border-color: var(--color-error); background: color-mix(in srgb, var(--color-error) 10%, var(--color-main-background)); }

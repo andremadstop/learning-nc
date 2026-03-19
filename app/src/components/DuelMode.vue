@@ -839,7 +839,7 @@ export default {
 .pool-picker {
   margin: 0 auto 24px;
   max-width: 360px;
-  text-align: left;
+  text-align: start;
 }
 
 .pool-picker-label {
@@ -929,7 +929,7 @@ export default {
 .duel-error {
   margin: 0 auto 16px;
   max-width: 420px;
-  text-align: left;
+  text-align: start;
 }
 
 /* ===== LOBBY ===== */

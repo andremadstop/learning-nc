@@ -2212,7 +2212,7 @@ export default {
 }
 
 .student-col {
-	text-align: left !important;
+	text-align: start !important;
 	font-weight: 500;
 	white-space: nowrap;
 }
@@ -2230,21 +2230,21 @@ td.mastery-high {
 	background: color-mix(in srgb, var(--color-success) 10%, transparent);
 	color: var(--color-success);
 	font-weight: 700;
-	border-left: 3px solid var(--color-success);
+	border-inline-start: 3px solid var(--color-success);
 }
 
 td.mastery-medium {
 	background: color-mix(in srgb, var(--color-warning) 10%, transparent);
 	color: var(--color-warning);
 	font-weight: 700;
-	border-left: 3px solid var(--color-warning);
+	border-inline-start: 3px solid var(--color-warning);
 }
 
 td.mastery-low {
 	background: color-mix(in srgb, var(--color-error) 10%, transparent);
 	color: var(--color-error);
 	font-weight: 700;
-	border-left: 3px solid var(--color-error);
+	border-inline-start: 3px solid var(--color-error);
 }
 
 /* Level pills */
@@ -2582,10 +2582,10 @@ td.mastery-low {
 	transform: translateY(-1px);
 }
 .at-risk-card.risk-high {
-	border-left: 4px solid var(--color-error);
+	border-inline-start: 4px solid var(--color-error);
 }
 .at-risk-card.risk-medium {
-	border-left: 4px solid var(--color-warning);
+	border-inline-start: 4px solid var(--color-warning);
 }
 .at-risk-card-header {
 	display: flex;

@@ -519,8 +519,8 @@ export default {
 .swipe-start h3 { font-size: 28px; font-weight: 700; margin-bottom: 12px; color: var(--color-main-text); }
 .swipe-start p { font-size: 16px; color: var(--color-text-maxcontrast); margin-bottom: 24px; }
 .start-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-.status-note { margin: 0 auto 16px; max-width: 420px; text-align: left; }
-.pool-picker { margin: 0 auto 24px; max-width: 360px; text-align: left; }
+.status-note { margin: 0 auto 16px; max-width: 420px; text-align: start; }
+.pool-picker { margin: 0 auto 24px; max-width: 360px; text-align: start; }
 .pool-picker-label { display: block; font-size: 13px; font-weight: 600; color: var(--color-text-maxcontrast); margin-bottom: 6px; }
 .pool-select { width: 100%; padding: 10px 12px; border: 2px solid var(--color-border); border-radius: var(--border-radius-large); background: var(--color-main-background); color: var(--color-main-text); font-size: 15px; cursor: pointer; }
 .pool-select:focus { border-color: var(--color-primary-element); outline: none; }
@@ -585,7 +585,7 @@ export default {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--color-border);
-  text-align: left;
+  text-align: start;
   font-size: 14px;
   color: var(--color-main-text);
   line-height: 1.5;

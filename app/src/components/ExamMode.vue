@@ -1106,7 +1106,7 @@ export default {
   border-radius: 12px;
   background: var(--color-main-background);
   cursor: pointer;
-  text-align: left;
+  text-align: start;
   font-size: 15px;
   transition: all 0.15s;
   min-height: 52px;
@@ -1207,7 +1207,7 @@ export default {
 .review-wrong { background: color-mix(in srgb, var(--color-error) 5%, var(--color-main-background)); }
 .review-question { font-weight: 600; margin-bottom: 8px; color: var(--color-main-text); line-height: 1.5; }
 .review-answer { font-size: 14px; line-height: 1.5; margin-bottom: 4px; }
-.review-label { font-weight: 500; margin-right: 8px; color: var(--color-text-maxcontrast); }
+.review-label { font-weight: 500; margin-inline-end: 8px; color: var(--color-text-maxcontrast); }
 .text-success { color: var(--color-success); font-weight: 600; }
 .text-error { color: var(--color-error); font-weight: 600; }
 
