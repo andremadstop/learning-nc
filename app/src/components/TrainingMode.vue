@@ -26,6 +26,7 @@
       </div>
 
       <div v-if="currentQuestion" class="question-card">
+        <QuestionLanguageSwitcher v-model="questionLanguage" />
         <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" :alt="currentQuestion.image_alt || t('learning', 'Diagram for question')" class="question-image" />
         <div class="question-text">{{ currentQuestion.text }}</div>
 
@@ -93,7 +94,7 @@
           <NcNoteCard :type="isCorrect ? 'success' : 'error'">{{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
           <div class="open-answer-review">
             <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
-            <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ correctAnswerTexts[0] || '' }}</div>
+            <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts[0] || '' }}</div>
           </div>
           <NcNoteCard v-if="currentQuestion.explanation" type="warning"><strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}</NcNoteCard>
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
@@ -121,8 +122,8 @@
             </div>
           </div>
           <div class="correct-answer">
-            <strong>{{ correctAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
-            {{ correctAnswerTexts.join(', ') }}
+            <strong>{{ displayCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
+            {{ displayCorrectAnswerTexts.join(', ') }}
           </div>
           <NcNoteCard v-if="currentQuestion.explanation" type="warning"><strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}</NcNoteCard>
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
@@ -174,10 +175,11 @@ import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
+import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 
 export default {
   name: 'TrainingMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer },
+  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   props: {
     poolId: { type: Number, required: true },
     courseId: { type: Number, default: null },
@@ -206,6 +208,7 @@ export default {
       explainTaskId: null,
       explainText: '',
       explainPollTimer: null,
+      questionLanguage: this.contentLanguage || '',
     };
   },
   mounted() {
@@ -213,7 +216,12 @@ export default {
     this.emitVirtuProf('training-first-start');
   },
   watch: {
-    contentLanguage() {
+    contentLanguage(newLang, oldLang) {
+      if (!this.questionLanguage || this.questionLanguage === oldLang) {
+        this.questionLanguage = newLang || '';
+      }
+    },
+    questionLanguage() {
       this.refreshQuestionsForLanguage();
     },
   },
@@ -222,7 +230,20 @@ export default {
     progress() { return this.questions.length > 0 ? ((this.currentIndex + 1) / this.questions.length) * 100 : 0; },
     isMultiSelect() { return this.currentQuestion && this.currentQuestion.question_type === 'multi'; },
     isOpenQuestion() { return this.currentQuestion && this.currentQuestion.question_type === 'open'; },
-    isPbq() { return this.currentQuestion && this.currentQuestion.question_type === 'pbq'; }
+    isPbq() { return this.currentQuestion && this.currentQuestion.question_type === 'pbq'; },
+    effectiveContentLanguage() { return this.questionLanguage || ''; },
+    displayCorrectAnswerTexts() {
+      if (this.currentQuestion && Array.isArray(this.currentQuestion.answers)) {
+        const texts = this.currentQuestion.answers
+          .filter(answer => answer.is_correct)
+          .map(answer => answer.text)
+          .filter(Boolean);
+        if (texts.length > 0) {
+          return texts;
+        }
+      }
+      return Array.isArray(this.correctAnswerTexts) ? this.correctAnswerTexts.filter(Boolean) : [];
+    },
   },
   methods: {
     emitVirtuProf(triggerId, context = {}) {
@@ -238,12 +259,12 @@ export default {
     },
     requestPayload(payload = {}) {
       const basePayload = this.courseId ? { ...payload, courseId: this.courseId } : payload;
-      return this.contentLanguage ? { ...basePayload, lang: this.contentLanguage } : basePayload;
+      return this.effectiveContentLanguage ? { ...basePayload, lang: this.effectiveContentLanguage } : basePayload;
     },
     buildStatusParams(includeQuestions = false) {
       const params = {};
-      if (this.contentLanguage) {
-        params.lang = this.contentLanguage;
+      if (this.effectiveContentLanguage) {
+        params.lang = this.effectiveContentLanguage;
       }
       if (includeQuestions) {
         params.includeQuestions = true;
@@ -254,14 +275,7 @@ export default {
       if (!Array.isArray(translatedQuestions) || translatedQuestions.length === 0) {
         return this.questions;
       }
-      if (!Array.isArray(this.questions) || this.questions.length === 0) {
-        return translatedQuestions;
-      }
-      const merged = translatedQuestions.slice();
-      if (this.currentIndex < merged.length && this.questions[this.currentIndex]) {
-        merged[this.currentIndex] = this.questions[this.currentIndex];
-      }
-      return merged;
+      return translatedQuestions;
     },
     async refreshQuestionsForLanguage() {
       if (!this.session || this.showResults) {
@@ -274,6 +288,7 @@ export default {
         );
         if (Array.isArray(response.data?.questions)) {
           this.questions = this.mergeFutureQuestions(response.data.questions);
+          this.correctAnswerTexts = this.displayCorrectAnswerTexts;
         }
       } catch (error) {
         // Language refresh is best-effort only.
@@ -305,7 +320,7 @@ export default {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
           pbqAnswers,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.isCorrect = response.data.is_correct;
         this.pbqPoints = response.data.pbq_points ?? 0;
@@ -323,7 +338,7 @@ export default {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
           answerText: this.openAnswer,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = [response.data.correct_answer_text || ''];
@@ -339,7 +354,7 @@ export default {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
           answerIds: this.selectedAnswerIds,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
@@ -356,7 +371,7 @@ export default {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
           answerId: answerId,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
@@ -492,7 +507,7 @@ export default {
 .start-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
 .question-counter { text-align: center; font-size: 14px; color: var(--color-text-maxcontrast); margin: 12px 0 28px; font-weight: 500; display: flex; justify-content: center; align-items: center; gap: 8px; }
 .question-db-id { font-size: 11px; font-weight: 400; color: var(--color-text-maxcontrast); opacity: 0.6; font-family: monospace; background: var(--color-background-hover); padding: 1px 5px; border-radius: 4px; }
-.question-card { background: var(--color-main-background); border: 1px solid var(--color-border); border-radius: 16px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+.question-card { position: relative; background: var(--color-main-background); border: 1px solid var(--color-border); border-radius: 16px; padding: 60px 32px 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
 .question-image { max-width: 100%; max-height: 240px; border-radius: 12px; border: 1px solid var(--color-border); margin-bottom: 16px; object-fit: contain; display: block; }
 .question-text { font-size: 20px; font-weight: 500; margin-bottom: 28px; line-height: 1.6; color: var(--color-main-text); }
 .multi-hint { text-align: center; font-size: 14px; font-weight: 600; color: var(--color-primary-element); margin-bottom: 16px; padding: 8px; background: color-mix(in srgb, var(--color-primary-element) 8%, transparent); border-radius: 8px; }
@@ -523,7 +538,7 @@ export default {
 .result-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
 @media (max-width: 768px) {
   .training-start { padding: 40px 16px; }
-  .question-card { padding: 20px; border-radius: 12px; }
+  .question-card { padding: 56px 20px 20px; border-radius: 12px; }
   .question-text { font-size: 17px; }
   .answers-grid { grid-template-columns: 1fr; }
   .score-circle { width: 140px; height: 140px; }

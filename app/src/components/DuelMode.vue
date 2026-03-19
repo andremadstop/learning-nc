@@ -112,6 +112,7 @@
       </div>
 
       <div class="duel-card">
+        <QuestionLanguageSwitcher v-model="questionLanguage" />
         <img
           v-if="currentQuestion && currentQuestion.image_path"
           :src="questionImageUrl(currentQuestion.id)"
@@ -141,6 +142,7 @@
 
     <!-- ===== FEEDBACK PHASE ===== -->
     <div v-else-if="phase === 'feedback'" class="duel-feedback">
+      <QuestionLanguageSwitcher v-model="questionLanguage" />
       <div class="feedback-card" :class="answeredCorrect ? 'feedback-correct' : 'feedback-incorrect'">
         <span class="feedback-icon">{{ answeredCorrect ? '✓' : '✗' }}</span>
         <span class="feedback-label">{{ answeredCorrect ? t('learning', 'Richtig!') : t('learning', 'Falsch!') }}</span>
@@ -220,10 +222,11 @@ import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
+import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 
 export default {
   name: 'DuelMode',
-  components: { NcButton, NcLoadingIcon, NcNoteCard, NcProgressBar },
+  components: { NcButton, NcLoadingIcon, NcNoteCard, NcProgressBar, QuestionLanguageSwitcher },
 
   props: {
     courseId: {
@@ -269,6 +272,7 @@ export default {
       correctAnswerId: null,
       selectedAnswerId: null,
       lastQuestion: null,
+      questionLanguage: this.contentLanguage || '',
     };
   },
 
@@ -316,6 +320,9 @@ export default {
       const iWon = (isCreator && cs > os) || (!isCreator && os > cs);
       return iWon ? t('learning', 'Du hast gewonnen!') : t('learning', 'Gegner gewinnt');
     },
+    effectiveContentLanguage() {
+      return this.questionLanguage || '';
+    },
   },
 
   mounted() {
@@ -353,10 +360,13 @@ export default {
         this.resetRoundState();
       }
     },
-    contentLanguage() {
-      if (this.duelCode) {
-        this.pollState();
+    contentLanguage(newLang, oldLang) {
+      if (!this.questionLanguage || this.questionLanguage === oldLang) {
+        this.questionLanguage = newLang || '';
       }
+    },
+    questionLanguage() {
+      this.refreshDisplayedQuestionLanguage();
     },
   },
 
@@ -365,14 +375,31 @@ export default {
       this.$root.$emit('virtuprof:trigger', triggerId, context);
     },
     buildStateParams() {
-      return this.contentLanguage ? { lang: this.contentLanguage } : {};
+      return this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {};
     },
     answerPayload(answerId) {
       return {
         answerId,
         answeredAt: Date.now(),
-        ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+        ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
       };
+    },
+    async refreshDisplayedQuestionLanguage() {
+      if (this.duelCode) {
+        await this.pollState();
+      }
+      if (!this.lastQuestion || !this.lastQuestion.id) {
+        return;
+      }
+      try {
+        const r = await axios.get(
+          generateUrl('/apps/learning/api/questions/' + this.lastQuestion.id + '/translated'),
+          { params: this.buildStateParams() }
+        );
+        this.lastQuestion = r.data;
+      } catch (e) {
+        // Best-effort only.
+      }
     },
     resetRoundState() {
       this.hasAnswered = false;
@@ -521,7 +548,7 @@ export default {
       try {
         const r = await axios.post(
           generateUrl('/apps/learning/api/duels/' + this.duelCode + '/ready'),
-          this.contentLanguage ? { lang: this.contentLanguage } : {}
+          this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}
         );
         this.duelState = r.data;
         this.applyStateTransitions(r.data);
@@ -936,7 +963,7 @@ export default {
   background: var(--color-main-background);
   border: 2px solid var(--color-border);
   border-radius: 16px;
-  padding: 28px 24px;
+  padding: 60px 24px 28px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   text-align: center;
   margin-bottom: 24px;
@@ -1034,7 +1061,8 @@ export default {
 
 /* ===== FEEDBACK ===== */
 .duel-feedback {
-  padding: 40px 20px;
+  position: relative;
+  padding: 64px 20px 40px;
   text-align: center;
 }
 
@@ -1202,7 +1230,7 @@ export default {
   .duel-finished,
   .duel-expired { padding: 24px 12px; }
 
-  .duel-card { padding: 20px 16px; min-height: 130px; }
+  .duel-card { padding: 56px 16px 20px; min-height: 130px; }
   .question-text { font-size: 17px; }
   .answer-grid { grid-template-columns: 1fr; }
   .answer-btn { min-height: 58px; }

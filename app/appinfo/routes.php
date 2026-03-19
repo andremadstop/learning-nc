@@ -56,6 +56,7 @@ return [
 
         // Translations
         ['name' => 'translation#questionTranslations', 'url' => '/api/questions/{questionId}/translations', 'verb' => 'GET'],
+        ['name' => 'translation#translatedQuestion', 'url' => '/api/questions/{questionId}/translated', 'verb' => 'GET'],
         ['name' => 'translation#setQuestionTranslation', 'url' => '/api/questions/{questionId}/translations/{lang}', 'verb' => 'PUT'],
         ['name' => 'translation#deleteQuestionTranslation', 'url' => '/api/questions/{questionId}/translations/{lang}', 'verb' => 'DELETE'],
         ['name' => 'translation#answerTranslations', 'url' => '/api/answers/{answerId}/translations', 'verb' => 'GET'],

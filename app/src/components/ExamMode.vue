@@ -60,6 +60,7 @@
       <div class="progress-label">{{ answeredCount }} / {{ questions.length }} {{ t('learning', 'answered') }}</div>
 
       <div v-if="currentQuestion" ref="questionCard" class="question-card">
+        <QuestionLanguageSwitcher v-model="questionLanguage" />
         <!-- Snake timer border -->
         <svg v-if="snakeReady"
              :class="['snake-svg', snakeColorClass]"
@@ -280,10 +281,11 @@ import NcModal from '@nextcloud/vue/dist/Components/NcModal.js';
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import PbqRenderer from './PbqRenderer.vue';
+import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 
 export default {
   name: 'ExamMode',
-  components: { NcButton, NcProgressBar, NcLoadingIcon, NcModal, NcNoteCard, BadgeUnlock, PbqRenderer },
+  components: { NcButton, NcProgressBar, NcLoadingIcon, NcModal, NcNoteCard, BadgeUnlock, PbqRenderer, QuestionLanguageSwitcher },
   props: {
     poolId: { type: Number, required: true },
     courseId: { type: Number, default: null },
@@ -339,6 +341,7 @@ export default {
       newBadges: [],
       showEndExamModal: false,
       showAbortExamModal: false,
+      questionLanguage: this.contentLanguage || '',
     };
   },
   computed: {
@@ -411,10 +414,18 @@ export default {
         if (a.isCorrect === b.isCorrect) return 0;
         return a.isCorrect ? 1 : -1;
       });
+    },
+    effectiveContentLanguage() {
+      return this.questionLanguage || '';
     }
   },
   watch: {
-    contentLanguage() {
+    contentLanguage(newLang, oldLang) {
+      if (!this.questionLanguage || this.questionLanguage === oldLang) {
+        this.questionLanguage = newLang || '';
+      }
+    },
+    questionLanguage() {
       this.refreshExamQuestionsForLanguage();
     },
   },
@@ -432,12 +443,12 @@ export default {
     },
     requestPayload(payload = {}) {
       const basePayload = this.courseId ? { ...payload, courseId: this.courseId } : payload;
-      return this.contentLanguage ? { ...basePayload, lang: this.contentLanguage } : basePayload;
+      return this.effectiveContentLanguage ? { ...basePayload, lang: this.effectiveContentLanguage } : basePayload;
     },
     buildStatusParams(includeQuestions = false) {
       const params = {};
-      if (this.contentLanguage) {
-        params.lang = this.contentLanguage;
+      if (this.effectiveContentLanguage) {
+        params.lang = this.effectiveContentLanguage;
       }
       if (includeQuestions) {
         params.includeQuestions = true;
@@ -448,14 +459,7 @@ export default {
       if (!Array.isArray(translatedQuestions) || translatedQuestions.length === 0) {
         return this.questions;
       }
-      if (!Array.isArray(this.questions) || this.questions.length === 0) {
-        return translatedQuestions;
-      }
-      const merged = translatedQuestions.slice();
-      if (this.currentQuestionIndex < merged.length && this.questions[this.currentQuestionIndex]) {
-        merged[this.currentQuestionIndex] = this.questions[this.currentQuestionIndex];
-      }
-      return merged;
+      return translatedQuestions;
     },
     async refreshExamQuestionsForLanguage() {
       if (!this.session || this.screen !== 'exam') {
@@ -861,7 +865,7 @@ export default {
             await axios.post(generateUrl('/apps/learning/api/training/submitBatch'), {
               sessionId: this.session,
               answers: batchAnswers,
-              ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+              ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
             });
           } catch (submitErr) {
             if (submitErr.response?.status === 409 && submitErr.response?.data?.timed_out) {
@@ -1055,7 +1059,7 @@ export default {
   background: var(--color-main-background);
   border: 1px solid var(--color-border);
   border-radius: 16px;
-  padding: 28px;
+  padding: 60px 28px 28px;
   margin-bottom: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
@@ -1228,7 +1232,7 @@ export default {
 @media (max-width: 768px) {
   .timer-display { font-size: 36px; }
   .question-text { font-size: 17px; }
-  .question-card { padding: 20px; }
+  .question-card { padding: 56px 20px 20px; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .score-circle { width: 130px; height: 130px; }
   .score-number { font-size: 36px; }

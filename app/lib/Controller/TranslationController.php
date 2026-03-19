@@ -38,6 +38,18 @@ class TranslationController extends Controller {
     /**
      * @NoAdminRequired
      */
+    public function translatedQuestion(int $questionId, string $lang = ''): DataResponse {
+        try {
+            $question = $this->questionService->find($questionId, $this->userId);
+            return new DataResponse($this->service->translateQuestion($question, $lang));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Question not found or no access'], Http::STATUS_NOT_FOUND);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
     #[UserRateLimit(limit: 30, period: 60)]
     public function setQuestionTranslation(int $questionId, string $lang, string $text, ?string $explanation = null): DataResponse {
         try {

@@ -49,6 +49,7 @@
           @pointerup="onPointerUp"
           @pointercancel="onPointerUp"
         >
+          <QuestionLanguageSwitcher v-model="questionLanguage" />
           <div v-if="showFeedback && !isDragging" class="feedback-overlay" :class="isCorrect ? 'feedback-correct' : 'feedback-incorrect'">
             <span class="feedback-icon">{{ isCorrect ? '\u2713' : '\u2717' }}</span>
             <span class="feedback-label">{{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Wrong') }}</span>
@@ -57,7 +58,7 @@
             <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" alt="" class="question-image" />
             <p class="question-text">{{ currentQuestion.text }}</p>
             <div v-if="showFeedback" class="explanation-area">
-              <p><strong>{{ correctAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct:') }}</strong> {{ correctAnswerTexts.join(', ') || correctAnswerText }}</p>
+              <p><strong>{{ displayCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct:') }}</strong> {{ displayCorrectAnswerTexts.join(', ') || correctAnswerText }}</p>
               <p v-if="currentQuestion.explanation" class="explanation-text">{{ currentQuestion.explanation }}</p>
             </div>
           </div>
@@ -142,10 +143,11 @@ import { generateUrl } from '@nextcloud/router';
 import { showError } from '@nextcloud/dialogs';
 import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
+import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 
 export default {
   name: 'SwipeMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock },
+  components: { NcButton, NcNoteCard, NcProgressBar, NcEmptyContent, BadgeUnlock, QuestionLanguageSwitcher },
   props: {
     poolId: { type: Number, default: 0 },
     courseId: { type: Number, default: null },
@@ -182,6 +184,7 @@ export default {
       dragStartY: 0,
       dragDeltaX: 0,
       newBadges: [],
+      questionLanguage: this.contentLanguage || '',
     };
   },
   computed: {
@@ -196,6 +199,21 @@ export default {
       return this.questions.length > 0
         ? Math.round(((this.currentIndex + (this.showFeedback ? 1 : 0)) / this.questions.length) * 100)
         : 0;
+    },
+    effectiveContentLanguage() {
+      return this.questionLanguage || '';
+    },
+    displayCorrectAnswerTexts() {
+      if (this.currentQuestion && Array.isArray(this.currentQuestion.answers)) {
+        const texts = this.currentQuestion.answers
+          .filter(answer => answer.is_correct)
+          .map(answer => answer.text)
+          .filter(Boolean);
+        if (texts.length > 0) {
+          return texts;
+        }
+      }
+      return Array.isArray(this.correctAnswerTexts) ? this.correctAnswerTexts.filter(Boolean) : [];
     },
     cardDragStyle() {
       if (this.dragDeltaX === 0) return {};
@@ -216,19 +234,24 @@ export default {
     }
   },
   watch: {
-    contentLanguage() {
+    contentLanguage(newLang, oldLang) {
+      if (!this.questionLanguage || this.questionLanguage === oldLang) {
+        this.questionLanguage = newLang || '';
+      }
+    },
+    questionLanguage() {
       this.refreshQuestionsForLanguage();
     },
   },
   methods: {
     requestPayload(payload = {}) {
       const basePayload = this.courseId ? { ...payload, courseId: this.courseId } : payload;
-      return this.contentLanguage ? { ...basePayload, lang: this.contentLanguage } : basePayload;
+      return this.effectiveContentLanguage ? { ...basePayload, lang: this.effectiveContentLanguage } : basePayload;
     },
     buildStatusParams(includeQuestions = false) {
       const params = {};
-      if (this.contentLanguage) {
-        params.lang = this.contentLanguage;
+      if (this.effectiveContentLanguage) {
+        params.lang = this.effectiveContentLanguage;
       }
       if (includeQuestions) {
         params.includeQuestions = true;
@@ -239,14 +262,7 @@ export default {
       if (!Array.isArray(translatedQuestions) || translatedQuestions.length === 0) {
         return this.questions;
       }
-      if (!Array.isArray(this.questions) || this.questions.length === 0) {
-        return translatedQuestions;
-      }
-      const merged = translatedQuestions.slice();
-      if (this.currentIndex < merged.length && this.questions[this.currentIndex]) {
-        merged[this.currentIndex] = this.questions[this.currentIndex];
-      }
-      return merged;
+      return translatedQuestions;
     },
     async refreshQuestionsForLanguage() {
       if (!this.session || this.showResults) {
@@ -261,6 +277,7 @@ export default {
           this.questions = this.mergeFutureQuestions(
             response.data.questions.filter(q => q.question_type !== 'open')
           );
+          this.correctAnswerTexts = this.displayCorrectAnswerTexts;
         }
       } catch (error) {
         // Language refresh is best-effort only.
@@ -384,7 +401,7 @@ export default {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
           answerIds: this.selectedAnswerIds,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.isCorrect = r.data.is_correct;
         this.correctAnswerText = r.data.correct_answer_text || '';
@@ -411,7 +428,7 @@ export default {
           sessionId: this.session,
           questionId: this.currentQuestion.id,
           answerId: answer.id,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.isCorrect = r.data.is_correct;
         this.correctAnswerId = r.data.correct_answer_id;
@@ -533,7 +550,7 @@ export default {
   background: var(--color-main-background);
   border: 2px solid var(--color-border);
   border-radius: 16px;
-  padding: 28px 24px;
+  padding: 60px 24px 28px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
   display: flex;
   flex-direction: column;
@@ -682,7 +699,7 @@ export default {
 /* Responsive */
 @media (max-width: 480px) {
   .swipe-start { padding: 40px 12px; }
-  .swipe-card { padding: 20px 16px; min-height: 220px; }
+  .swipe-card { padding: 56px 16px 20px; min-height: 220px; }
   .question-text { font-size: 17px; }
   .answer-grid { grid-template-columns: 1fr; }
   .answer-btn { min-height: 66px; font-size: 15px; }

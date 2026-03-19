@@ -23,6 +23,7 @@
         <NcProgressBar :value="reviewProgress" />
       </div>
       <div v-if="currentItem" class="review-card">
+        <QuestionLanguageSwitcher v-model="questionLanguage" />
         <div class="pool-badge">{{ currentItem.pool_name }}</div>
         <div class="review-box-indicator">{{ t('learning', 'Box {n}', { n: currentItem.box }) }}</div>
         <NcNoteCard v-if="currentIndex === 0 && !hintDismissed('box-movement')" type="info" class="onboarding-hint">
@@ -61,7 +62,7 @@
           <NcNoteCard :type="lastCorrect ? 'success' : 'error'">{{ lastCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
           <div class="open-answer-review">
             <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
-            <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ lastCorrectAnswerTexts.length > 0 ? lastCorrectAnswerTexts[0] : '' }}</div>
+            <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts.length > 0 ? displayCorrectAnswerTexts[0] : '' }}</div>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
@@ -83,9 +84,9 @@
             </div>
           </div>
           <div class="correct-answer-display">
-            <template v-if="lastCorrectAnswerTexts.length > 0">
-              <strong>{{ lastCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
-              {{ lastCorrectAnswerTexts.join(', ') }}
+            <template v-if="displayCorrectAnswerTexts.length > 0">
+              <strong>{{ displayCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
+              {{ displayCorrectAnswerTexts.join(', ') }}
             </template>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
@@ -133,11 +134,12 @@ import { showError } from '@nextcloud/dialogs';
 import { celebrateMastery } from '../confetti.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
+import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import hintMixin from '../hintMixin.js';
 
 export default {
   name: 'SmartQueue',
-  components: { NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay },
+  components: { NcButton, NcNoteCard, NcProgressBar, NcLoadingIcon, BadgeUnlock, LevelUpOverlay, QuestionLanguageSwitcher },
   mixins: [hintMixin],
   props: {
     mode: { type: String, default: 'queue', validator: v => ['queue', 'remediation'].includes(v) },
@@ -165,6 +167,7 @@ export default {
       newBadges: [],
       levelBefore: 0,
       levelAfter: 0,
+      questionLanguage: this.contentLanguage || '',
     };
   },
   computed: {
@@ -173,20 +176,38 @@ export default {
     isOpenQuestion() { return this.currentItem && this.currentItem.question_type === 'open'; },
     reviewProgress() { return ((this.currentIndex + (this.answered ? 1 : 0)) / this.items.length) * 100; },
     sessionAccuracy() { const total = this.sessionCorrect + this.sessionIncorrect; return total > 0 ? Math.round(this.sessionCorrect / total * 100) : 0; },
+    effectiveContentLanguage() { return this.questionLanguage || ''; },
+    displayCorrectAnswerTexts() {
+      if (this.currentItem && Array.isArray(this.currentItem.answers)) {
+        const texts = this.currentItem.answers
+          .filter(answer => answer.is_correct)
+          .map(answer => answer.text)
+          .filter(Boolean);
+        if (texts.length > 0) {
+          return texts;
+        }
+      }
+      return Array.isArray(this.lastCorrectAnswerTexts) ? this.lastCorrectAnswerTexts.filter(Boolean) : [];
+    },
   },
   mounted() {
     this.loadQueue();
   },
   watch: {
-    contentLanguage() {
+    contentLanguage(newLang, oldLang) {
+      if (!this.questionLanguage || this.questionLanguage === oldLang) {
+        this.questionLanguage = newLang || '';
+      }
+    },
+    questionLanguage() {
       this.refreshQueueForLanguage();
     },
   },
   methods: {
     queueParams() {
       const params = { limit: 30 };
-      if (this.contentLanguage) {
-        params.lang = this.contentLanguage;
+      if (this.effectiveContentLanguage) {
+        params.lang = this.effectiveContentLanguage;
       }
       return params;
     },
@@ -194,14 +215,7 @@ export default {
       if (!Array.isArray(translatedItems) || translatedItems.length === 0) {
         return this.items;
       }
-      if (!Array.isArray(this.items) || this.items.length === 0) {
-        return translatedItems;
-      }
-      const merged = translatedItems.slice();
-      if (this.currentIndex < merged.length && this.items[this.currentIndex]) {
-        merged[this.currentIndex] = this.items[this.currentIndex];
-      }
-      return merged;
+      return translatedItems;
     },
     async refreshQueueForLanguage() {
       if (this.showResults || this.items.length === 0) {
@@ -212,6 +226,7 @@ export default {
         const r = await axios.get(generateUrl(endpoint), { params: this.queueParams() });
         if (Array.isArray(r.data)) {
           this.items = this.mergeFutureItems(r.data);
+          this.lastCorrectAnswerTexts = this.displayCorrectAnswerTexts;
         }
       } catch (e) {
         // Language refresh is best-effort only.
@@ -239,7 +254,7 @@ export default {
         const r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
           answerText: this.openAnswer,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.handleAnswerResponse(r.data);
       } catch (e) {
@@ -263,7 +278,7 @@ export default {
         const r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
           answerIds: this.selectedAnswerIds,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.handleAnswerResponse(r.data);
       } catch (e) {
@@ -279,7 +294,7 @@ export default {
         const r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
           answerId: answer.id,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.handleAnswerResponse(r.data);
       } catch (e) {
@@ -340,7 +355,7 @@ export default {
 .review-header { margin-bottom: 24px; }
 .review-counter { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--color-primary-element); }
 
-.review-card { padding: 32px; border: 2px solid var(--color-border); border-radius: 12px; background: var(--color-main-background); }
+.review-card { position: relative; padding: 60px 32px 32px; border: 2px solid var(--color-border); border-radius: 12px; background: var(--color-main-background); }
 .pool-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: var(--color-primary-element); color: var(--color-primary-element-text); margin-bottom: 12px; }
 .review-box-indicator { font-size: 12px; color: var(--color-text-maxcontrast); margin-bottom: 16px; }
 .question-text { font-size: 20px; line-height: 1.6; margin-bottom: 24px; font-weight: 500; color: var(--color-main-text); }
@@ -386,7 +401,7 @@ export default {
 .open-review-row { padding: 10px 14px; border-radius: 8px; background: var(--color-background-hover); font-size: 14px; line-height: 1.5; }
 
 @media (max-width: 768px) {
-  .review-card { padding: 20px; }
+  .review-card { padding: 56px 20px 20px; }
   .question-text { font-size: 17px; }
   .session-stats { gap: 16px; }
   .session-stat-value { font-size: 28px; }

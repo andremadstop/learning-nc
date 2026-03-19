@@ -657,6 +657,7 @@
     "Course" : "Kurs",
     "Pool" : "Pool",
     "Question" : "Frage",
+    "Question language" : "Fragensprache",
     "Duel" : "Duell",
 
     "in {pool}" : "in {pool}",

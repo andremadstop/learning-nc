@@ -496,6 +496,7 @@ OC.L10N.register(
     "Course" : "Kurs",
     "Pool" : "Pool",
     "Question" : "Frage",
+    "Question language" : "Fragensprache",
     "Duel" : "Duell"
 },
 "nplurals=2; plural=(n != 1);");

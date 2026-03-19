@@ -68,6 +68,7 @@
         <NcProgressBar :value="reviewProgress" />
       </div>
       <div v-if="currentItem" class="review-card">
+        <QuestionLanguageSwitcher v-model="questionLanguage" />
         <div class="review-box-indicator">{{ t('learning', 'Box') }} {{ currentItem.box }} &rarr; {{ answered ? (lastAnswer ? t('learning', 'Box') + ' ' + lastMoveTarget : t('learning', 'Box') + ' 1') : '?' }}</div>
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
@@ -124,7 +125,7 @@
           <NcNoteCard :type="lastAnswer ? 'success' : 'error'">{{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
           <div class="open-answer-review">
             <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
-            <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ lastCorrectAnswerTexts.length > 0 ? lastCorrectAnswerTexts[0] : '' }}</div>
+            <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts.length > 0 ? displayCorrectAnswerTexts[0] : '' }}</div>
           </div>
           <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
@@ -153,7 +154,7 @@
           </div>
           <div class="correct-answer-display">
             <template v-if="getCorrectAnswer()">
-              <strong>{{ lastCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
+              <strong>{{ displayCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
               {{ getCorrectAnswer() }}
             </template>
             <em v-else>{{ t('learning', 'Correct answer hidden during active exam') }}</em>
@@ -200,11 +201,12 @@ import { countUp } from '../countUp.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
+import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import hintMixin from '../hintMixin.js';
 
 export default {
   name: 'LeitnerMode',
-  components: { NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer },
+  components: { NcButton, NcNoteCard, NcProgressBar, BadgeUnlock, LevelUpOverlay, PbqRenderer, QuestionLanguageSwitcher },
   mixins: [hintMixin],
   props: {
     poolId: { type: Number, required: true },
@@ -234,6 +236,7 @@ export default {
       explainTaskId: null,
       explainText: '',
       explainPollTimer: null,
+      questionLanguage: this.contentLanguage || '',
     };
   },
   computed: {
@@ -242,7 +245,20 @@ export default {
     isOpenQuestion() { return this.currentItem && this.currentItem.question_type === 'open'; },
     isPbq() { return this.currentItem && this.currentItem.question_type === 'pbq'; },
     reviewProgress() { return ((this.currentIndex + (this.answered ? 1 : 0)) / this.dueQuestions.length) * 100; },
-    sessionAccuracy() { const total = this.sessionCorrect + this.sessionIncorrect; return total > 0 ? Math.round(this.sessionCorrect / total * 100) : 0; }
+    sessionAccuracy() { const total = this.sessionCorrect + this.sessionIncorrect; return total > 0 ? Math.round(this.sessionCorrect / total * 100) : 0; },
+    effectiveContentLanguage() { return this.questionLanguage || ''; },
+    displayCorrectAnswerTexts() {
+      if (this.currentItem && Array.isArray(this.currentItem.answers)) {
+        const texts = this.currentItem.answers
+          .filter(answer => answer.is_correct)
+          .map(answer => answer.text)
+          .filter(Boolean);
+        if (texts.length > 0) {
+          return texts;
+        }
+      }
+      return Array.isArray(this.lastCorrectAnswerTexts) ? this.lastCorrectAnswerTexts.filter(Boolean) : [];
+    },
   },
   mounted() {
     this.checkInitialized();
@@ -251,7 +267,12 @@ export default {
     this.emitVirtuProf('leitner-first-start');
   },
   watch: {
-    contentLanguage() {
+    contentLanguage(newLang, oldLang) {
+      if (!this.questionLanguage || this.questionLanguage === oldLang) {
+        this.questionLanguage = newLang || '';
+      }
+    },
+    questionLanguage() {
       this.refreshDueQuestionsForLanguage();
     },
   },
@@ -274,8 +295,8 @@ export default {
       if (this.courseId) {
         params.courseId = this.courseId;
       }
-      if (this.contentLanguage) {
-        params.lang = this.contentLanguage;
+      if (this.effectiveContentLanguage) {
+        params.lang = this.effectiveContentLanguage;
       }
       return params;
     },
@@ -283,14 +304,7 @@ export default {
       if (!Array.isArray(translatedQuestions) || translatedQuestions.length === 0) {
         return this.dueQuestions;
       }
-      if (!Array.isArray(this.dueQuestions) || this.dueQuestions.length === 0) {
-        return translatedQuestions;
-      }
-      const merged = translatedQuestions.slice();
-      if (this.currentIndex < merged.length && this.dueQuestions[this.currentIndex]) {
-        merged[this.currentIndex] = this.dueQuestions[this.currentIndex];
-      }
-      return merged;
+      return translatedQuestions;
     },
     async refreshDueQuestionsForLanguage() {
       if (!this.started || this.showResults || this.dueQuestions.length === 0) {
@@ -300,6 +314,7 @@ export default {
         const r = await axios.get(generateUrl('/apps/learning/api/leitner/due'), { params: this.dueParams() });
         if (Array.isArray(r.data)) {
           this.dueQuestions = this.mergeFutureDueQuestions(r.data);
+          this.lastCorrectAnswerTexts = this.displayCorrectAnswerTexts;
         }
       } catch (e) {
         // Language refresh is best-effort only.
@@ -354,7 +369,7 @@ export default {
         var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
           answerText: this.openAnswer,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
         this.lastCorrectAnswerText = r.data.correct_answer_text || '';
@@ -372,7 +387,7 @@ export default {
         var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
           pbqAnswers,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.pbqPoints = r.data.pbq_points ?? 0;
         this.pbqMaxPoints = r.data.pbq_max_points ?? 1;
@@ -391,7 +406,7 @@ export default {
         var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
           answerIds: this.selectedAnswerIds,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
         this.lastCorrectAnswerText = r.data.correct_answer_text || '';
@@ -410,7 +425,7 @@ export default {
         var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
           itemId: this.currentItem.id,
           answerId: answer.id,
-          ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
         });
         this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
         this.lastCorrectAnswerText = r.data.correct_answer_text || '';
@@ -423,10 +438,10 @@ export default {
       finally { this.submitting = false; }
     },
     getCorrectAnswer() {
-      if (this.lastCorrectAnswerTexts.length > 1) {
-        return this.lastCorrectAnswerTexts.join(', ');
+      if (this.displayCorrectAnswerTexts.length > 1) {
+        return this.displayCorrectAnswerTexts.join(', ');
       }
-      return this.lastCorrectAnswerText || '';
+      return this.displayCorrectAnswerTexts[0] || this.lastCorrectAnswerText || '';
     },
     async checkAiAvailable() {
       try {
@@ -533,7 +548,7 @@ export default {
 .action-buttons { text-align: center; }
 .review-header { margin-bottom: 24px; }
 .review-counter { text-align: center; font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--color-primary-element); }
-.review-card { max-width: 700px; margin: 0 auto; padding: 32px; border: 2px solid var(--color-border); border-radius: 12px; background: var(--color-main-background); }
+.review-card { position: relative; max-width: 700px; margin: 0 auto; padding: 60px 32px 32px; border: 2px solid var(--color-border); border-radius: 12px; background: var(--color-main-background); }
 .review-box-indicator { font-size: 12px; color: var(--color-text-maxcontrast); margin-bottom: 16px; }
 .question-text { font-size: 20px; line-height: 1.6; margin-bottom: 24px; font-weight: 500; color: var(--color-main-text); }
 .answer-options { display: grid; gap: 10px; }
@@ -562,12 +577,12 @@ export default {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
   .session-stats { gap: 16px; }
   .session-stat-value { font-size: 28px; }
-  .review-card { padding: 20px; }
+  .review-card { padding: 56px 20px 20px; }
 }
 @media (max-width: 480px) {
   .box-grid { grid-template-columns: repeat(2, 1fr); }
   .question-text { font-size: 17px; }
-  .review-card { padding: 16px; }
+  .review-card { padding: 52px 16px 16px; }
   .leitner-init { padding: 30px 12px; }
 }
 .due-start-btn { margin-top: 8px; }
