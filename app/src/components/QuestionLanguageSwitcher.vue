@@ -45,27 +45,26 @@ export default {
 <style scoped>
 .question-language-switcher {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 8px;
+  right: 8px;
   display: inline-flex;
-  gap: 4px;
+  gap: 3px;
   z-index: 3;
-  padding: 4px;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.82);
-  backdrop-filter: blur(8px);
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
 }
 
 .lang-btn {
-  min-width: 32px;
+  min-width: 28px;
   border: 0;
   border-radius: 999px;
-  padding: 5px 8px;
-  font-size: 10px;
+  padding: 4px 7px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: #d7e7ff;
-  background: rgba(59, 130, 246, 0.18);
+  background: rgba(59, 130, 246, 0.22);
   cursor: pointer;
 }
 
