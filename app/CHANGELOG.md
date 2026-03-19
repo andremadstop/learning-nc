@@ -2,9 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.6.0] - 2026-03-18
+## [2.6.0] - 2026-03-19
 
 ### Added
+- **VirtuProf Ticket-Routing**: Support tickets can now be routed to course instructors (subject questions) or admins (technical issues). Ticket form in VirtuProf shows a category selector ("Course question", "Technical issue", "Usage question"). Backend stores `category`, `routing_target_type`, `routing_course_id` on each ticket.
+- **Instructor Requests Tab**: Course instructors see a new "Anfragen" tab in CourseDetail showing support tickets routed to them, with inline answer form.
+- **Admin Ticket Filter**: Admin support ticket list now only shows admin-routed tickets (technical/usage), not course-instructor tickets.
+- **Chapter Heatmap**: New instructor tab "Heatmap" — per-chapter correct-answer rate for the whole course with color-coded quality badges.
+- **Weak Questions Tab**: Instructor tab showing lowest-accuracy questions with per-question pause toggle.
+- **Announcements Tab**: Instructors can post time-limited announcements per course; students see active announcements in their pools tab.
+- **Live Prüfungs-Slot**: Instructor can open an exam window (duration + scope mode) for real-time supervised exams; students see a banner with countdown.
+- **Kursregeln Tab**: Instructors can enable/disable individual learning modes (Leitner, Swipe, Exam, Duell, Liga) per course. Disabled modes are hidden from students' tab bar.
+- **Curriculum Scope + Pause Filter**: `resolveCoursePoolContext()` now applies chapter-level curriculum scope and per-question pause overrides for all learning modes (Training, Leitner, Swipe, Exam, Duel).
+- **Duel Invites**: Instructors and students can invite course members to duels; invite list with accept/decline/cancel.
+- **VirtuProf Language Toggle**: Switch VirtuProf language independently of the UI locale.
 - **Live-Duell**: Two authenticated Nextcloud users can challenge each other to a real-time True/False quiz duel using Short Polling (500ms)
 - New `duel_sessions` and `duel_answers` DB tables with scoring matrix (correct+first=+4, both correct=+3/+2, both wrong=-1)
 - **DuelMode.vue**: New component with join/lobby/question/feedback/results phases and 30-second inactivity timeout (inactive player forfeits)
@@ -17,6 +28,10 @@ All notable changes to this project will be documented in this file.
 - **AI Explain button**: `POST /api/ai/explain` schedules a text2text task explaining why an answer is correct/incorrect. "Explain this" button appears after answering in LeitnerMode and TrainingMode (only shown when AI is available).
 - **At-Risk CSV Export**: `GET /api/courses/{courseId}/at-risk/export/csv` — downloads at-risk student list as CSV (Name, Risk Level, Risk Reasons, Accuracy, Last Active). Export button in course progress tab.
 - **Batch Pool Assignment**: Add-pool modal in CourseDetail now supports multi-select (checkboxes) — select multiple pools and add them all with one click.
+
+### Fixed
+- **Ticket authorization**: `instructorList` endpoint now enforces instructor-of-course check; previously any authenticated user could read course tickets.
+- **Instructor ticket answers**: Non-admin instructors can now answer tickets routed to them (previously only admins could).
 
 ### Changed
 - `ExportController`: Replaced anonymous class with `DataDownloadResponse` for ICS response (cleaner code, no custom `render()` override needed). ICS body extracted to `buildIcsBody()` — shared by authenticated and token-based endpoints.
