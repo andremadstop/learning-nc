@@ -2,7 +2,7 @@
   <div class="duel-mode">
 
     <!-- ===== JOIN PHASE ===== -->
-    <div v-if="phase === 'join'" class="duel-join">
+    <div v-if="phase === 'join' && !hideJoinScreen" class="duel-join">
       <h3>{{ t('learning', 'Duell') }}</h3>
 
       <NcNoteCard v-if="error" type="error" class="duel-error">{{ error }}</NcNoteCard>
@@ -12,6 +12,16 @@
         <select v-model="selectedPoolId" class="pool-select">
           <option :value="0" disabled>{{ t('learning', '— Pool auswählen —') }}</option>
           <option v-for="p in pools" :key="p.id" :value="p.id">{{ p.name }}</option>
+        </select>
+      </div>
+
+      <div class="pool-picker">
+        <label class="pool-picker-label">{{ t('learning', 'Fragen') }}</label>
+        <select v-model="numQuestions" class="pool-select">
+          <option :value="5">5</option>
+          <option :value="10">10</option>
+          <option :value="15">15</option>
+          <option :value="20">20</option>
         </select>
       </div>
 
@@ -39,6 +49,11 @@
           {{ t('learning', 'Zurück') }}
         </NcButton>
       </div>
+    </div>
+
+    <div v-else-if="phase === 'join' && hideJoinScreen" class="duel-join">
+      <NcNoteCard v-if="error" type="error" class="duel-error">{{ error }}</NcNoteCard>
+      <NcLoadingIcon v-else :size="44" />
     </div>
 
     <!-- ===== LOBBY PHASE ===== -->
@@ -112,18 +127,14 @@
 
       <div class="answer-grid">
         <button
-          class="answer-btn btn-true"
+          v-for="answer in (currentQuestion && currentQuestion.answers || [])"
+          :key="answer.id"
+          class="answer-btn"
+          :class="answerButtonClasses(answer)"
           :disabled="hasAnswered || loading"
-          @click="onAnswer(true)"
+          @click="onAnswer(answer.id)"
         >
-          {{ t('learning', 'Wahr') }}
-        </button>
-        <button
-          class="answer-btn btn-false"
-          :disabled="hasAnswered || loading"
-          @click="onAnswer(false)"
-        >
-          {{ t('learning', 'Falsch') }}
+          {{ answer.text }}
         </button>
       </div>
     </div>
@@ -135,6 +146,23 @@
         <span class="feedback-label">{{ answeredCorrect ? t('learning', 'Richtig!') : t('learning', 'Falsch!') }}</span>
         <span class="feedback-points" :class="lastPoints > 0 ? 'points-positive' : (lastPoints < 0 ? 'points-negative' : '')">
           {{ lastPoints > 0 ? '+' + lastPoints : lastPoints }}
+        </span>
+      </div>
+
+      <div v-if="lastQuestionAnswers.length > 0" class="answer-grid feedback-answer-grid">
+        <div
+          v-for="answer in lastQuestionAnswers"
+          :key="'feedback-' + answer.id"
+          class="answer-btn answer-btn-static"
+          :class="feedbackAnswerClasses(answer)">
+          {{ answer.text }}
+        </div>
+      </div>
+
+      <div v-if="correctAnswerId && lastQuestion" class="correct-answer-box">
+        <span class="correct-answer-label">{{ t('learning', 'Richtige Antwort:') }}</span>
+        <span class="correct-answer-text">
+          {{ correctAnswerText }}
         </span>
       </div>
 
@@ -187,6 +215,7 @@
 
 <script>
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
+import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js';
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js';
 import axios from '@nextcloud/axios';
@@ -194,7 +223,30 @@ import { generateUrl } from '@nextcloud/router';
 
 export default {
   name: 'DuelMode',
-  components: { NcButton, NcNoteCard, NcProgressBar },
+  components: { NcButton, NcLoadingIcon, NcNoteCard, NcProgressBar },
+
+  props: {
+    courseId: {
+      type: Number,
+      default: null,
+    },
+    coursePools: {
+      type: Array,
+      default: null,
+    },
+    presetDuelCode: {
+      type: String,
+      default: '',
+    },
+    hideJoinScreen: {
+      type: Boolean,
+      default: false,
+    },
+    contentLanguage: {
+      type: String,
+      default: '',
+    },
+  },
 
   data() {
     return {
@@ -204,6 +256,7 @@ export default {
       duelState: null,
       pools: [],
       selectedPoolId: 0,
+      numQuestions: 10,
       loading: false,
       error: null,
       pollingInterval: null,
@@ -213,6 +266,9 @@ export default {
       scoreBeforeAnswer: 0,
       readyClicked: false,
       lastQuestionIndex: -1,
+      correctAnswerId: null,
+      selectedAnswerId: null,
+      lastQuestion: null,
     };
   },
 
@@ -242,6 +298,15 @@ export default {
       if (!this.duelState) return 0;
       return Math.round((this.duelState.current_question_index / this.duelState.total_questions) * 100);
     },
+    lastQuestionAnswers() {
+      return this.lastQuestion && Array.isArray(this.lastQuestion.answers)
+        ? this.lastQuestion.answers
+        : [];
+    },
+    correctAnswerText() {
+      const correctAnswer = this.lastQuestionAnswers.find(answer => answer.id === this.correctAnswerId);
+      return correctAnswer ? correctAnswer.text : '';
+    },
     winnerText() {
       if (!this.duelState) return '';
       const cs = this.duelState.creator_score;
@@ -254,20 +319,129 @@ export default {
   },
 
   mounted() {
-    this.fetchPools();
+    if (this.coursePools && this.coursePools.length > 0) {
+      // Course pools use pool_id/pool_name — normalize to id/name
+      this.pools = this.coursePools.map(p => ({
+        id: p.pool_id ?? p.id,
+        name: p.pool_name ?? p.name,
+      }));
+      if (this.pools.length === 1) {
+        this.selectedPoolId = this.pools[0].id;
+      }
+    } else {
+      this.fetchPools();
+    }
+
+    if (this.presetDuelCode) {
+      this.loadExistingDuel(this.presetDuelCode);
+    }
   },
 
   destroyed() {
     this.stopPolling();
   },
 
+  watch: {
+    presetDuelCode(code) {
+      if (code) {
+        this.loadExistingDuel(code);
+      } else {
+        this.stopPolling();
+        this.phase = 'join';
+        this.duelCode = '';
+        this.duelState = null;
+        this.resetRoundState();
+      }
+    },
+    contentLanguage() {
+      if (this.duelCode) {
+        this.pollState();
+      }
+    },
+  },
+
   methods: {
+    emitVirtuProf(triggerId, context = {}) {
+      this.$root.$emit('virtuprof:trigger', triggerId, context);
+    },
+    buildStateParams() {
+      return this.contentLanguage ? { lang: this.contentLanguage } : {};
+    },
+    answerPayload(answerId) {
+      return {
+        answerId,
+        answeredAt: Date.now(),
+        ...(this.contentLanguage ? { lang: this.contentLanguage } : {}),
+      };
+    },
+    resetRoundState() {
+      this.hasAnswered = false;
+      this.lastPoints = 0;
+      this.answeredCorrect = false;
+      this.scoreBeforeAnswer = 0;
+      this.correctAnswerId = null;
+      this.selectedAnswerId = null;
+      this.lastQuestion = null;
+    },
+
+    answerButtonClasses(answer) {
+      const isSelected = this.selectedAnswerId === answer.id;
+      return {
+        'btn-selected': isSelected,
+        'btn-selected-correct': this.hasAnswered && isSelected && this.answeredCorrect,
+        'btn-selected-incorrect': this.hasAnswered && isSelected && !this.answeredCorrect,
+      };
+    },
+
+    feedbackAnswerClasses(answer) {
+      const isSelected = this.selectedAnswerId === answer.id;
+      return {
+        'btn-selected': isSelected,
+        'btn-selected-correct': isSelected && this.answeredCorrect,
+        'btn-selected-incorrect': isSelected && !this.answeredCorrect,
+        'btn-correct-answer': answer.id === this.correctAnswerId,
+      };
+    },
+
+    async loadExistingDuel(code) {
+      this.loading = true;
+      this.error = null;
+      this.duelCode = code;
+      this.resetRoundState();
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/duels/' + code + '/state'), { params: this.buildStateParams() });
+        this.duelState = r.data;
+        this.readyClicked = false;
+        this.lastQuestionIndex = (r.data.current_question_index || 0) - 1;
+        if (r.data.status === 'active') {
+          this.phase = 'question';
+        } else if (r.data.status === 'finished') {
+          this.phase = 'finished';
+        } else if (r.data.status === 'expired') {
+          this.phase = 'expired';
+        } else {
+          this.phase = 'lobby';
+        }
+        this.emitVirtuProf('duel-first-start');
+        this.startPolling();
+      } catch (e) {
+        this.error = e.response?.data?.error || t('learning', 'Duell konnte nicht geladen werden');
+        if (!this.hideJoinScreen) {
+          this.phase = 'join';
+        }
+      } finally {
+        this.loading = false;
+      }
+    },
+
     // ---------- API helpers ----------
 
     async fetchPools() {
       try {
         const r = await axios.get(generateUrl('/apps/learning/api/pools'));
-        this.pools = r.data || [];
+        const own = r.data.own || [];
+        const shared = r.data.shared || [];
+        this.pools = [...own, ...shared];
         if (this.pools.length === 1) {
           this.selectedPoolId = this.pools[0].id;
         }
@@ -289,13 +463,16 @@ export default {
       try {
         const r = await axios.post(generateUrl('/apps/learning/api/duels'), {
           poolId: this.selectedPoolId,
+          numQuestions: this.numQuestions,
+          ...(this.courseId ? { courseId: this.courseId } : {}),
         });
         this.duelCode = r.data.code;
         this.duelState = r.data;
         this.lastQuestionIndex = -1;
-        this.hasAnswered = false;
+        this.resetRoundState();
         this.readyClicked = false;
         this.phase = 'lobby';
+        this.emitVirtuProf('duel-first-start');
         this.startPolling();
       } catch (e) {
         this.error = e.response?.data?.error || t('learning', 'Duell konnte nicht erstellt werden');
@@ -315,9 +492,10 @@ export default {
         this.duelState = r.data;
         this.joinCode = '';
         this.lastQuestionIndex = -1;
-        this.hasAnswered = false;
+        this.resetRoundState();
         this.readyClicked = false;
         this.phase = 'lobby';
+        this.emitVirtuProf('duel-first-start');
         this.startPolling();
       } catch (e) {
         this.error = e.response?.data?.error || t('learning', 'Beitreten fehlgeschlagen');
@@ -341,7 +519,10 @@ export default {
       this.readyClicked = true;
       this.error = null;
       try {
-        const r = await axios.post(generateUrl('/apps/learning/api/duels/' + this.duelCode + '/ready'), {});
+        const r = await axios.post(
+          generateUrl('/apps/learning/api/duels/' + this.duelCode + '/ready'),
+          this.contentLanguage ? { lang: this.contentLanguage } : {}
+        );
         this.duelState = r.data;
         this.applyStateTransitions(r.data);
       } catch (e) {
@@ -357,22 +538,26 @@ export default {
       this.duelState = null;
       this.error = null;
       this.readyClicked = false;
+      this.resetRoundState();
       this.$emit('back');
     },
 
     // ---------- Question phase ----------
 
-    async onAnswer(correct) {
+    async onAnswer(answerId) {
       if (this.hasAnswered) return;
       this.hasAnswered = true;
+      this.selectedAnswerId = answerId;
+      this.lastQuestion = this.currentQuestion;
       this.scoreBeforeAnswer = this.myScore;
-      this.answeredCorrect = correct;
       this.loading = true;
       try {
         const r = await axios.post(
           generateUrl('/apps/learning/api/duels/' + this.duelCode + '/answer'),
-          { answerCorrect: correct, answeredAt: Date.now() }
+          this.answerPayload(answerId)
         );
+        this.correctAnswerId = r.data.correct_answer_id ?? null;
+        this.answeredCorrect = r.data.my_answer_correct ?? false;
         this.duelState = r.data;
         this.lastPoints = this.myScore - this.scoreBeforeAnswer;
 
@@ -387,7 +572,7 @@ export default {
           this.phase = 'feedback';
           setTimeout(() => {
             this.lastQuestionIndex = r.data.current_question_index - 1;
-            this.hasAnswered = false;
+            this.resetRoundState();
             this.phase = 'question';
           }, 1500);
         } else {
@@ -396,6 +581,9 @@ export default {
         }
       } catch (e) {
         this.hasAnswered = false;
+        this.selectedAnswerId = null;
+        this.correctAnswerId = null;
+        this.lastQuestion = null;
         this.error = e.response?.data?.error || t('learning', 'Antwort konnte nicht gesendet werden');
       } finally {
         this.loading = false;
@@ -416,10 +604,10 @@ export default {
         const newCode = r.data.new_code || r.data.code;
         this.duelCode = newCode;
         this.duelState = r.data;
-        this.hasAnswered = false;
-        this.lastQuestionIndex = -1;
+        this.resetRoundState();
+        this.lastQuestionIndex = (r.data.current_question_index || 0) - 1;
         this.readyClicked = false;
-        this.phase = 'lobby';
+        this.phase = 'question';  // active — skip lobby
         this.stopPolling();
         this.startPolling();
       } catch (e) {
@@ -446,7 +634,7 @@ export default {
     async pollState() {
       if (!this.duelCode) return;
       try {
-        const r = await axios.get(generateUrl('/apps/learning/api/duels/' + this.duelCode + '/state'));
+        const r = await axios.get(generateUrl('/apps/learning/api/duels/' + this.duelCode + '/state'), { params: this.buildStateParams() });
         this.applyStateTransitions(r.data);
       } catch (e) {
         // Network errors during polling are non-fatal — just skip this tick
@@ -454,6 +642,12 @@ export default {
     },
 
     applyStateTransitions(state) {
+      // Opponent detects that the other player already started a rematch
+      if (state.rematch_code && (state.status === 'finished' || state.status === 'expired')) {
+        this.loadExistingDuel(state.rematch_code);
+        return;
+      }
+
       const prevIndex = this.duelState ? this.duelState.current_question_index : -1;
       this.duelState = state;
 
@@ -480,7 +674,7 @@ export default {
           const nextIndex = state.current_question_index;
           setTimeout(() => {
             this.lastQuestionIndex = nextIndex - 1;
-            this.hasAnswered = false;
+            this.resetRoundState();
             this.phase = 'question';
           }, 1500);
           return;
@@ -539,13 +733,14 @@ export default {
 
 .pool-select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 14px 12px;
   border: 2px solid var(--color-border);
   border-radius: var(--border-radius-large);
   background: var(--color-main-background);
   color: var(--color-main-text);
   font-size: 15px;
   cursor: pointer;
+  appearance: auto;
 }
 
 .pool-select:focus {
@@ -775,7 +970,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--color-main-background) 80%, transparent);
+  background: rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(1px);
   border-radius: 14px;
   font-size: 16px;
   font-weight: 600;
@@ -804,22 +1000,34 @@ export default {
 .answer-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-color: var(--color-primary-element);
+  background: color-mix(in srgb, var(--color-primary-element) 8%, var(--color-main-background));
 }
 
-.btn-true:hover:not(:disabled) {
+.btn-selected {
+  border-color: var(--color-primary-element);
+  background: color-mix(in srgb, var(--color-primary-element) 12%, var(--color-main-background));
+}
+
+.btn-selected-correct {
   border-color: var(--color-success);
-  background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background));
+  background: color-mix(in srgb, var(--color-success) 16%, var(--color-main-background));
   color: var(--color-success);
 }
 
-.btn-false:hover:not(:disabled) {
+.btn-selected-incorrect {
   border-color: var(--color-error);
-  background: color-mix(in srgb, var(--color-error) 10%, var(--color-main-background));
+  background: color-mix(in srgb, var(--color-error) 12%, var(--color-main-background));
   color: var(--color-error);
 }
 
+.btn-correct-answer {
+  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 12%, var(--color-main-background));
+}
+
 .answer-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.9;
   cursor: not-allowed;
   transform: none;
 }
@@ -876,6 +1084,41 @@ export default {
 
 .points-positive { color: var(--color-success); }
 .points-negative { color: var(--color-error); }
+
+.correct-answer-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: color-mix(in srgb, var(--color-success) 10%, var(--color-main-background));
+  border: 1px solid var(--color-success);
+  border-radius: 10px;
+  padding: 12px 20px;
+  margin-bottom: 16px;
+}
+
+.correct-answer-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-success);
+}
+
+.correct-answer-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-main-text);
+  text-align: center;
+}
+
+.feedback-answer-grid {
+  margin-bottom: 16px;
+}
+
+.answer-btn-static {
+  cursor: default;
+}
 
 .feedback-scores {
   margin-bottom: 16px;
