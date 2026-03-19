@@ -128,6 +128,7 @@
           <h3>{{ t('learning', 'Support tickets') }}</h3>
           <NcButton type="tertiary" @click="loadSupportTickets">{{ t('learning', 'Refresh') }}</NcButton>
         </div>
+        <p class="field-help ticket-filter-note">{{ t('learning', 'Zeigt nur technische Anfragen (Admin-Tickets)') }}</p>
         <div v-if="ticketLoading" class="loading">
           <NcLoadingIcon :size="24" />
           <span>{{ t('learning', 'Loading...') }}</span>
@@ -275,7 +276,7 @@ export default {
       this.ticketError = ''
       this.ticketSuccess = ''
       try {
-        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/support-tickets'), { params: { limit: 100 } })
+        const res = await axios.get(generateUrl('/apps/learning/api/settings/admin/support-tickets'), { params: { limit: 100, target: 'admin' } })
         this.supportTickets = Array.isArray(res.data?.tickets) ? res.data.tickets : []
         const nextAnswers = {}
         this.supportTickets.forEach(ticket => {

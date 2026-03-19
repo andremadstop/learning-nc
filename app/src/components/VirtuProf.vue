@@ -73,6 +73,7 @@ export default {
       activeFaqCategoryId: null,
       ticketSubject: '',
       ticketDraft: '',
+      ticketCategory: 'technical',
       ticketSending: false,
       ticketError: '',
       ticketSuccess: '',
@@ -131,6 +132,15 @@ export default {
         return ids
       }
       return [recommendedId, ...ids.filter(id => id !== recommendedId)]
+    },
+    hasCourseContext() {
+      return !!(this.currentContext && this.currentContext.courseTitle)
+    },
+    categoryHint() {
+      if (this.ticketCategory === 'course_content') {
+        return this.vt('Your question will be sent to the course instructor.')
+      }
+      return this.vt('Your question will be sent to the admin.')
     },
   },
   watch: {
@@ -315,6 +325,10 @@ export default {
         this.openFaq(action.faqId)
         return
       }
+      if (action?.type === 'set-ticket-category') {
+        this.ticketCategory = action.value || 'technical'
+        return
+      }
       if (action?.type === 'open-ticket-form') {
         this.openTicketForm()
         return
@@ -421,6 +435,7 @@ export default {
       this.activeFaqCategoryId = null
       this.ticketSubject = ''
       this.ticketDraft = ''
+      this.ticketCategory = 'technical'
       this.ticketSending = false
       this.ticketError = ''
       this.ticketSuccess = ''
@@ -503,6 +518,7 @@ export default {
       if (!this.ticketSubject) {
         this.ticketSubject = this.defaultTicketSubject()
       }
+      this.ticketCategory = this.hasCourseContext ? 'course_content' : 'technical'
     },
     async openTicketList() {
       this.helpView = 'ticket-list'
@@ -664,6 +680,9 @@ export default {
         title: this.vt('Send a question'),
         text: this.vt('Your message will be stored as a support ticket with context, so an admin can answer it manually later.'),
         placeholder: this.vt('Describe your question or problem...'),
+        ticketCategory: this.ticketCategory,
+        hasCourseContext: this.hasCourseContext,
+        categoryHint: this.categoryHint,
         actions: [
           { label: this.ticketSending ? this.vt('Sending...') : this.vt('Send ticket'), type: 'submit-ticket' },
           { label: this.vt('My requests'), type: 'open-ticket-list' },
@@ -1023,6 +1042,7 @@ export default {
         await axios.post(generateUrl('/apps/learning/api/support-tickets'), {
           subject: this.ticketSubject || this.defaultTicketSubject(),
           message: this.ticketDraft,
+          category: this.ticketCategory,
           context: {
             ...this.currentContext,
             faqId: this.activeFaqId,
@@ -1033,6 +1053,7 @@ export default {
         })
         this.ticketDraft = ''
         this.ticketSubject = this.defaultTicketSubject()
+        this.ticketCategory = this.hasCourseContext ? 'course_content' : 'technical'
         this.ticketSuccess = this.vt('Support ticket sent')
         await this.loadMyTickets()
       } catch (e) {

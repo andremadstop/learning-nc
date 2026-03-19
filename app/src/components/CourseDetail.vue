@@ -646,6 +646,148 @@
 			</template>
 		</div>
 
+	<!-- Heatmap Tab (instructor only) -->
+	<div v-if="currentTab === 'heatmap' && isInstructor" class="tab-content heatmap-section">
+		<div v-if="loadingHeatmap" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
+		<div v-else-if="heatmapChapters.length === 0" class="empty-hint">
+			{{ t('learning', 'No chapter data available yet. Students need to answer questions first.') }}
+		</div>
+		<div v-else>
+			<p class="section-hint">{{ t('learning', 'Success rate per chapter across all students. Sorted by worst first.') }}</p>
+			<div class="heatmap-list">
+				<div v-for="ch in heatmapChapters" :key="ch.chapter_key" class="heatmap-row">
+					<div class="heatmap-meta">
+						<span class="chapter-title-hm">{{ ch.chapter_title || ch.chapter_key }}</span>
+						<span class="heatmap-stats">{{ ch.success_rate }}% · {{ ch.unique_learners }} {{ t('learning', 'learners') }}</span>
+					</div>
+					<div class="heatmap-bar-bg">
+						<div
+							class="heatmap-bar-fill"
+							:class="ch.severity"
+							:style="{ width: ch.success_rate + '%' }" />
+					</div>
+					<div v-if="expandedChapter === ch.chapter_key && ch.top_wrong_questions && ch.top_wrong_questions.length > 0" class="wrong-questions">
+						<div v-for="q in ch.top_wrong_questions" :key="q.id" class="wrong-q-row">
+							<span class="wrong-q-text">{{ q.text }}</span>
+							<span class="wrong-q-rate">{{ q.wrong_rate }}% falsch</span>
+						</div>
+					</div>
+					<NcButton type="tertiary" @click="toggleExpandChapter(ch.chapter_key)">
+						{{ expandedChapter === ch.chapter_key ? t('learning', 'Hide') : t('learning', 'Show worst questions') }}
+					</NcButton>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Weak Questions Tab (instructor only) -->
+	<div v-if="currentTab === 'weak-questions' && isInstructor" class="tab-content weak-questions-section">
+		<div v-if="loadingWeakQuestions" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
+		<div v-else-if="weakQuestions.length === 0" class="empty-hint">
+			{{ t('learning', 'No weak questions found. Questions need at least 5 answers to appear here.') }}
+		</div>
+		<table v-else class="weak-questions-table">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>{{ t('learning', 'Question') }}</th>
+					<th>{{ t('learning', 'Chapter') }}</th>
+					<th>{{ t('learning', 'Wrong rate') }}</th>
+					<th>{{ t('learning', 'Actions') }}</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-for="(q, idx) in weakQuestions" :key="q.question_id" :class="{ 'paused-row': q.is_paused }">
+					<td>{{ idx + 1 }}</td>
+					<td class="q-text">{{ q.question_text }}</td>
+					<td>{{ q.chapter_title || q.chapter_key || '—' }}</td>
+					<td class="wrong-rate" :class="q.wrong_rate >= 70 ? 'rate-red' : q.wrong_rate >= 50 ? 'rate-yellow' : 'rate-ok'">
+						{{ q.wrong_rate }}%
+					</td>
+					<td class="q-actions">
+						<NcButton type="tertiary" @click="toggleQuestionPause(q)">
+							{{ q.is_paused ? t('learning', 'Resume') : t('learning', 'Pause') }}
+						</NcButton>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Announcements Tab (instructor only) -->
+	<div v-if="currentTab === 'announcements' && isInstructor" class="tab-content announcements-section">
+		<div class="announcement-form">
+			<h3>{{ t('learning', 'New announcement') }}</h3>
+			<input v-model="newAnnouncementTitle" type="text" :placeholder="t('learning', 'Title')" class="nc-input announcement-input" />
+			<textarea v-model="newAnnouncementBody" :placeholder="t('learning', 'Message...')" class="nc-textarea" rows="3" />
+			<NcButton type="primary" :disabled="savingAnnouncement || !newAnnouncementTitle.trim()" @click="createAnnouncement">
+				{{ t('learning', 'Publish') }}
+			</NcButton>
+		</div>
+		<div class="announcements-list">
+			<div v-if="announcements.length === 0" class="empty-hint">{{ t('learning', 'No announcements yet.') }}</div>
+			<div v-for="a in announcements" :key="a.id" class="announcement-item">
+				<div class="announcement-header">
+					<strong>{{ a.title }}</strong>
+					<NcButton type="tertiary" @click="deleteAnnouncement(a.id)">{{ t('learning', 'Delete') }}</NcButton>
+				</div>
+				<p class="announcement-body">{{ a.body }}</p>
+				<small class="announcement-date">{{ formatDate(a.created_at) }}</small>
+			</div>
+		</div>
+	</div>
+
+	<!-- Exam Slot Tab (instructor only) -->
+	<div v-if="currentTab === 'exam-slot' && isInstructor" class="tab-content exam-slot-section">
+		<div v-if="activeExamSlot" class="active-slot-banner">
+			<NcNoteCard type="warning">
+				{{ t('learning', 'Exam is running!') }} {{ t('learning', 'Ends at:') }} {{ formatTimestamp(activeExamSlot.ends_at) }}
+			</NcNoteCard>
+			<NcButton type="error" @click="closeExamSlot">{{ t('learning', 'Close exam') }}</NcButton>
+		</div>
+		<div v-else class="start-slot-form">
+			<h3>{{ t('learning', 'Start exam slot') }}</h3>
+			<div class="form-row-cd">
+				<label>{{ t('learning', 'Duration (minutes)') }}</label>
+				<input v-model.number="examSlotDuration" type="number" min="10" max="300" class="nc-input" />
+			</div>
+			<div class="form-row-cd">
+				<label>{{ t('learning', 'Question scope') }}</label>
+				<select v-model="examSlotScope" class="nc-select-cd">
+					<option value="all">{{ t('learning', 'All course questions') }}</option>
+					<option value="curriculum">{{ t('learning', 'Active curriculum only') }}</option>
+				</select>
+			</div>
+			<NcButton type="primary" :disabled="startingExamSlot" @click="startExamSlot">
+				{{ t('learning', 'Start exam') }}
+			</NcButton>
+		</div>
+	</div>
+
+	<!-- Requests Tab (instructor only) -->
+	<div v-if="currentTab === 'requests' && isInstructor" class="tab-content requests-section">
+		<div v-if="loadingRequests" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
+		<div v-else-if="courseTickets.length === 0" class="empty-hint">
+			{{ t('learning', 'No open requests for this course.') }}
+		</div>
+		<div v-else class="tickets-list-cd">
+			<div v-for="ticket in courseTickets" :key="ticket.id" class="ticket-item-cd">
+				<div class="ticket-header-cd">
+					<span class="ticket-subject-cd">{{ ticket.subject }}</span>
+					<span class="ticket-status-cd" :class="'status-' + ticket.status">{{ ticket.status }}</span>
+				</div>
+				<p class="ticket-message-cd">{{ ticket.message }}</p>
+				<div v-if="ticket.status === 'open'" class="ticket-reply-cd">
+					<textarea v-model="ticketReplies[ticket.id]" :placeholder="t('learning', 'Your answer...')" class="nc-textarea" rows="3" />
+					<NcButton type="primary" @click="answerTicket(ticket.id)">{{ t('learning', 'Send answer') }}</NcButton>
+				</div>
+				<div v-if="ticket.answer_text" class="ticket-answer-cd">
+					<strong>{{ t('learning', 'Answer:') }}</strong> {{ ticket.answer_text }}
+				</div>
+			</div>
+		</div>
+	</div>
+
 		</template>
 
 		<!-- Add Pool Modal -->
@@ -964,6 +1106,32 @@ export default {
 			// At-Risk
 			atRiskStudents: [],
 			atRiskCollapsed: false,
+
+			// Heatmap
+			loadingHeatmap: false,
+			heatmapChapters: [],
+			expandedChapter: null,
+
+			// Weak questions
+			loadingWeakQuestions: false,
+			weakQuestions: [],
+
+			// Announcements
+			announcements: [],
+			newAnnouncementTitle: '',
+			newAnnouncementBody: '',
+			savingAnnouncement: false,
+
+			// Exam slot
+			activeExamSlot: null,
+			examSlotDuration: 90,
+			examSlotScope: 'all',
+			startingExamSlot: false,
+
+			// Course tickets
+			loadingRequests: false,
+			courseTickets: [],
+			ticketReplies: {},
 		}
 	},
 
@@ -988,6 +1156,11 @@ export default {
 					{ id: 'league', label: t('learning', 'Liga') },
 					{ id: 'duel', label: t('learning', 'Duell') },
 					{ id: 'curriculum', label: t('learning', 'Themen') },
+					{ id: 'heatmap', label: t('learning', 'Heatmap') },
+					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
+					{ id: 'announcements', label: t('learning', 'Ankündigungen') },
+					{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot') },
+					{ id: 'requests', label: t('learning', 'Anfragen') },
 				]
 			}
 			return [
@@ -1094,6 +1267,21 @@ export default {
 			}
 			if (tab === 'curriculum' && this.isInstructor) {
 				this.fetchCurriculumScope()
+			}
+			if (tab === 'heatmap' && this.isInstructor) {
+				this.fetchHeatmap()
+			}
+			if (tab === 'weak-questions' && this.isInstructor) {
+				this.fetchWeakQuestions()
+			}
+			if (tab === 'announcements' && this.isInstructor) {
+				this.fetchAnnouncements()
+			}
+			if (tab === 'exam-slot' && this.isInstructor) {
+				this.fetchActiveExamSlot()
+			}
+			if (tab === 'requests' && this.isInstructor) {
+				this.fetchCourseTickets()
 			}
 			this.emitVirtuProfContext()
 		},
@@ -1776,6 +1964,159 @@ export default {
 				})
 			} catch {
 				return String(timestamp)
+			}
+		},
+
+		formatTimestamp(timestamp) {
+			if (!timestamp) return ''
+			try {
+				return new Date(timestamp * 1000).toLocaleTimeString()
+			} catch {
+				return String(timestamp)
+			}
+		},
+
+		async fetchHeatmap() {
+			if (!this.course) return
+			this.loadingHeatmap = true
+			try {
+				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/chapter-heatmap`))
+				this.heatmapChapters = res.data.heatmap || res.data || []
+			} catch (e) {
+				console.error('Failed to load heatmap', e)
+			} finally {
+				this.loadingHeatmap = false
+			}
+		},
+
+		toggleExpandChapter(key) {
+			this.expandedChapter = this.expandedChapter === key ? null : key
+		},
+
+		async fetchWeakQuestions() {
+			if (!this.course) return
+			this.loadingWeakQuestions = true
+			try {
+				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/weak-questions`))
+				this.weakQuestions = res.data.questions || res.data || []
+			} catch (e) {
+				console.error('Failed to load weak questions', e)
+			} finally {
+				this.loadingWeakQuestions = false
+			}
+		},
+
+		async toggleQuestionPause(q) {
+			try {
+				await axios.post(generateUrl(`/apps/learning/api/courses/${this.courseId}/questions/${q.question_id}/override`), {
+					paused: !q.is_paused,
+					highlight: false,
+				})
+				q.is_paused = !q.is_paused
+			} catch (e) {
+				console.error('Failed to update question override', e)
+			}
+		},
+
+		async fetchAnnouncements() {
+			if (!this.course) return
+			try {
+				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/announcements`))
+				this.announcements = res.data.announcements || res.data || []
+			} catch (e) {
+				console.error('Failed to load announcements', e)
+			}
+		},
+
+		async createAnnouncement() {
+			if (!this.newAnnouncementTitle.trim()) return
+			this.savingAnnouncement = true
+			try {
+				const res = await axios.post(generateUrl(`/apps/learning/api/courses/${this.courseId}/announcements`), {
+					title: this.newAnnouncementTitle,
+					body: this.newAnnouncementBody,
+				})
+				this.announcements.unshift(res.data.announcement || res.data)
+				this.newAnnouncementTitle = ''
+				this.newAnnouncementBody = ''
+			} catch (e) {
+				console.error('Failed to create announcement', e)
+			} finally {
+				this.savingAnnouncement = false
+			}
+		},
+
+		async deleteAnnouncement(id) {
+			try {
+				await axios.delete(generateUrl(`/apps/learning/api/courses/${this.courseId}/announcements/${id}`))
+				this.announcements = this.announcements.filter(a => a.id !== id)
+			} catch (e) {
+				console.error('Failed to delete announcement', e)
+			}
+		},
+
+		async fetchActiveExamSlot() {
+			if (!this.course) return
+			try {
+				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/exam-slot/active`))
+				this.activeExamSlot = res.data.slot || null
+			} catch (e) {
+				this.activeExamSlot = null
+			}
+		},
+
+		async startExamSlot() {
+			this.startingExamSlot = true
+			try {
+				const res = await axios.post(generateUrl(`/apps/learning/api/courses/${this.courseId}/exam-slot`), {
+					durationMinutes: this.examSlotDuration,
+					scopeMode: this.examSlotScope,
+				})
+				this.activeExamSlot = res.data.slot || res.data
+			} catch (e) {
+				console.error('Failed to start exam slot', e)
+			} finally {
+				this.startingExamSlot = false
+			}
+		},
+
+		async closeExamSlot() {
+			try {
+				await axios.post(generateUrl(`/apps/learning/api/courses/${this.courseId}/exam-slot/close`))
+				this.activeExamSlot = null
+			} catch (e) {
+				console.error('Failed to close exam slot', e)
+			}
+		},
+
+		async fetchCourseTickets() {
+			if (!this.course) return
+			this.loadingRequests = true
+			try {
+				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/support-tickets`))
+				this.courseTickets = res.data.tickets || res.data || []
+			} catch (e) {
+				console.error('Failed to load course tickets', e)
+			} finally {
+				this.loadingRequests = false
+			}
+		},
+
+		async answerTicket(ticketId) {
+			const answer = this.ticketReplies[ticketId]
+			if (!answer || !answer.trim()) return
+			try {
+				await axios.post(generateUrl(`/apps/learning/api/settings/admin/support-tickets/${ticketId}/answer`), {
+					answerText: answer,
+				})
+				const ticket = this.courseTickets.find(t => t.id === ticketId)
+				if (ticket) {
+					ticket.status = 'answered'
+					ticket.answer_text = answer
+				}
+				this.$delete(this.ticketReplies, ticketId)
+			} catch (e) {
+				console.error('Failed to answer ticket', e)
 			}
 		},
 	},
@@ -2769,4 +3110,70 @@ td.mastery-low {
 .chapter-order { font-size: 12px; color: var(--color-text-maxcontrast); margin-inline-start: 8px; }
 .curriculum-actions { display: flex; align-items: center; gap: 12px; }
 .curriculum-saved-hint { font-size: 13px; color: var(--color-success); font-weight: 600; }
+
+/* Shared tab content */
+.tab-content { padding: 16px 0; }
+.loading-hint, .empty-hint { color: var(--color-text-maxcontrast); padding: 24px; text-align: center; }
+.section-hint { color: var(--color-text-maxcontrast); margin-bottom: 16px; font-size: 0.9em; }
+.nc-textarea { width: 100%; margin: 8px 0; padding: 8px; border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-main-background); font-family: inherit; font-size: inherit; box-sizing: border-box; }
+.nc-select-cd { width: 100%; padding: 6px 8px; border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-main-background); font-size: inherit; }
+
+/* Heatmap */
+.heatmap-section {}
+.heatmap-list { display: flex; flex-direction: column; gap: 16px; }
+.heatmap-row { padding-bottom: 16px; border-bottom: 1px solid var(--color-border); }
+.heatmap-meta { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.chapter-title-hm { font-weight: 600; }
+.heatmap-stats { color: var(--color-text-maxcontrast); font-size: 0.9em; }
+.heatmap-bar-bg { height: 12px; background: var(--color-background-dark); border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
+.heatmap-bar-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
+.heatmap-bar-fill.red { background: var(--color-error); }
+.heatmap-bar-fill.yellow { background: #e6a817; }
+.heatmap-bar-fill.green { background: var(--color-success); }
+.wrong-questions { background: var(--color-background-dark); padding: 8px 12px; border-radius: 4px; margin-bottom: 6px; }
+.wrong-q-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.9em; }
+.wrong-q-rate { color: var(--color-error); font-weight: 600; }
+
+/* Weak questions */
+.weak-questions-table { width: 100%; border-collapse: collapse; }
+.weak-questions-table th, .weak-questions-table td { padding: 8px 12px; border-bottom: 1px solid var(--color-border); text-align: start; }
+.weak-questions-table th { font-weight: 600; background: var(--color-background-dark); }
+.q-text { max-width: 300px; }
+.paused-row { opacity: 0.5; }
+.rate-red { color: var(--color-error); font-weight: 700; }
+.rate-yellow { color: #e6a817; font-weight: 600; }
+
+/* Announcements */
+.announcements-section {}
+.announcement-form { margin-bottom: 24px; padding: 16px; background: var(--color-background-dark); border-radius: 8px; }
+.announcement-form h3 { margin: 0 0 12px 0; font-size: 1.1em; font-weight: 600; }
+.announcement-input { width: 100%; box-sizing: border-box; margin-bottom: 8px; }
+.announcements-list { display: flex; flex-direction: column; gap: 8px; }
+.announcement-item { padding: 12px; border: 1px solid var(--color-border); border-radius: 8px; }
+.announcement-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.announcement-body { color: var(--color-text-maxcontrast); margin: 4px 0; }
+.announcement-date { color: var(--color-text-maxcontrast); font-size: 0.85em; }
+
+/* Exam Slot */
+.exam-slot-section {}
+.active-slot-banner { margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px; }
+.start-slot-form h3 { margin: 0 0 16px 0; font-size: 1.1em; font-weight: 600; }
+.form-row-cd { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.form-row-cd label { font-weight: 600; font-size: 0.9em; }
+
+/* Requests (course tickets) */
+.requests-section {}
+.tickets-list-cd { display: flex; flex-direction: column; gap: 12px; }
+.ticket-item-cd { border: 1px solid var(--color-border); border-radius: 8px; padding: 12px; }
+.ticket-header-cd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.ticket-subject-cd { font-weight: 600; }
+.ticket-status-cd { font-size: 0.85em; padding: 2px 8px; border-radius: 4px; }
+.ticket-status-cd.status-open { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
+.ticket-status-cd.status-answered { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
+.ticket-message-cd { color: var(--color-text-maxcontrast); margin-bottom: 8px; }
+.ticket-reply-cd { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.ticket-answer-cd { margin-top: 8px; padding: 8px; background: var(--color-background-dark); border-radius: 4px; font-size: 0.9em; }
+
+/* AdminSettings ticket filter note */
+.ticket-filter-note { margin-bottom: 8px; }
 </style>

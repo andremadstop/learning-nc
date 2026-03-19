@@ -18,6 +18,19 @@
       <p v-if="step.text" class="bubble-text">{{ step.text }}</p>
 
       <div v-if="step.kind === 'ticket-form'" class="ticket-form">
+        <div class="ticket-category-row">
+          <label class="ticket-label" for="virtuprof-ticket-category">{{ vt('Category') }}</label>
+          <select
+            id="virtuprof-ticket-category"
+            class="ticket-select"
+            :value="step.ticketCategory || 'technical'"
+            @change="$emit('action', { type: 'set-ticket-category', value: $event.target.value })">
+            <option v-if="step.hasCourseContext" value="course_content">{{ vt('Course content question') }}</option>
+            <option value="technical">{{ vt('Technical problem') }}</option>
+            <option value="usage">{{ vt('Usage question') }}</option>
+          </select>
+          <small v-if="step.categoryHint" class="ticket-category-hint">{{ step.categoryHint }}</small>
+        </div>
         <label class="ticket-label" for="virtuprof-ticket-subject">{{ vt('Subject') }}</label>
         <input
           id="virtuprof-ticket-subject"
@@ -317,6 +330,29 @@ export default {
   font-size: 12px;
   font-weight: 600;
   color: var(--color-text-maxcontrast);
+}
+
+.ticket-category-row {
+  display: grid;
+  gap: 4px;
+}
+
+.ticket-select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-main-background);
+  color: var(--color-main-text);
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 13px;
+}
+
+.ticket-category-hint {
+  font-size: 11px;
+  color: var(--color-text-maxcontrast);
+  margin-top: 2px;
 }
 
 .ticket-input,
