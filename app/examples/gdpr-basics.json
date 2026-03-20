@@ -1,0 +1,82 @@
+[
+  {
+    "text": "What does GDPR stand for?",
+    "answers": [
+      {"text": "General Data Protection Regulation", "is_correct": true},
+      {"text": "Global Data Privacy Rules", "is_correct": false},
+      {"text": "Government Data Processing Requirements", "is_correct": false},
+      {"text": "General Digital Privacy Regulation", "is_correct": false}
+    ],
+    "explanation": "The General Data Protection Regulation (EU 2016/679) is EU law on data protection and privacy, effective since May 25, 2018."
+  },
+  {
+    "text": "What is a Data Protection Officer (DPO)?",
+    "answers": [
+      {"text": "A person who manages IT infrastructure", "is_correct": false},
+      {"text": "A person who oversees data protection strategy and compliance", "is_correct": true},
+      {"text": "A government official who audits companies", "is_correct": false},
+      {"text": "A software tool for encrypting data", "is_correct": false}
+    ],
+    "explanation": "A DPO is required for organizations that process personal data on a large scale. They ensure GDPR compliance and act as contact point for supervisory authorities."
+  },
+  {
+    "text": "Within how many hours must a data breach be reported to the supervisory authority?",
+    "answers": [
+      {"text": "24 hours", "is_correct": false},
+      {"text": "48 hours", "is_correct": false},
+      {"text": "72 hours", "is_correct": true},
+      {"text": "7 days", "is_correct": false}
+    ],
+    "explanation": "GDPR Article 33 requires notification to the supervisory authority within 72 hours of becoming aware of a personal data breach."
+  },
+  {
+    "text": "What is the right to erasure also known as?",
+    "answers": [
+      {"text": "Right to access", "is_correct": false},
+      {"text": "Right to be forgotten", "is_correct": true},
+      {"text": "Right to portability", "is_correct": false},
+      {"text": "Right to rectification", "is_correct": false}
+    ],
+    "explanation": "GDPR Article 17 gives individuals the right to have their personal data erased under certain conditions, commonly called the 'right to be forgotten'."
+  },
+  {
+    "text": "What is the maximum fine for GDPR violations?",
+    "answers": [
+      {"text": "1 million EUR", "is_correct": false},
+      {"text": "10 million EUR or 2% of global turnover", "is_correct": false},
+      {"text": "20 million EUR or 4% of global turnover", "is_correct": true},
+      {"text": "50 million EUR", "is_correct": false}
+    ],
+    "explanation": "GDPR Article 83 specifies fines up to 20 million EUR or 4% of annual global turnover (whichever is higher) for the most serious violations."
+  },
+  {
+    "text": "What is 'data portability' under GDPR?",
+    "answers": [
+      {"text": "The right to move data between service providers", "is_correct": true},
+      {"text": "The ability to access data from mobile devices", "is_correct": false},
+      {"text": "A requirement to store data in multiple locations", "is_correct": false},
+      {"text": "The obligation to share data with authorities", "is_correct": false}
+    ],
+    "explanation": "GDPR Article 20 gives individuals the right to receive their personal data in a structured, machine-readable format and transfer it to another controller."
+  },
+  {
+    "text": "Which of the following is a valid legal basis for processing under GDPR?",
+    "answers": [
+      {"text": "The data subject gave consent", "is_correct": true},
+      {"text": "The data is publicly available", "is_correct": false},
+      {"text": "The company has existed for more than 5 years", "is_correct": false},
+      {"text": "The processing is convenient for the company", "is_correct": false}
+    ],
+    "explanation": "GDPR Article 6 lists six legal bases: consent, contract performance, legal obligation, vital interests, public task, and legitimate interests."
+  },
+  {
+    "text": "What is a Data Protection Impact Assessment (DPIA)?",
+    "answers": [
+      {"text": "An annual financial audit", "is_correct": false},
+      {"text": "A risk assessment for data processing activities", "is_correct": true},
+      {"text": "A software testing procedure", "is_correct": false},
+      {"text": "A customer satisfaction survey", "is_correct": false}
+    ],
+    "explanation": "GDPR Article 35 requires a DPIA when processing is likely to result in a high risk to individuals' rights and freedoms. It assesses necessity, proportionality, and risks."
+  }
+]

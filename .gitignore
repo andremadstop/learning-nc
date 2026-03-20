@@ -1,0 +1,128 @@
+# Docker volumes
+docker-data/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build output
+app/js/*.map
+#app/css/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env.local
+.env.production
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Ralph autonomous agent (internal workflow)
+.ralph/
+.ralphrc
+
+# Project-specific dev config (internal infra details)
+CLAUDE.md
+
+# Environment (contains passwords)
+.env
+
+# Signing certificates & keys (NEVER commit)
+certs/
+PRIVATE-signing-key.txt
+*.key
+*.pem
+
+# Internal dev docs (contain credentials/infra details)
+DONE.md
+FINAL_STATUS.md
+WEEK_*.md
+WEEKS_*.md
+DEVELOPMENT.md
+PROJEKT_STEUERUNG.md
+ROADMAP.md
+
+# Security review / smoketest reports (vulnerability details)
+CODEX-SMOKETEST*.md
+SMOKETEST*.md
+REVIEW-PROMPT*.md
+REVIEW_REPORT*.md
+GEMINI-DESIGN-REVIEW*.md
+LAUNCH_READINESS_REPORT*.md
+review-prompt-*.md
+v*-review-*.md
+
+# Infrastructure / VM setup (not app-related)
+install-automated.exp
+auto-setup.sh
+INSTALL_NOW.txt
+FRITZBOX_GUIDE.md
+VM_INFO.md
+SETUP.md
+nixos/
+
+# Local work artifacts
+.tmpq/
+.tmpq_upgrade2/
+AGENTS.md
+PLAN-settings-pages.md
+
+# E2E generated auth/fixture env
+app/tests/e2e/.auth/
+app/tests/e2e/.env.generated
+
+# Local/generated artifacts that should stay outside Git history
+app/test-results/
+app/js/*.bak
+translations/
+questions_*.json
+comptia_n10_009_batch_*.json
+merge_batch.py
+backups/
+learning-*.tar.gz
+scripts/__pycache__/
+.planning/
+
+# Internal build/planning files (not for public repo)
+AGENTS.md
+CODEX_HANDOFF*.md
+CODEX_PLAN_*.md
+DEVELOPMENT.md
+DONE.md
+FINAL_STATUS.md
+GEMINI*.md
+HANDOFF*.md
+LAUNCH_READINESS_REPORT*.md
+PLAN-*.md
+PROJEKT_STEUERUNG.md
+RESUME_PROMPT.md
+REVIEW-PROMPT*.md
+REVIEW_REPORT*.md
+ROADMAP.md
+WEEK_*.md
+WEEKS_*.md
+v170-review*.md
+scripts/*.sql
+scripts/__pycache__/
+scripts/translation_json_to_sql.py
+INBOX.md
+.planning/
+*.pdf
+a_plus*.txt
+pbq-import-n10009.json
+.git-backup-*

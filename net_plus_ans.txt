@@ -1,0 +1,2072 @@
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+
+Abb. 14.7: Verschiebung der Angriffe und ihrer Ziele über die letzten Jahre (© Mathias Gut,
+netchange.ch, in Anlehnung an MELANI Fachbericht 1/2012, Seite 3)
+
+Es ist unschwer zu erkennen, dass die Zeit für die Angreifer gekommen ist, aus
+dem »Schaden am System« zum »Schaden zum Erwirtschaften von Geld« überzugehen. Das heißt, die Ziele werden immer präziser ausgesucht, neue Formen wie
+gezielte Angriffe (Targeted Attacks) oder gar APT (Advanced Persistent Attacks),
+welche über einen langen Zeitraum erfolgen, führen zu direkten (und großen)
+wirtschaftlichen Schäden bei den Betroffenen.
+Bei der Beurteilung des Risikos durch Schadsoftware ist daher auch auf die Motive
+der möglichen Angreifer einzugehen. Handelt es sich dabei um die normalen Motive von Cyberkriminellen, steht Geld meist im Hauptfokus. Bei dieser Täterschaft
+soll Schadsoftware beispielsweise eine unauffällige Abbuchung im E-Banking, das
+Aufzeichnen der Kreditkartendaten oder eine anschließende Erpressung des Opfers ermöglichen. So werden dann auch unterschiedliche Schadsoftware-Arten
+und Kombinationen davon für Angriffe auf Endsysteme eingesetzt. Bei einem Angriff mit Schadsoftware kann zum Beispiel zunächst ein Zugriff über ein Remote
+Access Tool (RAT) mittels eines in einem Werbelink versteckten Remote-Exploits
+erfolgen. Danach wird über den meist verschlüsselten Kommunikationskanal
+(einen sogenannten Covert Channel) eine Schadsoftware auf dem Computer des
+Opfers platziert, die sich bei jedem Start des Systems mit dem Steuerungsserver
+der Cyberkriminellen verbindet und dort die neuesten Programmcodes direkt ins
+RAM nachlädt.
+Damit ich Sie hier nicht zu weit in Richtung der CompTIA-Security+-Zertifizierung
+wegführe, sondern beim Thema bleibe, hier ein paar Stichworte, die Sie selbst nachschlagen können.
+
+350
+
+14.1
+Viren und andere Krankheiten
+
+Netzwerkpraxis – jetzt sind Sie dran
+Wenn Sie diese Thematik interessiert, finden Sie im Internet gute Quellen, vor
+allem bei den Herstellern von Sicherheitssoftware oder seriösen Foren, wie etwa
+den Security Blog des CERTs Switch unter securityblog.switch.ch als Teil
+des First Security Networks unter www.first.org.
+Schlagen Sie dazu einmal folgende Begriffe nach und lesen und staunen Sie:
+쐽
+
+Wild Neutron
+
+쐽
+
+Operation Hangover (nein, nicht der Film ...)
+
+쐽
+
+Aurora
+
+쐽
+
+Titan Rain
+
+Einen Hinweis finden Sie in den Antworten in Abschnitt A.2, aber nur einen
+Hinweis, denn hier heißt es lesen, nicht lösen.
+Die Zukunft in diesem Gebiet liegt somit weniger in der Entdeckung der zweihunderttausendsten Windows-11-Sicherheitslücke, sondern in Folgendem:
+쐽
+
+Angriffe mit gezielten Attacken
+쐽
+
+쐽
+
+Social Engineering via Mobiltelefon
+쐽
+
+쐽
+
+SMS / Instant Messaging / MMS-Phishing: Das Ziel all dieser Angriffe ist es,
+den Benutzer dazu zu verleiten, seine Benutzerdaten und Passwörter vorzugsweise von Bank- und Postkonten auf einer gefälschten Webseite oder
+SMS-Adresse einzutragen. Dazu werden ihm SMS oder Instant Messages
+bzw. MMS zugestellt, welche täuschend echt Nachrichten einer wirklichen
+Institution gleichen, stattdessen den Benutzer aber auf eine Adresse der Betrüger umleiten.
+
+Die Entwicklung von Rootkits
+쐽
+
+쐽
+
+Vor allem in der Nutzung von »Zero hour«-Schwachstellen, Sicherheitslücken, die noch von keiner Sicherheitssoftware gefunden und gesichert werden konnten.
+
+Das Verstecken von Trojanern oder Spyware vor dem Benutzer durch die Installation von zusätzlicher Software, welche diese Prozesse vor dem Betriebssystem verbergen soll, wird allgemein üblich.
+
+Trojaner im Finanzsektor, hier stehen noch einige Entwicklungen an:
+쐽
+
+Phishing: Hierbei wird der Benutzer durch das Angebot eines Hyperlinks
+(z.B. via Mail) dazu verleitet, auf diesen Link zu klicken und damit auf eine
+gefälschte Webseite gelockt, die beispielsweise der Webseite der eigenen
+Bank so ähnlich sieht, dass der Benutzer die Täuschung nicht bemerkt und
+seine Zugangsdaten fälschlicherweise dort einträgt.
+
+351
+
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+쐽
+
+쐽
+
+Peer-to-Peer-Botnets
+쐽
+
+쐽
+
+Diese werden immer kleiner, schneller und so schwerer zu fassen.
+
+APT – Advanced Persistent Threat
+쐽
+
+쐽
+
+Pharming: Hierbei wird die lokale Hosts-Datei durch einen Virus oder
+einen Trojaner so manipuliert, dass sie beim Aufruf bestimmter Webseiten
+automatisch eine gefälschte Version dieser Seite anzeigt – mit demselben
+Ziel wie beim Phishing. Beiden Methoden gemeinsam ist das Ziel, an die
+vertraulichen Daten der Benutzer zu gelangen, um sich damit Zugang zu
+deren Geld zu verschaffen.
+
+Damit ist eine andauernde und auf mehreren Ebenen erfolgende Angriffsstrategie gemeint. APT bedarf seitens der Angreifer einen gewissen Aufwand und richtet sich daher gezielt gegen große Firmen, Konzerne oder
+den Staat. Die Angreifer benötigen genügend Zeit und eine sorgfältige Vorbereitung und erreichen ihr Ziel oft erst nach Monaten.
+
+Davon abzugrenzen sind Targeted Attacks, welche gezielt auf ein Unternehmen
+oder eine Organisation gerichtet sind.
+
+Ein sehr aktuelles Beispiel für einen solchen gezielten Angriff (Targeted Attack)
+lieferte vor drei Jahren der Carbanak-Angriff auf eine Bank. Die folgende Folie erläutert das Vorgehen, das die über rund eineinhalb Jahre aufgebaute Attacke zeigt.
+Die meiste Zeit verbrachten die Angreifer dabei mit dem genauen Studium der
+Vorgänge in den Banken selbst, die sie monatelang verfolgen konnten, nachdem
+sie die Malware über verschiedene Angriffsformen bis an die Schaltersysteme der
+betroffenen Bank durchgeschleust hatten.
+
+Abb. 14.8: Wie eine geplante Attacke zu 1 Milliarde Dollar Ertrag führte (© Kaspersky 2015)
+
+352
+
+14.2
+Was tut der Mann in der Mitte?
+
+Nach Abschluss der Aktion, die sich wie gesagt nach Einschätzung von Experten
+über eineinhalb Jahre hinzog, verschwanden die Angreifer mit gut 1 Milliarde Dollar
+– und zwar nicht virtuell, sondern mit wirklichem Geld, das sie durch das Eröffnen
+von Konten, das Verschieben von Geldern und das Abheben von Bankautomaten
+entwendeten.
+
+14.2 Was tut der Mann in der Mitte?
+Malware-Programme sind längst nicht die einzigen Bedrohungen für ein Netzwerk. Diese werden produziert und verteilt, stellen aber in den seltensten Fällen
+einen zielgerichteten Angriff dar. Lernen Sie daher auf den folgenden Seiten
+weitaus effizientere Arten von Angriffen kennen, die sich auch gezielt gegen Ihr
+Netzwerk einsetzen lassen, wenn auch nicht zu Ihrer Begeisterung.
+Der Begriff »Attacke« beschreibt die Tatsache, dass jemand ein Netzwerk angreift,
+um diesem technischen oder betriebswirtschaftlichen Schaden zuzufügen, wobei
+der letztere Schaden langfristig interessanter ist, weil sich darauf auch Szenarien
+wie »Bezahle mir Geld, dann lasse ich vom Angriff ab« aufbauen lassen und so der
+Angriff zum eigenen wirtschaftlichen Erfolg der Angreifer dienen kann.
+
+14.2.1 »Sie machen es dem Angreifer ja auch einfach«
+Die Grundlagen von Attacken liefern eigentlich die Netzwerkbetreiber selbst,
+indem sie verschiedene Lücken offen lassen:
+쐽
+
+Dienste, die nicht benötigt werden, laufen auf dem Server weiter. Da sie nicht
+benötigt werden, werden sie aber auch nicht überwacht.
+
+쐽
+
+Ports werden nach dem Prinzip »nur schließen, was nötig« offen gelassen,
+auch wenn sie nicht benötigt werden.
+
+쐽
+
+Systeme werden nicht gepatcht, d.h. Sicherheitslücken nicht gestopft und aktualisiert, z.B. gegen das seit Jahren bekannte und eigentlich auch gelöste Problem mit dem Ping-of-Death, einer Attacke, bei der man »nichts« tun muss, als
+eine Lücke im ICMP-Protokoll zu nutzen, welche übergroße Pakete (>65 K) erzeugen und so die Systeme zum Absturz bringen kann. Zwar ist diese Lücke
+bekannt, aber selbst Windows 2012 musste zusätzlich ein Patch installieren,
+weil die Lücke immer noch genutzt werden konnte.
+
+쐽
+
+Veraltete Systeme bleiben im Einsatz. Aktuelle Beispiele dafür sind die immer
+noch zahlreich im Einsatz befindlichen Windows-XP-Bankautomaten, Windows2003-basierte Server und sogar noch Windows 2000 Server – alles Systeme, die
+vom Hersteller nicht mehr unterstützt oder aktualisiert werden.
+
+쐽
+
+Einfache (ältere) Protokolle wie HTTP, FTP, TFTP, TELNET, SLIP oder SNMP
+verfügen über keine oder nur eine Klartextübermittlung von Anmeldeinformationen und sind daher unsicher.
+
+353
+
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+쐽
+
+Veraltete Verschlüsselungen oder nicht effektiv eingerichtete Passwörter erleichtern diese Angriffe zudem.
+
+쐽
+
+Die Aussendung von Signalen (WLAN, RF) reicht weit über den benötigten Bereich hinaus und kann von außen abgefangen werden (Tempest RF).
+
+Ein einfaches Beispiel hierzu ist der »FTP Bounce«-Angriff – die Nutzung des unverschlüsselten FTP-Protokolls, anhand dessen man ein eigenes Skript auf einen
+FTP-Server aufspielt und diesen so dazu bringen kann, Downloads umzuleiten.
+Mit wenig Aufwand kann der Angreifer so einen Fehler im FTP-Protokoll ausnutzen, der es ihm ermöglicht, damit eine Verbindung zu einem beliebigen Rechner
+aufzubauen und dabei erst noch anonym zu bleiben, weil das Skript die eigene IPAdresse verbirgt. Wenn Sie jetzt noch bedenken, dass diese Sicherheitslücke über
+30 Jahre bekannt ist und immer noch besteht, ist dies ein eindrückliches Beispiel
+für die Gefahrenlage in Netzwerken.
+Dabei ist es grundsätzlich unerheblich, ob diese Attacken von außerhalb oder von
+innerhalb des Netzwerks erfolgt. Da die Welt »außerhalb« aber viel größer ist als
+ein einzelnes Netzwerk, sind viele der berüchtigten Attacken logischerweise Angriffe von außen. Das geht von ungerichteten Angriffen wie sogenannten BruteForce-Attacken (Angriffe auf Passwörter oder Sicherheitscodes durch Durchspielen aller möglichen Kombinationen) oder Wörterbuchattacken (ähnlich, aber
+suchen aufgrund von Listen, die dem Programm gefüttert werden) über den Versuch der Nutzung von noch nicht gepatchten, aber bekannten Lücken oder Fehlern in Programmen (Zero-Day-Attacke) bis hin zu Social Engineering, technisch
+gestützter Wirtschaftsspionage oder korrupten Mitarbeitern, die Pläne und vertrauliche Daten weiterverkaufen. Die Schweiz könnte dazu einiges sagen, aber ich
+bin nicht aus dem Bankensektor ...
+
+14.2.2 Denial-of-Service-Attacken
+Eine, so muss man schon fast sagen, »beliebte« und in immer neuen Spielformen
+auftretende Angriffsart nennt sich Denial of Service, kurz DoS. Dies bedeutet,
+durch Angriffe auf das Zielsystem soll dieses an seiner Verfügbarkeit für seine eigentlichen Aufgaben gehindert oder gar zum Absturz gebracht werden.
+Von DoS spricht man in diesem Zusammenhang, wenn ein bestimmtes System
+über eine Leitung das Zielsystem angreift, von DDoS, Distributed Denial of Service, wenn es zeitgleich mehrere verteilte Angreifer sind.
+Beiden Formen gemeinsam ist das Ziel, das Opfer für seine eigenen Tätigkeiten
+lahmzulegen, damit seine Dienste nicht mehr genutzt werden können und ein
+möglichst großer Schaden entsteht.
+Das kann im ungünstigsten Fall unbeabsichtigt sein, ganz einfach, weil zu viele
+Benutzer gleichzeitig z.B. eine bestimmte Webseite aufrufen möchten. Das nennt
+
+354
+
+14.2
+Was tut der Mann in der Mitte?
+
+sich dann Friendly DDoS und kommt immer wieder vor, sei es, weil gerade wichtige News erschienen sind oder weil ein Anbieter wahnsinnig günstige Angebote
+platziert hat und alle gleichzeitig auf dessen Dienste zugreifen wollen.
+Meistens handelt es sich aber um gezielte Angriffe von einem (DoS) oder mehreren (DDoS) Angreifern.
+Das kann mit dem Einsatz von Verkehrsüberlastungen auf bestimmte Ziele beginnen, dem Erzeugen eines sogenannten Traffic Spike (eigentlich eine Vorform der
+DDoS-Attacke). Dazu werden Dienste wie z.B. HTTP so stark mit Anfragen überlastet, dass sie nicht mehr in der Lage sind, Anfragen zu beantworten, und daher
+für »normale« Clients nicht mehr oder nur äußerst langsam erreichbar sind.
+Ein groß angelegter DDoS kann auch durch verseuchte Systeme mit Trojanern herbeigeführt werden (die Botnets oder Zombie-Rechner), die zu einem definierten
+Zeitpunkt alle auf den gleichen Server zugreifen und diesen damit zum Erliegen
+bringen. Beliebte Ziele solcher Angriffe sind etwa Webseiten von Organisationen,
+von Behörden oder von sehr bekannten Unternehmen, aber auch Webserver von
+Sicherheitsanbietern. Letztlich kann auch Ihr Unternehmen davon betroffen sein,
+wenn der Angreifer ein spezifisches Interesse an einer Ihrer Dienstleistungen
+oder einem Ihrer Produkte hat.
+Nebst den klassischen DDoS-Attacken (Überlastung durch Anfragen) gibt es verschiedene andere Mittel, die dasselbe Ziel erreichen:
+쐽
+
+Verstärkung der Datenströme durch Missbrauch von DNS, DNS Amplification
+Attack genannt. Hierbei werden Namen dazu missbraucht, auf kurze Anfragen
+mit sehr langen Datenpaketen zu antworten. Dadurch kann der Verkehr auf
+dieser Leitung um einen Faktor von 10 (64 Byte Anfrage zu 640 Byte Antwort)
+oder auch 30 und mehr gesteigert werden.
+Anschließend wird dieser Antwortstrom auf die Netzwerkadresse des Opfers
+umgeleitet, sodass die Verkehrslast direkt bei ihm auftritt. Dies lässt sich mittels IP-Spoofing, also dem Vortäuschen eines falschen Absenders im manipulierten IP-Header, erreichen.
+
+쐽
+
+Verstärkung der Datenströme durch Missbrauch von NTP-Datenpaketen. Hierbei werden öffentlich zugängliche NTP-Server abgefragt und wie bei der DNSVerstärkung so viele NTP-Server mittels IP-Spoofing auf das Opfer umgelenkt,
+bis es mit UDP-Paketen völlig überschwemmt ist.
+
+쐽
+
+Eine weitere Form des Denial-of-Service-Angriffs ist die Smurf-Attacke. Hierbei sendet der Angreifer eine Reihe von pings an die Broadcast-Adresse eines
+Netzwerks. Zugleich wird das Opfer des Angriffs auch hier als Absender der
+IP-Pakete eingetragen, sodass der Router die Antworten auf ping nicht nach
+außen, sondern nach innen ins Netzwerk weiterleitet. Je nach Anzahl der dadurch angesprochenen Clients in einem Netzwerk kann damit eine sehr starke
+
+355
+
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+
+Auslastung der Netzwerkleitung herbeigeführt werden, die bis zum Zusammenbruch des Netzwerks führen kann.
+Router, die durch ihre Konfiguration einen solchen Angriff ermöglichen, werden Smurf-Amplifier genannt. Um dies zu verhindern, muss man Router so
+konfigurieren, dass sie Pakete nicht weiterleiten, die an eine Broadcast-Adresse
+gerichtet sind. Zudem müssen die Hosts so konfiguriert werden, dass sie nicht
+auf pings auf die Broadcast-Adresse antworten.
+쐽
+
+Eine andere Version nennt sich SYN-Flood. Diese macht sich die normale TCPKommunikation zunutze, welche einen 3-Weg-Handshake benutzt, um eine
+Verbindung herzustellen.
+1. Client an Server: TCP-Paket mit Flag SYN (Synchronize)
+2. Server an Client: TCP-Paket mit Flags SYN, ACK
+(Synchronize Acknowledge)
+3. Client an Server: Paket mit Flag ACK (Acknowledge)
+Die Verbindung ist nun hergestellt. Ein Angreifer kann nun als Client die letzte
+Nachricht unterschlagen und veranlasst den Server dadurch, einige Zeit auf
+das Paket zu warten. Während dieser Zeit werden sowohl die Adresse des
+Clients als auch der Status der noch halb offenen Verbindung im Speicher des
+Netzwerk-Stacks vorrätig gehalten, um die Verbindung später vollständig einrichten zu können. Diese Vorratshaltung belegt natürlich Ressourcen und
+wenn zu viele solch halb offene Verbindungen bestehen, sind diese auf einmal
+aufgebraucht, wodurch der Server keine neuen Verbindungen mehr annehmen kann. Und damit sind Sie wieder beim Hauptthema in diesem Abschnitt:
+dem Verweigern des Dienstes.
+
+쐽
+
+PDoS, Permanent DoS, geht noch weiter. Hierbei geht es darum, das Zielgerät
+zu beschädigen oder zu zerstören, daher der Begriff »Permanent«. Dazu
+müsste eigentlich die physische Adresse des Geräts bekannt sein, um es gezielt
+auf Hardware-Ebene angreifen zu können. Neuere Angriffsformen erlauben
+aber auch den Angriff auf die Firmware und deren Löschung oder Überschreibung, weshalb der Angriff auch Phlashing genannt wird. Und nicht jammern
+– schließlich verdanken wir diese Entwicklung denen, die das Jailbreaken erfunden haben, also das Entsperren der eigentlich geschützten Firmware auf
+Smartphones, um danach eigene Firmware-Releases aufzuspielen. Ja, das kann
+man auch umgekehrt nutzen, und das heißt eben leider nicht mehr: »Juhu, ich
+konnte mein Smartphone durch Jailbreaking neu installieren«, sondern: »Sehr
+schlecht, jemand hat durch PDoS das UEFI unseres Servers gelöscht.«
+
+Dass dies alles keine theoretischen Möglichkeiten sind, sondern raue Realität,
+zeigt folgendes Beispiel, das sich im August/September 2009 in der Schweiz abgespielt hat und seither an verschiedenen Orten in ähnlicher Form auftritt:
+Nachdem ein Anbieter von Online-Angeboten längere Zeit durch DoS-Attacken
+nicht mehr erreichbar war, hat er seine Webseite gegen Anfragen auf den Webser-
+
+356
+
+14.2
+Was tut der Mann in der Mitte?
+
+ver aus dem Ausland abgesichert, sodass nur noch Anfragen aus dem Inland vom
+Webserver angenommen wurden. Damit gaben sich die Angreifer aber nicht zufrieden ...
+»Sie haben der Swisscom, Sunrise und anderen Internet Service Providern
+anonyme Mails geschrieben und unter Androhung von DDOS-Attacken auf
+Großkunden unmissverständlich ans Herz gelegt, meine Webseite vom Netz
+zu nehmen«, erklärt der Betreiber das Vorgehen der Konkurrenz. Als darauf
+nicht reagiert wurde, haben die Erpresser ihre Drohungen wahr gemacht und
+Swisscom-Kunden mit DDOS-Attacken angegriffen. »Die Verantwortlichen
+bei der Swisscom ließen sich davon einschüchtern und haben alle von InTheNet betreuten Webseiten aus dem Netz geworfen, obwohl wir selbst ja von dieser Attacke gar nicht betroffen waren«, echauffiert sich der Kunde. ... Dass
+ihm die Swisscom deswegen bestehende Verträge fristlos gekündigt hat, stößt
+ihm sauer auf. ... Er beauftragte jetzt eine Zürcher Anwaltskanzlei mit einer
+Klage gegen Swisscom.
+Offensichtlich können Hacker mit DDOS-Attacken Provider wie die Swisscom
+zwingen, Dienste von Kunden auszuschalten und Webseiten vom Netz zu nehmen. Gegenüber 20 Minuten Online bestätigt die Swisscom die Angriffe: »Es
+war ein Internet-Anbieter betroffen, der unter anderem auf die Erotikbranche
+spezialisiert ist. Durch den enorm ansteigenden Datenverkehr – der gesamtschweizerisch auch andere Provider betraf – waren rund 20 weitere SwisscomGeschäftskunden von einer Beeinträchtigung im Datenverkehr betroffen. Zum
+Schutz dieser Kunden und der Infrastruktur sowie um eine Beeinträchtigung
+der Service-Qualität zu verhindern, sah sich Swisscom veranlasst, die Seite vom
+Netz zu nehmen«, rechtfertigt die Pressesprecherin das Vorgehen.
+Welche Webseiten vom Angriff betroffen waren, wollte die Swisscom nicht sagen. Auch zum Erpresserschreiben wurden keine Angaben gemacht. Wer hinter den Angriffen steckt, konnte noch nicht geklärt werden: »Die Urheber der
+DDOS-Attacken sind kaum zu eruieren«, so die Pressesprecherin. Die Hintermänner der DDOS-Attacke sitzen also am längeren Hebel – noch.
+(Quelle: 20 Minuten Online – Schweiz, publiziert am 2. September 2009)
+
+14.2.3 Pufferüberlauf
+Ein Pufferüberlauf (Buffer Overflow) ist ein Angriff, der auf einem Programmierfehler beruht. Viele Anwendungen nehmen Eingaben vom Benutzer oder einer
+anderen externen Quelle entgegen. Wird die Eingabe ohne weitere Kontrollen in
+einen vom Programmierer reservierten Puffer verschoben, kann es passieren,
+dass bei einer zu langen Eingabe der Puffer überschritten wird. Die Daten überschreiben dann andere Bereiche des Programms.
+
+357
+
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+
+In den meisten Fällen wird dabei lediglich ein Denial of Service ausgelöst, der betroffene Serverprozess stürzt ab. Ziel eines gut programmierten Pufferüberlaufs
+ist es aber, Schadcode auf das System zu übertragen und diesen auszuführen.
+Es gibt viele Spielarten von Pufferüberläufen. Die am einfachsten zu verstehende
+Variante ist der Pufferüberlauf auf dem Stack, der im Folgenden näher erläutert
+werden soll.
+Der Stack ist ein Bereich im Speicher eines Computers, in dem temporäre Daten
+gespeichert werden. Das können beispielsweise lokale Variablen sein oder die Returnadresse, zu der der Prozessor springen soll, wenn ein Unterprogramm beendet wurde. Ein gut programmierter Pufferüberlauf überschreibt die Returnadresse
+mit einem Wert, der den Prozessor zu einem Sprung in den Puffer selbst veranlasst. Dieser Puffer wurde aber vom Angreifer zuvor geschickt und sorgfältig präpariert. Der im Puffer mitgeschickte Schadcode wird ausgeführt, und zwar mit
+den Rechten des gerade ausgeführten Prozesses. Wenn diese Rechte etwa RootRechte sind, sind die Folgen unabsehbar.
+Ein prominentes Beispiel ist der Safari-Browser in Apples iPhone, der mit RootRechten läuft und über einen Pufferüberlauf bei der Interpretation von PDF-Dateien
+manipuliert werden konnte. Diese scheunentorgroße Sicherheitslücke konnte
+unter anderem für einen Jailbreak genutzt werden, mit dem das Sicherheitskonzept des Telefons komplett ausgehebelt wurde.
+
+14.2.4 Man-in-the-Middle-Attacken
+Bei der sogenannten Man-in-the-Middle-Attacke, kurz MITM, geht es darum, dass
+sich ein Angreifer in eine bestehende Verbindung einschleusen kann. Er steht
+dann sozusagen in der Mitte der Verbindung zwischen den eigentlichen Endpunkten – und zwar so, dass die anderen davon nichts merken. Neuere Bezeichnungen
+beschreiben diese Angriffsform auch als »On Path Attack«.
+Das Prinzip ermöglicht es dem Angreifer, sich als jemand anderen auszugeben
+und so dem Kommunikationspartner eine Identität vorzutäuschen. Damit erlangt
+er die Kontrolle über die Kommunikation und ist in der Lage, Informationen dieser Verbindung einzusehen – oder auch zu manipulieren.
+Sofern der Angreifer sich im selben physikalischen Netz befindet, kann er sich
+beispielsweise durch Übernahme von MAC-Adressen den Verkehr auf sein System umleiten lassen (sogenanntes ARP-Spoofing). Er kann auch versuchen, einen
+zweiten DHCP-Server ins Netz einzuschleusen und dort ein falsches Gateway mitzugeben, das dann sein Rechner ist – und schon kommen alle Daten wieder bei
+ihm vorbei.
+Wenn der Angreifer aus einem entfernten Netzwerk kommt, kann er versuchen,
+die Kontrolle über den Router zu übernehmen, um so an die Datenverbindungen
+
+358
+
+14.2
+Was tut der Mann in der Mitte?
+
+zu kommen. Beispielsweise kann durch DNS-Spoofing oder durch die Veränderung von Routing-Tabellen in Verbindung mit IP-Spoofing ein Zugriff des Kunden
+von seinem System aus auf einen Bankserver auf den eigenen Server des Angreifers umgeleitet werden. Nun führt der eigene Server die Anfrage beim Bankserver
+durch, wobei er die vom Kunden angeforderten Daten verwendet. Die von der
+Bank erhaltenen Daten liefert er an den Kunden zurück. Hierbei können die
+Daten beliebig modifiziert werden. Beispielsweise kann eine Sammelüberweisung
+um eine Buchung zugunsten des Angreifers erweitert werden.
+Eine spezielle Form hiervon ist das Session-Hijacking. Beim Session-Hijacking
+wird die Sitzung eines anderen Benutzers übernommen, d.h., ein Angreifer arbeitet anstelle des Benutzers weiter, ohne dass der Server diese Änderung bemerkt.
+Beim Session-Hijacking gibt es mehrere Varianten:
+쐽
+
+TCP-Hijacking Ein Angreifer wird Man in the Middle und übernimmt dann,
+wie weiter oben beschrieben, die TCP/IP-Verbindung zwischen Benutzer und
+Server.
+
+쐽
+
+Cookie-Diebstahl Falls die Kommunikation zwischen Client und Server über
+Session-Cookies abgesichert wird, können Angreifer versuchen, ein fremdes
+Session-Cookie zu erhalten. Session-Cookies sind kurzlebige Cookies, die
+meist sehr lang sind und einen durch Zufallsgenerator ermittelten Bestandteil
+haben. Sie sind deshalb schwierig zu raten, können aber beispielsweise über
+Cross Site Scripting gestohlen oder mit einem Sniffer gelesen werden.
+
+14.2.5 Spoofing
+Spoofing ist ein Angriff, bei dem über Netzwerkpakete eine falsche Identität vorgetäuscht wird. Das kann auf allen Ebenen des Netzwerk-Stacks geschehen. Ziel
+von Spoofing-Angriffen kann es sein, einen Angreifer unkenntlich zu machen
+oder falsche Webseiten als echt vorzutäuschen.
+Die verschiedenen Spoofing-Attacken in Einzelnen:
+쐽
+
+ARP-Spoofing Mit gefälschten ARP-Paketen (Zuordnung von IP-Adresse zu
+MAC-Adresse) wird der ARP-Cache des Opfers manipuliert. In der Folge sendet er seine Pakete an ein anderes System, was als Vorbereitung zu Man-in-theMiddle-Angriffen genutzt werden kann. Die Manipulation von ARP-Caches
+wird auch als ARP-Poisoning bezeichnet.
+
+쐽
+
+IP-Spoofing Ein Angreifer sendet IP-Pakete mit einer falschen Absenderadresse
+ab. Damit verschleiert er seine Identität. Eventuelle Antwortpakete werden allerdings an die falsche (»gespoofte«) Adresse gesendet, sodass sie beim Angreifer nicht ankommen. IP-Spoofing wird deshalb meist nur bei DoS-Angriffen
+eingesetzt.
+
+359
+
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+쐽
+
+DNS-Spoofing Durch die Manipulation eines DNS-Servers (Cache-Poisoning)
+oder das Senden falscher DNS-Antworten wird die Zuordnung eines Rechnernamens zur IP-Adresse gefälscht. Damit wendet sich der Client bei kommenden
+Anfragen an ein falsches System, das sich im Besitz des Angreifers befindet.
+
+쐽
+
+Web-Spoofing Beim Web-Spoofing wird eine falsche oder in Teilen falsche
+Webseite als echt vorgetäuscht. Das kann über DNS-Spoofing oder auch über
+Phishing-Angriffe geschehen.
+
+Aber auch andere Spoofing-Varianten sind denkbar, etwa ein Identitätsdiebstahl
+durch Anmeldung mit einem falschen Account.
+
+14.3 Angriffe gegen IT-Systeme
+Eine der häufigsten oder vielleicht sogar die häufigste Form von Angriffen gegen
+IT-Systeme sind Client-Side-Attacken. Diese Form des Angriffs hat direkt den
+Client im Fokus. Oft wird auf Clientsystemen Schadcode in Form von Exploits
+oder in Form von ausführbaren Dateien verbreitet. Exploits werden dabei häufig
+beim Besuchen einer Webseite mittels Exploit-Kits eingesetzt, wobei ausführbare
+Dateien ihren Weg auf die Endsysteme meist versteckt in E-Mail-Anhängen finden.
+
+Drei Bedingungen für einen funktionierenden Angriff mit Schadcode
+1. Der Nutzer muss etwas tun. Entweder wird dabei ein Anhang mit Schadsoftware geöffnet oder ein Link angeklickt, der zu einem Exploit-Kit führt.
+2. Der Nutzer hat zu hohe Rechte auf dem Computer. Wenn allgemein mit aktiven
+administrativen Rechten gearbeitet wird, ist die Installation von Schadsoftware
+natürlich umso einfacher. Zudem erbt die Schadsoftware sozusagen die Rechte
+des aktiven Benutzers und kann bei administrativen Rechten natürlich auch alles in diesem Kontext tun.
+3. Der Nutzer hat nicht alle Softwareaktualisierungen eingespielt. Ein Exploit benötigt für das einwandfreie Funktionieren eine programmtechnische Schwachstelle. Bei einem Remote-Exploit muss dazu nur eine speziell präparierte
+Webseite besucht werden, damit der Schadcode automatisch auf den Rechner
+gelangen kann.
+
+14.3.1 Exploits und Exploit-Kits
+Beim Exploit wird mit einem Schadcode eine Lücke in der Programmausführung
+einer Anwendung ausgenutzt. Dies geschieht am einfachsten mit einem Pufferüberlauf (Buffer Overflow). Ziel ist es dabei, den eigenen Schadcode über die angegriffene Anwendung im Speicher zur Ausführung zu bringen. Dies gelingt natürlich nur dann, wenn ein entsprechender Einsprungspunkt über eine Schwachstelle
+
+360
+
+14.3
+Angriffe gegen IT-Systeme
+
+gefunden wird. Dabei wird meist ein Programm-Zeiger in der manipulierten Software dereferenziert, um auf den mittels Exploit geladenen Schadcode zu zeigen.
+Damit wird nun der Schadcode ausgeführt.
+Im besten Fall führt ein Buffer Overflow nur zum Absturz der gesamten Anwendung und wird damit zum Denial-of-Service-Angriff oder treffend auch »Resource
+Exhaustion Attack« genannt. Im schlimmsten Fall kann über die Anwendung das
+gesamte System remote übernommen werden. Da bei Programmen mit ihren
+Abertausenden von Programmcodezeilen immer mit Fehlern zu rechnen ist, werden auch regelmäßig Schwachstellen gefunden. Sind diese Schwachstellen bei Cyberkriminellen noch nicht bekannt und werden diese zeitnah mit Bekanntgabe
+des Patches geschlossen, besteht nur ein geringes Risiko. Ansonsten tritt mit
+einem Zero-Day Exploit das Gegenteil ein.
+
+Zero-Day Exploits
+Wird eine Schwachstelle bereits vor Bekanntgabe eines Patches aktiv mit ExploitCode ausgenutzt, stehen die Karten bei der Computersicherheit natürlich äußerst
+schlecht! Bei einem solchen Exploit-Code wird dann auch von einem Zero-Day Exploit gesprochen. Dramatisch ist die Tatsache insofern, als dass sich Programmierer von im Dark Web erhältlichen Exploit-Kits mit der schnellen Verfügbarkeit neuer
+Exploits brüsten und dies als Marketinginstrument nutzen. Eine ziemliche Horrorvorstellung für Nutzer einer betroffenen Software!
+Mit solchen Zero-Day Exploits wird durch spezialisierte Sicherheitsfirmen auch
+im realen Geschäftsleben auf legale Weise Handel getrieben. Vielfach kommen die
+Kunden aus dem militärischen Sektor oder dem Regierungsbereich. Doch auch finanzstarke Branchen wie der Finanzsektor zeigen Interesse an solchen Informationen. In der Praxis werden mit solchen Zero-Day-Lücken dann zum Beispiel
+funktionstüchtige Staatstrojaner entwickelt. Es sei autorenseitig an dieser Stelle
+aber auch angemerkt, dass sich an diesem Punkt doch diverse ethische Fragen zu
+Verantwortlichkeit, Staatsmacht, Privatsphäre und anderen Themen stellen, die
+zwar weit über CompTIA Security+ hinausgehen – bedenkenswert sind sie aber allemal!
+
+Ausführen von Schadcode (Arbitrary Code Execution/
+Remote Code Execution)
+Bei einem erfolgreichen Exploit besteht das Ziel des Angreifers darin, den eigenen
+willkürlichen Schadcode zur Ausführung zu bringen (Arbitrary Code Execution)
+und so möglichst auch remote die gesamte Kontrolle über das Zielsystem zu erlangen (Remote Code Execution).
+Dazu muss der Schadcode zunächst mittels verschiedener Exploiting-Techniken
+über eine Programmschwachstelle in den Speicher, also ins RAM gebracht wer-
+
+361
+
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+
+den. Dazu eignen sich auf Windows-basierenden Systemen unsichere Dynamic
+Link Libraries, also DLLs. Um anschließend den Schadcode zur Ausführung zu
+bringen, besteht eine Möglichkeit darin, das Register Extended Instruction Pointer
+(EIP) der CPU zu dereferenzieren, das auf die als Nächstes auszuführende Programminstruktion zeigt.
+Konkret wird dazu die aktuelle Return-Adresse überschrieben, beispielsweise mittels eines Buffer Overflows. Damit wird erreicht, dass der eigene Payload als
+Nächstes ausgeführt wird. Als Payload wird meist ein mittels Opcodes in Assemblersprache geschriebener Shellcode eingesetzt, der danach einen Zugriff mittels
+einer Command-Shell auf das Zielsystem ermöglicht. Eine NOP (No Operation)
+Sled, die häufig beim Buffer Overflow verwendet wird, um an den gewünschten
+Ort innerhalb des Speichers zu gelangen, sieht dann als Shellcode bei einer Intelx86-CPU zur Veranschaulichung so aus: \x90\x90\x90\x90\x90 (wobei das x für
+hexadezimal steht und die Zahl 90 den Opcode für NOP in Assembler darstellt).
+Eine NOP Sled wird auch aus Stabilitätsgründen vor den effektiven Shellcode gesetzt und in Fachkreisen gerne als Landebahn bezeichnet.
+Einer der bekanntesten Payloads ist der Meterpreter aus dem Metasploit-Framework, der einen großen Funktionsumfang mit vielen Erweiterungen bietet. Mit
+verschiedenen Schutzmaßnahmen wie DEP und ASLR wird versucht, solche Angriffe auf den Speicher zu erschweren.
+
+Integer Overflow
+Der Integer-Datentyp wird in der Programmierung für ganzzahlige Werte verwendet. Stellen wir uns nun vor, dass für eine Integer-Variable ein vorher bestimmter
+Platz im Speicher reserviert wird. Wird nun beispielsweise über eine unvorhergesehene Multiplikation ein übergroßes Resultat in diesen reservierten Speicherplatz geladen, entsteht ein Überlauf und damit eine potenzielle Schwäche, die
+wiederum die Möglichkeit eines oben beschriebenen Buffer Overflows bietet.
+
+DLL-Injection
+Bei einem DLL-Injection-Angriff wird Schadcode in einen auf dem angegriffenen
+Computersystem laufenden Prozess eingespeist. Dabei werden aus einer manipulierten Dynamic Link Library (DLL) eigene Funktionen in den entsprechenden
+Speicherbereich geladen, um damit den gewünschten Schadcode zur Ausführung
+zu bringen (Arbitrary Code Execution).
+
+Schwachstellen gezielt finden (CVE)
+In der Menge an veröffentlichten Schwachstellen die Übersicht zu behalten, ist definitiv alles andere als einfach. Mit der eindeutigen Kennzeichnung durch eine
+CVE-Nummer wurde daher eine eindeutige Identifikation für Schwachstellen ge-
+
+362
+
+14.4
+Social Engineering
+
+schaffen. Dazu werden die Schwachstellen in der CVE-Liste (Common Vulnerabilities and Exposures) durch die MITRE Corporation zusammen mit den CVE
+Numbering Authorities geführt. Sie finden diese Liste auf der Website https://
+cve.mitre.org/cve/search_cve_list.html. Eine Schwachstelle wird nach
+Aufnahme zum Beispiel wie folgt bezeichnet: »CVE-2021-28480«. Wobei nach Namenskonvention die ersten 4 Ziffern nach dem CVE das Jahr und die hinteren Ziffern als ID zusammen die effektive Schwachstelle bezeichnen.
+
+Schweregrad einer Schwachstelle ermitteln (CVSS)
+Allein die Existenz einer Schwachstelle sagt noch nichts über deren Gefährlichkeit
+aus. Deshalb wurde mit dem Common Vulnerability Scoring System kurz CVSS
+ein zusätzlicher Bewertungsstandard zur Ermittlung des Schweregrads mittels diverser Metriken geschaffen. Dabei ist bei der Gesamtbewertung 0 der niedrigste
+und 10 der höchste Schweregrad. Zur einfacheren Verständlichkeit wird in der aktuellen CVSS-Version eine zusätzliche Bezeichnung mit low, medium, high und
+critical angegeben. Die CVSS-Einstufung ermöglicht raschere Entscheidungen
+und damit die zeitnahe Ergreifung von Sofortmaßnahmen. Die CVSS Special Interest Group (SIG) des FIRST – Forum of Incident Response and Security Teams
+– entwickelt den CVSS-Standard laufend weiter.
+
+14.4 Social Engineering
+Unter Social Engineering versteht man keine technische Bedrohung, sondern die
+Möglichkeit, auf sozialer Ebene, sprich von Mensch zu Mensch, an Daten oder Informationen zu gelangen, die ein Angreifer, Social Engineer genannt, danach zu
+seinen Gunsten verwenden kann.
+
+14.4.1 Die Ziele des Social Engineers
+Social Engineering beruht auf den Eigenschaften der meisten Menschen, dass ...
+쐽
+
+sie anderen Menschen helfen möchten.
+
+쐽
+
+sie das Bedürfnis haben, anderen Menschen vertrauen zu können.
+
+쐽
+
+sie selbst gerne geachtet oder beliebt sein möchten.
+
+쐽
+
+sie Ärger und Konflikten tendenziell ausweichen.
+
+Diese Eigenschaften machen sich Social Engineers zunutze, indem sie beispielsweise an die Hilfsbereitschaft appellieren. Beispiele dazu kommen Ihnen vermutlich nicht so fremd vor:
+쐽
+
+»Ich bin ein Kollege aus der Abteilung in Bern, ich muss nur schnell meine
+E-Mails abrufen. Darf ich kurz dein System benutzen?«
+
+363
+
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+쐽
+
+»Ich bin ein Journalist und schreibe einen Artikel über kreative Unternehmer.
+Erzählen Sie mir doch etwas über Ihren Werdegang und die aktuellen Vorhaben, die Sie weiterverfolgen möchten.«
+
+쐽
+
+»Ich habe ein Problem, nur Sie können mir helfen.«
+
+Ziele der Social Engineers sind:
+쐽
+
+Industriespionage: Durch Zugriff ins Unternehmensnetzwerk heikle Informationen über neue oder einzigartige Produkte beschaffen.
+
+쐽
+
+Datendiebstahl: Durch Zugriff auf Unternehmensdatenbanken Adress- oder
+sogar Kreditkarteninformationen der Kunden erlangen.
+
+쐽
+
+Identitätsdiebstahl: Durch Zugriff auf die Netzwerkanmeldeserver Benutzernamen und Passwörter der Mitarbeiter erlangen.
+
+Das Vorgehen beim Social Engineering folgt dabei immer gewissen Abläufen:
+1. Informationen sammeln (Internet, Werbung, Altpapier hinter der Firma ... )
+2. Kontakt aufbauen (Telefonanruf, Besuch in der Firma)
+3. Vortäuschen einer falschen Identität
+4. Informationen erarbeiten/beschaffen
+5. Sich rechtzeitig aus dem Staub machen
+6. Anwenden der Informationen
+Auch hierzu ein konkretes Beispiel:
+Eine Gruppe von Angreifern möchte sich gerne die Kreditkartendaten von Kunden
+einer Firma besorgen, um sich damit anschließend Geld zu beschaffen.
+(Schritte entsprechend obiger Nummerierung)
+1. Sie sammeln Informationen über die Kundenhotline und den Reklamationsdienst, d.h. die Namen der Verantwortlichen und deren Telefonnummern – im
+Internet sind solche Informationen heute oft einfach zu erlangen.
+2. Es folgt ein erster Telefonanruf bei der Firma: »Guten Tag, ich studiere an der
+Universität Berlin und mache eine Umfrage über Kreditinstitute. Welches Kreditinstitut nutzen Sie?« Antwort des Kundendienstes: »VISA.« Ende des Gesprächs.
+3. Zweiter Telefonanruf, beim Kundendienst der Firma: »Guten Tag, ich bin vom
+Kundendienst von VISA Deutschland und mache zurzeit eine Umfrage über die
+Zufriedenheit unserer Kunden. Können Sie mir kurz sagen, mit welchen Accounts Sie bei uns Kunde sind, damit ich Sie nicht mit langweiligen Fragen zu
+Ihren Personalien stören muss? Vielen Dank.« Antwort: »FI33RM21.« Dann folgen einige sehr unverfängliche Fragen zur Zufriedenheit und Ende des Gesprächs.
+
+364
+
+14.4
+Social Engineering
+
+4. Anruf bei der Finanzabteilung der Firma: »Guten Tag, ich betreue Ihren
+Account und muss diesen aufgrund von Sicherheitsproblemen verifizieren.
+Können Sie mir bitte für Ihren Account FI33RM21 kurz das Passwort nennen?«
+Antwort: »NI34XA44.« »Alles in Ordnung, vielen Dank.« Ende.
+5. Da der Kontakt immer nur telefonisch erfolgte, ist das »Sich aus dem Staub machen« relativ einfach. Allerdings ist darauf zu achten, dass man solche Anrufe
+nicht von zu Hause aus tätigt ...
+6. Mit den Informationen über den Account konnte sich die Gruppe in das Konto
+der Firma einloggen und Geld an verschiedene Konten überweisen lassen.
+Theorie? Mitnichten! Allein im Jahr 2002 haben Social Engineers mit dieser Methode die Kontendaten von über 10'000 Kunden der Ford-Bank in den USA erhalten! Oder denken Sie bei einer Umfrage (Schritt 2) bereits an Social Engineering?
+Gerade im Zusammenhang mit den erwähnten Targeted Attacks und APT ist Social Engineering als eine zentrale Komponente der Informationsgewinnung und
+des Eindringens wieder höchst aktuell – mehr, als Sie vielleicht ahnen.
+
+14.4.2 Beliebter Ansatz: Phishing-Mails
+Und während ich diesen Satz oben geschrieben habe, erhalte ich, wie es der Zufall
+will, diese Mail zugestellt:
+
+Abb. 14.9: Phishing-Mails als beliebte und erfolgreiche Methode des Social Engineering
+
+365
+
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+
+»Wäre ich jetzt nicht Informatiker und gerade beim Schreiben über Social Engineering und hätte ich ein Konto bei einer Kantonalbank (Schweizer Regionalbanken), müsste ich mir überlegen, ob dies nicht tatsächlich eine korrekte Maske
+ist – alle Links zu den Kantonalbanken unten sind sogar korrekt verbunden!
+Gerade bei einem gezielten Angriff werden Phishing-Mails häufig eingesetzt. Sie
+sind natürlich wesentlich besser gestaltet und formuliert als obiges, jetzt gerade
+eingegangenes Beispiel. Und so erreichen Angreifer oftmals ihr erstes Ziel, eine
+Malware ins Haus zu bringen, damit sie anfangen können, die benötigten Informationen für den eigentlichen Angriff zu sammeln.
+Oder haben Sie sich das letzte Mal, als Ihr Hauptlieferant für Kopierpapier Ihnen
+per Post einen USB-Stick geschenkt hat, ernsthaft Gedanken darüber gemacht,
+dass dies genauso gut eine Malware von einem anderen Absender sein könnte, mit
+der Sie jetzt gerade das Netzwerk Ihres Unternehmens verseuchen?
+Auf diese Weise hat sich auch der berüchtigte Angriff auf die Sicherheitsfirma
+RSA abgespielt. Es ist ja nicht so, dass die ihren Job nicht könnten, ihre Sicherheitsmaßnahmen von Sony gekauft hätten oder ihre Daten nicht gut verschlossen
+und verschlüsselt abgelegt hätten – weit gefehlt. Aber auch die Gebäude von RSA
+benötigen Klimaanlagen und Klimaanlagen werden nicht von der IT oder dem
+Hausmeister gewartet, sondern von externen Zulieferern (wie bei wohl allen).
+Und genau so einen Zulieferer haben sich die Angreifer ausgesucht, denn dort arbeiten Techniker, nicht Sicherheitsfachleute, und dort sind sie erfolgreich eingedrungen und haben es nach einiger Zeit erreicht, dass diese – für RSA vertraute –
+Firma die Malware über den Servicedienst, den sie erbracht haben, ins Gebäude
+der RSA hineinbrachten. So geht das, und wer über drei Ecken planen kann, ist
+schwer im Vorteil ...
+
+14.4.3 Tailgating und andere Methoden
+Beim Tailgating handelt es sich um einen physischen Social-Engineering-Angriff,
+bei dem versucht wird, gemeinsam mit einer autorisierten Person in das Firmengebäude zu gelangen. Dabei gibt es verschiedene Tricks, die gerade bei größeren
+Firmen besonders gut funktionieren. Hier kennen sich in der Regel nicht alle. Es
+funktioniert auch dann gut, wenn sich häufiger externes Personal im Gebäude
+aufhält. Es lohnt sich, neben diesen Punkten bei einer Sicherheitsanalyse immer
+auch das Gebäude von allen Seiten zu betrachten. Eventuell hat es offene Hintertüren, Anlieferrampen, offene Türen in der Tiefgarage und natürlich offene Notausgänge. Wenn diese nun auch noch unbeaufsichtigt sind, ist der Weg ins Gebäude
+ohne zusätzliches Tailgating möglich.
+Ein verwandter Begriff dazu lautet Piggybacking, »Huckepack« übersetzt, es beschreibt denselben Vorgang, sich durch Anschluss an eine autorisierte Person Zutritt zu eigentlich gesperrten Bereichen zu erlangen.
+
+366
+
+14.5
+Angriffspunkt drahtloses Netzwerk
+
+Etwas weniger direkt, aber nicht minder interessant für Social Engineers ist das
+Shoulder Surfing, zu Deutsch »jemandem über die Schulter schauen und mitlesen«. Hierbei handelt es sich um einen gezielten Angriff, der darauf beruht, Daten
+von einem Bildschirm oder Eingabegerät mitzulesen – nicht via Software, sondern
+direkt als Mensch.
+Leider ist es so: Da es sich beim Social Engineering um keine technische Bedrohung handelt, können Sie dagegen auch kein »Gerät« installieren. Sie müssen
+aber sich und Ihre Mitarbeiter für dieses Problem sensibilisieren:
+쐽
+
+Schulung der Mitarbeiter auf heikle Situationen wie Telefonanfragen, Bitten um
+Adressen oder Telefonnummern usw., die sogenannten Awareness- und Sensibilisierungstrainings
+
+쐽
+
+Klassifizierung von Informationen in verschiedene Sicherheitskategorien,
+grundsätzlich haben dabei alle Daten den Status »intern« und nur was explizit
+mit »öffentlich« gekennzeichnet ist, darf auch herausgegeben werden, alles andere gilt automatisch als »nicht öffentlich«
+
+쐽
+
+Nutzungsrichtlinien für den Einsatz von Informatikmitteln von den Mitarbeitern lesen und unterzeichnen lassen (Applikationen, Internet, Mail etc.)
+
+쐽
+
+Sensible Daten nur einem möglichst kleinen Personenkreis zugänglich machen, dies technisch durch Netzwerkrichtlinien umsetzen
+
+쐽
+
+Richtlinien für den Umgang mit Personen außerhalb der Firma erlassen
+
+쐽
+
+Aktualisieren der technischen Maßnahmen (Türenschließsysteme, Passwortsysteme auf Rechnern, Berechtigungen auf Daten usw.)
+
+쐽
+
+Einen Notfallplan bereithalten, wie in einem Schadensfall vorzugehen ist
+
+14.5 Angriffspunkt drahtloses Netzwerk
+Drahtlose Netzwerke haben den unbestreitbaren Vorteil der einfacheren Implementierung, was deren infrastrukturelle Vorgaben anbelangt. Das kabellose Netzwerk ist
+andererseits auch anderen Gefahren ausgesetzt als eine verkabelte Infrastruktur, da
+die Daten nicht gleichermaßen durch eine Leitung geschützt ausgetauscht, sondern
+durch die Luft »frei« übertragen werden. Als Kunstwort für das Aussenden kompromittierender Signale, die eine Schwachstelle bilden und zum Angriff genutzt werden können, hat sich der Begriff Tempest oder Tempest RF eingebürgert.
+So haben etwa Begriffe wie das War Driving oder War Chalking zweifelhafte Berühmtheit erlangt.
+Beim War Driving gehen oder fahren mit drahtlosem Equipment ausgestattete
+Personen durch die Gegend und suchen WLANs, in welche sie dann einzudringen
+versuchen.
+
+367
+
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+
+Das War Chalking wiederum bezeichnet die anschließende Kennzeichnung solcher gefundenen Netzwerke mit Kreide an einer Gebäudewand oder dergleichen.
+Die alte WEP-Verschlüsselung gilt ebenfalls als Unsicherheitsfaktor. WEP-Cracking, das Knacken von vorhandenen WEP-Schlüsseln, ist daher eine reale Bedrohung. Ohne hier allzu sehr ins Detail zu gehen: WEP-Schlüssel sind statisch und
+zu kurz. Abzüglich der Initialisierungsvektoren von 24 Bit bleiben gerade einmal
+40 oder 104 Bit (64-Bit-WEP oder 128-Bit-WEP) für die Verschlüsselung.
+Die 40-Bit-Schlüssellänge (64-Bit-WEP) bietet keinen ausreichenden Schutz vor
+Brute-Force-Angriffen. Mit Brute-Force können Angreifer durch das Aufzeichnen
+eines einzigen verschlüsselten Datenpakets und das systematische Durchprobieren (daher Brute-Force) möglicher Schlüssel in kurzer Zeit den richtigen WEPSchlüssel finden. Ein 104 Bit langer Schlüssel (128-Bit-WEP), der erst mit dem
+Standard IEEE-802.11i implementiert wurde, ist durch einen solchen Brute-ForceAngriff zwar aufwendiger zu knacken, es ist aber möglich.
+Zudem ist bei WEP kein Schlüsselmanagement vorhanden. Die statischen WEPSchlüssel müssen manuell bei allen Clients und Access Points im Netzwerk implementiert und aktualisiert werden. Da dadurch aber der Verwaltungsaufwand sehr
+hoch wird, werden die Schlüssel in der Regel selten oder gar nicht aktualisiert. Das
+gefährdet die Sicherheit nachhaltig. Denn der Schlüsselstrom ist bei einem statischen, sich nie ändernden WEP-Schlüssel nur vom Initialisierungsvektor (IV) abhängig. Da zusätzlich alle Teilnehmer denselben WEP-Schlüssel verwenden, besteht
+eine erhebliche Gefahr, dass ein Angreifer diesen Schlüssel ermitteln kann. Je größer die Anzahl Teilnehmer in einem Netzwerk ist, desto mehr steigt diese Gefahr
+an.
+Und nicht zuletzt: WEP kennt keine Benutzerauthentifizierung: Die Authentifizierung überprüft den Benutzer des Systems nicht. Es werden lediglich die WLANAdapter authentifiziert. Dazu ist der WEP-Schlüssel auf dem jeweiligen Gerät
+zum Teil sogar in Klartext abgelegt. So kann ein verloren gegangenes Notebook
+zum Eindringen in das WLAN verwendet werden.
+Die Fortsetzung dieser Gefahrenlage zeigt sich im etwas neueren WPA-Verschlüsselungssystem. Denn auch WPA-Cracking ist eine Gefahr. Denn bevor mit
+802.11i, umgangssprachlich WPA2 genannt, ein aktuell sicherer Standard definiert wurde, kam mit WPA ein Zwischenschritt auf den Markt, der wesentliche
+Schwachstellen von WEP immer noch enthält, auch wenn WPA immerhin schon
+dynamische anstelle von statischen Schlüsseln einsetzt, allerdings nach demselben RC4-Verfahren arbeitet wie WEP.
+Bekannt ist im Zusammenhang mit WPA2 etwa KRACK. KRACK ist ein Akronym
+für »Key Reinstallation Attack«. Diese nutzt Schwächen im Handshake-Verfahren
+aus, das WLAN-Clients zur Herstellung einer Verbindung in ein geschütztes Netzwerk benötigen.
+
+368
+
+14.6
+Der freundliche Mitarbeiter
+
+Es handelt sich hierbei um einen Vierwege-Handshake, in dem hin und her ausgehandelt wird, dass sowohl Zugangspunkt wie auch Client gültige Anmeldeinformationen (z.B. WPA2 PSK) aufweisen.
+Im Grunde ermöglicht dieses Handshake-Verfahren schnelle Anmeldungen und
+Verbindungen und richtet bei jeder Verbindung einen neuen Verschlüsselungsschlüssel ein. Damit werden Daten über WLAN-Verbindungen sicher gehalten,
+und alle geschützten WLAN-Verbindungen verwenden den Vierwege-Handshake
+für die Sicherheit.
+KRACK betrifft den dritten Schritt des Handshakes, wodurch der Angreifer den
+WPA2-Verschlüsselungsschlüssel manipulieren und wiedergeben kann, um zu
+erreichen, dass ein bereits verwendeter Schlüssel installiert wird. Wenn der
+Schlüssel neu installiert wird, werden andere dazugehörige Parameter wie die Paketnummer (inkrementell) oder der Replay-Zähler auf 0 gesetzt. Dadurch werden
+im vierten Schritt die Übertragungen von Schritt 3 noch einmal wiederholt – und
+das öffnet die Türe für wiederholte Angriffe, bis die korrekten Daten ermittelt
+sind. Seit Längerem gibt es einen Patch sowohl für Clients wie auch für Router
+und Access Points – Einspielen ist die einzige Methode zum Schutz ...
+Weitere Angriffsmöglichkeiten ergeben sich durch die in drahtlosen Netzen eingesetzten Geräte:
+쐽
+
+Rogue Access Point: Ein unerlaubter Access Point, der versucht, sich in Ihr
+Netzwerk hineinzuverbinden.
+
+쐽
+
+Evil Twin: Ein Access Point versucht, sich als »bekannt« auszugeben (als böser
+Zwilling), z.B. durch Übernahme einer bekannten SSID, und so den Netzwerkverkehr des WLAN über sich umzuleiten.
+
+쐽
+
+Bluejacking und Bluesnarfing sind zwei Methoden, die speziell auf Bluetooth
+ausgerichtet sind. Beim Bluejacking erhalten Sie unaufgefordert Meldungen
+auf Ihr Gerät, in der Regel Werbung. Das ist eher harmlos, aber nervig. Beim
+Bluesnarfing versucht der Angreifer, auf Ihr Gerät zuzugreifen und Einsicht in
+Kalender, Adressbuch oder Mails zu nehmen. Allerdings gibt es dazu heute
+einen viel einfacheren Weg – erfinden Sie eine App, laden Sie diese in einen
+der App-Stores, am besten lassen Sie sie kostenlos, und nennen Sie sie »Vacebuuk«, »Picogramm« oder noch besser »Wotssap«. Dann spricht auch niemand mehr von Angriff und Sie können sich legal vom Adressbuch bis zum
+Standort des Nutzers alle Informationen einholen ...
+
+14.6 Der freundliche Mitarbeiter
+Nicht wenige Angriffe oder Schädigungen erfolgen durch die eigenen Mitarbeiter.
+Das beginnt mit dem privaten Notebook, das sie ins Firmennetz einstecken und
+damit Viren von zu Hause mitbringen, weil der Sohn die Nacht vorher gerade mit
+
+369
+
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+
+entsprechenden Online-Games schwer beschäftigt war, und geht über Unachtsamkeit bis hin zum Daten- oder Gerätediebstahl.
+Der Idealfall im Umgang mit Mitarbeitern und der Sicherheit lautet daher:
+Der berechtigte Mitarbeiter greift im Rahmen seiner Autorisierung auf die ihm
+zustehenden Daten zu.
+Davon abweichend gibt es aber folgende Fälle, die zu behandeln sind:
+쐽
+
+Der Mitarbeiter greift auf ihm nicht zustehende Daten zu (oder versucht es zumindest).
+
+쐽
+
+Die Autorisierung auf Daten wird nicht verändert, obwohl Mitarbeiter neue Verantwortlichkeiten übernehmen oder solche abgeben.
+
+쐽
+
+Mitarbeiter treten aus dem Unternehmen aus, aber ihr Konto bleibt aktiv.
+
+쐽
+
+Administratoren haben der Einfachheit wegen Zugriff auf alle Daten.
+
+쐽
+
+Putzpersonal hat einen Schlüssel zu allen Räumen, auch zu den mit sicherheitsrelevanten Systemen.
+
+Diese Liste ist bestimmt nicht vollständig, zeigt aber einige wesentliche Probleme
+auf, die im Zusammenhang mit Mitarbeitern zu klären sind.
+Daher müssen Prozesse definiert werden, welche diese Sachverhalte festhalten. Es
+braucht z.B. einen Prozess, der festlegt:
+쐽
+
+Wer bestimmt, welche Rechte ein neu eintretender Mitarbeiter übernimmt?
+
+쐽
+
+Wer ist verantwortlich, dass personelle Wechsel im System richtig abgebildet
+werden?
+
+쐽
+
+Wer deaktiviert Konten ausgetretener Mitarbeiter?
+
+쐽
+
+Welche Rechte dürfen die Admins wirklich zugewiesen erhalten?
+
+쐽
+
+Wer hat Zutritt zu welchen Räumen – und wer stellt dies sicher?
+
+Im laufenden Betrieb lassen sich zudem Sicherheitsrisiken minimieren, indem
+beispielsweise von Zeit zu Zeit durch Aufgabenteilung und Job-Rotation die Zuständigkeiten und damit auch die Einflussnahme einzelner Personen verändert
+werden. Es gibt sogar den Begriff der »Mandatory Vacations«, mit Zwangsferien
+etwas hart übersetzt. Diese gelten beispielsweise bei wichtigen Stellen im Finanzund Sicherheitswesen.
+Der Sinn dahinter ist folgender: Da die zuständige Person in die Ferien muss, ist
+sie verpflichtet, eine Stellvertretung zuzulassen. Dadurch kommt eine andere Person mit denselben Rechten und Aufgaben an die Stelle, was wiederum eine Quer-
+
+370
+
+14.7
+Fragen zum Kapitel
+
+prüfung über das Verhalten der eigentlich zuständigen Person erlaubt und helfen
+soll, möglichen Missbrauch oder Fehlverhalten frühzeitig zu erkennen.
+Auch die Trennung von Verantwortlichkeiten bzw. die Funktionstrennung zwischen Mitarbeitern, Segregation of Duties genannt, spielt hier eine wichtige Rolle,
+um die Risiken zu minimieren.
+
+14.7 Fragen zum Kapitel
+1. Wenn Sie Richtlinien zum sicheren Umgang mit Informationen erlassen und
+die Benutzer in Ihrem Unternehmen für die entsprechenden Vorgehensweisen ausbilden, kann Sie dies besser schützen vor:
+A. Smurf-Attacken
+B. Man-in-the-Middle-Attacken
+C. Trojanern
+D. Social Engineering
+2. Wenn ein Angreifer das Zielsystem mit Informationen überflutet, sodass es berechtigte Anfragen nicht mehr verarbeiten kann, nennt sich dies:
+A. Blackhacking
+B. Session Denying Attack
+C. Bluehacking
+D. Denial of Service Attack
+3. Welcher Begriff passt technisch zu einer Smurf-Attacke?
+A. IP Spoofing
+B. Rechte-Eskalation
+C. Polymorphe Software
+D. Crimeware
+4. Welche Sicherheitslücke nutzt den Vorteil einer manipulierten MAC-Adresse?
+A. WPA Filtering
+B. DNS Bounding
+C. ARP Poisoning
+D. Bluejacking
+5. Welcher andere Begriff bezieht sich auf einen unerlaubten Access Point?
+A. Trojan Access Point
+B. Evil Twin
+C. Malware Access
+D. War Chalking
+
+371
+
+Kapitel 14
+Verschiedene Angriffsformen im Netzwerk
+
+6. Worin liegt der Unterschied zwischen einer DoS- und einer DDoS-Attacke?
+A. Die DDoS-Attacke nutzt verteilte Angreifer, die gleichzeitig ein gemeinsames Ziel angreifen.
+B. Die DoS-Attacke nutzt verteilte Angreifer, die nacheinander ein gemeinsames Ziel angreifen.
+C. Die DDoS-Attacke greift gleichzeitig verschiedene Ziele an.
+D. Die DoS-Attacke benötigt mindestens zwei unterschiedliche Angriffsziele,
+damit sie stattfinden kann.
+7. Welches ist ein Beispiel für eine Geländeaufnahme drahtloser Netzwerke?
+A. Shoulder Surfing
+B. Bluesnarfing
+C. War Driving
+D. Access Phishing
+8. Welcher Angriffsform ordnen Sie die Mailanfrage eines Ihnen unbekannten
+internen Mitarbeiters zu, der Sie bittet, Ihnen ein Dokument von einem USBStick auszudrucken, den er senden wird?
+A. Trojan Attack
+B. Social Engineering
+C. APT
+D. Phishing
+9. Das unmittelbare Ausnutzen von eben bekannt gewordenen Sicherheitslücken
+in einer Software für einen gezielten Angriff zu einem Zeitpunkt, zu dem es
+noch keinen Patch für die Software gibt, nennt man auch:
+A. Zero Day Attack
+B. Backdoor Attack
+C. Social Engineering
+D. Patch Day
+10. Die Plattform für DDoS-Attacken sind:
+A. Quarantäne-Rechner
+B. Malware
+C. Honeypots
+D. Botnetze
+
+372
+
+Kapitel 15
+
+Die Verteidigung des Netzwerks
+Den Angriffen stehen Sie als Benutzer(innen) und Administrator(inn)en, als Netzwerkverantwortliche genauso wie als Leiter(innen) IT gegenüber – Sie müssen basierend auf den verfügbaren Sicherheitsverfahren geeignete physische, organisatorische und technische Maßnahmen ergreifen, um solche Angriffe abzuwehren.
+Die drei Begriffe physisch, organisatorisch und technisch zeigen Ihnen dabei an,
+wie vielfältig die Thematik ist und wie anspruchsvoll je nach Firmenaufbau die
+Umsetzung sein kann. Darum gibt es entweder einen SIO (Security Information
+Officer) oder einen SiBe (Sicherheitsbeauftragten), die sich umfassend mit dieser
+Thematik und allen betroffenen Stellen im Unternehmen und den jeweils dafür
+verantwortlichen Personen befassen.
+Dabei bleibt es heute staatlichen Stellen und privaten Unternehmen gleichermaßen längst nicht mehr selbst überlassen, ob sie sich mit dieser Thematik überhaupt auseinandersetzen wollen. Im Gefolge der in vielen Ländern herrschenden
+Datenschutzgesetze (Schutz der Persönlichkeitsrechte bei Datenbearbeitung) besteht auch eine Pflicht, sich um die Datensicherheit zu kümmern, um eben diese
+Persönlichkeitsrechte angemessen zu wahren. Die Richtlinien dazu werden von
+den nationalen Stellen publiziert, in Deutschland etwa vom Bundesamt für Sicherheit in der Informationstechnik (BSI), in der Schweiz vom Datenschutzbeauftragten oder in Österreich durch die Datenschutzbehörden.
+Sie lernen im folgenden Kapitel:
+
+쐽
+
+Was physikalische Sicherheit alles umfasst
+Wie physikalische Sicherheit realisiert werden kann
+Was fehlertoleranter Aufbau zur Erhöhung der Sicherheit beiträgt
+Die Bedeutung von Backups für Netzwerkgeräte erkennen
+Virenschutz mit Konzept umsetzen
+Firewall-Typen und -Geräte unterscheiden
+쐽 Dedizierte und personalisierte Firewall
+쐽 Verschiedene Typen dedizierter Firewalls
+쐽 Das Konzept der DMZ verstehen
+쐽 Proxyserver ins Firewall-Konzept einordnen
+Das Konzept von Content Delivery Networks verstehen
+
+쐽
+
+IDS und IPS als Bestandteil von Bedrohungsabwehr integrieren
+
+쐽
+쐽
+쐽
+쐽
+쐽
+쐽
+
+373
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+쐽
+
+Aktive Suche nach Schwachstellen durchführen
+
+쐽
+
+Übergeordnete Verteidigungskonzepte verstehen
+
+15.1 Physikalische Sicherheit
+Unter physikalischer Sicherheit verstehen wir sowohl bauliche als auch organisatorische Maßnahmen rund um die Thematik Gebäude-, Infrastruktur- und Zutrittsschutz.
+Organisatorische Fragen in diesem Zusammenhang lauten:
+쐽
+
+Welche Zugangsbeschränkungen wie Schlüsselsysteme oder Badges gibt es generell für den Zugang zum Gebäude?
+
+쐽
+
+Welche Zutrittsregelungen werden bei den kritischen Räumen getroffen? Und
+wer verwaltet diese Regelungen und aktualisiert sie bei Bedarf?
+
+쐽
+
+Wer kümmert sich um die Abläufe der physikalischen Sicherheit?
+
+Bauliche Maßnahmen befassen sich mit Fragen wie:
+쐽
+
+Wie steht es um Hochwassersicherheit der Gebäude bzw. Räume?
+
+쐽
+
+Wie ist der Brandschutz umgesetzt?
+
+쐽
+
+Wie ist der Schutz der Anlagen gegen Hitze oder Kälte geregelt?
+
+쐽
+
+Wie ist die Stromversorgung aufgebaut?
+
+쐽
+
+Gibt es Ersatzgeneratoren, Notstrom, unabhängige Netzleitungen?
+
+Je größer die Informatikumgebung ist, desto umfassender müssen diese Fragen
+geklärt werden. Aber auch, wer nur einen Server im Keller stehen hat, sollte sich
+überlegen, wie gut dieser gegen Wassereinbruch geschützt ist – bevor die nächste
+Überschwemmung alle Daten wegspült! Ansprechende Beispiele zu dieser Thematik hatten Sie ja in den Nachrichten der letzten Jahre genug!
+
+15.1.1 Zutrittsregelungen
+Zugriff und Zutritt sind zwei verschiedene Ebenen. Der Zugriff wird organisatorisch geregelt, der Zutritt primär durch physische Maßnahmen, die organisatorisch
+überwacht werden. Über den organisatorischen Aspekt des Zugriffs haben Sie bei
+den Sicherheitsverfahren in Kapitel 13 gelesen, auf was Sie bei der Einrichtung und
+Nutzung von Passwörtern achten müssen. Dazu gehört auch das regelmäßige
+Wechseln von sicheren Passwörtern. Das gilt für den Remote-Zugriff auf den Server
+genauso wie für verwaltbare Netzwerkkomponenten, auf die Sie Zugriff nehmen.
+Die Regelung des physischen Zutritts (Zugang) beginnt beim Gebäude selbst, geht
+weiter über die Zutrittsberechtigung zum Serverraum und endet bei der Absiche-
+
+374
+
+15.1
+Physikalische Sicherheit
+
+rung der Racks und Servergehäuse. Nur so sind die Systeme selbst letztlich gegen
+unberechtigten Zutritt und Zugriff richtig gesichert.
+Für die Zutrittsregelung kommen unterschiedliche Schließsysteme zum Einsatz:
+쐽
+
+Schlüssel
+
+쐽
+
+Badge oder Keycard
+
+쐽
+
+Biometrisches System
+
+쐽
+
+Hybride Systeme
+
+Schließsysteme sind wichtig, aber sie sind nicht besser als der, der sie verwaltet.
+Nach der Installation muss das Schließsystem auch organisiert werden. Ein- und
+vor allem Austritte von Mitarbeitern müssen im System hinterlegt werden, sodass
+beispielsweise Schlüssel von austretenden Systemadministratoren wieder eingezogen werden, Badges ihre Gültigkeit verlieren oder biometrische Systeme die
+entsprechenden Personen nicht mehr akzeptieren. Wichtig ist, ein Verzeichnis aller ausgegebenen Schlüssel zu führen (und aktuell zu halten), damit man weiß,
+wer welchen Schlüssel besitzt.
+Schließsysteme gibt es vom altbekannten Schlüsselsystem über Zahlenschlösser bis
+hin zu den chipgesteuerten elektronischen Schließsystemen, wie sie heute vielfach
+eingesetzt werden. Elektronische Schlösser lassen sich zentral verwalten, das heißt
+auch, ein verlorener oder gestohlener Schlüssel kann sofort gesperrt werden und
+das Medium erlaubt keinen Zutritt mehr aufgrund der Sperrung.
+Nicht zuletzt müssen Schließsysteme wirklich zielführend eingesetzt werden. Es
+nützt das beste elektronische System nichts, wenn der Techniker einen Holzkeil in
+die Tür klemmt, um schneller hinein- und hinausgelangen zu können, und der
+Serverraum danach stundenlang für alle zugänglich ist.
+Zum Thema Zutritt gehört auch die Überwachung. Wird der Zugang zu kritischen
+Räumen überwacht und wenn ja wie? Gibt es vielleicht eine Videoüberwachung
+oder gar Bewegungsmelder?
+Und wie ist die Alarmierung geregelt, wenn jemand unberechtigt den Raum betritt oder ohne die korrekte Berechtigung Zutritt erlangt?
+Gerade in sensiblen Bereichen (Rechenzentren, Geldautomaten etc.) ist auch der
+Einsatz von Wachpersonal eine nicht zu unterschätzende Form von Zutrittsregelung, die im Zusammenhang mit Zutrittsausweisen oder Kontrolllisten eine wirkungsvolle Maßnahme darstellt.
+Das Wachpersonal kann auf der einen Seite reine Sichtkontrollen durchführen
+(wird der Zugangscode bzw. die Keycard eingegeben) oder den Zugang anhand
+von Kontrolllisten aktiv regeln. Klassisch in diesem Zusammenhang ist das Beispiel von Besuchern, die sich mit Namen und Unterschrift in solche Kontrolllisten
+ein- und beim Verlassen des Gebäudes auch wieder austragen. In Hochsicher-
+
+375
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+heitszonen kommt zudem die Kontrolle von Gepäck hinzu – manuell oder unterstützt von elektronischen Hilfsmitteln (Gepäck-Scanner).
+Alle diese Fragen wollen dem Einsatzgebiet und der Wichtigkeit entsprechend beantwortet und in einem Konzept zur physischen Sicherheit festgehalten werden.
+
+15.1.2 Vom Badge bis zur Biometrie
+Umgangssprachlich werden als Badges Ausweise bezeichnet, die aufgrund von
+aufgedruckten Merkmalen wie Identitätsfoto oder Strichcode zur Identifizierung
+von Personen eingesetzt werden.
+Grundsätzlich werden zwei Arten solcher Badge-Systeme unterschieden:
+쐽
+
+Kontaktbehaftete Systeme: Magnetstreifenkarten, Kontaktkarten
+
+쐽
+
+Berührungslose Systeme: RFID, Proximity Card, Contactless Smart Cards
+
+Die Systeme mit Kontakt zum Lesegerät sind insofern etwas sicherer, als dass
+keine Daten über die Luft übermittelt werden, allerdings können sie bei Diebstahl
+genauso ausgelesen und manipuliert werden wie die neueren berührungslosen
+Systeme.
+Bei allen Systemen liegt der Fokus heute darauf, die Daten auf den Badges selbst
+zu verschlüsseln und sie zentral zu erfassen, sodass auch eine Sperrung zentral erfolgen kann, selbst wenn die Karte noch im Umlauf ist.
+Ein biometrisches Erkennungssystem dagegen misst Werte an lebenden Wesen,
+im konkreten Werte von Mitarbeitern eines Unternehmens, welche Zutritt zu
+Räumen und Systemen der Informatik erhalten möchten.
+Damit ein biometrisches Erkennungssystem zuverlässig funktioniert, benötigt es
+gut definierbare Messgrößen sowie eindeutige und konstante Merkmale, um eine
+Person zweifelsfrei und unabhängig von Alter oder Gesundheit zu identifizieren.
+Dabei kommen sowohl verhaltensbasierte wie auch physiologiebasierte Merkmale
+infrage, die über längere Zeit stabil sind. Dazu gehören verhaltensbasiert etwa die
+Stimme oder die Handschrift, physiologiebasiert der Fingerabdruck, die Iris oder
+auch die Hand- oder die Gesichtsgeometrie.
+Natürlich gibt es noch mehr relativ eindeutige Merkmale wie etwa die Zahnstellung – aber wir möchten ja hier ein biometrisches Erkennungssystem beschreiben
+und das Erfassen des Zahnabdrucks wäre da nicht gerade hilfreich.
+Bei biometrischen Erkennungssystemen werden aktuell unterschiedliche Verfahren einzeln oder kombiniert eingesetzt:
+
+376
+
+쐽
+
+Gesichtserkennung
+
+쐽
+
+Iris-Scan
+
+15.1
+Physikalische Sicherheit
+쐽
+
+Retina-Scan
+
+쐽
+
+Handschriftenerkennung
+
+쐽
+
+Finger- oder Handabdruck
+
+쐽
+
+Stimmerkennung
+
+쐽
+
+Bilderkennung
+
+쐽
+
+Venen-Scan
+
+Damit ein biometrisches System funktioniert, muss es mit den individuellen
+Daten der Berechtigten »gefüttert« werden. Dazu benötigt das Lesegerät einen
+Sensor zur Merkmalsextraktion sowie eine Software zum Vergleich des erfassten
+Merkmals mit der sich identifizierenden Person (Merkmalsvergleich). Als Sensoren kommen Bildsensoren (Kamera, optische Sensoren), kapazitive Sensoren
+(Streifensensoren) oder Ultraschallsensoren zum Einsatz.
+Die Sensoren lesen zuerst ein biometrisches Beispiel ein, welches digital verschlüsselt abgespeichert wird und damit auch nicht gestohlen oder missbraucht
+werden kann. Dieses dient bei zukünftigem Einsatz des Sensors als Referenz für
+den Merkmalsvergleich mit der Person, die sich aktuell am System identifizieren
+möchte. Manchmal werden auch mehrere Beispiele genommen, um Abweichungen zu verarbeiten.
+Wird das System nebst der Identifikation auch zur Verifikation, z.B. Anmeldung an
+einem System, eingesetzt, wird es mit Badges, PINs oder Usernames kombiniert. In
+diesem Fall wird zuerst die Verifikation durchgeführt: Gibt es diesen Benutzer? Anschließend wird die Identifikation durch das biometrische Erkennungsgerät durchgeführt: Handelt es sich um diese Person?
+
+15.1.3 Zutrittsschleusen und Videoüberwachung
+Um hochsichere Räume wie ein Rechenzentrum zu schützen, werden diese nebst
+obigen Sicherheitssystemen meist mit physischen Barrieren ausgerüstet, sogenannten Schleusen, englisch Man Trap oder neuer auch Access Control Vestibule
+genannt.
+Am effizientesten sind in diesem Zusammenhang die Mannschleusen oder Drehschleusen. Nachdem sich der Zutrittswillige authentifiziert hat, kann er die
+Schleuse betreten, diese schließt sich hinter ihm und öffnet den Zugang erst, wenn
+keine weitere Person die Schleuse mehr betreten kann. Dies ermöglicht eine hohe
+Kontrollsicherheit. Besonders sensible Drehschleusen sind zudem mit Gewichtssensoren ausgestattet, damit sich bestimmt nicht mehr als eine Person in der
+Schleuse befinden kann und sich niemand im Huckepack oder durch dichtes Beieinanderstehen einschleichen kann. Ergänzt werden kann diese Schleuse durch
+einen Wachposten oder eine Videoüberwachung, die das Geschehen überwacht.
+
+377
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+Bei Schleusenzugängen findet die Zutrittserteilung in der Regel in mehreren
+Schritten statt:
+쐽
+
+Autorisierung: Durch Badge oder Ausweis. Nur ein gültiger Ausweis ist in der
+Lage, die Schleuse zu öffnen
+
+쐽
+
+Authentifizierung: Durch ein biometrisches System (oder älter: PIN-Nummer)
+wird überprüft, ob die eingetretene Person auch wirklich die autorisierte Person
+ist.
+
+쐽
+
+Vereinzelung: Durch den Einsatz von Sensoren wird sichergestellt, dass nur
+eine Person in der Schleuse ist und keine weitere Person unerlaubt eingeschleust werden kann.
+
+Wichtig ist beim Einsatz von Schleusen, dass außerhalb dieser Schleusen kein Zutritt möglich ist. Bei geschlossenen Räumen ist dies kaum ein Problem (Mauern),
+aber wenn es um ganze Gelände oder Gebäude geht, muss gegebenenfalls mit
+weiteren Maßnahmen wie einer Videoüberwachung oder mit Umzäunungen gearbeitet werden, um einen unberechtigten Zutritt zu verhindern.
+In Kombination mit Zutrittsbeschränkungen wie Sicherheitsschleusen oder bewachten Zugängen wird häufig eine Videoüberwachung eingesetzt.
+Die Videoüberwachung wird über Kameras realisiert, entweder via CATV (Kabel-TV)
+oder via Netzwerkkameras. Je nach Einsatzgebiet müssen solche Kameras große
+Temperaturunterschiede aushalten, wetterfest sein und sowohl Tag- als auch
+Nachtsichtobjektive aufweisen. Moderne Kameras bieten auch einen Modus für
+hohe Auflösung, damit auch Details der Überwachung zu erkennen sind.
+Beim Aufstellen einer Kamera ist zu beachten, dass sie möglichst große Sichtwinkel bietet und auf einer Höhe angebracht wird, die es einem Angreifer nur schwer
+ermöglicht, die Kamera auszuschalten. Achten Sie auch auf die sichere Führung
+von Strom- und Datenkabeln, die von außen nicht zugänglich sein sollten.
+Hilfreich ist in diesem Zusammenhang sicher die Anbringung mehrerer Kameras
+mit überlappenden Sichtwinkeln: Dies erhöht die Sicherheit gegenüber versteckten Angreifern oder dem Anschleichen an eine Überwachungsstation.
+Heute können Sie sich zwischen kabelgebundenen oder drahtlosen Kameras entscheiden. Dabei ist die Verlegung kabelloser Kameras gewiss einfacher, dafür bilden drahtlose Kameras ein höheres Sicherheitsrisiko beim Abfangen des Signals.
+Eine weitere Möglichkeit ist der Einsatz beweglicher Kameras sowie von Kameras
+mit automatischer Ereigniserkennung bzw. Bewegungsmeldern, die bei Bedarf an
+ein Alarmierungssystem angeschlossen werden können.
+Um die Sicherheit von sensiblen Bereichen zu erhöhen, werden mehrere Ebenen
+des Zutrittsschutzes realisiert, die auf unterschiedlichen Attributen beruhen. So
+beginnt der Zutritt zum Gebäude beispielsweise über ein Badge-System, beim
+
+378
+
+15.1
+Physikalische Sicherheit
+
+Eingang zum Rechenzentrum im Gebäude gibt es eine Videoüberwachung, die
+einen neuerlichen Badge-Zutritt überwacht, und der Raum mit den sensiblen Servern wird durch eine Zutrittsschleuse geschützt. Dadurch werden mehrere physische Barrieren eingebaut, um die Sicherheit zu erhöhen.
+Auch der Einsatz von Sensoren zur Manipulationserkennung (Tamper Detection)
+kann eine Maßnahme für die Erkennung physischer Manipulation in Racks, Gehäusen oder baulichen Einrichtungen sein.
+Durch den Einsatz unterschiedlicher Technologien schafft man sich zudem eine
+gewisse Unabhängigkeit, falls eines der Systeme überwunden wird oder ausfällt.
+
+15.1.4 Schutz gegen Einbruch, Feuer und Wasser
+Ein Gebäude und die Räume darin müssen gegen verschiedene Gefahren geschützt
+werden, namentlich gegen Einbruch, Feuer und Wasser.
+Der Einbruchsschutz wird primär durch den Bau selbst gewährleistet, d.h. durch
+den Einsatz von einbruchsicheren Türen und Fenstern sowie durch die bereits beschriebenen Maßnahmen der Überwachungs-, Schließ- und Zutrittssysteme, die
+Gebäude und sensible Räume vor unerlaubtem Eintreten schützen.
+Auch der Einsatz von Safes für die Aufbewahrung von wichtigen Dokumenten oder
+auch Datenträgern gehört zu den wichtigen Maßnahmen des Einbruchsschutzes.
+Ebenso selbstverständlich sollten Server- und Netzwerkracks nicht nur in abgeschlossenen Räumen stehen, sondern auch selbst verschlossen sein – und nicht so
+wie letzthin gerade wieder gesehen bei einem mittelgroßen Kunden, wo die produktiven Server auf einem alten Schulpult stehen, und dies durch eine Servicefirma installiert ...
+
+Abb. 15.1: Safe für die feuerfeste Aufbewahrung von Datenträgern
+
+Hinzu kommt die Installation von Alarmanlagen, an welche die bereits beschriebenen Systeme gekoppelt werden können, um so ein widerrechtliches Überwinden
+
+379
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+von Schließanlagen zu überwachen und entsprechende Maßnahmen (Alarmierung von Sicherheitsdienst, zusätzliche Verriegelungen etc.) auszulösen. Gekoppelt werden können diese Anlagen auch mit der Videoüberwachung oder wie
+schon erwähnt mit zusätzlichen Bewegungsmeldern, welche Auffälligkeiten registrieren und melden.
+Wichtig bei der Implementierung eines Einbruchsschutzes sind der Test und eine
+regelmäßige Überprüfung der Anlage, damit deren Funktionalität gewährleistet
+ist und sie nicht eine Scheinsicherheit vermittelt, im Ernstfall dann aber versagt.
+Ein weiteres Thema der physikalischen Sicherheit ist der Hochwasserschutz. Während der Schutz vor Hochwasser bzw. vor von außen eindringendem Wasser vor
+allem eine bauliche Angelegenheit ist (z.B. Hochwasserschotte oder Wasserschotttüren), kann gegen die anderen Wasserschäden auch durch die Raum- und Anlagengestaltung einiges unternommen werden.
+Gegen kleinere Wassermengen sind mit Hohlboden ausgestattete Räume sicher
+ein guter Schutz – sofern man die Hohlböden dann nicht auf derselben Ebene für
+eine schlecht geschützte Stromführung missbraucht ... Ebenso wichtig: keine
+Fenster in Server- oder Telekommunikationsräumen, wichtige Systeme nicht auf
+den Boden stellen, sondern in einem Rack montieren, und keine Wasser führenden Gebäudeleitungen durch den Serverraum leiten. Dazu bemühe ich noch einmal das Beispiel von vorhin: Dieselbe Firma, die Server auf Schulpulte installiert,
+hat auch die USV für beide Server direkt auf den Kellerboden gestellt ...
+Zurück zu den Fakten: Wichtig ist neben der Aufstellung und den Räumlichkeiten
+selbst auch eine sorgfältige Planung und Installation der Klimaanlagen, damit
+kein Kondenswasser in Berührung mit elektrischen Anlagen kommen kann.
+Nicht zuletzt ist es von Nutzen, mit entsprechenden Sensoren die Feuchtigkeit
+und gegebenenfalls eindringendes Wasser frühzeitig zu erkennen, um Maßnahmen treffen zu können, bevor alles meterhoch unter Wasser steht.
+Zu guter Letzt gehört der Brandschutz zu den hier zu besprechenden Elementen.
+Brandschutz ist Aufgabe der Bauleitung bzw. der Gebäudeplanung oder Nachrüstung. Sie sind damit also eher in der Bedienung als in der Erstellung involviert,
+doch auch dies muss richtig gemacht sein. Was nützen Brandschutztüren, die mit
+Türstoppern versehen sind, damit sie immer offen bleiben?
+Entsprechend der Umgebung können Brandschutzmauern sowie Brandschutzschleusen und -tore verbaut werden. Häufig müssen diese Anlagen aber bereits
+beim Bau des Gebäudes oder Raums mitberücksichtigt werden, da ein nachträglicher Einbau, wenn überhaupt möglich, nur mit großem Aufwand zu realisieren ist.
+Was sich auf jeden Fall während oder nach dem Bau implementieren lässt, sind
+Brandmeldeanlagen und Rauch- oder Feuersensoren. Diese müssen mit einer
+Alarmanlage und allenfalls auch direkt mit einer Löschanlage gekoppelt werden,
+damit das Feuer im Brandfall möglichst rasch bekämpft werden kann.
+
+380
+
+15.1
+Physikalische Sicherheit
+
+Bei größeren Räumen ist auch eine Rauchabsauganlage von Nutzen, die den Rauch
+entsprechend aus dem Raum absaugt. Zwingend notwendig sind Abzugssysteme
+immer dort, wo mit Gaslöschanlagen gearbeitet wird.
+Feuerlöschanlagen für IT-Infrastrukturen können sehr unterschiedlich konzipiert
+und mit unterschiedlichen Löschmitteln betrieben werden. Nicht jedes Löschmittel ist für den gleichen Zweck geeignet. Allen voran können Sie in elektronischen
+Umgebungen wie Serverräumen oder Rechenzentren nicht mit Wasser agieren,
+da dies zu erheblichen Schäden führen würde.
+Möglich sind der Einsatz von Stickstoff oder Argon, die per se nicht giftig oder Personen gefährdend sind und die das Feuer ersticken. Sie können in hoher Konzentration bei der Brandbekämpfung aber zu Sauerstoffmangel führen. Argon kann
+in Löschanlagen eingesetzt werden, nicht in Feuerlöschern.
+Auch CO2 löscht das Feuer durch Ersticken. CO2 treffen Sie auch in Feuerlöschern
+an (anstelle von Löschschaum oder Löschpulver). Sein großer Vorteil bei der
+Brandbekämpfung in elektrischen oder elektronischen Umgebungen wie Telekommunikationsanlagen oder Rechenzentren ist, dass es nicht elektrisch leitend
+ist und dass es keine Rückstände hinterlässt. Allerdings können durch die entstehende große Kälte magnetische Datenträger beschädigt werden. Bei der Anwendung sollte nicht vergessen werden, dass CO2 für Mensch und Tier als Atemgift
+wirkt und daher nicht unbedenklich eingesetzt werden sollte, insbesondere in geschlossenen Räumen.
+
+15.1.5 Klimatisierung und Kühlung
+Server- und Netzwerkräume enthalten in der Regel auf engem Raum zahlreiche
+Geräte, welche durch ihren elektrischen Betrieb Wärme abgeben. Im Unterschied
+zu Rechenzentren, bei denen die Klimatisierung von Planungsbeginn an eine
+feste Komponente beim Bau des Gebäudes ist, werden in diesen Räumen vorgängig oft keine gezielten Überlegungen zur Klimatisierung angestellt. Erst wenn
+Probleme durch zu große Wärme auftreten, wird über die Klimatisierung bzw.
+Kühlung des Raums beraten.
+Als Informationen dazu können Sie davon ausgehen, dass in einem Serverraum
+bis zu 4000 Watt pro Quadratmeter zu kühlen sind, ein volles Blade-Rack verbraucht bis zu 20 Kilowatt pro Rack. Dabei gilt der Grundsatz: Power in = Heat out
+(Energie rein und dafür Hitze raus).
+Wenn ein Doppelboden im Raum vorhanden ist, kann die Kühlung über diesen
+Hohlboden erfolgen. Ansonsten muss die Luft im Raum selbst gekühlt werden.
+Bei den in kleineren Umgebungen oft anzutreffenden Haushaltsklimageräten ist
+dabei zu bedenken, dass diese oft nicht geeignet sind, weil die Luft durch den Betrieb dieser Geräte zu trocken wird. Um nicht zusätzliche Risiken durch statische
+Ladungen oder (wenn zu feucht) durch Korrosion zu erzeugen, sollte die Luft-
+
+381
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+feuchtigkeit in Räumen mit Netzwerk- oder Servergeräten zwischen 30 % und
+60 % liegen (45 % +/– 15 % Abweichung). Die Temperatur beträgt idealerweise
+rund 23 °C +/– 3 °C.
+Wenn Sie den Raum mit einer Klimaanlage kühlen, müssen Sie auch beachten,
+dass die durch das Klimagerät entzogene Wärme (Abluft) aus dem Raum abgeführt wird. Sonst hebt sich der Nutzen der Anlage direkt auf. Aus diesem Grund
+müssen Abluftrohre aus dem Raum, in der Regel nach draußen, geführt werden.
+Hierbei dürfen wiederum andere Gefahren wie eindringendes Wasser bzw. der
+Einbruchschutz nicht vernachlässigt werden.
+Ein Konzept der getrennten Luftführung nennt sich Warmluftgang- und Kaltluftgangführung. Das heißt, es bestehen separate Kaltluftgänge, die kühle Luft zu den
+Systemen hinführen, und Warmluftgänge, die die warme Luft aus den Systemen
+absaugen. Dabei werden die zu kühlenden Systeme in Schränken oder über mehrere Racks hinweg zusammengenommen und nach außen abgedichtet, sodass die
+kühlende Luft direkt zu diesen Komponenten hingeführt wird. Durch das Absaugen der warmen Luft entstehen präzise gelenkte Luftströme, die eine kosten- und
+energieeffiziente Kühlung der Anlage zulassen und es nicht mehr erfordern, dass
+ganze Räume gekühlt werden müssen.
+In kleineren Räumen wird die Anlage meistens luftgekühlt betrieben, in größeren
+Räumen sind auch Wasserkühlung oder direkte Rack-Kühlung mit Luft-WasserWärmetauscher im Einsatz. Die ETH Zürich hat zusammen mit IBM sogar ein
+Modell vorgestellt, bei dem Mainboards und Prozessoren direkt wassergekühlt
+werden und die zur Kühlung benötigte Energie damit massiv reduziert werden
+kann. Zudem wird dort die Abwärme direkt zur Wärmeversorgung anderer Gebäude wieder eingesetzt, was bis zu 75 % der Energie wiederverwendbar macht.
+Überhaupt nimmt die Bedeutung der Kühlung heute zu, je größer der zu kühlende Raum ist. Dies hat weniger mit Sicherheit als mit den enormen Energiekosten zu tun. Es gibt daher verschiedenste Ansätze, um Rechenzentren optimal zu
+kühlen und dabei Energie zu sparen.
+
+15.1.6 Fachgerechte Inventarisierung und Entfernung
+Eine wichtige physische Maßnahme betrifft die Geräte selber, vom Tablet über den
+Server bis zum Rack. Alle diese Geräte müssen inventarisiert sein, mit einer Systemkennung versehen werden – nicht, um Daten zu sammeln, sondern vermisste
+Geräte gezielt suchen zu können oder Bewegungen von Geräten anhand des System Tags nachvollziehen zu können.
+Ebenso wichtig ist der Umgang mit außer Betrieb genommenen Komponenten.
+Sie müssen entweder zurückgesetzt und die Daten gelöscht werden oder physisch
+vernichtet werden.
+
+382
+
+15.2
+Fehlertoleranter Aufbau
+
+Während das Thema »Safe Disposal« bei mobilen Geräten, Clients oder auch Festplatten und SSDs längst etabliert ist, werden für Netzwerkkomponenten hier oftmals keine Regeln vorgesehen – aber auch hier sind wichtige Daten gespeichert!
+
+15.2 Fehlertoleranter Aufbau
+Damit gerade im Netzwerkbereich ein Ausfall einer Komponente nicht zu einem
+Ausfall der Infrastruktur führen muss, gibt es verschiedene Möglichkeiten und
+Ebenen der Redundanz, die sich realisieren lassen.
+Die grundlegendste Ebene ist hier die Redundanz von Komponenten. Diese werden
+also doppelt (oder mehrfach) verbaut und bei Ausfall der einen übernimmt die andere gleichartige Komponente deren Tätigkeit, bis sie ersetzt oder repariert wurde.
+Da sind zum einen die Netzwerkschnittstellen. Sowohl für Server als auch für
+Core-Switches oder Router gibt es verschiedene Formen der Adapterzusammenarbeit, um die Leistung von Netzwerkverbindungen zu optimieren, genannt Bonding (Bündelung) oder Teaming (Zusammenarbeit). Dazu gehört auch die
+Möglichkeit der Übernahme von Arbeiten im Fehlerfall (Fail Over). Die Möglichkeiten werden dabei durch die Software des Geräts oder der Adapterkarte bestimmt. Das heißt, bei Netzwerkkarten von Intel benötigen Sie die Software von
+Intel zur Steuerung der Redundanz, bei einem Managed Switch von Cisco entscheidet dagegen die Firmware des Switches, welche Möglichkeiten Ihnen das Management-Tool zur Verfügung stellen kann.
+Formen der Zusammenarbeit von zwei oder mehr Netzwerkschnittstellen sind:
+Link-Aggregation
+
+(Bonding): Hierbei werden mehrere Schnittstellen zusammengefasst, um die Leistung bzw. den Netzwerkdurchsatz
+zu erhöhen, entweder statisch als Port Bonding oder Teaming oder dynamisch mittels Link Aggregation Control
+Protocol (LACP).
+
+Lastenausgleich
+
+(Load Balancing): Dies kann ebenfalls statisch oder dynamisch definiert werden. Je nachdem kann der Lastenausgleich unterschiedlich definiert werden, beispielsweise auf
+Basis von IP-Adressen oder TCP-Paketen.
+
+Fehlertoleranz
+
+(Fault Tolerance): Auch hier gibt es mehrere Möglichkeiten.
+Die Fehlertoleranz kann statisch eingerichtet werden. Das
+bedeutet: Ein Adapter arbeitet als primäre Verbindung, der
+andere als sekundäre, die nur zum Einsatz kommt, wenn
+die primäre Verbindung ausfällt. Oder die Fehlertoleranz
+wird dynamisch eingerichtet, sodass die Adapter sich selbst
+verwalten und im Fehlerfall gegenseitig vertreten können.
+Dazu gleich mehr unter den Stichworten LACP und LAG.
+
+383
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+Die Redundanzverfahren können also grundsätzlich statisch oder dynamisch konfiguriert werden. Statische Verfahren beruhen auf einer festen Einrichtung auf
+den vorhandenen Schnittstellen und werden daher einmalig eingerichtet.
+Dynamische Link-Aggregation nutzt das Link Aggregation Control Protocol
+(LCAP) und ist ein relevantes Mittel, um die Zuverlässigkeit und Verfügbarkeit bei
+gleichzeitiger besserer Nutzung der Ressourcen zu realisieren. Das zuerst in IEEE
+802.3ad und später IEEE 802.1ax standardisierte LACP bildet mit seinen zugewiesenen Verbindungen eine Link Aggregation Group (LAG).
+Eine LAG hat folgende Eigenschaften:
+쐽
+
+Automatisches Recovery bei Ausfällen einzelner physischer Links im Verbund,
+solange noch mindestens eine Verbindung verfügbar ist
+
+쐽
+
+Verteilung des Datenverkehrs über die angeschlossenen physischen Links
+
+쐽
+
+Frames, die zu einer bestimmten Kommunikation gehören, werden dabei über
+dieselbe physische Verbindung weitergeleitet, um eine korrekte Reihenfolge zu
+gewährleisten
+
+Die in der LAG angeschlossenen Geräte tauschen dazu Protokolldaten zur LinkAggregation untereinander aus, um die Verbindung herzustellen und zu verwalten. Diese Dateneinheiten nennen sich entsprechend LACPDU (für Data Unit)
+und stellen beispielsweise auch fest, wenn auf einer Aggregation keine Antwort
+von einem bestimmten Gerät erfolgt, und entfernen diese Verbindung dann aus
+der LAG. Damit dies möglich ist, müssen alle beteiligten Geräte LCAP unterstützen und die LAG muss auf jedem Gerät konfiguriert werden.
+Dabei ist darauf zu achten, dass auf jedem angeschlossenen Gerät dieselben Einstellungen für Portgeschwindigkeit, Duplexmodus und MTU-Größe eingestellt
+sind.
+In der Praxis treffen Sie auch auf eine Kombination dieser grundsätzlichen Verfahren. Dies bedeutet, im Normalfall arbeiten die Adapter im Team alle im Modus
+»Lastenausgleich« oder »Bündelung« und können im Bedarfsfall automatisch auf
+fehlertolerantes Verhalten umschalten, wenn eine Verbindung ausfällt. Die konkreten Möglichkeiten hängen auf jeden Fall von den Konfigurationsmöglichkeiten
+ab, die Ihnen die Netzwerkkartensoftware bietet.
+Ebenfalls in den Bereich der Komponenten gehört der Einsatz von redundanten
+Netzteilen oder der doppelten Energieversorgung Netzkabel/USV.
+Einen Schritt weiter gehen Sie im fehlertoleranten Aufbau, wenn Sie ganze Geräte
+entweder passiv (als Ersatz) oder aktiv (miteinander verbunden) redundant einsetzen. Dazu gehören im Speziellen Core-Switches (also der zentrale Versorgungsswitch für das lokale Netzwerk), Router und Internetzugangsgeräte.
+
+384
+
+15.2
+Fehlertoleranter Aufbau
+
+Das kann auch so weit gehen, dass Sie redundante Leitungen aufbauen. Das ist
+dann nicht unbedingt der LAN-Weg, aber für Weitverkehrsverbindungen der aktuelle Standard.
+Doch nicht nur Geräte und Komponenten können redundant implementiert werden, Redundanz können Sie auch mit anderen Mitteln erreichen.
+Wenn Sie sich an das Kapitel mit den Topologien erinnern, lautet das Grundprinzip der Maschen-Topologie Redundanz. Jeder Knoten muss mit mindestens zwei
+anderen Knoten aktiv verbunden sein, damit er Teil des Maschennetzes sein kann.
+Und wofür steht die Maschen-Topologie in der Praxis? Für das Internet bzw. für
+alle Knoten, die als Teil des Internets mit öffentlichen Adressen ausgestattet sind
+und Informationen anbieten – also nicht Ihr PC zu Hause, aber jeder Webserver
+oder Name Server muss mit mindestens zwei Leitungen an das Netzwerk angeschlossen sein.
+Auf Ebene der Netzwerkgeräte wiederum steht mit RSTP auch ein Protokoll zur
+Verfügung, das sich um die Ausfallsicherheit kümmert. RSTP bestimmt, wie Sie
+sich erinnern, eine Root-Bridge im Netzwerk, die den Verkehr zwischen den Netzwerkvermittlungsgeräten organisiert. Fällt sie aus, besitzt das Protokoll Mechanismen, um die Datenpakete umzuleiten und einen anderen Switch zur Root-Bridge
+zu erklären – sofern Sie natürlich genügend Switches angeschlossen haben. SPB
+wird hier noch einen Schritt weitergehen, indem es Pfade mit identischen Kosten
+gleichzeitig handeln kann und so nicht nur Ausfallsicherheit, sondern auch Redundanz der Pfade bewältigt.
+Der nächsthöhere Level wäre dann die Bildung eines Clusters, d.h., Sie verbinden
+zwei größere Router oder zwei Core-Switches mittels Plattform und Software so
+miteinander, dass sie im ständigen Kontakt zueinander stehen und die Informationen laufend repliziert werden. Fällt das eine Gerät aus, übernimmt das andere
+automatisch dessen gesamte Funktionalität – in der Regel ohne dass der Benutzer
+davon überhaupt etwas mitbekommt.
+Wenn Ihnen das dann an Redundanz immer noch nicht reicht, dann bleibt Ihnen
+als Nächstes, das ganze Netzwerk an zwei Standorten redundant aufzubauen, gegebenenfalls sogar mit redundantem Personal. Das geht dann aber über das
+Thema »Redundanz« hinaus und führt uns zu Themen wie Business Continuity
+Management oder Desaster Recovery. Bei diesen Themen handelt es sich um die
+Verhinderung einer Betriebsunterbrechung respektive um die Frage einer möglichst raschen Wiederaufnahme des Betriebs. Für mehr Informationen verweise
+ich Sie an dieser Stelle auf das im MITP-Verlag erschienene Buch »CompTIA Security+«, in dem diese Thematik abgehandelt wird.
+
+385
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+15.3 Datensicherung
+Die Datensicherung ist ein Aspekt, der nur mittelbar mit dem Netzwerk zu tun hat.
+Denn es werden ja damit primär Daten gesichert, nicht Netzwerke .... Aber die Bedrohungen kommen unter anderem über Netzwerkleitungen zu Ihnen bzw. wenn
+Sie bei ausgefallenem Netzwerk keinen Zugriff mehr auf die Daten haben, benötigen Sie gesicherte Daten, die Sie wiederherstellen können, um weiterzuarbeiten.
+Dazu passt etwa die Nachricht, dass die Chance, ein Desaster zu überleben, welches das Datenverarbeitungszentrum der Firma betrifft, bei 7:100 steht. Die Chancen, einen solchen Fall zu erleben, stehen dagegen 1:100.
+Oder: Ein Unternehmen, das länger als 15 Arbeitstage ohne funktionierende EDV
+auskommen muss, hat eine Überlebenschance von 25 % (Quelle: Egbert Wald:
+»Backup und Disaster Recovery«).
+Daten sind somit das wichtigste Gut von Firmen (das war übrigens auch vor der
+elektronischen Form schon so!). Daher müssen sie auch entsprechend gegen Verlust geschützt werden. Dabei ist es unerheblich, ob die Daten gelöscht wurden
+oder ein physischer Schaden wie der Ausfall einer Harddisk vorliegt. Darum benötigt jedes Datennetzwerk ein entsprechendes Datensicherungskonzept.
+Das Thema steht im Zusammenhang mit CompTIA Network+, aber nicht weil die
+Daten an sich hier im Fokus stehen, sondern weil gerne vergessen geht, wie viele
+Daten im Netzwerk selbst gesichert sind.
+Das beginnt bei einfachen Angaben, die Sie auch auf Papier notieren können und
+auf die Sie in Abschnitt 17.2 »Die Netzwerkdokumentation« noch genauer hingewiesen werden, wie etwa die Konfiguration einer IP-Adresse oder ein Netzwerkdiagramm mit Angaben zu Geräten, Adressen und anderen wichtigen Informationen.
+Aber immer mehr Geräte im Netzwerk selbst sind verwaltbar, also Managed Devices. Und diese Konfigurationen müssen auch gesichert werden. Denn wenn Sie
+einen Access Point mit allen Profilen und Angaben fertig konfiguriert haben, diesen aber nach drei Monaten wegen eines Hardware-Schadens ersetzen müssen,
+möchten Sie dann die ganzen Angaben noch einmal von vorne eingeben?
+Um genau das zu vermeiden, können die Konfigurationsdaten von solchen Geräten wie Routern, Managed Switches, Access Points oder Firewalls gesichert werden. Diese Sicherungen lassen sich nicht nur auf dem Gerät selbst verwalten,
+sondern können auch auf externe Datenträger gespeichert werden.
+Legen Sie sich daher einen Speicherort an, an dem Sie die Konfigurationsdaten
+dieser Geräte aufbewahren können. Dies gilt umso mehr, je aufwendiger die Konfiguration eines Geräts ist, gerade im Bereich Firewall kann es sich dabei auch einmal um mehrere Stunden oder Tage handeln, bis alle Regeln und Ausnahmen
+sauber definiert und hinterlegt sind.
+
+386
+
+15.4
+Malwareschutz mit Konzept
+
+Abb. 15.2: Die Möglichkeiten, Konfigurationen zu sichern und herunterzuladen
+
+Zudem können Sie nach einer Anpassung der Konfiguration, die nicht das gewünschte Resultat erbracht hat, auch einfach wieder zurück zur bisherigen Version, wenn Sie eine solche gesichert haben.
+
+15.4 Malwareschutz mit Konzept
+Ein funktionierendes Virenschutzkonzept basiert auf mehreren Säulen: zum einen
+auf einem funktionierenden Datensicherungskonzept und dessen Umsetzung, damit verloren gegangene Informationen wieder restauriert werden können, und
+zum anderen auf der Basis von Kontrollen sowie einem Vorgehensplan bei eintretendem Virenbefall. Die Umsetzung gliedert sich grob in drei Teile:
+1. Bestimmen eines Verantwortlichen für die Malwarebekämpfung
+In vielen Firmen ist oft bereits ein Informatiksicherheitsbeauftragter im Amt.
+Ob er diese zusätzliche Funktion ebenfalls übernimmt oder sie delegiert, ist
+nicht vorgegeben, muss aber geregelt werden. Der Virenverantwortliche kümmert sich um alle Belange rund um Computerviren.
+2. Planung und Installation von Kontrollstrukturen
+Bevor mit der Installation von Virenschutzprogrammen begonnen werden
+kann, ist ein Plan zu erstellen. Dieser Plan beantwortet die Fragen: Was schützen Sie (Client und/oder Server) und mit welchem Aufwand?
+Ist dies geklärt, können die geplanten Maßnahmen implementiert werden.
+3. Festlegen eines Arbeitsprozesses bei einem Virenbefall
+Der dritte Teil besteht darin, was nun eigentlich geschehen soll, falls ein Virus
+durch die vorangegangenen Schutzmaßnahmen erkannt wurde. Das Formulieren eines Ablaufprozesses im Falle einer Vireninfektion ist oft Teil der Vorarbeiten für eine QS- bzw. ISO-Zertifizierung.
+Die Datensicherung wird (hoffentlich) im Rahmen des ISMS durchgeführt, sie betrifft das Virenschutzkonzept lediglich insoweit, als dass eine regelmäßige Daten-
+
+387
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+sicherung vorhanden sein muss, damit das Virenschutzkonzept darauf referenzieren kann.
+Der zweite Teil des Konzepts betrifft die Überwachung und die Kontrollen. Viren
+lauern in Programmen, Dokumenten und auf austauschbaren Medien (z.B. USBSticks). Vereinfacht könnte man also als erste präventive Maßnahme formulieren:
+Tausche weder Programme, Dokumente noch Medien mit anderen Personen.
+
+Abb. 15.3: Malwareschutz mit aktivierter Echtzeitüberwachung
+
+In der heutigen vernetzten Welt ist eine solche restriktive Forderung nicht mehr
+denkbar. Aber sie weist in eine Richtung für mögliche Ansätze. Um die Ausbreitung von Viren zu verhindern, ist durch organisatorische Maßnahmen dafür zu
+sorgen, dass jedes fremde Programm, jeder unbekannte USB-Stick und jedes zu
+bearbeitende Dokument zuerst auf Viren untersucht wird. Die Untersuchung
+kann automatisch im Hintergrund (Stichwort: Antivirenprogramm) erfolgen. Alle
+aktuellen Virenschutzwerkzeuge bieten die Installation einer solchen permanenten Überwachung an.
+Nebst der automatischen Überwachung sind regelmäßige Kontrollen zwingend periodisch durchzuführen (geplante Scans), da selbst die beste Prävention nicht hundertprozentig vor einer Infizierung mit Viren schützen kann. Weiter ist zu beachten,
+dass fast täglich neue Viren programmiert werden. Dies bedeutet, dass auch die Programme zum Aufspüren von Viren immer dem aktuellen Stand anzupassen sind.
+Die periodische Kontrolle z.B. alle zwei Wochen kann so einen Schädling auffinden,
+der zwar schon seit drei Wochen auf dem System ist, aber erst mit den Definitionen der aktuellen Virendatenbank gefunden werden kann.
+Des Weiteren müssen die Mitarbeiter das Thema Malware betreffend sensibilisiert
+werden, sodass sie selbst den ersten Schritt gegen eine Weiterverbreitung bzw.
+
+388
+
+15.4
+Malwareschutz mit Konzept
+
+eine Infektion gehen können und sich der möglichen Gefahren bewusst sind. Die
+Mentalität »Mir passiert das schon nicht« muss aus den Köpfen verschwinden, da
+sie mit der heutigen Realität nichts mehr gemein hat.
+
+Abb. 15.4: Das AV-Programm findet bei der regelmäßigen Scan-Prüfung bereits auf dem System
+befindliche Viren, die erst später entdeckt werden können
+
+Folgende Grafik, die ich in einem Training (auch Autoren bilden sich weiter!) zum
+Thema »Wie greife ich eine Firma gezielt an« gezeigt bekam, zeigt die Notwendigkeit von Awareness-Trainings oder Sensibilisierungsschulungen exzellent an:
+
+Abb. 15.5: Nachgemessene Rate einer Infiltration (© Markus Ruef, scip AG, 2015)
+
+389
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+Warum »nachgemessen«? Die Firma scip produziert Angriffe auf Antrag, und
+zwar auf Antrag von Firmen, die sich auf ihre Sicherheit hin überprüfen lassen
+wollen. Daher werden die Angriffe alle notiert und ihre Durchdringungsquote
+kann, da sie ja gezielt auf einen Kunden angesetzt werden, gemessen werden. Was
+Sie oben in der Grafik sehen, ist, dass eine E-Mail mit einem Anhang an 100 % aller Mitarbeiter des Kunden, der dazu den Auftrag erteilt hatte, erfolgreich versandt
+worden ist.
+48 % der Empfängerinnen und Empfänger haben den Anhang in der Mail angeklickt – und 32 % haben den Anhang auch ausgeführt. Klar, die Mail war nicht von
+der Sorte »Ich Ihre Freund biete 100 Mio. $ wenn du mich schreibe zurück«, sondern präzise auf den Kunden und die Thematik der Mitarbeiter abgestimmt – aber
+GENAU SO laufen moderne Angriffe ab. Und nach dem obigen Ergebnis fanden
+auch bei diesem Kunden entsprechende Schulungen statt, denn wenn jeder Dritte
+eine Mail mit Schadsoftware ausführt, führt das nicht zu einem guten Ende für die
+Firma – außer es war eben ein Test (das wussten die Mitarbeiter aber nicht).
+Zurück zum Konzept. Als letzten Schritt in einem Virenschutzkonzept müssen
+Sie den Vorgehensplan bei einem Virenbefall definieren.
+Grundsätzlich gilt ein System so lange als infiziert, bis man sich vom Gegenteil
+überzeugt hat. Das heißt, einmal befallene Systeme müssen so rasch wie möglich
+von den anderen Systemen getrennt werden (insbesondere die Netzwerkverbindungen) und dürfen erst nach erfolgreicher Kontrolle und Überprüfung einer Entseuchung wieder ins Netzwerk verbunden werden.
+Es gibt auch einen noch radikaleren Ansatz: Ein einmal kompromittiertes System
+ist immer ein kompromittiertes System. Gerade bei für den Betrieb kritischen Systemen ist dieser Gedanke sicher eine Überlegung wert, auch wenn der Ansatz besagt: Virenbefall = Neuinstallation, weil man sonst nie sicher sein kann, dass das
+Problem wirklich und endgültig gelöst ist. Und aufgrund verschiedener Vorfälle
+muss man heute festhalten: Am besten ist es, nicht einfach neu zu installieren,
+sondern zumindest die verbauten Datenträger generell zu ersetzen, damit sich
+nicht irgendwo darauf Rückstände des Befalls festsetzen können.
+Wenn Sie das System bereinigen möchten, umfasst das Entfernen von Malware
+zwei Schritte. Zuerst muss die entsprechende Malware gesucht und ihr Typ bestimmt werden. Sind Standort und Virustyp bekannt, kann der Virus, falls möglich, gelöscht werden.
+Leider ist es nicht immer möglich, das den ohne Zerstören des Wirtsprogramms
+bzw. Wirtsdokuments zu eliminieren. Dies wiederum zeigt, wie wichtig eine gut
+organisierte Datensicherung ist, um auch in einem solchen Fall an eine Vorversion von zu löschenden, weil verseuchten Daten zu gelangen.
+Befallen die Viren das ganze System oder kritische Systemdaten, so muss dieses
+von Grund auf neu installiert werden. Insbesondere muss hier auf Viren hinge-
+
+390
+
+15.4
+Malwareschutz mit Konzept
+
+wiesen werden, welche die Partitionstabelle oder Startdaten modifizieren oder sich
+als Dienste ins System einhängen. Zu deren sicheren Entfernung gehören oft eine
+komplette Neupartitionierung und Neuformatierung der Festplatte mit anschließender Systeminstallation. Diejenigen, die für solche Fälle ein Image vorbereitet
+haben, sparen einiges an Zeit und Nerven, weil man das verloren gegangene System relativ einfach wieder einspielen kann.
+Auch externe Boot-Datenträger (DVD bzw. USB-Stick) können hier von Nutzen
+sein, da sie es erlauben, das System zu überprüfen und zu bereinigen, ohne dass
+das systemeigene Betriebssystem hochgefahren und die Malware damit aktiviert
+wird. Bekannt hierfür ist etwa die Kaspersky Rescue Disk oder verschiedene Linuxbasierte Boot-Systeme. Aber auch andere Hersteller von Antivirenprogrammen bieten die Möglichkeit, solche systemunabhängigen Boot-Datenträger zu erstellen.
+Probleme beim Erkennen von virenbefallenen Programmen und Dokumenten bereiten komprimierte Dateien aus dem Internet, sich selbst verschlüsselnde Viren
+(Kryptoviren) oder sich tarnende Viren (Stealth-Viren). Allen gemein ist, dass das
+binäre Muster verändert wurde. Ohne dieses eindeutige binäre Muster ist das Virensuchprogramm nicht mehr in der Lage, die Viren aufzuspüren. Dem treten
+jetzt moderne Antivirenprogramme mit einer sogenannten heuristischen Suche
+entgegen, sodass auch Virensignaturen gefunden werden, die noch keinem bestimmten Virus zugewiesen wurden.
+Wenn Sie das Virenschutzkonzept implementiert, die Antivirenprogramme installiert und die Kontrollen und Überwachungen installiert haben – wie prüfen Sie
+den Erfolg Ihres Virenschutzkonzepts?
+Ein möglicher Weg ist es, einen realen Virus für die Tests im operativen Netzwerk
+auszusetzen. Dagegen werden sich aber bestimmt alle Systemadministratoren mit
+Händen und Füßen wehren. Und dies zu Recht: Viren in operativen Netzwerken
+sind unberechenbar und mit großen Risiken verbunden.
+Einen viel eleganteren Weg hat 1996 das European Institute for Computer Anti-Virus Research (kurz EICAR) beschritten. Zusammen mit namhaften Herstellern
+von Antivirenprogrammen hat das EICAR eine Testdatei entwickelt, die es erlaubt,
+Antivirenprogramme in operativen Netzwerken gefahrlos zu testen. Der Ansatz
+besteht darin, eine Zeichenkette, welche völlig harmlos ist, als zusätzlichen Pseudovirus in die Suchdatenbank der AV-Programme einzufügen.
+X5O!P%@AP[4\PZX54(p^)7CC)7}$EICAR-STANDARD-ANTI-VIRUS-TEST-FILE!$H+H*
+
+Diese Zeichenkette, abgespeichert und mit der Endung .com versehen, generiert
+ein kleines Programm, das folgende Bildschirmausgabe erzeugt:
+EICAR-STANDARD-ANTIVIRUS-TEST-FILE!
+
+391
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+Natürlich ist dieses Programm kein Virus, aber die Virensuchprogramme sprechen
+prompt auf den angeblichen Virus an. Also genau richtig, um die korrekte Funktionsweise zu testen.
+
+Netzwerkpraxis – jetzt sind Sie dran
+Gehen Sie auf die Website der EICAR und laden Sie sich dort den EICAR-Testvirus herunter. Erkennt Ihr System und Ihre Software ihn zuverlässig? In welcher
+Form können Sie ihn überhaupt herunterladen, damit Ihre Software den Virus
+nicht schon beim Ladevorgang blockiert?
+Weitere Informationen zur EICAR-Zeichenkette und die Organisation als solches finden Sie unter http://www.eicar.com.
+
+15.5 Netzwerkhärtung
+Nicht nur Client- oder Serversysteme, bei denen der Begriff Härtung (Hardening)
+längst bekannt und im Einsatz ist, sondern auch bei Netzwerkkomponenten spielt
+die Härtung eine wichtige Rolle. Dies basierend auf dem Wissen, wie wichtig es
+ist, die Angriffsfläche der eigenen Systeme und Netzwerke so gering wie möglich
+zu halten. Die Härtung der Systeme kann auf verschiedenen Ebenen erfolgen: auf
+Ebene der Hardware und Firmware, auf Ebene des Betriebssystems und auf der
+Ebene der Anwendungen. Im Bereich Netzwerkkomponenten kommt dabei der
+Ebene des Betriebssystems und der Firmware die größte Bedeutung zu.
+Dabei sollten Sie sich vor Augen halten, dass in einem Netzwerk meist nur wenige
+Server in Betrieb sind, aber ungleich viel mehr Komponenten wie Switches, Router, Access Points etc. Für einen potenziellen Angreifer ist es daher mitunter wesentlich einfacher, eine ungesicherte Komponente im Netzwerk zu finden und von
+dort aus weiter vorzudringen.
+Die erste Grundregel der Härtung lautet: Abschalten, was nicht benötigt wird.
+Seien es Schnittstellen (auch physische), Protokolle, die nicht notwendig sind,
+oder Dienste. Schalten Sie ab bzw. deaktivieren Sie, was nicht benötigt wird.
+Die zweite Grundregel heißt: Halten Sie Ihre Komponenten aktuell. Meistens ist
+das Update-Verhalten von Netzwerkkomponenten aufwendiger als ein automatisches Update auf Clients, das entbindet Sie aber nicht von der Verantwortung,
+Firmware und Anwendungen auf diesen Komponenten zu aktualisieren. Und
+sollte ein Gerät so alt sein, dass es über längere Zeit keine Updates mehr gibt –
+müssen Sie es unter Umständen aus diesem Grund ersetzen.
+Die dritte Grundregel heißt: no defaults – keine Standardwerte zulassen. Das gilt
+insbesondere für Kennwörter. Sie müssen individuell, komplex und lang genug
+
+392
+
+15.6
+Firewalls
+
+sein, um einem Angriff zu widerstehen. Das gilt für jeden Router, jeden Switch,
+jede Firewall etc.
+Weitergehende Maßnahmen der Netzwerkhärtung sind der Einsatz bereits beschriebener Verfahren wie IEEE 802.1p oder 802.1q, das Einrichten anderer Benutzer als der vorgegebenen Standardbenutzer und die Einrichtung verschiedener
+Rollen von Benutzern.
+Beim Einsatz von WLAN gehören Überlegungen wie der regelmäßige Tausch des
+WPA3-SAE-Schlüssels, MAC-Filterung oder die Aufstellung und Ausrichtung von
+Antennen in dieses Thema. Ebenso die Sicherstellung, dass Gästerechner im
+WLAN isoliert werden, und das Einsetzen eines Portals, bei dem sich Gästerechner registrieren müssen.
+Bei den im Folgenden näher ausgeführten Firewalls setzen Sie auf ein restriktives
+Regelwerk oder nutzen allenfalls den Einsatz von Geo-Fencing, das heißt, Sie sperren gewisse Regionen und Länder basierend auf deren IP-Adresse vom Zugriff aus.
+
+15.6 Firewalls
+Als Firewall wird verallgemeinernd ein System bezeichnet, das den Netzwerkverkehr zwischen zwei Netzwerken mit unterschiedlichen Sicherheitsanforderungen
+kontrolliert und ein zu schützendes Netz vor Schaden bewahrt. Die englischen Begriffe dafür lauten Untrusted Network und Trusted Network.
+Dazu analysiert als Trenneinheit das dazwischengeschaltete Firewall-System die
+Kommunikationsdaten, überprüft Kommunikationsbeziehungen und -partner
+und reglementiert die Kommunikation nach vorher definierten Regeln. Das kann
+je nach Typ der Firewall auf unterschiedlichen Ebenen erfolgen.
+
+Abb. 15.6: Das Grundkonzept einer Firewall
+
+393
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+Durch diese Konzeption der Trennung von unsicherem und sicherem Netzwerk
+an der Firewall wird diese zum Common Point of Trust: Sie bildet den einzigen Weg
+von »außen« in das zu schützende Netzwerk.
+Firewalls können daher eingesetzt werden, um das Internet als klassisches unsicheres Netzwerk von der eigenen Netzwerkinfrastruktur zu trennen, aber auch,
+um intern verschiedene Sicherheitsbereiche zu schaffen und das Netzwerk sicherer zu strukturieren.
+Dieses Konzept lässt sich zudem um eine weitere Stufe ergänzen: die Demilitarisierte Zone, kurz DMZ genannt.
+Eine DMZ ist eine Zone, die vom unsicheren Netzwerk her mehr oder weniger offen erreichbar ist und vom sicheren Netzwerk aus ebenfalls erreichbar ist. Die
+Dienste in der DMZ wiederum haben aber einen sehr limitierten Zugang von sich
+aus in das sichere Netzwerk. Dazu mehr später in diesem Kapitel.
+Doch nicht nur das Netzwerk benötigt eine Firewall. Auch die mobilen Mitarbeiter
+sollten damit ausgestattet werden. Dann spricht man von einer Personal Firewall.
+Dabei handelt es sich meistens um reine Software, welche direkt auf den ClientRechnern installiert wird und diesen auch dann vor Gefahren schützt, wenn das
+System sich nicht im gut geschützten Netzwerk, sondern unterwegs befindet: im
+Hotel, in Sitzungszimmern, auf Flughäfen oder im Heimbüro. Zudem werden
+auch immer mehr stationäre Geräte mit solchen Personal Firewalls ausgerüstet,
+um die Sicherheit im Netzwerk zu erhöhen.
+Als allgemeine Ziele der Firewall-Systeme noch ohne Berücksichtigung ihrer spezifischen Fähigkeiten kann man daher festhalten:
+쐽
+
+Schutz der internen Netzwerkinfrastruktur durch Abtrennung nach außen
+
+쐽
+
+Zugangskontrolle auf Netzwerkebene, Benutzerebene und Datenebene
+
+쐽
+
+Rechteverwaltung (Welche Protokolle und Dienste dürfen zu welcher Zeit eine
+Kommunikation zum Netzwerk unterhalten?)
+
+쐽
+
+Kontrolle auf Anwendungsebene
+
+쐽
+
+Protokollauswertung bis hin zur Alarmierung
+
+Eine Firewall kann als reine Applikation auf bestehenden Systemen installiert oder
+als dedizierte Firewall eingesetzt werden, d.h. als eigenständiges Gerät mit spezialisierter Software. Man spricht in diesem Zusammenhang auch von Software-Firewalls und Hardware-Firewalls, obwohl dies höchstens umgangssprachlich richtig
+ist, da die Funktionalität einer Firewall immer softwaregesteuert ist. Treffender ist
+daher der Vergleich von Personal Firewall und dedizierter Firewall.
+Eine Personal Firewall wird dabei auf Rechnern installiert, die andere Aufgaben erfüllen, seien es Arbeitsrechner, Notebooks oder heute auch Smartphones. Die Per-
+
+394
+
+15.6
+Firewalls
+
+sonal Firewall ist abhängig vom darunterliegenden Betriebssystem und setzt auf
+den Netzwerkschnittstellen des lokalen Systems auf.
+Eine dedizierte oder eben »Hardware«-Firewall ist dagegen ein eigenständiges Gerät mit eigenem Betriebssystem, zusammen auch Appliance genannt. Zudem treffen Sie – gerade im SoHo-Umfeld – auch Firewalls an, die mit Routern zusammen
+im selben Gerät untergebracht sind. SoHo steht dabei für Small Office and Home.
+Eine dedizierte Firewall wird zwischen das äußere und das interne Netzwerk geschaltet und trennt die Netze physisch. Das heißt, um eine effiziente Sicherung zu
+erreichen, verfügt eine Firewall immer über mindestens zwei physikalisch getrennte Netzwerkschnittstellen, zwischen denen die Software nach vorgegebenen
+Richtlinien den Verkehr zulässt, regelt oder untersagt. Es können aber auch mehr
+als zwei Schnittstellen vorhanden sein und mit virtuellen Wire-Schnittstellen können Ports auch logisch gebündelt werden. So ist es beispielsweise mit Virtual Wire
+möglich, den eingehenden Netzwerkverkehr über eine zweite logische Schnittstelle zu überwachen, ohne den eigentlichen Datenverkehr zu beeinträchtigen.
+Wenn eine Firewall mit zwei unabhängigen Netzwerkkarten ausgestattet ist, über
+die sie die Kontrolle hat, nennt sich diese Firewall Dual-homed für zwei eigenständige Netzverbindungen. Dies besagt auch, dass die Verbindung zwischen diesen
+beiden Netzwerkkarten nur durch die Funktionalität der Software gewährleistet
+ist. Steigt die Software aus, ist die Leitung unterbrochen. Das nennt sich »Fail
+Safe«-Prinzip, das heißt, bei einem Ausfall ist das lokale Netz durch das Unterbrechen des Zugangs vom äußeren Netzwerk her sicher. Das gegenteilige Prinzip
+dazu wäre »Fail Open«: Bei einem Fehler wäre das zu schützende System oder
+Netzwerk dann offen. Dies ist ein Risiko, das z.B. bei vielen Personal Firewalls (Software auf dem Betriebssystem installiert) besteht. Es bedeutet, dass bei einer Kompromittierung der Firewall der Netzwerkverkehr ungefiltert durchgelassen wird.
+
+Abb. 15.7: Eine ZyXEL-Firewall
+
+395
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+Unabhängig von obiger Definition ist die eigentliche Funktionalität der Firewall
+eine Software, die den Netzwerkverkehr nach verschiedenen Gesichtspunkten überprüft.
+Es gibt drei Typen von Firewalls, die später in diesem Kapitel genauer beschrieben
+werden, die aber ähnlich arbeiten:
+쐽
+
+Paketfilter
+
+쐽
+
+Stateful Packet Inspection
+
+쐽
+
+Application Level Gateway
+
+Sie alle arbeiten mit Regelwerken, mit denen der Datenverkehr gesteuert wird. Dabei können Sie zwei gegensätzliche Ansätze zur Regelerstellung verwenden:
+
+Positive Exceptions (Positive Rules)
+Hierbei wird die Firewall grundsätzlich nach innen (inbound) und nach außen
+(outbound) geschlossen. Entsprechend ihres Einsatzlevels lässt sie die Schnittstellen keinen Verkehr passieren (Deny all). Die Ausnahmen werden in Regeln definiert, sodass nur der Verkehr möglich ist, welcher explizit als Regel definiert wird.
+Man spricht daher auch vom Implicit Deny – was nicht erlaubt ist, ist implizit verboten.
+Beispiel: Auf Port 587 hört der Mail-Server eingehenden Mail-Verkehr ab. Dies bedeutet, alle Ports und alle Dienste außer Mail und 587 sind geschlossen,
+nur gerade diese Regel erlaubt eine Kommunikation.
+Dies verlangt einen hohen Aufwand bei der Definition, bis alle Regeln einmal so stehen, dass der benötigte Netzwerkverkehr nicht beeinträchtigt wird. Dafür können
+keine Sicherheitslücken entstehen, da »Unbekanntes« auf jeden Fall verboten ist.
+
+Negative Exceptions (Negative Rules)
+Dies ist der umgekehrte Ansatz. Alles ist erlaubt, reglementiert wird lediglich das,
+was verboten ist.
+Beispiel: Auf Port 25 hört der Mail-Server keinen Mail-Verkehr ab. Hier bleiben
+alle anderen Ports und Dienste offen, nur gerade an einer Stelle erfolgt
+eine Blockade, weil Port 25 unerwünscht ist.
+Diese Version der Regeldefinition ist weitaus häufiger anzutreffen, insbesondere
+wenn es um den ausgehenden Verkehr (Outbound Traffic) geht. Sie erfordert auch
+weniger Aufwand bei der Definition der Regeln, da nur eingetragen wird, was man
+explizit untersagen will.
+Dieser Ansatz birgt aber das Risiko der Sicherheitslücken, da hier »Unbekanntes«
+erst einmal zugelassen wird.
+
+396
+
+15.6
+Firewalls
+
+Der Ansatz der positiven Regeln ist daher sicherheitstechnisch vorzuziehen. Der
+Ansatz der regelbasierten Anwendung nennt sich auch ACL (Access Control List),
+insbesondere im Cisco-Umfeld, wohingegen ACLs ansonsten eher Zugriffsberechtigungen für Netzwerkressourcen im Systemumfeld sind.
+Als praktisches Beispiel kann das so aussehen, indem Sie folgende Regeln auf
+einer Firewall einrichten:
+Regelwerk
+Dienst
+
+Quelladresse
+
+Quellport
+
+Zieladresse
+
+Zielport
+
+Protokoll
+
+Regel
+
+HTTP
+
+10.0.0.0/24
+
+>1023
+
+any
+
+80
+
+TCP
+
+Allow
+
+SMTP
+
+10.0.0.0/24
+
+any
+
+any
+
+587
+
+TCP
+
+Allow
+
+FTP
+
+10.0.0.0/24
+
+any
+
+any
+
+20+21
+
+TCP
+
+Deny
+
+Tabelle 15.1: Beispiel für ein Regelwerk
+
+Dazu werden Sie immer zwei Regeln hinzufügen, welche sicherstellen, dass alles,
+was Sie nicht besonders regeln, grundsätzlich unterbunden wird.
+Diese beiden Regeln stehen jeweils zuunterst im Regelwerk und besagen:
+Regelwerk
+Dienst
+
+Port I = Incoming WAN Regel
+O = Outgoing WAN
+
+any
+
+any
+
+O
+
+Deny
+
+any
+
+any
+
+I
+
+Deny
+
+Tabelle 15.2: Sicherstellung der Sperrung für nicht definierten Netzwerkverkehr
+
+Mit diesem Aufbau stellen Sie sicher, dass nur explizit erlaubte Kommunikationen
+von LAN zu WAN (outgoing bzw. outbound) wie auch von WAN zu LAN (incoming
+bzw. inbound) möglich ist.
+
+15.6.1 Verschiedene Firewall-Typen
+Paketfilter-Firewall
+Eine Firewall, die auf Paketfilterebene arbeitet, analysiert und überprüft die einund ausgehenden Datenpakete auf der Ebene von Netzzugang sowie Netzwerkund Transportebene. Durch den Paketfilter werden die Netze physikalisch entkoppelt, er verhält sich zu den Netzen als Bridge.
+
+397
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+Dabei ist in der Praxis zu unterscheiden zwischen der Funktion eines Paketfilters,
+wie er häufig in Routern und SoHo-Geräten anzutreffen ist, und einer eigenständigen Applikation, die als Paketfilter arbeitet. Letztere verfügt über ein wesentlich
+feineres Analyseprotokoll und die Analysemöglichkeiten sind dadurch wesentlich
+detaillierter. Zudem schaffen Sie damit eine klare Trennung zwischen den Kommunikations- und den Sicherheitsanforderungen. Nebst der Analyse sind auch die
+Auswertungen bei dieser Variante deutlich vielfältiger.
+Ein Paketfilter liest bei der Überprüfung den Inhalt der Paket-Header und verifiziert, wie diese Angaben (Quelladresse, Zieladresse, Dienst, Port) mit dem Regelwerk der Firewall zu behandeln sind. Der Dateninhalt der Pakete wird dabei nicht
+weiter untersucht, sondern sozusagen einfach das »Etikett« des Pakets.
+Verallgemeinernd überprüft die Paketfilter-Firewall:
+쐽
+
+Von welcher Seite das Paket empfangen wird (eingehend, ausgehend)
+
+쐽
+
+Quell- und Zieladresse vonseiten des Netzzugangs
+
+쐽
+
+Auf Netzwerkebene je nach Protokoll Verschiedenes: vom verwendeten IP-Protokoll über die Quell- und Zieladresse bis hin zum eingesetzten Transportprotokoll (TCP/UDP) und den Angaben und Optionen im Header
+
+쐽
+
+Auf Transportebene Quell- und Zielports und damit auch die zugelassenen
+oder verweigerten Dienste (wobei dies nur gilt, wenn Dienste auch den ihnen
+zugewiesenen Standard-Port verwenden)
+
+쐽
+
+Zudem kann grundsätzlich bei allen Überprüfungen ein Zeitfenster eingerichtet werden, das die Regel aktiviert bzw. deaktiviert
+
+Dabei kennen Firewalls entweder die Möglichkeit, den Verkehr zurückzuweisen
+(Reject) oder das Datenpaket einfach zu verwerfen (Drop oder Deny). Im letzteren
+Fall wird der Verkehr massiv kleiner gehalten, aber dafür weiß der anfragende
+Rechner nicht, ob sein Datenpaket angenommen wurde oder nicht. Daher wird
+das Reject meistens für Regelverstöße aus dem internen Netz eingesetzt, um die
+Benutzer zu informieren. Gegenüber dem unsicheren Netzwerk wird dagegen mit
+Drop/Deny gearbeitet.
+Verstöße gegen die Filterregeln werden zudem protokolliert. Dabei ist es von Bedeutung, wie die Firewall mit den Protokollen umgeht. So können Sie einstellen,
+dass bei vollem Log einfach wieder Platz geschaffen wird und die ältesten Einträge
+überschrieben werden. Damit reduzieren Sie aber Ihre Kontrolle. Besser ist es,
+wenn ein volles Log zu einer Blockierung der Firewall führt. So werden Sie rasch
+informiert, wenn ein Log schnellen Zuwachs erhält. Voraussetzung dafür ist natürlich, dass Sie die Ereignisprotokolle regelmäßig kontrollieren und speichern,
+damit der Platz wieder freigegeben werden kann. Eine weitere Möglichkeit besteht
+auch darin, dass das Protokoll zwar von Zeit zu Zeit gelöscht wird, dabei aber zuerst an eine bestimmte Mail-Adresse zugestellt wird, damit keine Information verloren geht.
+
+398
+
+15.6
+Firewalls
+
+Der große Nachteil der Paketfilter-Firewall besteht darin, dass sie Inhalte über den
+untersuchten Layern nicht erkennt, d.h., Informationen, die über der Transportebene liegen, werden in der Regel nicht analysiert. Ohne Erweiterung in Richtung
+NAT-Tabelle können Sie überdies die interne Netzwerkstruktur nicht verbergen.
+
+Stateful Packet Firewall
+Eine Stateful Packet Inspection Firewall kontrolliert nicht nur die Datenpakete,
+sondern auch die ganze Weginformation und den Zustand, die ein Datenpaket
+enthält. Sie arbeitet auf den OSI-Layern 2 bis 4 (kann u.U. bis Layer 7 gehen) und
+führt eine entsprechende Header-Analyse durch. So gelingt es dieser Firewall,
+nach dem Verbindungsaufbau zu erkennen, ob und wie das Quellsystem mit dem
+Zielsystem kommuniziert, und lässt nur Antwortverkehr des Zielsystems zu,
+nicht aber unangeforderte Datenpakete des Zielsystems. Damit geht sie deutlich
+weiter als eine reine Paketfilter-Firewall.
+Solche Zustände können etwa der Verbindungsauf- und -abbau sein oder der
+Transferzustand der Übertragung. Die Firewall kontrolliert also nicht nur das »Etikett«, sondern sozusagen auch den »Lieferschein« des Pakets, um zu sehen, ob die
+Lieferung der Etikettierung entspricht. Dennoch wird auch hier der eigentliche Inhalt, die Daten an sich, bei den meisten Systemen nicht überprüft. Daher ist diese
+Version eben nur eine weiterentwickelte Paketfilter-Firewall. Allerdings gibt es
+Ausnahmen, da die Hersteller ihre Produkte stetig weiterentwickeln.
+
+Application Level Gateway
+Das Application Level Gateway ist in der Lage, die Netzwerke sowohl logisch als
+auch physisch zu entkoppeln, und bietet daher das höchste Maß an Sicherheit bei
+einer Firewall. Da diese Zugangsstelle von außen meist das einzige System ist, das
+mit dem unsicheren Netzwerk verbunden wird, werden diese Systeme auch Bastion oder Bastion Host genannt, um dem Umstand Rechnung zu tragen, dass sie
+besonders gegen Angriffe von außen geschützt werden müssen.
+Entgegen dem Namen »Application« kontrolliert diese Firewall aber nicht die zugelassenen Anwendungen, der Name leitet sich aus dem Begriff des »Application
+Level« aus dem OSI-Modell ab. Sie kontrolliert den Verkehr protokoll- bzw. dienstbasiert. Dazu muss die Firewall für jedes Protokoll einen eigenen Regelsatz enthalten, das heißt, die Konfiguration ist deutlich aufwendiger als bei der PaketfilterFirewall.
+Überprüfen die beiden vorher vorgestellten Konzepte lediglich den Versand und
+die Ankunft der Datenpakete, geht das Application Level Gateway einen Schritt
+weiter, indem es die Lieferung sozusagen annimmt, den Inhalt überprüft und den
+weiteren Transport dann selbst übernimmt. Das heißt, die Verbindung vom Quellsystem wird an der Firewall terminiert und die Daten aus den Transportpaketen
+
+399
+
+Kapitel 15
+Die Verteidigung des Netzwerks
+
+werden übernommen und in einer neuen Verbindung an das interne Netzwerk
+weitergeleitet.
+Für die Übertragung der Daten stellt die Firewall für jeden Dienst einen eigenen
+Stellvertreter zur Verfügung, Proxy genannt. Jeder Dienst wird somit durch einen
+eigenen Proxy repräsentiert, welcher dienstspezifisch unterschiedliche Sicherheitsmerkmale aufweisen kann und mit einem passenden Regelsatz jeweils individuell eingestellt werden muss.
+Wird dagegen für die Dienste, für die kein spezifischer Proxy vorhanden ist, ein
+genereller Proxy eingesetzt, der nicht dienstspezifisch agiert, spricht man von
+einer Circuit Level Firewall, auch Port-Relay oder generischer Proxy genannt.
+Dieser Typ von Firewall kann also auf verschiedenen Schichten des Netzwerks aktiv sein: von OSI-Layer 3 (einfacher Paketfilter) über Layer 4 (Stateful Inspection)
+bis zur Anwendungsschicht (daher Application Level Gateway).
+Da das Application Level Gateway zudem die einzige Verbindung zwischen unsicherem und zu schützendem Netzwerk ist, arbeitet es immer mit einer NAT-Tabelle (Network Address Translation). Dabei wird bei ausgehendem Datenverkehr
+die interne IP-Adresse des anfragenden Rechners durch die öffentliche IP-Adresse
+der Firewall ersetzt (auch IP Masquerading genannt). Die öffentliche IP-Adresse
+ist somit die einzige Adresse, die von außen sichtbar ist. Damit die Antwort auf
+ausgehenden Datenverkehr an den korrekten internen Rechner zurückgegeben
+werden kann, führt die NAT-Funktion eine Tabelle mit eindeutigen Zuordnungen
+jeder vom eingehenden Netz ankommenden Verbindungsanfrage, die einem internen und einem externen Port zugeordnet wird. Damit bleibt das zu schützende
+Netzwerk nach außen hin verborgen.
+
+Web-Application-Firewall (WAF)
+Eine spezifische Web-Application-Firewall (WAF) kann auf der Seite des Webservers zusätzlichen spezialisierten Anwendungsschutz ermöglichen. Dabei werden
+die Verbindungen und vor allem die getätigten Benutzereingaben auf der WAF geprüft, bevor sie an den Server weitergereicht werden. Eine WAF kann dabei gezielte
+Angriffsmuster wie XSS- und SQL-Injection-Angriffe erkennen und blockieren. Um
+einen möglichst hohen Schutz zu erreichen, wird eine WAF zunächst in einem
+Lernprozess ausgeführt. Dabei sollen möglichst alle Interaktionen und Eingaben
+mit der Webanwendung erlernt werden, um im produktiven Betrieb nur noch zugelassene Aktionen auf die Webanwendung zu erlauben. Obwohl eine WAF damit
+auch unsichere Webapplikationen zwischenzeitlich schützen kann, soll dies keinesfalls als Vorwand dienen, Webanwendungen nicht von Grund auf sicher zu
+programmieren oder auf dem unsicheren Entwicklungsstand zu belassen.
+
+400
+
+

@@ -1,0 +1,22 @@
+parameters:
+    level: 5
+    paths:
+        - lib/
+    excludePaths:
+        - lib/Migration/
+    scanDirectories:
+        - vendor/nextcloud/ocp/
+    ignoreErrors:
+        # NC DI injects null for userId in unauthenticated contexts
+        - '#Parameter .* \$userId .* expects string, string\|null given#'
+        # NC QBMapper provides magic getters/setters via __call()
+        - '#Call to an undefined method OCA\\Learning\\Db\\.*::(get|set)#'
+        # IQueryBuilder fluent interface not fully typed in stubs
+        - '#Call to an undefined method OCP\\DB\\QueryBuilder\\IQueryBuilder#'
+        # Rate limit attributes require NC 29+ stubs
+        - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\UserRateLimit#'
+        - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\NoAdminRequired#'
+        - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\NoCSRFRequired#'
+    checkMissingIterableValueType: false
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false

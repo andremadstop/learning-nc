@@ -1,0 +1,121 @@
+Kapitel 10
+Weitere Protokolle im TCP/IP-Stack
+
+Die wichtigsten Vorteile eines QoS-optimierten Netzwerks lassen sich folgendermaßen zusammenfassen:
+쐽
+
+Fähigkeit, Übertragungsprioritäten festzulegen, sodass kritische Datenströme
+vor weniger dringlichen bedient werden
+
+쐽
+
+Größere Zuverlässigkeit im Netzwerk dank der Kontrolle der Bandbreite, die
+einer Anwendung zugestanden wird, und dadurch Kontrolle über die Bandbreitenkonkurrenz zwischen Anwendungen
+
+Um QoS in einem Netzwerk mit Netzwerkvideoprodukten umzusetzen, müssen
+die folgenden Anforderungen eingehalten werden:
+쐽
+
+Alle Netzwerk-Switches und Router müssen QoS unterstützen. Das ist wichtig,
+um eine End-to-End-Funktionalität von QoS zu erreichen. Dies gilt sowohl für
+DiffServ auf Systemebene als auch für CoS, das unter 802.1p implementiert
+wird.
+
+쐽
+
+Die verwendeten Netzwerktelefon- oder Videoprodukte müssen QoS-fähig sein.
+
+Mehr zum Thema QoS erfahren Sie zudem in Abschnitt 22.5, »Netzwerke optimieren dank QoS«.
+
+10.8 Fragen zu diesem Kapitel
+1. Welches Protokoll erlaubt die Auflösung von MAC- auf IPv4-Adressen?
+A. NNTP
+B. SMTP
+C. RARP
+D. ICMP
+2. Wie heißt das Gremium, welches das WWW betreffende technologische Empfehlungen festlegt?
+A. W3C
+B. HTTP
+C. RFC
+D. ICANN
+3. Mit welchem Protokoll arbeitet der ping-Befehl eng zusammen?
+A. ARP
+B. IPX/SPX
+C. ICMP
+D. BootP
+
+244
+
+10.8
+Fragen zu diesem Kapitel
+
+4. Welcher Bereich von Port-Adressen wird als »Well-known Ports« bezeichnet?
+A. 0–512
+B. 0–1024
+C. 1024–2047
+D. 0–1023
+5. Der Port 80 bezeichnet welchen Dienst?
+A. FTP
+B. HTTP
+C. Gopher
+D. SMTP
+6. Welcher Programmaufruf erzeugt folgende Ausgabe:
+Internetadresse
+
+Physikalische Adresse
+
+Typ
+
+205.12.252.25
+
+00-00-23-AB-82-07
+
+dynamisch
+
+205.12.252.29
+
+00-0B-DH-04-21-1A
+
+dynamisch
+
+A. netstat
+B. arp
+C. ping
+D. ipconfig
+7. VoIP hat an das Netzwerk andere Anforderungen als das Speichern von Dokumenten. Welche Aussage zu VoIP ist korrekt?
+A. VoIP benötigt besseren Jitter und weniger Verlust als Datenspeicher.
+B. VoIP achtet weniger auf Jitter, aber mehr auf Verlust als Datenspeicher.
+C. VoIP benötigt mehr Bandbreite und erträgt dafür auch mehr Verlust als
+Datenspeicher.
+D. VoIP benötigt weniger Jitter und mehr Bandbreite als Datenspeicher.
+8. Von UC sprechen Sie, wenn Sie ...
+A. nur noch VoIP im Einsatz haben anstelle von analogen oder herkömmlichen digitalen Telefonen.
+B. sowohl Streaming-Dienste als auch Mail nutzen und den Mitarbeitern zur
+Verfügung stellen.
+C. verschiedene Vermittlungsformate über eine zentrale Schnittstelle digital
+zur Verfügung stellen.
+D. den Faxdienst auf Mail umgestellt haben und intern via Messenger mit den
+Mitarbeitern kommunizieren.
+
+245
+
+Kapitel 10
+Weitere Protokolle im TCP/IP-Stack
+
+9. Welches der folgenden TCP-Flags wird gesetzt für die Datenübertragung, nachdem die Verbindung aufgebaut worden ist?
+A. ACK
+B. SYN
+C. NACK
+D. RSH
+10. Eine Technikerin wird zu einem Client-PC gerufen, welcher sich nicht mit
+dem Internet verbinden, wohl aber Daten von anderen lokalen Maschinen
+beziehen kann. Bei der Überprüfung der Einstellungen stellt sie fest, dass
+sowohl die IP-Adresse als auch das Gateway beide die folgende Adresse aufweisen: 192.168.10.1/24. Was ist passiert?
+A. Das Gateway des Clients routet nicht in ein anderes Netzwerk.
+B. Der Client benutzt eine ungültige IP-Adresse.
+C. Client und Gateway sind nicht im selben Netzwerk.
+D. Der Client benutzt fälschlich eine private IP-Adresse.
+
+246
+
+

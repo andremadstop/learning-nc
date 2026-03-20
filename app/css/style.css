@@ -1,0 +1,71 @@
+/* Learning App - Global Styles */
+
+/* ========== LAYOUT ========== */
+#app-learning {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 40px;
+}
+
+#content-vue #app-learning,
+#content #app-learning {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ========== TOUCH TARGETS ========== */
+#app-learning button,
+#app-learning .answer-btn,
+#app-learning .tab-btn,
+#app-learning .mode-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  #app-learning {
+    padding: 20px 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  #app-learning {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  #app-learning {
+    padding: 10px;
+  }
+}
+
+/* Accessible focus indicators */
+:focus-visible {
+  outline: 2px solid var(--color-primary-element, #00679e);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-primary-element, #00679e);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 103, 158, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,199 @@
+# Learning - Nextcloud App
+
+Spaced Repetition Learning with Leitner System for Nextcloud.
+
+![Nextcloud](https://img.shields.io/badge/Nextcloud-29--31-blue)
+![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple)
+![License](https://img.shields.io/badge/License-AGPL--3.0-green)
+
+## Features
+
+### Learning Modes
+- **Smart Queue** — Cross-pool "Jetzt Lernen" button reviews all due cards from every pool in one session, sorted by priority
+- **Leitner System** — 5-box spaced repetition with automatic scheduling (1d, 3d, 7d, 14d intervals)
+- **Training Mode** — Quick quiz sessions with immediate feedback
+- **Exam Mode** — Timed exams with configurable question count and snake timer
+- **Wahr/Falsch** — Touch-friendly swipe-based true/false flashcard review
+- **Trouble Spots** — Focused practice on your hardest questions (3+ wrong, <30% accuracy)
+- **Daily Challenge** — One random question per day with bonus XP reward
+
+### Question Types
+- **Multiple Choice** — Questions with 2-8 answers, explanations, difficulty levels, multi-select support
+- **Free Text** — Open-ended questions where users type answers, matched against model answers with fuzzy matching (case-insensitive, typo-tolerant via Levenshtein distance)
+- **AI Question Generator** — Paste text (lecture notes, textbook excerpts) and let AI generate multiple-choice questions with editable preview before import
+
+### Gamification
+- **XP & Levels** — Experience points from sessions, reviews, accuracy bonuses
+- **14 Badges** — Achievements across 6 categories (sessions, performance, mastery, streak, social, fun)
+- **XP Streak Multipliers** — Tier-based bonuses: 1.5x at 3-day streak, 2x at 7-day, 3x at 30-day
+- **Daily Goal** — Configurable daily review target with visual progress ring and XP bonus
+- **Daily Missions** — Fresh bonus-XP objectives each day (master cards, start sessions, clear trouble spots)
+- **Streak Freeze Tokens** — One free token per week to protect streak when you miss a day
+- **Level-Up Celebration** — Animated overlay when reaching a new level
+
+### Course Management
+- **Courses** — Instructors create courses, assign pools (single or batch), enroll students
+- **Leaderboard** — Ranked by XP with medal indicators and student detail drill-down; refreshes on tab switch and member changes
+- **Student Progress** — Per-student XP, badges, streak, Leitner boxes per pool, session history
+- **My Progress Tab** — Students can view their own detailed progress inside any enrolled course
+- **At-Risk Warning** — Instructors see which students are falling behind with risk scores, reasons, and CSV export
+
+### Data & Sharing
+- **Pool Sharing** — Share with users (read-only or edit permissions)
+- **CSV/JSON Import** — Bulk import questions from files
+- **CSV/JSON Export** — Download question pools for backup or sharing (roundtrip-compatible with import)
+- **Multi-Language** — Translate questions and answers into any language
+- **Search** — Full-text search across all question pools
+
+### Integration
+- **Dashboard Widget** — See due questions from the Nextcloud Dashboard
+- **ICS Calendar Subscription** — Subscribe to your due cards as a calendar feed (personal token URL, works with Thunderbird, iOS, Android)
+- **AI Explanations** — 💡 button after each answer explains correct/wrong choices; uses Nextcloud AI provider; blocked during exams
+- **Activity Integration** — Badge unlocks appear in Nextcloud Activity stream
+- **Analytics** — Per-pool statistics with accuracy trends
+- **Mobile Friendly** — Responsive touch-optimized design
+
+## Installation
+
+### From Nextcloud App Store (Recommended)
+
+1. Go to **Apps** in your Nextcloud admin panel
+2. Search for "Learning"
+3. Click **Download and enable**
+
+### Manual Installation
+
+```bash
+cd /path/to/nextcloud/custom_apps/
+git clone https://github.com/andremadstop/learning-nc.git learning
+cd learning
+npm install
+npm run build
+```
+
+Then enable the app:
+```bash
+php occ app:enable learning
+```
+
+## Usage
+
+### Creating a Pool
+
+1. Open the **Learning** app from the navigation
+2. Click **New Pool**
+3. Enter a name and optional description
+4. Add questions with multiple choice answers
+
+### Importing Questions
+
+1. Open a pool and go to the question list
+2. Click the **Import** button
+3. Choose CSV or JSON format
+4. Paste data or upload a file
+5. Preview and confirm import
+
+**CSV Format (Multiple Choice):**
+```csv
+question,answer1,answer2,answer3,correct,explanation
+What is 2+2?,3,4,5,2,Basic math
+```
+
+**CSV Format (Free Text):**
+```csv
+question,model_answer,open
+What is the capital of France?,Paris,open
+```
+
+**JSON Format:**
+```json
+[
+  {
+    "text": "What is 2+2?",
+    "answers": [
+      {"text": "3", "is_correct": false},
+      {"text": "4", "is_correct": true},
+      {"text": "5", "is_correct": false}
+    ],
+    "explanation": "Basic math"
+  },
+  {
+    "text": "What is the capital of France?",
+    "type": "open",
+    "answers": [
+      {"text": "Paris", "is_correct": true}
+    ]
+  }
+]
+```
+
+### Exporting Questions
+
+1. Open a pool and go to the question list
+2. Click the **Export** dropdown (next to Import)
+3. Choose **CSV** or **JSON**
+4. The file downloads automatically
+
+Exported files are roundtrip-compatible — you can re-import them into any pool.
+
+### Leitner Spaced Repetition
+
+1. Open a pool and switch to **Leitner Mode**
+2. Click **Initialize** to add all questions to Box 1
+3. Review due questions daily
+4. Correct answers move questions to the next box
+5. Incorrect answers move questions back to Box 1
+
+**Box Intervals:**
+| Box | Review After |
+|-----|-------------|
+| Box 1 | Immediately |
+| Box 2 | 1 day |
+| Box 3 | 3 days |
+| Box 4 | 7 days |
+| Box 5 | 14 days (mastered) |
+
+### Course Management (for Instructors)
+
+1. Switch to the **Courses** tab
+2. Click **New Course** and add a title and description
+3. Assign question pools to the course
+4. Add students by Nextcloud username
+5. Track student progress from the **Instructor Dashboard**
+
+Students can self-enroll in courses and see their progress across all assigned pools.
+
+### Sharing Pools
+
+1. Click the share icon on any pool
+2. Search for a Nextcloud user
+3. Choose permission level (Read or Edit)
+4. Shared pools appear in the "Shared with me" tab
+
+## Requirements
+
+- Nextcloud 29, 30, or 31
+- PHP 8.1 or higher
+- PostgreSQL 13+ or MySQL 8+
+
+## Development
+
+```bash
+# Clone into custom_apps
+cd /path/to/nextcloud/custom_apps/
+git clone https://github.com/andremadstop/learning-nc.git learning
+
+# Install dependencies
+cd learning
+npm install
+
+# Development build with watch
+npm run dev
+
+# Production build
+npm run build
+```
+
+## License
+
+AGPL-3.0 — see [LICENSE](LICENSE)

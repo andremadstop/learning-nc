@@ -1,0 +1,46 @@
+# CI-only stack for E2E tests.
+# Keeps Nextcloud bootstrap isolated from the learning app source tree.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: learning-db
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: nextcloud
+    networks:
+      - learning-net
+
+  app:
+    image: nextcloud:30
+    container_name: learning-app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - nextcloud_data:/var/www/html
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: nextcloud
+      NEXTCLOUD_ADMIN_USER: admin
+      NEXTCLOUD_ADMIN_PASSWORD: admin
+      NEXTCLOUD_TRUSTED_DOMAINS: localhost
+    depends_on:
+      - db
+    networks:
+      - learning-net
+
+volumes:
+  db_data:
+    driver: local
+  nextcloud_data:
+    driver: local
+
+networks:
+  learning-net:
+    driver: bridge

@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>learning</id>
+    <name>Learning</name>
+    <summary>Spaced Repetition Learning with Leitner System</summary>
+    <description><![CDATA[**Learning** is a powerful flashcard and quiz app for Nextcloud with a built-in Leitner 5-box spaced repetition system.
+
+Create question pools, share them with your team, and study efficiently using scientifically-proven spaced repetition.
+
+## Learning Modes
+
+- **Smart Queue** — One-click "Jetzt Lernen" button reviews all due cards across every pool, prioritized by urgency
+- **Leitner Spaced Repetition** — 5-box system with automatic scheduling (1d, 3d, 7d, 14d intervals)
+- **Training Mode** — Quick quiz sessions with immediate feedback and score tracking
+- **Exam Mode** — Timed exams with configurable question count and animated snake timer
+- **Wahr/Falsch Mode** — Touch-friendly swipe-based true/false flashcard review
+- **Trouble Spots** — Focused practice on your hardest questions (3+ wrong, &lt;30% accuracy)
+- **Daily Challenge** — One question per day with bonus XP reward for correct answers
+
+## Question Types
+
+- **Multiple Choice** — Questions with 2-8 answers, explanations, difficulty levels, multi-select support
+- **Free Text** — Open-ended questions with fuzzy answer matching (case-insensitive, typo-tolerant via Levenshtein distance)
+- **AI Question Generator** — Paste text (lecture notes, textbook excerpts), let AI generate questions with editable preview before import
+
+## Gamification
+
+- **XP & Levels** — Experience points from sessions, reviews, accuracy bonuses
+- **14 Badges** — Achievements across 6 categories (sessions, performance, mastery, streak, social, fun)
+- **XP Streak Multipliers** — Tier-based XP bonuses: 1.5x at 3-day streak, 2x at 7-day, 3x at 30-day
+- **Daily Goal** — Configurable daily review target with visual progress ring and XP bonus
+- **Level-Up Celebration** — Animated overlay when reaching a new level
+
+## Course Management
+
+- **Courses** — Instructors create courses, assign pools, enroll students
+- **Leaderboard** — Ranked by XP with medal indicators and student detail drill-down
+- **Student Progress** — Per-student XP, badges, streak, Leitner boxes per pool, session history
+- **At-Risk Warning** — Instructors see which students are falling behind with risk scores and reasons
+- **Role-Based UX** — Students start at Courses, instructors at Pools. Each feature has a dismissible explanation hint
+
+## Data & Sharing
+
+- **CSV/JSON Import** — Bulk import questions from CSV or JSON files
+- **CSV/JSON Export** — Export question pools for backup or sharing, roundtrip-compatible with import
+- **Pool Sharing** — Share pools with other users (read or edit permissions)
+- **Multi-Language Support** — Translate questions and answers into any language
+- **Search** — Full-text search across all your question pools
+
+## Integration
+
+- **Dashboard Widget** — See due questions at a glance from the Nextcloud Dashboard
+- **Activity Integration** — Badge unlocks appear in Nextcloud Activity stream
+- **Progress Tracking** — Stats, accuracy, mastery percentage per pool
+- **Mobile Optimized** — Touch-friendly responsive design
+
+## Use Cases
+
+- Employee Onboarding & Compliance Training
+- IT Certification Prep (CompTIA, Cisco, AWS)
+- University Courses &amp; Exam Preparation
+- Language Learning Vocabulary
+- General Knowledge Retention
+
+## Requirements
+
+- Nextcloud 29, 30, or 31
+- PHP 8.1+
+- PostgreSQL 13+ or MySQL 8+
+    ]]></description>
+
+    <version>2.7.0</version>
+    <licence>agpl</licence>
+    <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
+    <namespace>Learning</namespace>
+    <category>organization</category>
+    <category>tools</category>
+
+    <website>https://github.com/andremadstop/learning-nc</website>
+    <bugs>https://github.com/andremadstop/learning-nc/issues</bugs>
+    <repository type="git">https://github.com/andremadstop/learning-nc.git</repository>
+
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/01-pool-list.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/02-smart-queue.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/03-leitner-boxes.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/04-training-result.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/05-achievements.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/06-leaderboard.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/07-exam-mode.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/08-course-instructor.png</screenshot>
+
+    <dependencies>
+        <nextcloud min-version="29" max-version="31"/>
+        <php min-version="8.1"/>
+    </dependencies>
+
+    <settings>
+        <admin>OCA\Learning\Settings\AdminSettings</admin>
+        <admin-section>OCA\Learning\Settings\AdminSection</admin-section>
+        <personal>OCA\Learning\Settings\PersonalSettings</personal>
+        <personal-section>OCA\Learning\Settings\AdminSection</personal-section>
+    </settings>
+
+    <activity>
+        <providers>
+            <provider>OCA\Learning\Activity\Provider</provider>
+        </providers>
+        <settings>
+            <setting>OCA\Learning\Activity\Setting</setting>
+        </settings>
+    </activity>
+
+    <navigations>
+        <navigation>
+            <name>Learning</name>
+            <route>learning.page.index</route>
+            <icon>app.svg</icon>
+            <order>10</order>
+        </navigation>
+    </navigations>
+</info>
