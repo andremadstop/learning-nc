@@ -18,8 +18,8 @@ class Version003500Date20260319240000 extends SimpleMigrationStep {
             $table->addColumn('id', 'integer', ['autoincrement' => true, 'notnull' => true]);
             $table->addColumn('course_id', 'integer', ['notnull' => true]);
             $table->addColumn('question_id', 'integer', ['notnull' => true]);
-            $table->addColumn('paused', 'boolean', ['notnull' => true, 'default' => false]);
-            $table->addColumn('highlight', 'boolean', ['notnull' => true, 'default' => false]);
+            $table->addColumn('paused', 'boolean', ['notnull' => false, 'default' => false]);
+            $table->addColumn('highlight', 'boolean', ['notnull' => false, 'default' => false]);
             $table->addColumn('created_at', 'integer', ['notnull' => false]);
             $table->addColumn('updated_at', 'integer', ['notnull' => false]);
             $table->setPrimaryKey(['id']);
@@ -83,7 +83,7 @@ class Version003500Date20260319240000 extends SimpleMigrationStep {
                 $table->addColumn('exam_attempts_per_day', 'integer', ['notnull' => false]);
             }
             if (!$table->hasColumn('exam_requires_training')) {
-                $table->addColumn('exam_requires_training', 'boolean', ['notnull' => true, 'default' => false]);
+                $table->addColumn('exam_requires_training', 'boolean', ['notnull' => false, 'default' => false]);
             }
         }
 

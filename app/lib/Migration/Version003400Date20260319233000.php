@@ -16,7 +16,7 @@ class Version003400Date20260319233000 extends SimpleMigrationStep {
             $table = $schema->createTable('learning_course_curriculum_scopes');
             $table->addColumn('id', 'integer', ['autoincrement' => true, 'notnull' => true]);
             $table->addColumn('course_id', 'integer', ['notnull' => true]);
-            $table->addColumn('enabled', 'boolean', ['notnull' => true, 'default' => false]);
+            $table->addColumn('enabled', 'boolean', ['notnull' => false, 'default' => false]);
             $table->addColumn('handbook_key', 'string', ['notnull' => false, 'length' => 128]);
             $table->addColumn('handbook_title', 'string', ['notnull' => false, 'length' => 256]);
             $table->addColumn('chapter_keys_json', 'text', ['notnull' => false]);
