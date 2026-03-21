@@ -184,6 +184,10 @@ return [
         // Note Generator (Phase 24)
         ['name' => 'noteGenerator#generate', 'url' => '/api/notes/generate', 'verb' => 'POST'],
 
+        // Lernplan + Fortschritt (Phase 25)
+        ['name' => 'lernplan#generatePlan', 'url' => '/api/lernbot/plan/generate', 'verb' => 'POST'],
+        ['name' => 'lernplan#generateFortschritt', 'url' => '/api/lernbot/fortschritt/generate', 'verb' => 'POST'],
+
         // Mode Config
         ['name' => 'course#updateModeConfig', 'url' => '/api/courses/{courseId}/mode-config', 'verb' => 'PUT'],
 
