@@ -746,6 +746,41 @@ class StoryEngineService {
         ];
     }
 
+    // ─── User Progress Listing ────────────────────────────────────────────────
+
+    /**
+     * List all progress records for a user, enriched with campaign title.
+     *
+     * @return array<array{campaign_id: string, campaign_title: string, current_scene_id: string,
+     *                      character_class: string, score: int, status: string, updated_at: int}>
+     */
+    public function listUserProgress(string $userId): array {
+        $records = $this->progressMapper->findAllByUser($userId);
+        $result  = [];
+        foreach ($records as $record) {
+            $campaignTitle = $record->getCampaignId(); // fallback
+            try {
+                $campaign      = $this->loadCampaign($record->getCampaignId());
+                $campaignTitle = $campaign['title'] ?? $campaignTitle;
+            } catch (\RuntimeException $e) {
+                // Campaign file may be missing — still return the progress row
+            }
+            $result[] = array_merge($this->serializeProgress($record), [
+                'campaign_title' => $campaignTitle,
+            ]);
+        }
+        return $result;
+    }
+
+    /**
+     * Return the character class stored in the user's progress for a campaign.
+     *
+     * @throws \RuntimeException if no progress record exists
+     */
+    public function getCharacterClass(string $userId, string $campaignId): string {
+        return $this->requireProgress($userId, $campaignId)->getCharacterClass();
+    }
+
     // ─── Validators ───────────────────────────────────────────────────────────
 
     /**
