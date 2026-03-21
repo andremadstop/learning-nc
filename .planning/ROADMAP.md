@@ -160,7 +160,7 @@ Plans:
 **Milestone Goal:** VirtuProf wird vom Script-basierten FAQ-Bot zum echten KI-Assistenten mit Gemini Flash API, RAG-Context, mehrsprachigen Antworten, Prompt-Injection-Schutz und DSGVO-Compliance.
 
 - [x] **Phase 17: Gemini Backend + Security** - GeminiService mit 5-Layer Prompt-Injection-Schutz und Admin-Settings (completed 2026-03-21)
-- [ ] **Phase 18: RAG-Context** - Context-Builder laedt Pool-, Kurs- und User-Daten fuer LLM-Kontext
+- [x] **Phase 18: RAG-Context** - Context-Builder laedt Pool-, Kurs- und User-Daten fuer LLM-Kontext (completed 2026-03-21)
 - [ ] **Phase 19: Chat-UI** - Freitext-Chat in VirtuProfBubble mit Typing-Indikator und Session-Verlauf
 - [ ] **Phase 20: Ticket-Triage** - Automatische Klassifizierung und Beantwortung von Support-Tickets
 - [ ] **Phase 21: Datenschutz & Compliance** - Opt-in Flow, Admin-Toggle, Privacy-Dokumentation
@@ -252,8 +252,8 @@ Phases execute sequentially: 17 → 18 → 19 → 20 → 21. Phase 18 depends on
 | 14. Training-Merge | v3.1 | 2/2 | Complete | 2026-03-21 |
 | 15. Arena | v3.1 | 1/1 | Complete | 2026-03-21 |
 | 16. Session-Robustheit | v3.1 | 2/2 | Complete | 2026-03-21 |
-| 17. Gemini Backend + Security | 2/2 | Complete   | 2026-03-21 | - |
-| 18. RAG-Context | v3.2 | 0/TBD | Not started | - |
+| 17. Gemini Backend + Security | 2/2 | Complete    | 2026-03-21 | - |
+| 18. RAG-Context | 1/1 | Complete   | 2026-03-21 | - |
 | 19. Chat-UI | v3.2 | 0/TBD | Not started | - |
 | 20. Ticket-Triage | v3.2 | 0/TBD | Not started | - |
 | 21. Datenschutz & Compliance | v3.2 | 0/TBD | Not started | - |
