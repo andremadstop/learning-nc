@@ -869,8 +869,8 @@ export default {
       if (area.includes('exam')) {
         return 'exam'
       }
-      if (area.includes('duel')) {
-        return 'duel'
+      if (area.includes('duel') || area.includes('arena') || area.includes('gameshow') || area.includes('sprint') || area.includes('elimination')) {
+        return 'arena'
       }
       if (area.includes('league')) {
         return 'league'
@@ -963,10 +963,22 @@ export default {
           text: this.vt('The league is course-specific. Challenge classmates, collect points and watch the standings change after each finished duel.'),
         }
       }
-      if (area === 'course-duel') {
+      if (area === 'course-duel' || area === 'course-arena') {
         return {
-          title: this.vt('Duell'),
-          text: this.vt('Here you can accept or start direct duels. Once the duel starts, every answer counts and speed can break ties.'),
+          title: this.vt('Arena'),
+          text: this.vt('Hier kannst du Duelle annehmen oder starten sowie Sprint- und Elimination-Runden beitreten. Die Arena bietet drei Modi: Duell (1 gegen 1), Sprint (2–5 Spieler) und Elimination (2–5 Spieler, 3 Leben).'),
+        }
+      }
+      if (area === 'course-arena-sprint' || area === 'arena-sprint') {
+        return {
+          title: this.vt('Sprint'),
+          text: this.vt('Im Sprint treten 2 bis 5 Spieler gleichzeitig an. Schnellste richtige Antwort gewinnt die meisten Punkte. Nach jeder der 15 Fragen siehst du die aktuelle Live-Rangliste.'),
+        }
+      }
+      if (area === 'course-arena-elimination' || area === 'arena-elimination') {
+        return {
+          title: this.vt('Elimination'),
+          text: this.vt('Starte mit 3 Leben. Jede falsche Antwort kostet ein Leben. Bei 2 verbleibenden Spielern beginnt der Sudden Death — wer zuerst falsch antwortet, scheidet aus.'),
         }
       }
       if (area === 'pool-training') {
