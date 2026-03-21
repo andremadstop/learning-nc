@@ -22,11 +22,11 @@
 
 ### Wissensturm (Trivial Pursuit Kategorien)
 
-- [ ] **TURM-01**: 5 Kategorien (= 5 Pools oder Kapitel im Kurs), je eine Blockfarbe
-- [ ] **TURM-02**: Spieler wählt Kategorie → Frage → richtig = Block in dieser Farbe auf Turm
-- [ ] **TURM-03**: Falsche Antwort = oberster Block fällt (Verlust-Animation)
-- [ ] **TURM-04**: Steal: Richtig wenn Gegner falsch → du bekommst seinen Block
-- [ ] **TURM-05**: Wer zuerst alle 5 Farben hat gewinnt
+- [x] **TURM-01**: 5 Kategorien (= 5 Pools oder Kapitel im Kurs), je eine Blockfarbe
+- [x] **TURM-02**: Spieler wählt Kategorie → Frage → richtig = Block in dieser Farbe auf Turm
+- [x] **TURM-03**: Falsche Antwort = oberster Block fällt (Verlust-Animation)
+- [x] **TURM-04**: Steal: Richtig wenn Gegner falsch → du bekommst seinen Block
+- [x] **TURM-05**: Wer zuerst alle 5 Farben hat gewinnt
 
 ### Backend
 
@@ -58,11 +58,11 @@
 | WUERF-05 | Phase 30 | Pending |
 | WUERF-06 | Phase 30 | Pending |
 | WUERF-07 | Phase 30 | Pending |
-| TURM-01 | Phase 31 | Pending |
-| TURM-02 | Phase 31 | Pending |
-| TURM-03 | Phase 31 | Pending |
-| TURM-04 | Phase 31 | Pending |
-| TURM-05 | Phase 31 | Pending |
+| TURM-01 | Phase 31 | Complete |
+| TURM-02 | Phase 31 | Complete |
+| TURM-03 | Phase 31 | Complete |
+| TURM-04 | Phase 31 | Complete |
+| TURM-05 | Phase 31 | Complete |
 
 **Coverage:**
 - v5.0 requirements: 17 total

@@ -332,7 +332,7 @@ Plans:
 - [x] **Phase 28: Brettspiel-Backend** - GameshowService erweitern für rundenbasierte Spielfeld-Logik
 - [x] **Phase 29: Oldschool-Menü** - Tab + Spielauswahl in CourseDetail
 - [ ] **Phase 30: Lernwürfel** - Vollständiger Mensch-ärgere-dich-nicht-Modus mit SVG-Brett
-- [ ] **Phase 31: Wissensturm** - Vollständiger Trivial-Pursuit-Modus mit Turm-Rendering
+- [x] **Phase 31: Wissensturm** - Vollständiger Trivial-Pursuit-Modus mit Turm-Rendering
 
 ## Phase Details
 
@@ -415,7 +415,7 @@ Phases 28-31 execute sequentially: 28 → 29 → 30 → 31. Phase 30 and 31 both
 | 25. Lernplan + Fortschritt | v4.0 | 1/1 | Complete | 2026-03-21 |
 | 26. Chat-Memory | v4.0 | 1/1 | Complete | 2026-03-21 |
 | 27. Auto-Trigger | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 28. Brettspiel-Backend | v5.0 | 1/1 | Complete | 2026-03-21 |
-| 29. Oldschool-Menü | v5.0 | 1/1 | Complete | 2026-03-21 |
+| 28. Brettspiel-Backend | v5.0 | Complete    | 2026-03-21 | 2026-03-21 |
+| 29. Oldschool-Menü | v5.0 | Complete    | 2026-03-21 | 2026-03-21 |
 | 30. Lernwürfel | v5.0 | 0/? | Not started | - |
-| 31. Wissensturm | v5.0 | 0/? | Not started | - |
+| 31. Wissensturm | v5.0 | 1/1 | Complete | 2026-03-21 |
