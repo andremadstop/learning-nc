@@ -143,6 +143,28 @@ class SupportTicketService {
         return $this->serializeTicket($this->ticketMapper->update($ticket));
     }
 
+    /**
+     * Admin one-click approve: copy ai_draft_answer → answer_text and mark ticket as answered.
+     *
+     * @throws \InvalidArgumentException if ticket has no draft answer
+     * @throws \OCP\AppFramework\Db\DoesNotExistException if ticket not found
+     */
+    public function approveDraft(int $ticketId, string $answeredBy): array {
+        $ticket = $this->ticketMapper->findById($ticketId);
+
+        if ($ticket->getAiDraftAnswer() === null || trim((string)$ticket->getAiDraftAnswer()) === '') {
+            throw new \InvalidArgumentException('Ticket has no AI draft answer to approve');
+        }
+
+        $ticket->setStatus('answered');
+        $ticket->setAnswerText($ticket->getAiDraftAnswer());
+        $ticket->setAnsweredBy($answeredBy);
+        $ticket->setAnsweredAt(time());
+        $ticket->setUpdatedAt(time());
+
+        return $this->serializeTicket($this->ticketMapper->update($ticket));
+    }
+
     public function listAdmin(int $limit = 100): array {
         return array_map([$this, 'serializeTicket'], $this->ticketMapper->findByRoutingTarget('admin', max(1, min(200, $limit))));
     }

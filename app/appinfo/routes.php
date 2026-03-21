@@ -103,6 +103,7 @@ return [
         ['name' => 'supportTicket#mine', 'url' => '/api/support-tickets', 'verb' => 'GET'],
         ['name' => 'supportTicket#adminList', 'url' => '/api/settings/admin/support-tickets', 'verb' => 'GET'],
         ['name' => 'supportTicket#answer', 'url' => '/api/settings/admin/support-tickets/{id}/answer', 'verb' => 'POST'],
+        ['name' => 'supportTicket#approveDraft', 'url' => '/api/settings/admin/support-tickets/{id}/approve-draft', 'verb' => 'POST'],
 
         // AI Generation
         ['name' => 'ai#available', 'url' => '/api/ai/available', 'verb' => 'GET'],

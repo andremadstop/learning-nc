@@ -82,6 +82,23 @@ class SupportTicketController extends Controller {
     }
 
     /**
+     * @AdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function approveDraft(int $id): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            return new DataResponse(['ticket' => $this->service->approveDraft($id, $this->userId)]);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Ticket not found'], Http::STATUS_NOT_FOUND);
+        }
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
