@@ -159,10 +159,10 @@ Plans:
   1. In CourseDetail erscheint ein einzelner Tab (statt separater Duell- und Gameshow-Tabs) mit einem passenden Namen
   2. Innerhalb des Arena-Bereichs sieht der User drei Karten/Buttons: Duell (1v1), Sprint (2-5), Elimination (2-5), jeweils mit Icon und Kurzbeschreibung
   3. Die Auswahl eines Modus fuehrt direkt in den jeweiligen Lobby/Start-Flow — kein zusaetzlicher Navigationsschritt
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 15-01: TBD
+- [ ] 15-01-PLAN.md — ArenaSelector.vue + CourseDetail Tab-Merge + App.vue anpassen
 
 ### Phase 16: Session-Robustheit
 **Goal**: Multiplayer-Sessions (Duell, Sprint, Elimination) sind resilient gegen Abbruch, Disconnect und verwaiste Sessions
@@ -174,11 +174,11 @@ Plans:
   3. Wenn alle Gegner die Verbindung verlieren (Polling-Timeout), erscheint innerhalb von 30 Sekunden eine klare Meldung statt Endlos-Warten
   4. Ein Spieler der die Seite verlaesst und zurueckkehrt, wird automatisch in seine laufende Session zurueckgefuehrt
   5. Sessions ohne Aktivitaet von allen Spielern werden nach 5 Minuten automatisch auf "expired" gesetzt
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 16-01: TBD
-- [ ] 16-02: TBD
+- [ ] 16-01-PLAN.md — Frontend: Abbrechen-Button, Disconnect-Overlay, localStorage Recovery (DuelMode + GameshowMode)
+- [ ] 16-02-PLAN.md — Backend: Stale-Session-Cleanup nach 5 Minuten (DuelService + GameshowService)
 
 ## Progress
 
