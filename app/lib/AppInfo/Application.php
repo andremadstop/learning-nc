@@ -4,6 +4,7 @@ namespace OCA\Learning\AppInfo;
 
 use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
 use OCA\Learning\BackgroundJob\NotificationJob;
+use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
 use OCA\Learning\Dashboard\LearningWidget;
 use OCA\Learning\Notification\Notifier;
 use OCP\AppFramework\App;
@@ -34,6 +35,9 @@ class Application extends App implements IBootstrap {
             }
             if (!$jobList->has(ConsistencyCheckJob::class, null)) {
                 $jobList->add(ConsistencyCheckJob::class);
+            }
+            if (!$jobList->has(WeeklyLernplanJob::class, null)) {
+                $jobList->add(WeeklyLernplanJob::class);
             }
         } catch (\Throwable $e) {
             // Duplicate entry is harmless (NC deduplicates), but log unexpected errors (R2 #5)
