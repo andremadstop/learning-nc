@@ -1,0 +1,41 @@
+#!/bin/bash
+# Pre-commit hook: PHP syntax check + PHPStan on changed PHP files
+set -e
+
+HOST="learning-dev"
+CONTAINER="learning-app"
+APP_PATH="/var/www/html/custom_apps/learning"
+
+# Get staged PHP files (relative to app/)
+STAGED_PHP=$(git diff --cached --name-only --diff-filter=ACM | grep '^app/lib/.*\.php$' || true)
+
+if [ -z "$STAGED_PHP" ]; then
+  exit 0
+fi
+
+echo "=== Pre-commit: PHP Quality Check ==="
+
+# Syntax check locally via container
+for f in $STAGED_PHP; do
+  REL="${f#app/}"
+  echo "  php -l $REL"
+  ssh "$HOST" "docker exec $CONTAINER php -l $APP_PATH/$REL" 2>/dev/null | grep -v "^No syntax errors" || true
+  if [ ${PIPESTATUS[0]} -ne 0 ]; then
+    echo "✗ Syntax error in $REL"
+    exit 1
+  fi
+done
+
+echo "✓ Syntax OK"
+
+# PHPStan (runs on all lib/ — fast with baseline)
+echo "  Running PHPStan..."
+RESULT=$(ssh "$HOST" "docker exec -w $APP_PATH $CONTAINER php vendor/bin/phpstan analyse --no-progress 2>&1")
+if echo "$RESULT" | grep -q "\[ERROR\]"; then
+  echo "$RESULT"
+  echo "✗ PHPStan errors — commit aborted!"
+  exit 1
+fi
+
+echo "✓ PHPStan clean"
+echo "=== Pre-commit passed ==="

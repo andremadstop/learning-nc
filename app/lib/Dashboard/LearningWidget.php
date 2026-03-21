@@ -80,7 +80,7 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
            ->orderBy('due_count', 'DESC')
            ->setMaxResults($limit);
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $pools = $result->fetchAll();
         $result->closeCursor();
 
@@ -116,7 +116,7 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
                 $qb2->andWhere($qb2->expr()->notIn('p.id', $qb2->createNamedParameter($poolIds, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY)));
             }
 
-            $result2 = $qb2->execute();
+            $result2 = $qb2->executeQuery();
             $extraPools = $result2->fetchAll();
             $result2->closeCursor();
 

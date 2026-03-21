@@ -14,13 +14,13 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 
 class LeitnerService {
-    private $db;
-    private $poolMapper;
-    private $shareMapper;
-    private $badgeService;
-    private $streakService;
-    private $xpService;
-    private $cacheFactory;
+    private IDBConnection $db;
+    private PoolMapper $poolMapper;
+    private PoolShareMapper $shareMapper;
+    private BadgeService $badgeService;
+    private StreakService $streakService;
+    private XpService $xpService;
+    private ICacheFactory $cacheFactory;
     private TranslationService $translationService;
     private IConfig $config;
     private CourseService $courseService;
@@ -75,7 +75,7 @@ class LeitnerService {
            ))
            ->setMaxResults(1);
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
 
@@ -95,7 +95,7 @@ class LeitnerService {
            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
            ->andWhere($qb->expr()->isNull('completed_at'))
            ->setMaxResults(1);
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $hasExam = $result->fetch();
         $result->closeCursor();
         return $hasExam !== false;
@@ -133,7 +133,7 @@ class LeitnerService {
            ->addOrderBy('l.next_review', 'ASC')
            ->setMaxResults($limit);
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $items = $result->fetchAll();
         $result->closeCursor();
 
@@ -144,7 +144,7 @@ class LeitnerService {
                ->from('learning_answers')
                ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
                ->orderBy('position', 'ASC');
-            $aResult = $aqb->execute();
+            $aResult = $aqb->executeQuery();
             $allAnswers = $aResult->fetchAll();
             $aResult->closeCursor();
 
@@ -172,7 +172,7 @@ class LeitnerService {
            ->from('learning_leitner_items')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->lte('next_review', $qb->createNamedParameter($now)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $count = (int)$result->fetch()['cnt'];
         $result->closeCursor();
         return $count;
@@ -206,7 +206,7 @@ class LeitnerService {
             $qb->andWhere($qb->expr()->in('l.question_id', $qb->createNamedParameter($courseQuestionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
         }
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $items = $result->fetchAll();
         $result->closeCursor();
 
@@ -218,7 +218,7 @@ class LeitnerService {
                ->from('learning_answers')
                ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
                ->orderBy('position', 'ASC');
-            $aResult = $aqb->execute();
+            $aResult = $aqb->executeQuery();
             $allAnswers = $aResult->fetchAll();
             $aResult->closeCursor();
 
@@ -252,7 +252,7 @@ class LeitnerService {
            ->from('learning_leitner_items')
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($itemId)))
            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $item = $result->fetch();
         $result->closeCursor();
 
@@ -270,7 +270,7 @@ class LeitnerService {
             $qb->select('pbq_subtype', 'pbq_config')
                ->from('learning_questions')
                ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)));
-            $pResult = $qb->execute();
+            $pResult = $qb->executeQuery();
             $pRow = $pResult->fetch();
             $pResult->closeCursor();
             [$correct, $pbqPoints, $pbqMaxPoints] = $this->scorePbqAnswer(
@@ -288,7 +288,7 @@ class LeitnerService {
                ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
                ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
                ->orderBy('position', 'ASC');
-            $cResult = $qb->execute();
+            $cResult = $qb->executeQuery();
             $correctRows = $cResult->fetchAll();
             $cResult->closeCursor();
             $modelText = $correctRows[0]['text'] ?? '';
@@ -302,7 +302,7 @@ class LeitnerService {
                ->from('learning_answers')
                ->where($qb->expr()->in('id', $qb->createNamedParameter($intIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
                ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
-            $vResult = $qb->execute();
+            $vResult = $qb->executeQuery();
             $validCount = (int)$vResult->fetch()['cnt'];
             $vResult->closeCursor();
             if ($validCount !== count($intIds)) {
@@ -316,7 +316,7 @@ class LeitnerService {
                ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
                ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
                ->orderBy('position', 'ASC');
-            $cResult = $qb->execute();
+            $cResult = $qb->executeQuery();
             $correctRows = $cResult->fetchAll();
             $cResult->closeCursor();
 
@@ -331,7 +331,7 @@ class LeitnerService {
                ->from('learning_answers')
                ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId)))
                ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
-            $ansResult = $qb->execute();
+            $ansResult = $qb->executeQuery();
             $ansRow = $ansResult->fetch();
             $ansResult->closeCursor();
 
@@ -387,7 +387,7 @@ class LeitnerService {
                ->andWhere($qb->expr()->eq('box', $qb->createNamedParameter($currentBox)))
                ->andWhere($qb->expr()->eq('correct_count', $qb->createNamedParameter((int)$item['correct_count'])))
                ->andWhere($qb->expr()->eq('incorrect_count', $qb->createNamedParameter((int)$item['incorrect_count'])));
-            $affected = $qb->execute();
+            $affected = $qb->executeStatement();
 
             if ($affected === 0) {
                 // R2 #3: single rollback point — let catch handle it
@@ -401,7 +401,7 @@ class LeitnerService {
                     ->set('total_mastered', $dqb->createFunction('CASE WHEN total_mastered > 0 THEN total_mastered - 1 ELSE 0 END'))
                     ->set('updated_at', $dqb->createNamedParameter(time()))
                     ->where($dqb->expr()->eq('user_id', $dqb->createNamedParameter($userId)));
-                $demoted = $dqb->execute();
+                $demoted = $dqb->executeStatement();
 
                 if ($demoted === 0) {
                     $this->xpService->updateUserStats($userId);
@@ -424,7 +424,7 @@ class LeitnerService {
                         ->set('total_mastered', $mqb->createFunction('total_mastered + 1'))
                         ->set('updated_at', $mqb->createNamedParameter(time()))
                         ->where($mqb->expr()->eq('user_id', $mqb->createNamedParameter($userId)));
-                    $mqb->execute();
+                    $mqb->executeStatement();
                 }
 
                 // Skip syncLevel inside transaction (defer to after commit)
@@ -452,7 +452,7 @@ class LeitnerService {
            ->from('learning_leitner_items')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->gte('last_reviewed', $qb->createNamedParameter($todayStart)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $cardsToday = (int)$result->fetch()['cnt'];
         $result->closeCursor();
 
@@ -461,7 +461,7 @@ class LeitnerService {
         $qb->select('daily_goal')
            ->from('learning_user_stats')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $goalRow = $result->fetch();
         $result->closeCursor();
         $dailyGoal = (int)($goalRow['daily_goal'] ?? 20);
@@ -493,7 +493,7 @@ class LeitnerService {
                ->from('learning_answers')
                ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
                ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)));
-            $oResult = $qb->execute();
+            $oResult = $qb->executeQuery();
             $oRows = $oResult->fetchAll();
             $oResult->closeCursor();
             $oRows = $this->translationService->translateAnswerRows($oRows, $contentLanguage);
@@ -509,7 +509,7 @@ class LeitnerService {
            ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
            ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
            ->orderBy('position', 'ASC');
-        $correctResult = $qb->execute();
+        $correctResult = $qb->executeQuery();
         $allCorrectRows = $correctResult->fetchAll();
         $correctResult->closeCursor();
         $translatedCorrectRows = $this->translationService->translateAnswerRows($allCorrectRows, $contentLanguage);
@@ -542,7 +542,7 @@ class LeitnerService {
            ->addOrderBy('l.last_reviewed', 'ASC')
            ->setMaxResults($limit);
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $items = $result->fetchAll();
         $result->closeCursor();
 
@@ -560,7 +560,7 @@ class LeitnerService {
                ->from('learning_answers')
                ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
                ->orderBy('position', 'ASC');
-            $aResult = $aqb->execute();
+            $aResult = $aqb->executeQuery();
             $allAnswers = $aResult->fetchAll();
             $aResult->closeCursor();
 
@@ -588,7 +588,7 @@ class LeitnerService {
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->gte('incorrect_count', $qb->createNamedParameter(3)))
            ->andWhere($qb->expr()->lte('box', $qb->createNamedParameter(2)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $count = 0;
         while ($row = $result->fetch()) {
             $total = (int)$row['correct_count'] + (int)$row['incorrect_count'];
@@ -624,7 +624,7 @@ class LeitnerService {
             $qb->andWhere($qb->expr()->in('q.id', $qb->createNamedParameter($courseQuestionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
         }
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $questions = $result->fetchAll();
         $result->closeCursor();
 
@@ -641,7 +641,7 @@ class LeitnerService {
                    'correct_count' => $qb->createNamedParameter(0),
                    'incorrect_count' => $qb->createNamedParameter(0)
                ]);
-            $qb->execute();
+            $qb->executeStatement();
             $count++;
         }
 
@@ -652,7 +652,7 @@ class LeitnerService {
         $qb = $this->db->getQueryBuilder();
         $qb->select('question_type')->from('learning_questions')
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
         return $row ? ($row['question_type'] ?? 'single') : 'single';
@@ -701,7 +701,7 @@ class LeitnerService {
             $qb->andWhere($qb->expr()->in('question_id', $qb->createNamedParameter($courseQuestionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
         }
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $boxes = $result->fetchAll();
         $result->closeCursor();
 
@@ -725,7 +725,7 @@ class LeitnerService {
         if (is_array($courseQuestionIds)) {
             $qb->andWhere($qb->expr()->in('question_id', $qb->createNamedParameter($courseQuestionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
         }
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $stats['due_count'] = (int)$result->fetch()['due_count'];
         $result->closeCursor();
 
@@ -740,7 +740,7 @@ class LeitnerService {
         if (is_array($courseQuestionIds)) {
             $qb->andWhere($qb->expr()->in('question_id', $qb->createNamedParameter($courseQuestionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
         }
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $accRow = $result->fetch();
         $result->closeCursor();
         $stats['total_correct'] = (int)$accRow['total_correct'];

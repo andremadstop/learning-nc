@@ -8,7 +8,6 @@ use OCA\Learning\Db\DuelInvite;
 use OCA\Learning\Db\DuelInviteMapper;
 use OCA\Learning\Db\DuelSession;
 use OCA\Learning\Db\DuelSessionMapper;
-use OCA\Learning\Service\LeagueService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IConfig;
@@ -25,6 +24,7 @@ class DuelService {
     private TranslationService $translationService;
     private IConfig $config;
     private CourseService $courseService;
+    private QuestionService $questionService;
 
     /** Tie-break threshold in milliseconds */
     private const TIE_THRESHOLD_MS = 50;
@@ -44,7 +44,8 @@ class DuelService {
         LeagueService $leagueService,
         TranslationService $translationService,
         IConfig $config,
-        CourseService $courseService
+        CourseService $courseService,
+        QuestionService $questionService
     ) {
         $this->sessionMapper = $sessionMapper;
         $this->answerMapper = $answerMapper;
@@ -55,6 +56,7 @@ class DuelService {
         $this->translationService = $translationService;
         $this->config = $config;
         $this->courseService = $courseService;
+        $this->questionService = $questionService;
     }
 
     // ---------- Public API ----------
@@ -289,7 +291,7 @@ class DuelService {
         // Determine correct answer ID for this question (for feedback display)
         $questionIds = json_decode($session->getQuestionIds(), true) ?? [];
         $questionId = (int)($questionIds[$questionIndex] ?? 0);
-        $correctAnswerId = $this->getCorrectAnswerId($questionId);
+        $correctAnswerId = $this->questionService->getCorrectAnswerIdForGame($questionId);
 
         // Check if both have answered
         $answers = $this->answerMapper->findByDuelAndQuestion($session->getId(), $questionIndex);
@@ -665,7 +667,7 @@ class DuelService {
         $currentQuestion = null;
         if ($status === 'active' && $currentIndex < count($questionIds)) {
             $questionId = $questionIds[$currentIndex];
-            $currentQuestion = $this->loadQuestion((int)$questionId, $lang);
+            $currentQuestion = $this->questionService->loadQuestionForGame((int)$questionId, $lang);
         }
 
         $myRole = $session->getCreatorUid() === $userId ? 'creator' : 'opponent';
@@ -695,47 +697,6 @@ class DuelService {
         return $state;
     }
 
-    private function loadQuestion(int $questionId, ?string $lang = null): ?array {
-        try {
-            $qb = $this->db->getQueryBuilder();
-            $qb->select('id', 'text', 'image_path')
-               ->from('learning_questions')
-               ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)));
-            $result = $qb->executeQuery();
-            $row = $result->fetch();
-            $result->closeCursor();
-
-            if ($row === false) {
-                return null;
-            }
-
-            // Load answers (shuffled, without is_correct to prevent cheating)
-            $aqb = $this->db->getQueryBuilder();
-            $aqb->select('id', 'text', 'position')
-                ->from('learning_answers')
-                ->where($aqb->expr()->eq('question_id', $aqb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)))
-                ->orderBy('position', 'ASC');
-            $aResult = $aqb->executeQuery();
-            $answers = [];
-            while ($aRow = $aResult->fetch()) {
-                $answers[] = ['id' => (int)$aRow['id'], 'text' => $aRow['text']];
-            }
-            $aResult->closeCursor();
-
-            $question = [
-                'id' => (int)$row['id'],
-                'text' => $row['text'],
-                'image_path' => $row['image_path'] ?? null,
-                'answers' => $answers,
-            ];
-
-            return $this->translationService->translateQuestion($question, (string)$lang);
-        } catch (\Exception $e) {
-            $this->logger->warning('DuelService: Failed to load question ' . $questionId . ': ' . $e->getMessage());
-            return null;
-        }
-    }
-
     private function findPendingRematch(DuelSession $session): ?string {
         $qb = $this->db->getQueryBuilder();
         $qb->select('code')
@@ -750,21 +711,6 @@ class DuelService {
         $row = $result->fetch();
         $result->closeCursor();
         return $row ? (string)$row['code'] : null;
-    }
-
-    private function getCorrectAnswerId(int $questionId): ?int {
-        try {
-            $qb = $this->db->getQueryBuilder();
-            $qb->select('id')->from('learning_answers')
-               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)))
-               ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, IQueryBuilder::PARAM_BOOL)));
-            $result = $qb->executeQuery();
-            $row = $result->fetch();
-            $result->closeCursor();
-            return $row ? (int)$row['id'] : null;
-        } catch (\Exception $e) {
-            return null;
-        }
     }
 
     private function shouldExposeInvite(DuelInvite $invite, DuelSession $session): bool {

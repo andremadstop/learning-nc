@@ -74,7 +74,7 @@ class QuestionMapper extends QBMapper {
         $qb->select($qb->createFunction('COUNT(*) as cnt'))
            ->from($this->getTableName())
            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
         return (int)($row['cnt'] ?? 0);

@@ -30,7 +30,7 @@ class StreakService {
                ->from('learning_user_stats')
                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
                ->setMaxResults(1);
-            $result = $qb->execute();
+            $result = $qb->executeQuery();
             $row = $result->fetch();
             $result->closeCursor();
         } catch (\Throwable $e) {
@@ -56,7 +56,7 @@ class StreakService {
                    $qb->expr()->isNull('last_freeze_reset_week'),
                    $qb->expr()->neq('last_freeze_reset_week', $qb->createNamedParameter($week))
                ));
-            $qb->execute();
+            $qb->executeStatement();
         }
 
         return ['tokens' => $tokens, 'week' => $week, 'row_exists' => true];
@@ -95,7 +95,7 @@ class StreakService {
            ->orderBy('activity_date', 'DESC')
            ->setMaxResults(365);
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $rows = $result->fetchAll();
         $result->closeCursor();
 
@@ -165,7 +165,7 @@ class StreakService {
                ->set('updated_at', $qb->createNamedParameter(time()))
                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
                ->andWhere($qb->expr()->gt('streak_freeze_tokens', $qb->createNamedParameter(0)));
-            $updated = $qb->execute();
+            $updated = $qb->executeStatement();
             if ($updated > 0) {
                 $freezeTokens--;
             } else {

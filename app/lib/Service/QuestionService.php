@@ -9,9 +9,12 @@ use OCA\Learning\Db\Answer;
 use OCA\Learning\Db\AnswerMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Db\PoolMapper;
+use OCA\Learning\Service\TranslationService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
+use Psr\Log\LoggerInterface;
 
 class QuestionService {
     private $questionMapper;
@@ -19,19 +22,25 @@ class QuestionService {
     private $shareMapper;
     private $poolMapper;
     private $db;
+    private TranslationService $translationService;
+    private LoggerInterface $logger;
 
     public function __construct(
         QuestionMapper $questionMapper,
         AnswerMapper $answerMapper,
         PoolShareMapper $shareMapper,
         PoolMapper $poolMapper,
-        IDBConnection $db
+        IDBConnection $db,
+        TranslationService $translationService,
+        LoggerInterface $logger
     ) {
         $this->questionMapper = $questionMapper;
         $this->answerMapper = $answerMapper;
         $this->shareMapper = $shareMapper;
         $this->poolMapper = $poolMapper;
         $this->db = $db;
+        $this->translationService = $translationService;
+        $this->logger = $logger;
     }
 
     private function hasPoolAccess(int $poolId, string $userId): bool {
@@ -64,7 +73,7 @@ class QuestionService {
            ))
            ->setMaxResults(1);
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
 
@@ -94,7 +103,7 @@ class QuestionService {
            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
            ->andWhere($qb->expr()->isNull('completed_at'))
            ->setMaxResults(1);
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $hasExam = $result->fetch();
         $result->closeCursor();
         return $hasExam !== false;
@@ -231,7 +240,6 @@ class QuestionService {
 
         $questions = $this->questionMapper->findByPoolId($poolId);
 
-        // TODO: Batch-load all answers instead of N+1
         $questionIds = array_map(fn($q) => $q->getId(), $questions);
         $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
 
@@ -266,7 +274,6 @@ class QuestionService {
         $questions = $this->questionMapper->findByPoolIdPaged($poolId, $limit, $offset);
         $total = $this->questionMapper->countByPoolId($poolId);
 
-        // TODO: Batch-load answers
         $questionIds = array_map(fn($q) => $q->getId(), $questions);
         $answersGrouped = $this->answerMapper->findByQuestions($questionIds);
 
@@ -340,7 +347,6 @@ class QuestionService {
     }
 
     public function setImagePath(int $questionId, ?string $imagePath, string $userId): Question {
-        // TODO: Use findById + canEditPool so shared-pool editors can set images
         $question = $this->questionMapper->findById($questionId);
         if (!$this->canEditPool($question->getPoolId(), $userId)) {
             throw new Exception('No edit access to this pool');
@@ -501,5 +507,74 @@ class QuestionService {
     public function search(string $query, string $userId, int $limit = 50): array {
         $limit = max(1, min($limit, 100));
         return $this->questionMapper->searchByText($query, $userId, $limit);
+    }
+
+    /**
+     * Load a question with its answers for multiplayer game modes (duel, gameshow).
+     * Answers are returned without `is_correct` to prevent client-side cheating.
+     * Applies optional translation if $lang is provided.
+     *
+     * Used by DuelService and GameshowService to avoid code duplication.
+     */
+    public function loadQuestionForGame(int $questionId, ?string $lang = null): ?array {
+        try {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id', 'text', 'image_path')
+               ->from('learning_questions')
+               ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)));
+            $result = $qb->executeQuery();
+            $row = $result->fetch();
+            $result->closeCursor();
+
+            if ($row === false) {
+                return null;
+            }
+
+            $aqb = $this->db->getQueryBuilder();
+            $aqb->select('id', 'text', 'position')
+                ->from('learning_answers')
+                ->where($aqb->expr()->eq('question_id', $aqb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)))
+                ->orderBy('position', 'ASC');
+            $aResult = $aqb->executeQuery();
+            $answers = [];
+            while ($aRow = $aResult->fetch()) {
+                $answers[] = ['id' => (int)$aRow['id'], 'text' => $aRow['text']];
+            }
+            $aResult->closeCursor();
+
+            $question = [
+                'id' => (int)$row['id'],
+                'text' => $row['text'],
+                'image_path' => $row['image_path'] ?? null,
+                'answers' => $answers,
+            ];
+
+            return $this->translationService->translateQuestion($question, (string)$lang);
+        } catch (\Exception $e) {
+            $this->logger->warning('QuestionService: Failed to load question {id} for game: {err}', [
+                'id' => $questionId,
+                'err' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Return the ID of the correct answer for a question.
+     * Used by DuelService and GameshowService for post-answer feedback.
+     */
+    public function getCorrectAnswerIdForGame(int $questionId): ?int {
+        try {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('id')->from('learning_answers')
+               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)))
+               ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, IQueryBuilder::PARAM_BOOL)));
+            $result = $qb->executeQuery();
+            $row = $result->fetch();
+            $result->closeCursor();
+            return $row ? (int)$row['id'] : null;
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }

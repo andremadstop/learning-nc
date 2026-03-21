@@ -24,11 +24,10 @@ class AnswerMapper extends QBMapper {
         $qb = $this->db->getQueryBuilder();
         $qb->delete($this->getTableName())
            ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)));
-        $qb->execute();
+        $qb->executeStatement();
     }
 
     /**
-     * TODO: Batch-load answers for multiple questions at once
      * @param int[] $questionIds
      * @return array<int, Answer[]> Grouped by question_id
      */

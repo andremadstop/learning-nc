@@ -264,7 +264,7 @@ class BadgeService {
                    'badge_id' => $qb->createNamedParameter($badgeId),
                    'earned_at' => $qb->createNamedParameter(time()),
                ]);
-            $qb->execute();
+            $qb->executeStatement();
         } catch (UniqueConstraintViolationException $e) {
             return []; // Already earned — race condition safe
         }
@@ -317,7 +317,7 @@ class BadgeService {
            ->from('learning_sessions')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->isNotNull('completed_at'));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $count = (int)$result->fetch()['cnt'];
         $result->closeCursor();
         return $count;
@@ -329,7 +329,7 @@ class BadgeService {
            ->from('learning_leitner_items')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('box', $qb->createNamedParameter(5)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $count = (int)$result->fetch()['cnt'];
         $result->closeCursor();
         return $count;
@@ -357,7 +357,7 @@ class BadgeService {
            ->from('learning_user_badges')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->orderBy('earned_at', 'DESC');
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $rows = $result->fetchAll();
         $result->closeCursor();
 
@@ -396,7 +396,7 @@ class BadgeService {
            ->from('learning_user_stats')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->setMaxResults(1);
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $streakRow = $result->fetch();
         $result->closeCursor();
         $currentStreak = (int)($streakRow['current_streak'] ?? 0);
@@ -429,7 +429,7 @@ class BadgeService {
         $qb->select('badge_id')
            ->from('learning_user_badges')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         while ($row = $result->fetch()) {
             $earned[] = $row['badge_id'];
         }

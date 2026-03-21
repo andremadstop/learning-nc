@@ -86,7 +86,7 @@ class TrainingService {
                     'context_json' => $qb->createNamedParameter(json_encode($context)),
                     'created_at' => $qb->createNamedParameter(time()),
                 ]);
-            $qb->execute();
+            $qb->executeStatement();
         } catch (\Throwable $e) {
             // Keep main flow resilient even if audit storage is not available.
         }
@@ -99,7 +99,7 @@ class TrainingService {
             ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $count = (int)$result->fetchOne();
         $result->closeCursor();
         return $count + 1;
@@ -142,7 +142,7 @@ class TrainingService {
             ->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$session['id'])))
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->isNull('completed_at'));
-        $qb->execute();
+        $qb->executeStatement();
         $session['completed_at'] = $now;
 
         $this->logAuditEvent('exam_timeout_auto_complete', [
@@ -190,7 +190,7 @@ class TrainingService {
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
             ->andWhere($qb->expr()->gte('started_at', $qb->createNamedParameter($sinceDay)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $attemptsLast24h = (int)$result->fetchOne();
         $result->closeCursor();
         if ($attemptsLast24h >= $limitPerDay) {
@@ -206,7 +206,7 @@ class TrainingService {
                 ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
                 ->orderBy('started_at', 'DESC')
                 ->setMaxResults(1);
-            $result = $qb->execute();
+            $result = $qb->executeQuery();
             $lastStartedAt = (int)($result->fetchOne() ?: 0);
             $result->closeCursor();
 
@@ -286,7 +286,7 @@ class TrainingService {
             ->from('learning_user_answers')
             ->where($qb->expr()->eq('session_id', $qb->createNamedParameter($sessionId)))
             ->orderBy('id', 'ASC');
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
 
         $map = [];
         while ($row = $result->fetch()) {
@@ -448,7 +448,7 @@ class TrainingService {
            ))
            ->setMaxResults(1);
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
 
@@ -467,7 +467,7 @@ class TrainingService {
            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
            ->andWhere($qb->expr()->isNull('completed_at'));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $rows = $result->fetchAll();
         $result->closeCursor();
         foreach ($rows as $row) {
@@ -485,7 +485,7 @@ class TrainingService {
            ->from('learning_sessions')
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)))
            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $session = $result->fetch();
         $result->closeCursor();
 
@@ -526,7 +526,7 @@ class TrainingService {
         $qb
             ->orderBy('started_at', 'DESC')
             ->setMaxResults(1);
-        $activeExamResult = $qb->execute();
+        $activeExamResult = $qb->executeQuery();
         $activeExam = $activeExamResult->fetch();
         $activeExamResult->closeCursor();
 
@@ -556,7 +556,7 @@ class TrainingService {
                ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
                ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
                ->andWhere($qb->expr()->isNull('completed_at'));
-            $qb->execute();
+            $qb->executeStatement();
         }
 
         if ($courseId !== null) {
@@ -605,7 +605,7 @@ class TrainingService {
                'attempt_no' => $qb->createNamedParameter($examAttemptNo, $examAttemptNo === null ? \PDO::PARAM_NULL : \PDO::PARAM_INT),
                'question_order_json' => $qb->createNamedParameter(json_encode($questionOrder)),
            ]);
-        $qb->execute();
+        $qb->executeStatement();
 
         $sessionId = (int)$qb->getLastInsertId();
         $deadlineAt = ($mode === 'exam' && $effectiveTimeLimit !== null) ? ($startedAt + $effectiveTimeLimit) : null;
@@ -645,7 +645,7 @@ class TrainingService {
            ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
            ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
            ->orderBy('position', 'ASC');
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $rows = $result->fetchAll();
         $result->closeCursor();
         return $rows;
@@ -655,7 +655,7 @@ class TrainingService {
         $qb = $this->db->getQueryBuilder();
         $qb->select('question_type')->from('learning_questions')
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
         return $row ? ($row['question_type'] ?? 'single') : 'single';
@@ -704,7 +704,7 @@ class TrainingService {
            ->from('learning_questions')
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)))
            ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter((int)$session['pool_id'])));
-        $checkResult = $qb->execute();
+        $checkResult = $qb->executeQuery();
         $questionRow = $checkResult->fetch();
         $checkResult->closeCursor();
         if (!$questionRow) {
@@ -717,7 +717,7 @@ class TrainingService {
            ->where($qb->expr()->eq('session_id', $qb->createNamedParameter($sessionId)))
            ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
            ->setMaxResults(1);
-        $dupResult = $qb->execute();
+        $dupResult = $qb->executeQuery();
         $dupRow = $dupResult->fetch();
         $dupResult->closeCursor();
         if ($dupRow) {
@@ -747,7 +747,7 @@ class TrainingService {
                 'is_correct' => $qb->createNamedParameter($isCorrect, \PDO::PARAM_BOOL),
                 'answered_at' => $qb->createNamedParameter(time())
             ]);
-            $qb->execute();
+            $qb->executeStatement();
 
             if ($isCorrect) {
                 $this->incrementSessionCorrectAnswers($sessionId);
@@ -766,7 +766,7 @@ class TrainingService {
             $qb->select('explanation')
                ->from('learning_questions')
                ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)));
-            $result = $qb->execute();
+            $result = $qb->executeQuery();
             $qRow = $result->fetch();
             $result->closeCursor();
 
@@ -786,7 +786,7 @@ class TrainingService {
             $qb2->select('pbq_subtype', 'pbq_config', 'explanation')
                 ->from('learning_questions')
                 ->where($qb2->expr()->eq('id', $qb2->createNamedParameter($questionId, \PDO::PARAM_INT)));
-            $qRes2 = $qb2->execute();
+            $qRes2 = $qb2->executeQuery();
             $qRow2 = $qRes2->fetch();
             $qRes2->closeCursor();
 
@@ -813,7 +813,7 @@ class TrainingService {
                 'is_correct' => $qb->createNamedParameter($pbqIsCorrect, \PDO::PARAM_BOOL),
                 'answered_at' => $qb->createNamedParameter(time()),
             ]);
-            $qb->execute();
+            $qb->executeStatement();
 
             if ($suppressAnswers) {
                 return [
@@ -847,7 +847,7 @@ class TrainingService {
                    ->from('learning_answers')
                    ->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$aid)))
                    ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
-                $vResult = $qb->execute();
+                $vResult = $qb->executeQuery();
                 $vRow = $vResult->fetch();
                 $vResult->closeCursor();
                 if (!$vRow) {
@@ -875,7 +875,7 @@ class TrainingService {
                    'is_correct' => $qb->createNamedParameter($isCorrect, \PDO::PARAM_BOOL),
                    'answered_at' => $qb->createNamedParameter(time())
                ]);
-            $qb->execute();
+            $qb->executeStatement();
 
             if ($isCorrect) {
                 $this->incrementSessionCorrectAnswers($sessionId);
@@ -907,7 +907,7 @@ class TrainingService {
            ->from('learning_answers')
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId)))
            ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
 
@@ -926,7 +926,7 @@ class TrainingService {
                'is_correct' => $qb->createNamedParameter($isCorrect, \PDO::PARAM_BOOL),
                'answered_at' => $qb->createNamedParameter(time())
            ]);
-        $qb->execute();
+        $qb->executeStatement();
 
         if ($isCorrect) {
             $this->incrementSessionCorrectAnswers($sessionId);
@@ -1019,7 +1019,7 @@ class TrainingService {
                ->from('learning_questions')
                ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId)))
                ->andWhere($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)));
-            $checkResult = $qb->execute();
+            $checkResult = $qb->executeQuery();
             $questionRow = $checkResult->fetch();
             $checkResult->closeCursor();
             if (!$questionRow) {
@@ -1034,7 +1034,7 @@ class TrainingService {
                ->where($qb->expr()->eq('session_id', $qb->createNamedParameter($sessionId)))
                ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
                ->setMaxResults(1);
-            $dupResult = $qb->execute();
+            $dupResult = $qb->executeQuery();
             $dupRow = $dupResult->fetch();
             $dupResult->closeCursor();
             if ($dupRow) {
@@ -1071,7 +1071,7 @@ class TrainingService {
                     'is_correct' => $qb->createNamedParameter($isCorrect, \PDO::PARAM_BOOL),
                     'answered_at' => $qb->createNamedParameter(time())
                 ]);
-                $qb->execute();
+                $qb->executeStatement();
 
                 if ($isCorrect) {
                     $this->incrementSessionCorrectAnswers($sessionId);
@@ -1135,7 +1135,7 @@ class TrainingService {
                     'is_correct' => $qb->createNamedParameter($pbqIsCorrect, \PDO::PARAM_BOOL),
                     'answered_at' => $qb->createNamedParameter(time()),
                 ]);
-                $qb->execute();
+                $qb->executeStatement();
 
                 if ($pbqIsCorrect && !$suppressAnswers) {
                     $this->incrementSessionCorrectAnswers($sessionId);
@@ -1169,7 +1169,7 @@ class TrainingService {
                        ->from('learning_answers')
                        ->where($qb->expr()->eq('id', $qb->createNamedParameter((int)$aid)))
                        ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
-                    $vResult = $qb->execute();
+                    $vResult = $qb->executeQuery();
                     $vRow = $vResult->fetch();
                     $vResult->closeCursor();
                     if (!$vRow) {
@@ -1200,7 +1200,7 @@ class TrainingService {
                        'is_correct' => $qb->createNamedParameter($isCorrect, \PDO::PARAM_BOOL),
                        'answered_at' => $qb->createNamedParameter(time())
                    ]);
-                $qb->execute();
+                $qb->executeStatement();
 
                 if ($isCorrect) {
                     $this->incrementSessionCorrectAnswers($sessionId);
@@ -1240,7 +1240,7 @@ class TrainingService {
                ->from('learning_answers')
                ->where($qb->expr()->eq('id', $qb->createNamedParameter($answerId)))
                ->andWhere($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)));
-            $result = $qb->execute();
+            $result = $qb->executeQuery();
             $row = $result->fetch();
             $result->closeCursor();
 
@@ -1260,7 +1260,7 @@ class TrainingService {
                    'is_correct' => $qb->createNamedParameter($isCorrect, \PDO::PARAM_BOOL),
                    'answered_at' => $qb->createNamedParameter(time())
                ]);
-            $qb->execute();
+            $qb->executeStatement();
 
             if ($isCorrect) {
                 $this->incrementSessionCorrectAnswers($sessionId);
@@ -1529,7 +1529,7 @@ class TrainingService {
            ->from('learning_sessions')
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($sessionId)))
            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $session = $result->fetch();
         $result->closeCursor();
 
@@ -1683,7 +1683,7 @@ class TrainingService {
            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter($mode)))
            ->andWhere($qb->expr()->isNotNull('completed_at'))
            ->andWhere($qb->expr()->neq('id', $qb->createNamedParameter($excludeSessionId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
         return round((float)($row['avg_pct'] ?? 0));
@@ -1697,7 +1697,7 @@ class TrainingService {
            ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
            ->where($qb->expr()->eq('ua.session_id', $qb->createNamedParameter($sessionId)))
            ->orderBy('ua.id', 'ASC');
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $userAnswers = $result->fetchAll();
         $result->closeCursor();
 
@@ -1717,7 +1717,7 @@ class TrainingService {
                ->from('learning_answers')
                ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId)))
                ->orderBy('position', 'ASC');
-            $aResult = $qb->execute();
+            $aResult = $qb->executeQuery();
             $allAnswers = $aResult->fetchAll();
             $aResult->closeCursor();
 

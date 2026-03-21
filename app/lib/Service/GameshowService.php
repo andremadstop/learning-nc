@@ -11,6 +11,7 @@ use OCA\Learning\Db\GameshowSessionMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\DB\Exception as DbException;
 use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCA\Learning\Service\QuestionService;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IUserManager;
@@ -28,6 +29,7 @@ class GameshowService {
     private IUserManager $userManager;
     private XpService $xpService;
     private StreakService $streakService;
+    private QuestionService $questionService;
 
     /** Inactivity timeout in seconds */
     private const TIMEOUT_SECONDS = 30;
@@ -46,7 +48,8 @@ class GameshowService {
         CourseService $courseService,
         IUserManager $userManager,
         XpService $xpService,
-        StreakService $streakService
+        StreakService $streakService,
+        QuestionService $questionService
     ) {
         $this->sessionMapper = $sessionMapper;
         $this->playerMapper = $playerMapper;
@@ -59,6 +62,7 @@ class GameshowService {
         $this->userManager = $userManager;
         $this->xpService = $xpService;
         $this->streakService = $streakService;
+        $this->questionService = $questionService;
     }
 
     // ---------- Public API ----------
@@ -343,7 +347,7 @@ class GameshowService {
         $this->answerMapper->insert($answer);
 
         // Determine correct answer ID for feedback
-        $correctAnswerId = $this->getCorrectAnswerId($questionId);
+        $correctAnswerId = $this->questionService->getCorrectAnswerIdForGame($questionId);
 
         // Check if ALL active (non-removed) players have answered this question
         $players = $this->playerMapper->findBySession($session->getId());
@@ -523,7 +527,7 @@ class GameshowService {
         $currentQuestion = null;
         if ($status === 'active' && $currentIndex < count($questionIds)) {
             $questionId = (int)$questionIds[$currentIndex];
-            $currentQuestion = $this->loadQuestion($questionId, $contentLanguage);
+            $currentQuestion = $this->questionService->loadQuestionForGame($questionId, $contentLanguage);
         }
 
         return [
@@ -800,62 +804,6 @@ class GameshowService {
             }
         }
         throw new \RuntimeException('Could not generate unique gameshow code after 10 attempts');
-    }
-
-    private function loadQuestion(int $questionId, ?string $lang = null): ?array {
-        try {
-            $qb = $this->db->getQueryBuilder();
-            $qb->select('id', 'text', 'image_path')
-               ->from('learning_questions')
-               ->where($qb->expr()->eq('id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)));
-            $result = $qb->executeQuery();
-            $row = $result->fetch();
-            $result->closeCursor();
-
-            if ($row === false) {
-                return null;
-            }
-
-            // Load answers (shuffled, without is_correct to prevent cheating)
-            $aqb = $this->db->getQueryBuilder();
-            $aqb->select('id', 'text', 'position')
-                ->from('learning_answers')
-                ->where($aqb->expr()->eq('question_id', $aqb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)))
-                ->orderBy('position', 'ASC');
-            $aResult = $aqb->executeQuery();
-            $answers = [];
-            while ($aRow = $aResult->fetch()) {
-                $answers[] = ['id' => (int)$aRow['id'], 'text' => $aRow['text']];
-            }
-            $aResult->closeCursor();
-
-            $question = [
-                'id' => (int)$row['id'],
-                'text' => $row['text'],
-                'image_path' => $row['image_path'] ?? null,
-                'answers' => $answers,
-            ];
-
-            return $this->translationService->translateQuestion($question, (string)$lang);
-        } catch (\Exception $e) {
-            $this->logger->warning('GameshowService: Failed to load question ' . $questionId . ': ' . $e->getMessage());
-            return null;
-        }
-    }
-
-    private function getCorrectAnswerId(int $questionId): ?int {
-        try {
-            $qb = $this->db->getQueryBuilder();
-            $qb->select('id')->from('learning_answers')
-               ->where($qb->expr()->eq('question_id', $qb->createNamedParameter($questionId, IQueryBuilder::PARAM_INT)))
-               ->andWhere($qb->expr()->eq('is_correct', $qb->createNamedParameter(true, IQueryBuilder::PARAM_BOOL)));
-            $result = $qb->executeQuery();
-            $row = $result->fetch();
-            $result->closeCursor();
-            return $row ? (int)$row['id'] : null;
-        } catch (\Exception $e) {
-            return null;
-        }
     }
 
     private function selectQuestions(int $poolId, int $numQuestions, string $userId, ?int $courseId = null): array {

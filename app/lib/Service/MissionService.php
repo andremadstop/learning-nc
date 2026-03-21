@@ -103,7 +103,7 @@ class MissionService {
                    'xp_earned' => $qb->createNamedParameter($xp),
                    'claimed_at' => $qb->createNamedParameter(time()),
                ]);
-            $qb->execute();
+            $qb->executeStatement();
             $this->xpService->incrementLeitnerXp($userId, $xp, true);
             $this->db->commit();
         } catch (UniqueConstraintViolationException $e) {
@@ -128,7 +128,7 @@ class MissionService {
            ->from('learning_mission_claims')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('mission_date', $qb->createNamedParameter($date)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $rows = $result->fetchAll();
         $result->closeCursor();
 
@@ -154,7 +154,7 @@ class MissionService {
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->isNotNull('completed_at'))
            ->andWhere($qb->expr()->gte('completed_at', $qb->createNamedParameter($start)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $progress['daily_sessions_1'] = (int)$result->fetch()['cnt'];
         $result->closeCursor();
 
@@ -163,7 +163,7 @@ class MissionService {
            ->from('learning_leitner_items')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->gte('last_reviewed', $qb->createNamedParameter($start)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $progress['daily_cards_20'] = (int)$result->fetch()['cnt'];
         $result->closeCursor();
 
@@ -181,7 +181,7 @@ class MissionService {
                )
            )
            ->setMaxResults(1);
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $progress['daily_high_score'] = $result->fetch() ? 1 : 0;
         $result->closeCursor();
 

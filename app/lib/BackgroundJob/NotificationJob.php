@@ -45,7 +45,7 @@ class NotificationJob extends TimedJob {
                $qb->expr()->gte('last_activity_date', $qb->createNamedParameter($thirtyDaysAgo)),
                $qb->expr()->isNull('last_activity_date')
            ));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
 
         while ($user = $result->fetch()) {
             $userId = $user['user_id'];
@@ -79,7 +79,7 @@ class NotificationJob extends TimedJob {
                 $uqb->update('learning_user_stats')
                     ->set('last_notif_date', $uqb->createNamedParameter($today))
                     ->where($uqb->expr()->eq('user_id', $uqb->createNamedParameter($userId)));
-                $uqb->execute();
+                $uqb->executeStatement();
             }
         }
         $result->closeCursor();
@@ -91,7 +91,7 @@ class NotificationJob extends TimedJob {
            ->from('learning_leitner_items')
            ->where($qb->expr()->lte('next_review', $qb->createNamedParameter($now)))
            ->groupBy('user_id');
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
 
         $counts = [];
         while ($row = $result->fetch()) {

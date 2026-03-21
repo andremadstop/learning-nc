@@ -120,7 +120,7 @@ class Version001200Date20260226000000 extends SimpleMigrationStep {
         $qb = $this->db->getQueryBuilder();
         $qb->select('user_id', 'total_xp')
            ->from('learning_user_stats');
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
 
         while ($row = $result->fetch()) {
             $totalXp = (int)$row['total_xp'];
@@ -138,7 +138,7 @@ class Version001200Date20260226000000 extends SimpleMigrationStep {
                 $uqb->update('learning_user_stats')
                     ->set('current_level', $uqb->createNamedParameter($level))
                     ->where($uqb->expr()->eq('user_id', $uqb->createNamedParameter($row['user_id'])));
-                $uqb->execute();
+                $uqb->executeStatement();
             }
         }
         $result->closeCursor();

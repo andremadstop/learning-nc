@@ -32,7 +32,7 @@ class XpService {
         $qb->select('total_xp', 'current_level')
            ->from('learning_user_stats')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $statsRow = $result->fetch();
         $result->closeCursor();
 
@@ -64,7 +64,7 @@ class XpService {
            ->from('learning_sessions')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->isNotNull('completed_at'));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
 
@@ -78,7 +78,7 @@ class XpService {
         )
            ->from('learning_leitner_items')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $leitnerRow = $result->fetch();
         $result->closeCursor();
 
@@ -165,7 +165,7 @@ class XpService {
            ->set('last_activity_date', $qb->createNamedParameter($today))
            ->set('updated_at', $qb->createNamedParameter(time()))
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $affected = $qb->execute();
+        $affected = $qb->executeStatement();
 
         // If no row existed, full recalc from source of truth (preserves historical XP)
         if ($affected === 0) {
@@ -178,7 +178,7 @@ class XpService {
                    'CASE WHEN ' . $qb->createNamedParameter($currentStreak) . ' > longest_streak THEN ' . $qb->createNamedParameter($currentStreak) . ' ELSE longest_streak END'
                ))
                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-            $qb->execute();
+            $qb->executeStatement();
             return;
         }
 
@@ -232,7 +232,7 @@ class XpService {
            ->from('learning_sessions')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->isNotNull('completed_at'));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $totalSessions = (int)$result->fetch()['cnt'];
         $result->closeCursor();
 
@@ -242,7 +242,7 @@ class XpService {
            ->from('learning_leitner_items')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('box', $qb->createNamedParameter(5)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $totalMastered = (int)$result->fetch()['cnt'];
         $result->closeCursor();
 
@@ -257,7 +257,7 @@ class XpService {
            ->set('total_mastered', $qb->createNamedParameter($totalMastered))
            ->set('updated_at', $qb->createNamedParameter(time()))
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $affected = $qb->execute();
+        $affected = $qb->executeStatement();
 
         if ($affected === 0) {
             try {
@@ -274,7 +274,7 @@ class XpService {
                        'total_mastered' => $qb->createNamedParameter($totalMastered),
                        'updated_at' => $qb->createNamedParameter(time()),
                    ]);
-                $qb->execute();
+                $qb->executeStatement();
             } catch (\OCP\DB\Exception $e) {
                 if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
                     // Race condition: retry as UPDATE
@@ -286,7 +286,7 @@ class XpService {
                        ->set('total_mastered', $qb->createNamedParameter($totalMastered))
                        ->set('updated_at', $qb->createNamedParameter(time()))
                        ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-                    $qb->execute();
+                    $qb->executeStatement();
                 } else {
                     throw $e;
                 }
@@ -315,7 +315,7 @@ class XpService {
            ->set('total_xp', $qb->createFunction('total_xp + ' . $qb->createNamedParameter($xp)))
            ->set('updated_at', $qb->createNamedParameter(time()))
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $affected = $qb->execute();
+        $affected = $qb->executeStatement();
 
         // If no row existed, full recalc from source of truth (preserves historical XP + mastered)
         if ($affected === 0) {
@@ -338,7 +338,7 @@ class XpService {
         $qb->select('total_xp')
            ->from('learning_user_stats')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
 
@@ -352,6 +352,6 @@ class XpService {
            ->set('current_level', $qb->createNamedParameter($levelData['level']))
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->lt('current_level', $qb->createNamedParameter($levelData['level'])));
-        $qb->execute();
+        $qb->executeStatement();
     }
 }

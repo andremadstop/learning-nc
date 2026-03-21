@@ -33,7 +33,7 @@ class PoolService {
            ->andWhere($qb->expr()->eq('s.share_type', $qb->createNamedParameter('user')))
            ->orderBy('p.name', 'ASC');
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $rows = $result->fetchAll();
         $result->closeCursor();
 
@@ -105,7 +105,7 @@ class PoolService {
         $qb->select('*')
            ->from('learning_pools')
            ->where($qb->expr()->eq('id', $qb->createNamedParameter($id)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
         return $row ?: null;
@@ -127,7 +127,7 @@ class PoolService {
                $expr->isNotNull('cm.id')
            ))
            ->setMaxResults(1);
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
         return $row !== false;
@@ -236,7 +236,7 @@ class PoolService {
             $qb = $this->db->getQueryBuilder();
             $qb->delete('learning_course_pools')
                ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($id)));
-            $qb->execute();
+            $qb->executeStatement();
 
             $this->mapper->delete($pool);
         } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {

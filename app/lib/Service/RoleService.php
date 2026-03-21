@@ -56,7 +56,7 @@ class RoleService {
                     $expr->isNotNull('cm.id')
                 ))
                 ->setMaxResults(1);
-            $result = $qb->execute();
+            $result = $qb->executeQuery();
             $row = $result->fetch();
             $result->closeCursor();
             return $row !== false;

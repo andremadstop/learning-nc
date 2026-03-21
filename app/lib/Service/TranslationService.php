@@ -68,7 +68,7 @@ class TranslationService {
            ))
            ->setMaxResults(1);
 
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
 
@@ -94,7 +94,7 @@ class TranslationService {
            ->from('learning_answers', 'a')
            ->innerJoin('a', 'learning_questions', 'q', 'a.question_id = q.id')
            ->where($qb->expr()->eq('a.id', $qb->createNamedParameter($answerId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
 
@@ -113,7 +113,7 @@ class TranslationService {
            ->from('learning_answers', 'a')
            ->innerJoin('a', 'learning_questions', 'q', 'a.question_id = q.id')
            ->where($qb->expr()->eq('a.id', $qb->createNamedParameter($answerId)));
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
         $row = $result->fetch();
         $result->closeCursor();
 

@@ -44,7 +44,7 @@ class ConsistencyCheckJob extends TimedJob {
            ->from('learning_user_stats')
            ->orderBy('updated_at', 'ASC')
            ->setMaxResults(self::BATCH_SIZE);
-        $result = $qb->execute();
+        $result = $qb->executeQuery();
 
         $cache = $this->cacheFactory->createDistributed('learning');
         $count = 0;
@@ -87,7 +87,7 @@ class ConsistencyCheckJob extends TimedJob {
            ))
            ->set('last_activity_date', $qb->createNamedParameter($streak['last_activity_date']))
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $qb->execute();
+        $qb->executeStatement();
 
         $cache->remove('user_state_' . $userId);
     }
