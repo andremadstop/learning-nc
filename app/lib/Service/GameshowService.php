@@ -32,6 +32,9 @@ class GameshowService {
     /** Inactivity timeout in seconds */
     private const TIMEOUT_SECONDS = 30;
 
+    /** Session with all players inactive for this long is considered abandoned */
+    private const STALE_SESSION_TIMEOUT = 300; // 5 minutes
+
     public function __construct(
         GameshowSessionMapper $sessionMapper,
         GameshowPlayerMapper $playerMapper,
@@ -242,6 +245,22 @@ class GameshowService {
         $session = $this->sessionMapper->findByCode($code);
         $players = $this->playerMapper->findBySession($session->getId());
 
+        // Check for completely abandoned session (all players inactive for 5+ minutes)
+        $session = $this->checkStaleSession($session, $players);
+        if ($session->getStatus() === 'expired') {
+            // Re-fetch players for accurate state
+            $players = $this->playerMapper->findBySession($session->getId());
+            // Update current user's last_poll even for expired (graceful state build)
+            foreach ($players as $p) {
+                if ($p->getUserId() === $userId) {
+                    $p->setLastPoll(time());
+                    $this->playerMapper->update($p);
+                    break;
+                }
+            }
+            return $this->buildState($session, $userId, $lang);
+        }
+
         // Verify current user is a participant
         $isParticipant = false;
         foreach ($players as $p) {
@@ -408,6 +427,52 @@ class GameshowService {
             $session->setStatus('expired');
             $this->sessionMapper->update($session);
         }
+    }
+
+    /**
+     * Check if all active players have been inactive for STALE_SESSION_TIMEOUT and expire if so.
+     *
+     * @param GameshowPlayer[] $players
+     */
+    private function checkStaleSession(GameshowSession $session, array $players): GameshowSession {
+        // Only check active sessions
+        if ($session->getStatus() !== 'active') {
+            return $session;
+        }
+
+        $cutoff = time() - self::STALE_SESSION_TIMEOUT;
+        $hasRecentActivity = false;
+
+        foreach ($players as $player) {
+            if ($player->getIsRemoved()) {
+                continue;
+            }
+            $lastPoll = $player->getLastPoll();
+            // If any active player polled recently, session is not stale
+            if ($lastPoll !== null && $lastPoll >= $cutoff) {
+                $hasRecentActivity = true;
+                break;
+            }
+        }
+
+        if (!$hasRecentActivity) {
+            // Check that at least one player has polled ever (avoid expiring brand-new sessions)
+            $anyPolled = false;
+            foreach ($players as $player) {
+                if (!$player->getIsRemoved() && $player->getLastPoll() !== null) {
+                    $anyPolled = true;
+                    break;
+                }
+            }
+
+            if ($anyPolled) {
+                $session->setStatus('expired');
+                $session = $this->sessionMapper->update($session);
+                $this->logger->info('GameshowService: Session ' . $session->getCode() . ' expired due to all-player inactivity');
+            }
+        }
+
+        return $session;
     }
 
     /**
