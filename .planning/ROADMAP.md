@@ -132,7 +132,7 @@ Plans:
 
 - [x] **Phase 14: Training-Merge** - SwipeMode wird in TrainingMode integriert, ein Modus fuer MC und Wahr/Falsch (completed 2026-03-21)
 - [x] **Phase 15: Arena** - Duell und Gameshow unter einem gemeinsamen Menuepunkt zusammenfassen (completed 2026-03-21)
-- [ ] **Phase 16: Session-Robustheit** - Abbruch, Reconnect, Timeout-Handling und Session-Cleanup
+- [x] **Phase 16: Session-Robustheit** - Abbruch, Reconnect, Timeout-Handling und Session-Cleanup (completed 2026-03-21)
 
 ## Phase Details
 
@@ -202,4 +202,4 @@ Phases execute sequentially: 14 -> 15 -> 16. Phase 16 depends on Phase 15. Phase
 | 13. XP Integration & Polish | v3.0 | 2/2 | Complete | 2026-03-20 |
 | 14. Training-Merge | 2/2 | Complete    | 2026-03-21 | - |
 | 15. Arena | 1/1 | Complete    | 2026-03-21 | - |
-| 16. Session-Robustheit | 1/2 | In Progress|  | - |
+| 16. Session-Robustheit | 2/2 | Complete   | 2026-03-21 | - |
