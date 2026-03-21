@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\AiChatMemoryService;
 use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\RagContextService;
 use OCP\AppFramework\Controller;
@@ -17,6 +18,7 @@ class VirtuProfController extends Controller {
     private ?string $userId;
     private GeminiService $geminiService;
     private RagContextService $ragContextService;
+    private AiChatMemoryService $chatMemoryService;
 
     public function __construct(
         string $appName,
@@ -24,13 +26,15 @@ class VirtuProfController extends Controller {
         IConfig $config,
         ?string $userId,
         GeminiService $geminiService,
-        RagContextService $ragContextService
+        RagContextService $ragContextService,
+        AiChatMemoryService $chatMemoryService
     ) {
         parent::__construct($appName, $request);
         $this->config = $config;
         $this->userId = $userId;
         $this->geminiService = $geminiService;
         $this->ragContextService = $ragContextService;
+        $this->chatMemoryService = $chatMemoryService;
     }
 
     /**
@@ -121,6 +125,43 @@ class VirtuProfController extends Controller {
     }
 
     /**
+     * Return the last 20 chat memory entries for the current user (for frontend display on mount).
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function getChatHistory(): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        $entries = $this->chatMemoryService->loadRecentEntries($this->userId, 20);
+
+        $messages = array_map(static fn($e) => [
+            'role' => $e->getRole(),
+            'text' => $e->getMessage(),
+        ], $entries);
+
+        return new DataResponse(['messages' => $messages]);
+    }
+
+    /**
+     * Delete all chat memory for the current user (MEM-04 — privacy right).
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 5, period: 60)]
+    public function clearChatHistory(): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        $this->chatMemoryService->clearMemory($this->userId);
+
+        return new DataResponse(['ok' => true]);
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 15, period: 60)]
@@ -150,11 +191,19 @@ class VirtuProfController extends Controller {
             );
         }
 
-        $result = $this->geminiService->chat($message, $this->userId, $ragContext);
+        // MEM-01: Load persistent chat memory (last 10 entries, oldest-first)
+        $memoryEntries = $this->chatMemoryService->loadMemory($this->userId);
+
+        $result = $this->geminiService->chat($message, $this->userId, $ragContext, $memoryEntries);
 
         // SEC-01: invalid_input is a client error
         if (($result['reason'] ?? '') === 'invalid_input') {
             return new DataResponse(['error' => $result['error'] ?? 'Invalid input'], Http::STATUS_BAD_REQUEST);
+        }
+
+        // MEM-01/02: Persist the exchange when we got a real answer
+        if (!($result['fallback'] ?? true) && $result['answer'] !== null) {
+            $this->chatMemoryService->saveExchange($this->userId, $message, $result['answer']);
         }
 
         // All other outcomes (success, fallback, rate_limit, api_error, output_blocked) → HTTP 200
