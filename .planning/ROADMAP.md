@@ -163,7 +163,7 @@ Plans:
 - [x] **Phase 18: RAG-Context** - Context-Builder laedt Pool-, Kurs- und User-Daten fuer LLM-Kontext (completed 2026-03-21)
 - [x] **Phase 19: Chat-UI** - Freitext-Chat in VirtuProfBubble mit Typing-Indikator und Session-Verlauf (completed 2026-03-21)
 - [x] **Phase 20: Ticket-Triage** - Automatische Klassifizierung und Beantwortung von Support-Tickets (completed 2026-03-21)
-- [ ] **Phase 21: Datenschutz & Compliance** - Opt-in Flow, Admin-Toggle, Privacy-Dokumentation
+- [x] **Phase 21: Datenschutz & Compliance** - Opt-in Flow, Admin-Toggle, Privacy-Dokumentation (completed 2026-03-21)
 
 ## Phase Details
 
@@ -256,4 +256,4 @@ Phases execute sequentially: 17 → 18 → 19 → 20 → 21. Phase 18 depends on
 | 18. RAG-Context | 1/1 | Complete    | 2026-03-21 | - |
 | 19. Chat-UI | v3.2 | Complete    | 2026-03-21 | 2026-03-21 |
 | 20. Ticket-Triage | 1/1 | Complete   | 2026-03-21 | - |
-| 21. Datenschutz & Compliance | v3.2 | 0/TBD | Not started | - |
+| 21. Datenschutz & Compliance | 1/1 | Complete   | 2026-03-21 | - |

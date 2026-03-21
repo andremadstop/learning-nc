@@ -44,11 +44,11 @@
 
 ### Datenschutz
 
-- [ ] **PRIV-01**: KI-Chat ist Opt-in — User muss beim ersten Mal aktiv zustimmen ("Deine Frage wird an Google Gemini gesendet")
-- [ ] **PRIV-02**: Admin kann KI-Feature global ein/ausschalten (Admin-Settings Toggle)
-- [ ] **PRIV-03**: Privacy-Abschnitt in README.md und info.xml privacy-Felder befüllt
-- [ ] **PRIV-04**: Keine personenbezogenen Daten im LLM-Context (kein Username, keine E-Mail, kein Passwort)
-- [ ] **PRIV-05**: Hinweis auf Google DPA (Data Processing Addendum) in Admin-Settings + Doku
+- [x] **PRIV-01**: KI-Chat ist Opt-in — User muss beim ersten Mal aktiv zustimmen ("Deine Frage wird an Google Gemini gesendet")
+- [x] **PRIV-02**: Admin kann KI-Feature global ein/ausschalten (Admin-Settings Toggle)
+- [x] **PRIV-03**: Privacy-Abschnitt in README.md und info.xml privacy-Felder befüllt
+- [x] **PRIV-04**: Keine personenbezogenen Daten im LLM-Context (kein Username, keine E-Mail, kein Passwort)
+- [x] **PRIV-05**: Hinweis auf Google DPA (Data Processing Addendum) in Admin-Settings + Doku
 
 ## Future Requirements
 
@@ -100,11 +100,11 @@
 | TRIAGE-02 | Phase 20 | Complete |
 | TRIAGE-03 | Phase 20 | Complete |
 | TRIAGE-04 | Phase 20 | Complete |
-| PRIV-01 | Phase 21 | Pending |
-| PRIV-02 | Phase 21 | Pending |
-| PRIV-03 | Phase 21 | Pending |
-| PRIV-04 | Phase 21 | Pending |
-| PRIV-05 | Phase 21 | Pending |
+| PRIV-01 | Phase 21 | Complete |
+| PRIV-02 | Phase 21 | Complete |
+| PRIV-03 | Phase 21 | Complete |
+| PRIV-04 | Phase 21 | Complete |
+| PRIV-05 | Phase 21 | Complete |
 
 **Coverage:**
 - v3.2 requirements: 27 total (24 new + 3 existing: VirtuProf.vue, SupportTicketService.php, TranslationService.php)

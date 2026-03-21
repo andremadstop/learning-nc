@@ -3,30 +3,30 @@ gsd_state_version: 1.0
 milestone: v3.2
 milestone_name: VirtuProf KI-Assistent
 status: executing
-stopped_at: Completed 19-01-PLAN.md
-last_updated: "2026-03-21T13:39:44Z"
-last_activity: "2026-03-21 — Phase 19 Plan 01 complete: Chat UI in VirtuProfBubble + Explain via VirtuProf in TrainingMode"
+stopped_at: Completed 21-01-PLAN.md
+last_updated: "2026-03-21T13:51:37.414Z"
+last_activity: "2026-03-21 — Phase 20 Plan 01 complete: Ticket-Triage AI classification via GeminiService"
 progress:
   total_phases: 21
-  completed_phases: 19
-  total_plans: 31
-  completed_plans: 31
+  completed_phases: 20
+  total_plans: 32
+  completed_plans: 33
   percent: 100
 ---
 
 ## Current Position
 
-Phase: 19 — Chat-UI
-Plan: 01 complete, phase 19 complete
-Status: In progress (next: Phase 20 Ticket-Triage)
-Progress: [██████████] 100% (historical plans)
-Last activity: 2026-03-21 — Phase 19 Plan 01 complete: Chat UI in VirtuProfBubble + Explain via VirtuProf in TrainingMode
+Phase: 21 — Datenschutz & Compliance
+Plan: 01 complete, phase 21 complete
+Status: Complete (all v3.2 phases done)
+Progress: [██████████] 100%
+Last activity: 2026-03-21 — Phase 21 Plan 01 complete: DSGVO opt-in consent, ai_enabled guard, privacy docs, @privacy-audit, DPA hint
 
 ## Project Reference
 
 **Core Value:** VirtuProf erklaert, beantwortet und unterstuetzt — in der Sprache des Users
 **Current Milestone:** v3.2 VirtuProf KI-Assistent (Phases 17-21)
-**Current Focus:** Phase 19 — Chat-UI (complete)
+**Current Focus:** Phase 21 — Datenschutz & Compliance (complete — milestone v3.2 DONE)
 
 ## Performance Metrics
 
@@ -40,6 +40,8 @@ Last activity: 2026-03-21 — Phase 19 Plan 01 complete: Chat UI in VirtuProfBub
 | 17 | 02 | 8min | 2/2 | 2 |
 | 18 | 01 | 175s | 3/3 | 3 |
 | 19 | 01 | 332s | 4/4 | 3 |
+| 20 | 01 | 4min | 5/5 | 7 |
+| 21 | 01 | 414s | 5/5 | 8 |
 
 ## Accumulated Context
 
@@ -60,6 +62,8 @@ Last activity: 2026-03-21 — Phase 19 Plan 01 complete: Chat UI in VirtuProfBub
 - [17-01] Output blocklist uses deterministic regex, not NLP (predictable, testable)
 - [17-02] ai_enabled guard runs before GeminiService.chat() to avoid rate limit counter increments when feature is disabled
 - [17-02] HTTP 400 only for invalid_input (client error); all GeminiService fallback outcomes return HTTP 200 with fallback:true
+- [20-01] Synchronous ticket triage in create(): ~2s Gemini latency acceptable for support flow; triage failure silently swallowed so ticket creation never fails
+- [20-01] approve-draft copies ai_draft_answer to answer_text (admin sees + approves before sending)
 
 ### Architectural Notes
 - GeminiService.php: neuer Service, kapselt HTTP-Call + Prompt-Aufbau + Fallback
@@ -76,5 +80,5 @@ Last activity: 2026-03-21 — Phase 19 Plan 01 complete: Chat UI in VirtuProfBub
 
 ## Session Continuity
 
-Stopped at: Completed 19-01-PLAN.md
-Next action: Run Phase 20 (Ticket-Triage)
+Stopped at: Completed 21-01-PLAN.md (Phase 21, final phase of v3.2)
+Next action: Milestone v3.2 complete — release v3.2.0 or plan next milestone
