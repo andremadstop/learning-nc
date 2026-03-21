@@ -606,6 +606,24 @@
 					:mode="'elimination'"
 					@back="arenaSubMode = null" />
 			</div>
+		<!-- Oldschool Tab -->
+		<div v-if="currentTab === 'oldschool'" class="oldschool-section">
+			<OldschoolSelector
+				v-if="oldschoolSubMode === null"
+				@select-mode="onOldschoolSelectMode" />
+			<div v-else-if="oldschoolSubMode === 'lernwuerfel'" class="oldschool-placeholder">
+				<p>{{ t('learning', 'Lernw\u00FCrfel — coming in Phase 30') }}</p>
+				<NcButton type="tertiary" @click="oldschoolSubMode = null">
+					{{ t('learning', '\u2190 Back') }}
+				</NcButton>
+			</div>
+			<div v-else-if="oldschoolSubMode === 'wissensturm'" class="oldschool-placeholder">
+				<p>{{ t('learning', 'Wissensturm — coming in Phase 31') }}</p>
+				<NcButton type="tertiary" @click="oldschoolSubMode = null">
+					{{ t('learning', '\u2190 Back') }}
+				</NcButton>
+			</div>
+		</div>
 		<!-- Curriculum Scope Tab (instructor only) -->
 		<div v-if="currentTab === 'curriculum' && isInstructor" class="curriculum-section">
 			<div class="curriculum-header">
@@ -1007,6 +1025,7 @@ import DuelMode from './DuelMode.vue'
 import GameshowMode from './GameshowMode.vue'
 import TrainingMode from './TrainingMode.vue'
 import ArenaSelector from './ArenaSelector.vue'
+import OldschoolSelector from './OldschoolSelector.vue'
 
 export default {
 	name: 'CourseDetail',
@@ -1027,6 +1046,7 @@ export default {
 		GameshowMode,
 		TrainingMode,
 		ArenaSelector,
+		OldschoolSelector,
 	},
 
 	props: {
@@ -1170,6 +1190,9 @@ export default {
 
 			// Arena sub-mode
 			arenaSubMode: null, // 'duel' | 'sprint' | 'elimination' | null
+
+			// Oldschool sub-mode
+			oldschoolSubMode: null, // 'lernwuerfel' | 'wissensturm' | null
 		}
 	},
 
@@ -1204,6 +1227,7 @@ export default {
 					{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
 					{ id: 'league', label: t('learning', 'Liga') },
 					{ id: 'arena', label: t('learning', 'Arena') },
+					{ id: 'oldschool', label: t('learning', 'Oldschool') },
 					{ id: 'curriculum', label: t('learning', 'Themen') },
 					{ id: 'heatmap', label: t('learning', 'Heatmap') },
 					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
@@ -1224,6 +1248,7 @@ export default {
 			tabs.push({ id: 'leaderboard', label: t('learning', 'Leaderboard') })
 			if (enabled('league')) tabs.push({ id: 'league', label: t('learning', 'Liga') })
 			tabs.push({ id: 'arena', label: t('learning', 'Arena') })
+			tabs.push({ id: 'oldschool', label: t('learning', 'Oldschool') })
 			return tabs
 		},
 		activeLearningModeLabel() {
@@ -1403,6 +1428,9 @@ export default {
 				if (tabId !== 'arena') {
 					this.arenaSubMode = null
 				}
+				if (tabId !== 'oldschool') {
+					this.oldschoolSubMode = null
+				}
 				if (tabId === 'arena' && !this.isInstructor) {
 					this.$root.$emit('virtuprof:trigger', 'arena-first-visit')
 				}
@@ -1420,6 +1448,9 @@ export default {
 				} else if (mode === 'elimination') {
 					this.$root.$emit('virtuprof:trigger', 'gameshow-elimination-first-start')
 				}
+			},
+			onOldschoolSelectMode(mode) {
+				this.oldschoolSubMode = mode
 			},
 
 			getLearningPoolQuestionCount(pool) {
