@@ -273,7 +273,6 @@ export default {
         this.missionsData = r.data.missions || this.missionsData;
       } catch (e) {
         // Fallback to individual endpoints (rolling-deploy safety, handles 404 + 5xx)
-        console.warn('User state endpoint failed, falling back to legacy endpoints:', e.response?.status);
         await Promise.all([
           this.fetchStreakLegacy(),
           this.fetchBadgesLegacy(),
