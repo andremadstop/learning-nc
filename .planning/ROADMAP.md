@@ -6,7 +6,8 @@
 - ✅ **v2.6 Live-Duell** — Phase 7 (shipped 2026-03-18)
 - ✅ **v3.0 Gameshow-Modi** — Phases 8-13 (shipped 2026-03-20)
 - ✅ **v3.1 UX-Konsolidierung** — Phases 14-16 (shipped 2026-03-21)
-- 📋 **v3.2 VirtuProf KI-Assistent** — Phases 17-21 (planned)
+- ✅ **v3.2 VirtuProf KI-Assistent** — Phases 17-21 (shipped 2026-03-21)
+- 🚧 **v4.0 Persönlicher Lernbot** — Phases 22-27 (in progress)
 
 ## Phases
 
@@ -155,17 +156,8 @@ Plans:
 
 </details>
 
-### 📋 v3.2 VirtuProf KI-Assistent (Planned)
-
-**Milestone Goal:** VirtuProf wird vom Script-basierten FAQ-Bot zum echten KI-Assistenten mit Gemini Flash API, RAG-Context, mehrsprachigen Antworten, Prompt-Injection-Schutz und DSGVO-Compliance.
-
-- [x] **Phase 17: Gemini Backend + Security** - GeminiService mit 5-Layer Prompt-Injection-Schutz und Admin-Settings (completed 2026-03-21)
-- [x] **Phase 18: RAG-Context** - Context-Builder laedt Pool-, Kurs- und User-Daten fuer LLM-Kontext (completed 2026-03-21)
-- [x] **Phase 19: Chat-UI** - Freitext-Chat in VirtuProfBubble mit Typing-Indikator und Session-Verlauf (completed 2026-03-21)
-- [x] **Phase 20: Ticket-Triage** - Automatische Klassifizierung und Beantwortung von Support-Tickets (completed 2026-03-21)
-- [x] **Phase 21: Datenschutz & Compliance** - Opt-in Flow, Admin-Toggle, Privacy-Dokumentation (completed 2026-03-21)
-
-## Phase Details
+<details>
+<summary>✅ v3.2 VirtuProf KI-Assistent (Phases 17-21) - SHIPPED 2026-03-21</summary>
 
 ### Phase 17: Gemini Backend + Security
 **Goal**: GeminiService kapselt Gemini Flash API mit vollstaendigem 5-Layer Prompt-Injection-Schutz — sicher genug zum Einschalten, noch bevor User-Daten fliessen
@@ -180,8 +172,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 17-01-PLAN.md — GeminiService.php + 5-layer security stack + Admin Settings API key wiring
-- [ ] 17-02-PLAN.md — VirtuProfController::chat() endpoint + route registration + deploy
+- [x] 17-01-PLAN.md — GeminiService.php + 5-layer security stack + Admin Settings API key wiring
+- [x] 17-02-PLAN.md — VirtuProfController::chat() endpoint + route registration + deploy
 
 ### Phase 18: RAG-Context
 **Goal**: VirtuProf kennt den Lernkontext des Users — welcher Pool, welcher Kurs, welche Fragen er zuletzt falsch beantwortet hat
@@ -192,7 +184,10 @@ Plans:
   2. Fragt der User "Warum habe ich diese Frage falsch?", nennt VirtuProf die konkrete falsche Antwort und erklaert die korrekte
   3. VirtuProf nennt auf Anfrage den Leitner-Box-Status des Users (z.B. "Du hast 12 Karten in Box 1")
   4. Bei sehr langen Pools (>100 Fragen) wird der Kontext automatisch auf die relevantesten Inhalte begrenzt — kein API-Fehler wegen Token-Overflow
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 18-01-PLAN.md — RagContextService.php + Kontext-Builder
 
 ### Phase 19: Chat-UI
 **Goal**: User kann mit VirtuProf per Freitext chatten — innerhalb der bestehenden VirtuProfBubble, ohne separate Chat-Seite
@@ -204,7 +199,10 @@ Plans:
   3. Waehrend VirtuProf antwortet sieht der User die talk-Animation des Avatars und drei pulsierende Punkte im Chat
   4. Der gesamte Gespraechsverlauf der aktuellen Session (bis 20 Nachrichten) bleibt sichtbar, wenn der User durch die Bubble scrollt
   5. Bei einer falschen Antwort in einem Lernmodus erscheint direkt ein "Erklaere diese Frage"-Button, der VirtuProf mit vorausgefuelltem Kontext oeffnet
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 19-01-PLAN.md — VirtuProfBubble.vue Freitext-Chat + Session-Verlauf
 
 ### Phase 20: Ticket-Triage
 **Goal**: Support-Tickets werden automatisch klassifiziert und einfache Fragen automatisch beantwortet — Admin-Postfach entlastet
@@ -215,7 +213,10 @@ Plans:
   2. Tickets mit Label FAQ haben eine automatisch generierte Antwort als Draft — Admin kann sie mit einem Klick absenden
   3. Tickets mit Label Bug oder Feature sind als "needs_review" markiert und erscheinen oben in der Inbox-Sortierung
   4. Wenn die KI-Klassifizierung unsicher ist (Confidence < 0.7), wird dem User eine Rueckfrage gestellt statt einer Auto-Antwort
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 20-01-PLAN.md — TriageService.php + Admin-Inbox Klassifizierung
 
 ### Phase 21: Datenschutz & Compliance
 **Goal**: KI-Feature ist DSGVO-konform ausgeliefert: Opt-in vor erster Nutzung, Admin-Kontrolle, Privacy-Dokumentation vollstaendig
@@ -227,12 +228,96 @@ Plans:
   3. In info.xml und README.md ist ein Privacy-Abschnitt vorhanden, der erklaert welche Daten an Gemini gehen
   4. Eine Analyse des LLM-Kontexts zeigt: kein Username, keine E-Mail-Adresse, keine User-ID, kein Passwort-Hash im Context-Payload
   5. In den Admin-Settings steht ein Hinweis auf das Google DPA mit Link zur Google-Dokumentation
+**Plans**: 1 plan
+
+Plans:
+- [x] 21-01-PLAN.md — Opt-in Flow + Admin-Toggle + Privacy-Dokumentation
+
+</details>
+
+### 🚧 v4.0 Persönlicher Lernbot (In Progress)
+
+**Milestone Goal:** Jeder User bekommt einen persönlichen KI-Lernbegleiter der Stärken/Schwächen kennt, individuelle Zusammenfassungen und Lernpläne als Obsidian-kompatible Markdown-Notes im NC-Dateisystem erstellt, und über Sessions hinweg mitlernt.
+
+- [x] **Phase 22: Lernprofil** - LernprofilService aggregiert Stärken/Schwächen aus Leitner, Training und Exam (completed 2026-03-21)
+- [ ] **Phase 23: NC Files Integration** - App erstellt und verwaltet Markdown-Notes im User-Home mit Obsidian-Format
+- [ ] **Phase 24: Note-Generator** - Gemini erzeugt Zusammenfassungen für schwache Themen und speichert sie als Notes
+- [ ] **Phase 25: Lernplan + Fortschritt** - Wöchentlicher Lernplan und Fortschritts-Dashboard als Markdown-Dateien
+- [ ] **Phase 26: Chat-Memory** - VirtuProf-Kontext wird persistent über Sessions hinweg gespeichert
+- [ ] **Phase 27: Auto-Trigger** - Exam-Abschluss, Fehler-Schwelle und Wochenplan lösen automatisch Bot-Aktionen aus
+
+## Phase Details
+
+### Phase 22: Lernprofil
+**Goal**: User hat ein maschinenlesbares Stärken/Schwächen-Profil das jede Lernsession automatisch aktualisiert — die Datenbasis für alle Bot-Aktionen
+**Depends on**: Phase 21 (v3.2 shipped)
+**Requirements**: PROF-01, PROF-02, PROF-03, PROF-04
+**Success Criteria** (what must be TRUE):
+  1. Nach einer Trainings- oder Exam-Session ist das Profil des Users aktualisiert und zeigt die 5 schwächsten Themen nach Fehlerrate sortiert
+  2. Das Profil enthält für jedes Thema einen Trend-Indikator (verbessert / verschlechtert / stabil) basierend auf den letzten 3 Sessions
+  3. Ein API-Aufruf auf `/api/profile` liefert aggregierte Daten aus Leitner-Boxen, Training-Scores und Exam-Ergebnissen in einem einzigen Response
+  4. Das Profil wird passiv aktualisiert — kein manueller Aufruf nötig, keine spürbare Verlangsamung der Lernsession
+**Plans**: TBD
+
+### Phase 23: NC Files Integration
+**Goal**: Der Bot kann Markdown-Notes im NC-Dateisystem des Users erstellen und aktualisieren — Obsidian-kompatibel, User besitzt seine Daten
+**Depends on**: Phase 22 (Lernprofil muss existieren für sinnvolle Dateinamen/Metadaten)
+**Requirements**: FILES-01, FILES-02, FILES-03, FILES-04, FILES-05
+**Success Criteria** (what must be TRUE):
+  1. Beim ersten Bot-Aufruf erscheint im Nextcloud-Dateisystem des Users der Ordner /Learning/ mit Unterordnern /Zusammenfassungen/ und /Schwachstellen/
+  2. Eine Bot-generierte Note öffnet sich in einem Markdown-Editor mit korrektem YAML Frontmatter (created, source, topic, status, chapter)
+  3. Die Note enthält mindestens einen Wiki-Link ([[...]]) und mindestens einen Tag (#schwach oder #gemeistert) — kompatibel mit Obsidian
+  4. Wird dieselbe Note erneut generiert (gleicher Dateiname = gleiches Thema), wird die bestehende Datei aktualisiert statt eine neue angelegt
+**Plans**: TBD
+
+### Phase 24: Note-Generator
+**Goal**: Gemini erstellt inhaltlich gehaltvolle Zusammenfassungen für schwache Themen — gespeichert als NC-Files-Notes mit konkretem Lernnutzen
+**Depends on**: Phase 23 (NC Files Integration muss Notes schreiben können)
+**Requirements**: NOTE-01, NOTE-02, NOTE-03, NOTE-04
+**Success Criteria** (what must be TRUE):
+  1. Nach einem Trigger öffnet der User eine generierte Note und findet: Kernpunkte des Themas, seinen häufigsten Fehler, eine konkrete Übungsempfehlung
+  2. Die Note enthält Wiki-Links zu mindestens einer verwandten Simulation oder Frage aus dem Pool
+  3. Wenn der User für dasselbe Thema ein zweites Mal eine Note anfordert, wird die bestehende Note aktualisiert — keine Duplikate im /Zusammenfassungen/-Ordner
+  4. Die Gemini-Anfrage enthält keine persönlichen Daten des Users — nur Thema, Fehlermuster und Frageinhalte
+**Plans**: TBD
+
+### Phase 25: Lernplan + Fortschritt
+**Goal**: User findet jede Woche einen aktuellen Lernplan und ein Fortschritts-Dashboard als Markdown in seinem NC-Dateisystem
+**Depends on**: Phase 24 (Note-Generator muss laufen, Profil und Files sind etabliert)
+**Requirements**: PLAN-01, PLAN-02, PLAN-03, PLAN-04
+**Success Criteria** (what must be TRUE):
+  1. /Learning/Lernplan.md enthält einen wöchentlichen Plan mit Tages-Checkboxen (- [ ] Montag: ...) basierend auf den aktuellen Profil-Schwächen
+  2. /Learning/Fortschritt.md zeigt die aktuelle Leitner-Box-Verteilung, den Trend der letzten 4 Wochen und konkrete Empfehlungen
+  3. Der Lernplan referenziert schwache Kapitel per Wiki-Link auf vorhandene /Zusammenfassungen/-Notes
+  4. Beide Dateien sind lesbar ohne Learning-NC — reines Markdown, kein App-Lock-in
+**Plans**: TBD
+
+### Phase 26: Chat-Memory
+**Goal**: VirtuProf erinnert sich über Sessions hinweg an den Kontext des Users — Gespräche bauen aufeinander auf statt jedes Mal von vorne zu beginnen
+**Depends on**: Phase 22 (Lernprofil), Phase 19 (Chat-UI ist die Oberfläche)
+**Requirements**: MEM-01, MEM-02, MEM-03, MEM-04
+**Success Criteria** (what must be TRUE):
+  1. Wenn ein User VirtuProf in einer neuen Session fragt "Erinnerst du dich an unser letztes Gespräch?", kann der Bot auf konkrete Inhalte aus früheren Sessions verweisen
+  2. VirtuProf nennt bei einer Erklärungsfrage nicht dieselbe Erklärung die bereits gegeben wurde — er baut auf dem bekannten Kontext auf
+  3. Der User kann in den Einstellungen "Chat-History löschen" klicken und VirtuProf hat danach keinerlei Erinnerung an frühere Sessions
+  4. Wenn 50 Kontext-Einträge erreicht sind, werden die ältesten automatisch zu einer Zusammenfassung komprimiert — kein Datenverlust, kein API-Fehler
+**Plans**: TBD
+
+### Phase 27: Auto-Trigger
+**Goal**: Der Bot handelt proaktiv — nach einem schlechten Exam, nach wiederholten Fehlern und wöchentlich — ohne dass der User manuell eingreifen muss
+**Depends on**: Phase 24 (Note-Generator), Phase 25 (Lernplan-Generator), Phase 26 (Chat-Memory)
+**Requirements**: TRIG-01, TRIG-02, TRIG-03, TRIG-04
+**Success Criteria** (what must be TRUE):
+  1. Nach einem Exam mit weniger als 70% erscheint in der VirtuProfBubble ein Hinweis "Ich habe eine Zusammenfassung für dein schwächstes Thema erstellt" — die Note ist in /Learning/Schwachstellen/ auffindbar
+  2. Nach 5 falschen Antworten zum gleichen Thema erscheint ein "Zusammenfassung erstellen"-Button direkt in der Trainingsansicht
+  3. Jeden Sonntag wird /Learning/Lernplan.md automatisch aktualisiert (NC BackgroundJob) — der User findet Montagmorgens einen frischen Plan
+  4. Der User kann manuell für jedes Kapitel "Zusammenfassung erstellen" anfordern und erhält innerhalb von 10 Sekunden eine Note
 **Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute sequentially: 17 → 18 → 19 → 20 → 21. Phase 18 depends on Phase 17. Phase 19 depends on Phase 18. Phase 20 depends on Phases 17 and 18. Phase 21 depends on Phases 19 and 20.
+Phases execute sequentially: 22 → 23 → 24 → 25 → 26 → 27. Phase 26 depends on Phase 22 and Phase 19 (v3.2). Phase 27 depends on Phases 24, 25, and 26.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -252,8 +337,14 @@ Phases execute sequentially: 17 → 18 → 19 → 20 → 21. Phase 18 depends on
 | 14. Training-Merge | v3.1 | 2/2 | Complete | 2026-03-21 |
 | 15. Arena | v3.1 | 1/1 | Complete | 2026-03-21 |
 | 16. Session-Robustheit | v3.1 | 2/2 | Complete | 2026-03-21 |
-| 17. Gemini Backend + Security | 2/2 | Complete    | 2026-03-21 | - |
-| 18. RAG-Context | 1/1 | Complete    | 2026-03-21 | - |
-| 19. Chat-UI | v3.2 | Complete    | 2026-03-21 | 2026-03-21 |
-| 20. Ticket-Triage | 1/1 | Complete   | 2026-03-21 | - |
-| 21. Datenschutz & Compliance | 1/1 | Complete   | 2026-03-21 | - |
+| 17. Gemini Backend + Security | v3.2 | 2/2 | Complete | 2026-03-21 |
+| 18. RAG-Context | v3.2 | 1/1 | Complete | 2026-03-21 |
+| 19. Chat-UI | v3.2 | 1/1 | Complete | 2026-03-21 |
+| 20. Ticket-Triage | v3.2 | 1/1 | Complete | 2026-03-21 |
+| 21. Datenschutz & Compliance | v3.2 | 1/1 | Complete | 2026-03-21 |
+| 22. Lernprofil | 1/1 | Complete   | 2026-03-21 | - |
+| 23. NC Files Integration | v4.0 | 0/TBD | Not started | - |
+| 24. Note-Generator | v4.0 | 0/TBD | Not started | - |
+| 25. Lernplan + Fortschritt | v4.0 | 0/TBD | Not started | - |
+| 26. Chat-Memory | v4.0 | 0/TBD | Not started | - |
+| 27. Auto-Trigger | v4.0 | 0/TBD | Not started | - |
