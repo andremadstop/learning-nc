@@ -7,14 +7,24 @@ use OCA\Learning\Db\SupportTicket;
 use OCA\Learning\Db\SupportTicketMapper;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\ForbiddenException;
+use OCP\IConfig;
 
 class SupportTicketService {
     private SupportTicketMapper $ticketMapper;
     private CourseService $courseService;
+    private GeminiService $geminiService;
+    private IConfig $config;
 
-    public function __construct(SupportTicketMapper $ticketMapper, CourseService $courseService) {
+    public function __construct(
+        SupportTicketMapper $ticketMapper,
+        CourseService $courseService,
+        GeminiService $geminiService,
+        IConfig $config
+    ) {
         $this->ticketMapper = $ticketMapper;
         $this->courseService = $courseService;
+        $this->geminiService = $geminiService;
+        $this->config = $config;
     }
 
     public function create(string $userId, ?string $subject, string $message, array $context = [], ?string $category = null): SupportTicket {
@@ -56,7 +66,45 @@ class SupportTicketService {
         $ticket->setRoutingTargetType($routing['routing_target_type']);
         $ticket->setRoutingCourseId($routing['routing_course_id']);
 
-        return $this->ticketMapper->insert($ticket);
+        $ticket = $this->ticketMapper->insert($ticket);
+
+        // AI Triage: classify ticket if AI is enabled
+        if ($this->config->getAppValue('learning', 'ai_enabled', 'no') === 'yes') {
+            $this->applyAiTriage($ticket, $subject, $message);
+        }
+
+        return $ticket;
+    }
+
+    /**
+     * Run AI triage classification and persist results.
+     * Called after initial ticket insert — updates the ticket record with AI fields.
+     */
+    private function applyAiTriage(SupportTicket $ticket, string $subject, string $message): void {
+        try {
+            $result = $this->geminiService->classifyTicket($subject, $message);
+
+            $ticket->setAiLabel($result['label']);
+            $ticket->setAiConfidence($result['confidence']);
+            $ticket->setUpdatedAt(time());
+
+            if ($result['label'] === 'FAQ' && $result['confidence'] >= 0.8 && $result['suggested_answer'] !== null) {
+                $ticket->setAiDraftAnswer($result['suggested_answer']);
+            }
+
+            if (in_array($result['label'], ['Bug', 'Feature'], true)) {
+                $ticket->setNeedsReview(true);
+            }
+
+            if ($result['followup_question'] !== null) {
+                $ticket->setAiFollowupQuestion($result['followup_question']);
+            }
+
+            $this->ticketMapper->update($ticket);
+        } catch (\Throwable $e) {
+            // Triage failure must never break ticket creation
+            // The ticket is already persisted — just log the error
+        }
     }
 
     public function listMine(string $userId, int $limit = 50): array {
