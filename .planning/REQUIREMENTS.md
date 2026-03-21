@@ -7,8 +7,8 @@
 
 ### Oldschool-Menü
 
-- [ ] **OLD-01**: "Oldschool" Tab in CourseDetail neben Arena
-- [ ] **OLD-02**: OldschoolSelector.vue mit 2 Karten (Lernwürfel, Wissensturm) — analog zu ArenaSelector
+- [x] **OLD-01**: "Oldschool" Tab in CourseDetail neben Arena
+- [x] **OLD-02**: OldschoolSelector.vue mit 2 Karten (Lernwürfel, Wissensturm) — analog zu ArenaSelector
 
 ### Lernwürfel (Mensch ärgere dich nicht)
 
@@ -49,8 +49,8 @@
 | BACK-01 | Phase 28 | Complete |
 | BACK-02 | Phase 28 | Complete |
 | BACK-03 | Phase 28 | Complete |
-| OLD-01 | Phase 29 | Pending |
-| OLD-02 | Phase 29 | Pending |
+| OLD-01 | Phase 29 | Complete |
+| OLD-02 | Phase 29 | Complete |
 | WUERF-01 | Phase 30 | Pending |
 | WUERF-02 | Phase 30 | Pending |
 | WUERF-03 | Phase 30 | Pending |

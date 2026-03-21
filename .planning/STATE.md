@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 ## Current Position
 
-Phase: 29 of 31 (Oldschool-Menü)
+Phase: 30 of 31 (Lernwürfel)
 Plan: 0 of ? in current phase
 Status: Ready to plan
-Last activity: 2026-03-21 — Phase 28 complete (28-01-SUMMARY.md)
+Last activity: 2026-03-21 — Phase 29 complete (29-01-SUMMARY.md)
 
-Progress: [█████████████████████░░░░░░░░░] 71% (28/31 phases complete)
+Progress: [█████████████████████░░░░░░░░░] 74% (29/31 phases complete)
 
 ## Performance Metrics
 
@@ -61,5 +61,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-21
-Stopped at: Phase 28 complete — 28-01-SUMMARY.md created. Ready for Phase 29 Oldschool-Menü.
+Stopped at: Phase 29 complete — 29-01-SUMMARY.md created. Ready for Phase 30 Lernwürfel.
 Resume file: None
