@@ -135,6 +135,50 @@
           </NcButton>
         </template>
       </div>
+
+      <!-- Chat section: always visible at the bottom of the bubble -->
+      <div class="chat-section">
+        <div
+          ref="chatHistory"
+          class="chat-history"
+          role="log"
+          aria-live="polite"
+          aria-label="VirtuProf chat">
+          <div
+            v-for="(msg, idx) in chatMessages"
+            :key="idx"
+            class="chat-msg"
+            :class="msg.role === 'user' ? 'chat-msg--user' : 'chat-msg--assistant'">
+            {{ msg.text }}
+          </div>
+          <div v-if="chatLoading" class="chat-typing" aria-label="VirtuProf is typing">
+            <span class="typing-dot" />
+            <span class="typing-dot" />
+            <span class="typing-dot" />
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input
+            ref="chatInput"
+            v-model="chatInput"
+            class="chat-input"
+            type="text"
+            :placeholder="vt('Ask VirtuProf...')"
+            :disabled="chatLoading"
+            maxlength="500"
+            @keyup.enter="sendChat">
+          <button
+            type="button"
+            class="chat-send-btn"
+            :disabled="chatLoading || !chatInput.trim()"
+            :aria-label="vt('Send')"
+            @click="sendChat">
+            <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+              <path d="M2 10l16-8-6 8 6 8z" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+      </div>
     </div>
     <div class="bubble-arrow" />
   </div>
@@ -188,6 +232,19 @@ export default {
       type: String,
       default: '',
     },
+    chatMessages: {
+      type: Array,
+      default: () => [],
+    },
+    chatLoading: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  data() {
+    return {
+      chatInput: '',
+    }
   },
   computed: {
     effectiveLanguage() {
@@ -201,6 +258,23 @@ export default {
     },
     hasInviteGroups() {
       return Array.isArray(this.step?.inviteGroups) && this.step.inviteGroups.some(group => Array.isArray(group.invites) && group.invites.length > 0)
+    },
+  },
+  watch: {
+    chatMessages() {
+      this.$nextTick(() => {
+        this.scrollChatToBottom()
+      })
+    },
+    chatLoading(newVal) {
+      if (!newVal) {
+        this.$nextTick(() => {
+          this.scrollChatToBottom()
+          if (this.$refs.chatInput) {
+            this.$refs.chatInput.focus()
+          }
+        })
+      }
     },
   },
   methods: {
@@ -238,6 +312,20 @@ export default {
         active: 'Active',
       }
       return this.vt(labels[normalized] || status)
+    },
+    sendChat() {
+      const text = this.chatInput.trim()
+      if (!text || this.chatLoading) {
+        return
+      }
+      this.$emit('chat-send', text)
+      this.chatInput = ''
+    },
+    scrollChatToBottom() {
+      const el = this.$refs.chatHistory
+      if (el) {
+        el.scrollTop = el.scrollHeight
+      }
     },
   },
 }
@@ -485,6 +573,161 @@ export default {
   width: 100%;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+/* ── Chat section ─────────────────────────────────── */
+.chat-section {
+  margin-top: 12px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 10px;
+}
+
+.chat-history {
+  max-height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+  scroll-behavior: smooth;
+}
+
+.chat-msg {
+  max-width: 85%;
+  padding: 7px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.chat-msg--user {
+  align-self: flex-end;
+  background: color-mix(in srgb, var(--color-primary-element) 15%, transparent);
+  color: var(--color-main-text);
+  border-bottom-right-radius: 4px;
+}
+
+.chat-msg--assistant {
+  align-self: flex-start;
+  background: var(--color-background-hover);
+  color: var(--color-main-text);
+  border-bottom-left-radius: 4px;
+}
+
+/* RTL: flip user/assistant alignment */
+[dir="rtl"] .chat-msg--user {
+  align-self: flex-start;
+  border-bottom-right-radius: 12px;
+  border-bottom-left-radius: 4px;
+}
+
+[dir="rtl"] .chat-msg--assistant {
+  align-self: flex-end;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-typing {
+  display: flex;
+  align-self: flex-start;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--color-background-hover);
+  border-radius: 12px;
+  border-bottom-left-radius: 4px;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-maxcontrast);
+  animation: typing-pulse 1.2s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing-pulse {
+  0%, 80%, 100% {
+    opacity: 0.3;
+    transform: scale(0.85);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.chat-input {
+  flex: 1;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-main-background);
+  color: var(--color-main-text);
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.chat-input:focus {
+  border-color: var(--color-primary-element);
+}
+
+.chat-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chat-send-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-primary-element);
+  color: var(--color-primary-element-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s ease;
+  padding: 0;
+}
+
+.chat-send-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.chat-send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Accessibility: reduced motion ─────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .typing-dot {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .chat-history {
+    scroll-behavior: auto;
+  }
 }
 
 .bubble-arrow {
