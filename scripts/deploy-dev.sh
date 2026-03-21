@@ -57,12 +57,28 @@ deploy_js() {
   echo "✓ JS deployed"
 }
 
+run_phpunit() {
+  echo "→ Running PHPUnit tests..."
+  # Sync test files
+  rsync -az --include='*.php' --exclude='*.js' app/tests/ "$HOST:~/learning-nc/app/tests/"
+  ssh "$HOST" "for f in tests/Support/PhpUnitStubs.php tests/Support/FakeInfrastructure.php tests/bootstrap.php; do \
+    docker cp ~/learning-nc/app/\$f $CONTAINER:$APP_PATH/\$f 2>/dev/null; done && \
+    find ~/learning-nc/app/tests/Unit -name '*.php' -exec sh -c 'docker cp \$1 $CONTAINER:$APP_PATH/\${1#*~/learning-nc/app/}' _ {} \; && \
+    docker exec -w $APP_PATH $CONTAINER php vendor/bin/phpunit 2>&1"
+  if [ $? -ne 0 ]; then
+    echo "✗ PHPUnit tests failed — deploy aborted!"
+    exit 1
+  fi
+  echo "✓ PHPUnit clean"
+}
+
 case "$MODE" in
   --php-only)    deploy_php; run_phpstan ;;
   --js-only)     deploy_js ;;
   --full)        deploy_php; run_phpstan; deploy_js ;;
   --phpstan)     run_phpstan ;;
-  *) echo "Usage: $0 [--php-only | --js-only | --full | --phpstan]"; exit 1 ;;
+  --test)        run_phpstan; run_phpunit ;;
+  *) echo "Usage: $0 [--php-only | --js-only | --full | --phpstan | --test]"; exit 1 ;;
 esac
 
 echo "=== Deploy complete ==="
