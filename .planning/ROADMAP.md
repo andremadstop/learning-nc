@@ -279,7 +279,10 @@ Plans:
   2. Die Note enthält Wiki-Links zu mindestens einer verwandten Simulation oder Frage aus dem Pool
   3. Wenn der User für dasselbe Thema ein zweites Mal eine Note anfordert, wird die bestehende Note aktualisiert — keine Duplikate im /Zusammenfassungen/-Ordner
   4. Die Gemini-Anfrage enthält keine persönlichen Daten des Users — nur Thema, Fehlermuster und Frageinhalte
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 24-01-PLAN.md — NoteGeneratorService + NoteGeneratorController + GeminiService::generateNote()
 
 ### Phase 25: Lernplan + Fortschritt
 **Goal**: User findet jede Woche einen aktuellen Lernplan und ein Fortschritts-Dashboard als Markdown in seinem NC-Dateisystem
@@ -344,7 +347,7 @@ Phases execute sequentially: 22 → 23 → 24 → 25 → 26 → 27. Phase 26 dep
 | 21. Datenschutz & Compliance | v3.2 | 1/1 | Complete | 2026-03-21 |
 | 22. Lernprofil | 1/1 | Complete    | 2026-03-21 | - |
 | 23. NC Files Integration | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 24. Note-Generator | v4.0 | 0/TBD | Not started | - |
+| 24. Note-Generator | v4.0 | 1/1 | Complete | 2026-03-21 |
 | 25. Lernplan + Fortschritt | v4.0 | 0/TBD | Not started | - |
 | 26. Chat-Memory | v4.0 | 0/TBD | Not started | - |
 | 27. Auto-Trigger | v4.0 | 0/TBD | Not started | - |

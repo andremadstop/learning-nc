@@ -3,24 +3,24 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Persönlicher Lernbot
 status: in_progress
-last_updated: "2026-03-21T15:15:00Z"
-last_activity: 2026-03-21 — Phase 23 NC Files Integration implemented
+last_updated: "2026-03-21T15:45:00Z"
+last_activity: 2026-03-21 — Phase 24 Note-Generator implemented
 progress:
   total_phases: 27
-  completed_phases: 22
-  total_plans: 35
-  completed_plans: 35
-  percent: 100
+  completed_phases: 23
+  total_plans: 36
+  completed_plans: 36
+  percent: 85
 ---
 
 ## Current Position
 
-Phase: 24 (Note-Generator) — Not started
+Phase: 25 (Lernplan + Fortschritt) — Not started
 Plan: —
-Status: Phase 23 complete (23-01-PLAN.md executed 2026-03-21)
-Last activity: 2026-03-21 — Phase 23 NC Files Integration implemented
+Status: Phase 24 complete (24-01-PLAN.md executed 2026-03-21)
+Last activity: 2026-03-21 — Phase 24 Note-Generator implemented
 
-Progress: [██████████] 100%
+Progress: [████████░░] 85%
 
 ## Project Reference
 
@@ -33,11 +33,12 @@ Progress: [██████████] 100%
 
 | Metric | Value |
 |--------|-------|
-| Phases completed (v4.0) | 2/6 |
+| Phases completed (v4.0) | 3/6 |
 | Requirements mapped | 22/22 |
-| Requirements complete | 9/22 (PROF-01..04, FILES-01..05) |
+| Requirements complete | 13/22 (PROF-01..04, FILES-01..05, NOTE-01..04) |
 | Phase 22 P01 | 15min | 4 tasks | 6 files |
-| Phase 23 P01 | 10 | 4 tasks | 3 files |
+| Phase 23 P01 | 10min | 4 tasks | 3 files |
+| Phase 24 P01 | 32min | 4 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -75,8 +76,15 @@ Progress: [██████████] 100%
 - Body written verbatim — Wiki-Links and Tags preserved for Obsidian compatibility
 - Subfolder auto-created inside writeNote — Phase 24+ can target custom subfolders without setup
 
+### Phase 24 Decisions
+- generateNote() in GeminiService bypasses user rate-limit — internal call, not user input
+- NoteGeneratorService strips any Gemini-generated frontmatter and replaces with authoritative meta
+- slugify() normalizes German umlauts for cross-platform-safe filenames
+- Pool access check in Controller: ownership OR pool_share OR course membership/instructor
+- FOLDER_SUMMARIES constant was private in LernbotFileService — used string literal in NoteGeneratorService
+
 ## Session Continuity
 
-Next action: `/gsd:plan-phase 24`
+Next action: `/gsd:plan-phase 25`
 
-Phase 24 scope: Note-Generator — Gemini generates summaries for weak topics, saves as NC Files notes via LernbotFileService.
+Phase 25 scope: Lernplan + Fortschritt — Weekly learning plan + progress dashboard as Markdown files in /Learning/.

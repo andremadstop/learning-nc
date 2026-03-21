@@ -22,10 +22,10 @@
 
 ### Note-Generator
 
-- [ ] **NOTE-01**: Bei Trigger generiert Gemini eine Zusammenfassung für ein schwaches Thema
-- [ ] **NOTE-02**: Zusammenfassung enthält: Kernpunkte, häufigster Fehler des Users, Übungsempfehlung
-- [ ] **NOTE-03**: Zusammenfassung verlinkt auf relevante Simulationen/Fragen via Wiki-Links
-- [ ] **NOTE-04**: Bestehende Notes werden aktualisiert statt dupliziert (Dateiname = Thema)
+- [x] **NOTE-01**: Bei Trigger generiert Gemini eine Zusammenfassung für ein schwaches Thema
+- [x] **NOTE-02**: Zusammenfassung enthält: Kernpunkte, häufigster Fehler des Users, Übungsempfehlung
+- [x] **NOTE-03**: Zusammenfassung verlinkt auf relevante Simulationen/Fragen via Wiki-Links
+- [x] **NOTE-04**: Bestehende Notes werden aktualisiert statt dupliziert (Dateiname = Thema)
 
 ### Lernplan
 
@@ -76,10 +76,10 @@
 | FILES-03 | Phase 23 | Complete |
 | FILES-04 | Phase 23 | Complete |
 | FILES-05 | Phase 23 | Complete |
-| NOTE-01 | Phase 24 | Pending |
-| NOTE-02 | Phase 24 | Pending |
-| NOTE-03 | Phase 24 | Pending |
-| NOTE-04 | Phase 24 | Pending |
+| NOTE-01 | Phase 24 | Complete |
+| NOTE-02 | Phase 24 | Complete |
+| NOTE-03 | Phase 24 | Complete |
+| NOTE-04 | Phase 24 | Complete |
 | PLAN-01 | Phase 25 | Pending |
 | PLAN-02 | Phase 25 | Pending |
 | PLAN-03 | Phase 25 | Pending |
