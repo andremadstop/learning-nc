@@ -96,6 +96,7 @@ return [
         ['name' => 'virtuProf#dismiss', 'url' => '/api/virtuprof/dismiss', 'verb' => 'POST'],
         ['name' => 'virtuProf#setEnabled', 'url' => '/api/virtuprof/enabled', 'verb' => 'PUT'],
         ['name' => 'virtuProf#setLanguage', 'url' => '/api/virtuprof/language', 'verb' => 'PUT'],
+        ['name' => 'virtuProf#chat', 'url' => '/api/virtu-prof/chat', 'verb' => 'POST'],
 
         // Support Tickets
         ['name' => 'supportTicket#create', 'url' => '/api/support-tickets', 'verb' => 'POST'],
