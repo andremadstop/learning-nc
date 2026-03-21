@@ -624,6 +624,14 @@
 				:contentLanguage="contentLanguage"
 				@back="oldschoolSubMode = null" />
 		</div>
+		<!-- Abenteuer Tab -->
+		<div v-if="currentTab === 'abenteuer'" class="abenteuer-section">
+			<AbenteuerMode
+				:courseId="courseId"
+				:coursePools="coursePools"
+				:contentLanguage="contentLanguage"
+				@back="currentTab = 'pools'" />
+		</div>
 		<!-- Curriculum Scope Tab (instructor only) -->
 		<div v-if="currentTab === 'curriculum' && isInstructor" class="curriculum-section">
 			<div class="curriculum-header">
@@ -1028,6 +1036,7 @@ import ArenaSelector from './ArenaSelector.vue'
 import OldschoolSelector from './OldschoolSelector.vue'
 import WissensturmMode from './WissensturmMode.vue'
 import LernwuerfelMode from './LernwuerfelMode.vue'
+import AbenteuerMode from './AbenteuerMode.vue'
 
 export default {
 	name: 'CourseDetail',
@@ -1051,6 +1060,7 @@ export default {
 		OldschoolSelector,
 		WissensturmMode,
 		LernwuerfelMode,
+		AbenteuerMode,
 	},
 
 	props: {
@@ -1232,6 +1242,7 @@ export default {
 					{ id: 'league', label: t('learning', 'Liga') },
 					{ id: 'arena', label: t('learning', 'Arena') },
 					{ id: 'oldschool', label: t('learning', 'Oldschool') },
+					{ id: 'abenteuer', label: t('learning', 'Abenteuer') },
 					{ id: 'curriculum', label: t('learning', 'Themen') },
 					{ id: 'heatmap', label: t('learning', 'Heatmap') },
 					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
@@ -1253,6 +1264,7 @@ export default {
 			if (enabled('league')) tabs.push({ id: 'league', label: t('learning', 'Liga') })
 			tabs.push({ id: 'arena', label: t('learning', 'Arena') })
 			tabs.push({ id: 'oldschool', label: t('learning', 'Oldschool') })
+			tabs.push({ id: 'abenteuer', label: t('learning', 'Abenteuer') })
 			return tabs
 		},
 		activeLearningModeLabel() {

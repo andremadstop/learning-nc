@@ -33,6 +33,12 @@
         @back="backToPools"
       />
 
+      <AbenteuerMode
+        v-else-if="currentView === 'abenteuer'"
+        :contentLanguage="contentLanguage"
+        @back="backToPools"
+      />
+
       <PoolList
         v-else-if="currentView === 'pools'"
         :userRole="userRole"
@@ -234,6 +240,7 @@ import GameshowMode from './components/GameshowMode.vue';
 import DuelMode from './components/DuelMode.vue';
 import ArenaSelector from './components/ArenaSelector.vue';
 import VirtuProf from './components/VirtuProf.vue';
+import AbenteuerMode from './components/AbenteuerMode.vue';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 
@@ -260,6 +267,7 @@ export default {
     AdminSettings,
     PersonalSettings,
     VirtuProf,
+    AbenteuerMode,
   },
   data() {
     return {
