@@ -74,3 +74,10 @@ Thumbs.db
 # Backup
 .git-backup-*
 scripts/
+.env
+.ralph/
+certs/
+translations/
+app/test-results/
+app/playwright-report/
+app/tests/

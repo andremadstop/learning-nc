@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.0] - 2026-03-21
+
+### Added
+- **Gameshow Sprint Mode**: 2-5 players compete simultaneously — fastest correct answer scores highest (500 + time bonus). Live leaderboard with crown icon after each question. 15 questions per round with podium animation (gold/silver/bronze).
+- **Gameshow Elimination Mode**: 3-5 players start with 3 lives. Wrong answer costs 1 life (heart-break animation). Last player standing wins. Sudden death when 2 players remain.
+- **N-Player Session Backend**: New `gameshow_sessions`, `gameshow_players`, `gameshow_answers` tables. Supports 2-5 simultaneous players with 500ms short-polling.
+- **Arena Tab**: Duell and Gameshow merged into a single "Arena" tab with mode selection cards (Duell 1v1, Sprint 2-5, Elimination 2-5).
+- **Spectacle Animations**: Spotlight effect, dramatic 2s reveal pause, screen shake on wrong answers, pulsing borders on tension, confetti on victories. All respect `prefers-reduced-motion`.
+- **VirtuProf Showmaster**: 6 gameshow trigger scripts — round announcements, standings commentary, answer reactions, elimination farewells.
+- **Training + Wahr/Falsch Merge**: TrainingMode now supports both Multiple-Choice and True/False with swipe animations. SwipeMode.vue removed.
+- **Session Robustness**: Abort button during play, disconnect detection (30s), localStorage session recovery on page reload, stale session cleanup (5min all-inactive → expired).
+- **Gameshow XP Integration**: Full XP from gameshow scores like other learning modes. Session history viewable.
+- **Course Lobby**: Instructors can start gameshow sessions visible to all course members.
+
+### Fixed
+- **Duel auto-start**: Duel starts immediately when opponent joins — no "Ready" click needed.
+- **Duel invite self-destruct**: Fixed feedback loop where `presetDuelCode` clearing reset the duel to join screen.
+- **Duel poll timeout**: Reset poll timestamps on session activation to prevent premature expiry.
+- **Gameshow lobby expiry**: Timeout check now only runs during active games, not waiting lobby.
+- **Select text visibility**: `color: !important` + `line-height` fix for NC theme overrides in Chrome/Firefox.
+- **Empty pool duel**: Reject duel creation when pool has 0 questions (was silently creating broken session).
+- **Boolean migration**: Changed `notnull: true` to `notnull: false` for boolean columns (NC migration framework incompatibility).
+
 ## [2.6.1] - 2026-03-20
 
 ### Added
