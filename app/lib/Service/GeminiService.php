@@ -83,6 +83,81 @@ class GeminiService {
     }
 
     /**
+     * Generate a note (Obsidian-compatible Markdown summary) via Gemini.
+     *
+     * This is an internal/trusted caller method — no user rate limit, no 500-char
+     * input validation. Used by NoteGeneratorService only.
+     *
+     * @param string $systemPrompt  Full system prompt (contains topic + context, no PII)
+     * @param string $userPrompt    Topic request (no PII)
+     *
+     * @throws \RuntimeException  On API error or empty response
+     */
+    public function generateNote(string $systemPrompt, string $userPrompt): string {
+        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
+        if ($apiKey === '') {
+            throw new \RuntimeException('Gemini API key not configured');
+        }
+
+        $payload = json_encode([
+            'system_instruction' => [
+                'parts' => [['text' => $systemPrompt]],
+            ],
+            'contents' => [
+                [
+                    'role' => 'user',
+                    'parts' => [['text' => $userPrompt]],
+                ],
+            ],
+            'generationConfig' => [
+                'temperature' => 0.5,
+                'maxOutputTokens' => 800,
+                'candidateCount' => 1,
+            ],
+        ]);
+
+        $ch = curl_init(self::API_URL);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'x-goog-api-key: ' . $apiKey,
+            ],
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($response === false) {
+            $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), '[curl error: ' . $curlError . ']');
+            throw new \RuntimeException('curl error: ' . $curlError);
+        }
+
+        if ($httpCode !== 200) {
+            $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), '[HTTP ' . $httpCode . ']');
+            throw new \RuntimeException('HTTP ' . $httpCode);
+        }
+
+        $data = json_decode((string)$response, true);
+        $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+
+        if ($text === '') {
+            $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), '[empty response]');
+            throw new \RuntimeException('Empty response from Gemini API');
+        }
+
+        $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), mb_substr($text, 0, 1000));
+
+        return $text;
+    }
+
+    /**
      * Classify a support ticket into FAQ/Bug/Feature/Unclear using Gemini.
      *
      * This method is used for admin-side ticket triage and does NOT apply user rate limits.
