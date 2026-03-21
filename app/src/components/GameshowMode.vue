@@ -199,6 +199,19 @@
           {{ answer.text }}
         </button>
       </div>
+
+      <div v-if="disconnectDetected" class="disconnect-overlay">
+        <NcNoteCard type="warning">
+          {{ t('learning', 'Verbindung unterbrochen. Das Spiel wird beendet...') }}
+        </NcNoteCard>
+        <NcButton type="primary" @click="cancelGame">{{ t('learning', 'Zurueck') }}</NcButton>
+      </div>
+
+      <div class="question-abort-area">
+        <NcButton type="tertiary" @click="cancelGame">
+          {{ t('learning', 'Abbrechen') }}
+        </NcButton>
+      </div>
     </div>
 
     <!-- ===== FEEDBACK PHASE ===== -->
@@ -510,6 +523,8 @@ export default {
       finishedCelebrated: false,
       history: [],
       historyLoading: false,
+      consecutivePollErrors: 0,
+      disconnectDetected: false,
     };
   },
 
@@ -663,6 +678,20 @@ export default {
     if (this.initialPoolId && this.pools.some(p => p.id === this.initialPoolId)) {
       this.selectedPoolId = this.initialPoolId;
     }
+
+    const saved = localStorage.getItem('learning_gameshow_session');
+    if (saved) {
+      try {
+        const { code } = JSON.parse(saved);
+        if (code) {
+          this.recoverSession(code);
+          return;
+        }
+      } catch (e) {
+        localStorage.removeItem('learning_gameshow_session');
+      }
+    }
+
     this.fetchHistory();
   },
 
@@ -829,6 +858,40 @@ export default {
       this.recentlyDamagedPlayerIds = [];
       this.recentlyEliminatedPlayerIds = [];
       this.recentlyEliminatedPlayers = [];
+      this.consecutivePollErrors = 0;
+      this.disconnectDetected = false;
+    },
+
+    async recoverSession(code) {
+      this.loading = true;
+      try {
+        const r = await axios.get(
+          generateUrl('/apps/learning/api/gameshow/' + code + '/state'),
+          { params: this.buildStateParams() }
+        );
+        if (['waiting', 'active'].includes(r.data.status)) {
+          this.gameshowCode = code;
+          this.state = r.data;
+          this.lastQuestionIndex = (r.data.current_question_index || 0) - 1;
+          this.finishedCelebrated = false;
+          this.readyClicked = false;
+          this.resetRoundState();
+          this.phase = r.data.status === 'active' ? 'question' : 'lobby';
+          if (r.data.status === 'active') {
+            this.spotlightActive = true;
+            this.startTimer();
+          }
+          this.startPolling();
+        } else {
+          localStorage.removeItem('learning_gameshow_session');
+          this.fetchHistory();
+        }
+      } catch (e) {
+        localStorage.removeItem('learning_gameshow_session');
+        this.fetchHistory();
+      } finally {
+        this.loading = false;
+      }
     },
 
     answerButtonClasses(answer) {
@@ -979,6 +1042,7 @@ export default {
         this.finishedCelebrated = false;
         this.readyClicked = false;
         this.phase = 'lobby';
+        localStorage.setItem('learning_gameshow_session', JSON.stringify({ code: this.gameshowCode }));
         this.startPolling();
       } catch (e) {
         this.error = e.response?.data?.error || t('learning', 'Gameshow konnte nicht erstellt werden');
@@ -1009,6 +1073,7 @@ export default {
           this.lastQuestionIndex = -1;
           this.phase = 'lobby';
         }
+        localStorage.setItem('learning_gameshow_session', JSON.stringify({ code: this.gameshowCode }));
         this.startPolling();
       } catch (e) {
         this.error = e.response?.data?.error || t('learning', 'Beitreten fehlgeschlagen');
@@ -1045,6 +1110,7 @@ export default {
     },
 
     cancelGame() {
+      localStorage.removeItem('learning_gameshow_session');
       this.stopPolling();
       this.stopTimer();
       this.phase = 'join';
@@ -1290,9 +1356,15 @@ export default {
           generateUrl('/apps/learning/api/gameshow/' + this.gameshowCode + '/state'),
           { params: this.buildStateParams() }
         );
+        this.consecutivePollErrors = 0;
         this.applyStateTransitions(r.data);
       } catch (e) {
         // Network errors during polling are non-fatal
+        this.consecutivePollErrors++;
+        if (this.consecutivePollErrors >= 60 && !this.disconnectDetected) {
+          // 60 ticks * 500ms = 30 seconds
+          this.disconnectDetected = true;
+        }
       }
     },
 
@@ -1302,6 +1374,7 @@ export default {
       this.state = newState;
 
       if (newState.status === 'finished') {
+        localStorage.removeItem('learning_gameshow_session');
         if (this.phase === 'question' && this.hasAnswered) {
           this.syncRoundOutcome(prevState, newState);
           this.showFeedbackThenTransition('finished');
@@ -1314,6 +1387,7 @@ export default {
       }
 
       if (newState.status === 'expired') {
+        localStorage.removeItem('learning_gameshow_session');
         this.stopPolling();
         this.stopTimer();
         this.phase = 'expired';
@@ -1914,6 +1988,16 @@ export default {
 
 .answer-btn-static {
   cursor: default;
+}
+
+.question-abort-area {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.disconnect-overlay {
+  margin-top: 20px;
+  text-align: center;
 }
 
 /* ===== FEEDBACK ===== */
