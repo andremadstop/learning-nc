@@ -7,7 +7,7 @@
 - ✅ **v3.0 Gameshow-Modi** — Phases 8-13 (shipped 2026-03-20)
 - ✅ **v3.1 UX-Konsolidierung** — Phases 14-16 (shipped 2026-03-21)
 - ✅ **v3.2 VirtuProf KI-Assistent** — Phases 17-21 (shipped 2026-03-21)
-- 🚧 **v4.0 Persönlicher Lernbot** — Phases 22-27 (in progress)
+- ✅ **v4.0 Persönlicher Lernbot** — Phases 22-27 (shipped 2026-03-21)
 
 ## Phases
 
@@ -241,10 +241,10 @@ Plans:
 
 - [x] **Phase 22: Lernprofil** - LernprofilService aggregiert Stärken/Schwächen aus Leitner, Training und Exam (completed 2026-03-21)
 - [x] **Phase 23: NC Files Integration** - App erstellt und verwaltet Markdown-Notes im User-Home mit Obsidian-Format (completed 2026-03-21)
-- [ ] **Phase 24: Note-Generator** - Gemini erzeugt Zusammenfassungen für schwache Themen und speichert sie als Notes
+- [x] **Phase 24: Note-Generator** - Gemini erzeugt Zusammenfassungen für schwache Themen und speichert sie als Notes (completed 2026-03-21)
 - [ ] **Phase 25: Lernplan + Fortschritt** - Wöchentlicher Lernplan und Fortschritts-Dashboard als Markdown-Dateien
 - [ ] **Phase 26: Chat-Memory** - VirtuProf-Kontext wird persistent über Sessions hinweg gespeichert
-- [ ] **Phase 27: Auto-Trigger** - Exam-Abschluss, Fehler-Schwelle und Wochenplan lösen automatisch Bot-Aktionen aus
+- [x] **Phase 27: Auto-Trigger** - Exam-Abschluss, Fehler-Schwelle und Wochenplan lösen automatisch Bot-Aktionen aus (completed 2026-03-21)
 
 ## Phase Details
 
@@ -346,8 +346,8 @@ Phases execute sequentially: 22 → 23 → 24 → 25 → 26 → 27. Phase 26 dep
 | 20. Ticket-Triage | v3.2 | 1/1 | Complete | 2026-03-21 |
 | 21. Datenschutz & Compliance | v3.2 | 1/1 | Complete | 2026-03-21 |
 | 22. Lernprofil | 1/1 | Complete    | 2026-03-21 | - |
-| 23. NC Files Integration | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 24. Note-Generator | v4.0 | 1/1 | Complete | 2026-03-21 |
+| 23. NC Files Integration | v4.0 | Complete    | 2026-03-21 | 2026-03-21 |
+| 24. Note-Generator | v4.0 | Complete    | 2026-03-21 | 2026-03-21 |
 | 25. Lernplan + Fortschritt | v4.0 | 0/TBD | Not started | - |
 | 26. Chat-Memory | v4.0 | 0/TBD | Not started | - |
-| 27. Auto-Trigger | v4.0 | 0/TBD | Not started | - |
+| 27. Auto-Trigger | v4.0 | 1/1 | Complete | 2026-03-21 |

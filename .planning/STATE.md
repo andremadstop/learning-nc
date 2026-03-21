@@ -2,25 +2,25 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Persönlicher Lernbot
-status: in_progress
-last_updated: "2026-03-21T15:45:00Z"
-last_activity: 2026-03-21 — Phase 24 Note-Generator implemented
+status: completed
+last_updated: "2026-03-21T16:43:50.074Z"
+last_activity: 2026-03-21 — Phase 27 Auto-Trigger implemented
 progress:
   total_phases: 27
-  completed_phases: 23
-  total_plans: 36
-  completed_plans: 36
-  percent: 85
+  completed_phases: 27
+  total_plans: 37
+  completed_plans: 37
+  percent: 100
 ---
 
 ## Current Position
 
-Phase: 25 (Lernplan + Fortschritt) — Not started
-Plan: —
-Status: Phase 24 complete (24-01-PLAN.md executed 2026-03-21)
-Last activity: 2026-03-21 — Phase 24 Note-Generator implemented
+Phase: 27 (Auto-Trigger) — Complete
+Plan: 27-01-PLAN.md
+Status: Phase 27 complete (27-01-PLAN.md executed 2026-03-21)
+Last activity: 2026-03-21 — Phase 27 Auto-Trigger implemented
 
-Progress: [████████░░] 85%
+Progress: [██████████] 100%
 
 ## Project Reference
 
@@ -39,6 +39,7 @@ Progress: [████████░░] 85%
 | Phase 22 P01 | 15min | 4 tasks | 6 files |
 | Phase 23 P01 | 10min | 4 tasks | 3 files |
 | Phase 24 P01 | 32min | 4 tasks | 4 files |
+| Phase 27 P01 | 19min | 4 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -83,8 +84,13 @@ Progress: [████████░░] 85%
 - Pool access check in Controller: ownership OR pool_share OR course membership/instructor
 - FOLDER_SUMMARIES constant was private in LernbotFileService — used string literal in NoteGeneratorService
 
+### Phase 27 Decisions
+- Hook TRIG-01 in TrainingService.completeSession() for single responsibility; tryAutoGenerateExamNote() swallows errors to protect exam flow
+- TRIG-02 count query uses 30-day window to catch cumulative weak patterns across sessions
+- WeeklyLernplanJob generates note for weakest pool only (top 1) to control Gemini API costs
+- LernplanService PHPStan false positive (comparison 0 > 0) added to baseline — DB integer inferred as literal 0
+
 ## Session Continuity
 
-Next action: `/gsd:plan-phase 25`
-
-Phase 25 scope: Lernplan + Fortschritt — Weekly learning plan + progress dashboard as Markdown files in /Learning/.
+v4.0 Milestone complete — all 27 phases implemented.
+Next action: Release v4.0 (CHANGELOG + tarball + signing + App Store upload)

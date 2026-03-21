@@ -43,10 +43,10 @@
 
 ### Auto-Trigger
 
-- [ ] **TRIG-01**: Nach einem Exam mit <70% wird automatisch eine Schwachstellen-Note generiert
-- [ ] **TRIG-02**: Nach 5 falschen Antworten zum gleichen Thema wird eine Zusammenfassung angeboten
-- [ ] **TRIG-03**: Wöchentlich (Sonntag) wird der Lernplan aktualisiert (NC BackgroundJob)
-- [ ] **TRIG-04**: User kann manuell "Zusammenfassung erstellen" für jedes Kapitel anfordern
+- [x] **TRIG-01**: Nach einem Exam mit <70% wird automatisch eine Schwachstellen-Note generiert
+- [x] **TRIG-02**: Nach 5 falschen Antworten zum gleichen Thema wird eine Zusammenfassung angeboten
+- [x] **TRIG-03**: Wöchentlich (Sonntag) wird der Lernplan aktualisiert (NC BackgroundJob)
+- [x] **TRIG-04**: User kann manuell "Zusammenfassung erstellen" für jedes Kapitel anfordern
 
 ## Future Requirements
 
@@ -88,10 +88,10 @@
 | MEM-02 | Phase 26 | Pending |
 | MEM-03 | Phase 26 | Pending |
 | MEM-04 | Phase 26 | Pending |
-| TRIG-01 | Phase 27 | Pending |
-| TRIG-02 | Phase 27 | Pending |
-| TRIG-03 | Phase 27 | Pending |
-| TRIG-04 | Phase 27 | Pending |
+| TRIG-01 | Phase 27 | Complete |
+| TRIG-02 | Phase 27 | Complete |
+| TRIG-03 | Phase 27 | Complete |
+| TRIG-04 | Phase 27 | Complete |
 
 **Coverage:**
 - v4.0 requirements: 22 total
