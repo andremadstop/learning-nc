@@ -12,8 +12,12 @@ use Psr\Log\LoggerInterface;
  * Loads pool questions, Leitner box stats, course name and last wrong answer
  * for a given user so that GeminiService can give contextually relevant answers.
  *
- * Privacy: No user PII (userId, username, email) is included in the returned array.
- * Only content data (questions, pool names, box counts) is returned.
+ * @privacy-audit (PRIV-04) — Context array sent to Gemini API contains:
+ *   INCLUDED: pool_name (string), pool_questions (question text + answer texts, truncated),
+ *             leitner_stats (numeric box counts only), course_name (string),
+ *             last_wrong (question text + correct answer text).
+ *   EXCLUDED: userId (used only for DB queries, never returned), username, email,
+ *             display name, passwords, system paths, or any personal identifiers.
  *
  * Token budget: context is trimmed to MAX_TOKENS (4000 tokens ≈ 16000 chars).
  */
