@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\GeminiService;
+use OCA\Learning\Service\RagContextService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
@@ -15,12 +16,21 @@ class VirtuProfController extends Controller {
     private IConfig $config;
     private ?string $userId;
     private GeminiService $geminiService;
+    private RagContextService $ragContextService;
 
-    public function __construct(string $appName, IRequest $request, IConfig $config, ?string $userId, GeminiService $geminiService) {
+    public function __construct(
+        string $appName,
+        IRequest $request,
+        IConfig $config,
+        ?string $userId,
+        GeminiService $geminiService,
+        RagContextService $ragContextService
+    ) {
         parent::__construct($appName, $request);
         $this->config = $config;
         $this->userId = $userId;
         $this->geminiService = $geminiService;
+        $this->ragContextService = $ragContextService;
     }
 
     /**
@@ -112,7 +122,12 @@ class VirtuProfController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 15, period: 60)]
-    public function chat(string $message): DataResponse {
+    public function chat(
+        string $message,
+        ?int $poolId = null,
+        ?int $courseId = null,
+        ?int $lastWrongQuestionId = null
+    ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
@@ -122,7 +137,18 @@ class VirtuProfController extends Controller {
             return new DataResponse(['error' => 'AI feature disabled'], Http::STATUS_SERVICE_UNAVAILABLE);
         }
 
-        $result = $this->geminiService->chat($message, $this->userId);
+        // Build RAG context when the frontend provides learning context params
+        $ragContext = [];
+        if ($poolId !== null || $courseId !== null || $lastWrongQuestionId !== null) {
+            $ragContext = $this->ragContextService->buildContext(
+                $this->userId,
+                $poolId,
+                $courseId,
+                $lastWrongQuestionId
+            );
+        }
+
+        $result = $this->geminiService->chat($message, $this->userId, $ragContext);
 
         // SEC-01: invalid_input is a client error
         if (($result['reason'] ?? '') === 'invalid_input') {
