@@ -8,7 +8,8 @@
 - ✅ **v3.1 UX-Konsolidierung** — Phases 14-16 (shipped 2026-03-21)
 - ✅ **v3.2 VirtuProf KI-Assistent** — Phases 17-21 (shipped 2026-03-21)
 - ✅ **v4.0 Persönlicher Lernbot** — Phases 22-27 (shipped 2026-03-21)
-- 🚧 **v5.0 Oldschool (Brettspiel-Modi)** — Phases 28-31 (in progress)
+- ✅ **v5.0 Oldschool (Brettspiel-Modi)** — Phases 28-31 (shipped 2026-03-21)
+- 🚧 **v6.0 Abenteuer (Story-RPG)** — Phases 32-35 (in progress)
 
 ## Phases
 
@@ -325,16 +326,8 @@ Plans:
 
 </details>
 
-### 🚧 v5.0 Oldschool (Brettspiel-Modi) (In Progress)
-
-**Milestone Goal:** Zwei Brettspiel-inspirierte Multiplayer-Lernmodi unter dem Menüpunkt "Oldschool": Lernwürfel (Mensch ärgere dich nicht) und Wissensturm (Trivial Pursuit Kategorien), vollständig in die bestehende N-Player-Infrastruktur eingebettet.
-
-- [x] **Phase 28: Brettspiel-Backend** - GameshowService erweitern für rundenbasierte Spielfeld-Logik
-- [x] **Phase 29: Oldschool-Menü** - Tab + Spielauswahl in CourseDetail
-- [ ] **Phase 30: Lernwürfel** - Vollständiger Mensch-ärgere-dich-nicht-Modus mit SVG-Brett
-- [x] **Phase 31: Wissensturm** - Vollständiger Trivial-Pursuit-Modus mit Turm-Rendering
-
-## Phase Details
+<details>
+<summary>✅ v5.0 Oldschool (Brettspiel-Modi) (Phases 28-31) - SHIPPED 2026-03-21</summary>
 
 ### Phase 28: Brettspiel-Backend
 **Goal**: GameshowService unterstützt rundenbasierte Brettspiel-Sessions mit persistentem Spielfeld-State — beide Spiele können darauf aufbauen
@@ -384,10 +377,71 @@ Plans:
   5. Sobald ein Spieler alle 5 Farben auf seinem Turm hat, endet das Spiel mit Sieger-Anzeige und VirtuProf-Kommentar
 **Plans**: TBD
 
+</details>
+
+### 🚧 v6.0 Abenteuer (Story-RPG) (In Progress)
+
+**Milestone Goal:** Story-getriebenes Lern-RPG "Network Down" — Schüler spielen IT-Techniker die Netzwerk-Probleme lösen. 5 Kampagnen, 4 Charakter-Klassen, verzweigende Story, Skill-Checks aus echten Prüfungsfragen, Simulationen am Ende.
+
+- [ ] **Phase 32: Story-Engine Backend** - StoryEngine.php Service, Kampagnen-JSON-Loader, Skill-Check-Logik, verzweigender Story-Baum, persistenter Fortschritt
+- [x] **Phase 33: RPG-Frontend + Tab** - AbenteuerMode.vue Szenen-Renderer, Skill-Check UI, Kampagnen-Übersicht, "Abenteuer" Tab, Koop-Modus (completed 2026-03-21)
+- [ ] **Phase 34: Charakter-System + Simulation-Integration** - 4 Klassen, klassenbasierte Schwierigkeitsmodifikation, NPC-Portraits, PBQ-Endszenen, Story-Epilog
+- [ ] **Phase 35: Kampagnen-Content** - 5 vollständige Kampagnen als JSON (25 Szenen gesamt, alle Entscheidungszweige, Skill-Check-Mappings)
+
+## Phase Details
+
+### Phase 32: Story-Engine Backend
+**Goal**: StoryEngine.php lädt und verwaltet Kampagnen vollständig — Szenen, Entscheidungen, Skill-Checks und Fortschritt funktionieren serverseitig und sind bereit für das Frontend
+**Depends on**: Phase 31 (v5.0 shipped)
+**Requirements**: STORY-01, STORY-02, STORY-03, STORY-04, STORY-05
+**Success Criteria** (what must be TRUE):
+  1. Ein API-Aufruf auf `/api/story/campaign/{id}/scene/{sceneId}` liefert narrative Texte, Entscheidungsoptionen und einen optionalen Skill-Check aus echten Pool-Fragen
+  2. Ein Skill-Check-Ergebnis (richtig/falsch) wird an den Server gesendet und die Engine liefert die korrekte Folge-Szene gemäß dem verzweigenden Story-Baum zurück
+  3. Pool-Fragen werden nach dem `pool_filter`-Feld der Szene gefiltert — eine Szene mit filter="routing" zieht ausschliesslich Fragen zum Thema Routing
+  4. Der Kampagnen-Fortschritt eines Users (aktuelle Szene, getroffene Entscheidungen, Ergebnisse) überlebt einen Browser-Neustart — er landet beim nächsten Login an derselben Stelle
+  5. Alle 5 Kampagnen-JSONs werden vom Service korrekt geladen und validiert — ein malformatiertes JSON wirft einen strukturierten Fehler statt einem 500er
+**Plans**: TBD
+
+### Phase 33: RPG-Frontend + Tab
+**Goal**: Spieler können eine Kampagne im Browser vollständig spielen — von der Kampagnen-Auswahl über Szenen und Skill-Checks bis zum Abschluss-Screen
+**Depends on**: Phase 32 (Story-Engine muss Szenen und Skill-Check-Ergebnisse liefern)
+**Requirements**: RPG-01, RPG-02, RPG-03, RPG-04, RPG-05
+**Success Criteria** (what must be TRUE):
+  1. In CourseDetail erscheint ein "Abenteuer" Tab; ein Klick darauf zeigt die Kampagnen-Übersicht mit Fortschrittsanzeige pro Kampagne (noch nicht gestartet / In Szene X / Abgeschlossen)
+  2. Eine Szene zeigt narrative Text-Box, NPC-Dialog (Portrait + Text) und 2-4 Entscheidungs-Karten nebeneinander — ein Klick auf eine Karte löst den nächsten Schritt aus
+  3. Enthält ein Schritt einen Skill-Check, erscheint die Frage aus dem Pool mit Antwortoptionen; nach der Antwort zeigt eine Animation (grüner Haken = Erfolg, roter X = Misserfolg) das Ergebnis
+  4. Im Koop-Modus (2-4 Spieler) sehen alle Spieler dieselbe Szene gleichzeitig; bei einer Entscheidung erscheint eine Abstimmungs-UI und die Mehrheit bestimmt den Weg
+  5. AbenteuerMode.vue ist auch standalone aufrufbar (ohne Kurs-Kontext) über einen direkten App-Route-Eintrag
+**Plans**: TBD
+
+### Phase 34: Charakter-System + Simulation-Integration
+**Goal**: Spieler wählen eine Klasse und spüren diesen Unterschied in Skill-Checks; jede Kampagne endet mit einer echten PBQ-Simulation deren Ergebnis den Epilog beeinflusst
+**Depends on**: Phase 33 (RPG-Frontend muss Charakter-Auswahl und Simulations-Trigger rendern können)
+**Requirements**: CHAR-01, CHAR-02, CHAR-03, SIM-01, SIM-02
+**Success Criteria** (what must be TRUE):
+  1. Beim Start einer Kampagne wählt der Spieler eine von 4 Klassen (Architekt, Security, Sysadmin, Helpdesk); die Wahl ist für die gesamte Kampagne gespeichert
+  2. Ein Architekt der eine Routing-Frage beantwortet sieht eine leichtere Frage (niedrigerer Schwierigkeitsgrad aus Pool) als ein Helpdesk-Spieler derselben Kampagne
+  3. NPC-Dialoge zeigen ein Text-Portrait (Emoji oder SVG-Platzhalter) und unterscheiden sich inhaltlich je nach gewählter Charakter-Klasse
+  4. Am Ende jeder Kampagne startet eine PBQ-Simulation (bestehende PbqRenderer-Komponente) — der Spieler muss ein Netzwerk-Szenario konfigurieren
+  5. Das Ergebnis der Simulation (Vollständig gelöst / Teilweise / Nicht gelöst) bestimmt welcher von drei Epilog-Texten angezeigt wird
+**Plans**: TBD
+
+### Phase 35: Kampagnen-Content
+**Goal**: Alle 5 Kampagnen existieren als vollständige, spielbare JSON-Dateien mit je 5 Szenen, Entscheidungszweigen, Skill-Check-Mappings und einer finalen Simulation
+**Depends on**: Phase 34 (Charakter-System und Simulations-Integration müssen verstanden sein, damit JSON-Schema korrekt befüllt wird)
+**Requirements**: CAMP-01, CAMP-02, CAMP-03, CAMP-04, CAMP-05
+**Success Criteria** (what must be TRUE):
+  1. Kampagne 1 "Der große Ausfall" ist spielbar: alle 5 Szenen laden, Routing/VLAN/WLAN-Skill-Checks ziehen reale Fragen, beide Entscheidungszweige (Erfolg/Misserfolg) führen zu unterschiedlichen Szenen
+  2. Kampagne 2 "Einbruch im Netz" ist spielbar: Incident-Response- und Forensik-Skill-Checks sind korrekt gemappt, der Security-Klassenvorteil greift
+  3. Kampagnen 3, 4 und 5 sind spielbar: alle JSONs validieren ohne Fehler, alle Szenen-IDs sind auflösbar, keine toten Verzweigungen
+  4. Jede Kampagne endet mit einem Simulations-Trigger der auf eine existierende PBQ-Konfiguration zeigt, und die drei Epilog-Varianten (Erfolg/Teilweise/Misserfolg) sind textlich ausformuliert
+  5. Ein neuer Spieler kann Kampagne 1 von Anfang bis Ende durchspielen ohne auf einen 404-Fehler, eine leere Szene oder eine fehlende Frage zu treffen
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases 28-31 execute sequentially: 28 → 29 → 30 → 31. Phase 30 and 31 both depend on Phase 29 (Menü), but 30 executes before 31.
+Phases 32-35 execute sequentially: 32 → 33 → 34 → 35. Each phase depends on the previous.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -418,7 +472,11 @@ Phases 28-31 execute sequentially: 28 → 29 → 30 → 31. Phase 30 and 31 both
 | 25. Lernplan + Fortschritt | v4.0 | 1/1 | Complete | 2026-03-21 |
 | 26. Chat-Memory | v4.0 | 1/1 | Complete | 2026-03-21 |
 | 27. Auto-Trigger | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 28. Brettspiel-Backend | v5.0 | Complete    | 2026-03-21 | 2026-03-21 |
-| 29. Oldschool-Menü | v5.0 | Complete    | 2026-03-21 | 2026-03-21 |
-| 30. Lernwürfel | v5.0 | 1/1 | Complete | 2026-03-21 |
-| 31. Wissensturm | v5.0 | 1/1 | Complete | 2026-03-21 |
+| 28. Brettspiel-Backend | v5.0 | Complete | 2026-03-21 | 2026-03-21 |
+| 29. Oldschool-Menü | v5.0 | Complete | 2026-03-21 | 2026-03-21 |
+| 30. Lernwürfel | v5.0 | Complete | 2026-03-21 | 2026-03-21 |
+| 31. Wissensturm | v5.0 | Complete | 2026-03-21 | 2026-03-21 |
+| 32. Story-Engine Backend | v6.0 | 1/1 | Complete | 2026-03-21 |
+| 33. RPG-Frontend + Tab | 1/1 | Complete   | 2026-03-21 | - |
+| 34. Charakter-System + Simulation-Integration | v6.0 | 0/? | Not started | - |
+| 35. Kampagnen-Content | v6.0 | 0/? | Not started | - |

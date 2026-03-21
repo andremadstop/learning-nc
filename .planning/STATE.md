@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.0
-milestone_name: Oldschool (Brettspiel-Modi)
-status: completed
-stopped_at: Completed 30-01-SUMMARY.md — Phase 30 Lernwürfel done
-last_updated: "2026-03-21T20:25:28.625Z"
-last_activity: 2026-03-21 — Phase 31 complete (31-01-SUMMARY.md)
+milestone: v6.0
+milestone_name: Abenteuer (Story-RPG)
+status: planning
+stopped_at: "Completed Phase 32-01: Story-Engine Backend"
+last_updated: "2026-03-21T23:12:00.000Z"
+last_activity: 2026-03-21 — Phase 32 Story-Engine Backend complete (4 tasks, 6 files)
 progress:
-  total_phases: 31
-  completed_phases: 25
-  total_plans: 37
-  completed_plans: 43
-  percent: 87
+  total_phases: 35
+  completed_phases: 27
+  total_plans: 38
+  completed_plans: 45
+  percent: 74
 ---
 
 # Project State
@@ -20,68 +20,67 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-03-21)
 
-**Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — für Einzellerner und Kursgruppen.
-**Current focus:** Phase 30 complete — v5.0 Lernwürfel + Wissensturm both shipped
+**Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — für Einzellerner und Kursgruppen
+**Current focus:** Phase 32 — Story-Engine Backend
 
 ## Current Position
 
-Phase: 31 of 31 — ALL PHASES COMPLETE
-Plan: 1 of 1 in current phase
-Status: Complete
-Last activity: 2026-03-21 — Phase 30 complete (30-01-SUMMARY.md), all 7 WUERF requirements done
+Phase: 32 of 35 (Story-Engine Backend) — COMPLETE
+Plan: 1 of 1 complete
+Status: Complete — next: Phase 33 RPG-Frontend + Tab
+Last activity: 2026-03-21 — Phase 32 Story-Engine Backend executed (migration, campaign JSON, service, controller)
 
-Progress: [██████████████████████████████] 100% (31/31 phases complete — v5.0 shipped)
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 35 (Phases 1-27 + 28, 29, 31)
+- Total plans completed: 39 (Phases 1-31)
 - Average duration: ~30 min
-- Total execution time: ~17.5 hours
+- Total execution time: ~20 hours
 
 **By Phase:**
 
-| Phase | Plans | Avg/Plan |
-|-------|-------|----------|
-| v2.3 (1-6) | 10 | ~30 min |
-| v2.6 (7) | 3 | ~30 min |
-| v3.0 (8-13) | 12 | ~30 min |
-| v3.1 (14-16) | 5 | ~30 min |
-| v3.2 (17-21) | 6 | ~30 min |
-| v4.0 (22-27) | 6 | ~30 min |
-| v5.0 (28-31) | 4 | ~10 min |
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| v2.3 (1-6) | 10 | ~5h | ~30 min |
+| v2.6-v3.2 (7-21) | 19 | ~10h | ~30 min |
+| v4.0-v5.0 (22-31) | 10 | ~5h | ~30 min |
 
-*Updated after each plan completion*
-| Phase 30-lernwuerfel P01 | 11 | 1 tasks | 2 files |
+**Recent Trend:**
+- Last milestone (v5.0): 4 phases, all complete
+- Trend: Stable
+| Phase 33 P01 | 87 | 4 tasks | 3 files |
+| Phase 32 P01 | 89 | 4 tasks | 6 files |
 
 ## Accumulated Context
 
 ### Decisions
 
-- v5.0 uses existing gameshow_sessions/gameshow_players schema (mode='lernwuerfel'/'wissensturm')
-- SVG for game boards (no Canvas) — consistent with PBQ topology renderer pattern
-- Vue 2.7 Options API — no composition API
-- OldschoolSelector.vue mirrors ArenaSelector.vue pattern
-- 2-4 players (not 2-5 like Gameshow)
-- Board state stored as JSON TEXT in existing gameshow_sessions column — no new table needed (Phase 28)
-- Turn-based phase machine: roll→question→roll (next player), special_effect=bonus_roll keeps same player
-- Lernwürfel uses round-robin question recycling (mod questionIds length) not linear exhaustion
-- Wissensturm win condition: 5 unique category colours (not total block count)
-- Wissensturm: roll is called invisibly before category select (backend requirement, hidden from UX)
-- Wissensturm: pool cycling — if fewer than 5 pools, cycle through them for all 5 color slots
-- Wissensturm: 1s poll interval (vs 500ms in GameshowMode) — board-game turns are slower
-- [Phase 30]: SVG 3-row snake layout (420×140): bottom L→R fields 1-10, middle R→L fields 11-20, top L→R fields 21-30
+- v6.0 uses JSON-based scene definitions (no scripting language) — simpler to author, validated on load
+- Bilder: Platzhalter-Emojis/Icons initial, echte Bilder optional per Prompt später
+- Fragen aus bestehenden Pools gefiltert nach pool_filter-Feld in Szene
+- Simulationen nutzen bestehende PbqRenderer-Komponenten (kein neues System)
+- Phase 35 (Kampagnen-Content) kommt zuletzt — Schema muss durch Phasen 32-34 verstanden sein
+- [Phase 33]: Static stub data fallback when Phase 32 backend not available — frontend testable independently
+- [Phase 33]: CSS-only typewriter via setTimeout + character append — respects prefers-reduced-motion
+- [Phase 33]: Emoji portraits for all characters and NPCs — zero image assets required
+- [Phase 32]: pool_filter uses LIKE match on pool name/description — no extra DB column for Phase 32
+- [Phase 32]: campaignId validated as [a-z0-9_\-]{1,64} to prevent path traversal attacks
+- [Phase 32]: Character difficulty modifier = random-result offset slice, not separate query
+- [Phase 32]: Skill-check questions pre-loaded in scene response — no extra frontend round-trip needed
 
 ### Pending Todos
 
-- Phase 30 (Lernwürfel) — not yet implemented, placeholder still in CourseDetail
+None yet.
 
 ### Blockers/Concerns
 
-None.
+- Kampagnen-JSON-Schema muss in Phase 32 definiert und dokumentiert werden, damit Phase 35 korrekt befüllt werden kann
+- Storyboard unter .planning/V6_KAMPAGNEN_STORYBOARD.md (1400+ Zeilen) ist Haupt-Referenz für Phase 35
 
 ## Session Continuity
 
-Last session: 2026-03-21T20:25:28.608Z
-Stopped at: Completed 30-01-SUMMARY.md — Phase 30 Lernwürfel done
+Last session: 2026-03-21T22:52:27.967Z
+Stopped at: Completed Phase 33-01: AbenteuerMode.vue RPG frontend
 Resume file: None

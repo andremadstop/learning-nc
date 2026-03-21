@@ -1,73 +1,77 @@
-# Requirements: v5.0 Oldschool (Brettspiel-Modi)
+# Requirements: v6.0 Abenteuer (Story-RPG)
 
 **Defined:** 2026-03-21
-**Core Value:** Lernen mit Brettspiel-Feeling — Strategie, Glück und Schadenfreude
+**Core Value:** Lernen durch Abenteuer — Fachfragen werden zu Skill-Checks in einer spannenden Story
 
-## v5.0 Requirements
+## v6.0 Requirements
 
-### Oldschool-Menü
+### Story-Engine
 
-- [x] **OLD-01**: "Oldschool" Tab in CourseDetail neben Arena
-- [x] **OLD-02**: OldschoolSelector.vue mit 2 Karten (Lernwürfel, Wissensturm) — analog zu ArenaSelector
+- [x] **STORY-01**: StoryEngine.php Service lädt Kampagnen-JSON und verwaltet den Spielfortschritt pro User
+- [x] **STORY-02**: Szenen haben narrative Texte, Entscheidungen, Skill-Checks und optionale Simulationen
+- [x] **STORY-03**: Skill-Checks ziehen Fragen aus echten Pools gefiltert nach Thema (pool_filter)
+- [x] **STORY-04**: Verzweigende Story-Baum: Erfolg/Teilweise/Misserfolg führen zu verschiedenen Szenen
+- [x] **STORY-05**: Kampagnen-Fortschritt wird persistent gespeichert (DB oder JSON in NC Files)
 
-### Lernwürfel (Mensch ärgere dich nicht)
+### Kampagnen-Content
 
-- [x] **WUERF-01**: Spielbrett mit 30 Feldern als Rundkurs (SVG), Figuren als farbige Kreise
-- [x] **WUERF-02**: Würfel-Animation (CSS rotate) zeigt Zahl 1-6
-- [x] **WUERF-03**: Nach Würfeln: Frage beantworten — richtig = vorwärts, falsch = stehenbleiben
-- [x] **WUERF-04**: Rauswerfen: Landest du auf besetztem Feld → Gegner zurück zum Start
-- [x] **WUERF-05**: Sonderfelder (★): Bonus-Würfel, Schutzfeld, Falle (1 Runde aussetzen)
-- [x] **WUERF-06**: 6 gewürfelt = nochmal würfeln
-- [x] **WUERF-07**: Erster bei Feld 30 gewinnt, Confetti + VirtuProf
+- [ ] **CAMP-01**: Kampagne 1 "Der große Ausfall" (Network+ Fokus) — 5 Szenen, Routing + VLAN + WLAN
+- [ ] **CAMP-02**: Kampagne 2 "Einbruch im Netz" (Security+ Fokus) — 5 Szenen, Incident Response + Forensik
+- [ ] **CAMP-03**: Kampagne 3 "Der neue Standort" (Mixed) — 5 Szenen, Design + Verkabelung + VPN
+- [ ] **CAMP-04**: Kampagne 4 "Ransomware" (Security+) — 5 Szenen, IR + Backup + Recovery
+- [ ] **CAMP-05**: Kampagne 5 "Das Erbe" (Mixed A+/Network+/Linux+) — 5 Szenen, Legacy + Migration
 
-### Wissensturm (Trivial Pursuit Kategorien)
+### Charakter-System
 
-- [x] **TURM-01**: 5 Kategorien (= 5 Pools oder Kapitel im Kurs), je eine Blockfarbe
-- [x] **TURM-02**: Spieler wählt Kategorie → Frage → richtig = Block in dieser Farbe auf Turm
-- [x] **TURM-03**: Falsche Antwort = oberster Block fällt (Verlust-Animation)
-- [x] **TURM-04**: Steal: Richtig wenn Gegner falsch → du bekommst seinen Block
-- [x] **TURM-05**: Wer zuerst alle 5 Farben hat gewinnt
+- [ ] **CHAR-01**: 4 spielbare Klassen (Architekt, Security, Sysadmin, Helpdesk) mit Stärken/Schwächen
+- [ ] **CHAR-02**: Charakter-Wahl beeinflusst Skill-Check-Schwierigkeit (Stärke = leichtere Fragen, Schwäche = schwerer)
+- [ ] **CHAR-03**: NPC-Dialoge mit Charakter-Portraits (Text-basiert, kein Voice)
 
-### Backend
+### RPG-Frontend
 
-- [x] **BACK-01**: GameshowService erweitern: mode='lernwuerfel' + mode='wissensturm' Scoring-Logik
-- [x] **BACK-02**: Spielfeld-State im Session-JSON: Figurpositionen, Sonderfelder, Würfel-Ergebnis
-- [x] **BACK-03**: Rundenbasierte Logik: aktiver Spieler → Würfel → Frage → nächster Spieler
+- [x] **RPG-01**: AbenteuerMode.vue Komponente mit Szenen-Renderer (narrative Box, Entscheidungs-Karten, NPC-Dialog)
+- [x] **RPG-02**: Skill-Check UI (Frage aus Pool, Ergebnis-Animation Erfolg/Misserfolg)
+- [x] **RPG-03**: Kampagnen-Übersicht (Karte oder Liste aller 5 Kampagnen mit Fortschritt)
+- [x] **RPG-04**: "Abenteuer" Tab in CourseDetail + Standalone
+- [x] **RPG-05**: Koop-Modus: 2-4 Spieler, Abstimmung bei Entscheidungen (Mehrheit gewinnt)
+
+### Simulation-Integration
+
+- [ ] **SIM-01**: Jede Kampagne endet mit einer PBQ-Simulation (nutzt bestehende PbqRenderer)
+- [ ] **SIM-02**: Simulations-Ergebnis beeinflusst Story-Epilog (Erfolg vs. Teilerfolg)
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Weitere Brettspiele | v5.1+ (Schlangen&Leitern, Quartett, Monopoly, Risiko) |
-| KI-Gegner | Nur echte Spieler |
-| Custom Spielbretter | Feste Layouts pro Modus |
+| Eigene Bild-Assets | Platzhalter-Emojis/Icons, echte Bilder optional per Prompt |
+| Voice-Acting | Text-basiert |
+| Kampagnen-Editor | Dozenten erstellen Kampagnen manuell als JSON |
+| Mehr als 5 Kampagnen | v6.1+ |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BACK-01 | Phase 28 | Complete |
-| BACK-02 | Phase 28 | Complete |
-| BACK-03 | Phase 28 | Complete |
-| OLD-01 | Phase 29 | Complete |
-| OLD-02 | Phase 29 | Complete |
-| WUERF-01 | Phase 30 | Complete |
-| WUERF-02 | Phase 30 | Complete |
-| WUERF-03 | Phase 30 | Complete |
-| WUERF-04 | Phase 30 | Complete |
-| WUERF-05 | Phase 30 | Complete |
-| WUERF-06 | Phase 30 | Complete |
-| WUERF-07 | Phase 30 | Complete |
-| TURM-01 | Phase 31 | Complete |
-| TURM-02 | Phase 31 | Complete |
-| TURM-03 | Phase 31 | Complete |
-| TURM-04 | Phase 31 | Complete |
-| TURM-05 | Phase 31 | Complete |
+| STORY-01 | Phase 32 | Complete |
+| STORY-02 | Phase 32 | Complete |
+| STORY-03 | Phase 32 | Complete |
+| STORY-04 | Phase 32 | Complete |
+| STORY-05 | Phase 32 | Complete |
+| RPG-01 | Phase 33 | Complete |
+| RPG-02 | Phase 33 | Complete |
+| RPG-03 | Phase 33 | Complete |
+| RPG-04 | Phase 33 | Complete |
+| RPG-05 | Phase 33 | Complete |
+| CHAR-01 | Phase 34 | Pending |
+| CHAR-02 | Phase 34 | Pending |
+| CHAR-03 | Phase 34 | Pending |
+| SIM-01 | Phase 34 | Pending |
+| SIM-02 | Phase 34 | Pending |
+| CAMP-01 | Phase 35 | Pending |
+| CAMP-02 | Phase 35 | Pending |
+| CAMP-03 | Phase 35 | Pending |
+| CAMP-04 | Phase 35 | Pending |
+| CAMP-05 | Phase 35 | Pending |
 
-**Coverage:**
-- v5.0 requirements: 17 total
-- Mapped to phases: 17
-- Unmapped: 0
-
----
-*Requirements defined: 2026-03-21*
+**Coverage:** 21/21 requirements mapped
