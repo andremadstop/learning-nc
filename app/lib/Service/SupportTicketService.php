@@ -66,6 +66,7 @@ class SupportTicketService {
         $ticket->setRoutingTargetType($routing['routing_target_type']);
         $ticket->setRoutingCourseId($routing['routing_course_id']);
 
+        /** @var SupportTicket $ticket */
         $ticket = $this->ticketMapper->insert($ticket);
 
         // AI Triage: classify ticket if AI is enabled
@@ -140,7 +141,9 @@ class SupportTicketService {
         $ticket->setAnsweredAt(time());
         $ticket->setUpdatedAt(time());
 
-        return $this->serializeTicket($this->ticketMapper->update($ticket));
+        /** @var SupportTicket $u */
+        $u = $this->ticketMapper->update($ticket);
+        return $this->serializeTicket($u);
     }
 
     /**
@@ -162,7 +165,9 @@ class SupportTicketService {
         $ticket->setAnsweredAt(time());
         $ticket->setUpdatedAt(time());
 
-        return $this->serializeTicket($this->ticketMapper->update($ticket));
+        /** @var SupportTicket $u */
+        $u = $this->ticketMapper->update($ticket);
+        return $this->serializeTicket($u);
     }
 
     public function listAdmin(int $limit = 100): array {
