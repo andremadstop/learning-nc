@@ -5,10 +5,10 @@
       <p v-if="totalQuestions > 0">{{ t('learning', 'Test your knowledge with {n} questions', { n: totalQuestions }) }}</p>
       <NcEmptyContent v-else :name="t('learning', 'No questions')" :description="t('learning', 'No questions available for training')" />
       <div class="mode-toggle" role="group" :aria-label="t('learning', 'Lernmodus')">
-        <button class="mode-toggle-btn" :class="{ active: !wfMode }" @click="wfMode = false">
+        <button class="mode-toggle-btn" :class="{ active: !localWfMode }" @click="localWfMode = false">
           Multiple-Choice
         </button>
-        <button class="mode-toggle-btn" :class="{ active: wfMode }" @click="wfMode = true">
+        <button class="mode-toggle-btn" :class="{ active: localWfMode }" @click="localWfMode = true">
           Wahr/Falsch
         </button>
       </div>
@@ -34,7 +34,7 @@
       </div>
 
       <!-- Wahr/Falsch card block -->
-      <div v-if="wfMode && currentQuestion" class="card-stack">
+      <div v-if="localWfMode && currentQuestion" class="card-stack">
         <div
           :key="currentIndex"
           class="swipe-card"
@@ -81,7 +81,7 @@
       </div>
 
       <!-- MC card block -->
-      <div v-if="!wfMode && currentQuestion" class="question-card">
+      <div v-if="!localWfMode && currentQuestion" class="question-card">
         <QuestionLanguageSwitcher v-model="questionLanguage" />
         <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" :alt="currentQuestion.image_alt || t('learning', 'Diagram for question')" class="question-image" />
         <div class="question-text">{{ currentQuestion.text }}</div>
@@ -240,7 +240,8 @@ export default {
     poolId: { type: Number, required: true },
     courseId: { type: Number, default: null },
     totalQuestions: { type: Number, required: true },
-    contentLanguage: { type: String, default: '' }
+    contentLanguage: { type: String, default: '' },
+    wfMode: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -265,8 +266,8 @@ export default {
       explainText: '',
       explainPollTimer: null,
       questionLanguage: this.contentLanguage || '',
-      // wfMode
-      wfMode: false,
+      // localWfMode: starts from prop, user can toggle on start screen
+      localWfMode: this.wfMode,
       cardAnimClass: '',
       canDrag: false,
       isDragging: false,
@@ -291,6 +292,17 @@ export default {
       this.refreshQuestionsForLanguage();
     },
     wfMode(newVal) {
+      this.localWfMode = newVal;
+      if (this.session) {
+        this.cardAnimClass = '';
+        this.canDrag = false;
+        this.isDragging = false;
+        this.dragDeltaX = 0;
+        this.showFeedback = false;
+        this.restartTraining();
+      }
+    },
+    localWfMode(newVal) {
       if (this.session) {
         this.restartTraining();
       }
@@ -383,7 +395,7 @@ export default {
       try {
         const response = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload({ poolId: this.poolId }));
         this.session = response.data.session_id; this.questions = response.data.questions;
-        if (this.wfMode) {
+        if (this.localWfMode) {
           this.$nextTick(() => { this.cardAnimClass = 'card-enter'; });
         }
       } catch (error) { this.loadError = error.response?.data?.error || t('learning', 'Failed to start training.'); }

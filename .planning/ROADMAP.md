@@ -200,6 +200,6 @@ Phases execute sequentially: 14 -> 15 -> 16. Phase 16 depends on Phase 15. Phase
 | 11. Spectacle Animations | v3.0 | 1/1 | Complete | 2026-03-20 |
 | 12. VirtuProf Showmaster | v3.0 | 1/1 | Complete | 2026-03-20 |
 | 13. XP Integration & Polish | v3.0 | 2/2 | Complete | 2026-03-20 |
-| 14. Training-Merge | v3.1 | 0/2 | Not started | - |
+| 14. Training-Merge | 1/2 | In Progress|  | - |
 | 15. Arena | v3.1 | 0/1 | Not started | - |
 | 16. Session-Robustheit | v3.1 | 0/2 | Not started | - |
