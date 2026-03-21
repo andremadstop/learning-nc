@@ -8,6 +8,7 @@ use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\LernprofilService;
+use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Db\DoesNotExistException;
@@ -32,6 +33,10 @@ class TrainingService {
     private LoggerInterface $logger;
     private CourseService $courseService;
     private LernprofilService $lernprofilService;
+    private NoteGeneratorService $noteGeneratorService;
+
+    /** TRIG-01: Exam score threshold below which a weakness note is auto-generated. */
+    private const EXAM_LOW_SCORE_THRESHOLD = 70;
 
     public function __construct(
         IDBConnection $db,
@@ -47,7 +52,8 @@ class TrainingService {
         IConfig $config,
         LoggerInterface $logger,
         CourseService $courseService,
-        LernprofilService $lernprofilService
+        LernprofilService $lernprofilService,
+        NoteGeneratorService $noteGeneratorService
     ) {
         $this->db = $db;
         $this->questionMapper = $questionMapper;
@@ -63,6 +69,7 @@ class TrainingService {
         $this->logger = $logger;
         $this->courseService = $courseService;
         $this->lernprofilService = $lernprofilService;
+        $this->noteGeneratorService = $noteGeneratorService;
     }
 
     private function applyNullableCourseFilter($qb, ?int $courseId): void {
@@ -774,13 +781,17 @@ class TrainingService {
             $qRow = $result->fetch();
             $result->closeCursor();
 
-            return [
+            $openResult = [
                 'is_correct' => $isCorrect,
                 'correct_answer_text' => $modelText,
                 'user_answer_text' => $answerText,
                 'explanation' => $qRow ? $qRow['explanation'] : null,
                 'xp_earned' => $xpEarned,
             ];
+            if (!$isCorrect) {
+                $openResult['wrong_answers_on_pool'] = $this->countRecentWrongAnswersOnPool($userId, $poolId);
+            }
+            return $openResult;
         }
 
         // PBQ path
@@ -895,7 +906,7 @@ class TrainingService {
             }
 
             $correctTexts = array_map(fn($r) => $r['text'], $translatedCorrectRows);
-            return [
+            $multiResult = [
                 'is_correct' => $isCorrect,
                 'correct_answer_id' => !empty($correctIds) ? $correctIds[0] : null,
                 'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
@@ -903,6 +914,10 @@ class TrainingService {
                 'correct_answer_texts' => $correctTexts,
                 'xp_earned' => $xpEarned,
             ];
+            if (!$isCorrect) {
+                $multiResult['wrong_answers_on_pool'] = $this->countRecentWrongAnswersOnPool($userId, $poolId);
+            }
+            return $multiResult;
         }
 
         // Single-select path (original logic)
@@ -951,7 +966,7 @@ class TrainingService {
         $correctIds = array_map(fn($r) => (int)$r['id'], $correctRows);
         $correctTexts = array_map(fn($r) => $r['text'], $translatedCorrectRows);
 
-        return [
+        $result = [
             'is_correct' => $isCorrect,
             'correct_answer_id' => !empty($correctIds) ? $correctIds[0] : null,
             'correct_answer_text' => !empty($correctTexts) ? $correctTexts[0] : '',
@@ -959,6 +974,41 @@ class TrainingService {
             'correct_answer_texts' => $correctTexts,
             'xp_earned' => $xpEarned,
         ];
+
+        // TRIG-02: After a wrong answer, check if user has ≥5 wrong answers on this pool
+        // in recent sessions (last 30 days). Frontend uses this to show the "generate summary" button.
+        if (!$isCorrect) {
+            $result['wrong_answers_on_pool'] = $this->countRecentWrongAnswersOnPool($userId, $poolId);
+        }
+
+        return $result;
+    }
+
+    /**
+     * TRIG-02: Count wrong answers for this user on this pool in the last 30 days.
+     *
+     * Used to detect the "5 wrong answers on same topic" threshold.
+     * Never throws — returns 0 on error.
+     */
+    private function countRecentWrongAnswersOnPool(string $userId, int $poolId): int {
+        try {
+            $cutoff = time() - (30 * 86400);
+            $qb = $this->db->getQueryBuilder();
+            $expr = $qb->expr();
+            $qb->select($qb->createFunction('COUNT(ua.id) AS cnt'))
+               ->from('learning_user_answers', 'ua')
+               ->innerJoin('ua', 'learning_sessions', 's', $expr->eq('ua.session_id', 's.id'))
+               ->where($expr->eq('s.user_id', $qb->createNamedParameter($userId)))
+               ->andWhere($expr->eq('s.pool_id', $qb->createNamedParameter($poolId)))
+               ->andWhere($expr->eq('ua.is_correct', $qb->createNamedParameter(false, \PDO::PARAM_BOOL)))
+               ->andWhere($expr->gte('ua.answered_at', $qb->createNamedParameter($cutoff)));
+            $result = $qb->executeQuery();
+            $cnt = (int)$result->fetchOne();
+            $result->closeCursor();
+            return $cnt;
+        } catch (\Throwable $e) {
+            return 0;
+        }
     }
 
     public function submitBatch(int $sessionId, array $answers, string $userId, ?string $lang = null): array {
@@ -1614,7 +1664,42 @@ class TrainingService {
             'attempt_no' => isset($session['attempt_no']) ? (int)$session['attempt_no'] : null,
         ]);
 
+        // TRIG-01: After exam with <70% → auto-generate weakness note.
+        // Runs asynchronously best-effort: failures are logged but do not affect response.
+        if ($mode === 'exam' && $response['score_percentage'] < self::EXAM_LOW_SCORE_THRESHOLD) {
+            $response['auto_note'] = $this->tryAutoGenerateExamNote($userId, $poolId);
+        }
+
         return $response;
+    }
+
+    /**
+     * TRIG-01: Try to auto-generate a Schwachstellen note after a low-score exam.
+     *
+     * Returns a summary for the frontend so VirtuProf can show a hint.
+     * Never throws — errors are swallowed to keep exam completion fast.
+     *
+     * @return array{generated: bool, path: string|null}
+     */
+    private function tryAutoGenerateExamNote(string $userId, int $poolId): array {
+        try {
+            $result = $this->noteGeneratorService->generateSummary($userId, $poolId, null);
+            $this->logger->info('TRIG-01: auto-generated exam weakness note for user {user} pool {pool}', [
+                'user' => $userId,
+                'pool' => $poolId,
+                'path' => $result['path'],
+                'app' => 'learning',
+            ]);
+            return ['generated' => true, 'path' => $result['path']];
+        } catch (\Throwable $e) {
+            $this->logger->debug('TRIG-01: auto note skipped for user {user} pool {pool}: {err}', [
+                'user' => $userId,
+                'pool' => $poolId,
+                'err' => $e->getMessage(),
+                'app' => 'learning',
+            ]);
+            return ['generated' => false, 'path' => null];
+        }
     }
 
     private function getExistingCompletionResult(int $sessionId, string $userId, ?string $lang = null): array {
