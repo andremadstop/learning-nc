@@ -80,6 +80,52 @@
           max="1440" />
       </div>
 
+      <!-- VirtuProf AI section -->
+      <div class="ai-section">
+        <h3>{{ t('learning', 'VirtuProf AI Assistant') }}</h3>
+
+        <NcNoteCard type="info" class="dpa-hint">
+          <span>
+            {{ t('learning', 'When AI is enabled, user questions are sent to Google Gemini (an external AI service). Admins subject to GDPR/DSGVO must review and accept the') }}
+            {{ ' ' }}
+            <a
+              href="https://cloud.google.com/terms/data-processing-addendum"
+              target="_blank"
+              rel="noopener noreferrer">{{ t('learning', 'Google Data Processing Addendum (DPA)') }}</a>{{ '.' }}
+          </span>
+        </NcNoteCard>
+
+        <div class="field-row">
+          <label>{{ t('learning', 'Enable AI chat (VirtuProf)') }}</label>
+          <NcCheckboxRadioSwitch
+            :checked="form.aiEnabled"
+            type="switch"
+            @update:checked="form.aiEnabled = !!$event" />
+          <small class="field-help">
+            {{ t('learning', 'When disabled, the AI chat input is hidden for all users. When enabled, each user must give consent before their first message is sent.') }}
+          </small>
+        </div>
+
+        <div class="field-row">
+          <label for="gemini-api-key">{{ t('learning', 'Gemini API Key') }}</label>
+          <input
+            id="gemini-api-key"
+            v-model="form.geminiApiKey"
+            class="nc-input"
+            type="password"
+            autocomplete="new-password"
+            :placeholder="form.geminiApiKeySet ? t('learning', '(key saved — enter new value to replace)') : t('learning', 'Enter Gemini API Key')" />
+          <small class="field-help">
+            {{ t('learning', 'Get your API key from') }}
+            <a
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
+              rel="noopener noreferrer">Google AI Studio</a>.
+            {{ t('learning', 'Leave blank to keep the existing key.') }}
+          </small>
+        </div>
+      </div>
+
       <NcNoteCard v-if="error" type="error">{{ error }}</NcNoteCard>
       <NcNoteCard v-if="saved" type="success">{{ t('learning', 'Settings saved') }}</NcNoteCard>
 
@@ -211,6 +257,9 @@ export default {
         allowCourseInstructorFallback: false,
         examAttemptLimitPerDay: 5,
         examAttemptCooldownMinutes: 10,
+        aiEnabled: false,
+        geminiApiKey: '',
+        geminiApiKeySet: false,
       },
     }
   },
@@ -233,6 +282,10 @@ export default {
         this.form.allowCourseInstructorFallback = (data.allow_course_instructor_fallback || 'no') === 'yes'
         this.form.examAttemptLimitPerDay = Math.max(1, Math.min(50, Number(data.exam_attempt_limit_per_day || 5)))
         this.form.examAttemptCooldownMinutes = Math.max(0, Math.min(1440, Number(data.exam_attempt_cooldown_minutes || 10)))
+        // PRIV-02 / PRIV-05: AI settings
+        this.form.aiEnabled = (data.ai_enabled || 'no') === 'yes'
+        this.form.geminiApiKeySet = data.gemini_api_key_set === true
+        this.form.geminiApiKey = ''
       } catch (e) {
         this.error = t('learning', 'Failed to load settings')
       } finally {
@@ -252,6 +305,9 @@ export default {
           allow_course_instructor_fallback: this.form.allowCourseInstructorFallback ? 'yes' : 'no',
           exam_attempt_limit_per_day: Math.max(1, Math.min(50, Number(this.form.examAttemptLimitPerDay || 5))),
           exam_attempt_cooldown_minutes: Math.max(0, Math.min(1440, Number(this.form.examAttemptCooldownMinutes || 10))),
+          // PRIV-02 / PRIV-05: AI settings
+          ai_enabled: this.form.aiEnabled ? 'yes' : 'no',
+          ...(this.form.geminiApiKey.trim() !== '' ? { gemini_api_key: this.form.geminiApiKey.trim() } : {}),
         })
         this.saved = true
       } catch (e) {
@@ -389,6 +445,27 @@ export default {
 
 .actions {
   padding-top: 4px;
+}
+
+.ai-section {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.ai-section h3 {
+  margin: 0 0 12px;
+  font-size: 1em;
+  font-weight: 700;
+}
+
+.dpa-hint {
+  margin-bottom: 14px;
+}
+
+.dpa-hint a {
+  color: var(--color-primary-element);
+  text-decoration: underline;
 }
 
 .audit-section {
