@@ -33,19 +33,13 @@
         @back="backToPools"
       />
 
-      <SwipeMode
-        v-else-if="currentView === 'swipeMode'"
-        :contentLanguage="contentLanguage"
-        @back="backToPools"
-      />
-
       <PoolList
         v-else-if="currentView === 'pools'"
         :userRole="userRole"
         @selectPool="selectPool"
         @openSmartQueue="openSmartQueue"
         @openRemediation="openRemediation"
-        @openSwipeMode="openSwipeMode"
+        @openTrainingWf="openSwipeMode"
       />
 
       <div v-else-if="currentView === 'questions'" class="pool-view">
@@ -98,10 +92,11 @@
           @back="setMode('train')"
         />
 
-        <SwipeMode
+        <TrainingMode
           v-else-if="mode === 'swipe'"
           :poolId="selectedPool.id"
           :totalQuestions="questionCount"
+          :wfMode="true"
           :contentLanguage="contentLanguage"
           @back="setMode('train')"
         />
@@ -216,7 +211,6 @@ import PoolList from './components/PoolList.vue';
 import QuestionList from './components/QuestionList.vue';
 import TrainingMode from './components/TrainingMode.vue';
 import LeitnerMode from './components/LeitnerMode.vue';
-import SwipeMode from './components/SwipeMode.vue';
 import ExamMode from './components/ExamMode.vue';
 import AnalyticsDashboard from './components/AnalyticsDashboard.vue';
 import CourseList from './components/CourseList.vue';
@@ -241,7 +235,6 @@ export default {
     QuestionList,
     TrainingMode,
     LeitnerMode,
-    SwipeMode,
     ExamMode,
     AnalyticsDashboard,
     CourseList,
@@ -389,9 +382,6 @@ export default {
         }
         if (this.currentView === 'smartQueue') {
           return { area: 'smartqueue' };
-        }
-        if (this.currentView === 'swipeMode') {
-          return { area: 'pool-swipe' };
         }
         return { area: 'pools' };
       }
@@ -562,7 +552,10 @@ export default {
       this.currentView = 'smartQueue';
     },
     openSwipeMode() {
-      this.currentView = 'swipeMode';
+      // Standalone Wahr/Falsch: no dedicated view anymore (SwipeMode removed).
+      // TrainingMode requires a pool — user must select a pool and use the Wahr/Falsch tab.
+      // Keep currentView as 'pools' so the pool list remains visible.
+      this.currentView = 'pools';
     },
     openRemediation() {
       this.smartQueueMode = 'remediation';

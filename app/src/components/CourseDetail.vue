@@ -427,11 +427,12 @@
 						:contentLanguage="contentLanguage"
 						@back="resetLearningPoolSelection" />
 
-					<SwipeMode
+					<TrainingMode
 						v-else-if="activeLearningMode === 'swipe'"
 						:poolId="selectedLearningPool.pool_id"
 						:courseId="courseId"
 						:totalQuestions="selectedLearningPoolQuestionCount"
+						:wfMode="true"
 						:contentLanguage="contentLanguage"
 						@back="resetLearningPoolSelection" />
 
@@ -1002,7 +1003,6 @@ import LeitnerMode from './LeitnerMode.vue'
 import StudentDetail from './StudentDetail.vue'
 import DuelMode from './DuelMode.vue'
 import GameshowMode from './GameshowMode.vue'
-import SwipeMode from './SwipeMode.vue'
 import TrainingMode from './TrainingMode.vue'
 
 export default {
@@ -1022,7 +1022,6 @@ export default {
 		StudentDetail,
 		DuelMode,
 		GameshowMode,
-		SwipeMode,
 		TrainingMode,
 	},
 
