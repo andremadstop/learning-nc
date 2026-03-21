@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.1
 milestone_name: UX-Konsolidierung
 status: planning
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-03-21T02:42:42.647Z"
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-03-21T02:52:33.771Z"
 last_activity: 2026-03-20 — Roadmap for v3.1 UX-Konsolidierung created
 progress:
   total_phases: 16
   completed_phases: 14
   total_plans: 26
-  completed_plans: 25
+  completed_plans: 26
   percent: 88
 ---
 
@@ -50,6 +50,7 @@ Progress: [█████████░] 88%
 | Phase 14-training-merge P01 | 6 | 1 tasks | 1 files |
 | Phase 14-training-merge P02 | 15 | 2 tasks | 5 files |
 | Phase 15-arena P01 | 15 | 3 tasks | 5 files |
+| Phase 16-session-robustheit P02 | 4 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Recent decisions affecting current work:
 - [Phase 14-training-merge]: SwipeMode.vue unchanged in plan 01 — removal/deprecation deferred to later plan
 - [Phase 14-training-merge]: wfMode added as Boolean prop to TrainingMode; localWfMode as toggleable internal copy; SwipeMode.vue deleted
 - [Phase 15-arena]: arenaSubMode null=selector, string=sub-component; selectTab resets arenaSubMode
+- [Phase 16-session-robustheit]: Stale check fires before updating current user last_poll so all old timestamps are visible for comparison
+- [Phase 16-session-robustheit]: Silent expiry for stale sessions: no forfeit bonus since we cannot determine who left first when both players are inactive
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T02:42:42.634Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-03-21T02:52:33.758Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None

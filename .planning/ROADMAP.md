@@ -201,5 +201,5 @@ Phases execute sequentially: 14 -> 15 -> 16. Phase 16 depends on Phase 15. Phase
 | 12. VirtuProf Showmaster | v3.0 | 1/1 | Complete | 2026-03-20 |
 | 13. XP Integration & Polish | v3.0 | 2/2 | Complete | 2026-03-20 |
 | 14. Training-Merge | 2/2 | Complete    | 2026-03-21 | - |
-| 15. Arena | 1/1 | Complete   | 2026-03-21 | - |
-| 16. Session-Robustheit | v3.1 | 0/2 | Not started | - |
+| 15. Arena | 1/1 | Complete    | 2026-03-21 | - |
+| 16. Session-Robustheit | 1/2 | In Progress|  | - |
