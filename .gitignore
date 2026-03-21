@@ -1,130 +1,76 @@
-# Docker volumes
-docker-data/
-
-# Node
+# Dependencies
 node_modules/
-npm-debug.log
-yarn-error.log
+vendor/
 
-# Build output
+# Build artifacts
 app/js/*.map
-#app/css/
+app/js/*.LICENSE.txt
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# Internal planning & build files
+.planning/
+.githooks/
+CODEX_HANDOFF*.md
+CODEX_PLAN_*.md
+GEMINI*.md
+HANDOFF*.md
+PLAN-*.md
+RESUME_PROMPT.md
+REVIEW*.md
+ROADMAP.md
+AGENTS.md
+DEVELOPMENT.md
+DONE.md
+FINAL_STATUS.md
+PROJEKT_STEUERUNG.md
+WEEK_*.md
+WEEKS_*.md
+INBOX.md
+v170-review*.md
+LAUNCH_READINESS_REPORT*.md
+
+# Data files (not for public repo)
+*.pdf
+*.odt
+*.txt
+!app/README.md
+!README.md
+!app/CHANGELOG.md
+!app/LICENSE
+net_plus_*.txt
+a_plus*.txt
+a_plus*.pdf
+pbq-import*.json
+
+# Scripts (internal tools)
+scripts/*.sql
+scripts/pbq/
+scripts/__pycache__/
+scripts/translation_json_to_sql.py
+scripts/e2e/
+scripts/test-api.sh
+
+# Docker (dev only)
+docker-compose*.yml
+
+# App internals (keep in repo but not these)
+app/docs/API_CONTRACTS.md
+app/docs/PBQ-PDF-AUDIT*.md
+app/examples/comptia_*.json
+app/examples/check_image_integrity.sh
+app/examples/security_regression_check.sh
+app/examples/verify_deploy_integrity.sh
+app/img/pbq/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Env
-.env.local
-.env.production
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
 
-# Logs
-*.log
-
-# Temporary files
-*.tmp
-*.temp
-
-# Ralph autonomous agent (internal workflow)
-.ralph/
-.ralphrc
-
-# Project-specific dev config (internal infra details)
-CLAUDE.md
-
-# Environment (contains passwords)
-.env
-
-# Signing certificates & keys (NEVER commit)
-certs/
-PRIVATE-signing-key.txt
-*.key
-*.pem
-
-# Internal dev docs (contain credentials/infra details)
-DONE.md
-FINAL_STATUS.md
-WEEK_*.md
-WEEKS_*.md
-DEVELOPMENT.md
-PROJEKT_STEUERUNG.md
-ROADMAP.md
-
-# Security review / smoketest reports (vulnerability details)
-CODEX-SMOKETEST*.md
-SMOKETEST*.md
-REVIEW-PROMPT*.md
-REVIEW_REPORT*.md
-GEMINI-DESIGN-REVIEW*.md
-LAUNCH_READINESS_REPORT*.md
-review-prompt-*.md
-v*-review-*.md
-
-# Infrastructure / VM setup (not app-related)
-install-automated.exp
-auto-setup.sh
-INSTALL_NOW.txt
-FRITZBOX_GUIDE.md
-VM_INFO.md
-SETUP.md
-nixos/
-
-# Local work artifacts
-.tmpq/
-.tmpq_upgrade2/
-AGENTS.md
-PLAN-settings-pages.md
-
-# E2E generated auth/fixture env
-app/tests/e2e/.auth/
-app/tests/e2e/.env.generated
-
-# Local/generated artifacts that should stay outside Git history
-app/test-results/
-app/js/*.bak
-translations/
-questions_*.json
-comptia_n10_009_batch_*.json
-merge_batch.py
-backups/
-learning-*.tar.gz
-scripts/__pycache__/
-.planning/
-
-# Internal build/planning files (not for public repo)
-AGENTS.md
-CODEX_HANDOFF*.md
-CODEX_PLAN_*.md
-DEVELOPMENT.md
-DONE.md
-FINAL_STATUS.md
-GEMINI*.md
-HANDOFF*.md
-LAUNCH_READINESS_REPORT*.md
-PLAN-*.md
-PROJEKT_STEUERUNG.md
-RESUME_PROMPT.md
-REVIEW-PROMPT*.md
-REVIEW_REPORT*.md
-ROADMAP.md
-WEEK_*.md
-WEEKS_*.md
-v170-review*.md
-scripts/*.sql
-scripts/__pycache__/
-scripts/translation_json_to_sql.py
-INBOX.md
-.planning/
-*.pdf
-a_plus*.txt
+# Backup
 .git-backup-*
-app/img/pbq/
-app/docs/PBQ-PDF-AUDIT*.md
-scripts/pbq/__pycache__/
+scripts/
