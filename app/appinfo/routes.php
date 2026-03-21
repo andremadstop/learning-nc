@@ -172,6 +172,11 @@ return [
         ['name' => 'course#closeExamSlot', 'url' => '/api/courses/{courseId}/exam-slot/close', 'verb' => 'POST'],
         ['name' => 'supportTicket#instructorList', 'url' => '/api/courses/{courseId}/support-tickets', 'verb' => 'GET'],
 
+        // Lernprofil
+        ['name' => 'lernprofil#profile', 'url' => '/api/profile', 'verb' => 'GET'],
+        ['name' => 'lernprofil#weakestTopics', 'url' => '/api/profile/weakest', 'verb' => 'GET'],
+        ['name' => 'lernprofil#lernhistorie', 'url' => '/api/profile/history', 'verb' => 'GET'],
+
         // Mode Config
         ['name' => 'course#updateModeConfig', 'url' => '/api/courses/{courseId}/mode-config', 'verb' => 'PUT'],
 
