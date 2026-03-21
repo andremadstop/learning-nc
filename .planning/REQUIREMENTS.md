@@ -21,11 +21,11 @@
 
 ### Chat-UI
 
-- [ ] **CHAT-01**: VirtuProfBubble zeigt ein Freitext-Eingabefeld unterhalb der FAQ-Buttons
-- [ ] **CHAT-02**: User kann eine Frage tippen und Antwort erscheint als Chat-Bubble
-- [ ] **CHAT-03**: Während der KI antwortet zeigt VirtuProf die talk-Animation + Typing-Indikator
-- [ ] **CHAT-04**: Chat-Verlauf bleibt innerhalb der Session sichtbar (max. 20 Nachrichten)
-- [ ] **CHAT-05**: Quick-Action: "Erkläre diese Frage" Button bei falscher Antwort in Lernmodi
+- [x] **CHAT-01**: VirtuProfBubble zeigt ein Freitext-Eingabefeld unterhalb der FAQ-Buttons
+- [x] **CHAT-02**: User kann eine Frage tippen und Antwort erscheint als Chat-Bubble
+- [x] **CHAT-03**: Während der KI antwortet zeigt VirtuProf die talk-Animation + Typing-Indikator
+- [x] **CHAT-04**: Chat-Verlauf bleibt innerhalb der Session sichtbar (max. 20 Nachrichten)
+- [x] **CHAT-05**: Quick-Action: "Erkläre diese Frage" Button bei falscher Antwort in Lernmodi
 
 ### Prompt-Injection-Schutz
 
@@ -91,11 +91,11 @@
 | RAG-02 | Phase 18 | Complete |
 | RAG-03 | Phase 18 | Complete |
 | RAG-04 | Phase 18 | Complete |
-| CHAT-01 | Phase 19 | Pending |
-| CHAT-02 | Phase 19 | Pending |
-| CHAT-03 | Phase 19 | Pending |
-| CHAT-04 | Phase 19 | Pending |
-| CHAT-05 | Phase 19 | Pending |
+| CHAT-01 | Phase 19 | Complete |
+| CHAT-02 | Phase 19 | Complete |
+| CHAT-03 | Phase 19 | Complete |
+| CHAT-04 | Phase 19 | Complete |
+| CHAT-05 | Phase 19 | Complete |
 | TRIAGE-01 | Phase 20 | Pending |
 | TRIAGE-02 | Phase 20 | Pending |
 | TRIAGE-03 | Phase 20 | Pending |
