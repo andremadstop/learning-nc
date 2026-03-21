@@ -162,6 +162,11 @@
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
           </div>
+          <div v-if="!isCorrect" class="ai-explain-row">
+            <NcButton type="tertiary" size="small" @click="explainViaVirtuProf">
+              {{ t('learning', 'Explain via VirtuProf') }}
+            </NcButton>
+          </div>
           <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
         <div v-else class="answer-feedback">
@@ -190,6 +195,11 @@
               {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
+          </div>
+          <div v-if="!isCorrect" class="ai-explain-row">
+            <NcButton type="tertiary" size="small" @click="explainViaVirtuProf">
+              {{ t('learning', 'Explain via VirtuProf') }}
+            </NcButton>
           </div>
           <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < questions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
@@ -353,6 +363,16 @@ export default {
   methods: {
     emitVirtuProf(triggerId, context = {}) {
       this.$root.$emit('virtuprof:trigger', triggerId, context);
+    },
+    explainViaVirtuProf() {
+      if (!this.currentQuestion) return;
+      this.$root.$emit('virtuprof:explain-question', {
+        questionText: this.currentQuestion.question,
+        correctAnswer: this.displayCorrectAnswerTexts.join(', '),
+        poolId: this.poolId,
+        courseId: this.courseId,
+        questionId: this.currentQuestion.id,
+      });
     },
     badgeDisplayName(badge) {
       return badge?.badge_name || badge?.name || badge?.title || t('learning', 'New badge');
