@@ -83,6 +83,103 @@ class GeminiService {
     }
 
     /**
+     * Classify a support ticket into FAQ/Bug/Feature/Unclear using Gemini.
+     *
+     * This method is used for admin-side ticket triage and does NOT apply user rate limits.
+     *
+     * @param string $subject Ticket subject
+     * @param string $message Ticket message body
+     *
+     * @return array{
+     *     label: string,
+     *     confidence: float,
+     *     suggested_answer: string|null,
+     *     followup_question: string|null
+     * }
+     */
+    public function classifyTicket(string $subject, string $message): array {
+        $fallback = [
+            'label' => 'Unclear',
+            'confidence' => 0.0,
+            'suggested_answer' => null,
+            'followup_question' => null,
+        ];
+
+        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
+        if ($apiKey === '') {
+            return $fallback;
+        }
+
+        // Combine and truncate to avoid token overflow
+        $combined = trim($subject) . "\n\n" . trim($message);
+        $combined = mb_substr($combined, 0, 1000);
+        $combined = strip_tags($combined);
+
+        $systemPrompt = <<<'PROMPT'
+You are a support ticket classifier for a spaced-repetition learning app (Nextcloud).
+Classify the ticket into exactly one category:
+- FAQ: a question that can be answered by documentation or common usage guidance
+- Bug: a report of unexpected behavior, error, or malfunction
+- Feature: a request for new functionality or enhancement
+- Unclear: cannot confidently classify
+
+Respond with ONLY valid JSON (no markdown, no code blocks, no explanation):
+{"label":"FAQ","confidence":0.9,"suggested_answer":"...","followup_question":null}
+
+Rules:
+- label must be exactly one of: FAQ, Bug, Feature, Unclear
+- confidence is a float from 0.0 to 1.0
+- suggested_answer: provide a helpful answer string only when label is FAQ, otherwise null
+- followup_question: provide a clarifying question string only when confidence < 0.7, otherwise null
+- suggested_answer and followup_question are never both non-null simultaneously
+PROMPT;
+
+        $userMessage = "<ticket>\n{$combined}\n</ticket>";
+
+        try {
+            $rawOutput = $this->callGeminiApi($systemPrompt, $userMessage);
+
+            // Strip markdown code fences if model wraps response
+            $cleaned = preg_replace('/^```(?:json)?\s*/i', '', trim($rawOutput));
+            $cleaned = preg_replace('/\s*```$/', '', $cleaned ?? $rawOutput);
+
+            $data = json_decode($cleaned, true);
+            if (!is_array($data)) {
+                $this->logger->warning('GeminiService::classifyTicket: JSON parse failed', ['app' => 'learning', 'raw' => mb_substr($rawOutput, 0, 200)]);
+                return $fallback;
+            }
+
+            $validLabels = ['FAQ', 'Bug', 'Feature', 'Unclear'];
+            $label = in_array($data['label'] ?? '', $validLabels, true) ? (string)$data['label'] : 'Unclear';
+            $confidence = isset($data['confidence']) && is_numeric($data['confidence'])
+                ? max(0.0, min(1.0, (float)$data['confidence']))
+                : 0.0;
+            $suggestedAnswer = ($label === 'FAQ' && !empty($data['suggested_answer']))
+                ? mb_substr((string)$data['suggested_answer'], 0, 5000)
+                : null;
+            $followupQuestion = ($confidence < 0.7 && !empty($data['followup_question']))
+                ? mb_substr((string)$data['followup_question'], 0, 1000)
+                : null;
+
+            // Audit log for triage (no user ID — use 'system')
+            $this->writeAuditLogWithKey('ticket_triage', 'system', mb_substr($combined, 0, 500), json_encode([
+                'label' => $label,
+                'confidence' => $confidence,
+            ]));
+
+            return [
+                'label' => $label,
+                'confidence' => $confidence,
+                'suggested_answer' => $suggestedAnswer,
+                'followup_question' => $followupQuestion,
+            ];
+        } catch (\RuntimeException $e) {
+            $this->logger->warning('GeminiService::classifyTicket API error: ' . $e->getMessage(), ['app' => 'learning']);
+            return $fallback;
+        }
+    }
+
+    /**
      * Layer 4 — Rate limiting via NC ICache.
      *
      * @return array|null Returns error array if rate limited, null if OK
@@ -342,11 +439,19 @@ class GeminiService {
      * Layer 5 — Write audit log entry (SEC-05).
      */
     private function writeAuditLog(string $userId, string $input, string $output): void {
+        $this->writeAuditLogWithKey('ai_chat', $userId, $input, $output);
+    }
+
+    /**
+     * Write audit log entry with a custom event key.
+     * Used by classifyTicket() (event_key = 'ticket_triage').
+     */
+    private function writeAuditLogWithKey(string $eventKey, string $userId, string $input, string $output): void {
         try {
             $qb = $this->db->getQueryBuilder();
             $qb->insert('learning_audit_events')
                 ->values([
-                    'event_key' => $qb->createNamedParameter('ai_chat'),
+                    'event_key' => $qb->createNamedParameter($eventKey),
                     'user_id' => $qb->createNamedParameter($userId),
                     'session_id' => $qb->createNamedParameter(null),
                     'pool_id' => $qb->createNamedParameter(null),
