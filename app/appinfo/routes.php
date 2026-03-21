@@ -177,6 +177,10 @@ return [
         ['name' => 'lernprofil#weakestTopics', 'url' => '/api/profile/weakest', 'verb' => 'GET'],
         ['name' => 'lernprofil#lernhistorie', 'url' => '/api/profile/history', 'verb' => 'GET'],
 
+        // Lernbot Files (Phase 23)
+        ['name' => 'lernbotFiles#listFiles', 'url' => '/api/lernbot/files', 'verb' => 'GET'],
+        ['name' => 'lernbotFiles#writeNote', 'url' => '/api/lernbot/note', 'verb' => 'POST'],
+
         // Mode Config
         ['name' => 'course#updateModeConfig', 'url' => '/api/courses/{courseId}/mode-config', 'verb' => 'PUT'],
 
