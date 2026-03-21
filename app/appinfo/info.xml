@@ -81,6 +81,21 @@ Create question pools, share them with your team, and study efficiently using sc
     <bugs>https://github.com/andremadstop/learning-nc/issues</bugs>
     <repository type="git">https://github.com/andremadstop/learning-nc.git</repository>
 
+    <privacy>
+        <duplication>false</duplication>
+        <thirdPartyLibraries>
+            <library>
+                <name>Google Gemini API (optional)</name>
+                <version>2.5 Flash</version>
+                <licenseOrTerms>https://cloud.google.com/terms/service-terms</licenseOrTerms>
+            </library>
+        </thirdPartyLibraries>
+        <privacyPolicies>
+            <privacyPolicy xml:lang="en">https://policies.google.com/privacy</privacyPolicy>
+            <privacyPolicy xml:lang="de">https://policies.google.com/privacy?hl=de</privacyPolicy>
+        </privacyPolicies>
+    </privacy>
+
     <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/01-pool-list.png</screenshot>
     <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/02-smart-queue.png</screenshot>
     <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/03-leitner-boxes.png</screenshot>

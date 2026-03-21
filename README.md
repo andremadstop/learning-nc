@@ -87,6 +87,42 @@ npm run dev
 npm run build
 ```
 
+## Privacy & AI
+
+The VirtuProf AI assistant is **optional** and requires explicit admin activation and user consent.
+
+### Data sent to Google Gemini (only when AI is enabled and user has consented)
+
+| Data | Details |
+|------|---------|
+| Question text | Up to 500 characters, stripped of HTML |
+| Pool sample questions | Up to 15 questions with answer options (text only, truncated) |
+| Course name | Name of the active course (no enrollment data) |
+| Leitner box counts | Numeric box distribution (e.g. Box1=3, Box2=5) — no question content |
+| Last wrong question | Question text and correct answer text (if triggered via "Explain") |
+
+### Data never sent to Google Gemini
+
+- Nextcloud username, display name, or email address
+- User ID or any user identifier
+- Passwords or authentication tokens
+- System paths or server configuration
+- Any personal or demographic data
+
+### Admin controls
+
+- **Admin toggle**: AI feature can be globally disabled in the Learning Admin Settings. When disabled, the chat UI is hidden for all users.
+- **User consent**: Each user must explicitly agree before their first chat message is sent.
+- **Rate limiting**: 10 requests per minute, 100 per day per user.
+- **Audit log**: Every AI request is logged internally (input, output, timestamp, Nextcloud user ID) for security auditing.
+
+### Data Processing
+
+When AI is enabled, messages are processed by **Google Gemini API**. Admins operating in jurisdictions requiring a Data Processing Agreement (GDPR/DSGVO) should review and sign Google's [Data Processing Addendum (DPA)](https://cloud.google.com/terms/data-processing-addendum).
+
+- Google Privacy Policy: https://policies.google.com/privacy
+- Google Cloud Terms: https://cloud.google.com/terms/service-terms
+
 ## Requirements
 
 - Nextcloud 29, 30, or 31
