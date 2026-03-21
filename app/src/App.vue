@@ -285,7 +285,7 @@ export default {
         { id: 'leitner', label: t('learning', 'Leitner') },
         { id: 'swipe', label: t('learning', 'Wahr/Falsch') },
         { id: 'exam', label: t('learning', 'Exam') },
-        { id: 'gameshow', label: t('learning', 'Gameshow') },
+        { id: 'gameshow', label: t('learning', 'Arena — Gameshow') },
         { id: 'stats', label: t('learning', 'Stats') },
         { id: 'manage', label: this.poolPermission === 'read' ? t('learning', 'View Questions') : t('learning', 'Manage') }
       ];
@@ -302,7 +302,7 @@ export default {
         leitner: t('learning', 'Spaced repetition — difficult questions come back more often. 5 boxes, step by step.'),
         swipe: t('learning', 'True or false — tap quickly to classify statements.'),
         exam: t('learning', 'Exam mode — no feedback until the end, like a real exam.'),
-        gameshow: t('learning', 'Multiplayer quiz — compete with others in a live gameshow.'),
+        gameshow: t('learning', 'Sprint oder Elimination — konkurriere live mit anderen Spielern.'),
         stats: t('learning', 'Learning statistics and box distribution for this pool.'),
         manage: t('learning', 'Add, edit, delete and import questions.'),
       };

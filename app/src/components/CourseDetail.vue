@@ -1380,7 +1380,7 @@ export default {
 				} else if (this.currentTab === 'league') {
 					area = 'course-league'
 				} else if (this.currentTab === 'arena') {
-					area = this.arenaSubMode ? \`course-${this.arenaSubMode}\` : 'course-arena'
+					area = this.arenaSubMode ? `course-${this.arenaSubMode}` : 'course-arena'
 				} else if (this.isStudentLearningTab) {
 					area = this.selectedLearningPool
 						? `course-${this.activeLearningMode}-active`
