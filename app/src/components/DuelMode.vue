@@ -151,6 +151,19 @@
           {{ answer.text }}
         </button>
       </div>
+
+      <div v-if="disconnectDetected" class="disconnect-overlay">
+        <NcNoteCard type="warning">
+          {{ t('learning', 'Verbindung zum Gegner unterbrochen. Das Spiel wird beendet...') }}
+        </NcNoteCard>
+        <NcButton type="primary" @click="$emit('back')">{{ t('learning', 'Zurueck') }}</NcButton>
+      </div>
+
+      <div class="question-abort-area">
+        <NcButton type="tertiary" @click="abortGame">
+          {{ t('learning', 'Abbrechen') }}
+        </NcButton>
+      </div>
     </div>
 
     <!-- ===== FEEDBACK PHASE ===== -->
@@ -288,6 +301,8 @@ export default {
       selectedAnswerId: null,
       lastQuestion: null,
       questionLanguage: this.contentLanguage || '',
+      consecutivePollErrors: 0,
+      disconnectDetected: false,
     };
   },
 
@@ -385,6 +400,18 @@ export default {
 
     if (this.presetDuelCode) {
       this.loadExistingDuel(this.presetDuelCode);
+    } else {
+      const saved = localStorage.getItem('learning_duel_session');
+      if (saved) {
+        try {
+          const { code } = JSON.parse(saved);
+          if (code) {
+            this.loadExistingDuel(code);
+          }
+        } catch (e) {
+          localStorage.removeItem('learning_duel_session');
+        }
+      }
     }
   },
 
@@ -452,6 +479,12 @@ export default {
       this.correctAnswerId = null;
       this.selectedAnswerId = null;
       this.lastQuestion = null;
+      this.consecutivePollErrors = 0;
+      this.disconnectDetected = false;
+    },
+
+    abortGame() {
+      this.cancelDuel();
     },
 
     answerButtonClasses(answer) {
@@ -494,6 +527,9 @@ export default {
         }
         this.$emit('preset-consumed');
         this.emitVirtuProf('duel-first-start');
+        if (r.data.status !== 'finished' && r.data.status !== 'expired') {
+          localStorage.setItem('learning_duel_session', JSON.stringify({ code: this.duelCode }));
+        }
         this.startPolling();
       } catch (e) {
         this.error = e.response?.data?.error || t('learning', 'Duell konnte nicht geladen werden');
@@ -564,6 +600,7 @@ export default {
         this.phase = 'lobby';
         this.$root.$emit('virtuprof:refresh-duel-invites');
         this.emitVirtuProf('duel-first-start');
+        localStorage.setItem('learning_duel_session', JSON.stringify({ code: this.duelCode }));
         this.startPolling();
       } catch (e) {
         this.error = e.response?.data?.error || t('learning', 'Duell konnte nicht erstellt werden');
@@ -592,6 +629,7 @@ export default {
           this.lastQuestionIndex = -1;
           this.phase = 'lobby';
         }
+        localStorage.setItem('learning_duel_session', JSON.stringify({ code: this.duelCode }));
         this.startPolling();
       } catch (e) {
         this.error = e.response?.data?.error || t('learning', 'Beitreten fehlgeschlagen');
@@ -628,6 +666,7 @@ export default {
     },
 
     cancelDuel() {
+      localStorage.removeItem('learning_duel_session');
       this.stopPolling();
       this.phase = 'join';
       this.duelCode = '';
@@ -732,9 +771,15 @@ export default {
       if (!this.duelCode) return;
       try {
         const r = await axios.get(generateUrl('/apps/learning/api/duels/' + this.duelCode + '/state'), { params: this.buildStateParams() });
+        this.consecutivePollErrors = 0;
         this.applyStateTransitions(r.data);
       } catch (e) {
         // Network errors during polling are non-fatal — just skip this tick
+        this.consecutivePollErrors++;
+        if (this.consecutivePollErrors >= 60 && !this.disconnectDetected) {
+          // 60 ticks * 500ms = 30 seconds
+          this.disconnectDetected = true;
+        }
       }
     },
 
@@ -749,6 +794,7 @@ export default {
       this.duelState = state;
 
       if (state.status === 'finished') {
+        localStorage.removeItem('learning_duel_session');
         this.stopPolling();
         this.phase = 'finished';
         this.$root.$emit('virtuprof:refresh-duel-invites');
@@ -756,6 +802,7 @@ export default {
       }
 
       if (state.status === 'expired') {
+        localStorage.removeItem('learning_duel_session');
         this.stopPolling();
         this.phase = 'expired';
         this.$root.$emit('virtuprof:refresh-duel-invites');
@@ -1170,6 +1217,16 @@ export default {
   opacity: 0.9;
   cursor: not-allowed;
   transform: none;
+}
+
+.question-abort-area {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.disconnect-overlay {
+  margin-top: 20px;
+  text-align: center;
 }
 
 /* ===== FEEDBACK ===== */
