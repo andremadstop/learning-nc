@@ -32,6 +32,9 @@ class DuelService {
     /** Inactivity timeout in seconds */
     private const TIMEOUT_SECONDS = 30;
 
+    /** Session with all players inactive for this long is considered abandoned */
+    private const STALE_SESSION_TIMEOUT = 300; // 5 minutes
+
     public function __construct(
         DuelSessionMapper $sessionMapper,
         DuelAnswerMapper $answerMapper,
@@ -201,6 +204,12 @@ class DuelService {
         $session = $this->sessionMapper->findByCode($code);
         $this->assertParticipant($session, $userId);
         $contentLanguage = $this->resolveContentLanguage($lang, $userId);
+
+        // Check for completely abandoned session (both players inactive for 5+ minutes)
+        $session = $this->checkStaleSession($session);
+        if ($session->getStatus() === 'expired') {
+            return $this->buildState($session, $userId, $contentLanguage);
+        }
 
         // Update last poll timestamp
         $now = time();
@@ -466,6 +475,34 @@ class DuelService {
         if ($session->getCreatorUid() !== $userId && $session->getOpponentUid() !== $userId) {
             throw new \RuntimeException('You are not a participant in this duel');
         }
+    }
+
+    private function checkStaleSession(DuelSession $session): DuelSession {
+        // Only check active sessions where both players have polled at least once
+        if (!in_array($session->getStatus(), ['ready', 'active'], true)) {
+            return $session;
+        }
+
+        $creatorPoll = $session->getCreatorLastPoll();
+        $opponentPoll = $session->getOpponentLastPoll();
+
+        // If neither has polled yet, nothing to check
+        if ($creatorPoll === null && $opponentPoll === null) {
+            return $session;
+        }
+
+        $cutoff = time() - self::STALE_SESSION_TIMEOUT;
+
+        $creatorStale = $creatorPoll === null || $creatorPoll < $cutoff;
+        $opponentStale = $opponentPoll === null || $opponentPoll < $cutoff;
+
+        if ($creatorStale && $opponentStale) {
+            $session->setStatus('expired');
+            $session = $this->sessionMapper->update($session);
+            $this->logger->info('DuelService: Session ' . $session->getCode() . ' expired due to all-player inactivity');
+        }
+
+        return $session;
     }
 
     private function resolveContentLanguage(?string $lang, string $userId): ?string {
