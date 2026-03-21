@@ -246,6 +246,13 @@ PROMPT;
     /**
      * Layer 2 — Build system prompt with context isolation and optional RAG addendum.
      *
+     * @privacy-audit (PRIV-04) — System prompt sent to Gemini API:
+     *   INCLUDED: role instruction, response language name (e.g. "German"), RAG context addendum
+     *             (pool_name, pool_questions texts, leitner_stats numeric, course_name, last_wrong texts).
+     *   EXCLUDED: userId, username, email, display name, passwords, system paths, API key, or any
+     *             personal identifiers. The userId is only used in writeAuditLog() for the internal
+     *             DB audit table and is never forwarded to the Gemini API.
+     *
      * @param string $language   ISO language code (de/en/ru/ar)
      * @param array  $ragContext Optional context from RagContextService::buildContext()
      */

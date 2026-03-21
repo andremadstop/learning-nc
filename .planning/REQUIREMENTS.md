@@ -37,10 +37,10 @@
 
 ### Ticket-Triage
 
-- [ ] **TRIAGE-01**: Neue Support-Tickets werden automatisch klassifiziert (FAQ/Bug/Feature/Unclear)
-- [ ] **TRIAGE-02**: FAQ-Tickets bekommen automatisch eine KI-generierte Antwort
-- [ ] **TRIAGE-03**: Bug/Feature-Tickets werden als "needs_review" markiert (Admin sieht Priorität)
-- [ ] **TRIAGE-04**: Bei confidence < 0.7 wird eine Rückfrage an den User gestellt statt Auto-Antwort
+- [x] **TRIAGE-01**: Neue Support-Tickets werden automatisch klassifiziert (FAQ/Bug/Feature/Unclear)
+- [x] **TRIAGE-02**: FAQ-Tickets bekommen automatisch eine KI-generierte Antwort
+- [x] **TRIAGE-03**: Bug/Feature-Tickets werden als "needs_review" markiert (Admin sieht Priorität)
+- [x] **TRIAGE-04**: Bei confidence < 0.7 wird eine Rückfrage an den User gestellt statt Auto-Antwort
 
 ### Datenschutz
 
@@ -96,10 +96,10 @@
 | CHAT-03 | Phase 19 | Complete |
 | CHAT-04 | Phase 19 | Complete |
 | CHAT-05 | Phase 19 | Complete |
-| TRIAGE-01 | Phase 20 | Pending |
-| TRIAGE-02 | Phase 20 | Pending |
-| TRIAGE-03 | Phase 20 | Pending |
-| TRIAGE-04 | Phase 20 | Pending |
+| TRIAGE-01 | Phase 20 | Complete |
+| TRIAGE-02 | Phase 20 | Complete |
+| TRIAGE-03 | Phase 20 | Complete |
+| TRIAGE-04 | Phase 20 | Complete |
 | PRIV-01 | Phase 21 | Pending |
 | PRIV-02 | Phase 21 | Pending |
 | PRIV-03 | Phase 21 | Pending |
