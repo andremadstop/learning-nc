@@ -97,6 +97,8 @@ return [
         ['name' => 'virtuProf#setEnabled', 'url' => '/api/virtuprof/enabled', 'verb' => 'PUT'],
         ['name' => 'virtuProf#setLanguage', 'url' => '/api/virtuprof/language', 'verb' => 'PUT'],
         ['name' => 'virtuProf#chat', 'url' => '/api/virtu-prof/chat', 'verb' => 'POST'],
+        ['name' => 'virtuProf#getChatHistory', 'url' => '/api/virtu-prof/chat-history', 'verb' => 'GET'],
+        ['name' => 'virtuProf#clearChatHistory', 'url' => '/api/virtu-prof/chat-history', 'verb' => 'DELETE'],
 
         // Support Tickets
         ['name' => 'supportTicket#create', 'url' => '/api/support-tickets', 'verb' => 'POST'],
