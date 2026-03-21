@@ -24,6 +24,12 @@ class SupportTicket extends Entity {
     protected $category;
     protected $routingTargetType;
     protected $routingCourseId;
+    // AI triage fields
+    protected $aiLabel;
+    protected $aiConfidence;
+    protected $aiDraftAnswer;
+    protected $aiFollowupQuestion;
+    protected $needsReview;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -35,6 +41,8 @@ class SupportTicket extends Entity {
         $this->addType('updatedAt', 'integer');
         $this->addType('answeredAt', 'integer');
         $this->addType('routingCourseId', 'integer');
+        $this->addType('aiConfidence', 'float');
+        $this->addType('needsReview', 'boolean');
     }
 
     public function jsonSerialize(): array {
@@ -58,6 +66,12 @@ class SupportTicket extends Entity {
             'category' => $this->category,
             'routing_target_type' => $this->routingTargetType,
             'routing_course_id' => $this->routingCourseId,
+            // AI triage fields
+            'ai_label' => $this->aiLabel,
+            'ai_confidence' => $this->aiConfidence,
+            'ai_draft_answer' => $this->aiDraftAnswer,
+            'ai_followup_question' => $this->aiFollowupQuestion,
+            'needs_review' => (bool)$this->needsReview,
         ];
     }
 }
