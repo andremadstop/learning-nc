@@ -16,12 +16,15 @@
         :ticket-success="ticketSuccess"
         :tickets="myTickets"
         :language="language"
+        :chat-messages="chatMessages"
+        :chat-loading="chatLoading"
         @next="nextStep"
         @dismiss="dismiss"
         @action="handleAction"
         @language-change="setLanguage"
         @update:ticketSubject="ticketSubject = $event"
-        @update:ticketDraft="ticketDraft = $event" />
+        @update:ticketDraft="ticketDraft = $event"
+        @chat-send="handleChatSend" />
       <VirtuProfAvatar
         :animation="currentAnimation"
         :has-message="visible && !isMinimized"
@@ -92,6 +95,10 @@ export default {
         courseTitle: '',
         poolName: '',
       },
+      // Chat state
+      chatMessages: [],
+      chatLoading: false,
+      chatAnimationTimer: null,
     }
   },
   computed: {
@@ -154,6 +161,7 @@ export default {
     this.$root.$on('virtuprof:trigger', this.enqueue)
     this.$root.$on('virtuprof:context', this.updateContext)
     this.$root.$on('virtuprof:refresh-duel-invites', this.handleInviteRefreshRequest)
+    this.$root.$on('virtuprof:explain-question', this.handleExplainQuestion)
     await this.loadState()
     await this.refreshDuelInvites(false)
     this.startInvitePolling()
@@ -163,9 +171,14 @@ export default {
     this.$root.$off('virtuprof:trigger', this.enqueue)
     this.$root.$off('virtuprof:context', this.updateContext)
     this.$root.$off('virtuprof:refresh-duel-invites', this.handleInviteRefreshRequest)
+    this.$root.$off('virtuprof:explain-question', this.handleExplainQuestion)
     if (this.pendingTimer) {
       clearTimeout(this.pendingTimer)
       this.pendingTimer = null
+    }
+    if (this.chatAnimationTimer) {
+      clearTimeout(this.chatAnimationTimer)
+      this.chatAnimationTimer = null
     }
     this.stopInvitePolling()
   },
@@ -420,6 +433,10 @@ export default {
         clearTimeout(this.pendingTimer)
         this.pendingTimer = null
       }
+      if (this.chatAnimationTimer) {
+        clearTimeout(this.chatAnimationTimer)
+        this.chatAnimationTimer = null
+      }
       this.queue = []
       this.processing = false
       this.visible = false
@@ -442,6 +459,8 @@ export default {
       this.myTickets = []
       this.inviteError = ''
       this.activeInviteFilter = 'incoming'
+      this.chatMessages = []
+      this.chatLoading = false
     },
     handleAvatarClick() {
       if (!this.enabled) {
@@ -860,6 +879,106 @@ export default {
     openDuel(courseId, duelCode) {
       this.closeHelp()
       this.$emit('open-duel', { courseId, duelCode })
+    },
+    async handleChatSend(message) {
+      if (!message || this.chatLoading) {
+        return
+      }
+
+      // Ensure bubble is open and visible
+      if (!this.visible || this.isMinimized) {
+        if (!this.helpView) {
+          this.helpView = 'home'
+        }
+        this.visible = true
+        this.isMinimized = false
+      }
+
+      // Push user message
+      this.chatMessages.push({ role: 'user', text: message })
+
+      // Trim to max 20 messages
+      if (this.chatMessages.length > 20) {
+        this.chatMessages = this.chatMessages.slice(this.chatMessages.length - 20)
+      }
+
+      // Start loading + talk animation
+      this.chatLoading = true
+      this.currentAnimation = 'talk'
+
+      // Build context payload from currentContext
+      const payload = { message }
+      if (this.currentContext?.poolId) {
+        payload.poolId = this.currentContext.poolId
+      }
+      if (this.currentContext?.courseId) {
+        payload.courseId = this.currentContext.courseId
+      }
+      if (this.currentContext?.questionId) {
+        payload.questionId = this.currentContext.questionId
+      }
+
+      try {
+        const response = await axios.post(generateUrl('/apps/learning/api/virtu-prof/chat'), payload)
+        const answer = response.data?.answer
+        this.chatMessages.push({
+          role: 'assistant',
+          text: answer || this.vt('Sorry, no answer available.'),
+        })
+      } catch (e) {
+        const status = e?.response?.status
+        let errorText
+        if (status === 400) {
+          errorText = this.vt('Your message could not be processed. Please try a shorter question.')
+        } else if (status === 503) {
+          errorText = this.vt('AI is currently disabled. Please contact your admin.')
+        } else if (status === 429) {
+          errorText = this.vt('Too many requests. Please wait a moment before asking again.')
+        } else {
+          errorText = this.vt('Something went wrong. Please try again later.')
+        }
+        this.chatMessages.push({ role: 'assistant', text: errorText })
+      } finally {
+        // Trim again after assistant reply
+        if (this.chatMessages.length > 20) {
+          this.chatMessages = this.chatMessages.slice(this.chatMessages.length - 20)
+        }
+        this.chatLoading = false
+        // Return avatar to idle after a short talk period
+        if (this.chatAnimationTimer) {
+          clearTimeout(this.chatAnimationTimer)
+        }
+        this.chatAnimationTimer = setTimeout(() => {
+          if (this.currentAnimation === 'talk') {
+            this.currentAnimation = 'idle'
+          }
+          this.chatAnimationTimer = null
+        }, 1500)
+      }
+    },
+    handleExplainQuestion(payload = {}) {
+      const questionText = payload.questionText || ''
+      const correctAnswer = payload.correctAnswer || ''
+      if (!questionText) {
+        return
+      }
+
+      // Update context with question's pool/course if provided
+      if (payload.poolId) {
+        this.currentContext = { ...this.currentContext, poolId: payload.poolId }
+      }
+      if (payload.courseId) {
+        this.currentContext = { ...this.currentContext, courseId: payload.courseId }
+      }
+      if (payload.questionId) {
+        this.currentContext = { ...this.currentContext, questionId: payload.questionId }
+      }
+
+      const message = correctAnswer
+        ? this.vt('Explain this question: {question} — correct answer: {answer}', { question: questionText, answer: correctAnswer })
+        : this.vt('Explain this question: {question}', { question: questionText })
+
+      this.handleChatSend(message)
     },
     recommendedFaqCategoryId() {
       const area = String(this.currentContext?.area || '')
