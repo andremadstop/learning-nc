@@ -936,6 +936,10 @@ export default {
         if (this.resultsData && this.resultsData.score_percentage < 60) {
           this.emitVirtuProf('exam-low-score');
         }
+        // TRIG-01: If server auto-generated a weakness note (score <70%), show VirtuProf hint
+        if (cr.data.auto_note && cr.data.auto_note.generated && cr.data.auto_note.path) {
+          this.emitVirtuProf('exam-note-generated', { notePath: cr.data.auto_note.path });
+        }
         // countUp animation
         this.$nextTick(() => {
           if (this.$refs.examScoreNumber && this.resultsData) {

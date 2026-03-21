@@ -151,6 +151,34 @@ export const SCRIPTS = {
       },
     ],
   },
+  // TRIG-01: Shown after exam <70% when a weakness note was auto-generated
+  'exam-note-generated': {
+    condition: 'always',
+    priority: 9,
+    delay: 2500,
+    steps: [
+      {
+        text: 'Ich habe eine Zusammenfassung für dein schwächstes Thema erstellt. Du findest sie in deinem /Learning/Zusammenfassungen/-Ordner.',
+        animation: 'talk',
+      },
+    ],
+  },
+  // TRIG-02: Shown after 5 wrong answers on the same topic
+  'suggest-summary': {
+    condition: 'always',
+    priority: 8,
+    delay: 800,
+    steps: [
+      {
+        text: 'Du hast diese Fragen öfter falsch beantwortet. Möchtest du eine Zusammenfassung für dieses Thema erstellen?',
+        animation: 'talk',
+        actions: [
+          { type: 'generate-note-for-context', label: 'Zusammenfassung erstellen' },
+          { type: 'close-help', label: 'Nicht jetzt' },
+        ],
+      },
+    ],
+  },
   'return-after-absence': {
     condition: 'daily',
     priority: 3,

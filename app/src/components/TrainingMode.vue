@@ -222,6 +222,21 @@
         <NcButton type="primary" @click="restartTraining">{{ t('learning', 'Train Again') }}</NcButton>
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back to Questions') }}</NcButton>
       </div>
+      <!-- TRIG-04: Manual "Zusammenfassung erstellen" button -->
+      <div class="summary-actions">
+        <NcButton
+          v-if="!summaryPath"
+          type="secondary"
+          :disabled="summaryGenerating"
+          @click="generateSummaryNote"
+        >
+          {{ summaryGenerating ? t('learning', 'Generating summary...') : t('learning', 'Create Summary Note') }}
+        </NcButton>
+        <div v-if="summaryPath" class="summary-success">
+          {{ t('learning', 'Summary saved to {path}', { path: summaryPath }) }}
+        </div>
+        <div v-if="summaryError" class="summary-error">{{ summaryError }}</div>
+      </div>
       <BadgeUnlock :badges="newBadges" />
       <LevelUpOverlay :levelBefore="levelBefore" :levelAfter="levelAfter" />
     </div>
@@ -277,6 +292,11 @@ export default {
       explainText: '',
       explainPollTimer: null,
       questionLanguage: this.contentLanguage || '',
+      // TRIG-02 / TRIG-04: wrong answer tracking + summary generation
+      wrongAnswersOnPool: 0,
+      summaryGenerating: false,
+      summaryPath: null,
+      summaryError: null,
       // localWfMode: starts from prop, user can toggle on start screen
       localWfMode: this.allowWfMode ? this.wfMode : false,
       cardAnimClass: '',
@@ -599,6 +619,11 @@ export default {
         this.isCorrect = response.data.is_correct;
         this.correctAnswerTexts = response.data.correct_answer_texts || [response.data.correct_answer_text || ''];
         this.answered = true;
+        // TRIG-02: Check if 5+ wrong answers on this pool → offer summary
+        if (!this.isCorrect && response.data.wrong_answers_on_pool >= 5) {
+          this.wrongAnswersOnPool = response.data.wrong_answers_on_pool;
+          this.emitVirtuProf('suggest-summary', { poolId: this.poolId });
+        }
       } catch (error) { showError(t('learning', 'Failed to submit answer')); }
       finally { this.submitting = false; }
     },
@@ -723,8 +748,31 @@ export default {
       this.pointerDown = false;
       this.dragDeltaX = 0;
       this.showFeedback = false;
+      // Reset summary state
+      this.summaryPath = null;
+      this.summaryError = null;
+      this.summaryGenerating = false;
+      this.wrongAnswersOnPool = 0;
       this.startTraining();
-    }
+    },
+    // TRIG-04: Manual "Zusammenfassung erstellen" — calls POST /api/notes/generate
+    async generateSummaryNote() {
+      this.summaryGenerating = true;
+      this.summaryError = null;
+      this.summaryPath = null;
+      try {
+        const r = await axios.post(generateUrl('/apps/learning/api/notes/generate'), {
+          pool_id: this.poolId,
+          course_id: this.courseId || null,
+        });
+        this.summaryPath = r.data.path || null;
+      } catch (e) {
+        const msg = e.response?.data?.error || t('learning', 'Summary generation failed');
+        this.summaryError = msg;
+      } finally {
+        this.summaryGenerating = false;
+      }
+    },
   }
 };
 </script>
@@ -766,6 +814,9 @@ export default {
 .score-number { font-size: 48px; font-weight: 700; }
 .score-display p { font-size: 16px; color: var(--color-text-maxcontrast); }
 .result-actions { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+.summary-actions { margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.summary-success { font-size: 14px; color: var(--color-success); padding: 8px 14px; background: color-mix(in srgb, var(--color-success) 10%, transparent); border-radius: 8px; }
+.summary-error { font-size: 13px; color: var(--color-error); }
 @media (max-width: 768px) {
   .training-start { padding: 40px 16px; }
   .question-card { padding: 56px 20px 20px; border-radius: 12px; }

@@ -401,10 +401,31 @@ export default {
         this.closeHelp()
         return
       }
+      // TRIG-02: Generate a weakness note for the current pool context
+      if (action?.type === 'generate-note-for-context') {
+        await this.generateNoteForContext()
+        this.dismiss()
+        return
+      }
       if (action?.next) {
         this.enqueue(action.next, action.context || {})
       }
       this.dismiss()
+    },
+    // TRIG-02: Call the Note Generator API for the current pool in context
+    async generateNoteForContext() {
+      const poolId = this.currentScriptContext?.poolId
+      if (!poolId) {
+        return
+      }
+      try {
+        await axios.post(generateUrl('/apps/learning/api/notes/generate'), {
+          pool_id: poolId,
+          course_id: this.currentScriptContext?.courseId || null,
+        })
+      } catch (e) {
+        // Best-effort — user can use manual button if this fails
+      }
     },
     async setLanguage(language) {
       const normalized = normalizeVirtuProfLanguage(language) || detectVirtuProfLanguage()
