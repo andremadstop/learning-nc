@@ -2,23 +2,23 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Persönlicher Lernbot
-status: planning
-last_updated: "2026-03-21T15:01:39.716Z"
-last_activity: 2026-03-21 — v4.0 roadmap created (Phases 22-27)
+status: in_progress
+last_updated: "2026-03-21T15:15:00Z"
+last_activity: 2026-03-21 — Phase 23 NC Files Integration implemented
 progress:
   total_phases: 27
-  completed_phases: 21
-  total_plans: 33
-  completed_plans: 34
+  completed_phases: 22
+  total_plans: 35
+  completed_plans: 35
   percent: 100
 ---
 
 ## Current Position
 
-Phase: 23 (NC Files Integration) — Not started
+Phase: 24 (Note-Generator) — Not started
 Plan: —
-Status: Phase 22 complete (22-01-PLAN.md executed 2026-03-21)
-Last activity: 2026-03-21 — Phase 22 LernprofilService implemented
+Status: Phase 23 complete (23-01-PLAN.md executed 2026-03-21)
+Last activity: 2026-03-21 — Phase 23 NC Files Integration implemented
 
 Progress: [██████████] 100%
 
@@ -33,10 +33,11 @@ Progress: [██████████] 100%
 
 | Metric | Value |
 |--------|-------|
-| Phases completed (v4.0) | 1/6 |
+| Phases completed (v4.0) | 2/6 |
 | Requirements mapped | 22/22 |
-| Requirements complete | 4/22 (PROF-01..04) |
+| Requirements complete | 9/22 (PROF-01..04, FILES-01..05) |
 | Phase 22 P01 | 15min | 4 tasks | 6 files |
+| Phase 23 P01 | 10 | 4 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -68,8 +69,14 @@ Progress: [██████████] 100%
 - Pool-level granularity (chapter_ref not yet populated in existing data)
 - Error rate = 1 - blended accuracy (50/50 Leitner + Training when both available)
 
+### Phase 23 Decisions
+- IRootFolder autowired — no Application.php changes needed for LernbotFileService
+- writeNote is idempotent by filename — same subfolder+filename overwrites existing file (no duplicates)
+- Body written verbatim — Wiki-Links and Tags preserved for Obsidian compatibility
+- Subfolder auto-created inside writeNote — Phase 24+ can target custom subfolders without setup
+
 ## Session Continuity
 
-Next action: `/gsd:plan-phase 23`
+Next action: `/gsd:plan-phase 24`
 
-Phase 23 scope: NC Files Integration — create /Learning/ folder structure, write Markdown notes with YAML frontmatter + Wiki-Links, Obsidian-compatible.
+Phase 24 scope: Note-Generator — Gemini generates summaries for weak topics, saves as NC Files notes via LernbotFileService.

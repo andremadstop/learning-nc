@@ -240,7 +240,7 @@ Plans:
 **Milestone Goal:** Jeder User bekommt einen persönlichen KI-Lernbegleiter der Stärken/Schwächen kennt, individuelle Zusammenfassungen und Lernpläne als Obsidian-kompatible Markdown-Notes im NC-Dateisystem erstellt, und über Sessions hinweg mitlernt.
 
 - [x] **Phase 22: Lernprofil** - LernprofilService aggregiert Stärken/Schwächen aus Leitner, Training und Exam (completed 2026-03-21)
-- [ ] **Phase 23: NC Files Integration** - App erstellt und verwaltet Markdown-Notes im User-Home mit Obsidian-Format
+- [x] **Phase 23: NC Files Integration** - App erstellt und verwaltet Markdown-Notes im User-Home mit Obsidian-Format (completed 2026-03-21)
 - [ ] **Phase 24: Note-Generator** - Gemini erzeugt Zusammenfassungen für schwache Themen und speichert sie als Notes
 - [ ] **Phase 25: Lernplan + Fortschritt** - Wöchentlicher Lernplan und Fortschritts-Dashboard als Markdown-Dateien
 - [ ] **Phase 26: Chat-Memory** - VirtuProf-Kontext wird persistent über Sessions hinweg gespeichert
@@ -342,8 +342,8 @@ Phases execute sequentially: 22 → 23 → 24 → 25 → 26 → 27. Phase 26 dep
 | 19. Chat-UI | v3.2 | 1/1 | Complete | 2026-03-21 |
 | 20. Ticket-Triage | v3.2 | 1/1 | Complete | 2026-03-21 |
 | 21. Datenschutz & Compliance | v3.2 | 1/1 | Complete | 2026-03-21 |
-| 22. Lernprofil | 1/1 | Complete   | 2026-03-21 | - |
-| 23. NC Files Integration | v4.0 | 0/TBD | Not started | - |
+| 22. Lernprofil | 1/1 | Complete    | 2026-03-21 | - |
+| 23. NC Files Integration | v4.0 | 1/1 | Complete | 2026-03-21 |
 | 24. Note-Generator | v4.0 | 0/TBD | Not started | - |
 | 25. Lernplan + Fortschritt | v4.0 | 0/TBD | Not started | - |
 | 26. Chat-Memory | v4.0 | 0/TBD | Not started | - |

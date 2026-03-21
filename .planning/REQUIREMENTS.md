@@ -14,11 +14,11 @@
 
 ### NC Files Integration
 
-- [ ] **FILES-01**: App erstellt einen /Learning/ Ordner im User-Home beim ersten Zugriff
-- [ ] **FILES-02**: App kann Markdown-Dateien in /Learning/ erstellen und aktualisieren
-- [ ] **FILES-03**: Ordnerstruktur: /Learning/Zusammenfassungen/, /Learning/Schwachstellen/, /Learning/Lernplan.md
-- [ ] **FILES-04**: Dateien haben YAML Frontmatter (created, source, topic, status, chapter)
-- [ ] **FILES-05**: Dateien nutzen Wiki-Links ([[...]]) und Tags (#schwach, #gemeistert) für Obsidian-Kompatibilität
+- [x] **FILES-01**: App erstellt einen /Learning/ Ordner im User-Home beim ersten Zugriff
+- [x] **FILES-02**: App kann Markdown-Dateien in /Learning/ erstellen und aktualisieren
+- [x] **FILES-03**: Ordnerstruktur: /Learning/Zusammenfassungen/, /Learning/Schwachstellen/, /Learning/Lernplan.md
+- [x] **FILES-04**: Dateien haben YAML Frontmatter (created, source, topic, status, chapter)
+- [x] **FILES-05**: Dateien nutzen Wiki-Links ([[...]]) und Tags (#schwach, #gemeistert) für Obsidian-Kompatibilität
 
 ### Note-Generator
 
@@ -71,11 +71,11 @@
 | PROF-02 | Phase 22 | Complete |
 | PROF-03 | Phase 22 | Complete |
 | PROF-04 | Phase 22 | Complete |
-| FILES-01 | Phase 23 | Pending |
-| FILES-02 | Phase 23 | Pending |
-| FILES-03 | Phase 23 | Pending |
-| FILES-04 | Phase 23 | Pending |
-| FILES-05 | Phase 23 | Pending |
+| FILES-01 | Phase 23 | Complete |
+| FILES-02 | Phase 23 | Complete |
+| FILES-03 | Phase 23 | Complete |
+| FILES-04 | Phase 23 | Complete |
+| FILES-05 | Phase 23 | Complete |
 | NOTE-01 | Phase 24 | Pending |
 | NOTE-02 | Phase 24 | Pending |
 | NOTE-03 | Phase 24 | Pending |
