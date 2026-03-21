@@ -181,6 +181,9 @@ return [
         ['name' => 'lernbotFiles#listFiles', 'url' => '/api/lernbot/files', 'verb' => 'GET'],
         ['name' => 'lernbotFiles#writeNote', 'url' => '/api/lernbot/note', 'verb' => 'POST'],
 
+        // Note Generator (Phase 24)
+        ['name' => 'noteGenerator#generate', 'url' => '/api/notes/generate', 'verb' => 'POST'],
+
         // Mode Config
         ['name' => 'course#updateModeConfig', 'url' => '/api/courses/{courseId}/mode-config', 'verb' => 'PUT'],
 
