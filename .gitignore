@@ -127,3 +127,4 @@ a_plus*.txt
 .git-backup-*
 app/img/pbq/
 app/docs/PBQ-PDF-AUDIT*.md
+scripts/pbq/__pycache__/
