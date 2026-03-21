@@ -585,24 +585,34 @@
 					:coursePools="coursePools"
 					:isInstructor="isInstructor" />
 			</div>
-			<!-- Duel Tab -->
-			<div v-if="currentTab === 'duel'" class="duel-section">
+			<!-- Arena Tab -->
+			<div v-if="currentTab === 'arena'" class="arena-section">
+				<ArenaSelector
+					v-if="arenaSubMode === null"
+					@select-mode="onArenaSelectMode" />
 				<DuelMode
+					v-else-if="arenaSubMode === 'duel'"
 					:courseId="courseId"
 					:coursePools="coursePools"
 					:presetDuelCode="presetDuelCode"
 					:hideJoinScreen="Boolean(presetDuelCode)"
 					:contentLanguage="contentLanguage"
 					@preset-consumed="$emit('clearPresetDuel')"
-					@back="currentTab = isInstructor ? 'pools' : 'training'" />
-			</div>
-			<!-- Gameshow Tab -->
-			<div v-if="currentTab === 'gameshow'" class="gameshow-section">
+					@back="arenaSubMode = null" />
 				<GameshowMode
+					v-else-if="arenaSubMode === 'sprint'"
 					:courseId="courseId"
 					:coursePools="coursePools"
 					:contentLanguage="contentLanguage"
-					@back="currentTab = isInstructor ? 'pools' : 'training'" />
+					:gameMode="'sprint'"
+					@back="arenaSubMode = null" />
+				<GameshowMode
+					v-else-if="arenaSubMode === 'elimination'"
+					:courseId="courseId"
+					:coursePools="coursePools"
+					:contentLanguage="contentLanguage"
+					:gameMode="'elimination'"
+					@back="arenaSubMode = null" />
 			</div>
 		<!-- Curriculum Scope Tab (instructor only) -->
 		<div v-if="currentTab === 'curriculum' && isInstructor" class="curriculum-section">
@@ -1004,6 +1014,7 @@ import StudentDetail from './StudentDetail.vue'
 import DuelMode from './DuelMode.vue'
 import GameshowMode from './GameshowMode.vue'
 import TrainingMode from './TrainingMode.vue'
+import ArenaSelector from './ArenaSelector.vue'
 
 export default {
 	name: 'CourseDetail',
@@ -1023,6 +1034,7 @@ export default {
 		DuelMode,
 		GameshowMode,
 		TrainingMode,
+		ArenaSelector,
 	},
 
 	props: {
@@ -1163,6 +1175,9 @@ export default {
 			modeConfigLocal: {},
 			savingModeConfig: false,
 			modeConfigSaved: false,
+
+			// Arena sub-mode
+			arenaSubMode: null, // 'duel' | 'sprint' | 'elimination' | null
 		}
 	},
 
@@ -1196,8 +1211,7 @@ export default {
 					{ id: 'progress', label: t('learning', 'Progress') },
 					{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
 					{ id: 'league', label: t('learning', 'Liga') },
-					{ id: 'duel', label: t('learning', 'Duell') },
-					{ id: 'gameshow', label: t('learning', 'Gameshow') },
+					{ id: 'arena', label: t('learning', 'Arena') },
 					{ id: 'curriculum', label: t('learning', 'Themen') },
 					{ id: 'heatmap', label: t('learning', 'Heatmap') },
 					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
@@ -1218,8 +1232,7 @@ export default {
 			tabs.push({ id: 'my-progress', label: t('learning', 'Mein Fortschritt') })
 			tabs.push({ id: 'leaderboard', label: t('learning', 'Leaderboard') })
 			if (enabled('league')) tabs.push({ id: 'league', label: t('learning', 'Liga') })
-			if (enabled('duel')) tabs.push({ id: 'duel', label: t('learning', 'Duell') })
-			tabs.push({ id: 'gameshow', label: t('learning', 'Gameshow') })
+			tabs.push({ id: 'arena', label: t('learning', 'Arena') })
 			return tabs
 		},
 		activeLearningModeLabel() {
@@ -1348,7 +1361,8 @@ export default {
 		},
 		presetDuelCode(newCode) {
 			if (newCode) {
-				this.currentTab = 'duel'
+				this.currentTab = 'arena'
+				this.arenaSubMode = 'duel'
 			}
 		},
 	},
@@ -1365,10 +1379,8 @@ export default {
 					area = 'course-leaderboard'
 				} else if (this.currentTab === 'league') {
 					area = 'course-league'
-				} else if (this.currentTab === 'duel') {
-					area = 'course-duel'
-				} else if (this.currentTab === 'gameshow') {
-					area = 'course-gameshow'
+				} else if (this.currentTab === 'arena') {
+					area = this.arenaSubMode ? \`course-${this.arenaSubMode}\` : 'course-arena'
 				} else if (this.isStudentLearningTab) {
 					area = this.selectedLearningPool
 						? `course-${this.activeLearningMode}-active`
@@ -1382,9 +1394,15 @@ export default {
 			},
 			selectTab(tabId) {
 				this.currentTab = tabId
+				if (tabId !== 'arena') {
+					this.arenaSubMode = null
+				}
 				if (tabId === 'league' && !this.isInstructor) {
 					this.$root.$emit('virtuprof:trigger', 'liga-first-visit')
 				}
+			},
+			onArenaSelectMode(mode) {
+				this.arenaSubMode = mode
 			},
 
 			getLearningPoolQuestionCount(pool) {
