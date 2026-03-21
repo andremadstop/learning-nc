@@ -12,10 +12,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run security regression checks
+      - name: Check for security anti-patterns
         run: |
-          chmod +x app/examples/security_regression_check.sh
-          app/examples/security_regression_check.sh
+          FAIL=0
+          echo "=== Security Regression Checks ==="
+
+          # No eval() in PHP
+          if grep -rn 'eval(' app/lib/ --include="*.php" 2>/dev/null; then
+            echo "FAIL: eval() found in PHP"
+            FAIL=1
+          fi
+
+          # No raw SQL without parameterized queries
+          if grep -rn 'query("' app/lib/ --include="*.php" 2>/dev/null | grep -v 'executeQuery\|executeStatement\|getQueryBuilder'; then
+            echo "FAIL: raw SQL query found"
+            FAIL=1
+          fi
+
+          # No v-html (XSS risk)
+          if grep -rn 'v-html' app/src/ --include="*.vue" 2>/dev/null; then
+            echo "FAIL: v-html found (XSS risk)"
+            FAIL=1
+          fi
+
+          # No hardcoded credentials
+          if grep -rn 'password.*=.*["\x27][^"\x27]' app/lib/ --include="*.php" 2>/dev/null | grep -v 'getPassword\|setPassword\|password_hash\|password_verify\|userId\|phpstan\|TODO\|FIXME'; then
+            echo "WARN: possible hardcoded credential"
+          fi
+
+          if [ $FAIL -eq 0 ]; then
+            echo "All security checks passed"
+          else
+            exit 1
+          fi
 
   frontend-build:
     runs-on: ubuntu-latest
