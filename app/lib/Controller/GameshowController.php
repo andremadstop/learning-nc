@@ -26,8 +26,9 @@ class GameshowController extends Controller {
     public function create(int $poolId, string $mode, int $maxPlayers = 5, ?int $courseId = null): DataResponse {
         try {
             $maxPlayers = max(2, min(5, $maxPlayers));
-            if (!in_array($mode, ['sprint', 'elimination'], true)) {
-                return new DataResponse(['error' => 'Invalid mode: must be sprint or elimination'], Http::STATUS_BAD_REQUEST);
+            $validModes = ['sprint', 'elimination', 'lernwuerfel', 'wissensturm'];
+            if (!in_array($mode, $validModes, true)) {
+                return new DataResponse(['error' => 'Invalid mode: must be sprint, elimination, lernwuerfel, or wissensturm'], Http::STATUS_BAD_REQUEST);
             }
             return new DataResponse(
                 $this->service->createSession($poolId, $this->userId, $mode, $maxPlayers, $courseId),
@@ -107,6 +108,34 @@ class GameshowController extends Controller {
             return new DataResponse($this->service->getCourseLobby($courseId, $this->userId));
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to load course lobby'], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * BACK-03: Roll the dice for the active player (board-game modes only).
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function roll(string $code, ?string $lang = null): DataResponse {
+        try {
+            return new DataResponse($this->service->rollDice($code, $this->userId, $lang));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to roll dice'], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * BACK-01: Select a category (Wissensturm mode only) before answering.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function category(string $code, int $categoryPoolId, ?string $lang = null): DataResponse {
+        try {
+            return new DataResponse($this->service->selectCategory($code, $this->userId, $categoryPoolId, $lang));
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to select category'], Http::STATUS_BAD_REQUEST);
         }
     }
 }

@@ -201,5 +201,8 @@ return [
         ['name' => 'gameshow#state', 'url' => '/api/gameshow/{code}/state', 'verb' => 'GET'],
         ['name' => 'gameshow#answer', 'url' => '/api/gameshow/{code}/answer', 'verb' => 'POST'],
         ['name' => 'gameshow#courseLobby', 'url' => '/api/courses/{courseId}/gameshow/lobby', 'verb' => 'GET'],
+        // Board-game extensions (Phase 28)
+        ['name' => 'gameshow#roll', 'url' => '/api/gameshow/{code}/roll', 'verb' => 'POST'],
+        ['name' => 'gameshow#category', 'url' => '/api/gameshow/{code}/category', 'verb' => 'POST'],
     ]
 ];
