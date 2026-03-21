@@ -611,18 +611,18 @@
 			<OldschoolSelector
 				v-if="oldschoolSubMode === null"
 				@select-mode="onOldschoolSelectMode" />
-			<div v-else-if="oldschoolSubMode === 'lernwuerfel'" class="oldschool-placeholder">
-				<p>{{ t('learning', 'Lernw\u00FCrfel — coming in Phase 30') }}</p>
-				<NcButton type="tertiary" @click="oldschoolSubMode = null">
-					{{ t('learning', '\u2190 Back') }}
-				</NcButton>
-			</div>
-			<div v-else-if="oldschoolSubMode === 'wissensturm'" class="oldschool-placeholder">
-				<p>{{ t('learning', 'Wissensturm — coming in Phase 31') }}</p>
-				<NcButton type="tertiary" @click="oldschoolSubMode = null">
-					{{ t('learning', '\u2190 Back') }}
-				</NcButton>
-			</div>
+			<LernwuerfelMode
+				v-else-if="oldschoolSubMode === 'lernwuerfel'"
+				:courseId="courseId"
+				:coursePools="coursePools"
+				:contentLanguage="contentLanguage"
+				@back="oldschoolSubMode = null" />
+			<WissensturmMode
+				v-else-if="oldschoolSubMode === 'wissensturm'"
+				:courseId="courseId"
+				:coursePools="coursePools"
+				:contentLanguage="contentLanguage"
+				@back="oldschoolSubMode = null" />
 		</div>
 		<!-- Curriculum Scope Tab (instructor only) -->
 		<div v-if="currentTab === 'curriculum' && isInstructor" class="curriculum-section">
@@ -1026,6 +1026,8 @@ import GameshowMode from './GameshowMode.vue'
 import TrainingMode from './TrainingMode.vue'
 import ArenaSelector from './ArenaSelector.vue'
 import OldschoolSelector from './OldschoolSelector.vue'
+import WissensturmMode from './WissensturmMode.vue'
+import LernwuerfelMode from './LernwuerfelMode.vue'
 
 export default {
 	name: 'CourseDetail',
@@ -1047,6 +1049,8 @@ export default {
 		TrainingMode,
 		ArenaSelector,
 		OldschoolSelector,
+		WissensturmMode,
+		LernwuerfelMode,
 	},
 
 	props: {
