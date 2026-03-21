@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\GeminiService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
@@ -13,11 +14,13 @@ use OCP\IRequest;
 class VirtuProfController extends Controller {
     private IConfig $config;
     private ?string $userId;
+    private GeminiService $geminiService;
 
-    public function __construct(string $appName, IRequest $request, IConfig $config, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, IConfig $config, ?string $userId, GeminiService $geminiService) {
         parent::__construct($appName, $request);
         $this->config = $config;
         $this->userId = $userId;
+        $this->geminiService = $geminiService;
     }
 
     /**
@@ -103,5 +106,31 @@ class VirtuProfController extends Controller {
         $this->config->setUserValue($this->userId, 'learning', 'virtuprof_language', $normalized);
 
         return new DataResponse(['ok' => true, 'language' => $normalized]);
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 15, period: 60)]
+    public function chat(string $message): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        // Admin guard: ai_enabled must be 'yes'
+        if ($this->config->getAppValue('learning', 'ai_enabled', 'no') !== 'yes') {
+            return new DataResponse(['error' => 'AI feature disabled'], Http::STATUS_SERVICE_UNAVAILABLE);
+        }
+
+        $result = $this->geminiService->chat($message, $this->userId);
+
+        // SEC-01: invalid_input is a client error
+        if (($result['reason'] ?? '') === 'invalid_input') {
+            return new DataResponse(['error' => $result['error'] ?? 'Invalid input'], Http::STATUS_BAD_REQUEST);
+        }
+
+        // All other outcomes (success, fallback, rate_limit, api_error, output_blocked) → HTTP 200
+        // Frontend reads 'fallback' flag to trigger FAQ matcher when answer is null
+        return new DataResponse($result);
     }
 }
