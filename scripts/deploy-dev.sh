@@ -10,6 +10,21 @@ APP_PATH="/var/www/html/custom_apps/learning"
 
 echo "=== Learning-NC Deploy to $HOST ==="
 
+run_phpstan() {
+  echo "→ Running PHPStan analysis..."
+  # Sync config + baseline first
+  rsync -az app/phpstan.neon app/phpstan-baseline.neon "$HOST:~/learning-nc/app/" 2>/dev/null
+  ssh "$HOST" "docker cp ~/learning-nc/app/phpstan.neon $CONTAINER:$APP_PATH/phpstan.neon && \
+    docker cp ~/learning-nc/app/phpstan-baseline.neon $CONTAINER:$APP_PATH/phpstan-baseline.neon" 2>/dev/null
+  # Run analysis after files are in container (called again after deploy_php copies lib/)
+  ssh "$HOST" "docker exec -w $APP_PATH $CONTAINER php vendor/bin/phpstan analyse --no-progress 2>&1"
+  if [ $? -ne 0 ]; then
+    echo "✗ PHPStan found errors — deploy aborted!"
+    exit 1
+  fi
+  echo "✓ PHPStan clean"
+}
+
 deploy_php() {
   echo "→ Syncing PHP + l10n..."
   rsync -az --exclude node_modules --exclude .git --exclude .planning --exclude build \
@@ -43,10 +58,11 @@ deploy_js() {
 }
 
 case "$MODE" in
-  --php-only) deploy_php ;;
-  --js-only)  deploy_js ;;
-  --full)     deploy_php; deploy_js ;;
-  *) echo "Usage: $0 [--php-only | --js-only | --full]"; exit 1 ;;
+  --php-only)    deploy_php; run_phpstan ;;
+  --js-only)     deploy_js ;;
+  --full)        deploy_php; run_phpstan; deploy_js ;;
+  --phpstan)     run_phpstan ;;
+  *) echo "Usage: $0 [--php-only | --js-only | --full | --phpstan]"; exit 1 ;;
 esac
 
 echo "=== Deploy complete ==="

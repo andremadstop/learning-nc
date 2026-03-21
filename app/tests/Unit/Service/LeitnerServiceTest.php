@@ -32,7 +32,7 @@ class LeitnerServiceTest extends TestCase {
         ]);
 
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \stdClass());
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService($db, $poolMapper);
 
@@ -68,7 +68,7 @@ class LeitnerServiceTest extends TestCase {
 
         $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
         $poolMapper = $this->createMock(PoolMapper::class);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \stdClass());
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService($db, $poolMapper);
 

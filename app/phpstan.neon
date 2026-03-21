@@ -1,3 +1,6 @@
+includes:
+    - phpstan-baseline.neon
+
 parameters:
     level: 5
     paths:
@@ -17,6 +20,5 @@ parameters:
         - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\UserRateLimit#'
         - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\NoAdminRequired#'
         - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\NoCSRFRequired#'
-    checkMissingIterableValueType: false
     treatPhpDocTypesAsCertain: false
     reportUnmatchedIgnoredErrors: false

@@ -44,7 +44,7 @@ class TrainingServiceTest extends TestCase {
             ->willReturn($questions);
         $answerMapper->method('findByQuestion')
             ->willReturnCallback(fn(int $questionId): array => [$this->makeAnswer($questionId * 10, $questionId, 'Answer')]);
-        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \stdClass());
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $service = $this->createService(
             db: $db,
@@ -178,7 +178,7 @@ class TrainingServiceTest extends TestCase {
         $translationService->method('translateQuestions')
             ->willReturnCallback(static fn(array $questions): array => $questions);
         $config->method('getUserValue')->willReturn('');
-        $logger->method('info')->willReturn(null);
+        // logger->info() is void — no willReturn needed, mock accepts any call by default
 
         return new TrainingService(
             $db,

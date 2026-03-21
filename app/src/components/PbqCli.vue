@@ -58,6 +58,14 @@ export default {
   },
   methods: {
     getHistory(termName) { return this.localHistory[termName] || [] },
+    resolveCommandOutputs(termName) {
+      const outputs = this.config.command_outputs || {}
+      const scopedOutputs = outputs[termName]
+      if (scopedOutputs && typeof scopedOutputs === 'object' && !Array.isArray(scopedOutputs)) {
+        return scopedOutputs
+      }
+      return outputs
+    },
     currentPrompt(term) {
       const domain = this.config.domain || 'generic'
       const mode = this.termModes[term.name]
@@ -75,7 +83,7 @@ export default {
       const domain = this.config.domain || 'generic'
       const currentMode = this.termModes[term.name]
       const context = this.termContexts[term.name] || {}
-      const commandOutputs = this.config.command_outputs || {}
+      const commandOutputs = this.resolveCommandOutputs(term.name)
 
       // Build the prompt line for this command (the line that appears as typed)
       const promptStr = this.currentPrompt(term)

@@ -116,13 +116,16 @@
       <!-- PBQ Config Section -->
       <div class="form-group">
         <label for="pbq-subtype">{{ t('learning', 'PBQ Type (optional)') }}</label>
-        <select id="pbq-subtype" v-model="form.pbqSubtype" class="nc-input">
+        <select id="pbq-subtype" v-model="form.pbqSubtype" class="nc-input" @change="onPbqSubtypeChange">
           <option value="">{{ t('learning', 'None (standard question)') }}</option>
           <option value="cli">CLI Terminal</option>
           <option value="placement">Device Placement</option>
           <option value="dropdown">Inline Dropdown</option>
           <option value="cable">Cable Mapping</option>
           <option value="multi_panel">Multi-Panel</option>
+          <option value="switch_config">Switch Config</option>
+          <option value="routing_config">Routing Config</option>
+          <option value="diagnostic">Diagnostic Review</option>
         </select>
       </div>
 
@@ -136,10 +139,14 @@
         <textarea
           id="pbq-config"
           v-model="form.pbqConfig"
+          @input="pbqConfigManualError = null"
           rows="6"
           :placeholder="t('learning', 'Paste JSON from PBQ Config Builder or enter manually...')"
           class="nc-input pbq-config-textarea"
         ></textarea>
+        <NcNoteCard v-if="pbqConfigDisplayError" type="error" class="pbq-config-error">
+          {{ pbqConfigDisplayError }}
+        </NcNoteCard>
       </div>
 
       <NcDialog
@@ -148,7 +155,11 @@
         size="large"
         @closing="showAuthorTool = false"
       >
-        <PbqAuthorTool />
+        <PbqAuthorTool
+          :initial-subtype="form.pbqSubtype"
+          :initial-config="parsedPbqConfigForBuilder"
+          @apply="applyPbqBuilderConfig"
+        />
       </NcDialog>
 
       <!-- Instructor Note -->
@@ -202,6 +213,7 @@ export default {
       existingImagePath: null,
       removeExistingImage: false,
       modelAnswer: '',
+      pbqConfigManualError: null,
       showAuthorTool: false,
       form: {
         text: '', explanation: '', difficulty: '',
@@ -231,6 +243,34 @@ export default {
     multiWarning() {
       if (this.form.questionType !== 'multi') return false;
       return this.correctAnswerIndices.size <= 1;
+    },
+    parsedPbqConfigForBuilder() {
+      if (!this.form.pbqConfig || !this.form.pbqConfig.trim()) {
+        return null;
+      }
+      try {
+        const parsed = JSON.parse(this.form.pbqConfig);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.pbq_config && typeof parsed.pbq_config === 'object') {
+          return parsed.pbq_config;
+        }
+        return parsed;
+      } catch (error) {
+        return null;
+      }
+    },
+    pbqConfigLiveError() {
+      if (!this.form.pbqSubtype || !this.form.pbqConfig || !this.form.pbqConfig.trim()) {
+        return '';
+      }
+      try {
+        JSON.parse(this.form.pbqConfig);
+        return '';
+      } catch (error) {
+        return t('learning', 'PBQ Config must be valid JSON.');
+      }
+    },
+    pbqConfigDisplayError() {
+      return this.pbqConfigManualError || this.pbqConfigLiveError;
     }
   },
   mounted() {
@@ -316,6 +356,12 @@ export default {
         this.correctAnswerIndices = new Set([this.correctAnswerIndex]);
       }
     },
+    onPbqSubtypeChange() {
+      this.pbqConfigManualError = null;
+      if (!this.form.pbqSubtype) {
+        this.form.pbqConfig = '';
+      }
+    },
     addAnswer() {
       if (this.form.answers.length < 8) {
         this.form.answers.push({ text: '', is_correct: false });
@@ -341,8 +387,79 @@ export default {
         this.correctAnswerIndices = newSet;
       }
     },
+    applyPbqBuilderConfig(payload) {
+      this.form.pbqSubtype = payload.subtype || '';
+      this.form.pbqConfig = payload.json || '';
+      this.pbqConfigManualError = null;
+      this.showAuthorTool = false;
+    },
+    normalizePbqPayload() {
+      const rawSubtype = this.form.pbqSubtype || null;
+      const rawConfig = this.form.pbqConfig ? this.form.pbqConfig.trim() : '';
+
+      if (!rawSubtype && !rawConfig) {
+        return { pbqSubtype: null, pbqConfig: null, error: null };
+      }
+
+      if (!rawSubtype) {
+        return {
+          pbqSubtype: null,
+          pbqConfig: null,
+          error: t('learning', 'Select a PBQ Type before saving PBQ Config.'),
+        };
+      }
+
+      if (!rawConfig) {
+        return {
+          pbqSubtype: rawSubtype,
+          pbqConfig: null,
+          error: t('learning', 'PBQ questions require a PBQ Config JSON object.'),
+        };
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(rawConfig);
+      } catch (error) {
+        return {
+          pbqSubtype: rawSubtype,
+          pbqConfig: null,
+          error: t('learning', 'PBQ Config must be valid JSON.'),
+        };
+      }
+
+      let finalSubtype = rawSubtype;
+      let finalConfig = parsed;
+
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.pbq_config !== undefined) {
+        if (parsed.pbq_subtype && parsed.pbq_subtype !== rawSubtype) {
+          return {
+            pbqSubtype: rawSubtype,
+            pbqConfig: null,
+            error: t('learning', 'PBQ Type and pasted builder subtype do not match.'),
+          };
+        }
+        finalSubtype = parsed.pbq_subtype || rawSubtype;
+        finalConfig = parsed.pbq_config;
+      }
+
+      if (!finalConfig || typeof finalConfig !== 'object' || Array.isArray(finalConfig)) {
+        return {
+          pbqSubtype: finalSubtype,
+          pbqConfig: null,
+          error: t('learning', 'PBQ Config must decode to a JSON object.'),
+        };
+      }
+
+      return {
+        pbqSubtype: finalSubtype,
+        pbqConfig: finalConfig,
+        error: null,
+      };
+    },
     save() {
       this.saving = true;
+      this.pbqConfigManualError = null;
       let filteredAnswers;
       if (this.form.questionType === 'open') {
         filteredAnswers = [{ text: this.modelAnswer, is_correct: true }];
@@ -357,6 +474,14 @@ export default {
         });
         filteredAnswers = this.form.answers.filter(a => a.text.trim() !== '');
       }
+
+      const normalizedPbq = this.normalizePbqPayload();
+      if (normalizedPbq.error) {
+        this.pbqConfigManualError = normalizedPbq.error;
+        this.saving = false;
+        return;
+      }
+
       this.$emit('save', {
         text: this.form.text,
         explanation: this.form.explanation || null,
@@ -365,8 +490,8 @@ export default {
         answers: filteredAnswers,
         imageFile: this.imageFile,
         removeImage: this.removeExistingImage,
-        pbqSubtype: this.form.pbqSubtype || null,
-        pbqConfig:  this.form.pbqConfig ? this.form.pbqConfig.trim() : null,
+        pbqSubtype: normalizedPbq.pbqSubtype,
+        pbqConfig: normalizedPbq.pbqConfig,
         instructorNote: this.form.instructorNote || null,
         noteVisible: this.form.noteVisible,
         examKey: this.form.examKey || null,
@@ -414,4 +539,5 @@ export default {
 .multi-warning { margin-top: 8px; }
 .pbq-config-actions { margin-bottom: 8px; }
 .pbq-config-textarea { font-family: monospace; font-size: 12px; }
+.pbq-config-error { margin-top: 8px; }
 </style>

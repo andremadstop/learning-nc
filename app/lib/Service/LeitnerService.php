@@ -758,6 +758,9 @@ class LeitnerService {
         switch ($subtype) {
             case 'dropdown':
                 foreach (($config['questions'] ?? []) as $q) {
+                    if (($q['scorable'] ?? true) !== true) {
+                        continue;
+                    }
                     $maxPoints++;
                     if (isset($userAnswers[$q['id']]) && $userAnswers[$q['id']] === $q['correct']) {
                         $points++;
@@ -767,7 +770,10 @@ class LeitnerService {
             case 'placement':
                 foreach (($config['positions'] ?? []) as $pos) {
                     $maxPoints++;
-                    if (isset($userAnswers[$pos['id']]) && $userAnswers[$pos['id']] === $pos['correct']) {
+                    $expected = $pos['correct'] ?? null;
+                    $actual = $userAnswers[$pos['id']] ?? null;
+                    $isMatch = is_array($expected) ? in_array($actual, $expected, true) : $actual === $expected;
+                    if ($actual !== null && $isMatch) {
                         $points++;
                     }
                 }
@@ -797,6 +803,105 @@ class LeitnerService {
                     }
                     if (isset($userAnswers[$q['cable_id'] . '_solution']) && $userAnswers[$q['cable_id'] . '_solution'] === $q['correct_solution']) {
                         $points++;
+                    }
+                }
+                break;
+            case 'multi_panel':
+                foreach ((($config['cli'] ?? [])['evaluation'] ?? []) as $ev) {
+                    $maxPoints += ($ev['points'] ?? 1);
+                    $history = ($userAnswers['cli'] ?? [])[$ev['terminal']] ?? [];
+                    $allCmds = is_array($history) ? implode("\n", $history) : (string)$history;
+                    $pattern = $ev['required_pattern'] ?? '';
+                    if (strlen($pattern) > 0 && strlen($pattern) <= 200) {
+                        try {
+                            if (@preg_match('/' . addcslashes($pattern, '/') . '/i', $allCmds) === 1) {
+                                $points += ($ev['points'] ?? 1);
+                            }
+                        } catch (\Throwable $e) {
+                            // Intentionally ignored: invalid regex pattern in PBQ config — skip award
+                        }
+                    }
+                }
+                foreach ((($config['dropdown'] ?? [])['questions'] ?? []) as $q) {
+                    if (($q['scorable'] ?? true) !== true) {
+                        continue;
+                    }
+                    $maxPoints++;
+                    if ((($userAnswers['dropdown'] ?? [])[$q['id']] ?? null) === $q['correct']) {
+                        $points++;
+                    }
+                }
+                foreach ((($config['placement'] ?? [])['positions'] ?? []) as $pos) {
+                    $maxPoints++;
+                    $expected = $pos['correct'] ?? null;
+                    $actual = (($userAnswers['placement'] ?? [])[$pos['id']] ?? null);
+                    $isMatch = is_array($expected) ? in_array($actual, $expected, true) : $actual === $expected;
+                    if ($actual !== null && $isMatch) {
+                        $points++;
+                    }
+                }
+                break;
+            case 'switch_config':
+                foreach (($config['switches'] ?? []) as $device) {
+                    foreach (($device['ports'] ?? []) as $port) {
+                        $expected = $port['correct'] ?? null;
+                        if (!is_array($expected)) {
+                            continue;
+                        }
+                        $answer = $userAnswers[$port['id']] ?? [];
+                        $initial = $port['initial'] ?? [];
+
+                        $maxPoints++;
+                        $effectiveStatus = $answer['status'] ?? $initial['status'] ?? 'Enabled';
+                        if ($effectiveStatus === ($expected['status'] ?? 'Enabled')) {
+                            $points++;
+                        }
+
+                        $maxPoints++;
+                        $effectiveLacp = $answer['lacp'] ?? $initial['lacp'] ?? 'Disabled';
+                        if ($effectiveLacp === ($expected['lacp'] ?? 'Disabled')) {
+                            $points++;
+                        }
+
+                        foreach (($expected['vlans'] ?? []) as $vlanId => $expectedMode) {
+                            $maxPoints++;
+                            $effectiveMode = $answer['vlans'][$vlanId] ?? $initial['vlans'][$vlanId] ?? 'none';
+                            if ($effectiveMode === $expectedMode) {
+                                $points++;
+                            }
+                        }
+                    }
+                }
+                break;
+            case 'routing_config':
+                foreach (($config['routers'] ?? []) as $router) {
+                    $expected = $router['correct'] ?? null;
+                    if (!is_array($expected)) {
+                        continue;
+                    }
+                    $answer = $userAnswers[$router['id']] ?? [];
+                    $initial = $router['initial'] ?? [];
+                    foreach (['problem_found', 'destination_prefix', 'destination_prefix_mask', 'interface'] as $field) {
+                        $maxPoints++;
+                        $effectiveValue = $answer[$field] ?? $initial[$field] ?? '';
+                        if ((string)$effectiveValue === (string)($expected[$field] ?? '')) {
+                            $points++;
+                        }
+                    }
+                }
+                break;
+            case 'diagnostic':
+                foreach (($config['findings'] ?? []) as $finding) {
+                    $expected = $finding['correct'] ?? null;
+                    if (!is_array($expected)) {
+                        continue;
+                    }
+                    $answer = $userAnswers[$finding['id']] ?? [];
+                    foreach (['component', 'problem', 'solution'] as $field) {
+                        $maxPoints++;
+                        if ((string)($answer[$field] ?? '') === (string)($expected[$field] ?? '')) {
+                            $points++;
+                        }
                     }
                 }
                 break;

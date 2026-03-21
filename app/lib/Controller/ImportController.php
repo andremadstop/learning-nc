@@ -577,7 +577,7 @@ class ImportController extends Controller {
         }
 
         $subtype = $item['subtype'] ?? null;
-        if (!in_array($subtype, ['dropdown', 'placement', 'cli', 'cable'], true)) {
+        if (!in_array($subtype, ['dropdown', 'placement', 'cli', 'cable', 'multi_panel', 'switch_config', 'routing_config', 'diagnostic'], true)) {
             $errors[] = "PBQ #$num: invalid subtype '$subtype'";
             return 0;
         }

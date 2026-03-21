@@ -124,5 +124,6 @@ INBOX.md
 .planning/
 *.pdf
 a_plus*.txt
-pbq-import-n10009.json
 .git-backup-*
+app/img/pbq/
+app/docs/PBQ-PDF-AUDIT*.md

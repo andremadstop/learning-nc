@@ -367,3 +367,12 @@ ssh learning-dev 'docker exec learning-db psql -U oc_admin -d nextcloud -c \
 - **SVG-Diagramme**: 720px breit, dark theme für CLI, light theme für Placement
 - **Erklärungen**: Zeigen nach dem Abschicken die vollständige Lösung mit Begründung
 - **Prüfungsnähe**: Szenarien 1–6 basieren auf dokumentierten echten N10-009 PBQ-Themen (ODT-Notizen)
+
+---
+
+## Addendum 2026-03-20
+
+- Diese Datei beschreibt den Stand vor dem PDF-Audit nur noch teilweise korrekt.
+- Der aktuelle kanonische PBQ-Inhalt für die sechs importierten Network+-Simulationen liegt in [pbq-import-n10009.json](/home/andre/Workspace/Code/learning-nc/pbq-import-n10009.json).
+- Der Soll/Ist-Audit gegen das Referenz-PDF ist dokumentiert in [PBQ-PDF-AUDIT-2026-03-20.md](/home/andre/Workspace/Code/learning-nc/app/docs/PBQ-PDF-AUDIT-2026-03-20.md).
+- Für DB-Synchronisierung der sechs bestehenden PBQ-Fragen nutze [generate_network_plus_pbq_sync_sql.py](/home/andre/Workspace/Code/learning-nc/scripts/pbq/generate_network_plus_pbq_sync_sql.py).

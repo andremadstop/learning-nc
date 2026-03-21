@@ -1,6 +1,18 @@
 <template>
   <div class="pbq-renderer">
-    <div v-if="scenarioImageUrl" class="pbq-scenario-image-wrapper">
+    <div v-if="instructions.length" class="pbq-instructions">
+      <p class="pbq-instructions__title">Instructions</p>
+      <ul>
+        <li v-for="instruction in instructions" :key="instruction">{{ instruction }}</li>
+      </ul>
+    </div>
+
+    <PbqReferenceGallery
+      v-if="referenceImages.length"
+      :images="referenceImages"
+    />
+
+    <div v-else-if="scenarioImageUrl" class="pbq-scenario-image-wrapper">
       <img :src="scenarioImageUrl" class="pbq-scenario-image" alt="Scenario" />
     </div>
 
@@ -41,6 +53,27 @@
       :disabled="disabled"
       @update="onUpdate"
     />
+    <PbqSwitchConfig
+      v-else-if="subtype === 'switch_config'"
+      :config="config"
+      :value="localAnswer"
+      :disabled="disabled"
+      @update="onUpdate"
+    />
+    <PbqRoutingConfig
+      v-else-if="subtype === 'routing_config'"
+      :config="config"
+      :value="localAnswer"
+      :disabled="disabled"
+      @update="onUpdate"
+    />
+    <PbqDiagnostic
+      v-else-if="subtype === 'diagnostic'"
+      :config="config"
+      :value="localAnswer"
+      :disabled="disabled"
+      @update="onUpdate"
+    />
 
     <div class="pbq-footer">
       <span class="pbq-progress">{{ answeredCount }} / {{ totalCount }} beantwortet</span>
@@ -60,10 +93,25 @@ import PbqPlacement from './PbqPlacement.vue'
 import PbqCli       from './PbqCli.vue'
 import PbqCable      from './PbqCable.vue'
 import PbqMultiPanel from './PbqMultiPanel.vue'
+import PbqSwitchConfig from './PbqSwitchConfig.vue'
+import PbqRoutingConfig from './PbqRoutingConfig.vue'
+import PbqDiagnostic from './PbqDiagnostic.vue'
+import PbqReferenceGallery from './PbqReferenceGallery.vue'
 
 export default {
   name: 'PbqRenderer',
-  components: { NcButton, PbqDropdown, PbqPlacement, PbqCli, PbqCable, PbqMultiPanel },
+  components: {
+    NcButton,
+    PbqDropdown,
+    PbqPlacement,
+    PbqCli,
+    PbqCable,
+    PbqMultiPanel,
+    PbqSwitchConfig,
+    PbqRoutingConfig,
+    PbqDiagnostic,
+    PbqReferenceGallery,
+  },
   props: {
     question:     { type: Object, required: true },
     initialValue: { type: Object, default: null },
@@ -77,25 +125,40 @@ export default {
   computed: {
     subtype()  { return this.question.pbq_subtype || '' },
     config()   { return this.question.pbq_config || {} },
-    configImage() { return this.config.scenario_image || null },
+    configImage() { return this.resolveAssetUrl(this.config.scenario_image || null) },
     topologyConfig() { return this.config.topology || null },
+    instructions() { return this.config.instructions || [] },
+    referenceImages() {
+      return (this.config.reference_images || []).map(image => ({
+        ...image,
+        src: this.resolveAssetUrl(image.src),
+      }))
+    },
     scenarioImageUrl() {
-      if (this.config.scenario_image) return this.config.scenario_image  // base64 data URI
+      if (this.config.scenario_image) return this.resolveAssetUrl(this.config.scenario_image)
       if (this.question.image_path) return generateUrl('/apps/learning/api/questions/' + this.question.id + '/image')
       return null
     },
     totalCount() {
       const cfg = this.config
+      const dropdownQuestions = (cfg.questions || []).filter(question => (question.scorable ?? true) === true).length
       switch (this.subtype) {
-        case 'dropdown':  return (cfg.questions || []).length
+        case 'dropdown':  return dropdownQuestions
         case 'placement': return (cfg.positions || []).length
         case 'cli':       return (cfg.terminals || []).length
         case 'cable':     return (cfg.questions || []).length * 2
         case 'multi_panel': {
           const cliTerms = (cfg.cli && cfg.cli.terminals || []).length
           const placementPos = (cfg.placement && cfg.placement.positions || []).length
-          return cliTerms + placementPos
+          const nestedDropdownQuestions = ((cfg.dropdown && cfg.dropdown.questions) || []).filter(question => (question.scorable ?? true) === true).length
+          return cliTerms + placementPos + nestedDropdownQuestions
         }
+        case 'switch_config':
+          return (cfg.switches || []).reduce((sum, device) => sum + ((device.ports || []).filter(port => !!port.correct).length), 0)
+        case 'routing_config':
+          return (cfg.routers || []).length
+        case 'diagnostic':
+          return (cfg.findings || []).length
         default: return 0
       }
     },
@@ -103,11 +166,24 @@ export default {
       if (this.subtype === 'multi_panel') {
         return Object.keys(this.localAnswer.cli || {}).length
           + Object.keys(this.localAnswer.placement || {}).length
+          + Object.keys(this.localAnswer.dropdown || {}).length
       }
       return Object.keys(this.localAnswer).length
     },
   },
   methods: {
+    resolveAssetUrl(url) {
+      if (!url || typeof url !== 'string') {
+        return url
+      }
+      if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
+        return url
+      }
+      if (url.startsWith('/')) {
+        return generateUrl(url)
+      }
+      return url
+    },
     onUpdate(key, value) {
       this.$set(this.localAnswer, String(key), value)
       this.$emit('change', { ...this.localAnswer })
@@ -118,6 +194,25 @@ export default {
 
 <style scoped>
 .pbq-renderer { padding: 8px 0; }
+.pbq-instructions {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-background-hover);
+}
+.pbq-instructions__title {
+  margin: 0 0 8px;
+  font-weight: 700;
+  color: var(--color-main-text);
+}
+.pbq-instructions ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.pbq-instructions li + li {
+  margin-top: 4px;
+}
 .pbq-scenario-image-wrapper { margin-bottom: 16px; }
 .pbq-scenario-image { max-width: 100%; border-radius: 8px; border: 1px solid var(--color-border); }
 .pbq-footer { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-border); }

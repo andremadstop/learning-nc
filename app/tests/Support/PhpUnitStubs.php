@@ -45,6 +45,48 @@ namespace OCP {
 }
 
 namespace OCP\AppFramework\Db {
+    if (!class_exists(Entity::class)) {
+        class Entity implements \JsonSerializable {
+            public int $id = 0;
+            protected array $updatedFields = [];
+
+            public function getId(): int { return $this->id; }
+            public function setId(int $id): void { $this->id = $id; }
+            public function jsonSerialize(): array { return ['id' => $this->id]; }
+
+            public function __call(string $name, array $args) {
+                // Support get/set magic for NC entities
+                if (str_starts_with($name, 'get')) {
+                    $field = lcfirst(substr($name, 3));
+                    return $this->$field ?? null;
+                }
+                if (str_starts_with($name, 'set') && count($args) === 1) {
+                    $field = lcfirst(substr($name, 3));
+                    $this->$field = $args[0];
+                    $this->updatedFields[$field] = true;
+                }
+                return null;
+            }
+
+            public static function fromRow(array $row): static {
+                $entity = new static();
+                foreach ($row as $key => $value) {
+                    $prop = lcfirst(implode('', array_map('ucfirst', explode('_', $key))));
+                    $entity->$prop = $value;
+                }
+                $entity->id = (int)($row['id'] ?? 0);
+                return $entity;
+            }
+        }
+    }
+
+    if (!class_exists(QBMapper::class)) {
+        abstract class QBMapper {
+            protected $db;
+            public function __construct($db) { $this->db = $db; }
+        }
+    }
+
     if (!class_exists(DoesNotExistException::class)) {
         class DoesNotExistException extends \Exception {
         }

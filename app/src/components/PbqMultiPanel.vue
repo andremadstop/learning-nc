@@ -10,11 +10,19 @@
     </div>
     <div class="pbq-panel pbq-panel--topology">
       <PbqPlacement
+        v-if="config.placement"
         :config="config.placement || {}"
         :value="value.placement || {}"
         :disabled="disabled"
         :topology-config="config.topology || null"
         @update="onPlacementUpdate"
+      />
+      <PbqDropdown
+        v-else-if="config.dropdown"
+        :config="config.dropdown || {}"
+        :value="value.dropdown || {}"
+        :disabled="disabled"
+        @update="onDropdownUpdate"
       />
     </div>
   </div>
@@ -23,10 +31,11 @@
 <script>
 import PbqCli       from './PbqCli.vue'
 import PbqPlacement from './PbqPlacement.vue'
+import PbqDropdown from './PbqDropdown.vue'
 
 export default {
   name: 'PbqMultiPanel',
-  components: { PbqCli, PbqPlacement },
+  components: { PbqCli, PbqPlacement, PbqDropdown },
   props: {
     config:   { type: Object, required: true },
     value:    { type: Object, default: () => ({}) },
@@ -40,6 +49,10 @@ export default {
     onPlacementUpdate(posId, device) {
       const placementVal = { ...(this.value.placement || {}), [posId]: device }
       this.$emit('update', 'placement', placementVal)
+    },
+    onDropdownUpdate(questionId, answer) {
+      const dropdownVal = { ...(this.value.dropdown || {}), [questionId]: answer }
+      this.$emit('update', 'dropdown', dropdownVal)
     },
   },
 }

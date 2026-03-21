@@ -79,8 +79,8 @@
           class="pbq-summary-value"
           :class="[
             !value[pos.id] ? 'pbq-unset' : '',
-            disabled && pos.correct !== undefined && value[pos.id] !== pos.correct ? 'pbq-summary-value--wrong' : '',
-            disabled && pos.correct !== undefined && value[pos.id] === pos.correct ? 'pbq-summary-value--correct' : '',
+            disabled && pos.correct !== undefined && !matchesPlacement(pos.correct, value[pos.id]) ? 'pbq-summary-value--wrong' : '',
+            disabled && pos.correct !== undefined && matchesPlacement(pos.correct, value[pos.id]) ? 'pbq-summary-value--correct' : '',
           ]"
         >{{ value[pos.id] || '—' }}</span>
       </span>
@@ -92,6 +92,13 @@
 <script>
 import NetworkTopologySvg from './NetworkTopologySvg.vue'
 import { scoringSummary } from '../utils/pbqScoringMode.js'
+
+function matchesPlacement(expected, actual) {
+  if (Array.isArray(expected)) {
+    return expected.includes(actual)
+  }
+  return actual === expected
+}
 
 export default {
   name: 'PbqPlacement',
@@ -150,6 +157,7 @@ export default {
       this.$emit('update', posId, device)
       this.closePicker()
     },
+    matchesPlacement,
   },
 }
 </script>

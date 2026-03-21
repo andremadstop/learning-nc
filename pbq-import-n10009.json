@@ -1,0 +1,727 @@
+[
+  {
+    "type": "pbq",
+    "db_id": 12460,
+    "pdf_question_no": 1,
+    "subtype": "switch_config",
+    "question_text": "A network technician replaced an access layer switch and needs to reconfigure it to allow the connected devices to connect to the correct networks.",
+    "explanation": "Switch 1 Ports 1 and 2 must remain enabled with LACP enabled and VLANs 1, 60, 90, 120, and 220 tagged. Switch 1 Ports 5 and 6 must carry VLANs 60, 120, and 150 as tagged uplinks to Switch 2. Switch 1 Ports 7 and 8 plus Switch 3 Ports 1 and 2 must form the fault-tolerant LACP connection with VLANs 60, 90, 120, and 220 tagged. Switch 3 Ports 3 and 5 must be disabled. Switch 3 Port 4 must carry VLAN 120 and 220 as tagged for the VoIP phone and PC3. Switch 3 Port 6 must be VLAN 120 untagged, Port 7 VLAN 60 untagged, and Port 8 VLAN 90 untagged.",
+    "difficulty": "hard",
+    "pbq_config": {
+      "instructions": [
+        "Click on the appropriate port(s) on Switch 1 and Switch 3 to verify or reconfigure the correct settings:",
+        "Ensure each device accesses only its correctly associated network.",
+        "Disable all unused switchports.",
+        "Require fault-tolerant connections between the switches.",
+        "Only make necessary changes to complete the above requirements.",
+        "If at any time you would like to bring back the initial state of the simulation, please click the Reset All button."
+      ],
+      "reference_images": [
+        { "id": "q1-overview", "title": "Topology", "src": "/apps/learning/img/pbq/network-plus/page-05.png" },
+        { "id": "q1-port-examples", "title": "Port Examples", "src": "/apps/learning/img/pbq/network-plus/page-06.png" },
+        { "id": "q1-solution-notes", "title": "Solution Notes", "src": "/apps/learning/img/pbq/network-plus/page-07.png" }
+      ],
+      "vlan_catalog": [
+        { "id": "1", "name": "Default" },
+        { "id": "60", "name": "Printers" },
+        { "id": "90", "name": "Servers" },
+        { "id": "120", "name": "Wired Users" },
+        { "id": "150", "name": "WLAN" },
+        { "id": "220", "name": "Voice" }
+      ],
+      "status_options": ["Enabled", "Disabled"],
+      "lacp_options": ["Enabled", "Disabled"],
+      "switches": [
+        {
+          "id": "switch1",
+          "label": "Switch 1",
+          "subtitle": "Access layer replacement switch",
+          "ports": [
+            {
+              "id": "s1_p1",
+              "label": "Port 1",
+              "role": "Core Switch uplink",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "tagged", "60": "tagged", "90": "tagged", "120": "tagged", "150": "none", "220": "tagged" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Enabled",
+                "vlans": { "1": "tagged", "60": "tagged", "90": "tagged", "120": "tagged", "150": "none", "220": "tagged" }
+              }
+            },
+            {
+              "id": "s1_p2",
+              "label": "Port 2",
+              "role": "Core Switch uplink",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "tagged", "60": "tagged", "90": "tagged", "120": "tagged", "150": "none", "220": "tagged" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Enabled",
+                "vlans": { "1": "tagged", "60": "tagged", "90": "tagged", "120": "tagged", "150": "none", "220": "tagged" }
+              }
+            },
+            {
+              "id": "s1_p3",
+              "label": "Port 3",
+              "role": "Server 1",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "tagged", "120": "none", "150": "none", "220": "none" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "untagged", "120": "none", "150": "none", "220": "none" }
+              }
+            },
+            {
+              "id": "s1_p4",
+              "label": "Port 4",
+              "role": "Server 2",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "untagged", "120": "none", "150": "none", "220": "none" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "untagged", "120": "none", "150": "none", "220": "none" }
+              }
+            },
+            {
+              "id": "s1_p5",
+              "label": "Port 5",
+              "role": "Switch 2 uplink",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "tagged", "120": "tagged", "150": "tagged", "220": "tagged" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "none", "120": "tagged", "150": "tagged", "220": "none" }
+              }
+            },
+            {
+              "id": "s1_p6",
+              "label": "Port 6",
+              "role": "Switch 2 uplink",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "tagged", "120": "tagged", "150": "tagged", "220": "tagged" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "none", "120": "tagged", "150": "tagged", "220": "none" }
+              }
+            },
+            {
+              "id": "s1_p7",
+              "label": "Port 7",
+              "role": "Switch 3 uplink",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "tagged", "120": "tagged", "150": "tagged", "220": "tagged" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Enabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "tagged", "120": "tagged", "150": "none", "220": "tagged" }
+              }
+            },
+            {
+              "id": "s1_p8",
+              "label": "Port 8",
+              "role": "Switch 3 uplink",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "tagged", "120": "tagged", "150": "tagged", "220": "tagged" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Enabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "tagged", "120": "tagged", "150": "none", "220": "tagged" }
+              }
+            }
+          ]
+        },
+        {
+          "id": "switch3",
+          "label": "Switch 3",
+          "subtitle": "Edge switch with phone, laptop, printer, and server",
+          "ports": [
+            {
+              "id": "s3_p1",
+              "label": "Port 1",
+              "role": "Switch 1 uplink",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "tagged", "120": "tagged", "150": "none", "220": "tagged" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Enabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "tagged", "120": "tagged", "150": "none", "220": "tagged" }
+              }
+            },
+            {
+              "id": "s3_p2",
+              "label": "Port 2",
+              "role": "Switch 1 uplink",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "tagged", "120": "tagged", "150": "none", "220": "tagged" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Enabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "tagged", "120": "tagged", "150": "none", "220": "tagged" }
+              }
+            },
+            {
+              "id": "s3_p3",
+              "label": "Port 3",
+              "role": "Unused",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "none", "120": "none", "150": "none", "220": "none" }
+              },
+              "correct": {
+                "status": "Disabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "none", "120": "none", "150": "none", "220": "none" }
+              }
+            },
+            {
+              "id": "s3_p4",
+              "label": "Port 4",
+              "role": "VoIP phone / PC3",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "none", "120": "tagged", "150": "none", "220": "none" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "none", "120": "tagged", "150": "none", "220": "tagged" }
+              }
+            },
+            {
+              "id": "s3_p5",
+              "label": "Port 5",
+              "role": "Unused",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "none", "120": "none", "150": "none", "220": "none" }
+              },
+              "correct": {
+                "status": "Disabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "none", "120": "none", "150": "none", "220": "none" }
+              }
+            },
+            {
+              "id": "s3_p6",
+              "label": "Port 6",
+              "role": "Laptop 2",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "none", "120": "tagged", "150": "none", "220": "none" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "none", "120": "untagged", "150": "none", "220": "none" }
+              }
+            },
+            {
+              "id": "s3_p7",
+              "label": "Port 7",
+              "role": "Printer 2",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "tagged", "90": "none", "120": "none", "150": "none", "220": "none" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "untagged", "90": "none", "120": "none", "150": "none", "220": "none" }
+              }
+            },
+            {
+              "id": "s3_p8",
+              "label": "Port 8",
+              "role": "Server 2",
+              "initial": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "tagged", "120": "none", "150": "none", "220": "none" }
+              },
+              "correct": {
+                "status": "Enabled",
+                "lacp": "Disabled",
+                "vlans": { "1": "none", "60": "none", "90": "untagged", "120": "none", "150": "none", "220": "none" }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "type": "pbq",
+    "db_id": 12465,
+    "pdf_question_no": 2,
+    "subtype": "multi_panel",
+    "question_text": "A network technician was recently onboarded to a company. A manager has tasked the technician with documenting the network and has provided the technician with partial information from previous documentation.",
+    "explanation": "Use the Core Switch 1 ARP data together with the MAC address tables on Access Switch 1 and Access Switch 2. The documented result is that PC1, PC2, and PC3 belong to VLAN 10, while PC4 belongs to VLAN 20. The partial fields shown in the PDF are completed by correlating the ARP entries with the switchport learn tables.",
+    "difficulty": "hard",
+    "pbq_config": {
+      "instructions": [
+        "Click on each switch to perform a network discovery by entering commands into the terminal.",
+        "Type help to view a list of available commands.",
+        "Fill in the missing information using the drop-down menus provided.",
+        "If at any time you would like to bring back the initial state of the simulation, please click the Reset All button."
+      ],
+      "reference_images": [
+        { "id": "q2-overview", "title": "Inventory Worksheet", "src": "/apps/learning/img/pbq/network-plus/page-08.png" },
+        { "id": "q2-notes", "title": "CLI Notes", "src": "/apps/learning/img/pbq/network-plus/page-09.png" }
+      ],
+      "cli": {
+        "hint": "Type help to view a list of available commands.",
+        "domain": "cisco_ios",
+        "terminals": [
+          { "name": "Core Switch 1" },
+          { "name": "Access Switch 1" },
+          { "name": "Access Switch 2" }
+        ],
+        "command_outputs": {
+          "Core Switch 1": {
+            "help": "Available commands:\nshow ip interface brief\narp -a\nshow arp table\nshow mac address-table",
+            "show ip interface brief": "Interface              IP-Address      OK? Method Status                Protocol\nVlan10                 10.10.30.1      YES manual up                    up\nVlan20                 10.10.60.1      YES manual up                    up\nGigabitEthernet0/1     unassigned      YES unset  up                    up\nGigabitEthernet0/2     unassigned      YES unset  up                    up\nGigabitEthernet0/3     unassigned      YES unset  up                    up\nGigabitEthernet0/4     unassigned      YES unset  up                    up\n",
+            "arp -a": "Protocol  Address        Age (min)  Hardware Addr   Type   Interface\nInternet  10.10.30.51            2   0200.0000.0002  ARPA   Vlan10\nInternet  10.10.30.52            4   0200.0000.0003  ARPA   Vlan10\nInternet  10.10.30.54            6   0200.0000.0007  ARPA   Vlan10\nInternet  10.10.60.53            1   0200.0000.0008  ARPA   Vlan20\n",
+            "show arp table": "Protocol  Address        Age (min)  Hardware Addr   Type   Interface\nInternet  10.10.30.51            2   0200.0000.0002  ARPA   Vlan10\nInternet  10.10.30.52            4   0200.0000.0003  ARPA   Vlan10\nInternet  10.10.30.54            6   0200.0000.0007  ARPA   Vlan10\nInternet  10.10.60.53            1   0200.0000.0008  ARPA   Vlan20\n",
+            "show mac address-table": "          Mac Address Table\n-------------------------------------------\nVlan    Mac Address       Type        Ports\n----    -----------       --------    -----\n  10    0200.0000.0002    DYNAMIC     Gi0/1\n  10    0200.0000.0003    DYNAMIC     Gi0/2\n  10    0200.0000.0007    DYNAMIC     Gi0/3\n  20    0200.0000.0008    DYNAMIC     Gi0/4\n"
+          },
+          "Access Switch 1": {
+            "help": "Available commands:\nshow mac address-table\nshow interfaces\nshow vlan brief",
+            "show mac address-table": "          Mac Address Table\n-------------------------------------------\nVlan    Mac Address       Type        Ports\n----    -----------       --------    -----\n  10    0200.0000.0002    DYNAMIC     Gi0/2\n  10    0200.0000.0003    DYNAMIC     Gi0/1\n",
+            "show interfaces": "GigabitEthernet0/1 is up, line protocol is up\nGigabitEthernet0/2 is up, line protocol is up\n",
+            "show vlan brief": "VLAN Name                             Status    Ports\n---- -------------------------------- --------- -------------------------------\n1    default                          active\n10   Users                            active    Gi0/1, Gi0/2\n20   Secure                           active\n"
+          },
+          "Access Switch 2": {
+            "help": "Available commands:\nshow mac address-table\nshow interfaces\nshow vlan brief",
+            "show mac address-table": "          Mac Address Table\n-------------------------------------------\nVlan    Mac Address       Type        Ports\n----    -----------       --------    -----\n  10    0200.0000.0007    DYNAMIC     Gi0/3\n  20    0200.0000.0008    DYNAMIC     Gi0/4\n",
+            "show interfaces": "GigabitEthernet0/3 is up, line protocol is up\nGigabitEthernet0/4 is up, line protocol is up\n",
+            "show vlan brief": "VLAN Name                             Status    Ports\n---- -------------------------------- --------- -------------------------------\n1    default                          active\n10   Users                            active    Gi0/3\n20   Secure                           active    Gi0/4\n"
+          }
+        },
+        "evaluation": [
+          { "terminal": "Core Switch 1", "required_pattern": "arp -a|show arp table", "points": 2 },
+          { "terminal": "Access Switch 1", "required_pattern": "show mac address-table", "points": 1 },
+          { "terminal": "Access Switch 2", "required_pattern": "show mac address-table", "points": 1 }
+        ]
+      },
+      "dropdown": {
+        "layout": "cards",
+        "sections": [
+          { "id": "pc1", "title": "PC1", "note": "MAC address was already inventoried in the worksheet screenshot." },
+          { "id": "pc2", "title": "PC2", "note": "IP address 10.10.30.51 is already shown in the worksheet." },
+          { "id": "pc3", "title": "PC3", "note": "Previously inventoried." },
+          { "id": "pc4", "title": "PC4", "note": "The screenshot shows a wrong IP value that must be corrected." }
+        ],
+        "questions": [
+          {
+            "id": "pc1_mac",
+            "section": "pc1",
+            "label": "MAC Address",
+            "readonly_value": "0200.0000.0003",
+            "scorable": false
+          },
+          {
+            "id": "pc1_ip",
+            "section": "pc1",
+            "label": "PC1 IP Address",
+            "placeholder": "Select IP Address",
+            "options": ["10.10.30.51", "10.10.30.52", "10.10.30.53", "10.10.30.54", "10.10.60.51", "10.10.60.52", "10.10.60.53", "10.10.60.54"],
+            "correct": "10.10.30.52"
+          },
+          {
+            "id": "pc1_vlan",
+            "section": "pc1",
+            "label": "PC1 VLAN",
+            "placeholder": "Select VLAN",
+            "options": ["10", "20"],
+            "correct": "10"
+          },
+          {
+            "id": "pc1_interface",
+            "section": "pc1",
+            "label": "PC1 Interface",
+            "placeholder": "Select Interface",
+            "options": ["GigabitEthernet0/1", "GigabitEthernet0/2", "GigabitEthernet0/3", "GigabitEthernet0/4"],
+            "correct": "GigabitEthernet0/1"
+          },
+          {
+            "id": "pc2_mac",
+            "section": "pc2",
+            "label": "PC2 MAC Address",
+            "placeholder": "Select MAC Address",
+            "options": ["0200.0000.0002", "0200.0000.0003", "0200.0000.0004", "0200.0000.0005", "0200.0000.0006", "0200.0000.0007", "0200.0000.0008", "0200.0000.0009"],
+            "correct": "0200.0000.0002"
+          },
+          {
+            "id": "pc2_ip",
+            "section": "pc2",
+            "label": "IP Address",
+            "readonly_value": "10.10.30.51",
+            "scorable": false
+          },
+          {
+            "id": "pc2_vlan",
+            "section": "pc2",
+            "label": "PC2 VLAN",
+            "placeholder": "Select VLAN",
+            "options": ["10", "20"],
+            "correct": "10"
+          },
+          {
+            "id": "pc2_interface",
+            "section": "pc2",
+            "label": "PC2 Interface",
+            "placeholder": "Select Interface",
+            "options": ["GigabitEthernet0/1", "GigabitEthernet0/2", "GigabitEthernet0/3", "GigabitEthernet0/4"],
+            "correct": "GigabitEthernet0/2"
+          },
+          {
+            "id": "pc4_mac",
+            "section": "pc4",
+            "label": "PC4 MAC Address",
+            "placeholder": "Select MAC Address",
+            "options": ["0200.0000.0002", "0200.0000.0003", "0200.0000.0004", "0200.0000.0005", "0200.0000.0006", "0200.0000.0007", "0200.0000.0008", "0200.0000.0009"],
+            "correct": "0200.0000.0008"
+          },
+          {
+            "id": "pc4_ip",
+            "section": "pc4",
+            "label": "PC4 IP Address",
+            "placeholder": "Select IP Address",
+            "current_value": "16.10.30.53",
+            "options": ["10.10.30.51", "10.10.30.52", "10.10.30.53", "10.10.30.54", "10.10.60.51", "10.10.60.52", "10.10.60.53", "10.10.60.54"],
+            "correct": "10.10.60.53"
+          },
+          {
+            "id": "pc4_vlan",
+            "section": "pc4",
+            "label": "PC4 VLAN",
+            "placeholder": "Select VLAN",
+            "options": ["10", "20"],
+            "correct": "20"
+          },
+          {
+            "id": "pc4_interface",
+            "section": "pc4",
+            "label": "PC4 Interface",
+            "placeholder": "Select Interface",
+            "options": ["GigabitEthernet0/1", "GigabitEthernet0/2", "GigabitEthernet0/3", "GigabitEthernet0/4"],
+            "correct": "GigabitEthernet0/4"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "pbq",
+    "db_id": 12461,
+    "pdf_question_no": 3,
+    "subtype": "routing_config",
+    "question_text": "Users are unable to access files on their department share located on file server 2. The network administrator has been tasked with validating routing between networks hosting workstation A and file server 2.",
+    "explanation": "Router A must be marked Yes and configured with destination prefix 10.0.5.0, mask 255.255.255.0, interface Gi1. Router B must be marked Yes and configured with destination prefix 10.0.1.0, mask 255.255.255.0, interface Gi2. Router C must remain No because its /22 routes already cover the required networks.",
+    "difficulty": "hard",
+    "pbq_config": {
+      "instructions": [
+        "Click on each router to review output, identify any issues, and configure the appropriate solution.",
+        "If at any time you would like to bring back the initial state of the simulation, please click the Reset All button."
+      ],
+      "reference_images": [
+        { "id": "q3-topology", "title": "Topology", "src": "/apps/learning/img/pbq/network-plus/page-10.png" },
+        { "id": "q3-router-a", "title": "Router A", "src": "/apps/learning/img/pbq/network-plus/page-11.png" },
+        { "id": "q3-router-b", "title": "Router B", "src": "/apps/learning/img/pbq/network-plus/page-12.png" },
+        { "id": "q3-router-c", "title": "Router C", "src": "/apps/learning/img/pbq/network-plus/page-13.png" }
+      ],
+      "routers": [
+        {
+          "id": "router_a",
+          "label": "Router A",
+          "summary": "Site A hosts 10.0.5.0/24 on Gi1 and 10.0.6.0/24 on Gi2 with the transit network on Gi3.",
+          "interface_options": ["Gi1", "Gi2", "Gi3", "Gi4"],
+          "routing_table": "Router-A# show ip route\nCodes: L - local, C - connected, S - static\n\nGateway of last resort is 0.0.0.0 to network 0.0.0.0\n\nC    10.0.0.0/22 is directly connected, GigabitEthernet3\nC    10.0.5.0/24 is directly connected, GigabitEthernet1\nC    10.0.6.0/24 is directly connected, GigabitEthernet2\n",
+          "initial": {
+            "problem_found": "No",
+            "destination_prefix": "",
+            "destination_prefix_mask": "",
+            "interface": ""
+          },
+          "correct": {
+            "problem_found": "Yes",
+            "destination_prefix": "10.0.5.0",
+            "destination_prefix_mask": "255.255.255.0",
+            "interface": "Gi1"
+          }
+        },
+        {
+          "id": "router_b",
+          "label": "Router B",
+          "summary": "Site B hosts 10.0.1.0/24 on Gi2 with 10.0.4.0/22 available on Gi1.",
+          "interface_options": ["Gi1", "Gi2", "Gi3", "Gi4"],
+          "routing_table": "Router-B# show ip route\nCodes: L - local, C - connected, S - static\n\nGateway of last resort is 0.0.0.0 to network 0.0.0.0\n\nC    10.0.0.0/24 is directly connected, GigabitEthernet3\nC    10.0.1.0/24 is directly connected, GigabitEthernet2\nC    10.0.4.0/22 is directly connected, GigabitEthernet1\n",
+          "initial": {
+            "problem_found": "No",
+            "destination_prefix": "",
+            "destination_prefix_mask": "",
+            "interface": ""
+          },
+          "correct": {
+            "problem_found": "Yes",
+            "destination_prefix": "10.0.1.0",
+            "destination_prefix_mask": "255.255.255.0",
+            "interface": "Gi2"
+          }
+        },
+        {
+          "id": "router_c",
+          "label": "Router C",
+          "summary": "The /22 routes on Router C already cover the two required path summaries.",
+          "interface_options": ["Gi1", "Gi2", "Gi3", "Gi4"],
+          "routing_table": "Router-C# show ip route\nCodes: L - local, C - connected, S - static\n\nS    10.0.0.0/22 [1/0] via GigabitEthernet1\nS    10.0.4.0/22 [1/0] via GigabitEthernet2\n",
+          "initial": {
+            "problem_found": "No",
+            "destination_prefix": "",
+            "destination_prefix_mask": "",
+            "interface": ""
+          },
+          "correct": {
+            "problem_found": "No",
+            "destination_prefix": "",
+            "destination_prefix_mask": "",
+            "interface": ""
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "pbq",
+    "db_id": 12468,
+    "pdf_question_no": 4,
+    "subtype": "placement",
+    "question_text": "A network administrator has been tasked with configuring a network for a new corporate office. The office consists of two buildings, separated by 50 feet with no physical connectivity. The configuration must meet the following requirements:",
+    "explanation": "The PDF accepts Switch on the left side of Building A, Firewall at the top center, Router beneath the Firewall, and the WAP and Wireless range extender in the two remaining wireless positions. The lecture notes explicitly allow either WAP-right plus extender-bottom or extender-right plus WAP-bottom.",
+    "difficulty": "medium",
+    "pbq_config": {
+      "instructions": [
+        "Devices in both buildings should be able to access the Internet.",
+        "Security insists that all Internet traffic be inspected before entering the network.",
+        "Desktops should not see traffic destined for other devices.",
+        "Select the appropriate network device for each location. If applicable, click on the magnifying glass next to any device which may require configuration updates and make any necessary changes.",
+        "Not all devices will be used, but all locations should be filled.",
+        "If at any time you would like to bring back the initial state of the simulation, please click the Reset All button."
+      ],
+      "reference_images": [
+        { "id": "q4-simulation", "title": "Simulation", "src": "/apps/learning/img/pbq/network-plus/page-14.png" },
+        { "id": "q4-accepted-layouts", "title": "Accepted Layouts", "src": "/apps/learning/img/pbq/network-plus/page-15.png" }
+      ],
+      "scenario_image": "/apps/learning/img/pbq/network-plus/page-14.png",
+      "positions": [
+        { "id": "building_a_switch", "label": "Building A desktop segment", "x_pct": 18, "y_pct": 75, "correct": "Switch" },
+        { "id": "internet_firewall", "label": "Internet edge", "x_pct": 48, "y_pct": 64, "correct": "Firewall" },
+        { "id": "building_a_router", "label": "Building A router", "x_pct": 48, "y_pct": 75, "correct": "Router" },
+        { "id": "wireless_floor", "label": "Building A wireless floor device", "x_pct": 47, "y_pct": 87, "correct": ["WAP", "Wireless range extender"] },
+        { "id": "building_b_wireless", "label": "Building B wireless device", "x_pct": 82, "y_pct": 75, "correct": ["Wireless range extender", "WAP"] }
+      ],
+      "device_options": ["Switch", "WAP", "Hub", "Wireless range extender", "Router", "Firewall"],
+      "scoring_mode": "partial"
+    }
+  },
+  {
+    "type": "pbq",
+    "db_id": 12472,
+    "pdf_question_no": 5,
+    "subtype": "diagnostic",
+    "question_text": "A network technician needs to resolve some issues with a customer's SOHO network. The customer reports that some of the devices are not connecting to the network, while others appear to work as intended.",
+    "explanation": "The unambiguous issues visible in the PDF are Cable 2 exceeding 100 meters, Cable 5 using crossover wiring, Cable 4 on the wrong VLAN, Cable 7 on the wrong VLAN, Cable 8 on the wrong VLAN, and the printer using 10.10.11.56 instead of the documented 10.10.11.16. The PDF notes also mention possible gateway and DNS issues, but those are not fully evidenced by the provided screenshots.",
+    "difficulty": "hard",
+    "pbq_config": {
+      "instructions": [
+        "Troubleshoot all the network components and review the cable test results by clicking on each device and cable.",
+        "Type help in each terminal to view a list of available commands.",
+        "Diagnose the appropriate component(s) by identifying any components with a problem and recommend a solution to correct each problem.",
+        "If at any time you would like to bring back the initial state of the simulation, please click the Reset All button."
+      ],
+      "reference_images": [
+        { "id": "q5-topology", "title": "Topology and Cables 1-3", "src": "/apps/learning/img/pbq/network-plus/page-16.png" },
+        { "id": "q5-cables", "title": "Cables 4-7", "src": "/apps/learning/img/pbq/network-plus/page-17.png" },
+        { "id": "q5-cable8", "title": "Cable 8", "src": "/apps/learning/img/pbq/network-plus/page-18.png" },
+        { "id": "q5-vlan-usage", "title": "VLAN Usage", "src": "/apps/learning/img/pbq/network-plus/page-19.png" },
+        { "id": "q5-printer", "title": "Printer and Remediation", "src": "/apps/learning/img/pbq/network-plus/page-20.png" }
+      ],
+      "findings": [
+        {
+          "id": "finding_cable2",
+          "label": "Finding 1",
+          "hint": "Review Cable 2.",
+          "component_options": ["PC1", "PC2", "PC3", "PC4", "PC5", "Printer", "Server1", "Switch1", "Switch2", "Cable1", "Cable2", "Cable3", "Cable4", "Cable5", "Cable6", "Cable7", "Cable8"],
+          "problem_options": ["Exceeds maximum cable length", "Wrong VLAN assignment", "Uses crossover wiring"],
+          "solution_options": ["Replace the cable with a run shorter than 100 meters", "Change the switchport VLAN", "Replace the cable with a straight-through cable"],
+          "correct": {
+            "component": "Cable2",
+            "problem": "Exceeds maximum cable length",
+            "solution": "Replace the cable with a run shorter than 100 meters"
+          }
+        },
+        {
+          "id": "finding_cable5",
+          "label": "Finding 2",
+          "hint": "Review Cable 5.",
+          "component_options": ["PC1", "PC2", "PC3", "PC4", "PC5", "Printer", "Server1", "Switch1", "Switch2", "Cable1", "Cable2", "Cable3", "Cable4", "Cable5", "Cable6", "Cable7", "Cable8"],
+          "problem_options": ["Uses crossover wiring", "Exceeds maximum cable length", "Wrong VLAN assignment"],
+          "solution_options": ["Replace the cable with a straight-through cable", "Replace the cable with a run shorter than 100 meters", "Change the switchport VLAN"],
+          "correct": {
+            "component": "Cable5",
+            "problem": "Uses crossover wiring",
+            "solution": "Replace the cable with a straight-through cable"
+          }
+        },
+        {
+          "id": "finding_cable4",
+          "label": "Finding 3",
+          "hint": "Compare Cable 4 against the VLAN usage table.",
+          "component_options": ["PC1", "PC2", "PC3", "PC4", "PC5", "Printer", "Server1", "Switch1", "Switch2", "Cable1", "Cable2", "Cable3", "Cable4", "Cable5", "Cable6", "Cable7", "Cable8"],
+          "problem_options": ["Wrong VLAN assignment", "Uses crossover wiring", "Bad IP address"],
+          "solution_options": ["Change the switchport VLAN to VLAN 2", "Replace the cable with a straight-through cable", "Change IP address"],
+          "correct": {
+            "component": "Cable4",
+            "problem": "Wrong VLAN assignment",
+            "solution": "Change the switchport VLAN to VLAN 2"
+          }
+        },
+        {
+          "id": "finding_cable7",
+          "label": "Finding 4",
+          "hint": "Compare Cable 7 against the VLAN usage table.",
+          "component_options": ["PC1", "PC2", "PC3", "PC4", "PC5", "Printer", "Server1", "Switch1", "Switch2", "Cable1", "Cable2", "Cable3", "Cable4", "Cable5", "Cable6", "Cable7", "Cable8"],
+          "problem_options": ["Wrong VLAN assignment", "Uses crossover wiring", "Bad gateway address"],
+          "solution_options": ["Change the switchport VLAN to VLAN 4", "Replace the cable with a straight-through cable", "Change gateway address"],
+          "correct": {
+            "component": "Cable7",
+            "problem": "Wrong VLAN assignment",
+            "solution": "Change the switchport VLAN to VLAN 4"
+          }
+        },
+        {
+          "id": "finding_cable8",
+          "label": "Finding 5",
+          "hint": "Compare Cable 8 against the VLAN usage table.",
+          "component_options": ["PC1", "PC2", "PC3", "PC4", "PC5", "Printer", "Server1", "Switch1", "Switch2", "Cable1", "Cable2", "Cable3", "Cable4", "Cable5", "Cable6", "Cable7", "Cable8"],
+          "problem_options": ["Wrong VLAN assignment", "Exceeds maximum cable length", "Bad subnet"],
+          "solution_options": ["Change the switchport VLAN to VLAN 11", "Replace the cable with a run shorter than 100 meters", "Change subnet mask"],
+          "correct": {
+            "component": "Cable8",
+            "problem": "Wrong VLAN assignment",
+            "solution": "Change the switchport VLAN to VLAN 11"
+          }
+        },
+        {
+          "id": "finding_printer",
+          "label": "Finding 6",
+          "hint": "Review the printer configuration page.",
+          "component_options": ["PC1", "PC2", "PC3", "PC4", "PC5", "Printer", "Server1", "Switch1", "Switch2", "Cable1", "Cable2", "Cable3", "Cable4", "Cable5", "Cable6", "Cable7", "Cable8"],
+          "problem_options": ["Bad IP address", "Bad gateway address", "Bad name server"],
+          "solution_options": ["Change IP address", "Change gateway address", "Change DNS address", "Release and renew IP address"],
+          "correct": {
+            "component": "Printer",
+            "problem": "Bad IP address",
+            "solution": "Change IP address"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "pbq",
+    "db_id": 12464,
+    "pdf_question_no": 6,
+    "subtype": "dropdown",
+    "question_text": "After a recent power outage, users are reporting performance issues accessing the application servers. Wireless users are also reporting intermittent Internet issues.",
+    "explanation": "WAN2 should be preferred for VoIP because it has significantly lower jitter than WAN1. Router A is the device timing out in the device status panel. In the Top Hosts widget, 10.1.90.53 is the highest-volume workstation address even though 206.208.133.9 is the overall top host.",
+    "difficulty": "hard",
+    "pbq_config": {
+      "instructions": [
+        "Click on each tab at the top of the screen.",
+        "Select a widget to view information, then use the drop-down menus to answer the associated questions.",
+        "If at any time you would like to bring back the initial state of the simulation, please click the Reset All button."
+      ],
+      "reference_images": [
+        { "id": "q6-network-health", "title": "Network Health", "src": "/apps/learning/img/pbq/network-plus/page-22.png" },
+        { "id": "q6-uplinks", "title": "Uplink Details", "src": "/apps/learning/img/pbq/network-plus/page-23.png" },
+        { "id": "q6-device-monitoring", "title": "Device Monitoring", "src": "/apps/learning/img/pbq/network-plus/page-24.png" },
+        { "id": "q6-hosts", "title": "Device and Host Details", "src": "/apps/learning/img/pbq/network-plus/page-25.png" }
+      ],
+      "layout": "cards",
+      "sections": [
+        { "id": "network_health", "title": "Network Health", "note": "Use the WAN uplinks widget to select the best WAN for VoIP." },
+        { "id": "device_monitoring", "title": "Device Monitoring", "note": "Use the device status and top hosts widgets for the remaining questions." }
+      ],
+      "questions": [
+        {
+          "id": "q_voip_wan",
+          "section": "network_health",
+          "label": "Which WAN station should be preferred for VoIP traffic?",
+          "placeholder": "Select WAN",
+          "help_text": "Compare WAN1 and WAN2 using the latency and jitter values in the Network Health panel.",
+          "options": ["WAN1", "WAN2"],
+          "correct": "WAN2"
+        },
+        {
+          "id": "q_connectivity_issue",
+          "section": "device_monitoring",
+          "label": "Which device is experiencing connectivity issues?",
+          "placeholder": "Select Answer",
+          "help_text": "The answer comes from the device status widget where one router times out.",
+          "options": ["Router A", "Router B", "WAP1", "WAP2", "WirelessController", "Switch A", "Switch B", "DHCP Server", "Web Server", "APP Server"],
+          "correct": "Router A"
+        },
+        {
+          "id": "q_most_traffic",
+          "section": "device_monitoring",
+          "label": "Which workstation IP is generating the MOST traffic?",
+          "placeholder": "Select Answer",
+          "help_text": "Pick the highest-volume workstation from the Top Hosts widget, not the overall top non-workstation host.",
+          "options": ["10.1.99.28", "10.1.99.14", "10.1.99.10", "10.1.99.24", "206.208.133.10", "206.208.133.9", "10.1.50.14", "10.1.59.81", "10.1.90.53", "10.1.90.55"],
+          "correct": "10.1.90.53"
+        }
+      ]
+    }
+  }
+]

@@ -8,8 +8,11 @@
  */
 export function scoringSummary(positions, value, mode = 'strict') {
   if (!positions.length) return ''
+  const isMatch = (expected, actual) => Array.isArray(expected)
+    ? expected.includes(actual)
+    : actual === expected
   const correct = positions.filter(
-    p => p.correct !== undefined && value[p.id] === p.correct
+    p => p.correct !== undefined && isMatch(p.correct, value[p.id])
   ).length
   const total = positions.length
   if (mode === 'partial') {
