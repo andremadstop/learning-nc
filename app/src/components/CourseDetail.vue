@@ -417,6 +417,7 @@
 						:poolId="selectedLearningPool.pool_id"
 						:courseId="courseId"
 						:totalQuestions="selectedLearningPoolQuestionCount"
+						:allowWfMode="selectedLearningPoolAllowsWfMode"
 						:contentLanguage="contentLanguage"
 						@back="resetLearningPoolSelection" />
 
@@ -424,15 +425,6 @@
 						v-else-if="activeLearningMode === 'leitner'"
 						:poolId="selectedLearningPool.pool_id"
 						:courseId="courseId"
-						:contentLanguage="contentLanguage"
-						@back="resetLearningPoolSelection" />
-
-					<TrainingMode
-						v-else-if="activeLearningMode === 'swipe'"
-						:poolId="selectedLearningPool.pool_id"
-						:courseId="courseId"
-						:totalQuestions="selectedLearningPoolQuestionCount"
-						:wfMode="true"
 						:contentLanguage="contentLanguage"
 						@back="resetLearningPoolSelection" />
 
@@ -604,14 +596,14 @@
 					:courseId="courseId"
 					:coursePools="coursePools"
 					:contentLanguage="contentLanguage"
-					:gameMode="'sprint'"
+					:mode="'sprint'"
 					@back="arenaSubMode = null" />
 				<GameshowMode
 					v-else-if="arenaSubMode === 'elimination'"
 					:courseId="courseId"
 					:coursePools="coursePools"
 					:contentLanguage="contentLanguage"
-					:gameMode="'elimination'"
+					:mode="'elimination'"
 					@back="arenaSubMode = null" />
 			</div>
 		<!-- Curriculum Scope Tab (instructor only) -->
@@ -1190,13 +1182,13 @@ export default {
 			return user ? user.uid : null
 		},
 		isStudentLearningTab() {
-			return !this.isInstructor && ['training', 'leitner', 'swipe', 'exam'].includes(this.currentTab)
+			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentTab)
 		},
 		modeConfigKeys() {
 			return [
 				{ key: 'training', label: t('learning', 'Training (immer aktiv)') },
 				{ key: 'leitner', label: t('learning', 'Leitner') },
-				{ key: 'swipe', label: t('learning', 'Wahr/Falsch (Swipe)') },
+				{ key: 'swipe', label: t('learning', 'Wahr/Falsch im Training') },
 				{ key: 'exam', label: t('learning', 'Exam') },
 				{ key: 'duel', label: t('learning', 'Duell') },
 				{ key: 'gameshow', label: t('learning', 'Gameshow') },
@@ -1227,7 +1219,6 @@ export default {
 				{ id: 'training', label: t('learning', 'Training') },
 			]
 			if (enabled('leitner')) tabs.push({ id: 'leitner', label: t('learning', 'Leitner') })
-			if (enabled('swipe')) tabs.push({ id: 'swipe', label: t('learning', 'Wahr/Falsch') })
 			if (enabled('exam')) tabs.push({ id: 'exam', label: t('learning', 'Exam') })
 			tabs.push({ id: 'my-progress', label: t('learning', 'Mein Fortschritt') })
 			tabs.push({ id: 'leaderboard', label: t('learning', 'Leaderboard') })
@@ -1251,6 +1242,9 @@ export default {
 			return this.poolQuestionCounts[this.selectedLearningPool.pool_id]
 				?? this.selectedLearningPool.question_count
 				?? 0
+		},
+		selectedLearningPoolAllowsWfMode() {
+			return this.course?.mode_config?.swipe !== false
 		},
 		currentRequiredBlockers() {
 			return this.sortedPools
@@ -1315,6 +1309,10 @@ export default {
 			},
 		},
 		currentTab(tab) {
+			if (tab === 'swipe') {
+				this.currentTab = 'training'
+				return
+			}
 			if (this.isStudentLearningTab) {
 				this.activeLearningMode = tab
 				this.selectedLearningPool = null
@@ -1380,7 +1378,15 @@ export default {
 				} else if (this.currentTab === 'league') {
 					area = 'course-league'
 				} else if (this.currentTab === 'arena') {
-					area = this.arenaSubMode ? `course-${this.arenaSubMode}` : 'course-arena'
+					if (this.arenaSubMode === 'sprint') {
+						area = 'course-arena-sprint'
+					} else if (this.arenaSubMode === 'elimination') {
+						area = 'course-arena-elimination'
+					} else if (this.arenaSubMode === 'duel') {
+						area = 'course-duel'
+					} else {
+						area = 'course-arena'
+					}
 				} else if (this.isStudentLearningTab) {
 					area = this.selectedLearningPool
 						? `course-${this.activeLearningMode}-active`
@@ -1397,12 +1403,23 @@ export default {
 				if (tabId !== 'arena') {
 					this.arenaSubMode = null
 				}
+				if (tabId === 'arena' && !this.isInstructor) {
+					this.$root.$emit('virtuprof:trigger', 'arena-first-visit')
+				}
 				if (tabId === 'league' && !this.isInstructor) {
 					this.$root.$emit('virtuprof:trigger', 'liga-first-visit')
 				}
 			},
 			onArenaSelectMode(mode) {
 				this.arenaSubMode = mode
+				if (this.isInstructor) {
+					return
+				}
+				if (mode === 'sprint') {
+					this.$root.$emit('virtuprof:trigger', 'gameshow-sprint-first-start')
+				} else if (mode === 'elimination') {
+					this.$root.$emit('virtuprof:trigger', 'gameshow-elimination-first-start')
+				}
 			},
 
 			getLearningPoolQuestionCount(pool) {
@@ -1548,12 +1565,14 @@ export default {
 
 				// Default tab for students
 				if (!this.course.is_instructor) {
-					this.currentTab = this.presetDuelCode ? 'duel' : 'training'
+					this.currentTab = this.presetDuelCode ? 'arena' : 'training'
+					this.arenaSubMode = this.presetDuelCode ? 'duel' : null
 					this.activeLearningMode = 'training'
 					this.selectedLearningPool = null
 					this.fetchStudentProgress()
 				} else if (this.presetDuelCode) {
-					this.currentTab = 'duel'
+					this.currentTab = 'arena'
+					this.arenaSubMode = 'duel'
 				}
 				this.$nextTick(() => {
 					this.emitVirtuProfContext()

@@ -963,7 +963,7 @@ export default {
           text: this.vt('The league is course-specific. Challenge classmates, collect points and watch the standings change after each finished duel.'),
         }
       }
-      if (area === 'course-duel' || area === 'course-arena') {
+      if (area === 'course-duel' || area === 'course-arena' || area === 'arena' || area === 'pool-arena') {
         return {
           title: this.vt('Arena'),
           text: this.vt('Hier kannst du Duelle annehmen oder starten sowie Sprint- und Elimination-Runden beitreten. Die Arena bietet drei Modi: Duell (1 gegen 1), Sprint (2–5 Spieler) und Elimination (2–5 Spieler, 3 Leben).'),

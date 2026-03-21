@@ -39,7 +39,6 @@
         @selectPool="selectPool"
         @openSmartQueue="openSmartQueue"
         @openRemediation="openRemediation"
-        @openTrainingWf="openSwipeMode"
       />
 
       <div v-else-if="currentView === 'questions'" class="pool-view">
@@ -92,15 +91,6 @@
           @back="setMode('train')"
         />
 
-        <TrainingMode
-          v-else-if="mode === 'swipe'"
-          :poolId="selectedPool.id"
-          :totalQuestions="questionCount"
-          :wfMode="true"
-          :contentLanguage="contentLanguage"
-          @back="setMode('train')"
-        />
-
         <ExamMode
           v-else-if="mode === 'exam'"
           :poolId="selectedPool.id"
@@ -109,12 +99,32 @@
           @back="setMode('train')"
         />
 
-        <GameshowMode
-          v-else-if="mode === 'gameshow'"
-          :initialPoolId="selectedPool.id"
-          :contentLanguage="contentLanguage"
-          @back="setMode('train')"
-        />
+        <template v-else-if="mode === 'gameshow'">
+          <ArenaSelector
+            v-if="arenaSubMode === null"
+            @select-mode="onArenaSelectMode"
+          />
+          <DuelMode
+            v-else-if="arenaSubMode === 'duel'"
+            :initialPoolId="selectedPool.id"
+            :contentLanguage="contentLanguage"
+            @back="arenaSubMode = null"
+          />
+          <GameshowMode
+            v-else-if="arenaSubMode === 'sprint'"
+            :initialPoolId="selectedPool.id"
+            :contentLanguage="contentLanguage"
+            :mode="'sprint'"
+            @back="arenaSubMode = null"
+          />
+          <GameshowMode
+            v-else-if="arenaSubMode === 'elimination'"
+            :initialPoolId="selectedPool.id"
+            :contentLanguage="contentLanguage"
+            :mode="'elimination'"
+            @back="arenaSubMode = null"
+          />
+        </template>
 
         <AnalyticsDashboard
           v-else-if="mode === 'stats'"
@@ -221,6 +231,8 @@ import SmartQueue from './components/SmartQueue.vue';
 import AdminSettings from './components/AdminSettings.vue';
 import PersonalSettings from './components/PersonalSettings.vue';
 import GameshowMode from './components/GameshowMode.vue';
+import DuelMode from './components/DuelMode.vue';
+import ArenaSelector from './components/ArenaSelector.vue';
 import VirtuProf from './components/VirtuProf.vue';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
@@ -243,6 +255,8 @@ export default {
     InstructorDashboard,
     SmartQueue,
     GameshowMode,
+    DuelMode,
+    ArenaSelector,
     AdminSettings,
     PersonalSettings,
     VirtuProf,
@@ -258,6 +272,7 @@ export default {
       smartQueueMode: 'queue',
       selectedPool: null,
       mode: 'train',
+      arenaSubMode: null,
       questionCount: 0,
       poolPermission: 'owner',
       error: null,
@@ -283,16 +298,15 @@ export default {
       return [
         { id: 'train', label: t('learning', 'Training') },
         { id: 'leitner', label: t('learning', 'Leitner') },
-        { id: 'swipe', label: t('learning', 'Wahr/Falsch') },
         { id: 'exam', label: t('learning', 'Exam') },
-        { id: 'gameshow', label: t('learning', 'Arena — Gameshow') },
+        { id: 'gameshow', label: t('learning', 'Arena') },
         { id: 'stats', label: t('learning', 'Stats') },
         { id: 'manage', label: this.poolPermission === 'read' ? t('learning', 'View Questions') : t('learning', 'Manage') }
       ];
     },
     filteredModes() {
       if (this.userRole === 'student') {
-        return this.modes.filter(m => ['train', 'leitner', 'swipe', 'exam', 'gameshow'].includes(m.id));
+        return this.modes.filter(m => ['train', 'leitner', 'exam', 'gameshow'].includes(m.id));
       }
       return this.modes;
     },
@@ -300,9 +314,8 @@ export default {
       return {
         train: t('learning', 'Quick quiz — test your knowledge with random questions.'),
         leitner: t('learning', 'Spaced repetition — difficult questions come back more often. 5 boxes, step by step.'),
-        swipe: t('learning', 'True or false — tap quickly to classify statements.'),
         exam: t('learning', 'Exam mode — no feedback until the end, like a real exam.'),
-        gameshow: t('learning', 'Sprint oder Elimination — konkurriere live mit anderen Spielern.'),
+        gameshow: t('learning', 'Arena mit Duell, Sprint oder Elimination.'),
         stats: t('learning', 'Learning statistics and box distribution for this pool.'),
         manage: t('learning', 'Add, edit, delete and import questions.'),
       };
@@ -375,6 +388,13 @@ export default {
       }
       if (this.mainView === 'pools') {
         if (this.currentView === 'questions') {
+          if (this.mode === 'gameshow') {
+            const area = this.arenaSubMode ? `arena-${this.arenaSubMode}` : 'arena';
+            return {
+              area,
+              poolName: this.selectedPool?.name || '',
+            };
+          }
           return {
             area: `pool-${this.mode}`,
             poolName: this.selectedPool?.name || '',
@@ -526,6 +546,7 @@ export default {
       this.currentView = 'pools';
       this.selectedPool = null;
       this.mode = 'train';
+      this.arenaSubMode = null;
       this.poolPermission = 'owner';
       this.error = null;
       this.poolFromCourse = false;
@@ -536,6 +557,7 @@ export default {
       this.currentView = 'pools';
       this.selectedPool = null;
       this.mode = 'train';
+      this.arenaSubMode = null;
       this.poolPermission = 'owner';
       this.error = null;
       this.poolFromCourse = false;
@@ -551,19 +573,29 @@ export default {
       this.smartQueueMode = 'queue';
       this.currentView = 'smartQueue';
     },
-    openSwipeMode() {
-      // Standalone Wahr/Falsch: no dedicated view anymore (SwipeMode removed).
-      // TrainingMode requires a pool — user must select a pool and use the Wahr/Falsch tab.
-      // Keep currentView as 'pools' so the pool list remains visible.
-      this.currentView = 'pools';
-    },
     openRemediation() {
       this.smartQueueMode = 'remediation';
       this.currentView = 'smartQueue';
     },
     setMode(newMode) {
+      if (newMode === 'swipe') {
+        newMode = 'train';
+      }
       this.mode = newMode;
+      if (newMode !== 'gameshow') {
+        this.arenaSubMode = null;
+      } else {
+        this.emitVirtuProf('arena-first-visit');
+      }
       this.error = null;
+    },
+    onArenaSelectMode(mode) {
+      this.arenaSubMode = mode;
+      if (mode === 'sprint') {
+        this.emitVirtuProf('gameshow-sprint-first-start');
+      } else if (mode === 'elimination') {
+        this.emitVirtuProf('gameshow-elimination-first-start');
+      }
     },
 
     // --- Courses methods ---

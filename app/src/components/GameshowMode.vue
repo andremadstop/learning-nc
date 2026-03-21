@@ -90,7 +90,7 @@
         >
           <span class="player-name">{{ player.display_name || player.user_id }}</span>
           <span class="player-ready" :class="{ ready: player.is_ready }">
-            {{ player.is_ready ? '&#10003;' : '...' }}
+            {{ player.is_ready ? '✓' : '...' }}
           </span>
         </div>
         <div v-for="n in emptySlots" :key="'empty-' + n" class="lobby-player lobby-player-empty">
@@ -250,7 +250,7 @@
 
       <QuestionLanguageSwitcher v-model="questionLanguage" />
       <div class="feedback-card" :class="[answeredCorrect ? 'feedback-correct' : 'feedback-incorrect', { 'sudden-death-frame': isEliminationMode && isSuddenDeath }]">
-        <span class="feedback-icon">{{ answeredCorrect ? '&#10003;' : '&#10007;' }}</span>
+        <span class="feedback-icon">{{ answeredCorrect ? '✓' : '✗' }}</span>
         <span class="feedback-label">{{ answeredCorrect ? t('learning', 'Richtig!') : t('learning', 'Falsch!') }}</span>
         <span class="feedback-points" :class="{ 'points-positive': !isEliminationMode && lastPoints > 0 }">
           {{ isEliminationMode ? feedbackMetricText : (lastPoints > 0 ? '+' + lastPoints : lastPoints) }}
@@ -881,6 +881,9 @@ export default {
             this.spotlightActive = true;
             this.startTimer();
           }
+          this.emitVirtuProf('arena-session-restored', {
+            mode: r.data.mode || this.mode,
+          });
           this.startPolling();
         } else {
           localStorage.removeItem('learning_gameshow_session');

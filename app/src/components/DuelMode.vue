@@ -263,6 +263,10 @@ export default {
       type: Array,
       default: null,
     },
+    initialPoolId: {
+      type: Number,
+      default: null,
+    },
     presetDuelCode: {
       type: String,
       default: '',
@@ -303,6 +307,7 @@ export default {
       questionLanguage: this.contentLanguage || '',
       consecutivePollErrors: 0,
       disconnectDetected: false,
+      restoringFromStorage: false,
     };
   },
 
@@ -387,9 +392,7 @@ export default {
         id: p.pool_id ?? p.id,
         name: p.pool_name ?? p.name,
       }));
-      if (this.pools.length === 1) {
-        this.selectedPoolId = this.pools[0].id;
-      }
+      this.applyInitialPoolSelection();
     } else {
       this.fetchPools();
     }
@@ -406,6 +409,7 @@ export default {
         try {
           const { code } = JSON.parse(saved);
           if (code) {
+            this.restoringFromStorage = true;
             this.loadExistingDuel(code);
           }
         } catch (e) {
@@ -443,6 +447,14 @@ export default {
   methods: {
     emitVirtuProf(triggerId, context = {}) {
       this.$root.$emit('virtuprof:trigger', triggerId, context);
+    },
+    applyInitialPoolSelection() {
+      const desiredPoolId = this.initialPoolId;
+      if (desiredPoolId && this.pools.some(pool => Number(pool.id) === Number(desiredPoolId))) {
+        this.selectedPoolId = Number(desiredPoolId);
+      } else if (this.pools.length === 1) {
+        this.selectedPoolId = this.pools[0].id;
+      }
     },
     buildStateParams() {
       return this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {};
@@ -527,11 +539,16 @@ export default {
         }
         this.$emit('preset-consumed');
         this.emitVirtuProf('duel-first-start');
+        if (this.restoringFromStorage) {
+          this.emitVirtuProf('arena-session-restored', { mode: 'duel' });
+          this.restoringFromStorage = false;
+        }
         if (r.data.status !== 'finished' && r.data.status !== 'expired') {
           localStorage.setItem('learning_duel_session', JSON.stringify({ code: this.duelCode }));
         }
         this.startPolling();
       } catch (e) {
+        this.restoringFromStorage = false;
         this.error = e.response?.data?.error || t('learning', 'Duell konnte nicht geladen werden');
         if (!this.hideJoinScreen) {
           this.phase = 'join';
@@ -549,9 +566,7 @@ export default {
         const own = r.data.own || [];
         const shared = r.data.shared || [];
         this.pools = [...own, ...shared];
-        if (this.pools.length === 1) {
-          this.selectedPoolId = this.pools[0].id;
-        }
+        this.applyInitialPoolSelection();
       } catch (e) {
         this.error = t('learning', 'Pools konnten nicht geladen werden');
       }

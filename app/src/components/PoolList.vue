@@ -33,10 +33,6 @@
         <span class="rem-count">{{ remediationCount }} {{ t('learning', 'cards') }}</span>
       </button>
 
-      <button class="swipe-mode-btn" @click="$emit('openTrainingWf')">
-        <span class="sq-icon">&#x1F500;</span>
-        <span class="sq-text">{{ t('learning', 'Wahr/Falsch') }}</span>
-      </button>
     </div>
 
     <!-- Smart Queue hint (only for students) -->

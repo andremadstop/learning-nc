@@ -4,7 +4,7 @@
       <h3>{{ t('learning', 'Start Training Session') }}</h3>
       <p v-if="totalQuestions > 0">{{ t('learning', 'Test your knowledge with {n} questions', { n: totalQuestions }) }}</p>
       <NcEmptyContent v-else :name="t('learning', 'No questions')" :description="t('learning', 'No questions available for training')" />
-      <div class="mode-toggle" role="group" :aria-label="t('learning', 'Lernmodus')">
+      <div v-if="allowWfMode" class="mode-toggle" role="group" :aria-label="t('learning', 'Lernmodus')">
         <button class="mode-toggle-btn" :class="{ active: !localWfMode }" @click="localWfMode = false">
           Multiple-Choice
         </button>
@@ -242,6 +242,7 @@ export default {
     totalQuestions: { type: Number, required: true },
     contentLanguage: { type: String, default: '' },
     wfMode: { type: Boolean, default: false },
+    allowWfMode: { type: Boolean, default: true },
   },
   data() {
     return {
@@ -267,7 +268,7 @@ export default {
       explainPollTimer: null,
       questionLanguage: this.contentLanguage || '',
       // localWfMode: starts from prop, user can toggle on start screen
-      localWfMode: this.wfMode,
+      localWfMode: this.allowWfMode ? this.wfMode : false,
       cardAnimClass: '',
       canDrag: false,
       isDragging: false,
@@ -292,7 +293,18 @@ export default {
       this.refreshQuestionsForLanguage();
     },
     wfMode(newVal) {
-      this.localWfMode = newVal;
+      this.localWfMode = this.allowWfMode ? newVal : false;
+      if (this.session) {
+        this.cardAnimClass = '';
+        this.canDrag = false;
+        this.isDragging = false;
+        this.dragDeltaX = 0;
+        this.showFeedback = false;
+        this.restartTraining();
+      }
+    },
+    allowWfMode(newVal) {
+      this.localWfMode = newVal ? this.wfMode : false;
       if (this.session) {
         this.cardAnimClass = '';
         this.canDrag = false;
