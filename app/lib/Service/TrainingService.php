@@ -7,6 +7,7 @@ use OCA\Learning\Db\AnswerMapper;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Service\BadgeService;
+use OCA\Learning\Service\LernprofilService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Db\DoesNotExistException;
@@ -30,6 +31,7 @@ class TrainingService {
     private IConfig $config;
     private LoggerInterface $logger;
     private CourseService $courseService;
+    private LernprofilService $lernprofilService;
 
     public function __construct(
         IDBConnection $db,
@@ -44,7 +46,8 @@ class TrainingService {
         TranslationService $translationService,
         IConfig $config,
         LoggerInterface $logger,
-        CourseService $courseService
+        CourseService $courseService,
+        LernprofilService $lernprofilService
     ) {
         $this->db = $db;
         $this->questionMapper = $questionMapper;
@@ -59,6 +62,7 @@ class TrainingService {
         $this->config = $config;
         $this->logger = $logger;
         $this->courseService = $courseService;
+        $this->lernprofilService = $lernprofilService;
     }
 
     private function applyNullableCourseFilter($qb, ?int $courseId): void {
@@ -1584,6 +1588,9 @@ class TrainingService {
 
         // Invalidate cache AFTER all state-changing writes (XP, badges, streak)
         $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);
+
+        // PROF-04: Passively invalidate Lernprofil cache so next GET /api/profile is fresh
+        $this->lernprofilService->invalidateCache($userId);
 
         // Personal best: compare score to user's average for this pool in this mode
         $poolId = (int)$session['pool_id'];

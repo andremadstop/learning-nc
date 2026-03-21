@@ -5,6 +5,7 @@ namespace OCA\Learning\Service;
 use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Service\BadgeService;
+use OCA\Learning\Service\LernprofilService;
 use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
@@ -24,8 +25,9 @@ class LeitnerService {
     private TranslationService $translationService;
     private IConfig $config;
     private CourseService $courseService;
+    private LernprofilService $lernprofilService;
 
-    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, StreakService $streakService, XpService $xpService, ICacheFactory $cacheFactory, TranslationService $translationService, IConfig $config, CourseService $courseService) {
+    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, StreakService $streakService, XpService $xpService, ICacheFactory $cacheFactory, TranslationService $translationService, IConfig $config, CourseService $courseService, LernprofilService $lernprofilService) {
         $this->db = $db;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
@@ -36,6 +38,7 @@ class LeitnerService {
         $this->translationService = $translationService;
         $this->config = $config;
         $this->courseService = $courseService;
+        $this->lernprofilService = $lernprofilService;
     }
 
     private function resolveCourseQuestionIds(?int $courseId, int $poolId, string $userId): ?array {
@@ -479,6 +482,9 @@ class LeitnerService {
 
         // Invalidate cache AFTER commit
         $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);
+
+        // PROF-04: Passively invalidate Lernprofil cache so next GET /api/profile is fresh
+        $this->lernprofilService->invalidateCache($userId);
 
         // SECURITY: Suppress correct answer details during active exam to prevent oracle attack
         $poolId = (int)$item['pool_id'];
