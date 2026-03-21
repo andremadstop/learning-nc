@@ -19,6 +19,8 @@ class GameshowSession extends Entity {
     protected $startedAt;
     protected $creatorUid;
     protected $questionStartedAt;
+    /** @var string|null JSON blob for board-game state (lernwuerfel / wissensturm) */
+    protected $boardState;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -36,5 +38,6 @@ class GameshowSession extends Entity {
         $this->addType('startedAt', 'integer');
         $this->addType('creatorUid', 'string');
         $this->addType('questionStartedAt', 'integer');
+        $this->addType('boardState', 'string');
     }
 }
