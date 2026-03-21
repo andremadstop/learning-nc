@@ -918,7 +918,7 @@ class GameshowService {
 
         // Move figure on correct answer
         if ($isCorrect) {
-            $currentPos = $positions[$slotKey] ?? 0;
+            $currentPos = (int)($positions[$slotKey] ?? 0);
             $newPos = $currentPos + $diceResult;
 
             if ($newPos >= self::LERNWUERFEL_BOARD_SIZE) {

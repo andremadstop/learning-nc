@@ -46,11 +46,6 @@ parameters:
 			path: lib/Db/AnswerTranslationMapper.php
 
 		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\AnswerTranslationMapper\\:\\:findByAnswersAndLang\\(\\) should return array\\<OCA\\\\Learning\\\\Db\\\\AnswerTranslation\\> but returns array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\.$#"
-			count: 1
-			path: lib/Db/AnswerTranslationMapper.php
-
-		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\CourseMapper\\:\\:findById\\(\\) should return OCA\\\\Learning\\\\Db\\\\Course but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
 			count: 1
 			path: lib/Db/CourseMapper.php
@@ -96,21 +91,6 @@ parameters:
 			path: lib/Db/DuelSessionMapper.php
 
 		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowAnswerMapper\\:\\:findBySession\\(\\) should return array\\<OCA\\\\Learning\\\\Db\\\\GameshowAnswer\\> but returns array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\.$#"
-			count: 1
-			path: lib/Db/GameshowAnswerMapper.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowAnswerMapper\\:\\:findBySessionAndQuestion\\(\\) should return array\\<OCA\\\\Learning\\\\Db\\\\GameshowAnswer\\> but returns array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\.$#"
-			count: 1
-			path: lib/Db/GameshowAnswerMapper.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowPlayerMapper\\:\\:findBySession\\(\\) should return array\\<OCA\\\\Learning\\\\Db\\\\GameshowPlayer\\> but returns array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\.$#"
-			count: 1
-			path: lib/Db/GameshowPlayerMapper.php
-
-		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowPlayerMapper\\:\\:findBySessionAndUser\\(\\) should return OCA\\\\Learning\\\\Db\\\\GameshowPlayer but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
 			count: 1
 			path: lib/Db/GameshowPlayerMapper.php
@@ -122,16 +102,6 @@ parameters:
 
 		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowSessionMapper\\:\\:findById\\(\\) should return OCA\\\\Learning\\\\Db\\\\GameshowSession but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
-			count: 1
-			path: lib/Db/GameshowSessionMapper.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowSessionMapper\\:\\:findFinishedByUser\\(\\) should return array\\<OCA\\\\Learning\\\\Db\\\\GameshowSession\\> but returns array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\.$#"
-			count: 1
-			path: lib/Db/GameshowSessionMapper.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowSessionMapper\\:\\:findOpenByCourse\\(\\) should return array\\<OCA\\\\Learning\\\\Db\\\\GameshowSession\\> but returns array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\.$#"
 			count: 1
 			path: lib/Db/GameshowSessionMapper.php
 
@@ -196,29 +166,9 @@ parameters:
 			path: lib/Db/QuestionTranslationMapper.php
 
 		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\QuestionTranslationMapper\\:\\:findByQuestionsAndLang\\(\\) should return array\\<OCA\\\\Learning\\\\Db\\\\QuestionTranslation\\> but returns array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\.$#"
-			count: 1
-			path: lib/Db/QuestionTranslationMapper.php
-
-		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\SupportTicketMapper\\:\\:findById\\(\\) should return OCA\\\\Learning\\\\Db\\\\SupportTicket but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
 			count: 1
 			path: lib/Db/SupportTicketMapper.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowAnswerMapper\\:\\:findBySession\\(\\) should return array\\<OCA\\\\Learning\\\\Db\\\\GameshowAnswer\\> but returns array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\.$#"
-			count: 1
-			path: lib/GameshowAnswerMapper.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowAnswerMapper\\:\\:findBySessionAndQuestion\\(\\) should return array\\<OCA\\\\Learning\\\\Db\\\\GameshowAnswer\\> but returns array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\.$#"
-			count: 1
-			path: lib/GameshowAnswerMapper.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowPlayerMapper\\:\\:findBySession\\(\\) should return array\\<OCA\\\\Learning\\\\Db\\\\GameshowPlayer\\> but returns array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\.$#"
-			count: 1
-			path: lib/GameshowPlayerMapper.php
 
 		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowPlayerMapper\\:\\:findBySessionAndUser\\(\\) should return OCA\\\\Learning\\\\Db\\\\GameshowPlayer but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
@@ -237,11 +187,6 @@ parameters:
 
 		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowSessionMapper\\:\\:findById\\(\\) should return OCA\\\\Learning\\\\Db\\\\GameshowSession but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
-			count: 1
-			path: lib/GameshowSessionMapper.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\GameshowSessionMapper\\:\\:findOpenByCourse\\(\\) should return array\\<OCA\\\\Learning\\\\Db\\\\GameshowSession\\> but returns array\\<int, OCP\\\\AppFramework\\\\Db\\\\Entity\\>\\.$#"
 			count: 1
 			path: lib/GameshowSessionMapper.php
 
@@ -397,7 +342,7 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$session of method OCA\\\\Learning\\\\Service\\\\GameshowService\\:\\:buildState\\(\\) expects OCA\\\\Learning\\\\Db\\\\GameshowSession, OCP\\\\AppFramework\\\\Db\\\\Entity given\\.$#"
-			count: 3
+			count: 6
 			path: lib/Service/GameshowService.php
 
 		-
@@ -414,6 +359,11 @@ parameters:
 			message: "#^Method OCA\\\\Learning\\\\Service\\\\LeagueService\\:\\:createLeagueDuel\\(\\) should return OCA\\\\Learning\\\\Db\\\\DuelSession but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
 			count: 1
 			path: lib/Service/LeagueService.php
+
+		-
+			message: "#^Comparison operation \"\\>\" between 0 and 0 is always false\\.$#"
+			count: 1
+			path: lib/Service/LernplanService.php
 
 		-
 			message: "#^Caught class Doctrine\\\\DBAL\\\\Exception\\\\UniqueConstraintViolationException not found\\.$#"
@@ -434,16 +384,6 @@ parameters:
 			message: "#^Call to method getName\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Platforms\\\\AbstractPlatform\\.$#"
 			count: 1
 			path: lib/Service/StreakService.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Service\\\\SupportTicketService\\:\\:create\\(\\) should return OCA\\\\Learning\\\\Db\\\\SupportTicket but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
-			count: 1
-			path: lib/Service/SupportTicketService.php
-
-		-
-			message: "#^Parameter \\#1 \\$ticket of method OCA\\\\Learning\\\\Service\\\\SupportTicketService\\:\\:serializeTicket\\(\\) expects OCA\\\\Learning\\\\Db\\\\SupportTicket, OCP\\\\AppFramework\\\\Db\\\\Entity given\\.$#"
-			count: 1
-			path: lib/Service/SupportTicketService.php
 
 		-
 			message: "#^Method OCA\\\\Learning\\\\Service\\\\TranslationService\\:\\:setAnswerTranslation\\(\\) should return OCA\\\\Learning\\\\Db\\\\AnswerTranslation but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
@@ -499,8 +439,3 @@ parameters:
 			message: "#^Property OCA\\\\Learning\\\\Migration\\\\Version003800Date20260320120000\\:\\:\\$db is never read, only written\\.$#"
 			count: 1
 			path: lib/Version003800Date20260320120000.php
-
-		-
-			message: "#^Comparison operation \">\" between 0 and 0 is always false\\.$#"
-			count: 1
-			path: lib/Service/LernplanService.php

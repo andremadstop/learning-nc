@@ -12,13 +12,13 @@
 
 ### Lernwürfel (Mensch ärgere dich nicht)
 
-- [ ] **WUERF-01**: Spielbrett mit 30 Feldern als Rundkurs (SVG), Figuren als farbige Kreise
-- [ ] **WUERF-02**: Würfel-Animation (CSS rotate) zeigt Zahl 1-6
-- [ ] **WUERF-03**: Nach Würfeln: Frage beantworten — richtig = vorwärts, falsch = stehenbleiben
-- [ ] **WUERF-04**: Rauswerfen: Landest du auf besetztem Feld → Gegner zurück zum Start
-- [ ] **WUERF-05**: Sonderfelder (★): Bonus-Würfel, Schutzfeld, Falle (1 Runde aussetzen)
-- [ ] **WUERF-06**: 6 gewürfelt = nochmal würfeln
-- [ ] **WUERF-07**: Erster bei Feld 30 gewinnt, Confetti + VirtuProf
+- [x] **WUERF-01**: Spielbrett mit 30 Feldern als Rundkurs (SVG), Figuren als farbige Kreise
+- [x] **WUERF-02**: Würfel-Animation (CSS rotate) zeigt Zahl 1-6
+- [x] **WUERF-03**: Nach Würfeln: Frage beantworten — richtig = vorwärts, falsch = stehenbleiben
+- [x] **WUERF-04**: Rauswerfen: Landest du auf besetztem Feld → Gegner zurück zum Start
+- [x] **WUERF-05**: Sonderfelder (★): Bonus-Würfel, Schutzfeld, Falle (1 Runde aussetzen)
+- [x] **WUERF-06**: 6 gewürfelt = nochmal würfeln
+- [x] **WUERF-07**: Erster bei Feld 30 gewinnt, Confetti + VirtuProf
 
 ### Wissensturm (Trivial Pursuit Kategorien)
 
@@ -51,13 +51,13 @@
 | BACK-03 | Phase 28 | Complete |
 | OLD-01 | Phase 29 | Complete |
 | OLD-02 | Phase 29 | Complete |
-| WUERF-01 | Phase 30 | Pending |
-| WUERF-02 | Phase 30 | Pending |
-| WUERF-03 | Phase 30 | Pending |
-| WUERF-04 | Phase 30 | Pending |
-| WUERF-05 | Phase 30 | Pending |
-| WUERF-06 | Phase 30 | Pending |
-| WUERF-07 | Phase 30 | Pending |
+| WUERF-01 | Phase 30 | Complete |
+| WUERF-02 | Phase 30 | Complete |
+| WUERF-03 | Phase 30 | Complete |
+| WUERF-04 | Phase 30 | Complete |
+| WUERF-05 | Phase 30 | Complete |
+| WUERF-06 | Phase 30 | Complete |
+| WUERF-07 | Phase 30 | Complete |
 | TURM-01 | Phase 31 | Complete |
 | TURM-02 | Phase 31 | Complete |
 | TURM-03 | Phase 31 | Complete |

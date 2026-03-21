@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v5.0
 milestone_name: Oldschool (Brettspiel-Modi)
-status: planning
-stopped_at: Phase 31 complete — 31-01-SUMMARY.md created. v5.0 Wissensturm shipped.
-last_updated: "2026-03-21T20:19:03.000Z"
+status: completed
+stopped_at: Completed 30-01-SUMMARY.md — Phase 30 Lernwürfel done
+last_updated: "2026-03-21T20:25:28.625Z"
 last_activity: 2026-03-21 — Phase 31 complete (31-01-SUMMARY.md)
 progress:
   total_phases: 31
-  completed_phases: 27
-  total_plans: 38
-  completed_plans: 42
+  completed_phases: 25
+  total_plans: 37
+  completed_plans: 43
   percent: 87
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — für Einzellerner und Kursgruppen.
-**Current focus:** Phase 31 complete — v5.0 Wissensturm delivered
+**Current focus:** Phase 30 complete — v5.0 Lernwürfel + Wissensturm both shipped
 
 ## Current Position
 
-Phase: 31 of 31 (Wissensturm) — COMPLETE
+Phase: 31 of 31 — ALL PHASES COMPLETE
 Plan: 1 of 1 in current phase
 Status: Complete
-Last activity: 2026-03-21 — Phase 31 complete (31-01-SUMMARY.md)
+Last activity: 2026-03-21 — Phase 30 complete (30-01-SUMMARY.md), all 7 WUERF requirements done
 
-Progress: [████████████████████████░░░░░░] 87% (31/31 phases — all planned phases complete, Phase 30 Lernwürfel pending)
+Progress: [██████████████████████████████] 100% (31/31 phases complete — v5.0 shipped)
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Progress: [███████████████████████
 | v5.0 (28-31) | 4 | ~10 min |
 
 *Updated after each plan completion*
+| Phase 30-lernwuerfel P01 | 11 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,7 @@ Progress: [███████████████████████
 - Wissensturm: roll is called invisibly before category select (backend requirement, hidden from UX)
 - Wissensturm: pool cycling — if fewer than 5 pools, cycle through them for all 5 color slots
 - Wissensturm: 1s poll interval (vs 500ms in GameshowMode) — board-game turns are slower
+- [Phase 30]: SVG 3-row snake layout (420×140): bottom L→R fields 1-10, middle R→L fields 11-20, top L→R fields 21-30
 
 ### Pending Todos
 
@@ -80,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21
-Stopped at: Phase 31 complete — 31-01-SUMMARY.md created. v5.0 Wissensturm shipped.
+Last session: 2026-03-21T20:25:28.608Z
+Stopped at: Completed 30-01-SUMMARY.md — Phase 30 Lernwürfel done
 Resume file: None

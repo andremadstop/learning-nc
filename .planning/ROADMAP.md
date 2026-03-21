@@ -367,7 +367,10 @@ Plans:
   3. Nach dem Würfeln erscheint eine Frage aus dem Pool; richtige Antwort = Figur rückt vor, falsche Antwort = Figur bleibt stehen
   4. Landet eine Figur auf einem besetzten Feld, wird der Gegner auf Start zurückgesetzt; Sonderfelder (★) lösen Bonus-Würfel, Schutz oder Falle aus
   5. Erreicht die erste Figur Feld 30, erscheint Confetti + VirtuProf-Glückwunsch und das Spiel endet
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 30-01-PLAN.md — LernwuerfelMode.vue SVG board + full game flow
 
 ### Phase 31: Wissensturm
 **Goal**: Spieler können eine vollständige Runde Wissensturm spielen — Kategorien wählen, Blöcke sammeln, stehlen und gewinnen
@@ -417,5 +420,5 @@ Phases 28-31 execute sequentially: 28 → 29 → 30 → 31. Phase 30 and 31 both
 | 27. Auto-Trigger | v4.0 | 1/1 | Complete | 2026-03-21 |
 | 28. Brettspiel-Backend | v5.0 | Complete    | 2026-03-21 | 2026-03-21 |
 | 29. Oldschool-Menü | v5.0 | Complete    | 2026-03-21 | 2026-03-21 |
-| 30. Lernwürfel | v5.0 | 0/? | Not started | - |
+| 30. Lernwürfel | v5.0 | 1/1 | Complete | 2026-03-21 |
 | 31. Wissensturm | v5.0 | 1/1 | Complete | 2026-03-21 |
