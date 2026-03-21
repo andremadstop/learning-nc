@@ -131,7 +131,7 @@ Plans:
 **Milestone Goal:** Lernmodi zusammenfuehren und die Multiplayer-Session-UX robuster machen. Weniger Modi-Verwirrung, stabilere Sessions.
 
 - [x] **Phase 14: Training-Merge** - SwipeMode wird in TrainingMode integriert, ein Modus fuer MC und Wahr/Falsch (completed 2026-03-21)
-- [ ] **Phase 15: Arena** - Duell und Gameshow unter einem gemeinsamen Menuepunkt zusammenfassen
+- [x] **Phase 15: Arena** - Duell und Gameshow unter einem gemeinsamen Menuepunkt zusammenfassen (completed 2026-03-21)
 - [ ] **Phase 16: Session-Robustheit** - Abbruch, Reconnect, Timeout-Handling und Session-Cleanup
 
 ## Phase Details
@@ -200,6 +200,6 @@ Phases execute sequentially: 14 -> 15 -> 16. Phase 16 depends on Phase 15. Phase
 | 11. Spectacle Animations | v3.0 | 1/1 | Complete | 2026-03-20 |
 | 12. VirtuProf Showmaster | v3.0 | 1/1 | Complete | 2026-03-20 |
 | 13. XP Integration & Polish | v3.0 | 2/2 | Complete | 2026-03-20 |
-| 14. Training-Merge | 2/2 | Complete   | 2026-03-21 | - |
-| 15. Arena | v3.1 | 0/1 | Not started | - |
+| 14. Training-Merge | 2/2 | Complete    | 2026-03-21 | - |
+| 15. Arena | 1/1 | Complete   | 2026-03-21 | - |
 | 16. Session-Robustheit | v3.1 | 0/2 | Not started | - |

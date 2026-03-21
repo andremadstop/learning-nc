@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v3.1
 milestone_name: UX-Konsolidierung
 status: planning
-stopped_at: Completed 14-02-PLAN.md
-last_updated: "2026-03-21T02:05:35.277Z"
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-03-21T02:42:42.647Z"
 last_activity: 2026-03-20 — Roadmap for v3.1 UX-Konsolidierung created
 progress:
   total_phases: 16
-  completed_phases: 13
+  completed_phases: 14
   total_plans: 26
-  completed_plans: 24
+  completed_plans: 25
   percent: 88
 ---
 
@@ -49,6 +49,7 @@ Progress: [█████████░] 88%
 *Updated after each plan completion*
 | Phase 14-training-merge P01 | 6 | 1 tasks | 1 files |
 | Phase 14-training-merge P02 | 15 | 2 tasks | 5 files |
+| Phase 15-arena P01 | 15 | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -62,6 +63,7 @@ Recent decisions affecting current work:
 - [Phase 14-training-merge]: wfMode toggle integrated into TrainingMode.vue — selectWfAnswer maps True/False to existing submitAnswer() without new API endpoint
 - [Phase 14-training-merge]: SwipeMode.vue unchanged in plan 01 — removal/deprecation deferred to later plan
 - [Phase 14-training-merge]: wfMode added as Boolean prop to TrainingMode; localWfMode as toggleable internal copy; SwipeMode.vue deleted
+- [Phase 15-arena]: arenaSubMode null=selector, string=sub-component; selectTab resets arenaSubMode
 
 ### Pending Todos
 
@@ -74,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T02:05:35.274Z
-Stopped at: Completed 14-02-PLAN.md
+Last session: 2026-03-21T02:42:42.634Z
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None
