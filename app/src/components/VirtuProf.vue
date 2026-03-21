@@ -179,6 +179,10 @@ export default {
     this.$root.$on('virtuprof:refresh-duel-invites', this.handleInviteRefreshRequest)
     this.$root.$on('virtuprof:explain-question', this.handleExplainQuestion)
     await this.loadState()
+    // MEM-01: Load persistent chat history so previous conversations are visible immediately
+    if (this.aiEnabled) {
+      await this.loadChatHistory()
+    }
     await this.refreshDuelInvites(false)
     this.startInvitePolling()
     this.$emit('ready')
@@ -405,6 +409,11 @@ export default {
       if (action?.type === 'generate-note-for-context') {
         await this.generateNoteForContext()
         this.dismiss()
+        return
+      }
+      // MEM-04: Clear persistent chat history
+      if (action?.type === 'clear-chat-history') {
+        await this.clearChatHistory()
         return
       }
       if (action?.next) {
@@ -922,6 +931,33 @@ export default {
       this.closeHelp()
       this.$emit('open-duel', { courseId, duelCode })
     },
+    // MEM-01: Load persistent chat history from the server on mount.
+    async loadChatHistory() {
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/virtu-prof/chat-history'))
+        const messages = response.data?.messages
+        if (Array.isArray(messages) && messages.length > 0) {
+          // Filter out 'summary' role entries (internal compression artefacts) for display
+          this.chatMessages = messages
+            .filter(m => m.role === 'user' || m.role === 'assistant')
+            .map(m => ({ role: m.role, text: m.text || m.message || '' }))
+        }
+      } catch (e) {
+        // Non-critical — silently ignore (fresh session if endpoint fails)
+      }
+    },
+
+    // MEM-04: Delete all persistent chat memory for this user.
+    async clearChatHistory() {
+      try {
+        await axios.delete(generateUrl('/apps/learning/api/virtu-prof/chat-history'))
+        this.chatMessages = []
+      } catch (e) {
+        // Silently ignore — local messages already cleared above if needed
+        this.chatMessages = []
+      }
+    },
+
     async handleChatSend(message) {
       if (!message || this.chatLoading) {
         return

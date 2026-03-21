@@ -187,6 +187,14 @@
             </svg>
           </button>
         </div>
+        <div v-if="chatMessages.length > 0" class="chat-clear-row">
+          <button
+            type="button"
+            class="chat-clear-btn"
+            @click="$emit('action', { type: 'clear-chat-history' })">
+            {{ vt('Clear chat history') }}
+          </button>
+        </div>
       </div>
     </div>
     <div class="bubble-arrow" />
@@ -753,6 +761,28 @@ export default {
 .chat-send-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* ── Chat clear button ─────────────────────────────── */
+.chat-clear-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.chat-clear-btn {
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  font-size: 11px;
+  color: var(--color-text-maxcontrast);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.chat-clear-btn:hover {
+  color: var(--color-error);
 }
 
 /* ── Accessibility: reduced motion ─────────────────── */
