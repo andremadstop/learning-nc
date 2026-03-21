@@ -1,0 +1,370 @@
+{
+  "campaign_id": "grosser_ausfall",
+  "title": "Der große Ausfall",
+  "description": "Montag morgen: nichts geht. Du bist das Notfall-Team.",
+  "duration_minutes": 60,
+  "difficulty": "intermediate",
+  "focus_areas": ["network_plus"],
+  "character_recommendations": ["architect", "helpdesk"],
+  "characters": {
+    "architect": {
+      "name": "Alex \"The Architect\" Neumann",
+      "avatar": "👨‍💻",
+      "skill_bonus_pools": ["routing", "vlan", "subnetting", "topology"],
+      "skill_penalty_pools": ["security", "incident_response"]
+    },
+    "security": {
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "👩‍💻",
+      "skill_bonus_pools": ["security", "incident_response", "firewall"],
+      "skill_penalty_pools": ["routing", "vlan"]
+    },
+    "sysadmin": {
+      "name": "Kai \"Root\" Lindström",
+      "avatar": "🧔",
+      "skill_bonus_pools": ["linux", "dns", "troubleshooting"],
+      "skill_penalty_pools": ["wireless", "wlan"]
+    },
+    "helpdesk": {
+      "name": "Mia \"Helpdesk\" Torres",
+      "avatar": "👩‍🎧",
+      "skill_bonus_pools": ["troubleshooting", "hardware", "a_plus"],
+      "skill_penalty_pools": ["routing", "subnetting"]
+    }
+  },
+  "npcs": {
+    "dr_weber": {
+      "name": "Dr. Margarethe Weber",
+      "role": "CEO",
+      "avatar": "👔"
+    },
+    "jens_bug": {
+      "name": "Jens \"Bug\" Hoffmann",
+      "role": "Ehemaliger Admin",
+      "avatar": "😰"
+    },
+    "nova": {
+      "name": "NOVA",
+      "role": "KI-Assistent",
+      "avatar": "🤖"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_ankunft",
+      "title": "Ankunft",
+      "narrative": "Du betrittst das Gebäude. Die Rezeption ist chaotisch — Telefone klingeln, niemand hat Internet. Ein Mitarbeiter zeigt dir sein Laptop: 'Kein WLAN, kein nichts.'",
+      "image": "scene_lobby_chaos.png",
+      "animation_in": "mission_start",
+      "npc_dialog": {
+        "speaker": "dr_weber",
+        "text": "Mein Meeting um 8 ist per Video. Schaffen Sie das?",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c1_serverraum",
+          "text": "Ich gehe direkt in den Serverraum",
+          "icon": "🖥️",
+          "skill_check": {
+            "pool_filter": "routing",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "architect": {"difficulty_modifier": -1},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s2a_serverraum",
+          "partial_scene": "s2a_serverraum",
+          "fail_scene": "s2a_serverraum_fail"
+        },
+        {
+          "id": "c1_befragung",
+          "text": "Erst befrage ich die Mitarbeiter — wann fing es an?",
+          "icon": "🗣️",
+          "skill_check": {
+            "pool_filter": "troubleshooting",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "helpdesk": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": -1}
+            }
+          },
+          "success_scene": "s2b_befragung",
+          "partial_scene": "s2b_befragung",
+          "fail_scene": "s3_vlan"
+        },
+        {
+          "id": "c1_schraenke",
+          "text": "Ich prüfe die Netzwerkschränke auf dieser Etage",
+          "icon": "🔌",
+          "skill_check": {
+            "pool_filter": "switching",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "architect": {"difficulty_modifier": -1}
+            }
+          },
+          "success_scene": "s3_vlan",
+          "partial_scene": "s3_vlan",
+          "fail_scene": "s3_vlan"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2a_serverraum",
+      "title": "Der Serverraum",
+      "narrative": "Der Serverraum ist kühl und leise — zu leise. Rack 3 ist dunkel. Du siehst: Der Core-Router hat Strom, aber die Interfaces blinken falsch. An der Konsole steht noch der letzte Befehl: 'no ip route 10.0.1.0 255.255.255.0 192.168.1.1'",
+      "image": "scene_server_room.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Routing-Tabelle zeigt unvollständige Einträge. Empfehle Analyse der statischen Routen.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c2a_route_fix",
+          "text": "Statische Route wiederherstellen",
+          "icon": "🗺️",
+          "skill_check": {
+            "pool_filter": "routing",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "architect": {"difficulty_modifier": -1},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s3_vlan",
+          "partial_scene": "s3_vlan",
+          "fail_scene": "s3_vlan"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2a_serverraum_fail",
+      "title": "Falscher Weg im Serverraum",
+      "narrative": "Du hast eine falsche Route konfiguriert — ein Routing-Loop entsteht. NOVA meldet: 'Routing-Loop erkannt. Tipp: Überprüfe die Netzmaske.'",
+      "image": "scene_server_room.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Routing-Loop erkannt. Das passiert jedem mal. Tipp: Überprüfe die Subnetzmaske und die Next-Hop-Adresse.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c2a_retry",
+          "text": "Route korrigieren",
+          "icon": "🔄",
+          "skill_check": {
+            "pool_filter": "routing",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {}
+          },
+          "success_scene": "s3_vlan",
+          "partial_scene": "s3_vlan",
+          "fail_scene": "s3_vlan"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2b_befragung",
+      "title": "Die Befragung",
+      "narrative": "Du sprichst mit dem Hausmeister Herr Krause: 'Freitag Abend war noch alles gut. Dann kam dieser Typ von der IT-Firma — hat was am Switch gemacht. Danach ging das WLAN nicht mehr.'",
+      "image": "scene_hallway.png",
+      "npc_dialog": {
+        "speaker": "jens_bug",
+        "text": "Ich... ich habe nur ein Update eingespielt. Das sollte eigentlich nichts kaputt machen.",
+        "portrait": "npc_jens"
+      },
+      "choices": [
+        {
+          "id": "c2b_switch",
+          "text": "Den Switch-Log analysieren",
+          "icon": "📋",
+          "skill_check": {
+            "pool_filter": "switching",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "architect": {"difficulty_modifier": -1}
+            }
+          },
+          "success_scene": "s3_vlan",
+          "partial_scene": "s3_vlan",
+          "fail_scene": "s3_vlan"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s3_vlan",
+      "title": "VLAN-Chaos",
+      "narrative": "Du öffnest den Netzwerkschrank auf Etage 4. Der Switch ist an, aber die Port-LEDs zeigen ein unerwartetes Muster. Du verbindest dich per Konsole: VLAN 10, 20, 30 existieren, aber die Trunk-Ports sind als Access-Ports konfiguriert.",
+      "image": "scene_switch_cabinet.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "VLAN-Konfiguration inkonsistent. Trunk-Ports sollten Tagged-Frames aller VLANs weiterleiten.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c3_vlan_fix",
+          "text": "Trunk-Ports korrekt konfigurieren",
+          "icon": "🔧",
+          "skill_check": {
+            "pool_filter": "vlan",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "architect": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s4_wireless",
+          "partial_scene": "s4_wireless",
+          "fail_scene": "s4_wireless"
+        }
+      ],
+      "simulation": {
+        "type": "switch_config",
+        "pbq_question_id": null,
+        "description": "Konfiguriere die Switch-Trunk-Ports korrekt (VLAN-Tagging)"
+      }
+    },
+    {
+      "id": "s4_wireless",
+      "title": "Die Wireless-Lücke",
+      "narrative": "Etage 1-4 läuft wieder. Aber Dr. Webers Konferenzraum auf Etage 5 hat immer noch kein WLAN. Du scannst die Umgebung — 3 Access Points, aber einer sendet auf Kanal 6, genau wie der des Nachbargebäudes: Co-Channel Interference.",
+      "image": "scene_conference_room.png",
+      "npc_dialog": {
+        "speaker": "dr_weber",
+        "text": "Fünf Minuten noch bis zum Call. Bitte.",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c4_wlan_kanal",
+          "text": "Kanal auf 1 oder 11 wechseln (überlappungsfreie Kanäle)",
+          "icon": "📡",
+          "skill_check": {
+            "pool_filter": "wireless",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "sysadmin": {"difficulty_modifier": 1},
+              "security": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "s5_finale",
+          "partial_scene": "s5_finale",
+          "fail_scene": "s5_finale"
+        },
+        {
+          "id": "c4_wlan_5ghz",
+          "text": "Auf 5 GHz-Band wechseln (keine Interferenz)",
+          "icon": "📶",
+          "skill_check": {
+            "pool_filter": "wireless",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {}
+          },
+          "success_scene": "s5_finale",
+          "partial_scene": "s5_finale",
+          "fail_scene": "s5_finale"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s5_finale",
+      "title": "Der Stresstest",
+      "narrative": "Alles scheint zu laufen. Dr. Webers Video-Call beginnt in 5 Minuten. Du machst einen letzten Check — `ping -t 8.8.8.8`... Antwort. Dann: NOVA meldet 'Anomalie erkannt — unbekanntes Gerät im Netzwerk, MAC xx:xx:xx:xx:xx:xx'. Ein Rogue AP?",
+      "image": "scene_terminal_split.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Unbekanntes Gerät erkannt. MAC-Adresse stimmt mit keinem registrierten Asset überein. Empfehle sofortige Isolation.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c5_rogue_isolate",
+          "text": "Rogue AP isolieren (Port Security aktivieren)",
+          "icon": "🔒",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_partial"
+        }
+      ],
+      "simulation": {
+        "type": "network_device_placement",
+        "pbq_question_id": null,
+        "description": "Identifiziere und isoliere das unbekannte Gerät im Netzwerk"
+      }
+    },
+    {
+      "id": "epilog_success",
+      "title": "Mission erfüllt",
+      "narrative": "Dr. Webers Call startet pünktlich. Sie nickt dir vom Konferenzraum aus zu. Dein Telefon vibriert — NOVA: 'Netzwerk-Status: 100% operativ. Geschätzte Reparaturzeit: 47 Minuten. Gut gemacht.'",
+      "image": "scene_victory.png",
+      "animation_in": "campaign_complete",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Alle Systeme grün. Exzellente Arbeit heute.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "success"
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Teilweise geschafft",
+      "narrative": "Das Netzwerk läuft — größtenteils. Dr. Weber hat ihren Call mit einer leichten Verzögerung gestartet. NOVA zeigt eine Checkliste: 'Das nächste Mal: 1) Erst dokumentieren 2) Dann ändern 3) Immer testen'.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Gute Arbeit unter Druck. Hier sind drei Dinge für das nächste Mal...",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "partial"
+    }
+  ],
+  "epilog": {
+    "success": {
+      "narrative": "Dr. Webers Call startet pünktlich. Sie nickt dir vom Konferenzraum aus zu. Dein Telefon vibriert — NOVA: 'Netzwerk-Status: 100% operativ. Gut gemacht.'",
+      "image": "scene_victory.png",
+      "animation": "campaign_complete"
+    },
+    "partial": {
+      "narrative": "Das Netzwerk läuft — größtenteils. NOVA zeigt eine Checkliste: '1) Erst dokumentieren 2) Dann ändern 3) Immer testen'.",
+      "image": "scene_partial_victory.png"
+    },
+    "fail": {
+      "narrative": "Es hat nicht ganz gereicht — aber du hast viel gelernt. Netzwerke sind komplex, und jeder Fehler macht dich besser.",
+      "image": "scene_partial_victory.png"
+    }
+  }
+}
