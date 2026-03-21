@@ -18,13 +18,17 @@
         :language="language"
         :chat-messages="chatMessages"
         :chat-loading="chatLoading"
+        :ai-enabled="aiEnabled"
+        :show-consent-dialog="showAiConsentDialog"
         @next="nextStep"
         @dismiss="dismiss"
         @action="handleAction"
         @language-change="setLanguage"
         @update:ticketSubject="ticketSubject = $event"
         @update:ticketDraft="ticketDraft = $event"
-        @chat-send="handleChatSend" />
+        @chat-send="handleChatSend"
+        @consent-accept="handleConsentAccept"
+        @consent-decline="handleConsentDecline" />
       <VirtuProfAvatar
         :animation="currentAnimation"
         :has-message="visible && !isMinimized"
@@ -99,6 +103,12 @@ export default {
       chatMessages: [],
       chatLoading: false,
       chatAnimationTimer: null,
+      // AI consent (PRIV-01)
+      aiChatConsent: false,
+      showAiConsentDialog: false,
+      pendingChatMessage: null,
+      // AI global enabled flag (PRIV-02)
+      aiEnabled: false,
     }
   },
   computed: {
@@ -158,6 +168,12 @@ export default {
     },
   },
   async mounted() {
+    // PRIV-01: Read persisted AI chat consent from localStorage
+    try {
+      this.aiChatConsent = window.localStorage.getItem('learning:ai_chat_consent') === 'accepted'
+    } catch (e) {
+      this.aiChatConsent = false
+    }
     this.$root.$on('virtuprof:trigger', this.enqueue)
     this.$root.$on('virtuprof:context', this.updateContext)
     this.$root.$on('virtuprof:refresh-duel-invites', this.handleInviteRefreshRequest)
@@ -192,9 +208,12 @@ export default {
         if (typeof response.data?.enabled === 'boolean') {
           this.$emit('enabled-change', response.data.enabled)
         }
+        // PRIV-02: read global AI enabled flag from state
+        this.aiEnabled = response.data?.ai_enabled === true
       } catch (e) {
         this.dismissedTriggers = []
         this.language = detectVirtuProfLanguage()
+        this.aiEnabled = false
       }
     },
     vt(key, params = {}) {
@@ -461,6 +480,8 @@ export default {
       this.activeInviteFilter = 'incoming'
       this.chatMessages = []
       this.chatLoading = false
+      this.showAiConsentDialog = false
+      this.pendingChatMessage = null
     },
     handleAvatarClick() {
       if (!this.enabled) {
@@ -885,6 +906,21 @@ export default {
         return
       }
 
+      // PRIV-01: show consent dialog before first AI chat
+      if (!this.aiChatConsent) {
+        this.pendingChatMessage = message
+        this.showAiConsentDialog = true
+        // Ensure bubble is open so the dialog is visible
+        if (!this.visible || this.isMinimized) {
+          if (!this.helpView) {
+            this.helpView = 'home'
+          }
+          this.visible = true
+          this.isMinimized = false
+        }
+        return
+      }
+
       // Ensure bubble is open and visible
       if (!this.visible || this.isMinimized) {
         if (!this.helpView) {
@@ -956,6 +992,28 @@ export default {
         }, 1500)
       }
     },
+    // PRIV-01: User accepted the AI consent dialog
+    handleConsentAccept() {
+      try {
+        window.localStorage.setItem('learning:ai_chat_consent', 'accepted')
+      } catch (e) {
+        // Ignore storage failures.
+      }
+      this.aiChatConsent = true
+      this.showAiConsentDialog = false
+      const pending = this.pendingChatMessage
+      this.pendingChatMessage = null
+      if (pending) {
+        this.handleChatSend(pending)
+      }
+    },
+
+    // PRIV-01: User declined the AI consent dialog
+    handleConsentDecline() {
+      this.showAiConsentDialog = false
+      this.pendingChatMessage = null
+    },
+
     handleExplainQuestion(payload = {}) {
       const questionText = payload.questionText || ''
       const correctAnswer = payload.correctAnswer || ''

@@ -51,6 +51,8 @@ class VirtuProfController extends Controller {
             'dismissed' => is_array($dismissed) ? array_values($dismissed) : [],
             'enabled' => $this->config->getUserValue($this->userId, 'learning', 'virtuprof_enabled', 'yes') === 'yes',
             'language' => $this->config->getUserValue($this->userId, 'learning', 'virtuprof_language', ''),
+            // PRIV-02: expose global AI toggle so frontend can hide chat section when disabled
+            'ai_enabled' => $this->config->getAppValue('learning', 'ai_enabled', 'no') === 'yes',
         ]);
     }
 

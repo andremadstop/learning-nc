@@ -136,8 +136,17 @@
         </template>
       </div>
 
-      <!-- Chat section: always visible at the bottom of the bubble -->
-      <div class="chat-section">
+      <!-- AI consent dialog: shown before first chat use -->
+      <div v-if="showConsentDialog" class="ai-consent-overlay" role="dialog" aria-modal="true" :aria-label="vt('AI consent required')">
+        <p class="ai-consent-text">{{ vt('Your question will be sent to Google Gemini (an external AI service). Do you agree?') }}</p>
+        <div class="ai-consent-actions">
+          <NcButton type="primary" size="small" @click="$emit('consent-accept')">{{ vt('I agree') }}</NcButton>
+          <NcButton type="secondary" size="small" @click="$emit('consent-decline')">{{ vt('Cancel') }}</NcButton>
+        </div>
+      </div>
+
+      <!-- Chat section: visible only when AI is enabled -->
+      <div v-if="aiEnabled" class="chat-section">
         <div
           ref="chatHistory"
           class="chat-history"
@@ -237,6 +246,14 @@ export default {
       default: () => [],
     },
     chatLoading: {
+      type: Boolean,
+      default: false,
+    },
+    aiEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    showConsentDialog: {
       type: Boolean,
       default: false,
     },
@@ -573,6 +590,26 @@ export default {
   width: 100%;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+/* ── AI consent overlay ───────────────────────────── */
+.ai-consent-overlay {
+  margin-top: 12px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 10px;
+}
+
+.ai-consent-text {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-main-text);
+}
+
+.ai-consent-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 /* ── Chat section ─────────────────────────────────── */
