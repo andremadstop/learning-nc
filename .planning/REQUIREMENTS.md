@@ -1,103 +1,73 @@
-# Requirements: v4.0 Persönlicher Lernbot
+# Requirements: v5.0 Oldschool (Brettspiel-Modi)
 
 **Defined:** 2026-03-21
-**Core Value:** Jeder Schüler bekommt einen KI-Begleiter der mitlernt und individuelle Lernmaterialien erstellt
+**Core Value:** Lernen mit Brettspiel-Feeling — Strategie, Glück und Schadenfreude
 
-## v4.0 Requirements
+## v5.0 Requirements
 
-### Lernprofil
+### Oldschool-Menü
 
-- [x] **PROF-01**: LernprofilService aggregiert Stärken/Schwächen pro User aus Leitner-Boxen, Training-Scores und Exam-Ergebnissen
-- [x] **PROF-02**: Profil identifiziert die 5 schwächsten Themen/Kapitel des Users
-- [x] **PROF-03**: Profil trackt Lernhistorie (wann, was, wie lange, Trend)
-- [x] **PROF-04**: Profil wird bei jeder Lernsession automatisch aktualisiert
+- [ ] **OLD-01**: "Oldschool" Tab in CourseDetail neben Arena
+- [ ] **OLD-02**: OldschoolSelector.vue mit 2 Karten (Lernwürfel, Wissensturm) — analog zu ArenaSelector
 
-### NC Files Integration
+### Lernwürfel (Mensch ärgere dich nicht)
 
-- [x] **FILES-01**: App erstellt einen /Learning/ Ordner im User-Home beim ersten Zugriff
-- [x] **FILES-02**: App kann Markdown-Dateien in /Learning/ erstellen und aktualisieren
-- [x] **FILES-03**: Ordnerstruktur: /Learning/Zusammenfassungen/, /Learning/Schwachstellen/, /Learning/Lernplan.md
-- [x] **FILES-04**: Dateien haben YAML Frontmatter (created, source, topic, status, chapter)
-- [x] **FILES-05**: Dateien nutzen Wiki-Links ([[...]]) und Tags (#schwach, #gemeistert) für Obsidian-Kompatibilität
+- [ ] **WUERF-01**: Spielbrett mit 30 Feldern als Rundkurs (SVG), Figuren als farbige Kreise
+- [ ] **WUERF-02**: Würfel-Animation (CSS rotate) zeigt Zahl 1-6
+- [ ] **WUERF-03**: Nach Würfeln: Frage beantworten — richtig = vorwärts, falsch = stehenbleiben
+- [ ] **WUERF-04**: Rauswerfen: Landest du auf besetztem Feld → Gegner zurück zum Start
+- [ ] **WUERF-05**: Sonderfelder (★): Bonus-Würfel, Schutzfeld, Falle (1 Runde aussetzen)
+- [ ] **WUERF-06**: 6 gewürfelt = nochmal würfeln
+- [ ] **WUERF-07**: Erster bei Feld 30 gewinnt, Confetti + VirtuProf
 
-### Note-Generator
+### Wissensturm (Trivial Pursuit Kategorien)
 
-- [x] **NOTE-01**: Bei Trigger generiert Gemini eine Zusammenfassung für ein schwaches Thema
-- [x] **NOTE-02**: Zusammenfassung enthält: Kernpunkte, häufigster Fehler des Users, Übungsempfehlung
-- [x] **NOTE-03**: Zusammenfassung verlinkt auf relevante Simulationen/Fragen via Wiki-Links
-- [x] **NOTE-04**: Bestehende Notes werden aktualisiert statt dupliziert (Dateiname = Thema)
+- [ ] **TURM-01**: 5 Kategorien (= 5 Pools oder Kapitel im Kurs), je eine Blockfarbe
+- [ ] **TURM-02**: Spieler wählt Kategorie → Frage → richtig = Block in dieser Farbe auf Turm
+- [ ] **TURM-03**: Falsche Antwort = oberster Block fällt (Verlust-Animation)
+- [ ] **TURM-04**: Steal: Richtig wenn Gegner falsch → du bekommst seinen Block
+- [ ] **TURM-05**: Wer zuerst alle 5 Farben hat gewinnt
 
-### Lernplan
+### Backend
 
-- [x] **PLAN-01**: Bot generiert wöchentlichen Lernplan basierend auf Profil-Schwächen
-- [x] **PLAN-02**: Lernplan als Markdown mit Checkliste (- [ ] Montag: VLAN-Kapitel wiederholen)
-- [x] **PLAN-03**: Lernplan wird in /Learning/Lernplan.md geschrieben (überschreibt vorherigen)
-- [x] **PLAN-04**: Fortschritts-Dashboard als /Learning/Fortschritt.md (Box-Stats, Trend, Empfehlungen)
-
-### Chat-Memory
-
-- [x] **MEM-01**: Chat-Kontext wird über Sessions hinweg gespeichert (DB-backed, pro User)
-- [x] **MEM-02**: Bot erinnert sich an vergangene Fragen und Erklärungen
-- [x] **MEM-03**: Max 50 Kontext-Einträge pro User (älteste werden zusammengefasst)
-- [x] **MEM-04**: User kann Chat-History löschen (Datenschutz)
-
-### Auto-Trigger
-
-- [x] **TRIG-01**: Nach einem Exam mit <70% wird automatisch eine Schwachstellen-Note generiert
-- [x] **TRIG-02**: Nach 5 falschen Antworten zum gleichen Thema wird eine Zusammenfassung angeboten
-- [x] **TRIG-03**: Wöchentlich (Sonntag) wird der Lernplan aktualisiert (NC BackgroundJob)
-- [x] **TRIG-04**: User kann manuell "Zusammenfassung erstellen" für jedes Kapitel anfordern
-
-## Future Requirements
-
-- **FUTURE-01**: Obsidian-Plugin für bidirektionale Sync (Notes → Lernfortschritt)
-- **FUTURE-02**: Sprachnotizen (Whisper STT → Note)
-- **FUTURE-03**: Lerngruppen-Notes (gemeinsame Zusammenfassungen)
+- [x] **BACK-01**: GameshowService erweitern: mode='lernwuerfel' + mode='wissensturm' Scoring-Logik
+- [x] **BACK-02**: Spielfeld-State im Session-JSON: Figurpositionen, Sonderfelder, Würfel-Ergebnis
+- [x] **BACK-03**: Rundenbasierte Logik: aktiver Spieler → Würfel → Frage → nächster Spieler
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Eigenes Obsidian-Plugin | NC Sync reicht, zu komplex |
-| Voice-Interaktion | Browser STT unzuverlässig |
-| Automatische Kurs-Erstellung | Dozenten-Aufgabe, nicht Bot |
-| Fine-Tuning | Gemini + RAG reicht |
+| Weitere Brettspiele | v5.1+ (Schlangen&Leitern, Quartett, Monopoly, Risiko) |
+| KI-Gegner | Nur echte Spieler |
+| Custom Spielbretter | Feste Layouts pro Modus |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROF-01 | Phase 22 | Complete |
-| PROF-02 | Phase 22 | Complete |
-| PROF-03 | Phase 22 | Complete |
-| PROF-04 | Phase 22 | Complete |
-| FILES-01 | Phase 23 | Complete |
-| FILES-02 | Phase 23 | Complete |
-| FILES-03 | Phase 23 | Complete |
-| FILES-04 | Phase 23 | Complete |
-| FILES-05 | Phase 23 | Complete |
-| NOTE-01 | Phase 24 | Complete |
-| NOTE-02 | Phase 24 | Complete |
-| NOTE-03 | Phase 24 | Complete |
-| NOTE-04 | Phase 24 | Complete |
-| PLAN-01 | Phase 25 | Complete |
-| PLAN-02 | Phase 25 | Complete |
-| PLAN-03 | Phase 25 | Complete |
-| PLAN-04 | Phase 25 | Complete |
-| MEM-01 | Phase 26 | Complete |
-| MEM-02 | Phase 26 | Complete |
-| MEM-03 | Phase 26 | Complete |
-| MEM-04 | Phase 26 | Complete |
-| TRIG-01 | Phase 27 | Complete |
-| TRIG-02 | Phase 27 | Complete |
-| TRIG-03 | Phase 27 | Complete |
-| TRIG-04 | Phase 27 | Complete |
+| BACK-01 | Phase 28 | Complete |
+| BACK-02 | Phase 28 | Complete |
+| BACK-03 | Phase 28 | Complete |
+| OLD-01 | Phase 29 | Pending |
+| OLD-02 | Phase 29 | Pending |
+| WUERF-01 | Phase 30 | Pending |
+| WUERF-02 | Phase 30 | Pending |
+| WUERF-03 | Phase 30 | Pending |
+| WUERF-04 | Phase 30 | Pending |
+| WUERF-05 | Phase 30 | Pending |
+| WUERF-06 | Phase 30 | Pending |
+| WUERF-07 | Phase 30 | Pending |
+| TURM-01 | Phase 31 | Pending |
+| TURM-02 | Phase 31 | Pending |
+| TURM-03 | Phase 31 | Pending |
+| TURM-04 | Phase 31 | Pending |
+| TURM-05 | Phase 31 | Pending |
 
 **Coverage:**
-- v4.0 requirements: 22 total
-- Mapped to phases: 22
+- v5.0 requirements: 17 total
+- Mapped to phases: 17
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
-*Traceability updated: 2026-03-21 (roadmap created)*

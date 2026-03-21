@@ -8,6 +8,7 @@
 - ✅ **v3.1 UX-Konsolidierung** — Phases 14-16 (shipped 2026-03-21)
 - ✅ **v3.2 VirtuProf KI-Assistent** — Phases 17-21 (shipped 2026-03-21)
 - ✅ **v4.0 Persönlicher Lernbot** — Phases 22-27 (shipped 2026-03-21)
+- 🚧 **v5.0 Oldschool (Brettspiel-Modi)** — Phases 28-31 (in progress)
 
 ## Phases
 
@@ -235,18 +236,8 @@ Plans:
 
 </details>
 
-### 🚧 v4.0 Persönlicher Lernbot (In Progress)
-
-**Milestone Goal:** Jeder User bekommt einen persönlichen KI-Lernbegleiter der Stärken/Schwächen kennt, individuelle Zusammenfassungen und Lernpläne als Obsidian-kompatible Markdown-Notes im NC-Dateisystem erstellt, und über Sessions hinweg mitlernt.
-
-- [x] **Phase 22: Lernprofil** - LernprofilService aggregiert Stärken/Schwächen aus Leitner, Training und Exam (completed 2026-03-21)
-- [x] **Phase 23: NC Files Integration** - App erstellt und verwaltet Markdown-Notes im User-Home mit Obsidian-Format (completed 2026-03-21)
-- [x] **Phase 24: Note-Generator** - Gemini erzeugt Zusammenfassungen für schwache Themen und speichert sie als Notes (completed 2026-03-21)
-- [x] **Phase 25: Lernplan + Fortschritt** - Wöchentlicher Lernplan und Fortschritts-Dashboard als Markdown-Dateien (completed 2026-03-21)
-- [x] **Phase 26: Chat-Memory** - VirtuProf-Kontext wird persistent über Sessions hinweg gespeichert (completed 2026-03-21)
-- [x] **Phase 27: Auto-Trigger** - Exam-Abschluss, Fehler-Schwelle und Wochenplan lösen automatisch Bot-Aktionen aus (completed 2026-03-21)
-
-## Phase Details
+<details>
+<summary>✅ v4.0 Persönlicher Lernbot (Phases 22-27) - SHIPPED 2026-03-21</summary>
 
 ### Phase 22: Lernprofil
 **Goal**: User hat ein maschinenlesbares Stärken/Schwächen-Profil das jede Lernsession automatisch aktualisiert — die Datenbasis für alle Bot-Aktionen
@@ -257,7 +248,10 @@ Plans:
   2. Das Profil enthält für jedes Thema einen Trend-Indikator (verbessert / verschlechtert / stabil) basierend auf den letzten 3 Sessions
   3. Ein API-Aufruf auf `/api/profile` liefert aggregierte Daten aus Leitner-Boxen, Training-Scores und Exam-Ergebnissen in einem einzigen Response
   4. Das Profil wird passiv aktualisiert — kein manueller Aufruf nötig, keine spürbare Verlangsamung der Lernsession
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 22-01-PLAN.md — LernprofilService.php + Profil-Aggregation + API-Endpoint
 
 ### Phase 23: NC Files Integration
 **Goal**: Der Bot kann Markdown-Notes im NC-Dateisystem des Users erstellen und aktualisieren — Obsidian-kompatibel, User besitzt seine Daten
@@ -268,7 +262,10 @@ Plans:
   2. Eine Bot-generierte Note öffnet sich in einem Markdown-Editor mit korrektem YAML Frontmatter (created, source, topic, status, chapter)
   3. Die Note enthält mindestens einen Wiki-Link ([[...]]) und mindestens einen Tag (#schwach oder #gemeistert) — kompatibel mit Obsidian
   4. Wird dieselbe Note erneut generiert (gleicher Dateiname = gleiches Thema), wird die bestehende Datei aktualisiert statt eine neue angelegt
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 23-01-PLAN.md — NcFilesService.php + Ordnerstruktur + Frontmatter-Generator
 
 ### Phase 24: Note-Generator
 **Goal**: Gemini erstellt inhaltlich gehaltvolle Zusammenfassungen für schwache Themen — gespeichert als NC-Files-Notes mit konkretem Lernnutzen
@@ -293,7 +290,10 @@ Plans:
   2. /Learning/Fortschritt.md zeigt die aktuelle Leitner-Box-Verteilung, den Trend der letzten 4 Wochen und konkrete Empfehlungen
   3. Der Lernplan referenziert schwache Kapitel per Wiki-Link auf vorhandene /Zusammenfassungen/-Notes
   4. Beide Dateien sind lesbar ohne Learning-NC — reines Markdown, kein App-Lock-in
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 25-01-PLAN.md — LernplanService.php + FortschrittService.php + NC BackgroundJob
 
 ### Phase 26: Chat-Memory
 **Goal**: VirtuProf erinnert sich über Sessions hinweg an den Kontext des Users — Gespräche bauen aufeinander auf statt jedes Mal von vorne zu beginnen
@@ -304,7 +304,10 @@ Plans:
   2. VirtuProf nennt bei einer Erklärungsfrage nicht dieselbe Erklärung die bereits gegeben wurde — er baut auf dem bekannten Kontext auf
   3. Der User kann in den Einstellungen "Chat-History löschen" klicken und VirtuProf hat danach keinerlei Erinnerung an frühere Sessions
   4. Wenn 50 Kontext-Einträge erreicht sind, werden die ältesten automatisch zu einer Zusammenfassung komprimiert — kein Datenverlust, kein API-Fehler
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 26-01-PLAN.md — ChatMemoryService.php + Komprimierungs-Job + Settings-Toggle
 
 ### Phase 27: Auto-Trigger
 **Goal**: Der Bot handelt proaktiv — nach einem schlechten Exam, nach wiederholten Fehlern und wöchentlich — ohne dass der User manuell eingreifen muss
@@ -315,12 +318,73 @@ Plans:
   2. Nach 5 falschen Antworten zum gleichen Thema erscheint ein "Zusammenfassung erstellen"-Button direkt in der Trainingsansicht
   3. Jeden Sonntag wird /Learning/Lernplan.md automatisch aktualisiert (NC BackgroundJob) — der User findet Montagmorgens einen frischen Plan
   4. Der User kann manuell für jedes Kapitel "Zusammenfassung erstellen" anfordern und erhält innerhalb von 10 Sekunden eine Note
+**Plans**: 1 plan
+
+Plans:
+- [x] 27-01-PLAN.md — AutoTriggerService.php + ExamFinish-Hook + BackgroundJob-Wiring
+
+</details>
+
+### 🚧 v5.0 Oldschool (Brettspiel-Modi) (In Progress)
+
+**Milestone Goal:** Zwei Brettspiel-inspirierte Multiplayer-Lernmodi unter dem Menüpunkt "Oldschool": Lernwürfel (Mensch ärgere dich nicht) und Wissensturm (Trivial Pursuit Kategorien), vollständig in die bestehende N-Player-Infrastruktur eingebettet.
+
+- [x] **Phase 28: Brettspiel-Backend** - GameshowService erweitern für rundenbasierte Spielfeld-Logik
+- [ ] **Phase 29: Oldschool-Menü** - Tab + Spielauswahl in CourseDetail
+- [ ] **Phase 30: Lernwürfel** - Vollständiger Mensch-ärgere-dich-nicht-Modus mit SVG-Brett
+- [ ] **Phase 31: Wissensturm** - Vollständiger Trivial-Pursuit-Modus mit Turm-Rendering
+
+## Phase Details
+
+### Phase 28: Brettspiel-Backend
+**Goal**: GameshowService unterstützt rundenbasierte Brettspiel-Sessions mit persistentem Spielfeld-State — beide Spiele können darauf aufbauen
+**Depends on**: Phase 27 (v4.0 shipped)
+**Requirements**: BACK-01, BACK-02, BACK-03
+**Success Criteria** (what must be TRUE):
+  1. Eine Session mit mode='lernwuerfel' oder mode='wissensturm' kann erstellt werden und verwaltet Spieler-Reihenfolge, aktiven Spieler und Spielfeld-Zustand im Session-JSON
+  2. Der API-Endpunkt gibt bei jedem Poll den aktuellen Spielfeld-State zurück: Figurpositionen (Lernwürfel) oder Turm-Blöcke (Wissensturm) aller Spieler
+  3. Nach einer Spieler-Aktion (Würfeln + Antwort) wechselt der aktive Spieler automatisch zum nächsten in der Reihe — kein manueller Trigger nötig
+  4. Scoring-Logik für beide Modi ist serverseitig implementiert und beeinflusst den Session-State (Figurposition vorwärts / Block hinzufügen / Steal)
+**Plans**: TBD
+
+### Phase 29: Oldschool-Menü
+**Goal**: Spieler finden den Oldschool-Bereich in CourseDetail und können zwischen Lernwürfel und Wissensturm wählen
+**Depends on**: Phase 28 (Backend muss Sessions für beide Modi anlegen können)
+**Requirements**: OLD-01, OLD-02
+**Success Criteria** (what must be TRUE):
+  1. In CourseDetail erscheint ein "Oldschool" Tab neben dem Arena-Tab — sichtbar für alle Kurs-Mitglieder
+  2. Im Oldschool-Tab zeigt OldschoolSelector.vue zwei Karten (Lernwürfel, Wissensturm) mit Kurzbeschreibung und Start-Button
+  3. Ein Klick auf eine Karte startet die Lobby des jeweiligen Spiels — analog zum Arena-Flow
+**Plans**: TBD
+
+### Phase 30: Lernwürfel
+**Goal**: Spieler können eine vollständige Runde Mensch-ärgere-dich-nicht mit Lernfragen spielen — vom Würfeln bis zum Sieg
+**Depends on**: Phase 29 (Oldschool-Menü muss in Lernwürfel-Lobby routen)
+**Requirements**: WUERF-01, WUERF-02, WUERF-03, WUERF-04, WUERF-05, WUERF-06, WUERF-07
+**Success Criteria** (what must be TRUE):
+  1. Das Spielbrett als SVG mit 30 Feldern ist sichtbar; die Figuren der Spieler (farbige Kreise) bewegen sich nach richtiger Antwort auf das korrekte Feld
+  2. Der Würfel animiert (CSS rotate) und zeigt die gewürfelte Zahl — bei einer 6 erscheint automatisch ein zweiter Wurf
+  3. Nach dem Würfeln erscheint eine Frage aus dem Pool; richtige Antwort = Figur rückt vor, falsche Antwort = Figur bleibt stehen
+  4. Landet eine Figur auf einem besetzten Feld, wird der Gegner auf Start zurückgesetzt; Sonderfelder (★) lösen Bonus-Würfel, Schutz oder Falle aus
+  5. Erreicht die erste Figur Feld 30, erscheint Confetti + VirtuProf-Glückwunsch und das Spiel endet
+**Plans**: TBD
+
+### Phase 31: Wissensturm
+**Goal**: Spieler können eine vollständige Runde Wissensturm spielen — Kategorien wählen, Blöcke sammeln, stehlen und gewinnen
+**Depends on**: Phase 29 (Oldschool-Menü muss in Wissensturm-Lobby routen)
+**Requirements**: TURM-01, TURM-02, TURM-03, TURM-04, TURM-05
+**Success Criteria** (what must be TRUE):
+  1. Der Spieler sieht 5 Kategorie-Buttons (je eine Farbe, entsprechend den 5 Pools/Kapiteln) und kann eine davon auswählen
+  2. Nach richtiger Antwort erscheint ein Block dieser Farbe sichtbar auf dem Turm des Spielers im SVG-Rendering
+  3. Eine falsche Antwort löst eine Verlust-Animation aus (oberster Block fällt) und entfernt den Block vom Turm
+  4. Bei einem Steal (Gegner antwortet falsch, aktueller Spieler richtig) wechselt der Block sichtbar vom Gegner-Turm auf den eigenen Turm
+  5. Sobald ein Spieler alle 5 Farben auf seinem Turm hat, endet das Spiel mit Sieger-Anzeige und VirtuProf-Kommentar
 **Plans**: TBD
 
 ## Progress
 
 **Execution Order:**
-Phases execute sequentially: 22 → 23 → 24 → 25 → 26 → 27. Phase 26 depends on Phase 22 and Phase 19 (v3.2). Phase 27 depends on Phases 24, 25, and 26.
+Phases 28-31 execute sequentially: 28 → 29 → 30 → 31. Phase 30 and 31 both depend on Phase 29 (Menü), but 30 executes before 31.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -345,9 +409,13 @@ Phases execute sequentially: 22 → 23 → 24 → 25 → 26 → 27. Phase 26 dep
 | 19. Chat-UI | v3.2 | 1/1 | Complete | 2026-03-21 |
 | 20. Ticket-Triage | v3.2 | 1/1 | Complete | 2026-03-21 |
 | 21. Datenschutz & Compliance | v3.2 | 1/1 | Complete | 2026-03-21 |
-| 22. Lernprofil | 1/1 | Complete    | 2026-03-21 | - |
-| 23. NC Files Integration | v4.0 | Complete    | 2026-03-21 | 2026-03-21 |
-| 24. Note-Generator | v4.0 | Complete    | 2026-03-21 | 2026-03-21 |
+| 22. Lernprofil | v4.0 | 1/1 | Complete | 2026-03-21 |
+| 23. NC Files Integration | v4.0 | 1/1 | Complete | 2026-03-21 |
+| 24. Note-Generator | v4.0 | 1/1 | Complete | 2026-03-21 |
 | 25. Lernplan + Fortschritt | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 26. Chat-Memory | 1/1 | Complete   | 2026-03-21 | - |
+| 26. Chat-Memory | v4.0 | 1/1 | Complete | 2026-03-21 |
 | 27. Auto-Trigger | v4.0 | 1/1 | Complete | 2026-03-21 |
+| 28. Brettspiel-Backend | v5.0 | 1/1 | Complete | 2026-03-21 |
+| 29. Oldschool-Menü | v5.0 | 0/? | Not started | - |
+| 30. Lernwürfel | v5.0 | 0/? | Not started | - |
+| 31. Wissensturm | v5.0 | 0/? | Not started | - |
