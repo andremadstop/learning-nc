@@ -20,6 +20,8 @@ class AdminSettings implements ISettings {
             'default_language' => $this->config->getAppValue('learning', 'default_language', 'de'),
             'max_import_size_mb' => (int)$this->config->getAppValue('learning', 'max_import_size_mb', '2'),
             'gamification_enabled' => $this->config->getAppValue('learning', 'gamification_enabled', 'yes'),
+            'gemini_api_key_set' => $this->config->getAppValue('learning', 'gemini_api_key', '') !== '',
+            'ai_enabled' => $this->config->getAppValue('learning', 'ai_enabled', 'no'),
         ];
 
         return new TemplateResponse('learning', 'settings/admin', $params, TemplateResponse::RENDER_AS_BLANK);

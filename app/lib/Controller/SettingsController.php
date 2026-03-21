@@ -33,6 +33,8 @@ class SettingsController extends Controller {
             'allow_course_instructor_fallback' => $this->config->getAppValue('learning', 'allow_course_instructor_fallback', 'no'),
             'exam_attempt_limit_per_day' => (int)$this->config->getAppValue('learning', 'exam_attempt_limit_per_day', '5'),
             'exam_attempt_cooldown_minutes' => (int)$this->config->getAppValue('learning', 'exam_attempt_cooldown_minutes', '10'),
+            'gemini_api_key_set' => $this->config->getAppValue('learning', 'gemini_api_key', '') !== '',
+            'ai_enabled' => $this->config->getAppValue('learning', 'ai_enabled', 'no'),
         ]);
     }
 
@@ -78,7 +80,9 @@ class SettingsController extends Controller {
         string $gamification_enabled,
         string $allow_course_instructor_fallback = 'no',
         int $exam_attempt_limit_per_day = 5,
-        int $exam_attempt_cooldown_minutes = 10
+        int $exam_attempt_cooldown_minutes = 10,
+        ?string $gemini_api_key = null,
+        string $ai_enabled = 'no'
     ): DataResponse {
         $this->config->setAppValue('learning', 'daily_challenge_enabled', $daily_challenge_enabled === 'yes' ? 'yes' : 'no');
         $this->config->setAppValue('learning', 'default_language', in_array($default_language, ['de', 'en'], true) ? $default_language : 'de');
@@ -87,6 +91,16 @@ class SettingsController extends Controller {
         $this->config->setAppValue('learning', 'allow_course_instructor_fallback', $allow_course_instructor_fallback === 'yes' ? 'yes' : 'no');
         $this->config->setAppValue('learning', 'exam_attempt_limit_per_day', (string)max(1, min(50, $exam_attempt_limit_per_day)));
         $this->config->setAppValue('learning', 'exam_attempt_cooldown_minutes', (string)max(0, min(1440, $exam_attempt_cooldown_minutes)));
+
+        // API key: only update when a new non-masked value is provided
+        if ($gemini_api_key !== null && $gemini_api_key !== '***') {
+            if ($gemini_api_key === '') {
+                $this->config->deleteAppValue('learning', 'gemini_api_key');
+            } else {
+                $this->config->setAppValue('learning', 'gemini_api_key', trim($gemini_api_key));
+            }
+        }
+        $this->config->setAppValue('learning', 'ai_enabled', $ai_enabled === 'yes' ? 'yes' : 'no');
 
         return new DataResponse(['status' => 'ok']);
     }
