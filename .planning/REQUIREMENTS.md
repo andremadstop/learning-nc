@@ -29,17 +29,17 @@
 
 ### Lernplan
 
-- [ ] **PLAN-01**: Bot generiert wöchentlichen Lernplan basierend auf Profil-Schwächen
-- [ ] **PLAN-02**: Lernplan als Markdown mit Checkliste (- [ ] Montag: VLAN-Kapitel wiederholen)
-- [ ] **PLAN-03**: Lernplan wird in /Learning/Lernplan.md geschrieben (überschreibt vorherigen)
-- [ ] **PLAN-04**: Fortschritts-Dashboard als /Learning/Fortschritt.md (Box-Stats, Trend, Empfehlungen)
+- [x] **PLAN-01**: Bot generiert wöchentlichen Lernplan basierend auf Profil-Schwächen
+- [x] **PLAN-02**: Lernplan als Markdown mit Checkliste (- [ ] Montag: VLAN-Kapitel wiederholen)
+- [x] **PLAN-03**: Lernplan wird in /Learning/Lernplan.md geschrieben (überschreibt vorherigen)
+- [x] **PLAN-04**: Fortschritts-Dashboard als /Learning/Fortschritt.md (Box-Stats, Trend, Empfehlungen)
 
 ### Chat-Memory
 
-- [ ] **MEM-01**: Chat-Kontext wird über Sessions hinweg gespeichert (DB-backed, pro User)
-- [ ] **MEM-02**: Bot erinnert sich an vergangene Fragen und Erklärungen
-- [ ] **MEM-03**: Max 50 Kontext-Einträge pro User (älteste werden zusammengefasst)
-- [ ] **MEM-04**: User kann Chat-History löschen (Datenschutz)
+- [x] **MEM-01**: Chat-Kontext wird über Sessions hinweg gespeichert (DB-backed, pro User)
+- [x] **MEM-02**: Bot erinnert sich an vergangene Fragen und Erklärungen
+- [x] **MEM-03**: Max 50 Kontext-Einträge pro User (älteste werden zusammengefasst)
+- [x] **MEM-04**: User kann Chat-History löschen (Datenschutz)
 
 ### Auto-Trigger
 
@@ -80,14 +80,14 @@
 | NOTE-02 | Phase 24 | Complete |
 | NOTE-03 | Phase 24 | Complete |
 | NOTE-04 | Phase 24 | Complete |
-| PLAN-01 | Phase 25 | Pending |
-| PLAN-02 | Phase 25 | Pending |
-| PLAN-03 | Phase 25 | Pending |
-| PLAN-04 | Phase 25 | Pending |
-| MEM-01 | Phase 26 | Pending |
-| MEM-02 | Phase 26 | Pending |
-| MEM-03 | Phase 26 | Pending |
-| MEM-04 | Phase 26 | Pending |
+| PLAN-01 | Phase 25 | Complete |
+| PLAN-02 | Phase 25 | Complete |
+| PLAN-03 | Phase 25 | Complete |
+| PLAN-04 | Phase 25 | Complete |
+| MEM-01 | Phase 26 | Complete |
+| MEM-02 | Phase 26 | Complete |
+| MEM-03 | Phase 26 | Complete |
+| MEM-04 | Phase 26 | Complete |
 | TRIG-01 | Phase 27 | Complete |
 | TRIG-02 | Phase 27 | Complete |
 | TRIG-03 | Phase 27 | Complete |

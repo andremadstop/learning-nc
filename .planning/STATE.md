@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Persönlicher Lernbot
 status: completed
-last_updated: "2026-03-21T16:43:50.074Z"
+last_updated: "2026-03-21T18:44:45.626Z"
 last_activity: 2026-03-21 — Phase 27 Auto-Trigger implemented
 progress:
   total_phases: 27
-  completed_phases: 27
+  completed_phases: 25
   total_plans: 37
-  completed_plans: 37
+  completed_plans: 39
   percent: 100
 ---
 
@@ -39,7 +39,9 @@ Progress: [██████████] 100%
 | Phase 22 P01 | 15min | 4 tasks | 6 files |
 | Phase 23 P01 | 10min | 4 tasks | 3 files |
 | Phase 24 P01 | 32min | 4 tasks | 4 files |
+| Phase 25 P01 | 29min | 4 tasks | 3 files |
 | Phase 27 P01 | 19min | 4 tasks | 7 files |
+| Phase 26 P01 | 143 | 6 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -83,6 +85,19 @@ Progress: [██████████] 100%
 - slugify() normalizes German umlauts for cross-platform-safe filenames
 - Pool access check in Controller: ownership OR pool_share OR course membership/instructor
 - FOLDER_SUMMARIES constant was private in LernbotFileService — used string literal in NoteGeneratorService
+
+### Phase 25 Decisions
+- Fortschritt.md is data-driven (no Gemini) — faster, cheaper, always available without API key
+- Lernplan.md written to /Learning/ root via empty subfolder arg in LernbotFileService::writeNote
+- buildWeeklySummary groups 28-day history into 4 rolling ISO week buckets
+- Language defaults to 'de' (not 'en') — target audience is German-speaking learners
+
+### Phase 26 Decisions
+- Memory entries injected as system prompt addendum (not Gemini conversation history API) — avoids multi-turn billing, stays within callGeminiApi() architecture
+- loadMemory() passes max 10 entries to Gemini to prevent token overflow; DB stores up to 50
+- Compression via generateNote() reuses existing trusted-caller path bypassing user rate limits; fallback to static summary if Gemini unavailable
+- Summary entries stored as role=summary in DB but filtered from getChatHistory response (internal compression artefact)
+- DB files (migration/entity/mapper) were already committed in Phase 27 scaffolding by Codex — adopted as-is
 
 ### Phase 27 Decisions
 - Hook TRIG-01 in TrainingService.completeSession() for single responsibility; tryAutoGenerateExamNote() swallows errors to protect exam flow
