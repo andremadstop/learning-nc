@@ -1,77 +1,79 @@
-# Requirements: Learning-NC v4.1
+# Requirements: Learning-NC v6.1
 
 **Defined:** 2026-03-22
-**Core Value:** VirtuProf beantwortet Fragen basierend auf echtem Kursmaterial, nicht nur Pool-Fragen.
+**Core Value:** Abenteuer-Modus wird lebendiger durch KI-Erzaehler und bekommt Kampagnen fuer alle Kursthemen.
 
-## v4.1 Requirements
+## v6.1 Requirements
 
-### Dokument-Management
+### KI-Erzaehler
 
-- [x] **DOCS-01**: Dozent kann PDF/Markdown-Dateien in einen Kurs-Materialordner hochladen
-- [x] **DOCS-02**: System extrahiert Text aus hochgeladenen PDFs via pdftotext
-- [x] **DOCS-03**: System extrahiert Text aus Markdown-Dateien
-- [x] **DOCS-04**: Dozent sieht Liste aller hochgeladenen Kursmaterialien mit Status
+- [x] **NARR-01**: narrator_mode ist global aktiv fuer alle Kampagnen (nicht nur einzelne Szenen)
+- [x] **NARR-02**: Gemini generiert dynamische Entscheidungsoptionen basierend auf Szenen-Kontext statt fester JSON-Choices
+- [x] **NARR-03**: Freetext-Aktionen werden von Gemini bewertet und in den Story-Verlauf integriert (Relevanz, Konsequenzen)
+- [x] **NARR-04**: Gemini kann als Gegner agieren (spielt Angreifer in Security-Szenarien, reagiert auf Spieler-Verteidigung)
+- [x] **NARR-05**: Gemini kann als DAU agieren (simuliert unwissenden User, Spieler muss erklaeren/helfen)
 
-### Chunking
+### Security-Kampagnen
 
-- [x] **CHUNK-01**: System zerlegt extrahierten Text in ~500-Token-Chunks
-- [x] **CHUNK-02**: Chunks erhalten Kapitel-Tags aus Dokumentstruktur (Headings)
-- [x] **CHUNK-03**: Chunking läuft als BackgroundJob (nicht synchron)
-- [x] **CHUNK-04**: Chunks werden in learning_rag_chunks Tabelle gespeichert (course_id, chapter, text, source_file, created_at)
+- [ ] **SEC-01**: Kampagne "SolarWinds — Die Supply Chain" (APT, Backdoor Detection, 5 Szenen)
+- [ ] **SEC-02**: Kampagne "WannaCry Weekend" (Ransomware, Patch Management, 5 Szenen)
+- [ ] **SEC-03**: Kampagne "Log4Shell — Der Zero Day" (Dependency Vulnerabilities, 5 Szenen)
+- [ ] **SEC-04**: Kampagne "Colonial Pipeline" (Critical Infrastructure, CEO-Entscheidung, 5 Szenen)
+- [ ] **SEC-05**: Kampagne "Equifax — Die vergessene Patch-Nacht" (Vulnerability Management, 5 Szenen)
 
-### Suche
+### Kurs-Kampagnen
 
-- [x] **SEARCH-01**: System findet relevante Chunks per Keyword-Match gegen User-Frage
-- [x] **SEARCH-02**: Suchergebnisse werden nach Relevanz sortiert (Treffer-Häufigkeit + Kapitel-Match)
+- [ ] **KURS-01**: A+ Kampagne "Der erste Tag" (Hardware-Setup, Troubleshooting, 5 Szenen)
+- [ ] **KURS-02**: Linux+ Kampagne "Server Down" (Linux-Administration, Recovery, 5 Szenen)
+- [ ] **KURS-03**: CySA+ Kampagne "Zero Day" (Threat Analysis, Incident Response, 5 Szenen)
 
-### Multi-Source-RAG
+### AI Security Content
 
-- [x] **RAG-01**: RagContextService bündelt: Pool-Fragen + User-Profil + Chat-Memory + Dokument-Chunks + User-Notes
-- [x] **RAG-02**: VirtuProf-Antworten enthalten Quellenangaben (z.B. "[Quelle: Dateiname, Kap. 6]")
-- [x] **RAG-03**: Context enthält User-Schwächen und vergangene Erklärungen
-- [x] **RAG-04**: Context-Fenster wird intelligent gefüllt (Priorität: relevante Chunks > Pool-Fragen > History)
+- [ ] **AISEC-01**: Fragen-Pool "AI Security & Prompt Injection" (20+ Fragen, CompTIA-kompatibel)
+- [ ] **AISEC-02**: Meta-Kampagne "Der KI-Fluesterer" (Spieler repariert kompromittierten KI-Assistenten, 5 Szenen)
 
 ## Future Requirements
 
-### Vektor-Suche (Stufe 3)
+### Erweiterte Kampagnen (v7.0+)
 
-- **VEC-01**: Gemini Embedding API (text-embedding-004) für Chunk-Embeddings
-- **VEC-02**: Vektor-Similarity statt Keyword-Match
-- **VEC-03**: Bessere Chunk-Relevanz durch semantische Suche
+- **HACK-01**: Hacker-Zeitreise "Hack Through Time" — 7 Epochen
+- **HACK-02**: Epochen-spezifische UI-Themes (Retro-Terminal, DOS, etc.)
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Vektor-Embeddings | Stufe 3, späterer Milestone |
-| OCR für gescannte PDFs | pdftotext reicht für digitale PDFs |
-| Externe Dokumentquellen (URLs) | Nur NC-Dateien in v4.1 |
-| DOCX/PPTX-Extraktion | Scope-Begrenzung, PDF+Markdown reichen |
+| Voice-Acting / TTS | Text-basiert bleibt |
+| Eigene Bild-Assets | Emoji/Icons reichen |
+| Kampagnen-Editor fuer Dozenten | JSON manuell, v7.0+ |
+| Hacker-Zeitreise | Eigener Milestone v7.0 |
+| Vektor-Embeddings | Stufe 3 |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DOCS-01 | Phase 36 | Complete (36-01) |
-| DOCS-02 | Phase 36 | Complete (36-01) |
-| DOCS-03 | Phase 36 | Complete (36-01) |
-| DOCS-04 | Phase 36 | Complete (36-01) |
-| CHUNK-01 | Phase 37 | Complete |
-| CHUNK-02 | Phase 37 | Complete |
-| CHUNK-03 | Phase 37 | Complete |
-| CHUNK-04 | Phase 37 | Complete |
-| SEARCH-01 | Phase 38 | Complete |
-| SEARCH-02 | Phase 38 | Complete |
-| RAG-01 | Phase 39 | Complete |
-| RAG-02 | Phase 39 | Complete |
-| RAG-03 | Phase 39 | Complete |
-| RAG-04 | Phase 39 | Complete |
+| NARR-01 | Phase 40 | Complete |
+| NARR-02 | Phase 40 | Complete |
+| NARR-03 | Phase 40 | Complete |
+| NARR-04 | Phase 40 | Complete |
+| NARR-05 | Phase 40 | Complete |
+| SEC-01 | Phase 41 | Pending |
+| SEC-02 | Phase 41 | Pending |
+| SEC-03 | Phase 41 | Pending |
+| SEC-04 | Phase 42 | Pending |
+| SEC-05 | Phase 42 | Pending |
+| KURS-01 | Phase 42 | Pending |
+| KURS-02 | Phase 42 | Pending |
+| KURS-03 | Phase 42 | Pending |
+| AISEC-01 | Phase 43 | Pending |
+| AISEC-02 | Phase 43 | Pending |
 
 **Coverage:**
-- v4.1 requirements: 14 total
-- Mapped to phases: 14
+- v6.1 requirements: 15 total
+- Mapped to phases: 15
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-22*
-*Last updated: 2026-03-22 after 36-01 completion*
+*Last updated: 2026-03-22 after roadmap creation*

@@ -623,7 +623,7 @@ Phases 40-43 execute sequentially: 40 -> 41 -> 42 -> 43. Phase 40 (Engine) must 
 | 37. Chunking-Pipeline | v4.1 | 1/1 | Complete | 2026-03-22 |
 | 38. Chunk-Suche | v4.1 | 1/1 | Complete | 2026-03-22 |
 | 39. Multi-Source-RAG | v4.1 | 1/1 | Complete | 2026-03-22 |
-| 40. KI-Erzaehler Engine | v6.1 | 0/TBD | Not started | - |
+| 40. KI-Erzaehler Engine | 1/2 | In Progress|  | - |
 | 41. Security-Kampagnen Teil 1 | v6.1 | 0/TBD | Not started | - |
 | 42. Security-Kampagnen Teil 2 + Kurs-Kampagnen | v6.1 | 0/TBD | Not started | - |
 | 43. AI Security Content | v6.1 | 0/TBD | Not started | - |
