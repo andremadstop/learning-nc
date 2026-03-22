@@ -1,5 +1,5 @@
 <template>
-  <div class="abenteuer-mode">
+  <div class="abenteuer-mode" data-lnc-theme="dark">
 
     <!-- ===== CAMPAIGN SELECT PHASE ===== -->
     <div v-if="phase === 'campaign-select'" class="ab-campaign-select">
@@ -1177,21 +1177,10 @@ export default {
 <style scoped>
 /* ===== ROOT ===== */
 .abenteuer-mode {
-  --rpg-bg: #0d1117;
-  --rpg-surface: #161b22;
-  --rpg-border: #30363d;
-  --rpg-text: #c9d1d9;
-  --rpg-text-muted: #8b949e;
-  --rpg-accent: #58a6ff;
-  --rpg-success: #3fb950;
-  --rpg-danger: #f85149;
-  --rpg-gold: #d29922;
-  --rpg-radius: 8px;
-
   min-height: 400px;
-  color: var(--rpg-text);
-  background: var(--rpg-bg);
-  border-radius: var(--rpg-radius);
+  color: var(--lnc-text);
+  background: var(--lnc-bg);
+  border-radius: var(--lnc-radius-sm);
   padding: 20px;
   position: relative;
 }
@@ -1203,10 +1192,10 @@ export default {
 
 .ab-back-btn {
   background: transparent;
-  border: 1px solid var(--rpg-border);
-  color: var(--rpg-text-muted);
+  border: 1px solid var(--lnc-border);
+  color: var(--lnc-text-secondary);
   padding: 6px 12px;
-  border-radius: var(--rpg-radius);
+  border-radius: var(--lnc-radius-sm);
   cursor: pointer;
   font-size: 13px;
   margin-bottom: 12px;
@@ -1214,19 +1203,19 @@ export default {
   transition: color 0.15s, border-color 0.15s;
 }
 .ab-back-btn:hover {
-  color: var(--rpg-text);
-  border-color: var(--rpg-accent);
+  color: var(--lnc-text);
+  border-color: var(--lnc-cyan);
 }
 
 .ab-title {
   margin: 8px 0 4px;
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--rpg-text);
+  color: var(--lnc-text);
 }
 
 .ab-subtitle {
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   font-size: 0.9rem;
   margin: 0;
 }
@@ -1238,14 +1227,14 @@ export default {
   align-items: center;
   padding: 40px;
   gap: 12px;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
 }
 
 .ab-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--rpg-border);
-  border-top-color: var(--rpg-accent);
+  border: 3px solid var(--lnc-border);
+  border-top-color: var(--lnc-cyan);
   border-radius: 50%;
   animation: ab-spin 0.7s linear infinite;
 }
@@ -1257,7 +1246,7 @@ export default {
 @media (prefers-reduced-motion: reduce) {
   .ab-spinner {
     animation: none;
-    border-top-color: var(--rpg-accent);
+    border-top-color: var(--lnc-cyan);
   }
 }
 
@@ -1269,9 +1258,9 @@ export default {
 }
 
 .ab-campaign-card {
-  background: var(--rpg-surface);
-  border: 1px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  background: var(--lnc-panel);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   padding: 16px;
   cursor: pointer;
   display: flex;
@@ -1283,14 +1272,14 @@ export default {
 }
 .ab-campaign-card:hover,
 .ab-campaign-card:focus-visible {
-  border-color: var(--rpg-accent);
+  border-color: var(--lnc-cyan);
   transform: translateY(-2px);
 }
 .ab-campaign-card:focus-visible {
-  box-shadow: 0 0 0 2px var(--rpg-accent);
+  box-shadow: 0 0 0 2px var(--lnc-cyan);
 }
 .ab-campaign-completed {
-  border-color: var(--rpg-success);
+  border-color: var(--lnc-green);
 }
 
 .ab-campaign-icon {
@@ -1302,13 +1291,13 @@ export default {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--rpg-text);
+  color: var(--lnc-text);
 }
 
 .ab-campaign-desc {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   line-height: 1.4;
 }
 
@@ -1334,7 +1323,7 @@ export default {
   border-radius: 99px;
   font-size: 0.75rem;
   background: #1c2535;
-  color: var(--rpg-accent);
+  color: var(--lnc-cyan);
 }
 
 .ab-campaign-progress {
@@ -1348,9 +1337,9 @@ export default {
   font-size: 0.75rem;
   font-weight: 500;
 }
-.ab-prog-new { background: #1c2535; color: var(--rpg-accent); }
-.ab-prog-active { background: #2d2505; color: var(--rpg-gold); }
-.ab-prog-done { background: #1c3a1c; color: var(--rpg-success); }
+.ab-prog-new { background: #1c2535; color: var(--lnc-cyan); }
+.ab-prog-active { background: #2d2505; color: var(--lnc-amber); }
+.ab-prog-done { background: #1c3a1c; color: var(--lnc-green); }
 
 /* ===== CHARACTER GRID ===== */
 .ab-character-grid {
@@ -1361,9 +1350,9 @@ export default {
 }
 
 .ab-character-card {
-  background: var(--rpg-surface);
-  border: 2px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  background: var(--lnc-panel);
+  border: 2px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   padding: 16px;
   cursor: pointer;
   transition: border-color 0.15s, transform 0.15s;
@@ -1373,14 +1362,14 @@ export default {
 }
 .ab-character-card:hover,
 .ab-character-card:focus-visible {
-  border-color: var(--rpg-accent);
+  border-color: var(--lnc-cyan);
   transform: translateY(-2px);
 }
 .ab-character-card:focus-visible {
-  box-shadow: 0 0 0 2px var(--rpg-accent);
+  box-shadow: 0 0 0 2px var(--lnc-cyan);
 }
 .ab-char-selected {
-  border-color: var(--rpg-accent) !important;
+  border-color: var(--lnc-cyan) !important;
   background: #1c2535;
 }
 
@@ -1394,13 +1383,13 @@ export default {
   margin: 0 0 2px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--rpg-text);
+  color: var(--lnc-text);
 }
 
 .ab-char-role {
   margin: 0 0 6px;
   font-size: 0.75rem;
-  color: var(--rpg-accent);
+  color: var(--lnc-cyan);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -1408,7 +1397,7 @@ export default {
 .ab-char-desc {
   margin: 0 0 10px;
   font-size: 0.82rem;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   line-height: 1.4;
 }
 
@@ -1424,18 +1413,18 @@ export default {
   gap: 6px;
 }
 .ab-stat-label {
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   min-width: 50px;
 }
 .ab-stat-value {
-  color: var(--rpg-text);
+  color: var(--lnc-text);
 }
 
 .ab-char-check {
   position: absolute;
   top: 10px;
   right: 12px;
-  color: var(--rpg-success);
+  color: var(--lnc-green);
   font-size: 1.2rem;
   font-weight: 700;
 }
@@ -1448,7 +1437,7 @@ export default {
 /* ===== BUTTONS ===== */
 .ab-btn {
   padding: 10px 20px;
-  border-radius: var(--rpg-radius);
+  border-radius: var(--lnc-radius-sm);
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -1460,27 +1449,27 @@ export default {
   cursor: not-allowed;
 }
 .ab-btn-primary {
-  background: var(--rpg-accent);
+  background: var(--lnc-cyan);
   color: #0d1117;
 }
 .ab-btn-primary:hover:not(:disabled) {
   background: #79b8ff;
 }
 .ab-btn-secondary {
-  background: var(--rpg-surface);
-  color: var(--rpg-text);
-  border: 1px solid var(--rpg-border);
+  background: var(--lnc-panel);
+  color: var(--lnc-text);
+  border: 1px solid var(--lnc-border);
 }
 .ab-btn-secondary:hover:not(:disabled) {
-  border-color: var(--rpg-accent);
+  border-color: var(--lnc-cyan);
 }
 .ab-btn-ghost {
   background: transparent;
-  color: var(--rpg-text-muted);
-  border: 1px solid var(--rpg-border);
+  color: var(--lnc-text-secondary);
+  border: 1px solid var(--lnc-border);
 }
 .ab-btn-ghost:hover:not(:disabled) {
-  color: var(--rpg-text);
+  color: var(--lnc-text);
 }
 
 /* ===== SCENE ===== */
@@ -1502,13 +1491,13 @@ export default {
 }
 .ab-scene-progress {
   font-size: 0.8rem;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
 }
 
 .ab-narrative-box {
   background: #0a0e15;
-  border: 1px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   padding: 20px;
   position: relative;
   min-height: 80px;
@@ -1518,7 +1507,7 @@ export default {
   margin: 0;
   font-size: 0.95rem;
   line-height: 1.7;
-  color: var(--rpg-text);
+  color: var(--lnc-text);
   font-family: Georgia, 'Times New Roman', serif;
   white-space: pre-wrap;
 }
@@ -1527,7 +1516,7 @@ export default {
 .ab-typing::after {
   content: '\u258C';
   animation: ab-blink 1s step-end infinite;
-  color: var(--rpg-accent);
+  color: var(--lnc-cyan);
 }
 
 @keyframes ab-blink {
@@ -1544,7 +1533,7 @@ export default {
   margin-top: 8px;
   background: transparent;
   border: none;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   font-size: 0.78rem;
   cursor: pointer;
   padding: 2px 0;
@@ -1562,8 +1551,8 @@ export default {
   font-size: 2.5rem;
   line-height: 1;
   flex-shrink: 0;
-  background: var(--rpg-surface);
-  border: 1px solid var(--rpg-border);
+  background: var(--lnc-panel);
+  border: 1px solid var(--lnc-border);
   border-radius: 50%;
   width: 56px;
   height: 56px;
@@ -1573,9 +1562,9 @@ export default {
 }
 
 .ab-speech-bubble {
-  background: var(--rpg-surface);
-  border: 1px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  background: var(--lnc-panel);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   padding: 12px 16px;
   flex: 1;
   position: relative;
@@ -1589,13 +1578,13 @@ export default {
   height: 0;
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
-  border-right: 8px solid var(--rpg-border);
+  border-right: 8px solid var(--lnc-border);
 }
 
 .ab-npc-name {
   display: block;
   font-size: 0.75rem;
-  color: var(--rpg-accent);
+  color: var(--lnc-cyan);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1606,7 +1595,7 @@ export default {
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.5;
-  color: var(--rpg-text);
+  color: var(--lnc-text);
 }
 
 /* ===== CHOICES ===== */
@@ -1616,7 +1605,7 @@ export default {
 
 .ab-choices-label {
   font-size: 0.85rem;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0 0 10px;
@@ -1629,9 +1618,9 @@ export default {
 }
 
 .ab-choice-card {
-  background: var(--rpg-surface);
-  border: 1px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  background: var(--lnc-panel);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   padding: 14px;
   cursor: pointer;
   text-align: left;
@@ -1639,12 +1628,12 @@ export default {
   gap: 10px;
   align-items: flex-start;
   transition: border-color 0.15s, background 0.15s, transform 0.15s;
-  color: var(--rpg-text);
+  color: var(--lnc-text);
   font-size: 0.9rem;
   line-height: 1.4;
 }
 .ab-choice-card:hover:not(:disabled) {
-  border-color: var(--rpg-accent);
+  border-color: var(--lnc-cyan);
   background: #1c2535;
   transform: translateY(-1px);
 }
@@ -1673,7 +1662,7 @@ export default {
 
 .ab-skill-badge {
   background: #2d2505;
-  color: var(--rpg-gold);
+  color: var(--lnc-amber);
   padding: 4px 12px;
   border-radius: 99px;
   font-size: 0.8rem;
@@ -1682,13 +1671,13 @@ export default {
 
 .ab-skill-context {
   font-size: 0.8rem;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
 }
 
 .ab-skill-question {
-  background: var(--rpg-surface);
-  border: 1px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  background: var(--lnc-panel);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   padding: 20px;
 }
 
@@ -1696,7 +1685,7 @@ export default {
   margin: 0 0 16px;
   font-size: 1rem;
   line-height: 1.6;
-  color: var(--rpg-text);
+  color: var(--lnc-text);
 }
 
 .ab-answers {
@@ -1706,36 +1695,36 @@ export default {
 }
 
 .ab-answer-btn {
-  background: var(--rpg-bg);
-  border: 1px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  background: var(--lnc-bg);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   padding: 12px 16px;
-  color: var(--rpg-text);
+  color: var(--lnc-text);
   font-size: 0.9rem;
   text-align: left;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
 }
 .ab-answer-btn:hover:not(:disabled) {
-  border-color: var(--rpg-accent);
+  border-color: var(--lnc-cyan);
   background: #1c2535;
 }
 .ab-answer-btn:disabled {
   cursor: not-allowed;
 }
 .ab-answer-selected {
-  border-color: var(--rpg-accent);
+  border-color: var(--lnc-cyan);
   background: #1c2535;
 }
 .ab-answer-correct {
-  border-color: var(--rpg-success) !important;
+  border-color: var(--lnc-green) !important;
   background: #1c3a1c !important;
-  color: var(--rpg-success) !important;
+  color: var(--lnc-green) !important;
 }
 .ab-answer-wrong {
-  border-color: var(--rpg-danger) !important;
+  border-color: var(--lnc-danger) !important;
   background: #3a1c1c !important;
-  color: var(--rpg-danger) !important;
+  color: var(--lnc-danger) !important;
 }
 
 /* ===== RESULT OVERLAY ===== */
@@ -1750,8 +1739,8 @@ export default {
 }
 
 .ab-result-box {
-  background: var(--rpg-surface);
-  border: 2px solid var(--rpg-border);
+  background: var(--lnc-panel);
+  border: 2px solid var(--lnc-border);
   border-radius: 12px;
   padding: 32px;
   text-align: center;
@@ -1759,10 +1748,10 @@ export default {
   width: 90%;
 }
 .ab-result-success {
-  border-color: var(--rpg-success);
+  border-color: var(--lnc-green);
 }
 .ab-result-fail {
-  border-color: var(--rpg-danger);
+  border-color: var(--lnc-danger);
 }
 
 .ab-result-icon {
@@ -1775,13 +1764,13 @@ export default {
   font-size: 1rem;
   font-weight: 600;
 }
-.ab-result-success .ab-result-label { color: var(--rpg-success); }
-.ab-result-fail .ab-result-label { color: var(--rpg-danger); }
+.ab-result-success .ab-result-label { color: var(--lnc-green); }
+.ab-result-fail .ab-result-label { color: var(--lnc-danger); }
 
 .ab-result-explanation {
   margin: 8px 0 0;
   font-size: 0.85rem;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   line-height: 1.5;
 }
 
@@ -1800,7 +1789,7 @@ export default {
 
 .ab-sim-badge {
   background: #1c2535;
-  color: var(--rpg-accent);
+  color: var(--lnc-cyan);
   padding: 4px 12px;
   border-radius: 99px;
   font-size: 0.8rem;
@@ -1809,20 +1798,20 @@ export default {
 
 .ab-sim-context {
   font-size: 0.85rem;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
 }
 
 .ab-sim-body {
-  background: var(--rpg-surface);
-  border: 1px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  background: var(--lnc-panel);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   padding: 20px;
 }
 
 .ab-sim-intro {
   margin: 0 0 16px;
   font-size: 0.9rem;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   line-height: 1.5;
   font-style: italic;
 }
@@ -1830,7 +1819,7 @@ export default {
 .ab-sim-result {
   margin-top: 20px;
   padding: 16px;
-  border-radius: var(--rpg-radius);
+  border-radius: var(--lnc-radius-sm);
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -1840,12 +1829,12 @@ export default {
 
 .ab-sim-pass {
   background: #1c3a1c;
-  border: 1px solid var(--rpg-success);
+  border: 1px solid var(--lnc-green);
 }
 
 .ab-sim-partial {
   background: #2d2505;
-  border: 1px solid var(--rpg-gold);
+  border: 1px solid var(--lnc-amber);
 }
 
 .ab-sim-result-icon {
@@ -1858,8 +1847,8 @@ export default {
   font-weight: 500;
 }
 
-.ab-sim-pass .ab-sim-result-label { color: var(--rpg-success); }
-.ab-sim-partial .ab-sim-result-label { color: var(--rpg-gold); }
+.ab-sim-pass .ab-sim-result-label { color: var(--lnc-green); }
+.ab-sim-partial .ab-sim-result-label { color: var(--lnc-amber); }
 
 /* ===== EPILOG ===== */
 .ab-epilog {
@@ -1886,7 +1875,7 @@ export default {
 }
 
 .ab-epilog-narrative {
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   font-size: 0.95rem;
   line-height: 1.7;
   font-family: Georgia, 'Times New Roman', serif;
@@ -1894,9 +1883,9 @@ export default {
 }
 
 .ab-epilog-score {
-  background: var(--rpg-surface);
-  border: 1px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  background: var(--lnc-panel);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   padding: 16px;
   margin-bottom: 24px;
   display: flex;
@@ -1912,10 +1901,10 @@ export default {
 }
 .ab-score-val {
   font-weight: 600;
-  color: var(--rpg-text);
+  color: var(--lnc-text);
 }
 .ab-xp {
-  color: var(--rpg-gold);
+  color: var(--lnc-amber);
 }
 
 .ab-epilog-actions {
@@ -1927,9 +1916,9 @@ export default {
 
 /* ===== COOP LOBBY ===== */
 .ab-lobby-code-box {
-  background: var(--rpg-surface);
-  border: 1px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  background: var(--lnc-panel);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   padding: 16px;
   display: flex;
   align-items: center;
@@ -1939,14 +1928,14 @@ export default {
 
 .ab-lobby-code-label {
   font-size: 0.8rem;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
 }
 
 .ab-lobby-code {
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: var(--rpg-accent);
+  color: var(--lnc-cyan);
   flex: 1;
   text-align: center;
 }
@@ -1959,20 +1948,20 @@ export default {
 }
 
 .ab-lobby-player {
-  background: var(--rpg-surface);
-  border: 1px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  background: var(--lnc-panel);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   padding: 10px 14px;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 .ab-player-ready {
-  border-color: var(--rpg-success);
+  border-color: var(--lnc-green);
 }
 .ab-player-name { flex: 1; }
 .ab-player-char { font-size: 1.2rem; }
-.ab-player-status { color: var(--rpg-text-muted); font-size: 0.9rem; }
+.ab-player-status { color: var(--lnc-text-secondary); font-size: 0.9rem; }
 
 .ab-lobby-actions {
   display: flex;
@@ -1991,8 +1980,8 @@ export default {
 }
 
 .ab-coop-dialog {
-  background: var(--rpg-surface);
-  border: 1px solid var(--rpg-border);
+  background: var(--lnc-panel);
+  border: 1px solid var(--lnc-border);
   border-radius: 12px;
   padding: 28px;
   max-width: 360px;
@@ -2003,7 +1992,7 @@ export default {
   margin: 0 0 8px;
 }
 .ab-coop-dialog p {
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   font-size: 0.9rem;
   margin: 0 0 16px;
 }
@@ -2017,13 +2006,13 @@ export default {
 .ab-coop-vote-row {
   display: flex;
   justify-content: space-between;
-  background: var(--rpg-bg);
-  border-radius: var(--rpg-radius);
+  background: var(--lnc-bg);
+  border-radius: var(--lnc-radius-sm);
   padding: 8px 12px;
   font-size: 0.85rem;
 }
 .ab-coop-vote-count {
-  color: var(--rpg-accent);
+  color: var(--lnc-cyan);
   font-weight: 600;
 }
 
@@ -2039,8 +2028,8 @@ export default {
 }
 
 .ab-abort-dialog {
-  background: var(--rpg-surface);
-  border: 1px solid var(--rpg-border);
+  background: var(--lnc-panel);
+  border: 1px solid var(--lnc-border);
   border-radius: 12px;
   padding: 24px;
   max-width: 360px;
@@ -2050,7 +2039,7 @@ export default {
   margin: 0 0 8px;
 }
 .ab-abort-dialog p {
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   font-size: 0.9rem;
   margin: 0 0 16px;
 }
@@ -2099,11 +2088,11 @@ export default {
 .ab-freetext {
   margin-top: 16px;
   padding: 12px;
-  border-top: 1px solid var(--rpg-border);
+  border-top: 1px solid var(--lnc-border);
 }
 .ab-freetext-label {
   font-size: 14px;
-  color: var(--rpg-text-muted);
+  color: var(--lnc-text-secondary);
   margin: 0 0 8px 0;
   font-weight: 400;
 }
@@ -2114,22 +2103,22 @@ export default {
 .ab-freetext-field {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid var(--rpg-border);
-  border-radius: var(--rpg-radius);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-sm);
   font-size: 14px;
-  background: var(--rpg-surface);
-  color: var(--rpg-text);
+  background: var(--lnc-panel);
+  color: var(--lnc-text);
 }
 .ab-freetext-field:focus {
-  border-color: var(--rpg-accent);
+  border-color: var(--lnc-cyan);
   outline: none;
 }
 .ab-freetext-submit {
   padding: 8px 16px;
-  background: var(--rpg-accent);
+  background: var(--lnc-cyan);
   color: #fff;
   border: none;
-  border-radius: var(--rpg-radius);
+  border-radius: var(--lnc-radius-sm);
   cursor: pointer;
   font-weight: bold;
   font-size: 16px;
@@ -2139,7 +2128,7 @@ export default {
   cursor: not-allowed;
 }
 .ab-freetext-error {
-  color: var(--rpg-danger);
+  color: var(--lnc-danger);
   font-size: 13px;
   margin: 8px 0 0 0;
 }
@@ -2153,7 +2142,7 @@ export default {
   top: 4px;
   right: 4px;
   background: rgba(88, 166, 255, 0.15);
-  color: var(--rpg-accent);
+  color: var(--lnc-cyan);
   font-size: 10px;
   padding: 1px 5px;
   border-radius: 8px;
@@ -2171,10 +2160,10 @@ export default {
 }
 .ab-role-attacker {
   background: rgba(248, 81, 73, 0.15);
-  color: var(--rpg-danger);
+  color: var(--lnc-danger);
 }
 .ab-role-dau {
   background: rgba(88, 166, 255, 0.15);
-  color: var(--rpg-accent);
+  color: var(--lnc-cyan);
 }
 </style>
