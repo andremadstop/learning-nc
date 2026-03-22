@@ -339,7 +339,10 @@ Plans:
   2. Der API-Endpunkt gibt bei jedem Poll den aktuellen Spielfeld-State zurück: Figurpositionen (Lernwürfel) oder Turm-Blöcke (Wissensturm) aller Spieler
   3. Nach einer Spieler-Aktion (Würfeln + Antwort) wechselt der aktive Spieler automatisch zum nächsten in der Reihe — kein manueller Trigger nötig
   4. Scoring-Logik für beide Modi ist serverseitig implementiert und beeinflusst den Session-State (Figurposition vorwärts / Block hinzufügen / Steal)
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 39-01-PLAN.md � Multi-source context aggregation + citation instructions
 
 ### Phase 29: Oldschool-Menü
 **Goal**: Spieler finden den Oldschool-Bereich in CourseDetail und können zwischen Lernwürfel und Wissensturm wählen
@@ -349,7 +352,10 @@ Plans:
   1. In CourseDetail erscheint ein "Oldschool" Tab neben dem Arena-Tab — sichtbar für alle Kurs-Mitglieder
   2. Im Oldschool-Tab zeigt OldschoolSelector.vue zwei Karten (Lernwürfel, Wissensturm) mit Kurzbeschreibung und Start-Button
   3. Ein Klick auf eine Karte startet die Lobby des jeweiligen Spiels — analog zum Arena-Flow
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 39-01-PLAN.md � Multi-source context aggregation + citation instructions
 
 ### Phase 30: Lernwürfel
 **Goal**: Spieler können eine vollständige Runde Mensch-ärgere-dich-nicht mit Lernfragen spielen — vom Würfeln bis zum Sieg
@@ -376,7 +382,10 @@ Plans:
   3. Eine falsche Antwort löst eine Verlust-Animation aus (oberster Block fällt) und entfernt den Block vom Turm
   4. Bei einem Steal (Gegner antwortet falsch, aktueller Spieler richtig) wechselt der Block sichtbar vom Gegner-Turm auf den eigenen Turm
   5. Sobald ein Spieler alle 5 Farben auf seinem Turm hat, endet das Spiel mit Sieger-Anzeige und VirtuProf-Kommentar
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 39-01-PLAN.md � Multi-source context aggregation + citation instructions
 
 </details>
 
@@ -393,7 +402,10 @@ Plans:
   3. Pool-Fragen werden nach dem `pool_filter`-Feld der Szene gefiltert — eine Szene mit filter="routing" zieht ausschliesslich Fragen zum Thema Routing
   4. Der Kampagnen-Fortschritt eines Users (aktuelle Szene, getroffene Entscheidungen, Ergebnisse) überlebt einen Browser-Neustart — er landet beim nächsten Login an derselben Stelle
   5. Alle 5 Kampagnen-JSONs werden vom Service korrekt geladen und validiert — ein malformatiertes JSON wirft einen strukturierten Fehler statt einem 500er
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 39-01-PLAN.md � Multi-source context aggregation + citation instructions
 
 ### Phase 33: RPG-Frontend + Tab
 **Goal**: Spieler können eine Kampagne im Browser vollständig spielen — von der Kampagnen-Auswahl über Szenen und Skill-Checks bis zum Abschluss-Screen
@@ -405,7 +417,10 @@ Plans:
   3. Enthält ein Schritt einen Skill-Check, erscheint die Frage aus dem Pool mit Antwortoptionen; nach der Antwort zeigt eine Animation (grüner Haken = Erfolg, roter X = Misserfolg) das Ergebnis
   4. Im Koop-Modus (2-4 Spieler) sehen alle Spieler dieselbe Szene gleichzeitig; bei einer Entscheidung erscheint eine Abstimmungs-UI und die Mehrheit bestimmt den Weg
   5. AbenteuerMode.vue ist auch standalone aufrufbar (ohne Kurs-Kontext) über einen direkten App-Route-Eintrag
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 39-01-PLAN.md � Multi-source context aggregation + citation instructions
 
 ### Phase 34: Charakter-System + Simulation-Integration
 **Goal**: Spieler wählen eine Klasse und spüren diesen Unterschied in Skill-Checks; jede Kampagne endet mit einer echten PBQ-Simulation deren Ergebnis den Epilog beeinflusst
@@ -417,7 +432,10 @@ Plans:
   3. NPC-Dialoge zeigen ein Text-Portrait (Emoji oder SVG-Platzhalter) und unterscheiden sich inhaltlich je nach gewählter Charakter-Klasse
   4. Am Ende jeder Kampagne startet eine PBQ-Simulation (bestehende PbqRenderer-Komponente) — der Spieler muss ein Netzwerk-Szenario konfigurieren
   5. Das Ergebnis der Simulation (Vollständig gelöst / Teilweise / Nicht gelöst) bestimmt welcher von drei Epilog-Texten angezeigt wird
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 39-01-PLAN.md � Multi-source context aggregation + citation instructions
 
 ### Phase 35: Kampagnen-Content
 **Goal**: Alle 5 Kampagnen existieren als vollständige, spielbare JSON-Dateien mit je 5 Szenen, Entscheidungszweigen, Skill-Check-Mappings und einer finalen Simulation
@@ -429,7 +447,10 @@ Plans:
   3. Kampagnen 3, 4 und 5 sind spielbar: alle JSONs validieren ohne Fehler, alle Szenen-IDs sind auflösbar, keine toten Verzweigungen
   4. Jede Kampagne endet mit einem Simulations-Trigger der auf eine existierende PBQ-Konfiguration zeigt, und die drei Epilog-Varianten (Erfolg/Teilweise/Misserfolg) sind textlich ausformuliert
   5. Ein neuer Spieler kann Kampagne 1 von Anfang bis Ende durchspielen ohne auf einen 404-Fehler, eine leere Szene oder eine fehlende Frage zu treffen
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 39-01-PLAN.md � Multi-source context aggregation + citation instructions
 
 </details>
 
@@ -440,7 +461,7 @@ Plans:
 - [x] **Phase 36: Dokument-Upload + Extraktion** - Dozent laedt PDF/Markdown hoch, System extrahiert Text, Status-Uebersicht (completed 2026-03-22)
 - [x] **Phase 37: Chunking-Pipeline** - Text wird in ~500-Token-Chunks mit Kapitel-Tags zerlegt, als BackgroundJob verarbeitet und in DB gespeichert (completed 2026-03-22)
 - [x] **Phase 38: Chunk-Suche** - Keyword-basierte Suche findet relevante Chunks zur User-Frage, sortiert nach Relevanz (completed 2026-03-22)
-- [ ] **Phase 39: Multi-Source-RAG** - RagContextService buendelt alle Quellen mit Prioritaeten, VirtuProf zeigt Quellenangaben
+- [x] **Phase 39: Multi-Source-RAG** - RagContextService buendelt alle Quellen mit Prioritaeten, VirtuProf zeigt Quellenangaben (completed 2026-03-22)
 
 ## Phase Details
 
@@ -495,7 +516,10 @@ Plans:
   2. Jede VirtuProf-Antwort die auf Kursmaterial basiert enthaelt eine Quellenangabe im Format "[Quelle: Dateiname, Kap. X]" am Ende der Antwort
   3. VirtuProf bezieht User-Schwaechen und vergangene Erklaerungen ein: bei einer Frage zu einem Thema das der User wiederholt falsch beantwortet hat, referenziert die Antwort fruehere Fehlversuche
   4. Das Context-Fenster wird priorisiert gefuellt: zuerst relevante Dokument-Chunks, dann passende Pool-Fragen, dann Chat-History -- bei Ueberlauf werden niedrig-priorisierte Quellen abgeschnitten statt einen API-Fehler zu verursachen
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 39-01-PLAN.md � Multi-source context aggregation + citation instructions
 
 ## Progress
 
@@ -541,5 +565,5 @@ Phases 36-39 execute sequentially: 36 → 37 → 38 → 39. Each phase depends o
 | 35. Kampagnen-Content | v6.0 | Complete | Complete | 2026-03-22 |
 | 36. Dokument-Upload + Extraktion | 2/2 | Complete    | 2026-03-22 | - |
 | 37. Chunking-Pipeline | 1/1 | Complete    | 2026-03-22 | - |
-| 38. Chunk-Suche | 1/1 | Complete   | 2026-03-22 | - |
-| 39. Multi-Source-RAG | v4.1 | 0/? | Not started | - |
+| 38. Chunk-Suche | 1/1 | Complete    | 2026-03-22 | - |
+| 39. Multi-Source-RAG | 1/1 | Complete   | 2026-03-22 | - |

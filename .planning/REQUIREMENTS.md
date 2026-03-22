@@ -26,10 +26,10 @@
 
 ### Multi-Source-RAG
 
-- [ ] **RAG-01**: RagContextService bündelt: Pool-Fragen + User-Profil + Chat-Memory + Dokument-Chunks + User-Notes
-- [ ] **RAG-02**: VirtuProf-Antworten enthalten Quellenangaben (z.B. "[Quelle: Dateiname, Kap. 6]")
-- [ ] **RAG-03**: Context enthält User-Schwächen und vergangene Erklärungen
-- [ ] **RAG-04**: Context-Fenster wird intelligent gefüllt (Priorität: relevante Chunks > Pool-Fragen > History)
+- [x] **RAG-01**: RagContextService bündelt: Pool-Fragen + User-Profil + Chat-Memory + Dokument-Chunks + User-Notes
+- [x] **RAG-02**: VirtuProf-Antworten enthalten Quellenangaben (z.B. "[Quelle: Dateiname, Kap. 6]")
+- [x] **RAG-03**: Context enthält User-Schwächen und vergangene Erklärungen
+- [x] **RAG-04**: Context-Fenster wird intelligent gefüllt (Priorität: relevante Chunks > Pool-Fragen > History)
 
 ## Future Requirements
 
@@ -62,10 +62,10 @@
 | CHUNK-04 | Phase 37 | Complete |
 | SEARCH-01 | Phase 38 | Complete |
 | SEARCH-02 | Phase 38 | Complete |
-| RAG-01 | Phase 39 | Pending |
-| RAG-02 | Phase 39 | Pending |
-| RAG-03 | Phase 39 | Pending |
-| RAG-04 | Phase 39 | Pending |
+| RAG-01 | Phase 39 | Complete |
+| RAG-02 | Phase 39 | Complete |
+| RAG-03 | Phase 39 | Complete |
+| RAG-04 | Phase 39 | Complete |
 
 **Coverage:**
 - v4.1 requirements: 14 total

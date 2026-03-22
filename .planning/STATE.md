@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.1
 milestone_name: RAG Stufe 2
 status: completed
-stopped_at: Completed 38-01-PLAN.md
-last_updated: "2026-03-22T08:45:45Z"
+stopped_at: Completed 39-01-PLAN.md
+last_updated: "2026-03-22T08:56:30.332Z"
 last_activity: 2026-03-22 — Plan 38-01 executed (Chunk Search)
 progress:
   total_phases: 39
-  completed_phases: 29
-  total_plans: 42
-  completed_plans: 50
+  completed_phases: 31
+  total_plans: 44
+  completed_plans: 52
   percent: 100
 ---
 
@@ -53,6 +53,7 @@ Progress: [██████████] 100%
 
 *Updated after each plan completion*
 | Phase 38 P01 | 5min | 2 tasks | 2 files |
+| Phase 39-multi-source-rag P01 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,7 @@ Recent decisions affecting current work:
 - [37-01] ALL CAPS heading detection for PDF text, title-case conversion for readability
 - [38-01] LOWER(col) LIKE pattern for cross-DB ILIKE compatibility
 - [38-01] Chapter match weighted 2x vs text match for topical relevance scoring
+- [Phase 39-multi-source-rag]: 7500 token budget, priority trimming: weaknesses > pool_questions > chunks
 
 ### Existing Architecture
 
@@ -101,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T08:45:45Z
-Stopped at: Completed 38-01-PLAN.md
+Last session: 2026-03-22T08:56:30.315Z
+Stopped at: Completed 39-01-PLAN.md
 Resume file: None
