@@ -1,0 +1,680 @@
+{
+  "campaign_id": "linux_server_down",
+  "title": "Server Down \u2014 Freitag 17 Uhr",
+  "description": "Freitag, 17 Uhr. Drei Produktionsserver sind gleichzeitig abgestuerzt. SSH geht nicht. Der Projektleiter ruft alle fuenf Minuten an. Du hast nur die KVM-Konsole und dein Linux-Wissen. Jeder Befehl zaehlt, jeder Tippfehler kostet Zeit.",
+  "duration_minutes": 60,
+  "difficulty": "intermediate",
+  "focus_areas": [
+    "linux_plus"
+  ],
+  "character_recommendations": [
+    "sysadmin"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Stressiger Freitag-Abend-Krimi. Jeder Befehl zaehlt, jeder Tippfehler kostet Zeit. Die Produktionssysteme stehen still und das Wochenende rueckt naeher.",
+  "gemini_role": "dau",
+  "characters": {
+    "architect": {
+      "name": "Alex \"The Architect\" Neumann",
+      "avatar": "\ud83d\udc68\u200d\ud83d\udcbb",
+      "skill_bonus_pools": [
+        "routing",
+        "vlan",
+        "subnetting",
+        "topology"
+      ],
+      "skill_penalty_pools": [
+        "linux",
+        "dns",
+        "troubleshooting"
+      ],
+      "portrait_emoji": "\ud83c\udfd7\ufe0f"
+    },
+    "security": {
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "\ud83d\udc69\u200d\ud83d\udcbb",
+      "skill_bonus_pools": [
+        "security",
+        "incident_response",
+        "forensics"
+      ],
+      "skill_penalty_pools": [
+        "linux",
+        "dns"
+      ],
+      "portrait_emoji": "\ud83d\udee1\ufe0f"
+    },
+    "sysadmin": {
+      "name": "Kai \"Root\" Lindstr\u00f6m",
+      "avatar": "\ud83e\uddd4",
+      "skill_bonus_pools": [
+        "linux",
+        "dns",
+        "troubleshooting"
+      ],
+      "skill_penalty_pools": [
+        "wireless",
+        "wlan"
+      ],
+      "portrait_emoji": "\ud83d\udda5\ufe0f"
+    },
+    "helpdesk": {
+      "name": "Mia \"Helpdesk\" Torres",
+      "avatar": "\ud83d\udc69\u200d\ud83c\udfa7",
+      "skill_bonus_pools": [
+        "troubleshooting",
+        "hardware",
+        "a_plus"
+      ],
+      "skill_penalty_pools": [
+        "linux",
+        "dns",
+        "security"
+      ],
+      "portrait_emoji": "\ud83c\udfa7"
+    }
+  },
+  "npcs": {
+    "pm_frank": {
+      "name": "Frank Obermeier",
+      "role": "Projektleiter",
+      "avatar": "\ud83d\udcf1"
+    },
+    "senior_admin": {
+      "name": "Yuki Tanaka",
+      "role": "Senior Sysadmin (remote, nur via Chat)",
+      "avatar": "\ud83d\udcac"
+    },
+    "db_admin": {
+      "name": "Pavel Kowalski",
+      "role": "DBA",
+      "avatar": "\ud83d\uddc4\ufe0f"
+    },
+    "monitoring": {
+      "name": "Alertbot",
+      "role": "Monitoring System",
+      "avatar": "\ud83e\udd16"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_alarm",
+      "title": "Alarm!",
+      "narrative": "Freitag, 17:00. Du wolltest gerade den Rechner runterfahren als Alertbot losgeht: Drei Server down. Server 1 (Webshop): Kernel Panic. Server 2 (Fileserver): Filesystem-Fehler, I/O-Errors in der Konsole. Server 3 (Intranet): Bootet in Emergency Mode und bleibt stehen. SSH auf alle drei: Connection refused. Nur IPMI/KVM-Konsole verfuegbar. Frank ruft an: 'Was ist los? Der Webshop ist offline! Die Kunden koennen nicht bestellen! Koennen wir nicht einfach alles neustarten?' Yuki schreibt aus dem Urlaub: 'Bin am Handy. Kann per Chat helfen. Was zeigt dmesg?'",
+      "image": "scene_serverroom.png",
+      "animation_in": "mission_start",
+      "npc_dialog": {
+        "speaker": "pm_frank",
+        "text": "Der Webshop ist offline! Wir verlieren pro Stunde 5000 Euro Umsatz! Koennen wir nicht einfach alles neustarten? Das hilft doch immer! Und warum geht das ausgerechnet am Freitag kaputt?",
+        "portrait": "npc_frank"
+      },
+      "choices": [
+        {
+          "id": "c1_kernel_panic",
+          "text": "Server 1: Kernel Panic analysieren \u2014 dmesg und journalctl auf der KVM-Konsole auswerten",
+          "icon": "\ud83d\udcbb",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s2_filesystem_recovery",
+          "partial_scene": "s2_filesystem_recovery",
+          "fail_scene": "s1_fail_panik"
+        },
+        {
+          "id": "c1_filesystem",
+          "text": "Server 2: Filesystem-Check \u2014 fsck im Single-User-Mode starten",
+          "icon": "\ud83d\udcc0",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s2_filesystem_recovery",
+          "partial_scene": "s2_filesystem_recovery",
+          "fail_scene": "s1_fail_panik"
+        },
+        {
+          "id": "c1_triage",
+          "text": "Triage: Alle 3 Server nach Business Impact priorisieren \u2014 Webshop zuerst, dann Fileserver",
+          "icon": "\ud83d\udccb",
+          "skill_check": {
+            "pool_filter": "troubleshooting",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
+            }
+          },
+          "success_scene": "s2_filesystem_recovery",
+          "partial_scene": "s2_filesystem_recovery",
+          "fail_scene": "s1_fail_panik"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s1_fail_panik",
+      "title": "Franks Panik-Reboot",
+      "narrative": "Waehrend du noch analysierst, hat Frank eigenmaechttig Server 3 hart rebootet. 'Ich hab einfach den Stecker gezogen und wieder reingesteckt. Das hilft bei meinem PC auch immer.' Das Ergebnis: Das ext4-Filesystem auf Server 3 ist jetzt korrupt. fsck meldet schwere Fehler. Yuki schreibt: 'Wer hat den Server hart rebootet?! Nie ohne fsck rebooten, wenn Filesystem-Fehler vorliegen! Jetzt muessen wir erst das Filesystem reparieren bevor wir ueberhaupt weitermachen koennen.'",
+      "image": "scene_serverroom.png",
+      "npc_dialog": {
+        "speaker": "senior_admin",
+        "text": "Okay, tief durchatmen. Hart-Reboot bei Filesystem-Fehlern ist das Schlimmste was man tun kann. Aber es ist passiert. Boot von einem Live-System, dann fsck -y auf die betroffene Partition. Und sag Frank er soll die Finger von den Servern lassen.",
+        "portrait": "npc_yuki"
+      },
+      "choices": [
+        {
+          "id": "c1_fail_repair",
+          "text": "Live-System booten und Filesystem reparieren \u2014 Yukis Anweisungen folgen",
+          "icon": "\u26a1",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {}
+          },
+          "success_scene": "s2_filesystem_recovery",
+          "partial_scene": "s2_filesystem_recovery",
+          "fail_scene": "s2_filesystem_recovery"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_filesystem_recovery",
+      "title": "Filesystem Recovery",
+      "narrative": "Server 2, der Fileserver. Die KVM-Konsole zeigt I/O-Errors und ext4-Fehlermeldungen. Ein schnelles `df -h` zeigt das Problem: /var/log ist zu 100% voll. Monatelang haben sich Logdateien angesammelt \u2014 niemand hat logrotate konfiguriert. Ohne freien Speicher auf /var kann auch kein Service starten. Ausserdem zeigt `pvs` eine Anomalie: Ein Physical Volume im LVM-Verbund meldet 'unknown device'. Pavel, der DBA, meldet sich: 'Die PostgreSQL-Datenbank auf Server 2 startet nicht. Die WAL-Dateien sind korrupt. Ich brauche das Filesystem zuerst!'",
+      "image": "scene_forensics_terminal.png",
+      "npc_dialog": {
+        "speaker": "db_admin",
+        "text": "Ohne funktionierendes Filesystem kann ich nichts machen. PostgreSQL braucht konsistente WAL-Dateien zum Starten. Raeum bitte erst /var/log auf und pruef die LVM-Volumes. Dann koennen wir die Datenbank recovern.",
+        "portrait": "npc_pavel"
+      },
+      "choices": [
+        {
+          "id": "c2_logrotate",
+          "text": "journalctl --vacuum-size=100M + alte Logs loeschen + logrotate manuell konfigurieren",
+          "icon": "\ud83d\uddc4\ufe0f",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s3_service_debugging",
+          "partial_scene": "s3_service_debugging",
+          "fail_scene": "s3_service_debugging"
+        },
+        {
+          "id": "c2_lvm",
+          "text": "LVM-Status pruefen: pvs, vgs, lvs \u2014 defektes PV identifizieren und Filesystem reparieren",
+          "icon": "\ud83d\udd27",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 2
+              }
+            }
+          },
+          "success_scene": "s3_service_debugging",
+          "partial_scene": "s3_service_debugging",
+          "fail_scene": "s3_service_debugging"
+        },
+        {
+          "id": "c2_backup",
+          "text": "Backup-Volume mounten und kritische Daten sichern bevor fsck alles anfasst",
+          "icon": "\ud83d\udcbe",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s3_service_debugging",
+          "partial_scene": "s3_service_debugging",
+          "fail_scene": "s3_service_debugging"
+        }
+      ],
+      "simulation": {
+        "type": "cli_analysis",
+        "pbq_question_id": null,
+        "description": "Filesystem-Diagnose: df -h, du -sh /var/log/*, journalctl --disk-usage, pvs/vgs/lvs Ausgabe interpretieren und Speicherplatz freigeben"
+      }
+    },
+    {
+      "id": "s3_service_debugging",
+      "title": "Service-Debugging",
+      "narrative": "Server 1 bootet wieder \u2014 aber nichts startet. `systemctl list-units --failed` zeigt eine Kaskade: nginx.service (Failed), postgresql.service (Failed), redis.service (Failed). Die Abhaengigkeitskette ist klar: PostgreSQL braucht das Netzwerk, Redis braucht PostgreSQL (custom dependency), Nginx braucht Redis fuer Session-Cache. Aber warum startet PostgreSQL nicht? `journalctl -u postgresql` zeigt: 'FATAL: could not open shared memory segment: Permission denied'. Die Berechtigungen auf /dev/shm sind nach dem Crash falsch gesetzt. Frank ruft wieder an: 'Ist es schon fertig?'",
+      "image": "scene_forensics_terminal.png",
+      "npc_dialog": {
+        "speaker": "monitoring",
+        "text": "[ALERT] nginx: FAILED. [ALERT] postgresql: FAILED. [ALERT] redis: FAILED. [ALERT] webshop: DOWN since 47 minutes. [ALERT] Customer complaints: 12 new tickets. [INFO] Frank Obermeier has called 6 times.",
+        "portrait": "npc_alertbot"
+      },
+      "choices": [
+        {
+          "id": "c3_dependencies",
+          "text": "systemctl list-dependencies + journalctl -u fuer jeden Service \u2014 Root Cause finden",
+          "icon": "\ud83d\udd0d",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 2
+              }
+            }
+          },
+          "success_scene": "s4_netzwerk_config",
+          "partial_scene": "s4_netzwerk_config",
+          "fail_scene": "s4_netzwerk_config"
+        },
+        {
+          "id": "c3_manual_start",
+          "text": "Services manuell in richtiger Reihenfolge starten: erst PostgreSQL, dann Redis, dann Nginx",
+          "icon": "\u25b6\ufe0f",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s4_netzwerk_config",
+          "partial_scene": "s4_netzwerk_config",
+          "fail_scene": "s4_netzwerk_config"
+        },
+        {
+          "id": "c3_config_check",
+          "text": "Konfigurationsdateien pruefen: nginx.conf, pg_hba.conf, redis.conf \u2014 Fehler suchen",
+          "icon": "\ud83d\udcc4",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s4_netzwerk_config",
+          "partial_scene": "s4_netzwerk_config",
+          "fail_scene": "s4_netzwerk_config"
+        }
+      ],
+      "simulation": {
+        "type": "cli_analysis",
+        "pbq_question_id": null,
+        "description": "Service-Debugging: systemctl status/list-dependencies auswerten, journalctl -u Fehlermeldungen analysieren, Service-Unit-Files und Abhaengigkeitsketten verstehen"
+      }
+    },
+    {
+      "id": "s4_netzwerk_config",
+      "title": "Netzwerk-Konfiguration",
+      "narrative": "Server 3, das Intranet. Nach Franks hartem Reboot ist das Netzwerk-Interface durcheinander. `ip addr` zeigt: Die IP-Adresse stimmt, aber `ip route` zeigt kein Default-Gateway. DNS-Resolution geht nicht \u2014 /etc/resolv.conf ist leer. Und die Firewall blockiert alles: `nft list ruleset` zeigt eine Default-Drop-Policy ohne eine einzige Allow-Regel. Die Netzwerk-Config wurde beim Crash offenbar nicht persistent gespeichert. Yuki schreibt: 'Schau in /etc/netplan/ oder /etc/sysconfig/network-scripts/ \u2014 je nach Distro. Und pruef ob NetworkManager oder systemd-networkd aktiv ist.'",
+      "image": "scene_firewall_config.png",
+      "npc_dialog": {
+        "speaker": "senior_admin",
+        "text": "Okay, Netzwerk-Config. Erst mal: `ip route add default via <gateway>`. Dann /etc/resolv.conf fixen. Und die nftables-Regeln \u2014 die muessen aus dem Backup wiederhergestellt werden. Schau in /etc/nftables.conf.bak ob es ein Backup gibt.",
+        "portrait": "npc_yuki"
+      },
+      "choices": [
+        {
+          "id": "c4_ip_route",
+          "text": "ip route + /etc/resolv.conf + nftables-Regeln manuell wiederherstellen",
+          "icon": "\ud83c\udf10",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 2
+              }
+            }
+          },
+          "success_scene": "s5_post_mortem",
+          "partial_scene": "s5_post_mortem",
+          "fail_scene": "s5_post_mortem"
+        },
+        {
+          "id": "c4_backup_restore",
+          "text": "Netzwerk-Konfiguration komplett aus Backup wiederherstellen",
+          "icon": "\ud83d\udcbe",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s5_post_mortem",
+          "partial_scene": "s5_post_mortem",
+          "fail_scene": "s5_post_mortem"
+        },
+        {
+          "id": "c4_diagnose",
+          "text": "tcpdump + ss -tulpn fuer Netzwerk-Diagnose \u2014 systematisch pruefen was blockiert",
+          "icon": "\ud83d\udd0d",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 2
+              }
+            }
+          },
+          "success_scene": "s5_post_mortem",
+          "partial_scene": "s5_post_mortem",
+          "fail_scene": "s5_post_mortem"
+        }
+      ],
+      "simulation": {
+        "type": "cli_analysis",
+        "pbq_question_id": null,
+        "description": "Netzwerk-Diagnose: ip addr/route Ausgabe interpretieren, resolv.conf konfigurieren, nft list ruleset analysieren und Firewall-Regeln wiederherstellen"
+      }
+    },
+    {
+      "id": "s5_post_mortem",
+      "title": "Post Mortem",
+      "narrative": "21:30 Uhr. Alle drei Server laufen wieder. Der Webshop nimmt Bestellungen an, das Intranet ist erreichbar, der Fileserver synchronisiert. Aber die Frage bleibt: Warum sind drei Server gleichzeitig abgestuerzt? Yuki hat einen Verdacht: 'Pruef mal /var/log/apt/ oder /var/log/dnf/ \u2014 ich wette da war ein automatisches Kernel-Update.' Sie hat recht. unattended-upgrades hat auf allen drei Servern gleichzeitig einen neuen Kernel installiert und automatisch rebootet. Der neue Kernel hat einen Bug bei bestimmter Hardware. Frank fragt: 'Kann man das verhindern?' Ja. Und zwar so:",
+      "image": "scene_security_hardening.png",
+      "npc_dialog": {
+        "speaker": "senior_admin",
+        "text": "Automatische Kernel-Updates auf Produktionsservern ohne Staging. Das ist der eigentliche Bug. Wir brauchen: 1. Staging-Umgebung. 2. Kernel-Pinning auf Produktion. 3. Aenderungsmanagement. Und 4. Ein Runbook fuer genau diesen Fall. Schreib es auf solange du dich erinnerst.",
+        "portrait": "npc_yuki"
+      },
+      "choices": [
+        {
+          "id": "c5_unattended",
+          "text": "Unattended-Upgrades deaktivieren + Change-Management-Prozess einfuehren",
+          "icon": "\u2699\ufe0f",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c5_staging",
+          "text": "Staging-Umgebung aufsetzen + Kernel-Pinning auf Produktionsservern konfigurieren",
+          "icon": "\ud83d\udee0\ufe0f",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c5_komplett",
+          "text": "Komplettpaket: Staging + Kernel-Pin + Monitoring-Alerts + Runbook dokumentieren",
+          "icon": "\ud83d\udccb",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 5,
+            "pass_threshold": 4,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "epilog_success",
+      "title": "Der Wochenend-Held",
+      "narrative": "Samstag, 0:30 Uhr. Alle Server laufen stabil. Das Runbook ist geschrieben: 'Server-Recovery nach Kernel-Panic \u2014 Schritt fuer Schritt'. Unattended-Upgrades sind deaktiviert, Kernel-Pinning ist konfiguriert, Monitoring-Alerts sind angepasst. Yuki schreibt: 'Saubere Arbeit. Die meisten Admins haetten einfach alles rebootet und gehofft.' Frank ruft ein letztes Mal an: 'Der Webshop laeuft? Super. Ich schulde Ihnen ein Bier. Oder zwei.' Pavel bestaetigt: 'Datenbank ist konsistent, kein Datenverlust.' Montag wird es ein Lob vom CTO geben.",
+      "image": "scene_victory.png",
+      "animation_in": "campaign_complete",
+      "npc_dialog": {
+        "speaker": "senior_admin",
+        "text": "Das Runbook ist Gold wert. Beim naechsten Mal braucht man keine 4 Stunden \u2014 mit dem Runbook schafft man es in einer. Gute Nacht, du hast es dir verdient. Am Montag reden wir ueber die Staging-Umgebung.",
+        "portrait": "npc_yuki"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "success"
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Gerettet aber muede",
+      "narrative": "Samstag, 1 Uhr. Die Server laufen. Aber das Runbook ist nur halb fertig, und die Root Cause \u2014 das automatische Kernel-Update \u2014 ist noch nicht endgueltig bestaetigt. Yuki schreibt: 'Das reicht fuer heute. Server sind stabil, Monitoring laeuft. Am Montag machen wir die Post-Mortem-Analyse richtig.' Frank ist zufrieden: 'Webshop laeuft? Gut. Schoenes Wochenende.' Du faehrst nach Hause. Im Auto ueberlegst du ob du den Wecker fuer morgen frueh stellen solltest. Sicher ist sicher.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "db_admin",
+        "text": "Datenbank laeuft. Ein paar WAL-Segmente musste ich manuell recovern, aber kein Datenverlust. Am Montag machen wir einen vollstaendigen Konsistenzcheck. Jetzt erst mal schlafen.",
+        "portrait": "npc_pavel"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "partial"
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Montag wird besser",
+      "narrative": "Samstag, 2 Uhr. Die Server laufen, aber es war ein Kampf. Einige Konfigurationen sind mit Klebeband und Hoffnung zusammengehalten. Das Runbook fehlt komplett. Die Root Cause ist unklar. Yuki schreibt: 'Nicht ideal, aber die Server sind up. Am Montag setzen wir uns zusammen und machen alles richtig. Ich nehme mir den Tag frei dafuer.' Frank ist halb zufrieden: 'Naja, ein paar Bestellungen haben wir verloren. Aber besser spaet als nie.' Du hast verdammt viel ueber Linux-Recovery gelernt. Naechstes Mal bist du schneller.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "senior_admin",
+        "text": "Hey, Kopf hoch. Niemand wird als Linux-Admin geboren. Du hast drei Server gleichzeitig recovered \u2014 das schaffen manche nach 10 Jahren nicht. Am Montag zeig ich dir ein paar Tricks die ich ueber die Jahre gelernt habe.",
+        "portrait": "npc_yuki"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "fail"
+    }
+  ],
+  "epilog": {
+    "success": {
+      "narrative": "Alle Server stabil. Runbook geschrieben. Kernel-Pinning konfiguriert. Yuki ist beeindruckt. Frank schuldet dir zwei Bier. Montag gibt es Lob vom CTO.",
+      "image": "scene_victory.png",
+      "animation": "campaign_complete"
+    },
+    "partial": {
+      "narrative": "Server laufen. Root Cause noch nicht final bestaetigt. Yuki hilft am Montag bei der vollstaendigen Post-Mortem-Analyse. Erstmal schlafen.",
+      "image": "scene_partial_victory.png"
+    },
+    "fail": {
+      "narrative": "Server sind up, aber mit Klebeband und Hoffnung. Viel gelernt ueber Linux-Recovery. Montag wird alles richtig gemacht \u2014 mit Yukis Hilfe.",
+      "image": "scene_partial_victory.png"
+    }
+  }
+}
