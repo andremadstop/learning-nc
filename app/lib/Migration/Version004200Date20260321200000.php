@@ -37,23 +37,23 @@ class Version004200Date20260321200000 extends SimpleMigrationStep {
 
         $table->addColumn('id', Types::INTEGER, [
             'autoincrement' => true,
-            'notnull' => true,
+            'notnull' => false,
         ]);
         $table->addColumn('user_id', Types::STRING, [
             'length' => 64,
-            'notnull' => true,
+            'notnull' => false,
         ]);
         $table->addColumn('campaign_id', Types::STRING, [
             'length' => 128,
-            'notnull' => true,
+            'notnull' => false,
         ]);
         $table->addColumn('current_scene_id', Types::STRING, [
             'length' => 128,
-            'notnull' => true,
+            'notnull' => false,
         ]);
         $table->addColumn('character_class', Types::STRING, [
             'length' => 32,
-            'notnull' => true,
+            'notnull' => false,
             'default' => 'helpdesk',
         ]);
         $table->addColumn('choices_json', Types::TEXT, [
@@ -61,12 +61,12 @@ class Version004200Date20260321200000 extends SimpleMigrationStep {
             'default' => null,
         ]);
         $table->addColumn('score', Types::INTEGER, [
-            'notnull' => true,
+            'notnull' => false,
             'default' => 0,
         ]);
         $table->addColumn('status', Types::STRING, [
             'length' => 32,
-            'notnull' => true,
+            'notnull' => false,
             'default' => 'in_progress',
         ]);
         $table->addColumn('coop_user_ids', Types::TEXT, [
@@ -74,17 +74,17 @@ class Version004200Date20260321200000 extends SimpleMigrationStep {
             'default' => null,
         ]);
         $table->addColumn('created_at', Types::INTEGER, [
-            'notnull' => true,
+            'notnull' => false,
             'default' => 0,
         ]);
         $table->addColumn('updated_at', Types::INTEGER, [
-            'notnull' => true,
+            'notnull' => false,
             'default' => 0,
         ]);
 
         $table->setPrimaryKey(['id']);
-        $table->addIndex(['user_id', 'campaign_id'], 'story_progress_user_campaign_idx');
-        $table->addIndex(['user_id', 'status'], 'story_progress_user_status_idx');
+        $table->addIndex(['user_id', 'campaign_id'], 'lrn_story_user_camp_idx');
+        $table->addIndex(['user_id', 'status'], 'lrn_story_user_stat_idx');
 
         return $schema;
     }

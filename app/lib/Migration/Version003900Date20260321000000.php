@@ -66,7 +66,7 @@ class Version003900Date20260321000000 extends SimpleMigrationStep {
 
         if (!$table->hasColumn('needs_review')) {
             $table->addColumn('needs_review', Types::BOOLEAN, [
-                'notnull' => true,
+                'notnull' => false,
                 'default' => false,
             ]);
             $changed = true;
