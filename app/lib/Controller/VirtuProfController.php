@@ -201,7 +201,8 @@ class VirtuProfController extends Controller {
                 $this->userId,
                 $poolId,
                 $courseId,
-                $lastWrongQuestionId
+                $lastWrongQuestionId,
+                $message
             );
         }
 
