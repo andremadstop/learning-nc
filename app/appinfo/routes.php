@@ -214,5 +214,6 @@ return [
         ['name' => 'story#makeChoice',             'url' => '/api/story/campaigns/{campaignId}/choice',                          'verb' => 'POST'],
         ['name' => 'story#submitSkillAnswer',      'url' => '/api/story/campaigns/{campaignId}/answer',                          'verb' => 'POST'],
         ['name' => 'story#submitSkillBatch',       'url' => '/api/story/campaigns/{campaignId}/batch',                           'verb' => 'POST'],
+        ['name' => 'story#submitFreetext',         'url' => '/api/story/campaigns/{campaignId}/freetext',                        'verb' => 'POST'],
     ]
 ];

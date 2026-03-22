@@ -22,6 +22,7 @@ use OCP\IRequest;
  *   POST /api/story/campaigns/{campaignId}/choice     → makeChoice
  *   POST /api/story/campaigns/{campaignId}/answer     → submitSkillAnswer
  *   POST /api/story/campaigns/{campaignId}/batch      → submitSkillBatch
+ *   POST /api/story/campaigns/{campaignId}/freetext   → submitFreetext
  *   GET  /api/story/progress                          → listProgress
  */
 class StoryController extends Controller {
@@ -282,6 +283,47 @@ class StoryController extends Controller {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to submit batch'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Evaluate a free-text player action via Gemini narrator.
+     * Gemini judges if the action is relevant to the learning objective and
+     * generates a narrative response.
+     *
+     * POST body:
+     *   text  string  Free-text action description (max 500 chars)
+     *
+     * @return DataResponse{valid: bool, narrative: string, next_scene: string|null, fallback: bool}
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 15, period: 60)]
+    public function submitFreetext(string $campaignId, string $text = ''): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        $text = trim($text);
+        if ($text === '') {
+            return new DataResponse(['error' => 'text is required'], Http::STATUS_BAD_REQUEST);
+        }
+        if (mb_strlen($text) > 500) {
+            return new DataResponse(['error' => 'text must not exceed 500 characters'], Http::STATUS_BAD_REQUEST);
+        }
+
+        try {
+            $result = $this->service->submitFreetext($campaignId, $text, $this->userId);
+            return new DataResponse($result);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\RuntimeException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            return new DataResponse(
+                ['error' => $e->getMessage() ?: 'Failed to process free-text action'],
+                Http::STATUS_INTERNAL_SERVER_ERROR
+            );
         }
     }
 }
