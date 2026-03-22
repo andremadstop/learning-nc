@@ -1,76 +1,77 @@
-# Requirements: Learning-NC v6.1
+# Requirements: Learning-NC v6.2
 
 **Defined:** 2026-03-22
-**Core Value:** Abenteuer-Modus wird lebendiger durch KI-Erzaehler und bekommt Kampagnen fuer alle Kursthemen.
+**Core Value:** Hybrid-CI mit erweitertem Charakter-Cast — die App bekommt ein Gesicht.
 
-## v6.1 Requirements
+## v6.2 Requirements
 
-### KI-Erzaehler
+### Design-System
 
-- [x] **NARR-01**: narrator_mode ist global aktiv fuer alle Kampagnen (nicht nur einzelne Szenen)
-- [x] **NARR-02**: Gemini generiert dynamische Entscheidungsoptionen basierend auf Szenen-Kontext statt fester JSON-Choices
-- [x] **NARR-03**: Freetext-Aktionen werden von Gemini bewertet und in den Story-Verlauf integriert (Relevanz, Konsequenzen)
-- [x] **NARR-04**: Gemini kann als Gegner agieren (spielt Angreifer in Security-Szenarien, reagiert auf Spieler-Verteidigung)
-- [x] **NARR-05**: Gemini kann als DAU agieren (simuliert unwissenden User, Spieler muss erklaeren/helfen)
+- [x] **DS-01**: CSS-Token-Layer mit Farbpaletten (Primary, Ink, Cyan, Amber, Magenta, Danger, Green) als CSS-Variablen
+- [x] **DS-02**: Dark/Light Mode Tokens (Adventure=Dark, Training=Light)
+- [x] **DS-03**: Motion-Utility-Layer (fade, snap-in, pulse, reduced-motion Fallbacks)
+- [ ] **DS-04**: Narrative-Skin "Paper & Circuits" fuer Abenteuer-Modus (Gemini-Stil auf Codex-Tokens)
 
-### Security-Kampagnen
+### Charakter-System
 
-- [x] **SEC-01**: Kampagne "SolarWinds — Die Supply Chain" (APT, Backdoor Detection, 5 Szenen)
-- [x] **SEC-02**: Kampagne "WannaCry Weekend" (Ransomware, Patch Management, 5 Szenen)
-- [x] **SEC-03**: Kampagne "Log4Shell — Der Zero Day" (Dependency Vulnerabilities, 5 Szenen)
-- [x] **SEC-04**: Kampagne "Colonial Pipeline" (Critical Infrastructure, CEO-Entscheidung, 5 Szenen)
-- [x] **SEC-05**: Kampagne "Equifax — Die vergessene Patch-Nacht" (Vulnerability Management, 5 Szenen)
+- [ ] **CHAR-01**: CharacterAvatar.vue Komponente (SVG-basiert, States: idle/thinking/explain/alert/celebrate, Emotionen)
+- [ ] **CHAR-02**: Character-Registry JSON mit allen 13 Figuren (ID, Name, Rolle, Palette, States, Silhouette)
+- [ ] **CHAR-03**: 7 Helden-Charaktere: NOVA (Tutor), Architekt, Security-Agentin, Sysadmin, Helpdesk-Rookie, CHRONOS, Ghostline
+- [ ] **CHAR-04**: 6 Workplace-Charaktere: DAU (klickt alles kaputt), Chef (Geld/KPIs), DSGVO-Beauftragte (Compliance), Uschi (keine Ahnung aber haelt Laden zusammen), Azubi (motiviert, Anfaengerfehler), Externer Berater (redet viel, macht wenig)
 
-### Kurs-Kampagnen
+### Kampagnen-Integration
 
-- [x] **KURS-01**: A+ Kampagne "Der erste Tag" (Hardware-Setup, Troubleshooting, 5 Szenen)
-- [x] **KURS-02**: Linux+ Kampagne "Server Down" (Linux-Administration, Recovery, 5 Szenen)
-- [x] **KURS-03**: CySA+ Kampagne "Zero Day" (Threat Analysis, Incident Response, 5 Szenen)
+- [ ] **KI-01**: Kampagnen-Intro Animation pro Kampagne (CSS/SVG, <100KB, 3-5 Sekunden)
+- [ ] **KI-02**: NPC-Portraits in DialoguePanel (CharacterAvatar + Sprechblase)
+- [ ] **KI-03**: Workplace-Figuren als NPCs in bestehende Kampagnen einbauen (Chef in Colonial Pipeline, DSGVO in Equifax, DAU in WannaCry, Uschi in A+ "Der erste Tag", Azubi in Log4Shell, Berater in SolarWinds)
+- [ ] **KI-04**: Skill-Check UI mit Charakter-Reaktion (Erfolg/Misserfolg Animation)
 
-### AI Security Content
+### UI-Komponenten
 
-- [x] **AISEC-01**: Fragen-Pool "AI Security & Prompt Injection" (20+ Fragen, CompTIA-kompatibel)
-- [x] **AISEC-02**: Meta-Kampagne "Der KI-Fluesterer" (Spieler repariert kompromittierten KI-Assistenten, 5 Szenen)
+- [ ] **UI-01**: CampaignCard.vue (Dark-Gradient, Charakter-Portrait, Difficulty-Badge)
+- [ ] **UI-02**: DialogueStage.vue (Speaker-Bar, Portrait links, Sprechfeld rechts, Emotions-Tags)
+- [ ] **UI-03**: ModeIdentityBanner.vue (Modus + Mentor + Ziel pro Lernmodus)
 
 ## Future Requirements
 
-### Erweiterte Kampagnen (v7.0+)
+### Erweiterte Animationen (v7.0+)
 
-- **HACK-01**: Hacker-Zeitreise "Hack Through Time" — 7 Epochen
-- **HACK-02**: Epochen-spezifische UI-Themes (Retro-Terminal, DOS, etc.)
+- **ANIM-01**: Epochen-spezifische UI-Themes (Retro-Terminal, DOS, etc.)
+- **ANIM-02**: 3-Layer Parallax fuer Kampagnen-Szenen
+- **ANIM-03**: Charakter-spezifische Idle-Animationen
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
 | Voice-Acting / TTS | Text-basiert bleibt |
-| Eigene Bild-Assets | Emoji/Icons reichen |
-| Kampagnen-Editor fuer Dozenten | JSON manuell, v7.0+ |
-| Hacker-Zeitreise | Eigener Milestone v7.0 |
-| Vektor-Embeddings | Stufe 3 |
+| Canvas-Animationen | Performance, nur CSS/SVG |
+| Hand-gezeichnete Illustrationen | SVG-Silhouetten reichen, wartbar |
+| Lottie >20KB | Performance-Budget |
+| Parallax | v7.0, zu komplex fuer v6.2 |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NARR-01 | Phase 40 | Complete |
-| NARR-02 | Phase 40 | Complete |
-| NARR-03 | Phase 40 | Complete |
-| NARR-04 | Phase 40 | Complete |
-| NARR-05 | Phase 40 | Complete |
-| SEC-01 | Phase 41 | Complete |
-| SEC-02 | Phase 41 | Complete |
-| SEC-03 | Phase 41 | Complete |
-| SEC-04 | Phase 42 | Complete |
-| SEC-05 | Phase 42 | Complete |
-| KURS-01 | Phase 42 | Complete |
-| KURS-02 | Phase 42 | Complete |
-| KURS-03 | Phase 42 | Complete |
-| AISEC-01 | Phase 43 | Complete |
-| AISEC-02 | Phase 43 | Complete |
+| DS-01 | Phase 44 | Complete |
+| DS-02 | Phase 44 | Complete |
+| DS-03 | Phase 44 | Complete |
+| DS-04 | Phase 44 | Pending |
+| CHAR-01 | Phase 45 | Pending |
+| CHAR-02 | Phase 45 | Pending |
+| CHAR-03 | Phase 45 | Pending |
+| CHAR-04 | Phase 45 | Pending |
+| KI-01 | Phase 47 | Pending |
+| KI-02 | Phase 47 | Pending |
+| KI-03 | Phase 47 | Pending |
+| KI-04 | Phase 47 | Pending |
+| UI-01 | Phase 46 | Pending |
+| UI-02 | Phase 46 | Pending |
+| UI-03 | Phase 46 | Pending |
 
 **Coverage:**
-- v6.1 requirements: 15 total
+- v6.2 requirements: 15 total
 - Mapped to phases: 15
 - Unmapped: 0
 

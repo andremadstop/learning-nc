@@ -194,7 +194,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 44-01: CSS-Token-Layer + Dark/Light + Motion-Utilities
+- [x] 44-01: CSS-Token-Layer + Dark/Light + Motion-Utilities
 - [ ] 44-02: Narrative-Skin "Paper & Circuits" fuer AbenteuerMode
 
 ### Phase 45: Charakter-System
@@ -249,7 +249,7 @@ Phases execute in numeric order: 44 → 45 → 46 → 47
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 44. Design-Token-System + Narrative-Skin | v6.2 | 0/2 | Not started | - |
+| 44. Design-Token-System + Narrative-Skin | v6.2 | 1/2 | In progress | - |
 | 45. Charakter-System | v6.2 | 0/2 | Not started | - |
 | 46. UI-Komponenten | v6.2 | 0/2 | Not started | - |
 | 47. Kampagnen-Integration | v6.2 | 0/2 | Not started | - |

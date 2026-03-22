@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v6.1
-milestone_name: KI-Erzaehler + Security-Kampagnen
-status: completed
-stopped_at: Completed 43-02-PLAN.md
-last_updated: "2026-03-22T20:10:09.796Z"
-last_activity: 2026-03-22 — Completed 42-01 Colonial Pipeline + Equifax campaigns
+milestone: v6.2
+milestone_name: Visual Identity + Charakter-Cast
+status: executing
+stopped_at: Completed 44-01-PLAN.md
+last_updated: "2026-03-22T21:11:00Z"
+last_activity: 2026-03-22 — Completed 44-01 CSS Token Layer + AbenteuerMode migration
 progress:
-  total_phases: 43
-  completed_phases: 35
-  total_plans: 52
-  completed_plans: 60
-  percent: 100
+  total_phases: 15
+  completed_phases: 11
+  total_plans: 23
+  completed_plans: 22
+  percent: 0
 ---
 
 # Project State
@@ -20,42 +20,36 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-03-22)
 
-**Core value:** Abenteuer-Modus wird lebendiger durch KI-Erzaehler und bekommt Kampagnen fuer alle Kursthemen.
-**Current focus:** Phase 41 - Security Kampagnen Teil 1
+**Core value:** Hybrid-CI mit erweitertem Charakter-Cast — die App bekommt ein Gesicht.
+**Current focus:** Phase 44 - Design-Token-System + Narrative-Skin
 
 ## Current Position
 
-Phase: 42 of 43 (Security Kampagnen Teil 2 - Kurs-Kampagnen)
-Plan: 1 of 1 in current phase
-Status: Complete
-Last activity: 2026-03-22 — Completed 42-01 Colonial Pipeline + Equifax campaigns
+Phase: 44 of 47 (Design-Token-System + Narrative-Skin)
+Plan: 1 of 2 in current phase
+Status: Executing
+Last activity: 2026-03-22 — Completed 44-01 CSS Token Layer + AbenteuerMode migration
 
-Progress: [██████████] 100%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2 (this milestone)
-- Average duration: 5min
-- Total execution time: 10min
+- Total plans completed: 1 (this milestone)
+- Average duration: 4min
+- Total execution time: 4min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 40-ki-erzaehler-engine | 2/2 | 10min | 5min |
-| 41-security-kampagnen-teil-1 | 2/2 | 10min | 5min |
+| 44 | 1 | 4min | 4min |
 
 **Recent Trend:**
-- Last 5 plans (v6.1): 40-01 (5min), 40-02 (5min), 41-01 (4min), 41-02 (6min)
-- Trend: Stable ~5min/plan
+- Last 5 plans (v6.1): 41-02 (6min), 42-01 (5min), 42-02 (8min), 43-01 (6min), 43-02 (6min)
+- Trend: Stable ~6min/plan
 
 *Updated after each plan completion*
-| Phase 41 P02 | 6min | 2 tasks | 2 files |
-| Phase 42 P02 | 8min | 2 tasks | 3 files |
-| Phase 42 P01 | 5min | 2 tasks | 2 files |
-| Phase 43 P01 | 6min | 1 tasks | 1 files |
-| Phase 43 P02 | 6min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -64,29 +58,25 @@ Progress: [██████████] 100%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Echte Incidents als Kampagnen-Basis (hoeherer Lernwert als fiktive Szenarien)
-- Gemini als Gegner/DAU (dynamischer als geskriptete NPCs)
-- Prompt Injection als eigener Pool (CompTIA-relevant, Meta-Lerneffekt)
-- Campaign-level flags use OR logic (campaign OR scene) for backward compatibility
-- Freetext progress tracked via choice_id='freetext' sentinel with freetext_action field
-- Role prompt fragments appended to base system prompt (additive, not replacement)
-- Security campaigns (einbruch, ransomware) get attacker role; helpdesk/legacy get dau role
-- Per-scene narrator flags superseded by campaign-level flags
-- [Phase 41-security-kampagnen-teil-1]: 4 NPCs including CISA government liaison for realistic national-level incident coordination
-- [Phase 41]: Fail-branch scenes added for better narrative branching in security campaigns
-- [Phase 42]: A+ beginner office comedy, Linux+ intermediate Friday-crisis, CySA+ expert paranoid thriller - each with role-appropriate Gemini integration
-- [Phase 42]: Colonial Pipeline uses gemini_role=dau (panicking CEO) for executive pressure simulation
-- [Phase 42]: Equifax uses gemini_role=attacker for offensive perspective via log traces
-- [Phase 43]: app/data/ directory established for importable question pool JSON files
-- [Phase 43]: ARIA as attacker identity gives unique meta-experience where player resists AI manipulation
+- Hybrid Codex+Gemini: Codex-Architektur (Tokens, Komponenten) + Gemini-Atmosphaere (Emotionen, Skin)
+- SVG-Silhouetten statt Illustrationen: wartbar, lightweight, skalierbar
+- Realistische Workplace-Figuren: authentischere Kampagnen, Wiedererkennung
+- Assets <100KB pro Animation, SVG-first
+- prefers-reduced-motion fuer alle Animationen
+- --lnc-* namespace for all design tokens (avoids NC var conflicts)
+- data-lnc-theme attribute selector for dark/light scoping
+- 3-tier radius scale: sm(8px), md(14px), lg(20px)
 
 ### Existing Architecture
 
-- StoryEngineService mit narrator_mode, freetext, dynamic choices (v6.0)
-- GeminiService mit 5-Layer Security, Multi-Source-RAG (v4.1)
-- 8 Kampagnen (grosser_ausfall, einbruch_im_netz, neuer_standort, ransomware, das_erbe, solarwinds, wannacry, log4shell)
-- AbenteuerMode.vue mit Szenen-Renderer, NPC-Dialog, Skill-Checks
+- 13 Kampagnen (5 v6.0 + 8 v6.1) in app/data/campaigns/
+- AbenteuerMode.vue mit Szenen-Renderer, NPC-Dialog, Skill-Checks (now using --lnc-* tokens)
+- StoryEngineService mit narrator_mode, freetext, dynamic choices
+- GeminiService mit 5-Layer Security, Multi-Source-RAG
 - Charakter-System (4 Klassen: Architekt, Security, Sysadmin, Helpdesk)
+- Global CSS token system in app/css/style.css (--lnc-* namespace, dark/light scopes, motion utilities)
+- Codex-Studio Output: .planning/parallel-agencies/codex-studio/
+- Gemini-Studio Output: .planning/parallel-agencies/gemini-studio/
 
 ### Pending Todos
 
@@ -98,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T20:10:09.789Z
-Stopped at: Completed 43-02-PLAN.md
+Last session: 2026-03-22
+Stopped at: Completed 44-01-PLAN.md
 Resume file: None

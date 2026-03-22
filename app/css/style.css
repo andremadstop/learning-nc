@@ -82,6 +82,69 @@
 .lnc-snap-in { animation: lnc-snap-in 200ms ease-out both; }
 .lnc-pulse { animation: lnc-pulse 2s ease-in-out infinite; }
 
+/* ========== NARRATIVE SKINS ========== */
+
+/* --- Paper & Circuits --- */
+[data-lnc-skin="paper-circuits"] {
+  --lnc-panel: rgba(22, 27, 34, 0.75);
+  --lnc-border: rgba(88, 166, 255, 0.15);
+  --lnc-font-narrative: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+  --lnc-font-system: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Glass panels */
+[data-lnc-skin="paper-circuits"] .ab-scene-inner,
+[data-lnc-skin="paper-circuits"] .ab-npc-dialog {
+  background: var(--lnc-panel);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--lnc-border);
+  border-radius: var(--lnc-radius-md);
+  box-shadow: var(--lnc-shadow-card);
+}
+
+/* Narrative typography */
+[data-lnc-skin="paper-circuits"] .ab-narrative-text,
+[data-lnc-skin="paper-circuits"] .ab-npc-text {
+  font-family: var(--lnc-font-narrative);
+  font-size: 1.05rem;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+}
+
+/* System text */
+[data-lnc-skin="paper-circuits"] .ab-skill-badge,
+[data-lnc-skin="paper-circuits"] .ab-scene-progress {
+  font-family: var(--lnc-font-system);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--lnc-cyan);
+}
+
+/* Choice cards glow */
+[data-lnc-skin="paper-circuits"] .ab-choice-card:hover:not(:disabled) {
+  box-shadow: var(--lnc-shadow-glow);
+  border-color: var(--lnc-cyan);
+}
+
+/* Circuit line decorators */
+[data-lnc-skin="paper-circuits"] .ab-scene-inner {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-lnc-skin="paper-circuits"] .ab-scene-inner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--lnc-cyan) 20%, var(--lnc-amber) 50%, var(--lnc-cyan) 80%, transparent 100%);
+  opacity: 0.4;
+}
+
 /* ========== LAYOUT ========== */
 #app-learning {
   max-width: 1400px;

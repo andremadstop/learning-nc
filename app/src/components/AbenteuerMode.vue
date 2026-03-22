@@ -1,5 +1,5 @@
 <template>
-  <div class="abenteuer-mode" data-lnc-theme="dark">
+  <div class="abenteuer-mode" data-lnc-theme="dark" data-lnc-skin="paper-circuits">
 
     <!-- ===== CAMPAIGN SELECT PHASE ===== -->
     <div v-if="phase === 'campaign-select'" class="ab-campaign-select">
