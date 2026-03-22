@@ -11,7 +11,8 @@
 - ✅ **v5.0 Oldschool (Brettspiel-Modi)** — Phases 28-31 (shipped 2026-03-21)
 - ✅ **v6.0 Abenteuer (Story-RPG)** — Phases 32-35 (shipped 2026-03-22)
 - ✅ **v4.1 RAG Stufe 2** — Phases 36-39 (shipped 2026-03-22)
-- 🚧 **v6.1 KI-Erzaehler + Security-Kampagnen** — Phases 40-43 (in progress)
+- ✅ **v6.1 KI-Erzaehler + Security-Kampagnen** — Phases 40-43 (shipped 2026-03-22)
+- 🚧 **v6.2 Visual Identity + Charakter-Cast** — Phases 44-47 (in progress)
 
 ## Phases
 
@@ -49,20 +50,19 @@ Plans:
 - [x] 04-01-PLAN.md — PbqMultiPanel.vue + responsive layout
 
 ### Phase 5: PBQ Author Tool
-**Goal**: Visueller Editor zum Erstellen von PBQ-Fragen-Configs.
+**Goal**: Dozenten koennen PBQ-Fragen mit Topologie und CLI-Aufgaben im Frontend erstellen.
 **Plans**: 2 plans
 
 Plans:
-- [x] 05-01-PLAN.md — PbqAuthorTool.vue
-- [x] 05-02-PLAN.md — Live preview + QuestionForm integration
+- [x] 05-01-PLAN.md — PbqAuthorTool.vue + Clipboard-as-bridge
+- [x] 05-02-PLAN.md — QuestionForm PBQ integration + validation
 
 ### Phase 6: Instructor Notes
-**Goal**: Pro Frage ein Kommentarfeld fuer Dozenten, mit Sichtbarkeits-Toggle.
-**Plans**: 2 plans
+**Goal**: Dozenten koennen pro Frage eine Note hinterlegen die Studenten nach der Antwort sehen.
+**Plans**: 1 plan
 
 Plans:
-- [x] 06-01-PLAN.md — DB Migration + Backend
-- [x] 06-02-PLAN.md — Frontend: QuestionForm Editor + note display
+- [x] 06-01-PLAN.md — note_visible column + NcNoteCard in learning modes
 
 </details>
 
@@ -70,572 +70,186 @@ Plans:
 <summary>✅ v2.6 Live-Duell (Phase 7) - SHIPPED 2026-03-18</summary>
 
 ### Phase 7: Live-Duell
-**Goal**: Echtzeit-Duell-Modus im Wahr/Falsch-Stil fuer zwei Spieler.
-**Plans**: 3 plans
+**Goal**: Zwei Spieler koennen in Echtzeit gegeneinander antreten.
+**Plans**: 1 plan
 
 Plans:
-- [x] 07-01-PLAN.md — Backend: DB-Schema, API-Endpoints, Short Polling
-- [x] 07-02-PLAN.md — Frontend: DuelMode.vue Komponente
-- [x] 07-03-PLAN.md — Integration: App.vue Routing, Rematch-Flow, Deploy
+- [x] 07-01-PLAN.md — DuelMode.vue + DuelService.php + DuelController.php
 
 </details>
 
 <details>
 <summary>✅ v3.0 Gameshow-Modi (Phases 8-13) - SHIPPED 2026-03-20</summary>
 
-### Phase 8: N-Player Session Backend
-**Goal**: Players can create, join, and synchronize gameshow sessions for 2-5 players
-**Plans**: 2 plans
-
-Plans:
-- [x] 08-01-PLAN.md — DB Migration + Entities + Mappers (3 tables, 6 ORM classes)
-- [x] 08-02-PLAN.md — GameshowService + GameshowController + Routes (full API)
-
-### Phase 9: Sprint Mode
-**Goal**: Players compete in a speed-based quiz where the fastest correct answer scores highest
-**Plans**: 2 plans
-
-Plans:
-- [x] 09-01-PLAN.md — Sprint scoring backend + GameshowMode.vue (lobby, question, feedback)
-- [x] 09-02-PLAN.md — Animated leaderboard, final scoreboard, crown icon, CourseDetail wiring
-
-### Phase 10: Elimination Mode
-**Goal**: Players survive a last-one-standing quiz where wrong answers cost lives
-**Plans**: 3 plans
-
-Plans:
-- [x] 10-01-PLAN.md — Elimination scoring + lives system
-- [x] 10-02-PLAN.md — Sudden death logic + elimination animations
-- [x] 10-03-PLAN.md — Integration + testing
-
-### Phase 11: Spectacle Animations
-**Goal**: Both game modes feel like a TV gameshow with dramatic visual effects
-**Plans**: 1 plan
-
-Plans:
-- [x] 11-01-PLAN.md — CSS keyframes + JS class toggles for all spectacle animations
-
-### Phase 12: VirtuProf Showmaster
-**Goal**: VirtuProf acts as a live gameshow host, commenting on the action as it unfolds
-**Plans**: 1 plan
-
-Plans:
-- [x] 12-01-PLAN.md — Gameshow trigger scripts + GameshowMode.vue VirtuProf wiring
-
-### Phase 13: XP Integration & Polish
-**Goal**: Gameshow modes are fully integrated into the Learning-NC ecosystem as first-class learning activities
-**Plans**: 2 plans
-
-Plans:
-- [x] 13-01-PLAN.md — Backend: XP award on finish + results history API
-- [x] 13-02-PLAN.md — Frontend: Standalone pool access + history display
+### Phase 8-13: Gameshow-Modi
+**Plans**: 6 plans (collapsed)
 
 </details>
 
 <details>
 <summary>✅ v3.1 UX-Konsolidierung (Phases 14-16) - SHIPPED 2026-03-21</summary>
 
-### Phase 14: Training-Merge
-**Goal**: User lernt Multiple-Choice und Wahr/Falsch in einem einzigen Trainingsmodus mit optionalen Swipe-Animationen
-**Plans**: 2 plans
-
-Plans:
-- [x] 14-01-PLAN.md — TrainingMode: wfMode-Toggle, Swipe-Animationen, True/False-Buttons
-- [x] 14-02-PLAN.md — SwipeMode.vue loeschen, App.vue + CourseDetail + PoolList umbiegen
-
-### Phase 15: Arena
-**Goal**: User findet Duell, Sprint und Elimination unter einem einzigen Menuepunkt und waehlt dort den gewuenschten Wettkampfmodus
-**Plans**: 1 plan
-
-Plans:
-- [x] 15-01-PLAN.md — ArenaSelector.vue + CourseDetail Tab-Merge + App.vue anpassen
-
-### Phase 16: Session-Robustheit
-**Goal**: Multiplayer-Sessions (Duell, Sprint, Elimination) sind resilient gegen Abbruch, Disconnect und verwaiste Sessions
-**Plans**: 2 plans
-
-Plans:
-- [x] 16-01-PLAN.md — Frontend: Abbrechen-Button, Disconnect-Overlay, localStorage Recovery (DuelMode + GameshowMode)
-- [x] 16-02-PLAN.md — Backend: Stale-Session-Cleanup nach 5 Minuten (DuelService + GameshowService)
+### Phase 14-16: UX-Konsolidierung
+**Plans**: 3 plans (collapsed)
 
 </details>
 
 <details>
 <summary>✅ v3.2 VirtuProf KI-Assistent (Phases 17-21) - SHIPPED 2026-03-21</summary>
 
-### Phase 17: Gemini Backend + Security
-**Goal**: GeminiService kapselt Gemini Flash API mit vollstaendigem 5-Layer Prompt-Injection-Schutz — sicher genug zum Einschalten, noch bevor User-Daten fliessen
-**Depends on**: Phase 16 (v3.1 shipped)
-**Requirements**: GEM-01, GEM-02, GEM-03, GEM-04, SEC-01, SEC-02, SEC-03, SEC-04, SEC-05
-**Success Criteria** (what must be TRUE):
-  1. Admin kann einen Gemini API-Key in den Nextcloud-Einstellungen eintragen, und VirtuProf antwortet auf eine einfache Frage auf Englisch
-  2. Eine Anfrage mit 501+ Zeichen, HTML-Tags oder Script-Injections im User-Input wird abgelehnt (HTTP 400) bevor sie die API erreicht
-  3. VirtuProf antwortet in der content_language des Users (DE/EN/RU/AR) ohne manuellen Sprachwechsel
-  4. Bei API-Timeout oder -Fehler erscheint keine Fehlermeldung — VirtuProf gibt stattdessen eine passende FAQ-Antwort zurueck
-  5. Jede KI-Anfrage erzeugt einen Audit-Log-Eintrag mit Input, Output, Timestamp und UserId
-**Plans**: 2 plans
-
-Plans:
-- [x] 17-01-PLAN.md — GeminiService.php + 5-layer security stack + Admin Settings API key wiring
-- [x] 17-02-PLAN.md — VirtuProfController::chat() endpoint + route registration + deploy
-
-### Phase 18: RAG-Context
-**Goal**: VirtuProf kennt den Lernkontext des Users — welcher Pool, welcher Kurs, welche Fragen er zuletzt falsch beantwortet hat
-**Depends on**: Phase 17 (GeminiService muss existieren)
-**Requirements**: RAG-01, RAG-02, RAG-03, RAG-04
-**Success Criteria** (what must be TRUE):
-  1. Wenn ein User VirtuProf in einem aktiven Pool fragt, enthaelt die Antwort Bezug zu Fragen oder Themen aus diesem Pool
-  2. Fragt der User "Warum habe ich diese Frage falsch?", nennt VirtuProf die konkrete falsche Antwort und erklaert die korrekte
-  3. VirtuProf nennt auf Anfrage den Leitner-Box-Status des Users (z.B. "Du hast 12 Karten in Box 1")
-  4. Bei sehr langen Pools (>100 Fragen) wird der Kontext automatisch auf die relevantesten Inhalte begrenzt — kein API-Fehler wegen Token-Overflow
-**Plans**: 1 plan
-
-Plans:
-- [x] 18-01-PLAN.md — RagContextService.php + Kontext-Builder
-
-### Phase 19: Chat-UI
-**Goal**: User kann mit VirtuProf per Freitext chatten — innerhalb der bestehenden VirtuProfBubble, ohne separate Chat-Seite
-**Depends on**: Phase 18 (RAG-Context muss fuer qualitaetsvolle Antworten bereitstehen)
-**Requirements**: CHAT-01, CHAT-02, CHAT-03, CHAT-04, CHAT-05
-**Success Criteria** (what must be TRUE):
-  1. In der VirtuProfBubble erscheint unterhalb der FAQ-Buttons ein Textfeld mit Send-Button, in das der User eine freie Frage eintippen kann
-  2. Nach dem Absenden erscheint die Antwort als Chat-Bubble — User-Frage links/grau, VirtuProf-Antwort rechts/farbig
-  3. Waehrend VirtuProf antwortet sieht der User die talk-Animation des Avatars und drei pulsierende Punkte im Chat
-  4. Der gesamte Gespraechsverlauf der aktuellen Session (bis 20 Nachrichten) bleibt sichtbar, wenn der User durch die Bubble scrollt
-  5. Bei einer falschen Antwort in einem Lernmodus erscheint direkt ein "Erklaere diese Frage"-Button, der VirtuProf mit vorausgefuelltem Kontext oeffnet
-**Plans**: 1 plan
-
-Plans:
-- [x] 19-01-PLAN.md — VirtuProfBubble.vue Freitext-Chat + Session-Verlauf
-
-### Phase 20: Ticket-Triage
-**Goal**: Support-Tickets werden automatisch klassifiziert und einfache Fragen automatisch beantwortet — Admin-Postfach entlastet
-**Depends on**: Phase 17 (GeminiService), Phase 18 (RAG-Context fuer bessere FAQ-Matches)
-**Requirements**: TRIAGE-01, TRIAGE-02, TRIAGE-03, TRIAGE-04
-**Success Criteria** (what must be TRUE):
-  1. Jedes neue Support-Ticket zeigt in der Admin-Inbox ein automatisch gesetztes Label: FAQ, Bug, Feature oder Unclear
-  2. Tickets mit Label FAQ haben eine automatisch generierte Antwort als Draft — Admin kann sie mit einem Klick absenden
-  3. Tickets mit Label Bug oder Feature sind als "needs_review" markiert und erscheinen oben in der Inbox-Sortierung
-  4. Wenn die KI-Klassifizierung unsicher ist (Confidence < 0.7), wird dem User eine Rueckfrage gestellt statt einer Auto-Antwort
-**Plans**: 1 plan
-
-Plans:
-- [x] 20-01-PLAN.md — TriageService.php + Admin-Inbox Klassifizierung
-
-### Phase 21: Datenschutz & Compliance
-**Goal**: KI-Feature ist DSGVO-konform ausgeliefert: Opt-in vor erster Nutzung, Admin-Kontrolle, Privacy-Dokumentation vollstaendig
-**Depends on**: Phase 19 (Chat-UI muss stehen fuer Opt-in-Dialog), Phase 20 (alle KI-Features komplett)
-**Requirements**: PRIV-01, PRIV-02, PRIV-03, PRIV-04, PRIV-05
-**Success Criteria** (what must be TRUE):
-  1. Beim ersten Klick auf das Freitext-Feld erscheint ein Hinweis-Dialog ("Deine Frage wird an Google Gemini gesendet") — erst nach "Zustimmen" wird die Anfrage abgeschickt
-  2. Ein Admin kann das KI-Feature global deaktivieren, sodass das Freitext-Feld bei allen Usern verschwindet
-  3. In info.xml und README.md ist ein Privacy-Abschnitt vorhanden, der erklaert welche Daten an Gemini gehen
-  4. Eine Analyse des LLM-Kontexts zeigt: kein Username, keine E-Mail-Adresse, keine User-ID, kein Passwort-Hash im Context-Payload
-  5. In den Admin-Settings steht ein Hinweis auf das Google DPA mit Link zur Google-Dokumentation
-**Plans**: 1 plan
-
-Plans:
-- [x] 21-01-PLAN.md — Opt-in Flow + Admin-Toggle + Privacy-Dokumentation
+### Phase 17-21: VirtuProf KI-Assistent
+**Plans**: 5 plans (collapsed)
 
 </details>
 
 <details>
 <summary>✅ v4.0 Persoenlicher Lernbot (Phases 22-27) - SHIPPED 2026-03-21</summary>
 
-### Phase 22: Lernprofil
-**Goal**: User hat ein maschinenlesbares Staerken/Schwaechen-Profil das jede Lernsession automatisch aktualisiert — die Datenbasis fuer alle Bot-Aktionen
-**Depends on**: Phase 21 (v3.2 shipped)
-**Requirements**: PROF-01, PROF-02, PROF-03, PROF-04
-**Success Criteria** (what must be TRUE):
-  1. Nach einer Trainings- oder Exam-Session ist das Profil des Users aktualisiert und zeigt die 5 schwaechsten Themen nach Fehlerrate sortiert
-  2. Das Profil enthaelt fuer jedes Thema einen Trend-Indikator (verbessert / verschlechtert / stabil) basierend auf den letzten 3 Sessions
-  3. Ein API-Aufruf auf `/api/profile` liefert aggregierte Daten aus Leitner-Boxen, Training-Scores und Exam-Ergebnissen in einem einzigen Response
-  4. Das Profil wird passiv aktualisiert — kein manueller Aufruf noetig, keine spuerbare Verlangsamung der Lernsession
-**Plans**: 1 plan
-
-Plans:
-- [x] 22-01-PLAN.md — LernprofilService.php + Profil-Aggregation + API-Endpoint
-
-### Phase 23: NC Files Integration
-**Goal**: Der Bot kann Markdown-Notes im NC-Dateisystem des Users erstellen und aktualisieren — Obsidian-kompatibel, User besitzt seine Daten
-**Depends on**: Phase 22 (Lernprofil muss existieren fuer sinnvolle Dateinamen/Metadaten)
-**Requirements**: FILES-01, FILES-02, FILES-03, FILES-04, FILES-05
-**Success Criteria** (what must be TRUE):
-  1. Beim ersten Bot-Aufruf erscheint im Nextcloud-Dateisystem des Users der Ordner /Learning/ mit Unterordnern /Zusammenfassungen/ und /Schwachstellen/
-  2. Eine Bot-generierte Note oeffnet sich in einem Markdown-Editor mit korrektem YAML Frontmatter (created, source, topic, status, chapter)
-  3. Die Note enthaelt mindestens einen Wiki-Link ([[...]]) und mindestens einen Tag (#schwach oder #gemeistert) — kompatibel mit Obsidian
-  4. Wird dieselbe Note erneut generiert (gleicher Dateiname = gleiches Thema), wird die bestehende Datei aktualisiert statt eine neue angelegt
-**Plans**: 1 plan
-
-Plans:
-- [x] 23-01-PLAN.md — NcFilesService.php + Ordnerstruktur + Frontmatter-Generator
-
-### Phase 24: Note-Generator
-**Goal**: Gemini erstellt inhaltlich gehaltvolle Zusammenfassungen fuer schwache Themen — gespeichert als NC-Files-Notes mit konkretem Lernnutzen
-**Depends on**: Phase 23 (NC Files Integration muss Notes schreiben koennen)
-**Requirements**: NOTE-01, NOTE-02, NOTE-03, NOTE-04
-**Success Criteria** (what must be TRUE):
-  1. Nach einem Trigger oeffnet der User eine generierte Note und findet: Kernpunkte des Themas, seinen haeufigsten Fehler, eine konkrete Uebungsempfehlung
-  2. Die Note enthaelt Wiki-Links zu mindestens einer verwandten Simulation oder Frage aus dem Pool
-  3. Wenn der User fuer dasselbe Thema ein zweites Mal eine Note anfordert, wird die bestehende Note aktualisiert — keine Duplikate im /Zusammenfassungen/-Ordner
-  4. Die Gemini-Anfrage enthaelt keine persoenlichen Daten des Users — nur Thema, Fehlermuster und Frageinhalte
-**Plans**: 1 plan
-
-Plans:
-- [x] 24-01-PLAN.md — NoteGeneratorService + NoteGeneratorController + GeminiService::generateNote()
-
-### Phase 25: Lernplan + Fortschritt
-**Goal**: User findet jede Woche einen aktuellen Lernplan und ein Fortschritts-Dashboard als Markdown in seinem NC-Dateisystem
-**Depends on**: Phase 24 (Note-Generator muss laufen, Profil und Files sind etabliert)
-**Requirements**: PLAN-01, PLAN-02, PLAN-03, PLAN-04
-**Success Criteria** (what must be TRUE):
-  1. /Learning/Lernplan.md enthaelt einen woechentlichen Plan mit Tages-Checkboxen (- [ ] Montag: ...) basierend auf den aktuellen Profil-Schwaechen
-  2. /Learning/Fortschritt.md zeigt die aktuelle Leitner-Box-Verteilung, den Trend der letzten 4 Wochen und konkrete Empfehlungen
-  3. Der Lernplan referenziert schwache Kapitel per Wiki-Link auf vorhandene /Zusammenfassungen/-Notes
-  4. Beide Dateien sind lesbar ohne Learning-NC — reines Markdown, kein App-Lock-in
-**Plans**: 1 plan
-
-Plans:
-- [x] 25-01-PLAN.md — LernplanService.php + FortschrittService.php + NC BackgroundJob
-
-### Phase 26: Chat-Memory
-**Goal**: VirtuProf erinnert sich ueber Sessions hinweg an den Kontext des Users — Gespraeche bauen aufeinander auf statt jedes Mal von vorne zu beginnen
-**Depends on**: Phase 22 (Lernprofil), Phase 19 (Chat-UI ist die Oberflaeche)
-**Requirements**: MEM-01, MEM-02, MEM-03, MEM-04
-**Success Criteria** (what must be TRUE):
-  1. Wenn ein User VirtuProf in einer neuen Session fragt "Erinnerst du dich an unser letztes Gespraech?", kann der Bot auf konkrete Inhalte aus frueheren Sessions verweisen
-  2. VirtuProf nennt bei einer Erklaerungsfrage nicht dieselbe Erklaerung die bereits gegeben wurde — er baut auf dem bekannten Kontext auf
-  3. Der User kann in den Einstellungen "Chat-History loeschen" klicken und VirtuProf hat danach keinerlei Erinnerung an fruehere Sessions
-  4. Wenn 50 Kontext-Eintraege erreicht sind, werden die aeltesten automatisch zu einer Zusammenfassung komprimiert — kein Datenverlust, kein API-Fehler
-**Plans**: 1 plan
-
-Plans:
-- [x] 26-01-PLAN.md — ChatMemoryService.php + Komprimierungs-Job + Settings-Toggle
-
-### Phase 27: Auto-Trigger
-**Goal**: Der Bot handelt proaktiv — nach einem schlechten Exam, nach wiederholten Fehlern und woechentlich — ohne dass der User manuell eingreifen muss
-**Depends on**: Phase 24 (Note-Generator), Phase 25 (Lernplan-Generator), Phase 26 (Chat-Memory)
-**Requirements**: TRIG-01, TRIG-02, TRIG-03, TRIG-04
-**Success Criteria** (what must be TRUE):
-  1. Nach einem Exam mit weniger als 70% erscheint in der VirtuProfBubble ein Hinweis "Ich habe eine Zusammenfassung fuer dein schwaechstes Thema erstellt" — die Note ist in /Learning/Schwachstellen/ auffindbar
-  2. Nach 5 falschen Antworten zum gleichen Thema erscheint ein "Zusammenfassung erstellen"-Button direkt in der Trainingsansicht
-  3. Jeden Sonntag wird /Learning/Lernplan.md automatisch aktualisiert (NC BackgroundJob) — der User findet Montagmorgens einen frischen Plan
-  4. Der User kann manuell fuer jedes Kapitel "Zusammenfassung erstellen" anfordern und erhaelt innerhalb von 10 Sekunden eine Note
-**Plans**: 1 plan
-
-Plans:
-- [x] 27-01-PLAN.md — AutoTriggerService.php + ExamFinish-Hook + BackgroundJob-Wiring
+### Phase 22-27: Persoenlicher Lernbot
+**Plans**: 6 plans (collapsed)
 
 </details>
 
 <details>
 <summary>✅ v5.0 Oldschool (Brettspiel-Modi) (Phases 28-31) - SHIPPED 2026-03-21</summary>
 
-### Phase 28: Brettspiel-Backend
-**Goal**: GameshowService unterstuetzt rundenbasierte Brettspiel-Sessions mit persistentem Spielfeld-State — beide Spiele koennen darauf aufbauen
-**Depends on**: Phase 27 (v4.0 shipped)
-**Requirements**: BACK-01, BACK-02, BACK-03
-**Success Criteria** (what must be TRUE):
-  1. Eine Session mit mode='lernwuerfel' oder mode='wissensturm' kann erstellt werden und verwaltet Spieler-Reihenfolge, aktiven Spieler und Spielfeld-Zustand im Session-JSON
-  2. Der API-Endpunkt gibt bei jedem Poll den aktuellen Spielfeld-State zurueck: Figurpositionen (Lernwuerfel) oder Turm-Bloecke (Wissensturm) aller Spieler
-  3. Nach einer Spieler-Aktion (Wuerfeln + Antwort) wechselt der aktive Spieler automatisch zum naechsten in der Reihe — kein manueller Trigger noetig
-  4. Scoring-Logik fuer beide Modi ist serverseitig implementiert und beeinflusst den Session-State (Figurposition vorwaerts / Block hinzufuegen / Steal)
-**Plans**: 1 plan
-
-Plans:
-- [x] 28-01-PLAN.md — Brettspiel-Backend
-
-### Phase 29: Oldschool-Menue
-**Goal**: Spieler finden den Oldschool-Bereich in CourseDetail und koennen zwischen Lernwuerfel und Wissensturm waehlen
-**Depends on**: Phase 28 (Backend muss Sessions fuer beide Modi anlegen koennen)
-**Requirements**: OLD-01, OLD-02
-**Success Criteria** (what must be TRUE):
-  1. In CourseDetail erscheint ein "Oldschool" Tab neben dem Arena-Tab — sichtbar fuer alle Kurs-Mitglieder
-  2. Im Oldschool-Tab zeigt OldschoolSelector.vue zwei Karten (Lernwuerfel, Wissensturm) mit Kurzbeschreibung und Start-Button
-  3. Ein Klick auf eine Karte startet die Lobby des jeweiligen Spiels — analog zum Arena-Flow
-**Plans**: 1 plan
-
-Plans:
-- [x] 29-01-PLAN.md — Oldschool-Menue
-
-### Phase 30: Lernwuerfel
-**Goal**: Spieler koennen eine vollstaendige Runde Mensch-aergere-dich-nicht mit Lernfragen spielen — vom Wuerfeln bis zum Sieg
-**Depends on**: Phase 29 (Oldschool-Menue muss in Lernwuerfel-Lobby routen)
-**Requirements**: WUERF-01, WUERF-02, WUERF-03, WUERF-04, WUERF-05, WUERF-06, WUERF-07
-**Success Criteria** (what must be TRUE):
-  1. Das Spielbrett als SVG mit 30 Feldern ist sichtbar; die Figuren der Spieler (farbige Kreise) bewegen sich nach richtiger Antwort auf das korrekte Feld
-  2. Der Wuerfel animiert (CSS rotate) und zeigt die gewuerfelte Zahl — bei einer 6 erscheint automatisch ein zweiter Wurf
-  3. Nach dem Wuerfeln erscheint eine Frage aus dem Pool; richtige Antwort = Figur rueckt vor, falsche Antwort = Figur bleibt stehen
-  4. Landet eine Figur auf einem besetzten Feld, wird der Gegner auf Start zurueckgesetzt; Sonderfelder zeigen Bonus-Wuerfel, Schutz oder Falle
-  5. Erreicht die erste Figur Feld 30, erscheint Confetti + VirtuProf-Glueckwunsch und das Spiel endet
-**Plans**: 1 plan
-
-Plans:
-- [x] 30-01-PLAN.md — LernwuerfelMode.vue SVG board + full game flow
-
-### Phase 31: Wissensturm
-**Goal**: Spieler koennen eine vollstaendige Runde Wissensturm spielen — Kategorien waehlen, Bloecke sammeln, stehlen und gewinnen
-**Depends on**: Phase 29 (Oldschool-Menue muss in Wissensturm-Lobby routen)
-**Requirements**: TURM-01, TURM-02, TURM-03, TURM-04, TURM-05
-**Success Criteria** (what must be TRUE):
-  1. Der Spieler sieht 5 Kategorie-Buttons (je eine Farbe, entsprechend den 5 Pools/Kapiteln) und kann eine davon auswaehlen
-  2. Nach richtiger Antwort erscheint ein Block dieser Farbe sichtbar auf dem Turm des Spielers im SVG-Rendering
-  3. Eine falsche Antwort loest eine Verlust-Animation aus (oberster Block faellt) und entfernt den Block vom Turm
-  4. Bei einem Steal (Gegner antwortet falsch, aktueller Spieler richtig) wechselt der Block sichtbar vom Gegner-Turm auf den eigenen Turm
-  5. Sobald ein Spieler alle 5 Farben auf seinem Turm hat, endet das Spiel mit Sieger-Anzeige und VirtuProf-Kommentar
-**Plans**: 1 plan
-
-Plans:
-- [x] 31-01-PLAN.md — Wissensturm
+### Phase 28-31: Brettspiel-Modi
+**Plans**: 4 plans (collapsed)
 
 </details>
 
 <details>
 <summary>✅ v6.0 Abenteuer (Story-RPG) (Phases 32-35) - SHIPPED 2026-03-22</summary>
 
-### Phase 32: Story-Engine Backend
-**Goal**: StoryEngine.php laedt und verwaltet Kampagnen vollstaendig — Szenen, Entscheidungen, Skill-Checks und Fortschritt funktionieren serverseitig und sind bereit fuer das Frontend
-**Depends on**: Phase 31 (v5.0 shipped)
-**Requirements**: STORY-01, STORY-02, STORY-03, STORY-04, STORY-05
-**Success Criteria** (what must be TRUE):
-  1. Ein API-Aufruf auf `/api/story/campaign/{id}/scene/{sceneId}` liefert narrative Texte, Entscheidungsoptionen und einen optionalen Skill-Check aus echten Pool-Fragen
-  2. Ein Skill-Check-Ergebnis (richtig/falsch) wird an den Server gesendet und die Engine liefert die korrekte Folge-Szene gemaess dem verzweigenden Story-Baum zurueck
-  3. Pool-Fragen werden nach dem `pool_filter`-Feld der Szene gefiltert — eine Szene mit filter="routing" zieht ausschliesslich Fragen zum Thema Routing
-  4. Der Kampagnen-Fortschritt eines Users (aktuelle Szene, getroffene Entscheidungen, Ergebnisse) ueberlebt einen Browser-Neustart — er landet beim naechsten Login an derselben Stelle
-  5. Alle 5 Kampagnen-JSONs werden vom Service korrekt geladen und validiert — ein malformatiertes JSON wirft einen strukturierten Fehler statt einem 500er
-**Plans**: 1 plan
-
-Plans:
-- [x] 32-01-PLAN.md — Story-Engine Backend
-
-### Phase 33: RPG-Frontend + Tab
-**Goal**: Spieler koennen eine Kampagne im Browser vollstaendig spielen — von der Kampagnen-Auswahl ueber Szenen und Skill-Checks bis zum Abschluss-Screen
-**Depends on**: Phase 32 (Story-Engine muss Szenen und Skill-Check-Ergebnisse liefern)
-**Requirements**: RPG-01, RPG-02, RPG-03, RPG-04, RPG-05
-**Success Criteria** (what must be TRUE):
-  1. In CourseDetail erscheint ein "Abenteuer" Tab; ein Klick darauf zeigt die Kampagnen-Uebersicht mit Fortschrittsanzeige pro Kampagne
-  2. Eine Szene zeigt narrative Text-Box, NPC-Dialog (Portrait + Text) und 2-4 Entscheidungs-Karten nebeneinander
-  3. Enthaelt ein Schritt einen Skill-Check, erscheint die Frage aus dem Pool mit Antwortoptionen; nach der Antwort zeigt eine Animation das Ergebnis
-  4. Im Koop-Modus sehen alle Spieler dieselbe Szene gleichzeitig; bei einer Entscheidung erscheint eine Abstimmungs-UI
-  5. AbenteuerMode.vue ist auch standalone aufrufbar (ohne Kurs-Kontext) ueber einen direkten App-Route-Eintrag
-**Plans**: 1 plan
-
-Plans:
-- [x] 33-01-PLAN.md — RPG-Frontend + Tab
-
-### Phase 34: Charakter-System + Simulation-Integration
-**Goal**: Spieler waehlen eine Klasse und spueren diesen Unterschied in Skill-Checks; jede Kampagne endet mit einer echten PBQ-Simulation deren Ergebnis den Epilog beeinflusst
-**Depends on**: Phase 33 (RPG-Frontend muss Charakter-Auswahl und Simulations-Trigger rendern koennen)
-**Requirements**: CHAR-01, CHAR-02, CHAR-03, SIM-01, SIM-02
-**Success Criteria** (what must be TRUE):
-  1. Beim Start einer Kampagne waehlt der Spieler eine von 4 Klassen (Architekt, Security, Sysadmin, Helpdesk); die Wahl ist fuer die gesamte Kampagne gespeichert
-  2. Ein Architekt der eine Routing-Frage beantwortet sieht eine leichtere Frage als ein Helpdesk-Spieler derselben Kampagne
-  3. NPC-Dialoge zeigen ein Text-Portrait und unterscheiden sich inhaltlich je nach gewaehlter Charakter-Klasse
-  4. Am Ende jeder Kampagne startet eine PBQ-Simulation — der Spieler muss ein Netzwerk-Szenario konfigurieren
-  5. Das Ergebnis der Simulation bestimmt welcher von drei Epilog-Texten angezeigt wird
-**Plans**: 1 plan
-
-Plans:
-- [x] 34-01-PLAN.md — Charakter-System + Simulation-Integration
-
-### Phase 35: Kampagnen-Content
-**Goal**: Alle 5 Kampagnen existieren als vollstaendige, spielbare JSON-Dateien mit je 5 Szenen, Entscheidungszweigen, Skill-Check-Mappings und einer finalen Simulation
-**Depends on**: Phase 34 (Charakter-System und Simulations-Integration muessen verstanden sein)
-**Requirements**: CAMP-01, CAMP-02, CAMP-03, CAMP-04, CAMP-05
-**Success Criteria** (what must be TRUE):
-  1. Kampagne 1 "Der grosse Ausfall" ist spielbar: alle 5 Szenen laden, Skill-Checks ziehen reale Fragen, beide Entscheidungszweige fuehren zu unterschiedlichen Szenen
-  2. Kampagne 2 "Einbruch im Netz" ist spielbar: Incident-Response- und Forensik-Skill-Checks sind korrekt gemappt
-  3. Kampagnen 3, 4 und 5 sind spielbar: alle JSONs validieren ohne Fehler, alle Szenen-IDs sind aufloesbar
-  4. Jede Kampagne endet mit einem Simulations-Trigger der auf eine existierende PBQ-Konfiguration zeigt
-  5. Ein neuer Spieler kann Kampagne 1 von Anfang bis Ende durchspielen ohne auf einen Fehler zu treffen
-**Plans**: 1 plan
-
-Plans:
-- [x] 35-01-PLAN.md — Kampagnen-Content
+### Phase 32-35: Story-RPG
+**Plans**: 4 plans (collapsed)
 
 </details>
 
 <details>
 <summary>✅ v4.1 RAG Stufe 2 (Phases 36-39) - SHIPPED 2026-03-22</summary>
 
-### Phase 36: Dokument-Upload + Extraktion
-**Goal**: Dozent kann Kursmaterialien (PDF/Markdown) in Nextcloud hochladen und das System extrahiert automatisch den Text -- die Rohtext-Basis fuer alle weiteren RAG-Schritte
-**Depends on**: Phase 35 (v6.0 shipped)
-**Requirements**: DOCS-01, DOCS-02, DOCS-03, DOCS-04
-**Success Criteria** (what must be TRUE):
-  1. Ein Dozent kann in den Kurs-Einstellungen einen NC-Ordner als Materialordner verknuepfen und dort PDF/Markdown-Dateien ablegen
-  2. Nach dem Upload einer PDF-Datei extrahiert das System via pdftotext den Volltext und speichert ihn -- der Dozent sieht in der Materialliste den Status "Extrahiert"
-  3. Nach dem Upload einer Markdown-Datei wird der Rohtext direkt uebernommen -- gleicher Status "Extrahiert" in der Materialliste
-  4. Der Dozent sieht eine Materialliste pro Kurs mit Dateiname, Dateityp, Extraktions-Status (Hochgeladen / Extrahiert / Fehler) und Upload-Datum
-**Plans**: 2 plans
-
-Plans:
-- [x] 36-01-PLAN.md — Backend: DB Migration, DocumentService, DocumentController, Routes
-- [x] 36-02-PLAN.md — Frontend: CourseMaterials.vue + CourseDetail Integration + Verification
-
-### Phase 37: Chunking-Pipeline
-**Goal**: Extrahierter Text wird automatisch in durchsuchbare Chunks zerlegt und in der Datenbank gespeichert -- bereit fuer die Suche, ohne den Dozenten zu blockieren
-**Depends on**: Phase 36 (Extraktion muss Rohtext liefern)
-**Requirements**: CHUNK-01, CHUNK-02, CHUNK-03, CHUNK-04
-**Success Criteria** (what must be TRUE):
-  1. Nach der Extraktion eines Dokuments startet automatisch ein BackgroundJob der den Text in ~500-Token-Chunks zerlegt -- der Dozent muss nichts manuell ausloesen
-  2. Chunks die aus einem Abschnitt mit Heading stammen erhalten den Kapitel-Tag aus der naechsten uebergeordneten Ueberschrift
-  3. In der Tabelle `learning_rag_chunks` existieren nach dem Job Eintraege mit course_id, chapter, text, source_file und created_at
-  4. Ein 50-seitiges PDF wird innerhalb von 60 Sekunden vollstaendig gechunkt -- der Job blockiert keine anderen NC-BackgroundJobs
-**Plans**: 1 plan
-
-Plans:
-- [x] 37-01-PLAN.md — DB Migration + ChunkingService + ChunkingJob (full pipeline)
-
-### Phase 38: Chunk-Suche
-**Goal**: Das System kann zu einer User-Frage die relevantesten Chunks finden -- die Bruecke zwischen Frage und Kursmaterial
-**Depends on**: Phase 37 (Chunks muessen in der DB existieren)
-**Requirements**: SEARCH-01, SEARCH-02
-**Success Criteria** (what must be TRUE):
-  1. Eine User-Frage "Was ist OSPF?" liefert Chunks zurueck die das Wort "OSPF" enthalten -- kein leeres Ergebnis wenn das Kursmaterial OSPF behandelt
-  2. Die Ergebnisse sind nach Relevanz sortiert: Chunks mit mehr Keyword-Treffern und passendem Kapitel-Match stehen weiter oben
-  3. Die Suche liefert maximal 5 Chunks zurueck um das Gemini Context-Window nicht zu sprengen
-**Plans**: 1 plan
-
-Plans:
-- [x] 38-01-PLAN.md — Keyword-based chunk search with relevance ranking
-
-### Phase 39: Multi-Source-RAG
-**Goal**: VirtuProf nutzt alle verfuegbaren Wissensquellen mit intelligenter Priorisierung und zeigt dem User woher die Antwort stammt
-**Depends on**: Phase 38 (Chunk-Suche muss relevante Dokument-Chunks liefern)
-**Requirements**: RAG-01, RAG-02, RAG-03, RAG-04
-**Success Criteria** (what must be TRUE):
-  1. VirtuProf beantwortet eine Frage zu einem Thema das nur im Kursmaterial (nicht in Pool-Fragen) vorkommt -- die Antwort ist inhaltlich korrekt basierend auf dem hochgeladenen PDF
-  2. Jede VirtuProf-Antwort die auf Kursmaterial basiert enthaelt eine Quellenangabe im Format "[Quelle: Dateiname, Kap. X]" am Ende der Antwort
-  3. VirtuProf bezieht User-Schwaechen und vergangene Erklaerungen ein
-  4. Das Context-Fenster wird priorisiert gefuellt: zuerst relevante Dokument-Chunks, dann passende Pool-Fragen, dann Chat-History
-**Plans**: 1 plan
-
-Plans:
-- [x] 39-01-PLAN.md — Multi-source context aggregation + citation instructions
+### Phase 36-39: RAG Stufe 2
+**Plans**: 5 plans (collapsed)
 
 </details>
 
-### 🚧 v6.1 KI-Erzaehler + Security-Kampagnen (In Progress)
+<details>
+<summary>✅ v6.1 KI-Erzaehler + Security-Kampagnen (Phases 40-43) - SHIPPED 2026-03-22</summary>
 
-**Milestone Goal:** Abenteuer-Modus wird lebendiger durch KI-Erzaehler (Gemini generiert dynamische Entscheidungen, bewertet Freetext-Aktionen, spielt Gegner/DAU) und bekommt Kampagnen fuer alle Kursthemen — 5 echte Security-Incidents, 3 Cross-Disziplin-Kampagnen und eine Meta-Kampagne ueber AI Security.
+### Phase 40: KI-Erzaehler Engine
+**Goal**: Gemini uebernimmt die Rolle des Erzaehlers in allen Kampagnen
+**Plans**: 2 plans
 
-- [x] **Phase 40: KI-Erzaehler Engine** - narrator_mode global, dynamische Choices, Freetext-Bewertung, Gegner/DAU-Rollen (completed 2026-03-22)
-- [x] **Phase 41: Security-Kampagnen Teil 1** - SolarWinds, WannaCry, Log4Shell (3 Kampagnen mit KI-Erzaehler) (completed 2026-03-22)
-- [x] **Phase 42: Security-Kampagnen Teil 2 + Kurs-Kampagnen** - Colonial Pipeline, Equifax, A+ "Der erste Tag", Linux+ "Server Down", CySA+ "Zero Day" (completed 2026-03-22)
-- [x] **Phase 43: AI Security Content** - Prompt Injection Fragen-Pool + Meta-Kampagne "Der KI-Fluesterer" (completed 2026-03-22)
+Plans:
+- [x] 40-01-PLAN.md — StoryEngineService global narrator, role-based prompts, freetext advancement
+- [x] 40-02-PLAN.md — Campaign JSON activation + AbenteuerMode.vue freetext UI
+
+### Phase 41: Security-Kampagnen Teil 1
+**Goal**: SolarWinds, WannaCry, Log4Shell Kampagnen
+**Plans**: 2 plans
+
+Plans:
+- [x] 41-01-PLAN.md — SolarWinds + WannaCry campaigns
+- [x] 41-02-PLAN.md — Log4Shell campaign
+
+### Phase 42: Security-Kampagnen Teil 2 + Kurs-Kampagnen
+**Goal**: Colonial Pipeline, Equifax, A+, Linux+, CySA+ Kampagnen
+**Plans**: 2 plans
+
+Plans:
+- [x] 42-01-PLAN.md — Colonial Pipeline + Equifax campaigns
+- [x] 42-02-PLAN.md — A+ "Der erste Tag" + Linux+ "Server Down" + CySA+ "Zero Day"
+
+### Phase 43: AI Security Content
+**Goal**: Prompt Injection Pool + Meta-Kampagne "Der KI-Fluesterer"
+**Plans**: 2 plans
+
+Plans:
+- [x] 43-01-PLAN.md — Prompt Injection question pool
+- [x] 43-02-PLAN.md — "Der KI-Fluesterer" meta campaign
+
+</details>
+
+### 🚧 v6.2 Visual Identity + Charakter-Cast (In Progress)
+
+**Milestone Goal:** Hybrid-CI aus Codex (Token-System, Komponenten) + Gemini (Atmosphaere, Emotionen) mit erweitertem Charakter-Cast aus realistischen IT-Workplace-Figuren. Die App bekommt ein Gesicht.
+
+- [ ] **Phase 44: Design-Token-System + Narrative-Skin** - CSS-Token-Layer, Dark/Light, Motion-Utilities, Paper & Circuits Skin
+- [ ] **Phase 45: Charakter-System** - 13 Figuren definieren, CharacterAvatar.vue Komponente
+- [ ] **Phase 46: UI-Komponenten** - CampaignCard, DialogueStage, ModeIdentityBanner
+- [ ] **Phase 47: Kampagnen-Integration** - Intros, NPC-Portraits, Workplace-Figuren in bestehende Kampagnen
 
 ## Phase Details
 
-### Phase 40: KI-Erzaehler Engine
-**Goal**: Gemini uebernimmt die Rolle des Erzaehlers in allen Kampagnen — generiert dynamische Entscheidungsoptionen, bewertet freie Spieler-Aktionen und kann als Gegner oder hilfloser User agieren
-**Depends on**: Phase 39 (v4.1 shipped, Multi-Source-RAG verfuegbar fuer Kontext-Anreicherung)
-**Requirements**: NARR-01, NARR-02, NARR-03, NARR-04, NARR-05
+### Phase 44: Design-Token-System + Narrative-Skin
+**Goal**: Die App verfuegt ueber ein konsistentes CSS-Token-System mit Farbpaletten, Dark/Light-Umschaltung, Motion-Utilities und einem narrativen Skin fuer den Abenteuer-Modus
+**Depends on**: Phase 43 (v6.1 shipped)
+**Requirements**: DS-01, DS-02, DS-03, DS-04
 **Success Criteria** (what must be TRUE):
-  1. Jede Kampagne (auch die 5 bestehenden aus v6.0) zeigt KI-generierte Szenen-Texte mit narrativer Tiefe — der Erzaehlstil passt sich dem Kampagnen-Thema an (technisch-nuechterner Ton bei Netzwerk-Troubleshooting, Thriller-Atmosphaere bei Security-Incidents)
-  2. Statt fester JSON-Choices generiert Gemini 2-4 kontextabhaengige Entscheidungsoptionen pro Szene — die Optionen reflektieren den bisherigen Story-Verlauf und die getroffenen Entscheidungen des Spielers
-  3. Der Spieler kann eine freie Textaktion eingeben (z.B. "Ich trenne den Server vom Netz"); Gemini bewertet die Aktion auf Relevanz und Wirksamkeit und integriert das Ergebnis in die naechste Szene mit nachvollziehbaren Konsequenzen
-  4. In Security-Kampagnen agiert Gemini als Angreifer — es beschreibt laufende Angriffs-Aktionen und reagiert dynamisch auf die Verteidigungsmassnahmen des Spielers (z.B. Angreifer eskaliert wenn Firewall aktiviert wird)
-  5. In Helpdesk-Szenarien agiert Gemini als DAU — es stellt naive Fragen, versteht technische Erklaerungen nicht sofort und gibt erst nach verstaendlicher Erklaerung durch den Spieler nach
+  1. Alle Farben der App (Primary, Ink, Cyan, Amber, Magenta, Danger, Green) sind als CSS-Custom-Properties definiert und werden in mindestens einer bestehenden Komponente genutzt statt hartcodierter Hex-Werte
+  2. Der Abenteuer-Modus rendert im Dark-Theme und der Trainings-Modus im Light-Theme — der Wechsel erfolgt automatisch beim Moduswechsel ohne manuellen Toggle
+  3. Animationen (fade, snap-in, pulse) funktionieren in allen Modi und werden bei aktiviertem `prefers-reduced-motion` durch sofortige Zustandswechsel ohne Bewegung ersetzt
+  4. Der Abenteuer-Modus zeigt den "Paper & Circuits" Skin — sichtbar durch veraenderte Hintergruende, Borders und Typografie gegenueber dem Standard-Training-Look
 **Plans**: 2 plans
 
 Plans:
-- [ ] 40-01-PLAN.md — StoryEngineService global narrator, role-based prompts, freetext advancement
-- [ ] 40-02-PLAN.md — Campaign JSON activation + AbenteuerMode.vue freetext UI
+- [ ] 44-01: CSS-Token-Layer + Dark/Light + Motion-Utilities
+- [ ] 44-02: Narrative-Skin "Paper & Circuits" fuer AbenteuerMode
 
-### Phase 41: Security-Kampagnen Teil 1
-**Goal**: Drei Security-Kampagnen basierend auf echten Incidents sind spielbar — mit KI-Erzaehler, dynamischen Choices und fachlich korrekten Szenarien
-**Depends on**: Phase 40 (KI-Erzaehler Engine muss dynamische Choices und Gegner-Rolle beherrschen)
-**Requirements**: SEC-01, SEC-02, SEC-03
+### Phase 45: Charakter-System
+**Goal**: 13 Charaktere mit definierten Persoenlichkeiten existieren als strukturierte Daten und werden durch eine wiederverwendbare SVG-Avatar-Komponente mit State-Machine visuell dargestellt
+**Depends on**: Phase 44 (Token-System muss Farb-Paletten fuer Charakter-Zuweisung bereitstellen)
+**Requirements**: CHAR-01, CHAR-02, CHAR-03, CHAR-04
 **Success Criteria** (what must be TRUE):
-  1. Kampagne "SolarWinds — Die Supply Chain" ist spielbar: der Spieler untersucht in 5 Szenen eine kompromittierte Update-Pipeline, identifiziert die Backdoor und entscheidet ueber Incident-Response-Massnahmen — Gemini spielt den Angreifer der die Supply Chain infiltriert hat
-  2. Kampagne "WannaCry Weekend" ist spielbar: der Spieler muss in 5 Szenen unter Zeitdruck Systeme patchen, infizierte Rechner isolieren und die Ausbreitung stoppen — dynamische Choices reflektieren den eskalierenden Druck (z.B. "CEO ruft an und will Updates")
-  3. Kampagne "Log4Shell — Der Zero Day" ist spielbar: der Spieler analysiert in 5 Szenen vulnerable Dependency-Trees, testet Exploit-Vektoren und deployt Mitigations — Skill-Checks pruefen echtes Wissen ueber Dependency Management und CVE-Analyse
-  4. Alle drei Kampagnen enthalten fachlich korrekte Details zum realen Incident (Zeitlinie, betroffene Systeme, tatsaechliche Angriffsvektoren) — kein erfundener Inhalt bei den technischen Fakten
-**Plans**: 2 plans
+  1. CharacterAvatar.vue rendert einen Charakter als SVG-Silhouette und wechselt sichtbar zwischen mindestens 3 States (idle, thinking, celebrate) — der Unterschied ist visuell erkennbar
+  2. Die Character-Registry JSON enthaelt alle 13 Figuren mit ID, Name, Rolle, Farb-Palette, verfuegbaren States und Silhouetten-Referenz — ein fehlender Eintrag fuehrt zu einem Fallback-Avatar statt einem Fehler
+  3. Die 7 Helden (NOVA, Architekt, Security-Agentin, Sysadmin, Helpdesk-Rookie, CHRONOS, Ghostline) sind visuell unterscheidbar durch verschiedene Silhouetten und Farbpaletten
+  4. Die 6 Workplace-Figuren (DAU, Chef, DSGVO-Beauftragte, Uschi, Azubi, Externer Berater) haben jeweils einen erkennbaren visuellen Stil der zu ihrer Rolle passt
+  5. CharacterAvatar.vue respektiert `prefers-reduced-motion` — State-Wechsel erfolgen ohne Animation wenn aktiviert
+**Plans**: TBD
 
 Plans:
-- [ ] 41-01-PLAN.md — SolarWinds Supply Chain campaign (APT, backdoor detection, incident response)
-- [ ] 41-02-PLAN.md — WannaCry + Log4Shell campaigns (ransomware, dependency vulnerabilities)
+- [ ] 45-01: Character-Registry JSON + CharacterAvatar.vue Komponente
+- [ ] 45-02: 13 SVG-Silhouetten + State-Definitionen
 
-### Phase 42: Security-Kampagnen Teil 2 + Kurs-Kampagnen
-**Goal**: Zwei weitere Security-Kampagnen und drei Cross-Disziplin-Kampagnen sind spielbar — das Kampagnen-Angebot deckt Network+, Security+, CySA+, A+ und Linux+ ab
-**Depends on**: Phase 41 (Kampagnen-Erstellungs-Pattern ist etabliert, KI-Erzaehler bewaehrt)
-**Requirements**: SEC-04, SEC-05, KURS-01, KURS-02, KURS-03
+### Phase 46: UI-Komponenten
+**Goal**: Drei neue Vue-Komponenten liefern ein einheitliches visuelles Erlebnis fuer Kampagnen-Auswahl, NPC-Dialoge und Modus-Erkennung
+**Depends on**: Phase 45 (CharacterAvatar wird in allen drei Komponenten verwendet)
+**Requirements**: UI-01, UI-02, UI-03
 **Success Criteria** (what must be TRUE):
-  1. Kampagne "Colonial Pipeline" ist spielbar: der Spieler steht als IT-Leiter einer kritischen Infrastruktur vor der Entscheidung Loesegeld zu zahlen oder Systeme manuell wiederherzustellen — CEO-Entscheidungsszenen mit Gemini als DAU-CEO der die technischen Auswirkungen nicht versteht
-  2. Kampagne "Equifax — Die vergessene Patch-Nacht" ist spielbar: der Spieler navigiert durch Vulnerability-Management-Prozesse und muss Patch-Prioritaeten setzen waehrend 147 Millionen Datensaetze auf dem Spiel stehen
-  3. A+ Kampagne "Der erste Tag" ist spielbar: ein Helpdesk-Techniker richtet am ersten Arbeitstag Hardware ein, diagnostiziert Boot-Probleme und baut ein Netzwerk auf — Gemini agiert als verwirrter Endanwender
-  4. Linux+ Kampagne "Server Down" ist spielbar: der Spieler muss einen abgestuerzten Linux-Server per CLI recovern — Skill-Checks pruefen grep, systemctl, mount und Dateisystem-Reparatur
-  5. CySA+ Kampagne "Zero Day" ist spielbar: der Spieler analysiert IOCs, erstellt YARA-Regeln und koordiniert die Incident Response — Gemini spielt den APT-Akteur der sich lateral bewegt
-**Plans**: 2 plans
+  1. CampaignCard.vue zeigt pro Kampagne einen Dark-Gradient-Hintergrund, das Portrait des Hauptcharakters (via CharacterAvatar) und ein Difficulty-Badge — der User erkennt auf einen Blick Thema und Schwierigkeit
+  2. DialogueStage.vue zeigt links ein Charakter-Portrait mit Emotions-Tag und rechts ein Sprechfeld — bei einem Sprecherwechsel aendert sich das Portrait und der Emotions-Tag passend zum neuen Sprecher
+  3. ModeIdentityBanner.vue zeigt am oberen Rand jedes Lernmodus den Modus-Namen, den zugeordneten Mentor-Charakter und das aktuelle Lernziel — der User weiss jederzeit in welchem Modus er sich befindet
+**Plans**: TBD
 
 Plans:
-- [ ] 42-01-PLAN.md — Colonial Pipeline + Equifax campaigns (SEC-04, SEC-05)
-- [ ] 42-02-PLAN.md — A+ "Der erste Tag" + Linux+ "Server Down" + CySA+ "Zero Day" (KURS-01, KURS-02, KURS-03)
+- [ ] 46-01: CampaignCard.vue + DialogueStage.vue
+- [ ] 46-02: ModeIdentityBanner.vue + Integration in Lernmodi
 
-### Phase 43: AI Security Content
-**Goal**: Spieler koennen ihr Wissen ueber KI-Sicherheit und Prompt Injection testen — sowohl als Fragen-Pool fuer alle Lernmodi als auch als spielbare Meta-Kampagne
-**Depends on**: Phase 40 (KI-Erzaehler Engine fuer die Meta-Kampagne)
-**Requirements**: AISEC-01, AISEC-02
+### Phase 47: Kampagnen-Integration
+**Goal**: Alle bestehenden Kampagnen nutzen das neue visuelle System — mit Intro-Animationen, NPC-Portraits in Dialogen und Workplace-Figuren als wiederkehrende NPCs
+**Depends on**: Phase 46 (UI-Komponenten muessen fertig sein)
+**Requirements**: KI-01, KI-02, KI-03, KI-04
 **Success Criteria** (what must be TRUE):
-  1. Ein Fragen-Pool "AI Security & Prompt Injection" mit 20+ Fragen existiert und ist in allen Lernmodi (Training, Leitner, Exam) nutzbar — die Fragen decken Prompt Injection, Data Poisoning, Model Extraction und AI Ethics ab (CompTIA Security+ kompatibel)
-  2. Meta-Kampagne "Der KI-Fluesterer" ist spielbar: der Spieler findet in 5 Szenen einen kompromittierten KI-Assistenten vor, identifiziert die Manipulation, bereinigt die Trainingsdaten und sichert das System — Gemini spielt den kompromittierten Assistenten der subtil falsche Antworten gibt
-  3. Die Fragen im Pool sind als Import-JSON vorhanden und koennen auch in anderen Nextcloud-Instanzen importiert werden (Standard-Import-Format)
-  4. Der KI-Fluesterer nutzt den Prompt-Injection-Pool fuer seine Skill-Checks — die Fragen testen genau das Wissen das in der Kampagnen-Handlung vorkommt
-**Plans**: 2 plans
+  1. Jede Kampagne startet mit einer 3-5 Sekunden CSS/SVG Intro-Animation (<100KB) die Thema und Atmosphaere etabliert — bei `prefers-reduced-motion` wird stattdessen ein statisches Titelbild gezeigt
+  2. NPC-Dialoge in allen Kampagnen zeigen ein CharacterAvatar-Portrait neben der Sprechblase — der Avatar wechselt den State passend zum Dialog-Inhalt (z.B. alert bei Warnung, explain bei Erklaerung)
+  3. Die 6 Workplace-Figuren erscheinen als NPCs in den zugewiesenen Kampagnen: Chef in Colonial Pipeline, DSGVO in Equifax, DAU in WannaCry, Uschi in A+ "Der erste Tag", Azubi in Log4Shell, Berater in SolarWinds
+  4. Skill-Check Ergebnisse loesen eine sichtbare Charakter-Reaktion aus: Erfolg zeigt celebrate-State, Misserfolg zeigt alert-State des beteiligten NPCs
+**Plans**: TBD
 
 Plans:
-- [ ] 43-01-PLAN.md — AI Security question pool (24 Fragen)
-- [ ] 43-02-PLAN.md — Meta-Kampagne "Der KI-Fluesterer"
+- [ ] 47-01: Kampagnen-Intro Animationen (CSS/SVG)
+- [ ] 47-02: NPC-Portraits + Workplace-Figuren in Kampagnen + Skill-Check Reaktionen
 
 ## Progress
 
 **Execution Order:**
-Phases 40-43 execute sequentially: 40 -> 41 -> 42 -> 43. Phase 40 (Engine) must be complete before campaign phases can use KI-Erzaehler features.
+Phases execute in numeric order: 44 → 45 → 46 → 47
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1. CLI State Machine | v2.3 | 2/2 | Complete | 2026-03-16 |
-| 2. SVG Topology Renderer | v2.3 | 2/2 | Complete | 2026-03-16 |
-| 3. Inline-Dropdown | v2.3 | 1/1 | Complete | 2026-03-17 |
-| 4. Multi-Panel Layout | v2.3 | 1/1 | Complete | 2026-03-17 |
-| 5. PBQ Author Tool | v2.3 | 2/2 | Complete | 2026-03-17 |
-| 6. Instructor Notes | v2.3 | 2/2 | Complete | 2026-03-17 |
-| 7. Live-Duell | v2.6 | 3/3 | Complete | 2026-03-18 |
-| 8. N-Player Session Backend | v3.0 | 2/2 | Complete | 2026-03-20 |
-| 9. Sprint Mode | v3.0 | 2/2 | Complete | 2026-03-20 |
-| 10. Elimination Mode | v3.0 | 3/3 | Complete | 2026-03-20 |
-| 11. Spectacle Animations | v3.0 | 1/1 | Complete | 2026-03-20 |
-| 12. VirtuProf Showmaster | v3.0 | 1/1 | Complete | 2026-03-20 |
-| 13. XP Integration & Polish | v3.0 | 2/2 | Complete | 2026-03-20 |
-| 14. Training-Merge | v3.1 | 2/2 | Complete | 2026-03-21 |
-| 15. Arena | v3.1 | 1/1 | Complete | 2026-03-21 |
-| 16. Session-Robustheit | v3.1 | 2/2 | Complete | 2026-03-21 |
-| 17. Gemini Backend + Security | v3.2 | 2/2 | Complete | 2026-03-21 |
-| 18. RAG-Context | v3.2 | 1/1 | Complete | 2026-03-21 |
-| 19. Chat-UI | v3.2 | 1/1 | Complete | 2026-03-21 |
-| 20. Ticket-Triage | v3.2 | 1/1 | Complete | 2026-03-21 |
-| 21. Datenschutz & Compliance | v3.2 | 1/1 | Complete | 2026-03-21 |
-| 22. Lernprofil | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 23. NC Files Integration | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 24. Note-Generator | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 25. Lernplan + Fortschritt | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 26. Chat-Memory | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 27. Auto-Trigger | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 28. Brettspiel-Backend | v5.0 | 1/1 | Complete | 2026-03-21 |
-| 29. Oldschool-Menue | v5.0 | 1/1 | Complete | 2026-03-21 |
-| 30. Lernwuerfel | v5.0 | 1/1 | Complete | 2026-03-21 |
-| 31. Wissensturm | v5.0 | 1/1 | Complete | 2026-03-21 |
-| 32. Story-Engine Backend | v6.0 | 1/1 | Complete | 2026-03-22 |
-| 33. RPG-Frontend + Tab | v6.0 | 1/1 | Complete | 2026-03-22 |
-| 34. Charakter-System | v6.0 | 1/1 | Complete | 2026-03-22 |
-| 35. Kampagnen-Content | v6.0 | 1/1 | Complete | 2026-03-22 |
-| 36. Dokument-Upload + Extraktion | v4.1 | 2/2 | Complete | 2026-03-22 |
-| 37. Chunking-Pipeline | v4.1 | 1/1 | Complete | 2026-03-22 |
-| 38. Chunk-Suche | v4.1 | 1/1 | Complete | 2026-03-22 |
-| 39. Multi-Source-RAG | v4.1 | 1/1 | Complete | 2026-03-22 |
-| 40. KI-Erzaehler Engine | 2/2 | Complete    | 2026-03-22 | - |
-| 41. Security-Kampagnen Teil 1 | 2/2 | Complete    | 2026-03-22 | - |
-| 42. Security-Kampagnen Teil 2 + Kurs-Kampagnen | 2/2 | Complete    | 2026-03-22 | - |
-| 43. AI Security Content | 2/2 | Complete   | 2026-03-22 | - |
+| 44. Design-Token-System + Narrative-Skin | v6.2 | 0/2 | Not started | - |
+| 45. Charakter-System | v6.2 | 0/2 | Not started | - |
+| 46. UI-Komponenten | v6.2 | 0/2 | Not started | - |
+| 47. Kampagnen-Integration | v6.2 | 0/2 | Not started | - |
