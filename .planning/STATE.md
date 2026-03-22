@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v6.1
 milestone_name: KI-Erzaehler + Security-Kampagnen
-status: executing
-stopped_at: Completed 42-02-PLAN.md
-last_updated: "2026-03-22T19:31:02.348Z"
-last_activity: 2026-03-22 — Completed 41-02 WannaCry + Log4Shell campaigns
+status: completed
+stopped_at: Completed 42-01-PLAN.md
+last_updated: "2026-03-22T19:52:28.498Z"
+last_activity: 2026-03-22 — Completed 42-01 Colonial Pipeline + Equifax campaigns
 progress:
   total_phases: 43
-  completed_phases: 33
+  completed_phases: 34
   total_plans: 50
-  completed_plans: 57
+  completed_plans: 58
   percent: 100
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 
 ## Current Position
 
-Phase: 41 of 43 (Security Kampagnen Teil 1)
-Plan: 2 of 2 in current phase
-Status: In progress
-Last activity: 2026-03-22 — Completed 41-02 WannaCry + Log4Shell campaigns
+Phase: 42 of 43 (Security Kampagnen Teil 2 - Kurs-Kampagnen)
+Plan: 1 of 1 in current phase
+Status: Complete
+Last activity: 2026-03-22 — Completed 42-01 Colonial Pipeline + Equifax campaigns
 
 Progress: [██████████] 100%
 
@@ -53,6 +53,7 @@ Progress: [██████████] 100%
 *Updated after each plan completion*
 | Phase 41 P02 | 6min | 2 tasks | 2 files |
 | Phase 42 P02 | 8min | 2 tasks | 3 files |
+| Phase 42 P01 | 5min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Recent decisions affecting current work:
 - [Phase 41-security-kampagnen-teil-1]: 4 NPCs including CISA government liaison for realistic national-level incident coordination
 - [Phase 41]: Fail-branch scenes added for better narrative branching in security campaigns
 - [Phase 42]: A+ beginner office comedy, Linux+ intermediate Friday-crisis, CySA+ expert paranoid thriller - each with role-appropriate Gemini integration
+- [Phase 42]: Colonial Pipeline uses gemini_role=dau (panicking CEO) for executive pressure simulation
+- [Phase 42]: Equifax uses gemini_role=attacker for offensive perspective via log traces
 
 ### Existing Architecture
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T19:31:02.345Z
-Stopped at: Completed 42-02-PLAN.md
+Last session: 2026-03-22T19:52:28.491Z
+Stopped at: Completed 42-01-PLAN.md
 Resume file: None

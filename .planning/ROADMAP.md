@@ -522,7 +522,7 @@ Plans:
 
 - [x] **Phase 40: KI-Erzaehler Engine** - narrator_mode global, dynamische Choices, Freetext-Bewertung, Gegner/DAU-Rollen (completed 2026-03-22)
 - [x] **Phase 41: Security-Kampagnen Teil 1** - SolarWinds, WannaCry, Log4Shell (3 Kampagnen mit KI-Erzaehler) (completed 2026-03-22)
-- [ ] **Phase 42: Security-Kampagnen Teil 2 + Kurs-Kampagnen** - Colonial Pipeline, Equifax, A+ "Der erste Tag", Linux+ "Server Down", CySA+ "Zero Day"
+- [x] **Phase 42: Security-Kampagnen Teil 2 + Kurs-Kampagnen** - Colonial Pipeline, Equifax, A+ "Der erste Tag", Linux+ "Server Down", CySA+ "Zero Day" (completed 2026-03-22)
 - [ ] **Phase 43: AI Security Content** - Prompt Injection Fragen-Pool + Meta-Kampagne "Der KI-Fluesterer"
 
 ## Phase Details
@@ -633,5 +633,5 @@ Phases 40-43 execute sequentially: 40 -> 41 -> 42 -> 43. Phase 40 (Engine) must 
 | 39. Multi-Source-RAG | v4.1 | 1/1 | Complete | 2026-03-22 |
 | 40. KI-Erzaehler Engine | 2/2 | Complete    | 2026-03-22 | - |
 | 41. Security-Kampagnen Teil 1 | 2/2 | Complete    | 2026-03-22 | - |
-| 42. Security-Kampagnen Teil 2 + Kurs-Kampagnen | 1/2 | In Progress|  | - |
+| 42. Security-Kampagnen Teil 2 + Kurs-Kampagnen | 2/2 | Complete   | 2026-03-22 | - |
 | 43. AI Security Content | v6.1 | 0/TBD | Not started | - |
