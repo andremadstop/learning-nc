@@ -181,6 +181,7 @@ class DocumentService {
 
             $doc->setExtractedText($text);
             $doc->setStatus('extracted');
+            $doc->setChunkingStatus('pending');
             $doc->setErrorMessage(null);
         } catch (\RuntimeException $e) {
             $doc->setStatus('error');

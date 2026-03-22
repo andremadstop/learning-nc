@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\AppInfo;
 
+use OCA\Learning\BackgroundJob\ChunkingJob;
 use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
 use OCA\Learning\BackgroundJob\NotificationJob;
 use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
@@ -38,6 +39,9 @@ class Application extends App implements IBootstrap {
             }
             if (!$jobList->has(WeeklyLernplanJob::class, null)) {
                 $jobList->add(WeeklyLernplanJob::class);
+            }
+            if (!$jobList->has(ChunkingJob::class, null)) {
+                $jobList->add(ChunkingJob::class);
             }
         } catch (\Throwable $e) {
             // Duplicate entry is harmless (NC deduplicates), but log unexpected errors (R2 #5)

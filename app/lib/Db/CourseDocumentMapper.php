@@ -49,4 +49,25 @@ class CourseDocumentMapper extends QBMapper {
             ->where($qb->expr()->eq('id', $qb->createNamedParameter($id)));
         return $this->findEntity($qb);
     }
+
+    /**
+     * Find documents that are extracted but not yet chunked.
+     *
+     * @return CourseDocument[]
+     */
+    public function findExtractedUnchunked(int $limit = 10): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('status', $qb->createNamedParameter('extracted')))
+            ->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->isNull('chunking_status'),
+                    $qb->expr()->eq('chunking_status', $qb->createNamedParameter('pending'))
+                )
+            )
+            ->orderBy('created_at', 'ASC')
+            ->setMaxResults($limit);
+        return $this->findEntities($qb);
+    }
 }
