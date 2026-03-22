@@ -220,6 +220,42 @@
       </transition>
     </div>
 
+    <!-- ===== SIMULATION PHASE ===== -->
+    <div v-else-if="phase === 'simulation'" class="ab-simulation">
+      <div class="ab-sim-header">
+        <span class="ab-sim-badge">&#x1F4BB; {{ t('learning', 'Simulation') }}</span>
+        <span class="ab-sim-context">{{ currentSimulation ? currentSimulation.description : '' }}</span>
+      </div>
+
+      <div v-if="currentSimulation" class="ab-sim-body">
+        <p class="ab-sim-intro">
+          {{ t('learning', 'Weise deine Fähigkeiten nach: Löse die folgende Netzwerk-Simulation, bevor die Geschichte endet.') }}
+        </p>
+
+        <PbqRenderer
+          v-if="simQuestion"
+          :question="simQuestion"
+          :initial-value="simAnswer"
+          :disabled="simSubmitted"
+          @change="onSimChange"
+          @submit="onSimSubmit"
+          @skip="onSimSkip"
+        />
+
+        <div v-if="simSubmitted" class="ab-sim-result" :class="simPassed ? 'ab-sim-pass' : 'ab-sim-partial'">
+          <div class="ab-sim-result-icon">{{ simPassed ? '&#x2705;' : '&#x1F4CA;' }}</div>
+          <p class="ab-sim-result-label">
+            {{ simPassed
+              ? t('learning', 'Simulation abgeschlossen! Ausgezeichnete Arbeit.')
+              : t('learning', 'Simulation beendet. Teilweise gelöst — Lernfortschritt gespeichert.') }}
+          </p>
+          <button class="ab-btn ab-btn-primary" @click="finishSimulation">
+            {{ t('learning', 'Epilog lesen') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== EPILOG PHASE ===== -->
     <div v-else-if="phase === 'epilog'" class="ab-epilog">
       <div class="ab-epilog-inner">
@@ -320,6 +356,7 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
+import PbqRenderer from './PbqRenderer.vue'
 
 const STATIC_CAMPAIGNS = [
 	{
@@ -427,6 +464,10 @@ const NPC_PORTRAITS = {
 export default {
 	name: 'AbenteuerMode',
 
+	components: {
+		PbqRenderer,
+	},
+
 	props: {
 		courseId: {
 			type: Number,
@@ -500,6 +541,13 @@ export default {
 
 			// Abort
 			showAbortConfirm: false,
+
+			// Simulation
+			currentSimulation: null,
+			simQuestion: null,
+			simAnswer: {},
+			simSubmitted: false,
+			simPassed: false,
 
 			// Accessibility
 			reducedMotion: false,
@@ -596,7 +644,13 @@ export default {
 				const resp = await axios.get(url, { params })
 				this.currentScene = resp.data
 				this.loadingScene = false
-				this.startTypewriter(this.currentScene.narrative)
+				// Check if this scene has a simulation to show before choices
+				if (this.currentScene.simulation) {
+					this.startTypewriter(this.currentScene.narrative)
+					// Simulation will be triggered after narrative finishes or on choice
+				} else {
+					this.startTypewriter(this.currentScene.narrative)
+				}
 			} catch (e) {
 				// Backend not yet available — show stub scene
 				this.currentScene = this.makeStubScene()
@@ -683,6 +737,30 @@ export default {
 			}
 			this.sessionStats.scenesCompleted++
 			await this.beginScene(sceneId)
+
+			// If the scene is an epilog scene, trigger epilog phase
+			if (this.currentScene && this.currentScene.is_epilog) {
+				this.showEpilog(this.currentScene.epilog_type || 'success')
+				return
+			}
+
+			// If the newly loaded scene has a simulation, enter simulation phase after narrative
+			if (this.currentScene && this.currentScene.simulation) {
+				// Delay to let typewriter finish — simulation starts when narrative is done
+				this.scheduleSimulation(this.currentScene.simulation)
+			}
+		},
+
+		scheduleSimulation(simulation) {
+			// Poll until narrative typing is done, then show simulation
+			const checkTyping = () => {
+				if (!this.narrativeTyping) {
+					this.enterSimulationPhase(simulation)
+				} else {
+					setTimeout(checkTyping, 300)
+				}
+			}
+			checkTyping()
 		},
 
 		// ===== SKILL CHECK =====
@@ -787,6 +865,129 @@ export default {
 				: (this.currentSkillCheck?.fail_scene || this.currentSkillCheck?.partial_scene)
 
 			await this.advanceToScene(nextScene)
+		},
+
+		// ===== SIMULATION =====
+
+		/**
+		 * Enter the PBQ simulation phase for the current scene.
+		 * Builds a stub PBQ question config derived from simulation.type.
+		 */
+		enterSimulationPhase(simulation) {
+			this.currentSimulation = simulation
+			this.simAnswer = {}
+			this.simSubmitted = false
+			this.simPassed = false
+			this.simQuestion = this.buildSimQuestion(simulation)
+			this.phase = 'simulation'
+		},
+
+		/**
+		 * Build a PBQ question object from the simulation descriptor.
+		 * Uses the simulation.type to pick the right pbq_subtype.
+		 * Falls back to a diagnostic subtype when type is unknown.
+		 */
+		buildSimQuestion(simulation) {
+			const typeMap = {
+				switch_config: {
+					pbq_subtype: 'switch_config',
+					pbq_config: {
+						instructions: [simulation.description || t('learning', 'Konfiguriere die Netzwerkgeräte korrekt.')],
+						switches: [
+							{
+								name: 'SW-CORE',
+								ports: [
+									{ id: 'Gi0/1', label: 'Gi0/1 (Trunk)', correct: 'trunk' },
+									{ id: 'Gi0/2', label: 'Gi0/2 (Access VLAN 10)', correct: 'access_vlan10' },
+								],
+							},
+						],
+					},
+				},
+				network_device_placement: {
+					pbq_subtype: 'placement',
+					pbq_config: {
+						instructions: [simulation.description || t('learning', 'Platziere die Netzwerkgeräte korrekt.')],
+						positions: [
+							{ id: 'firewall', label: t('learning', 'Firewall'), correct: 'edge' },
+							{ id: 'switch',   label: t('learning', 'Core Switch'), correct: 'core' },
+						],
+						choices: [
+							{ id: 'edge', label: 'Edge' },
+							{ id: 'core', label: 'Core' },
+						],
+					},
+				},
+				diagnostic: {
+					pbq_subtype: 'diagnostic',
+					pbq_config: {
+						instructions: [simulation.description || t('learning', 'Analysiere die Netzwerkprobleme.')],
+						findings: [
+							{ id: 'f1', description: t('learning', 'Routing Loop erkannt'), correct_action: 'fix_route' },
+							{ id: 'f2', description: t('learning', 'Falsche VLAN-Konfiguration'), correct_action: 'fix_vlan' },
+						],
+						actions: [
+							{ id: 'fix_route', label: t('learning', 'Route korrigieren') },
+							{ id: 'fix_vlan',  label: t('learning', 'VLAN anpassen') },
+							{ id: 'ignore',    label: t('learning', 'Ignorieren') },
+						],
+					},
+				},
+			}
+
+			const template = typeMap[simulation.type] || typeMap.diagnostic
+			return {
+				id: 'sim_' + (simulation.type || 'generic'),
+				text: simulation.description || t('learning', 'Netzwerk-Simulation'),
+				...template,
+			}
+		},
+
+		onSimChange(answer) {
+			this.simAnswer = answer
+		},
+
+		/**
+		 * Called when the user submits the simulation.
+		 * Score: answered >= 50% of total = pass.
+		 */
+		onSimSubmit(answer) {
+			this.simAnswer = answer
+			const answered = Object.keys(answer || {}).length
+			// Get total from PbqRenderer's totalCount logic (we mirror it here)
+			const total = this.simQuestion
+				? this.calcSimTotal(this.simQuestion)
+				: 2
+			this.simPassed = answered > 0 && answered >= Math.ceil(total / 2)
+			this.simSubmitted = true
+		},
+
+		onSimSkip() {
+			// Skipping counts as partial
+			this.simPassed = false
+			this.simSubmitted = true
+		},
+
+		calcSimTotal(question) {
+			const cfg = question.pbq_config || {}
+			switch (question.pbq_subtype) {
+				case 'switch_config':
+					return (cfg.switches || []).reduce(
+						(sum, sw) => sum + (sw.ports || []).filter(p => !!p.correct).length,
+						0,
+					)
+				case 'placement':
+					return (cfg.positions || []).length
+				case 'diagnostic':
+					return (cfg.findings || []).length
+				default:
+					return 1
+			}
+		},
+
+		finishSimulation() {
+			const outcome = this.simPassed ? 'success' : 'partial'
+			this.showEpilog(outcome)
 		},
 
 		// ===== EPILOG =====
@@ -1507,6 +1708,82 @@ export default {
   color: var(--rpg-text-muted);
   line-height: 1.5;
 }
+
+/* ===== SIMULATION ===== */
+.ab-simulation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ab-sim-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ab-sim-badge {
+  background: #1c2535;
+  color: var(--rpg-accent);
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.ab-sim-context {
+  font-size: 0.85rem;
+  color: var(--rpg-text-muted);
+}
+
+.ab-sim-body {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border);
+  border-radius: var(--rpg-radius);
+  padding: 20px;
+}
+
+.ab-sim-intro {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  color: var(--rpg-text-muted);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.ab-sim-result {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: var(--rpg-radius);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.ab-sim-pass {
+  background: #1c3a1c;
+  border: 1px solid var(--rpg-success);
+}
+
+.ab-sim-partial {
+  background: #2d2505;
+  border: 1px solid var(--rpg-gold);
+}
+
+.ab-sim-result-icon {
+  font-size: 2rem;
+}
+
+.ab-sim-result-label {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.ab-sim-pass .ab-sim-result-label { color: var(--rpg-success); }
+.ab-sim-partial .ab-sim-result-label { color: var(--rpg-gold); }
 
 /* ===== EPILOG ===== */
 .ab-epilog {

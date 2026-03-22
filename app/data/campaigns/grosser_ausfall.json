@@ -59,7 +59,12 @@
       "npc_dialog": {
         "speaker": "dr_weber",
         "text": "Mein Meeting um 8 ist per Video. Schaffen Sie das?",
-        "portrait": "npc_weber"
+        "portrait": "npc_weber",
+        "class_text": {
+          "architect": "Mein Meeting um 8 ist per Video. Sie sehen doch sofort wo das Problem liegt, oder?",
+          "security": "Mein Meeting um 8 ist per Video. Ich hoffe es ist kein Sicherheitsvorfall.",
+          "helpdesk": "Mein Meeting um 8 ist per Video. Ich erkläre Ihnen gerne die Symptome, die Mitarbeiter haben mir alles gemeldet."
+        }
       },
       "choices": [
         {
@@ -212,7 +217,12 @@
       "npc_dialog": {
         "speaker": "nova",
         "text": "VLAN-Konfiguration inkonsistent. Trunk-Ports sollten Tagged-Frames aller VLANs weiterleiten.",
-        "portrait": "npc_nova"
+        "portrait": "npc_nova",
+        "class_text": {
+          "architect": "VLAN-Konfiguration inkonsistent — wie ich es erwartet hatte. Die Trunk-Ports fehlen. Du weißt was zu tun ist.",
+          "sysadmin": "VLAN-Konfiguration inkonsistent. `show interfaces trunk` sollte das Problem zeigen.",
+          "helpdesk": "VLAN-Konfiguration inkonsistent. Kurz erklärt: Es gibt verschiedene Netzwerk-Segmente die nicht richtig verbunden sind."
+        }
       },
       "choices": [
         {

@@ -439,3 +439,13 @@ parameters:
 			message: "#^Property OCA\\\\Learning\\\\Migration\\\\Version003800Date20260320120000\\:\\:\\$db is never read, only written\\.$#"
 			count: 1
 			path: lib/Version003800Date20260320120000.php
+
+		-
+			message: "#^Method OCA\\\\Learning\\\\Db\\\\StoryProgressMapper\\:\\:findByUserAndCampaign\\(\\) should return OCA\\\\Learning\\\\Db\\\\StoryProgress\\|null but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
+			count: 1
+			path: lib/Db/StoryProgressMapper.php
+
+		-
+			message: "#^Parameter \\#1 \\$progress of method OCA\\\\Learning\\\\Service\\\\StoryEngineService\\:\\:serializeProgress\\(\\) expects OCA\\\\Learning\\\\Db\\\\StoryProgress, OCP\\\\AppFramework\\\\Db\\\\Entity given\\.$#"
+			count: 2
+			path: lib/Service/StoryEngineService.php

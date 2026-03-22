@@ -429,9 +429,60 @@ class StoryEngineService {
 
         $poolFilter    = $skillCheck['pool_filter'] ?? null;
         $questionCount = (int)($skillCheck['question_count'] ?? 3);
-        $adjustment    = $skillCheck['character_adjustments'][$characterClass]['difficulty_modifier'] ?? 0;
+        $adjustment    = $this->resolveCharacterDifficultyModifier(
+            $campaign, $choice, $characterClass, $poolFilter
+        );
 
-        return $this->fetchFilteredQuestions($poolFilter, $questionCount, (int)$adjustment);
+        return $this->fetchFilteredQuestions($poolFilter, $questionCount, $adjustment);
+    }
+
+    /**
+     * Determine the difficulty modifier for a character class on a specific choice.
+     *
+     * Priority:
+     *  1. Per-choice `character_adjustments[class].difficulty_modifier` (explicit)
+     *  2. Campaign-level `characters[class].skill_bonus_pools` / `skill_penalty_pools`
+     *     matched against the choice's `pool_filter`
+     *  3. 0 (no adjustment)
+     */
+    private function resolveCharacterDifficultyModifier(
+        array  $campaign,
+        array  $choice,
+        string $characterClass,
+        ?string $poolFilter
+    ): int {
+        $skillCheck = $choice['skill_check'] ?? [];
+
+        // Priority 1: explicit per-choice adjustment
+        if (isset($skillCheck['character_adjustments'][$characterClass]['difficulty_modifier'])) {
+            return (int)$skillCheck['character_adjustments'][$characterClass]['difficulty_modifier'];
+        }
+
+        // Priority 2: campaign-level character pool affinity
+        if ($poolFilter !== null && isset($campaign['characters'][$characterClass])) {
+            $charDef     = $campaign['characters'][$characterClass];
+            $bonusPools  = $charDef['skill_bonus_pools']  ?? [];
+            $penaltyPools= $charDef['skill_penalty_pools'] ?? [];
+
+            $filterLower = strtolower($poolFilter);
+
+            foreach ($bonusPools as $pool) {
+                if (str_contains($filterLower, strtolower($pool))
+                    || str_contains(strtolower($pool), $filterLower)
+                ) {
+                    return -1; // Strength: easier questions
+                }
+            }
+            foreach ($penaltyPools as $pool) {
+                if (str_contains($filterLower, strtolower($pool))
+                    || str_contains(strtolower($pool), $filterLower)
+                ) {
+                    return 1; // Weakness: harder questions
+                }
+            }
+        }
+
+        return 0; // No adjustment
     }
 
     /**
@@ -682,15 +733,19 @@ class StoryEngineService {
 
             if (!empty($choice['skill_check'])) {
                 $sc = $choice['skill_check'];
+                $diffModifier = $this->resolveCharacterDifficultyModifier(
+                    $campaign, $choice, $characterClass, $sc['pool_filter'] ?? null
+                );
                 $safeChoice['skill_check'] = [
-                    'pool_filter'    => $sc['pool_filter'],
-                    'question_count' => (int)($sc['question_count'] ?? 3),
-                    'pass_threshold' => (int)($sc['pass_threshold'] ?? 2),
+                    'pool_filter'         => $sc['pool_filter'],
+                    'question_count'      => (int)($sc['question_count'] ?? 3),
+                    'pass_threshold'      => (int)($sc['pass_threshold'] ?? 2),
+                    'difficulty_modifier' => $diffModifier,
                     // Pre-load questions so the frontend doesn't need a second round-trip
-                    'questions'      => $this->fetchFilteredQuestions(
+                    'questions'           => $this->fetchFilteredQuestions(
                         $sc['pool_filter'] ?? null,
                         (int)($sc['question_count'] ?? 3),
-                        (int)($sc['character_adjustments'][$characterClass]['difficulty_modifier'] ?? 0)
+                        $diffModifier
                     ),
                 ];
             } else {
@@ -705,11 +760,17 @@ class StoryEngineService {
         if (!empty($scene['npc_dialog'])) {
             $speakerKey = $scene['npc_dialog']['speaker'] ?? null;
             $npcMeta    = $campaign['npcs'][$speakerKey] ?? [];
+
+            // Use class-specific dialog text if present, otherwise fall back to default
+            $classTexts = $scene['npc_dialog']['class_text'] ?? [];
+            $dialogText = $classTexts[$characterClass] ?? ($scene['npc_dialog']['text'] ?? '');
+
             $npcDialog  = [
-                'speaker' => $speakerKey,
-                'name'    => $npcMeta['name']   ?? $speakerKey,
-                'avatar'  => $npcMeta['avatar'] ?? '🤖',
-                'text'    => $scene['npc_dialog']['text'] ?? '',
+                'speaker'          => $speakerKey,
+                'name'             => $npcMeta['name']   ?? $speakerKey,
+                'avatar'           => $npcMeta['avatar'] ?? '🤖',
+                'text'             => $dialogText,
+                'has_class_text'   => !empty($classTexts[$characterClass]),
             ];
         }
 
