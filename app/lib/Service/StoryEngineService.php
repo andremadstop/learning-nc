@@ -5,6 +5,7 @@ namespace OCA\Learning\Service;
 use OCA\Learning\Db\StoryProgress;
 use OCA\Learning\Db\StoryProgressMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
@@ -17,11 +18,18 @@ use Psr\Log\LoggerInterface;
  *  - Execute skill checks against real pool questions filtered by pool_filter tag
  *  - Determine next scene based on skill-check outcome and character class
  *  - Support coop sessions (majority-vote on choices)
+ *  - Generate dynamic narrative, NPC dialog, and choices via Gemini (narrator mode)
  */
 class StoryEngineService {
 
     /** Valid character classes. */
     private const VALID_CLASSES = ['architect', 'security', 'sysadmin', 'helpdesk'];
+
+    /** Max tokens for narrator / NPC dialog output — keep scenes brief. */
+    private const NARRATOR_MAX_TOKENS = 250;
+
+    /** Max tokens for dynamic choices JSON output. */
+    private const CHOICES_MAX_TOKENS = 300;
 
     /** Directory (relative to app root) where campaign JSON files live. */
     private string $campaignDir;
@@ -29,15 +37,21 @@ class StoryEngineService {
     private StoryProgressMapper $progressMapper;
     private IDBConnection $db;
     private LoggerInterface $logger;
+    private GeminiService $geminiService;
+    private IConfig $config;
 
     public function __construct(
         StoryProgressMapper $progressMapper,
         IDBConnection $db,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        GeminiService $geminiService,
+        IConfig $config
     ) {
         $this->progressMapper = $progressMapper;
         $this->db = $db;
         $this->logger = $logger;
+        $this->geminiService = $geminiService;
+        $this->config = $config;
         // Resolve campaign directory relative to this file's location:
         // app/lib/Service/ → ../../../data/campaigns/
         $this->campaignDir = realpath(__DIR__ . '/../../../app/data/campaigns')
@@ -201,7 +215,7 @@ class StoryEngineService {
 
         return [
             'progress' => $this->serializeProgress($saved),
-            'scene'    => $this->buildSceneResponse($firstScene, $campaign, $characterClass),
+            'scene'    => $this->buildSceneResponse($firstScene, $campaign, $characterClass, $userId, [], ''),
         ];
     }
 
@@ -218,7 +232,10 @@ class StoryEngineService {
 
         return [
             'progress' => $this->serializeProgress($progress),
-            'scene'    => $this->buildSceneResponse($scene, $campaign, $progress->getCharacterClass()),
+            'scene'    => $this->buildSceneResponse(
+                $scene, $campaign, $progress->getCharacterClass(),
+                $userId, $progress->getChoicesDecoded(), ''
+            ),
         ];
     }
 
@@ -275,7 +292,10 @@ class StoryEngineService {
 
         $response = [
             'progress' => $this->serializeProgress($progress),
-            'scene'    => $this->buildSceneResponse($currentScene, $campaign, $progress->getCharacterClass()),
+            'scene'    => $this->buildSceneResponse(
+                $currentScene, $campaign, $progress->getCharacterClass(),
+                $userId, $progress->getChoicesDecoded(), $choiceId
+            ),
         ];
 
         if ($skillResult !== null) {
@@ -323,7 +343,10 @@ class StoryEngineService {
 
         return [
             'progress'     => $this->serializeProgress($progress),
-            'scene'        => $this->buildSceneResponse($nextScene, $campaign, $progress->getCharacterClass()),
+            'scene'        => $this->buildSceneResponse(
+                $nextScene, $campaign, $progress->getCharacterClass(),
+                $userId, $progress->getChoicesDecoded(), $choiceId
+            ),
             'skill_result' => $skillResult,
         ];
     }
@@ -397,7 +420,10 @@ class StoryEngineService {
 
         return [
             'progress'     => $this->serializeProgress($progress),
-            'scene'        => $this->buildSceneResponse($nextScene, $campaign, $progress->getCharacterClass()),
+            'scene'        => $this->buildSceneResponse(
+                $nextScene, $campaign, $progress->getCharacterClass(),
+                $userId, $progress->getChoicesDecoded(), $choiceId
+            ),
             'skill_result' => $skillResult,
         ];
     }
@@ -721,14 +747,32 @@ class StoryEngineService {
      * Build the scene response payload sent to the frontend.
      * Strips internal routing fields (success_scene, etc.) from choices.
      * Augments skill-check metadata with pre-loaded questions.
+     * When narrator_mode / dynamic_choices / npc.dynamic flags are set, calls Gemini.
+     *
+     * @param string|null $userId       User ID — required for Gemini narrator calls
+     * @param array       $choicesSoFar Decoded choices history for narrative context
+     * @param string      $lastChoiceId Last choice ID taken (for NPC dialog context)
      */
-    private function buildSceneResponse(array $scene, array $campaign, string $characterClass): array {
+    private function buildSceneResponse(
+        array  $scene,
+        array  $campaign,
+        string $characterClass,
+        ?string $userId = null,
+        array  $choicesSoFar = [],
+        string $lastChoiceId = ''
+    ): array {
+        // Resolve choices — dynamic first if enabled, otherwise static
+        $rawChoices = ($userId !== null && !empty($scene['dynamic_choices']))
+            ? $this->generateDynamicChoices($scene, $campaign, $characterClass, $choicesSoFar, $userId)
+            : ($scene['choices'] ?? []);
+
         $choices = [];
-        foreach ($scene['choices'] ?? [] as $choice) {
+        foreach ($rawChoices as $choice) {
             $safeChoice = [
-                'id'   => $choice['id'],
-                'text' => $choice['text'],
-                'icon' => $choice['icon'] ?? null,
+                'id'       => $choice['id'],
+                'text'     => $choice['text'],
+                'icon'     => $choice['icon'] ?? null,
+                'dynamic'  => (bool)($choice['_dynamic'] ?? false),
             ];
 
             if (!empty($choice['skill_check'])) {
@@ -755,36 +799,54 @@ class StoryEngineService {
             $choices[] = $safeChoice;
         }
 
+        // Resolve narrative — dynamic via Gemini or static
+        $narrative = ($userId !== null && !empty($scene['narrator_mode']))
+            ? $this->generateNarrative($scene, $campaign, $characterClass, $choicesSoFar, $userId)
+            : ($scene['narrative'] ?? '');
+
         // Build NPC character meta from campaign definition
         $npcDialog = null;
         if (!empty($scene['npc_dialog'])) {
             $speakerKey = $scene['npc_dialog']['speaker'] ?? null;
             $npcMeta    = $campaign['npcs'][$speakerKey] ?? [];
 
-            // Use class-specific dialog text if present, otherwise fall back to default
-            $classTexts = $scene['npc_dialog']['class_text'] ?? [];
-            $dialogText = $classTexts[$characterClass] ?? ($scene['npc_dialog']['text'] ?? '');
+            $dialogText = ($userId !== null && !empty($scene['npc_dialog']['dynamic']))
+                ? $this->generateNpcDialog(
+                    $scene['npc_dialog'],
+                    $npcMeta,
+                    $scene,
+                    $campaign,
+                    $characterClass,
+                    $lastChoiceId,
+                    $userId
+                )
+                : (($scene['npc_dialog']['class_text'][$characterClass] ?? null)
+                    ?? ($scene['npc_dialog']['text'] ?? ''));
 
+            $classTexts = $scene['npc_dialog']['class_text'] ?? [];
             $npcDialog  = [
                 'speaker'          => $speakerKey,
                 'name'             => $npcMeta['name']   ?? $speakerKey,
                 'avatar'           => $npcMeta['avatar'] ?? '🤖',
                 'text'             => $dialogText,
                 'has_class_text'   => !empty($classTexts[$characterClass]),
+                'is_dynamic'       => !empty($scene['npc_dialog']['dynamic']),
             ];
         }
 
         return [
-            'id'            => $scene['id'],
-            'title'         => $scene['title'] ?? '',
-            'narrative'     => $scene['narrative'] ?? '',
-            'image'         => $scene['image'] ?? null,
-            'animation_in'  => $scene['animation_in'] ?? null,
-            'npc_dialog'    => $npcDialog,
-            'choices'       => $choices,
-            'simulation'    => $scene['simulation'] ?? null,
-            'is_epilog'     => (bool)($scene['is_epilog'] ?? false),
-            'epilog_type'   => $scene['epilog_type'] ?? null,
+            'id'             => $scene['id'],
+            'title'          => $scene['title'] ?? '',
+            'narrative'      => $narrative,
+            'narrator_mode'  => (bool)($scene['narrator_mode'] ?? false),
+            'dynamic_choices'=> (bool)($scene['dynamic_choices'] ?? false),
+            'image'          => $scene['image'] ?? null,
+            'animation_in'   => $scene['animation_in'] ?? null,
+            'npc_dialog'     => $npcDialog,
+            'choices'        => $choices,
+            'simulation'     => $scene['simulation'] ?? null,
+            'is_epilog'      => (bool)($scene['is_epilog'] ?? false),
+            'epilog_type'    => $scene['epilog_type'] ?? null,
         ];
     }
 
@@ -840,6 +902,386 @@ class StoryEngineService {
      */
     public function getCharacterClass(string $userId, string $campaignId): string {
         return $this->requireProgress($userId, $campaignId)->getCharacterClass();
+    }
+
+    // ─── Gemini Narrator ──────────────────────────────────────────────────────
+
+    /**
+     * Generate dynamic narrative text via Gemini when scene has narrator_mode: true.
+     * Falls back to static narrative on any error.
+     *
+     * @param array  $scene          Scene array from campaign JSON
+     * @param array  $campaign       Full campaign array
+     * @param string $characterClass Player's character class
+     * @param array  $choicesSoFar   Decoded choices history from StoryProgress
+     * @param string $userId         NC user ID (for language preference + audit log)
+     * @return string                Generated or static narrative text
+     */
+    public function generateNarrative(
+        array  $scene,
+        array  $campaign,
+        string $characterClass,
+        array  $choicesSoFar,
+        string $userId
+    ): string {
+        $static = $scene['narrative'] ?? '';
+
+        if (empty($scene['narrator_mode'])) {
+            return $static;
+        }
+
+        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
+        if ($apiKey === '') {
+            return $static;
+        }
+
+        $language = $this->config->getUserValue($userId, 'learning', 'content_language', '') ?: 'de';
+
+        $choicesSummary = [];
+        foreach ($choicesSoFar as $c) {
+            $choicesSummary[] = $c['scene_id'] . ':' . $c['choice_id'] . '(' . ($c['skill_result'] ?? '?') . ')';
+        }
+        $choicesSummaryStr = implode(', ', $choicesSummary) ?: 'keine';
+
+        $systemPrompt = "Du bist ein Game Master für ein IT-Lern-RPG. Erzähle die Szene basierend auf: {$scene['title']}. "
+            . "Charakter: {$characterClass}. "
+            . "Bisherige Entscheidungen: {$choicesSummaryStr}. "
+            . "Lernziel: " . implode(', ', $campaign['focus_areas'] ?? []) . ". "
+            . "Halte dich an den CompTIA-Kontext. Max 150 Wörter. Sprache: {$language}. "
+            . "Statischer Kontext als Basis: {$static}";
+
+        $userPrompt = "Erzähle diese RPG-Szene lebendig und spannend. Nur den Erzähltext, keine Metadaten.";
+
+        try {
+            $text = $this->callGeminiForStory($systemPrompt, $userPrompt, $userId, self::NARRATOR_MAX_TOKENS);
+            return $text !== '' ? $text : $static;
+        } catch (\Throwable $e) {
+            $this->logger->warning('StoryEngineService: Gemini narrator fallback for scene {scene}: {err}', [
+                'scene' => $scene['id'] ?? '?',
+                'err'   => $e->getMessage(),
+                'app'   => 'learning',
+            ]);
+            return $static;
+        }
+    }
+
+    /**
+     * Generate dynamic choice options via Gemini when scene has dynamic_choices: true.
+     * Gemini returns JSON array of 2-3 choices. Falls back to static choices on parse failure.
+     *
+     * Dynamic choices are PREPENDED to static choices (static choices always kept as fallback).
+     * Dynamic choice IDs get prefix "dyn_" to distinguish from static ones.
+     *
+     * @param array  $scene          Scene array
+     * @param array  $campaign       Full campaign array
+     * @param string $characterClass Player's character class
+     * @param array  $choicesSoFar   Decoded choices history
+     * @param string $userId         NC user ID
+     * @return array                 Array of choice arrays (may include dynamic ones prepended)
+     */
+    public function generateDynamicChoices(
+        array  $scene,
+        array  $campaign,
+        string $characterClass,
+        array  $choicesSoFar,
+        string $userId
+    ): array {
+        $staticChoices = $scene['choices'] ?? [];
+
+        if (empty($scene['dynamic_choices'])) {
+            return $staticChoices;
+        }
+
+        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
+        if ($apiKey === '') {
+            return $staticChoices;
+        }
+
+        $language = $this->config->getUserValue($userId, 'learning', 'content_language', '') ?: 'de';
+
+        $choicesSummary = [];
+        foreach ($choicesSoFar as $c) {
+            $choicesSummary[] = $c['scene_id'] . ':' . $c['choice_id'];
+        }
+        $historyStr = implode(', ', $choicesSummary) ?: 'keine';
+
+        $systemPrompt = "Du bist ein Game Master für ein IT-Lern-RPG (CompTIA-Kontext). "
+            . "Szene: {$scene['title']}. Charakter: {$characterClass}. "
+            . "Lernziel: " . implode(', ', $campaign['focus_areas'] ?? []) . ". "
+            . "Bisherige Entscheidungen: {$historyStr}. Sprache: {$language}. "
+            . "Antworte NUR mit validem JSON, kein Markdown, keine Erklärung.";
+
+        $userPrompt = 'Generiere 2-3 kontextuelle Handlungsoptionen als JSON-Array: '
+            . '{"choices":[{"id":"dyn_1","text":"...","icon":"🔧"},{"id":"dyn_2","text":"...","icon":"📋"}]}. '
+            . 'Die Optionen müssen IT-Troubleshooting betreffen und zur aktuellen Szene passen.';
+
+        try {
+            $raw = $this->callGeminiForStory($systemPrompt, $userPrompt, $userId, self::CHOICES_MAX_TOKENS);
+
+            // Strip markdown code fences
+            $cleaned = preg_replace('/^```(?:json)?\s*/i', '', trim($raw));
+            $cleaned = preg_replace('/\s*```$/', '', $cleaned ?? $raw);
+
+            $decoded = json_decode($cleaned, true);
+
+            if (!is_array($decoded) || empty($decoded['choices']) || !is_array($decoded['choices'])) {
+                $this->logger->warning('StoryEngineService: dynamic choices JSON parse failed', [
+                    'app' => 'learning',
+                    'raw' => mb_substr($raw, 0, 200),
+                ]);
+                return $staticChoices;
+            }
+
+            // Validate and sanitize dynamic choices
+            $dynChoices = [];
+            $usedIds = [];
+            foreach ($decoded['choices'] as $i => $dc) {
+                if (!is_array($dc) || empty($dc['text'])) {
+                    continue;
+                }
+                $id = preg_replace('/[^a-z0-9_]/', '_', strtolower((string)($dc['id'] ?? "dyn_{$i}")));
+                // Avoid ID collisions
+                if (in_array($id, $usedIds, true)) {
+                    $id = $id . '_' . $i;
+                }
+                $usedIds[] = $id;
+
+                $dynChoices[] = [
+                    'id'          => $id,
+                    'text'        => mb_substr(strip_tags((string)$dc['text']), 0, 200),
+                    'icon'        => mb_substr((string)($dc['icon'] ?? '🎮'), 0, 10),
+                    'skill_check' => null, // Dynamic choices are narrative only (no skill check)
+                    '_dynamic'    => true, // Internal marker, stripped by buildSceneResponse
+                ];
+            }
+
+            if (empty($dynChoices)) {
+                return $staticChoices;
+            }
+
+            // Dynamic choices first, then static choices as fallback
+            return array_merge($dynChoices, $staticChoices);
+
+        } catch (\Throwable $e) {
+            $this->logger->warning('StoryEngineService: Gemini dynamic choices fallback for scene {scene}: {err}', [
+                'scene' => $scene['id'] ?? '?',
+                'err'   => $e->getMessage(),
+                'app'   => 'learning',
+            ]);
+            return $staticChoices;
+        }
+    }
+
+    /**
+     * Generate dynamic NPC dialog via Gemini when npc_dialog has dynamic: true.
+     * Falls back to static dialog text on any error.
+     *
+     * @param array  $npcDialog      npc_dialog from scene
+     * @param array  $npcMeta        NPC definition from campaign['npcs']
+     * @param array  $scene          Scene array
+     * @param array  $campaign       Full campaign array
+     * @param string $characterClass Player's character class
+     * @param string $lastChoiceId   The last choice taken by the player (context for NPC reaction)
+     * @param string $userId         NC user ID
+     * @return string                Generated or static dialog text
+     */
+    public function generateNpcDialog(
+        array  $npcDialog,
+        array  $npcMeta,
+        array  $scene,
+        array  $campaign,
+        string $characterClass,
+        string $lastChoiceId,
+        string $userId
+    ): string {
+        // Determine static fallback
+        $classTexts = $npcDialog['class_text'] ?? [];
+        $staticText = $classTexts[$characterClass] ?? ($npcDialog['text'] ?? '');
+
+        if (empty($npcDialog['dynamic'])) {
+            return $staticText;
+        }
+
+        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
+        if ($apiKey === '') {
+            return $staticText;
+        }
+
+        $language  = $this->config->getUserValue($userId, 'learning', 'content_language', '') ?: 'de';
+        $npcName   = $npcMeta['name']        ?? ($npcDialog['speaker'] ?? 'NPC');
+        $npcRole   = $npcMeta['role']        ?? '';
+        $npcPersonality = $npcMeta['personality'] ?? "professionell und direkt";
+
+        $systemPrompt = "Du bist {$npcName} ({$npcRole}) in einem IT-Lern-RPG (CompTIA-Kontext). "
+            . "Deine Persönlichkeit: {$npcPersonality}. "
+            . "Szene: {$scene['title']}. Spreche zu einem {$characterClass}-Charakter. "
+            . "Der Spieler hat gerade entschieden: {$lastChoiceId}. "
+            . "Sprache: {$language}. Max 60 Wörter. Nur der Dialog-Text, keine Regieanweisungen.";
+
+        $userPrompt = "Wie reagiert {$npcName} auf die Entscheidung des Spielers in dieser Szene?";
+
+        try {
+            $text = $this->callGeminiForStory($systemPrompt, $userPrompt, $userId, 150);
+            // Strip any accidental quotes or NPC name prefix
+            $text = trim(preg_replace('/^["\']?(.*)["\']?$/s', '$1', $text));
+            return $text !== '' ? $text : $staticText;
+        } catch (\Throwable $e) {
+            $this->logger->warning('StoryEngineService: Gemini NPC dialog fallback: {err}', [
+                'err' => $e->getMessage(),
+                'app' => 'learning',
+            ]);
+            return $staticText;
+        }
+    }
+
+    /**
+     * Evaluate a free-text player action against the learning objective via Gemini.
+     * Returns validity verdict, narrative response, and optional next_scene suggestion.
+     *
+     * @param string $campaignId Campaign ID
+     * @param string $text       Free-text action from player
+     * @param string $userId     NC user ID
+     * @return array{valid: bool, narrative: string, next_scene: string|null, fallback: bool}
+     * @throws \RuntimeException if campaign or progress cannot be loaded
+     */
+    public function submitFreetext(string $campaignId, string $text, string $userId): array {
+        $this->validateCampaignId($campaignId);
+
+        // Sanitize input — strip tags, truncate hard to 500 chars
+        $text = mb_substr(strip_tags(trim($text)), 0, 500);
+
+        if ($text === '') {
+            return [
+                'valid'      => false,
+                'narrative'  => 'Bitte beschreibe deine Aktion.',
+                'next_scene' => null,
+                'fallback'   => false,
+            ];
+        }
+
+        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
+        if ($apiKey === '') {
+            return [
+                'valid'      => false,
+                'narrative'  => 'KI-Narrator nicht verfügbar. Bitte wähle eine der vorgegebenen Optionen.',
+                'next_scene' => null,
+                'fallback'   => true,
+            ];
+        }
+
+        $progress = $this->requireProgress($userId, $campaignId);
+        $campaign  = $this->loadCampaign($campaignId);
+        $scene     = $this->findScene($campaign, $progress->getCurrentSceneId());
+
+        $language = $this->config->getUserValue($userId, 'learning', 'content_language', '') ?: 'de';
+
+        // Build list of valid next scene IDs for this scene
+        $validNextScenes = [];
+        foreach ($scene['choices'] ?? [] as $ch) {
+            foreach (['success_scene', 'partial_scene', 'fail_scene'] as $k) {
+                if (!empty($ch[$k])) {
+                    $validNextScenes[] = $ch[$k];
+                }
+            }
+        }
+        $validNextScenes = array_values(array_unique($validNextScenes));
+        $nextScenesStr   = implode(', ', $validNextScenes);
+
+        $systemPrompt = "Du bist ein Game Master für ein IT-Lern-RPG (CompTIA-Kontext). "
+            . "Lernziel: " . implode(', ', $campaign['focus_areas'] ?? []) . ". "
+            . "Aktuelle Szene: {$scene['title']}. Szenenbeschreibung: " . mb_substr($scene['narrative'] ?? '', 0, 300) . ". "
+            . "Bewerte ob die Spieleraktion relevant und sinnvoll für das Lernziel ist. "
+            . "Mögliche nächste Szenen: {$nextScenesStr}. "
+            . "Antworte NUR mit validem JSON, kein Markdown, keine Erklärung. Sprache für narrative: {$language}.";
+
+        $userPrompt = "Spieleraktion: <action>" . $text . "</action>\n"
+            . "Antworte mit: {\"valid\":true/false,\"narrative\":\"...\",\"next_scene\":\"scene_id_or_null\",\"reason\":\"...\"}.\n"
+            . "- valid=true wenn die Aktion IT-relevant ist und zum Lernziel passt.\n"
+            . "- narrative: max 100 Wörter, beschreibt was passiert.\n"
+            . "- next_scene: eine der möglichen Szenen-IDs wenn valid=true, sonst null.\n"
+            . "- reason: kurze Erklärung wenn valid=false, sonst null.";
+
+        try {
+            $raw = $this->callGeminiForStory($systemPrompt, $userPrompt, $userId, 400);
+
+            // Strip markdown fences
+            $cleaned = preg_replace('/^```(?:json)?\s*/i', '', trim($raw));
+            $cleaned = preg_replace('/\s*```$/', '', $cleaned ?? $raw);
+
+            $data = json_decode($cleaned, true);
+
+            if (!is_array($data)) {
+                $this->logger->warning('StoryEngineService: freetext JSON parse failed', [
+                    'app' => 'learning',
+                    'raw' => mb_substr($raw, 0, 300),
+                ]);
+                return [
+                    'valid'      => false,
+                    'narrative'  => 'Ich konnte deine Aktion nicht auswerten. Bitte versuche es erneut oder wähle eine vorgegebene Option.',
+                    'next_scene' => null,
+                    'fallback'   => true,
+                ];
+            }
+
+            $valid     = (bool)($data['valid'] ?? false);
+            $narrative = mb_substr(strip_tags((string)($data['narrative'] ?? '')), 0, 1000);
+            $reason    = mb_substr(strip_tags((string)($data['reason'] ?? '')), 0, 500);
+
+            // Validate next_scene — must be one of the actual valid next scenes
+            $rawNextScene = (string)($data['next_scene'] ?? '');
+            $nextScene    = in_array($rawNextScene, $validNextScenes, true) ? $rawNextScene : null;
+
+            // If valid but Gemini gave no valid next_scene, pick first
+            if ($valid && $nextScene === null && !empty($validNextScenes)) {
+                $nextScene = $validNextScenes[0];
+            }
+
+            // If not valid, include reason in narrative
+            if (!$valid && $reason !== '' && $narrative !== '') {
+                $narrative = $narrative . ' ' . $reason;
+            } elseif (!$valid && $reason !== '') {
+                $narrative = $reason;
+            }
+
+            return [
+                'valid'      => $valid,
+                'narrative'  => $narrative !== '' ? $narrative : ($valid ? 'Weiter!' : 'Diese Aktion passt nicht zur aktuellen Situation.'),
+                'next_scene' => $nextScene,
+                'fallback'   => false,
+            ];
+
+        } catch (\Throwable $e) {
+            $this->logger->warning('StoryEngineService: freetext Gemini error: {err}', [
+                'err' => $e->getMessage(),
+                'app' => 'learning',
+            ]);
+            return [
+                'valid'      => false,
+                'narrative'  => 'KI-Narrator temporär nicht verfügbar. Bitte wähle eine der vorgegebenen Optionen.',
+                'next_scene' => null,
+                'fallback'   => true,
+            ];
+        }
+    }
+
+    /**
+     * Internal: call Gemini API directly for story generation (bypasses chat() user rate limit
+     * since story actions are already rate-limited by the controller's #[UserRateLimit]).
+     * Uses generateNote()-style direct API call with audit logging.
+     *
+     * @throws \RuntimeException on API error
+     */
+    private function callGeminiForStory(
+        string $systemPrompt,
+        string $userPrompt,
+        string $userId,
+        int    $maxTokens = 250
+    ): string {
+        // Delegate to GeminiService.generateNote() which does direct API call + audit log.
+        // We build a combined system+user prompt because generateNote() takes both.
+        // For story calls, input sanitization is done upstream (no user-controlled free text
+        // reaches this point without strip_tags + truncation).
+        return $this->geminiService->generateNote($systemPrompt, $userPrompt);
     }
 
     // ─── Validators ───────────────────────────────────────────────────────────
