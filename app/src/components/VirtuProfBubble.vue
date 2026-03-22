@@ -14,139 +14,19 @@
           </button>
         </div>
       </div>
-      <p v-if="step.title" class="bubble-title">{{ step.title }}</p>
-      <p v-if="step.text" class="bubble-text">{{ step.text }}</p>
 
-      <div v-if="step.kind === 'ticket-form'" class="ticket-form">
-        <div class="ticket-category-row">
-          <label class="ticket-label" for="virtuprof-ticket-category">{{ vt('Category') }}</label>
-          <select
-            id="virtuprof-ticket-category"
-            class="ticket-select"
-            :value="step.ticketCategory || 'technical'"
-            @change="$emit('action', { type: 'set-ticket-category', value: $event.target.value })">
-            <option v-if="step.hasCourseContext" value="course_content">{{ vt('Course content question') }}</option>
-            <option value="technical">{{ vt('Technical problem') }}</option>
-            <option value="usage">{{ vt('Usage question') }}</option>
-          </select>
-          <small v-if="step.categoryHint" class="ticket-category-hint">{{ step.categoryHint }}</small>
-        </div>
-        <label class="ticket-label" for="virtuprof-ticket-subject">{{ vt('Subject') }}</label>
-        <input
-          id="virtuprof-ticket-subject"
-          class="ticket-input"
-          type="text"
-          :value="ticketSubject"
-          :placeholder="vt('Short summary')"
-          @input="$emit('update:ticketSubject', $event.target.value)">
-        <label class="ticket-label" for="virtuprof-ticket-message">{{ vt('Message') }}</label>
-        <textarea
-          id="virtuprof-ticket-message"
-          class="ticket-textarea"
-          rows="5"
-          :value="ticketDraft"
-          :placeholder="step.placeholder || vt('Describe your question or problem...')"
-          @input="$emit('update:ticketDraft', $event.target.value)" />
-        <p v-if="ticketError" class="ticket-error">{{ ticketError }}</p>
-        <p v-if="ticketSuccess" class="ticket-success">{{ ticketSuccess }}</p>
-      </div>
-
-      <div v-if="step.kind === 'ticket-list'" class="ticket-list">
-        <div v-if="tickets.length === 0" class="ticket-empty">
-          {{ vt('No support tickets yet.') }}
-        </div>
-        <div v-for="ticket in tickets" :key="ticket.id" class="ticket-item">
-          <div class="ticket-header">
-            <strong>{{ ticket.subject }}</strong>
-            <span class="ticket-status" :class="'status-' + ticket.status">{{ statusLabel(ticket.status) }}</span>
-          </div>
-          <div class="ticket-meta">{{ formatTimestamp(ticket.updated_at || ticket.created_at) }}</div>
-          <div class="ticket-message">{{ ticket.message }}</div>
-          <div v-if="ticket.answer_text" class="ticket-answer">
-            <strong>{{ vt('Answer') }}:</strong> {{ ticket.answer_text }}
+      <!-- ── AI-first layout (aiEnabled=true) ──────────────────── -->
+      <template v-if="aiEnabled">
+        <!-- AI consent dialog: shown before first chat use -->
+        <div v-if="showConsentDialog" class="ai-consent-overlay" role="dialog" aria-modal="true" :aria-label="vt('AI consent required')">
+          <p class="ai-consent-text">{{ vt('Your question will be sent to Google Gemini (an external AI service). Do you agree?') }}</p>
+          <div class="ai-consent-actions">
+            <NcButton type="primary" size="small" @click="$emit('consent-accept')">{{ vt('I agree') }}</NcButton>
+            <NcButton type="secondary" size="small" @click="$emit('consent-decline')">{{ vt('Cancel') }}</NcButton>
           </div>
         </div>
-      </div>
 
-      <div v-if="step.kind === 'invite-list'" class="invite-list">
-        <div v-if="!hasInviteGroups" class="ticket-empty">
-          {{ vt('No active duel invites right now.') }}
-        </div>
-        <div v-for="group in step.inviteGroups || []" :key="group.id" class="invite-group">
-          <p class="invite-group-title">{{ group.title }}</p>
-          <div v-for="invite in group.invites" :key="group.id + '-' + invite.id" class="invite-item">
-            <div class="ticket-header">
-              <strong>{{ invite.title }}</strong>
-              <span class="ticket-status" :class="'status-' + invite.status">{{ invite.statusLabel || statusLabel(invite.status) }}</span>
-            </div>
-            <div v-if="invite.subtitle" class="ticket-meta">{{ invite.subtitle }}</div>
-            <div v-if="invite.updatedAt" class="ticket-meta">{{ formatTimestamp(invite.updatedAt) }}</div>
-            <div class="ticket-message">{{ invite.message }}</div>
-            <div v-if="invite.itemActions && invite.itemActions.length" class="invite-item-actions">
-              <NcButton
-                v-for="action in invite.itemActions"
-                :key="invite.id + '-' + action.type"
-                type="secondary"
-                size="small"
-                @click="$emit('action', action)">
-                {{ action.label }}
-              </NcButton>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="totalSteps > 1" class="step-dots">
-        <span
-          v-for="i in totalSteps"
-          :key="i"
-          class="dot"
-          :class="{ active: i === stepIndex + 1 }" />
-      </div>
-
-      <div
-        class="bubble-actions"
-        :class="{ stacked: step.actionLayout === 'stacked' || (step.actions && step.actions.length > 3) }">
-        <template v-if="step.actions && step.actions.length">
-          <NcButton
-            v-for="action in step.actions"
-            :key="action.label"
-            type="secondary"
-            size="small"
-            :disabled="ticketSending && action.type === 'submit-ticket'"
-            @click="$emit('action', action)">
-            {{ action.label }}
-          </NcButton>
-        </template>
-        <template v-else>
-          <NcButton
-            v-if="stepIndex < totalSteps - 1"
-            type="primary"
-            size="small"
-            @click="$emit('next')">
-            {{ vt('Next') }}
-          </NcButton>
-          <NcButton
-            v-else
-            type="secondary"
-            size="small"
-            @click="$emit('dismiss')">
-            {{ vt('Ok, got it') }}
-          </NcButton>
-        </template>
-      </div>
-
-      <!-- AI consent dialog: shown before first chat use -->
-      <div v-if="showConsentDialog" class="ai-consent-overlay" role="dialog" aria-modal="true" :aria-label="vt('AI consent required')">
-        <p class="ai-consent-text">{{ vt('Your question will be sent to Google Gemini (an external AI service). Do you agree?') }}</p>
-        <div class="ai-consent-actions">
-          <NcButton type="primary" size="small" @click="$emit('consent-accept')">{{ vt('I agree') }}</NcButton>
-          <NcButton type="secondary" size="small" @click="$emit('consent-decline')">{{ vt('Cancel') }}</NcButton>
-        </div>
-      </div>
-
-      <!-- Chat section: visible only when AI is enabled -->
-      <div v-if="aiEnabled" class="chat-section">
+        <!-- Chat history (primary content) -->
         <div
           ref="chatHistory"
           class="chat-history"
@@ -158,7 +38,15 @@
             :key="idx"
             class="chat-msg"
             :class="msg.role === 'user' ? 'chat-msg--user' : 'chat-msg--assistant'">
-            {{ msg.text }}
+            <span>{{ msg.text }}</span>
+            <a
+              v-if="msg.filePath"
+              :href="ncFileUrl(msg.filePath)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="chat-file-link">
+              {{ msg.filePath }}
+            </a>
           </div>
           <div v-if="chatLoading" class="chat-typing" aria-label="VirtuProf is typing">
             <span class="typing-dot" />
@@ -166,6 +54,21 @@
             <span class="typing-dot" />
           </div>
         </div>
+
+        <!-- Quick suggestion chips (above input) -->
+        <div class="chat-suggestions" role="group" :aria-label="vt('Quick suggestions')">
+          <button
+            v-for="suggestion in quickSuggestions"
+            :key="suggestion.key"
+            type="button"
+            class="chat-suggestion-btn"
+            :disabled="chatLoading"
+            @click="sendSuggestion(suggestion.text)">
+            {{ suggestion.label }}
+          </button>
+        </div>
+
+        <!-- Chat input row -->
         <div class="chat-input-row">
           <input
             ref="chatInput"
@@ -187,6 +90,8 @@
             </svg>
           </button>
         </div>
+
+        <!-- Clear row -->
         <div v-if="chatMessages.length > 0" class="chat-clear-row">
           <button
             type="button"
@@ -195,7 +100,293 @@
             {{ vt('Clear chat history') }}
           </button>
         </div>
-      </div>
+
+        <!-- Collapsible "Mehr Optionen" section -->
+        <div class="mehr-optionen">
+          <button
+            type="button"
+            class="mehr-optionen-toggle"
+            :aria-expanded="moreOptionsOpen.toString()"
+            @click="moreOptionsOpen = !moreOptionsOpen">
+            <svg
+              class="mehr-optionen-chevron"
+              :class="{ open: moreOptionsOpen }"
+              viewBox="0 0 16 16"
+              width="12"
+              height="12"
+              aria-hidden="true">
+              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            {{ vt('More options') }}
+          </button>
+
+          <div v-if="moreOptionsOpen" class="mehr-optionen-body">
+            <!-- Existing step content (FAQ menus etc.) when in help mode -->
+            <p v-if="step.title" class="bubble-title">{{ step.title }}</p>
+            <p v-if="step.text" class="bubble-text">{{ step.text }}</p>
+
+            <div v-if="step.kind === 'ticket-form'" class="ticket-form">
+              <div class="ticket-category-row">
+                <label class="ticket-label" for="virtuprof-ticket-category">{{ vt('Category') }}</label>
+                <select
+                  id="virtuprof-ticket-category"
+                  class="ticket-select"
+                  :value="step.ticketCategory || 'technical'"
+                  @change="$emit('action', { type: 'set-ticket-category', value: $event.target.value })">
+                  <option v-if="step.hasCourseContext" value="course_content">{{ vt('Course content question') }}</option>
+                  <option value="technical">{{ vt('Technical problem') }}</option>
+                  <option value="usage">{{ vt('Usage question') }}</option>
+                </select>
+                <small v-if="step.categoryHint" class="ticket-category-hint">{{ step.categoryHint }}</small>
+              </div>
+              <label class="ticket-label" for="virtuprof-ticket-subject">{{ vt('Subject') }}</label>
+              <input
+                id="virtuprof-ticket-subject"
+                class="ticket-input"
+                type="text"
+                :value="ticketSubject"
+                :placeholder="vt('Short summary')"
+                @input="$emit('update:ticketSubject', $event.target.value)">
+              <label class="ticket-label" for="virtuprof-ticket-message">{{ vt('Message') }}</label>
+              <textarea
+                id="virtuprof-ticket-message"
+                class="ticket-textarea"
+                rows="5"
+                :value="ticketDraft"
+                :placeholder="step.placeholder || vt('Describe your question or problem...')"
+                @input="$emit('update:ticketDraft', $event.target.value)" />
+              <p v-if="ticketError" class="ticket-error">{{ ticketError }}</p>
+              <p v-if="ticketSuccess" class="ticket-success">{{ ticketSuccess }}</p>
+            </div>
+
+            <div v-if="step.kind === 'ticket-list'" class="ticket-list">
+              <div v-if="tickets.length === 0" class="ticket-empty">
+                {{ vt('No support tickets yet.') }}
+              </div>
+              <div v-for="ticket in tickets" :key="ticket.id" class="ticket-item">
+                <div class="ticket-header">
+                  <strong>{{ ticket.subject }}</strong>
+                  <span class="ticket-status" :class="'status-' + ticket.status">{{ statusLabel(ticket.status) }}</span>
+                </div>
+                <div class="ticket-meta">{{ formatTimestamp(ticket.updated_at || ticket.created_at) }}</div>
+                <div class="ticket-message">{{ ticket.message }}</div>
+                <div v-if="ticket.answer_text" class="ticket-answer">
+                  <strong>{{ vt('Answer') }}:</strong> {{ ticket.answer_text }}
+                </div>
+              </div>
+            </div>
+
+            <div v-if="step.kind === 'invite-list'" class="invite-list">
+              <div v-if="!hasInviteGroups" class="ticket-empty">
+                {{ vt('No active duel invites right now.') }}
+              </div>
+              <div v-for="group in step.inviteGroups || []" :key="group.id" class="invite-group">
+                <p class="invite-group-title">{{ group.title }}</p>
+                <div v-for="invite in group.invites" :key="group.id + '-' + invite.id" class="invite-item">
+                  <div class="ticket-header">
+                    <strong>{{ invite.title }}</strong>
+                    <span class="ticket-status" :class="'status-' + invite.status">{{ invite.statusLabel || statusLabel(invite.status) }}</span>
+                    <!-- X dismiss button for outgoing and incoming invite cards -->
+                    <button
+                      type="button"
+                      class="invite-dismiss-btn"
+                      :aria-label="invite.direction === 'incoming' ? vt('Decline') : vt('Cancel invite')"
+                      @click="$emit('action', invite.direction === 'incoming'
+                        ? { type: 'decline-invite', inviteId: invite.id }
+                        : { type: 'cancel-invite', inviteId: invite.id })">
+                      <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
+                        <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div v-if="invite.subtitle" class="ticket-meta">{{ invite.subtitle }}</div>
+                  <div v-if="invite.updatedAt" class="ticket-meta">{{ formatTimestamp(invite.updatedAt) }}</div>
+                  <div class="ticket-message">{{ invite.message }}</div>
+                  <div v-if="invite.itemActions && invite.itemActions.length" class="invite-item-actions">
+                    <NcButton
+                      v-for="action in invite.itemActions"
+                      :key="invite.id + '-' + action.type"
+                      type="secondary"
+                      size="small"
+                      @click="$emit('action', action)">
+                      {{ action.label }}
+                    </NcButton>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="bubble-actions"
+              :class="{ stacked: step.actionLayout === 'stacked' || (step.actions && step.actions.length > 3) }">
+              <template v-if="step.actions && step.actions.length">
+                <NcButton
+                  v-for="action in step.actions"
+                  :key="action.label"
+                  type="secondary"
+                  size="small"
+                  :disabled="ticketSending && action.type === 'submit-ticket'"
+                  @click="$emit('action', action)">
+                  {{ action.label }}
+                </NcButton>
+              </template>
+              <template v-else>
+                <NcButton
+                  v-if="stepIndex < totalSteps - 1"
+                  type="primary"
+                  size="small"
+                  @click="$emit('next')">
+                  {{ vt('Next') }}
+                </NcButton>
+                <NcButton
+                  v-else
+                  type="secondary"
+                  size="small"
+                  @click="$emit('dismiss')">
+                  {{ vt('Ok, got it') }}
+                </NcButton>
+              </template>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- ── Non-AI fallback layout (aiEnabled=false) ───────────── -->
+      <template v-else>
+        <p v-if="step.title" class="bubble-title">{{ step.title }}</p>
+        <p v-if="step.text" class="bubble-text">{{ step.text }}</p>
+
+        <div v-if="step.kind === 'ticket-form'" class="ticket-form">
+          <div class="ticket-category-row">
+            <label class="ticket-label" for="virtuprof-ticket-category">{{ vt('Category') }}</label>
+            <select
+              id="virtuprof-ticket-category"
+              class="ticket-select"
+              :value="step.ticketCategory || 'technical'"
+              @change="$emit('action', { type: 'set-ticket-category', value: $event.target.value })">
+              <option v-if="step.hasCourseContext" value="course_content">{{ vt('Course content question') }}</option>
+              <option value="technical">{{ vt('Technical problem') }}</option>
+              <option value="usage">{{ vt('Usage question') }}</option>
+            </select>
+            <small v-if="step.categoryHint" class="ticket-category-hint">{{ step.categoryHint }}</small>
+          </div>
+          <label class="ticket-label" for="virtuprof-ticket-subject">{{ vt('Subject') }}</label>
+          <input
+            id="virtuprof-ticket-subject"
+            class="ticket-input"
+            type="text"
+            :value="ticketSubject"
+            :placeholder="vt('Short summary')"
+            @input="$emit('update:ticketSubject', $event.target.value)">
+          <label class="ticket-label" for="virtuprof-ticket-message">{{ vt('Message') }}</label>
+          <textarea
+            id="virtuprof-ticket-message"
+            class="ticket-textarea"
+            rows="5"
+            :value="ticketDraft"
+            :placeholder="step.placeholder || vt('Describe your question or problem...')"
+            @input="$emit('update:ticketDraft', $event.target.value)" />
+          <p v-if="ticketError" class="ticket-error">{{ ticketError }}</p>
+          <p v-if="ticketSuccess" class="ticket-success">{{ ticketSuccess }}</p>
+        </div>
+
+        <div v-if="step.kind === 'ticket-list'" class="ticket-list">
+          <div v-if="tickets.length === 0" class="ticket-empty">
+            {{ vt('No support tickets yet.') }}
+          </div>
+          <div v-for="ticket in tickets" :key="ticket.id" class="ticket-item">
+            <div class="ticket-header">
+              <strong>{{ ticket.subject }}</strong>
+              <span class="ticket-status" :class="'status-' + ticket.status">{{ statusLabel(ticket.status) }}</span>
+            </div>
+            <div class="ticket-meta">{{ formatTimestamp(ticket.updated_at || ticket.created_at) }}</div>
+            <div class="ticket-message">{{ ticket.message }}</div>
+            <div v-if="ticket.answer_text" class="ticket-answer">
+              <strong>{{ vt('Answer') }}:</strong> {{ ticket.answer_text }}
+            </div>
+          </div>
+        </div>
+
+        <div v-if="step.kind === 'invite-list'" class="invite-list">
+          <div v-if="!hasInviteGroups" class="ticket-empty">
+            {{ vt('No active duel invites right now.') }}
+          </div>
+          <div v-for="group in step.inviteGroups || []" :key="group.id" class="invite-group">
+            <p class="invite-group-title">{{ group.title }}</p>
+            <div v-for="invite in group.invites" :key="group.id + '-' + invite.id" class="invite-item">
+              <div class="ticket-header">
+                <strong>{{ invite.title }}</strong>
+                <span class="ticket-status" :class="'status-' + invite.status">{{ invite.statusLabel || statusLabel(invite.status) }}</span>
+                <!-- X dismiss button -->
+                <button
+                  type="button"
+                  class="invite-dismiss-btn"
+                  :aria-label="invite.direction === 'incoming' ? vt('Decline') : vt('Cancel invite')"
+                  @click="$emit('action', invite.direction === 'incoming'
+                    ? { type: 'decline-invite', inviteId: invite.id }
+                    : { type: 'cancel-invite', inviteId: invite.id })">
+                  <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
+                    <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  </svg>
+                </button>
+              </div>
+              <div v-if="invite.subtitle" class="ticket-meta">{{ invite.subtitle }}</div>
+              <div v-if="invite.updatedAt" class="ticket-meta">{{ formatTimestamp(invite.updatedAt) }}</div>
+              <div class="ticket-message">{{ invite.message }}</div>
+              <div v-if="invite.itemActions && invite.itemActions.length" class="invite-item-actions">
+                <NcButton
+                  v-for="action in invite.itemActions"
+                  :key="invite.id + '-' + action.type"
+                  type="secondary"
+                  size="small"
+                  @click="$emit('action', action)">
+                  {{ action.label }}
+                </NcButton>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="totalSteps > 1" class="step-dots">
+          <span
+            v-for="i in totalSteps"
+            :key="i"
+            class="dot"
+            :class="{ active: i === stepIndex + 1 }" />
+        </div>
+
+        <div
+          class="bubble-actions"
+          :class="{ stacked: step.actionLayout === 'stacked' || (step.actions && step.actions.length > 3) }">
+          <template v-if="step.actions && step.actions.length">
+            <NcButton
+              v-for="action in step.actions"
+              :key="action.label"
+              type="secondary"
+              size="small"
+              :disabled="ticketSending && action.type === 'submit-ticket'"
+              @click="$emit('action', action)">
+              {{ action.label }}
+            </NcButton>
+          </template>
+          <template v-else>
+            <NcButton
+              v-if="stepIndex < totalSteps - 1"
+              type="primary"
+              size="small"
+              @click="$emit('next')">
+              {{ vt('Next') }}
+            </NcButton>
+            <NcButton
+              v-else
+              type="secondary"
+              size="small"
+              @click="$emit('dismiss')">
+              {{ vt('Ok, got it') }}
+            </NcButton>
+          </template>
+        </div>
+      </template>
     </div>
     <div class="bubble-arrow" />
   </div>
@@ -269,6 +460,7 @@ export default {
   data() {
     return {
       chatInput: '',
+      moreOptionsOpen: false,
     }
   },
   computed: {
@@ -283,6 +475,13 @@ export default {
     },
     hasInviteGroups() {
       return Array.isArray(this.step?.inviteGroups) && this.step.inviteGroups.some(group => Array.isArray(group.invites) && group.invites.length > 0)
+    },
+    quickSuggestions() {
+      return [
+        { key: 'was-ist', label: this.vt('What is...?'), text: this.vt('What is...?') },
+        { key: 'erklaere', label: this.vt('Explain my last question'), text: this.vt('Explain my last question') },
+        { key: 'zusammenfassung', label: this.vt('Create summary'), text: 'zusammenfassung erstellen' },
+      ]
     },
   },
   watch: {
@@ -346,11 +545,22 @@ export default {
       this.$emit('chat-send', text)
       this.chatInput = ''
     },
+    sendSuggestion(text) {
+      if (this.chatLoading) {
+        return
+      }
+      this.$emit('chat-send', text)
+    },
     scrollChatToBottom() {
       const el = this.$refs.chatHistory
       if (el) {
         el.scrollTop = el.scrollHeight
       }
+    },
+    ncFileUrl(path) {
+      // Build a Nextcloud Files URL for a path like /Learning/Lernplan.md
+      const encoded = encodeURIComponent(path)
+      return '/apps/files/?dir=' + encodeURIComponent(path.substring(0, path.lastIndexOf('/'))) + '&scrollto=' + encodeURIComponent(path.split('/').pop())
     },
   },
 }
@@ -510,6 +720,7 @@ export default {
 }
 
 .invite-item {
+  position: relative;
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 10px 12px;
@@ -544,6 +755,29 @@ export default {
   font-size: 13px;
   line-height: 1.5;
   color: var(--color-main-text);
+}
+
+/* ── Invite dismiss (X) button ─────────────────────────── */
+.invite-dismiss-btn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-maxcontrast);
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-inline-start: auto;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.invite-dismiss-btn:hover {
+  background: var(--color-background-hover);
+  color: var(--color-error);
 }
 
 .invite-item-actions {
@@ -602,9 +836,9 @@ export default {
 
 /* ── AI consent overlay ───────────────────────────── */
 .ai-consent-overlay {
-  margin-top: 12px;
-  border-top: 1px solid var(--color-border);
-  padding-top: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 10px;
 }
 
 .ai-consent-text {
@@ -621,12 +855,6 @@ export default {
 }
 
 /* ── Chat section ─────────────────────────────────── */
-.chat-section {
-  margin-top: 12px;
-  border-top: 1px solid var(--color-border);
-  padding-top: 10px;
-}
-
 .chat-history {
   max-height: 240px;
   overflow-y: auto;
@@ -644,6 +872,9 @@ export default {
   font-size: 13px;
   line-height: 1.45;
   word-break: break-word;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .chat-msg--user {
@@ -671,6 +902,18 @@ export default {
   align-self: flex-end;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 4px;
+}
+
+.chat-file-link {
+  font-size: 11px;
+  color: var(--color-primary-element);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+.chat-file-link:hover {
+  opacity: 0.8;
 }
 
 .chat-typing {
@@ -710,6 +953,39 @@ export default {
   }
 }
 
+/* ── Quick suggestion chips ────────────────────────── */
+.chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.chat-suggestion-btn {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-maxcontrast);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+  white-space: nowrap;
+}
+
+.chat-suggestion-btn:hover:not(:disabled) {
+  border-color: var(--color-primary-element);
+  color: var(--color-primary-element);
+  background: color-mix(in srgb, var(--color-primary-element) 8%, transparent);
+}
+
+.chat-suggestion-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Chat input row ───────────────────────────────── */
 .chat-input-row {
   display: flex;
   gap: 6px;
@@ -785,6 +1061,43 @@ export default {
   color: var(--color-error);
 }
 
+/* ── Mehr Optionen collapsible ────────────────────── */
+.mehr-optionen {
+  margin-top: 10px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 8px;
+}
+
+.mehr-optionen-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  font-size: 11px;
+  color: var(--color-text-maxcontrast);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+}
+
+.mehr-optionen-toggle:hover {
+  color: var(--color-main-text);
+}
+
+.mehr-optionen-chevron {
+  transition: transform 0.18s ease;
+}
+
+.mehr-optionen-chevron.open {
+  transform: rotate(180deg);
+}
+
+.mehr-optionen-body {
+  margin-top: 8px;
+}
+
 /* ── Accessibility: reduced motion ─────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .typing-dot {
@@ -794,6 +1107,9 @@ export default {
   }
   .chat-history {
     scroll-behavior: auto;
+  }
+  .mehr-optionen-chevron {
+    transition: none;
   }
 }
 

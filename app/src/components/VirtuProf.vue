@@ -832,6 +832,7 @@ export default {
 
       return {
         id: invite.id,
+        direction: isIncoming ? 'incoming' : 'outgoing',
         status: invite.status,
         statusLabel: this.vt(this.inviteStatusLabel(invite)),
         title: isIncoming
@@ -1014,10 +1015,16 @@ export default {
       try {
         const response = await axios.post(generateUrl('/apps/learning/api/virtu-prof/chat'), payload)
         const answer = response.data?.answer
-        this.chatMessages.push({
+        const action = response.data?.action
+        const filePath = response.data?.path || null
+        const msg = {
           role: 'assistant',
           text: answer || this.vt('Sorry, no answer available.'),
-        })
+        }
+        if (action === 'file_created' && filePath) {
+          msg.filePath = filePath
+        }
+        this.chatMessages.push(msg)
       } catch (e) {
         const status = e?.response?.status
         let errorText
