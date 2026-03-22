@@ -5,6 +5,8 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\AiChatMemoryService;
 use OCA\Learning\Service\GeminiService;
+use OCA\Learning\Service\LernplanService;
+use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\RagContextService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -19,6 +21,8 @@ class VirtuProfController extends Controller {
     private GeminiService $geminiService;
     private RagContextService $ragContextService;
     private AiChatMemoryService $chatMemoryService;
+    private NoteGeneratorService $noteGeneratorService;
+    private LernplanService $lernplanService;
 
     public function __construct(
         string $appName,
@@ -27,7 +31,9 @@ class VirtuProfController extends Controller {
         ?string $userId,
         GeminiService $geminiService,
         RagContextService $ragContextService,
-        AiChatMemoryService $chatMemoryService
+        AiChatMemoryService $chatMemoryService,
+        NoteGeneratorService $noteGeneratorService,
+        LernplanService $lernplanService
     ) {
         parent::__construct($appName, $request);
         $this->config = $config;
@@ -35,6 +41,8 @@ class VirtuProfController extends Controller {
         $this->geminiService = $geminiService;
         $this->ragContextService = $ragContextService;
         $this->chatMemoryService = $chatMemoryService;
+        $this->noteGeneratorService = $noteGeneratorService;
+        $this->lernplanService = $lernplanService;
     }
 
     /**
@@ -180,6 +188,12 @@ class VirtuProfController extends Controller {
             return new DataResponse(['error' => 'AI feature disabled'], Http::STATUS_SERVICE_UNAVAILABLE);
         }
 
+        // FILE-INTENT: detect file-creation intents before the AI call
+        $lowerMessage = mb_strtolower($message);
+        if ($this->isFileIntent($lowerMessage)) {
+            return $this->handleFileIntent($lowerMessage, $poolId, $courseId);
+        }
+
         // Build RAG context when the frontend provides learning context params
         $ragContext = [];
         if ($poolId !== null || $courseId !== null || $lastWrongQuestionId !== null) {
@@ -209,5 +223,104 @@ class VirtuProfController extends Controller {
         // All other outcomes (success, fallback, rate_limit, api_error, output_blocked) → HTTP 200
         // Frontend reads 'fallback' flag to trigger FAQ matcher when answer is null
         return new DataResponse($result);
+    }
+
+    // -------------------------------------------------------------------------
+    // FILE-INTENT helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Detect whether the message is a file-creation intent.
+     * Matches German and English keywords for summary, plan, and progress intents.
+     */
+    private function isFileIntent(string $lowerMessage): bool {
+        $patterns = [
+            'zusammenfassung erstellen',
+            'zusammenfassung generieren',
+            'lernplan erstellen',
+            'lernplan generieren',
+            'wochenplan erstellen',
+            'fortschritt erstellen',
+            'fortschritt anzeigen',
+            'fortschritt aktualisieren',
+            'create summary',
+            'generate summary',
+            'create learning plan',
+            'learning plan',
+            'lernplan',
+            'fortschritt',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (str_contains($lowerMessage, $pattern)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Handle a file-creation intent: call the appropriate service and return
+     * a response with {answer, action: 'file_created', path: '/Learning/...'}.
+     */
+    private function handleFileIntent(string $lowerMessage, ?int $poolId, ?int $courseId): DataResponse {
+        try {
+            // Determine which intent matched
+            if (
+                str_contains($lowerMessage, 'zusammenfassung') ||
+                str_contains($lowerMessage, 'summary')
+            ) {
+                // Summary requires a pool context
+                if ($poolId === null) {
+                    return new DataResponse([
+                        'answer' => 'Bitte öffne zuerst einen Pool, damit ich eine Zusammenfassung erstellen kann.',
+                        'fallback' => false,
+                    ]);
+                }
+                $result = $this->noteGeneratorService->generateSummary($this->userId, $poolId, $courseId);
+                return new DataResponse([
+                    'answer' => 'Ich habe eine Zusammenfassung für dieses Thema erstellt und in deiner Nextcloud gespeichert.',
+                    'action' => 'file_created',
+                    'path'   => $result['path'],
+                    'fallback' => false,
+                ]);
+            }
+
+            if (
+                str_contains($lowerMessage, 'lernplan') ||
+                str_contains($lowerMessage, 'wochenplan') ||
+                str_contains($lowerMessage, 'learning plan')
+            ) {
+                $result = $this->lernplanService->generateWeeklyPlan($this->userId, $courseId);
+                return new DataResponse([
+                    'answer' => 'Ich habe deinen wöchentlichen Lernplan erstellt und in deiner Nextcloud gespeichert.',
+                    'action' => 'file_created',
+                    'path'   => $result['path'],
+                    'fallback' => false,
+                ]);
+            }
+
+            if (str_contains($lowerMessage, 'fortschritt')) {
+                $result = $this->lernplanService->generateFortschritt($this->userId, $courseId);
+                return new DataResponse([
+                    'answer' => 'Ich habe dein Fortschritts-Dashboard aktualisiert und in deiner Nextcloud gespeichert.',
+                    'action' => 'file_created',
+                    'path'   => $result['path'],
+                    'fallback' => false,
+                ]);
+            }
+
+            // Fallback — should not reach here if isFileIntent() is accurate
+            return new DataResponse([
+                'answer' => 'Ich konnte keinen passenden Datei-Typ für deine Anfrage bestimmen.',
+                'fallback' => false,
+            ]);
+        } catch (\Throwable $e) {
+            return new DataResponse([
+                'answer' => 'Die Datei konnte leider nicht erstellt werden. Bitte versuche es später erneut.',
+                'fallback' => false,
+            ]);
+        }
     }
 }
