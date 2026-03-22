@@ -568,7 +568,11 @@ Plans:
   3. A+ Kampagne "Der erste Tag" ist spielbar: ein Helpdesk-Techniker richtet am ersten Arbeitstag Hardware ein, diagnostiziert Boot-Probleme und baut ein Netzwerk auf — Gemini agiert als verwirrter Endanwender
   4. Linux+ Kampagne "Server Down" ist spielbar: der Spieler muss einen abgestuerzten Linux-Server per CLI recovern — Skill-Checks pruefen grep, systemctl, mount und Dateisystem-Reparatur
   5. CySA+ Kampagne "Zero Day" ist spielbar: der Spieler analysiert IOCs, erstellt YARA-Regeln und koordiniert die Incident Response — Gemini spielt den APT-Akteur der sich lateral bewegt
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 42-01-PLAN.md — Colonial Pipeline + Equifax campaigns (SEC-04, SEC-05)
+- [ ] 42-02-PLAN.md — A+ "Der erste Tag" + Linux+ "Server Down" + CySA+ "Zero Day" (KURS-01, KURS-02, KURS-03)
 
 ### Phase 43: AI Security Content
 **Goal**: Spieler koennen ihr Wissen ueber KI-Sicherheit und Prompt Injection testen — sowohl als Fragen-Pool fuer alle Lernmodi als auch als spielbare Meta-Kampagne
@@ -628,6 +632,6 @@ Phases 40-43 execute sequentially: 40 -> 41 -> 42 -> 43. Phase 40 (Engine) must 
 | 38. Chunk-Suche | v4.1 | 1/1 | Complete | 2026-03-22 |
 | 39. Multi-Source-RAG | v4.1 | 1/1 | Complete | 2026-03-22 |
 | 40. KI-Erzaehler Engine | 2/2 | Complete    | 2026-03-22 | - |
-| 41. Security-Kampagnen Teil 1 | 2/2 | Complete   | 2026-03-22 | - |
+| 41. Security-Kampagnen Teil 1 | 2/2 | Complete    | 2026-03-22 | - |
 | 42. Security-Kampagnen Teil 2 + Kurs-Kampagnen | v6.1 | 0/TBD | Not started | - |
 | 43. AI Security Content | v6.1 | 0/TBD | Not started | - |

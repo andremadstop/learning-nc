@@ -1,0 +1,678 @@
+{
+  "campaign_id": "a_plus_erster_tag",
+  "title": "Der erste Tag \u2014 Willkommen in der IT",
+  "description": "Dein erster Tag als IT-Support in einem mittelstaendischen Unternehmen. Fuenf Tickets gleichzeitig, ein wuetender Vertriebsleiter, eine Praktikantin mit Kaffee-Laptop und ein Serverraum der ueberhitzt. Alles was schiefgehen kann geht schief \u2014 aber mit Humor und Lerneffekt.",
+  "duration_minutes": 50,
+  "difficulty": "beginner",
+  "focus_areas": [
+    "a_plus"
+  ],
+  "character_recommendations": [
+    "helpdesk",
+    "sysadmin"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Leichtfuessige Buerokomoedie mit technischem Tiefgang. Alles was schiefgehen kann geht schief \u2014 aber mit Humor und Lerneffekt.",
+  "gemini_role": "dau",
+  "characters": {
+    "architect": {
+      "name": "Alex \"The Architect\" Neumann",
+      "avatar": "\ud83d\udc68\u200d\ud83d\udcbb",
+      "skill_bonus_pools": [
+        "routing",
+        "vlan",
+        "subnetting",
+        "topology"
+      ],
+      "skill_penalty_pools": [
+        "hardware",
+        "a_plus",
+        "troubleshooting"
+      ],
+      "portrait_emoji": "\ud83c\udfd7\ufe0f"
+    },
+    "security": {
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "\ud83d\udc69\u200d\ud83d\udcbb",
+      "skill_bonus_pools": [
+        "security",
+        "incident_response",
+        "forensics"
+      ],
+      "skill_penalty_pools": [
+        "hardware",
+        "a_plus"
+      ],
+      "portrait_emoji": "\ud83d\udee1\ufe0f"
+    },
+    "sysadmin": {
+      "name": "Kai \"Root\" Lindstr\u00f6m",
+      "avatar": "\ud83e\uddd4",
+      "skill_bonus_pools": [
+        "linux",
+        "dns",
+        "troubleshooting",
+        "hardware"
+      ],
+      "skill_penalty_pools": [
+        "wireless",
+        "wlan"
+      ],
+      "portrait_emoji": "\ud83d\udda5\ufe0f"
+    },
+    "helpdesk": {
+      "name": "Mia \"Helpdesk\" Torres",
+      "avatar": "\ud83d\udc69\u200d\ud83c\udfa7",
+      "skill_bonus_pools": [
+        "troubleshooting",
+        "hardware",
+        "a_plus"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response",
+        "forensics"
+      ],
+      "portrait_emoji": "\ud83c\udfa7"
+    }
+  },
+  "npcs": {
+    "hr_mueller": {
+      "name": "Frau Mueller",
+      "role": "HR-Leiterin",
+      "avatar": "\ud83d\udccb"
+    },
+    "user_schmidt": {
+      "name": "Herr Schmidt",
+      "role": "Vertriebsleiter",
+      "avatar": "\ud83d\ude24"
+    },
+    "user_lisa": {
+      "name": "Lisa",
+      "role": "Praktikantin",
+      "avatar": "\ud83d\ude0a"
+    },
+    "it_chef": {
+      "name": "Thomas \"The Admin\" Braun",
+      "role": "IT-Leiter",
+      "avatar": "\ud83d\udda5\ufe0f"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_erste_stunde",
+      "title": "Die erste Stunde",
+      "narrative": "Montagmorgen, 8 Uhr. Dein erster Tag in der IT-Abteilung der Firma TechnoTrade GmbH. Du hast kaum deinen Kaffee abgestellt, da steht Frau Mueller von HR in der Tuer: 'Gut dass Sie da sind! Wir haben fuenf offene Tickets und niemanden der sich kuemmert.' Auf deinem Bildschirm blinken die Tickets. Herr Schmidt, der Vertriebsleiter, steht bereits im Flur und gestikuliert wild: 'Mein Laptop geht nicht! Ich habe in einer Stunde eine Praesentation beim Kunden!' Sein Laptop-Akku ist leer \u2014 und er hat das falsche Netzteil eingesteckt. Hinter ihm fluestert Lisa, die Praktikantin: 'Ich hab was kaputt gemacht... bitte sag es niemand.'",
+      "image": "scene_office.png",
+      "animation_in": "mission_start",
+      "npc_dialog": {
+        "speaker": "hr_mueller",
+        "text": "Willkommen! Hier sind die fuenf Tickets. Herr Schmidt hat Prioritaet \u2014 der hat gleich Kundentermin. Und Lisa braucht auch Hilfe, die traut sich nur nicht zu fragen. Thomas ist heute auf einer Messe, der kommt erst um 14 Uhr.",
+        "portrait": "npc_mueller"
+      },
+      "choices": [
+        {
+          "id": "c1_priorisieren",
+          "text": "Tickets nach Dringlichkeit priorisieren \u2014 systematisch abarbeiten statt Panik",
+          "icon": "\ud83d\udccb",
+          "skill_check": {
+            "pool_filter": "troubleshooting",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "s2_hardware_chaos",
+          "partial_scene": "s2_hardware_chaos",
+          "fail_scene": "s1_fail_overwhelmed"
+        },
+        {
+          "id": "c1_schmidt_zuerst",
+          "text": "Herrn Schmidt zuerst helfen \u2014 er ist am lautesten und hat Kundentermin",
+          "icon": "\ud83d\udcbb",
+          "skill_check": {
+            "pool_filter": "hardware",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "s2_hardware_chaos",
+          "partial_scene": "s2_hardware_chaos",
+          "fail_scene": "s1_fail_overwhelmed"
+        },
+        {
+          "id": "c1_bestandsaufnahme",
+          "text": "Systematische Bestandsaufnahme aller gemeldeten Probleme \u2014 erst verstehen, dann handeln",
+          "icon": "\ud83d\udd0d",
+          "skill_check": {
+            "pool_filter": "a_plus",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "s2_hardware_chaos",
+          "partial_scene": "s2_hardware_chaos",
+          "fail_scene": "s1_fail_overwhelmed"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s1_fail_overwhelmed",
+      "title": "Ueberfordert",
+      "narrative": "Du hast versucht alles gleichzeitig zu machen. Herrn Schmidts Laptop liegt halb zerlegt auf dem Tisch, Lisa wartet immer noch, und drei weitere Tickets sind unberuehrt. Thomas ruft von der Messe an: 'Hey, Neuer! Tief durchatmen. Eins nach dem anderen. Welches Problem hat den groessten Business Impact? Fang damit an.' Ein einfacher Rat, aber genau der richtige.",
+      "image": "scene_office.png",
+      "npc_dialog": {
+        "speaker": "it_chef",
+        "text": "Erster Tag, ich weiss. Aber hier ist der wichtigste Tipp den ich dir geben kann: Priorisiere nach Business Impact, nicht nach Lautstaerke. Der der am lautesten schreit hat nicht immer das dringendste Problem.",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c1_fail_neustart",
+          "text": "Tief durchatmen, Tickets sortieren und von vorne anfangen",
+          "icon": "\u26a1",
+          "skill_check": {
+            "pool_filter": "troubleshooting",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {}
+          },
+          "success_scene": "s2_hardware_chaos",
+          "partial_scene": "s2_hardware_chaos",
+          "fail_scene": "s2_hardware_chaos"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_hardware_chaos",
+      "title": "Hardware-Chaos",
+      "narrative": "Neuer Arbeitsplatz fuer die Marketing-Abteilung einrichten. Der Monitor zeigt kein Bild \u2014 das DisplayPort-Kabel steckt, aber der Monitor steht auf HDMI-Eingang. Der Netzwerkdrucker im Flur druckt nicht: Treiber fehlt, die IP-Adresse ist falsch konfiguriert, und im Papierfach steckt ein Stau. Zwei USB-Maeuse werden nicht erkannt \u2014 USB-Port scheint tot. Mitten in der Arbeit kommt Herr Schmidt zurueck: 'Jetzt geht mein E-Mail auch nicht! Outlook sagt irgendwas von Zertifikat!' Er haelt dir sein Handy hin mit einem Screenshot einer SSL-Warnung.",
+      "image": "scene_hardware.png",
+      "npc_dialog": {
+        "speaker": "user_schmidt",
+        "text": "Also ich hab da auf 'Trotzdem fortfahren' geklickt und jetzt kommt gar nichts mehr. Und der Becherhalter an meinem PC ist auch abgebrochen! Was fuer ein Laden ist das hier?",
+        "portrait": "npc_schmidt"
+      },
+      "choices": [
+        {
+          "id": "c2_display",
+          "text": "Display-Anschluesse und Eingangssignal pruefen \u2014 DisplayPort, HDMI, Input Source",
+          "icon": "\ud83d\udcba",
+          "skill_check": {
+            "pool_filter": "hardware",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "s3_netzwerk_probleme",
+          "partial_scene": "s3_netzwerk_probleme",
+          "fail_scene": "s3_netzwerk_probleme"
+        },
+        {
+          "id": "c2_drucker",
+          "text": "Netzwerkdrucker-Setup: IP-Konfiguration, Treiber installieren, Testseite drucken",
+          "icon": "\ud83d\udda8\ufe0f",
+          "skill_check": {
+            "pool_filter": "a_plus",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "s3_netzwerk_probleme",
+          "partial_scene": "s3_netzwerk_probleme",
+          "fail_scene": "s3_netzwerk_probleme"
+        },
+        {
+          "id": "c2_diagnose",
+          "text": "Systematische Hardware-Diagnose: POST-Codes, Device Manager, USB-Controller pruefen",
+          "icon": "\ud83d\udd27",
+          "skill_check": {
+            "pool_filter": "a_plus",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "s3_netzwerk_probleme",
+          "partial_scene": "s3_netzwerk_probleme",
+          "fail_scene": "s3_netzwerk_probleme"
+        }
+      ],
+      "simulation": {
+        "type": "cli_analysis",
+        "pbq_question_id": null,
+        "description": "Device Manager Analyse: USB-Controller Status pruefen, unbekannte Geraete identifizieren, Treiber-Konflikte erkennen"
+      }
+    },
+    {
+      "id": "s3_netzwerk_probleme",
+      "title": "Netzwerk-Probleme",
+      "narrative": "Halbzeit. Du hast gerade die Hardware-Probleme im Griff, da meldet sich die ganze zweite Etage: 'WLAN geht nicht!' Ein Blick in den Serverraum zeigt das Problem: Am Netzwerk-Switch blinken alle LEDs wie ein Weihnachtsbaum. Ein Kollege aus dem Vertrieb hat 'aufgeraeumt' und dabei ein Patchkabel von Port 1 in Port 2 gesteckt \u2014 ein klassischer Switching Loop. Das Spanning Tree Protocol hat kapituliert. Thomas schickt per Chat: 'Switching Loop, oder? Klassiker am ersten Tag. Tipp: Schau dir die MAC-Adresstabelle an.'",
+      "image": "scene_serverroom.png",
+      "npc_dialog": {
+        "speaker": "it_chef",
+        "text": "Switching Loop \u2014 das passiert hier alle paar Monate. Jemand raeumt Kabel um und ploetzlich geht nichts mehr. Finde den Loop, zieh das Kabel, dann kommt STP wieder hoch. Und dann reden wir ueber Port Security.",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c3_topologie",
+          "text": "Netzwerk-Topologie nachverfolgen \u2014 STP-Status pruefen und Loop identifizieren",
+          "icon": "\ud83c\udf10",
+          "skill_check": {
+            "pool_filter": "troubleshooting",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": -1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
+            }
+          },
+          "success_scene": "s4_software_krise",
+          "partial_scene": "s4_software_krise",
+          "fail_scene": "s4_software_krise"
+        },
+        {
+          "id": "c3_ports",
+          "text": "Switch-Ports einzeln testen \u2014 systematisch den fehlerhaften Port finden",
+          "icon": "\ud83d\udd0c",
+          "skill_check": {
+            "pool_filter": "hardware",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "s4_software_krise",
+          "partial_scene": "s4_software_krise",
+          "fail_scene": "s4_software_krise"
+        },
+        {
+          "id": "c3_patchpanel",
+          "text": "Kabelverbindungen im Patchpanel pruefen und dokumentieren",
+          "icon": "\ud83d\udcdd",
+          "skill_check": {
+            "pool_filter": "a_plus",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": -1
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "s4_software_krise",
+          "partial_scene": "s4_software_krise",
+          "fail_scene": "s4_software_krise"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s4_software_krise",
+      "title": "Software-Krise",
+      "narrative": "Lisa traut sich endlich zu dir: 'Ich hab Kaffee ueber meinen Laptop geschuettet. Die Tastatur reagiert nur noch teilweise und der Bildschirm flackert.' Der Laptop ist ein Firmenlaptop mit wichtigen Kundendaten. Gleichzeitig melden drei Kollegen: Nach dem letzten Windows-Update startet ihr Rechner nicht mehr \u2014 Bluescreen bei jedem Boot. Der Fehlercode: INACCESSIBLE_BOOT_DEVICE. Thomas kommentiert trocken: 'Update-Dienstag. Mein Lieblings-Wochentag.'",
+      "image": "scene_laptop_repair.png",
+      "npc_dialog": {
+        "speaker": "user_lisa",
+        "text": "Es tut mir so leid! Ich hatte den Kaffee direkt neben dem Laptop stehen und dann ist die Tasse umgekippt. Kann man die Daten noch retten? Da sind die ganzen Kundenpraesentation vom letzten Monat drauf...",
+        "portrait": "npc_lisa"
+      },
+      "choices": [
+        {
+          "id": "c4_lisa_laptop",
+          "text": "Lisas Laptop: Externe Tastatur anschliessen, Daten auf USB sichern, dann Geraetetausch",
+          "icon": "\ud83d\udcbe",
+          "skill_check": {
+            "pool_filter": "hardware",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "s5_feierabend",
+          "partial_scene": "s5_feierabend",
+          "fail_scene": "s5_feierabend"
+        },
+        {
+          "id": "c4_bluescreen",
+          "text": "Blue Screen analysieren: Safe Mode booten, Treiber-Rollback, Windows Recovery",
+          "icon": "\ud83d\udcdf",
+          "skill_check": {
+            "pool_filter": "troubleshooting",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "s5_feierabend",
+          "partial_scene": "s5_feierabend",
+          "fail_scene": "s5_feierabend"
+        },
+        {
+          "id": "c4_clean_install",
+          "text": "Standard-Vorgehensweise: Backup erstellen, Clean Install mit Firmen-Image",
+          "icon": "\ud83d\udcbf",
+          "skill_check": {
+            "pool_filter": "a_plus",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "s5_feierabend",
+          "partial_scene": "s5_feierabend",
+          "fail_scene": "s5_feierabend"
+        }
+      ],
+      "simulation": {
+        "type": "cli_analysis",
+        "pbq_question_id": null,
+        "description": "Windows Recovery Environment: Bootreihenfolge im BIOS aendern, Safe Mode starten, sfc /scannow und DISM ausfuehren"
+      }
+    },
+    {
+      "id": "s5_feierabend",
+      "title": "Feierabend?",
+      "narrative": "Es ist 17 Uhr, dein erster Tag neigt sich dem Ende. Aber zwei letzte Probleme warten: Die Klimaanlage im Serverraum ist ausgefallen. Die Temperatur steigt auf 35 Grad. Thomas hat remote Zugriff auf das Monitoring: 'Die CPUs throttlen schon. Wenn das so weitergeht, fahren die Server in 30 Minuten automatisch runter.' Ausserdem: Das naechtliche Backup laeuft seit 3 Tagen nicht \u2014 keiner hat es bemerkt. Der Backup-Job haengt mit der Meldung 'Target volume full'.",
+      "image": "scene_serverroom.png",
+      "npc_dialog": {
+        "speaker": "it_chef",
+        "text": "Okay, das ist jetzt ernst. Serverraum-Temperatur und Backup sind kritisch. Wenn die Server ueberhitzen UND wir kein aktuelles Backup haben, wird Montag sehr ungemuetlich. Du schaffst das \u2014 priorisiere richtig.",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c5_temperatur",
+          "text": "Temperatur-Management: Nicht-kritische Server herunterfahren, Tueren oeffnen, Notfall-Luefter organisieren",
+          "icon": "\ud83c\udf21\ufe0f",
+          "skill_check": {
+            "pool_filter": "hardware",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c5_backup",
+          "text": "Backup-Problem diagnostizieren: Speicherplatz freigeben, manuelles Backup starten",
+          "icon": "\ud83d\udcbe",
+          "skill_check": {
+            "pool_filter": "a_plus",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c5_beides",
+          "text": "Beides parallel: Temperatur stabilisieren, Backup reparieren und alles dokumentieren",
+          "icon": "\ud83d\udccb",
+          "skill_check": {
+            "pool_filter": "a_plus",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": -1
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "epilog_success",
+      "title": "IT-Held des ersten Tages",
+      "narrative": "18:30 Uhr. Alle Tickets geschlossen. Die Klimaanlage-Firma ist informiert und kommt morgen frueh. Server laufen stabil mit reduzierter Last. Backup laeuft wieder. Thomas kommt von der Messe zurueck und ist beeindruckt: 'Nicht schlecht fuer den ersten Tag. Die meisten Neuen schaffen nicht mal die Haelfte.' Herr Schmidt klopft dir auf die Schulter: 'Danke fuer den Laptop \u2014 die Praesentation lief super.' Sogar Lisa strahlt: 'Meine Daten sind gerettet!' Frau Mueller laechelt: 'Ich glaube, Sie passen gut ins Team.'",
+      "image": "scene_victory.png",
+      "animation_in": "campaign_complete",
+      "npc_dialog": {
+        "speaker": "it_chef",
+        "text": "Weisst du was? Fuer den ersten Tag war das richtig stark. Du hast priorisiert, systematisch gearbeitet und unter Druck einen kuehlen Kopf behalten. Morgen zeig ich dir den Rest. Willkommen im Team.",
+        "portrait": "npc_thomas"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "success"
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Ueberlebt",
+      "narrative": "18 Uhr. Nicht alles ist perfekt: Ein Ticket ist noch offen, das Backup laeuft erst morgen frueh durch, und die Klimaanlage braucht professionelle Hilfe. Aber die wichtigsten Probleme sind geloest. Thomas nickt anerkennend: 'Besser als mein erster Tag. Da hab ich den Fileserver geloescht.' Lisa hat ihre Daten zurueck. Herr Schmidt meckert noch ein bisschen, aber sein Laptop laeuft. Frau Mueller sagt: 'Morgen wird einfacher. Versprochen.' Du bist dir nicht sicher ob du ihr glaubst.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "hr_mueller",
+        "text": "Nicht perfekt, aber solide. Die wichtigsten Probleme sind geloest und niemand hat Daten verloren. Das ist mehr als ich erwartet habe. Morgen frueh gibt es erstmal Kaffee \u2014 das haben Sie sich verdient.",
+        "portrait": "npc_mueller"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "partial"
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Lehrreiches Chaos",
+      "narrative": "18 Uhr. Ehrlich gesagt: Es haette besser laufen koennen. Einige Tickets sind noch offen, das Backup-Problem ist nur halb geloest, und die Serverraum-Temperatur ist immer noch kritisch. Aber du hast verdammt viel gelernt. Thomas setzt sich neben dich: 'Hey, Kopf hoch. Mein erster Tag war schlimmer \u2014 ich hab aus Versehen die Telefonanlage abgeschaltet. Das Wichtigste: Du hast nichts unwiederbringlich zerstoert. Morgen machen wir eine Post-Mortem-Analyse und dann wird alles besser.' Lisa bringt dir einen Kaffee. Herr Schmidt meckert noch, aber das macht er immer.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "it_chef",
+        "text": "Jeder erste Tag ist chaotisch. Wichtig ist was du daraus lernst. Morgen setzen wir uns zusammen und gehen jeden Punkt durch. Du wirst sehen \u2014 in einer Woche lachst du darueber.",
+        "portrait": "npc_thomas"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "fail"
+    }
+  ],
+  "epilog": {
+    "success": {
+      "narrative": "Alle Tickets geschlossen. Server stabil. Backup laeuft. Thomas ist beeindruckt, Herr Schmidt bedankt sich, Lisa strahlt. Willkommen im Team \u2014 Festanstellung gesichert.",
+      "image": "scene_victory.png",
+      "animation": "campaign_complete"
+    },
+    "partial": {
+      "narrative": "Nicht perfekt, aber die wichtigsten Probleme sind geloest. Thomas nickt anerkennend: 'Besser als mein erster Tag.' Morgen wird einfacher. Vielleicht.",
+      "image": "scene_partial_victory.png"
+    },
+    "fail": {
+      "narrative": "Chaotisch, aber lehrreich. Nichts unwiederbringlich zerstoert. Thomas wird morgen bei der Post-Mortem-Analyse helfen. In einer Woche lachst du darueber.",
+      "image": "scene_partial_victory.png"
+    }
+  }
+}
