@@ -24,6 +24,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setCreatedAt(int $createdAt)
  * @method int getUpdatedAt()
  * @method void setUpdatedAt(int $updatedAt)
+ * @method string|null getChunkingStatus()
+ * @method void setChunkingStatus(?string $chunkingStatus)
  */
 class CourseDocument extends Entity {
     protected $courseId;
@@ -34,6 +36,7 @@ class CourseDocument extends Entity {
     protected $extractedText;
     protected $errorMessage;
     protected $fileSize;
+    protected $chunkingStatus;
     protected $createdAt;
     protected $updatedAt;
 
@@ -56,6 +59,7 @@ class CourseDocument extends Entity {
             'extracted_text' => $this->extractedText,
             'error_message' => $this->errorMessage,
             'file_size' => $this->fileSize,
+            'chunking_status' => $this->chunkingStatus,
             'created_at' => $this->createdAt,
             'updated_at' => $this->updatedAt,
         ];
