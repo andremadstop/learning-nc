@@ -15,9 +15,9 @@
 
 ### Security-Kampagnen
 
-- [ ] **SEC-01**: Kampagne "SolarWinds — Die Supply Chain" (APT, Backdoor Detection, 5 Szenen)
-- [ ] **SEC-02**: Kampagne "WannaCry Weekend" (Ransomware, Patch Management, 5 Szenen)
-- [ ] **SEC-03**: Kampagne "Log4Shell — Der Zero Day" (Dependency Vulnerabilities, 5 Szenen)
+- [x] **SEC-01**: Kampagne "SolarWinds — Die Supply Chain" (APT, Backdoor Detection, 5 Szenen)
+- [x] **SEC-02**: Kampagne "WannaCry Weekend" (Ransomware, Patch Management, 5 Szenen)
+- [x] **SEC-03**: Kampagne "Log4Shell — Der Zero Day" (Dependency Vulnerabilities, 5 Szenen)
 - [ ] **SEC-04**: Kampagne "Colonial Pipeline" (Critical Infrastructure, CEO-Entscheidung, 5 Szenen)
 - [ ] **SEC-05**: Kampagne "Equifax — Die vergessene Patch-Nacht" (Vulnerability Management, 5 Szenen)
 
@@ -58,9 +58,9 @@
 | NARR-03 | Phase 40 | Complete |
 | NARR-04 | Phase 40 | Complete |
 | NARR-05 | Phase 40 | Complete |
-| SEC-01 | Phase 41 | Pending |
-| SEC-02 | Phase 41 | Pending |
-| SEC-03 | Phase 41 | Pending |
+| SEC-01 | Phase 41 | Complete |
+| SEC-02 | Phase 41 | Complete |
+| SEC-03 | Phase 41 | Complete |
 | SEC-04 | Phase 42 | Pending |
 | SEC-05 | Phase 42 | Pending |
 | KURS-01 | Phase 42 | Pending |

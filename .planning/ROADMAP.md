@@ -521,7 +521,7 @@ Plans:
 **Milestone Goal:** Abenteuer-Modus wird lebendiger durch KI-Erzaehler (Gemini generiert dynamische Entscheidungen, bewertet Freetext-Aktionen, spielt Gegner/DAU) und bekommt Kampagnen fuer alle Kursthemen — 5 echte Security-Incidents, 3 Cross-Disziplin-Kampagnen und eine Meta-Kampagne ueber AI Security.
 
 - [x] **Phase 40: KI-Erzaehler Engine** - narrator_mode global, dynamische Choices, Freetext-Bewertung, Gegner/DAU-Rollen (completed 2026-03-22)
-- [ ] **Phase 41: Security-Kampagnen Teil 1** - SolarWinds, WannaCry, Log4Shell (3 Kampagnen mit KI-Erzaehler)
+- [x] **Phase 41: Security-Kampagnen Teil 1** - SolarWinds, WannaCry, Log4Shell (3 Kampagnen mit KI-Erzaehler) (completed 2026-03-22)
 - [ ] **Phase 42: Security-Kampagnen Teil 2 + Kurs-Kampagnen** - Colonial Pipeline, Equifax, A+ "Der erste Tag", Linux+ "Server Down", CySA+ "Zero Day"
 - [ ] **Phase 43: AI Security Content** - Prompt Injection Fragen-Pool + Meta-Kampagne "Der KI-Fluesterer"
 
@@ -552,7 +552,11 @@ Plans:
   2. Kampagne "WannaCry Weekend" ist spielbar: der Spieler muss in 5 Szenen unter Zeitdruck Systeme patchen, infizierte Rechner isolieren und die Ausbreitung stoppen — dynamische Choices reflektieren den eskalierenden Druck (z.B. "CEO ruft an und will Updates")
   3. Kampagne "Log4Shell — Der Zero Day" ist spielbar: der Spieler analysiert in 5 Szenen vulnerable Dependency-Trees, testet Exploit-Vektoren und deployt Mitigations — Skill-Checks pruefen echtes Wissen ueber Dependency Management und CVE-Analyse
   4. Alle drei Kampagnen enthalten fachlich korrekte Details zum realen Incident (Zeitlinie, betroffene Systeme, tatsaechliche Angriffsvektoren) — kein erfundener Inhalt bei den technischen Fakten
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 41-01-PLAN.md — SolarWinds Supply Chain campaign (APT, backdoor detection, incident response)
+- [ ] 41-02-PLAN.md — WannaCry + Log4Shell campaigns (ransomware, dependency vulnerabilities)
 
 ### Phase 42: Security-Kampagnen Teil 2 + Kurs-Kampagnen
 **Goal**: Zwei weitere Security-Kampagnen und drei Cross-Disziplin-Kampagnen sind spielbar — das Kampagnen-Angebot deckt Network+, Security+, CySA+, A+ und Linux+ ab
@@ -623,7 +627,7 @@ Phases 40-43 execute sequentially: 40 -> 41 -> 42 -> 43. Phase 40 (Engine) must 
 | 37. Chunking-Pipeline | v4.1 | 1/1 | Complete | 2026-03-22 |
 | 38. Chunk-Suche | v4.1 | 1/1 | Complete | 2026-03-22 |
 | 39. Multi-Source-RAG | v4.1 | 1/1 | Complete | 2026-03-22 |
-| 40. KI-Erzaehler Engine | 2/2 | Complete   | 2026-03-22 | - |
-| 41. Security-Kampagnen Teil 1 | v6.1 | 0/TBD | Not started | - |
+| 40. KI-Erzaehler Engine | 2/2 | Complete    | 2026-03-22 | - |
+| 41. Security-Kampagnen Teil 1 | 2/2 | Complete   | 2026-03-22 | - |
 | 42. Security-Kampagnen Teil 2 + Kurs-Kampagnen | v6.1 | 0/TBD | Not started | - |
 | 43. AI Security Content | v6.1 | 0/TBD | Not started | - |
