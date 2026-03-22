@@ -23,9 +23,9 @@
 
 ### Kurs-Kampagnen
 
-- [ ] **KURS-01**: A+ Kampagne "Der erste Tag" (Hardware-Setup, Troubleshooting, 5 Szenen)
-- [ ] **KURS-02**: Linux+ Kampagne "Server Down" (Linux-Administration, Recovery, 5 Szenen)
-- [ ] **KURS-03**: CySA+ Kampagne "Zero Day" (Threat Analysis, Incident Response, 5 Szenen)
+- [x] **KURS-01**: A+ Kampagne "Der erste Tag" (Hardware-Setup, Troubleshooting, 5 Szenen)
+- [x] **KURS-02**: Linux+ Kampagne "Server Down" (Linux-Administration, Recovery, 5 Szenen)
+- [x] **KURS-03**: CySA+ Kampagne "Zero Day" (Threat Analysis, Incident Response, 5 Szenen)
 
 ### AI Security Content
 
@@ -63,9 +63,9 @@
 | SEC-03 | Phase 41 | Complete |
 | SEC-04 | Phase 42 | Pending |
 | SEC-05 | Phase 42 | Pending |
-| KURS-01 | Phase 42 | Pending |
-| KURS-02 | Phase 42 | Pending |
-| KURS-03 | Phase 42 | Pending |
+| KURS-01 | Phase 42 | Complete |
+| KURS-02 | Phase 42 | Complete |
+| KURS-03 | Phase 42 | Complete |
 | AISEC-01 | Phase 43 | Pending |
 | AISEC-02 | Phase 43 | Pending |
 

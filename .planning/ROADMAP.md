@@ -633,5 +633,5 @@ Phases 40-43 execute sequentially: 40 -> 41 -> 42 -> 43. Phase 40 (Engine) must 
 | 39. Multi-Source-RAG | v4.1 | 1/1 | Complete | 2026-03-22 |
 | 40. KI-Erzaehler Engine | 2/2 | Complete    | 2026-03-22 | - |
 | 41. Security-Kampagnen Teil 1 | 2/2 | Complete    | 2026-03-22 | - |
-| 42. Security-Kampagnen Teil 2 + Kurs-Kampagnen | v6.1 | 0/TBD | Not started | - |
+| 42. Security-Kampagnen Teil 2 + Kurs-Kampagnen | 1/2 | In Progress|  | - |
 | 43. AI Security Content | v6.1 | 0/TBD | Not started | - |
