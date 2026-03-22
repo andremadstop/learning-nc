@@ -1,0 +1,686 @@
+{
+  "campaign_id": "solarwinds",
+  "title": "SolarWinds \u2014 Die Supply Chain",
+  "description": "Dezember 2020. Ein vertrauenswuerdiges Software-Update enthaelt eine Hintertuer. 18.000 Organisationen betroffen. Der Angreifer war monatelang unsichtbar \u2014 und vielleicht ist er es immer noch.",
+  "duration_minutes": 75,
+  "difficulty": "expert",
+  "focus_areas": [
+    "security_plus",
+    "cysa_plus"
+  ],
+  "character_recommendations": [
+    "security",
+    "sysadmin"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Geopolitischer Cyber-Thriller. Langsame Enthuellung, Misstrauen gegenueber allem was vertraut erscheint. Der Angreifer war monatelang unsichtbar \u2014 und vielleicht ist er es immer noch.",
+  "gemini_role": "attacker",
+  "characters": {
+    "architect": {
+      "name": "Alex \"The Architect\" Neumann",
+      "avatar": "\ud83d\udc68\u200d\ud83d\udcbb",
+      "skill_bonus_pools": [
+        "routing",
+        "vlan",
+        "subnetting",
+        "topology"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response",
+        "forensics"
+      ],
+      "portrait_emoji": "\ud83c\udfd7\ufe0f"
+    },
+    "security": {
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "\ud83d\udc69\u200d\ud83d\udcbb",
+      "skill_bonus_pools": [
+        "security",
+        "incident_response",
+        "forensics",
+        "cysa_plus"
+      ],
+      "skill_penalty_pools": [
+        "routing",
+        "vlan"
+      ],
+      "portrait_emoji": "\ud83d\udee1\ufe0f"
+    },
+    "sysadmin": {
+      "name": "Kai \"Root\" Lindstr\u00f6m",
+      "avatar": "\ud83e\uddd4",
+      "skill_bonus_pools": [
+        "linux",
+        "dns",
+        "troubleshooting",
+        "forensics",
+        "incident_response"
+      ],
+      "skill_penalty_pools": [
+        "wireless",
+        "wlan"
+      ],
+      "portrait_emoji": "\ud83d\udda5\ufe0f"
+    },
+    "helpdesk": {
+      "name": "Mia \"Helpdesk\" Torres",
+      "avatar": "\ud83d\udc69\u200d\ud83c\udfa7",
+      "skill_bonus_pools": [
+        "troubleshooting",
+        "hardware",
+        "a_plus"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response",
+        "forensics",
+        "cysa_plus"
+      ],
+      "portrait_emoji": "\ud83c\udfa7"
+    }
+  },
+  "npcs": {
+    "dr_vasquez": {
+      "name": "Dr. Elena Vasquez",
+      "role": "CISO",
+      "avatar": "\ud83d\udc69\u200d\ud83d\udcbc"
+    },
+    "marcus_chen": {
+      "name": "Marcus Chen",
+      "role": "SOC-Analyst",
+      "avatar": "\ud83d\udd0d"
+    },
+    "tom_vendor": {
+      "name": "Tom Harrington",
+      "role": "SolarWinds Support",
+      "avatar": "\ud83d\udcde"
+    },
+    "agent_park": {
+      "name": "Agent Kim Park",
+      "role": "CISA Liaison",
+      "avatar": "\ud83c\udff4"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_anomale_beacons",
+      "title": "Anomale Beacon-Aktivitaet",
+      "narrative": "Dezember 2020. Dein SOC-Dashboard zeigt eine ungewoehnliche Anomalie: Der Orion-Server sendet periodische DNS-Anfragen an avsvmcloud[.]com. Die Beacons folgen einem praezisen Timing-Muster \u2014 alle 12 bis 14 Stunden. Das passt zu keiner bekannten Malware-Signatur. Marcus Chen, dein SOC-Analyst, hat die Anomalie zuerst bemerkt: 'Das laeuft schon seit Wochen. Ich dachte erst an Telemetrie, aber die Domain ist nicht auf SolarWinds registriert.' Gleichzeitig erreichen euch Geruechte: FireEye wurde gehackt. Ihre Red-Team-Tools gestohlen. Die groesste Security-Firma der Welt \u2014 kompromittiert. Ein Zufall?",
+      "image": "scene_siem_dashboard.png",
+      "animation_in": "mission_start",
+      "npc_dialog": {
+        "speaker": "marcus_chen",
+        "text": "Chef, diese DNS-Queries an avsvmcloud.com \u2014 das ist kein normales Verhalten. Der Orion-Server sollte nicht mit unbekannten Domains kommunizieren. Und das Timing ist zu regelmaessig fuer Telemetrie.",
+        "portrait": "npc_marcus"
+      },
+      "choices": [
+        {
+          "id": "c1_dns_traffic",
+          "text": "DNS-Traffic analysieren \u2014 alle Queries zu avsvmcloud.com isolieren und Muster untersuchen",
+          "icon": "\ud83c\udf10",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s2_vergifteter_update",
+          "partial_scene": "s2_vergifteter_update",
+          "fail_scene": "s1_fail_slow_response"
+        },
+        {
+          "id": "c1_orion_integrity",
+          "text": "Integritaet des Orion-Updates pruefen \u2014 Hashes und digitale Signaturen verifizieren",
+          "icon": "\ud83d\udd0d",
+          "skill_check": {
+            "pool_filter": "forensics",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s2_vergifteter_update",
+          "partial_scene": "s2_vergifteter_update",
+          "fail_scene": "s1_fail_slow_response"
+        },
+        {
+          "id": "c1_escalate_ciso",
+          "text": "Sofort an CISO Dr. Vasquez eskalieren \u2014 das koennte gross sein",
+          "icon": "\u26a0\ufe0f",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
+            }
+          },
+          "success_scene": "s2_vergifteter_update",
+          "partial_scene": "s2_vergifteter_update",
+          "fail_scene": "s1_fail_slow_response"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s1_fail_slow_response",
+      "title": "Verzoegerte Reaktion",
+      "narrative": "Waehrend du noch ueberlegst, sendet der Orion-Server weitere Beacons. Marcus wird nervoes: 'Die Queries werden haeufiger. Irgendwas hat sich geaendert.' FireEye hat inzwischen oeffentlich bestaetigt: Ihre Red-Team-Tools wurden gestohlen. Und sie deuten auf einen Supply-Chain-Angriff hin. Die Zeit draengt.",
+      "image": "scene_siem_dashboard.png",
+      "npc_dialog": {
+        "speaker": "marcus_chen",
+        "text": "FireEye hat gerade veroeffentlicht dass sie gehackt wurden. Supply-Chain-Angriff ueber ein Software-Update. Wir muessen JETZT unsere Updates pruefen.",
+        "portrait": "npc_marcus"
+      },
+      "choices": [
+        {
+          "id": "c1_fail_investigate",
+          "text": "Sofort alle kuerzlich installierten Software-Updates pruefen",
+          "icon": "\u26a1",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {}
+          },
+          "success_scene": "s2_vergifteter_update",
+          "partial_scene": "s2_vergifteter_update",
+          "fail_scene": "s2_vergifteter_update"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_vergifteter_update",
+      "title": "Der vergiftete Update",
+      "narrative": "Die Analyse ist erschuetternd. Die DLL SolarWinds.Orion.Core.BusinessLayer.dll in den Orion-Versionen 2019.4 HF 5 bis 2020.2.1 wurde manipuliert. Der Schadcode \u2014 Codename SUNBURST \u2014 wurde direkt in den Build-Prozess eingeschleust. Die DLL ist digital signiert von SolarWinds. Der Angreifer hat nicht das Update kompromittiert. Er hat die Build-Pipeline kompromittiert. Rund 18.000 Organisationen weltweit haben dieses Update heruntergeladen. Regierungsbehoerden, Fortune-500-Unternehmen, kritische Infrastruktur. Tom von SolarWinds Support ist zunaechst skeptisch: 'Unsere Updates durchlaufen strenge Qualitaetskontrollen.' Aber die Beweise sind eindeutig.",
+      "image": "scene_forensics_terminal.png",
+      "npc_dialog": {
+        "speaker": "tom_vendor",
+        "text": "Das kann nicht sein. Unsere Build-Pipeline hat mehrere Sicherheitsebenen. Wir... moment, lassen Sie mich intern nachfragen. Bitte nichts veroeffentlichen bis wir das verifiziert haben.",
+        "portrait": "npc_tom"
+      },
+      "choices": [
+        {
+          "id": "c2_analyze_dll",
+          "text": "Die kompromittierte DLL reverse-engineeren \u2014 SUNBURST-Backdoor dokumentieren",
+          "icon": "\ud83e\uddec",
+          "skill_check": {
+            "pool_filter": "forensics",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 2
+              }
+            }
+          },
+          "success_scene": "s3_lateral_movement",
+          "partial_scene": "s3_lateral_movement",
+          "fail_scene": "s3_lateral_movement"
+        },
+        {
+          "id": "c2_check_systems",
+          "text": "Alle Systeme mit Orion identifizieren \u2014 Blast Radius bestimmen",
+          "icon": "\ud83d\udcca",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s3_lateral_movement",
+          "partial_scene": "s3_lateral_movement",
+          "fail_scene": "s3_lateral_movement"
+        },
+        {
+          "id": "c2_contact_solarwinds",
+          "text": "SolarWinds offiziell kontaktieren \u2014 koordinierte Offenlegung einleiten",
+          "icon": "\ud83d\udcde",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
+            }
+          },
+          "success_scene": "s3_lateral_movement",
+          "partial_scene": "s3_lateral_movement",
+          "fail_scene": "s3_lateral_movement"
+        }
+      ],
+      "simulation": {
+        "type": "cli_analysis",
+        "pbq_question_id": null,
+        "description": "Hash-Verifikation der SolarWinds DLLs und Vergleich mit bekannten SUNBURST-Indicators of Compromise"
+      }
+    },
+    {
+      "id": "s3_lateral_movement",
+      "title": "Lateral Movement",
+      "narrative": "Die Lage eskaliert. SUNBURST war nur die Eintrittskarte. Der Angreifer hat sich ueber Monate hinweg lateral im Netzwerk bewegt. Die Technik ist raffiniert: SAML-Token-Faelschung \u2014 sogenannte 'Golden SAML'-Angriffe \u2014 erm\u00f6glichten Zugriff auf Azure AD und Cloud-Ressourcen ohne Passwoerter zu benoetigen. Der Angreifer hat sich eigene Service Principals angelegt, Zertifikate generiert und E-Mail-Postfaecher von Fuehrungskraeften gelesen. Marcus findet Spuren in den Azure AD Audit-Logs: Unbekannte App-Registrierungen, Token-Erneuerungen zu ungewoehnlichen Zeiten, Zugriffe aus IP-Bereichen die keinem bekannten Standort zugeordnet sind.",
+      "image": "scene_firewall_config.png",
+      "npc_dialog": {
+        "speaker": "dr_vasquez",
+        "text": "Golden SAML? Das bedeutet der Angreifer kann sich als jeder Benutzer ausgeben \u2014 ohne Passwort, ohne MFA. Wie lange hat er das schon? Und wer hat mitgelesen? Der Vorstand will Antworten. Jetzt.",
+        "portrait": "npc_vasquez"
+      },
+      "choices": [
+        {
+          "id": "c3_revoke_saml",
+          "text": "Alle SAML-Tokens sofort widerrufen und Signing-Zertifikate rotieren",
+          "icon": "\ud83d\udd12",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 2
+              }
+            }
+          },
+          "success_scene": "s4_attribution",
+          "partial_scene": "s4_attribution",
+          "fail_scene": "s4_attribution"
+        },
+        {
+          "id": "c3_isolate_orion",
+          "text": "Orion-Server komplett isolieren und Netzwerksegmentierung verschaerfen",
+          "icon": "\ud83d\udeab",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s4_attribution",
+          "partial_scene": "s4_attribution",
+          "fail_scene": "s4_attribution"
+        },
+        {
+          "id": "c3_azure_audit",
+          "text": "Azure AD Audit-Logs forensisch auswerten \u2014 jeden unauthorisierten Zugriff dokumentieren",
+          "icon": "\ud83d\udcdd",
+          "skill_check": {
+            "pool_filter": "forensics",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 2
+              }
+            }
+          },
+          "success_scene": "s4_attribution",
+          "partial_scene": "s4_attribution",
+          "fail_scene": "s4_attribution"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s4_attribution",
+      "title": "Die Attribution",
+      "narrative": "Die Beweise verdichten sich. Die TTPs (Tactics, Techniques, and Procedures) passen zu APT29, auch bekannt als 'Cozy Bear' \u2014 eine Einheit des russischen Auslandsgeheimdienstes SVR. Die Kill Chain ist klar: Kompromittierung der SolarWinds Build-Pipeline, SUNBURST als Initial Access ueber signierte Updates, TEARDROP und RAINDROP als Second-Stage-Malware, Golden SAML fuer Persistent Access zu Cloud-Ressourcen. Agent Park von der CISA meldet sich: 'Wir koordinieren die nationale Reaktion. US-Finanzministerium, Commerce Department, Homeland Security \u2014 alle betroffen. Das ist der groesste Supply-Chain-Angriff in der Geschichte.' Du musst jetzt den vollstaendigen Kill Chain dokumentieren und die Offenlegung vorbereiten.",
+      "image": "scene_forensics_terminal.png",
+      "npc_dialog": {
+        "speaker": "agent_park",
+        "text": "CISA-Directive 21-01 ist raus: Alle Bundesbehoerden muessen SolarWinds Orion sofort abschalten. Wir brauchen Ihren vollstaendigen Kill-Chain-Bericht fuer die nationale Lagebeurteilung. Koennen Sie das bis heute Abend liefern?",
+        "portrait": "npc_park"
+      },
+      "choices": [
+        {
+          "id": "c4_kill_chain",
+          "text": "Vollstaendige Kill-Chain-Dokumentation erstellen \u2014 von Initial Access bis Exfiltration",
+          "icon": "\ud83d\udccb",
+          "skill_check": {
+            "pool_filter": "cysa_plus",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 2
+              }
+            }
+          },
+          "success_scene": "s5_supply_chain_hardening",
+          "partial_scene": "s5_supply_chain_hardening",
+          "fail_scene": "s5_supply_chain_hardening"
+        },
+        {
+          "id": "c4_coordinate_cisa",
+          "text": "Mit CISA und FBI koordinieren \u2014 Indicators of Compromise teilen",
+          "icon": "\ud83c\udff4",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s5_supply_chain_hardening",
+          "partial_scene": "s5_supply_chain_hardening",
+          "fail_scene": "s5_supply_chain_hardening"
+        },
+        {
+          "id": "c4_internal_first",
+          "text": "Erst interne Offenlegung an Vorstand \u2014 dann externe Koordination",
+          "icon": "\ud83c\udfe2",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
+            }
+          },
+          "success_scene": "s5_supply_chain_hardening",
+          "partial_scene": "s5_supply_chain_hardening",
+          "fail_scene": "s5_supply_chain_hardening"
+        }
+      ],
+      "simulation": {
+        "type": "cli_analysis",
+        "pbq_question_id": null,
+        "description": "MITRE ATT&CK Mapping: Ordne die identifizierten TTPs den korrekten ATT&CK-Techniken zu (T1195.002 Supply Chain, T1606.002 SAML Tokens, T1078 Valid Accounts)"
+      }
+    },
+    {
+      "id": "s5_supply_chain_hardening",
+      "title": "Supply Chain Hardening",
+      "narrative": "Der Angriff ist eingedaemmt. Jetzt beginnt die eigentliche Arbeit: Sicherstellen dass so etwas nie wieder passiert. Der SolarWinds-Incident hat die gesamte Branche wachgeruettelt. Praesident Biden wird Executive Order 14028 unterzeichnen \u2014 'Improving the Nation's Cybersecurity'. Die Kernforderungen: Software Bill of Materials (SBOM) fuer alle Regierungssoftware, Code-Signing-Verifizierung, Build-Pipeline-Security, Zero-Trust-Architektur. Dr. Vasquez will einen umfassenden Plan: 'Wir muessen unsere gesamte Software-Lieferkette ueberdenken. Von der Beschaffung bis zum Deployment.'",
+      "image": "scene_security_hardening.png",
+      "npc_dialog": {
+        "speaker": "dr_vasquez",
+        "text": "Der Vorstand hat grünes Licht gegeben. Budget ist genehmigt. Aber ich will einen Plan der nicht nur Checkboxen abarbeitet, sondern unsere Denkweise aendert. Zero Trust ist keine Technologie \u2014 es ist eine Philosophie.",
+        "portrait": "npc_vasquez"
+      },
+      "choices": [
+        {
+          "id": "c5_zero_trust",
+          "text": "Zero-Trust-Architektur implementieren \u2014 kein implizites Vertrauen, alles verifizieren",
+          "icon": "\ud83c\udfd7\ufe0f",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c5_vendor_audit",
+          "text": "Vendor-Security-Audit-Programm aufbauen \u2014 alle Lieferanten bewerten und ueberwachen",
+          "icon": "\ud83d\udcdd",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c5_full_program",
+          "text": "Komplettpaket: Zero Trust + SBOM-Pflicht + Vendor Audits + Build Verification",
+          "icon": "\ud83d\udee1\ufe0f",
+          "skill_check": {
+            "pool_filter": "cysa_plus",
+            "question_count": 5,
+            "pass_threshold": 4,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        }
+      ],
+      "simulation": {
+        "type": "network_device_placement",
+        "pbq_question_id": null,
+        "description": "Zero-Trust-Architektur: Platziere SDP Controller, Identity Provider, Micro-Segmentation Gateways und SBOM-Validation-Service im Netzwerk"
+      }
+    },
+    {
+      "id": "epilog_success",
+      "title": "Vorbildliche Incident Response",
+      "narrative": "Drei Monate spaeter. Dein Kill-Chain-Bericht wird als Referenzdokument von der CISA zitiert. Die Organisation hat Zero Trust implementiert, SBOM-Pflicht fuer alle Lieferanten eingefuehrt und eine eigene Supply-Chain-Security-Taskforce gegruendet. Dr. Vasquez praesentiert auf der RSA Conference: 'Der SolarWinds-Incident hat uns gezeigt dass Vertrauen verifiziert werden muss \u2014 immer und ueberall.' Agent Park ruft an: 'Ihre IoCs haben drei weiteren Organisationen geholfen den Angriff fruehzeitig zu erkennen. Gute Arbeit.' Marcus grinst: 'Naechstes Mal will ich aber der sein der den Beacon zuerst findet.'",
+      "image": "scene_victory.png",
+      "animation_in": "campaign_complete",
+      "npc_dialog": {
+        "speaker": "dr_vasquez",
+        "text": "Sie haben nicht nur einen der groessten Cyberangriffe der Geschichte abgewehrt \u2014 Sie haben unsere gesamte Security-Strategie transformiert. Zero Trust ist jetzt keine Folie mehr, sondern Realitaet.",
+        "portrait": "npc_vasquez"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "success"
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Bedrohung eingedaemmt",
+      "narrative": "Der Angriff wurde gestoppt, aber nicht ohne Narben. Einige Systeme mussten komplett neu aufgesetzt werden. Die Azure AD Audit-Logs zeigen dass der Angreifer mindestens drei Monate Zugriff auf E-Mail-Postfaecher hatte. Was er gelesen hat ist unklar. Dr. Vasquez ist erleichtert aber nachdenklich: 'Wir haetten frueher reagieren muessen. Die Beacons liefen wochenlang.' Agent Park empfiehlt ein umfassendes Supply-Chain-Audit. Die Arbeit beginnt gerade erst. Die Lehre ist klar: Software-Updates sind kein automatischer Vertrauensbeweis. Jede Komponente muss verifiziert werden.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "agent_park",
+        "text": "Der Angriff ist eingedaemmt. Aber APT29 ist geduldig. Stellen Sie sicher dass alle Hintertüren geschlossen sind \u2014 auch die die Sie noch nicht gefunden haben. Ich empfehle ein vollstaendiges Supply-Chain-Audit.",
+        "portrait": "npc_park"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "partial"
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Lehren aus dem Schatten",
+      "narrative": "Die Reaktion kam zu spaet. Der Angreifer hatte mehr Zeit als noetig und konnte zusaetzliche Daten exfiltrieren. Aber die Dokumentation ist lueckenlos: Jeder Schritt des Angriffs, jede versaeumte Gelegenheit fruehzeitig zu handeln, ist festgehalten. Der Post-Mortem-Bericht wird zum Pflichtlektuere fuer jedes Teammitglied. Dr. Vasquez: 'Das darf nie wieder passieren.' Executive Order 14028 gibt den Rahmen vor. Die Organisation verpflichtet sich zu SBOM, Zero Trust und regelmaessigen Supply-Chain-Audits. Aus dem groessten Supply-Chain-Angriff der Geschichte werden konkrete Massnahmen.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "marcus_chen",
+        "text": "Die Beacons liefen seit Maerz 2020. Neun Monate. Wir haetten sie frueher finden koennen \u2014 wenn wir gewusst haetten wonach wir suchen. Das aendert sich jetzt.",
+        "portrait": "npc_marcus"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "fail"
+    }
+  ],
+  "epilog": {
+    "success": {
+      "narrative": "Drei Monate spaeter. Dein Kill-Chain-Bericht wird als Referenz zitiert. Zero Trust implementiert, SBOM-Pflicht eingefuehrt, Supply-Chain-Security-Taskforce gegruendet. Die CISA bedankt sich: 'Ihre IoCs haben drei weiteren Organisationen geholfen.'",
+      "image": "scene_victory.png",
+      "animation": "campaign_complete"
+    },
+    "partial": {
+      "narrative": "Der Angriff ist eingedaemmt. Einige Systeme mussten neu aufgesetzt werden. Die Lehre ist klar: Vertrauen muss verifiziert werden. Agent Park empfiehlt ein umfassendes Supply-Chain-Audit. Die Arbeit beginnt gerade erst.",
+      "image": "scene_partial_victory.png"
+    },
+    "fail": {
+      "narrative": "Die Reaktion kam spaet, aber der Post-Mortem-Bericht ist lueckenlos. Executive Order 14028 gibt den Rahmen vor: SBOM, Zero Trust, Supply-Chain-Audits. Aus dem groessten Supply-Chain-Angriff der Geschichte werden konkrete Massnahmen.",
+      "image": "scene_partial_victory.png"
+    }
+  }
+}
