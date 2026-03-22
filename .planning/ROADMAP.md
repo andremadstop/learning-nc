@@ -9,7 +9,8 @@
 - ✅ **v3.2 VirtuProf KI-Assistent** — Phases 17-21 (shipped 2026-03-21)
 - ✅ **v4.0 Persönlicher Lernbot** — Phases 22-27 (shipped 2026-03-21)
 - ✅ **v5.0 Oldschool (Brettspiel-Modi)** — Phases 28-31 (shipped 2026-03-21)
-- 🚧 **v6.0 Abenteuer (Story-RPG)** — Phases 32-35 (in progress)
+- ✅ **v6.0 Abenteuer (Story-RPG)** — Phases 32-35 (shipped 2026-03-22)
+- 🚧 **v4.1 RAG Stufe 2** — Phases 36-39 (in progress)
 
 ## Phases
 
@@ -379,16 +380,8 @@ Plans:
 
 </details>
 
-### 🚧 v6.0 Abenteuer (Story-RPG) (In Progress)
-
-**Milestone Goal:** Story-getriebenes Lern-RPG "Network Down" — Schüler spielen IT-Techniker die Netzwerk-Probleme lösen. 5 Kampagnen, 4 Charakter-Klassen, verzweigende Story, Skill-Checks aus echten Prüfungsfragen, Simulationen am Ende.
-
-- [x] **Phase 32: Story-Engine Backend** - StoryEngine.php Service, Kampagnen-JSON-Loader, Skill-Check-Logik, verzweigender Story-Baum, persistenter Fortschritt (completed 2026-03-22)
-- [x] **Phase 33: RPG-Frontend + Tab** - AbenteuerMode.vue Szenen-Renderer, Skill-Check UI, Kampagnen-Übersicht, "Abenteuer" Tab, Koop-Modus (completed 2026-03-21)
-- [x] **Phase 34: Charakter-System + Simulation-Integration** - 4 Klassen, klassenbasierte Schwierigkeitsmodifikation, NPC-Portraits, PBQ-Endszenen, Story-Epilog (completed 2026-03-22)
-- [ ] **Phase 35: Kampagnen-Content** - 5 vollständige Kampagnen als JSON (25 Szenen gesamt, alle Entscheidungszweige, Skill-Check-Mappings)
-
-## Phase Details
+<details>
+<summary>✅ v6.0 Abenteuer (Story-RPG) (Phases 32-35) - SHIPPED 2026-03-22</summary>
 
 ### Phase 32: Story-Engine Backend
 **Goal**: StoryEngine.php lädt und verwaltet Kampagnen vollständig — Szenen, Entscheidungen, Skill-Checks und Fortschritt funktionieren serverseitig und sind bereit für das Frontend
@@ -438,10 +431,70 @@ Plans:
   5. Ein neuer Spieler kann Kampagne 1 von Anfang bis Ende durchspielen ohne auf einen 404-Fehler, eine leere Szene oder eine fehlende Frage zu treffen
 **Plans**: TBD
 
+</details>
+
+### 🚧 v4.1 RAG Stufe 2 (In Progress)
+
+**Milestone Goal:** VirtuProf beantwortet Fragen basierend auf echtem Kursmaterial (PDF/Markdown) -- nicht nur Pool-Fragen. Dokument-Upload, Text-Extraktion, Chunking-Pipeline, Keyword-Suche und Multi-Source-RAG mit Quellenangaben.
+
+- [ ] **Phase 36: Dokument-Upload + Extraktion** - Dozent laedt PDF/Markdown hoch, System extrahiert Text, Status-Uebersicht
+- [ ] **Phase 37: Chunking-Pipeline** - Text wird in ~500-Token-Chunks mit Kapitel-Tags zerlegt, als BackgroundJob verarbeitet und in DB gespeichert
+- [ ] **Phase 38: Chunk-Suche** - Keyword-basierte Suche findet relevante Chunks zur User-Frage, sortiert nach Relevanz
+- [ ] **Phase 39: Multi-Source-RAG** - RagContextService buendelt alle Quellen mit Prioritaeten, VirtuProf zeigt Quellenangaben
+
+## Phase Details
+
+### Phase 36: Dokument-Upload + Extraktion
+**Goal**: Dozent kann Kursmaterialien (PDF/Markdown) in Nextcloud hochladen und das System extrahiert automatisch den Text -- die Rohtext-Basis fuer alle weiteren RAG-Schritte
+**Depends on**: Phase 35 (v6.0 shipped)
+**Requirements**: DOCS-01, DOCS-02, DOCS-03, DOCS-04
+**Success Criteria** (what must be TRUE):
+  1. Ein Dozent kann in den Kurs-Einstellungen einen NC-Ordner als Materialordner verknuepfen und dort PDF/Markdown-Dateien ablegen
+  2. Nach dem Upload einer PDF-Datei extrahiert das System via pdftotext den Volltext und speichert ihn -- der Dozent sieht in der Materialliste den Status "Extrahiert"
+  3. Nach dem Upload einer Markdown-Datei wird der Rohtext direkt uebernommen -- gleicher Status "Extrahiert" in der Materialliste
+  4. Der Dozent sieht eine Materialliste pro Kurs mit Dateiname, Dateityp, Extraktions-Status (Hochgeladen / Extrahiert / Fehler) und Upload-Datum
+**Plans**: 2 plans
+
+Plans:
+- [ ] 36-01-PLAN.md — Backend: DB Migration, DocumentService, DocumentController, Routes
+- [ ] 36-02-PLAN.md — Frontend: CourseMaterials.vue + CourseDetail Integration + Verification
+
+### Phase 37: Chunking-Pipeline
+**Goal**: Extrahierter Text wird automatisch in durchsuchbare Chunks zerlegt und in der Datenbank gespeichert -- bereit fuer die Suche, ohne den Dozenten zu blockieren
+**Depends on**: Phase 36 (Extraktion muss Rohtext liefern)
+**Requirements**: CHUNK-01, CHUNK-02, CHUNK-03, CHUNK-04
+**Success Criteria** (what must be TRUE):
+  1. Nach der Extraktion eines Dokuments startet automatisch ein BackgroundJob der den Text in ~500-Token-Chunks zerlegt -- der Dozent muss nichts manuell ausloesen
+  2. Chunks die aus einem Abschnitt mit Heading stammen erhalten den Kapitel-Tag aus der naechsten uebergeordneten Ueberschrift (z.B. "Kapitel 6: Routing")
+  3. In der Tabelle `learning_rag_chunks` existieren nach dem Job Eintraege mit course_id, chapter, text, source_file und created_at -- pruefbar per SQL
+  4. Ein 50-seitiges PDF wird innerhalb von 60 Sekunden vollstaendig gechunkt -- der Job blockiert keine anderen NC-BackgroundJobs
+**Plans**: TBD
+
+### Phase 38: Chunk-Suche
+**Goal**: Das System kann zu einer User-Frage die relevantesten Chunks finden -- die Bruecke zwischen Frage und Kursmaterial
+**Depends on**: Phase 37 (Chunks muessen in der DB existieren)
+**Requirements**: SEARCH-01, SEARCH-02
+**Success Criteria** (what must be TRUE):
+  1. Eine User-Frage "Was ist OSPF?" liefert Chunks zurueck die das Wort "OSPF" enthalten -- kein leeres Ergebnis wenn das Kursmaterial OSPF behandelt
+  2. Die Ergebnisse sind nach Relevanz sortiert: Chunks mit mehr Keyword-Treffern und passendem Kapitel-Match stehen weiter oben
+  3. Die Suche liefert maximal 5 Chunks zurueck um das Gemini Context-Window nicht zu sprengen
+**Plans**: TBD
+
+### Phase 39: Multi-Source-RAG
+**Goal**: VirtuProf nutzt alle verfuegbaren Wissensquellen mit intelligenter Priorisierung und zeigt dem User woher die Antwort stammt
+**Depends on**: Phase 38 (Chunk-Suche muss relevante Dokument-Chunks liefern)
+**Requirements**: RAG-01, RAG-02, RAG-03, RAG-04
+**Success Criteria** (what must be TRUE):
+  1. VirtuProf beantwortet eine Frage zu einem Thema das nur im Kursmaterial (nicht in Pool-Fragen) vorkommt -- die Antwort ist inhaltlich korrekt basierend auf dem hochgeladenen PDF
+  2. Jede VirtuProf-Antwort die auf Kursmaterial basiert enthaelt eine Quellenangabe im Format "[Quelle: Dateiname, Kap. X]" am Ende der Antwort
+  3. VirtuProf bezieht User-Schwaechen und vergangene Erklaerungen ein: bei einer Frage zu einem Thema das der User wiederholt falsch beantwortet hat, referenziert die Antwort fruehere Fehlversuche
+  4. Das Context-Fenster wird priorisiert gefuellt: zuerst relevante Dokument-Chunks, dann passende Pool-Fragen, dann Chat-History -- bei Ueberlauf werden niedrig-priorisierte Quellen abgeschnitten statt einen API-Fehler zu verursachen
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases 32-35 execute sequentially: 32 → 33 → 34 → 35. Each phase depends on the previous.
+Phases 36-39 execute sequentially: 36 → 37 → 38 → 39. Each phase depends on the previous.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -472,11 +525,15 @@ Phases 32-35 execute sequentially: 32 → 33 → 34 → 35. Each phase depends o
 | 25. Lernplan + Fortschritt | v4.0 | 1/1 | Complete | 2026-03-21 |
 | 26. Chat-Memory | v4.0 | 1/1 | Complete | 2026-03-21 |
 | 27. Auto-Trigger | v4.0 | 1/1 | Complete | 2026-03-21 |
-| 28. Brettspiel-Backend | v5.0 | Complete | 2026-03-21 | 2026-03-21 |
-| 29. Oldschool-Menü | v5.0 | Complete | 2026-03-21 | 2026-03-21 |
-| 30. Lernwürfel | v5.0 | Complete | 2026-03-21 | 2026-03-21 |
-| 31. Wissensturm | v5.0 | Complete | 2026-03-21 | 2026-03-21 |
-| 32. Story-Engine Backend | v6.0 | Complete    | 2026-03-22 | 2026-03-21 |
-| 33. RPG-Frontend + Tab | 1/1 | Complete    | 2026-03-22 | - |
-| 34. Charakter-System + Simulation-Integration | 1/1 | Complete   | 2026-03-22 | - |
-| 35. Kampagnen-Content | v6.0 | 0/? | Not started | - |
+| 28. Brettspiel-Backend | v5.0 | Complete | Complete | 2026-03-21 |
+| 29. Oldschool-Menü | v5.0 | Complete | Complete | 2026-03-21 |
+| 30. Lernwürfel | v5.0 | 1/1 | Complete | 2026-03-21 |
+| 31. Wissensturm | v5.0 | Complete | Complete | 2026-03-21 |
+| 32. Story-Engine Backend | v6.0 | Complete | Complete | 2026-03-22 |
+| 33. RPG-Frontend + Tab | v6.0 | Complete | Complete | 2026-03-22 |
+| 34. Charakter-System | v6.0 | Complete | Complete | 2026-03-22 |
+| 35. Kampagnen-Content | v6.0 | Complete | Complete | 2026-03-22 |
+| 36. Dokument-Upload + Extraktion | v4.1 | 0/? | Not started | - |
+| 37. Chunking-Pipeline | v4.1 | 0/? | Not started | - |
+| 38. Chunk-Suche | v4.1 | 0/? | Not started | - |
+| 39. Multi-Source-RAG | v4.1 | 0/? | Not started | - |
