@@ -1,5 +1,87 @@
 /* Learning App - Global Styles */
 
+/* ========== TOKEN LAYER ========== */
+:root {
+  /* Primary */
+  --lnc-primary: var(--color-primary-element, #0082C9);
+
+  /* Ink & Surface */
+  --lnc-ink: #0F172A;
+  --lnc-surface-dark: #0D1117;
+  --lnc-surface-light: #F4F7FB;
+  --lnc-surface: #161B22;
+
+  /* Accent Colors */
+  --lnc-cyan: #58A6FF;
+  --lnc-amber: #D29922;
+  --lnc-magenta: #FF4FD8;
+  --lnc-danger: #F85149;
+  --lnc-green: #00E676;
+
+  /* Text */
+  --lnc-text-light: #C9D1D9;
+  --lnc-text-dark: #1A1A2E;
+  --lnc-text-muted: #8B949E;
+
+  /* Borders */
+  --lnc-border-soft: rgba(255, 255, 255, 0.12);
+  --lnc-border-hard: #30363D;
+
+  /* Shadows */
+  --lnc-shadow-card: 0 12px 32px rgba(15, 23, 42, 0.18);
+  --lnc-shadow-glow: 0 0 0 1px rgba(88, 166, 255, 0.18), 0 0 24px rgba(88, 166, 255, 0.16);
+
+  /* Radius */
+  --lnc-radius-sm: 8px;
+  --lnc-radius-md: 14px;
+  --lnc-radius-lg: 20px;
+
+  /* Spacing */
+  --lnc-space-xs: 4px;
+  --lnc-space-sm: 8px;
+  --lnc-space-md: 12px;
+  --lnc-space-lg: 16px;
+  --lnc-space-xl: 24px;
+
+  /* Light mode defaults */
+  --lnc-bg: var(--lnc-surface-light);
+  --lnc-text: var(--lnc-text-dark);
+  --lnc-text-secondary: #6B7280;
+  --lnc-border: #E5E7EB;
+  --lnc-panel: #FFFFFF;
+}
+
+/* ========== DARK MODE SCOPE ========== */
+[data-lnc-theme="dark"] {
+  --lnc-bg: var(--lnc-surface-dark);
+  --lnc-text: var(--lnc-text-light);
+  --lnc-text-secondary: var(--lnc-text-muted);
+  --lnc-border: var(--lnc-border-soft);
+  --lnc-panel: var(--lnc-surface);
+  background: var(--lnc-bg);
+  color: var(--lnc-text);
+}
+
+/* ========== LIGHT MODE SCOPE ========== */
+[data-lnc-theme="light"] {
+  --lnc-bg: var(--lnc-surface-light);
+  --lnc-text: var(--lnc-text-dark);
+  --lnc-text-secondary: #6B7280;
+  --lnc-border: #E5E7EB;
+  --lnc-panel: #FFFFFF;
+  background: var(--lnc-bg);
+  color: var(--lnc-text);
+}
+
+/* ========== MOTION UTILITIES ========== */
+@keyframes lnc-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lnc-snap-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes lnc-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+.lnc-fade { animation: lnc-fade 300ms ease-out both; }
+.lnc-snap-in { animation: lnc-snap-in 200ms ease-out both; }
+.lnc-pulse { animation: lnc-pulse 2s ease-in-out infinite; }
+
 /* ========== LAYOUT ========== */
 #app-learning {
   max-width: 1400px;
