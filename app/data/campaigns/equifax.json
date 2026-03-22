@@ -1,0 +1,682 @@
+{
+  "campaign_id": "equifax",
+  "title": "Equifax \u2014 Die vergessene Patch-Nacht",
+  "description": "Maerz 2017. Apache Struts CVE-2017-5638, CVSS 10.0, Remote Code Execution. Der Patch ist verfuegbar. Aber niemand spielt ihn ein. 76 Tage lang haben Angreifer freien Zugang zu 147 Millionen Datensaetzen \u2014 Namen, Sozialversicherungsnummern, Kreditkartendaten. Die teuerste Patch-Nacht der Geschichte.",
+  "duration_minutes": 70,
+  "difficulty": "expert",
+  "focus_areas": [
+    "security_plus",
+    "cysa_plus"
+  ],
+  "character_recommendations": [
+    "security",
+    "sysadmin"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Schleichender Horror. Die Luecke war bekannt, der Patch verfuegbar \u2014 aber niemand hat ihn eingespielt. 76 Tage lang hatten die Angreifer freien Zugang zu 147 Millionen Datensaetzen.",
+  "gemini_role": "attacker",
+  "characters": {
+    "architect": {
+      "name": "Alex \"The Architect\" Neumann",
+      "avatar": "\ud83d\udc68\u200d\ud83d\udcbb",
+      "skill_bonus_pools": [
+        "routing",
+        "vlan",
+        "subnetting",
+        "topology"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response",
+        "forensics"
+      ],
+      "portrait_emoji": "\ud83c\udfd7\ufe0f"
+    },
+    "security": {
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "\ud83d\udc69\u200d\ud83d\udcbb",
+      "skill_bonus_pools": [
+        "security",
+        "incident_response",
+        "forensics",
+        "cysa_plus"
+      ],
+      "skill_penalty_pools": [
+        "routing",
+        "vlan"
+      ],
+      "portrait_emoji": "\ud83d\udee1\ufe0f"
+    },
+    "sysadmin": {
+      "name": "Kai \"Root\" Lindstr\u00f6m",
+      "avatar": "\ud83e\uddd4",
+      "skill_bonus_pools": [
+        "linux",
+        "dns",
+        "troubleshooting",
+        "forensics",
+        "incident_response"
+      ],
+      "skill_penalty_pools": [
+        "wireless",
+        "wlan"
+      ],
+      "portrait_emoji": "\ud83d\udda5\ufe0f"
+    },
+    "helpdesk": {
+      "name": "Mia \"Helpdesk\" Torres",
+      "avatar": "\ud83d\udc69\u200d\ud83c\udfa7",
+      "skill_bonus_pools": [
+        "troubleshooting",
+        "hardware",
+        "a_plus"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response",
+        "forensics",
+        "cysa_plus"
+      ],
+      "portrait_emoji": "\ud83c\udfa7"
+    }
+  },
+  "npcs": {
+    "cso_sullivan": {
+      "name": "Susan Sullivan",
+      "role": "CSO",
+      "avatar": "\ud83d\udc69\u200d\ud83d\udcbc"
+    },
+    "patch_admin": {
+      "name": "Derek \"Patches\" Nguyen",
+      "role": "Patch Management Lead",
+      "avatar": "\ud83d\udd27"
+    },
+    "legal_counsel": {
+      "name": "Dr. Rebecca Hartmann",
+      "role": "General Counsel",
+      "avatar": "\u2696\ufe0f"
+    },
+    "attacker_voice": {
+      "name": "Unbekannt",
+      "role": "Stimme im Log",
+      "avatar": "\ud83d\udc64"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_struts_advisory",
+      "title": "CVE-2017-5638 \u2014 Das Advisory",
+      "narrative": "7. Maerz 2017. Apache veroeffentlicht ein Security Advisory: CVE-2017-5638. Apache Struts 2, Remote Code Execution, CVSS Score 10.0 \u2014 das Maximum. Ein Angreifer kann ueber einen manipulierten Content-Type-Header beliebigen Code auf dem Server ausfuehren. Kein Login noetig, kein Exploit-Chain noetig \u2014 ein einziger HTTP-Request genuegt. Der Patch ist verfuegbar. Euer Dispute Resolution Portal \u2014 das System ueber das Verbraucher Fehler in ihren Kreditberichten melden \u2014 laeuft auf Apache Struts. Internet-facing, mit direktem Zugriff auf die Kerndatenbank. Derek 'Patches' Nguyen, der Patch Management Lead, ist ueberfordert: 'Wir haben ueber 200 Systeme mit Struts. Das Patchen dauert Wochen. Wir brauchen Tests, Change Requests, Downtime-Windows...' Die Uhr tickt. Exploit-Code ist bereits auf GitHub.",
+      "image": "scene_siem_dashboard.png",
+      "animation_in": "mission_start",
+      "npc_dialog": {
+        "speaker": "patch_admin",
+        "text": "CVSS 10.0, ich weiss. Aber wir koennen nicht einfach 200 Systeme patchen ohne zu testen. Das Dispute Portal allein hat 47 Abhaengigkeiten. Wenn ich da was kaputtmache, ruft der CEO an. Gebt mir zwei Wochen fuer einen Plan.",
+        "portrait": "npc_patches"
+      },
+      "choices": [
+        {
+          "id": "c1_patch_now",
+          "text": "Sofort-Patch fuer alle internet-facing Systeme \u2014 Dispute Portal hat hoechste Prioritaet",
+          "icon": "\ud83d\udee1\ufe0f",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s2_unbemerkt",
+          "partial_scene": "s2_unbemerkt",
+          "fail_scene": "s1_fail_delayed_patch"
+        },
+        {
+          "id": "c1_waf_first",
+          "text": "WAF-Regel als Sofortmassnahme gegen CVE-2017-5638 + strukturierten Patch-Plan erstellen",
+          "icon": "\ud83d\udee1\ufe0f",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s2_unbemerkt",
+          "partial_scene": "s2_unbemerkt",
+          "fail_scene": "s1_fail_delayed_patch"
+        },
+        {
+          "id": "c1_vuln_scan",
+          "text": "Vulnerability Scan ueber alle Systeme \u2014 erstmal das volle Ausmass verstehen",
+          "icon": "\ud83d\udd0d",
+          "skill_check": {
+            "pool_filter": "forensics",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s2_unbemerkt",
+          "partial_scene": "s2_unbemerkt",
+          "fail_scene": "s1_fail_delayed_patch"
+        }
+      ],
+      "simulation": {
+        "type": "cli_analysis",
+        "pbq_question_id": null,
+        "description": "Vulnerability Assessment: Identifiziere alle Apache-Struts-Instanzen im Netzwerk, pruefe Versionsstaende und bewerte Expositionsrisiko (internet-facing vs. intern)"
+      }
+    },
+    {
+      "id": "s1_fail_delayed_patch",
+      "title": "Der Patch liegt im Test",
+      "narrative": "Wochen vergehen. Der Patch fuer CVE-2017-5638 liegt im Testsystem. Change Advisory Board hat den naechsten Slot in drei Wochen. Das Dispute Portal ist weiterhin ungepatcht und internet-facing. Derek sagt: 'Wir folgen dem Prozess.' Aber der Prozess wurde nicht fuer CVSS 10.0 designed. In den Logs des Dispute Portals tauchen merkwuerdige HTTP-Requests auf \u2014 manipulierte Content-Type-Header. Die Exploit-Versuche haben begonnen. Vielleicht sind sie auch schon erfolgreich.",
+      "image": "scene_siem_dashboard.png",
+      "npc_dialog": {
+        "speaker": "cso_sullivan",
+        "text": "Derek, ich habe vor Wochen gesagt: Patchen. Sofort. Warum laeuft das Portal immer noch auf der alten Version? Wenn da jemand drin ist... Das geht auf unsere Kappe. Auf meine Kappe.",
+        "portrait": "npc_sullivan"
+      },
+      "choices": [
+        {
+          "id": "c1_fail_emergency_patch",
+          "text": "Emergency Patch jetzt \u2014 Change-Prozess ueberspringen, Risiko akzeptieren",
+          "icon": "\u26a1",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {}
+          },
+          "success_scene": "s2_unbemerkt",
+          "partial_scene": "s2_unbemerkt",
+          "fail_scene": "s2_unbemerkt"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_unbemerkt",
+      "title": "76 Tage im Dunkeln",
+      "narrative": "Mai 2017. Ein routinemaessiger Netzwerk-Scan zeigt Anomalien: Das Dispute Resolution Portal generiert ungewoehnlichen Datenbank-Traffic. 30 verschiedene SQL-Queries in kurzer Abfolge, systematisch durch Tabellen iterierend. Nicht das Muster eines normalen Benutzers. Nicht das Muster einer Anwendung. Das Muster eines Angreifers der Daten exfiltriert. Das SSL-Inspection-Zertifikat fuer den Netzwerk-Proxy ist seit 19 Monaten abgelaufen \u2014 der ausgehende Traffic wurde die ganze Zeit nicht inspiziert. Die Angreifer konnten Daten ungehindert nach aussen schleusen. Derek wird blass: 'Das Zertifikat... das steht seit letztem Jahr auf meiner Todo-Liste.'",
+      "image": "scene_forensics_terminal.png",
+      "npc_dialog": {
+        "speaker": "attacker_voice",
+        "text": "[Access Log] 2017-05-13 03:41:22 \u2014 SELECT ssn, dob, dl_number FROM consumer_records WHERE batch_id > 847291 LIMIT 10000 \u2014 Source: dispute-portal-web03 \u2014 Destination: 203.0.113.42:443",
+        "portrait": "npc_attacker"
+      },
+      "choices": [
+        {
+          "id": "c2_incident_response",
+          "text": "Traffic-Analyse und Incident Response sofort starten \u2014 Ausmass bestimmen",
+          "icon": "\ud83d\udea8",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 2
+              }
+            }
+          },
+          "success_scene": "s3_datenflut",
+          "partial_scene": "s3_datenflut",
+          "fail_scene": "s3_datenflut"
+        },
+        {
+          "id": "c2_isolate_portal",
+          "text": "Dispute Portal sofort isolieren und alle Logs sichern",
+          "icon": "\ud83d\udeab",
+          "skill_check": {
+            "pool_filter": "forensics",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s3_datenflut",
+          "partial_scene": "s3_datenflut",
+          "fail_scene": "s3_datenflut"
+        },
+        {
+          "id": "c2_kill_struts",
+          "text": "Alle Struts-Systeme sofort offline nehmen \u2014 radikale Eindaemmung",
+          "icon": "\u26d4",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
+            }
+          },
+          "success_scene": "s3_datenflut",
+          "partial_scene": "s3_datenflut",
+          "fail_scene": "s3_datenflut"
+        }
+      ],
+      "simulation": {
+        "type": "cli_analysis",
+        "pbq_question_id": null,
+        "description": "Log-Forensik: Analysiere Apache-Access-Logs und Datenbank-Query-Logs um Exfiltrations-Muster, Zeitraeume und betroffene Tabellen zu identifizieren"
+      }
+    },
+    {
+      "id": "s3_datenflut",
+      "title": "147 Millionen",
+      "narrative": "Die forensische Analyse enthuellt das volle Ausmass: 147 Millionen Datensaetze. Namen, Sozialversicherungsnummern, Geburtsdaten, Adressen, Fuehrerscheinnummern. 209.000 Kreditkartennummern. 76 Tage unkontrollierter Zugriff \u2014 vom 13. Mai bis 30. Juli 2017. Die Angreifer nutzten CVE-2017-5638 als Einstiegspunkt, bewegten sich dann lateral durch das Netzwerk und erreichten 48 verschiedene Datenbanken. Das abgelaufene SSL-Zertifikat auf dem Inspection-Proxy bedeutet: Der gesamte exfiltrierte Traffic war verschluesselt und wurde nicht inspiziert. CSO Sullivan ist am Boden: 'Ich wurde im Maerz gewarnt. Der Patch war verfuegbar. Und jetzt...' Dr. Hartmann, die General Counsel, unterbricht: 'Wir haben eine gesetzliche Meldepflicht. In allen 50 Bundesstaaten.'",
+      "image": "scene_forensics_terminal.png",
+      "npc_dialog": {
+        "speaker": "legal_counsel",
+        "text": "147 Millionen Betroffene. Jeder einzelne Bundesstaat hat eigene Notification-Gesetze. Wir haben 30 bis 90 Tage je nach Staat. Die SEC erwartet ein Filing. Die FTC wird ermitteln. Und der Kongress wird uns vorladen. Wir brauchen JETZT einen Plan.",
+        "portrait": "npc_legal"
+      },
+      "choices": [
+        {
+          "id": "c3_containment",
+          "text": "Breach Containment \u2014 alle betroffenen Systeme isolieren, Exfiltration stoppen",
+          "icon": "\ud83d\udd12",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s4_offenlegung",
+          "partial_scene": "s4_offenlegung",
+          "fail_scene": "s4_offenlegung"
+        },
+        {
+          "id": "c3_timeline",
+          "text": "Forensische Timeline erstellen \u2014 exakt dokumentieren was wann exfiltriert wurde",
+          "icon": "\ud83d\udcc5",
+          "skill_check": {
+            "pool_filter": "forensics",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 2
+              }
+            }
+          },
+          "success_scene": "s4_offenlegung",
+          "partial_scene": "s4_offenlegung",
+          "fail_scene": "s4_offenlegung"
+        },
+        {
+          "id": "c3_legal",
+          "text": "Notification-Pflicht pruefen und Legal einschalten \u2014 Compliance zuerst",
+          "icon": "\u2696\ufe0f",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
+            }
+          },
+          "success_scene": "s4_offenlegung",
+          "partial_scene": "s4_offenlegung",
+          "fail_scene": "s4_offenlegung"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s4_offenlegung",
+      "title": "Die Offenlegung",
+      "narrative": "7. September 2017 \u2014 143 Tage nach Beginn des Angriffs, 40 Tage nach der Entdeckung. Equifax veroeffentlicht den Breach. Die Reaktion ist verheerend. Die Aktie stuerzt 35% ab. CSO Susan Sullivan und CIO David Webb werden gefeuert. CEO Richard Smith muss vor dem Senat aussagen. Die FTC leitet eine Untersuchung ein. 50 Generalstaatsanwaelte klagen. Die Presse zerlegt jedes Detail: Der ungepatche Struts-Server. Das abgelaufene SSL-Zertifikat. Die 76 Tage ohne Erkennung. Und dann der Skandal im Skandal: Drei Fuehrungskraefte haben Aktien verkauft bevor der Breach oeffentlich wurde. Dr. Hartmann: 'Insider Trading-Vorwuerfe. Das wird noch haesslicher.'",
+      "image": "scene_firewall_config.png",
+      "npc_dialog": {
+        "speaker": "cso_sullivan",
+        "text": "Ich uebernehme die Verantwortung. Der Patch haette eingespielt werden muessen. Das Zertifikat haette erneuert werden muessen. Aber wir muessen jetzt nach vorne schauen \u2014 147 Millionen Menschen brauchen Schutz. Credit Monitoring, Identity Theft Protection, alles.",
+        "portrait": "npc_sullivan"
+      },
+      "choices": [
+        {
+          "id": "c4_transparent",
+          "text": "Transparente Kommunikation \u2014 alles offenlegen, nichts zurueckhalten",
+          "icon": "\ud83d\udce2",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
+            }
+          },
+          "success_scene": "s5_lessons_learned",
+          "partial_scene": "s5_lessons_learned",
+          "fail_scene": "s5_lessons_learned"
+        },
+        {
+          "id": "c4_credit_monitoring",
+          "text": "Credit Monitoring fuer alle 147 Millionen Betroffenen + umfassenden Incident Report",
+          "icon": "\ud83d\udee1\ufe0f",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s5_lessons_learned",
+          "partial_scene": "s5_lessons_learned",
+          "fail_scene": "s5_lessons_learned"
+        },
+        {
+          "id": "c4_remediation_plan",
+          "text": "Umfassenden Remediation-Plan mit konkreter Timeline dem Kongress praesentieren",
+          "icon": "\ud83d\udccb",
+          "skill_check": {
+            "pool_filter": "cysa_plus",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "s5_lessons_learned",
+          "partial_scene": "s5_lessons_learned",
+          "fail_scene": "s5_lessons_learned"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s5_lessons_learned",
+      "title": "Lessons Learned \u2014 $700 Millionen spaeter",
+      "narrative": "Juli 2019. Equifax einigt sich auf einen Vergleich: 700 Millionen Dollar. 425 Millionen fuer Entschaedigung der Betroffenen, 175 Millionen an die Bundesstaaten, 100 Millionen an die CFPB. Es ist der groesste Data-Breach-Vergleich der Geschichte. Der neue CISO hat aufgeraeumt: Neues Patch-Management-Team, automatisierte Vulnerability Scans, Certificate Lifecycle Management. Aber die Frage bleibt: Wie konnte ein einzelner ungepatchter Server mit einer bekannten Schwachstelle 147 Millionen Datensaetze kompromittieren? Die Antwort liegt in systemischen Defiziten: kein Asset Inventory, kein Vulnerability Management Lifecycle, keine automatische Zertifikats-Erneuerung, keine Netzwerksegmentierung. Jetzt liegt es an dir, die richtigen Lehren zu ziehen.",
+      "image": "scene_security_hardening.png",
+      "npc_dialog": {
+        "speaker": "patch_admin",
+        "text": "Nie wieder. Wir haben jetzt SLA-basiertes Patching: CVSS 9+ innerhalb von 48 Stunden. Kein Change Advisory Board, kein Warten. Und jedes Zertifikat wird automatisch 90 Tage vor Ablauf erneuert. Haetten wir das vorher gehabt...",
+        "portrait": "npc_patches"
+      },
+      "choices": [
+        {
+          "id": "c5_patch_automation",
+          "text": "Automatisiertes Patch-Management mit SLA-Enforcement \u2014 CVSS-basierte Priorisierung",
+          "icon": "\u2699\ufe0f",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c5_vuln_lifecycle",
+          "text": "Vulnerability Management Lifecycle mit Risk Scoring und kontinuierlichem Monitoring",
+          "icon": "\ud83d\udcca",
+          "skill_check": {
+            "pool_filter": "cysa_plus",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c5_full_program",
+          "text": "Komplettumbau: Asset Inventory + Vuln Management + Patch Automation + Certificate Monitoring",
+          "icon": "\ud83d\udee1\ufe0f",
+          "skill_check": {
+            "pool_filter": "cysa_plus",
+            "question_count": 5,
+            "pass_threshold": 4,
+            "character_adjustments": {
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 2
+              }
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "epilog_success",
+      "title": "Vulnerability Management Vorbild",
+      "narrative": "Zwei Jahre spaeter. Die Organisation hat das beste Patch-Management der Branche. CVSS 9+ wird innerhalb von 24 Stunden gepatcht. Ein vollstaendiges Asset Inventory erfasst jedes System, jede Abhaengigkeit, jedes Zertifikat. Automatisierte Vulnerability Scans laufen kontinuierlich. Der neue CISO praesentiert auf der Black Hat: 'Wir haben aus dem groessten Data Breach der Geschichte die richtigen Lehren gezogen.' Derek 'Patches' Nguyen leitet jetzt ein 20-koepfiges Vulnerability Management Team: 'Frueher war ich allein mit 200 Systemen. Jetzt haben wir Tooling, Prozesse und Leute. Kein Patch bleibt liegen.' Das Vertrauen der Kunden kehrt langsam zurueck \u2014 weil die Massnahmen echt sind, nicht nur PR.",
+      "image": "scene_victory.png",
+      "animation_in": "campaign_complete",
+      "npc_dialog": {
+        "speaker": "patch_admin",
+        "text": "20 Leute im Team. Automatisiertes Patching. SBOM fuer jede Anwendung. Und kein einziges Zertifikat ist abgelaufen seit dem Incident. Das haette ich mir vor zwei Jahren nicht vorstellen koennen.",
+        "portrait": "npc_patches"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "success"
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Schadensbegrenzung",
+      "narrative": "Die Patch-Prozesse sind verbessert. SLA-basiertes Patching ist eingefuehrt, Zertifikate werden ueberwacht. Aber das vollstaendige Asset Inventory fehlt noch, und die Netzwerksegmentierung hat Luecken. Das Vertrauen der Kunden ist angeschlagen \u2014 Equifax' Ruf als Kreditauskunftei ist beschaedigt. 147 Millionen Menschen wissen, dass ihre sensibelsten Daten kompromittiert wurden. Die $700 Millionen sind gezahlt, aber das eigentliche Risiko bleibt: Ohne vollstaendige Sichtbarkeit ueber alle Assets kann die naechste Schwachstelle genau so lang unbemerkt bleiben. Derek arbeitet daran, aber der Weg ist noch weit.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "legal_counsel",
+        "text": "Der Vergleich ist unterschrieben. $700 Millionen. Aber die Sammelklagen laufen weiter, und die regulatorische Aufsicht wird Jahre dauern. Das Vertrauen zurueckzugewinnen kostet mehr als jeder Vergleich.",
+        "portrait": "npc_legal"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "partial"
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Die teuerste Patch-Nacht",
+      "narrative": "700 Millionen Dollar. 147 Millionen kompromittierte Datensaetze. Ein CEO vor dem Senat. Ein CSO gefeuert. Insider-Trading-Anklagen. Und alles wegen eines Patches der nicht eingespielt wurde. Die Geschichte von Equifax wird zum Standardbeispiel in jedem Cybersecurity-Kurs weltweit: Was passiert wenn Patch-Management versagt, wenn Zertifikate ablaufen, wenn Asset Inventories fehlen. Die Branche lernt \u2014 langsam. Automatisiertes Patching wird zum Standard. Certificate Lifecycle Management wird Pflicht. Vulnerability Disclosure Policies werden geschaerft. Equifax hat den Preis bezahlt, damit andere es besser machen koennen.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "cso_sullivan",
+        "text": "Ich habe meinen Job verloren. Aber wenn dadurch auch nur eine Organisation ihre Patches ernst nimmt, ihre Zertifikate prueft und ein Asset Inventory fuehrt \u2014 dann war es nicht umsonst. Patcht eure Systeme. Sofort.",
+        "portrait": "npc_sullivan"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "fail"
+    }
+  ],
+  "epilog": {
+    "success": {
+      "narrative": "Zwei Jahre spaeter. Bestes Patch-Management der Branche. CVSS 9+ in 24h gepatcht. Vollstaendiges Asset Inventory, automatisierte Scans, 20-koepfiges Vuln-Management-Team. Der neue CISO praesentiert auf der Black Hat als Vorbild.",
+      "image": "scene_victory.png",
+      "animation": "campaign_complete"
+    },
+    "partial": {
+      "narrative": "Patch-Prozesse verbessert, Zertifikate ueberwacht. Aber Asset Inventory unvollstaendig, Netzwerksegmentierung lueckenhaft. $700M gezahlt, Vertrauen beschaedigt. Der Weg ist noch weit.",
+      "image": "scene_partial_victory.png"
+    },
+    "fail": {
+      "narrative": "$700M, 147M Datensaetze, CEO vor dem Senat. Das Standardbeispiel fuer Patch-Management-Versagen. Die Branche lernt daraus \u2014 automatisiertes Patching wird Standard, Certificate Lifecycle Management wird Pflicht.",
+      "image": "scene_partial_victory.png"
+    }
+  }
+}
