@@ -4,32 +4,77 @@
   "description": "NovaTech hat Oldstyle GmbH übernommen. IT-Raum seit 2015 nicht modernisiert. Dein Auftrag: Inventur, Migration, Integration. Budget: so wenig wie möglich.",
   "duration_minutes": 75,
   "difficulty": "intermediate",
-  "focus_areas": ["a_plus", "network_plus", "linux_plus"],
-  "character_recommendations": ["sysadmin", "helpdesk"],
+  "focus_areas": [
+    "a_plus",
+    "network_plus",
+    "linux_plus"
+  ],
+  "character_recommendations": [
+    "sysadmin",
+    "helpdesk"
+  ],
   "characters": {
     "architect": {
       "name": "Alex \"The Architect\" Neumann",
       "avatar": "👨‍💻",
-      "skill_bonus_pools": ["routing", "vlan", "subnetting", "topology"],
-      "skill_penalty_pools": ["security", "incident_response", "linux"]
+      "skill_bonus_pools": [
+        "routing",
+        "vlan",
+        "subnetting",
+        "topology"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response",
+        "linux"
+      ],
+      "portrait_emoji": "🏗️"
     },
     "security": {
       "name": "Sarah \"Firewall\" Okonkwo",
       "avatar": "👩‍💻",
-      "skill_bonus_pools": ["security", "incident_response", "firewall"],
-      "skill_penalty_pools": ["linux", "hardware", "legacy_systems"]
+      "skill_bonus_pools": [
+        "security",
+        "incident_response",
+        "firewall"
+      ],
+      "skill_penalty_pools": [
+        "linux",
+        "hardware",
+        "legacy_systems"
+      ],
+      "portrait_emoji": "🛡️"
     },
     "sysadmin": {
       "name": "Kai \"Root\" Lindström",
       "avatar": "🧔",
-      "skill_bonus_pools": ["linux", "dns", "troubleshooting", "legacy_systems", "migration"],
-      "skill_penalty_pools": ["wireless", "wlan"]
+      "skill_bonus_pools": [
+        "linux",
+        "dns",
+        "troubleshooting",
+        "legacy_systems",
+        "migration"
+      ],
+      "skill_penalty_pools": [
+        "wireless",
+        "wlan"
+      ],
+      "portrait_emoji": "🖥️"
     },
     "helpdesk": {
       "name": "Mia \"Helpdesk\" Torres",
       "avatar": "👩‍🎧",
-      "skill_bonus_pools": ["troubleshooting", "hardware", "a_plus", "legacy_systems"],
-      "skill_penalty_pools": ["linux", "subnetting"]
+      "skill_bonus_pools": [
+        "troubleshooting",
+        "hardware",
+        "a_plus",
+        "legacy_systems"
+      ],
+      "skill_penalty_pools": [
+        "linux",
+        "subnetting"
+      ],
+      "portrait_emoji": "🎧"
     }
   },
   "npcs": {
@@ -71,10 +116,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "helpdesk": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": -1},
-              "architect": {"difficulty_modifier": 0},
-              "security": {"difficulty_modifier": 0}
+              "helpdesk": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "security": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "s2_network_discovery",
@@ -90,10 +143,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "security": {"difficulty_modifier": -1},
-              "helpdesk": {"difficulty_modifier": 0},
-              "sysadmin": {"difficulty_modifier": 0},
-              "architect": {"difficulty_modifier": 1}
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              }
             }
           },
           "success_scene": "s2_network_discovery",
@@ -123,10 +184,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "sysadmin": {"difficulty_modifier": -1},
-              "architect": {"difficulty_modifier": -1},
-              "helpdesk": {"difficulty_modifier": 0},
-              "security": {"difficulty_modifier": 0}
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": -1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              },
+              "security": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "s3_linux_server",
@@ -188,10 +257,18 @@
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
-              "sysadmin": {"difficulty_modifier": -1},
-              "helpdesk": {"difficulty_modifier": 0},
-              "architect": {"difficulty_modifier": 1},
-              "security": {"difficulty_modifier": 0}
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "security": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "s4_migration",
@@ -207,7 +284,9 @@
             "question_count": 2,
             "pass_threshold": 1,
             "character_adjustments": {
-              "sysadmin": {"difficulty_modifier": -1}
+              "sysadmin": {
+                "difficulty_modifier": -1
+              }
             }
           },
           "success_scene": "s4_migration",
@@ -237,10 +316,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "architect": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": -1},
-              "helpdesk": {"difficulty_modifier": 1},
-              "security": {"difficulty_modifier": 0}
+              "architect": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              },
+              "security": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "s5_golive_troubleshooting",
@@ -256,7 +343,9 @@
             "question_count": 2,
             "pass_threshold": 1,
             "character_adjustments": {
-              "sysadmin": {"difficulty_modifier": -1}
+              "sysadmin": {
+                "difficulty_modifier": -1
+              }
             }
           },
           "success_scene": "s5_golive_troubleshooting",
@@ -286,10 +375,18 @@
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
-              "helpdesk": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": -1},
-              "architect": {"difficulty_modifier": 0},
-              "security": {"difficulty_modifier": 0}
+              "helpdesk": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "security": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "epilog_success",
@@ -305,8 +402,12 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "helpdesk": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": 0}
+              "helpdesk": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "epilog_partial",

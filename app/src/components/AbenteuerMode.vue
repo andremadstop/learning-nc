@@ -4,8 +4,8 @@
     <!-- ===== CAMPAIGN SELECT PHASE ===== -->
     <div v-if="phase === 'campaign-select'" class="ab-campaign-select">
       <div class="ab-header">
-        <button class="ab-back-btn" @click="$emit('back')">&#x2190; {{ t('learning', 'Zurück') }}</button>
-        <h2 class="ab-title">&#x1F5FA; {{ t('learning', 'Abenteuer') }}</h2>
+        <button class="ab-back-btn" @click="$emit('back')">← {{ t('learning', 'Zurück') }}</button>
+        <h2 class="ab-title">🗺 {{ t('learning', 'Abenteuer') }}</h2>
         <p class="ab-subtitle">{{ t('learning', 'Wähle eine Kampagne und löse IT-Probleme in einer spannenden Geschichte.') }}</p>
       </div>
 
@@ -42,7 +42,7 @@
               {{ t('learning', 'Neu') }}
             </div>
             <div v-else-if="campaign.progress === 'completed'" class="ab-prog-badge ab-prog-done">
-              &#x2713; {{ t('learning', 'Abgeschlossen') }}
+              ✓ {{ t('learning', 'Abgeschlossen') }}
             </div>
             <div v-else class="ab-prog-badge ab-prog-active">
               {{ t('learning', 'Szene {n}', { n: campaign.current_scene || 1 }) }}
@@ -55,7 +55,7 @@
     <!-- ===== CHARACTER SELECT PHASE ===== -->
     <div v-else-if="phase === 'character-select'" class="ab-character-select">
       <div class="ab-header">
-        <button class="ab-back-btn" @click="phase = 'campaign-select'">&#x2190; {{ t('learning', 'Kampagnen') }}</button>
+        <button class="ab-back-btn" @click="phase = 'campaign-select'">← {{ t('learning', 'Kampagnen') }}</button>
         <h2 class="ab-title">{{ selectedCampaign ? selectedCampaign.title : '' }}</h2>
         <p class="ab-subtitle">{{ t('learning', 'Wähle deinen Charakter') }}</p>
       </div>
@@ -88,7 +88,7 @@
               </div>
             </div>
           </div>
-          <div v-if="selectedCharacter && selectedCharacter.id === char.id" class="ab-char-check">&#x2713;</div>
+          <div v-if="selectedCharacter && selectedCharacter.id === char.id" class="ab-char-check">✓</div>
         </div>
       </div>
 
@@ -114,7 +114,7 @@
           <template v-else-if="currentScene">
             <!-- Scene header -->
             <div class="ab-scene-header">
-              <button class="ab-back-btn" @click="confirmAbort">&#x2190;</button>
+              <button class="ab-back-btn" @click="confirmAbort">←</button>
               <span class="ab-scene-title">{{ currentScene.title }}</span>
               <span class="ab-scene-progress">{{ sceneProgressLabel }}</span>
             </div>
@@ -149,7 +149,7 @@
                   :disabled="makingChoice"
                   @click="makeChoice(choice)"
                 >
-                  <span class="ab-choice-icon">{{ choice.icon || '&#x1F3AF;' }}</span>
+                  <span class="ab-choice-icon">{{ choice.icon || '🎯' }}</span>
                   <span class="ab-choice-text">{{ choice.text }}</span>
                 </button>
               </div>
@@ -176,7 +176,7 @@
     <!-- ===== SKILL CHECK PHASE ===== -->
     <div v-else-if="phase === 'skill-check'" class="ab-skill-check">
       <div class="ab-skill-header">
-        <span class="ab-skill-badge">&#x26A1; {{ t('learning', 'Skill Check') }}</span>
+        <span class="ab-skill-badge">⚡ {{ t('learning', 'Skill Check') }}</span>
         <span v-if="currentSkillCheck" class="ab-skill-context">
           {{ t('learning', 'Frage {n} von {total}', { n: skillCheckIndex + 1, total: skillCheckTotal }) }}
         </span>
@@ -206,7 +206,7 @@
       <transition name="rpg-result">
         <div v-if="skillAnswered" class="ab-result-overlay">
           <div class="ab-result-box" :class="lastAnswerCorrect ? 'ab-result-success' : 'ab-result-fail'">
-            <div class="ab-result-icon">{{ lastAnswerCorrect ? '&#x2705;' : '&#x274C;' }}</div>
+            <div class="ab-result-icon">{{ lastAnswerCorrect ? '✅' : '❌' }}</div>
             <p class="ab-result-label">
               {{ lastAnswerCorrect
                 ? t('learning', 'SKILL CHECK BESTANDEN')
@@ -223,7 +223,7 @@
     <!-- ===== SIMULATION PHASE ===== -->
     <div v-else-if="phase === 'simulation'" class="ab-simulation">
       <div class="ab-sim-header">
-        <span class="ab-sim-badge">&#x1F4BB; {{ t('learning', 'Simulation') }}</span>
+        <span class="ab-sim-badge">💻 {{ t('learning', 'Simulation') }}</span>
         <span class="ab-sim-context">{{ currentSimulation ? currentSimulation.description : '' }}</span>
       </div>
 
@@ -243,7 +243,7 @@
         />
 
         <div v-if="simSubmitted" class="ab-sim-result" :class="simPassed ? 'ab-sim-pass' : 'ab-sim-partial'">
-          <div class="ab-sim-result-icon">{{ simPassed ? '&#x2705;' : '&#x1F4CA;' }}</div>
+          <div class="ab-sim-result-icon">{{ simPassed ? '✅' : '📊' }}</div>
           <p class="ab-sim-result-label">
             {{ simPassed
               ? t('learning', 'Simulation abgeschlossen! Ausgezeichnete Arbeit.')
@@ -299,7 +299,7 @@
     <!-- ===== COOP LOBBY PHASE ===== -->
     <div v-else-if="phase === 'coop-lobby'" class="ab-coop-lobby">
       <div class="ab-header">
-        <button class="ab-back-btn" @click="phase = 'character-select'">&#x2190;</button>
+        <button class="ab-back-btn" @click="phase = 'character-select'">←</button>
         <h2 class="ab-title">{{ t('learning', 'Koop-Lobby') }}</h2>
       </div>
 
@@ -320,7 +320,7 @@
         >
           <span class="ab-player-name">{{ player.display_name || player.user_id }}</span>
           <span v-if="player.character" class="ab-player-char">{{ characterPortrait(player.character) }}</span>
-          <span class="ab-player-status">{{ player.is_ready ? '&#x2713;' : '...' }}</span>
+          <span class="ab-player-status">{{ player.is_ready ? '✓' : '...' }}</span>
         </div>
       </div>
 
@@ -361,7 +361,7 @@ import PbqRenderer from './PbqRenderer.vue'
 const STATIC_CAMPAIGNS = [
 	{
 		id: 'grosser_ausfall',
-		icon: '&#x1F4E1;',
+		icon: '📡',
 		title: 'Der große Ausfall',
 		description: 'Montag morgen: nichts geht. Alle Systeme von NovaTech sind down. Du bist das Notfall-Team.',
 		difficulty: 'intermediate',
@@ -372,7 +372,7 @@ const STATIC_CAMPAIGNS = [
 	},
 	{
 		id: 'einbruch_im_netz',
-		icon: '&#x1F510;',
+		icon: '🔐',
 		title: 'Einbruch im Netz',
 		description: 'Dienstag, 03:47 Uhr. 847 fehlgeschlagene Logins in 12 Minuten. Das ist kein normaler Dienstag.',
 		difficulty: 'advanced',
@@ -383,7 +383,7 @@ const STATIC_CAMPAIGNS = [
 	},
 	{
 		id: 'neuer_standort',
-		icon: '&#x1F3E2;',
+		icon: '🏢',
 		title: 'Der neue Standort',
 		description: 'NovaTech expandiert. Neues Büro, 40 Arbeitsplätze, 4 Wochen Deadline. Kein Fehler erlaubt.',
 		difficulty: 'intermediate',
@@ -394,7 +394,7 @@ const STATIC_CAMPAIGNS = [
 	},
 	{
 		id: 'ransomware',
-		icon: '&#x1F480;',
+		icon: '💀',
 		title: 'Ransomware',
 		description: 'Freitag 16:30 Uhr: "YOUR FILES HAVE BEEN ENCRYPTED." 48 Stunden bis zur Deadline.',
 		difficulty: 'advanced',
@@ -405,7 +405,7 @@ const STATIC_CAMPAIGNS = [
 	},
 	{
 		id: 'das_erbe',
-		icon: '&#x1F4BE;',
+		icon: '💾',
 		title: 'Das Erbe',
 		description: 'NovaTech übernimmt Oldstyle GmbH. Windows Server 2012, ein Hub (kein Switch!) und admin123.',
 		difficulty: 'beginner',
@@ -419,7 +419,7 @@ const STATIC_CAMPAIGNS = [
 const CHARACTERS = [
 	{
 		id: 'architect',
-		portrait: '&#x1F468;&#x200D;&#x1F4BB;',
+		portrait: '👨‍💻',
 		name: 'Alex "The Architect" Neumann',
 		role: 'Netzwerk-Architekt',
 		description: 'Methodisch, analytisch. Denkt in OSI-Schichten. Stark bei Routing und Topologie-Design.',
@@ -428,7 +428,7 @@ const CHARACTERS = [
 	},
 	{
 		id: 'security',
-		portrait: '&#x1F469;&#x200D;&#x1F4BB;',
+		portrait: '👩‍💻',
 		name: 'Sarah "Firewall" Okonkwo',
 		role: 'Security-Analystin',
 		description: 'Paranoid im besten Sinne. Sieht überall Bedrohungen. Hat für jedes Szenario einen IR-Plan.',
@@ -437,7 +437,7 @@ const CHARACTERS = [
 	},
 	{
 		id: 'sysadmin',
-		portrait: '&#x1F9D4;',
+		portrait: '🧔',
 		name: 'Kai "Root" Lindström',
 		role: 'Sysadmin',
 		description: 'Unix-Philosophie pur. Löst alles per Terminal. Hat für jedes Problem ein Bash-Skript.',
@@ -446,7 +446,7 @@ const CHARACTERS = [
 	},
 	{
 		id: 'helpdesk',
-		portrait: '&#x1F469;&#x200D;&#x1F9BA;',
+		portrait: '👩‍🦺',
 		name: 'Mia "Helpdesk" Torres',
 		role: 'First-Level-Support',
 		description: 'Troubleshooting-Talent. Kann Fachjargon in Alltagssprache übersetzen. Kennt das Drucker-Passwort.',
@@ -456,9 +456,9 @@ const CHARACTERS = [
 ]
 
 const NPC_PORTRAITS = {
-	dr_weber: { portrait: '&#x1F469;&#x200D;&#x1F4BC;', name: 'Dr. Weber' },
-	jens_bug: { portrait: '&#x1F468;&#x200D;&#x1F4BB;', name: 'Jens "Bug" Hoffmann' },
-	nova: { portrait: '&#x1F916;', name: 'NOVA' },
+	dr_weber: { portrait: '👩‍💼', name: 'Dr. Weber' },
+	jens_bug: { portrait: '👨‍💻', name: 'Jens "Bug" Hoffmann' },
+	nova: { portrait: '🤖', name: 'NOVA' },
 }
 
 export default {
@@ -556,8 +556,8 @@ export default {
 
 	computed: {
 		epilogIcon() {
-			if (!this.epilogData) return '&#x1F4CB;'
-			return this.epilogData.outcome === 'success' ? '&#x1F3C6;' : '&#x1F4CB;'
+			if (!this.epilogData) return '📋'
+			return this.epilogData.outcome === 'success' ? '🏆' : '📋'
 		},
 		sceneProgressLabel() {
 			if (!this.selectedCampaign) return ''
@@ -669,9 +669,9 @@ export default {
 					text: t('learning', 'Mein Meeting um 8 ist per Video. Schaffen Sie das?'),
 				},
 				choices: [
-					{ id: 'c1_serverraum', icon: '&#x1F5A5;', text: t('learning', 'Ich gehe direkt in den Serverraum') },
-					{ id: 'c1_befragung', icon: '&#x1F5E3;', text: t('learning', 'Erst befrage ich die Mitarbeiter') },
-					{ id: 'c1_schraenke', icon: '&#x1F4E6;', text: t('learning', 'Ich prüfe die Netzwerkschränke auf dieser Etage') },
+					{ id: 'c1_serverraum', icon: '🖥', text: t('learning', 'Ich gehe direkt in den Serverraum') },
+					{ id: 'c1_befragung', icon: '🗣', text: t('learning', 'Erst befrage ich die Mitarbeiter') },
+					{ id: 'c1_schraenke', icon: '📦', text: t('learning', 'Ich prüfe die Netzwerkschränke auf dieser Etage') },
 				],
 			}
 		},
@@ -1077,7 +1077,7 @@ export default {
 		// ===== HELPERS =====
 
 		npcPortrait(speaker) {
-			return (NPC_PORTRAITS[speaker] || { portrait: '&#x1F464;' }).portrait
+			return (NPC_PORTRAITS[speaker] || { portrait: '👤' }).portrait
 		},
 
 		npcName(speaker) {
@@ -1086,7 +1086,7 @@ export default {
 
 		characterPortrait(charId) {
 			const char = CHARACTERS.find(c => c.id === charId)
-			return char ? char.portrait : '&#x1F464;'
+			return char ? char.portrait : '👤'
 		},
 
 		clearTimers() {

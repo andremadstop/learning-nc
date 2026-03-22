@@ -4,32 +4,75 @@
   "description": "NovaTech expandiert. 40 Arbeitsplätze, 4 Wochen, kein Budget für Fehler. Du bist der Projektleiter.",
   "duration_minutes": 75,
   "difficulty": "intermediate",
-  "focus_areas": ["network_plus", "security_plus"],
-  "character_recommendations": ["architect", "sysadmin"],
+  "focus_areas": [
+    "network_plus",
+    "security_plus"
+  ],
+  "character_recommendations": [
+    "architect",
+    "sysadmin"
+  ],
   "characters": {
     "architect": {
       "name": "Alex \"The Architect\" Neumann",
       "avatar": "👨‍💻",
-      "skill_bonus_pools": ["routing", "vlan", "subnetting", "topology", "network_design"],
-      "skill_penalty_pools": ["security", "incident_response"]
+      "skill_bonus_pools": [
+        "routing",
+        "vlan",
+        "subnetting",
+        "topology",
+        "network_design"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response"
+      ],
+      "portrait_emoji": "🏗️"
     },
     "security": {
       "name": "Sarah \"Firewall\" Okonkwo",
       "avatar": "👩‍💻",
-      "skill_bonus_pools": ["security", "vpn", "firewall"],
-      "skill_penalty_pools": ["routing", "vlan", "cabling"]
+      "skill_bonus_pools": [
+        "security",
+        "vpn",
+        "firewall"
+      ],
+      "skill_penalty_pools": [
+        "routing",
+        "vlan",
+        "cabling"
+      ],
+      "portrait_emoji": "🛡️"
     },
     "sysadmin": {
       "name": "Kai \"Root\" Lindström",
       "avatar": "🧔",
-      "skill_bonus_pools": ["linux", "dns", "troubleshooting", "dhcp"],
-      "skill_penalty_pools": ["wireless", "wlan"]
+      "skill_bonus_pools": [
+        "linux",
+        "dns",
+        "troubleshooting",
+        "dhcp"
+      ],
+      "skill_penalty_pools": [
+        "wireless",
+        "wlan"
+      ],
+      "portrait_emoji": "🖥️"
     },
     "helpdesk": {
       "name": "Mia \"Helpdesk\" Torres",
       "avatar": "👩‍🎧",
-      "skill_bonus_pools": ["troubleshooting", "hardware", "cabling"],
-      "skill_penalty_pools": ["routing", "subnetting", "vpn"]
+      "skill_bonus_pools": [
+        "troubleshooting",
+        "hardware",
+        "cabling"
+      ],
+      "skill_penalty_pools": [
+        "routing",
+        "subnetting",
+        "vpn"
+      ],
+      "portrait_emoji": "🎧"
     }
   },
   "npcs": {
@@ -71,10 +114,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "architect": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": 0},
-              "security": {"difficulty_modifier": 0},
-              "helpdesk": {"difficulty_modifier": 1}
+              "architect": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
             }
           },
           "success_scene": "s2_hardware",
@@ -90,9 +141,15 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "architect": {"difficulty_modifier": -1},
-              "helpdesk": {"difficulty_modifier": 0},
-              "sysadmin": {"difficulty_modifier": -1}
+              "architect": {
+                "difficulty_modifier": -1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              }
             }
           },
           "success_scene": "s2_hardware",
@@ -122,9 +179,15 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "architect": {"difficulty_modifier": -1},
-              "helpdesk": {"difficulty_modifier": 0},
-              "sysadmin": {"difficulty_modifier": 0}
+              "architect": {
+                "difficulty_modifier": -1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "s3_verkabelung",
@@ -196,10 +259,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "helpdesk": {"difficulty_modifier": -1},
-              "architect": {"difficulty_modifier": 0},
-              "sysadmin": {"difficulty_modifier": 0},
-              "security": {"difficulty_modifier": 1}
+              "helpdesk": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "security": {
+                "difficulty_modifier": 1
+              }
             }
           },
           "success_scene": "s4_vpn",
@@ -233,10 +304,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "security": {"difficulty_modifier": -1},
-              "architect": {"difficulty_modifier": 0},
-              "sysadmin": {"difficulty_modifier": 0},
-              "helpdesk": {"difficulty_modifier": 1}
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
             }
           },
           "success_scene": "s5_golive",
@@ -252,7 +331,9 @@
             "question_count": 2,
             "pass_threshold": 1,
             "character_adjustments": {
-              "security": {"difficulty_modifier": -1}
+              "security": {
+                "difficulty_modifier": -1
+              }
             }
           },
           "success_scene": "s5_golive",
@@ -282,10 +363,18 @@
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
-              "helpdesk": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": -1},
-              "architect": {"difficulty_modifier": 0},
-              "security": {"difficulty_modifier": 0}
+              "helpdesk": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "security": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "epilog_success",
@@ -301,8 +390,12 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "helpdesk": {"difficulty_modifier": -1},
-              "architect": {"difficulty_modifier": 0}
+              "helpdesk": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "epilog_partial",

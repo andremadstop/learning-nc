@@ -4,32 +4,70 @@
   "description": "Montag morgen: nichts geht. Du bist das Notfall-Team.",
   "duration_minutes": 60,
   "difficulty": "intermediate",
-  "focus_areas": ["network_plus"],
-  "character_recommendations": ["architect", "helpdesk"],
+  "focus_areas": [
+    "network_plus"
+  ],
+  "character_recommendations": [
+    "architect",
+    "helpdesk"
+  ],
   "characters": {
     "architect": {
       "name": "Alex \"The Architect\" Neumann",
       "avatar": "👨‍💻",
-      "skill_bonus_pools": ["routing", "vlan", "subnetting", "topology"],
-      "skill_penalty_pools": ["security", "incident_response"]
+      "skill_bonus_pools": [
+        "routing",
+        "vlan",
+        "subnetting",
+        "topology"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response"
+      ],
+      "portrait_emoji": "🏗️"
     },
     "security": {
       "name": "Sarah \"Firewall\" Okonkwo",
       "avatar": "👩‍💻",
-      "skill_bonus_pools": ["security", "incident_response", "firewall"],
-      "skill_penalty_pools": ["routing", "vlan"]
+      "skill_bonus_pools": [
+        "security",
+        "incident_response",
+        "firewall"
+      ],
+      "skill_penalty_pools": [
+        "routing",
+        "vlan"
+      ],
+      "portrait_emoji": "🛡️"
     },
     "sysadmin": {
       "name": "Kai \"Root\" Lindström",
       "avatar": "🧔",
-      "skill_bonus_pools": ["linux", "dns", "troubleshooting"],
-      "skill_penalty_pools": ["wireless", "wlan"]
+      "skill_bonus_pools": [
+        "linux",
+        "dns",
+        "troubleshooting"
+      ],
+      "skill_penalty_pools": [
+        "wireless",
+        "wlan"
+      ],
+      "portrait_emoji": "🖥️"
     },
     "helpdesk": {
       "name": "Mia \"Helpdesk\" Torres",
       "avatar": "👩‍🎧",
-      "skill_bonus_pools": ["troubleshooting", "hardware", "a_plus"],
-      "skill_penalty_pools": ["routing", "subnetting"]
+      "skill_bonus_pools": [
+        "troubleshooting",
+        "hardware",
+        "a_plus"
+      ],
+      "skill_penalty_pools": [
+        "routing",
+        "subnetting"
+      ],
+      "portrait_emoji": "🎧"
     }
   },
   "npcs": {
@@ -76,8 +114,12 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "architect": {"difficulty_modifier": -1},
-              "helpdesk": {"difficulty_modifier": 1}
+              "architect": {
+                "difficulty_modifier": -1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
             }
           },
           "success_scene": "s2a_serverraum",
@@ -93,8 +135,12 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "helpdesk": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": -1}
+              "helpdesk": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              }
             }
           },
           "success_scene": "s2b_befragung",
@@ -110,7 +156,9 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "architect": {"difficulty_modifier": -1}
+              "architect": {
+                "difficulty_modifier": -1
+              }
             }
           },
           "success_scene": "s3_vlan",
@@ -140,8 +188,12 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "architect": {"difficulty_modifier": -1},
-              "helpdesk": {"difficulty_modifier": 1}
+              "architect": {
+                "difficulty_modifier": -1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
             }
           },
           "success_scene": "s3_vlan",
@@ -199,7 +251,9 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "architect": {"difficulty_modifier": -1}
+              "architect": {
+                "difficulty_modifier": -1
+              }
             }
           },
           "success_scene": "s3_vlan",
@@ -234,9 +288,15 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "architect": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": 0},
-              "helpdesk": {"difficulty_modifier": 1}
+              "architect": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
             }
           },
           "success_scene": "s4_wireless",
@@ -270,8 +330,12 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "sysadmin": {"difficulty_modifier": 1},
-              "security": {"difficulty_modifier": 0}
+              "sysadmin": {
+                "difficulty_modifier": 1
+              },
+              "security": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "s5_finale",
@@ -315,8 +379,12 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "security": {"difficulty_modifier": -1},
-              "architect": {"difficulty_modifier": 0}
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "epilog_success",

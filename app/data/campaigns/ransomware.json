@@ -4,32 +4,74 @@
   "description": "Freitag 16:30: YOUR FILES HAVE BEEN ENCRYPTED. Die Uhr tickt — 48 Stunden.",
   "duration_minutes": 60,
   "difficulty": "advanced",
-  "focus_areas": ["security_plus"],
-  "character_recommendations": ["security", "sysadmin"],
+  "focus_areas": [
+    "security_plus"
+  ],
+  "character_recommendations": [
+    "security",
+    "sysadmin"
+  ],
   "characters": {
     "architect": {
       "name": "Alex \"The Architect\" Neumann",
       "avatar": "👨‍💻",
-      "skill_bonus_pools": ["routing", "vlan", "subnetting", "topology"],
-      "skill_penalty_pools": ["security", "incident_response", "backup"]
+      "skill_bonus_pools": [
+        "routing",
+        "vlan",
+        "subnetting",
+        "topology"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response",
+        "backup"
+      ],
+      "portrait_emoji": "🏗️"
     },
     "security": {
       "name": "Sarah \"Firewall\" Okonkwo",
       "avatar": "👩‍💻",
-      "skill_bonus_pools": ["security", "incident_response", "firewall", "endpoint_security"],
-      "skill_penalty_pools": ["routing", "vlan"]
+      "skill_bonus_pools": [
+        "security",
+        "incident_response",
+        "firewall",
+        "endpoint_security"
+      ],
+      "skill_penalty_pools": [
+        "routing",
+        "vlan"
+      ],
+      "portrait_emoji": "🛡️"
     },
     "sysadmin": {
       "name": "Kai \"Root\" Lindström",
       "avatar": "🧔",
-      "skill_bonus_pools": ["linux", "backup", "troubleshooting", "dns"],
-      "skill_penalty_pools": ["wireless", "wlan"]
+      "skill_bonus_pools": [
+        "linux",
+        "backup",
+        "troubleshooting",
+        "dns"
+      ],
+      "skill_penalty_pools": [
+        "wireless",
+        "wlan"
+      ],
+      "portrait_emoji": "🖥️"
     },
     "helpdesk": {
       "name": "Mia \"Helpdesk\" Torres",
       "avatar": "👩‍🎧",
-      "skill_bonus_pools": ["troubleshooting", "hardware", "a_plus"],
-      "skill_penalty_pools": ["security", "incident_response", "backup"]
+      "skill_bonus_pools": [
+        "troubleshooting",
+        "hardware",
+        "a_plus"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response",
+        "backup"
+      ],
+      "portrait_emoji": "🎧"
     }
   },
   "npcs": {
@@ -71,10 +113,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "security": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": 0},
-              "architect": {"difficulty_modifier": 1},
-              "helpdesk": {"difficulty_modifier": 0}
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 1
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "s2_eindaemmung",
@@ -90,10 +140,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "security": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": -1},
-              "architect": {"difficulty_modifier": 0},
-              "helpdesk": {"difficulty_modifier": 1}
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
             }
           },
           "success_scene": "s2_eindaemmung",
@@ -109,10 +167,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "sysadmin": {"difficulty_modifier": -1},
-              "security": {"difficulty_modifier": 0},
-              "architect": {"difficulty_modifier": 0},
-              "helpdesk": {"difficulty_modifier": 0}
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "s2_eindaemmung",
@@ -142,10 +208,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "security": {"difficulty_modifier": -1},
-              "architect": {"difficulty_modifier": 0},
-              "sysadmin": {"difficulty_modifier": 0},
-              "helpdesk": {"difficulty_modifier": 1}
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
             }
           },
           "success_scene": "s3_backup_frage",
@@ -203,10 +277,18 @@
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
-              "sysadmin": {"difficulty_modifier": -1},
-              "security": {"difficulty_modifier": 0},
-              "architect": {"difficulty_modifier": 0},
-              "helpdesk": {"difficulty_modifier": 1}
+              "sysadmin": {
+                "difficulty_modifier": -1
+              },
+              "security": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
             }
           },
           "success_scene": "s4_zahlen_oder_nicht",
@@ -236,10 +318,18 @@
             "question_count": 3,
             "pass_threshold": 2,
             "character_adjustments": {
-              "security": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": 0},
-              "architect": {"difficulty_modifier": 0},
-              "helpdesk": {"difficulty_modifier": 0}
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 0
+              }
             }
           },
           "success_scene": "s5_recovery_prevention",
@@ -255,7 +345,9 @@
             "question_count": 2,
             "pass_threshold": 1,
             "character_adjustments": {
-              "security": {"difficulty_modifier": -1}
+              "security": {
+                "difficulty_modifier": -1
+              }
             }
           },
           "success_scene": "s5_recovery_prevention",
@@ -285,10 +377,18 @@
             "question_count": 4,
             "pass_threshold": 3,
             "character_adjustments": {
-              "security": {"difficulty_modifier": -1},
-              "sysadmin": {"difficulty_modifier": 0},
-              "architect": {"difficulty_modifier": 0},
-              "helpdesk": {"difficulty_modifier": 1}
+              "security": {
+                "difficulty_modifier": -1
+              },
+              "sysadmin": {
+                "difficulty_modifier": 0
+              },
+              "architect": {
+                "difficulty_modifier": 0
+              },
+              "helpdesk": {
+                "difficulty_modifier": 1
+              }
             }
           },
           "success_scene": "epilog_success",
