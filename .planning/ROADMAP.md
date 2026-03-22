@@ -383,9 +383,9 @@ Plans:
 
 **Milestone Goal:** Story-getriebenes Lern-RPG "Network Down" — Schüler spielen IT-Techniker die Netzwerk-Probleme lösen. 5 Kampagnen, 4 Charakter-Klassen, verzweigende Story, Skill-Checks aus echten Prüfungsfragen, Simulationen am Ende.
 
-- [ ] **Phase 32: Story-Engine Backend** - StoryEngine.php Service, Kampagnen-JSON-Loader, Skill-Check-Logik, verzweigender Story-Baum, persistenter Fortschritt
+- [x] **Phase 32: Story-Engine Backend** - StoryEngine.php Service, Kampagnen-JSON-Loader, Skill-Check-Logik, verzweigender Story-Baum, persistenter Fortschritt (completed 2026-03-22)
 - [x] **Phase 33: RPG-Frontend + Tab** - AbenteuerMode.vue Szenen-Renderer, Skill-Check UI, Kampagnen-Übersicht, "Abenteuer" Tab, Koop-Modus (completed 2026-03-21)
-- [ ] **Phase 34: Charakter-System + Simulation-Integration** - 4 Klassen, klassenbasierte Schwierigkeitsmodifikation, NPC-Portraits, PBQ-Endszenen, Story-Epilog
+- [x] **Phase 34: Charakter-System + Simulation-Integration** - 4 Klassen, klassenbasierte Schwierigkeitsmodifikation, NPC-Portraits, PBQ-Endszenen, Story-Epilog (completed 2026-03-22)
 - [ ] **Phase 35: Kampagnen-Content** - 5 vollständige Kampagnen als JSON (25 Szenen gesamt, alle Entscheidungszweige, Skill-Check-Mappings)
 
 ## Phase Details
@@ -476,7 +476,7 @@ Phases 32-35 execute sequentially: 32 → 33 → 34 → 35. Each phase depends o
 | 29. Oldschool-Menü | v5.0 | Complete | 2026-03-21 | 2026-03-21 |
 | 30. Lernwürfel | v5.0 | Complete | 2026-03-21 | 2026-03-21 |
 | 31. Wissensturm | v5.0 | Complete | 2026-03-21 | 2026-03-21 |
-| 32. Story-Engine Backend | v6.0 | 1/1 | Complete | 2026-03-21 |
-| 33. RPG-Frontend + Tab | 1/1 | Complete   | 2026-03-21 | - |
-| 34. Charakter-System + Simulation-Integration | v6.0 | 0/? | Not started | - |
+| 32. Story-Engine Backend | v6.0 | Complete    | 2026-03-22 | 2026-03-21 |
+| 33. RPG-Frontend + Tab | 1/1 | Complete    | 2026-03-22 | - |
+| 34. Charakter-System + Simulation-Integration | 1/1 | Complete   | 2026-03-22 | - |
 | 35. Kampagnen-Content | v6.0 | 0/? | Not started | - |

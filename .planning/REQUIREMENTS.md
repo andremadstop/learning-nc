@@ -15,17 +15,17 @@
 
 ### Kampagnen-Content
 
-- [ ] **CAMP-01**: Kampagne 1 "Der große Ausfall" (Network+ Fokus) — 5 Szenen, Routing + VLAN + WLAN
-- [ ] **CAMP-02**: Kampagne 2 "Einbruch im Netz" (Security+ Fokus) — 5 Szenen, Incident Response + Forensik
-- [ ] **CAMP-03**: Kampagne 3 "Der neue Standort" (Mixed) — 5 Szenen, Design + Verkabelung + VPN
-- [ ] **CAMP-04**: Kampagne 4 "Ransomware" (Security+) — 5 Szenen, IR + Backup + Recovery
-- [ ] **CAMP-05**: Kampagne 5 "Das Erbe" (Mixed A+/Network+/Linux+) — 5 Szenen, Legacy + Migration
+- [x] **CAMP-01**: Kampagne 1 "Der große Ausfall" (Network+ Fokus) — 5 Szenen, Routing + VLAN + WLAN
+- [x] **CAMP-02**: Kampagne 2 "Einbruch im Netz" (Security+ Fokus) — 5 Szenen, Incident Response + Forensik
+- [x] **CAMP-03**: Kampagne 3 "Der neue Standort" (Mixed) — 5 Szenen, Design + Verkabelung + VPN
+- [x] **CAMP-04**: Kampagne 4 "Ransomware" (Security+) — 5 Szenen, IR + Backup + Recovery
+- [x] **CAMP-05**: Kampagne 5 "Das Erbe" (Mixed A+/Network+/Linux+) — 5 Szenen, Legacy + Migration
 
 ### Charakter-System
 
-- [ ] **CHAR-01**: 4 spielbare Klassen (Architekt, Security, Sysadmin, Helpdesk) mit Stärken/Schwächen
-- [ ] **CHAR-02**: Charakter-Wahl beeinflusst Skill-Check-Schwierigkeit (Stärke = leichtere Fragen, Schwäche = schwerer)
-- [ ] **CHAR-03**: NPC-Dialoge mit Charakter-Portraits (Text-basiert, kein Voice)
+- [x] **CHAR-01**: 4 spielbare Klassen (Architekt, Security, Sysadmin, Helpdesk) mit Stärken/Schwächen
+- [x] **CHAR-02**: Charakter-Wahl beeinflusst Skill-Check-Schwierigkeit (Stärke = leichtere Fragen, Schwäche = schwerer)
+- [x] **CHAR-03**: NPC-Dialoge mit Charakter-Portraits (Text-basiert, kein Voice)
 
 ### RPG-Frontend
 
@@ -37,8 +37,8 @@
 
 ### Simulation-Integration
 
-- [ ] **SIM-01**: Jede Kampagne endet mit einer PBQ-Simulation (nutzt bestehende PbqRenderer)
-- [ ] **SIM-02**: Simulations-Ergebnis beeinflusst Story-Epilog (Erfolg vs. Teilerfolg)
+- [x] **SIM-01**: Jede Kampagne endet mit einer PBQ-Simulation (nutzt bestehende PbqRenderer)
+- [x] **SIM-02**: Simulations-Ergebnis beeinflusst Story-Epilog (Erfolg vs. Teilerfolg)
 
 ## Out of Scope
 
@@ -63,15 +63,15 @@
 | RPG-03 | Phase 33 | Complete |
 | RPG-04 | Phase 33 | Complete |
 | RPG-05 | Phase 33 | Complete |
-| CHAR-01 | Phase 34 | Pending |
-| CHAR-02 | Phase 34 | Pending |
-| CHAR-03 | Phase 34 | Pending |
-| SIM-01 | Phase 34 | Pending |
-| SIM-02 | Phase 34 | Pending |
-| CAMP-01 | Phase 35 | Pending |
-| CAMP-02 | Phase 35 | Pending |
-| CAMP-03 | Phase 35 | Pending |
-| CAMP-04 | Phase 35 | Pending |
-| CAMP-05 | Phase 35 | Pending |
+| CHAR-01 | Phase 34 | Complete |
+| CHAR-02 | Phase 34 | Complete |
+| CHAR-03 | Phase 34 | Complete |
+| SIM-01 | Phase 34 | Complete |
+| SIM-02 | Phase 34 | Complete |
+| CAMP-01 | Phase 35 | Complete |
+| CAMP-02 | Phase 35 | Complete |
+| CAMP-03 | Phase 35 | Complete |
+| CAMP-04 | Phase 35 | Complete |
+| CAMP-05 | Phase 35 | Complete |
 
 **Coverage:** 21/21 requirements mapped

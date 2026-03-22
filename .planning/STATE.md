@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: Abenteuer (Story-RPG)
-status: planning
-stopped_at: "Completed Phase 32-01: Story-Engine Backend"
-last_updated: "2026-03-21T23:12:00.000Z"
-last_activity: 2026-03-21 — Phase 32 Story-Engine Backend complete (4 tasks, 6 files)
+status: completed
+stopped_at: "Completed Phase 35-01: Kampagnen-Content (5 campaign JSONs)"
+last_updated: "2026-03-22T05:11:02.613Z"
+last_activity: 2026-03-21 — Phase 32 Story-Engine Backend executed (migration, campaign JSON, service, controller)
 progress:
   total_phases: 35
   completed_phases: 27
-  total_plans: 38
-  completed_plans: 45
-  percent: 74
+  total_plans: 39
+  completed_plans: 47
+  percent: 100
 ---
 
 # Project State
@@ -52,6 +52,7 @@ Progress: [██████████] 100%
 - Trend: Stable
 | Phase 33 P01 | 87 | 4 tasks | 3 files |
 | Phase 32 P01 | 89 | 4 tasks | 6 files |
+| Phase 34 P01 | 140 | 4 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,11 @@ Progress: [██████████] 100%
 - [Phase 32]: campaignId validated as [a-z0-9_\-]{1,64} to prevent path traversal attacks
 - [Phase 32]: Character difficulty modifier = random-result offset slice, not separate query
 - [Phase 32]: Skill-check questions pre-loaded in scene response — no extra frontend round-trip needed
+- [Phase 34]: resolveCharacterDifficultyModifier: per-choice adjustments take priority over campaign-level pool affinity
+- [Phase 34]: Simulation uses scheduleSimulation() polling narrativeTyping — starts after typewriter finishes, no hardcoded delay
+- [Phase 34]: buildSimQuestion() maps simulation.type to PBQ subtype + stub config — no new API endpoint needed
+- [Phase 35]: [Phase 35]: 9 scenes per campaign — 5 story + branches + 3 epilogs, all branch targets validated, zero dead branches
+- [Phase 35]: [Phase 35]: pool_filter snake_case keys: routing, vlan, security, incident_response, linux, cabling, vpn, backup, hardware, networking, troubleshooting, wireless, firewall, forensics, endpoint_security
 
 ### Pending Todos
 
@@ -81,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T22:52:27.967Z
-Stopped at: Completed Phase 33-01: AbenteuerMode.vue RPG frontend
+Last session: 2026-03-22T05:10:57.741Z
+Stopped at: Completed Phase 35-01: Kampagnen-Content (5 campaign JSONs)
 Resume file: None
