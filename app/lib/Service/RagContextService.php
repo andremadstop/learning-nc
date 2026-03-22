@@ -9,32 +9,47 @@ use Psr\Log\LoggerInterface;
 /**
  * Builds a RAG (Retrieval-Augmented Generation) context payload for VirtuProf.
  *
- * Loads pool questions, Leitner box stats, course name and last wrong answer
- * for a given user so that GeminiService can give contextually relevant answers.
+ * Loads document chunks, pool questions, user weaknesses, Leitner box stats,
+ * course name and last wrong answer for a given user so that GeminiService
+ * can give contextually relevant answers with source citations.
  *
- * @privacy-audit (PRIV-04) — Context array sent to Gemini API contains:
+ * Context-window filling is prioritized (RAG-04):
+ *   1. Document chunks (highest priority -- real course material)
+ *   2. Pool questions (sample questions for topic awareness)
+ *   3. User weaknesses (frequently wrong questions)
+ *   4. Last wrong question (most recent mistake)
+ *
+ * @privacy-audit (PRIV-04) -- Context array sent to Gemini API contains:
  *   INCLUDED: pool_name (string), pool_questions (question text + answer texts, truncated),
  *             leitner_stats (numeric box counts only), course_name (string),
- *             last_wrong (question text + correct answer text).
+ *             last_wrong (question text + correct answer text),
+ *             chunks (course material text + source_file + chapter -- no PII, only course content),
+ *             user_weaknesses (question text + error rate -- derived from existing DB data).
  *   EXCLUDED: userId (used only for DB queries, never returned), username, email,
  *             display name, passwords, system paths, or any personal identifiers.
  *
- * Token budget: context is trimmed to MAX_TOKENS (4000 tokens ≈ 16000 chars).
+ * Token budget: context is trimmed to MAX_TOKENS (7500 tokens ~ 30000 chars).
  */
 class RagContextService {
     private IDBConnection $db;
     private LoggerInterface $logger;
+    private ChunkSearchService $chunkSearchService;
 
     /** Max questions loaded from pool to keep context compact */
     private const MAX_POOL_QUESTIONS = 15;
 
-    /** Approximate token limit (1 token ≈ 4 chars) */
-    private const MAX_TOKENS = 4000;
+    /** Approximate token limit (1 token ~ 4 chars) */
+    private const MAX_TOKENS = 7500;
     private const MAX_CHARS = self::MAX_TOKENS * 4;
 
-    public function __construct(IDBConnection $db, LoggerInterface $logger) {
+    public function __construct(
+        IDBConnection $db,
+        LoggerInterface $logger,
+        ChunkSearchService $chunkSearchService
+    ) {
         $this->db = $db;
         $this->logger = $logger;
+        $this->chunkSearchService = $chunkSearchService;
     }
 
     /**
@@ -44,6 +59,7 @@ class RagContextService {
      * @param int|null $poolId               Active pool the user is studying
      * @param int|null $courseId             Active course context (optional)
      * @param int|null $lastWrongQuestionId  Question the user just answered incorrectly (optional)
+     * @param string|null $userMessage       User's chat message for chunk search (optional)
      *
      * @return array{
      *   pool_name: string|null,
@@ -51,6 +67,8 @@ class RagContextService {
      *   leitner_stats: array{box_1:int,box_2:int,box_3:int,box_4:int,box_5:int,total:int}|null,
      *   course_name: string|null,
      *   last_wrong: array{question:string,correct_answer:string}|null,
+     *   chunks: list<array{text: string, source_file: string, chapter: string|null}>,
+     *   user_weaknesses: list<array{topic: string, error_rate: float}>,
      *   token_estimate: int,
      * }
      */
@@ -58,41 +76,65 @@ class RagContextService {
         string $userId,
         ?int $poolId,
         ?int $courseId,
-        ?int $lastWrongQuestionId
+        ?int $lastWrongQuestionId,
+        ?string $userMessage = null
     ): array {
         $context = [
-            'pool_name'      => null,
-            'pool_questions' => [],
-            'leitner_stats'  => null,
-            'course_name'    => null,
-            'last_wrong'     => null,
-            'token_estimate' => 0,
+            'pool_name'        => null,
+            'pool_questions'   => [],
+            'leitner_stats'    => null,
+            'course_name'      => null,
+            'last_wrong'       => null,
+            'chunks'           => [],
+            'user_weaknesses'  => [],
+            'token_estimate'   => 0,
         ];
 
         try {
-            // RAG-01: Pool questions
-            if ($poolId !== null) {
-                $context['pool_name']      = $this->loadPoolName($poolId);
-                $context['pool_questions'] = $this->loadPoolQuestions($poolId);
-                // RAG-03: Leitner box stats
-                $context['leitner_stats']  = $this->loadLeitnerStats($userId, $poolId);
-            }
-
-            // RAG-03: Course name
+            // Course name (small, always included)
             if ($courseId !== null) {
                 $context['course_name'] = $this->loadCourseName($courseId);
             }
 
-            // RAG-02: Last wrong question + correct answer
+            // Pool name (small, always included)
+            if ($poolId !== null) {
+                $context['pool_name'] = $this->loadPoolName($poolId);
+                // Leitner box stats (small, always included)
+                $context['leitner_stats'] = $this->loadLeitnerStats($userId, $poolId);
+            }
+
+            // Priority 1: Document chunks (RAG-01)
+            if ($courseId !== null && $userMessage !== null && $userMessage !== '') {
+                $chunks = $this->chunkSearchService->search($courseId, $userMessage, 8);
+                foreach ($chunks as $chunk) {
+                    $context['chunks'][] = [
+                        'text'        => $chunk->getText(),
+                        'source_file' => $chunk->getSourceFile(),
+                        'chapter'     => $chunk->getChapter(),
+                    ];
+                }
+            }
+
+            // Priority 2: Pool questions (existing)
+            if ($poolId !== null) {
+                $context['pool_questions'] = $this->loadPoolQuestions($poolId);
+            }
+
+            // Priority 3: User weaknesses (RAG-03)
+            if ($poolId !== null) {
+                $context['user_weaknesses'] = $this->loadUserWeaknesses($userId, $poolId);
+            }
+
+            // Priority 4: Last wrong question
             if ($lastWrongQuestionId !== null) {
                 $context['last_wrong'] = $this->loadLastWrongQuestion($lastWrongQuestionId);
             }
         } catch (\Throwable $e) {
             $this->logger->warning('RagContextService: error building context: ' . $e->getMessage(), ['app' => 'learning']);
-            // Partial context is fine — return what we have
+            // Partial context is fine -- return what we have
         }
 
-        // RAG-04: Enforce token budget by trimming pool_questions from the end
+        // RAG-04: Enforce token budget with priority-based trimming
         $context = $this->enforceTokenBudget($context);
 
         return $context;
@@ -114,7 +156,7 @@ class RagContextService {
 
     /**
      * Load up to MAX_POOL_QUESTIONS questions with their answers from a pool.
-     * Returns array of ['text' => ..., 'answers' => [...]] — correct answers listed first.
+     * Returns array of ['text' => ..., 'answers' => [...]] -- correct answers listed first.
      */
     private function loadPoolQuestions(int $poolId): array {
         // Load question IDs (limited)
@@ -249,27 +291,121 @@ class RagContextService {
     }
 
     /**
-     * RAG-04: Enforce the 4000-token budget by trimming pool_questions from the end.
-     * Uses strlen(json_encode()) / 4 as token estimate (1 token ≈ 4 chars).
+     * Load the 5 questions with the most wrong answers for this user + pool.
+     *
+     * Returns array of ['topic' => question text, 'error_rate' => float 0..1].
+     */
+    private function loadUserWeaknesses(string $userId, int $poolId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('ua.question_id')
+           ->selectAlias($qb->createFunction('COUNT(*) as total_answers'), 'total_answers')
+           ->selectAlias(
+               $qb->createFunction(
+                   'SUM(CASE WHEN ua.is_correct = ' . $qb->createNamedParameter(false, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)
+                   . ' THEN 1 ELSE 0 END)'
+               ),
+               'wrong_count'
+           )
+           ->from('learning_user_answers', 'ua')
+           ->innerJoin('ua', 'learning_questions', 'q', $qb->expr()->eq('ua.question_id', 'q.id'))
+           ->where($qb->expr()->eq('ua.user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('q.pool_id', $qb->createNamedParameter($poolId)))
+           ->groupBy('ua.question_id')
+           ->orderBy('wrong_count', 'DESC')
+           ->setMaxResults(5);
+
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+
+        if (empty($rows)) {
+            return [];
+        }
+
+        // Load question texts for the IDs
+        $questionIds = array_column($rows, 'question_id');
+        $tqb = $this->db->getQueryBuilder();
+        $tqb->select('id', 'text')
+            ->from('learning_questions')
+            ->where($tqb->expr()->in(
+                'id',
+                $tqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)
+            ));
+        $tResult = $tqb->executeQuery();
+        $textRows = $tResult->fetchAll();
+        $tResult->closeCursor();
+
+        $textsById = [];
+        foreach ($textRows as $tr) {
+            $textsById[(int)$tr['id']] = (string)$tr['text'];
+        }
+
+        $weaknesses = [];
+        foreach ($rows as $row) {
+            $qid = (int)$row['question_id'];
+            $total = (int)$row['total_answers'];
+            $wrong = (int)$row['wrong_count'];
+            if ($total === 0 || $wrong === 0) {
+                continue;
+            }
+            $weaknesses[] = [
+                'topic'      => $textsById[$qid] ?? '(unknown)',
+                'error_rate' => round($wrong / $total, 2),
+            ];
+        }
+
+        return $weaknesses;
+    }
+
+    /**
+     * RAG-04: Enforce the 7500-token budget with priority-based trimming.
+     *
+     * Trimming order (lowest priority dropped first):
+     *   1. Drop user_weaknesses entirely
+     *   2. Trim pool_questions from the end
+     *   3. Trim chunks from the end (last resort)
+     *
+     * pool_name, course_name, leitner_stats, and last_wrong are always kept (they are small).
+     *
+     * Uses strlen(json_encode()) / 4 as token estimate (1 token ~ 4 chars).
      */
     private function enforceTokenBudget(array $context): array {
-        // Remove token_estimate from the payload before encoding
         $payload = $context;
         unset($payload['token_estimate']);
 
-        $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE);
-        $chars = $encoded !== false ? strlen($encoded) : 0;
+        $chars = $this->estimateChars($payload);
 
-        // Trim questions one by one until under budget
+        // Step 1: Drop user_weaknesses if over budget
+        if ($chars > self::MAX_CHARS && !empty($payload['user_weaknesses'])) {
+            $payload['user_weaknesses'] = [];
+            $chars = $this->estimateChars($payload);
+        }
+
+        // Step 2: Trim pool_questions from the end
         while ($chars > self::MAX_CHARS && !empty($payload['pool_questions'])) {
             array_pop($payload['pool_questions']);
-            $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE);
-            $chars = $encoded !== false ? strlen($encoded) : 0;
+            $chars = $this->estimateChars($payload);
+        }
+
+        // Step 3: Trim chunks from the end (last resort)
+        while ($chars > self::MAX_CHARS && !empty($payload['chunks'])) {
+            array_pop($payload['chunks']);
+            $chars = $this->estimateChars($payload);
         }
 
         $context['pool_questions']  = $payload['pool_questions'];
+        $context['chunks']          = $payload['chunks'];
+        $context['user_weaknesses'] = $payload['user_weaknesses'];
         $context['token_estimate']  = (int)ceil($chars / 4);
 
         return $context;
+    }
+
+    /**
+     * Estimate character count of context payload.
+     */
+    private function estimateChars(array $payload): int {
+        $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE);
+        return $encoded !== false ? strlen($encoded) : 0;
     }
 }
