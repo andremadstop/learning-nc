@@ -11,6 +11,11 @@
     "security",
     "sysadmin"
   ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Dringlichkeit und Zeitdruck. Jede Entscheidung zaehlt, die Uhr tickt, Dateien werden verschluesselt. Dramatischer Countdown-Stil.",
+  "gemini_role": "attacker",
   "characters": {
     "architect": {
       "name": "Alex \"The Architect\" Neumann",

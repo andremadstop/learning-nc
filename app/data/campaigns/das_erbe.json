@@ -13,6 +13,11 @@
     "sysadmin",
     "helpdesk"
   ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Nostalgie trifft Pragmatismus. Alte Systeme haben Charakter, aber die Migration muss klappen. Humor ueber veraltete Technik.",
+  "gemini_role": "dau",
   "characters": {
     "architect": {
       "name": "Alex \"The Architect\" Neumann",

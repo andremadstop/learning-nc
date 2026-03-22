@@ -11,6 +11,11 @@
     "architect",
     "helpdesk"
   ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "technisch-sachlich mit einer Prise Buerohektik. Beschreibe die Panik wenn das Netzwerk ausfaellt, Telefone klingeln, und Kolleginnen hilflos am Schreibtisch sitzen.",
+  "gemini_role": "dau",
   "characters": {
     "architect": {
       "name": "Alex \"The Architect\" Neumann",
@@ -95,7 +100,6 @@
       "id": "s1_ankunft",
       "title": "Ankunft",
       "narrative": "Du betrittst das Gebäude. Die Rezeption ist chaotisch — Telefone klingeln, niemand hat Internet. Ein Mitarbeiter zeigt dir sein Laptop: 'Kein WLAN, kein nichts.'",
-      "narrator_mode": true,
       "image": "scene_lobby_chaos.png",
       "animation_in": "mission_start",
       "npc_dialog": {
@@ -272,8 +276,6 @@
       "id": "s3_vlan",
       "title": "VLAN-Chaos",
       "narrative": "Du öffnest den Netzwerkschrank auf Etage 4. Der Switch ist an, aber die Port-LEDs zeigen ein unerwartetes Muster. Du verbindest dich per Konsole: VLAN 10, 20, 30 existieren, aber die Trunk-Ports sind als Access-Ports konfiguriert.",
-      "narrator_mode": true,
-      "dynamic_choices": true,
       "image": "scene_switch_cabinet.png",
       "npc_dialog": {
         "speaker": "nova",
@@ -371,7 +373,6 @@
       "id": "s5_finale",
       "title": "Der Stresstest",
       "narrative": "Alles scheint zu laufen. Dr. Webers Video-Call beginnt in 5 Minuten. Du machst einen letzten Check — `ping -t 8.8.8.8`... Antwort. Dann: NOVA meldet 'Anomalie erkannt — unbekanntes Gerät im Netzwerk, MAC xx:xx:xx:xx:xx:xx'. Ein Rogue AP?",
-      "narrator_mode": true,
       "image": "scene_terminal_split.png",
       "npc_dialog": {
         "speaker": "nova",

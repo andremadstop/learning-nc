@@ -12,6 +12,11 @@
     "architect",
     "sysadmin"
   ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Optimistisch-planerisch mit Projektmanagement-Flair. Budget-Druck, Deadlines, aber auch die Freude etwas Neues aufzubauen.",
+  "gemini_role": null,
   "characters": {
     "architect": {
       "name": "Alex \"The Architect\" Neumann",
