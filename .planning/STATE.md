@@ -26,24 +26,24 @@ See: .planning/PROJECT.md (updated 2026-03-22)
 ## Current Position
 
 Phase: 40 of 43 (KI-Erzaehler Engine)
-Plan: 1 of 2 in current phase
-Status: In progress
-Last activity: 2026-03-22 — Completed 40-01 KI-Erzaehler Engine plan
+Plan: 2 of 2 in current phase (COMPLETE)
+Status: Phase complete
+Last activity: 2026-03-22 — Completed 40-02 Campaign Activation + Narrator UI plan
 
-Progress: [█████░░░░░] 50%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1 (this milestone)
-- Average duration: 4min
-- Total execution time: 4min
+- Total plans completed: 2 (this milestone)
+- Average duration: 5min
+- Total execution time: 10min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 40-ki-erzaehler-engine | 1/2 | 4min | 4min |
+| 40-ki-erzaehler-engine | 2/2 | 10min | 5min |
 
 **Recent Trend:**
 - Last 5 plans (v4.1): 36-01 (11min), 37-01 (7min), 38-01 (5min), 39-01 (3min)
@@ -64,6 +64,8 @@ Recent decisions affecting current work:
 - Campaign-level flags use OR logic (campaign OR scene) for backward compatibility
 - Freetext progress tracked via choice_id='freetext' sentinel with freetext_action field
 - Role prompt fragments appended to base system prompt (additive, not replacement)
+- Security campaigns (einbruch, ransomware) get attacker role; helpdesk/legacy get dau role
+- Per-scene narrator flags superseded by campaign-level flags
 
 ### Existing Architecture
 
@@ -84,5 +86,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-22
-Stopped at: Completed 40-01-PLAN.md
+Stopped at: Completed 40-02-PLAN.md (Phase 40 complete)
 Resume file: None
