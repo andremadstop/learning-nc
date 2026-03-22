@@ -116,6 +116,12 @@
             <div class="ab-scene-header">
               <button class="ab-back-btn" @click="confirmAbort">←</button>
               <span class="ab-scene-title">{{ currentScene.title }}</span>
+              <span v-if="currentScene.gemini_role === 'attacker'" class="ab-role-badge ab-role-attacker">
+                {{ t('learning', 'Angreifer aktiv') }}
+              </span>
+              <span v-if="currentScene.gemini_role === 'dau'" class="ab-role-badge ab-role-dau">
+                {{ t('learning', 'Endanwender am Telefon') }}
+              </span>
               <span class="ab-scene-progress">{{ sceneProgressLabel }}</span>
             </div>
 
@@ -149,10 +155,35 @@
                   :disabled="makingChoice"
                   @click="makeChoice(choice)"
                 >
+                  <span v-if="choice.dynamic" class="ab-choice-dynamic-badge">KI</span>
                   <span class="ab-choice-icon">{{ choice.icon || '🎯' }}</span>
                   <span class="ab-choice-text">{{ choice.text }}</span>
                 </button>
               </div>
+            </div>
+
+            <!-- Freetext input -->
+            <div v-if="currentScene.freetext_enabled && !narrativeTyping && !choiceMade" class="ab-freetext">
+              <h4 class="ab-freetext-label">{{ t('learning', '...oder beschreibe deine eigene Aktion:') }}</h4>
+              <div class="ab-freetext-input-row">
+                <input
+                  v-model="freetextInput"
+                  type="text"
+                  class="ab-freetext-field"
+                  :placeholder="t('learning', 'Was tust du? (z.B. \"Ich trenne den Server vom Netz\")')"
+                  :disabled="freetextLoading"
+                  maxlength="500"
+                  @keydown.enter="submitFreetext"
+                />
+                <button
+                  class="ab-freetext-submit"
+                  :disabled="!freetextInput.trim() || freetextLoading"
+                  @click="submitFreetext"
+                >
+                  {{ freetextLoading ? '...' : '>' }}
+                </button>
+              </div>
+              <p v-if="freetextError" class="ab-freetext-error">{{ freetextError }}</p>
             </div>
 
             <!-- Coop voting overlay -->
@@ -548,6 +579,11 @@ export default {
 			simAnswer: {},
 			simSubmitted: false,
 			simPassed: false,
+
+			// Freetext
+			freetextInput: '',
+			freetextLoading: false,
+			freetextError: '',
 
 			// Accessibility
 			reducedMotion: false,
@@ -1072,6 +1108,46 @@ export default {
 			this.phase = 'campaign-select'
 			this.currentScene = null
 			this.selectedCharacter = null
+		},
+
+		// ===== FREETEXT =====
+
+		async submitFreetext() {
+			if (!this.freetextInput.trim() || this.freetextLoading) return
+			this.freetextLoading = true
+			this.freetextError = ''
+			try {
+				const { data } = await axios.post(
+					generateUrl(`/apps/learning/api/story/campaigns/${this.selectedCampaign.id}/freetext`),
+					{ text: this.freetextInput.trim() },
+				)
+				if (data.valid && data.next_scene) {
+					this.freetextInput = ''
+					this.showFreetextNarrative(data.narrative)
+				} else {
+					this.freetextError = data.narrative || t('learning', 'Aktion nicht moeglich')
+				}
+			} catch (err) {
+				this.freetextError = err.response?.data?.error || t('learning', 'Fehler bei der Verarbeitung')
+			} finally {
+				this.freetextLoading = false
+			}
+		},
+
+		showFreetextNarrative(text) {
+			if (!text) return
+			this.choiceMade = true
+			this.startTypewriter(text)
+			// After narrative finishes, reload the current scene (which has been advanced server-side)
+			const waitForTyping = () => {
+				if (!this.narrativeTyping) {
+					this.choiceMade = false
+					this.beginScene()
+				} else {
+					setTimeout(waitForTyping, 300)
+				}
+			}
+			waitForTyping()
 		},
 
 		// ===== HELPERS =====
@@ -2017,5 +2093,88 @@ export default {
   .rpg-result-leave-active {
     animation: none;
   }
+}
+
+/* ===== FREETEXT INPUT ===== */
+.ab-freetext {
+  margin-top: 16px;
+  padding: 12px;
+  border-top: 1px solid var(--rpg-border);
+}
+.ab-freetext-label {
+  font-size: 14px;
+  color: var(--rpg-text-muted);
+  margin: 0 0 8px 0;
+  font-weight: 400;
+}
+.ab-freetext-input-row {
+  display: flex;
+  gap: 8px;
+}
+.ab-freetext-field {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--rpg-border);
+  border-radius: var(--rpg-radius);
+  font-size: 14px;
+  background: var(--rpg-surface);
+  color: var(--rpg-text);
+}
+.ab-freetext-field:focus {
+  border-color: var(--rpg-accent);
+  outline: none;
+}
+.ab-freetext-submit {
+  padding: 8px 16px;
+  background: var(--rpg-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--rpg-radius);
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+}
+.ab-freetext-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ab-freetext-error {
+  color: var(--rpg-danger);
+  font-size: 13px;
+  margin: 8px 0 0 0;
+}
+
+/* ===== DYNAMIC CHOICE BADGE ===== */
+.ab-choice-card {
+  position: relative;
+}
+.ab-choice-dynamic-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(88, 166, 255, 0.15);
+  color: var(--rpg-accent);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+/* ===== ROLE BADGES ===== */
+.ab-role-badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: 8px;
+  font-weight: 500;
+}
+.ab-role-attacker {
+  background: rgba(248, 81, 73, 0.15);
+  color: var(--rpg-danger);
+}
+.ab-role-dau {
+  background: rgba(88, 166, 255, 0.15);
+  color: var(--rpg-accent);
 }
 </style>
