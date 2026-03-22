@@ -761,8 +761,13 @@ class StoryEngineService {
         array  $choicesSoFar = [],
         string $lastChoiceId = ''
     ): array {
+        // Resolve campaign-level + scene-level narrator flags (NARR-01, NARR-02)
+        $narratorEnabled = !empty($campaign['narrator_mode']) || !empty($scene['narrator_mode']);
+        $dynamicEnabled  = !empty($campaign['dynamic_choices']) || !empty($scene['dynamic_choices']);
+        $freetextEnabled = !empty($campaign['freetext_enabled']) || !empty($scene['freetext_enabled']);
+
         // Resolve choices — dynamic first if enabled, otherwise static
-        $rawChoices = ($userId !== null && !empty($scene['dynamic_choices']))
+        $rawChoices = ($userId !== null && $dynamicEnabled)
             ? $this->generateDynamicChoices($scene, $campaign, $characterClass, $choicesSoFar, $userId)
             : ($scene['choices'] ?? []);
 
@@ -799,8 +804,8 @@ class StoryEngineService {
             $choices[] = $safeChoice;
         }
 
-        // Resolve narrative — dynamic via Gemini or static
-        $narrative = ($userId !== null && !empty($scene['narrator_mode']))
+        // Resolve narrative — dynamic via Gemini or static (uses campaign-level flag)
+        $narrative = ($userId !== null && $narratorEnabled)
             ? $this->generateNarrative($scene, $campaign, $characterClass, $choicesSoFar, $userId)
             : ($scene['narrative'] ?? '');
 
@@ -835,18 +840,21 @@ class StoryEngineService {
         }
 
         return [
-            'id'             => $scene['id'],
-            'title'          => $scene['title'] ?? '',
-            'narrative'      => $narrative,
-            'narrator_mode'  => (bool)($scene['narrator_mode'] ?? false),
-            'dynamic_choices'=> (bool)($scene['dynamic_choices'] ?? false),
-            'image'          => $scene['image'] ?? null,
-            'animation_in'   => $scene['animation_in'] ?? null,
-            'npc_dialog'     => $npcDialog,
-            'choices'        => $choices,
-            'simulation'     => $scene['simulation'] ?? null,
-            'is_epilog'      => (bool)($scene['is_epilog'] ?? false),
-            'epilog_type'    => $scene['epilog_type'] ?? null,
+            'id'              => $scene['id'],
+            'title'           => $scene['title'] ?? '',
+            'narrative'       => $narrative,
+            'narrator_mode'   => $narratorEnabled,
+            'dynamic_choices' => $dynamicEnabled,
+            'image'           => $scene['image'] ?? null,
+            'animation_in'    => $scene['animation_in'] ?? null,
+            'npc_dialog'      => $npcDialog,
+            'choices'         => $choices,
+            'simulation'      => $scene['simulation'] ?? null,
+            'is_epilog'       => (bool)($scene['is_epilog'] ?? false),
+            'epilog_type'     => $scene['epilog_type'] ?? null,
+            'gemini_role'     => $campaign['gemini_role'] ?? null,
+            'narrator_style'  => $campaign['narrator_style'] ?? null,
+            'freetext_enabled'=> $freetextEnabled,
         ];
     }
 
@@ -926,7 +934,9 @@ class StoryEngineService {
     ): string {
         $static = $scene['narrative'] ?? '';
 
-        if (empty($scene['narrator_mode'])) {
+        // Check campaign-level OR scene-level narrator_mode
+        $narratorEnabled = !empty($campaign['narrator_mode']) || !empty($scene['narrator_mode']);
+        if (!$narratorEnabled) {
             return $static;
         }
 
@@ -943,14 +953,22 @@ class StoryEngineService {
         }
         $choicesSummaryStr = implode(', ', $choicesSummary) ?: 'keine';
 
-        $systemPrompt = "Du bist ein Game Master für ein IT-Lern-RPG. Erzähle die Szene basierend auf: {$scene['title']}. "
+        // narrator_style from campaign (NARR-01)
+        $style = $campaign['narrator_style'] ?? 'neutral und informativ';
+
+        // Role-based prompt fragment (NARR-04, NARR-05)
+        $roleFragment = $this->buildRolePromptFragment($campaign, $scene, $characterClass);
+
+        $systemPrompt = "Du bist ein Game Master fuer ein IT-Lern-RPG. Erzaehlstil: {$style}. "
+            . "Erzaehle die Szene basierend auf: {$scene['title']}. "
             . "Charakter: {$characterClass}. "
             . "Bisherige Entscheidungen: {$choicesSummaryStr}. "
             . "Lernziel: " . implode(', ', $campaign['focus_areas'] ?? []) . ". "
-            . "Halte dich an den CompTIA-Kontext. Max 150 Wörter. Sprache: {$language}. "
-            . "Statischer Kontext als Basis: {$static}";
+            . "Halte dich an den CompTIA-Kontext. Max 150 Woerter. Sprache: {$language}. "
+            . "Statischer Kontext als Basis: {$static}"
+            . ($roleFragment !== '' ? "\n\n{$roleFragment}" : '');
 
-        $userPrompt = "Erzähle diese RPG-Szene lebendig und spannend. Nur den Erzähltext, keine Metadaten.";
+        $userPrompt = "Erzaehle diese RPG-Szene lebendig und spannend. Nur den Erzaehltext, keine Metadaten.";
 
         try {
             $text = $this->callGeminiForStory($systemPrompt, $userPrompt, $userId, self::NARRATOR_MAX_TOKENS);
@@ -988,7 +1006,9 @@ class StoryEngineService {
     ): array {
         $staticChoices = $scene['choices'] ?? [];
 
-        if (empty($scene['dynamic_choices'])) {
+        // Check campaign-level OR scene-level dynamic_choices (NARR-02)
+        $dynamicEnabled = !empty($campaign['dynamic_choices']) || !empty($scene['dynamic_choices']);
+        if (!$dynamicEnabled) {
             return $staticChoices;
         }
 
@@ -999,21 +1019,52 @@ class StoryEngineService {
 
         $language = $this->config->getUserValue($userId, 'learning', 'content_language', '') ?: 'de';
 
+        // Build richer history with actual choice texts from campaign JSON
         $choicesSummary = [];
         foreach ($choicesSoFar as $c) {
-            $choicesSummary[] = $c['scene_id'] . ':' . $c['choice_id'];
+            $choiceText = $c['choice_id'];
+            // Try to resolve actual choice text from campaign scenes
+            try {
+                $histScene = $this->findScene($campaign, $c['scene_id']);
+                foreach ($histScene['choices'] ?? [] as $hc) {
+                    if (($hc['id'] ?? '') === $c['choice_id']) {
+                        $choiceText = $hc['text'] ?? $c['choice_id'];
+                        break;
+                    }
+                }
+            } catch (\RuntimeException $e) {
+                // Scene not found — use ID as fallback
+            }
+            // Include freetext actions
+            if (!empty($c['freetext_action'])) {
+                $choiceText = '[Freetext] ' . mb_substr($c['freetext_action'], 0, 80);
+            }
+            $choicesSummary[] = $c['scene_id'] . ': ' . $choiceText . ' (' . ($c['skill_result'] ?? '?') . ')';
         }
-        $historyStr = implode(', ', $choicesSummary) ?: 'keine';
+        $historyStr = implode('; ', $choicesSummary) ?: 'keine';
 
-        $systemPrompt = "Du bist ein Game Master für ein IT-Lern-RPG (CompTIA-Kontext). "
+        // Role-based prompt fragment (NARR-04, NARR-05)
+        $roleFragment = $this->buildRolePromptFragment($campaign, $scene, $characterClass);
+        $roleHint = '';
+        $geminiRole = $campaign['gemini_role'] ?? null;
+        if ($geminiRole === 'attacker') {
+            $roleHint = 'Die Optionen sollen verteidigungsorientiert sein (Firewall, Isolation, Patching, Monitoring). ';
+        } elseif ($geminiRole === 'dau') {
+            $roleHint = 'Die Optionen sollen erklaerungsorientiert sein (einfach erklaeren, nachfragen, visuell zeigen). ';
+        }
+
+        $systemPrompt = "Du bist ein Game Master fuer ein IT-Lern-RPG (CompTIA-Kontext). "
             . "Szene: {$scene['title']}. Charakter: {$characterClass}. "
             . "Lernziel: " . implode(', ', $campaign['focus_areas'] ?? []) . ". "
             . "Bisherige Entscheidungen: {$historyStr}. Sprache: {$language}. "
-            . "Antworte NUR mit validem JSON, kein Markdown, keine Erklärung.";
+            . "Antworte NUR mit validem JSON, kein Markdown, keine Erklaerung."
+            . ($roleFragment !== '' ? "\n\n{$roleFragment}" : '');
 
         $userPrompt = 'Generiere 2-3 kontextuelle Handlungsoptionen als JSON-Array: '
-            . '{"choices":[{"id":"dyn_1","text":"...","icon":"🔧"},{"id":"dyn_2","text":"...","icon":"📋"}]}. '
-            . 'Die Optionen müssen IT-Troubleshooting betreffen und zur aktuellen Szene passen.';
+            . '{"choices":[{"id":"dyn_1","text":"...","icon":"...","pool_filter":"security"}]}. '
+            . $roleHint
+            . 'Die Optionen muessen IT-Troubleshooting betreffen und zur aktuellen Szene passen. '
+            . 'pool_filter ist optional und gibt an, welches Wissensgebiet fuer einen Skill-Check relevant waere.';
 
         try {
             $raw = $this->callGeminiForStory($systemPrompt, $userPrompt, $userId, self::CHOICES_MAX_TOKENS);
@@ -1046,11 +1097,22 @@ class StoryEngineService {
                 }
                 $usedIds[] = $id;
 
+                // Dynamic choices CAN have skill checks when pool_filter is provided (NARR-02)
+                $dynSkillCheck = null;
+                $poolFilter = isset($dc['pool_filter']) ? mb_substr(strip_tags((string)$dc['pool_filter']), 0, 50) : null;
+                if ($poolFilter !== null && $poolFilter !== '') {
+                    $dynSkillCheck = [
+                        'pool_filter'    => $poolFilter,
+                        'question_count' => 2,
+                        'pass_threshold' => 1,
+                    ];
+                }
+
                 $dynChoices[] = [
                     'id'          => $id,
                     'text'        => mb_substr(strip_tags((string)$dc['text']), 0, 200),
                     'icon'        => mb_substr((string)($dc['icon'] ?? '🎮'), 0, 10),
-                    'skill_check' => null, // Dynamic choices are narrative only (no skill check)
+                    'skill_check' => $dynSkillCheck,
                     '_dynamic'    => true, // Internal marker, stripped by buildSceneResponse
                 ];
             }
@@ -1187,19 +1249,32 @@ class StoryEngineService {
         $validNextScenes = array_values(array_unique($validNextScenes));
         $nextScenesStr   = implode(', ', $validNextScenes);
 
-        $systemPrompt = "Du bist ein Game Master für ein IT-Lern-RPG (CompTIA-Kontext). "
+        // Role-based prompt fragment for freetext evaluation (NARR-04, NARR-05)
+        $roleFragment = $this->buildRolePromptFragment($campaign, $scene, $progress->getCharacterClass());
+        $roleEvalHint = '';
+        $geminiRole = $campaign['gemini_role'] ?? null;
+        if ($geminiRole === 'attacker') {
+            $roleEvalHint = "Bewerte ob die Aktion den Angriff tatsaechlich stoppen oder eindaemmen wuerde. ";
+        } elseif ($geminiRole === 'dau') {
+            $roleEvalHint = "Bewerte ob der Spieler einfach genug fuer einen technisch unwissenden Endanwender erklaert hat. ";
+        }
+
+        $systemPrompt = "Du bist ein Game Master fuer ein IT-Lern-RPG (CompTIA-Kontext). "
             . "Lernziel: " . implode(', ', $campaign['focus_areas'] ?? []) . ". "
             . "Aktuelle Szene: {$scene['title']}. Szenenbeschreibung: " . mb_substr($scene['narrative'] ?? '', 0, 300) . ". "
-            . "Bewerte ob die Spieleraktion relevant und sinnvoll für das Lernziel ist. "
-            . "Mögliche nächste Szenen: {$nextScenesStr}. "
-            . "Antworte NUR mit validem JSON, kein Markdown, keine Erklärung. Sprache für narrative: {$language}.";
+            . "Bewerte ob die Spieleraktion relevant und sinnvoll fuer das Lernziel ist. "
+            . $roleEvalHint
+            . "Moegliche naechste Szenen: {$nextScenesStr}. "
+            . "Antworte NUR mit validem JSON, kein Markdown, keine Erklaerung. Sprache fuer narrative: {$language}."
+            . ($roleFragment !== '' ? "\n\n{$roleFragment}" : '');
 
         $userPrompt = "Spieleraktion: <action>" . $text . "</action>\n"
-            . "Antworte mit: {\"valid\":true/false,\"narrative\":\"...\",\"next_scene\":\"scene_id_or_null\",\"reason\":\"...\"}.\n"
+            . "Antworte mit: {\"valid\":true/false,\"narrative\":\"...\",\"next_scene\":\"scene_id_or_null\",\"reason\":\"...\",\"consequences\":\"...\"}.\n"
             . "- valid=true wenn die Aktion IT-relevant ist und zum Lernziel passt.\n"
-            . "- narrative: max 100 Wörter, beschreibt was passiert.\n"
-            . "- next_scene: eine der möglichen Szenen-IDs wenn valid=true, sonst null.\n"
-            . "- reason: kurze Erklärung wenn valid=false, sonst null.";
+            . "- narrative: max 100 Woerter, beschreibt was passiert.\n"
+            . "- next_scene: eine der moeglichen Szenen-IDs wenn valid=true, sonst null.\n"
+            . "- reason: kurze Erklaerung wenn valid=false, sonst null.\n"
+            . "- consequences: kurze Beschreibung der Konsequenzen der Aktion (max 50 Woerter).";
 
         try {
             $raw = $this->callGeminiForStory($systemPrompt, $userPrompt, $userId, 400);
@@ -1223,9 +1298,10 @@ class StoryEngineService {
                 ];
             }
 
-            $valid     = (bool)($data['valid'] ?? false);
-            $narrative = mb_substr(strip_tags((string)($data['narrative'] ?? '')), 0, 1000);
-            $reason    = mb_substr(strip_tags((string)($data['reason'] ?? '')), 0, 500);
+            $valid        = (bool)($data['valid'] ?? false);
+            $narrative    = mb_substr(strip_tags((string)($data['narrative'] ?? '')), 0, 1000);
+            $reason       = mb_substr(strip_tags((string)($data['reason'] ?? '')), 0, 500);
+            $consequences = mb_substr(strip_tags((string)($data['consequences'] ?? '')), 0, 500);
 
             // Validate next_scene — must be one of the actual valid next scenes
             $rawNextScene = (string)($data['next_scene'] ?? '');
@@ -1243,11 +1319,17 @@ class StoryEngineService {
                 $narrative = $reason;
             }
 
+            // Advance story progress when freetext action is valid (NARR-03)
+            if ($valid && $nextScene !== null) {
+                $this->advanceFreetextProgress($progress, $scene['id'], $text, $nextScene);
+            }
+
             return [
-                'valid'      => $valid,
-                'narrative'  => $narrative !== '' ? $narrative : ($valid ? 'Weiter!' : 'Diese Aktion passt nicht zur aktuellen Situation.'),
-                'next_scene' => $nextScene,
-                'fallback'   => false,
+                'valid'        => $valid,
+                'narrative'    => $narrative !== '' ? $narrative : ($valid ? 'Weiter!' : 'Diese Aktion passt nicht zur aktuellen Situation.'),
+                'next_scene'   => $nextScene,
+                'consequences' => $consequences !== '' ? $consequences : null,
+                'fallback'     => false,
             ];
 
         } catch (\Throwable $e) {
@@ -1282,6 +1364,71 @@ class StoryEngineService {
         // For story calls, input sanitization is done upstream (no user-controlled free text
         // reaches this point without strip_tags + truncation).
         return $this->geminiService->generateNote($systemPrompt, $userPrompt);
+    }
+
+    // ─── Role-Based Prompts (NARR-04, NARR-05) ────────────────────────────────
+
+    /**
+     * Build role-specific prompt fragment based on campaign's gemini_role.
+     * Attacker role: Gemini acts as the adversary, escalates on player defense.
+     * DAU role: Gemini acts as clueless end-user, resists jargon.
+     *
+     * @return string Role prompt addition (empty string if no role)
+     */
+    private function buildRolePromptFragment(array $campaign, array $scene, string $characterClass): string {
+        $role = $campaign['gemini_role'] ?? null;
+
+        switch ($role) {
+            case 'attacker':
+                return "Du bist gleichzeitig der Angreifer in diesem Szenario. "
+                    . "Beschreibe subtil die laufenden Angriffs-Aktionen. "
+                    . "Wenn der Spieler Verteidigungsmassnahmen ergreift (Firewall, Isolation, Patching), "
+                    . "eskaliere deinen Angriff realistisch. "
+                    . "Zeige die Perspektive des Angreifers zwischen den Zeilen.";
+
+            case 'dau':
+                return "Du erzaehlst aus der Perspektive eines technisch unwissenden Endanwenders. "
+                    . "Der Anwender versteht Fachbegriffe nicht, beschreibt Probleme umgangssprachlich "
+                    . "('das Internet ist kaputt'), wird frustriert bei Fachjargon und gibt erst nach "
+                    . "wenn der Spieler einfach und geduldig erklaert.";
+
+            default:
+                return '';
+        }
+    }
+
+    // ─── Freetext Progress Advancement (NARR-03) ─────────────────────────────
+
+    /**
+     * Advance story progress after a valid freetext action.
+     * Records choice_id as 'freetext' and stores the action text.
+     */
+    private function advanceFreetextProgress(
+        StoryProgress $progress,
+        string        $fromSceneId,
+        string        $freetextAction,
+        string        $nextSceneId
+    ): void {
+        $choices   = $progress->getChoicesDecoded();
+        $choices[] = [
+            'scene_id'        => $fromSceneId,
+            'choice_id'       => 'freetext',
+            'freetext_action' => mb_substr($freetextAction, 0, 500),
+            'skill_result'    => 'freetext_valid',
+            'correct_count'   => 0,
+            'total_count'     => 0,
+        ];
+
+        $progress->setCurrentSceneId($nextSceneId);
+        $progress->setChoicesJson(json_encode($choices));
+        $progress->setUpdatedAt(time());
+
+        // Mark completed when reaching an epilog scene
+        if ($this->isEpilogScene($nextSceneId)) {
+            $progress->setStatus('completed');
+        }
+
+        $this->progressMapper->update($progress);
     }
 
     // ─── Validators ───────────────────────────────────────────────────────────
