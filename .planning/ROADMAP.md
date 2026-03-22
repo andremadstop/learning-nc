@@ -437,7 +437,7 @@ Plans:
 
 **Milestone Goal:** VirtuProf beantwortet Fragen basierend auf echtem Kursmaterial (PDF/Markdown) -- nicht nur Pool-Fragen. Dokument-Upload, Text-Extraktion, Chunking-Pipeline, Keyword-Suche und Multi-Source-RAG mit Quellenangaben.
 
-- [ ] **Phase 36: Dokument-Upload + Extraktion** - Dozent laedt PDF/Markdown hoch, System extrahiert Text, Status-Uebersicht
+- [x] **Phase 36: Dokument-Upload + Extraktion** - Dozent laedt PDF/Markdown hoch, System extrahiert Text, Status-Uebersicht (completed 2026-03-22)
 - [ ] **Phase 37: Chunking-Pipeline** - Text wird in ~500-Token-Chunks mit Kapitel-Tags zerlegt, als BackgroundJob verarbeitet und in DB gespeichert
 - [ ] **Phase 38: Chunk-Suche** - Keyword-basierte Suche findet relevante Chunks zur User-Frage, sortiert nach Relevanz
 - [ ] **Phase 39: Multi-Source-RAG** - RagContextService buendelt alle Quellen mit Prioritaeten, VirtuProf zeigt Quellenangaben
@@ -533,7 +533,7 @@ Phases 36-39 execute sequentially: 36 → 37 → 38 → 39. Each phase depends o
 | 33. RPG-Frontend + Tab | v6.0 | Complete | Complete | 2026-03-22 |
 | 34. Charakter-System | v6.0 | Complete | Complete | 2026-03-22 |
 | 35. Kampagnen-Content | v6.0 | Complete | Complete | 2026-03-22 |
-| 36. Dokument-Upload + Extraktion | v4.1 | 0/? | Not started | - |
+| 36. Dokument-Upload + Extraktion | 2/2 | Complete   | 2026-03-22 | - |
 | 37. Chunking-Pipeline | v4.1 | 0/? | Not started | - |
 | 38. Chunk-Suche | v4.1 | 0/? | Not started | - |
 | 39. Multi-Source-RAG | v4.1 | 0/? | Not started | - |

@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v4.1
+milestone_name: RAG Stufe 2
+status: completed
+stopped_at: Completed 36-02-PLAN.md
+last_updated: "2026-03-22T08:14:10.642Z"
+last_activity: 2026-03-22 — Plan 36-01 executed (Document Upload + Extraction backend)
+progress:
+  total_phases: 39
+  completed_phases: 28
+  total_plans: 41
+  completed_plans: 49
+  percent: 100
+---
+
 # Project State
 
 ## Project Reference
@@ -14,7 +30,7 @@ Plan: 1 of 1 complete
 Status: Phase 36 complete
 Last activity: 2026-03-22 — Plan 36-01 executed (Document Upload + Extraction backend)
 
-Progress: [###-------] 25% (1/4 phases)
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -34,6 +50,7 @@ Progress: [###-------] 25% (1/4 phases)
 - Trend: Starting
 
 *Updated after each plan completion*
+| Phase 36 P02 | 3min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -49,6 +66,8 @@ Recent decisions affecting current work:
 - [36-01] Removed unused IDBConnection from DocumentService (PHPStan clean code)
 - [36-01] Regenerated PHPStan baseline for new QBMapper return types
 - [36-01] File paths stored relative to user home for NC Files API compatibility
+- [Phase 36]: Used scoped CSS in CourseMaterials.vue for self-contained styling
+- [Phase 36]: Auto-scan after folder linking for immediate instructor feedback
 
 ### Existing Architecture
 
@@ -72,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22
-Stopped at: Completed 36-01-PLAN.md
+Last session: 2026-03-22T08:14:10.622Z
+Stopped at: Completed 36-02-PLAN.md
 Resume file: None
