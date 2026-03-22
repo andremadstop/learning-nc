@@ -175,7 +175,7 @@ Plans:
 
 **Milestone Goal:** Hybrid-CI aus Codex (Token-System, Komponenten) + Gemini (Atmosphaere, Emotionen) mit erweitertem Charakter-Cast aus realistischen IT-Workplace-Figuren. Die App bekommt ein Gesicht.
 
-- [ ] **Phase 44: Design-Token-System + Narrative-Skin** - CSS-Token-Layer, Dark/Light, Motion-Utilities, Paper & Circuits Skin
+- [x] **Phase 44: Design-Token-System + Narrative-Skin** - CSS-Token-Layer, Dark/Light, Motion-Utilities, Paper & Circuits Skin (completed 2026-03-22)
 - [ ] **Phase 45: Charakter-System** - 13 Figuren definieren, CharacterAvatar.vue Komponente
 - [ ] **Phase 46: UI-Komponenten** - CampaignCard, DialogueStage, ModeIdentityBanner
 - [ ] **Phase 47: Kampagnen-Integration** - Intros, NPC-Portraits, Workplace-Figuren in bestehende Kampagnen
@@ -249,7 +249,7 @@ Phases execute in numeric order: 44 → 45 → 46 → 47
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 44. Design-Token-System + Narrative-Skin | v6.2 | 1/2 | In progress | - |
+| 44. Design-Token-System + Narrative-Skin | 2/2 | Complete   | 2026-03-22 | - |
 | 45. Charakter-System | v6.2 | 0/2 | Not started | - |
 | 46. UI-Komponenten | v6.2 | 0/2 | Not started | - |
 | 47. Kampagnen-Integration | v6.2 | 0/2 | Not started | - |

@@ -10,7 +10,7 @@
 - [x] **DS-01**: CSS-Token-Layer mit Farbpaletten (Primary, Ink, Cyan, Amber, Magenta, Danger, Green) als CSS-Variablen
 - [x] **DS-02**: Dark/Light Mode Tokens (Adventure=Dark, Training=Light)
 - [x] **DS-03**: Motion-Utility-Layer (fade, snap-in, pulse, reduced-motion Fallbacks)
-- [ ] **DS-04**: Narrative-Skin "Paper & Circuits" fuer Abenteuer-Modus (Gemini-Stil auf Codex-Tokens)
+- [x] **DS-04**: Narrative-Skin "Paper & Circuits" fuer Abenteuer-Modus (Gemini-Stil auf Codex-Tokens)
 
 ### Charakter-System
 
@@ -57,7 +57,7 @@
 | DS-01 | Phase 44 | Complete |
 | DS-02 | Phase 44 | Complete |
 | DS-03 | Phase 44 | Complete |
-| DS-04 | Phase 44 | Pending |
+| DS-04 | Phase 44 | Complete |
 | CHAR-01 | Phase 45 | Pending |
 | CHAR-02 | Phase 45 | Pending |
 | CHAR-03 | Phase 45 | Pending |
