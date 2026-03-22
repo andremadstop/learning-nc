@@ -59,6 +59,11 @@ select:focus-visible,
   box-shadow: 0 0 0 4px rgba(0, 103, 158, 0.25);
 }
 
+/* ========== COURSE MATERIALS ========== */
+.materials-section {
+  padding: 8px 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

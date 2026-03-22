@@ -843,6 +843,10 @@
 		<NcNoteCard v-if="modeConfigSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
 	</div>
 
+	<div v-if="currentTab === 'materials' && isInstructor" class="tab-content materials-section">
+		<CourseMaterials :course-id="courseId" :is-instructor="isInstructor" />
+	</div>
+
 		</template>
 
 		<!-- Add Pool Modal -->
@@ -1037,6 +1041,7 @@ import OldschoolSelector from './OldschoolSelector.vue'
 import WissensturmMode from './WissensturmMode.vue'
 import LernwuerfelMode from './LernwuerfelMode.vue'
 import AbenteuerMode from './AbenteuerMode.vue'
+import CourseMaterials from './CourseMaterials.vue'
 
 export default {
 	name: 'CourseDetail',
@@ -1061,6 +1066,7 @@ export default {
 		WissensturmMode,
 		LernwuerfelMode,
 		AbenteuerMode,
+		CourseMaterials,
 	},
 
 	props: {
@@ -1250,6 +1256,7 @@ export default {
 					{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot') },
 					{ id: 'requests', label: t('learning', 'Anfragen') },
 					{ id: 'mode-config', label: t('learning', 'Kursregeln') },
+					{ id: 'materials', label: t('learning', 'Materialien') },
 				]
 			}
 			const mc = this.course?.mode_config || {}
