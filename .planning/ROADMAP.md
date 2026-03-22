@@ -481,7 +481,10 @@ Plans:
   1. Eine User-Frage "Was ist OSPF?" liefert Chunks zurueck die das Wort "OSPF" enthalten -- kein leeres Ergebnis wenn das Kursmaterial OSPF behandelt
   2. Die Ergebnisse sind nach Relevanz sortiert: Chunks mit mehr Keyword-Treffern und passendem Kapitel-Match stehen weiter oben
   3. Die Suche liefert maximal 5 Chunks zurueck um das Gemini Context-Window nicht zu sprengen
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 38-01-PLAN.md — Keyword-based chunk search with relevance ranking
 
 ### Phase 39: Multi-Source-RAG
 **Goal**: VirtuProf nutzt alle verfuegbaren Wissensquellen mit intelligenter Priorisierung und zeigt dem User woher die Antwort stammt
@@ -537,6 +540,6 @@ Phases 36-39 execute sequentially: 36 → 37 → 38 → 39. Each phase depends o
 | 34. Charakter-System | v6.0 | Complete | Complete | 2026-03-22 |
 | 35. Kampagnen-Content | v6.0 | Complete | Complete | 2026-03-22 |
 | 36. Dokument-Upload + Extraktion | 2/2 | Complete    | 2026-03-22 | - |
-| 37. Chunking-Pipeline | 1/1 | Complete   | 2026-03-22 | - |
+| 37. Chunking-Pipeline | 1/1 | Complete    | 2026-03-22 | - |
 | 38. Chunk-Suche | v4.1 | 0/? | Not started | - |
 | 39. Multi-Source-RAG | v4.1 | 0/? | Not started | - |
