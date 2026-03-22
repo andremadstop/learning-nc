@@ -21,8 +21,8 @@
 
 ### Suche
 
-- [ ] **SEARCH-01**: System findet relevante Chunks per Keyword-Match gegen User-Frage
-- [ ] **SEARCH-02**: Suchergebnisse werden nach Relevanz sortiert (Treffer-Häufigkeit + Kapitel-Match)
+- [x] **SEARCH-01**: System findet relevante Chunks per Keyword-Match gegen User-Frage
+- [x] **SEARCH-02**: Suchergebnisse werden nach Relevanz sortiert (Treffer-Häufigkeit + Kapitel-Match)
 
 ### Multi-Source-RAG
 
@@ -60,8 +60,8 @@
 | CHUNK-02 | Phase 37 | Complete |
 | CHUNK-03 | Phase 37 | Complete |
 | CHUNK-04 | Phase 37 | Complete |
-| SEARCH-01 | Phase 38 | Pending |
-| SEARCH-02 | Phase 38 | Pending |
+| SEARCH-01 | Phase 38 | Complete |
+| SEARCH-02 | Phase 38 | Complete |
 | RAG-01 | Phase 39 | Pending |
 | RAG-02 | Phase 39 | Pending |
 | RAG-03 | Phase 39 | Pending |

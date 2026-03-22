@@ -439,7 +439,7 @@ Plans:
 
 - [x] **Phase 36: Dokument-Upload + Extraktion** - Dozent laedt PDF/Markdown hoch, System extrahiert Text, Status-Uebersicht (completed 2026-03-22)
 - [x] **Phase 37: Chunking-Pipeline** - Text wird in ~500-Token-Chunks mit Kapitel-Tags zerlegt, als BackgroundJob verarbeitet und in DB gespeichert (completed 2026-03-22)
-- [ ] **Phase 38: Chunk-Suche** - Keyword-basierte Suche findet relevante Chunks zur User-Frage, sortiert nach Relevanz
+- [x] **Phase 38: Chunk-Suche** - Keyword-basierte Suche findet relevante Chunks zur User-Frage, sortiert nach Relevanz (completed 2026-03-22)
 - [ ] **Phase 39: Multi-Source-RAG** - RagContextService buendelt alle Quellen mit Prioritaeten, VirtuProf zeigt Quellenangaben
 
 ## Phase Details
@@ -541,5 +541,5 @@ Phases 36-39 execute sequentially: 36 → 37 → 38 → 39. Each phase depends o
 | 35. Kampagnen-Content | v6.0 | Complete | Complete | 2026-03-22 |
 | 36. Dokument-Upload + Extraktion | 2/2 | Complete    | 2026-03-22 | - |
 | 37. Chunking-Pipeline | 1/1 | Complete    | 2026-03-22 | - |
-| 38. Chunk-Suche | v4.1 | 0/? | Not started | - |
+| 38. Chunk-Suche | 1/1 | Complete   | 2026-03-22 | - |
 | 39. Multi-Source-RAG | v4.1 | 0/? | Not started | - |
