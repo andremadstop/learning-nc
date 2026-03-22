@@ -26,6 +26,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setExamAttemptsPerDay(?int $examAttemptsPerDay)
  * @method bool getExamRequiresTraining()
  * @method void setExamRequiresTraining(bool $examRequiresTraining)
+ * @method string|null getMaterialFolder()
+ * @method void setMaterialFolder(?string $materialFolder)
  */
 class Course extends Entity {
     protected $title;
@@ -39,6 +41,7 @@ class Course extends Entity {
     protected $examAvailableFrom;
     protected $examAttemptsPerDay;
     protected $examRequiresTraining;
+    protected $materialFolder;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -63,6 +66,7 @@ class Course extends Entity {
             'exam_available_from' => $this->examAvailableFrom,
             'exam_attempts_per_day' => $this->examAttemptsPerDay,
             'exam_requires_training' => $this->examRequiresTraining ?? false,
+            'material_folder' => $this->materialFolder,
         ];
     }
 }
