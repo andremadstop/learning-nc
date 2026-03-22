@@ -14,10 +14,10 @@
 
 ### Chunking
 
-- [ ] **CHUNK-01**: System zerlegt extrahierten Text in ~500-Token-Chunks
-- [ ] **CHUNK-02**: Chunks erhalten Kapitel-Tags aus Dokumentstruktur (Headings)
-- [ ] **CHUNK-03**: Chunking läuft als BackgroundJob (nicht synchron)
-- [ ] **CHUNK-04**: Chunks werden in learning_rag_chunks Tabelle gespeichert (course_id, chapter, text, source_file, created_at)
+- [x] **CHUNK-01**: System zerlegt extrahierten Text in ~500-Token-Chunks
+- [x] **CHUNK-02**: Chunks erhalten Kapitel-Tags aus Dokumentstruktur (Headings)
+- [x] **CHUNK-03**: Chunking läuft als BackgroundJob (nicht synchron)
+- [x] **CHUNK-04**: Chunks werden in learning_rag_chunks Tabelle gespeichert (course_id, chapter, text, source_file, created_at)
 
 ### Suche
 
@@ -56,10 +56,10 @@
 | DOCS-02 | Phase 36 | Complete (36-01) |
 | DOCS-03 | Phase 36 | Complete (36-01) |
 | DOCS-04 | Phase 36 | Complete (36-01) |
-| CHUNK-01 | Phase 37 | Pending |
-| CHUNK-02 | Phase 37 | Pending |
-| CHUNK-03 | Phase 37 | Pending |
-| CHUNK-04 | Phase 37 | Pending |
+| CHUNK-01 | Phase 37 | Complete |
+| CHUNK-02 | Phase 37 | Complete |
+| CHUNK-03 | Phase 37 | Complete |
+| CHUNK-04 | Phase 37 | Complete |
 | SEARCH-01 | Phase 38 | Pending |
 | SEARCH-02 | Phase 38 | Pending |
 | RAG-01 | Phase 39 | Pending |

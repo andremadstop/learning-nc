@@ -438,7 +438,7 @@ Plans:
 **Milestone Goal:** VirtuProf beantwortet Fragen basierend auf echtem Kursmaterial (PDF/Markdown) -- nicht nur Pool-Fragen. Dokument-Upload, Text-Extraktion, Chunking-Pipeline, Keyword-Suche und Multi-Source-RAG mit Quellenangaben.
 
 - [x] **Phase 36: Dokument-Upload + Extraktion** - Dozent laedt PDF/Markdown hoch, System extrahiert Text, Status-Uebersicht (completed 2026-03-22)
-- [ ] **Phase 37: Chunking-Pipeline** - Text wird in ~500-Token-Chunks mit Kapitel-Tags zerlegt, als BackgroundJob verarbeitet und in DB gespeichert
+- [x] **Phase 37: Chunking-Pipeline** - Text wird in ~500-Token-Chunks mit Kapitel-Tags zerlegt, als BackgroundJob verarbeitet und in DB gespeichert (completed 2026-03-22)
 - [ ] **Phase 38: Chunk-Suche** - Keyword-basierte Suche findet relevante Chunks zur User-Frage, sortiert nach Relevanz
 - [ ] **Phase 39: Multi-Source-RAG** - RagContextService buendelt alle Quellen mit Prioritaeten, VirtuProf zeigt Quellenangaben
 
@@ -468,7 +468,10 @@ Plans:
   2. Chunks die aus einem Abschnitt mit Heading stammen erhalten den Kapitel-Tag aus der naechsten uebergeordneten Ueberschrift (z.B. "Kapitel 6: Routing")
   3. In der Tabelle `learning_rag_chunks` existieren nach dem Job Eintraege mit course_id, chapter, text, source_file und created_at -- pruefbar per SQL
   4. Ein 50-seitiges PDF wird innerhalb von 60 Sekunden vollstaendig gechunkt -- der Job blockiert keine anderen NC-BackgroundJobs
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 37-01-PLAN.md — DB Migration + ChunkingService + ChunkingJob (full pipeline)
 
 ### Phase 38: Chunk-Suche
 **Goal**: Das System kann zu einer User-Frage die relevantesten Chunks finden -- die Bruecke zwischen Frage und Kursmaterial
@@ -533,7 +536,7 @@ Phases 36-39 execute sequentially: 36 → 37 → 38 → 39. Each phase depends o
 | 33. RPG-Frontend + Tab | v6.0 | Complete | Complete | 2026-03-22 |
 | 34. Charakter-System | v6.0 | Complete | Complete | 2026-03-22 |
 | 35. Kampagnen-Content | v6.0 | Complete | Complete | 2026-03-22 |
-| 36. Dokument-Upload + Extraktion | 2/2 | Complete   | 2026-03-22 | - |
-| 37. Chunking-Pipeline | v4.1 | 0/? | Not started | - |
+| 36. Dokument-Upload + Extraktion | 2/2 | Complete    | 2026-03-22 | - |
+| 37. Chunking-Pipeline | 1/1 | Complete   | 2026-03-22 | - |
 | 38. Chunk-Suche | v4.1 | 0/? | Not started | - |
 | 39. Multi-Source-RAG | v4.1 | 0/? | Not started | - |
