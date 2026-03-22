@@ -1,0 +1,367 @@
+{
+  "campaign_id": "ransomware",
+  "title": "Ransomware",
+  "description": "Freitag 16:30: YOUR FILES HAVE BEEN ENCRYPTED. Die Uhr tickt — 48 Stunden.",
+  "duration_minutes": 60,
+  "difficulty": "advanced",
+  "focus_areas": ["security_plus"],
+  "character_recommendations": ["security", "sysadmin"],
+  "characters": {
+    "architect": {
+      "name": "Alex \"The Architect\" Neumann",
+      "avatar": "👨‍💻",
+      "skill_bonus_pools": ["routing", "vlan", "subnetting", "topology"],
+      "skill_penalty_pools": ["security", "incident_response", "backup"]
+    },
+    "security": {
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "👩‍💻",
+      "skill_bonus_pools": ["security", "incident_response", "firewall", "endpoint_security"],
+      "skill_penalty_pools": ["routing", "vlan"]
+    },
+    "sysadmin": {
+      "name": "Kai \"Root\" Lindström",
+      "avatar": "🧔",
+      "skill_bonus_pools": ["linux", "backup", "troubleshooting", "dns"],
+      "skill_penalty_pools": ["wireless", "wlan"]
+    },
+    "helpdesk": {
+      "name": "Mia \"Helpdesk\" Torres",
+      "avatar": "👩‍🎧",
+      "skill_bonus_pools": ["troubleshooting", "hardware", "a_plus"],
+      "skill_penalty_pools": ["security", "incident_response", "backup"]
+    }
+  },
+  "npcs": {
+    "dr_weber": {
+      "name": "Dr. Margarethe Weber",
+      "role": "CEO",
+      "avatar": "👔"
+    },
+    "jens_bug": {
+      "name": "Jens \"Bug\" Hoffmann",
+      "role": "Ehemaliger Admin",
+      "avatar": "😰"
+    },
+    "nova": {
+      "name": "NOVA",
+      "role": "KI-Assistent",
+      "avatar": "🤖"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_erste_reaktion",
+      "title": "Erste Reaktion",
+      "narrative": "Freitag Nachmittag, 16:30. Du wolltest gerade Feierabend machen. Dann erscheint auf dem Bildschirm der Buchhaltung: 'YOUR FILES HAVE BEEN ENCRYPTED. PAY 2 BTC TO...' Die Ransomware-Uhr tickt: 48 Stunden. Du hörst Panik in den Büros. Dein erster Move entscheidet.",
+      "image": "scene_ransomware_lockscreen.png",
+      "animation_in": "mission_start",
+      "npc_dialog": {
+        "speaker": "dr_weber",
+        "text": "Was ist das?! Alle meine Dateien! Die Quartalszahlen! Das Audit nächste Woche! Was tun wir jetzt?!",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c1_isolate_all",
+          "text": "Sofort alle Rechner vom Netz trennen",
+          "icon": "🔌",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 1},
+              "helpdesk": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "s2_eindaemmung",
+          "partial_scene": "s2_eindaemmung",
+          "fail_scene": "s2_eindaemmung_slow"
+        },
+        {
+          "id": "c1_assess_spread",
+          "text": "Erstmal schauen wie weit es sich verbreitet hat",
+          "icon": "🔍",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s2_eindaemmung",
+          "partial_scene": "s2_eindaemmung",
+          "fail_scene": "s2_eindaemmung_slow"
+        },
+        {
+          "id": "c1_check_backup",
+          "text": "Backup-Status prüfen — haben wir eins?",
+          "icon": "💾",
+          "skill_check": {
+            "pool_filter": "backup",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "sysadmin": {"difficulty_modifier": -1},
+              "security": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "s2_eindaemmung",
+          "partial_scene": "s2_eindaemmung",
+          "fail_scene": "s2_eindaemmung_slow"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_eindaemmung",
+      "title": "Eindämmung",
+      "narrative": "Du isolierst die betroffenen Segmente. Aber die Ransomware verbreitet sich über SMB — Port 445. Alle Windows-Shares sind betroffen. Der Linux-Server ist verschont. Kai grinst: 'Natürlich.' Du musst jetzt die Firewall-Regeln anpassen um die Ausbreitung zu stoppen.",
+      "image": "scene_firewall_config.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "SMB-Traffic auf Port 445 lateral gesperrt. Empfehle: Alle Windows-Shares offline nehmen bis Malware-Analyse abgeschlossen.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c2_segment_network",
+          "text": "Netzwerk-Segmentierung: Betroffene Segmente isolieren",
+          "icon": "🔒",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": 0},
+              "sysadmin": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s3_backup_frage",
+          "partial_scene": "s3_backup_frage",
+          "fail_scene": "s3_backup_frage"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_eindaemmung_slow",
+      "title": "Zu langsam reagiert",
+      "narrative": "Während du noch abwägst, hat die Ransomware 3 weitere Server verschlüsselt. Das Backup-NAS ist jetzt auch betroffen. NOVA: 'Backup-System kompromittiert. Das ändert die Optionen.' Du fluchst lautlos und fängst an zu containen.",
+      "image": "scene_siem_dashboard.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Ausbreitung: 7 Systeme betroffen. Backup-NAS verschlüsselt. Sofortiges Containment erforderlich — jetzt.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c2_emergency_contain",
+          "text": "Notfall-Containment: Komplettes Netz-Segment abschalten",
+          "icon": "⚡",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {}
+          },
+          "success_scene": "s3_backup_frage",
+          "partial_scene": "s3_backup_frage",
+          "fail_scene": "s3_backup_frage"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s3_backup_frage",
+      "title": "Die Backup-Frage",
+      "narrative": "Es gibt Backups. Schlechte Nachricht: Das letzte vollständige Backup ist 5 Tage alt. Die inkrementellen Backups der letzten 5 Tage sind auf dem verschlüsselten NAS. Lektion gelernt: Offsite-Backup. Aber zuerst musst du entscheiden wie du vorgehen willst.",
+      "image": "scene_backup_status.png",
+      "npc_dialog": {
+        "speaker": "jens_bug",
+        "text": "Ich hatte ein Backup-Konzept vorgeschlagen... vor einem Jahr. Es wurde abgelehnt. 'Zu teuer.' Das hier ist teurer.",
+        "portrait": "npc_jens"
+      },
+      "choices": [
+        {
+          "id": "c3_321_backup_plan",
+          "text": "3-2-1-Backup-Strategie für Notfall-Recovery entwickeln",
+          "icon": "💾",
+          "skill_check": {
+            "pool_filter": "backup",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "sysadmin": {"difficulty_modifier": -1},
+              "security": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s4_zahlen_oder_nicht",
+          "partial_scene": "s4_zahlen_oder_nicht",
+          "fail_scene": "s4_zahlen_oder_nicht"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s4_zahlen_oder_nicht",
+      "title": "Zahlen oder nicht?",
+      "narrative": "Dr. Weber fragt: 'Sollen wir zahlen?' Die Buchhaltung hat Daten der letzten 5 Tage die nicht im Backup sind — Quartalszahlen, Vertragsunterlagen. Der CEO sagt: 'Auf keinen Fall.' Die Rechtsabteilung: 'Wir müssen es melden.' DSGVO-Meldepflicht innerhalb 72 Stunden. Du musst beraten.",
+      "image": "scene_boardroom.png",
+      "npc_dialog": {
+        "speaker": "dr_weber",
+        "text": "Ich will Zahlen und Optionen auf dem Tisch. Zahlen: wie viel und was passiert? Nicht zahlen: was verlieren wir? Ich entscheide — aber ich brauche Fakten.",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c4_no_payment",
+          "text": "Nicht zahlen — Daten aus Backup wiederherstellen + BKA melden",
+          "icon": "🚫",
+          "skill_check": {
+            "pool_filter": "incident_response",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "s5_recovery_prevention",
+          "partial_scene": "s5_recovery_prevention",
+          "fail_scene": "s5_recovery_prevention"
+        },
+        {
+          "id": "c4_legal_compliance",
+          "text": "DSGVO-Meldepflicht erfüllen + Recovery parallel starten",
+          "icon": "⚖️",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1}
+            }
+          },
+          "success_scene": "s5_recovery_prevention",
+          "partial_scene": "s5_recovery_prevention",
+          "fail_scene": "s5_recovery_prevention"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s5_recovery_prevention",
+      "title": "Recovery und Prävention",
+      "narrative": "Ihr entscheidet euch gegen Zahlung. Recovery aus dem 5-Tage-alten Backup läuft. Die fehlenden Daten werden manuell rekonstruiert — schmerzhaft aber machbar. Danach: Härtung. Endpoint Protection, Network Segmentation, Email-Filterung, User Training. Es darf kein zweites Mal passieren.",
+      "image": "scene_security_hardening.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Recovery: 73% abgeschlossen. Prävention ist jetzt die Priorität. Email-Gateway-Konfiguration, Endpoint Detection and Response, und ein Offline-Backup-System.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c5_full_hardening",
+          "text": "Vollständiges Security-Hardening implementieren",
+          "icon": "🛡️",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 0},
+              "helpdesk": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_partial"
+        }
+      ],
+      "simulation": {
+        "type": "static_route_config",
+        "pbq_question_id": null,
+        "description": "Konfiguriere statische Routen für die neue Netzwerk-Segmentierung zur Ransomware-Prävention"
+      }
+    },
+    {
+      "id": "epilog_success",
+      "title": "Erholt und gehärtet",
+      "narrative": "48 Stunden später. Die meisten Systeme laufen wieder. Die fehlenden Daten wurden zu 95% rekonstruiert. Die neue Sicherheitsarchitektur ist in Betrieb. Dr. Weber im All-Hands: 'Das war ein Weckruf. Ich habe das IT-Budget für Security verdoppelt.' NOVA: 'Neue Security-Architektur: Vollständig deployed.'",
+      "image": "scene_victory.png",
+      "animation_in": "campaign_complete",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Ransomware-Incident geschlossen. Alle Systeme wiederhergestellt. Neue Sicherheitsmaßnahmen aktiv. Sehr professionelle Handhabung.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "success"
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Recovery läuft",
+      "narrative": "Recovery dauert länger als geplant. 80% der Daten sind wiederhergestellt. Dr. Weber ist angespannt aber versteht die Situation. NOVA erstellt einen 30-Tage-Hardening-Plan. Die wichtigste Lektion: Ein Offline-Backup-System wird noch diese Woche eingerichtet.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "30-Tage-Hardening-Plan generiert. Priorität 1: Offline-Backup noch diese Woche. Das wäre die teure Lektion.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "partial"
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Teuer gelernt",
+      "narrative": "Der Schaden ist erheblich. Aber das Unternehmen überlebt. Dr. Weber hat das Incident-Budget für das nächste Jahr verzehnfacht. NOVA generiert eine 60-seitige Post-Mortem Analyse. Die wichtigste Seite: 'Was wäre wenn wir das 3-2-1-Backup-Prinzip befolgt hätten.'",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Post-Mortem: 15 kritische Verbesserungspunkte identifiziert. Jeder davon hätte den Schaden reduziert. Beginnen wir mit dem wichtigsten: Backups.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "fail"
+    }
+  ],
+  "epilog": {
+    "success": {
+      "narrative": "48 Stunden später. 95% der Daten wiederhergestellt. Dr. Weber verdoppelt das Security-Budget. NOVA: 'Neue Security-Architektur vollständig deployed.'",
+      "image": "scene_victory.png",
+      "animation": "campaign_complete"
+    },
+    "partial": {
+      "narrative": "Recovery läuft. 80% wiederhergestellt. Ein Offline-Backup-System wird noch diese Woche eingerichtet. Die wichtigste Lektion: 3-2-1.",
+      "image": "scene_partial_victory.png"
+    },
+    "fail": {
+      "narrative": "Teuer gelernt. Post-Mortem: 15 Verbesserungspunkte. Das 3-2-1-Backup-Prinzip wäre billiger gewesen als dieser Incident.",
+      "image": "scene_partial_victory.png"
+    }
+  }
+}

@@ -1,0 +1,385 @@
+{
+  "campaign_id": "das_erbe",
+  "title": "Das Erbe",
+  "description": "NovaTech hat Oldstyle GmbH übernommen. IT-Raum seit 2015 nicht modernisiert. Dein Auftrag: Inventur, Migration, Integration. Budget: so wenig wie möglich.",
+  "duration_minutes": 75,
+  "difficulty": "intermediate",
+  "focus_areas": ["a_plus", "network_plus", "linux_plus"],
+  "character_recommendations": ["sysadmin", "helpdesk"],
+  "characters": {
+    "architect": {
+      "name": "Alex \"The Architect\" Neumann",
+      "avatar": "👨‍💻",
+      "skill_bonus_pools": ["routing", "vlan", "subnetting", "topology"],
+      "skill_penalty_pools": ["security", "incident_response", "linux"]
+    },
+    "security": {
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "👩‍💻",
+      "skill_bonus_pools": ["security", "incident_response", "firewall"],
+      "skill_penalty_pools": ["linux", "hardware", "legacy_systems"]
+    },
+    "sysadmin": {
+      "name": "Kai \"Root\" Lindström",
+      "avatar": "🧔",
+      "skill_bonus_pools": ["linux", "dns", "troubleshooting", "legacy_systems", "migration"],
+      "skill_penalty_pools": ["wireless", "wlan"]
+    },
+    "helpdesk": {
+      "name": "Mia \"Helpdesk\" Torres",
+      "avatar": "👩‍🎧",
+      "skill_bonus_pools": ["troubleshooting", "hardware", "a_plus", "legacy_systems"],
+      "skill_penalty_pools": ["linux", "subnetting"]
+    }
+  },
+  "npcs": {
+    "dr_weber": {
+      "name": "Dr. Margarethe Weber",
+      "role": "CEO",
+      "avatar": "👔"
+    },
+    "jens_bug": {
+      "name": "Jens \"Bug\" Hoffmann",
+      "role": "Ehemaliger Admin",
+      "avatar": "😰"
+    },
+    "nova": {
+      "name": "NOVA",
+      "role": "KI-Assistent",
+      "avatar": "🤖"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_bestandsaufnahme",
+      "title": "Die Bestandsaufnahme",
+      "narrative": "Du betrittst den 'Serverraum' von Oldstyle GmbH — ein umgebauter Besenschrank. Ein Server mit Windows Server 2012 (unsupported!), ein Linux-NAS das per Cronjob Backups macht, ein 8-Port-Hub (kein Switch, ein HUB!), und ein Router der seit 3 Jahren kein Firmware-Update hatte. Ein Post-it am Monitor: 'ADMIN PW: admin123'. Du stehst mit offenem Mund davor.",
+      "image": "scene_legacy_serverroom.png",
+      "animation_in": "mission_start",
+      "npc_dialog": {
+        "speaker": "jens_bug",
+        "text": "Das System läuft seit 11 Jahren stabil. 11 Jahre! Ich verstehe nicht was das Problem ist.",
+        "portrait": "npc_jens"
+      },
+      "choices": [
+        {
+          "id": "c1_full_inventory",
+          "text": "Vollständige Inventur: Hardware identifizieren und klassifizieren",
+          "icon": "📋",
+          "skill_check": {
+            "pool_filter": "hardware",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "helpdesk": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": 0},
+              "security": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "s2_network_discovery",
+          "partial_scene": "s2_network_discovery",
+          "fail_scene": "s2_network_discovery_limited"
+        },
+        {
+          "id": "c1_security_first",
+          "text": "Sicherheitslücken dokumentieren — das ist ein Desaster",
+          "icon": "🚨",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "security": {"difficulty_modifier": -1},
+              "helpdesk": {"difficulty_modifier": 0},
+              "sysadmin": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 1}
+            }
+          },
+          "success_scene": "s2_network_discovery",
+          "partial_scene": "s2_network_discovery",
+          "fail_scene": "s2_network_discovery_limited"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_network_discovery",
+      "title": "Netzwerk-Discovery",
+      "narrative": "Du verbindest deinen Laptop. DHCP funktioniert — gibt dir 192.168.1.147 mit Gateway 192.168.1.1. Du scannst das Netz: 23 Geräte. 15 PCs, 3 Drucker, 1 Server, 1 NAS, 1 Router, 1 Hub, und ein unbekanntes Gerät. Was ist Gerät 23?",
+      "image": "scene_network_scan.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Netzwerk-Scan läuft. Hub erkannt — das erklärt die Collision Domains. Alle 23 Geräte teilen eine Broadcast-Domain. Performance-Impact: erheblich.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c2_full_scan",
+          "text": "Netzwerk-Scan mit ARP und MAC-Table analysieren",
+          "icon": "🔍",
+          "skill_check": {
+            "pool_filter": "networking",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "sysadmin": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": -1},
+              "helpdesk": {"difficulty_modifier": 0},
+              "security": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "s3_linux_server",
+          "partial_scene": "s3_linux_server",
+          "fail_scene": "s3_linux_server"
+        }
+      ],
+      "simulation": {
+        "type": "cli_analysis",
+        "pbq_question_id": null,
+        "description": "Network Discovery mit CLI: show mac address-table, arp -a, nmap-Scan interpretieren"
+      }
+    },
+    {
+      "id": "s2_network_discovery_limited",
+      "title": "Inventur unvollständig",
+      "narrative": "Die Inventur war nicht gründlich genug — du hast einige Geräte übersehen. NOVA: 'Drei Geräte wurden nicht erfasst. Darunter möglicherweise das unbekannte Gerät.' Du machst nochmal einen sauberen Scan.",
+      "image": "scene_network_scan.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Inventur unvollständig. Empfehle: nmap -sn 192.168.1.0/24 für vollständigen Host-Scan. Dann arp -a für MAC-Adressen.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c2_redo_scan",
+          "text": "Sauberen Netzwerk-Scan wiederholen",
+          "icon": "🔄",
+          "skill_check": {
+            "pool_filter": "networking",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {}
+          },
+          "success_scene": "s3_linux_server",
+          "partial_scene": "s3_linux_server",
+          "fail_scene": "s3_linux_server"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s3_linux_server",
+      "title": "Der Linux-Server",
+      "narrative": "Der Linux-NAS (Ubuntu 18.04, auch unsupported!) hat wichtige Daten — Vertragsunterlagen, Kundendaten, 11 Jahre Buchungsdaten. Du musst: Was läuft da überhaupt? Daten sichern, OS-Status prüfen, Cronjobs analysieren. Kai reibt sich die Hände.",
+      "image": "scene_linux_terminal.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Ubuntu 18.04 End-of-Life: Mai 2023. Sicherheitsupdates seit 3 Jahren ausständig. Aber: Daten intakt. Priorität: Backup JETZT, dann Migration.",
+        "portrait": "npc_nova"
+      },
+      "choices": [
+        {
+          "id": "c3_linux_analysis",
+          "text": "Linux-System analysieren: Services, Cronjobs, Dateisystem",
+          "icon": "🐧",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "sysadmin": {"difficulty_modifier": -1},
+              "helpdesk": {"difficulty_modifier": 0},
+              "architect": {"difficulty_modifier": 1},
+              "security": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "s4_migration",
+          "partial_scene": "s4_migration",
+          "fail_scene": "s4_migration"
+        },
+        {
+          "id": "c3_backup_first",
+          "text": "Erst Backup, dann Analysis",
+          "icon": "💾",
+          "skill_check": {
+            "pool_filter": "linux",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {
+              "sysadmin": {"difficulty_modifier": -1}
+            }
+          },
+          "success_scene": "s4_migration",
+          "partial_scene": "s4_migration",
+          "fail_scene": "s4_migration"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s4_migration",
+      "title": "Die Migration",
+      "narrative": "Plan: Hub durch Managed Switch ersetzen, neues IP-Schema (NovaTech-konform: 10.0.x.0/24), VPN-Tunnel zum Hauptgebäude, Active Directory Integration, Windows Server 2012 ersetzen durch Windows Server 2022. Klingt simpel. Ist es nicht.",
+      "image": "scene_migration_plan.png",
+      "npc_dialog": {
+        "speaker": "jens_bug",
+        "text": "Wenn ihr das IP-Schema ändert, müssen alle Drucker neu konfiguriert werden. Und die Legacy-Kassensoftware von 2008 funktioniert nur mit 192.168.1.x. Das hab ich vergessen zu erwähnen.",
+        "portrait": "npc_jens"
+      },
+      "choices": [
+        {
+          "id": "c4_ip_migration",
+          "text": "IP-Schema migrieren + DHCP neu konfigurieren",
+          "icon": "🔢",
+          "skill_check": {
+            "pool_filter": "subnetting",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "architect": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": -1},
+              "helpdesk": {"difficulty_modifier": 1},
+              "security": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "s5_golive_troubleshooting",
+          "partial_scene": "s5_golive_troubleshooting",
+          "fail_scene": "s5_golive_troubleshooting"
+        },
+        {
+          "id": "c4_gradual_migration",
+          "text": "Schrittweise Migration: Erst Switch, dann IPs",
+          "icon": "📅",
+          "skill_check": {
+            "pool_filter": "networking",
+            "question_count": 2,
+            "pass_threshold": 1,
+            "character_adjustments": {
+              "sysadmin": {"difficulty_modifier": -1}
+            }
+          },
+          "success_scene": "s5_golive_troubleshooting",
+          "partial_scene": "s5_golive_troubleshooting",
+          "fail_scene": "s5_golive_troubleshooting"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s5_golive_troubleshooting",
+      "title": "Go-Live und Problemlösung",
+      "narrative": "Die Migration ist abgeschlossen. Aber: 3 der 15 PCs bekommen kein WLAN. Der Drucker druckt nur Hieroglyphen (Zeichencodierung). Und der Chef von Oldstyle beschwert sich dass 'alles anders aussieht und nicht mehr so funktioniert wie früher.' Change Management ist auch eine technische Kompetenz.",
+      "image": "scene_golive_chaos.png",
+      "npc_dialog": {
+        "speaker": "dr_weber",
+        "text": "Ich höre Beschwerden. Drei Mitarbeiter können nicht arbeiten. Das kostet uns Geld. Wie lange noch?",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c5_systematic_fix",
+          "text": "Systematisch Troubleshooten: WLAN, Drucker, dann User-Schulung",
+          "icon": "🔧",
+          "skill_check": {
+            "pool_filter": "troubleshooting",
+            "question_count": 4,
+            "pass_threshold": 3,
+            "character_adjustments": {
+              "helpdesk": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": -1},
+              "architect": {"difficulty_modifier": 0},
+              "security": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_partial"
+        },
+        {
+          "id": "c5_quick_fixes",
+          "text": "Schnelle Fixes zuerst: Low-hanging Fruit",
+          "icon": "⚡",
+          "skill_check": {
+            "pool_filter": "wireless",
+            "question_count": 3,
+            "pass_threshold": 2,
+            "character_adjustments": {
+              "helpdesk": {"difficulty_modifier": -1},
+              "sysadmin": {"difficulty_modifier": 0}
+            }
+          },
+          "success_scene": "epilog_partial",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_partial"
+        }
+      ],
+      "simulation": {
+        "type": "soho_troubleshooting",
+        "pbq_question_id": null,
+        "description": "SOHO-Troubleshooting: WLAN-Verbindungsprobleme und Drucker-Konfiguration nach Migration lösen"
+      }
+    },
+    {
+      "id": "epilog_success",
+      "title": "Das Erbe übernommen",
+      "narrative": "Eine Woche nach der Migration. Alle 15 Arbeitsplätze laufen auf moderner Infrastruktur. Der Linux-Server läuft jetzt auf Ubuntu 24.04 LTS. Der Hub ist Geschichte. Dr. Weber: 'Das war wie eine Zeitreise in die Gegenwart.' NOVA: 'Infrastruktur auf NovaTech-Standard. Sicherheits-Score: 94/100.'",
+      "image": "scene_victory.png",
+      "animation_in": "campaign_complete",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Migration abgeschlossen. Alle Systeme modernisiert. Sicherheits-Score von 23/100 auf 94/100. Das Erbe ist angenommen.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "success"
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Gute Grundlage",
+      "narrative": "Die kritischen Systeme laufen. Noch 3 offene Punkte auf der Liste. Die Legacy-Kassensoftware läuft noch auf einer VM — das ist eine Kompromisslösung aber sie funktioniert. NOVA: '82/100 Sicherheits-Score. Restliche Punkte: 2 Wochen-Sprint.' Jens schaut zu und nickt langsam.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Sicherheits-Score: 82/100. Restliche 3 Punkte auf dem Backlog. Gute Grundlage — das Fundament stimmt.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "partial"
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Modernisierung in Arbeit",
+      "narrative": "Die Migration ist komplexer als geplant. 8 offene Punkte, 2 Systeme noch auf Legacy. Aber niemand sitzt ohne Computer. NOVA dokumentiert einen 4-Wochen-Plan. Der wichtigste Fortschritt: Der Hub ist weg. Das allein verdoppelt die Netzwerk-Performance.",
+      "image": "scene_partial_victory.png",
+      "npc_dialog": {
+        "speaker": "nova",
+        "text": "Fortschritt: 60%. Hub ersetzt, Daten gesichert, Linux modernisiert. Verbleibend: IP-Migration, VPN, AD-Integration. 4-Wochen-Plan aktiv.",
+        "portrait": "npc_nova"
+      },
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "fail"
+    }
+  ],
+  "epilog": {
+    "success": {
+      "narrative": "Eine Woche später. Alle 15 Arbeitsplätze modernisiert. Linux auf Ubuntu 24.04 LTS. Hub Geschichte. NOVA: 'Sicherheits-Score: 94/100. Das Erbe ist angenommen.'",
+      "image": "scene_victory.png",
+      "animation": "campaign_complete"
+    },
+    "partial": {
+      "narrative": "Kritische Systeme laufen. 3 offene Punkte. 82/100 Sicherheits-Score. Gute Grundlage — das Fundament stimmt. Restliche Punkte: 2-Wochen-Sprint.",
+      "image": "scene_partial_victory.png"
+    },
+    "fail": {
+      "narrative": "Migration 60% abgeschlossen. Hub weg, Daten gesichert. Restliche 8 Punkte im 4-Wochen-Plan. Der wichtigste Fortschritt ist gemacht.",
+      "image": "scene_partial_victory.png"
+    }
+  }
+}
