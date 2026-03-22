@@ -215,5 +215,13 @@ return [
         ['name' => 'story#submitSkillAnswer',      'url' => '/api/story/campaigns/{campaignId}/answer',                          'verb' => 'POST'],
         ['name' => 'story#submitSkillBatch',       'url' => '/api/story/campaigns/{campaignId}/batch',                           'verb' => 'POST'],
         ['name' => 'story#submitFreetext',         'url' => '/api/story/campaigns/{campaignId}/freetext',                        'verb' => 'POST'],
+
+        // Document Upload & Extraction (Phase 36)
+        ['name' => 'document#setFolder',   'url' => '/api/courses/{courseId}/material-folder',               'verb' => 'POST'],
+        ['name' => 'document#getFolder',   'url' => '/api/courses/{courseId}/material-folder',               'verb' => 'GET'],
+        ['name' => 'document#scan',        'url' => '/api/courses/{courseId}/documents/scan',                'verb' => 'POST'],
+        ['name' => 'document#index',       'url' => '/api/courses/{courseId}/documents',                     'verb' => 'GET'],
+        ['name' => 'document#extract',     'url' => '/api/courses/{courseId}/documents/{documentId}/extract', 'verb' => 'POST'],
+        ['name' => 'document#extractAll',  'url' => '/api/courses/{courseId}/documents/extract-all',         'verb' => 'POST'],
     ]
 ];

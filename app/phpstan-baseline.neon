@@ -46,6 +46,16 @@ parameters:
 			path: lib/Db/AnswerTranslationMapper.php
 
 		-
+			message: "#^Method OCA\\\\Learning\\\\Db\\\\CourseDocumentMapper\\:\\:findById\\(\\) should return OCA\\\\Learning\\\\Db\\\\CourseDocument but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
+			count: 1
+			path: lib/Db/CourseDocumentMapper.php
+
+		-
+			message: "#^Method OCA\\\\Learning\\\\Db\\\\CourseDocumentMapper\\:\\:findByPath\\(\\) should return OCA\\\\Learning\\\\Db\\\\CourseDocument\\|null but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
+			count: 1
+			path: lib/Db/CourseDocumentMapper.php
+
+		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\CourseMapper\\:\\:findById\\(\\) should return OCA\\\\Learning\\\\Db\\\\Course but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
 			count: 1
 			path: lib/Db/CourseMapper.php
@@ -164,6 +174,11 @@ parameters:
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\QuestionTranslationMapper\\:\\:findByQuestionAndLang\\(\\) should return OCA\\\\Learning\\\\Db\\\\QuestionTranslation\\|null but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
 			count: 1
 			path: lib/Db/QuestionTranslationMapper.php
+
+		-
+			message: "#^Method OCA\\\\Learning\\\\Db\\\\StoryProgressMapper\\:\\:findByUserAndCampaign\\(\\) should return OCA\\\\Learning\\\\Db\\\\StoryProgress\\|null but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
+			count: 1
+			path: lib/Db/StoryProgressMapper.php
 
 		-
 			message: "#^Method OCA\\\\Learning\\\\Db\\\\SupportTicketMapper\\:\\:findById\\(\\) should return OCA\\\\Learning\\\\Db\\\\SupportTicket but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
@@ -381,6 +396,11 @@ parameters:
 			path: lib/Service/ShareService.php
 
 		-
+			message: "#^Parameter \\#1 \\$progress of method OCA\\\\Learning\\\\Service\\\\StoryEngineService\\:\\:serializeProgress\\(\\) expects OCA\\\\Learning\\\\Db\\\\StoryProgress, OCP\\\\AppFramework\\\\Db\\\\Entity given\\.$#"
+			count: 1
+			path: lib/Service/StoryEngineService.php
+
+		-
 			message: "#^Call to method getName\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Platforms\\\\AbstractPlatform\\.$#"
 			count: 1
 			path: lib/Service/StreakService.php
@@ -439,13 +459,3 @@ parameters:
 			message: "#^Property OCA\\\\Learning\\\\Migration\\\\Version003800Date20260320120000\\:\\:\\$db is never read, only written\\.$#"
 			count: 1
 			path: lib/Version003800Date20260320120000.php
-
-		-
-			message: "#^Method OCA\\\\Learning\\\\Db\\\\StoryProgressMapper\\:\\:findByUserAndCampaign\\(\\) should return OCA\\\\Learning\\\\Db\\\\StoryProgress\\|null but returns OCP\\\\AppFramework\\\\Db\\\\Entity\\.$#"
-			count: 1
-			path: lib/Db/StoryProgressMapper.php
-
-		-
-			message: "#^Parameter \\#1 \\$progress of method OCA\\\\Learning\\\\Service\\\\StoryEngineService\\:\\:serializeProgress\\(\\) expects OCA\\\\Learning\\\\Db\\\\StoryProgress, OCP\\\\AppFramework\\\\Db\\\\Entity given\\.$#"
-			count: 2
-			path: lib/Service/StoryEngineService.php
