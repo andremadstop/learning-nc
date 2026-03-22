@@ -1,77 +1,77 @@
-# Requirements: v6.0 Abenteuer (Story-RPG)
+# Requirements: Learning-NC v4.1
 
-**Defined:** 2026-03-21
-**Core Value:** Lernen durch Abenteuer — Fachfragen werden zu Skill-Checks in einer spannenden Story
+**Defined:** 2026-03-22
+**Core Value:** VirtuProf beantwortet Fragen basierend auf echtem Kursmaterial, nicht nur Pool-Fragen.
 
-## v6.0 Requirements
+## v4.1 Requirements
 
-### Story-Engine
+### Dokument-Management
 
-- [x] **STORY-01**: StoryEngine.php Service lädt Kampagnen-JSON und verwaltet den Spielfortschritt pro User
-- [x] **STORY-02**: Szenen haben narrative Texte, Entscheidungen, Skill-Checks und optionale Simulationen
-- [x] **STORY-03**: Skill-Checks ziehen Fragen aus echten Pools gefiltert nach Thema (pool_filter)
-- [x] **STORY-04**: Verzweigende Story-Baum: Erfolg/Teilweise/Misserfolg führen zu verschiedenen Szenen
-- [x] **STORY-05**: Kampagnen-Fortschritt wird persistent gespeichert (DB oder JSON in NC Files)
+- [x] **DOCS-01**: Dozent kann PDF/Markdown-Dateien in einen Kurs-Materialordner hochladen
+- [x] **DOCS-02**: System extrahiert Text aus hochgeladenen PDFs via pdftotext
+- [x] **DOCS-03**: System extrahiert Text aus Markdown-Dateien
+- [x] **DOCS-04**: Dozent sieht Liste aller hochgeladenen Kursmaterialien mit Status
 
-### Kampagnen-Content
+### Chunking
 
-- [x] **CAMP-01**: Kampagne 1 "Der große Ausfall" (Network+ Fokus) — 5 Szenen, Routing + VLAN + WLAN
-- [x] **CAMP-02**: Kampagne 2 "Einbruch im Netz" (Security+ Fokus) — 5 Szenen, Incident Response + Forensik
-- [x] **CAMP-03**: Kampagne 3 "Der neue Standort" (Mixed) — 5 Szenen, Design + Verkabelung + VPN
-- [x] **CAMP-04**: Kampagne 4 "Ransomware" (Security+) — 5 Szenen, IR + Backup + Recovery
-- [x] **CAMP-05**: Kampagne 5 "Das Erbe" (Mixed A+/Network+/Linux+) — 5 Szenen, Legacy + Migration
+- [ ] **CHUNK-01**: System zerlegt extrahierten Text in ~500-Token-Chunks
+- [ ] **CHUNK-02**: Chunks erhalten Kapitel-Tags aus Dokumentstruktur (Headings)
+- [ ] **CHUNK-03**: Chunking läuft als BackgroundJob (nicht synchron)
+- [ ] **CHUNK-04**: Chunks werden in learning_rag_chunks Tabelle gespeichert (course_id, chapter, text, source_file, created_at)
 
-### Charakter-System
+### Suche
 
-- [x] **CHAR-01**: 4 spielbare Klassen (Architekt, Security, Sysadmin, Helpdesk) mit Stärken/Schwächen
-- [x] **CHAR-02**: Charakter-Wahl beeinflusst Skill-Check-Schwierigkeit (Stärke = leichtere Fragen, Schwäche = schwerer)
-- [x] **CHAR-03**: NPC-Dialoge mit Charakter-Portraits (Text-basiert, kein Voice)
+- [ ] **SEARCH-01**: System findet relevante Chunks per Keyword-Match gegen User-Frage
+- [ ] **SEARCH-02**: Suchergebnisse werden nach Relevanz sortiert (Treffer-Häufigkeit + Kapitel-Match)
 
-### RPG-Frontend
+### Multi-Source-RAG
 
-- [x] **RPG-01**: AbenteuerMode.vue Komponente mit Szenen-Renderer (narrative Box, Entscheidungs-Karten, NPC-Dialog)
-- [x] **RPG-02**: Skill-Check UI (Frage aus Pool, Ergebnis-Animation Erfolg/Misserfolg)
-- [x] **RPG-03**: Kampagnen-Übersicht (Karte oder Liste aller 5 Kampagnen mit Fortschritt)
-- [x] **RPG-04**: "Abenteuer" Tab in CourseDetail + Standalone
-- [x] **RPG-05**: Koop-Modus: 2-4 Spieler, Abstimmung bei Entscheidungen (Mehrheit gewinnt)
+- [ ] **RAG-01**: RagContextService bündelt: Pool-Fragen + User-Profil + Chat-Memory + Dokument-Chunks + User-Notes
+- [ ] **RAG-02**: VirtuProf-Antworten enthalten Quellenangaben (z.B. "[Quelle: Dateiname, Kap. 6]")
+- [ ] **RAG-03**: Context enthält User-Schwächen und vergangene Erklärungen
+- [ ] **RAG-04**: Context-Fenster wird intelligent gefüllt (Priorität: relevante Chunks > Pool-Fragen > History)
 
-### Simulation-Integration
+## Future Requirements
 
-- [x] **SIM-01**: Jede Kampagne endet mit einer PBQ-Simulation (nutzt bestehende PbqRenderer)
-- [x] **SIM-02**: Simulations-Ergebnis beeinflusst Story-Epilog (Erfolg vs. Teilerfolg)
+### Vektor-Suche (Stufe 3)
+
+- **VEC-01**: Gemini Embedding API (text-embedding-004) für Chunk-Embeddings
+- **VEC-02**: Vektor-Similarity statt Keyword-Match
+- **VEC-03**: Bessere Chunk-Relevanz durch semantische Suche
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Eigene Bild-Assets | Platzhalter-Emojis/Icons, echte Bilder optional per Prompt |
-| Voice-Acting | Text-basiert |
-| Kampagnen-Editor | Dozenten erstellen Kampagnen manuell als JSON |
-| Mehr als 5 Kampagnen | v6.1+ |
+| Vektor-Embeddings | Stufe 3, späterer Milestone |
+| OCR für gescannte PDFs | pdftotext reicht für digitale PDFs |
+| Externe Dokumentquellen (URLs) | Nur NC-Dateien in v4.1 |
+| DOCX/PPTX-Extraktion | Scope-Begrenzung, PDF+Markdown reichen |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STORY-01 | Phase 32 | Complete |
-| STORY-02 | Phase 32 | Complete |
-| STORY-03 | Phase 32 | Complete |
-| STORY-04 | Phase 32 | Complete |
-| STORY-05 | Phase 32 | Complete |
-| RPG-01 | Phase 33 | Complete |
-| RPG-02 | Phase 33 | Complete |
-| RPG-03 | Phase 33 | Complete |
-| RPG-04 | Phase 33 | Complete |
-| RPG-05 | Phase 33 | Complete |
-| CHAR-01 | Phase 34 | Complete |
-| CHAR-02 | Phase 34 | Complete |
-| CHAR-03 | Phase 34 | Complete |
-| SIM-01 | Phase 34 | Complete |
-| SIM-02 | Phase 34 | Complete |
-| CAMP-01 | Phase 35 | Complete |
-| CAMP-02 | Phase 35 | Complete |
-| CAMP-03 | Phase 35 | Complete |
-| CAMP-04 | Phase 35 | Complete |
-| CAMP-05 | Phase 35 | Complete |
+| DOCS-01 | Phase 36 | Complete (36-01) |
+| DOCS-02 | Phase 36 | Complete (36-01) |
+| DOCS-03 | Phase 36 | Complete (36-01) |
+| DOCS-04 | Phase 36 | Complete (36-01) |
+| CHUNK-01 | Phase 37 | Pending |
+| CHUNK-02 | Phase 37 | Pending |
+| CHUNK-03 | Phase 37 | Pending |
+| CHUNK-04 | Phase 37 | Pending |
+| SEARCH-01 | Phase 38 | Pending |
+| SEARCH-02 | Phase 38 | Pending |
+| RAG-01 | Phase 39 | Pending |
+| RAG-02 | Phase 39 | Pending |
+| RAG-03 | Phase 39 | Pending |
+| RAG-04 | Phase 39 | Pending |
 
-**Coverage:** 21/21 requirements mapped
+**Coverage:**
+- v4.1 requirements: 14 total
+- Mapped to phases: 14
+- Unmapped: 0
+
+---
+*Requirements defined: 2026-03-22*
+*Last updated: 2026-03-22 after 36-01 completion*

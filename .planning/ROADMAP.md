@@ -456,7 +456,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 36-01-PLAN.md — Backend: DB Migration, DocumentService, DocumentController, Routes
+- [x] 36-01-PLAN.md — Backend: DB Migration, DocumentService, DocumentController, Routes
 - [ ] 36-02-PLAN.md — Frontend: CourseMaterials.vue + CourseDetail Integration + Verification
 
 ### Phase 37: Chunking-Pipeline
