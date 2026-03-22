@@ -29,8 +29,8 @@
 
 ### AI Security Content
 
-- [ ] **AISEC-01**: Fragen-Pool "AI Security & Prompt Injection" (20+ Fragen, CompTIA-kompatibel)
-- [ ] **AISEC-02**: Meta-Kampagne "Der KI-Fluesterer" (Spieler repariert kompromittierten KI-Assistenten, 5 Szenen)
+- [x] **AISEC-01**: Fragen-Pool "AI Security & Prompt Injection" (20+ Fragen, CompTIA-kompatibel)
+- [x] **AISEC-02**: Meta-Kampagne "Der KI-Fluesterer" (Spieler repariert kompromittierten KI-Assistenten, 5 Szenen)
 
 ## Future Requirements
 
@@ -66,8 +66,8 @@
 | KURS-01 | Phase 42 | Complete |
 | KURS-02 | Phase 42 | Complete |
 | KURS-03 | Phase 42 | Complete |
-| AISEC-01 | Phase 43 | Pending |
-| AISEC-02 | Phase 43 | Pending |
+| AISEC-01 | Phase 43 | Complete |
+| AISEC-02 | Phase 43 | Complete |
 
 **Coverage:**
 - v6.1 requirements: 15 total

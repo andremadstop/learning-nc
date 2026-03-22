@@ -523,7 +523,7 @@ Plans:
 - [x] **Phase 40: KI-Erzaehler Engine** - narrator_mode global, dynamische Choices, Freetext-Bewertung, Gegner/DAU-Rollen (completed 2026-03-22)
 - [x] **Phase 41: Security-Kampagnen Teil 1** - SolarWinds, WannaCry, Log4Shell (3 Kampagnen mit KI-Erzaehler) (completed 2026-03-22)
 - [x] **Phase 42: Security-Kampagnen Teil 2 + Kurs-Kampagnen** - Colonial Pipeline, Equifax, A+ "Der erste Tag", Linux+ "Server Down", CySA+ "Zero Day" (completed 2026-03-22)
-- [ ] **Phase 43: AI Security Content** - Prompt Injection Fragen-Pool + Meta-Kampagne "Der KI-Fluesterer"
+- [x] **Phase 43: AI Security Content** - Prompt Injection Fragen-Pool + Meta-Kampagne "Der KI-Fluesterer" (completed 2026-03-22)
 
 ## Phase Details
 
@@ -583,7 +583,11 @@ Plans:
   2. Meta-Kampagne "Der KI-Fluesterer" ist spielbar: der Spieler findet in 5 Szenen einen kompromittierten KI-Assistenten vor, identifiziert die Manipulation, bereinigt die Trainingsdaten und sichert das System — Gemini spielt den kompromittierten Assistenten der subtil falsche Antworten gibt
   3. Die Fragen im Pool sind als Import-JSON vorhanden und koennen auch in anderen Nextcloud-Instanzen importiert werden (Standard-Import-Format)
   4. Der KI-Fluesterer nutzt den Prompt-Injection-Pool fuer seine Skill-Checks — die Fragen testen genau das Wissen das in der Kampagnen-Handlung vorkommt
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 43-01-PLAN.md — AI Security question pool (24 Fragen)
+- [ ] 43-02-PLAN.md — Meta-Kampagne "Der KI-Fluesterer"
 
 ## Progress
 
@@ -633,5 +637,5 @@ Phases 40-43 execute sequentially: 40 -> 41 -> 42 -> 43. Phase 40 (Engine) must 
 | 39. Multi-Source-RAG | v4.1 | 1/1 | Complete | 2026-03-22 |
 | 40. KI-Erzaehler Engine | 2/2 | Complete    | 2026-03-22 | - |
 | 41. Security-Kampagnen Teil 1 | 2/2 | Complete    | 2026-03-22 | - |
-| 42. Security-Kampagnen Teil 2 + Kurs-Kampagnen | 2/2 | Complete   | 2026-03-22 | - |
-| 43. AI Security Content | v6.1 | 0/TBD | Not started | - |
+| 42. Security-Kampagnen Teil 2 + Kurs-Kampagnen | 2/2 | Complete    | 2026-03-22 | - |
+| 43. AI Security Content | 2/2 | Complete   | 2026-03-22 | - |
