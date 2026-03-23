@@ -574,6 +574,7 @@ export default {
 			currentSkillQuestion: null,
 			skillCheckQuestions: [],
 			skillChecksPassedThisRound: 0,
+			skillAnswersBatch: [],
 			skillCheckIndex: 0,
 			skillCheckTotal: 0,
 			skillAnswered: false,
@@ -949,6 +950,13 @@ export default {
 			this.lastAnswerCorrect = answer.is_correct
 			this.sessionStats.skillChecksTotal++
 
+			// Collect answer for batch submission
+			if (!this.skillAnswersBatch) this.skillAnswersBatch = []
+			this.skillAnswersBatch.push({
+				question_id: this.currentSkillQuestion.id,
+				answer_id: answer.id,
+			})
+
 			if (answer.is_correct) {
 				this.sessionStats.skillChecksPassed++
 				this.skillChecksPassedThisRound++
@@ -956,30 +964,17 @@ export default {
 			} else {
 				this.skillCheckNpcState = 'alert'
 			}
-			// Reset NPC state after 2s
 			setTimeout(() => { this.skillCheckNpcState = 'idle' }, 2000)
-
-			try {
-				const cid = this.selectedCampaign.id
-				await axios.post(generateUrl(`/apps/learning/api/story/campaigns/${cid}/answer`), {
-					choiceId: this.currentSkillCheck ? this.currentSkillCheck.id : '',
-					questionId: this.currentSkillQuestion.id,
-					answerId: answer.id,
-				})
-			} catch (e) {
-				// Silently ignore — progress tracking is best-effort
-			}
 
 			// Auto-advance after showing result
 			this.advanceTimer = setTimeout(() => {
 				this.skillAnswered = false
 				this.skillCheckIndex++
 				if (this.skillCheckIndex < this.skillCheckTotal) {
-					// Fetch next question
 					this.fetchNextSkillQuestion()
 				} else {
-					// Return to scene or advance
-					this.resolveSkillCheck(answer.is_correct)
+					// All questions answered — submit batch to backend
+					this.submitSkillBatch()
 				}
 			}, 2000)
 		},
@@ -994,15 +989,37 @@ export default {
 			}
 		},
 
-		async resolveSkillCheck(lastWasCorrect) {
-			const passThreshold = this.currentSkillCheck?.skill_check?.pass_threshold || Math.ceil(this.skillCheckTotal / 2)
-			const passed = this.skillChecksPassedThisRound >= passThreshold
-
-			const nextScene = passed
-				? (this.currentSkillCheck?.success_scene || this.currentSkillCheck?.next_scene)
-				: (this.currentSkillCheck?.fail_scene || this.currentSkillCheck?.partial_scene)
-
-			await this.advanceToScene(nextScene)
+		async submitSkillBatch() {
+			// Send all collected answers to backend — it decides pass/fail and returns next scene
+			try {
+				const cid = this.selectedCampaign.id
+				const choiceId = this.currentSkillCheck ? this.currentSkillCheck.id : ''
+				const resp = await axios.post(
+					generateUrl(`/apps/learning/api/story/campaigns/${cid}/batch`),
+					{
+						choiceId: choiceId,
+						answers: JSON.stringify(this.skillAnswersBatch || []),
+					}
+				)
+				const scene = resp.data?.scene
+				if (scene && scene.id) {
+					this.sessionStats.scenesCompleted++
+					this.currentScene = scene
+					this.phase = 'scene'
+					this.choiceMade = false
+					this.loadingScene = false
+					this.skillAnswersBatch = []
+					if (scene.is_epilog) {
+						this.showEpilog(scene.epilog_type || 'success')
+					} else {
+						this.startTypewriter(scene.narrative)
+						if (scene.simulation) this.scheduleSimulation(scene.simulation)
+					}
+				}
+			} catch (e) {
+				// Fallback: show epilog (we can't determine next scene locally)
+				this.showEpilog('partial')
+			}
 		},
 
 		// ===== SIMULATION =====
