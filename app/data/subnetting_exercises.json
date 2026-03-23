@@ -1,0 +1,301 @@
+{
+  "exercises": [
+    {
+      "id": "ex_01",
+      "difficulty": "easy",
+      "type": "calculate_subnet",
+      "prompt": "Berechne die Netzwerkadresse für 192.168.1.50/24",
+      "given": {"ip": "192.168.1.50", "prefix": 24},
+      "expected": {
+        "network": "192.168.1.0",
+        "broadcast": "192.168.1.255",
+        "firstHost": "192.168.1.1",
+        "lastHost": "192.168.1.254",
+        "hostCount": 254,
+        "mask": "255.255.255.0"
+      },
+      "hint": "Bei /24 sind die ersten drei Oktette das Netzwerk. Das vierte Oktett ist für die Hosts (.0 bis .255).",
+      "explanation": "Ein /24 Netzwerk ist ein Standard C-Klasse Netz mit 256 Adressen. Die erste (.0) ist das Netz, die letzte (.255) der Broadcast."
+    },
+    {
+      "id": "ex_02",
+      "difficulty": "easy",
+      "type": "calculate_subnet",
+      "prompt": "Berechne das Subnetz für 10.0.0.5/25",
+      "given": {"ip": "10.0.0.5", "prefix": 25},
+      "expected": {
+        "network": "10.0.0.0",
+        "broadcast": "10.0.0.127",
+        "firstHost": "10.0.0.1",
+        "lastHost": "10.0.0.126",
+        "hostCount": 126,
+        "mask": "255.255.255.128"
+      },
+      "hint": "/25 teilt ein /24 in zwei Blöcke von 128 Adressen (0-127 und 128-255).",
+      "explanation": "Die IP .5 liegt im ersten Block (0 bis 127). Blockgröße ist 128."
+    },
+    {
+      "id": "ex_03",
+      "difficulty": "medium",
+      "type": "calculate_subnet",
+      "prompt": "Berechne die Werte für 172.16.10.100/27",
+      "given": {"ip": "172.16.10.100", "prefix": 27},
+      "expected": {
+        "network": "172.16.10.96",
+        "broadcast": "172.16.10.127",
+        "firstHost": "172.16.10.97",
+        "lastHost": "172.16.10.126",
+        "hostCount": 30,
+        "mask": "255.255.255.224"
+      },
+      "hint": "/27 hat eine Blockgröße von 32. Multiples von 32 sind 0, 32, 64, 96, 128...",
+      "explanation": "Die IP .100 liegt im Bereich 96 bis 127. Die Blockgröße ist 32, davon sind 30 für Hosts nutzbar."
+    },
+    {
+      "id": "ex_04",
+      "difficulty": "medium",
+      "type": "calculate_subnet",
+      "prompt": "Berechne die Werte für 192.168.0.70/28",
+      "given": {"ip": "192.168.0.70", "prefix": 28},
+      "expected": {
+        "network": "192.168.0.64",
+        "broadcast": "192.168.0.79",
+        "firstHost": "192.168.0.65",
+        "lastHost": "192.168.0.78",
+        "hostCount": 14,
+        "mask": "255.255.255.240"
+      },
+      "hint": "/28 hat eine Blockgröße von 16. Multiples: 0, 16, 32, 48, 64, 80...",
+      "explanation": "Die IP .70 liegt zwischen 64 und 79. Das Netz ist .64, der Broadcast .79."
+    },
+    {
+      "id": "ex_05",
+      "difficulty": "hard",
+      "type": "calculate_subnet",
+      "prompt": "Berechne die Werte für 10.10.10.10/30",
+      "given": {"ip": "10.10.10.10", "prefix": 30},
+      "expected": {
+        "network": "10.10.10.8",
+        "broadcast": "10.10.10.11",
+        "firstHost": "10.10.10.9",
+        "lastHost": "10.10.10.10",
+        "hostCount": 2,
+        "mask": "255.255.255.252"
+      },
+      "hint": "/30 hat eine Blockgröße von 4. Multiples: 0, 4, 8, 12...",
+      "explanation": "Die IP .10 liegt im Block 8 bis 11. Nur zwei Adressen (.9 und .10) sind als Hosts nutzbar."
+    },
+    {
+      "id": "ex_06",
+      "difficulty": "easy",
+      "type": "split_network",
+      "prompt": "Teile 192.168.10.0/24 in 2 gleiche Subnetze.",
+      "given": {"ip": "192.168.10.0", "prefix": 24, "count": 2},
+      "expected": {
+        "newPrefix": 25,
+        "subnets": [
+          {"network": "192.168.10.0/25", "hosts": 126},
+          {"network": "192.168.10.128/25", "hosts": 126}
+        ]
+      },
+      "hint": "2 Subnetze = 1 zusätzliches Bit (2^1=2). /24 + 1 = /25.",
+      "explanation": "Ein /24 wird durch ein weiteres Bit in zwei /25 Netze mit je 126 nutzbaren Hosts geteilt."
+    },
+    {
+      "id": "ex_07",
+      "difficulty": "medium",
+      "type": "split_network",
+      "prompt": "Teile 172.16.0.0/24 in 4 gleiche Subnetze.",
+      "given": {"ip": "172.16.0.0", "prefix": 24, "count": 4},
+      "expected": {
+        "newPrefix": 26,
+        "subnets": [
+          {"network": "172.16.0.0/26", "hosts": 62},
+          {"network": "172.16.0.64/26", "hosts": 62},
+          {"network": "172.16.0.128/26", "hosts": 62},
+          {"network": "172.16.0.192/26", "hosts": 62}
+        ]
+      },
+      "hint": "4 Subnetze = 2 zusätzliche Bits (2^2=4). /24 + 2 = /26.",
+      "explanation": "Jedes der vier Subnetze hat eine Blockgröße von 64 Adressen."
+    },
+    {
+      "id": "ex_08",
+      "difficulty": "medium",
+      "type": "split_network",
+      "prompt": "Teile 10.0.0.0/24 in 8 gleiche Subnetze.",
+      "given": {"ip": "10.0.0.0", "prefix": 24, "count": 8},
+      "expected": {
+        "newPrefix": 27,
+        "subnets": [
+          {"network": "10.0.0.0/27", "hosts": 30},
+          {"network": "10.0.0.32/27", "hosts": 30},
+          {"network": "10.0.0.64/27", "hosts": 30},
+          {"network": "10.0.0.96/27", "hosts": 30},
+          {"network": "10.0.0.128/27", "hosts": 30},
+          {"network": "10.0.0.160/27", "hosts": 30},
+          {"network": "10.0.0.192/27", "hosts": 30},
+          {"network": "10.0.0.224/27", "hosts": 30}
+        ]
+      },
+      "hint": "8 Subnetze = 3 zusätzliche Bits (2^3=8). /24 + 3 = /27.",
+      "explanation": "Die Blockgröße pro Netz beträgt 32 Adressen."
+    },
+    {
+      "id": "ex_09",
+      "difficulty": "hard",
+      "type": "split_network",
+      "prompt": "Teile 192.168.1.0/25 in 4 gleiche Subnetze.",
+      "given": {"ip": "192.168.1.0", "prefix": 25, "count": 4},
+      "expected": {
+        "newPrefix": 27,
+        "subnets": [
+          {"network": "192.168.1.0/27", "hosts": 30},
+          {"network": "192.168.1.32/27", "hosts": 30},
+          {"network": "192.168.1.64/27", "hosts": 30},
+          {"network": "192.168.1.96/27", "hosts": 30}
+        ]
+      },
+      "hint": "Basis ist /25. Für 4 Netze brauchst du 2 Bits. /25 + 2 = /27.",
+      "explanation": "Ein /25 hat 128 Adressen. Geteilt durch 4 ergibt 32 Adressen pro Netz (/27)."
+    },
+    {
+      "id": "ex_10",
+      "difficulty": "hard",
+      "type": "split_network",
+      "prompt": "Teile 172.16.5.0/24 in zwei ungleiche Netze: Netz A (128 Adressen) und Netz B (zwei 64er Netze).",
+      "given": {"ip": "172.16.5.0", "prefix": 24, "mode": "variable"},
+      "expected": {
+        "subnets": [
+          {"network": "172.16.5.0/25", "hosts": 126},
+          {"network": "172.16.5.128/26", "hosts": 62},
+          {"network": "172.16.5.192/26", "hosts": 62}
+        ]
+      },
+      "hint": "Teile zuerst in zwei /25. Behalte das erste, teile das zweite /25 in zwei /26.",
+      "explanation": "Dies ist der erste Schritt zu VLSM: Ein Netz wird in unterschiedliche Längen aufgeteilt."
+    },
+    {
+      "id": "ex_11",
+      "difficulty": "medium",
+      "type": "vlsm",
+      "prompt": "Verteile 192.168.1.0/24 auf: Büro A (60 Hosts), Büro B (60 Hosts).",
+      "given": {
+        "ip": "192.168.1.0",
+        "prefix": 24,
+        "requirements": [
+          {"name": "Büro A", "hosts": 60},
+          {"name": "Büro B", "hosts": 60}
+        ]
+      },
+      "expected": {
+        "subnets": [
+          {"name": "Büro A", "network": "192.168.1.0/26", "hosts": 62},
+          {"name": "Büro B", "network": "192.168.1.64/26", "hosts": 62}
+        ]
+      },
+      "hint": "60 Hosts brauchen ein /26 (64 Adressen).",
+      "explanation": "Zwei /26 Netze belegen genau die erste Hälfte eines /24 Netzes."
+    },
+    {
+      "id": "ex_12",
+      "difficulty": "medium",
+      "type": "vlsm",
+      "prompt": "Verteile 10.0.0.0/24 auf: VLAN 10 (100 Hosts), VLAN 20 (20 Hosts).",
+      "given": {
+        "ip": "10.0.0.0",
+        "prefix": 24,
+        "requirements": [
+          {"name": "VLAN 10", "hosts": 100},
+          {"name": "VLAN 20", "hosts": 20}
+        ]
+      },
+      "expected": {
+        "subnets": [
+          {"name": "VLAN 10", "network": "10.0.0.0/25", "hosts": 126},
+          {"name": "VLAN 20", "network": "10.0.0.128/27", "hosts": 30}
+        ]
+      },
+      "hint": "VLAN 10 braucht /25. VLAN 20 braucht /27.",
+      "explanation": "Zuerst das größte Netz (100 Hosts -> /25). Danach bleibt Platz ab .128 für das /27 Netz."
+    },
+    {
+      "id": "ex_13",
+      "difficulty": "hard",
+      "type": "vlsm",
+      "prompt": "Verteilung 172.16.10.0/24: Admin (120 Hosts), WLAN (50 Hosts), VoIP (25 Hosts).",
+      "given": {
+        "ip": "172.16.10.0",
+        "prefix": 24,
+        "requirements": [
+          {"name": "Admin", "hosts": 120},
+          {"name": "WLAN", "hosts": 50},
+          {"name": "VoIP", "hosts": 25}
+        ]
+      },
+      "expected": {
+        "subnets": [
+          {"name": "Admin", "network": "172.16.10.0/25", "hosts": 126},
+          {"name": "WLAN", "network": "172.16.10.128/26", "hosts": 62},
+          {"name": "VoIP", "network": "172.16.10.192/27", "hosts": 30}
+        ]
+      },
+      "hint": "Absteigend sortieren: 120 (/25), 50 (/26), 25 (/27).",
+      "explanation": "Das /25 belegt 0-127. Das /26 belegt 128-191. Das /27 belegt 192-223."
+    },
+    {
+      "id": "ex_14",
+      "difficulty": "hard",
+      "type": "vlsm",
+      "prompt": "Verteilung 192.168.5.0/24: Server (10 Hosts), Support (100 Hosts), Kasse (5 Hosts), VPN (20 Hosts).",
+      "given": {
+        "ip": "192.168.5.0",
+        "prefix": 24,
+        "requirements": [
+          {"name": "Support", "hosts": 100},
+          {"name": "VPN", "hosts": 20},
+          {"name": "Server", "hosts": 10},
+          {"name": "Kasse", "hosts": 5}
+        ]
+      },
+      "expected": {
+        "subnets": [
+          {"name": "Support", "network": "192.168.5.0/25", "hosts": 126},
+          {"name": "VPN", "network": "192.168.5.128/27", "hosts": 30},
+          {"name": "Server", "network": "192.168.5.160/28", "hosts": 14},
+          {"name": "Kasse", "network": "192.168.5.176/29", "hosts": 6}
+        ]
+      },
+      "hint": "Immer vom größten zum kleinsten planen!",
+      "explanation": "Support (/25: .0-.127), VPN (/27: .128-.159), Server (/28: .160-.175), Kasse (/29: .176-.183)."
+    },
+    {
+      "id": "ex_15",
+      "difficulty": "hard",
+      "type": "vlsm",
+      "prompt": "Maximaler Packgrad: Teile 10.1.1.0/24 auf: Netz 1 (120 Hosts), Netz 2 (60 Hosts), Netz 3 (30 Hosts), Netz 4 (14 Hosts), Netz 5 (2 Hosts).",
+      "given": {
+        "ip": "10.1.1.0",
+        "prefix": 24,
+        "requirements": [
+          {"name": "Netz 1", "hosts": 120},
+          {"name": "Netz 2", "hosts": 60},
+          {"name": "Netz 3", "hosts": 30},
+          {"name": "Netz 4", "hosts": 14},
+          {"name": "Netz 5", "hosts": 2}
+        ]
+      },
+      "expected": {
+        "subnets": [
+          {"name": "Netz 1", "network": "10.1.1.0/25", "hosts": 126},
+          {"name": "Netz 2", "network": "10.1.1.128/26", "hosts": 62},
+          {"name": "Netz 3", "network": "10.1.1.192/27", "hosts": 30},
+          {"name": "Netz 4", "network": "10.1.1.224/28", "hosts": 14},
+          {"name": "Netz 5", "network": "10.1.1.240/30", "hosts": 2}
+        ]
+      },
+      "hint": "Hier wird das Netz fast lückenlos von unten nach oben aufgefüllt.",
+      "explanation": "N1: .0/25, N2: .128/26, N3: .192/27, N4: .224/28, N5: .240/30. Alle Anforderungen werden exakt mit der kleinstmöglichen Blockgröße erfüllt."
+    }
+  ]
+}
