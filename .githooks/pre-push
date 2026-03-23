@@ -1,0 +1,57 @@
+#!/bin/bash
+# Pre-Push Security Check: Learning-NC
+# Verhindert das Pushen von sensiblen Daten
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+FAIL=0
+
+echo "=== Pre-push: Security Check ==="
+
+# 1. Keine hardcodierten Secrets (echte Werte, nicht Variablennamen)
+# Pattern: key/password/token gefolgt von = und einem echten Wert (nicht getAppValue/process.env)
+SECRETS_FOUND=$(git ls-files | xargs grep -rn "ANTHROPIC_API_KEY=sk-\|gemini_api_key=AI\|password.*=.*Pa\$\$\|api_key.*=.*['\"][a-zA-Z0-9]\{20,\}" 2>/dev/null | grep -v ".planning/" | grep -v "getAppValue\|process\.env\|config\.\|\.gitignore\|pre-push" | head -3)
+if [ -n "$SECRETS_FOUND" ]; then
+    echo -e "${RED}FAIL: Hardcoded secret found:${NC}"
+    echo "$SECRETS_FOUND"
+    FAIL=1
+fi
+
+# 2. Keine .env Dateien
+if git ls-files --cached | grep -q "\.env$\|\.env\."; then
+    echo -e "${RED}FAIL: .env file in repo${NC}"
+    FAIL=1
+fi
+
+# 3. Keine auth-state / Credential-Dateien
+if git ls-files --cached | grep -qi "auth-state\|credential\|\.key$\|\.pem$\|\.p12$"; then
+    echo -e "${RED}FAIL: Credential/key file in repo${NC}"
+    FAIL=1
+fi
+
+# 4. Keine persönlichen IPs in Non-Planning-Dateien
+PERSONAL_LEAKS=$(git diff --stat @{upstream}..HEAD 2>/dev/null | grep -v ".planning/" | head -1)
+if [ -n "$PERSONAL_LEAKS" ]; then
+    LEAKED_FILES=$(git diff --name-only @{upstream}..HEAD 2>/dev/null | grep -v ".planning/" | xargs grep -l "192\.168\.178\.[0-9]\{1,3\}" 2>/dev/null | head -3)
+    if [ -n "$LEAKED_FILES" ]; then
+        echo -e "${RED}WARN: Private IP found in: $LEAKED_FILES${NC}"
+        # Warn but don't block — some IPs are in example code
+    fi
+fi
+
+# 5. Keine node_modules oder test-results
+if git ls-files --cached | grep -q "node_modules/\|test-results/"; then
+    echo -e "${RED}FAIL: node_modules or test-results in repo${NC}"
+    FAIL=1
+fi
+
+if [ "$FAIL" -eq 1 ]; then
+    echo -e "${RED}=== Pre-push FAILED ===${NC}"
+    echo "Fix the issues above or use --no-verify to skip (NOT recommended)"
+    exit 1
+fi
+
+echo -e "${GREEN}=== Pre-push passed ✓${NC}"
+exit 0

@@ -82,3 +82,8 @@ app/test-results/
 app/playwright-report/
 app/tests/
 *.bak
+.gitnexus
+
+# Test artifacts
+tests/auth-state.json
+test-results/
