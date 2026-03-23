@@ -1,0 +1,250 @@
+{
+  "id": "quantum_dawn",
+  "epoch_id": "quantum_threat",
+  "title": "Quantum Dawn — Die letzte Verschluesselung",
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Hard Science Fiction mit philosophischem Unterton. Die Zukunft der Kryptografie haengt an einem Quantenbit. Was wenn alles was wir verschluesselt haben morgen lesbar wird?",
+  "scenes": [
+    {
+      "id": "s1_pqc",
+      "title": "Post-Quantum Crypto — Die grosse Migration",
+      "narrative": "2032. NIST hat die Post-Quantum-Standards finalisiert: CRYSTALS-Kyber fuer Schluesselaustausch, CRYSTALS-Dilithium fuer digitale Signaturen. Doch die Migration ist ein Albtraum — Milliarden von Geraeten, Protokollen und Zertifikaten muessen umgestellt werden. Und die Uhr tickt: Geheimdienste sammeln seit Jahren verschluesselte Kommunikation nach dem Prinzip 'Harvest Now, Decrypt Later'. Wenn ein kryptografisch relevanter Quantencomputer online geht, wird alles auf einen Schlag lesbar. Du leitest die PQC-Migration fuer kritische Infrastruktur.",
+      "choices": [
+        {
+          "id": "s1_c1",
+          "text": "Migration der sensibelsten Daten priorisieren — Regierungskommunikation und Finanzsektor zuerst",
+          "icon": "priority",
+          "skill_check": {
+            "pool_filter": "epoch:quantum_threat",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s2_qkd",
+          "partial_scene": "s2_qkd",
+          "fail_scene": "s1_fail"
+        },
+        {
+          "id": "s1_c2",
+          "text": "Crypto-Agility-Framework implementieren — schneller Algorithmus-Wechsel ohne System-Redesign",
+          "icon": "refresh",
+          "skill_check": {
+            "pool_filter": "epoch:quantum_threat",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_qkd",
+          "partial_scene": "s2_qkd",
+          "fail_scene": "s1_fail"
+        },
+        {
+          "id": "s1_c3",
+          "text": "Hybride klassisch+PQC-Verschluesselung deployen — doppelter Schutz waehrend der Uebergangsphase",
+          "icon": "layers",
+          "skill_check": {
+            "pool_filter": "epoch:quantum_threat",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_qkd",
+          "partial_scene": "s2_qkd",
+          "fail_scene": "s1_fail"
+        }
+      ]
+    },
+    {
+      "id": "s1_fail",
+      "title": "Migration verzoegert",
+      "narrative": "Die Komplexitaet der PQC-Migration hat dich ausgebremst — Legacy-Systeme, inkompatible Hardware und fehlende Testinfrastruktur. Waehrend du noch planst, hat China den ersten 1000-Qubit-Prozessor vorgestellt. Die Zeit wird knapp, aber die NIST-Standards geben dir einen klaren Migrationsplan.",
+      "choices": [
+        {
+          "id": "s1f_c1",
+          "text": "NIST-Migrationsleitfaden folgen und beschleunigen",
+          "icon": "rocket",
+          "skill_check": {
+            "pool_filter": "epoch:quantum_threat",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_qkd",
+          "partial_scene": "s2_qkd",
+          "fail_scene": "epilog_fail"
+        }
+      ]
+    },
+    {
+      "id": "s2_qkd",
+      "title": "QKD — Quantenschluessel aus dem All",
+      "narrative": "2034. Quantenschluesselverteilung (QKD) verspricht theoretisch unknackbare Verschluesselung durch die Gesetze der Quantenphysik — jeder Abhoerversuch veraendert den Quantenzustand und wird sofort erkannt. China hat bereits ein 4.600 km langes QKD-Netzwerk aufgebaut und den Satelliten Micius fuer interkontinentale Quantenkommunikation gestartet. Deine Organisation erhaelt ein Angebot fuer einen QKD-Link. Doch die Technologie hat Grenzen: begrenzte Reichweite, hohe Kosten, Vertrauenswuerdigkeit der Relay-Knoten.",
+      "choices": [
+        {
+          "id": "s2_c1",
+          "text": "QKD fuer die kritischsten Verbindungen deployen — maximale Sicherheit wo es zaehlt",
+          "icon": "satellite",
+          "skill_check": {
+            "pool_filter": "epoch:quantum_threat",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s3_shor",
+          "partial_scene": "s3_shor",
+          "fail_scene": "s3_shor"
+        },
+        {
+          "id": "s2_c2",
+          "text": "QKD-Limitierungen evaluieren und Alternativen vorschlagen",
+          "icon": "clipboard",
+          "skill_check": {
+            "pool_filter": "epoch:quantum_threat",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_shor",
+          "partial_scene": "s3_shor",
+          "fail_scene": "s3_shor"
+        },
+        {
+          "id": "s2_c3",
+          "text": "Hybride QKD+PQC-Architektur entwerfen — das Beste aus beiden Welten",
+          "icon": "merge",
+          "skill_check": {
+            "pool_filter": "epoch:quantum_threat",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_shor",
+          "partial_scene": "s3_shor",
+          "fail_scene": "s3_shor"
+        }
+      ]
+    },
+    {
+      "id": "s3_shor",
+      "title": "Shors Algorithmus — Q-Day",
+      "narrative": "2037. Der Tag, den Kryptografen seit Jahrzehnten fuerchten, ist da. Ein Nationalstaat verkuendet, kryptografisch relevantes Quantencomputing erreicht zu haben. RSA-2048 wird in Stunden gebrochen. Jeder RSA- und ECC-Schluessel, der je verwendet wurde, ist potenziell kompromittiert. 'Harvest Now, Decrypt Later'-Archive werden entschluesselt — diplomatische Kommunikation, Geschaeftsgeheimnisse, persoenliche Daten aus Jahrzehnten liegen offen. Du stehst vor der ultimativen kryptografischen Krise.",
+      "choices": [
+        {
+          "id": "s3_c1",
+          "text": "Notfall-PQC-Migrationsplan aktivieren — alle verbleibenden Systeme sofort umstellen",
+          "icon": "alert",
+          "skill_check": {
+            "pool_filter": "epoch:quantum_threat",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "s3_fail"
+        },
+        {
+          "id": "s3_c2",
+          "text": "Bewerten welche historisch verschluesselten Daten nun exponiert sind",
+          "icon": "database",
+          "skill_check": {
+            "pool_filter": "epoch:quantum_threat",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "s3_fail"
+        },
+        {
+          "id": "s3_c3",
+          "text": "Internationale Quanten-Ruestungskontrolle koordinieren — diplomatische Loesung suchen",
+          "icon": "globe",
+          "skill_check": {
+            "pool_filter": "epoch:quantum_threat",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        }
+      ]
+    },
+    {
+      "id": "s3_fail",
+      "title": "Q-Day ohne Vorbereitung",
+      "narrative": "Die PQC-Migration wurde zu lange aufgeschoben — und jetzt ist es zu spaet fuer einen geordneten Uebergang. Jahrzehnte verschluesselter Kommunikation liegen offen. Doch selbst in der Krise gibt es Handlungsoptionen: Forward Secrecy fuer neue Kommunikation und Schadensbegrenzung fuer exponierte Daten.",
+      "choices": [
+        {
+          "id": "s3f_c1",
+          "text": "Schadensbegrenzung einleiten und Forward Secrecy sicherstellen",
+          "icon": "shield",
+          "skill_check": {
+            "pool_filter": "epoch:quantum_threat",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_partial",
+          "partial_scene": "epilog_fail",
+          "fail_scene": "epilog_fail"
+        }
+      ]
+    },
+    {
+      "id": "epilog_success",
+      "title": "Hueter der Quantensicherheit",
+      "narrative": "Du hast die groesste kryptografische Revolution der Menschheitsgeschichte gemeistert. Von der PQC-Migration ueber Quantenschluesselverteilung bis zum gefuerchteten Q-Day — du warst vorbereitet. Dein Verstaendnis von Gitter-basierter Kryptografie, Quantenphysik und Crypto-Agility macht dich zum Architekten einer post-quantensicheren Zukunft. Die Lektion: Wer frueh migriert, ueberlebt.",
+      "is_epilog": true,
+      "epilog_type": "success",
+      "choices": []
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Teilweise vorbereitet",
+      "narrative": "Die Quantenbedrohung ist real und du hast wichtige erste Schritte unternommen. Nicht alle Systeme sind migriert, nicht alle Risiken adressiert — aber du verstehst die Grundlagen von PQC und die Dringlichkeit der Migration. In einer Welt, in der die meisten Organisationen noch nicht einmal begonnen haben, bist du bereits voraus.",
+      "is_epilog": true,
+      "epilog_type": "partial",
+      "choices": []
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Die Krypto-Apokalypse",
+      "narrative": "Q-Day hat dich unvorbereitet getroffen. Jahrzehnte verschluesselter Daten sind nun angreifbar, und die Umstellung auf quantensichere Algorithmen wird Jahre dauern. Doch Aufgeben ist keine Option — die Quantenphysik laesst sich nicht rueckgaengig machen, aber die Kryptografie kann sich anpassen. Lerne aus dieser Erfahrung und beginne die Migration.",
+      "is_epilog": true,
+      "epilog_type": "fail",
+      "choices": []
+    }
+  ],
+  "historical_facts": [
+    {
+      "id": "shor_algorithm",
+      "title": "Shors Algorithmus",
+      "year": 1994,
+      "description": "Peter Shor veroeffentlichte 1994 einen Quantenalgorithmus, der Primfaktorzerlegung exponentiell schneller loest als klassische Computer. RSA, DSA und ECC — die Grundlagen der modernen Kryptografie — waeren damit gebrochen.",
+      "significance": "Begann das Wettrennen zwischen Quantencomputing und Post-Quantum-Kryptografie, das die IT-Sicherheit bis heute praegt."
+    },
+    {
+      "id": "nist_pqc_competition",
+      "title": "NIST PQC-Wettbewerb",
+      "year": 2016,
+      "description": "NIST startete 2016 einen oeffentlichen Wettbewerb zur Standardisierung quantenresistenter Algorithmen. 69 Einreichungen wurden in mehreren Runden evaluiert. 2024 wurden CRYSTALS-Kyber (ML-KEM), CRYSTALS-Dilithium (ML-DSA) und SPHINCS+ als Standards veroeffentlicht.",
+      "significance": "Definierte die kryptografischen Standards der Post-Quantum-Aera — die Migration auf diese Algorithmen ist die groesste kryptografische Umstellung seit der Einfuehrung von Public-Key-Kryptografie."
+    },
+    {
+      "id": "google_quantum_supremacy",
+      "title": "Google Quantum Supremacy",
+      "year": 2019,
+      "description": "Google verkuendete im Oktober 2019, mit dem 53-Qubit-Prozessor Sycamore eine Berechnung in 200 Sekunden durchgefuehrt zu haben, fuer die ein klassischer Supercomputer geschaetzte 10.000 Jahre gebraucht haette. IBM widersprach der Behauptung.",
+      "significance": "Erster oeffentlicher Beleg fuer Quantenueberlegenheit — machte die Quantenbedrohung fuer Kryptografie greifbar, auch wenn kryptografisch relevante Quantencomputer noch Jahre entfernt sind."
+    },
+    {
+      "id": "harvest_now_decrypt_later",
+      "title": "Harvest Now, Decrypt Later",
+      "year": 2022,
+      "description": "Geheimdienste und APT-Gruppen sammeln seit Jahren verschluesselte Kommunikation in der Erwartung, sie mit zukuenftigen Quantencomputern entschluesseln zu koennen. Die NSA warnte 2022 offiziell vor dieser Bedrohung und empfahl den Uebergang zu PQC.",
+      "significance": "Bedeutet, dass die Quantenbedrohung JETZT relevant ist — nicht erst wenn Quantencomputer existieren. Alles was heute mit RSA/ECC verschluesselt wird, koennte morgen lesbar sein."
+    },
+    {
+      "id": "qkd_satellite",
+      "title": "Micius QKD-Satellit",
+      "year": 2017,
+      "description": "China startete 2016 den Satelliten Micius (Mozi) und demonstrierte 2017 interkontinentale Quantenschluesselverteilung zwischen Peking und Wien ueber 7.600 km. Das chinesische QKD-Netzwerk erstreckt sich ueber 4.600 km.",
+      "significance": "Bewies die Machbarkeit von satellitengestuetzter Quantenkommunikation — China fuehrt im globalen Quantenrennen und baut aktiv ein Quanten-Internet auf."
+    }
+  ]
+}
