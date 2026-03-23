@@ -1232,10 +1232,13 @@ export default {
 				{ key: 'training', label: t('learning', 'Training (immer aktiv)') },
 				{ key: 'leitner', label: t('learning', 'Leitner') },
 				{ key: 'swipe', label: t('learning', 'Wahr/Falsch im Training') },
-				{ key: 'exam', label: t('learning', 'Exam') },
+				{ key: 'exam', label: t('learning', 'Prüfung') },
 				{ key: 'duel', label: t('learning', 'Duell') },
 				{ key: 'gameshow', label: t('learning', 'Gameshow') },
 				{ key: 'league', label: t('learning', 'Liga') },
+				{ key: 'oldschool', label: t('learning', 'Oldschool') },
+				{ key: 'abenteuer', label: t('learning', 'Abenteuer') },
+				{ key: 'zeitreise', label: t('learning', 'Zeitreise') },
 			]
 		},
 		visibleTabs() {
