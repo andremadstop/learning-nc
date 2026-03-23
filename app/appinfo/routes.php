@@ -223,5 +223,15 @@ return [
         ['name' => 'document#index',       'url' => '/api/courses/{courseId}/documents',                     'verb' => 'GET'],
         ['name' => 'document#extract',     'url' => '/api/courses/{courseId}/documents/{documentId}/extract', 'verb' => 'POST'],
         ['name' => 'document#extractAll',  'url' => '/api/courses/{courseId}/documents/extract-all',         'verb' => 'POST'],
+
+        // Hack Through Time — Zeitreise (Phase 48)
+        ['name' => 'hackThroughTime#listEpochs',      'url' => '/api/zeitreise/epochs',                              'verb' => 'GET'],
+        ['name' => 'hackThroughTime#getUserProgress',  'url' => '/api/zeitreise/progress',                            'verb' => 'GET'],
+        ['name' => 'hackThroughTime#startEpoch',       'url' => '/api/zeitreise/epochs/{epochId}/start',              'verb' => 'POST'],
+        ['name' => 'hackThroughTime#getMuseumFacts',   'url' => '/api/zeitreise/epochs/{epochId}/museum',             'verb' => 'GET'],
+        ['name' => 'hackThroughTime#markMuseumViewed', 'url' => '/api/zeitreise/epochs/{epochId}/museum/viewed',      'verb' => 'POST'],
+        ['name' => 'hackThroughTime#getSkillCheck',    'url' => '/api/zeitreise/epochs/{epochId}/skill-check',        'verb' => 'GET'],
+        ['name' => 'hackThroughTime#submitSkillCheck', 'url' => '/api/zeitreise/epochs/{epochId}/skill-check',        'verb' => 'POST'],
+        ['name' => 'hackThroughTime#getOverallScore',  'url' => '/api/zeitreise/score',                               'verb' => 'GET'],
     ]
 ];
