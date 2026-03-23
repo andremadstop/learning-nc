@@ -213,7 +213,7 @@ Plans:
 **Milestone Goal:** Eigenes Spielformat — Zeitreise durch 7 IT-Security-Epochen mit epochen-spezifischen CSS-Themes, CHRONOS als KI-Guide, 4 Charakter-Klassen und 25 Szenen basierend auf echten Hacks.
 
 - [x] **Phase 48: Engine + Charakter-Klassen** - HackThroughTime.vue, Epochen-Fortschritt, Museum, Skill-Checks, 4 Klassen mit Epochen-Affinitaet (completed 2026-03-23)
-- [ ] **Phase 49: Epochen-Themes** - 7 CSS-Themes (Terminal, DOS, Netscape, XP, Dark Modern, Cloud, Hologramm)
+- [x] **Phase 49: Epochen-Themes** - 7 CSS-Themes (Terminal, DOS, Netscape, XP, Dark Modern, Cloud, Hologramm) (completed 2026-03-23)
 - [ ] **Phase 50: Kampagnen Retro** - Blue Box, WarGames, The Worm, Bobby Tables (1960er-2000er)
 - [ ] **Phase 51: Kampagnen Modern** - Shadow Brokers, Supply Chain, Quantum Dawn (2010er-Zukunft)
 
@@ -233,7 +233,7 @@ Plans:
 
 Plans:
 - [x] 48-01-PLAN.md — Backend: Epoch data, character classes, museum facts, DB migration, HackThroughTimeService + Controller + Routes
-- [ ] 48-02-PLAN.md — Frontend: HackThroughTime.vue + epoch-tokens.css + App.vue wiring + human verification
+- [x] 48-02-PLAN.md — Frontend: HackThroughTime.vue + epoch-tokens.css + App.vue wiring + human verification
 
 ### Phase 49: Epochen-Themes
 **Goal**: Jede der 7 Epochen hat ein visuell unverwechselbares CSS-Theme das die Aera authentisch repraesentiert — vom gruenen Terminal der 60er bis zum Hologramm-Look der Zukunft
@@ -245,7 +245,10 @@ Plans:
   3. Die 1990er-Epoche zeigt Netscape-graue Oberflaeche mit Times New Roman, 3D-Buttons und Statusbar — fruehes Web
   4. Die 2000er-Epoche zeigt XP-Luna blau-gruen mit Tahoma-Schrift und Startmenue-Ecken — Windows-XP-Aera
   5. Die 2010er/2020er/Zukunft-Themes sind jeweils visuell unterscheidbar: Dark-Terminal mit Matrix-Regen, Cloud-Dashboard mit Cards/Metriken, Hologramm mit Glow-Effekten
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 49-01-PLAN.md — 7 authentic epoch CSS themes with period-specific visual effects
 
 ### Phase 50: Kampagnen Retro
 **Goal**: Vier Kampagnen (1960er-2000er) mit insgesamt 14 Szenen erzaehlen die Geschichte des Hackings von Phone Phreaking bis SQL Injection — basierend auf echten historischen Ereignissen
@@ -274,7 +277,7 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 48. Engine + Charakter-Klassen | 2/2 | Complete   | 2026-03-23 | - |
-| 49. Epochen-Themes | v7.0 | 0/TBD | Not started | - |
+| 48. Engine + Charakter-Klassen | 2/2 | Complete    | 2026-03-23 | - |
+| 49. Epochen-Themes | 1/1 | Complete   | 2026-03-23 | - |
 | 50. Kampagnen Retro | v7.0 | 0/TBD | Not started | - |
 | 51. Kampagnen Modern | v7.0 | 0/TBD | Not started | - |

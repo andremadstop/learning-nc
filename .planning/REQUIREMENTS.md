@@ -15,13 +15,13 @@
 
 ### Epochen-Themes
 
-- [ ] **THEME-01**: 1960er Phone Phreaking (gruen-auf-schwarz Terminal, Monospace, Scanline-Effekt)
-- [ ] **THEME-02**: 1980er WarGames (DOS-Prompt blau/weiss, ASCII-Art Rahmen, Blinking Cursor)
-- [ ] **THEME-03**: 1990er Morris Worm (Netscape-grau, Times New Roman, 3D-Buttons, Statusbar)
-- [ ] **THEME-04**: 2000er SQL Injection (XP-Luna blau/gruen, Tahoma, Startmenue-Ecken)
-- [ ] **THEME-05**: 2010er APT & Nation States (Dark Terminal modern, monospace, Matrix-Regen subtil)
-- [ ] **THEME-06**: 2020er AI & Supply Chain (Cloud-Dashboard, Cards, Metriken, Slack-Aesthetic)
-- [ ] **THEME-07**: Zukunft Quantum Threat (Hologramm-blau, transparente Panels, Glow-Effekte)
+- [x] **THEME-01**: 1960er Phone Phreaking (gruen-auf-schwarz Terminal, Monospace, Scanline-Effekt)
+- [x] **THEME-02**: 1980er WarGames (DOS-Prompt blau/weiss, ASCII-Art Rahmen, Blinking Cursor)
+- [x] **THEME-03**: 1990er Morris Worm (Netscape-grau, Times New Roman, 3D-Buttons, Statusbar)
+- [x] **THEME-04**: 2000er SQL Injection (XP-Luna blau/gruen, Tahoma, Startmenue-Ecken)
+- [x] **THEME-05**: 2010er APT & Nation States (Dark Terminal modern, monospace, Matrix-Regen subtil)
+- [x] **THEME-06**: 2020er AI & Supply Chain (Cloud-Dashboard, Cards, Metriken, Slack-Aesthetic)
+- [x] **THEME-07**: Zukunft Quantum Threat (Hologramm-blau, transparente Panels, Glow-Effekte)
 
 ### Kampagnen-Content
 
@@ -64,13 +64,13 @@
 | ENG-03 | Phase 48 | Complete |
 | ENG-04 | Phase 48 | Complete |
 | ENG-05 | Phase 48 | Complete |
-| THEME-01 | Phase 49 | Pending |
-| THEME-02 | Phase 49 | Pending |
-| THEME-03 | Phase 49 | Pending |
-| THEME-04 | Phase 49 | Pending |
-| THEME-05 | Phase 49 | Pending |
-| THEME-06 | Phase 49 | Pending |
-| THEME-07 | Phase 49 | Pending |
+| THEME-01 | Phase 49 | Complete |
+| THEME-02 | Phase 49 | Complete |
+| THEME-03 | Phase 49 | Complete |
+| THEME-04 | Phase 49 | Complete |
+| THEME-05 | Phase 49 | Complete |
+| THEME-06 | Phase 49 | Complete |
+| THEME-07 | Phase 49 | Complete |
 | CAMP-01 | Phase 50 | Pending |
 | CAMP-02 | Phase 50 | Pending |
 | CAMP-03 | Phase 50 | Pending |
