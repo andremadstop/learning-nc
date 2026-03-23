@@ -145,14 +145,15 @@
               </button>
             </div>
 
-            <!-- NPC Dialog -->
-            <div v-if="currentScene.npc_dialog && !narrativeTyping" class="ab-npc-dialog">
-              <div class="ab-npc-portrait">{{ npcPortrait(currentScene.npc_dialog.speaker) }}</div>
-              <div class="ab-speech-bubble">
-                <span class="ab-npc-name">{{ npcName(currentScene.npc_dialog.speaker) }}</span>
-                <p class="ab-npc-text">{{ currentScene.npc_dialog.text }}</p>
-              </div>
-            </div>
+            <!-- NPC Dialog (portrait-based via DialogueStage) -->
+            <DialogueStage
+              v-if="currentScene.npc_dialog && !narrativeTyping"
+              :speakerId="resolveNpcCharacterId(currentScene.npc_dialog.speaker)"
+              :speakerName="npcName(currentScene.npc_dialog.speaker)"
+              :emotion="currentScene.npc_dialog.emotion || npcDefaultEmotion(currentScene.npc_dialog.speaker)"
+              :text="currentScene.npc_dialog.text"
+              :isNarrator="false"
+            />
 
             <!-- Decision cards -->
             <div v-if="currentScene.choices && !narrativeTyping && !choiceMade" class="ab-choices">
@@ -259,6 +260,15 @@
           </div>
         </div>
       </transition>
+
+      <!-- NPC reaction to skill-check result -->
+      <div v-if="skillCheckNpcId" class="ab-skill-npc-reaction">
+        <CharacterAvatar
+          :characterId="skillCheckNpcId"
+          :size="80"
+          :state="skillCheckNpcState"
+        />
+      </div>
     </div>
 
     <!-- ===== SIMULATION PHASE ===== -->
@@ -399,6 +409,9 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import PbqRenderer from './PbqRenderer.vue'
 import CampaignIntro from './CampaignIntro.vue'
+import DialogueStage from './DialogueStage.vue'
+import CharacterAvatar from './CharacterAvatar.vue'
+import { getCharacter } from '../data/characters.js'
 
 const STATIC_CAMPAIGNS = [
 	{
@@ -509,6 +522,8 @@ export default {
 	components: {
 		PbqRenderer,
 		CampaignIntro,
+		DialogueStage,
+		CharacterAvatar,
 	},
 
 	props: {
@@ -599,6 +614,9 @@ export default {
 
 			// Accessibility
 			reducedMotion: false,
+
+			// Skill-check NPC reaction
+			skillCheckNpcState: 'idle',
 		}
 	},
 
@@ -607,6 +625,13 @@ export default {
 			if (!this.epilogData) return '📋'
 			return this.epilogData.outcome === 'success' ? '🏆' : '📋'
 		},
+		skillCheckNpcId() {
+			if (!this.selectedCampaign) return null
+			const wpNpcs = this.selectedCampaign.workplace_npcs
+			if (!wpNpcs || !wpNpcs.length) return null
+			return wpNpcs[0].character_id || null
+		},
+
 		sceneProgressLabel() {
 			if (!this.selectedCampaign) return ''
 			const total = this.selectedCampaign.total_scenes || 5
@@ -859,7 +884,12 @@ export default {
 
 			if (answer.is_correct) {
 				this.sessionStats.skillChecksPassed++
+				this.skillCheckNpcState = 'celebrate'
+			} else {
+				this.skillCheckNpcState = 'alert'
 			}
+			// Reset NPC state after 2s
+			setTimeout(() => { this.skillCheckNpcState = 'idle' }, 2000)
 
 			try {
 				await axios.post(generateUrl('/apps/learning/api/story/answer'), {
@@ -1163,6 +1193,30 @@ export default {
 		},
 
 		// ===== HELPERS =====
+
+		resolveNpcCharacterId(speaker) {
+			// Look up speaker in campaign's workplace_npcs array
+			if (this.selectedCampaign && this.selectedCampaign.workplace_npcs) {
+				const wpNpc = this.selectedCampaign.workplace_npcs.find(
+					n => n.role_in_story === speaker || n.character_id === speaker,
+				)
+				if (wpNpc) return wpNpc.character_id
+			}
+			// Check if speaker is already a valid character ID
+			const char = getCharacter(speaker)
+			if (char.id !== 'unknown') return speaker
+			return 'unknown'
+		},
+
+		npcDefaultEmotion(speaker) {
+			if (this.selectedCampaign && this.selectedCampaign.workplace_npcs) {
+				const wpNpc = this.selectedCampaign.workplace_npcs.find(
+					n => n.role_in_story === speaker || n.character_id === speaker,
+				)
+				if (wpNpc) return wpNpc.default_emotion || 'idle'
+			}
+			return 'idle'
+		},
 
 		npcPortrait(speaker) {
 			return (NPC_PORTRAITS[speaker] || { portrait: '👤' }).portrait
@@ -2177,5 +2231,12 @@ export default {
 .ab-role-dau {
   background: rgba(88, 166, 255, 0.15);
   color: var(--lnc-cyan);
+}
+
+/* ===== SKILL-CHECK NPC REACTION ===== */
+.ab-skill-npc-reaction {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--lnc-space-md, 16px);
 }
 </style>
