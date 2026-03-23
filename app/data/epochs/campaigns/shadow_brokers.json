@@ -1,0 +1,303 @@
+{
+  "id": "shadow_brokers",
+  "epoch_id": "apt_nation_states",
+  "title": "The Shadow Brokers — Cyberkrieg der Nationen",
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Cyber-Thriller im Stil eines Geheimdienstromans. Die Grenzen zwischen Verteidigung und Angriff verschwimmen — wer hackt hier eigentlich wen?",
+  "scenes": [
+    {
+      "id": "s1_stuxnet",
+      "title": "Stuxnet — Die erste Cyberwaffe",
+      "narrative": "Sommer 2010. In der Urananreicherungsanlage von Natanz drehen sich die Zentrifugen unerklaerlich schnell — und zerstoeren sich selbst. Ein mysterioeser Wurm hat sich ueber USB-Sticks verbreitet und nutzt vier Zero-Day-Exploits, um Siemens-SCADA-Systeme zu manipulieren. Du analysierst den komplexesten Schadcode, den die Welt je gesehen hat. Operation Olympic Games — ein Gemeinschaftsprojekt der USA und Israels — hat die Grenze zwischen digitaler und physischer Kriegsfuehrung fuer immer verschoben.",
+      "choices": [
+        {
+          "id": "s1_c1",
+          "text": "PLC-Code-Anomalien analysieren — die Zentrifugen-Manipulation im Detail untersuchen",
+          "icon": "cpu",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s2_apt1",
+          "partial_scene": "s2_apt1",
+          "fail_scene": "s1_fail"
+        },
+        {
+          "id": "s1_c2",
+          "text": "USB-Propagationsvektor untersuchen — wie hat sich der Wurm verbreitet?",
+          "icon": "usb",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_apt1",
+          "partial_scene": "s2_apt1",
+          "fail_scene": "s1_fail"
+        },
+        {
+          "id": "s1_c3",
+          "text": "Command-and-Control-Infrastruktur zurueckverfolgen — wer steckt dahinter?",
+          "icon": "globe",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_apt1",
+          "partial_scene": "s2_apt1",
+          "fail_scene": "s1_fail"
+        }
+      ]
+    },
+    {
+      "id": "s1_fail",
+      "title": "Analyse fehlgeschlagen",
+      "narrative": "Die Komplexitaet von Stuxnet hat dich ueberwaltigt. Waehrend du noch versuchst, den Code zu entschluesseln, haben andere Analysten die vier Zero-Days bereits dokumentiert. Du kannst von ihren Erkenntnissen lernen und trotzdem weiter ermitteln.",
+      "choices": [
+        {
+          "id": "s1f_c1",
+          "text": "Mit den veroeffentlichten Analysen weiterarbeiten",
+          "icon": "book",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_apt1",
+          "partial_scene": "s2_apt1",
+          "fail_scene": "epilog_fail"
+        }
+      ]
+    },
+    {
+      "id": "s2_apt1",
+      "title": "APT1 — Die Entlarvung von Unit 61398",
+      "narrative": "Februar 2013. Mandiant veroeffentlicht einen Bericht, der die Welt der Cybersicherheit erschuettert: Die chinesische Volksbefreiungsarmee betreibt eine dedizierte Hacker-Einheit — PLA Unit 61398 — in einem unscheinbaren Buerogebaeude in Shanghai. 141 Organisationen aus 20 Branchen wurden systematisch ausspioniert. Du musst die Beweiskette nachvollziehen, die zur ersten oeffentlichen Zuschreibung eines staatlichen Hackerangriffs fuehrte.",
+      "choices": [
+        {
+          "id": "s2_c1",
+          "text": "Infrastruktur mit dem Shanghaier Gebaeude korrelieren — IP-Adressen und physische Standorte verknuepfen",
+          "icon": "map",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s3_snowden",
+          "partial_scene": "s3_snowden",
+          "fail_scene": "s3_snowden"
+        },
+        {
+          "id": "s2_c2",
+          "text": "Spear-Phishing-Kampagnen analysieren — die Einstiegsvektoren dokumentieren",
+          "icon": "mail",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_snowden",
+          "partial_scene": "s3_snowden",
+          "fail_scene": "s3_snowden"
+        },
+        {
+          "id": "s2_c3",
+          "text": "Attributions-Timeline erstellen — die Angriffe chronologisch zuordnen",
+          "icon": "timeline",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_snowden",
+          "partial_scene": "s3_snowden",
+          "fail_scene": "s3_snowden"
+        }
+      ]
+    },
+    {
+      "id": "s3_snowden",
+      "title": "Snowden — Ueberwachung ohne Grenzen",
+      "narrative": "Juni 2013. Edward Snowden, ein NSA-Vertragsarbeiter, flieht nach Hongkong und uebergibt Journalisten tausende geheime Dokumente. PRISM, XKeyscore, Boundless Informant — die Programme lesen sich wie Science-Fiction, sind aber Realitaet. Die NSA kann praktisch jede digitale Kommunikation weltweit abfangen. Du stehst vor der groessten Frage der Cybersicherheit: Wo endet legitime nationale Sicherheit und wo beginnt Massenueberwachung?",
+      "choices": [
+        {
+          "id": "s3_c1",
+          "text": "Ueberwachungsumfang auditieren — welche Programme erfassen welche Daten?",
+          "icon": "eye",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s4_eternalblue",
+          "partial_scene": "s4_eternalblue",
+          "fail_scene": "s4_eternalblue"
+        },
+        {
+          "id": "s3_c2",
+          "text": "Schaden fuer Geheimdienstoperationen bewerten — was wurde kompromittiert?",
+          "icon": "shield",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_eternalblue",
+          "partial_scene": "s4_eternalblue",
+          "fail_scene": "s4_eternalblue"
+        },
+        {
+          "id": "s3_c3",
+          "text": "Auswirkungen auf Verschluesselungsadoption evaluieren — hat Snowden die Krypto-Revolution ausgeloest?",
+          "icon": "lock",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_eternalblue",
+          "partial_scene": "s4_eternalblue",
+          "fail_scene": "s4_eternalblue"
+        }
+      ]
+    },
+    {
+      "id": "s4_eternalblue",
+      "title": "EternalBlue — Wenn Cyberwaffen ausser Kontrolle geraten",
+      "narrative": "April 2017. Die Shadow Brokers veroeffentlichen das NSA-Exploit-Arsenal — darunter EternalBlue, ein Exploit fuer SMBv1 (MS17-010). Sechs Wochen spaeter nutzt WannaCry diesen Exploit und verschluesselt ueber 230.000 Computer in 150 Laendern. Krankenhaeuser, Logistik, Produktion — alles steht still. Du bist mittendrin im groessten Ransomware-Angriff der Geschichte und musst schnell handeln.",
+      "choices": [
+        {
+          "id": "s4_c1",
+          "text": "SMBv1-Schwachstelle patchen — MS17-010 auf allen Systemen einspielen",
+          "icon": "wrench",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "s4_fail"
+        },
+        {
+          "id": "s4_c2",
+          "text": "Laterale Bewegung eindaemmen — Netzwerksegmentierung und SMB-Blockierung",
+          "icon": "network",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "s4_fail"
+        },
+        {
+          "id": "s4_c3",
+          "text": "Kill-Switch-Domain analysieren — den Notaus-Mechanismus von WannaCry finden",
+          "icon": "power",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        }
+      ]
+    },
+    {
+      "id": "s4_fail",
+      "title": "Reaktion zu langsam",
+      "narrative": "WannaCry hat sich schneller verbreitet als deine Gegenmassnahmen greifen konnten. Doch Marcus Hutchins hat den Kill-Switch entdeckt und registriert — die Ausbreitung stoppt. Du hast wertvolle Lektionen ueber Patch-Management und Incident Response gelernt.",
+      "choices": [
+        {
+          "id": "s4f_c1",
+          "text": "Lehren dokumentieren und Notfallplan ueberarbeiten",
+          "icon": "clipboard",
+          "skill_check": {
+            "pool_filter": "epoch:apt_nation_states",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_partial",
+          "partial_scene": "epilog_fail",
+          "fail_scene": "epilog_fail"
+        }
+      ]
+    },
+    {
+      "id": "epilog_success",
+      "title": "Meister der Cyberkriegsfuehrung",
+      "narrative": "Du hast die Aera der staatlichen Cyberwaffen gemeistert. Von Stuxnet bis WannaCry — du verstehst, wie Nationen den Cyberspace als fuenftes Schlachtfeld nutzen. Dein Wissen ueber APT-Gruppen, Attribution und Exploit-Lifecycle macht dich zu einem Experten fuer die gefaehrlichste Dekade der IT-Sicherheit. Die Lehre: Cyberwaffen kennen keine Grenzen — einmal freigesetzt, treffen sie alle.",
+      "is_epilog": true,
+      "epilog_type": "success",
+      "choices": []
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Solide Grundlagen",
+      "narrative": "Die Welt der APTs und staatlichen Cyberoperationen ist komplex — und du hast einen guten Ueberblick gewonnen. Nicht jede Attribution war perfekt, nicht jeder Patch rechtzeitig, aber du verstehst die Dynamiken zwischen Angriff und Verteidigung auf staatlicher Ebene. Mit mehr Uebung wirst du zum Cyberkriegs-Experten.",
+      "is_epilog": true,
+      "epilog_type": "partial",
+      "choices": []
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Ueberfordert von der Komplexitaet",
+      "narrative": "Die Verflechtung von Geheimdiensten, Exploit-Maerkten und globaler Politik hat dich ueberwaeltigt. Das ist verstaendlich — selbst Experten streiten ueber Attribution und Ethik. Nimm dir Zeit, die einzelnen Vorfaelle nochmal durchzuarbeiten. Jeder dieser Faelle hat die Cybersicherheit grundlegend veraendert.",
+      "is_epilog": true,
+      "epilog_type": "fail",
+      "choices": []
+    }
+  ],
+  "historical_facts": [
+    {
+      "id": "stuxnet_discovery",
+      "title": "Stuxnet-Entdeckung",
+      "year": 2010,
+      "description": "Stuxnet wurde im Juni 2010 von der belarussischen Firma VirusBlokAda entdeckt. Der Wurm nutzte vier Zero-Day-Exploits und zwei gestohlene digitale Zertifikate von Realtek und JMicron.",
+      "significance": "Erste bekannte Cyberwaffe, die physische Infrastruktur zerstoerte — 984 Uranzentrifugen in Natanz beschaedigt."
+    },
+    {
+      "id": "apt1_report",
+      "title": "Mandiant APT1 Report",
+      "year": 2013,
+      "description": "Mandiant veroeffentlichte am 19. Februar 2013 einen 74-seitigen Bericht, der PLA Unit 61398 als Quelle systematischer Cyberattacken identifizierte. 141 Organisationen in 20 Branchen waren betroffen.",
+      "significance": "Erste oeffentliche Attribution eines staatlichen Cyberangriffs — veraenderte die geopolitische Debatte ueber Cyberspionage grundlegend."
+    },
+    {
+      "id": "snowden_leaks",
+      "title": "Snowden-Enthuellungen",
+      "year": 2013,
+      "description": "Edward Snowden uebergab im Juni 2013 ca. 1,5 Millionen klassifizierte NSA-Dokumente an Journalisten. Programme wie PRISM (Zugriff auf Daten von 9 Tech-Konzernen) und XKeyscore (Echtzeit-Internetueberwachung) wurden aufgedeckt.",
+      "significance": "Groesster Geheimdienst-Leak der Geschichte — fuehrte zu weltweiter Verschluesselungsadoption und EU-Datenschutzreformen."
+    },
+    {
+      "id": "shadow_brokers_auction",
+      "title": "Shadow Brokers NSA-Leak",
+      "year": 2016,
+      "description": "Eine Gruppe namens 'The Shadow Brokers' veroeffentlichte ab August 2016 NSA-Hacking-Tools, darunter EternalBlue (MS17-010 SMBv1 Exploit). Die Identitaet der Gruppe ist bis heute ungeklaert.",
+      "significance": "Bewies, dass selbst Geheimdienst-Exploits nicht sicher aufbewahrt werden koennen — mit verheerenden Folgen."
+    },
+    {
+      "id": "wannacry_attack",
+      "title": "WannaCry-Ransomware",
+      "year": 2017,
+      "description": "Am 12. Mai 2017 verbreitete sich WannaCry ueber EternalBlue in 150 Laendern. Der NHS in Grossbritannien war besonders betroffen — Operationen wurden abgesagt, Krankenwagen umgeleitet.",
+      "significance": "Groesster Ransomware-Angriff der Geschichte — zeigte die realen Konsequenzen von Patch-Versaeumnissen und Exploit-Leaks."
+    },
+    {
+      "id": "notpetya_attack",
+      "title": "NotPetya — Der teuerste Cyberangriff",
+      "year": 2017,
+      "description": "NotPetya tarnte sich als Ransomware, war aber ein destruktiver Wiper. Verbreitung ueber ein ukrainisches Steuer-Software-Update (M.E.Doc). Maersk, Merck und FedEx erlitten Milliardenschaeden.",
+      "significance": "Mit geschaetzten 10 Mrd. USD Schaden der teuerste Cyberangriff aller Zeiten — und ein fruehes Beispiel fuer Supply-Chain-Angriffe."
+    }
+  ]
+}
