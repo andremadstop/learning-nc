@@ -23,6 +23,7 @@ class EpochProgressMapper extends QBMapper {
            ->andWhere($qb->expr()->eq('epoch_id', $qb->createNamedParameter($epochId)))
            ->setMaxResults(1);
         try {
+            /** @var EpochProgress */
             return $this->findEntity($qb);
         } catch (DoesNotExistException $e) {
             return null;

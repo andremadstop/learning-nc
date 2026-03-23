@@ -135,8 +135,11 @@ class HackThroughTimeService {
 
     private EpochProgressMapper $progressMapper;
     private IDBConnection $db;
+    /** @phpstan-ignore-next-line — Reserved for Gemini narrator integration */
     private LoggerInterface $logger;
+    /** @phpstan-ignore-next-line — Reserved for content_language setting */
     private IConfig $config;
+    /** @phpstan-ignore-next-line — Reserved for rate-limiting */
     private ICacheFactory $cacheFactory;
 
     public function __construct(
@@ -246,11 +249,12 @@ class HackThroughTimeService {
             $progress->setMuseumViewed(null);
             $progress->setCreatedAt($now);
             $progress->setUpdatedAt($now);
+            /** @var EpochProgress $progress */
             $progress = $this->progressMapper->insert($progress);
         }
 
         $epoch = self::EPOCHS[$epochId];
-        $facts = self::MUSEUM_FACTS[$epochId] ?? [];
+        $facts = self::MUSEUM_FACTS[$epochId];
 
         return [
             'epoch'      => $epoch,
@@ -271,7 +275,7 @@ class HackThroughTimeService {
             throw new \InvalidArgumentException('Unknown epoch: ' . $epochId);
         }
 
-        $facts = self::MUSEUM_FACTS[$epochId] ?? [];
+        $facts = self::MUSEUM_FACTS[$epochId];
         $progress = $this->progressMapper->findByUserAndEpoch($userId, $epochId);
         $viewed = $progress !== null ? $progress->getMuseumViewedDecoded() : [];
 
