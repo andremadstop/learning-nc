@@ -123,7 +123,16 @@ export default {
     }
   },
   computed: {
-    subtype()  { return this.question.pbq_subtype || '' },
+    subtype() {
+      if (this.question.pbq_subtype) return this.question.pbq_subtype
+      // Auto-detect subtype from config structure
+      const cfg = this.config
+      if (cfg.terminals && cfg.terminals.length > 0) return 'cli'
+      if (cfg.questions && cfg.questions.length > 0) return 'dropdown'
+      if (cfg.devices || cfg.hotspots) return 'placement'
+      if (cfg.pins) return 'cable'
+      return ''
+    },
     config()   { return this.question.pbq_config || {} },
     configImage() { return this.resolveAssetUrl(this.config.scenario_image || null) },
     topologyConfig() { return this.config.topology || null },
