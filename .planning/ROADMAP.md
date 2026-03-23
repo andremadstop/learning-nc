@@ -215,7 +215,7 @@ Plans:
 - [x] **Phase 48: Engine + Charakter-Klassen** - HackThroughTime.vue, Epochen-Fortschritt, Museum, Skill-Checks, 4 Klassen mit Epochen-Affinitaet (completed 2026-03-23)
 - [x] **Phase 49: Epochen-Themes** - 7 CSS-Themes (Terminal, DOS, Netscape, XP, Dark Modern, Cloud, Hologramm) (completed 2026-03-23)
 - [ ] **Phase 50: Kampagnen Retro** - Blue Box, WarGames, The Worm, Bobby Tables (1960er-2000er)
-- [ ] **Phase 51: Kampagnen Modern** - Shadow Brokers, Supply Chain, Quantum Dawn (2010er-Zukunft)
+- [x] **Phase 51: Kampagnen Modern** - Shadow Brokers, Supply Chain, Quantum Dawn (2010er-Zukunft) (completed 2026-03-23)
 
 ## Phase Details
 
@@ -259,7 +259,10 @@ Plans:
   2. "Shall We Play a Game?" (1980er) hat 4 spielbare Szenen ueber WarGames, Kevin Mitnick Social Engineering und BBS-Kultur — inkl. mindestens einem Easter Egg (Hacker-Quote)
   3. "The Worm" (1990er) hat 3 spielbare Szenen ueber den Morris Worm, Buffer Overflows und den Finger-Daemon — der Internet-Kollaps von 1988 wird nachvollziehbar
   4. "Bobby Tables" (2000er) hat 4 spielbare Szenen ueber SQL Injection, Code Red, MySpace Worm und OWASP-Gruendung — der Spieler versteht die Geburt moderner Web-Security
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 50-01-PLAN.md — 4 epoch campaign JSONs (Blue Box, WarGames, The Worm, Bobby Tables) with 14 scenes total
 
 ### Phase 51: Kampagnen Modern
 **Goal**: Drei Kampagnen (2010er-Zukunft) mit insgesamt 11 Szenen fuehren von staatlichen Cyberwaffen ueber Supply-Chain-Angriffe bis zur Quantenbedrohung — der Spieler erlebt die Eskalation moderner IT-Security
@@ -269,6 +272,10 @@ Plans:
   1. "The Shadow Brokers" (2010er) hat 4 spielbare Szenen ueber Stuxnet, APT1, Snowden und EternalBlue — die Eskalation von Cyberwarfare wird greifbar
   2. "Supply Chain" (2020er) hat 4 spielbare Szenen ueber SolarWinds, Log4Shell, Prompt Injection und Deepfakes — aktuelle Bedrohungen werden erlebbar
   3. "Quantum Dawn" (Zukunft) hat 3 spielbare Szenen ueber Post-Quantum Crypto, QKD und Shors Algorithmus — der Spieler versteht warum Quantencomputer die Kryptografie bedrohen
+**Plans**: 1 plan
+
+Plans:
+- [ ] 51-01-PLAN.md — Shadow Brokers + Supply Chain + Quantum Dawn epoch campaigns (11 scenes)
 
 ## Progress
 
@@ -278,6 +285,6 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 48. Engine + Charakter-Klassen | 2/2 | Complete    | 2026-03-23 | - |
-| 49. Epochen-Themes | 1/1 | Complete   | 2026-03-23 | - |
-| 50. Kampagnen Retro | v7.0 | 0/TBD | Not started | - |
-| 51. Kampagnen Modern | v7.0 | 0/TBD | Not started | - |
+| 49. Epochen-Themes | 1/1 | Complete    | 2026-03-23 | - |
+| 50. Kampagnen Retro | v7.0 | 0/1 | Not started | - |
+| 51. Kampagnen Modern | 1/1 | Complete   | 2026-03-23 | - |

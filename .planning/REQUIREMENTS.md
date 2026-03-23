@@ -29,9 +29,9 @@
 - [ ] **CAMP-02**: 1980er "Shall We Play a Game?" — WarGames, Kevin Mitnick Social Engineering, BBS (4 Szenen)
 - [ ] **CAMP-03**: 1990er "The Worm" — Morris Worm, Buffer Overflow, Finger-Daemon, Internet-Kollaps (3 Szenen)
 - [ ] **CAMP-04**: 2000er "Bobby Tables" — SQL Injection, Code Red, MySpace Worm, OWASP-Gruendung (4 Szenen)
-- [ ] **CAMP-05**: 2010er "The Shadow Brokers" — Stuxnet, APT1, Snowden, EternalBlue (4 Szenen)
-- [ ] **CAMP-06**: 2020er "Supply Chain" — SolarWinds, Log4Shell, Prompt Injection, Deepfakes (4 Szenen)
-- [ ] **CAMP-07**: Zukunft "Quantum Dawn" — Post-Quantum Crypto, QKD, Shors Algorithmus (3 Szenen)
+- [x] **CAMP-05**: 2010er "The Shadow Brokers" — Stuxnet, APT1, Snowden, EternalBlue (4 Szenen)
+- [x] **CAMP-06**: 2020er "Supply Chain" — SolarWinds, Log4Shell, Prompt Injection, Deepfakes (4 Szenen)
+- [x] **CAMP-07**: Zukunft "Quantum Dawn" — Post-Quantum Crypto, QKD, Shors Algorithmus (3 Szenen)
 
 ### Charakter-System
 
@@ -75,9 +75,9 @@
 | CAMP-02 | Phase 50 | Pending |
 | CAMP-03 | Phase 50 | Pending |
 | CAMP-04 | Phase 50 | Pending |
-| CAMP-05 | Phase 51 | Pending |
-| CAMP-06 | Phase 51 | Pending |
-| CAMP-07 | Phase 51 | Pending |
+| CAMP-05 | Phase 51 | Complete |
+| CAMP-06 | Phase 51 | Complete |
+| CAMP-07 | Phase 51 | Complete |
 | CHAR-01 | Phase 48 | Complete |
 | CHAR-02 | Phase 48 | Complete |
 
