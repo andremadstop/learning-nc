@@ -670,7 +670,7 @@
   "workplace_npcs": [
     {
       "character_id": "klaus_dau",
-      "role_in_story": "Hat den E-Mail-Anhang geoeffnet und damit die Ransomware ausgeloest",
+      "role_in_story": "Hat einen infizierten Laptop ans Netzwerk angeschlossen — WannaCry verbreitete sich als Wurm via SMB (EternalBlue/MS17-010) ohne Nutzerinteraktion ueber Port 445",
       "default_emotion": "confused"
     }
   ]
