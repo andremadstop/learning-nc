@@ -1,0 +1,312 @@
+{
+  "campaign_id": "phishing_friday",
+  "title": "Phishing Friday — Der digitale Köder",
+  "description": "Freitagmorgen, 08:30 Uhr. Die Support-Hotline steht nicht still. Dutzende Mitarbeiter melden verdächtige E-Mails, während der erste CEO-Fraud Versuch bereits in der Buchhaltung gelandet ist. Ein Wettlauf gegen die Zeit beginnt, bevor der erste Klick zum Systemkollaps führt.",
+  "duration_minutes": 45,
+  "difficulty": "intermediate",
+  "focus_areas": [
+    "security_plus"
+  ],
+  "character_recommendations": [
+    "security",
+    "helpdesk"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Hektischer IT-Alltag mit psychologischem Tiefgang. Fokus auf menschliche Schwachstellen und technisches Gegensteuern.",
+  "gemini_role": "attacker",
+  "characters": {
+    "security": {
+      "id": "security",
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "👩‍💻",
+      "skill_bonus_pools": [
+        "security",
+        "incident_response"
+      ],
+      "skill_penalty_pools": [
+        "hardware",
+        "a_plus"
+      ]
+    },
+    "helpdesk": {
+      "id": "helpdesk",
+      "name": "Mia \"Helpdesk\" Torres",
+      "avatar": "👩‍🎧",
+      "skill_bonus_pools": [
+        "troubleshooting",
+        "a_plus"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response"
+      ]
+    }
+  },
+  "npcs": {
+    "klaus_dau": {
+      "name": "Klaus",
+      "role": "Endanwender",
+      "avatar": "👴"
+    },
+    "it_leiter": {
+      "name": "Thomas",
+      "role": "IT-Leiter",
+      "avatar": "🖥️"
+    },
+    "buchhaltung_sabine": {
+      "name": "Sabine",
+      "role": "Buchhaltung",
+      "avatar": "📊"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_entdeckung",
+      "title": "Der Sturm bricht los",
+      "narrative": "Es ist Freitag, kurz vor dem Wochenende. Eigentlich wolltest du nur die Logs prüfen, aber die Support-Queue füllt sich in Sekundenschnelle. 'Klaus' aus dem Vertrieb fragt, warum er sein Microsoft-Passwort auf einer Seite eingeben soll, die 'mircosoft-support.com' heißt. Zeitgleich meldet Sabine aus der Buchhaltung eine 'dringende Rechnung' vom CEO, die sofort per Echtzeitüberweisung beglichen werden muss. Der Angreifer nutzt die Freitags-Hektik schamlos aus.",
+      "npc_dialog": {
+        "speaker": "klaus_dau",
+        "text": "Du, ich hab da so eine Mail bekommen... da steht mein Konto wird gesperrt wenn ich mich nicht sofort einlogge. Die Seite sieht echt aus, aber mein Passwort-Manager meckert. Soll ich das einfach ignorieren?",
+        "portrait": "npc_klaus"
+      },
+      "choices": [
+        {
+          "id": "c1_global_alert",
+          "text": "Unternehmensweiten Warnhinweis schalten — Alle Mitarbeiter sofort sensibilisieren",
+          "icon": "📢",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_analyse",
+          "fail_scene": "s1_fail_delayed"
+        },
+        {
+          "id": "c1_isolate_klaus",
+          "text": "Klaus' Account präventiv sperren — Das Risiko eines Credential-Leaks minimieren",
+          "icon": "🔒",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_analyse",
+          "fail_scene": "s1_fail_delayed"
+        }
+      ]
+    },
+    {
+      "id": "s1_fail_delayed",
+      "title": "Zu langsame Reaktion",
+      "narrative": "Während du noch überlegst, hat Klaus bereits auf den Link geklickt. 'War doch nur kurz', murmelt er. Doch die Logs zeigen bereits die ersten Login-Versuche aus einem fernen Land. Der Angreifer hat die ersten gültigen Credentials erbeutet. Du musst jetzt sofort den Schaden begrenzen.",
+      "npc_dialog": {
+        "speaker": "it_leiter",
+        "text": "Verdammt, Klaus hat geklickt. Wir haben einen Session-Token-Leak. Sperr sofort alle aktiven Sitzungen und erzwinge MFA-Resets!",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c1_emergency_reset",
+          "text": "Globalen Session-Reset durchführen",
+          "icon": "⚡",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 2,
+            "pass_threshold": 1
+          },
+          "success_scene": "s2_analyse",
+          "fail_scene": "s2_analyse"
+        }
+      ]
+    },
+    {
+      "id": "s2_analyse",
+      "title": "Anatomie des Angriffs",
+      "narrative": "Du hast die E-Mails isoliert. Es ist kein einfacher Spam, sondern eine koordinierte Kampagne. Der CEO-Fraud an Sabine nutzt 'Display Name Spoofing', während die Mail an Klaus einen perfiden Look-alike-Domain-Link enthielt. In den Header-Daten findest du Hinweise auf einen kompromittierten Mail-Server eines Partners. Der Angreifer antwortet sogar auf Rückfragen der Mitarbeiter – echtes Spear-Phishing.",
+      "npc_dialog": {
+        "speaker": "buchhaltung_sabine",
+        "text": "Die Mail vom Chef klang so echt! Er schrieb, er sei am Flughafen und brauche die Überweisung für einen neuen Deal. Er hat sogar meinen Namen richtig geschrieben. Woher wissen die das?",
+        "portrait": "npc_sabine"
+      },
+      "choices": [
+        {
+          "id": "c2_header_analysis",
+          "text": "Mail-Header tiefenanalysieren — SPF, DKIM und DMARC Einträge prüfen",
+          "icon": "📧",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s3_eindaemmung",
+          "fail_scene": "s3_eindaemmung"
+        },
+        {
+          "id": "c2_osint_check",
+          "text": "OSINT-Recherche — Prüfen, ob Mitarbeiterdaten in aktuellen Leaks aufgetaucht sind",
+          "icon": "🔍",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_eindaemmung",
+          "fail_scene": "s3_eindaemmung"
+        }
+      ]
+    },
+    {
+      "id": "s3_eindaemmung",
+      "title": "Den Hahn zudrehen",
+      "narrative": "Die Beweise liegen vor. Du musst den Angreifer jetzt aus dem System drängen. Die bösartigen URLs müssen auf dem Proxy gesperrt, die Dateianhänge im gesamten Tenant gelöscht und die betroffenen Postfächer bereinigt werden. Zeitgleich versucht der Angreifer, Sabine mit einer SMS (Smishing) unter Druck zu setzen: 'Warum ist das Geld noch nicht da? Melde dich sofort!'",
+      "npc_dialog": {
+        "speaker": "it_leiter",
+        "text": "Der Typ gibt nicht auf. Jetzt versucht er es per SMS. Wir müssen die IP-Ranges der Phishing-Infrastruktur auf der Firewall blocken und die Mail-Gateway-Regeln verschärfen.",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c3_block_infra",
+          "text": "Phishing-Infrastruktur blocken und bösartige URLs auf die Blacklist setzen",
+          "icon": "🚫",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s4_awareness",
+          "fail_scene": "s4_awareness"
+        },
+        {
+          "id": "c3_mfa_enforce",
+          "text": "MFA-Richtlinien verschärfen — 'Number Matching' für Push-Benachrichtigungen erzwingen",
+          "icon": "📱",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_awareness",
+          "fail_scene": "s4_awareness"
+        }
+      ]
+    },
+    {
+      "id": "s4_awareness",
+      "title": "Das menschliche Update",
+      "narrative": "Die technische Abwehr steht, aber das Problem bleibt der Mensch. Du organisierst eine Ad-hoc-Schulung. Klaus und Sabine sitzen in der ersten Reihe. Du musst erklären, wie man 'Social Engineering' erkennt, ohne die Leute bloßzustellen. Du zeigst ihnen die Merkmale: Zeitdruck, ungewöhnliche Kanäle, kleine Fehler in der Adresse. Der IT-Leiter will wissen, wie wir das nachhaltig verbessern.",
+      "npc_dialog": {
+        "speaker": "klaus_dau",
+        "text": "Ich dachte immer, ich merk das sofort. Aber die Mail sah 1:1 aus wie unser Intranet. Was kann ich tun, damit mir das nicht nochmal passiert?",
+        "portrait": "npc_klaus"
+      },
+      "choices": [
+        {
+          "id": "c4_phishing_sim",
+          "text": "Regelmäßige Phishing-Simulationen vorschlagen — Training durch Erfahrung",
+          "icon": "🎣",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s5_post_incident",
+          "fail_scene": "s5_post_incident"
+        },
+        {
+          "id": "c4_reporting_button",
+          "text": "Einfachen 'Report Phishing' Button in Outlook implementieren — Meldehürden senken",
+          "icon": "🔘",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s5_post_incident",
+          "fail_scene": "s5_post_incident"
+        }
+      ]
+    },
+    {
+      "id": "s5_post_incident",
+      "title": "Sicher ins Wochenende",
+      "narrative": "Es ist 16:30 Uhr. Die Welle ist abgeklungen, keine weiteren Klicks wurden verzeichnet. Du schreibst den Abschlussbericht. Der finanzielle Schaden durch den CEO-Fraud wurde durch Sabines Aufmerksamkeit (und deinen Alarm) verhindert. Die IT-Infrastruktur ist nun besser gegen ähnliche Angriffe gerüstet. Der Angreifer hat sich zurückgezogen, aber er wird es wieder versuchen.",
+      "npc_dialog": {
+        "speaker": "it_leiter",
+        "text": "Gute Arbeit heute. Wir haben gezeigt, dass Technik und Awareness zusammenwirken müssen. Geh ins Wochenende, du hast es dir verdient.",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c5_lessons_learned",
+          "text": "Vollständigen Post-Incident Report erstellen und dem Vorstand präsentieren",
+          "icon": "📊",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "epilog_success",
+          "fail_scene": "epilog_partial"
+        }
+      ]
+    },
+    {
+      "id": "epilog_success",
+      "title": "Auftrag erfuellt",
+      "narrative": "Hervorragend! Du hast die Situation professionell geloest und dabei wertvolle Erfahrung gesammelt. Dein Team ist beeindruckt von deiner strukturierten Vorgehensweise.",
+      "is_epilog": true,
+      "epilog_type": "success",
+      "choices": []
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Teilweise erfolgreich",
+      "narrative": "Du hast die Situation unter Kontrolle gebracht, aber es gibt noch Verbesserungspotenzial. Einige Schritte haetten gruendlicher sein koennen. Beim naechsten Mal weisst du es besser.",
+      "is_epilog": true,
+      "epilog_type": "partial",
+      "choices": []
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Gelernt aus dem Scheitern",
+      "narrative": "Diesmal lief es nicht optimal. Aber jeder Fehler ist eine Lektion. Analysiere was schiefging und versuche es erneut — beim naechsten Mal wirst du besser vorbereitet sein.",
+      "is_epilog": true,
+      "epilog_type": "fail",
+      "choices": []
+    }
+  ],
+  "epilog": [
+    {
+      "id": "epilog_success",
+      "title": "Sieg über den Köder",
+      "narrative": "Hervorragende Arbeit! Du hast die Phishing-Welle nicht nur gestoppt, sondern die Chance genutzt, die Abwehr langfristig zu stärken. Durch die Kombination aus technischen Maßnahmen (DMARC, MFA-Hardening) und menschlicher Awareness hast du den 'Human Factor' abgesichert. Praxistipp: Nutze immer MFA-Verfahren, die resistent gegen Proxy-Phishing sind (z.B. FIDO2/Passkeys), da einfache Push-Benachrichtigungen oft per 'MFA Fatigue' umgangen werden können.",
+      "outcome": "success",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Eingeschränkter Erfolg",
+      "narrative": "Der Angriff wurde gestoppt, aber nicht bevor Klaus seine Daten eingegeben hat. Der Account-Reset hat Schlimmeres verhindert, aber die Reaktionszeit war grenzwertig. Du hast gelernt, dass im Ernstfall jede Sekunde zählt. Praxistipp: Implementiere automatisierte Playbooks, die bei Meldungen von bekannten Phishing-URLs sofort die entsprechenden Mails aus allen Postfächern löschen, um weitere Opfer zu vermeiden.",
+      "outcome": "partial",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Teures Lehrgeld",
+      "narrative": "Ein harter Freitag. Der CEO-Fraud konnte zwar gestoppt werden, aber mehrere Mitarbeiter-Accounts wurden kompromittiert, da die Warnungen zu spät kamen. Die Aufräumarbeiten werden das gesamte Wochenende in Anspruch nehmen. Praxistipp: Awareness ist kein Einmalevent. Ohne einfache Meldewege und regelmäßiges Training bleibt der Mensch das größte Sicherheitsrisiko in deiner Infrastruktur.",
+      "outcome": "fail",
+      "is_epilog": true
+    }
+  ],
+  "workplace_npcs": [
+    {
+      "character_id": "klaus_dau",
+      "role_in_story": "Der klassische 'Clicker' — motiviert aber leichtgläubig",
+      "default_emotion": "confused"
+    }
+  ]
+}

@@ -1,0 +1,308 @@
+{
+  "campaign_id": "cloud_under_fire",
+  "title": "Cloud Under Fire — Schatten in der Cloud",
+  "description": "Ein CloudTrail-Alarm am Abend: Ungewöhnliche API-Aufrufe aus einer fremden Region. Während du noch versuchst, die Spur zu verfolgen, entdeckst du einen miskonfigurierten S3-Bucket und EC2-Instanzen, die unter Volllast laufen. Der Angreifer nutzt deine Ressourcen für seine Zwecke.",
+  "duration_minutes": 60,
+  "difficulty": "expert",
+  "focus_areas": [
+    "security_plus"
+  ],
+  "character_recommendations": [
+    "architect",
+    "security"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Modern, dynamisch, technologisch fokussiert. Der Fokus liegt auf Shared Responsibility, Cloud-Governance und Identitätsmanagement.",
+  "gemini_role": "attacker",
+  "characters": {
+    "architect": {
+      "id": "architect",
+      "name": "Alex \"The Architect\" Neumann",
+      "avatar": "👨‍💻",
+      "skill_bonus_pools": [
+        "vlan",
+        "subnetting",
+        "topology"
+      ],
+      "skill_penalty_pools": [
+        "hardware",
+        "troubleshooting"
+      ]
+    },
+    "security": {
+      "id": "security",
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "👩‍💻",
+      "skill_bonus_pools": [
+        "security",
+        "incident_response"
+      ],
+      "skill_penalty_pools": [
+        "routing",
+        "vlan"
+      ]
+    }
+  },
+  "npcs": {
+    "cloud_admin_leo": {
+      "name": "Leo",
+      "role": "Cloud Architect",
+      "avatar": "☁️"
+    },
+    "it_leiter_thomas": {
+      "name": "Thomas",
+      "role": "IT-Leiter",
+      "avatar": "🖥️"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_cloudtrail_alert",
+      "title": "Der unsichtbare Gast",
+      "narrative": "Dein Security-Dashboard schlägt Alarm. In den CloudTrail-Logs tauchen 'PutObject'- und 'ListBuckets'-Aufrufe von einer IP-Adresse auf, die nicht zu deinem Unternehmen gehört. Schlimmer noch: Die Aufrufe nutzen den 'Admin'-Account deines Cloud-Architekten Leo — allerdings von einem Standort aus, an dem Leo sich definitiv nicht befindet. Ein klassischer Credential-Theft oder ein Session-Hijacking im Browser.",
+      "npc_dialog": {
+        "speaker": "cloud_admin_leo",
+        "text": "Was? Das sind nicht meine Aufrufe! Ich bin zu Hause und hab mich seit heute Mittag nicht mehr eingeloggt. Mein Key muss kompromittiert worden sein. Wir müssen den Account sofort sperren!",
+        "portrait": "npc_leo"
+      },
+      "choices": [
+        {
+          "id": "c1_revoke_sessions",
+          "text": "IAM-Sessions sofort widerrufen und API-Keys ungültig erklären",
+          "icon": "🔑",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_bucket_analysis",
+          "fail_scene": "s1_fail_data_exfil"
+        },
+        {
+          "id": "c1_enable_mfa_enforcement",
+          "text": "MFA-Zwang für alle administrativen Rollen global erzwingen",
+          "icon": "📱",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_bucket_analysis",
+          "fail_scene": "s1_fail_data_exfil"
+        }
+      ]
+    },
+    {
+      "id": "s1_fail_data_exfil",
+      "title": "Datenleck in Echtzeit",
+      "narrative": "Du warst zu langsam. Der Angreifer hat die Zeit genutzt, um den Inhalt deines 'Customer-Records' S3-Buckets in seinen eigenen Cloud-Account zu spiegeln. Die Logs zeigen einen massiven Datenabfluss. Thomas, der IT-Leiter, ist alarmiert: 'Sind das die Realdaten unserer Kunden? Wenn ja, müssen wir sofort die Rechtsabteilung informieren!'",
+      "npc_dialog": {
+        "speaker": "it_leiter_thomas",
+        "text": "Das ist ein Albtraum. Wir haben keine Verschlüsselung auf dem Bucket aktiviert? Wie konnte das passieren? Wir müssen jetzt sofort wissen, was genau abgeflossen ist.",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c1_fail_log_review",
+          "text": "Detaillierte Analyse der S3-Access-Logs — Schadensausmaß bestimmen",
+          "icon": "📊",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 2,
+            "pass_threshold": 1
+          },
+          "success_scene": "s2_bucket_analysis",
+          "fail_scene": "s2_bucket_analysis"
+        }
+      ]
+    },
+    {
+      "id": "s2_bucket_analysis",
+      "title": "Das offene Scheunentor",
+      "narrative": "Die Analyse des betroffenen Buckets offenbart das ganze Ausmaß der Miskonfiguration. Der Bucket war auf 'Public Read' gesetzt, und das 'Block Public Access'-Feature auf Account-Ebene war deaktiviert. Leo ist sichtlich zerknirscht: 'Ich hab das für ein kurzes Testing-Skript freigegeben und vergessen wieder zuzumachen.' Du musst den Bucket nun harten Security-Policies unterwerfen.",
+      "npc_dialog": {
+        "speaker": "cloud_admin_leo",
+        "text": "Mein Fehler. Ich hätte die Bucket-Policy niemals so offen lassen dürfen. Aber schau dir das mal an: Während wir hier fixen, sind plötzlich neue EC2-Instanzen in der Region 'us-west-1' gestartet worden. Die gehören nicht zu uns!",
+        "portrait": "npc_leo"
+      },
+      "choices": [
+        {
+          "id": "c2_bucket_hardening",
+          "text": "Implementierung von S3-Verschlüsselung (SSE-KMS) und Bucket-Policies (Least Privilege)",
+          "icon": "🛡️",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s3_cryptominer",
+          "fail_scene": "s3_cryptominer"
+        },
+        {
+          "id": "c2_audit_all_buckets",
+          "text": "Automatisierter Scan aller Buckets im Account auf 'Public Access'",
+          "icon": "🔍",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_cryptominer",
+          "fail_scene": "s3_cryptominer"
+        }
+      ]
+    },
+    {
+      "id": "s3_cryptominer",
+      "title": "Mining auf Firmenkosten",
+      "narrative": "Der Angreifer hat nicht nur Daten gestohlen, sondern nutzt deine Cloud-Ressourcen nun für Cryptomining. In einer ungenutzten Region hat er hunderte Hochleistungs-Instanzen gestartet. Dein Budget-Alarm hat bereits angeschlagen: Die Kosten für diesen Monat sind in den letzten zwei Stunden um 5.000 Euro gestiegen. Thomas fordert eine sofortige Lösung, bevor die Rechnung den Rahmen sprengt.",
+      "npc_dialog": {
+        "speaker": "it_leiter_thomas",
+        "text": "Stopp das! Sofort! Wir zahlen doch nicht für das Mining eines Hackers. Lösch alle Instanzen, die wir nicht kennen, und sperr die Regionen, die wir nicht nutzen!",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c3_terminate_instances",
+          "text": "Sofortige Terminierung aller nicht-autorisierten EC2-Instanzen",
+          "icon": "⛔",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_containment",
+          "fail_scene": "s4_containment"
+        },
+        {
+          "id": "c3_service_control_policies",
+          "text": "Service Control Policies (SCP) nutzen — Nicht genutzte Regionen hart sperren",
+          "icon": "🧱",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s4_containment",
+          "fail_scene": "s4_containment"
+        }
+      ]
+    },
+    {
+      "id": "s4_containment",
+      "title": "Die Brandmauer in der Cloud",
+      "narrative": "Die Instanzen sind gelöscht, die Kosten eingefroren. Jetzt musst du sicherstellen, dass der Angreifer keinen 'Persistence'-Mechanismus hinterlassen hat. Du untersuchst die IAM-Rollen und findest eine neue Rolle mit dem Namen 'Cloud-Maintenance-Support', die weitreichende Berechtigungen hat. Das war die Hintertür des Angreifers. Leo arbeitet bereits an einem neuen Governance-Modell.",
+      "npc_dialog": {
+        "speaker": "cloud_admin_leo",
+        "text": "Er hat eine eigene IAM-Rolle erstellt, um wieder reinzukommen. Clever. Wir müssen auf ein 'Least Privilege' Modell umsteigen und jede Rollen-Erstellung über ein 'Four-Eyes-Principle' absichern.",
+        "portrait": "npc_leo"
+      },
+      "choices": [
+        {
+          "id": "c4_iam_audit",
+          "text": "Vollständiges IAM-Audit — Alle ungenutzten Rollen und User löschen",
+          "icon": "🆔",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s5_hardening",
+          "fail_scene": "s5_hardening"
+        },
+        {
+          "id": "c4_cloud_guardrail",
+          "text": "Implementierung von Cloud-native Security Tools (z.B. GuardDuty, Security Hub)",
+          "icon": "🛡️",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s5_hardening",
+          "fail_scene": "s5_hardening"
+        }
+      ]
+    },
+    {
+      "id": "s5_hardening",
+      "title": "In den sicheren Hafen",
+      "narrative": "Nach 24 Stunden Hochdruck ist der Cloud-Account sicherer als je zuvor. Du präsentierst Thomas den Abschlussbericht. Die Kosten konnten durch das SCP-Hardening begrenzt werden, und die Datenverschlüsselung ist nun Standard. Leo hat gelernt, dass 'kurzes Testen' in der Cloud fatale Folgen haben kann. Thomas will wissen, wie wir solche Vorfälle in Zukunft proaktiv verhindern können.",
+      "npc_dialog": {
+        "speaker": "it_leiter_thomas",
+        "text": "Wir haben den Kopf noch mal aus der Schlinge gezogen. Aber ich will automatisierte Benachrichtigungen, wenn sich eine Policy ändert. Cloud Security darf nicht von der Aufmerksamkeit eines Admins abhängen.",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c5_infrastructure_as_code",
+          "text": "Umstellung auf 'Infrastructure as Code' (IaC) — Sicherheitschecks in der Pipeline",
+          "icon": "⚙️",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "epilog_success",
+          "fail_scene": "epilog_partial"
+        }
+      ]
+    },
+    {
+      "id": "epilog_success",
+      "title": "Auftrag erfuellt",
+      "narrative": "Hervorragend! Du hast die Situation professionell geloest und dabei wertvolle Erfahrung gesammelt. Dein Team ist beeindruckt von deiner strukturierten Vorgehensweise.",
+      "is_epilog": true,
+      "epilog_type": "success",
+      "choices": []
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Teilweise erfolgreich",
+      "narrative": "Du hast die Situation unter Kontrolle gebracht, aber es gibt noch Verbesserungspotenzial. Einige Schritte haetten gruendlicher sein koennen. Beim naechsten Mal weisst du es besser.",
+      "is_epilog": true,
+      "epilog_type": "partial",
+      "choices": []
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Gelernt aus dem Scheitern",
+      "narrative": "Diesmal lief es nicht optimal. Aber jeder Fehler ist eine Lektion. Analysiere was schiefging und versuche es erneut — beim naechsten Mal wirst du besser vorbereitet sein.",
+      "is_epilog": true,
+      "epilog_type": "fail",
+      "choices": []
+    }
+  ],
+  "epilog": [
+    {
+      "id": "epilog_success",
+      "title": "Cloud Security Architekt",
+      "narrative": "Herausragende Arbeit! Du hast nicht nur ein akutes Datenleck und horrende Mining-Kosten gestoppt, sondern die Cloud-Infrastruktur nach modernen Standards (Shared Responsibility Model, Governance) gehärtet. Praxistipp: In der Cloud ist Identität der neue Perimeter. Nutze SCPs, um gefährliche Aktionen global zu unterbinden, und setze auf automatisierte Monitoring-Tools, die Abweichungen von der 'Security Baseline' sofort erkennen.",
+      "outcome": "success",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Cloud-Gewitter mit Folgen",
+      "narrative": "Der Angriff wurde gestoppt, aber der Datenabfluss aus dem S3-Bucket wird rechtliche Konsequenzen haben. Du hast gelernt, dass 'Default-Einstellungen' in der Cloud oft unsicher sind und manuell gehärtet werden müssen. Praxistipp: Aktiviere immer 'Block Public Access' auf Account-Ebene für S3, es sei denn, ein Bucket muss explizit öffentlich sein. Verschlüssele alle Daten 'at rest' mit kundenverwalteten Schlüsseln (KMS).",
+      "outcome": "partial",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Budget-Crash & Datenverlust",
+      "narrative": "Die Reaktion war zu langsam und unkoordiniert. Der Angreifer konnte tagelang Mining betreiben und alle Kundendaten exfiltrieren. Die Kosten haben das Jahresbudget gesprengt, und das Vertrauen der Kunden ist verloren. Praxistipp: Cloud Security erfordert Schnelligkeit. Ohne automatisierte Alerts und klare Incident Response Playbooks bist du gegen moderne Cloud-Angreifer machtlos.",
+      "outcome": "fail",
+      "is_epilog": true
+    }
+  ],
+  "workplace_npcs": [
+    {
+      "character_id": "architect",
+      "role_in_story": "Spielt Leo — den geständigen Cloud-Experten",
+      "default_emotion": "alert"
+    }
+  ]
+}

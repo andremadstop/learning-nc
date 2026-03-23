@@ -1,0 +1,283 @@
+{
+  "campaign_id": "compliance_marathon",
+  "title": "Der Compliance-Marathon — Audit unter Druck",
+  "description": "In zwei Wochen steht das ISO 27001 Zertifizierungs-Audit an. Doch während du die Dokumentation sichtest, entdeckst du einen massiven DSGVO-Verstoß in der Marketing-Datenbank. Zwischen Paragraphen, Risiko-Assessments und einem ungeduldigen Geschäftsführer kämpfst du um die Existenzberechtigung deiner IT-Sicherheit.",
+  "duration_minutes": 50,
+  "difficulty": "intermediate",
+  "focus_areas": [
+    "security_plus"
+  ],
+  "character_recommendations": [
+    "security",
+    "helpdesk"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Bürokratischer Thriller. Der Fokus liegt auf Governance, Risikomanagement und der Balance zwischen Gesetzestexten und technischer Realität.",
+  "gemini_role": "dau",
+  "characters": {
+    "security": {
+      "id": "security",
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "👩‍💻",
+      "skill_bonus_pools": [
+        "security",
+        "incident_response"
+      ],
+      "skill_penalty_pools": [
+        "hardware",
+        "a_plus"
+      ]
+    },
+    "helpdesk": {
+      "id": "helpdesk",
+      "name": "Mia \"Helpdesk\" Torres",
+      "avatar": "👩‍🎧",
+      "skill_bonus_pools": [
+        "troubleshooting",
+        "a_plus"
+      ],
+      "skill_penalty_pools": [
+        "security",
+        "incident_response"
+      ]
+    }
+  },
+  "npcs": {
+    "ceo_dr_hartmann": {
+      "name": "Dr. Hartmann",
+      "role": "Geschäftsführer",
+      "avatar": "👔"
+    },
+    "frau_weber": {
+      "name": "Frau Weber",
+      "role": "Datenschutzbeauftragte",
+      "avatar": "📋"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_audit_alarm",
+      "title": "Die Ankündigung",
+      "narrative": "Das Telefon klingelt. Dr. Hartmann ist am Apparat: 'Die Auditoren für die ISO 27001 kommen in zwei Wochen. Wir brauchen das Zertifikat für den neuen Großkunden. Sorgen Sie dafür, dass alles glänzt!'. Du weißt genau, dass die letzte Gap-Analyse sechs Monate alt ist und viele Maßnahmen nur auf dem Papier existieren. Zu allem Überfluss steht Frau Weber in der Tür und wedelt mit einem Bericht über eine 'unverschlüsselte Excel-Liste' mit 50.000 Kundendaten.",
+      "npc_dialog": {
+        "speaker": "ceo_dr_hartmann",
+        "text": "Dieses ISO-Ding ist doch nur Formsache, oder? Ein paar Unterschriften, ein bisschen Papierkram... wir haben Wichtigeres zu tun, als Akten zu wälzen. Machen Sie das einfach fertig.",
+        "portrait": "npc_hartmann"
+      },
+      "choices": [
+        {
+          "id": "c1_kickoff_audit",
+          "text": "Sofortiges Kick-off Meeting mit allen Abteilungsleitern — Verantwortlichkeiten klären",
+          "icon": "👥",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_gap_analyse",
+          "fail_scene": "s2_gap_analyse"
+        },
+        {
+          "id": "c1_triage_dsgvo",
+          "text": "DSGVO-Vorfall priorisieren — Meldepflicht innerhalb von 72 Stunden prüfen",
+          "icon": "⚖️",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_gap_analyse",
+          "fail_scene": "s2_gap_analyse"
+        }
+      ]
+    },
+    {
+      "id": "s2_gap_analyse",
+      "title": "Der Abgrund der Dokumentation",
+      "narrative": "Du startest die Gap-Analyse. Ergebnis: Katastrophal. Das Asset-Register ist unvollständig, das Patch-Management hat keine dokumentierten SLAs und der Notfallplan (BCP) wurde seit drei Jahren nicht getestet. Frau Weber drängt: 'Wenn die Auditoren das sehen, wird das kein Minor Non-Conformity, sondern ein Major!'. Dr. Hartmann will wissen, warum wir so viel Zeit mit 'Listen schreiben' verbringen.",
+      "npc_dialog": {
+        "speaker": "frau_weber",
+        "text": "Ohne Asset-Inventory wissen wir gar nicht, was wir schützen müssen. Und der DSGVO-Verstoß in der Marketing-Abteilung muss sofort dokumentiert und gemeldet werden. Wir riskieren Bußgelder!",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c2_asset_inventory",
+          "text": "Automatisierter Asset-Scan — Schnellstmögliche Erstellung eines Inventars",
+          "icon": "🖥️",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s3_risk_assessment",
+          "fail_scene": "s3_risk_assessment"
+        },
+        {
+          "id": "c2_policy_update",
+          "text": "Update der Kern-Policies (AUP, Incident Response) — Papierform glattziehen",
+          "icon": "📝",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_risk_assessment",
+          "fail_scene": "s3_risk_assessment"
+        }
+      ]
+    },
+    {
+      "id": "s3_risk_assessment",
+      "title": "Das Spiel mit den Wahrscheinlichkeiten",
+      "narrative": "Zeit für das Risiko-Assessment. Du musst entscheiden: Welche Risiken akzeptieren wir (Risk Acceptance), welche übertragen wir (Risk Transfer, z.B. Versicherung) und welche bekämpfen wir (Risk Mitigation)? Dr. Hartmann will 'Null Risiko', aber ohne Budget für neue Hardware. Du musst ihm erklären, dass Risiko-Management eine strategische Entscheidung ist, kein technisches Wunderwerk.",
+      "npc_dialog": {
+        "speaker": "ceo_dr_hartmann",
+        "text": "Risiko? Wir haben doch Firewalls! Warum soll ich jetzt Geld für eine Cyber-Versicherung ausgeben? Können wir nicht einfach unterschreiben, dass alles sicher ist?",
+        "portrait": "npc_hartmann"
+      },
+      "choices": [
+        {
+          "id": "c3_quantitative_risk",
+          "text": "Quantitative Risiko-Analyse — Den möglichen Schaden in Euro ausdrücken",
+          "icon": "💶",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s4_action_plan",
+          "fail_scene": "s4_action_plan"
+        },
+        {
+          "id": "c3_risk_register",
+          "text": "Erstellung eines Risk Registers mit klaren Verantwortlichkeiten (Risk Owners)",
+          "icon": "📋",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_action_plan",
+          "fail_scene": "s4_action_plan"
+        }
+      ]
+    },
+    {
+      "id": "s4_action_plan",
+      "title": "Der Rettungsplan",
+      "narrative": "Noch 48 Stunden. Du erstellst den Maßnahmenplan (Statement of Applicability - SoA). Du musst priorisieren: Was muss technisch sofort umgesetzt werden (z.B. Verschlüsselung der Marketing-Daten) und was kann als 'geplanter Prozess' für die Zukunft deklariert werden? Der Stresspegel steigt, Frau Weber ist mit der Dokumentation des DSGVO-Vorfalls fertig und wartet auf deine Freigabe.",
+      "npc_dialog": {
+        "speaker": "frau_weber",
+        "text": "Der Bericht an die Aufsichtsbehörde ist fertig. Wenn wir das heute nicht abschicken, sind wir über die 72 Stunden. Das wäre der Todesstoß für unser Audit.",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c4_file_report",
+          "text": "DSGVO-Meldung abschicken — Transparenz gegenüber der Behörde",
+          "icon": "📧",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s5_audit_day",
+          "fail_scene": "s5_audit_day"
+        },
+        {
+          "id": "c4_security_controls",
+          "text": "Implementierung technischer Controls (Encryption at Rest) für kritische DBs",
+          "icon": "🔐",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s5_audit_day",
+          "fail_scene": "s5_audit_day"
+        }
+      ]
+    },
+    {
+      "id": "s5_audit_day",
+      "title": "Stunde der Wahrheit",
+      "narrative": "Der Auditor ist da. Er prüft stichprobenartig das Asset-Management, lässt sich den Incident-Response-Prozess erklären und fragt gezielt nach dem Umgang mit Datenschutzverletzungen. Dr. Hartmann hält sich zurück, während Frau Weber souverän die Meldung des Vorfalls präsentiert. Es geht um alles oder nichts: Bekommt das Unternehmen das Zertifikat oder müssen wir in die Nachprüfung?",
+      "npc_dialog": {
+        "speaker": "ceo_dr_hartmann",
+        "text": "Und? Haben wir das Ding? Sagen Sie mir, dass sich die ganze Aufregung gelohnt hat. Der neue Kunde wartet auf die Bestätigung.",
+        "portrait": "npc_hartmann"
+      },
+      "choices": [
+        {
+          "id": "c5_audit_interview",
+          "text": "Sicheres Auftreten im Audit-Interview — Prozesse fachlich fundiert erklären",
+          "icon": "🎤",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "epilog_success",
+          "fail_scene": "epilog_partial"
+        }
+      ]
+    },
+    {
+      "id": "epilog_success",
+      "title": "Auftrag erfuellt",
+      "narrative": "Hervorragend! Du hast die Situation professionell geloest und dabei wertvolle Erfahrung gesammelt. Dein Team ist beeindruckt von deiner strukturierten Vorgehensweise.",
+      "is_epilog": true,
+      "epilog_type": "success",
+      "choices": []
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Teilweise erfolgreich",
+      "narrative": "Du hast die Situation unter Kontrolle gebracht, aber es gibt noch Verbesserungspotenzial. Einige Schritte haetten gruendlicher sein koennen. Beim naechsten Mal weisst du es besser.",
+      "is_epilog": true,
+      "epilog_type": "partial",
+      "choices": []
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Gelernt aus dem Scheitern",
+      "narrative": "Diesmal lief es nicht optimal. Aber jeder Fehler ist eine Lektion. Analysiere was schiefging und versuche es erneut — beim naechsten Mal wirst du besser vorbereitet sein.",
+      "is_epilog": true,
+      "epilog_type": "fail",
+      "choices": []
+    }
+  ],
+  "epilog": [
+    {
+      "id": "epilog_success",
+      "title": "Zertifiziert & Sicher",
+      "narrative": "Herzlichen Glückwunsch! Du hast das ISO 27001 Zertifikat erhalten. Der Auditor war besonders beeindruckt von deinem transparenten Umgang mit dem DSGVO-Vorfall und dem soliden Risiko-Management. Praxistipp: Compliance ist kein Einmalevent. Ein lebendiges ISMS (Information Security Management System) erfordert kontinuierliche Verbesserung (PDCA-Zyklus: Plan-Do-Check-Act), um auch im nächsten Jahr erfolgreich zu sein.",
+      "outcome": "success",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Bestanden mit Auflagen",
+      "narrative": "Du hast das Zertifikat erhalten, aber mit mehreren 'Minor Non-Conformities'. Du hast nun drei Monate Zeit, das Asset-Management und die BCP-Tests nachzubessern. Dr. Hartmann ist zufrieden, aber Frau Weber mahnt zur Eile. Praxistipp: Governance bedeutet, dass Security von der Geschäftsführung getragen werden muss. Nutze das Audit-Ergebnis, um feste Security-Budgets für das nächste Jahr zu sichern.",
+      "outcome": "partial",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Audit gescheitert",
+      "narrative": "Das Audit wurde abgebrochen. Die Mängel im Risiko-Management und der verspätet gemeldete DSGVO-Vorfall waren zu schwerwiegend. Dr. Hartmann ist außer sich, aber die Lektion ist klar: Ohne echte Prozesse hilft auch der beste Techniker nicht. Praxistipp: Compliance schützt nicht nur vor Strafen, sondern strukturiert deine gesamte Security-Arbeit. Ohne Asset-Management und Risk-Assessment ist jede Firewall nur ein teurer Türstopper.",
+      "outcome": "fail",
+      "is_epilog": true
+    }
+  ],
+  "workplace_npcs": [
+    {
+      "character_id": "frau_weber",
+      "role_in_story": "Die mahnende Stimme der Vernunft und des Gesetzes",
+      "default_emotion": "alert"
+    }
+  ]
+}

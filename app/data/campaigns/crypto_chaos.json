@@ -1,0 +1,283 @@
+{
+  "campaign_id": "crypto_chaos",
+  "title": "Crypto Chaos — Das schwächste Glied in der Kette",
+  "description": "Ein Montagmorgen wie jeder andere — bis die ersten Webseiten 'Internal Server Error' melden und dein Monitoring-System rot leuchtet. Ein kritisches SSL-Zertifikat ist abgelaufen, doch das ist nur die Spitze des Eisbergs. Die Spur führt tief in eine kompromittierte Root-CA.",
+  "duration_minutes": 55,
+  "difficulty": "expert",
+  "focus_areas": [
+    "security_plus"
+  ],
+  "character_recommendations": [
+    "security",
+    "sysadmin"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Analytisch, technisch anspruchsvoll. Der Fokus liegt auf der Integrität der Public Key Infrastructure (PKI) und den mathematischen Grundlagen der Sicherheit.",
+  "gemini_role": null,
+  "characters": {
+    "security": {
+      "id": "security",
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "👩‍💻",
+      "skill_bonus_pools": [
+        "security",
+        "incident_response"
+      ],
+      "skill_penalty_pools": [
+        "hardware",
+        "a_plus"
+      ]
+    },
+    "sysadmin": {
+      "id": "sysadmin",
+      "name": "Kai \"Root\" Lindström",
+      "avatar": "🧔",
+      "skill_bonus_pools": [
+        "linux",
+        "dns"
+      ],
+      "skill_penalty_pools": [
+        "wireless",
+        "wlan"
+      ]
+    }
+  },
+  "npcs": {
+    "it_leiter": {
+      "name": "Thomas",
+      "role": "IT-Leiter",
+      "avatar": "🖥️"
+    },
+    "compliance_manager": {
+      "name": "Frau Weber",
+      "role": "Compliance",
+      "avatar": "📋"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_zertifikats_alarm",
+      "title": "Der Krypto-Blackout",
+      "narrative": "Das Intranet ist down. Die Fehlermeldung ist eindeutig: 'NET::ERR_CERT_DATE_INVALID'. Ein schnelles Review zeigt, dass das Wildcard-Zertifikat für die Hauptdomain heute Nacht abgelaufen ist. Thomas, der IT-Leiter, steht unter Strom: 'Wie konnte das passieren? Wir haben doch ein Management-Tool!'. Doch beim Versuch, ein neues Zertifikat zu signieren, stellst du fest, dass die Verbindung zur internen Zertifizierungsstelle (CA) verweigert wird.",
+      "npc_dialog": {
+        "speaker": "it_leiter",
+        "text": "Fix das sofort! Die Leute können nicht arbeiten. Warum lässt sich kein neues Zertifikat ausstellen? Hat jemand die CA-Admin-Passwörter geändert?",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c1_check_ca_status",
+          "text": "CA-Server Status und CRL (Certificate Revocation List) prüfen",
+          "icon": "📜",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_root_ca_analyse",
+          "fail_scene": "s2_root_ca_analyse"
+        },
+        {
+          "id": "c1_inspect_logs",
+          "text": "Event-Logs der Zertifizierungsstelle auf unbefugte Zugriffe scannen",
+          "icon": "🔍",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_root_ca_analyse",
+          "fail_scene": "s2_root_ca_analyse"
+        }
+      ]
+    },
+    {
+      "id": "s2_root_ca_analyse",
+      "title": "Das kompromittierte Fundament",
+      "narrative": "Die Schreckensnachricht bestätigt sich: In den Logs finden sich Spuren einer 'Key Export' Aktivität, die nicht autorisiert war. Der private Schlüssel der Root-CA wurde möglicherweise exfiltriert. Das bedeutet, dass jeder Angreifer nun gültige Zertifikate für dein Unternehmen ausstellen kann, die von jedem Browser als vertrauenswürdig eingestuft werden. Die gesamte Vertrauenskette ist gebrochen.",
+      "npc_dialog": {
+        "speaker": "it_leiter",
+        "text": "Der private Schlüssel der Root-CA ist weg?! Das ist der Super-GAU. Wir müssen jedes einzelne Zertifikat im Haus für ungültig erklären. Weißt du, was das für eine Arbeit ist?",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c2_revoke_root",
+          "text": "Root-CA Zertifikat widerrufen und neue Offline-Root-CA planen",
+          "icon": "🚫",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s3_key_rotation",
+          "fail_scene": "s3_key_rotation"
+        },
+        {
+          "id": "c2_ocsp_stapling",
+          "text": "OCSP-Stapling Status prüfen — Wie schnell verbreitet sich der Widerruf?",
+          "icon": "⚡",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_key_rotation",
+          "fail_scene": "s3_key_rotation"
+        }
+      ]
+    },
+    {
+      "id": "s3_key_rotation",
+      "title": "Die Rotation der Macht",
+      "narrative": "Du startest den mühsamen Prozess der Key-Rotation. Eine neue Root-CA wird auf einem luftdichten (air-gapped) System erstellt. Die untergeordneten Intermediate-CAs müssen neu generiert und die alten Schlüssel sicher gelöscht werden. Währenddessen klopft die Compliance-Abteilung an die Tür: Frau Weber will wissen, wie wir den Verlust der Schlüssel gegenüber den Aufsichtsbehörden rechtfertigen.",
+      "npc_dialog": {
+        "speaker": "compliance_manager",
+        "text": "Ein Key-Compromise ist meldepflichtig! Wurde Hardware Security Module (HSM) eingesetzt? Wenn die Schlüssel im Dateisystem lagen, haben wir ein massives Compliance-Problem.",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c3_hsm_implement",
+          "text": "Einsatz eines Hardware Security Modules (HSM) für die neue Root-CA fordern",
+          "icon": "📟",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s4_pki_rebuild",
+          "fail_scene": "s4_pki_rebuild"
+        },
+        {
+          "id": "c3_key_escrow",
+          "text": "Key Escrow Verfahren prüfen — Wer hat im Notfall Zugriff auf die neuen Schlüssel?",
+          "icon": "🔑",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_pki_rebuild",
+          "fail_scene": "s4_pki_rebuild"
+        }
+      ]
+    },
+    {
+      "id": "s4_pki_rebuild",
+      "title": "Wiederaufbau des Vertrauens",
+      "narrative": "Die neue PKI-Hierarchie steht. Jetzt müssen tausende Endgeräte das neue Root-Zertifikat erhalten. Über Gruppenrichtlinien (GPO) und MDM-Systeme rollst du den neuen Trust-Anchor aus. Doch es gibt Probleme: Einige Linux-Server und IoT-Geräte im Lager akzeptieren das neue Zertifikat nicht, da sie manuell aktualisiert werden müssen. Die Zeit drängt, da wichtige Cloud-Dienste die Verbindung verweigern.",
+      "npc_dialog": {
+        "speaker": "it_leiter",
+        "text": "Die Windows-Clients laufen wieder, aber die API-Gateways zu unseren Partnern werfen immer noch Fehler. Wir müssen die neuen Public Keys manuell bei den Partnern hinterlegen!",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c4_certificate_pinning",
+          "text": "Certificate Pinning analysieren — Warum schlagen die Verbindungen fehl?",
+          "icon": "📌",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s5_compliance_check",
+          "fail_scene": "s5_compliance_check"
+        },
+        {
+          "id": "c4_distribute_anchors",
+          "text": "Automatisierte Verteilung der Root-Anchors via SCEP/EST Protokolle",
+          "icon": "📡",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s5_compliance_check",
+          "fail_scene": "s5_compliance_check"
+        }
+      ]
+    },
+    {
+      "id": "s5_compliance_check",
+      "title": "Das kryptografische Audit",
+      "narrative": "Die Krise ist technisch bewältigt, aber das Audit beginnt erst jetzt. Frau Weber fordert einen lückenlosen Nachweis über die kryptografische Stärke der neuen Zertifikate. Wir müssen nachweisen, dass wir von RSA-2048 auf modernere Verfahren wie ECDSA umgestiegen sind und dass die Signatur-Algorithmen (wie SHA-256) den aktuellen Empfehlungen entsprechen. Ein Fehler hier könnte zum Entzug wichtiger Zertifizierungen führen.",
+      "npc_dialog": {
+        "speaker": "compliance_manager",
+        "text": "Ich brauche den Bericht über die Schlüssellängen und Algorithmen. Und wehe, ich sehe irgendwo noch MD5 oder SHA-1! Wir müssen zeigen, dass wir aus dem Vorfall gelernt haben.",
+        "portrait": "npc_weber"
+      },
+      "choices": [
+        {
+          "id": "c5_cipher_suite_audit",
+          "text": "Vollständiges Audit der unterstützten Cipher Suites auf allen Webservern",
+          "icon": "🔐",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "epilog_success",
+          "fail_scene": "epilog_partial"
+        }
+      ]
+    },
+    {
+      "id": "epilog_success",
+      "title": "Auftrag erfuellt",
+      "narrative": "Hervorragend! Du hast die Situation professionell geloest und dabei wertvolle Erfahrung gesammelt. Dein Team ist beeindruckt von deiner strukturierten Vorgehensweise.",
+      "is_epilog": true,
+      "epilog_type": "success",
+      "choices": []
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Teilweise erfolgreich",
+      "narrative": "Du hast die Situation unter Kontrolle gebracht, aber es gibt noch Verbesserungspotenzial. Einige Schritte haetten gruendlicher sein koennen. Beim naechsten Mal weisst du es besser.",
+      "is_epilog": true,
+      "epilog_type": "partial",
+      "choices": []
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Gelernt aus dem Scheitern",
+      "narrative": "Diesmal lief es nicht optimal. Aber jeder Fehler ist eine Lektion. Analysiere was schiefging und versuche es erneut — beim naechsten Mal wirst du besser vorbereitet sein.",
+      "is_epilog": true,
+      "epilog_type": "fail",
+      "choices": []
+    }
+  ],
+  "epilog": [
+    {
+      "id": "epilog_success",
+      "title": "Meister der Kryptografie",
+      "narrative": "Herausragend! Du hast eine der schwersten Krisen der IT-Sicherheit gemeistert — den Bruch der Vertrauenskette. Durch den Aufbau einer robusten PKI mit HSM-Unterstützung und modernen Algorithmen (Perfect Forward Secrecy, ECDSA) hast du das Fundament für die nächsten Jahre gelegt. Praxistipp: Eine Root-CA sollte niemals online sein. Nutze eine Offline-Root-CA und signiere nur die Zertifikate der Intermediate-CAs, um den Schaden bei einer Kompromittierung zu begrenzen.",
+      "outcome": "success",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Zertifiziertes Chaos",
+      "narrative": "Das System läuft wieder, aber der Wiederaufbau war chaotisch und langwierig. Einige Altsysteme sind immer noch offline, da der Umstieg auf moderne Algorithmen zu radikal war. Du hast gelernt, dass Kryptografie keine Insellösung ist, sondern tief in der Infrastruktur verwurzelt ist. Praxistipp: Implementiere ein Certificate Lifecycle Management (CLM) Tool, um rechtzeitig vor Ablauf von Zertifikaten gewarnt zu werden und die Erneuerung zu automatisieren.",
+      "outcome": "partial",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Vertrauensverlust",
+      "narrative": "Die Kompromittierung der Root-CA konnte nicht rechtzeitig eingedämmt werden. Gefälschte Zertifikate wurden für Man-in-the-Middle-Angriffe genutzt, bevor die neue PKI stand. Der Imageschaden ist immens. Praxistipp: Schütze deine privaten Schlüssel wie dein Leben. Ohne HSM und strikte physische Zugriffskontrollen ist jede Verschlüsselung nur eine Illusion von Sicherheit.",
+      "outcome": "fail",
+      "is_epilog": true
+    }
+  ],
+  "workplace_npcs": [
+    {
+      "character_id": "frau_weber",
+      "role_in_story": "Achtet peinlich genau auf die Einhaltung kryptografischer Standards",
+      "default_emotion": "alert"
+    }
+  ]
+}

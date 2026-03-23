@@ -833,9 +833,18 @@ class StoryEngineService {
         }
 
         // Resolve narrative — dynamic via Gemini or static (uses campaign-level flag)
-        $narrative = ($userId !== null && $narratorEnabled)
-            ? $this->generateNarrative($scene, $campaign, $characterClass, $choicesSoFar, $userId)
-            : ($scene['narrative'] ?? '');
+        $staticNarrative = $scene['narrative'] ?? '';
+        if ($userId !== null && $narratorEnabled) {
+            $narrative = $this->generateNarrative($scene, $campaign, $characterClass, $choicesSoFar, $userId);
+            // Sanity check: if Gemini returns garbage (too short, no spaces, or contains HTML/template syntax),
+            // fall back to static narrative
+            if (mb_strlen($narrative) < 20 || str_word_count($narrative) < 5
+                || preg_match('/<[a-z]|{{|\$\{|<script/i', $narrative)) {
+                $narrative = $staticNarrative;
+            }
+        } else {
+            $narrative = $staticNarrative;
+        }
 
         // Build NPC character meta from campaign definition
         $npcDialog = null;

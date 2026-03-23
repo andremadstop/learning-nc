@@ -1,0 +1,307 @@
+{
+  "campaign_id": "incident_response_golden_hour",
+  "title": "Incident Response — Die goldene Stunde",
+  "description": "Ein IDS-Alarm mitten in der Nacht. Ein unbekannter Prozess auf dem Domain Controller. Die Uhr tickt, während du dich durch den NIST-Standard kämpfst: Detection, Analysis, Containment. Jede Sekunde, die du zögerst, nutzt der Angreifer für sein Lateral Movement.",
+  "duration_minutes": 50,
+  "difficulty": "intermediate",
+  "focus_areas": [
+    "security_plus"
+  ],
+  "character_recommendations": [
+    "security",
+    "sysadmin"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Hochdruck-Ermittlung. Fokus auf methodisches Vorgehen unter Zeitdruck und die Bedeutung forensischer Beweissicherung.",
+  "gemini_role": "attacker",
+  "characters": {
+    "security": {
+      "id": "security",
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "👩‍💻",
+      "skill_bonus_pools": [
+        "security",
+        "incident_response"
+      ],
+      "skill_penalty_pools": [
+        "hardware",
+        "a_plus"
+      ]
+    },
+    "sysadmin": {
+      "id": "sysadmin",
+      "name": "Kai \"Root\" Lindström",
+      "avatar": "🧔",
+      "skill_bonus_pools": [
+        "linux",
+        "dns"
+      ],
+      "skill_penalty_pools": [
+        "wireless",
+        "wlan"
+      ]
+    }
+  },
+  "npcs": {
+    "soc_analyst_marcus": {
+      "name": "Marcus",
+      "role": "SOC Analyst",
+      "avatar": "🔍"
+    },
+    "it_leiter_thomas": {
+      "name": "Thomas",
+      "role": "IT-Leiter",
+      "avatar": "🖥️"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_alert",
+      "title": "Der erste Funke",
+      "narrative": "03:14 Uhr. Dein Dienst-Handy vibriert. Marcus aus dem SOC meldet eine 'High Severity' Anomalie: 'Wir sehen ungewöhnlichen Traffic von einem Domain Controller zu einer IP in Osteuropa. Und auf dem Server läuft ein Prozess namens srvhost.exe — mit einem 'v' statt 'c'. Das riecht nach einer Reverse Shell.' Du musst die Triage einleiten, während der Angreifer bereits versucht, weitere Server im Netz zu scannen.",
+      "npc_dialog": {
+        "speaker": "soc_analyst_marcus",
+        "text": "Ich hab den Traffic isoliert, aber der Prozess ist noch aktiv. Wenn wir den DC jetzt einfach hart ausschalten, verlieren wir alle forensischen Daten im RAM. Was ist unser erster Schritt?",
+        "portrait": "npc_marcus"
+      },
+      "choices": [
+        {
+          "id": "c1_triage_analysis",
+          "text": "Sicherung des flüchtigen Speichers (RAM Dump) — Beweise sichern vor Eindaemmung",
+          "icon": "💾",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_analysis",
+          "fail_scene": "s1_fail_escalation"
+        },
+        {
+          "id": "c1_network_containment",
+          "text": "Netzwerkisolierung des DC — Port auf dem Core-Switch sperren",
+          "icon": "🚫",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_analysis",
+          "fail_scene": "s1_fail_escalation"
+        }
+      ]
+    },
+    {
+      "id": "s1_fail_escalation",
+      "title": "Kontrollverlust",
+      "narrative": "Das Zögern hat seinen Preis. Der Angreifer hat die Verzögerung genutzt, um Ransomware auf dem Fileserver zu platzieren. Die ersten Dateien werden bereits verschlüsselt. Thomas, der IT-Leiter, ist nun ebenfalls wach und fordert radikale Maßnahmen: 'Zieh den Stecker! Überall!'",
+      "npc_dialog": {
+        "speaker": "it_leiter_thomas",
+        "text": "Es ist eskaliert! Die Buchhaltung meldet verschlüsselte Dateien. Wir müssen das gesamte Subnetz vom Internet trennen, jetzt!",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c1_fail_containment",
+          "text": "Notfall-Isolierung des gesamten Segments",
+          "icon": "⚡",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 2,
+            "pass_threshold": 1
+          },
+          "success_scene": "s2_analysis",
+          "fail_scene": "s2_analysis"
+        }
+      ]
+    },
+    {
+      "id": "s2_analysis",
+      "title": "Analyse im Trümmerfeld",
+      "narrative": "Die unmittelbare Ausbreitung ist gestoppt. Jetzt beginnt die 'Anatomie des Angriffs'. Du untersuchst die Logfiles und den RAM-Dump. Der Einstiegspunkt war ein ungeschütztes RDP-Gateway ohne MFA. Der Angreifer hat sich mit 'Mimikatz' die Admin-Credentials aus dem Speicher gefischt. Marcus zeigt dir eine Liste der betroffenen Systeme. Der Angreifer ist noch im Netz, aber seine Werkzeuge sind nun bekannt.",
+      "npc_dialog": {
+        "speaker": "soc_analyst_marcus",
+        "text": "Hier ist die Timeline. Er kam über RDP, hat sich seit drei Tagen lateral bewegt und heute Nacht den DC übernommen. Wir müssen wissen: Wurden Daten exfiltriert?",
+        "portrait": "npc_marcus"
+      },
+      "choices": [
+        {
+          "id": "c2_traffic_forensics",
+          "text": "Analyse der Firewall-Logs auf große ausgehende Datenmengen (Exfiltration)",
+          "icon": "📊",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s3_containment",
+          "fail_scene": "s3_containment"
+        },
+        {
+          "id": "c2_persistence_check",
+          "text": "Suche nach 'Persistence' — Scheduled Tasks oder neue Service-Einträge prüfen",
+          "icon": "🔍",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s3_containment",
+          "fail_scene": "s3_containment"
+        }
+      ]
+    },
+    {
+      "id": "s3_containment",
+      "title": "Eindämmung & Bereinigung",
+      "narrative": "Du startest die 'Eradication' Phase. Alle kompromittierten Accounts werden gesperrt, Passwörter zurückgesetzt und die bösartigen Prozesse terminiert. Die Lücke im RDP-Gateway wird durch die Erzwingung von MFA und VPN-Pflicht geschlossen. Thomas will wissen, wann die Systeme wieder online gehen können: 'Die Produktion steht still, wir verlieren pro Stunde 50.000 Euro!'",
+      "npc_dialog": {
+        "speaker": "it_leiter_thomas",
+        "text": "Können wir das Backup einspielen? Wir müssen so schnell wie möglich zurück in den Normalbetrieb. Aber wie stellen wir sicher, dass der Angreifer nicht wieder reinkommt?",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c3_malware_scan",
+          "text": "Offline-Virenscan der Backups vor dem Restore — 'Re-Infection' verhindern",
+          "icon": "🛡️",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_forensik",
+          "fail_scene": "s4_forensik"
+        },
+        {
+          "id": "c3_password_reset",
+          "text": "Globaler Passwort-Reset für alle User- und Service-Accounts erzwingen",
+          "icon": "🔑",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_forensik",
+          "fail_scene": "s4_forensik"
+        }
+      ]
+    },
+    {
+      "id": "s4_forensik",
+      "title": "Beweissicherung",
+      "narrative": "Die Systeme laufen wieder an, aber die forensische Arbeit geht weiter. Du musst eine lückenlose 'Chain of Custody' für die gesicherten Daten erstellen, falls die Rechtsabteilung Anzeige erstatten will. Du findest Fragmente des Angreifer-Tools: Eine modifizierte Version von 'Cobalt Strike'. Das weist auf eine professionelle APT-Gruppe hin. Marcus dokumentiert die 'Indicators of Compromise' (IoCs).",
+      "npc_dialog": {
+        "speaker": "soc_analyst_marcus",
+        "text": "Ich hab die Hashes der Malware und die Command-and-Control IPs dokumentiert. Sollen wir die IoCs mit der Community teilen (MISP)?",
+        "portrait": "npc_marcus"
+      },
+      "choices": [
+        {
+          "id": "c4_threat_intel",
+          "text": "Teilen der IoCs über Threat Intelligence Plattformen — Community-Schutz",
+          "icon": "📡",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s5_recovery",
+          "fail_scene": "s5_recovery"
+        },
+        {
+          "id": "c4_internal_report",
+          "text": "Detaillierten internen Forensik-Bericht für das Management erstellen",
+          "icon": "📝",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s5_recovery",
+          "fail_scene": "s5_recovery"
+        }
+      ]
+    },
+    {
+      "id": "s5_recovery",
+      "title": "Normalbetrieb & Lehren",
+      "narrative": "Es ist 14:00 Uhr. Alle Systeme sind stabil, die Produktion läuft. Die 'Lessons Learned' Sitzung steht an. Der Vorfall hat gezeigt, dass die Detektion gut war, aber die Prävention (MFA) und die Schnelligkeit der Reaktion verbessert werden müssen. Thomas ist erleichtert, fordert aber Konsequenzen für das nächste Jahr.",
+      "npc_dialog": {
+        "speaker": "it_leiter_thomas",
+        "text": "Wir hatten Glück im Unglück. Das hätte schlimmer ausgehen können. Was ist die wichtigste Investition für die Zukunft, damit wir 'Die goldene Stunde' beim nächsten Mal besser nutzen?",
+        "portrait": "npc_thomas"
+      },
+      "choices": [
+        {
+          "id": "c5_incident_playbooks",
+          "text": "Automatisierte Incident Playbooks (SOAR) entwickeln — Reaktionszeit senken",
+          "icon": "⚙️",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "epilog_success",
+          "fail_scene": "epilog_partial"
+        }
+      ]
+    },
+    {
+      "id": "epilog_success",
+      "title": "Auftrag erfuellt",
+      "narrative": "Hervorragend! Du hast die Situation professionell geloest und dabei wertvolle Erfahrung gesammelt. Dein Team ist beeindruckt von deiner strukturierten Vorgehensweise.",
+      "is_epilog": true,
+      "epilog_type": "success",
+      "choices": []
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Teilweise erfolgreich",
+      "narrative": "Du hast die Situation unter Kontrolle gebracht, aber es gibt noch Verbesserungspotenzial. Einige Schritte haetten gruendlicher sein koennen. Beim naechsten Mal weisst du es besser.",
+      "is_epilog": true,
+      "epilog_type": "partial",
+      "choices": []
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Gelernt aus dem Scheitern",
+      "narrative": "Diesmal lief es nicht optimal. Aber jeder Fehler ist eine Lektion. Analysiere was schiefging und versuche es erneut — beim naechsten Mal wirst du besser vorbereitet sein.",
+      "is_epilog": true,
+      "epilog_type": "fail",
+      "choices": []
+    }
+  ],
+  "epilog": [
+    {
+      "id": "epilog_success",
+      "title": "Incident Responder der Extraklasse",
+      "narrative": "Hervorragende Arbeit! Du hast den Incident nach dem Lehrbuch (NIST SP 800-61) abgearbeitet. Durch die Sicherung forensischer Daten vor der Eindämmung konntest du den Angreifer identifizieren und die Lücken dauerhaft schließen. Praxistipp: In der 'goldenen Stunde' nach der Detektion entscheidet sich der Schaden. Ein gut gepflegtes Incident Response Plan (IRP) und regelmäßige 'Tabletop Exercises' sind lebenswichtig für jedes Unternehmen.",
+      "outcome": "success",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Schaden begrenzt, aber teuer",
+      "narrative": "Die Reaktion war erfolgreich, aber die Verzögerung bei der Triage hat zu unnötigem Datenverlust geführt. Die Wiederherstellung war mühsam, da die Backups nicht vorbereitet waren. Du hast gelernt, dass Theorie und Praxis unter Zeitdruck zwei verschiedene Dinge sind. Praxistipp: Die 'Chain of Custody' beginnt beim ersten Kontakt. Dokumentiere jeden Befehl, den du auf einem kompromittierten System ausführst.",
+      "outcome": "partial",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Verbrannte Erde",
+      "narrative": "Der Vorfall wurde erst gestoppt, als es fast zu spät war. Die forensischen Spuren wurden durch unkoordiniertes Handeln vernichtet, und der Angreifer konnte möglicherweise Hintertüren hinterlassen, die du übersehen hast. Ein herber Rückschlag für das Vertrauen in die IT-Sicherheit. Praxistipp: Ruhe bewahren ist die wichtigste Eigenschaft eines Incident Responders. Wer in Panik gerät, hilft dem Angreifer.",
+      "outcome": "fail",
+      "is_epilog": true
+    }
+  ],
+  "workplace_npcs": [
+    {
+      "character_id": "security",
+      "role_in_story": "Der kühle Kopf in der Krisen-Nacht",
+      "default_emotion": "alert"
+    }
+  ]
+}

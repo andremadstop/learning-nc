@@ -1,0 +1,284 @@
+{
+  "campaign_id": "zero_trust_migration",
+  "title": "Zero Trust — Der neue Perimeter",
+  "description": "Das klassische Burggraben-Modell hat ausgedient. Dein Unternehmen migriert von einer VPN-basierten Infrastruktur zu einer Zero Trust Architecture (ZTA). Doch Widerstände im Team und technische Altlasten machen den Weg zum 'Never Trust, Always Verify' zur Zerreißprobe.",
+  "duration_minutes": 60,
+  "difficulty": "expert",
+  "focus_areas": [
+    "security_plus"
+  ],
+  "character_recommendations": [
+    "architect",
+    "security"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Strategisch-technische Herausforderung. Fokus auf Architektur-Prinzipien und das Überwinden von Legacy-Denkweisen.",
+  "gemini_role": "dau",
+  "characters": {
+    "architect": {
+      "id": "architect",
+      "name": "Alex \"The Architect\" Neumann",
+      "avatar": "👨‍💻",
+      "skill_bonus_pools": [
+        "vlan",
+        "subnetting",
+        "topology"
+      ],
+      "skill_penalty_pools": [
+        "hardware",
+        "troubleshooting"
+      ]
+    },
+    "security": {
+      "id": "security",
+      "name": "Sarah \"Firewall\" Okonkwo",
+      "avatar": "👩‍💻",
+      "skill_bonus_pools": [
+        "security",
+        "incident_response"
+      ],
+      "skill_penalty_pools": [
+        "routing",
+        "vlan"
+      ]
+    }
+  },
+  "npcs": {
+    "alt_admin_werner": {
+      "name": "Werner",
+      "role": "Senior Admin (Legacy)",
+      "avatar": "👴"
+    },
+    "cio_claudia": {
+      "name": "Claudia",
+      "role": "CIO",
+      "avatar": "👩‍💼"
+    }
+  },
+  "scenes": [
+    {
+      "id": "s1_assessment",
+      "title": "Bestandsaufnahme im Burggraben",
+      "narrative": "Die Entscheidung der Geschäftsführung steht: Wir stellen auf Zero Trust um. Bisher vertrauen wir jedem im internen Netz blind, sobald das VPN steht. Doch die Zunahme von Ransomware und lateralen Bewegungen macht dieses Modell zum Risiko. Werner, der seit 25 Jahren das Netz verwaltet, ist skeptisch: 'Warum der Aufwand? Das VPN läuft doch!'. Du musst die ersten Schritte für das Assessment festlegen.",
+      "npc_dialog": {
+        "speaker": "alt_admin_werner",
+        "text": "Zero Trust? Also ich vertraue meinen Kollegen. Und wer im Haus ist, darf auch an die Server. Das war schon immer so. Dieses neue Zeug macht nur alles komplizierter für die User.",
+        "portrait": "npc_werner"
+      },
+      "choices": [
+        {
+          "id": "c1_identify_assets",
+          "text": "Inventarisierung aller Assets und Datenflüsse — Wer braucht worauf Zugriff?",
+          "icon": "📊",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_design",
+          "fail_scene": "s2_design"
+        },
+        {
+          "id": "c1_policy_enforcement",
+          "text": "Definition der 'Policy Enforcement Points' (PEP) — Wo wird der Zugriff geprüft?",
+          "icon": "🛡️",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s2_design",
+          "fail_scene": "s2_design"
+        }
+      ]
+    },
+    {
+      "id": "s2_design",
+      "title": "Das Design des Vertrauens",
+      "narrative": "Das ZTA-Konzept nimmt Form an. Wir setzen auf den NIST SP 800-207 Standard. Jede Anfrage, ob von intern oder extern, muss authentifiziert, autorisiert und verschlüsselt sein. Der Zugriff erfolgt nicht mehr auf Netzebene, sondern auf Applikationsebene. Werner schüttelt den Kopf: 'Und was ist mit meinen alten Druckern? Die können kein modernes TLS!'",
+      "npc_dialog": {
+        "speaker": "alt_admin_werner",
+        "text": "Wenn ihr alles verschlüsselt, kann ich mit Wireshark gar nicht mehr mitschauen, wenn was klemmt. Und die alten Scada-Systeme im Keller... die verstehen euer Zero Trust gar nicht.",
+        "portrait": "npc_werner"
+      },
+      "choices": [
+        {
+          "id": "c2_microsegmentation",
+          "text": "Mikrosegmentierung für Legacy-Systeme — Isolierte Zonen mit strengen Gateways",
+          "icon": "🧱",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s3_pilot",
+          "fail_scene": "s3_pilot"
+        },
+        {
+          "id": "c2_identity_first",
+          "text": "Identity-based Access — Bindung des Zugriffs an User- und Device-Zertifikate",
+          "icon": "🆔",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_pilot",
+          "fail_scene": "s3_pilot"
+        }
+      ]
+    },
+    {
+      "id": "s3_pilot",
+      "title": "Der Pilotversuch",
+      "narrative": "Die IT-Abteilung ist die Pilotgruppe. Wir nutzen einen 'Cloud-native Identity Proxy'. Der Zugriff auf das Jira-System erfolgt nun nur noch nach einem Device-Health-Check und MFA. Es knirscht: Einige Admins haben ihre Zertifikate nicht aktuell, andere beschweren sich über die ständige MFA-Abfrage. Claudia, die CIO, will erste Ergebnisse sehen.",
+      "npc_dialog": {
+        "speaker": "cio_claudia",
+        "text": "Ich höre Klagen aus der Technik. Wenn die IT schon Probleme hat, wie soll das dann der Vertrieb schaffen? Zeigen Sie mir, dass das Modell wirklich die Sicherheit erhöht, ohne die Produktivität zu killen.",
+        "portrait": "npc_claudia"
+      },
+      "choices": [
+        {
+          "id": "c3_adaptive_access",
+          "text": "Adaptive Access Policies — MFA nur bei Risikoänderung (z.B. neuer Standort)",
+          "icon": "🔄",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s4_rollout_problems",
+          "fail_scene": "s4_rollout_problems"
+        },
+        {
+          "id": "c3_device_compliance",
+          "text": "Strikte Device Compliance — Zugriff nur für verwaltete und gepatchte Geräte",
+          "icon": "💻",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_rollout_problems",
+          "fail_scene": "s4_rollout_problems"
+        }
+      ]
+    },
+    {
+      "id": "s4_rollout_problems",
+      "title": "Eskalation beim Rollout",
+      "narrative": "Der Rollout für den Vertrieb startet. Das VPN wird für die erste Region abgeschaltet. Prompt bricht das Chaos aus: Die Außendienstler können nicht auf die Fileshares zugreifen, weil die Latenz des Proxys zu hoch ist oder die Berechtigungen im neuen System fehlen. Werner triumphiert: 'Ich hab's euch gesagt! Schaltet das VPN wieder an!'",
+      "npc_dialog": {
+        "speaker": "alt_admin_werner",
+        "text": "Der Vertriebschef hat gerade angerufen. Er kann sein Angebot nicht hochladen. Wollt ihr den Deal platzen lassen? Ich hab das VPN-Profil noch auf dem Desktop, ich schalt's in einer Minute wieder frei!",
+        "portrait": "npc_werner"
+      },
+      "choices": [
+        {
+          "id": "c4_troubleshoot_proxy",
+          "text": "Performance-Analyse des Proxys — Optimierung der Routing-Pfade",
+          "icon": "⚡",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s5_lessons_learned",
+          "fail_scene": "s5_lessons_learned"
+        },
+        {
+          "id": "c4_implicit_trust_check",
+          "text": "Suche nach 'Implicit Trust' Resten — Warum schlägt die Autorisierung fehl?",
+          "icon": "🔍",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "s5_lessons_learned",
+          "fail_scene": "s5_lessons_learned"
+        }
+      ]
+    },
+    {
+      "id": "s5_lessons_learned",
+      "title": "Der neue Standard",
+      "narrative": "Nach zwei harten Wochen läuft das System stabil. Das VPN ist Geschichte. Wir haben nun volle Sichtbarkeit über jeden einzelnen Zugriff. Ein versuchter Ransomware-Angriff auf ein ungeschütztes Endgerät wurde sofort gestoppt, da der Angreifer keine gültigen 'Claims' für das interne Netz vorweisen konnte. Sogar Werner fängt an, die Vorteile zu sehen, als er merkt, wie einfach Single-Sign-On nun funktioniert.",
+      "npc_dialog": {
+        "speaker": "alt_admin_werner",
+        "text": "Na gut, dass ich mich nicht mehr in fünf verschiedene Portale einloggen muss, ist okay. Und dass der eine Virus im Vertrieb nicht auf meine Server kam... das war wohl Glück, was?",
+        "portrait": "npc_werner"
+      },
+      "choices": [
+        {
+          "id": "c5_continuous_monitoring",
+          "text": "Kontinuierliches Monitoring und Trust-Score Anpassung implementieren",
+          "icon": "📈",
+          "skill_check": {
+            "pool_filter": "security",
+            "question_count": 4,
+            "pass_threshold": 3
+          },
+          "success_scene": "epilog_success",
+          "fail_scene": "epilog_partial"
+        }
+      ]
+    },
+    {
+      "id": "epilog_success",
+      "title": "Auftrag erfuellt",
+      "narrative": "Hervorragend! Du hast die Situation professionell geloest und dabei wertvolle Erfahrung gesammelt. Dein Team ist beeindruckt von deiner strukturierten Vorgehensweise.",
+      "is_epilog": true,
+      "epilog_type": "success",
+      "choices": []
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Teilweise erfolgreich",
+      "narrative": "Du hast die Situation unter Kontrolle gebracht, aber es gibt noch Verbesserungspotenzial. Einige Schritte haetten gruendlicher sein koennen. Beim naechsten Mal weisst du es besser.",
+      "is_epilog": true,
+      "epilog_type": "partial",
+      "choices": []
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Gelernt aus dem Scheitern",
+      "narrative": "Diesmal lief es nicht optimal. Aber jeder Fehler ist eine Lektion. Analysiere was schiefging und versuche es erneut — beim naechsten Mal wirst du besser vorbereitet sein.",
+      "is_epilog": true,
+      "epilog_type": "fail",
+      "choices": []
+    }
+  ],
+  "epilog": [
+    {
+      "id": "epilog_success",
+      "title": "Zero Trust Champion",
+      "narrative": "Hervorragende Leistung! Du hast eine komplexe Migration erfolgreich gemeistert. Zero Trust ist kein Produkt, sondern eine Strategie, die auf drei Säulen basiert: Explizite Verifizierung, Nutzung des Prinzips der geringsten Privilegien (Least Privilege) und die Annahme einer bereits erfolgten Kompromittierung (Assume Breach). Praxistipp: Zero Trust beginnt bei der Identität. Ein starker Identity Provider (IdP) mit robustem MFA ist das Fundament jeder ZTA.",
+      "outcome": "success",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Sicherer, aber steinig",
+      "narrative": "Die Migration war erfolgreich, aber die Akzeptanz im Team hat gelitten. Technische Hürden bei Legacy-Systemen wurden nur oberflächlich gelöst. Du hast gelernt, dass Change Management in der IT genauso wichtig ist wie die technische Umsetzung. Praxistipp: Nutze 'Shadow IT' Analysen während der Planungsphase, um alle versteckten Datenflüsse zu finden, bevor du den Zugriff hart einschränkst.",
+      "outcome": "partial",
+      "is_epilog": true
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Zurück zum VPN",
+      "narrative": "Der Widerstand war zu groß und die technischen Probleme zu massiv. Das Unternehmen ist vorerst zum alten VPN-Modell zurückgekehrt. Ein herber Rückschlag für die Sicherheit. Praxistipp: Starte eine Zero Trust Migration niemals mit einem Big Bang. Beginne mit unkritischen Anwendungen und baue das Vertrauen der User (und Admins wie Werner) schrittweise auf.",
+      "outcome": "fail",
+      "is_epilog": true
+    }
+  ],
+  "workplace_npcs": [
+    {
+      "character_id": "sysadmin",
+      "role_in_story": "Spielt Werner — den skeptischen Senior Admin",
+      "default_emotion": "alert"
+    }
+  ]
+}
