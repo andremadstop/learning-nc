@@ -30,7 +30,7 @@
 
 - [ ] **UI-01**: CampaignCard.vue (Dark-Gradient, Charakter-Portrait, Difficulty-Badge)
 - [ ] **UI-02**: DialogueStage.vue (Speaker-Bar, Portrait links, Sprechfeld rechts, Emotions-Tags)
-- [ ] **UI-03**: ModeIdentityBanner.vue (Modus + Mentor + Ziel pro Lernmodus)
+- [x] **UI-03**: ModeIdentityBanner.vue (Modus + Mentor + Ziel pro Lernmodus)
 
 ## Future Requirements
 
@@ -68,7 +68,7 @@
 | KI-04 | Phase 47 | Pending |
 | UI-01 | Phase 46 | Pending |
 | UI-02 | Phase 46 | Pending |
-| UI-03 | Phase 46 | Pending |
+| UI-03 | Phase 46 | Complete |
 
 **Coverage:**
 - v6.2 requirements: 15 total

@@ -176,8 +176,8 @@ Plans:
 **Milestone Goal:** Hybrid-CI aus Codex (Token-System, Komponenten) + Gemini (Atmosphaere, Emotionen) mit erweitertem Charakter-Cast aus realistischen IT-Workplace-Figuren. Die App bekommt ein Gesicht.
 
 - [x] **Phase 44: Design-Token-System + Narrative-Skin** - CSS-Token-Layer, Dark/Light, Motion-Utilities, Paper & Circuits Skin (completed 2026-03-22)
-- [ ] **Phase 45: Charakter-System** - 13 Figuren definieren, CharacterAvatar.vue Komponente
-- [ ] **Phase 46: UI-Komponenten** - CampaignCard, DialogueStage, ModeIdentityBanner
+- [x] **Phase 45: Charakter-System** - 13 Figuren definieren, CharacterAvatar.vue Komponente (completed 2026-03-23)
+- [x] **Phase 46: UI-Komponenten** - CampaignCard, DialogueStage, ModeIdentityBanner (completed 2026-03-23)
 - [ ] **Phase 47: Kampagnen-Integration** - Intros, NPC-Portraits, Workplace-Figuren in bestehende Kampagnen
 
 ## Phase Details
@@ -220,7 +220,7 @@ Plans:
   1. CampaignCard.vue zeigt pro Kampagne einen Dark-Gradient-Hintergrund, das Portrait des Hauptcharakters (via CharacterAvatar) und ein Difficulty-Badge — der User erkennt auf einen Blick Thema und Schwierigkeit
   2. DialogueStage.vue zeigt links ein Charakter-Portrait mit Emotions-Tag und rechts ein Sprechfeld — bei einem Sprecherwechsel aendert sich das Portrait und der Emotions-Tag passend zum neuen Sprecher
   3. ModeIdentityBanner.vue zeigt am oberen Rand jedes Lernmodus den Modus-Namen, den zugeordneten Mentor-Charakter und das aktuelle Lernziel — der User weiss jederzeit in welchem Modus er sich befindet
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 46-01: CampaignCard.vue + DialogueStage.vue
@@ -249,6 +249,6 @@ Phases execute in numeric order: 44 → 45 → 46 → 47
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 44. Design-Token-System + Narrative-Skin | 2/2 | Complete    | 2026-03-22 | - |
-| 45. Charakter-System | v6.2 | 1/1 | Complete | 2026-03-22 |
-| 46. UI-Komponenten | v6.2 | 0/2 | Not started | - |
+| 45. Charakter-System | v6.2 | Complete    | 2026-03-23 | 2026-03-22 |
+| 46. UI-Komponenten | 2/2 | Complete   | 2026-03-23 | - |
 | 47. Kampagnen-Integration | v6.2 | 0/2 | Not started | - |
