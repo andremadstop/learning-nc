@@ -437,7 +437,7 @@ const STATIC_CAMPAIGNS = [
 		current_scene: null,
 	},
 	{
-		id: 'neuer_standort',
+		id: 'der_neue_standort',
 		icon: '🏢',
 		title: 'Der neue Standort',
 		description: 'NovaTech expandiert. Neues Büro, 40 Arbeitsplätze, 4 Wochen Deadline. Kein Fehler erlaubt.',
@@ -661,7 +661,13 @@ export default {
 				const resp = await axios.get(url, {
 					params: this.courseId ? { courseId: this.courseId } : {},
 				})
-				this.campaigns = resp.data.campaigns || resp.data || STATIC_CAMPAIGNS
+				const raw = resp.data.campaigns || resp.data || []
+				// Normalize: backend uses campaign_id, frontend expects id
+				this.campaigns = (Array.isArray(raw) ? raw : []).map(c => ({
+					...c,
+					id: c.id || c.campaign_id,
+				}))
+				if (this.campaigns.length === 0) this.campaigns = STATIC_CAMPAIGNS
 			} catch (e) {
 				// Backend not yet available — fall back to static data
 				this.campaigns = STATIC_CAMPAIGNS
@@ -690,11 +696,32 @@ export default {
 			this.selectedCharacter = char
 		},
 
-		startCampaign() {
+		async startCampaign() {
 			if (!this.selectedCharacter) return
 			if (this.coopMode) {
 				this.initCoopSession()
-			} else {
+				return
+			}
+			// Start or resume campaign via backend
+			try {
+				const cid = this.selectedCampaign.id
+				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/start`)
+				const resp = await axios.post(url, {
+					characterClass: this.selectedCharacter.id,
+					courseId: this.courseId || null,
+				})
+				// Backend returns {progress, scene} — use scene directly for first render
+				if (resp.data.scene) {
+					this.phase = 'scene'
+					this.choiceMade = false
+					this.currentScene = resp.data.scene
+					this.loadingScene = false
+					this.startTypewriter(this.currentScene.narrative)
+				} else {
+					this.beginScene()
+				}
+			} catch (e) {
+				// Fallback: try getScene directly (may already have progress)
 				this.beginScene()
 			}
 		},
@@ -709,15 +736,16 @@ export default {
 			this.clearTimers()
 
 			try {
-				const url = generateUrl('/apps/learning/api/story/scene')
+				const cid = this.selectedCampaign.id
+				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/scene`)
 				const params = {
-					campaignId: this.selectedCampaign.id,
 					characterClass: this.selectedCharacter.id,
 				}
 				if (sceneId) params.sceneId = sceneId
 				if (this.courseId) params.courseId = this.courseId
 				const resp = await axios.get(url, { params })
-				this.currentScene = resp.data
+				// Backend returns {progress, scene} wrapper
+				this.currentScene = resp.data.scene || resp.data
 				this.loadingScene = false
 				// Check if this scene has a simulation to show before choices
 				if (this.currentScene.simulation) {
@@ -1084,22 +1112,9 @@ export default {
 
 		// ===== COOP =====
 
-		async initCoopSession() {
-			try {
-				const resp = await axios.post(generateUrl('/apps/learning/api/story/coop/start'), {
-					campaignId: this.selectedCampaign.id,
-					characterClass: this.selectedCharacter.id,
-				})
-				this.coopSessionCode = resp.data.session_code
-				this.coopPlayers = resp.data.players || []
-				this.phase = 'coop-lobby'
-				this.startCoopPoll()
-			} catch (e) {
-				// Stub for demo
-				this.coopSessionCode = 'NOVA' + Math.floor(Math.random() * 9000 + 1000)
-				this.coopPlayers = [{ user_id: 'me', display_name: t('learning', 'Du'), character: this.selectedCharacter.id, is_ready: false }]
-				this.phase = 'coop-lobby'
-			}
+		initCoopSession() {
+			// Coop is not yet implemented (no backend routes) — show message
+			alert(t('learning', 'Koop-Modus ist noch in Entwicklung und wird in einem zukünftigen Update verfügbar sein.'))
 		},
 
 		coopSetReady() {
