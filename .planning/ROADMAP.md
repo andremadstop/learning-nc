@@ -171,7 +171,7 @@ Plans:
 
 </details>
 
-### 🚧 v6.2 Visual Identity + Charakter-Cast (In Progress)
+### v6.2 Visual Identity + Charakter-Cast (In Progress)
 
 **Milestone Goal:** Hybrid-CI aus Codex (Token-System, Komponenten) + Gemini (Atmosphaere, Emotionen) mit erweitertem Charakter-Cast aus realistischen IT-Workplace-Figuren. Die App bekommt ein Gesicht.
 
@@ -223,8 +223,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 46-01: CampaignCard.vue + DialogueStage.vue
-- [ ] 46-02: ModeIdentityBanner.vue + Integration in Lernmodi
+- [x] 46-01: CampaignCard.vue + DialogueStage.vue
+- [x] 46-02: ModeIdentityBanner.vue + Integration in Lernmodi
 
 ### Phase 47: Kampagnen-Integration
 **Goal**: Alle bestehenden Kampagnen nutzen das neue visuelle System — mit Intro-Animationen, NPC-Portraits in Dialogen und Workplace-Figuren als wiederkehrende NPCs
@@ -235,20 +235,20 @@ Plans:
   2. NPC-Dialoge in allen Kampagnen zeigen ein CharacterAvatar-Portrait neben der Sprechblase — der Avatar wechselt den State passend zum Dialog-Inhalt (z.B. alert bei Warnung, explain bei Erklaerung)
   3. Die 6 Workplace-Figuren erscheinen als NPCs in den zugewiesenen Kampagnen: Chef in Colonial Pipeline, DSGVO in Equifax, DAU in WannaCry, Uschi in A+ "Der erste Tag", Azubi in Log4Shell, Berater in SolarWinds
   4. Skill-Check Ergebnisse loesen eine sichtbare Charakter-Reaktion aus: Erfolg zeigt celebrate-State, Misserfolg zeigt alert-State des beteiligten NPCs
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 47-01: Kampagnen-Intro Animationen (CSS/SVG)
-- [ ] 47-02: NPC-Portraits + Workplace-Figuren in Kampagnen + Skill-Check Reaktionen
+- [x] 47-01-PLAN.md — CampaignIntro.vue + Workplace NPC assignments in campaign JSONs
+- [ ] 47-02-PLAN.md — AbenteuerMode integration: intro phase, DialogueStage NPC dialogs, skill-check reactions
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 44 → 45 → 46 → 47
+Phases execute in numeric order: 44 -> 45 -> 46 -> 47
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 44. Design-Token-System + Narrative-Skin | 2/2 | Complete    | 2026-03-22 | - |
 | 45. Charakter-System | v6.2 | Complete    | 2026-03-23 | 2026-03-22 |
-| 46. UI-Komponenten | 2/2 | Complete   | 2026-03-23 | - |
-| 47. Kampagnen-Integration | v6.2 | 0/2 | Not started | - |
+| 46. UI-Komponenten | 2/2 | Complete    | 2026-03-23 | - |
+| 47. Kampagnen-Integration | v6.2 | 1/2 | In Progress | - |

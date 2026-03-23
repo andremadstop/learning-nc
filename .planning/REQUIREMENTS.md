@@ -21,9 +21,9 @@
 
 ### Kampagnen-Integration
 
-- [ ] **KI-01**: Kampagnen-Intro Animation pro Kampagne (CSS/SVG, <100KB, 3-5 Sekunden)
+- [x] **KI-01**: Kampagnen-Intro Animation pro Kampagne (CSS/SVG, <100KB, 3-5 Sekunden)
 - [ ] **KI-02**: NPC-Portraits in DialoguePanel (CharacterAvatar + Sprechblase)
-- [ ] **KI-03**: Workplace-Figuren als NPCs in bestehende Kampagnen einbauen (Chef in Colonial Pipeline, DSGVO in Equifax, DAU in WannaCry, Uschi in A+ "Der erste Tag", Azubi in Log4Shell, Berater in SolarWinds)
+- [x] **KI-03**: Workplace-Figuren als NPCs in bestehende Kampagnen einbauen (Chef in Colonial Pipeline, DSGVO in Equifax, DAU in WannaCry, Uschi in A+ "Der erste Tag", Azubi in Log4Shell, Berater in SolarWinds)
 - [ ] **KI-04**: Skill-Check UI mit Charakter-Reaktion (Erfolg/Misserfolg Animation)
 
 ### UI-Komponenten
@@ -62,9 +62,9 @@
 | CHAR-02 | Phase 45 | Complete |
 | CHAR-03 | Phase 45 | Complete |
 | CHAR-04 | Phase 45 | Complete |
-| KI-01 | Phase 47 | Pending |
+| KI-01 | Phase 47 | Complete |
 | KI-02 | Phase 47 | Pending |
-| KI-03 | Phase 47 | Pending |
+| KI-03 | Phase 47 | Complete |
 | KI-04 | Phase 47 | Pending |
 | UI-01 | Phase 46 | Complete |
 | UI-02 | Phase 46 | Complete |
