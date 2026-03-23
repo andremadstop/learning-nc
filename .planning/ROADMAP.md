@@ -214,7 +214,7 @@ Plans:
 
 - [x] **Phase 48: Engine + Charakter-Klassen** - HackThroughTime.vue, Epochen-Fortschritt, Museum, Skill-Checks, 4 Klassen mit Epochen-Affinitaet (completed 2026-03-23)
 - [x] **Phase 49: Epochen-Themes** - 7 CSS-Themes (Terminal, DOS, Netscape, XP, Dark Modern, Cloud, Hologramm) (completed 2026-03-23)
-- [ ] **Phase 50: Kampagnen Retro** - Blue Box, WarGames, The Worm, Bobby Tables (1960er-2000er)
+- [x] **Phase 50: Kampagnen Retro** - Blue Box, WarGames, The Worm, Bobby Tables (1960er-2000er) (completed 2026-03-23)
 - [x] **Phase 51: Kampagnen Modern** - Shadow Brokers, Supply Chain, Quantum Dawn (2010er-Zukunft) (completed 2026-03-23)
 
 ## Phase Details
@@ -286,5 +286,5 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51
 |-------|-----------|----------------|--------|-----------|
 | 48. Engine + Charakter-Klassen | 2/2 | Complete    | 2026-03-23 | - |
 | 49. Epochen-Themes | 1/1 | Complete    | 2026-03-23 | - |
-| 50. Kampagnen Retro | v7.0 | 0/1 | Not started | - |
+| 50. Kampagnen Retro | 1/1 | Complete   | 2026-03-23 | - |
 | 51. Kampagnen Modern | 1/1 | Complete   | 2026-03-23 | - |

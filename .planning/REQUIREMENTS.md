@@ -25,10 +25,10 @@
 
 ### Kampagnen-Content
 
-- [ ] **CAMP-01**: 1960er "Blue Box" — Captain Crunch, Phone Phreaking, 2600 Hz Ton (3 Szenen)
-- [ ] **CAMP-02**: 1980er "Shall We Play a Game?" — WarGames, Kevin Mitnick Social Engineering, BBS (4 Szenen)
-- [ ] **CAMP-03**: 1990er "The Worm" — Morris Worm, Buffer Overflow, Finger-Daemon, Internet-Kollaps (3 Szenen)
-- [ ] **CAMP-04**: 2000er "Bobby Tables" — SQL Injection, Code Red, MySpace Worm, OWASP-Gruendung (4 Szenen)
+- [x] **CAMP-01**: 1960er "Blue Box" — Captain Crunch, Phone Phreaking, 2600 Hz Ton (3 Szenen)
+- [x] **CAMP-02**: 1980er "Shall We Play a Game?" — WarGames, Kevin Mitnick Social Engineering, BBS (4 Szenen)
+- [x] **CAMP-03**: 1990er "The Worm" — Morris Worm, Buffer Overflow, Finger-Daemon, Internet-Kollaps (3 Szenen)
+- [x] **CAMP-04**: 2000er "Bobby Tables" — SQL Injection, Code Red, MySpace Worm, OWASP-Gruendung (4 Szenen)
 - [x] **CAMP-05**: 2010er "The Shadow Brokers" — Stuxnet, APT1, Snowden, EternalBlue (4 Szenen)
 - [x] **CAMP-06**: 2020er "Supply Chain" — SolarWinds, Log4Shell, Prompt Injection, Deepfakes (4 Szenen)
 - [x] **CAMP-07**: Zukunft "Quantum Dawn" — Post-Quantum Crypto, QKD, Shors Algorithmus (3 Szenen)
@@ -71,10 +71,10 @@
 | THEME-05 | Phase 49 | Complete |
 | THEME-06 | Phase 49 | Complete |
 | THEME-07 | Phase 49 | Complete |
-| CAMP-01 | Phase 50 | Pending |
-| CAMP-02 | Phase 50 | Pending |
-| CAMP-03 | Phase 50 | Pending |
-| CAMP-04 | Phase 50 | Pending |
+| CAMP-01 | Phase 50 | Complete |
+| CAMP-02 | Phase 50 | Complete |
+| CAMP-03 | Phase 50 | Complete |
+| CAMP-04 | Phase 50 | Complete |
 | CAMP-05 | Phase 51 | Complete |
 | CAMP-06 | Phase 51 | Complete |
 | CAMP-07 | Phase 51 | Complete |
