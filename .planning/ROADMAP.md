@@ -12,7 +12,8 @@
 - ✅ **v6.0 Abenteuer (Story-RPG)** — Phases 32-35 (shipped 2026-03-22)
 - ✅ **v4.1 RAG Stufe 2** — Phases 36-39 (shipped 2026-03-22)
 - ✅ **v6.1 KI-Erzaehler + Security-Kampagnen** — Phases 40-43 (shipped 2026-03-22)
-- 🚧 **v6.2 Visual Identity + Charakter-Cast** — Phases 44-47 (in progress)
+- ✅ **v6.2 Visual Identity + Charakter-Cast** — Phases 44-47 (shipped 2026-03-23)
+- 🚧 **v7.0 Hacker-Zeitreise "Hack Through Time"** — Phases 48-51 (in progress)
 
 ## Phases
 
@@ -171,26 +172,11 @@ Plans:
 
 </details>
 
-### v6.2 Visual Identity + Charakter-Cast (In Progress)
-
-**Milestone Goal:** Hybrid-CI aus Codex (Token-System, Komponenten) + Gemini (Atmosphaere, Emotionen) mit erweitertem Charakter-Cast aus realistischen IT-Workplace-Figuren. Die App bekommt ein Gesicht.
-
-- [x] **Phase 44: Design-Token-System + Narrative-Skin** - CSS-Token-Layer, Dark/Light, Motion-Utilities, Paper & Circuits Skin (completed 2026-03-22)
-- [x] **Phase 45: Charakter-System** - 13 Figuren definieren, CharacterAvatar.vue Komponente (completed 2026-03-23)
-- [x] **Phase 46: UI-Komponenten** - CampaignCard, DialogueStage, ModeIdentityBanner (completed 2026-03-23)
-- [x] **Phase 47: Kampagnen-Integration** - Intros, NPC-Portraits, Workplace-Figuren in bestehende Kampagnen (completed 2026-03-23)
-
-## Phase Details
+<details>
+<summary>✅ v6.2 Visual Identity + Charakter-Cast (Phases 44-47) - SHIPPED 2026-03-23</summary>
 
 ### Phase 44: Design-Token-System + Narrative-Skin
-**Goal**: Die App verfuegt ueber ein konsistentes CSS-Token-System mit Farbpaletten, Dark/Light-Umschaltung, Motion-Utilities und einem narrativen Skin fuer den Abenteuer-Modus
-**Depends on**: Phase 43 (v6.1 shipped)
-**Requirements**: DS-01, DS-02, DS-03, DS-04
-**Success Criteria** (what must be TRUE):
-  1. Alle Farben der App (Primary, Ink, Cyan, Amber, Magenta, Danger, Green) sind als CSS-Custom-Properties definiert und werden in mindestens einer bestehenden Komponente genutzt statt hartcodierter Hex-Werte
-  2. Der Abenteuer-Modus rendert im Dark-Theme und der Trainings-Modus im Light-Theme — der Wechsel erfolgt automatisch beim Moduswechsel ohne manuellen Toggle
-  3. Animationen (fade, snap-in, pulse) funktionieren in allen Modi und werden bei aktiviertem `prefers-reduced-motion` durch sofortige Zustandswechsel ohne Bewegung ersetzt
-  4. Der Abenteuer-Modus zeigt den "Paper & Circuits" Skin — sichtbar durch veraenderte Hintergruende, Borders und Typografie gegenueber dem Standard-Training-Look
+**Goal**: CSS-Token-Layer, Dark/Light, Motion-Utilities, Paper & Circuits Skin
 **Plans**: 2 plans
 
 Plans:
@@ -198,28 +184,14 @@ Plans:
 - [x] 44-02: Narrative-Skin "Paper & Circuits" fuer AbenteuerMode
 
 ### Phase 45: Charakter-System
-**Goal**: 13 Charaktere mit definierten Persoenlichkeiten existieren als strukturierte Daten und werden durch eine wiederverwendbare SVG-Avatar-Komponente mit State-Machine visuell dargestellt
-**Depends on**: Phase 44 (Token-System muss Farb-Paletten fuer Charakter-Zuweisung bereitstellen)
-**Requirements**: CHAR-01, CHAR-02, CHAR-03, CHAR-04
-**Success Criteria** (what must be TRUE):
-  1. CharacterAvatar.vue rendert einen Charakter als SVG-Silhouette und wechselt sichtbar zwischen mindestens 3 States (idle, thinking, celebrate) — der Unterschied ist visuell erkennbar
-  2. Die Character-Registry JSON enthaelt alle 13 Figuren mit ID, Name, Rolle, Farb-Palette, verfuegbaren States und Silhouetten-Referenz — ein fehlender Eintrag fuehrt zu einem Fallback-Avatar statt einem Fehler
-  3. Die 7 Helden (NOVA, Architekt, Security-Agentin, Sysadmin, Helpdesk-Rookie, CHRONOS, Ghostline) sind visuell unterscheidbar durch verschiedene Silhouetten und Farbpaletten
-  4. Die 6 Workplace-Figuren (DAU, Chef, DSGVO-Beauftragte, Uschi, Azubi, Externer Berater) haben jeweils einen erkennbaren visuellen Stil der zu ihrer Rolle passt
-  5. CharacterAvatar.vue respektiert `prefers-reduced-motion` — State-Wechsel erfolgen ohne Animation wenn aktiviert
+**Goal**: 13 Charaktere mit SVG-Avatar-Komponente und State-Machine
 **Plans**: 1 plan
 
 Plans:
 - [x] 45-01-PLAN.md — Character-Registry + CharacterAvatar.vue mit 13 SVG-Silhouetten
 
 ### Phase 46: UI-Komponenten
-**Goal**: Drei neue Vue-Komponenten liefern ein einheitliches visuelles Erlebnis fuer Kampagnen-Auswahl, NPC-Dialoge und Modus-Erkennung
-**Depends on**: Phase 45 (CharacterAvatar wird in allen drei Komponenten verwendet)
-**Requirements**: UI-01, UI-02, UI-03
-**Success Criteria** (what must be TRUE):
-  1. CampaignCard.vue zeigt pro Kampagne einen Dark-Gradient-Hintergrund, das Portrait des Hauptcharakters (via CharacterAvatar) und ein Difficulty-Badge — der User erkennt auf einen Blick Thema und Schwierigkeit
-  2. DialogueStage.vue zeigt links ein Charakter-Portrait mit Emotions-Tag und rechts ein Sprechfeld — bei einem Sprecherwechsel aendert sich das Portrait und der Emotions-Tag passend zum neuen Sprecher
-  3. ModeIdentityBanner.vue zeigt am oberen Rand jedes Lernmodus den Modus-Namen, den zugeordneten Mentor-Charakter und das aktuelle Lernziel — der User weiss jederzeit in welchem Modus er sich befindet
+**Goal**: CampaignCard, DialogueStage, ModeIdentityBanner
 **Plans**: 2 plans
 
 Plans:
@@ -227,28 +199,82 @@ Plans:
 - [x] 46-02: ModeIdentityBanner.vue + Integration in Lernmodi
 
 ### Phase 47: Kampagnen-Integration
-**Goal**: Alle bestehenden Kampagnen nutzen das neue visuelle System — mit Intro-Animationen, NPC-Portraits in Dialogen und Workplace-Figuren als wiederkehrende NPCs
-**Depends on**: Phase 46 (UI-Komponenten muessen fertig sein)
-**Requirements**: KI-01, KI-02, KI-03, KI-04
-**Success Criteria** (what must be TRUE):
-  1. Jede Kampagne startet mit einer 3-5 Sekunden CSS/SVG Intro-Animation (<100KB) die Thema und Atmosphaere etabliert — bei `prefers-reduced-motion` wird stattdessen ein statisches Titelbild gezeigt
-  2. NPC-Dialoge in allen Kampagnen zeigen ein CharacterAvatar-Portrait neben der Sprechblase — der Avatar wechselt den State passend zum Dialog-Inhalt (z.B. alert bei Warnung, explain bei Erklaerung)
-  3. Die 6 Workplace-Figuren erscheinen als NPCs in den zugewiesenen Kampagnen: Chef in Colonial Pipeline, DSGVO in Equifax, DAU in WannaCry, Uschi in A+ "Der erste Tag", Azubi in Log4Shell, Berater in SolarWinds
-  4. Skill-Check Ergebnisse loesen eine sichtbare Charakter-Reaktion aus: Erfolg zeigt celebrate-State, Misserfolg zeigt alert-State des beteiligten NPCs
+**Goal**: Intros, NPC-Portraits, Workplace-Figuren in bestehende Kampagnen
 **Plans**: 2 plans
 
 Plans:
 - [x] 47-01-PLAN.md — CampaignIntro.vue + Workplace NPC assignments in campaign JSONs
-- [ ] 47-02-PLAN.md — AbenteuerMode integration: intro phase, DialogueStage NPC dialogs, skill-check reactions
+- [x] 47-02-PLAN.md — AbenteuerMode integration: intro phase, DialogueStage NPC dialogs, skill-check reactions
+
+</details>
+
+### v7.0 Hacker-Zeitreise "Hack Through Time" (In Progress)
+
+**Milestone Goal:** Eigenes Spielformat — Zeitreise durch 7 IT-Security-Epochen mit epochen-spezifischen CSS-Themes, CHRONOS als KI-Guide, 4 Charakter-Klassen und 25 Szenen basierend auf echten Hacks.
+
+- [ ] **Phase 48: Engine + Charakter-Klassen** - HackThroughTime.vue, Epochen-Fortschritt, Museum, Skill-Checks, 4 Klassen mit Epochen-Affinitaet
+- [ ] **Phase 49: Epochen-Themes** - 7 CSS-Themes (Terminal, DOS, Netscape, XP, Dark Modern, Cloud, Hologramm)
+- [ ] **Phase 50: Kampagnen Retro** - Blue Box, WarGames, The Worm, Bobby Tables (1960er-2000er)
+- [ ] **Phase 51: Kampagnen Modern** - Shadow Brokers, Supply Chain, Quantum Dawn (2010er-Zukunft)
+
+## Phase Details
+
+### Phase 48: Engine + Charakter-Klassen
+**Goal**: Spieler koennen eine Zeitreise durch IT-Security-Epochen starten, ihren Fortschritt verfolgen, zwischen Szenen historische Fakten im Museum lesen und am Ende jeder Epoche ihr Wissen in Skill-Checks pruefen — mit klassenspezifischen Vorteilen
+**Depends on**: Phase 47 (v6.2 shipped)
+**Requirements**: ENG-01, ENG-02, ENG-03, ENG-04, ENG-05, CHAR-01, CHAR-02
+**Success Criteria** (what must be TRUE):
+  1. HackThroughTime.vue zeigt eine Epochen-Navigation mit 7 Epochen (1960er bis Zukunft) und CHRONOS als sichtbaren Guide — der Spieler erkennt sofort die Zeitreise-Struktur
+  2. Das data-epoch Attribut wechselt beim Epochen-Uebergang und aktiviert epochen-spezifische CSS-Variablen (--epoch-* Tokens) — visuell sichtbarer Theme-Wechsel
+  3. Der Spieler sieht nach Abschluss einer Epoche seinen Gesamt-Score und welche Epochen bereits abgeschlossen sind — der Fortschritt bleibt nach Seiten-Reload erhalten
+  4. Zwischen Szenen erscheint eine Museum-Zwischensequenz mit historischen Fakten zum gerade erlebten Hack — mindestens Datum, beteiligte Personen und Auswirkung
+  5. Am Ende jeder Epoche gibt es einen Pool-basierten Skill-Check, wobei die gewaehlte Charakter-Klasse (Phreaker, Script-Kiddie/Ethical Hacker, Red Teamer, Quantum Defender) die Schwierigkeit in "ihrer" Epoche reduziert
+**Plans**: 2 plans
+
+Plans:
+- [x] 48-01-PLAN.md — Backend: Epoch data, character classes, museum facts, DB migration, HackThroughTimeService + Controller + Routes
+- [ ] 48-02-PLAN.md — Frontend: HackThroughTime.vue + epoch-tokens.css + App.vue wiring + human verification
+
+### Phase 49: Epochen-Themes
+**Goal**: Jede der 7 Epochen hat ein visuell unverwechselbares CSS-Theme das die Aera authentisch repraesentiert — vom gruenen Terminal der 60er bis zum Hologramm-Look der Zukunft
+**Depends on**: Phase 48 (EpochTheme-System mit --epoch-* Tokens muss existieren)
+**Requirements**: THEME-01, THEME-02, THEME-03, THEME-04, THEME-05, THEME-06, THEME-07
+**Success Criteria** (what must be TRUE):
+  1. Die 1960er-Epoche zeigt gruen-auf-schwarz Monospace-Text mit Scanline-Effekt — sofort als Retro-Terminal erkennbar
+  2. Die 1980er-Epoche zeigt blau-weissen DOS-Prompt mit ASCII-Art Rahmen und blinkendem Cursor — WarGames-Atmosphaere
+  3. Die 1990er-Epoche zeigt Netscape-graue Oberflaeche mit Times New Roman, 3D-Buttons und Statusbar — fruehes Web
+  4. Die 2000er-Epoche zeigt XP-Luna blau-gruen mit Tahoma-Schrift und Startmenue-Ecken — Windows-XP-Aera
+  5. Die 2010er/2020er/Zukunft-Themes sind jeweils visuell unterscheidbar: Dark-Terminal mit Matrix-Regen, Cloud-Dashboard mit Cards/Metriken, Hologramm mit Glow-Effekten
+**Plans**: TBD
+
+### Phase 50: Kampagnen Retro
+**Goal**: Vier Kampagnen (1960er-2000er) mit insgesamt 14 Szenen erzaehlen die Geschichte des Hackings von Phone Phreaking bis SQL Injection — basierend auf echten historischen Ereignissen
+**Depends on**: Phase 49 (Retro-Themes 01-04 muessen funktionieren)
+**Requirements**: CAMP-01, CAMP-02, CAMP-03, CAMP-04
+**Success Criteria** (what must be TRUE):
+  1. "Blue Box" (1960er) hat 3 spielbare Szenen ueber Captain Crunch, Phone Phreaking und den 2600-Hz-Ton — der Spieler versteht wie Phreaking funktionierte
+  2. "Shall We Play a Game?" (1980er) hat 4 spielbare Szenen ueber WarGames, Kevin Mitnick Social Engineering und BBS-Kultur — inkl. mindestens einem Easter Egg (Hacker-Quote)
+  3. "The Worm" (1990er) hat 3 spielbare Szenen ueber den Morris Worm, Buffer Overflows und den Finger-Daemon — der Internet-Kollaps von 1988 wird nachvollziehbar
+  4. "Bobby Tables" (2000er) hat 4 spielbare Szenen ueber SQL Injection, Code Red, MySpace Worm und OWASP-Gruendung — der Spieler versteht die Geburt moderner Web-Security
+**Plans**: TBD
+
+### Phase 51: Kampagnen Modern
+**Goal**: Drei Kampagnen (2010er-Zukunft) mit insgesamt 11 Szenen fuehren von staatlichen Cyberwaffen ueber Supply-Chain-Angriffe bis zur Quantenbedrohung — der Spieler erlebt die Eskalation moderner IT-Security
+**Depends on**: Phase 49 (Themes 05-07 muessen funktionieren)
+**Requirements**: CAMP-05, CAMP-06, CAMP-07
+**Success Criteria** (what must be TRUE):
+  1. "The Shadow Brokers" (2010er) hat 4 spielbare Szenen ueber Stuxnet, APT1, Snowden und EternalBlue — die Eskalation von Cyberwarfare wird greifbar
+  2. "Supply Chain" (2020er) hat 4 spielbare Szenen ueber SolarWinds, Log4Shell, Prompt Injection und Deepfakes — aktuelle Bedrohungen werden erlebbar
+  3. "Quantum Dawn" (Zukunft) hat 3 spielbare Szenen ueber Post-Quantum Crypto, QKD und Shors Algorithmus — der Spieler versteht warum Quantencomputer die Kryptografie bedrohen
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 44 -> 45 -> 46 -> 47
+Phases execute in numeric order: 48 -> 49 -> 50 -> 51
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 44. Design-Token-System + Narrative-Skin | 2/2 | Complete    | 2026-03-22 | - |
-| 45. Charakter-System | v6.2 | Complete    | 2026-03-23 | 2026-03-22 |
-| 46. UI-Komponenten | 2/2 | Complete    | 2026-03-23 | - |
-| 47. Kampagnen-Integration | 2/2 | Complete   | 2026-03-23 | - |
+| 48. Engine + Charakter-Klassen | v7.0 | 1/2 | In progress | - |
+| 49. Epochen-Themes | v7.0 | 0/TBD | Not started | - |
+| 50. Kampagnen Retro | v7.0 | 0/TBD | Not started | - |
+| 51. Kampagnen Modern | v7.0 | 0/TBD | Not started | - |

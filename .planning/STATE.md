@@ -1,62 +1,55 @@
 ---
 gsd_state_version: 1.0
-milestone: v6.2
-milestone_name: Visual Identity + Charakter-Cast
+milestone: v7.0
+milestone_name: Hacker-Zeitreise "Hack Through Time"
 status: executing
-stopped_at: Completed 47-02-PLAN.md
-last_updated: "2026-03-23T06:59:33.024Z"
-last_activity: 2026-03-23 — Completed 47-01 CampaignIntro + NPC assignments
+stopped_at: Completed 48-01-PLAN.md
+last_updated: "2026-03-23T07:25:22Z"
+last_activity: 2026-03-23 — Completed 48-01 (Epoch data, classes, service, controller, routes)
 progress:
-  total_phases: 15
-  completed_phases: 15
-  total_plans: 28
-  completed_plans: 28
-  percent: 100
+  total_phases: 4
+  completed_phases: 0
+  total_plans: 2
+  completed_plans: 1
+  percent: 50
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-22)
+See: .planning/PROJECT.md (updated 2026-03-23)
 
-**Core value:** Hybrid-CI mit erweitertem Charakter-Cast — die App bekommt ein Gesicht.
-**Current focus:** Phase 47 in progress, CampaignIntro + NPC data done
+**Core value:** Zeitreise durch 7 IT-Security-Epochen — Geschichte erleben statt auswendig lernen.
+**Current focus:** Phase 48 executing (Engine + Charakter-Klassen)
 
 ## Current Position
 
-Phase: 47 of 47 (Kampagnen-Integration)
-Plan: 1 complete in current phase
-Status: In Progress
-Last activity: 2026-03-23 — Completed 47-01 CampaignIntro + NPC assignments
+Phase: 48 of 51 (Engine + Charakter-Klassen)
+Plan: 1 of 2 in current phase (48-01 complete)
+Status: Executing
+Last activity: 2026-03-23 — Completed 48-01 backend (epochs, classes, service, controller, routes)
 
-Progress: [██████████] 100%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
 - Total plans completed: 1 (this milestone)
-- Average duration: 4min
-- Total execution time: 4min
+- Average duration: 6min
+- Total execution time: 6min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 44 | 1 | 4min | 4min |
-| 45 | 1 | 4min | 4min |
+| 48. Engine + Charakter-Klassen | 1/2 | 6min | 6min |
 
 **Recent Trend:**
-- Last 5 plans (v6.1): 41-02 (6min), 42-01 (5min), 42-02 (8min), 43-01 (6min), 43-02 (6min)
-- Trend: Stable ~6min/plan
+- Last 5 plans (v6.2): 44-02 (3min), 45-01 (4min), 46-01 (2min), 46-02 (2min), 47-01 (4min)
+- Trend: Stable ~3min/plan
 
 *Updated after each plan completion*
-| Phase 44 P02 | 3min | 2 tasks | 2 files |
-| Phase 45 P01 | 4min | 2 tasks | 2 files |
-| Phase 46 P02 | 2min | 1 tasks | 1 files |
-| Phase 46 P01 | 2min | 2 tasks | 2 files |
-| Phase 47 P01 | 4min | 2 tasks | 7 files |
-| Phase 47 P02 | 3min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -65,33 +58,24 @@ Progress: [██████████] 100%
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Hybrid Codex+Gemini: Codex-Architektur (Tokens, Komponenten) + Gemini-Atmosphaere (Emotionen, Skin)
-- SVG-Silhouetten statt Illustrationen: wartbar, lightweight, skalierbar
-- Realistische Workplace-Figuren: authentischere Kampagnen, Wiedererkennung
-- Assets <100KB pro Animation, SVG-first
-- prefers-reduced-motion fuer alle Animationen
-- --lnc-* namespace for all design tokens (avoids NC var conflicts)
-- data-lnc-theme attribute selector for dark/light scoping
-- 3-tier radius scale: sm(8px), md(14px), lg(20px)
-- [Phase 44]: data-lnc-skin attribute for skin scoping (Paper & Circuits as first skin)
-- [Phase 45]: Geometric SVG shapes only for character avatars (max 5-8 elements, no illustrations)
-- [Phase 45]: CSS-only state machine for character visual states (no JS animation libs)
-- [Phase 46]: Unicode escape sequences for emoji in mode config map
-- [Phase 46]: Emotion labels mapped to German inline (no i18n dep for internal labels)
-- [Phase 47]: workplace_npcs field name to avoid collision with existing story npcs objects
-- [Phase 47]: Actual characters.js IDs (sven_berater etc.) used in campaign data for getCharacter() compatibility
-- [Phase 47]: Used workplace_npcs field for NPC resolution, speakerName prop for display names, flexible NPC matching via role_in_story and character_id
+- CSS-Themes statt separater Seiten: Ein Renderer, 7 Skins — wartbar
+- CHRONOS als einziger Guide: Konsistenz ueber alle Epochen
+- Echte historische Hacks: Hoechster Lernwert + Engagement
+- Parallele JS+PHP Datendefinitionen fuer Epochen/Museum/Affinitaeten
+- Affinitaets-Modifier 0.8/1.0/1.2 fuer Schwierigkeitssteuerung, Pass-Threshold 3/5 vs 4/5
 
 ### Existing Architecture
 
-- 13 Kampagnen (5 v6.0 + 8 v6.1) in app/data/campaigns/
-- AbenteuerMode.vue mit Szenen-Renderer, NPC-Dialog, Skill-Checks (now using --lnc-* tokens)
-- StoryEngineService mit narrator_mode, freetext, dynamic choices
-- GeminiService mit 5-Layer Security, Multi-Source-RAG
-- Charakter-System: 13 Figuren in app/src/data/characters.js, CharacterAvatar.vue SVG-Komponente
-- Global CSS token system in app/css/style.css (--lnc-* namespace, dark/light scopes, motion utilities)
-- Codex-Studio Output: .planning/parallel-agencies/codex-studio/
-- Gemini-Studio Output: .planning/parallel-agencies/gemini-studio/
+- StoryEngineService mit narrator_mode, dynamic_choices, freetext, gemini_role
+- 13 Kampagnen in app/data/campaigns/
+- CharacterAvatar.vue mit SVG-Silhouetten + State-Machine
+- CHRONOS-Charakter definiert in characters.js
+- Design-Token-System (--lnc-*) + Paper & Circuits Skin
+- GeminiService mit 5-Layer Security + Rate-Limits
+- CampaignCard, DialogueStage, CampaignIntro Komponenten
+- HackThroughTimeService + Controller mit 8 REST-Endpoints unter /api/zeitreise/
+- 7 Epochen + 4 Charakter-Klassen mit Affinitaets-System (bonus/neutral/penalty)
+- EpochProgress DB-Entity + Migration (oc_learning_epoch_progress)
 
 ### Pending Todos
 
@@ -103,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T06:59:33.021Z
-Stopped at: Completed 47-02-PLAN.md
+Last session: 2026-03-23
+Stopped at: Completed 48-01-PLAN.md
 Resume file: None
