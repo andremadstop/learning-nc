@@ -15,6 +15,14 @@
         {{ t('learning', 'Kurse') }}
       </button>
       <button
+        :class="['main-nav-btn', { active: mainView === 'zeitreise' }]"
+        role="tab"
+        :aria-selected="mainView === 'zeitreise' ? 'true' : 'false'"
+        @click="switchMainView('zeitreise')"
+      >
+        {{ t('learning', 'Zeitreise') }}
+      </button>
+      <button
         :class="['main-nav-btn', { active: mainView === 'settings' }]"
         role="tab"
         :aria-selected="mainView === 'settings' ? 'true' : 'false'"
@@ -210,6 +218,14 @@
       />
     </template>
 
+    <!-- ==================== ZEITREISE VIEW ==================== -->
+    <template v-if="mainView === 'zeitreise'">
+      <HackThroughTime
+        :contentLanguage="contentLanguage"
+        @back="switchMainView('courses')"
+      />
+    </template>
+
     <VirtuProf
       v-if="appInitialized"
       :enabled="virtuProfEnabled"
@@ -241,6 +257,7 @@ import DuelMode from './components/DuelMode.vue';
 import ArenaSelector from './components/ArenaSelector.vue';
 import VirtuProf from './components/VirtuProf.vue';
 import AbenteuerMode from './components/AbenteuerMode.vue';
+import HackThroughTime from './components/HackThroughTime.vue';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 
@@ -268,6 +285,7 @@ export default {
     PersonalSettings,
     VirtuProf,
     AbenteuerMode,
+    HackThroughTime,
   },
   data() {
     return {

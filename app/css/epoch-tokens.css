@@ -1,0 +1,95 @@
+/* ========== EPOCH THEME TOKENS ========== */
+/* Activated via data-epoch attribute on root element.
+ * Each epoch sets --epoch-* custom properties for background, text, accent, border, font, glow.
+ * Phase 49 refines these into authentic period-accurate themes. */
+
+/* Base defaults */
+[data-epoch] {
+  --epoch-bg: #1a1a2e;
+  --epoch-text: #c9d1d9;
+  --epoch-accent: #58a6ff;
+  --epoch-border: #30363d;
+  --epoch-font-family: system-ui, sans-serif;
+  --epoch-glow: rgba(88, 166, 255, 0.3);
+}
+
+/* 1960er — Phone Phreaking */
+[data-epoch="terminal-green"] {
+  --epoch-bg: #0a0a0a;
+  --epoch-text: #00ff41;
+  --epoch-accent: #00ff41;
+  --epoch-border: #00ff41;
+  --epoch-font-family: "Courier New", monospace;
+  --epoch-glow: rgba(0, 255, 65, 0.3);
+}
+
+/* 1980er — WarGames */
+[data-epoch="dos-blue"] {
+  --epoch-bg: #0000aa;
+  --epoch-text: #ffffff;
+  --epoch-accent: #aaaaaa;
+  --epoch-border: #ffffff;
+  --epoch-font-family: "Courier New", monospace;
+  --epoch-glow: rgba(170, 170, 170, 0.3);
+}
+
+/* 1990er — The Worm */
+[data-epoch="netscape-grey"] {
+  --epoch-bg: #c0c0c0;
+  --epoch-text: #000000;
+  --epoch-accent: #0000ff;
+  --epoch-border: #808080;
+  --epoch-font-family: "Times New Roman", serif;
+  --epoch-glow: rgba(0, 0, 255, 0.3);
+}
+
+/* 2000er — Bobby Tables */
+[data-epoch="xp-luna"] {
+  --epoch-bg: #ece9d8;
+  --epoch-text: #000000;
+  --epoch-accent: #003399;
+  --epoch-border: #0054e3;
+  --epoch-font-family: Tahoma, sans-serif;
+  --epoch-glow: rgba(0, 51, 153, 0.3);
+}
+
+/* 2010er — The Shadow Brokers */
+[data-epoch="dark-terminal"] {
+  --epoch-bg: #1a1a2e;
+  --epoch-text: #00ff41;
+  --epoch-accent: #e94560;
+  --epoch-border: #16213e;
+  --epoch-font-family: "Fira Code", monospace;
+  --epoch-glow: rgba(233, 69, 96, 0.3);
+}
+
+/* 2020er — Supply Chain */
+[data-epoch="cloud-dashboard"] {
+  --epoch-bg: #f5f5f5;
+  --epoch-text: #333333;
+  --epoch-accent: #2196f3;
+  --epoch-border: #e0e0e0;
+  --epoch-font-family: "Inter", sans-serif;
+  --epoch-glow: rgba(33, 150, 243, 0.3);
+}
+
+/* Zukunft — Quantum Dawn */
+[data-epoch="hologram-glow"] {
+  --epoch-bg: #0a0a1a;
+  --epoch-text: #00e5ff;
+  --epoch-accent: #7c4dff;
+  --epoch-border: rgba(0, 229, 255, 0.3);
+  --epoch-font-family: "Rajdhani", sans-serif;
+  --epoch-glow: rgba(124, 77, 255, 0.3);
+}
+
+/* Epoch transition utility */
+.epoch-transition {
+  transition: background-color 0.6s ease, color 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .epoch-transition {
+    transition: none;
+  }
+}

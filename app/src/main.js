@@ -4,6 +4,8 @@ import { translate as t, translatePlural as n } from '@nextcloud/l10n';
 
 // Nextcloud Vue styles
 import '@nextcloud/dialogs/style.css';
+// Epoch theme tokens for Hack Through Time
+import '../css/epoch-tokens.css';
 
 Vue.config.productionTip = false;
 
