@@ -396,7 +396,7 @@
           },
           "success_scene": "epilog_success",
           "partial_scene": "epilog_partial",
-          "fail_scene": "epilog_partial"
+          "fail_scene": "epilog_fail"
         },
         {
           "id": "c5_quick_fixes",
@@ -417,7 +417,7 @@
           },
           "success_scene": "epilog_partial",
           "partial_scene": "epilog_partial",
-          "fail_scene": "epilog_partial"
+          "fail_scene": "epilog_fail"
         }
       ],
       "simulation": {
