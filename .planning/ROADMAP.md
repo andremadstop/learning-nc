@@ -195,7 +195,7 @@ Plans:
 
 Plans:
 - [x] 44-01: CSS-Token-Layer + Dark/Light + Motion-Utilities
-- [ ] 44-02: Narrative-Skin "Paper & Circuits" fuer AbenteuerMode
+- [x] 44-02: Narrative-Skin "Paper & Circuits" fuer AbenteuerMode
 
 ### Phase 45: Charakter-System
 **Goal**: 13 Charaktere mit definierten Persoenlichkeiten existieren als strukturierte Daten und werden durch eine wiederverwendbare SVG-Avatar-Komponente mit State-Machine visuell dargestellt
@@ -207,11 +207,10 @@ Plans:
   3. Die 7 Helden (NOVA, Architekt, Security-Agentin, Sysadmin, Helpdesk-Rookie, CHRONOS, Ghostline) sind visuell unterscheidbar durch verschiedene Silhouetten und Farbpaletten
   4. Die 6 Workplace-Figuren (DAU, Chef, DSGVO-Beauftragte, Uschi, Azubi, Externer Berater) haben jeweils einen erkennbaren visuellen Stil der zu ihrer Rolle passt
   5. CharacterAvatar.vue respektiert `prefers-reduced-motion` — State-Wechsel erfolgen ohne Animation wenn aktiviert
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 45-01: Character-Registry JSON + CharacterAvatar.vue Komponente
-- [ ] 45-02: 13 SVG-Silhouetten + State-Definitionen
+- [x] 45-01-PLAN.md — Character-Registry + CharacterAvatar.vue mit 13 SVG-Silhouetten
 
 ### Phase 46: UI-Komponenten
 **Goal**: Drei neue Vue-Komponenten liefern ein einheitliches visuelles Erlebnis fuer Kampagnen-Auswahl, NPC-Dialoge und Modus-Erkennung
@@ -249,7 +248,7 @@ Phases execute in numeric order: 44 → 45 → 46 → 47
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 44. Design-Token-System + Narrative-Skin | 2/2 | Complete   | 2026-03-22 | - |
-| 45. Charakter-System | v6.2 | 0/2 | Not started | - |
+| 44. Design-Token-System + Narrative-Skin | 2/2 | Complete    | 2026-03-22 | - |
+| 45. Charakter-System | v6.2 | 1/1 | Complete | 2026-03-22 |
 | 46. UI-Komponenten | v6.2 | 0/2 | Not started | - |
 | 47. Kampagnen-Integration | v6.2 | 0/2 | Not started | - |

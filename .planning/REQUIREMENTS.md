@@ -14,10 +14,10 @@
 
 ### Charakter-System
 
-- [ ] **CHAR-01**: CharacterAvatar.vue Komponente (SVG-basiert, States: idle/thinking/explain/alert/celebrate, Emotionen)
-- [ ] **CHAR-02**: Character-Registry JSON mit allen 13 Figuren (ID, Name, Rolle, Palette, States, Silhouette)
-- [ ] **CHAR-03**: 7 Helden-Charaktere: NOVA (Tutor), Architekt, Security-Agentin, Sysadmin, Helpdesk-Rookie, CHRONOS, Ghostline
-- [ ] **CHAR-04**: 6 Workplace-Charaktere: DAU (klickt alles kaputt), Chef (Geld/KPIs), DSGVO-Beauftragte (Compliance), Uschi (keine Ahnung aber haelt Laden zusammen), Azubi (motiviert, Anfaengerfehler), Externer Berater (redet viel, macht wenig)
+- [x] **CHAR-01**: CharacterAvatar.vue Komponente (SVG-basiert, States: idle/thinking/explain/alert/celebrate, Emotionen)
+- [x] **CHAR-02**: Character-Registry JSON mit allen 13 Figuren (ID, Name, Rolle, Palette, States, Silhouette)
+- [x] **CHAR-03**: 7 Helden-Charaktere: NOVA (Tutor), Architekt, Security-Agentin, Sysadmin, Helpdesk-Rookie, CHRONOS, Ghostline
+- [x] **CHAR-04**: 6 Workplace-Charaktere: DAU (klickt alles kaputt), Chef (Geld/KPIs), DSGVO-Beauftragte (Compliance), Uschi (keine Ahnung aber haelt Laden zusammen), Azubi (motiviert, Anfaengerfehler), Externer Berater (redet viel, macht wenig)
 
 ### Kampagnen-Integration
 
@@ -58,10 +58,10 @@
 | DS-02 | Phase 44 | Complete |
 | DS-03 | Phase 44 | Complete |
 | DS-04 | Phase 44 | Complete |
-| CHAR-01 | Phase 45 | Pending |
-| CHAR-02 | Phase 45 | Pending |
-| CHAR-03 | Phase 45 | Pending |
-| CHAR-04 | Phase 45 | Pending |
+| CHAR-01 | Phase 45 | Complete |
+| CHAR-02 | Phase 45 | Complete |
+| CHAR-03 | Phase 45 | Complete |
+| CHAR-04 | Phase 45 | Complete |
 | KI-01 | Phase 47 | Pending |
 | KI-02 | Phase 47 | Pending |
 | KI-03 | Phase 47 | Pending |
