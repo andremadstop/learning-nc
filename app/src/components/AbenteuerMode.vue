@@ -573,6 +573,7 @@ export default {
 			currentSkillCheck: null,
 			currentSkillQuestion: null,
 			skillCheckQuestions: [],
+			skillChecksPassedThisRound: 0,
 			skillCheckIndex: 0,
 			skillCheckTotal: 0,
 			skillAnswered: false,
@@ -839,28 +840,24 @@ export default {
 
 		// ===== SKILL CHECK =====
 
-		async fetchSkillQuestion(choice) {
+		fetchSkillQuestion(choice) {
 			this.phase = 'skill-check'
 			this.skillAnswered = false
 			this.selectedAnswer = null
 			this.skillCheckIndex = 0
 			this.skillCheckTotal = choice.skill_check?.question_count || 1
+			// Reset per-check pass counter (not session-wide)
+			this.skillChecksPassedThisRound = 0
 
-			try {
-				const url = generateUrl('/apps/learning/api/story/skill-questions')
-				const resp = await axios.get(url, { params: {
-					campaignId: this.selectedCampaign.id,
-					sceneId: this.currentScene.id,
-					choiceId: choice.id,
-				} })
-				// Backend returns {questions: [...]}
-				const questions = Array.isArray(resp.data?.questions) ? resp.data.questions : (Array.isArray(resp.data) ? resp.data : [resp.data])
-				this.skillCheckQuestions = questions
-				this.currentSkillQuestion = questions[0] || this.makeStubQuestion()
-			} catch (e) {
-				// Stub question when backend not available
-				this.skillCheckQuestions = []
-				this.currentSkillQuestion = this.makeStubQuestion()
+			// Questions are pre-loaded in the scene response (buildSceneResponse includes them)
+			const preloaded = choice.skill_check?.questions
+			if (Array.isArray(preloaded) && preloaded.length > 0) {
+				this.skillCheckQuestions = preloaded
+				this.currentSkillQuestion = preloaded[0]
+			} else {
+				// Fallback: single stub question
+				this.skillCheckQuestions = [this.makeStubQuestion()]
+				this.currentSkillQuestion = this.skillCheckQuestions[0]
 			}
 		},
 
@@ -887,6 +884,7 @@ export default {
 
 			if (answer.is_correct) {
 				this.sessionStats.skillChecksPassed++
+				this.skillChecksPassedThisRound++
 				this.skillCheckNpcState = 'celebrate'
 			} else {
 				this.skillCheckNpcState = 'alert'
@@ -933,7 +931,7 @@ export default {
 
 		async resolveSkillCheck(lastWasCorrect) {
 			const passThreshold = this.currentSkillCheck?.skill_check?.pass_threshold || Math.ceil(this.skillCheckTotal / 2)
-			const passed = this.sessionStats.skillChecksPassed >= passThreshold
+			const passed = this.skillChecksPassedThisRound >= passThreshold
 
 			const nextScene = passed
 				? (this.currentSkillCheck?.success_scene || this.currentSkillCheck?.next_scene)
