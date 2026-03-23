@@ -1,0 +1,274 @@
+{
+  "id": "blue_box",
+  "epoch_id": "phone_phreaking",
+  "title": "Blue Box -- Die Frequenz der Freiheit",
+  "description": "1971. Eine Spielzeugpfeife aus einer Cerealienpackung erzeugt exakt 2600 Hz -- den Ton, der AT&Ts Vermittlungsstellen steuert. Du tauchst ein in die Welt der Phone Phreaker, wo Neugier und analoge Technik eine Revolution ausloesen.",
+  "duration_minutes": 45,
+  "difficulty": "beginner",
+  "focus_areas": [
+    "network_plus"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Retro-Dokumentarfilm. Rauschen auf der Leitung, analoge Waerme, die Faszination einer unsichtbaren Welt aus Toenen und Frequenzen.",
+  "scenes": [
+    {
+      "id": "s1_cerealien_pfeife",
+      "title": "Die Cerealien-Pfeife",
+      "narrative": "1971. John Draper sitzt in seiner Wohnung in San Jose, als ihm ein Freund namens Joe Engressia etwas Unglaubliches erzaehlt: Eine kleine Plastikpfeife aus einer Packung Cap'n Crunch Cerealien erzeugt exakt 2600 Hertz -- die Frequenz, die AT&Ts Fernverbindungs-Vermittlungsstellen als 'Leitung frei' interpretieren. Draper ist fasziniert. Er holt sich die Pfeife und pfeift in den Hoerer. Das Klicken der Relais ist hoerbar. Die Leitung ist offen. Er kann jede Nummer der Welt waehlen -- kostenlos. In diesem Moment wird 'Captain Crunch' geboren. Aber wie funktioniert das eigentlich? Das analoge Telefonnetz nutzt In-Band-Signaling: Steuersignale und Sprachdaten teilen sich denselben Kanal. Wer den richtigen Ton kennt, kontrolliert das Netz.",
+      "image": "scene_phone_phreaking.png",
+      "animation_in": "mission_start",
+      "choices": [
+        {
+          "id": "c1_analyze_frequency",
+          "text": "Die Frequenz analysieren -- wie funktioniert In-Band-Signaling im analogen Telefonnetz?",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:phone_phreaking",
+            "question_count": 2,
+            "pass_threshold": 1
+          },
+          "success_scene": "s2_blue_box_werkstatt",
+          "partial_scene": "s2_blue_box_werkstatt",
+          "fail_scene": "s1_fail_entdeckt"
+        },
+        {
+          "id": "c1_replicate_tone",
+          "text": "Den Ton replizieren -- mit einem Oszillator exakt 2600 Hz erzeugen",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:phone_phreaking",
+            "question_count": 2,
+            "pass_threshold": 1
+          },
+          "success_scene": "s2_blue_box_werkstatt",
+          "partial_scene": "s2_blue_box_werkstatt",
+          "fail_scene": "s1_fail_entdeckt"
+        },
+        {
+          "id": "c1_research_att",
+          "text": "AT&Ts Vermittlungsnetz erforschen -- technische Dokumentation beschaffen",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:phone_phreaking",
+            "question_count": 2,
+            "pass_threshold": 1
+          },
+          "success_scene": "s2_blue_box_werkstatt",
+          "partial_scene": "s2_blue_box_werkstatt",
+          "fail_scene": "s1_fail_entdeckt"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s1_fail_entdeckt",
+      "title": "Verdaechtige Aktivitaet",
+      "narrative": "Dein erster Versuch war zu auffaellig. AT&Ts Sicherheitsabteilung hat ungewoehnliche Signalmuster auf der Leitung bemerkt. Aber sie koennen dich nicht identifizieren -- noch nicht. Joe Engressia warnt dich: 'Sei vorsichtiger. Die wissen, dass jemand ihre Leitungen manipuliert. Aber wenn du die Technik richtig verstehst, kannst du unsichtbar bleiben.' Er gibt dir einen Tipp: Die Blue Box. Ein kleines elektronisches Geraet, das alle benoetigen Toene praesize erzeugen kann.",
+      "image": "scene_phone_phreaking.png",
+      "choices": [
+        {
+          "id": "c1_fail_learn",
+          "text": "Von Joe lernen und die technischen Grundlagen sauber verstehen",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:phone_phreaking",
+            "question_count": 2,
+            "pass_threshold": 1
+          },
+          "success_scene": "s2_blue_box_werkstatt",
+          "partial_scene": "s2_blue_box_werkstatt",
+          "fail_scene": "s2_blue_box_werkstatt"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_blue_box_werkstatt",
+      "title": "Blue Box Werkstatt",
+      "narrative": "1972. Steve Wozniak hat von Captain Crunch gehoert und ist begeistert. In seiner Garage in Berkeley baut er eine eigene Blue Box -- eleganter und praeziser als alles zuvor. Sein Kumpel Steve Jobs sieht sofort das Geschaeftspotenzial: 'Woz, wir koennen die Dinger an Studenten verkaufen!' Die Blue Box nutzt Multi-Frequency-Signaling (MF): Jede Ziffer wird durch die Kombination zweier Frequenzen dargestellt. Der Schluessel ist der 2600-Hz-Ton zum 'Seizen' der Leitung, gefolgt von KP (Key Pulse) und ST (Start) Signalen. Wozniak und Jobs verkaufen die Boxen fuer 150 Dollar pro Stueck. Jobs spaeter: 'Ohne die Blue Box haette es Apple nie gegeben. Sie hat uns gezeigt, dass zwei Typen in einer Garage die Welt veraendern koennen.' Jetzt musst du selbst eine bauen und testen.",
+      "image": "scene_phone_phreaking.png",
+      "choices": [
+        {
+          "id": "c2_build_circuit",
+          "text": "Die Schaltung bauen -- Oszillatoren fuer alle MF-Toene praezise kalibrieren",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:phone_phreaking",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_frequenz_freiheit",
+          "partial_scene": "s3_frequenz_freiheit",
+          "fail_scene": "s2_fail_kurzschluss"
+        },
+        {
+          "id": "c2_test_trunk",
+          "text": "Trunk-Line-Zugang testen -- eine Fernverbindung ueber die Blue Box aufbauen",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:phone_phreaking",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_frequenz_freiheit",
+          "partial_scene": "s3_frequenz_freiheit",
+          "fail_scene": "s2_fail_kurzschluss"
+        },
+        {
+          "id": "c2_map_network",
+          "text": "Das Telefonnetz kartieren -- Trunk-Routen und Vermittlungsstellen dokumentieren",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:phone_phreaking",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_frequenz_freiheit",
+          "partial_scene": "s3_frequenz_freiheit",
+          "fail_scene": "s2_fail_kurzschluss"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_fail_kurzschluss",
+      "title": "Fehlsignal",
+      "narrative": "Deine Blue Box sendet ein falsches Signal. Statt der korrekten MF-Kombination erzeugst du einen Ton, der die Vermittlungsstelle verwirrt. Die Verbindung bricht ab. Wozniak schaut auf deine Schaltung und grinst: 'Der zweite Oszillator ist 50 Hz daneben. Bei analogen Systemen zaehlt jeder Hertz.' Er zeigt dir, wie man die Frequenzen mit einem Oszilloskop exakt abstimmt. Ein zweiter Versuch sollte klappen.",
+      "image": "scene_phone_phreaking.png",
+      "choices": [
+        {
+          "id": "c2_fail_retry",
+          "text": "Die Frequenzen neu kalibrieren und einen weiteren Versuch starten",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:phone_phreaking",
+            "question_count": 2,
+            "pass_threshold": 1
+          },
+          "success_scene": "s3_frequenz_freiheit",
+          "partial_scene": "s3_frequenz_freiheit",
+          "fail_scene": "s3_frequenz_freiheit"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s3_frequenz_freiheit",
+      "title": "2600 Hz -- Die Frequenz der Freiheit",
+      "narrative": "1977. Die Phreaker-Community waechst. Was als Spielerei begann, wird zur Bewegung. Das '2600 Magazine' wird zum Sprachrohr einer Generation, die glaubt: Information will frei sein. Aber AT&T hat genug. Sie stellen auf Out-of-Band-Signaling um -- SS7 trennt Steuersignale und Sprache in getrennte Kanaele. Die Blue Box wird nutzlos. Captain Crunch wird verhaftet. Die Aera geht zu Ende, aber ihr Erbe lebt weiter: Die Phreaker haben bewiesen, dass Sicherheit durch Verschleierung nicht funktioniert. Und zwei Typen aus einer Garage werden bald einen Computer bauen, der die Welt veraendert. Was tust du mit diesem Wissen?",
+      "image": "scene_phone_phreaking.png",
+      "choices": [
+        {
+          "id": "c3_publish",
+          "text": "Die Erkenntnisse veroeffentlichen -- damit jeder versteht, warum In-Band-Signaling unsicher ist",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:phone_phreaking",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c3_underground",
+          "text": "In den Untergrund gehen -- das Wissen im inneren Kreis behalten",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:phone_phreaking",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c3_red_box",
+          "text": "Eine Red Box fuer Muenztelefone bauen -- die naechste Generation der Phreaking-Tools",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:phone_phreaking",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "epilog_success",
+      "title": "Erbe der Phreaker",
+      "narrative": "Du hast die Geschichte der Phone Phreaker nicht nur erlebt -- du hast sie verstanden. Von der 2600-Hz-Pfeife ueber die Blue Box bis zum Untergang durch SS7: Jede Sicherheitsluecke entstand, weil die Entwickler dachten, niemand wuerde die Technik hinterfragen. Die Phreaker haben bewiesen, dass 'Security through Obscurity' eine Illusion ist. Wozniak und Jobs haben daraus Apple gebaut. Die Hacker-Ethik lebt weiter: Verstehe die Systeme, die dein Leben bestimmen. Und Captain Crunch? Der pfeift immer noch -- aber jetzt in 5G.",
+      "image": "scene_victory.png",
+      "animation_in": "campaign_complete",
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "success"
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Gemischte Signale",
+      "narrative": "Du hast einen Blick in die Welt der Phreaker geworfen, aber einige Konzepte sind dir noch nicht ganz klar. In-Band-Signaling, MF-Toene, Trunk-Routing -- die analoge Welt ist komplex. Aber du hast das Wichtigste gelernt: Jedes System hat Schwachstellen, wenn man die richtige Frequenz kennt. AT&T musste Milliarden investieren, um auf SS7 umzusteigen. Die Lehre fuer die Zukunft: Sicherheit muss von Anfang an ins Design -- nicht nachtraeglich aufgeklebt.",
+      "image": "scene_partial_victory.png",
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "partial"
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Rauschen auf der Leitung",
+      "narrative": "Die Technik der Phreaker war zu schnell fuer dich -- die Toene, die Frequenzen, die Vermittlungsstellen. Aber du hast etwas Wichtiges mitgenommen: Die Geschichte zeigt, dass Neugier der erste Schritt ist. Captain Crunch, Wozniak, Engressia -- sie alle begannen damit, Fragen zu stellen. Warum macht die Pfeife diesen Ton? Was passiert, wenn ich ihn ins Telefon pfeife? Die naechste Epoche wartet. Die Fragen werden komplexer. Aber der Geist der Phreaker begleitet dich.",
+      "image": "scene_partial_victory.png",
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "fail"
+    }
+  ],
+  "epilog": {
+    "success": {
+      "narrative": "Du hast die Welt der Phone Phreaker durchdrungen. Von der 2600-Hz-Pfeife zur Blue Box -- Security through Obscurity ist eine Illusion. Die Phreaker legten den Grundstein fuer die Hacker-Kultur.",
+      "image": "scene_victory.png",
+      "animation": "campaign_complete"
+    },
+    "partial": {
+      "narrative": "Einige Konzepte bleiben unklar, aber die Kernlektion sitzt: Jedes System hat Schwachstellen, wenn man die richtige Frequenz kennt. AT&T lernte es auf die harte Tour.",
+      "image": "scene_partial_victory.png"
+    },
+    "fail": {
+      "narrative": "Die analoge Welt war komplex, aber der Geist der Phreaker begleitet dich weiter. Neugier ist der erste Schritt -- die naechste Epoche wartet.",
+      "image": "scene_partial_victory.png"
+    }
+  },
+  "historical_facts": [
+    {
+      "year": 1957,
+      "title": "Joe Engressia entdeckt 2600 Hz",
+      "description": "Ein blinder Teenager mit absolutem Gehoer entdeckt, dass ein 2600-Hz-Pfeifton AT&Ts Fernvermittlung steuern kann -- die Geburt des Phone Phreaking."
+    },
+    {
+      "year": 1971,
+      "title": "Captain Crunch und die Cerealien-Pfeife",
+      "description": "John Draper erfaehrt, dass eine Spielzeugpfeife aus Cap'n Crunch Cerealien exakt 2600 Hz erzeugt und damit kostenlose Ferngespraeche ermoeglicht."
+    },
+    {
+      "year": 1972,
+      "title": "Wozniak und Jobs bauen Blue Boxes",
+      "description": "Steve Wozniak und Steve Jobs bauen und verkaufen Blue Boxes an Studenten in Berkeley. Jobs spaeter: 'Ohne die Blue Box haette es Apple nie gegeben.'"
+    },
+    {
+      "year": 1978,
+      "title": "Captain Crunch wird verhaftet",
+      "description": "John Draper wird wegen Telefonbetrug verhaftet und verurteilt. AT&T beginnt den Umstieg auf Out-of-Band-Signaling (SS7), das Steuersignale von Sprachdaten trennt."
+    }
+  ]
+}
