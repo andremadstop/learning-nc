@@ -702,26 +702,40 @@ export default {
 				this.initCoopSession()
 				return
 			}
-			// Start or resume campaign via backend
+			const cid = this.selectedCampaign.id
+
+			// Try to resume existing progress first
 			try {
-				const cid = this.selectedCampaign.id
-				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/start`)
-				const resp = await axios.post(url, {
-					characterClass: this.selectedCharacter.id,
-					courseId: this.courseId || null,
-				})
-				// Backend returns {progress, scene} — use scene directly for first render
-				if (resp.data.scene) {
+				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/scene`)
+				const resp = await axios.get(url)
+				if (resp.data?.scene?.id) {
 					this.phase = 'scene'
 					this.choiceMade = false
 					this.currentScene = resp.data.scene
 					this.loadingScene = false
 					this.startTypewriter(this.currentScene.narrative)
-				} else {
-					this.beginScene()
+					return
 				}
 			} catch (e) {
-				// Fallback: try getScene directly (may already have progress)
+				// No existing progress — start fresh
+			}
+
+			// Start new campaign
+			try {
+				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/start`)
+				const resp = await axios.post(url, {
+					characterClass: this.selectedCharacter.id,
+					courseId: this.courseId || null,
+				})
+				if (resp.data?.scene) {
+					this.phase = 'scene'
+					this.choiceMade = false
+					this.currentScene = resp.data.scene
+					this.loadingScene = false
+					this.startTypewriter(this.currentScene.narrative)
+				}
+			} catch (e) {
+				// Last resort: local fallback
 				this.beginScene()
 			}
 		},
@@ -825,10 +839,35 @@ export default {
 			// Check if choice has skill check
 			if (choice.skill_check) {
 				this.currentSkillCheck = choice
-				await this.fetchSkillQuestion(choice)
+				this.fetchSkillQuestion(choice)
 			} else {
-				// Navigate directly to next scene
-				await this.advanceToScene(choice.success_scene || choice.next_scene)
+				// POST choice to backend — advances progress + returns next scene
+				try {
+					const cid = this.selectedCampaign.id
+					const resp = await axios.post(
+						generateUrl(`/apps/learning/api/story/campaigns/${cid}/choice`),
+						{ choiceId: choice.id }
+					)
+					const scene = resp.data?.scene || resp.data
+					if (scene && scene.id) {
+						this.sessionStats.scenesCompleted++
+						this.currentScene = scene
+						this.choiceMade = false
+						this.loadingScene = false
+						if (scene.is_epilog) {
+							this.showEpilog(scene.epilog_type || 'success')
+						} else {
+							this.startTypewriter(scene.narrative)
+							if (scene.simulation) this.scheduleSimulation(scene.simulation)
+						}
+					} else {
+						// Fallback: local advance
+						await this.advanceToScene(choice.success_scene || choice.next_scene)
+					}
+				} catch (e) {
+					// Fallback: local advance
+					await this.advanceToScene(choice.success_scene || choice.next_scene)
+				}
 			}
 			this.makingChoice = false
 		},
@@ -923,11 +962,9 @@ export default {
 			try {
 				const cid = this.selectedCampaign.id
 				await axios.post(generateUrl(`/apps/learning/api/story/campaigns/${cid}/answer`), {
-					sceneId: this.currentScene ? this.currentScene.id : null,
+					choiceId: this.currentSkillCheck ? this.currentSkillCheck.id : '',
 					questionId: this.currentSkillQuestion.id,
 					answerId: answer.id,
-					characterClass: this.selectedCharacter.id,
-					courseId: this.courseId || null,
 				})
 			} catch (e) {
 				// Silently ignore — progress tracking is best-effort
