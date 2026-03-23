@@ -847,13 +847,14 @@ export default {
 			this.skillCheckTotal = choice.skill_check?.question_count || 1
 
 			try {
-				const cid = this.selectedCampaign.id
-				const sid = this.currentScene.id
-				const chid = choice.id
-				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/scene/${sid}/questions/${chid}`)
-				const resp = await axios.get(url)
-				// Backend returns array of questions — take first for single skill check
-				const questions = Array.isArray(resp.data) ? resp.data : [resp.data]
+				const url = generateUrl('/apps/learning/api/story/skill-questions')
+				const resp = await axios.get(url, { params: {
+					campaignId: this.selectedCampaign.id,
+					sceneId: this.currentScene.id,
+					choiceId: choice.id,
+				} })
+				// Backend returns {questions: [...]}
+				const questions = Array.isArray(resp.data?.questions) ? resp.data.questions : (Array.isArray(resp.data) ? resp.data : [resp.data])
 				this.skillCheckQuestions = questions
 				this.currentSkillQuestion = questions[0] || this.makeStubQuestion()
 			} catch (e) {

@@ -145,7 +145,7 @@ class StoryController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 60, period: 60)]
-    public function getSkillCheckQuestions(string $campaignId, string $sceneId, string $choiceId): DataResponse {
+    public function getSkillCheckQuestions(string $campaignId = '', string $sceneId = '', string $choiceId = ''): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }

@@ -210,7 +210,7 @@ return [
         ['name' => 'story#listProgress',           'url' => '/api/story/progress',                                               'verb' => 'GET'],
         ['name' => 'story#startCampaign',          'url' => '/api/story/campaigns/{campaignId}/start',                           'verb' => 'POST'],
         ['name' => 'story#getScene',               'url' => '/api/story/campaigns/{campaignId}/scene',                           'verb' => 'GET'],
-        ['name' => 'story#getSkillCheckQuestions', 'url' => '/api/story/campaigns/{campaignId}/scene/{sceneId}/questions/{choiceId}', 'verb' => 'GET'],
+        ['name' => 'story#getSkillCheckQuestions', 'url' => '/api/story/skill-questions', 'verb' => 'GET'],
         ['name' => 'story#makeChoice',             'url' => '/api/story/campaigns/{campaignId}/choice',                          'verb' => 'POST'],
         ['name' => 'story#submitSkillAnswer',      'url' => '/api/story/campaigns/{campaignId}/answer',                          'verb' => 'POST'],
         ['name' => 'story#submitSkillBatch',       'url' => '/api/story/campaigns/{campaignId}/batch',                           'verb' => 'POST'],
