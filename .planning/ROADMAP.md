@@ -212,7 +212,7 @@ Plans:
 
 **Milestone Goal:** Eigenes Spielformat — Zeitreise durch 7 IT-Security-Epochen mit epochen-spezifischen CSS-Themes, CHRONOS als KI-Guide, 4 Charakter-Klassen und 25 Szenen basierend auf echten Hacks.
 
-- [ ] **Phase 48: Engine + Charakter-Klassen** - HackThroughTime.vue, Epochen-Fortschritt, Museum, Skill-Checks, 4 Klassen mit Epochen-Affinitaet
+- [x] **Phase 48: Engine + Charakter-Klassen** - HackThroughTime.vue, Epochen-Fortschritt, Museum, Skill-Checks, 4 Klassen mit Epochen-Affinitaet (completed 2026-03-23)
 - [ ] **Phase 49: Epochen-Themes** - 7 CSS-Themes (Terminal, DOS, Netscape, XP, Dark Modern, Cloud, Hologramm)
 - [ ] **Phase 50: Kampagnen Retro** - Blue Box, WarGames, The Worm, Bobby Tables (1960er-2000er)
 - [ ] **Phase 51: Kampagnen Modern** - Shadow Brokers, Supply Chain, Quantum Dawn (2010er-Zukunft)
@@ -274,7 +274,7 @@ Phases execute in numeric order: 48 -> 49 -> 50 -> 51
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 48. Engine + Charakter-Klassen | v7.0 | 1/2 | In progress | - |
+| 48. Engine + Charakter-Klassen | 2/2 | Complete   | 2026-03-23 | - |
 | 49. Epochen-Themes | v7.0 | 0/TBD | Not started | - |
 | 50. Kampagnen Retro | v7.0 | 0/TBD | Not started | - |
 | 51. Kampagnen Modern | v7.0 | 0/TBD | Not started | - |

@@ -7,8 +7,8 @@
 
 ### Engine
 
-- [ ] **ENG-01**: HackThroughTime.vue Haupt-Komponente mit Epochen-Navigation und CHRONOS-Guide
-- [ ] **ENG-02**: EpochTheme-System: 7 CSS-Themes die per data-Attribut aktiviert werden (--epoch-* Tokens)
+- [x] **ENG-01**: HackThroughTime.vue Haupt-Komponente mit Epochen-Navigation und CHRONOS-Guide
+- [x] **ENG-02**: EpochTheme-System: 7 CSS-Themes die per data-Attribut aktiviert werden (--epoch-* Tokens)
 - [x] **ENG-03**: Epochen-Fortschritt wird persistent gespeichert (welche Epochen abgeschlossen, Gesamt-Score)
 - [x] **ENG-04**: "Museum"-Zwischensequenzen mit historischen Fakten zwischen den Szenen
 - [x] **ENG-05**: "Was haben wir daraus gelernt?" Skill-Check am Ende jeder Epoche (Pool-basiert)
@@ -59,8 +59,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENG-01 | Phase 48 | Pending |
-| ENG-02 | Phase 48 | Pending |
+| ENG-01 | Phase 48 | Complete |
+| ENG-02 | Phase 48 | Complete |
 | ENG-03 | Phase 48 | Complete |
 | ENG-04 | Phase 48 | Complete |
 | ENG-05 | Phase 48 | Complete |
