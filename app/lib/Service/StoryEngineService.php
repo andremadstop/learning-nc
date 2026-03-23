@@ -269,6 +269,19 @@ class StoryEngineService {
         $choice = $this->findChoice($scene, $choiceId);
         $skillCheck = $choice['skill_check'] ?? null;
 
+        // If skill_check exists but has 0 pre-loaded questions (pool_filter didn't match),
+        // treat as no skill check — don't block the player
+        if ($skillCheck !== null) {
+            $preloadedQuestions = $this->fetchFilteredQuestions(
+                $skillCheck['pool_filter'] ?? null,
+                (int)($skillCheck['question_count'] ?? 3),
+                0
+            );
+            if (empty($preloadedQuestions)) {
+                $skillCheck = null;
+            }
+        }
+
         $skillResult = null;
         $nextSceneId = null;
 
@@ -279,11 +292,10 @@ class StoryEngineService {
                 ? ($choice['success_scene'] ?? null)
                 : ($choice['fail_scene'] ?? null);
         } elseif ($skillCheck === null) {
-            // No skill check — go straight to success scene
+            // No skill check (or empty pool) — go straight to success scene
             $nextSceneId = $choice['success_scene'] ?? null;
         }
         // If skillCheck exists but no answer provided yet, stay on current scene
-        // (frontend will present the question and call back with submitSkillAnswer)
 
         // Advance progress if we determined the next scene
         if ($nextSceneId !== null) {
@@ -537,13 +549,20 @@ class StoryEngineService {
            ->from('learning_questions', 'q');
 
         // Apply pool_filter: join on pool and filter by keyword in pool name
+        // Use LOWER() on both sides for case-insensitive matching (MySQL + PostgreSQL compatible)
         if ($filter !== null && $filter !== '') {
-            $keyword = '%' . $this->db->escapeLikeParameter($filter) . '%';
+            $keyword = '%' . $this->db->escapeLikeParameter(strtolower($filter)) . '%';
             $qb->innerJoin('q', 'learning_pools', 'p', $qb->expr()->eq('q.pool_id', 'p.id'))
                ->where(
                    $qb->expr()->orX(
-                       $qb->expr()->like('p.name',        $qb->createNamedParameter($keyword)),
-                       $qb->expr()->like('p.description', $qb->createNamedParameter($keyword))
+                       $qb->expr()->like(
+                           $qb->createFunction('LOWER(`p`.`name`)'),
+                           $qb->createNamedParameter($keyword)
+                       ),
+                       $qb->expr()->like(
+                           $qb->createFunction('LOWER(`p`.`description`)'),
+                           $qb->createNamedParameter($keyword)
+                       )
                    )
                );
         }
@@ -789,18 +808,23 @@ class StoryEngineService {
                 $diffModifier = $this->resolveCharacterDifficultyModifier(
                     $campaign, $choice, $characterClass, $sc['pool_filter'] ?? null
                 );
-                $safeChoice['skill_check'] = [
-                    'pool_filter'         => $sc['pool_filter'],
-                    'question_count'      => (int)($sc['question_count'] ?? 3),
-                    'pass_threshold'      => (int)($sc['pass_threshold'] ?? 2),
-                    'difficulty_modifier' => $diffModifier,
-                    // Pre-load questions so the frontend doesn't need a second round-trip
-                    'questions'           => $this->fetchFilteredQuestions(
-                        $sc['pool_filter'] ?? null,
-                        (int)($sc['question_count'] ?? 3),
-                        $diffModifier
-                    ),
-                ];
+                $preloadedQuestions = $this->fetchFilteredQuestions(
+                    $sc['pool_filter'] ?? null,
+                    (int)($sc['question_count'] ?? 3),
+                    $diffModifier
+                );
+                // If pool_filter matched no questions, treat as no skill check
+                if (empty($preloadedQuestions)) {
+                    $safeChoice['skill_check'] = null;
+                } else {
+                    $safeChoice['skill_check'] = [
+                        'pool_filter'         => $sc['pool_filter'],
+                        'question_count'      => (int)($sc['question_count'] ?? 3),
+                        'pass_threshold'      => (int)($sc['pass_threshold'] ?? 2),
+                        'difficulty_modifier' => $diffModifier,
+                        'questions'           => $preloadedQuestions,
+                    ];
+                }
             } else {
                 $safeChoice['skill_check'] = null;
             }
