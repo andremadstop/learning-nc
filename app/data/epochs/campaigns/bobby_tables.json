@@ -1,0 +1,350 @@
+{
+  "id": "bobby_tables",
+  "epoch_id": "sql_injection",
+  "title": "Bobby Tables -- Das Web erwacht",
+  "description": "2000er. Das Web explodiert -- und mit ihm die Schwachstellen. SQL Injection, Code Red, der MySpace-Wurm Samy: Eine Dekade des schmerzhaften Lernens. OWASP wird gegruendet, um Ordnung ins Chaos zu bringen.",
+  "duration_minutes": 60,
+  "difficulty": "intermediate",
+  "focus_areas": [
+    "security_plus",
+    "cysa_plus"
+  ],
+  "narrator_mode": true,
+  "dynamic_choices": true,
+  "freetext_enabled": true,
+  "narrator_style": "Dot-Com Zeitgeist. PHP-Spaghetti-Code, GeoCities-Aesthetik, die naive Unschuld des fruehen Web -- und das boese Erwachen.",
+  "scenes": [
+    {
+      "id": "s1_bobby_tables",
+      "title": "Little Bobby Tables",
+      "narrative": "Es ist das Jahr 2002. Du bist Web-Entwickler bei einem E-Commerce-Startup. PHP 4, MySQL 3, keine Frameworks, kein ORM -- nur rohe SQL-Queries, zusammengebaut mit String-Konkatenation. Dein Registrierungsformular sieht harmlos aus: 'SELECT * FROM users WHERE username = \\'' + $input + '\\''. Eines Morgens findest du eine seltsame Registrierung in der Datenbank. Der Benutzername: Robert'); DROP TABLE Students;-- Du erinnerst dich an den XKCD-Comic, den ein Kollege dir gezeigt hat. 'Kleiner Bobby Tables, so nennen wir ihn,' sagte Randall Munroe. Das war 2007 -- aber die Schwachstelle existiert seit den Anfaengen des dynamischen Webs. Rain Forest Puppy hat sie bereits 1998 in Phrack dokumentiert. Und dein Code ist genauso verwundbar.",
+      "image": "scene_web_terminal.png",
+      "animation_in": "mission_start",
+      "choices": [
+        {
+          "id": "c1_test_input",
+          "text": "Das Eingabefeld testen -- systematisch SQL-Injection-Payloads ausprobieren",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_code_red",
+          "partial_scene": "s2_code_red",
+          "fail_scene": "s1_fail_datenbank"
+        },
+        {
+          "id": "c1_examine_source",
+          "text": "Den Quellcode untersuchen -- jede SQL-Query auf String-Konkatenation pruefen",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_code_red",
+          "partial_scene": "s2_code_red",
+          "fail_scene": "s1_fail_datenbank"
+        },
+        {
+          "id": "c1_report_dev",
+          "text": "Die Schwachstelle dem Lead-Entwickler melden -- Parameterized Queries vorschlagen",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s2_code_red",
+          "partial_scene": "s2_code_red",
+          "fail_scene": "s1_fail_datenbank"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s1_fail_datenbank",
+      "title": "Datenbank kompromittiert",
+      "narrative": "Waehrend du noch den Code analysierst, meldet sich der Monitoring-Service: Jemand hat bereits eine UNION-based SQL Injection ausgefuehrt und die gesamte User-Tabelle extrahiert. E-Mail-Adressen, Passwoerter im Klartext (ja, Klartext -- es ist 2002), Kreditkartendaten. Dein Chef wird blass. 'Koennen wir die Luecke sofort schliessen?' Die Antwort ist Prepared Statements -- aber erst musst du verstehen, warum String-Konkatenation in SQL-Queries niemals sicher ist.",
+      "image": "scene_web_terminal.png",
+      "choices": [
+        {
+          "id": "c1_fail_fix",
+          "text": "Sofort alle Queries auf Prepared Statements umstellen",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 2,
+            "pass_threshold": 1
+          },
+          "success_scene": "s2_code_red",
+          "partial_scene": "s2_code_red",
+          "fail_scene": "s2_code_red"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_code_red",
+      "title": "Code Red",
+      "narrative": "19. Juli 2001. Der Code Red Wurm schlaegt zu. Er nutzt einen Buffer Overflow in Microsofts IIS-Webserver (genauer: in der ISAPI-Extension fuer Index Server). Keine Datei wird auf die Festplatte geschrieben -- der Wurm lebt komplett im Arbeitsspeicher. In 14 Stunden infiziert er 359.000 Server. Befallene Webseiten zeigen nur noch: 'HACKED BY CHINESE!' -- obwohl die Herkunft unklar bleibt. Am 20. des Monats startet der Wurm eine DDoS-Attacke gegen whitehouse.gov. Das Weisse Haus aendert seine IP-Adresse, um dem Angriff auszuweichen. Die Schaetzungen: 2,6 Milliarden Dollar Schaden. Microsoft veroeffentlicht einen Patch -- den die meisten Admins nicht installieren. Die Lehre: Patch-Management ist kein optionales Feature.",
+      "image": "scene_web_terminal.png",
+      "choices": [
+        {
+          "id": "c2_patch_iis",
+          "text": "Alle IIS-Server patchen -- den Microsoft-Sicherheitspatch sofort ausrollen",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_samy_worm",
+          "partial_scene": "s3_samy_worm",
+          "fail_scene": "s2_fail_outbreak"
+        },
+        {
+          "id": "c2_analyze_payload",
+          "text": "Den Wurm-Payload analysieren -- verstehen, wie er ohne Dateien im Speicher ueberlebt",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_samy_worm",
+          "partial_scene": "s3_samy_worm",
+          "fail_scene": "s2_fail_outbreak"
+        },
+        {
+          "id": "c2_setup_ids",
+          "text": "Ein Netzwerk-IDS aufsetzen -- den Wurm-Traffic erkennen und blockieren",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s3_samy_worm",
+          "partial_scene": "s3_samy_worm",
+          "fail_scene": "s2_fail_outbreak"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s2_fail_outbreak",
+      "title": "Ausbruch nicht eingedaemmt",
+      "narrative": "Der Wurm breitet sich schneller aus als du patchen kannst. Dein IIS-Server zeigt bereits 'HACKED BY CHINESE!'. Aber ein Kollege hat gute Neuigkeiten: Code Red nutzt immer dieselbe HTTP-Anfrage. Ein einfacher Snort-Rule kann ihn erkennen: 'alert tcp any any -> any 80 (content:\"/default.ida?\"; msg:\"Code Red Worm\";)'. Das ist die Geburtsstunde des signaturbasierten Intrusion Detection.",
+      "image": "scene_web_terminal.png",
+      "choices": [
+        {
+          "id": "c2_fail_snort",
+          "text": "Die Snort-Regel deployen und gleichzeitig patchen",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 2,
+            "pass_threshold": 1
+          },
+          "success_scene": "s3_samy_worm",
+          "partial_scene": "s3_samy_worm",
+          "fail_scene": "s3_samy_worm"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s3_samy_worm",
+      "title": "Samy is my Hero",
+      "narrative": "4. Oktober 2005. Samy Kamkar, 19 Jahre alt, ist gelangweilt. Er hat nur 73 Freunde auf MySpace. Also schreibt er einen XSS-Wurm -- ein JavaScript, das sich ueber MySpace-Profile verbreitet. Der Wurm umgeht MySpaces Sicherheitsfilter mit einem genialen Trick: Er verteilt das Wort 'javascript' auf mehrere CSS-Attribute, die der Browser wieder zusammensetzt. Jeder, der ein infiziertes Profil besucht, wird automatisch Samys Freund und bekommt den Text 'but most of all, samy is my hero' ins Profil geschrieben. In 20 Stunden hat Samy eine Million Freunde -- der schnellste sich verbreitende Virus aller Zeiten. MySpace muss offline gehen. Samy wird vom US Secret Service verhaftet. Er bekommt 3 Jahre Bewaehrung und darf 720 Stunden keinen Computer benutzen. Heute ist er ein respektierter Security-Researcher.",
+      "image": "scene_web_terminal.png",
+      "choices": [
+        {
+          "id": "c3_reverse_engineer",
+          "text": "Den Samy-Wurm reverse-engineeren -- verstehen, wie XSS-Filter umgangen werden",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_owasp",
+          "partial_scene": "s4_owasp",
+          "fail_scene": "s3_fail_xss"
+        },
+        {
+          "id": "c3_build_waf",
+          "text": "Eine WAF-Regel bauen -- XSS-Payloads erkennen und blockieren",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_owasp",
+          "partial_scene": "s4_owasp",
+          "fail_scene": "s3_fail_xss"
+        },
+        {
+          "id": "c3_coordinate_myspace",
+          "text": "Mit MySpace koordinieren -- den Wurm gemeinsam eindaemmen und User informieren",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "s4_owasp",
+          "partial_scene": "s4_owasp",
+          "fail_scene": "s3_fail_xss"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s3_fail_xss",
+      "title": "XSS ueberall",
+      "narrative": "Der XSS-Vektor ist komplexer als gedacht. Samys Trick mit verteiltem JavaScript ueber CSS-Properties zeigt ein fundamentales Problem: Browser interpretieren Inhalte grosszuegig. Input-Validierung auf der Serverseite reicht nicht -- Output-Encoding ist genauso wichtig. Content Security Policy (CSP) existiert noch nicht (das kommt erst 2012). Die einzige Loesung: Jeden Output escapen. Keine Ausnahme.",
+      "image": "scene_web_terminal.png",
+      "choices": [
+        {
+          "id": "c3_fail_escape",
+          "text": "Output-Encoding fuer alle dynamischen Inhalte implementieren",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 2,
+            "pass_threshold": 1
+          },
+          "success_scene": "s4_owasp",
+          "partial_scene": "s4_owasp",
+          "fail_scene": "s4_owasp"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "s4_owasp",
+      "title": "OWASP Top 10",
+      "narrative": "2004. Das Chaos des fruehen Web hat eine Organisation hervorgebracht: Das Open Web Application Security Project (OWASP), gegruendet 2001 von Mark Curphey. Die erste OWASP Top 10 Liste wird veroeffentlicht -- eine Rangliste der kritischsten Web-Schwachstellen. Auf Platz 1: Unvalidated Input. SQL Injection, XSS, CSRF -- alles dabei. Die Liste wird zum globalen Standard. Unternehmen, Behoerden und Entwickler weltweit orientieren sich daran. Du stehst vor der Aufgabe, die Erkenntnisse dieser Dekade in konkrete Massnahmen umzusetzen. SQL Injection (Bobby Tables), Buffer Overflows (Code Red), XSS (Samy) -- die OWASP Top 10 fassen alles zusammen. Deine Web-Applikation muss sicher werden. Wo faengst du an?",
+      "image": "scene_web_terminal.png",
+      "choices": [
+        {
+          "id": "c4_input_validation",
+          "text": "Input-Validierung implementieren -- Prepared Statements, Whitelisting, Encoding",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c4_deploy_waf",
+          "text": "Eine Web Application Firewall deployen -- ModSecurity mit OWASP Core Rule Set",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        },
+        {
+          "id": "c4_secure_training",
+          "text": "Secure-Coding-Training fuer das gesamte Entwicklerteam aufsetzen",
+          "icon": "~",
+          "skill_check": {
+            "pool_filter": "epoch:sql_injection",
+            "question_count": 3,
+            "pass_threshold": 2
+          },
+          "success_scene": "epilog_success",
+          "partial_scene": "epilog_partial",
+          "fail_scene": "epilog_fail"
+        }
+      ],
+      "simulation": null
+    },
+    {
+      "id": "epilog_success",
+      "title": "Web-Security-Pionier",
+      "narrative": "Du hast eine der wildesten Dekaden der IT-Geschichte durchlebt und ueberlebt. Von Bobby Tables' SQL Injection ueber Code Reds Rampage bis zu Samys Million Freunde -- das Web der 2000er war ein einziges Sicherheitsloch. Aber aus dem Chaos entstand Ordnung: OWASP, Prepared Statements, WAFs, Content Security Policy. Die Lehren dieser Aera sind ins Fundament moderner Web-Entwicklung eingeflossen. Jedes Mal wenn ein Entwickler $stmt->prepare() statt mysql_query($input) schreibt, lebt Bobby Tables' Erbe weiter. Der Heartland-Breach 2009 -- 130 Millionen Kreditkarten gestohlen durch SQL Injection -- zeigt, dass die Lektionen noch nicht ueberall angekommen sind. Aber der Weg ist klar: Vertraue keinem Input. Escape jeden Output. Und lies die OWASP Top 10.",
+      "image": "scene_victory.png",
+      "animation_in": "campaign_complete",
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "success"
+    },
+    {
+      "id": "epilog_partial",
+      "title": "Lektionen gelernt",
+      "narrative": "Das Web der 2000er hat dir einige Narben hinterlassen. SQL Injection, XSS, Buffer Overflows -- die Schwachstellen sind vielfaeltig und die Angriffe schnell. Du hast die wichtigsten Konzepte verstanden: Prepared Statements gegen SQL Injection, Output-Encoding gegen XSS, Patch-Management gegen bekannte Exploits. Aber die Umsetzung ist lueckenhaft. Die OWASP Top 10 liegen auf deinem Schreibtisch -- ein guter Anfang. Die naechste Epoche bringt Staatshacker und Zero-Days. Die Spielregeln aendern sich fundamental.",
+      "image": "scene_partial_victory.png",
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "partial"
+    },
+    {
+      "id": "epilog_fail",
+      "title": "Dot-Com-Kater",
+      "narrative": "Die Geschwindigkeit der Angriffe hat dich ueberrollt. Code Red in 14 Stunden, Samy in 20 Stunden -- das Web bewegt sich schneller als jede Verteidigung. Aber du nimmst die schmerzhafteste aller Lektionen mit: Bobby Tables war vermeidbar. Jede einzelne SQL Injection in der Geschichte war vermeidbar -- durch Prepared Statements. Die OWASP Top 10 fassen zusammen, was du auf die harte Tour gelernt hast. Naechste Epoche: Stuxnet zeigt, dass Cyberangriffe auch physische Infrastruktur zerstoeren koennen.",
+      "image": "scene_partial_victory.png",
+      "choices": [],
+      "simulation": null,
+      "is_epilog": true,
+      "epilog_type": "fail"
+    }
+  ],
+  "epilog": {
+    "success": {
+      "narrative": "Die wildeste Dekade der Web-Geschichte gemeistert. Bobby Tables, Code Red, Samy -- aus dem Chaos entstand OWASP, Prepared Statements und moderne Web-Security.",
+      "image": "scene_victory.png",
+      "animation": "campaign_complete"
+    },
+    "partial": {
+      "narrative": "Die wichtigsten Konzepte verstanden, die Umsetzung noch lueckenhaft. OWASP Top 10 liegen bereit. Die naechste Epoche bringt Staatshacker.",
+      "image": "scene_partial_victory.png"
+    },
+    "fail": {
+      "narrative": "Die Geschwindigkeit der Angriffe war ueberwaeltigend. Aber Bobby Tables war vermeidbar -- durch Prepared Statements. Die schmerzhafteste Lektion ist die wertvollste.",
+      "image": "scene_partial_victory.png"
+    }
+  },
+  "historical_facts": [
+    {
+      "year": 1998,
+      "title": "SQL Injection entdeckt",
+      "description": "Rain Forest Puppy veroeffentlicht den ersten dokumentierten SQL-Injection-Angriff in Phrack Magazine. Die Technik existiert seit Anbeginn des dynamischen Webs -- aber erst jetzt bekommt sie einen Namen."
+    },
+    {
+      "year": 2001,
+      "title": "Code Red Wurm",
+      "description": "Der Code Red Wurm infiziert 359.000 IIS-Server in 14 Stunden, defaced Webseiten mit 'HACKED BY CHINESE!' und startet DDoS gegen whitehouse.gov. Geschaetzter Schaden: 2,6 Milliarden Dollar."
+    },
+    {
+      "year": 2001,
+      "title": "OWASP gegruendet",
+      "description": "Mark Curphey gruendet das Open Web Application Security Project. Die OWASP Top 10 (erste Ausgabe 2004) werden zum globalen Standard fuer Web-Sicherheit."
+    },
+    {
+      "year": 2005,
+      "title": "Samy -- der schnellste Wurm",
+      "description": "Samy Kamkar erstellt den schnellsten sich verbreitenden Virus aller Zeiten: Ein XSS-Wurm auf MySpace, der in 20 Stunden eine Million Profile infiziert. 'But most of all, samy is my hero.'"
+    },
+    {
+      "year": 2007,
+      "title": "XKCD Bobby Tables",
+      "description": "Randall Munroes XKCD-Comic #327 macht SQL Injection zum Meme: 'Robert\\'); DROP TABLE Students;--' -- 'Little Bobby Tables' wird zum Synonym fuer mangelnde Input-Validierung."
+    }
+  ]
+}
