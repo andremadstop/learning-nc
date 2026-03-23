@@ -23,12 +23,20 @@
         {{ t('learning', 'Zeitreise') }}
       </button>
       <button
+        :class="['main-nav-btn', { active: mainView === 'werkzeuge' }]"
+        role="tab"
+        :aria-selected="mainView === 'werkzeuge' ? 'true' : 'false'"
+        @click="switchMainView('werkzeuge')"
+      >
+        {{ t('learning', 'Werkzeuge') }}
+      </button>
+      <button
         :class="['main-nav-btn', { active: mainView === 'settings' }]"
         role="tab"
         :aria-selected="mainView === 'settings' ? 'true' : 'false'"
         @click="switchMainView('settings')"
       >
-        {{ t('learning', 'Settings') }}
+        {{ t('learning', 'Einstellungen') }}
       </button>
     </div>
 
@@ -226,6 +234,11 @@
       />
     </template>
 
+    <!-- ==================== WERKZEUGE VIEW ==================== -->
+    <template v-if="mainView === 'werkzeuge'">
+      <SubnetCalculator />
+    </template>
+
     <VirtuProf
       v-if="appInitialized"
       :enabled="virtuProfEnabled"
@@ -258,6 +271,7 @@ import ArenaSelector from './components/ArenaSelector.vue';
 import VirtuProf from './components/VirtuProf.vue';
 import AbenteuerMode from './components/AbenteuerMode.vue';
 import HackThroughTime from './components/HackThroughTime.vue';
+import SubnetCalculator from './components/SubnetCalculator.vue';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 
@@ -286,6 +300,7 @@ export default {
     VirtuProf,
     AbenteuerMode,
     HackThroughTime,
+    SubnetCalculator,
   },
   data() {
     return {
