@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v6.2
 milestone_name: Visual Identity + Charakter-Cast
-status: in-progress
-stopped_at: Completed 47-01-PLAN.md
-last_updated: "2026-03-23T05:49:00Z"
+status: executing
+stopped_at: Completed 47-02-PLAN.md
+last_updated: "2026-03-23T06:59:33.024Z"
 last_activity: 2026-03-23 — Completed 47-01 CampaignIntro + NPC assignments
 progress:
   total_phases: 15
-  completed_phases: 14
+  completed_phases: 15
   total_plans: 28
-  completed_plans: 27
+  completed_plans: 28
   percent: 100
 ---
 
@@ -56,6 +56,7 @@ Progress: [██████████] 100%
 | Phase 46 P02 | 2min | 1 tasks | 1 files |
 | Phase 46 P01 | 2min | 2 tasks | 2 files |
 | Phase 47 P01 | 4min | 2 tasks | 7 files |
+| Phase 47 P02 | 3min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,7 @@ Recent decisions affecting current work:
 - [Phase 46]: Emotion labels mapped to German inline (no i18n dep for internal labels)
 - [Phase 47]: workplace_npcs field name to avoid collision with existing story npcs objects
 - [Phase 47]: Actual characters.js IDs (sven_berater etc.) used in campaign data for getCharacter() compatibility
+- [Phase 47]: Used workplace_npcs field for NPC resolution, speakerName prop for display names, flexible NPC matching via role_in_story and character_id
 
 ### Existing Architecture
 
@@ -101,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T05:49:00Z
-Stopped at: Completed 47-01-PLAN.md
+Last session: 2026-03-23T06:59:33.021Z
+Stopped at: Completed 47-02-PLAN.md
 Resume file: None

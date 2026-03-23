@@ -178,7 +178,7 @@ Plans:
 - [x] **Phase 44: Design-Token-System + Narrative-Skin** - CSS-Token-Layer, Dark/Light, Motion-Utilities, Paper & Circuits Skin (completed 2026-03-22)
 - [x] **Phase 45: Charakter-System** - 13 Figuren definieren, CharacterAvatar.vue Komponente (completed 2026-03-23)
 - [x] **Phase 46: UI-Komponenten** - CampaignCard, DialogueStage, ModeIdentityBanner (completed 2026-03-23)
-- [ ] **Phase 47: Kampagnen-Integration** - Intros, NPC-Portraits, Workplace-Figuren in bestehende Kampagnen
+- [x] **Phase 47: Kampagnen-Integration** - Intros, NPC-Portraits, Workplace-Figuren in bestehende Kampagnen (completed 2026-03-23)
 
 ## Phase Details
 
@@ -251,4 +251,4 @@ Phases execute in numeric order: 44 -> 45 -> 46 -> 47
 | 44. Design-Token-System + Narrative-Skin | 2/2 | Complete    | 2026-03-22 | - |
 | 45. Charakter-System | v6.2 | Complete    | 2026-03-23 | 2026-03-22 |
 | 46. UI-Komponenten | 2/2 | Complete    | 2026-03-23 | - |
-| 47. Kampagnen-Integration | v6.2 | 1/2 | In Progress | - |
+| 47. Kampagnen-Integration | 2/2 | Complete   | 2026-03-23 | - |
