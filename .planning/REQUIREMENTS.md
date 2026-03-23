@@ -28,8 +28,8 @@
 
 ### UI-Komponenten
 
-- [ ] **UI-01**: CampaignCard.vue (Dark-Gradient, Charakter-Portrait, Difficulty-Badge)
-- [ ] **UI-02**: DialogueStage.vue (Speaker-Bar, Portrait links, Sprechfeld rechts, Emotions-Tags)
+- [x] **UI-01**: CampaignCard.vue (Dark-Gradient, Charakter-Portrait, Difficulty-Badge)
+- [x] **UI-02**: DialogueStage.vue (Speaker-Bar, Portrait links, Sprechfeld rechts, Emotions-Tags)
 - [x] **UI-03**: ModeIdentityBanner.vue (Modus + Mentor + Ziel pro Lernmodus)
 
 ## Future Requirements
@@ -66,8 +66,8 @@
 | KI-02 | Phase 47 | Pending |
 | KI-03 | Phase 47 | Pending |
 | KI-04 | Phase 47 | Pending |
-| UI-01 | Phase 46 | Pending |
-| UI-02 | Phase 46 | Pending |
+| UI-01 | Phase 46 | Complete |
+| UI-02 | Phase 46 | Complete |
 | UI-03 | Phase 46 | Complete |
 
 **Coverage:**
