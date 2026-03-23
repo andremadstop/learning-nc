@@ -572,6 +572,7 @@ export default {
 			// Skill check
 			currentSkillCheck: null,
 			currentSkillQuestion: null,
+			skillCheckQuestions: [],
 			skillCheckIndex: 0,
 			skillCheckTotal: 0,
 			skillAnswered: false,
@@ -846,17 +847,18 @@ export default {
 			this.skillCheckTotal = choice.skill_check?.question_count || 1
 
 			try {
-				const url = generateUrl('/apps/learning/api/story/skill-question')
-				const resp = await axios.post(url, {
-					campaignId: this.selectedCampaign.id,
-					sceneId: this.currentScene.id,
-					choiceId: choice.id,
-					characterClass: this.selectedCharacter.id,
-					courseId: this.courseId || null,
-				})
-				this.currentSkillQuestion = resp.data
+				const cid = this.selectedCampaign.id
+				const sid = this.currentScene.id
+				const chid = choice.id
+				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/scene/${sid}/questions/${chid}`)
+				const resp = await axios.get(url)
+				// Backend returns array of questions — take first for single skill check
+				const questions = Array.isArray(resp.data) ? resp.data : [resp.data]
+				this.skillCheckQuestions = questions
+				this.currentSkillQuestion = questions[0] || this.makeStubQuestion()
 			} catch (e) {
 				// Stub question when backend not available
+				this.skillCheckQuestions = []
 				this.currentSkillQuestion = this.makeStubQuestion()
 			}
 		},
@@ -892,8 +894,8 @@ export default {
 			setTimeout(() => { this.skillCheckNpcState = 'idle' }, 2000)
 
 			try {
-				await axios.post(generateUrl('/apps/learning/api/story/answer'), {
-					campaignId: this.selectedCampaign.id,
+				const cid = this.selectedCampaign.id
+				await axios.post(generateUrl(`/apps/learning/api/story/campaigns/${cid}/answer`), {
 					sceneId: this.currentScene ? this.currentScene.id : null,
 					questionId: this.currentSkillQuestion.id,
 					answerId: answer.id,
@@ -918,18 +920,12 @@ export default {
 			}, 2000)
 		},
 
-		async fetchNextSkillQuestion() {
+		fetchNextSkillQuestion() {
 			this.selectedAnswer = null
-			try {
-				const url = generateUrl('/apps/learning/api/story/skill-question-next')
-				const resp = await axios.post(url, {
-					campaignId: this.selectedCampaign.id,
-					sceneId: this.currentScene ? this.currentScene.id : null,
-					questionIndex: this.skillCheckIndex,
-					characterClass: this.selectedCharacter.id,
-				})
-				this.currentSkillQuestion = resp.data
-			} catch (e) {
+			// Use pre-loaded questions array from initial fetch
+			if (this.skillCheckQuestions && this.skillCheckQuestions[this.skillCheckIndex]) {
+				this.currentSkillQuestion = this.skillCheckQuestions[this.skillCheckIndex]
+			} else {
 				this.currentSkillQuestion = this.makeStubQuestion()
 			}
 		},
