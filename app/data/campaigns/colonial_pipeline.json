@@ -1,7 +1,7 @@
 {
   "campaign_id": "colonial_pipeline",
-  "title": "Colonial Pipeline \u2014 Der Blackout",
-  "description": "Mai 2021. DarkSide-Ransomware legt die groesste Treibstoff-Pipeline der USA lahm. 5.500 Meilen, 45% der Ostkuesten-Versorgung. Der CEO will zahlen \u2014 4,4 Millionen Dollar in Bitcoin. Die Uhr tickt, Tankstellen laufen leer, und jede Minute kostet Millionen.",
+  "title": "Colonial Pipeline — Der Blackout",
+  "description": "Mai 2021. DarkSide-Ransomware legt die groesste Treibstoff-Pipeline der USA lahm. 5.500 Meilen, 45% der Ostkuesten-Versorgung. Der CEO will zahlen — 4,4 Millionen Dollar in Bitcoin. Die Uhr tickt, Tankstellen laufen leer, und jede Minute kostet Millionen.",
   "duration_minutes": 70,
   "difficulty": "expert",
   "focus_areas": [
@@ -20,7 +20,7 @@
   "characters": {
     "architect": {
       "name": "Alex \"The Architect\" Neumann",
-      "avatar": "\ud83d\udc68\u200d\ud83d\udcbb",
+      "avatar": "👨‍💻",
       "skill_bonus_pools": [
         "routing",
         "vlan",
@@ -32,11 +32,11 @@
         "incident_response",
         "forensics"
       ],
-      "portrait_emoji": "\ud83c\udfd7\ufe0f"
+      "portrait_emoji": "🏗️"
     },
     "security": {
       "name": "Sarah \"Firewall\" Okonkwo",
-      "avatar": "\ud83d\udc69\u200d\ud83d\udcbb",
+      "avatar": "👩‍💻",
       "skill_bonus_pools": [
         "security",
         "incident_response",
@@ -47,11 +47,11 @@
         "routing",
         "vlan"
       ],
-      "portrait_emoji": "\ud83d\udee1\ufe0f"
+      "portrait_emoji": "🛡️"
     },
     "sysadmin": {
-      "name": "Kai \"Root\" Lindstr\u00f6m",
-      "avatar": "\ud83e\uddd4",
+      "name": "Kai \"Root\" Lindström",
+      "avatar": "🧔",
       "skill_bonus_pools": [
         "linux",
         "dns",
@@ -63,11 +63,11 @@
         "wireless",
         "wlan"
       ],
-      "portrait_emoji": "\ud83d\udda5\ufe0f"
+      "portrait_emoji": "🖥️"
     },
     "helpdesk": {
       "name": "Mia \"Helpdesk\" Torres",
-      "avatar": "\ud83d\udc69\u200d\ud83c\udfa7",
+      "avatar": "👩‍🎧",
       "skill_bonus_pools": [
         "troubleshooting",
         "hardware",
@@ -79,48 +79,48 @@
         "forensics",
         "cysa_plus"
       ],
-      "portrait_emoji": "\ud83c\udfa7"
+      "portrait_emoji": "🎧"
     }
   },
   "npcs": {
     "ceo_wilson": {
       "name": "James Wilson",
       "role": "CEO",
-      "avatar": "\ud83d\udc54"
+      "avatar": "👔"
     },
     "agent_fbi": {
       "name": "Special Agent Rivera",
       "role": "FBI Cyber Division",
-      "avatar": "\ud83c\udfdb\ufe0f"
+      "avatar": "🏛️"
     },
     "ops_manager": {
       "name": "Diana Kowalski",
       "role": "Pipeline Operations Manager",
-      "avatar": "\ud83c\udfed"
+      "avatar": "🏭"
     },
     "ransom_negotiator": {
       "name": "Alex \"Ghost\" Petrov",
       "role": "External Ransom Negotiator",
-      "avatar": "\ud83d\udd76\ufe0f"
+      "avatar": "🕶️"
     }
   },
   "scenes": [
     {
       "id": "s1_ransomware_alarm",
       "title": "Ransomware-Alarm",
-      "narrative": "7. Mai 2021, 05:30 Uhr. Die Bildschirme im Network Operations Center leuchten rot. Auf jedem kompromittierten System der gleiche Text: 'We are DarkSide. We have downloaded more than 100 GB of your data. If you do not pay, we will publish it.' Der Erpresserbrief ist professionell \u2014 mit Support-Portal und FAQ. 100 Gigabyte Unternehmensdaten angeblich exfiltriert. Die IT-Systeme der groessten Treibstoff-Pipeline der USA sind verschluesselt. CEO James Wilson ruft an, seine Stimme zittert: 'Was heisst Ransomware? Koennen wir nicht einfach zahlen und das Ding ist erledigt?' Im Hintergrund laeuft die Pipeline noch \u2014 die OT-Systeme scheinen nicht betroffen. Aber wie lange noch?",
+      "narrative": "7. Mai 2021, 05:30 Uhr. Die Bildschirme im Network Operations Center leuchten rot. Auf jedem kompromittierten System der gleiche Text: 'We are DarkSide. We have downloaded more than 100 GB of your data. If you do not pay, we will publish it.' Der Erpresserbrief ist professionell — mit Support-Portal und FAQ. 100 Gigabyte Unternehmensdaten angeblich exfiltriert. Die IT-Systeme der groessten Treibstoff-Pipeline der USA sind verschluesselt. CEO James Wilson ruft an, seine Stimme zittert: 'Was heisst Ransomware? Koennen wir nicht einfach zahlen und das Ding ist erledigt?' Im Hintergrund laeuft die Pipeline noch — die OT-Systeme scheinen nicht betroffen. Aber wie lange noch?",
       "image": "scene_siem_dashboard.png",
       "animation_in": "mission_start",
       "npc_dialog": {
         "speaker": "ceo_wilson",
-        "text": "Ich verstehe das nicht. Ransomware? Was wollen die? Vier Millionen Dollar?! Zahlen wir einfach und machen weiter! Wir verlieren jede Stunde Geld \u2014 die Aktionaere werden mich kreuzigen!",
+        "text": "Ich verstehe das nicht. Ransomware? Was wollen die? Vier Millionen Dollar?! Zahlen wir einfach und machen weiter! Wir verlieren jede Stunde Geld — die Aktionaere werden mich kreuzigen!",
         "portrait": "npc_ceo"
       },
       "choices": [
         {
           "id": "c1_isolate_ot",
-          "text": "OT-Netzwerk sofort isolieren \u2014 IT/OT-Grenze absichern bevor Ransomware ueberspringt",
-          "icon": "\ud83d\udeab",
+          "text": "OT-Netzwerk sofort isolieren — IT/OT-Grenze absichern bevor Ransomware ueberspringt",
+          "icon": "🚫",
           "skill_check": {
             "pool_filter": "incident_response",
             "question_count": 3,
@@ -146,8 +146,8 @@
         },
         {
           "id": "c1_forensics",
-          "text": "Forensische Sicherung der befallenen Systeme \u2014 Beweise sichern bevor etwas ueberschrieben wird",
-          "icon": "\ud83d\udd0d",
+          "text": "Forensische Sicherung der befallenen Systeme — Beweise sichern bevor etwas ueberschrieben wird",
+          "icon": "🔍",
           "skill_check": {
             "pool_filter": "forensics",
             "question_count": 3,
@@ -173,8 +173,8 @@
         },
         {
           "id": "c1_calm_ceo",
-          "text": "CEO beruhigen und Incident-Response-Plan aktivieren \u2014 strukturiert vorgehen",
-          "icon": "\ud83d\udccb",
+          "text": "CEO beruhigen und Incident-Response-Plan aktivieren — strukturiert vorgehen",
+          "icon": "📋",
           "skill_check": {
             "pool_filter": "security",
             "question_count": 3,
@@ -204,18 +204,18 @@
     {
       "id": "s1_fail_delayed",
       "title": "CEO verhandelt eigenmaechtigt",
-      "narrative": "Waehrend das Team noch analysiert, hat CEO Wilson eigenmaechtigt ueber das DarkSide-Support-Portal Kontakt aufgenommen. 'Ich habe denen geschrieben, dass wir zahlen wollen.' FBI Special Agent Rivera ist ausser sich: 'Das macht die Verhandlungsposition deutlich schlechter. Die wissen jetzt, dass Sie zahlen werden.' Die Situation ist eskaliert \u2014 jetzt muss aufgeholt werden.",
+      "narrative": "Waehrend das Team noch analysiert, hat CEO Wilson eigenmaechtigt ueber das DarkSide-Support-Portal Kontakt aufgenommen. 'Ich habe denen geschrieben, dass wir zahlen wollen.' FBI Special Agent Rivera ist ausser sich: 'Das macht die Verhandlungsposition deutlich schlechter. Die wissen jetzt, dass Sie zahlen werden.' Die Situation ist eskaliert — jetzt muss aufgeholt werden.",
       "image": "scene_siem_dashboard.png",
       "npc_dialog": {
         "speaker": "agent_fbi",
-        "text": "Mr. Wilson hat die Angreifer kontaktiert? Das ist das Schlimmste was passieren konnte. Jetzt wissen die, dass er unter Druck steht. Der Preis geht nicht runter \u2014 er geht hoch. Wir muessen das sofort uebernehmen.",
+        "text": "Mr. Wilson hat die Angreifer kontaktiert? Das ist das Schlimmste was passieren konnte. Jetzt wissen die, dass er unter Druck steht. Der Preis geht nicht runter — er geht hoch. Wir muessen das sofort uebernehmen.",
         "portrait": "npc_fbi"
       },
       "choices": [
         {
           "id": "c1_fail_recover",
           "text": "Incident Response sofort aktivieren und FBI die Verhandlung ueberlassen",
-          "icon": "\u26a1",
+          "icon": "⚡",
           "skill_check": {
             "pool_filter": "incident_response",
             "question_count": 2,
@@ -232,18 +232,18 @@
     {
       "id": "s2_ot_dilemma",
       "title": "Das OT-Dilemma",
-      "narrative": "Die grosse Frage steht im Raum: Die Operational Technology \u2014 die Systeme die physisch die Pipeline steuern \u2014 sind nicht direkt von der Ransomware betroffen. Aber die IT/OT-Grenze ist unklar. Historisch gewachsen, schlecht dokumentiert, moeglicherweise durchlaessig. Die Pipeline transportiert 2,5 Millionen Barrel Treibstoff pro Tag. 45% der Ostkueste haengen davon ab. Diana Kowalski, die Operations Managerin, erklaert: 'Wir koennen die Pipeline sicher fahren, aber nur wenn die SCADA-Systeme sauber sind. Und das kann ich nicht garantieren.' CEO Wilson tobt: 'Wir koennen nicht abschalten! Das kostet uns Millionen pro Stunde! Die Tankstellen laufen leer!' Draussen bilden sich bereits die ersten Schlangen an Tankstellen.",
+      "narrative": "Die grosse Frage steht im Raum: Die Operational Technology — die Systeme die physisch die Pipeline steuern — sind nicht direkt von der Ransomware betroffen. Aber die IT/OT-Grenze ist unklar. Historisch gewachsen, schlecht dokumentiert, moeglicherweise durchlaessig. Die Pipeline transportiert 2,5 Millionen Barrel Treibstoff pro Tag. 45% der Ostkueste haengen davon ab. Diana Kowalski, die Operations Managerin, erklaert: 'Wir koennen die Pipeline sicher fahren, aber nur wenn die SCADA-Systeme sauber sind. Und das kann ich nicht garantieren.' CEO Wilson tobt: 'Wir koennen nicht abschalten! Das kostet uns Millionen pro Stunde! Die Tankstellen laufen leer!' Draussen bilden sich bereits die ersten Schlangen an Tankstellen.",
       "image": "scene_firewall_config.png",
       "npc_dialog": {
         "speaker": "ops_manager",
-        "text": "Die Pipeline-Steuerung laeuft ueber SCADA und PLCs. Die sind auf einem separaten Netzwerk \u2014 theoretisch. Aber wir haben Historian-Server die beide Seiten verbinden. Wenn die Ransomware da rueberkommt, verlieren wir die Kontrolle ueber 5.500 Meilen Pipeline.",
+        "text": "Die Pipeline-Steuerung laeuft ueber SCADA und PLCs. Die sind auf einem separaten Netzwerk — theoretisch. Aber wir haben Historian-Server die beide Seiten verbinden. Wenn die Ransomware da rueberkommt, verlieren wir die Kontrolle ueber 5.500 Meilen Pipeline.",
         "portrait": "npc_ops"
       },
       "choices": [
         {
           "id": "c2_stop_pipeline",
-          "text": "Pipeline sofort stoppen \u2014 Sicherheit vor Profit, keine Kompromisse bei kritischer Infrastruktur",
-          "icon": "\u26d4",
+          "text": "Pipeline sofort stoppen — Sicherheit vor Profit, keine Kompromisse bei kritischer Infrastruktur",
+          "icon": "⛔",
           "skill_check": {
             "pool_filter": "incident_response",
             "question_count": 4,
@@ -269,8 +269,8 @@
         },
         {
           "id": "c2_monitor",
-          "text": "OT-Monitoring verdoppeln und Pipeline weiterlaufen lassen \u2014 engmaschige Ueberwachung",
-          "icon": "\ud83d\udcca",
+          "text": "OT-Monitoring verdoppeln und Pipeline weiterlaufen lassen — engmaschige Ueberwachung",
+          "icon": "📊",
           "skill_check": {
             "pool_filter": "security",
             "question_count": 3,
@@ -296,8 +296,8 @@
         },
         {
           "id": "c2_verify_boundary",
-          "text": "IT/OT-Segmentierung pruefen \u2014 nur stoppen wenn Breach in OT nachweisbar",
-          "icon": "\ud83d\udd0d",
+          "text": "IT/OT-Segmentierung pruefen — nur stoppen wenn Breach in OT nachweisbar",
+          "icon": "🔍",
           "skill_check": {
             "pool_filter": "forensics",
             "question_count": 4,
@@ -331,18 +331,18 @@
     {
       "id": "s3_ransom_decision",
       "title": "Die Loesegeld-Entscheidung",
-      "narrative": "Tag 3. Die Pipeline steht. Benzin wird knapp an der gesamten US-Ostkueste. Panikkaeufe, Hamsterer fuellen Plastiktueten mit Benzin. Der Benzinpreis steigt auf den hoechsten Stand seit 2014. CEO Wilson hat das Board zusammengerufen: 'Wir muessen zahlen. 4,4 Millionen Dollar. In Bitcoin.' FBI Special Agent Rivera raet ab: 'DarkSide ist eine Ransomware-as-a-Service-Gruppe. Zahlung finanziert weitere Angriffe.' Aber Alex 'Ghost' Petrov, der externe Ransom-Negotiator, hat recherchiert: 'DarkSide hat bisher bei Zahlung immer den Entschluesselungs-Key geliefert. Die haben einen Ruf zu verlieren \u2014 ihr Geschaeftsmodell basiert auf Verlaesslichkeit.' Das Board ist gespalten. Die Entscheidung liegt bei dir.",
+      "narrative": "Tag 3. Die Pipeline steht. Benzin wird knapp an der gesamten US-Ostkueste. Panikkaeufe, Hamsterer fuellen Plastiktueten mit Benzin. Der Benzinpreis steigt auf den hoechsten Stand seit 2014. CEO Wilson hat das Board zusammengerufen: 'Wir muessen zahlen. 4,4 Millionen Dollar. In Bitcoin.' FBI Special Agent Rivera raet ab: 'DarkSide ist eine Ransomware-as-a-Service-Gruppe. Zahlung finanziert weitere Angriffe.' Aber Alex 'Ghost' Petrov, der externe Ransom-Negotiator, hat recherchiert: 'DarkSide hat bisher bei Zahlung immer den Entschluesselungs-Key geliefert. Die haben einen Ruf zu verlieren — ihr Geschaeftsmodell basiert auf Verlaesslichkeit.' Das Board ist gespalten. Die Entscheidung liegt bei dir.",
       "image": "scene_forensics_terminal.png",
       "npc_dialog": {
         "speaker": "ransom_negotiator",
-        "text": "Ich habe mit DarkSide verhandelt. Der Preis steht: 75 Bitcoin, etwa 4,4 Millionen Dollar. Die liefern den Key innerhalb von Stunden nach Zahlung. In 90% der Faelle funktioniert die Entschluesselung. Aber der Key ist langsam \u2014 die Recovery dauert trotzdem Wochen.",
+        "text": "Ich habe mit DarkSide verhandelt. Der Preis steht: 75 Bitcoin, etwa 4,4 Millionen Dollar. Die liefern den Key innerhalb von Stunden nach Zahlung. In 90% der Faelle funktioniert die Entschluesselung. Aber der Key ist langsam — die Recovery dauert trotzdem Wochen.",
         "portrait": "npc_negotiator"
       },
       "choices": [
         {
           "id": "c3_refuse_pay",
-          "text": "Zahlung verweigern \u2014 Backup-Recovery starten, wir finanzieren keine Kriminellen",
-          "icon": "\ud83d\udeab",
+          "text": "Zahlung verweigern — Backup-Recovery starten, wir finanzieren keine Kriminellen",
+          "icon": "🚫",
           "skill_check": {
             "pool_filter": "incident_response",
             "question_count": 4,
@@ -368,8 +368,8 @@
         },
         {
           "id": "c3_pay_parallel",
-          "text": "Zahlung autorisieren aber FBI parallel ermitteln lassen \u2014 Pragmatismus trifft Strafverfolgung",
-          "icon": "\ud83d\udcb0",
+          "text": "Zahlung autorisieren aber FBI parallel ermitteln lassen — Pragmatismus trifft Strafverfolgung",
+          "icon": "💰",
           "skill_check": {
             "pool_filter": "security",
             "question_count": 3,
@@ -395,8 +395,8 @@
         },
         {
           "id": "c3_negotiate",
-          "text": "Verhandeln \u2014 Zeit gewinnen waehrend Backups geprueft werden",
-          "icon": "\u23f3",
+          "text": "Verhandeln — Zeit gewinnen waehrend Backups geprueft werden",
+          "icon": "⏳",
           "skill_check": {
             "pool_filter": "security",
             "question_count": 3,
@@ -426,7 +426,7 @@
     {
       "id": "s4_recovery",
       "title": "Recovery unter Druck",
-      "narrative": "Ob gezahlt oder nicht \u2014 die Recovery muss her. Die Pipeline muss wieder anlaufen. Das Department of Homeland Security und CISA sind involviert. Die Entschluesselungs-Software von DarkSide (falls erworben) ist quaelend langsam \u2014 langsamer als Recovery aus Backups. Die Pipeline besteht aus Hunderten von Segmenten mit eigenen Steuerungssystemen. Ein falscher Restart koennte physische Schaeden verursachen \u2014 Druckaufbau in leeren Leitungen, Ventilsteuerungsfehler. Diana warnt: 'Wir koennen nicht einfach den Schalter umlegen. Jedes Segment muss einzeln geprueft und stufenweise hochgefahren werden.' Die oeffentliche Aufmerksamkeit ist enorm. Praesident Biden erwaegt Notfall-Massnahmen.",
+      "narrative": "Ob gezahlt oder nicht — die Recovery muss her. Die Pipeline muss wieder anlaufen. Das Department of Homeland Security und CISA sind involviert. Die Entschluesselungs-Software von DarkSide (falls erworben) ist quaelend langsam — langsamer als Recovery aus Backups. Die Pipeline besteht aus Hunderten von Segmenten mit eigenen Steuerungssystemen. Ein falscher Restart koennte physische Schaeden verursachen — Druckaufbau in leeren Leitungen, Ventilsteuerungsfehler. Diana warnt: 'Wir koennen nicht einfach den Schalter umlegen. Jedes Segment muss einzeln geprueft und stufenweise hochgefahren werden.' Die oeffentliche Aufmerksamkeit ist enorm. Praesident Biden erwaegt Notfall-Massnahmen.",
       "image": "scene_security_hardening.png",
       "npc_dialog": {
         "speaker": "ops_manager",
@@ -436,8 +436,8 @@
       "choices": [
         {
           "id": "c4_staged_restart",
-          "text": "Stufenweiser Restart mit Integritaetspruefung jedes Segments \u2014 langsam aber sicher",
-          "icon": "\ud83d\udcca",
+          "text": "Stufenweiser Restart mit Integritaetspruefung jedes Segments — langsam aber sicher",
+          "icon": "📊",
           "skill_check": {
             "pool_filter": "incident_response",
             "question_count": 4,
@@ -463,8 +463,8 @@
         },
         {
           "id": "c4_rebuild_scada",
-          "text": "SCADA-Systeme komplett neu aufsetzen \u2014 keine Kompromisse bei OT-Integritaet",
-          "icon": "\ud83d\udda5\ufe0f",
+          "text": "SCADA-Systeme komplett neu aufsetzen — keine Kompromisse bei OT-Integritaet",
+          "icon": "🖥️",
           "skill_check": {
             "pool_filter": "security",
             "question_count": 4,
@@ -491,7 +491,7 @@
         {
           "id": "c4_hybrid",
           "text": "Hybrid: Kritische Segmente neu aufsetzen, Rest mit intensivem Monitoring fahren",
-          "icon": "\u2696\ufe0f",
+          "icon": "⚖️",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 5,
@@ -524,19 +524,19 @@
     },
     {
       "id": "s5_aftermath",
-      "title": "Aftermath \u2014 Executive Order",
-      "narrative": "12. Mai 2021. Die Pipeline laeuft wieder \u2014 nach 6 Tagen Stillstand. Das FBI hat spaeter 2,3 Millionen Dollar der Loesegeldzahlung zurueckgeholt, indem es die Bitcoin-Wallet von DarkSide beschlagnahmt hat. Praesident Biden unterzeichnet Executive Order 14028 zur Staerkung der Cybersecurity kritischer Infrastruktur. Die TSA erlasst Sicherheitsdirektiven fuer Pipeline-Betreiber: Pflicht zur Meldung von Cybervorfaellen, Ernennung eines Cybersecurity-Koordinators, Bewertung der aktuellen Sicherheitslage. DarkSide loest sich auf \u2014 angeblich unter dem Druck der Ermittlungen. Der Colonial-Pipeline-Incident wird zum Wendepunkt fuer OT-Security in den USA. Jetzt liegt es an dir, die Lehren in konkrete Massnahmen umzusetzen.",
+      "title": "Aftermath — Executive Order",
+      "narrative": "12. Mai 2021. Die Pipeline laeuft wieder — nach 6 Tagen Stillstand. Das FBI hat spaeter 2,3 Millionen Dollar der Loesegeldzahlung zurueckgeholt, indem es die Bitcoin-Wallet von DarkSide beschlagnahmt hat. Praesident Biden unterzeichnet Executive Order 14028 zur Staerkung der Cybersecurity kritischer Infrastruktur. Die TSA erlasst Sicherheitsdirektiven fuer Pipeline-Betreiber: Pflicht zur Meldung von Cybervorfaellen, Ernennung eines Cybersecurity-Koordinators, Bewertung der aktuellen Sicherheitslage. DarkSide loest sich auf — angeblich unter dem Druck der Ermittlungen. Der Colonial-Pipeline-Incident wird zum Wendepunkt fuer OT-Security in den USA. Jetzt liegt es an dir, die Lehren in konkrete Massnahmen umzusetzen.",
       "image": "scene_security_hardening.png",
       "npc_dialog": {
         "speaker": "agent_fbi",
-        "text": "Wir haben 63,7 Bitcoin aus DarkSides Wallet beschlagnahmt \u2014 etwa 2,3 Millionen Dollar. Die Gruppe hat sich aufgeloest, aber die Affiliates werden unter neuem Namen weitermachen. Die Frage ist: Sind Sie beim naechsten Mal besser vorbereitet?",
+        "text": "Wir haben 63,7 Bitcoin aus DarkSides Wallet beschlagnahmt — etwa 2,3 Millionen Dollar. Die Gruppe hat sich aufgeloest, aber die Affiliates werden unter neuem Namen weitermachen. Die Frage ist: Sind Sie beim naechsten Mal besser vorbereitet?",
         "portrait": "npc_fbi"
       },
       "choices": [
         {
           "id": "c5_ot_soc",
           "text": "OT-Security-Programm mit Air-Gap und dediziertem OT-SOC aufbauen",
-          "icon": "\ud83c\udfd7\ufe0f",
+          "icon": "🏗️",
           "skill_check": {
             "pool_filter": "security",
             "question_count": 4,
@@ -563,7 +563,7 @@
         {
           "id": "c5_ics_monitoring",
           "text": "ICS-Monitoring und umfassenden Incident-Response-Plan fuer OT implementieren",
-          "icon": "\ud83d\udcca",
+          "icon": "📊",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 4,
@@ -590,7 +590,7 @@
         {
           "id": "c5_full_rebuild",
           "text": "Komplettumbau: Zero Trust fuer OT + Vendor Audits + Data Diodes + 24/7 SOC",
-          "icon": "\ud83d\udee1\ufe0f",
+          "icon": "🛡️",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 5,
@@ -620,12 +620,12 @@
     {
       "id": "epilog_success",
       "title": "Pipeline Security Pioneer",
-      "narrative": "Ein Jahr spaeter. Die Organisation ist zum Vorbild fuer Critical Infrastructure Protection geworden. Das OT-SOC ueberwacht 24/7, Data Diodes trennen IT und OT physisch, jeder Vendor durchlaeuft Security-Audits. Die TSA zitiert eure Massnahmen als Best Practice. Diana Kowalski praesentiert auf der ICS Security Conference: 'Wir haben aus dem groessten Angriff auf kritische Infrastruktur der USA die richtigen Lehren gezogen.' Das FBI hat weitere 15 DarkSide-Affiliates identifiziert \u2014 dank eurer forensischen Daten. CEO Wilson, inzwischen demuetig: 'Ich habe gelernt, dass Cybersecurity keine IT-Frage ist. Es ist eine Frage der nationalen Sicherheit.'",
+      "narrative": "Ein Jahr spaeter. Die Organisation ist zum Vorbild fuer Critical Infrastructure Protection geworden. Das OT-SOC ueberwacht 24/7, Data Diodes trennen IT und OT physisch, jeder Vendor durchlaeuft Security-Audits. Die TSA zitiert eure Massnahmen als Best Practice. Diana Kowalski praesentiert auf der ICS Security Conference: 'Wir haben aus dem groessten Angriff auf kritische Infrastruktur der USA die richtigen Lehren gezogen.' Das FBI hat weitere 15 DarkSide-Affiliates identifiziert — dank eurer forensischen Daten. CEO Wilson, inzwischen demuetig: 'Ich habe gelernt, dass Cybersecurity keine IT-Frage ist. Es ist eine Frage der nationalen Sicherheit.'",
       "image": "scene_victory.png",
       "animation_in": "campaign_complete",
       "npc_dialog": {
         "speaker": "ops_manager",
-        "text": "Die Pipeline laeuft sicher. Unsere OT-Security ist die beste der Branche. Und ich schlafe nachts wieder ruhig \u2014 weil ich weiss, dass unsere SCADA-Systeme geschuetzt sind.",
+        "text": "Die Pipeline laeuft sicher. Unsere OT-Security ist die beste der Branche. Und ich schlafe nachts wieder ruhig — weil ich weiss, dass unsere SCADA-Systeme geschuetzt sind.",
         "portrait": "npc_ops"
       },
       "choices": [],
@@ -636,11 +636,11 @@
     {
       "id": "epilog_partial",
       "title": "Notbetrieb stabilisiert",
-      "narrative": "Die Pipeline laeuft wieder, aber die Sicherheitsluecken sind nicht vollstaendig geschlossen. Die IT/OT-Grenze ist verstaerkt, aber nicht hermetisch. Das Monitoring wurde verbessert, aber ein dediziertes OT-SOC fehlt noch. Die TSA-Direktiven werden eingehalten \u2014 gerade so. Diana Kowalski ist besorgt: 'Wir sind besser als vorher, aber nicht gut genug. Der naechste Angriff kommt \u2014 die Frage ist nur wann.' CEO Wilson hat den Ernst der Lage begriffen und mehr Budget bewilligt. Aber die Umsetzung braucht Zeit, und die Bedrohungslandschaft entwickelt sich schneller als die Abwehr.",
+      "narrative": "Die Pipeline laeuft wieder, aber die Sicherheitsluecken sind nicht vollstaendig geschlossen. Die IT/OT-Grenze ist verstaerkt, aber nicht hermetisch. Das Monitoring wurde verbessert, aber ein dediziertes OT-SOC fehlt noch. Die TSA-Direktiven werden eingehalten — gerade so. Diana Kowalski ist besorgt: 'Wir sind besser als vorher, aber nicht gut genug. Der naechste Angriff kommt — die Frage ist nur wann.' CEO Wilson hat den Ernst der Lage begriffen und mehr Budget bewilligt. Aber die Umsetzung braucht Zeit, und die Bedrohungslandschaft entwickelt sich schneller als die Abwehr.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "agent_fbi",
-        "text": "DarkSide ist weg, aber BlackMatter, BlackCat und andere haben uebernommen. Die Bedrohung fuer kritische Infrastruktur ist hoeher denn je. Sie brauchen ein vollstaendiges OT-Security-Programm \u2014 nicht nur Patches.",
+        "text": "DarkSide ist weg, aber BlackMatter, BlackCat und andere haben uebernommen. Die Bedrohung fuer kritische Infrastruktur ist hoeher denn je. Sie brauchen ein vollstaendiges OT-Security-Programm — nicht nur Patches.",
         "portrait": "npc_fbi"
       },
       "choices": [],
@@ -651,11 +651,11 @@
     {
       "id": "epilog_fail",
       "title": "Lehrgeld bezahlt",
-      "narrative": "Die teuerste Lektion in der Geschichte der US-Energieinfrastruktur. 6 Tage Pipeline-Stillstand, 4,4 Millionen Dollar Loesegeld, Milliarden an wirtschaftlichem Schaden, politisches Erdbeben. Aber: OT-Security wird endlich ernst genommen. Der Kongress bewilligt Milliardenbudgets fuer Critical Infrastructure Protection. Die TSA-Direktiven zwingen Pipeline-Betreiber zu konkreten Massnahmen. CEO Wilson tritt zurueck, aber sein Nachfolger macht Cybersecurity zur Chefsache. Die Lehre: Ransomware-Gruppen greifen nicht nur IT an \u2014 sie greifen die physische Welt an. Und die Konsequenzen sind real: leere Tankstellen, steigende Preise, nationale Panik.",
+      "narrative": "Die teuerste Lektion in der Geschichte der US-Energieinfrastruktur. 6 Tage Pipeline-Stillstand, 4,4 Millionen Dollar Loesegeld, Milliarden an wirtschaftlichem Schaden, politisches Erdbeben. Aber: OT-Security wird endlich ernst genommen. Der Kongress bewilligt Milliardenbudgets fuer Critical Infrastructure Protection. Die TSA-Direktiven zwingen Pipeline-Betreiber zu konkreten Massnahmen. CEO Wilson tritt zurueck, aber sein Nachfolger macht Cybersecurity zur Chefsache. Die Lehre: Ransomware-Gruppen greifen nicht nur IT an — sie greifen die physische Welt an. Und die Konsequenzen sind real: leere Tankstellen, steigende Preise, nationale Panik.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "ceo_wilson",
-        "text": "Ich trete zurueck. Aber ich bitte meinen Nachfolger um eines: Hoeren Sie auf Ihre Security-Experten. Ich habe es nicht getan \u2014 und das hat uns alle den Preis gekostet.",
+        "text": "Ich trete zurueck. Aber ich bitte meinen Nachfolger um eines: Hoeren Sie auf Ihre Security-Experten. Ich habe es nicht getan — und das hat uns alle den Preis gekostet.",
         "portrait": "npc_ceo"
       },
       "choices": [],
@@ -666,17 +666,24 @@
   ],
   "epilog": {
     "success": {
-      "narrative": "Ein Jahr spaeter. Die Organisation ist Vorbild fuer Critical Infrastructure Protection. OT-SOC, Data Diodes, Vendor Audits \u2014 alles implementiert. Die TSA zitiert eure Massnahmen als Best Practice. Das FBI dankt fuer die forensischen Daten.",
+      "narrative": "Ein Jahr spaeter. Die Organisation ist Vorbild fuer Critical Infrastructure Protection. OT-SOC, Data Diodes, Vendor Audits — alles implementiert. Die TSA zitiert eure Massnahmen als Best Practice. Das FBI dankt fuer die forensischen Daten.",
       "image": "scene_victory.png",
       "animation": "campaign_complete"
     },
     "partial": {
-      "narrative": "Die Pipeline laeuft, aber Sicherheitsluecken bleiben. IT/OT-Grenze verstaerkt, Monitoring verbessert, aber kein vollstaendiges OT-Security-Programm. Die TSA-Direktiven werden eingehalten \u2014 gerade so.",
+      "narrative": "Die Pipeline laeuft, aber Sicherheitsluecken bleiben. IT/OT-Grenze verstaerkt, Monitoring verbessert, aber kein vollstaendiges OT-Security-Programm. Die TSA-Direktiven werden eingehalten — gerade so.",
       "image": "scene_partial_victory.png"
     },
     "fail": {
-      "narrative": "Die teuerste Lektion der US-Energieinfrastruktur. 6 Tage Stillstand, $4.4M Loesegeld, Milliarden wirtschaftlicher Schaden. Aber OT-Security wird endlich ernst genommen \u2014 der Kongress bewilligt Milliardenbudgets.",
+      "narrative": "Die teuerste Lektion der US-Energieinfrastruktur. 6 Tage Stillstand, $4.4M Loesegeld, Milliarden wirtschaftlicher Schaden. Aber OT-Security wird endlich ernst genommen — der Kongress bewilligt Milliardenbudgets.",
       "image": "scene_partial_victory.png"
     }
-  }
+  },
+  "workplace_npcs": [
+    {
+      "character_id": "dr_hartmann",
+      "role_in_story": "CEO der Pipeline-Firma, will sofort das Loesegeld zahlen — 4,4 Millionen Dollar",
+      "default_emotion": "frustrated"
+    }
+  ]
 }

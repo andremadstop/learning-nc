@@ -666,5 +666,12 @@
       "narrative": "Zwei Wochen Ausfall. Millionenschaden. Aber die schmerzhafteste Lektion ist die wirksamste. Die Klinik investiert massiv — und uebersteht Petya unbeschadet.",
       "image": "scene_partial_victory.png"
     }
-  }
+  },
+  "workplace_npcs": [
+    {
+      "character_id": "klaus_dau",
+      "role_in_story": "Hat den E-Mail-Anhang geoeffnet und damit die Ransomware ausgeloest",
+      "default_emotion": "confused"
+    }
+  ]
 }

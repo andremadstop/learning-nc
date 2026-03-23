@@ -670,5 +670,12 @@
       "narrative": "Drei Wochen bis zum Patch. Jenkins kompromittiert. 400.000 Euro Schaden. Aber der Weckruf fuehrt zu einem echten Supply Chain Security Programm mit unbegrenztem Budget.",
       "image": "scene_partial_victory.png"
     }
-  }
+  },
+  "workplace_npcs": [
+    {
+      "character_id": "tim_azubi",
+      "role_in_story": "Hat die verwundbare Dependency ins Projekt gebracht — motiviert aber unerfahren",
+      "default_emotion": "alert"
+    }
+  ]
 }
