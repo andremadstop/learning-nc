@@ -52,6 +52,16 @@
       </div>
     </div>
 
+    <!-- ===== CAMPAIGN INTRO PHASE ===== -->
+    <div v-else-if="phase === 'intro'" class="ab-intro">
+      <CampaignIntro
+        :campaignId="selectedCampaign.id"
+        :title="selectedCampaign.title"
+        :difficulty="selectedCampaign.difficulty || 'normal'"
+        @done="phase = 'character-select'"
+      />
+    </div>
+
     <!-- ===== CHARACTER SELECT PHASE ===== -->
     <div v-else-if="phase === 'character-select'" class="ab-character-select">
       <div class="ab-header">
@@ -388,6 +398,7 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import PbqRenderer from './PbqRenderer.vue'
+import CampaignIntro from './CampaignIntro.vue'
 
 const STATIC_CAMPAIGNS = [
 	{
@@ -497,6 +508,7 @@ export default {
 
 	components: {
 		PbqRenderer,
+		CampaignIntro,
 	},
 
 	props: {
@@ -633,7 +645,7 @@ export default {
 
 		selectCampaign(campaign) {
 			this.selectedCampaign = campaign
-			this.phase = 'character-select'
+			this.phase = 'intro'
 		},
 
 		difficultyLabel(d) {
