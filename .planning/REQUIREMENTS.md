@@ -12,10 +12,10 @@
 
 ### Content-Bereinigung
 
-- [ ] **CONT-01**: Wireshark-Anleitung ist von persoenlichen Homelab-Referenzen bereinigt (IPs, SSH-Aliases generalisiert)
-- [ ] **CONT-02**: Nmap-Anleitung ist von persoenlichen Homelab-Referenzen bereinigt
-- [ ] **CONT-03**: Network+ Wissensbasis, Lehrplan und Grossevents-Guide sind geprueft und bereinigt
-- [ ] **CONT-04**: Alle bereinigten Guides liegen als geteilte Kopien vor (Originale im Personal Vault bleiben unveraendert)
+- [x] **CONT-01**: Wireshark-Anleitung ist von persoenlichen Homelab-Referenzen bereinigt (IPs, SSH-Aliases generalisiert)
+- [x] **CONT-02**: Nmap-Anleitung ist von persoenlichen Homelab-Referenzen bereinigt
+- [x] **CONT-03**: Network+ Wissensbasis, Lehrplan und Grossevents-Guide sind geprueft und bereinigt
+- [x] **CONT-04**: Alle bereinigten Guides liegen als geteilte Kopien vor (Originale im Personal Vault bleiben unveraendert)
 
 ### Content-Verteilung
 
@@ -67,10 +67,10 @@
 |-------------|-------|--------|
 | FIX-01 | Phase 52 | Complete |
 | FIX-02 | Phase 52 | Complete |
-| CONT-01 | Phase 53 | Pending |
-| CONT-02 | Phase 53 | Pending |
-| CONT-03 | Phase 53 | Pending |
-| CONT-04 | Phase 53 | Pending |
+| CONT-01 | Phase 53 | Complete |
+| CONT-02 | Phase 53 | Complete |
+| CONT-03 | Phase 53 | Complete |
+| CONT-04 | Phase 53 | Complete |
 | DIST-01 | Phase 54 | Pending |
 | DIST-02 | Phase 54 | Pending |
 | DIST-03 | Phase 54 | Pending |

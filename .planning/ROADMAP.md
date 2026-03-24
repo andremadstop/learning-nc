@@ -262,7 +262,7 @@ Plans:
 **Milestone Goal:** Offene Bugfixes deployen, App Store aktualisieren, Netzwerk-Lernmaterial bereinigen und zentral an alle User verteilen, DevCloud aufraeumen.
 
 - [x] **Phase 52: Bugfix & Release** - Binary Tab Fix deployen, App Store Token erneuern + Release hochladen (completed 2026-03-24)
-- [ ] **Phase 53: Content-Bereinigung** - Wireshark/Nmap/Network+ Guides von persoenlichen Referenzen bereinigen
+- [x] **Phase 53: Content-Bereinigung** - Wireshark/Nmap/Network+ Guides von persoenlichen Referenzen bereinigen (completed 2026-03-24)
 - [ ] **Phase 54: Content-Verteilung** - Shared Folder einrichten, Guides ablegen, RAG-Quellen registrieren
 - [ ] **Phase 55: DevCloud-Hygiene** - Ordner-Redundanzcheck, Aufraeumen, OSSU-Evaluation
 
@@ -322,6 +322,6 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 52. Bugfix & Release | 1/1 | Complete    | 2026-03-24 | - |
-| 53. Content-Bereinigung | v4.0 Housekeeping | 0/1 | Planning | - |
+| 53. Content-Bereinigung | 1/1 | Complete   | 2026-03-24 | - |
 | 54. Content-Verteilung | v4.0 Housekeeping | 0/TBD | Not started | - |
 | 55. DevCloud-Hygiene | v4.0 Housekeeping | 0/TBD | Not started | - |
