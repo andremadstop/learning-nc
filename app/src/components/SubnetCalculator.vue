@@ -35,7 +35,7 @@
 			</button>
 		</nav>
 
-		<section v-if="isCalculatorTab" class="subnet-panel" role="tabpanel">
+		<div v-if="!isPracticeTab" class="subnet-input-global">
 			<label class="subnet-label" for="subnet-calculator-input">{{ t('learning', 'IP/CIDR oder IP + Maske') }}</label>
 			<input
 				id="subnet-calculator-input"
@@ -44,10 +44,11 @@
 				:class="calculatorInputClass"
 				type="text"
 				:placeholder="t('learning', 'Beispiel: 192.168.1.0/24 oder 192.168.1.0 255.255.255.0')">
-			<p class="subnet-help">{{ t('learning', 'Die Berechnung aktualisiert sich sofort während der Eingabe.') }}</p>
 			<p v-if="calculatorError" class="subnet-state subnet-state--error">{{ calculatorError }}</p>
 			<p v-else-if="calculatorResult" class="subnet-state subnet-state--valid">{{ t('learning', 'Gültige Eingabe erkannt.') }}</p>
+		</div>
 
+		<section v-if="isCalculatorTab" class="subnet-panel" role="tabpanel">
 			<div v-if="calculatorResult" class="toggle-controls">
 				<div class="toggle-controls__preset">
 					<label class="subnet-label" for="toggle-preset">{{ t('learning', 'Anzeige-Preset') }}</label>
@@ -91,7 +92,7 @@
 
 		<section v-if="isBinaryTab" class="subnet-panel" role="tabpanel">
 			<p class="subnet-help">{{ t('learning', 'Netz-Bits sind cyan, Host-Bits amber markiert.') }}</p>
-			<p v-if="!calculatorResult" class="subnet-empty">{{ t('learning', 'Gib zuerst im Rechner-Tab eine gültige IPv4-Adresse mit Prefix oder Maske ein.') }}</p>
+			<p v-if="!calculatorResult" class="subnet-empty">{{ t('learning', 'Gib oben eine gültige IPv4-Adresse mit Prefix oder Maske ein.') }}</p>
 
 			<div v-else class="binary-panel">
 				<div class="binary-legend">
@@ -807,6 +808,13 @@ export default {
 	border-color: var(--lnc-primary);
 	color: #fff;
 	box-shadow: var(--lnc-shadow-glow);
+}
+
+.subnet-input-global {
+	display: flex;
+	flex-direction: column;
+	gap: var(--lnc-space-sm);
+	margin-bottom: var(--lnc-space-lg);
 }
 
 .subnet-panel {
