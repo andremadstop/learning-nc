@@ -281,6 +281,104 @@
 				</div>
 			</div>
 		</section>
+		<section v-if="isPracticeTab" class="subnet-panel" role="tabpanel">
+			<!-- Not started state -->
+			<div v-if="!practiceStarted" class="practice-start">
+				<p class="subnet-help">{{ t('learning', 'Teste dein Wissen mit zufaelligen Subnetting-Aufgaben. Du bekommst sofort Feedback zu jeder Antwort.') }}</p>
+				<button class="subnet-button subnet-button--primary" @click="startPractice">
+					{{ t('learning', 'Uebung starten') }}
+				</button>
+			</div>
+
+			<!-- Active practice -->
+			<div v-else-if="practiceSession && practiceSession.current">
+				<!-- Progress bar -->
+				<div class="practice-progress">
+					<span class="practice-progress__score">
+						{{ t('learning', '{correct} von {total} richtig', { correct: practiceProgress.correct, total: practiceProgress.total }) }}
+					</span>
+					<span v-if="practiceProgress.streak > 0" class="practice-progress__streak">
+						{{ t('learning', 'Serie: {streak}', { streak: practiceProgress.streak }) }}
+					</span>
+					<span class="practice-progress__remaining">
+						{{ t('learning', 'Noch {n} Aufgaben', { n: practiceProgress.remaining }) }}
+					</span>
+				</div>
+
+				<!-- Difficulty badge -->
+				<span class="practice-difficulty" :class="'practice-difficulty--' + practiceSession.current.difficulty">
+					{{ practiceSession.current.difficulty === 'easy' ? t('learning', 'Leicht') : practiceSession.current.difficulty === 'medium' ? t('learning', 'Mittel') : t('learning', 'Schwer') }}
+				</span>
+
+				<!-- Question -->
+				<div class="practice-question">
+					<p class="practice-question__text">{{ practiceSession.current.question }}</p>
+					<p v-if="practiceSession.current.context" class="practice-question__context">{{ practiceSession.current.context }}</p>
+				</div>
+
+				<!-- Answer fields -->
+				<div class="practice-answers">
+					<div v-for="(expected, field) in practiceSession.current.expectedAnswers" :key="field" class="practice-field">
+						<label class="subnet-label" :for="'practice-' + field">{{ practiceFieldLabels[field] || field }}</label>
+						<div class="practice-field__input-row">
+							<input
+								:id="'practice-' + field"
+								v-model="practiceUserAnswers[field]"
+								class="subnet-input"
+								:class="{
+									'practice-field--correct': practiceResults && practiceResults.find(r => r.field === field && r.correct),
+									'practice-field--wrong': practiceResults && practiceResults.find(r => r.field === field && !r.correct),
+								}"
+								type="text"
+								:disabled="practiceResults !== null"
+								@keyup.enter="practiceResults === null && submitPracticeAnswer()">
+							<!-- Feedback icons -->
+							<span v-if="practiceResults && practiceResults.find(r => r.field === field && r.correct)" class="practice-field__icon practice-field__icon--correct" aria-label="Richtig">&#10003;</span>
+							<span v-if="practiceResults && practiceResults.find(r => r.field === field && !r.correct)" class="practice-field__icon practice-field__icon--wrong" aria-label="Falsch">&#10007;</span>
+						</div>
+						<!-- Show correct answer on wrong -->
+						<p v-if="practiceResults && practiceResults.find(r => r.field === field && !r.correct)" class="practice-field__correction">
+							{{ t('learning', 'Richtige Antwort: {answer}', { answer: practiceResults.find(r => r.field === field).expected }) }}
+						</p>
+					</div>
+				</div>
+
+				<!-- Action buttons -->
+				<div class="practice-actions">
+					<button
+						v-if="practiceResults === null"
+						class="subnet-button subnet-button--primary"
+						@click="submitPracticeAnswer">
+						{{ t('learning', 'Pruefen') }}
+					</button>
+					<button
+						v-else-if="practiceProgress.remaining > 0"
+						class="subnet-button subnet-button--primary"
+						@click="loadNextScenario">
+						{{ t('learning', 'Naechste Aufgabe') }}
+					</button>
+					<button
+						v-else
+						class="subnet-button subnet-button--secondary"
+						@click="resetPractice">
+						{{ t('learning', 'Nochmal starten') }}
+					</button>
+				</div>
+			</div>
+
+			<!-- All done -->
+			<div v-else-if="practiceStarted" class="practice-done">
+				<p class="practice-done__text">
+					{{ t('learning', 'Alle Aufgaben bearbeitet! {correct} von {total} richtig.', { correct: practiceProgress.correct, total: practiceProgress.total }) }}
+				</p>
+				<p v-if="practiceProgress.maxStreak > 1" class="practice-done__streak">
+					{{ t('learning', 'Beste Serie: {streak} in Folge', { streak: practiceProgress.maxStreak }) }}
+				</p>
+				<button class="subnet-button subnet-button--primary" @click="resetPractice">
+					{{ t('learning', 'Nochmal starten') }}
+				</button>
+			</div>
+		</section>
 	</section>
 </template>
 
@@ -293,6 +391,13 @@ import {
 } from '../utils/subnetMath.js'
 import { ROW_KEYS, getVisibleRows } from '../utils/togglePresets.js'
 import { generateIPv4Steps, generateIPv6Steps, generateWhyExplanation } from '../utils/subnetExplainer.js'
+import {
+	createPracticeSession,
+	nextScenario,
+	checkAnswers,
+	submitAnswer,
+	getProgress,
+} from '../utils/practiceEngine.js'
 import {
 	parseIPv6,
 	calculateIPv6Subnet,
@@ -320,6 +425,10 @@ export default {
 			vlsmError: '',
 			ipv6Input: '2001:db8::1/48',
 			explainMode: false,
+			practiceSession: null,
+			practiceUserAnswers: {},
+			practiceResults: null,
+			practiceStarted: false,
 		}
 	},
 
@@ -328,12 +437,14 @@ export default {
 		isBinaryTab() { return this.activeTab === 'binary' },
 		isVlsmTab() { return this.activeTab === 'vlsm' },
 		isIpv6Tab() { return this.activeTab === 'ipv6' },
+		isPracticeTab() { return this.activeTab === 'practice' },
 		tabs() {
 			return [
 				{ id: 'calculator', label: t('learning', 'Rechner') },
 				{ id: 'binary', label: t('learning', 'Binaer-Display') },
 				{ id: 'vlsm', label: t('learning', 'VLSM') },
 				{ id: 'ipv6', label: t('learning', 'IPv6') },
+				{ id: 'practice', label: t('learning', 'Uebung') },
 			]
 		},
 
@@ -515,6 +626,23 @@ export default {
 				value: g.toString(16).padStart(4, '0'),
 			}))
 		},
+
+		practiceProgress() {
+			if (!this.practiceSession) return null
+			return getProgress(this.practiceSession)
+		},
+
+		practiceFieldLabels() {
+			return {
+				networkAddress: t('learning', 'Netzadresse'),
+				broadcast: t('learning', 'Broadcast'),
+				cidr: t('learning', 'CIDR-Prefix'),
+				hostCount: t('learning', 'Anzahl Hosts'),
+				subnetMask: t('learning', 'Subnetzmaske'),
+				firstHost: t('learning', 'Erster Host'),
+				lastHost: t('learning', 'Letzter Host'),
+			}
+		},
 	},
 
 	methods: {
@@ -543,6 +671,38 @@ export default {
 
 		removeRequirement(index) {
 			this.vlsmRows.splice(index, 1)
+		},
+
+		startPractice() {
+			this.practiceSession = createPracticeSession()
+			this.practiceStarted = true
+			this.loadNextScenario()
+		},
+
+		loadNextScenario() {
+			const scenario = nextScenario(this.practiceSession)
+			this.practiceResults = null
+			if (scenario) {
+				const answers = {}
+				for (const key of Object.keys(scenario.expectedAnswers)) {
+					answers[key] = ''
+				}
+				this.practiceUserAnswers = answers
+			}
+		},
+
+		submitPracticeAnswer() {
+			if (!this.practiceSession || !this.practiceSession.current) return
+			const results = checkAnswers(this.practiceSession.current.expectedAnswers, this.practiceUserAnswers)
+			this.practiceResults = results
+			submitAnswer(this.practiceSession, results)
+		},
+
+		resetPractice() {
+			this.practiceSession = null
+			this.practiceStarted = false
+			this.practiceResults = null
+			this.practiceUserAnswers = {}
 		},
 
 		calculateVlsm() {
@@ -1131,6 +1291,109 @@ export default {
 	padding: 2px 6px;
 	border-radius: 4px;
 	margin-right: 8px;
+}
+
+.practice-progress {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	font-size: 0.9rem;
+	padding: 0.75rem;
+	background: var(--lnc-surface-raised, #f5f5f5);
+	border-radius: 8px;
+	margin-bottom: 1rem;
+}
+
+.practice-progress__streak {
+	color: var(--lnc-accent, #f59e0b);
+	font-weight: 600;
+}
+
+.practice-difficulty {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 4px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+}
+
+.practice-difficulty--easy {
+	background: #dcfce7;
+	color: #166534;
+}
+
+.practice-difficulty--medium {
+	background: #fef3c7;
+	color: #92400e;
+}
+
+.practice-difficulty--hard {
+	background: #fecaca;
+	color: #991b1b;
+}
+
+.practice-question__text {
+	font-size: 1.1rem;
+	margin: 1rem 0 0.5rem;
+}
+
+.practice-question__context {
+	font-size: 0.9rem;
+	color: var(--lnc-text-secondary);
+	font-style: italic;
+	margin-bottom: 1rem;
+}
+
+.practice-field {
+	margin-bottom: 0.75rem;
+}
+
+.practice-field__input-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.practice-field--correct {
+	border-color: #16a34a;
+	background: #f0fdf4;
+}
+
+.practice-field--wrong {
+	border-color: #dc2626;
+	background: #fef2f2;
+}
+
+.practice-field__icon {
+	font-size: 1.2rem;
+	flex-shrink: 0;
+}
+
+.practice-field__icon--correct {
+	color: #16a34a;
+}
+
+.practice-field__icon--wrong {
+	color: #dc2626;
+}
+
+.practice-field__correction {
+	color: #dc2626;
+	font-size: 0.85rem;
+	margin-top: 0.25rem;
+}
+
+.practice-actions {
+	margin-top: 1.5rem;
+	display: flex;
+	gap: 0.75rem;
+}
+
+.practice-start,
+.practice-done {
+	text-align: center;
+	padding: 2rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
