@@ -604,7 +604,10 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
   2. Der State-Bag akkumuliert Flags, Items und Reputation-Werte ueber Szenen hinweg — eine Szene kann z.B. ein Flag setzen ("has_evidence") und eine spaetere Szene kann dieses Flag lesen und darauf reagieren
   3. Szenen mit Bedingungen (z.B. "requires: has_evidence" oder "min_reputation: 5") werden nur angeboten wenn die Bedingung im State-Bag erfuellt ist — nicht erfuellte Pfade sind unsichtbar
   4. Die DB-Migration erstellt die campaign_state Tabelle (state_bag JSON, act_number, graph_position, timestamps) ohne bestehende story_progress Daten zu zerstoeren — alte lineare Kampagnen funktionieren weiterhin
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 71-01-PLAN.md — DB migration + CampaignState entity/mapper + CampaignGraphService
+- [ ] 71-02-PLAN.md — StoryEngineService integration + test campaign JSON
 
 ### Phase 72: Akt-Struktur + Save/Resume + API
 **Goal**: Kampagnen haben eine dramaturgische Akt-Struktur, der Spielstand persistiert zuverlaessig ueber Tage und REST-Endpoints ermoeglichen Graph-Traversal und State-Management
