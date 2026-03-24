@@ -1,93 +1,64 @@
-# Requirements: Learning-NC v7.2 Subnetzrechner Pro
+# Requirements: Learning-NC v8.0 VirtuProf v2
 
 **Defined:** 2026-03-24
-**Core Value:** Interaktives Netzwerk-Lernwerkzeug das schrittweises Lernen, realistische Uebungen und moderne Protokolle (VLAN, IPv6) in einem Browser-Tool vereint.
+**Core Value:** VirtuProf wird kontextbewusst — der Bot weiss welche Frage der User sieht, gibt gestufte Hints und ist im Pruefungsmodus gesperrt.
 
-## v7.2 Requirements
+## v8.0 Requirements
 
-### Toggle-Spalten
+### Kontext-Mapping
 
-- [x] **TOG-01**: User kann im Rechner-Tab einzelne Ergebnis-Zeilen per Checkbox ein/ausblenden (z.B. nur Netzadresse + CIDR sichtbar, Rest verdeckt)
-- [x] **TOG-02**: User kann zwischen Presets waehlen (Alle, Anfaenger, Fortgeschritten, Nur Basics) die vordefinierte Spalten-Kombinationen aktivieren
-- [x] **TOG-03**: Die Toggle-Einstellung bleibt beim Tab-Wechsel erhalten (Session-persistent)
+- [x] **CTX-01**: Frontend sendet die aktuell angezeigte Frage (Text + Optionen + korrekte Antwort + Erklaerung) als Kontext an die Chat-API
+- [x] **CTX-02**: GeminiService baut den Fragen-Kontext in den System-Prompt ein sodass der Bot weiss welche Frage der User gerade sieht
+- [ ] **CTX-03**: Bot kann auf "Erklaer mir diese Frage" oder "Warum ist B richtig?" direkt antworten ohne dass der User die Frage kopieren muss
 
-### Uebungsmodus
+### Hint-System
 
-- [ ] **UEB-01**: User kann einen Uebungsmodus starten der eine zufaellige Aufgabe aus einem Szenario-Pool stellt
-- [ ] **UEB-02**: User gibt seine Antwort(en) in Eingabefelder ein (Netzadresse, Broadcast, CIDR, Host-Anzahl etc.)
-- [ ] **UEB-03**: Der Simulator prueft die Antwort automatisch und zeigt Feedback (richtig/falsch + korrekte Loesung)
-- [ ] **UEB-04**: User sieht einen Fortschritts-Tracker (X von Y richtig, aktuelle Serie)
+- [ ] **HINT-01**: User kann "Tipp" oder "Hint" schreiben und bekommt eine gestufte Hilfe (Richtung → konkreter → fast die Antwort) statt sofort die Loesung
+- [ ] **HINT-02**: Der Hint-Level wird pro Frage getrackt (1→2→3), bei neuer Frage reset
+- [ ] **HINT-03**: Nach Hint 3 bietet der Bot an die vollstaendige Erklaerung zu zeigen
 
-### Szenarien-Content
+### Pruefungsmodus-Sperre
 
-- [ ] **SCN-01**: Mindestens 15 realistische Subnetting-Aufgaben auf CompTIA Network+ Niveau (CIDR-Berechnung, Host-Ranges, nicht-aligned Adressen)
-- [ ] **SCN-02**: Mindestens 5 VLSM-Aufgaben (Netzwerk aufteilen fuer mehrere Abteilungen/Standorte)
-- [ ] **SCN-03**: Mindestens 5 Praxis-Szenarien mit Kontext (z.B. "Firma mit 3 Standorten", "Server-Rack mit /28")
-- [ ] **SCN-04**: Aufgaben haben Schwierigkeitsgrade (Leicht/Mittel/Schwer) und decken typische Fallstricke ab (Broadcast abziehen, Router-Interface, nicht auf Netzgrenze)
+- [ ] **EXAM-01**: Im Exam-Mode ist die VirtuProf-Bubble ausgeblendet oder der Chat-Input deaktiviert — keine KI-Hilfe waehrend der Pruefung
+- [ ] **EXAM-02**: Der Sperr-Zustand wird vom ExamMode-Kontext gesteuert, nicht manuell
 
-### VLAN
+### Fehler-Report
 
-- [ ] **VLAN-01**: Neuer Tab "VLAN" im Subnetzrechner mit VLAN-ID Eingabe und Zuordnung zu Subnetzen
-- [ ] **VLAN-02**: Visualisierung von Access vs Trunk Ports mit 802.1Q Tagging (welcher Frame bekommt welchen Tag)
-- [ ] **VLAN-03**: Inter-VLAN Routing Darstellung (Router-on-a-Stick oder L3-Switch, Subinterfaces mit VLAN-Zuordnung)
-
-### Rechenweg / Erklaer-Modus
-
-- [x] **ERK-01**: Im Binaer-Tab wird unter dem Bit-Grid ein Rechenweg-Panel angezeigt das Schritt fuer Schritt die Berechnung erklaert (Prefix → Host-Bits → Blockgroesse → Maske binär → Broadcast-Formel)
-- [x] **ERK-02**: Jedes Ergebnis-Feld im Rechner-Tab hat einen optionalen "Warum?"-Toggle der die Herleitung zeigt (z.B. "Broadcast = Netzadresse OR Wildcard = 192.168.0.0 OR 0.0.0.31 = 192.168.0.31")
-- [x] **ERK-03**: User kann zwischen Kompakt-Ansicht (nur Ergebnisse) und Erklaer-Ansicht (mit Rechenweg) umschalten — Anfaenger sehen Erklaerungen, Profis blenden sie aus
-
-### IPv6
-
-- [x] **IPV6-01**: User kann IPv6-Adressen mit Prefix eingeben und Netzadresse, Host-Range, Typ (Link-Local, Global Unicast, Multicast) berechnen
-- [x] **IPV6-02**: Binaer-Display zeigt 128-Bit Darstellung mit farblich markiertem Prefix/Interface-ID
-- [ ] **IPV6-03**: Mindestens 5 IPv6-Uebungsszenarien (Prefix-Berechnung, Subnetting eines /48, EUI-64, Link-Local Erkennung)
-
-### Mehrsprachigkeit
-
-- [ ] **I18N-01**: Alle UI-Strings im Subnetzrechner nutzen t('learning', '...') und haben englische Uebersetzungen in l10n/ — kein hardcoded Deutsch
-- [ ] **I18N-02**: Fachbegriffe sind korrekt uebersetzt (Netzadresse/Network Address, Subnetzmaske/Subnet Mask, Hostanteil/Host Portion etc.)
+- [ ] **REP-01**: User kann per Button oder Kommando ("Fehler melden") ein Problem mit der aktuellen Frage melden (falsche Antwort, schlechte Uebersetzung, unklare Formulierung)
+- [ ] **REP-02**: Der Report enthaelt automatisch die Fragen-ID, den aktuellen Modus und optional User-Kommentar
 
 ## Future Requirements
 
-- **FUT-01**: Persistierung der Uebungsergebnisse in DB (Backend noetig)
-- **FUT-02**: Multiplayer/Duell-Subnetting
-- **FUT-03**: DHCPv6 vs SLAAC Visualisierung
+- **FUT-01**: QA-Scanner — Bot prueft automatisch alle Fragen auf Konsistenz
+- **FUT-02**: Proaktive Hinweise ("Dieses Thema kommt in 3 weiteren Fragen vor")
+- **FUT-03**: Lernstatistik-Integration ("Du hast bei diesem Thema 40% falsch")
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Backend/PHP-Aenderungen | Anderer Chat, Ops-Ebene |
-| DB-Persistierung | Rein Frontend, localStorage reicht |
-| Multiplayer/Duell-Subnetting | Eigener Milestone |
-| DHCPv6/SLAAC | Zu tief fuer v7.2 |
+| Multi-Bot-Swarm | Zu teuer (API-Kosten), ein schlauer Bot reicht |
+| Eigener LLM statt Gemini | Infra-Aufwand, Gemini funktioniert |
+| Kontext fuer Subnetzrechner | Subnetzrechner hat eigenen Erklaer-Modus |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOG-01 | Phase 56 | Complete |
-| TOG-02 | Phase 56 | Complete |
-| TOG-03 | Phase 56 | Complete |
-| IPV6-01 | Phase 57 | Complete |
-| IPV6-02 | Phase 57 | Complete |
-| UEB-01 | Phase 58 | Pending |
-| UEB-02 | Phase 58 | Pending |
-| UEB-03 | Phase 58 | Pending |
-| UEB-04 | Phase 58 | Pending |
-| SCN-01 | Phase 59 | Pending |
-| SCN-02 | Phase 59 | Pending |
-| SCN-03 | Phase 59 | Pending |
-| SCN-04 | Phase 59 | Pending |
-| IPV6-03 | Phase 59 | Pending |
-| VLAN-01 | Phase 60 | Pending |
-| VLAN-02 | Phase 60 | Pending |
-| VLAN-03 | Phase 60 | Pending |
+| CTX-01 | Phase 61 | Complete |
+| CTX-02 | Phase 61 | Complete |
+| CTX-03 | Phase 61 | Pending |
+| HINT-01 | Phase 62 | Pending |
+| HINT-02 | Phase 62 | Pending |
+| HINT-03 | Phase 62 | Pending |
+| EXAM-01 | Phase 63 | Pending |
+| EXAM-02 | Phase 63 | Pending |
+| REP-01 | Phase 63 | Pending |
+| REP-02 | Phase 63 | Pending |
 
 **Coverage:**
-- v7.2 requirements: 17 total
-- Mapped to phases: 17
+- v8.0 requirements: 10 total
+- Mapped to phases: 10
 - Unmapped: 0
 
 ---

@@ -477,6 +477,6 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 2/2 | Complete | 2026-03-24 |
 | 59. Szenarien-Content | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
-| 61. Kontext-Mapping | v8.0 VirtuProf v2 | 0/2 | Not started | - |
+| 61. Kontext-Mapping | 1/2 | In Progress|  | - |
 | 62. Hint-System | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
 | 63. Exam-Sperre + Fehler-Report | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
