@@ -316,7 +316,11 @@ Plans:
   1. Ein dokumentierter Redundanzcheck aller User-Home-Ordner auf learning-dev liegt vor — mit Auflistung welche Ordner redundant/veraltet sind und wieviel Speicher sie belegen
   2. Identifizierte redundante/doppelte Ordner sind geloescht oder archiviert — der belegte Speicher ist messbar reduziert
   3. Eine dokumentierte Evaluation des OSSU Curriculum als Kursstruktur-Template liegt vor — mit Fazit ob und wie es als Kursstruktur in Learning-NC importiert werden kann
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 55-01-PLAN.md — DevCloud Redundanzcheck + OSSU Curriculum Evaluation
+- [ ] 55-02-PLAN.md — Cleanup ausfuehren (checkpoint: User-Genehmigung)
 
 ---
 
@@ -418,8 +422,8 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 |-------|-----------|----------------|--------|-----------|
 | 52. Bugfix & Release | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
 | 53. Content-Bereinigung | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
-| 54. Content-Verteilung | 1/1 | Complete   | 2026-03-24 | - |
-| 55. DevCloud-Hygiene | v4.0 Housekeeping | 0/TBD | Not started | - |
+| 54. Content-Verteilung | 1/1 | Complete    | 2026-03-24 | - |
+| 55. DevCloud-Hygiene | v4.0 Housekeeping | 0/2 | Planned | - |
 | 56. Toggle-Spalten | 1/1 | Complete    | 2026-03-24 | - |
 | 57. IPv6 Math + UI | 1/1 | Complete    | 2026-03-24 | - |
 | 58. Uebungsmodus Engine | 2/2 | Complete   | 2026-03-24 | - |

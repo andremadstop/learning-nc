@@ -214,6 +214,175 @@
 			</table>
 		</section>
 
+		<section v-if="isVlanTab" class="subnet-panel subnet-panel--vlan" role="tabpanel">
+			<div class="vlan-grid">
+				<article class="vlan-card">
+					<div class="vlan-card__header">
+						<div>
+							<h3 class="vlan-card__title">{{ t('learning', 'VLAN-Tabelle') }}</h3>
+							<p class="subnet-help">{{ t('learning', 'Pflege VLAN-ID, Name, Subnetz und Gateway fuer dein Segment-Design.') }}</p>
+						</div>
+						<button class="subnet-button subnet-button--secondary" type="button" @click="addVlanEntry">
+							{{ t('learning', 'VLAN hinzufügen') }}
+						</button>
+					</div>
+
+					<p v-if="vlanValidationMessage" class="subnet-state subnet-state--error">{{ vlanValidationMessage }}</p>
+
+					<table class="subnet-table vlan-table">
+						<thead>
+							<tr>
+								<th scope="col">{{ t('learning', 'VLAN-ID') }}</th>
+								<th scope="col">{{ t('learning', 'Name') }}</th>
+								<th scope="col">{{ t('learning', 'Subnetz') }}</th>
+								<th scope="col">{{ t('learning', 'Gateway') }}</th>
+								<th scope="col">{{ t('learning', 'Aktion') }}</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="(entry, index) in vlanEntries" :key="'vlan-entry-' + index">
+								<td><input v-model.number="entry.vlanId" class="subnet-input" type="number" min="1" max="4094"></td>
+								<td><input v-model.trim="entry.name" class="subnet-input" type="text"></td>
+								<td><input v-model.trim="entry.subnet" class="subnet-input" type="text"></td>
+								<td><input v-model.trim="entry.gateway" class="subnet-input" type="text"></td>
+								<td>
+									<button
+										class="subnet-button subnet-button--ghost"
+										type="button"
+										:disabled="vlanEntries.length === 1"
+										@click="removeVlanEntry(index)">
+										{{ t('learning', 'Entfernen') }}
+									</button>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</article>
+
+				<article class="vlan-card">
+					<div class="vlan-card__header">
+						<div>
+							<h3 class="vlan-card__title">{{ t('learning', 'Port-Visualisierung') }}</h3>
+							<p class="subnet-help">{{ t('learning', 'Access-Ports senden untagged, Trunks transportieren mehrere VLANs per 802.1Q.') }}</p>
+						</div>
+					</div>
+
+					<div class="vlan-ports">
+						<div v-for="port in displayedVlanPorts" :key="port.portId" class="vlan-port" :class="'vlan-port--' + port.mode">
+							<div class="vlan-port__badge" :style="portVisualStyle(port)"></div>
+							<div class="vlan-port__body">
+								<div class="vlan-port__headline">
+									<strong>{{ port.portId }}</strong>
+									<span class="vlan-port__mode">{{ port.mode === 'access' ? t('learning', 'Access') : t('learning', 'Trunk') }}</span>
+								</div>
+								<p class="vlan-port__copy">
+									<span v-if="port.mode === 'access'">{{ t('learning', 'Access VLAN {id}', { id: port.accessVlan }) }}</span>
+									<span v-else>{{ t('learning', 'Erlaubte VLANs: {ids}', { ids: port.allowedVlans.join(', ') }) }}</span>
+								</p>
+								<div class="vlan-port__diagram">
+									<span class="vlan-port__node">PC</span>
+									<span class="vlan-port__link">{{ port.mode === 'access' ? t('learning', 'untagged') : t('learning', 'tagged') }}</span>
+									<span class="vlan-port__node">{{ port.portId }}</span>
+									<span class="vlan-port__link">{{ port.mode === 'access' ? t('learning', 'tagged im Uplink') : t('learning', '802.1Q') }}</span>
+									<span class="vlan-port__node">Switch</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</article>
+
+				<article class="vlan-card">
+					<div class="vlan-card__header">
+						<div>
+							<h3 class="vlan-card__title">{{ t('learning', '802.1Q Frame') }}</h3>
+							<p class="subnet-help">{{ t('learning', 'Vergleiche den Ethernet-Frame fuer Access- und Trunk-Ports.') }}</p>
+						</div>
+					</div>
+
+					<div class="vlan-frame-controls">
+						<div class="vlan-frame-toggle" role="tablist">
+							<button
+								class="subnet-button"
+								:class="framePreviewMode === 'access' ? 'subnet-button--primary' : 'subnet-button--secondary'"
+								type="button"
+								@click="framePreviewMode = 'access'">
+								{{ t('learning', 'Access') }}
+							</button>
+							<button
+								class="subnet-button"
+								:class="framePreviewMode === 'trunk' ? 'subnet-button--primary' : 'subnet-button--secondary'"
+								type="button"
+								@click="framePreviewMode = 'trunk'">
+								{{ t('learning', 'Trunk') }}
+							</button>
+						</div>
+
+						<label class="subnet-label vlan-frame-controls__label" for="frame-vlan-select">{{ t('learning', 'VLAN fuer Vorschau') }}</label>
+						<select id="frame-vlan-select" v-model.number="framePreviewVlanId" class="subnet-input vlan-frame-controls__select">
+							<option v-for="entry in validVlanEntries" :key="'frame-vlan-' + entry.vlanId" :value="entry.vlanId">
+								{{ entry.vlanId }} - {{ entry.name }}
+							</option>
+						</select>
+					</div>
+
+					<div class="vlan-frame">
+						<div
+							v-for="field in frameVisualization.fields"
+							:key="'frame-field-' + field"
+							class="vlan-frame__segment"
+							:class="{ 'vlan-frame__segment--tag': field === '802.1Q Tag' }">
+							<strong>{{ field }}</strong>
+							<small v-if="field === '802.1Q Tag'">{{ t('learning', 'VLAN {id}', { id: framePreviewVlanId }) }}</small>
+							<small v-else-if="field === 'EthType'">{{ frameVisualization.tagged ? '0x8100 / IPv4' : '0x0800' }}</small>
+							<small v-else>{{ t('learning', 'Layer-2 Feld') }}</small>
+						</div>
+					</div>
+
+					<p class="vlan-frame__hint">
+						<span v-if="frameVisualization.tagged">{{ t('learning', 'Auf dem Trunk wird der 802.1Q-Tag gesetzt; der Native VLAN Traffic kann untagged bleiben.') }}</span>
+						<span v-else>{{ t('learning', 'Am Access-Port bleibt der Frame fuer Endgeraete untagged.') }}</span>
+					</p>
+				</article>
+
+				<article class="vlan-card">
+					<div class="vlan-card__header">
+						<div>
+							<h3 class="vlan-card__title">{{ t('learning', 'Inter-VLAN-Routing') }}</h3>
+							<p class="subnet-help">{{ t('learning', 'Router-on-a-Stick erstellt fuer jedes VLAN eine Subinterface mit dot1Q-Kapselung.') }}</p>
+						</div>
+					</div>
+
+					<table class="subnet-table vlan-routing-table">
+						<thead>
+							<tr>
+								<th scope="col">{{ t('learning', 'Interface') }}</th>
+								<th scope="col">{{ t('learning', 'Subinterface') }}</th>
+								<th scope="col">{{ t('learning', 'Encapsulation') }}</th>
+								<th scope="col">{{ t('learning', 'Gateway') }}</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="subif in vlanRouterConfig.subinterfaces" :key="subif.subinterface">
+								<td>{{ subif.interface }}</td>
+								<td>{{ subif.subinterface }}</td>
+								<td>{{ subif.encapsulation }}</td>
+								<td>{{ subif.ip }}</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<ul class="vlan-route-checks">
+						<li v-for="check in routeChecks" :key="check.id" class="vlan-route-checks__item">
+							<span>{{ check.label }}</span>
+							<strong :class="check.routable ? 'vlan-route-checks__status--ok' : 'vlan-route-checks__status--fail'">
+								{{ check.routable ? t('learning', 'Routing moeglich') : t('learning', 'Routing blockiert') }}
+							</strong>
+						</li>
+					</ul>
+				</article>
+			</div>
+		</section>
+
 		<section v-if="isIpv6Tab" class="subnet-panel" role="tabpanel">
 			<label class="subnet-label" for="ipv6-input">{{ t('learning', 'IPv6-Adresse / Prefix') }}</label>
 			<input
@@ -399,6 +568,7 @@ import {
 	submitAnswer,
 	getProgress,
 } from '../utils/practiceEngine.js'
+import { SCENARIOS } from '../utils/scenarios.js'
 import {
 	parseIPv6,
 	calculateIPv6Subnet,
@@ -406,6 +576,28 @@ import {
 	ipv6ToBitArray,
 	formatIPv6,
 } from '../utils/ipv6Math.js'
+import {
+	buildFrameVisualization,
+	calculateSubinterfaces,
+	canRoute,
+	createVlanSetup,
+	isValidVlanId,
+} from '../utils/vlanSimulator.js'
+
+const DEFAULT_VLAN_ENTRIES = [
+	{ vlanId: 10, name: 'HR', subnet: '10.10.10.0/24', gateway: '10.10.10.1' },
+	{ vlanId: 20, name: 'Dev', subnet: '10.10.20.0/24', gateway: '10.10.20.1' },
+	{ vlanId: 30, name: 'Finance', subnet: '10.10.30.0/24', gateway: '10.10.30.1' },
+]
+
+const DEFAULT_VLAN_SETUP = createVlanSetup(DEFAULT_VLAN_ENTRIES)
+
+function clonePort(port) {
+	return {
+		...port,
+		allowedVlans: Array.isArray(port.allowedVlans) ? [...port.allowedVlans] : undefined,
+	}
+}
 
 export default {
 	name: 'SubnetCalculator',
@@ -424,6 +616,10 @@ export default {
 			nextRequirementId: 3,
 			vlsmResults: [],
 			vlsmError: '',
+			vlanEntries: DEFAULT_VLAN_ENTRIES.map((entry) => ({ ...entry })),
+			vlanPorts: DEFAULT_VLAN_SETUP.ports.map(clonePort),
+			framePreviewMode: 'access',
+			framePreviewVlanId: 10,
 			ipv6Input: '2001:db8::1/48',
 			explainMode: false,
 			practiceSession: null,
@@ -437,6 +633,7 @@ export default {
 		isCalculatorTab() { return this.activeTab === 'calculator' },
 		isBinaryTab() { return this.activeTab === 'binary' },
 		isVlsmTab() { return this.activeTab === 'vlsm' },
+		isVlanTab() { return this.activeTab === 'vlan' },
 		isIpv6Tab() { return this.activeTab === 'ipv6' },
 		isPracticeTab() { return this.activeTab === 'practice' },
 		tabs() {
@@ -444,6 +641,7 @@ export default {
 				{ id: 'calculator', label: t('learning', 'Rechner') },
 				{ id: 'binary', label: t('learning', 'Binär-Display') },
 				{ id: 'vlsm', label: t('learning', 'VLSM') },
+				{ id: 'vlan', label: t('learning', 'VLAN') },
 				{ id: 'ipv6', label: t('learning', 'IPv6') },
 				{ id: 'practice', label: t('learning', 'Übung') },
 			]
@@ -563,6 +761,70 @@ export default {
 			}
 		},
 
+		validVlanEntries() {
+			const seen = new Set()
+			return this.vlanEntries
+				.map((entry) => ({
+					...entry,
+					vlanId: Number(entry.vlanId),
+				}))
+				.filter((entry) => {
+					if (!isValidVlanId(entry.vlanId)) return false
+					if (!entry.name || !entry.subnet || !entry.gateway) return false
+					if (seen.has(entry.vlanId)) return false
+					seen.add(entry.vlanId)
+					return true
+				})
+		},
+
+		displayedVlanPorts() {
+			const validIds = this.validVlanEntries.map((entry) => entry.vlanId)
+			return this.vlanPorts.map((port, index) => {
+				if (port.mode === 'trunk') {
+					const allowed = (port.allowedVlans || validIds).filter((vlanId) => validIds.includes(Number(vlanId)))
+					return {
+						...clonePort(port),
+						allowedVlans: allowed.length ? allowed : [...validIds],
+					}
+				}
+
+				const fallbackVlan = validIds[index] || validIds[0] || Number(port.accessVlan)
+				return {
+					...clonePort(port),
+					accessVlan: validIds.includes(Number(port.accessVlan)) ? Number(port.accessVlan) : fallbackVlan,
+				}
+			})
+		},
+
+		vlanRouterConfig() {
+			return {
+				interface: 'Gi0/0',
+				subinterfaces: calculateSubinterfaces(this.validVlanEntries),
+			}
+		},
+
+		vlanValidationMessage() {
+			const invalidIds = this.vlanEntries
+				.map((entry) => Number(entry.vlanId))
+				.filter((vlanId) => !isValidVlanId(vlanId))
+			const duplicates = this.vlanEntries.reduce((acc, entry) => {
+				const vlanId = Number(entry.vlanId)
+				acc[vlanId] = (acc[vlanId] || 0) + 1
+				return acc
+			}, {})
+			const duplicateIds = Object.keys(duplicates).filter((vlanId) => duplicates[vlanId] > 1)
+
+			if (invalidIds.length) {
+				return t('learning', 'Ungueltige VLAN-IDs gefunden. Erlaubt sind 1-4094, ausser 1002-1005.')
+			}
+
+			if (duplicateIds.length) {
+				return t('learning', 'VLAN-IDs muessen eindeutig sein.')
+			}
+
+			return ''
+		},
+
 		ipv6Parsed() {
 			return parseIPv6(this.ipv6Input)
 		},
@@ -633,6 +895,41 @@ export default {
 			return getProgress(this.practiceSession)
 		},
 
+		framePreviewPort() {
+			if (this.framePreviewMode === 'trunk') {
+				return this.displayedVlanPorts.find((port) => port.mode === 'trunk') || {
+					portId: 'Gi0/1',
+					mode: 'trunk',
+					allowedVlans: [Number(this.framePreviewVlanId)],
+					nativeVlan: 1,
+				}
+			}
+
+			return this.displayedVlanPorts.find((port) => port.mode === 'access' && port.accessVlan === Number(this.framePreviewVlanId))
+				|| this.displayedVlanPorts.find((port) => port.mode === 'access')
+				|| { portId: 'Fa0/1', mode: 'access', accessVlan: Number(this.framePreviewVlanId) }
+		},
+
+		frameVisualization() {
+			return buildFrameVisualization(this.framePreviewPort, Number(this.framePreviewVlanId))
+		},
+
+		routeChecks() {
+			const checks = []
+			for (let left = 0; left < this.validVlanEntries.length; left++) {
+				for (let right = left + 1; right < this.validVlanEntries.length; right++) {
+					const vlanA = this.validVlanEntries[left]
+					const vlanB = this.validVlanEntries[right]
+					checks.push({
+						id: `${vlanA.vlanId}-${vlanB.vlanId}`,
+						label: `${vlanA.name} ↔ ${vlanB.name}`,
+						routable: canRoute(vlanA, vlanB, this.vlanRouterConfig),
+					})
+				}
+			}
+			return checks
+		},
+
 		practiceFieldLabels() {
 			return {
 				networkAddress: t('learning', 'Netzadresse'),
@@ -642,6 +939,11 @@ export default {
 				subnetMask: t('learning', 'Subnetzmaske'),
 				firstHost: t('learning', 'Erster Host'),
 				lastHost: t('learning', 'Letzter Host'),
+				maxServers: t('learning', 'Maximale Server'),
+				fitsInSupernet: t('learning', 'Passt ins Supernetz'),
+				totalUsed: t('learning', 'Belegte Adressen'),
+				subnetCount: t('learning', 'Anzahl Subnetze'),
+				addressType: t('learning', 'Adresstyp'),
 			}
 		},
 	},
@@ -670,12 +972,43 @@ export default {
 			})
 		},
 
+		addVlanEntry() {
+			const highest = this.vlanEntries.reduce((max, entry) => Math.max(max, Number(entry.vlanId) || 0), 0)
+			this.vlanEntries.push({
+				vlanId: highest >= 4090 ? highest + 1 : highest + 10,
+				name: '',
+				subnet: '',
+				gateway: '',
+			})
+			const trunk = this.vlanPorts.find((port) => port.mode === 'trunk')
+			if (trunk) {
+				trunk.allowedVlans = [...new Set([...(trunk.allowedVlans || []), highest >= 4090 ? highest + 1 : highest + 10])]
+			}
+		},
+
+		removeVlanEntry(index) {
+			if (this.vlanEntries.length <= 1) return
+			const removed = this.vlanEntries[index]
+			this.vlanEntries.splice(index, 1)
+			this.vlanPorts = this.vlanPorts.map((port) => {
+				if (port.mode === 'trunk') {
+					return {
+						...clonePort(port),
+						allowedVlans: (port.allowedVlans || []).filter((vlanId) => vlanId !== Number(removed.vlanId)),
+					}
+				}
+				return port.accessVlan === Number(removed.vlanId)
+					? { ...clonePort(port), accessVlan: this.validVlanEntries[0] ? this.validVlanEntries[0].vlanId : port.accessVlan }
+					: clonePort(port)
+			})
+		},
+
 		removeRequirement(index) {
 			this.vlsmRows.splice(index, 1)
 		},
 
 		startPractice() {
-			this.practiceSession = createPracticeSession()
+			this.practiceSession = createPracticeSession(SCENARIOS)
 			this.practiceStarted = true
 			this.loadNextScenario()
 		},
@@ -704,6 +1037,28 @@ export default {
 			this.practiceStarted = false
 			this.practiceResults = null
 			this.practiceUserAnswers = {}
+		},
+
+		vlanColor(vlanId) {
+			const palette = ['#1f6feb', '#2da44e', '#d97706', '#d1242f', '#7c3aed', '#0f766e', '#db2777']
+			const index = Math.abs(Number(vlanId) || 0) % palette.length
+			return palette[index]
+		},
+
+		portVisualStyle(port) {
+			if (!port) return {}
+			if (port.mode === 'trunk') {
+				const allowed = (port.allowedVlans || []).length ? port.allowedVlans : [Number(this.framePreviewVlanId)]
+				const stripes = allowed.map((vlanId, index) => {
+					const start = Math.round((index / allowed.length) * 100)
+					const end = Math.round(((index + 1) / allowed.length) * 100)
+					const color = this.vlanColor(vlanId)
+					return `${color} ${start}% ${end}%`
+				})
+				return { backgroundImage: `linear-gradient(90deg, ${stripes.join(', ')})` }
+			}
+
+			return { background: this.vlanColor(port.accessVlan) }
 		},
 
 		calculateVlsm() {
@@ -1153,6 +1508,176 @@ export default {
 	grid-template-columns: repeat(8, minmax(0, 1fr));
 }
 
+.subnet-panel--vlan {
+	gap: var(--lnc-space-lg);
+}
+
+.vlan-grid {
+	display: grid;
+	gap: var(--lnc-space-lg);
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.vlan-card {
+	background: color-mix(in srgb, var(--lnc-panel) 92%, var(--lnc-primary) 8%);
+	border: 1px solid var(--lnc-border);
+	border-radius: var(--lnc-radius-md);
+	padding: var(--lnc-space-lg);
+	display: flex;
+	flex-direction: column;
+	gap: var(--lnc-space-md);
+}
+
+.vlan-card__header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: var(--lnc-space-md);
+}
+
+.vlan-card__title {
+	margin: 0;
+	font-size: 1rem;
+}
+
+.vlan-table input {
+	min-width: 120px;
+}
+
+.vlan-ports {
+	display: grid;
+	gap: var(--lnc-space-md);
+}
+
+.vlan-port {
+	display: grid;
+	grid-template-columns: 18px 1fr;
+	gap: 14px;
+	padding: 14px;
+	border: 1px solid var(--lnc-border);
+	border-radius: var(--lnc-radius-md);
+	background: var(--lnc-bg);
+}
+
+.vlan-port__badge {
+	border-radius: 999px;
+	min-height: 100%;
+}
+
+.vlan-port__headline {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	align-items: center;
+}
+
+.vlan-port__mode {
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--lnc-text-secondary);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.vlan-port__copy {
+	margin: 6px 0 10px;
+	color: var(--lnc-text-secondary);
+}
+
+.vlan-port__diagram {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+	font-size: 0.85rem;
+}
+
+.vlan-port__node {
+	padding: 6px 10px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--lnc-bg) 84%, var(--lnc-primary) 16%);
+	border: 1px solid var(--lnc-border);
+}
+
+.vlan-port__link {
+	color: var(--lnc-text-secondary);
+}
+
+.vlan-frame-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+}
+
+.vlan-frame-toggle {
+	display: inline-flex;
+	gap: 8px;
+}
+
+.vlan-frame-controls__label {
+	margin-bottom: 0;
+}
+
+.vlan-frame-controls__select {
+	max-width: 240px;
+}
+
+.vlan-frame {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+	gap: 10px;
+}
+
+.vlan-frame__segment {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 12px;
+	border-radius: var(--lnc-radius-md);
+	border: 1px solid var(--lnc-border);
+	background: var(--lnc-bg);
+	min-height: 92px;
+}
+
+.vlan-frame__segment--tag {
+	border-color: var(--lnc-cyan);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--lnc-cyan) 35%, transparent);
+}
+
+.vlan-frame__segment small,
+.vlan-frame__hint {
+	color: var(--lnc-text-secondary);
+}
+
+.vlan-route-checks {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: grid;
+	gap: 10px;
+}
+
+.vlan-route-checks__item {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	align-items: center;
+	padding: 10px 12px;
+	border-radius: var(--lnc-radius-md);
+	background: var(--lnc-bg);
+	border: 1px solid var(--lnc-border);
+}
+
+.vlan-route-checks__status--ok {
+	color: var(--lnc-green);
+}
+
+.vlan-route-checks__status--fail {
+	color: var(--lnc-danger);
+}
+
 @media (max-width: 900px) {
 	.binary-octets {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1163,6 +1688,10 @@ export default {
 	}
 
 	.vlsm-form__row {
+		grid-template-columns: 1fr;
+	}
+
+	.vlan-grid {
 		grid-template-columns: 1fr;
 	}
 }
@@ -1192,6 +1721,14 @@ export default {
 	.toggle-controls__preset {
 		min-width: unset;
 		width: 100%;
+	}
+
+	.vlan-card__header,
+	.vlan-frame-controls,
+	.vlan-route-checks__item,
+	.vlan-port__headline {
+		flex-direction: column;
+		align-items: flex-start;
 	}
 }
 
