@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v9.0
-milestone_name: Simulator-Werkzeuge
-status: defining_requirements
-stopped_at: null
-last_updated: "2026-03-24"
+milestone: v4.0
+milestone_name: Housekeeping + Content-Rollout
+status: Defining requirements
+stopped_at: Completed 61-02-PLAN.md
+last_updated: "2026-03-24T12:15:55.688Z"
 last_activity: 2026-03-24 — Milestone v9.0 started
 progress:
-  total_phases: 0
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_phases: 39
+  completed_phases: 28
+  total_plans: 46
+  completed_plans: 46
 ---
 
 # Project State
@@ -38,6 +37,8 @@ Last activity: 2026-03-24 — Milestone v9.0 started
 - Rein Frontend, kein Backend
 - Kampagnenfaehig (einbettbar in Abenteuer/Zeitreise)
 - Gleiche UX-Patterns wie Subnetzrechner (Toggle, Uebungsmodus, Erklaer-Modus)
+- [Phase 61]: Vue computed watchers with immediate:true for question context emission ensures sync regardless of navigation method
+- [Phase 61]: ExamMode enforces answer omission at frontend emission point as defense-in-depth alongside backend null-check
 
 ### Existing Architecture
 
@@ -57,6 +58,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24
-Stopped at: Requirements definition
+Last session: 2026-03-24T12:15:55.684Z
+Stopped at: Completed 61-02-PLAN.md
 Resume file: None

@@ -17,6 +17,7 @@
 - 🚧 **v4.0 Housekeeping + Content-Rollout** — Phases 52-55 (in progress)
 - 📋 **v7.2 Subnetzrechner Pro** — Phases 56-60 (planned)
 - 📋 **v8.0 VirtuProf v2** — Phases 61-63 (planned)
+- 📋 **v9.0 Simulator-Werkzeuge** — Phases 64-70 (planned)
 
 ## Phases
 
@@ -420,7 +421,7 @@ Plans:
 
 **Milestone Goal:** VirtuProf wird kontextbewusst — der Bot weiss welche Frage der User gerade sieht, gibt gestufte Hints statt sofort die Antwort, ist im Pruefungsmodus gesperrt, und User koennen Fehler direkt melden.
 
-- [ ] **Phase 61: Kontext-Mapping** - Frontend sendet Fragen-Kontext an Chat-API, GeminiService nutzt ihn im System-Prompt
+- [x] **Phase 61: Kontext-Mapping** - Frontend sendet Fragen-Kontext an Chat-API, GeminiService nutzt ihn im System-Prompt (completed 2026-03-24)
 - [ ] **Phase 62: Hint-System** - Gestufte Tipps (Richtung, konkreter, fast die Antwort) mit Per-Frage-Tracking
 - [ ] **Phase 63: Exam-Sperre + Fehler-Report** - VirtuProf im Exam-Mode deaktiviert, Fehler-Melde-Funktion mit automatischer Fragen-ID
 
@@ -461,10 +462,97 @@ Plans:
   4. Gemeldete Fehler sind fuer den Dozenten/Admin einsehbar (z.B. ueber das bestehende SupportTicketService) — kein Report geht verloren
 **Plans**: TBD
 
+
+---
+
+### v9.0 Simulator-Werkzeuge (Phases 64-70)
+
+**Milestone Goal:** 7 interaktive Netzwerk-Simulatoren als reine Frontend-Tools — CompTIA Network+ und Security+ Kernthemen hands-on ueben. Alle Simulatoren im Werkzeuge-Tab, kampagnenfaehig.
+
+- [ ] **Phase 64: DNS-Resolver** - Schritt-fuer-Schritt DNS-Aufloesung, Record-Typen, Fehlersuche-Szenarien
+- [ ] **Phase 65: Firewall/ACL-Builder** - Regelwerk-Editor, Paket-Simulation, Sicherheits-Szenarien
+- [ ] **Phase 66: Port-Scanner** - Animierter Scan, Service-Erkennung, Host-Profile
+- [ ] **Phase 67: Routing-Tabelle** - Editierbare Tabelle, Longest Prefix Match, Paket-Routing
+- [ ] **Phase 68: NAT-Tabelle** - Uebersetzungs-Visualisierung, NAT-Typen, Szenarien
+- [ ] **Phase 69: Wireshark-Lite** - Paket-Aufbau, vordefinierte Captures, Problemerkennung
+- [ ] **Phase 70: 802.1X Auth-Flow** - Sequenzdiagramm, EAP-Phasen, Vergleich
+
+### Phase 64: DNS-Resolver
+**Goal**: User koennen eine Domain eingeben und sehen die vollstaendige DNS-Aufloesung Schritt fuer Schritt — von Root-Server bis zur IP-Adresse, mit allen gaengigen Record-Typen und Fehlersuche-Szenarien
+**Depends on**: Phase 63 (v8.0 abgeschlossen) — keine harte Abhaengigkeit, eigenstaendig startbar
+**Requirements**: DNS-01, DNS-02, DNS-03
+**Success Criteria** (what must be TRUE):
+  1. Der User gibt eine Domain ein und sieht eine animierte Schritt-fuer-Schritt Aufloesung (Root → TLD → Authoritative → IP) mit sichtbaren Zwischenstationen und erklaerenden Labels an jedem Schritt
+  2. Der User kann Record-Typen (A, AAAA, MX, CNAME, PTR, NS, SOA, TXT) auswaehlen und sieht pro Typ eine visuelle Erklaerung mit Beispiel-Daten und typischem Einsatzzweck
+  3. Im Uebungsmodus bekommt der User eine manipulierte DNS-Kette praesentiert ("Warum loest diese Domain nicht auf?") und muss das Problem identifizieren — mit Feedback ob die Analyse korrekt war
+**Plans**: TBD
+
+### Phase 65: Firewall/ACL-Builder
+**Goal**: User koennen ein Firewall-Regelwerk in einer Tabelle aufbauen und simulierte Pakete dagegen testen — mit visueller Rueckmeldung ob ein Paket erlaubt oder blockiert wird
+**Depends on**: None (unabhaengig von anderen Simulatoren)
+**Requirements**: FW-01, FW-02, FW-03
+**Success Criteria** (what must be TRUE):
+  1. Der User kann Firewall-Regeln (Src-IP, Dst-IP, Port, Protocol, Action) in einer Tabelle anlegen, bearbeiten und per Drag-and-Drop umsortieren — die Reihenfolge bestimmt die Auswertung (First Match)
+  2. Der User kann ein simuliertes Paket (Src, Dst, Port, Protocol) eingeben und sieht visuell welche Regel greift (gruen = erlaubt, rot = blockiert) — mit Markierung der matchenden Zeile im Regelwerk
+  3. Im Uebungsmodus bekommt der User eine Anforderung ("Erlaube HTTP von Subnetz X, blockiere alles andere") und muss ein passendes Regelwerk erstellen — mit automatischer Pruefung gegen vordefinierte Test-Pakete
+**Plans**: TBD
+
+### Phase 66: Port-Scanner
+**Goal**: User koennen einen simulierten Port-Scan gegen vordefinierte Host-Profile durchfuehren und lernen offene Ports, Services und verdaechtige Konfigurationen zu erkennen
+**Depends on**: None (unabhaengig von anderen Simulatoren)
+**Requirements**: PSCAN-01, PSCAN-02, PSCAN-03
+**Success Criteria** (what must be TRUE):
+  1. Der User gibt eine IP ein und sieht einen animierten Scan der Port fuer Port durchgeht — offene Ports erscheinen mit Service-Name und Version (z.B. "80/tcp — HTTP — Apache 2.4")
+  2. Mindestens 4 vordefinierte Host-Profile (Webserver, Mailserver, Router, Domain Controller) liefern realistische Port-Sets — der User kann zwischen Profilen wechseln und die Unterschiede erkennen
+  3. Im Uebungsmodus muss der User Fragen beantworten wie "Welcher Service laeuft auf Port 3389?" oder "Welcher Host ist vermutlich kompromittiert?" — mit Erklaerung warum bestimmte offene Ports ein Sicherheitsrisiko darstellen
+**Plans**: TBD
+
+### Phase 67: Routing-Tabelle
+**Goal**: User koennen eine Routing-Tabelle editieren und sehen wie Pakete anhand von Longest Prefix Match durch ein Netzwerk geroutet werden
+**Depends on**: None (unabhaengig von anderen Simulatoren)
+**Requirements**: RT-01, RT-02, RT-03
+**Success Criteria** (what must be TRUE):
+  1. Der User sieht eine editierbare Routing-Tabelle (Destination, Mask, Gateway, Interface, Metric) und kann Eintraege hinzufuegen, loeschen und aendern — inklusive Default-Route
+  2. Bei Eingabe einer Ziel-IP zeigt eine Animation den Longest-Prefix-Match-Prozess: alle passenden Routen werden markiert, die spezifischste wird hervorgehoben und das Paket wird visuell ueber das gewaehlte Interface weitergeleitet
+  3. Im Uebungsmodus bekommt der User ein Netzwerk-Szenario ("Subnetz 10.1.2.0/24 soll ueber Gateway 10.0.0.1 erreichbar sein") und muss die richtige Route eintragen — mit Verifikation durch Test-Pakete
+**Plans**: TBD
+
+### Phase 68: NAT-Tabelle
+**Goal**: User verstehen Network Address Translation visuell — sie sehen wie interne Adressen in externe uebersetzt werden und koennen verschiedene NAT-Typen vergleichen
+**Depends on**: None (unabhaengig von anderen Simulatoren)
+**Requirements**: NAT-01, NAT-02, NAT-03
+**Success Criteria** (what must be TRUE):
+  1. Eine Visualisierung zeigt den Paket-Weg von Inside Local ueber NAT-Device zu Inside Global und zum Outside-Ziel — mit sichtbarer Adress-Transformation an jedem Punkt
+  2. Der User kann zwischen Static NAT, Dynamic NAT und PAT/Overload umschalten und sieht die Unterschiede in der Uebersetzungstabelle — bei PAT sind Port-Zuordnungen sichtbar, bei Static die 1:1-Zuordnung
+  3. Im Uebungsmodus bekommt der User ein Szenario ("5 Clients, 1 oeffentliche IP — welche externe IP:Port Kombination sieht der Server?") und muss die korrekte Uebersetzung angeben
+**Plans**: TBD
+
+### Phase 69: Wireshark-Lite
+**Goal**: User koennen Netzwerk-Pakete visuell untersuchen — vom Ethernet-Frame bis zum Payload — und lernen typische Protokoll-Muster und Fehlersituationen zu erkennen
+**Depends on**: None (unabhaengig von anderen Simulatoren)
+**Requirements**: WS-01, WS-02, WS-03
+**Success Criteria** (what must be TRUE):
+  1. Der User sieht einen Paket-Aufbau als verschachtelte Darstellung (Ethernet-Header → IP-Header → TCP/UDP-Header → Payload) mit allen Feldern, Hex-Werten und menschenlesbaren Beschreibungen — klickbar zum Auf-/Zuklappen
+  2. Vordefinierte Captures (TCP 3-Way Handshake, DNS Query/Response, HTTP GET, ARP Request/Reply) zeigen jeweils eine Sequenz von Paketen mit erklaerenden Annotationen — der User kann Paket fuer Paket durchklicken
+  3. Im Uebungsmodus bekommt der User einen Capture mit einem Problem (Retransmissions, RST-Flags, TTL exceeded) und muss das Problem identifizieren — mit Hinweisen auf welche Felder er achten soll
+  4. Die Paket-Darstellung verwendet Farb-Kodierung nach Protokoll-Schicht (L2 blau, L3 gruen, L4 orange, L7 lila) — konsistent ueber alle Captures hinweg
+**Plans**: TBD
+
+### Phase 70: 802.1X Auth-Flow
+**Goal**: User verstehen den 802.1X Authentifizierungs-Ablauf visuell — vom Supplicant ueber den Authenticator bis zum Auth-Server, mit allen EAP-Phasen und Protokoll-Vergleichen
+**Depends on**: None (unabhaengig von anderen Simulatoren)
+**Requirements**: AUTH-01, AUTH-02, AUTH-03
+**Success Criteria** (what must be TRUE):
+  1. Ein animiertes Sequenzdiagramm zeigt den kompletten 802.1X Ablauf (Supplicant → Authenticator → RADIUS Server) mit EAP-Phasen (EAPOL-Start, EAP-Request Identity, EAP-Response, Challenge, Success/Failure) — jeder Schritt wird nacheinander eingeblendet mit Erklaerung
+  2. Im Uebungsmodus muss der User die EAP-Nachrichten in die richtige Reihenfolge bringen (Drag-and-Drop) — mit Feedback welche Schritte vertauscht waren und warum die korrekte Reihenfolge wichtig ist
+  3. Eine Vergleichsansicht zeigt EAP-TLS, PEAP und EAP-FAST nebeneinander mit Unterschieden in Zertifikat-Anforderungen, Tunnel-Aufbau und Sicherheitsniveau — der User erkennt auf einen Blick welches Protokoll wann geeignet ist
+
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63
+Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 -> 64 -> 65 -> 66 -> 67 -> 68 -> 69 -> 70
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -477,6 +565,13 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 2/2 | Complete | 2026-03-24 |
 | 59. Szenarien-Content | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
-| 61. Kontext-Mapping | 1/2 | In Progress|  | - |
+| 61. Kontext-Mapping | 2/2 | Complete   | 2026-03-24 | - |
 | 62. Hint-System | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
 | 63. Exam-Sperre + Fehler-Report | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
+| 64. DNS-Resolver | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
+| 65. Firewall/ACL-Builder | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
+| 66. Port-Scanner | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
+| 67. Routing-Tabelle | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
+| 68. NAT-Tabelle | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
+| 69. Wireshark-Lite | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
+| 70. 802.1X Auth-Flow | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
