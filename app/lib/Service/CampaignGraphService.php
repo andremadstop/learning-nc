@@ -241,17 +241,23 @@ class CampaignGraphService {
         $targetNodeId = (string)($targetEdge['to'] ?? '');
         $targetNode = $this->findNode($graph, $targetNodeId);
 
-        // Apply node effects if any
+        // Apply node effects if any (effects is a list of individual effect objects)
         $newBag = $currentBag;
         if (isset($targetNode['effects']) && is_array($targetNode['effects'])) {
-            $newBag = $this->applyEffects($targetNode['effects'], $newBag);
+            foreach ($targetNode['effects'] as $effect) {
+                if (is_array($effect)) {
+                    $newBag = $this->applyEffects($effect, $newBag);
+                }
+            }
         }
 
         // Update state
         $state->setGraphPosition($targetNodeId);
         $state->setStateBagFromArray($newBag);
-        if (isset($targetNode['act_number'])) {
-            $state->setActNumber((int)$targetNode['act_number']);
+        // Support both 'act' (JSON convention) and 'act_number' field names
+        $actValue = $targetNode['act'] ?? $targetNode['act_number'] ?? null;
+        if ($actValue !== null) {
+            $state->setActNumber((int)$actValue);
         }
         $state->setUpdatedAt(time());
         $this->stateMapper->update($state);
@@ -283,10 +289,14 @@ class CampaignGraphService {
 
         $emptyBag = ['flags' => [], 'items' => [], 'reputation' => []];
 
-        // Apply start node effects if any
+        // Apply start node effects if any (effects is a list of individual effect objects)
         $bag = $emptyBag;
         if (isset($startNode['effects']) && is_array($startNode['effects'])) {
-            $bag = $this->applyEffects($startNode['effects'], $emptyBag);
+            foreach ($startNode['effects'] as $effect) {
+                if (is_array($effect)) {
+                    $bag = $this->applyEffects($effect, $bag);
+                }
+            }
         }
 
         $now = time();

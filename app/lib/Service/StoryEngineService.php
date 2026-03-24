@@ -4,6 +4,7 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\StoryProgress;
 use OCA\Learning\Db\StoryProgressMapper;
+use OCA\Learning\Service\CampaignGraphService;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\ICacheFactory;
 use OCP\IConfig;
@@ -41,6 +42,7 @@ class StoryEngineService {
     private GeminiService $geminiService;
     private IConfig $config;
     private ICacheFactory $cacheFactory;
+    private CampaignGraphService $graphService;
 
     public function __construct(
         StoryProgressMapper $progressMapper,
@@ -48,7 +50,8 @@ class StoryEngineService {
         LoggerInterface $logger,
         GeminiService $geminiService,
         IConfig $config,
-        ICacheFactory $cacheFactory
+        ICacheFactory $cacheFactory,
+        CampaignGraphService $graphService
     ) {
         $this->progressMapper = $progressMapper;
         $this->db = $db;
@@ -56,6 +59,7 @@ class StoryEngineService {
         $this->geminiService = $geminiService;
         $this->config = $config;
         $this->cacheFactory = $cacheFactory;
+        $this->graphService = $graphService;
         // Resolve campaign directory relative to this file's location:
         // app/lib/Service/ → ../../../data/campaigns/
         $this->campaignDir = realpath(__DIR__ . '/../../../app/data/campaigns')
@@ -146,10 +150,22 @@ class StoryEngineService {
      * @throws \RuntimeException
      */
     private function validateCampaignStructure(array $data, string $filename): void {
-        foreach (['campaign_id', 'title', 'scenes'] as $field) {
+        // campaign_id and title are always required
+        foreach (['campaign_id', 'title'] as $field) {
             if (empty($data[$field])) {
                 throw new \RuntimeException("Campaign {$filename} missing required field: {$field}");
             }
+        }
+
+        // Graph-format campaigns: validate graph structure instead of scenes
+        if (isset($data['graph']['nodes']) && isset($data['graph']['edges'])) {
+            $this->validateGraphStructure($data['graph'], $filename);
+            return;
+        }
+
+        // Linear-format campaigns: require scenes (existing validation unchanged)
+        if (empty($data['scenes'])) {
+            throw new \RuntimeException("Campaign {$filename} missing required field: scenes");
         }
         if (!is_array($data['scenes']) || count($data['scenes']) === 0) {
             throw new \RuntimeException("Campaign {$filename} has no scenes");
@@ -176,6 +192,95 @@ class StoryEngineService {
         }
     }
 
+    /**
+     * Validate graph structure: each node has 'id', each edge has 'id', 'from', 'to',
+     * and all edge from/to references point to existing node IDs.
+     *
+     * @param array<string, mixed> $graph
+     * @throws \RuntimeException
+     */
+    private function validateGraphStructure(array $graph, string $filename): void {
+        if (!is_array($graph['nodes']) || empty($graph['nodes'])) {
+            throw new \RuntimeException("Campaign {$filename} graph has no nodes");
+        }
+        if (!is_array($graph['edges'])) {
+            throw new \RuntimeException("Campaign {$filename} graph has no edges");
+        }
+
+        // Build node ID set
+        $nodeIds = [];
+        foreach ($graph['nodes'] as $node) {
+            if (empty($node['id'])) {
+                throw new \RuntimeException("Campaign {$filename} graph has a node missing 'id'");
+            }
+            $nodeIds[(string)$node['id']] = true;
+        }
+
+        // Validate edges
+        foreach ($graph['edges'] as $edge) {
+            if (empty($edge['id'])) {
+                throw new \RuntimeException("Campaign {$filename} graph has an edge missing 'id'");
+            }
+            foreach (['from', 'to'] as $key) {
+                if (empty($edge[$key])) {
+                    throw new \RuntimeException(
+                        "Campaign {$filename} graph edge '{$edge['id']}' missing '{$key}'"
+                    );
+                }
+                if (!isset($nodeIds[(string)$edge[$key]])) {
+                    throw new \RuntimeException(
+                        "Campaign {$filename} graph edge '{$edge['id']}' references unknown node '{$edge[$key]}'"
+                    );
+                }
+            }
+        }
+    }
+
+    // ─── Graph Response Transformer ──────────────────────────────────────────
+
+    /**
+     * Transform CampaignGraphService response to the shape StoryController/frontend expects.
+     * Maps graph nodes + edges to the existing progress/scene response format.
+     *
+     * @param array{state: array<string, mixed>, node: array<string, mixed>, available_edges: list<array<string, mixed>>} $graphResult
+     * @param array<string, mixed> $campaign
+     * @return array{progress: array<string, mixed>, scene: array<string, mixed>}
+     */
+    private function transformGraphResponse(array $graphResult, array $campaign): array {
+        $node = $graphResult['node'];
+        $edges = $graphResult['available_edges'] ?? [];
+        $state = $graphResult['state'];
+
+        // Map edges to choices format the frontend understands
+        $choices = array_map(static fn(array $edge) => [
+            'id' => $edge['id'],
+            'text' => $edge['label'] ?? $edge['id'],
+            'skill_check' => null, // Phase 73 will add simulator refs
+        ], $edges);
+
+        return [
+            'progress' => [
+                'campaign_id' => $state['campaign_id'] ?? '',
+                'current_scene_id' => $state['graph_position'] ?? '',
+                'character_class' => $state['character_class'] ?? 'helpdesk',
+                'score' => $state['score'] ?? 0,
+                'status' => $state['status'] ?? 'in_progress',
+                'state_bag' => $state['state_bag'] ?? [],
+            ],
+            'scene' => [
+                'id' => $node['id'],
+                'title' => $node['title'] ?? $node['id'],
+                'narrative' => $node['narrative'] ?? '',
+                'choices' => $choices,
+                'act' => $node['act'] ?? $state['act_number'] ?? 1,
+                'is_ending' => empty($edges) && !empty($node['is_ending']),
+                'characters' => $node['characters'] ?? [],
+                'simulation' => $node['simulation'] ?? null,
+                'graph_mode' => true,
+            ],
+        ];
+    }
+
     // ─── Progress Management ─────────────────────────────────────────────────
 
     /**
@@ -189,6 +294,14 @@ class StoryEngineService {
     public function startCampaign(string $userId, string $campaignId, string $characterClass, array $coopUserIds = []): array {
         $this->validateCharacterClass($characterClass);
         $campaign = $this->loadCampaign($campaignId);
+
+        // Graph-mode delegation — early return, linear logic below unchanged
+        if ($this->graphService->isGraphCampaign($campaign)) {
+            $result = $this->graphService->initGraphSession(
+                $userId, $campaignId, $characterClass, $campaign['graph']
+            );
+            return $this->transformGraphResponse($result, $campaign);
+        }
 
         $firstScene = $campaign['scenes'][0] ?? null;
         if ($firstScene === null) {
@@ -230,8 +343,15 @@ class StoryEngineService {
      * @throws \RuntimeException
      */
     public function getScene(string $userId, string $campaignId): array {
-        $progress = $this->requireProgress($userId, $campaignId);
         $campaign  = $this->loadCampaign($campaignId);
+
+        // Graph-mode delegation — early return, linear logic below unchanged
+        if ($this->graphService->isGraphCampaign($campaign)) {
+            $result = $this->graphService->getGraphScene($userId, $campaignId, $campaign['graph']);
+            return $this->transformGraphResponse($result, $campaign);
+        }
+
+        $progress = $this->requireProgress($userId, $campaignId);
         $scene     = $this->findScene($campaign, $progress->getCurrentSceneId());
 
         return [
@@ -262,8 +382,17 @@ class StoryEngineService {
         ?int   $questionId = null,
         ?int   $answerId   = null
     ): array {
-        $progress = $this->requireProgress($userId, $campaignId);
         $campaign  = $this->loadCampaign($campaignId);
+
+        // Graph-mode delegation — in graph mode, choiceId = edge ID
+        if ($this->graphService->isGraphCampaign($campaign)) {
+            $result = $this->graphService->traverseEdge(
+                $userId, $campaignId, $choiceId, $campaign['graph'], $campaign
+            );
+            return $this->transformGraphResponse($result, $campaign);
+        }
+
+        $progress = $this->requireProgress($userId, $campaignId);
         $scene     = $this->findScene($campaign, $progress->getCurrentSceneId());
 
         $choice = $this->findChoice($scene, $choiceId);
