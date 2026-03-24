@@ -351,7 +351,10 @@ Plans:
   1. Der User kann eine IPv6-Adresse mit Prefix (z.B. 2001:db8::1/48) eingeben und sieht korrekt berechnete Netzadresse, Host-Range und Adresstyp (Link-Local, Global Unicast, Multicast) — die Berechnung stimmt mit Referenz-Tools ueberein
   2. Ein Binaer-Display zeigt die vollstaendige 128-Bit Darstellung der IPv6-Adresse mit farblicher Trennung von Prefix und Interface-ID — der User erkennt visuell wo die Netzgrenze liegt
   3. subnetMath.js enthaelt reine IPv6-Funktionen (Parsing, Expansion, Prefix-Berechnung, Typ-Erkennung) die per Vitest getestet sind — mindestens 10 Unit-Tests fuer IPv6-Logik
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 57-01-PLAN.md — ipv6Math.js utility (TDD) + SubnetCalculator IPv6 tab with 128-bit binary display
 
 ### Phase 58: Uebungsmodus Engine
 **Goal**: Der Subnetzrechner bietet einen interaktiven Uebungsmodus in dem User Netzwerk-Aufgaben loesen, sofortiges Feedback bekommen und ihren Fortschritt verfolgen
@@ -398,8 +401,8 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 53. Content-Bereinigung | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
 | 54. Content-Verteilung | v4.0 Housekeeping | 0/1 | Not started | - |
 | 55. DevCloud-Hygiene | v4.0 Housekeeping | 0/TBD | Not started | - |
-| 56. Toggle-Spalten | 1/1 | Complete   | 2026-03-24 | - |
-| 57. IPv6 Math + UI | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
+| 56. Toggle-Spalten | 1/1 | Complete    | 2026-03-24 | - |
+| 57. IPv6 Math + UI | v7.2 Subnetzrechner Pro | 0/1 | Not started | - |
 | 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 59. Szenarien-Content | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
