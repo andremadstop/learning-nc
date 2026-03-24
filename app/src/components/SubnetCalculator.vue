@@ -34,6 +34,29 @@
 			<p v-if="calculatorError" class="subnet-state subnet-state--error">{{ calculatorError }}</p>
 			<p v-else-if="calculatorResult" class="subnet-state subnet-state--valid">{{ t('learning', 'Gueltige Eingabe erkannt.') }}</p>
 
+			<div v-if="calculatorResult" class="toggle-controls">
+				<div class="toggle-controls__preset">
+					<label class="subnet-label" for="toggle-preset">{{ t('learning', 'Anzeige-Preset') }}</label>
+					<select
+						id="toggle-preset"
+						class="subnet-input toggle-controls__select"
+						:value="activePreset"
+						@change="applyPreset($event.target.value)">
+						<option value="all">{{ t('learning', 'Alle Felder') }}</option>
+						<option value="beginner">{{ t('learning', 'Anfaenger') }}</option>
+						<option value="advanced">{{ t('learning', 'Fortgeschritten') }}</option>
+						<option value="basics">{{ t('learning', 'Nur Basics') }}</option>
+						<option v-if="activePreset === 'custom'" value="custom" disabled>{{ t('learning', 'Benutzerdefiniert') }}</option>
+					</select>
+				</div>
+				<div class="toggle-controls__rows">
+					<label v-for="(key, index) in rowKeys" :key="key" class="toggle-controls__checkbox">
+						<input type="checkbox" :checked="visibleRows[key]" @change="toggleRow(key)">
+						<span>{{ allCalculatorRows[index] ? allCalculatorRows[index].label : key }}</span>
+					</label>
+				</div>
+			</div>
+
 			<table v-if="calculatorResult" class="subnet-table">
 				<tbody>
 					<tr v-for="row in calculatorRows" :key="row.label">
@@ -166,6 +189,7 @@ import {
 	parseInput,
 	vlsmAllocate,
 } from '../utils/subnetMath.js'
+import { ROW_KEYS, getVisibleRows } from '../utils/togglePresets.js'
 
 export default {
 	name: 'SubnetCalculator',
@@ -174,6 +198,8 @@ export default {
 		return {
 			activeTab: 'calculator',
 			calculatorInput: '192.168.1.0/24',
+			visibleRows: getVisibleRows('all'),
+			activePreset: 'all',
 			vlsmInput: '10.0.0.0/24',
 			vlsmRows: [
 				{ id: 1, name: 'LAN A', hosts: 100 },
@@ -218,7 +244,11 @@ export default {
 			}
 		},
 
-		calculatorRows() {
+		rowKeys() {
+			return ROW_KEYS
+		},
+
+		allCalculatorRows() {
 			if (!this.calculatorResult) return []
 
 			return [
@@ -233,6 +263,10 @@ export default {
 				{ label: t('learning', 'Klasse'), value: `${this.calculatorResult.ipClass} ${t('learning', '(historisch)')}` },
 				{ label: t('learning', 'Privat'), value: this.calculatorResult.isPrivate ? t('learning', 'Ja (RFC1918)') : t('learning', 'Nein') },
 			]
+		},
+
+		calculatorRows() {
+			return this.allCalculatorRows.filter((row, index) => this.visibleRows[ROW_KEYS[index]])
 		},
 
 		bitCells() {
@@ -278,6 +312,14 @@ export default {
 	methods: {
 		switchTab(id) {
 			this.$set(this.$data, 'activeTab', id)
+		},
+		applyPreset(presetName) {
+			this.activePreset = presetName
+			this.visibleRows = getVisibleRows(presetName)
+		},
+		toggleRow(key) {
+			this.$set(this.visibleRows, key, !this.visibleRows[key])
+			this.activePreset = 'custom'
 		},
 		formatAddress(octets) {
 			return octets ? ipToString(octets) : '-'
@@ -662,6 +704,49 @@ export default {
 	opacity: 0.5;
 }
 
+.toggle-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--lnc-space-md);
+	align-items: flex-start;
+	padding: var(--lnc-space-md);
+	background: color-mix(in srgb, var(--lnc-panel) 92%, var(--lnc-primary) 8%);
+	border: 1px solid var(--lnc-border);
+	border-radius: var(--lnc-radius-md);
+}
+
+.toggle-controls__preset {
+	min-width: 200px;
+}
+
+.toggle-controls__select {
+	width: 100%;
+	cursor: pointer;
+	appearance: auto;
+}
+
+.toggle-controls__rows {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 16px;
+	flex: 1;
+	min-width: 280px;
+}
+
+.toggle-controls__checkbox {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.9rem;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.toggle-controls__checkbox input[type="checkbox"] {
+	accent-color: var(--lnc-primary);
+	cursor: pointer;
+}
+
 @media (max-width: 900px) {
 	.binary-octets {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -684,6 +769,15 @@ export default {
 
 	.binary-octets {
 		grid-template-columns: 1fr;
+	}
+
+	.toggle-controls {
+		flex-direction: column;
+	}
+
+	.toggle-controls__preset {
+		min-width: unset;
+		width: 100%;
 	}
 }
 
