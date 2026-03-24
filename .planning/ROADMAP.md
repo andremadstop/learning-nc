@@ -324,7 +324,7 @@ Plans:
 
 **Milestone Goal:** Subnetzrechner zum interaktiven Lernwerkzeug ausbauen — Toggle-Spalten fuer schrittweises Lernen, Uebungsmodus mit realistischen CompTIA-Szenarien, VLAN-Visualisierung und IPv6-Support. Nur Frontend (app/src/, app/js/).
 
-- [ ] **Phase 56: Toggle-Spalten** - Ergebnis-Zeilen ein/ausblenden mit Lern-Presets und Session-Persistenz
+- [x] **Phase 56: Toggle-Spalten** - Ergebnis-Zeilen ein/ausblenden mit Lern-Presets und Session-Persistenz (completed 2026-03-24)
 - [ ] **Phase 57: IPv6 Math + UI** - subnetMath.js um IPv6 erweitern, neuer Tab/Bereich mit 128-Bit Binaer-Display
 - [ ] **Phase 58: Uebungsmodus Engine** - Aufgaben-Framework mit Zufallsauswahl, Eingabefelder, Prueflogik, Fortschritt
 - [ ] **Phase 59: Szenarien-Content** - 25+ Aufgaben (Subnetting, VLSM, Praxis, IPv6) mit Schwierigkeitsgraden
@@ -398,7 +398,7 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 53. Content-Bereinigung | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
 | 54. Content-Verteilung | v4.0 Housekeeping | 0/1 | Not started | - |
 | 55. DevCloud-Hygiene | v4.0 Housekeeping | 0/TBD | Not started | - |
-| 56. Toggle-Spalten | v7.2 Subnetzrechner Pro | 0/1 | Not started | - |
+| 56. Toggle-Spalten | 1/1 | Complete   | 2026-03-24 | - |
 | 57. IPv6 Math + UI | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 59. Szenarien-Content | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |

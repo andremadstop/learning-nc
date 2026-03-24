@@ -1,86 +1,82 @@
-# Requirements: Learning-NC
+# Requirements: Learning-NC v7.2 Subnetzrechner Pro
 
 **Defined:** 2026-03-24
-**Core Value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — fuer Einzellerner und Kursgruppen.
+**Core Value:** Interaktives Netzwerk-Lernwerkzeug das schrittweises Lernen, realistische Uebungen und moderne Protokolle (VLAN, IPv6) in einem Browser-Tool vereint.
 
-## v4.0 Requirements
+## v7.2 Requirements
 
-### Bugfix & Release
+### Toggle-Spalten
 
-- [x] **FIX-01**: Binary Tab Fix ist auf learning-dev deployed und funktioniert im Browser
-- [x] **FIX-02**: App Store Token ist erneuert und aktueller Release ist im App Store hochgeladen
+- [x] **TOG-01**: User kann im Rechner-Tab einzelne Ergebnis-Zeilen per Checkbox ein/ausblenden (z.B. nur Netzadresse + CIDR sichtbar, Rest verdeckt)
+- [x] **TOG-02**: User kann zwischen Presets waehlen (Alle, Anfaenger, Fortgeschritten, Nur Basics) die vordefinierte Spalten-Kombinationen aktivieren
+- [x] **TOG-03**: Die Toggle-Einstellung bleibt beim Tab-Wechsel erhalten (Session-persistent)
 
-### Content-Bereinigung
+### Uebungsmodus
 
-- [x] **CONT-01**: Wireshark-Anleitung ist von persoenlichen Homelab-Referenzen bereinigt (IPs, SSH-Aliases generalisiert)
-- [x] **CONT-02**: Nmap-Anleitung ist von persoenlichen Homelab-Referenzen bereinigt
-- [x] **CONT-03**: Network+ Wissensbasis, Lehrplan und Grossevents-Guide sind geprueft und bereinigt
-- [x] **CONT-04**: Alle bereinigten Guides liegen als geteilte Kopien vor (Originale im Personal Vault bleiben unveraendert)
+- [ ] **UEB-01**: User kann einen Uebungsmodus starten der eine zufaellige Aufgabe aus einem Szenario-Pool stellt
+- [ ] **UEB-02**: User gibt seine Antwort(en) in Eingabefelder ein (Netzadresse, Broadcast, CIDR, Host-Anzahl etc.)
+- [ ] **UEB-03**: Der Simulator prueft die Antwort automatisch und zeigt Feedback (richtig/falsch + korrekte Loesung)
+- [ ] **UEB-04**: User sieht einen Fortschritts-Tracker (X von Y richtig, aktuelle Serie)
 
-### Content-Verteilung
+### Szenarien-Content
 
-- [ ] **DIST-01**: NC Shared Folder "Kurs-Materialien" existiert und ist fuer alle Kurs-User sichtbar
-- [ ] **DIST-02**: Bereinigte Network+ Guides sind im Shared Folder abgelegt
-- [ ] **DIST-03**: VirtuProf kann Fragen zu den Guides beantworten (RAG-Quellen registriert)
+- [ ] **SCN-01**: Mindestens 15 realistische Subnetting-Aufgaben auf CompTIA Network+ Niveau (CIDR-Berechnung, Host-Ranges, nicht-aligned Adressen)
+- [ ] **SCN-02**: Mindestens 5 VLSM-Aufgaben (Netzwerk aufteilen fuer mehrere Abteilungen/Standorte)
+- [ ] **SCN-03**: Mindestens 5 Praxis-Szenarien mit Kontext (z.B. "Firma mit 3 Standorten", "Server-Rack mit /28")
+- [ ] **SCN-04**: Aufgaben haben Schwierigkeitsgrade (Leicht/Mittel/Schwer) und decken typische Fallstricke ab (Broadcast abziehen, Router-Interface, nicht auf Netzgrenze)
 
-### DevCloud-Hygiene
+### VLAN
 
-- [ ] **HYGN-01**: Redundanzcheck aller User-Home-Ordner auf learning-dev ist durchgefuehrt und dokumentiert
-- [ ] **HYGN-02**: Ueberfluessige/doppelte Ordner sind aufgeraeumt
-- [ ] **HYGN-03**: OSSU Curriculum ist als Kursstruktur-Template evaluiert (Ergebnis dokumentiert, ggf. Import)
+- [ ] **VLAN-01**: Neuer Tab "VLAN" im Subnetzrechner mit VLAN-ID Eingabe und Zuordnung zu Subnetzen
+- [ ] **VLAN-02**: Visualisierung von Access vs Trunk Ports mit 802.1Q Tagging (welcher Frame bekommt welchen Tag)
+- [ ] **VLAN-03**: Inter-VLAN Routing Darstellung (Router-on-a-Stick oder L3-Switch, Subinterfaces mit VLAN-Zuordnung)
+
+### IPv6
+
+- [ ] **IPV6-01**: User kann IPv6-Adressen mit Prefix eingeben und Netzadresse, Host-Range, Typ (Link-Local, Global Unicast, Multicast) berechnen
+- [ ] **IPV6-02**: Binaer-Display zeigt 128-Bit Darstellung mit farblich markiertem Prefix/Interface-ID
+- [ ] **IPV6-03**: Mindestens 5 IPv6-Uebungsszenarien (Prefix-Berechnung, Subnetting eines /48, EUI-64, Link-Local Erkennung)
 
 ## Future Requirements
 
-### Digitaler Klassenraum
-- **CLASS-01**: Kurs-Chat (Echtzeit, pro Kurs)
-- **CLASS-02**: Diskussionsforum (pro Frage/Thema, threaded)
-- **CLASS-03**: Kanban-Board fuer Lernziele
-- **CLASS-04**: Peer-Review (Schueler bewerten Freitext-Antworten)
-
-### Skill-Profil
-- **SKILL-01**: User-Profilseite mit Tags (Setup, Fokus, Rolle)
-- **SKILL-02**: Staerken automatisch aus Lernhistorie
-- **SKILL-03**: Skill-Map als Force-directed Graph
-
-### KI Starter
-- **START-01**: Cross-Platform Setup-Kit fuer Mitschueler
-
-### Netzwerk-Tools (v7.1 deferred)
-- **CALC-01**: Subnetzrechner (IP + Maske -> Netzadresse, Broadcast, Host-Range)
-- **CALC-02**: 32-Bit Binaer-Display
-- **CALC-03**: VLSM-Rechner
-- **UEB-01**: Subnetting-Uebungen mit Validierung
-- **INT-01**: Werkzeuge-Tab in App-Navigation
+- **FUT-01**: Persistierung der Uebungsergebnisse in DB (Backend noetig)
+- **FUT-02**: Multiplayer/Duell-Subnetting
+- **FUT-03**: DHCPv6 vs SLAAC Visualisierung
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Vue 3 Migration | Eigener Major-Milestone, nicht mit Housekeeping mischen |
-| Neue Security-Kampagnen | Nach Content-Rollout als eigener Milestone |
-| IPv6 Subnetting | Noch nicht pruefungsrelevant |
-| Honeypot-Szenario | Noch in Ideenphase |
+| Backend/PHP-Aenderungen | Anderer Chat, Ops-Ebene |
+| DB-Persistierung | Rein Frontend, localStorage reicht |
+| Multiplayer/Duell-Subnetting | Eigener Milestone |
+| DHCPv6/SLAAC | Zu tief fuer v7.2 |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FIX-01 | Phase 52 | Complete |
-| FIX-02 | Phase 52 | Complete |
-| CONT-01 | Phase 53 | Complete |
-| CONT-02 | Phase 53 | Complete |
-| CONT-03 | Phase 53 | Complete |
-| CONT-04 | Phase 53 | Complete |
-| DIST-01 | Phase 54 | Pending |
-| DIST-02 | Phase 54 | Pending |
-| DIST-03 | Phase 54 | Pending |
-| HYGN-01 | Phase 55 | Pending |
-| HYGN-02 | Phase 55 | Pending |
-| HYGN-03 | Phase 55 | Pending |
+| TOG-01 | Phase 56 | Complete |
+| TOG-02 | Phase 56 | Complete |
+| TOG-03 | Phase 56 | Complete |
+| IPV6-01 | Phase 57 | Pending |
+| IPV6-02 | Phase 57 | Pending |
+| UEB-01 | Phase 58 | Pending |
+| UEB-02 | Phase 58 | Pending |
+| UEB-03 | Phase 58 | Pending |
+| UEB-04 | Phase 58 | Pending |
+| SCN-01 | Phase 59 | Pending |
+| SCN-02 | Phase 59 | Pending |
+| SCN-03 | Phase 59 | Pending |
+| SCN-04 | Phase 59 | Pending |
+| IPV6-03 | Phase 59 | Pending |
+| VLAN-01 | Phase 60 | Pending |
+| VLAN-02 | Phase 60 | Pending |
+| VLAN-03 | Phase 60 | Pending |
 
 **Coverage:**
-- v4.0 requirements: 12 total
-- Mapped to phases: 12
+- v7.2 requirements: 17 total
+- Mapped to phases: 17
 - Unmapped: 0
 
 ---

@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: Housekeeping + Content-Rollout
-status: planning
-stopped_at: Completed 53-01-PLAN.md
-last_updated: "2026-03-24T07:37:59.776Z"
-last_activity: 2026-03-24 — Roadmap created for v4.0 Housekeeping (4 phases, 12 requirements)
+milestone: v7.2
+milestone_name: Subnetzrechner Pro
+status: executing
+stopped_at: Completed 56-01-PLAN.md
+last_updated: "2026-03-24T08:22:39.684Z"
+last_activity: 2026-03-24 — Phase 56 Toggle-Spalten complete (1/1 plans)
 progress:
-  total_phases: 23
-  completed_phases: 21
-  total_plans: 35
-  completed_plans: 35
+  total_phases: 28
+  completed_phases: 22
+  total_plans: 37
+  completed_plans: 36
   percent: 0
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** Phase 52 — Bugfix & Release
+**Current focus:** Milestone v7.2 — Subnetzrechner Pro (Phases 56-60)
 
 ## Current Position
 
-Phase: 52 of 55 (Bugfix & Release)
-Plan: Ready to plan
-Status: Ready to plan Phase 52
-Last activity: 2026-03-24 — Roadmap created for v4.0 Housekeeping (4 phases, 12 requirements)
+Phase: 56 of 60 (Toggle-Spalten) — complete
+Plan: 01 of 01 — complete
+Status: Phase 56 complete, ready for Phase 57
+Last activity: 2026-03-24 — Toggle-Spalten implemented (togglePresets.js + SubnetCalculator toggle UI)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -43,25 +43,25 @@ Progress: [░░░░░░░░░░] 0%
 
 ### Decisions
 
-- Shared Folder statt Kopien pro User (zentral gepflegt)
-- Content bereinigen vor Verteilung (keine persoenlichen Daten)
-- RAG-Integration der Guides in VirtuProf
-- Reihenfolge: Bugfix + Token zuerst, dann Content, dann OSSU
-- [Phase 52]: Updated existing v3.0.0 GitHub release asset instead of creating new tag
-- [Phase 53]: Used 10.0.0.0/24 as generic lab subnet, functional hostnames for educational clarity
+- Nur Frontend (app/src/, app/js/) — kein Backend/PHP
+- IPv6 mit einplanen statt auf spaeteren Milestone verschieben
+- Realistische Uebungsszenarien gleich mitliefern (nicht nachtraeglich)
+- Session-persistent Toggles (kein localStorage, nur JS-State)
+- IPv6-Math VOR Uebungsmodus (damit Engine beide Protokolle unterstuetzen kann)
+- VLAN-Tab parallel zu Uebungsmodus moeglich (abhaengig nur von Phase 56)
+- [Phase 56]: Test files in tests/unit/ (vitest config), not src/utils/__tests__/ (plan)
 
 ### Existing Architecture
 
-- RAG-Pipeline: VirtuProf -> GeminiService -> Multi-Source Context
-- NC Sharing API fuer Ordner/Dateien
-- STAS-Vault-Verteilung per ssh/docker cp Workflow (11 User)
-- Subnetzrechner mit Binary Tab (Fix lokal fertig)
-- App Store Token abgelaufen seit 2026-03-19
+- SubnetCalculator.vue: 3 Tabs (Rechner, Binaer, VLSM), ~790 Zeilen, toggle presets integrated
+- togglePresets.js: Pure utility for row visibility presets (ROW_KEYS, PRESETS, getVisibleRows)
+- subnetMath.js: Pure utility (~305 Zeilen), IPv4-only
+- Design-Token-System (--lnc-* CSS Variablen)
+- Vue 2.7 mit Options API
 
 ### Pending Todos
 
-- Binary Tab Fix deployen (Phase 52)
-- App Store Token erneuern (Phase 52)
+None.
 
 ### Blockers/Concerns
 
@@ -69,6 +69,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T07:37:59.772Z
-Stopped at: Completed 53-01-PLAN.md
+Last session: 2026-03-24T08:22:39.671Z
+Stopped at: Completed 56-01-PLAN.md
 Resume file: None
