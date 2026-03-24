@@ -188,9 +188,9 @@ describe('submitAnswer', () => {
 			{ id: 's2', expectedAnswers: { hostCount: '62' } },
 		])
 
-		// First: correct
+		// First: correct (use current scenario's own expected answers)
 		nextScenario(session)
-		submitAnswer(session, checkAnswers(session.current.expectedAnswers, { hostCount: '14' }))
+		submitAnswer(session, checkAnswers(session.current.expectedAnswers, { ...session.current.expectedAnswers }))
 		expect(session.streak).toBe(1)
 
 		// Second: wrong
@@ -234,7 +234,7 @@ describe('getProgress', () => {
 			{ id: 's2', expectedAnswers: { hostCount: '62' } },
 		])
 		nextScenario(session)
-		submitAnswer(session, checkAnswers(session.current.expectedAnswers, { hostCount: '14' }))
+		submitAnswer(session, checkAnswers(session.current.expectedAnswers, { ...session.current.expectedAnswers }))
 		const progress = getProgress(session)
 		expect(progress.correct).toBe(1)
 		expect(progress.total).toBe(1)
