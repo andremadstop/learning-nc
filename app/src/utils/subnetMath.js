@@ -224,6 +224,7 @@ export function calculateSubnet(ip, prefix) {
 	const hostCount = hostCapacity(prefix)
 
 	return {
+		ip: cloneOctets(normalizedIp),
 		network: intToOctets(networkInt),
 		broadcast: intToOctets(broadcastInt),
 		firstHost: hostCount > 0 ? intToOctets((networkInt + 1) >>> 0) : null,
