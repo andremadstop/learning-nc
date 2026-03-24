@@ -1011,6 +1011,9 @@ export default {
       if (this.currentContext?.questionId) {
         payload.questionId = this.currentContext.questionId
       }
+      if (this.currentContext?.questionContext) {
+        payload.questionContext = this.currentContext.questionContext
+      }
 
       try {
         const response = await axios.post(generateUrl('/apps/learning/api/virtu-prof/chat'), payload)
