@@ -6,6 +6,20 @@
 				<h2 class="subnet-tool__title">{{ t('learning', 'Subnetzrechner') }}</h2>
 				<p class="subnet-tool__subtitle">{{ t('learning', 'Netzadresse, Broadcast, Binardarstellung und VLSM direkt im Browser berechnen.') }}</p>
 			</div>
+			<div class="explain-toggle">
+				<label class="explain-toggle__label" for="explain-mode-toggle">
+					{{ explainMode ? t('learning', 'Erklaer-Modus') : t('learning', 'Kompakt') }}
+				</label>
+				<button
+					id="explain-mode-toggle"
+					class="explain-toggle__switch"
+					:class="{ 'explain-toggle__switch--active': explainMode }"
+					role="switch"
+					:aria-checked="explainMode ? 'true' : 'false'"
+					@click="explainMode = !explainMode">
+					<span class="explain-toggle__knob"></span>
+				</button>
+			</div>
 		</header>
 
 		<nav class="subnet-tool__tabs" role="tablist" :aria-label="t('learning', 'Subnetzrechner Tabs')">
@@ -59,10 +73,18 @@
 
 			<table v-if="calculatorResult" class="subnet-table">
 				<tbody>
-					<tr v-for="row in calculatorRows" :key="row.label">
-						<th scope="row">{{ row.label }}</th>
-						<td>{{ row.value }}</td>
-					</tr>
+					<template v-for="row in calculatorRowsWithKeys">
+						<tr :key="'row-' + row.key">
+							<th scope="row">{{ row.label }}</th>
+							<td>{{ row.value }}</td>
+						</tr>
+						<tr v-if="explainMode && row.why" :key="'why-' + row.key" class="subnet-table__why">
+							<td colspan="2">
+								<span class="why-badge">{{ t('learning', 'Warum?') }}</span>
+								{{ row.why }}
+							</td>
+						</tr>
+					</template>
 				</tbody>
 			</table>
 		</section>
@@ -104,6 +126,17 @@
 						<span class="binary-octets__value">{{ calculatorResult.ip[index] }}</span>
 						<span class="binary-octets__meta">{{ t('learning', 'Netzmaske: {mask}', { mask: calculatorResult.mask[index] }) }}</span>
 					</div>
+				</div>
+
+				<div v-if="explainMode && ipv4Steps.length" class="rechenweg-panel">
+					<h3 class="rechenweg-panel__title">{{ t('learning', 'Rechenweg') }}</h3>
+					<ol class="rechenweg-panel__steps">
+						<li v-for="(step, i) in ipv4Steps" :key="'step-' + i" class="rechenweg-panel__step">
+							<span class="rechenweg-panel__label">{{ step.label }}</span>
+							<span class="rechenweg-panel__formula">{{ step.formula }}</span>
+							<span class="rechenweg-panel__result">= {{ step.result }}</span>
+						</li>
+					</ol>
 				</div>
 			</div>
 		</section>
@@ -235,6 +268,17 @@
 						<span class="binary-octets__value">{{ group.value }}</span>
 					</div>
 				</div>
+
+				<div v-if="explainMode && ipv6Steps.length" class="rechenweg-panel">
+					<h3 class="rechenweg-panel__title">{{ t('learning', 'Rechenweg (IPv6)') }}</h3>
+					<ol class="rechenweg-panel__steps">
+						<li v-for="(step, i) in ipv6Steps" :key="'ipv6step-' + i" class="rechenweg-panel__step">
+							<span class="rechenweg-panel__label">{{ step.label }}</span>
+							<span class="rechenweg-panel__formula">{{ step.formula }}</span>
+							<span class="rechenweg-panel__result">= {{ step.result }}</span>
+						</li>
+					</ol>
+				</div>
 			</div>
 		</section>
 	</section>
@@ -248,6 +292,7 @@ import {
 	vlsmAllocate,
 } from '../utils/subnetMath.js'
 import { ROW_KEYS, getVisibleRows } from '../utils/togglePresets.js'
+import { generateIPv4Steps, generateIPv6Steps, generateWhyExplanation } from '../utils/subnetExplainer.js'
 import {
 	parseIPv6,
 	calculateIPv6Subnet,
@@ -274,6 +319,7 @@ export default {
 			vlsmResults: [],
 			vlsmError: '',
 			ipv6Input: '2001:db8::1/48',
+			explainMode: false,
 		}
 	},
 
@@ -335,6 +381,35 @@ export default {
 
 		calculatorRows() {
 			return this.allCalculatorRows.filter((row, index) => this.visibleRows[ROW_KEYS[index]])
+		},
+
+		calculatorRowsWithKeys() {
+			if (!this.calculatorResult) return []
+			return this.allCalculatorRows
+				.map((row, index) => ({
+					...row,
+					key: ROW_KEYS[index],
+					why: this.whyExplanations[ROW_KEYS[index]] || null,
+				}))
+				.filter((row) => this.visibleRows[row.key])
+		},
+
+		whyExplanations() {
+			if (!this.calculatorResult) return {}
+			return ROW_KEYS.reduce((acc, key) => {
+				acc[key] = generateWhyExplanation(key, this.calculatorResult)
+				return acc
+			}, {})
+		},
+
+		ipv4Steps() {
+			if (!this.calculatorResult) return []
+			return generateIPv4Steps(this.calculatorResult)
+		},
+
+		ipv6Steps() {
+			if (!this.ipv6Result) return []
+			return generateIPv6Steps(this.ipv6Result, this.ipv6Parsed.prefix)
 		},
 
 		bitCells() {
@@ -952,10 +1027,118 @@ export default {
 	}
 }
 
+.explain-toggle {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.explain-toggle__label {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: var(--lnc-text-secondary);
+}
+
+.explain-toggle__switch {
+	width: 44px;
+	height: 24px;
+	background: var(--lnc-border);
+	border-radius: 12px;
+	position: relative;
+	cursor: pointer;
+	transition: background 0.2s;
+	border: none;
+	padding: 0;
+}
+
+.explain-toggle__switch--active {
+	background: var(--lnc-cyan);
+}
+
+.explain-toggle__knob {
+	width: 18px;
+	height: 18px;
+	background: white;
+	position: absolute;
+	left: 3px;
+	top: 3px;
+	transition: left 0.2s;
+	border-radius: 50%;
+}
+
+.explain-toggle__switch--active .explain-toggle__knob {
+	left: 23px;
+}
+
+.rechenweg-panel {
+	background: color-mix(in srgb, var(--lnc-bg) 92%, var(--lnc-cyan) 8%);
+	border: 1px solid var(--lnc-border);
+	border-radius: var(--lnc-radius-md);
+	padding: var(--lnc-space-lg);
+	margin-top: var(--lnc-space-lg);
+}
+
+.rechenweg-panel__title {
+	font-size: 1rem;
+	font-weight: 700;
+	margin: 0 0 var(--lnc-space-md);
+	color: var(--lnc-cyan);
+}
+
+.rechenweg-panel__steps {
+	list-style: decimal;
+	padding-left: 1.5em;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: var(--lnc-space-sm);
+}
+
+.rechenweg-panel__step {
+	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+	font-size: 0.9rem;
+	line-height: 1.6;
+}
+
+.rechenweg-panel__label {
+	font-weight: 700;
+	margin-right: 8px;
+}
+
+.rechenweg-panel__formula {
+	color: var(--lnc-text-secondary);
+}
+
+.rechenweg-panel__result {
+	color: var(--lnc-cyan);
+	font-weight: 600;
+}
+
+.subnet-table__why td {
+	background: color-mix(in srgb, var(--lnc-bg) 90%, var(--lnc-amber) 10%);
+	font-size: 0.88rem;
+	padding: 8px 14px;
+	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+	color: var(--lnc-text-secondary);
+	border-top: none;
+}
+
+.why-badge {
+	background: var(--lnc-amber);
+	color: #000;
+	font-size: 0.75rem;
+	font-weight: 700;
+	padding: 2px 6px;
+	border-radius: 4px;
+	margin-right: 8px;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.subnet-tool__tab,
 	.subnet-button,
-	.subnet-input {
+	.subnet-input,
+	.explain-toggle__switch,
+	.explain-toggle__knob {
 		transition: none;
 	}
 }
