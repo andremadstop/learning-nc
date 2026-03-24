@@ -289,7 +289,10 @@ Plans:
   2. Die Nmap-Anleitung ist analog bereinigt — alle Scan-Beispiele verwenden generische Netzwerke und Hostnamen
   3. Die Network+ Wissensbasis, der Lehrplan und der Grossevents-Guide sind geprueft und enthalten keine persoenlichen Referenzen
   4. Fuer jeden bereinigten Guide existiert eine geteilte Kopie (z.B. im STAS-Vault oder Staging-Ordner) — die Originale im Personal Vault sind unveraendert
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 53-01-PLAN.md — Clean all 5 Network+ guides from personal references, write to app/data/kurs-materialien/
 
 ### Phase 54: Content-Verteilung
 **Goal**: Alle bereinigten Guides sind zentral in einem NC Shared Folder verfuegbar und VirtuProf kann inhaltliche Fragen dazu beantworten
@@ -318,7 +321,7 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 52. Bugfix & Release | 1/1 | Complete   | 2026-03-24 | - |
-| 53. Content-Bereinigung | v4.0 Housekeeping | 0/TBD | Not started | - |
+| 52. Bugfix & Release | 1/1 | Complete    | 2026-03-24 | - |
+| 53. Content-Bereinigung | v4.0 Housekeeping | 0/1 | Planning | - |
 | 54. Content-Verteilung | v4.0 Housekeeping | 0/TBD | Not started | - |
 | 55. DevCloud-Hygiene | v4.0 Housekeeping | 0/TBD | Not started | - |
