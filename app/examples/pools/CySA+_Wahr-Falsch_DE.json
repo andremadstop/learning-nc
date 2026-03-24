@@ -1,0 +1,1928 @@
+{
+  "pool_name": "CySA+ Wahr/Falsch (DE)",
+  "source": "AI-generated (Claude/Gemini), reviewed and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "questions": [
+    {
+      "text": "False Positives koennen SOC-Ressourcen stark belasten.",
+      "explanation": "Zu viele False Positives verursachen Alarmmuedigkeit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Containment kann je nach Vorfall vor Eradication stattfinden.",
+      "explanation": "Reihenfolge haengt vom Incident-Typ ab.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein einzelner IOC beweist immer sicher einen erfolgreichen Angriff.",
+      "explanation": "IOCs sind Indikatoren, keine alleinige Gewissheit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Threat Hunting ist ausschliesslich reaktiv nach einem Alert.",
+      "explanation": "Hunting ist oft proaktiv ohne konkreten Alert.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Playbooks helfen, Incident-Antworten reproduzierbar zu machen.",
+      "explanation": "Standardisierte Ablaufe verbessern Geschwindigkeit und Qualitaet.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "MTTR beschreibt die Zeit bis zur Wiederherstellung.",
+      "explanation": "Mean Time To Respond/Recover ist zentrale Ops-Metrik.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Log-Retention hat auch Compliance-Relevanz.",
+      "explanation": "Aufbewahrungsfristen sind oft regulatorisch vorgegeben.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "YARA-Regeln werden typischerweise fuer Netzwerkrouting eingesetzt.",
+      "explanation": "YARA dient Malware-/Artefakt-Erkennung, nicht Routing.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Threat Intelligence ist nuetzlicher, wenn sie nach Vertrauensniveau und Relevanz bewertet wird.",
+      "explanation": "Qualitaet und Kontext sind wichtiger als reine Menge.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein hoher CVSS-Score bedeutet immer sofortige Prioritaet, unabhaengig vom Asset-Kontext.",
+      "explanation": "Asset-Kritikalitaet und Exponierung beeinflussen Prioritaet stark.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Use-Case-Tuning im SIEM kann False Positives reduzieren.",
+      "explanation": "Schwellen, Korrelationen und Kontext verbessern Erkennungsqualitaet.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Forensic Imaging sollte idealerweise mit Hash-Verifikation dokumentiert werden.",
+      "explanation": "Hashes sichern Integritaetsnachweis der Beweise.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Threat Hunting ist nur nach einem Incident sinnvoll.",
+      "explanation": "Hunting ist oft proaktiv und hypothesengetrieben.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Zeitlich unsynchrone Logs erschweren Root-Cause-Analysen.",
+      "explanation": "Korrelation ohne saubere Zeitachse ist fehleranfaellig.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein einzelner Alarm reicht immer fuer eindeutige Attribution eines Angreifers.",
+      "explanation": "Attribution braucht meist mehrfache Evidenz und Kontext.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Runbooks koennen helfen, Reaktionszeiten im SOC zu verbessern.",
+      "explanation": "Standardisierte Schritte reduzieren Reibung in Stresssituationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Vulnerability Management endet nach dem Scan-Lauf.",
+      "explanation": "Es umfasst Bewertung, Priorisierung, Remediation und Re-Validation.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "IOC-Blocklisten ohne Pflege koennen mit der Zeit an Nutzen verlieren.",
+      "explanation": "Indikatoren altern und erfordern regelmaessige Aktualisierung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Executive Reporting sollte technische Details immer vollstaendig auslassen.",
+      "explanation": "Es sollte technisch korrekt bleiben, aber zielgruppengerecht verdichtet sein.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Containment-Entscheidungen muessen Business-Impact mitberuecksichtigen.",
+      "explanation": "Zu harte Massnahmen koennen Betriebsschaden verursachen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Detection Engineering profitiert von Versionierung und Peer Review.",
+      "explanation": "Das erhoeht Qualitaet und reduziert Fehler.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein kompromittierter Service-Account ist oft besonders kritisch wegen Privilegien und Persistenz.",
+      "explanation": "Service-Accounts haben haeufig weitreichende Rechte.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SIEM-Datenquellen koennen ohne Normalisierung genauso gut korreliert werden.",
+      "explanation": "Uneinheitliche Felder reduzieren Erkennungsqualitaet.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Lessons Learned sollten konkrete Control-Verbesserungen nach sich ziehen.",
+      "explanation": "Nur so steigt die Reife ueber Zeit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SIEM-Alert ohne Kontextdaten ist fuer Triage meist weniger nuetzlich als ein Alert mit Entity-, Zeit- und Asset-Kontext.",
+      "explanation": "Kontext beschleunigt Bewertung und reduziert Fehlentscheidungen. Reine Einzelsignale sind schwer einzuordnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "MTTR misst die Zeit bis zur ersten Erkennung eines Vorfalls.",
+      "explanation": "MTTR beschreibt die Zeit bis zur Behebung oder Wiederherstellung. Fuer Erkennung wird meist MTTD genutzt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein deduplizierter Alert-Stream kann Analysten entlasten, ohne zwingend Sichtbarkeit zu verlieren.",
+      "explanation": "Wenn Duplikate sauber zusammengefasst werden, bleibt das Signal erhalten. Gleichzeitig sinkt Ticket-Rauschen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wenn ein EDR-Agent ausfaellt, ist das kein Security-Risiko, solange das SIEM aktiv ist.",
+      "explanation": "Agent-Ausfaelle erzeugen blinde Flecken auf Endpunkten. SIEM kann fehlende Host-Telemetrie nicht vollstaendig ersetzen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Runbooks helfen, Incident-Reaktionen auch bei Schichtwechsel konsistent zu halten.",
+      "explanation": "Standardisierte Schritte und Entscheidungsregeln sichern Qualitaet. Das reduziert Wissensverlust zwischen Teams.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei Security Operations ist die Anzahl erzeugter Alerts wichtiger als deren Qualitaet.",
+      "explanation": "Hohe Alert-Menge ohne Qualitaet verursacht Fatigue. Relevante, priorisierte Alerts sind operativ wertvoller.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Identity-Logs sind zentral fuer die Erkennung von Account Takeover.",
+      "explanation": "Anmeldeanomalien, MFA-Status und Geo-Muster liefern fruehe Hinweise. Ohne Identity-Sicht bleiben viele Angriffe verborgen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SOC sollte bekannte False Positives nie dokumentieren, um flexibel zu bleiben.",
+      "explanation": "Dokumentation von Noise-Mustern beschleunigt Triage und Tuning. Sie ist Teil kontinuierlicher Verbesserung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Asset-Kritikalitaet beeinflusst sinnvollerweise die Prioritaet eines Alerts.",
+      "explanation": "Der gleiche technische Befund kann je nach Geschaeftskontext unterschiedlich kritisch sein. Priorisierung muss das beruecksichtigen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SOC-Handover kann auf Ticket-IDs ohne Statusdetails reduziert werden.",
+      "explanation": "Ohne Status, Risiken und naechste Schritte gehen Informationen verloren. Das erhoeht Bearbeitungsfehler.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Normalisierte Log-Felder erleichtern SIEM-Korrelation ueber unterschiedliche Datenquellen.",
+      "explanation": "Einheitliche Feldnamen machen Regeln portabler und wartbarer. Das reduziert Integrationsaufwand.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Kurze Log-Retention verbessert Threat Hunting, weil nur aktuelle Daten relevant sind.",
+      "explanation": "Hunts brauchen oft historische Daten fuer schleichende Aktivitaeten. Zu kurze Retention schraenkt Analyse stark ein.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Zeitdrift zwischen Systemen kann Incident-Timelines unbrauchbar machen.",
+      "explanation": "Fehlende NTP-Konsistenz verfalscht Ereignisreihenfolgen. Dadurch werden Ursachen schwer nachvollziehbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SIEM-Health-Monitoring sollte auch Parser-Fehler und Ingestion-Luecken ueberwachen.",
+      "explanation": "Detections sind nur so gut wie ihre Datenbasis. Health-Checks verhindern unbemerkte Blindheit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein neuer Cloud-Service sollte ohne Logging-Plan produktiv gehen, solange MFA aktiv ist.",
+      "explanation": "MFA allein ersetzt keine Detection-Telemetrie. Log-Onboarding ist von Beginn an notwendig.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Aggregation im SIEM kann bei Alert-Stuermen die Bearbeitbarkeit verbessern.",
+      "explanation": "Zusammenfassen gleicher Ereignisse reduziert Ticketlast. Das Team bleibt handlungsfaehig.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Impossible-Travel-Erkennung braucht keine Zeitstempel, nur Benutzername und Land.",
+      "explanation": "Ohne Zeitbezug kann keine Reisegeschwindigkeit bewertet werden. Timestamp ist zwingend.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Risikobasierte Datenselektion ist ein legitimer Weg zur SIEM-Kostensteuerung.",
+      "explanation": "Nicht jede Quelle hat denselben Sicherheitswert. Priorisierung sichert Wirkung bei begrenztem Budget.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Datenqualitaet ist fuer Detection Engineering zweitrangig, wenn die Regel gut genug ist.",
+      "explanation": "Schlechte Daten erzeugen blinde Flecken oder Fehlalarme. Regelqualitaet kann das nicht voll kompensieren.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Eine SIEM-Regel ohne dokumentierten Zweck ist schwer nachhaltig zu warten.",
+      "explanation": "Ohne Ziel und Annahmen fehlt Grundlage fuer Tuning und Review. Wissen geht bei Teamwechsel verloren.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "LSASS-Zugriff durch ungewohnte Prozesse kann auf Credential Dumping hinweisen.",
+      "explanation": "Das ist ein haeufiges Muster bei Zugangsdaten-Diebstahl. Solche Befunde sind hoch priorisierbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "EDR-Netzwerkisolation ist im Incident immer falsch, weil sie Forensik verhindert.",
+      "explanation": "Isolation stoppt Ausbreitung und kann mit Ausnahmen forensisch nutzbar bleiben. Sie ist oft ein zentraler Containment-Schritt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Tamper-Protection im EDR erschwert Angreifern das Deaktivieren der Schutzkomponenten.",
+      "explanation": "Dadurch bleibt Telemetrie und Reaktionsfaehigkeit laenger erhalten. Das reduziert Blindflug im Incident.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Living-off-the-Land nutzt oft legitime Systemwerkzeuge fuer schaedliche Zwecke.",
+      "explanation": "Darum sind Verhaltensmuster wichtiger als reine Malware-Signaturen. LOLBins sind klassisch in vielen Kampagnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wenn ein EDR-Alert mit geplanter Admin-Aktivitaet korreliert, ist automatische Schliessung ohne Pruefung immer korrekt.",
+      "explanation": "Auch legitime Wartung kann missbraucht oder falsch zugeordnet sein. Minimalpruefung bleibt erforderlich.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Massive Datei-Verschluesselung durch einen einzelnen Prozess ist ein starkes Ransomware-Signal.",
+      "explanation": "Die Kombination aus Menge, Tempo und Prozesskontext ist hoch indikativ. Das rechtfertigt schnelle Reaktion.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein einzelner Signaturtreffer ohne weitere Telemetrie ist immer ausreichend fuer finale Incident-Entscheidungen.",
+      "explanation": "Finale Entscheidungen brauchen Kontext aus Prozess-, Netzwerk- und User-Daten. Einzelsignale koennen taeuschen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "EDR-Detektions-Tuning sollte Ausnahmen mit Ablaufdatum statt permanent setzen.",
+      "explanation": "Befristung erzwingt Review und verhindert dauerhafte Luecken. Permanente Ausnahmen sind riskant.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Remote Service Creation zwischen Workstations kann ein Hinweis auf laterale Bewegung sein.",
+      "explanation": "Diese Technik wird haeufig fuer Ausbreitung genutzt. Sie sollte im Kontext weiter untersucht werden.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "EDR ersetzt komplett die Notwendigkeit von zentralem Logging im SIEM.",
+      "explanation": "EDR und SIEM ergaenzen sich. Zentrale Korrelation und Langzeitanalyse bleiben wichtig.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Detection-as-Code verbessert Nachvollziehbarkeit durch Versionierung und Reviews.",
+      "explanation": "Aenderungen werden transparent und kontrollierbar. Das senkt Regressionen in produktiven Regeln.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Unit-Tests fuer Detektionsregeln sind unnuetz, weil reale Daten immer anders sind.",
+      "explanation": "Tests validieren Kernlogik gegen bekannte Samples. Sie sind kein Allheilmittel, aber sehr wertvoll.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "ATT&CK-Mapping hilft, Detection-Luecken systematisch zu erkennen.",
+      "explanation": "Die Abdeckung kann gegen relevante Techniken gemessen werden. Das unterstuetzt Priorisierung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "High-Fidelity-Detections sind dadurch definiert, dass sie moeglichst viele Alerts erzeugen.",
+      "explanation": "High Fidelity bedeutet hohe Treffergenauigkeit bei geringem Rauschen. Masse ist nicht das Ziel.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Globale Suppression ohne Review ist ein haeufiger Grund fuer unbemerkte Blindheit.",
+      "explanation": "Unkontrollierte Ausnahmen entfernen oft kritische Signale dauerhaft. Regelmaessige Pruefung ist Pflicht.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Detection-Templates sollten neben Logik auch Response-Hinweise enthalten.",
+      "explanation": "Analysten brauchen nicht nur Erkennung, sondern naechste Schritte. Das verkuerzt Reaktionszeit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wenn eine Regel zu oft feuert, sollte man als ersten Schritt die Severity erhoehen.",
+      "explanation": "Zuerst muessen Daten und Filter verbessert werden. Severity ohne Tuning loest das Grundproblem nicht.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Incident-Postmortems sind eine gute Quelle fuer neue Detection-Ideen.",
+      "explanation": "Sie zeigen reale Angriffspfade und fehlende Kontrollen. Daraus entstehen praxisnahe Use-Cases.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Detections sollten nie geaendert werden, damit historische Vergleichbarkeit bestehen bleibt.",
+      "explanation": "Regeln muessen an neue TTPs und Umgebungen angepasst werden. Versionierte Aenderungen erhalten Vergleichbarkeit trotzdem.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Eine gute Detection-Metrik verbindet Coverage mit operativer Wirksamkeit.",
+      "explanation": "Abdeckung allein reicht nicht; auch Trefferqualitaet und Reaktionsfaehigkeit zaehlen. Kombination liefert realistischen Reifegrad.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Threat Hunting ist idealerweise hypothesengetrieben statt rein zufallsbasiert.",
+      "explanation": "Hypothesen strukturieren Datenauswahl, Suche und Auswertung. Das macht Hunts reproduzierbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Periodische kleine Outbound-Verbindungen koennen auf C2-Beaconing hindeuten.",
+      "explanation": "Konstante Intervalle sind ein typisches Beacon-Muster. Zeitreihenanalyse ist hier sehr hilfreich.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Hunting ist identisch mit Alert-Triage, nur unter anderem Namen.",
+      "explanation": "Triage reagiert auf vorhandene Alerts, Hunting sucht proaktiv neue Signale. Ziele und Methodik unterscheiden sich.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Hunt-Funde sollten moeglichst nicht in neue Detections ueberfuehrt werden, um flexibel zu bleiben.",
+      "explanation": "Ohne Operationalisierung bleibt der Nutzen einmalig. Reife Programme ueberfuehren Funde in dauerhafte Kontrollen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Cloud-Hunts profitieren stark von IAM- und API-Aktivitaetslogs.",
+      "explanation": "Viele Cloud-Angriffe laufen ueber Identitaet und API-Missbrauch. Diese Quellen liefern fruehe Indikatoren.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei Datenexfiltration sind ungewoehnliche Egress-Spitzen zu neuen Zielen ein relevantes Signal.",
+      "explanation": "Abweichungen im ausgehenden Traffic sind klassisch fuer Exfil-Verdacht. Kontext entscheidet ueber Prioritaet.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "In grossen Umgebungen ist es effizient, Hunts gleich tief auf allen Assets zu fahren.",
+      "explanation": "Risikobasierte Fokussierung auf kritische Assets bringt mehr Wirkung. Gleichverteilung verschwendet Ressourcen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Hunt-Report sollte Methode und Datenquellen enthalten, nicht nur das Ergebnis.",
+      "explanation": "So koennen andere Teams den Hunt nachvollziehen und wiederholen. Das verbessert Wissenstransfer.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wenn ein Hunt nichts findet, war er automatisch wertlos.",
+      "explanation": "Negative Ergebnisse koennen Hypothesen schaerfen und Baselines verbessern. Auch das ist Erkenntnisgewinn.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Threat Hunting kann Detection Engineering direkt verbessern.",
+      "explanation": "Gefundene Muster fliessen in neue oder bessere Regeln ein. So entsteht ein kontinuierlicher Verbesserungszyklus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Containment sollte nach Incident-Bestaetigung frueh geplant und koordiniert werden.",
+      "explanation": "Schnelles, abgestimmtes Eindaemmen reduziert Folgeschaeden. Unkoordinierte Aktionen koennen Lage verschlimmern.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Chain of Custody ist nur fuer rechtliche Teams relevant, nicht fuer technische IR.",
+      "explanation": "Auch technische Teams brauchen nachvollziehbare Beweiswege. Sonst leidet Integritaet der Analyse.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Incident kann geschlossen werden, sobald keine neuen Alerts mehr kommen.",
+      "explanation": "Ohne Eradication, Recovery und Nachbereitung bleibt Restrisiko bestehen. Alert-Stille allein ist kein Abschlusskriterium.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Post-Incident-Reviews sollten auf Systemverbesserung statt Schuldzuweisung abzielen.",
+      "explanation": "Lernorientierte Reviews erzeugen nachhaltige Massnahmen. Schuldkultur verhindert offene Analyse.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei kritischer Produktion ist abgestuftes Containment mit Business-Abstimmung oft sinnvoll.",
+      "explanation": "Sicherheit und Verfuegbarkeit muessen gemeinsam bewertet werden. Das reduziert unnoetige Geschaeftsausfaelle.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Kommunikation im Incident sollte moeglichst inoffiziell und ad hoc bleiben, um Zeit zu sparen.",
+      "explanation": "Strukturierte Kommunikation verhindert Missverstaendnisse. Gerade unter Druck sind klare Kanaele entscheidend.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Eradication ohne Beseitigung des initialen Zugriffspfads kann zu Reinfektion fuehren.",
+      "explanation": "Wenn Root Cause offen bleibt, kommt der Angreifer oft zurueck. Nachhaltige Behebung braucht Ursachenfokus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Tabletop-Uebungen sind ein wirksames Mittel zur IR-Readiness.",
+      "explanation": "Sie testen Rollen, Entscheidungen und Kommunikationswege realitaetsnah. Luecken werden vor dem Ernstfall sichtbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein initialer Statusbericht sollte Scope, Impact und naechste Schritte enthalten.",
+      "explanation": "Diese drei Elemente schaffen gemeinsames Lageverstaendnis. Daraus folgen priorisierte Entscheidungen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Incident-Kommunikation muss fuer alle Stakeholder identisch detailliert sein.",
+      "explanation": "Zielgruppen brauchen unterschiedliche Detailtiefe. Einheitliche Kernbotschaft und angepasste Tiefe sind besser.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Vulnerability-Priorisierung nur nach CVSS ohne Kontext kann zu Fehlpriorisierung fuehren.",
+      "explanation": "Exploitability, Exposition und Asset-Wert sind entscheidend. Kontextlose Scores reichen nicht.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Kompensierende Kontrollen sind sinnlos, wenn ein Patch verzoegert ist.",
+      "explanation": "Sie reduzieren Risiko bis zur endgueltigen Behebung. In der Praxis sind sie oft unverzichtbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "MTTR nach Risiko-Klasse ist eine hilfreiche Metrik fuer Vulnerability-Programme.",
+      "explanation": "Sie zeigt, ob kritische Luecken schnell genug geschlossen werden. Damit laesst sich Steuerung verbessern.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Authenticated Scans koennen die Genauigkeit von Schwachstellenbefunden erhoehen.",
+      "explanation": "Mit Systemzugriff sind Patchstand und Konfiguration genauer erkennbar. Das reduziert Fehleinschaetzungen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ausnahmen fuer offene Schwachstellen sollten ohne Ablaufdatum erlaubt sein, um Aufwand zu sparen.",
+      "explanation": "Ohne Frist und Review entstehen dauerhafte Risiken. Governance erfordert zeitliche Begrenzung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Nach einem Patch-Rollout sollte ein Rescan die Wirksamkeit bestaetigen.",
+      "explanation": "Verifikation zeigt, ob die Luecke tatsaechlich geschlossen wurde. Ticketstatus allein ist unzuverlaessig.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Security-Management-Report sollte primar risikoorientierte Aussagen liefern.",
+      "explanation": "Entscheider brauchen Impact, Trend und Optionen statt Rohdatenflut. Das verbessert Steuerbarkeit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Executive Briefings nach Incidents sollten Rest-Risiko und Entscheidungsbedarf klar benennen.",
+      "explanation": "Fuehrungskraefte muessen wissen, was als naechstes zu entscheiden ist. Unklare Briefings verzoegern Massnahmen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nur technische IOCs ohne Geschaeftskontext reichen fuer Vorstandskommunikation aus.",
+      "explanation": "Der Vorstand benoetigt Business-Impact und Handlungsempfehlungen. Reine Technikdetails sind nicht ausreichend.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Trenddarstellungen zu MTTD, MTTR und Alert-Qualitaet helfen bei SOC-Steuerung.",
+      "explanation": "Zeitliche Entwicklung zeigt, ob Massnahmen wirken. Einzelwerte ohne Verlauf sind schwer einzuordnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine hohe Alert-Anzahl bedeutet automatisch hohe Detection-Qualitaet.",
+      "explanation": "Viele Alerts koennen auch nur Rauschen sein; Qualitaet zeigt sich in Praezision und Relevanz.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Bei Threat Hunting sollte die Hypothese vor der Query klar formuliert werden.",
+      "explanation": "Hypothesengetriebenes Hunting macht Suche messbar und reproduzierbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein deaktivierter EDR-Agent auf einem kritischen Server ist ein Security-Incident-Kandidat.",
+      "explanation": "Verlust von Telemetrie/Schutz auf kritischen Assets erhoeht Risiko unmittelbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "CVSS allein reicht immer fuer Patch-Priorisierung aus.",
+      "explanation": "Exploitability, Exposure und Asset-Wert muessen zusaetzlich beruecksichtigt werden.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Containment kann Business-Auswirkungen haben und muss daher abgestimmt erfolgen.",
+      "explanation": "Isolation oder Abschaltung kann kritische Prozesse beeinflussen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein True Positive ohne dokumentierte Timeline ist fuer Lessons Learned oft unzureichend.",
+      "explanation": "Ohne Timeline sind Ursache, Ausbreitung und Reaktionsfenster schwer bewertbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wenn eine Regel False Positives erzeugt, muss sie immer komplett entfernt werden.",
+      "explanation": "Meist ist Tuning sinnvoller als Entfernung, um Erkennung zu erhalten.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "DNS-Logs koennen bei der Erkennung von C2-Kommunikation hilfreich sein.",
+      "explanation": "Domain-Muster, seltene Ziele und zeitliche Regelmaessigkeit liefern starke Hinweise.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Incident-Report fuer Executives sollte nur rohe technische Logdaten enthalten.",
+      "explanation": "Executives brauchen Impact, Risiko und Entscheidungen, nicht ungefilterte Rohdaten.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Mean Time to Respond (MTTR) ist eine relevante SOC-Performance-Metrik.",
+      "explanation": "MTTR misst Reaktionsgeschwindigkeit bis zur Bearbeitung/Schadensbegrenzung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Threat Intelligence ist nur nuetzlich, wenn sie 100 Prozent sicher ist.",
+      "explanation": "Intel ist probabilistisch und wird mit internem Kontext validiert.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein geplanter Purple-Team-Test kann Detection-Luecken sichtbar machen.",
+      "explanation": "Kontrollierte Angriffssimulation prueft reale Detection-Coverage.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei Ransomware-Verdacht sollte man zuerst forensische Artefakte sichern, dann wahllos rebooten.",
+      "explanation": "Volatile Hinweise koennen durch unkontrollierten Reboot verloren gehen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Triage-Playbooks reduzieren die Konsistenz zwischen Analysten.",
+      "explanation": "Playbooks erhoehen Konsistenz durch standardisierte Entscheidungswege.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Nicht jeder Malware-Alert auf einem Testsystem ist automatisch ein meldepflichtiger Vorfall.",
+      "explanation": "Kontext, Scope und regulatorische Kriterien bestimmen Meldepflicht.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "ATT&CK-Mapping hilft, Detection-Inhalte strategisch zu priorisieren.",
+      "explanation": "Technik-Mapping zeigt sichtbare und fehlende Abdeckung pro Angriffsphase.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein kompromittierter privilegierter Account hat meist hoehere Prioritaet als ein normaler User-Account.",
+      "explanation": "Privilegierte Konten ermoeglichen schnellere Ausweitung und groesseren Impact.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wenn ein IOC in mehreren Quellen auftaucht, ist Kontextkorrelation ueberfluessig.",
+      "explanation": "Mehrere Treffer ohne Kontext koennen weiterhin falsch oder irrelevant sein.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Vulnerability-Age kann ein nuetzlicher Faktor fuer Priorisierung sein.",
+      "explanation": "Lange offene Findings erhoehen Expositionsdauer und oft Angriffsfenster.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Baseline-Modell fuer normales Nutzerverhalten kann UEBA-Detections verbessern.",
+      "explanation": "Abweichungen gegen eine belastbare Baseline sind leichter erkennbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SIEM-Normalisierung ist unnoetig, solange genug Speicher vorhanden ist.",
+      "explanation": "Ohne Normalisierung sinken Query-Qualitaet, Vergleichbarkeit und Detection-Zuverlaessigkeit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Bei Verdacht auf Insider Threat sind HR- und Legal-Abstimmung oft erforderlich.",
+      "explanation": "Insider-Faelle beruehren Datenschutz, Arbeitsrecht und Beweisfuehrung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dashboards ersetzen vollstaendig die Notwendigkeit von Incident-Postmortems.",
+      "explanation": "Postmortems liefern Ursachenanalyse und Verbesserungsmassnahmen ueber KPI hinaus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein kompromittierter Endpoint sollte waehrend Investigation moeglichst keine unbeaufsichtigten Live-Aenderungen erhalten.",
+      "explanation": "Unkontrollierte Aenderungen koennen Spuren verfaelschen oder loeschen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Detection Engineering endet, sobald eine Regel einmal produktiv ist.",
+      "explanation": "Regeln muessen laufend gegen neue TTPs und Umgebungswandel angepasst werden.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein sauberer Hand-off zwischen SOC-Schichten verkuerzt oft die Bearbeitungszeit.",
+      "explanation": "Klarer Kontext und Artefakte verhindern doppelte Analysearbeit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    }
+  ]
+}

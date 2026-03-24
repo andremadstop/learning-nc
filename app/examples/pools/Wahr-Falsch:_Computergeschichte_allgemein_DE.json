@@ -1,0 +1,1608 @@
+{
+  "pool_name": "Wahr/Falsch: Computergeschichte allgemein (DE)",
+  "source": "AI-generated (Claude/Gemini), reviewed and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "questions": [
+    {
+      "text": "Die Analytical Engine von Charles Babbage gilt als konzeptioneller Vorläufer des modernen Computers.",
+      "explanation": "Stimmt! Babbage entwarf die Analytical Engine bereits im 19. Jahrhundert mit Konzepten wie Rechenwerk, Speicher und Programmsteuerung über Lochkarten, die auch heute noch relevant sind.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der ENIAC war der erste Computer, der Mikroprozessoren zur Berechnung nutzte.",
+      "explanation": "Falsch — Der ENIAC (fertiggestellt 1946) war zwar einer der ersten elektronischen Digitalrechner, nutzte aber Vakuumröhren. Mikroprozessoren kamen erst viel später, ab den 1970er Jahren, zum Einsatz.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Erfindung des Transistors 1947 ermöglichte den Übergang von Vakuumröhren zu kleineren, effizienteren Computern.",
+      "explanation": "Stimmt! Die Erfindung des Transistors bei Bell Labs revolutionierte die Elektronik. Er führte zur zweiten Computergeneration, die kleiner, schneller und zuverlässiger war als ihre Vorgänger mit Vakuumröhren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Grace Hopper wird zugeschrieben, den Begriff 'Computer-Bug' populär gemacht zu haben, nachdem sie eine Motte aus einem Relais entfernt hatte.",
+      "explanation": "Stimmt! Obwohl der Begriff 'Bug' für technische Probleme schon vorher existierte, dokumentierte Grace Hopper 1947 eine Motte (bug) in einem Relais des Mark II Computers, was den Begriff im Computerbereich sehr bekannt machte. Es war ein 'echter' Bug!",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das World Wide Web wurde in den frühen 1990er Jahren von Bill Gates als Teil von Microsoft entwickelt.",
+      "explanation": "Falsch — Das World Wide Web wurde Ende der 1980er, Anfang der 1990er Jahre von Tim Berners-Lee am CERN entwickelt, um den Informationsaustausch unter Forschern zu erleichtern. Bill Gates und Microsoft spielten dabei keine direkte Rolle.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Programmiersprache COBOL wurde hauptsächlich für wissenschaftliche Berechnungen entwickelt.",
+      "explanation": "Falsch — COBOL (Common Business-Oriented Language) wurde, wie der Name schon sagt, für kommerzielle und geschäftliche Anwendungen konzipiert. Für wissenschaftliche Berechnungen wurde primär FORTRAN entwickelt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der erste Mikroprozessor, der Intel 4004, wurde 1971 vorgestellt.",
+      "explanation": "Stimmt! Der Intel 4004 war der erste kommerziell erhältliche Mikroprozessor und leitete die Vierte Computergeneration ein, die die Entwicklung von PCs ermöglichte.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das Betriebssystem UNIX wurde ursprünglich von Microsoft entwickelt.",
+      "explanation": "Falsch — UNIX wurde in den späten 1960er und frühen 1970er Jahren in den Bell Labs von AT&T entwickelt, maßgeblich von Ken Thompson und Dennis Ritchie. Microsoft wurde erst 1975 gegründet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der Apple I, der erste Computer von Apple, wurde als kompletter PC mit Gehäuse, Tastatur und Monitor verkauft.",
+      "explanation": "Falsch — Der Apple I wurde 1976 als reine Platine verkauft. Gehäuse, Netzteil, Tastatur und Monitor mussten vom Käufer selbst hinzugefügt werden. Erst der Apple II war ein kompletter PC.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ada Lovelace gilt als die erste Programmiererin der Welt.",
+      "explanation": "Stimmt! Ada Lovelace schrieb Mitte des 19. Jahrhunderts einen Algorithmus, der für Charles Babbages Analytical Engine gedacht war. Sie erkannte das Potenzial der Maschine über reine Berechnungen hinaus.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "ARPANET, der Vorläufer des Internets, wurde hauptsächlich für kommerzielle Zwecke entwickelt.",
+      "explanation": "Falsch — Das ARPANET wurde vom US-Verteidigungsministerium (ARPA) in Auftrag gegeben. Es sollte ein dezentrales, ausfallsicheres Netzwerk für militärische und wissenschaftliche Kommunikation schaffen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Turing-Maschine ist ein praktisch gebauter Computer von Alan Turing.",
+      "explanation": "Falsch — Die Turing-Maschine ist ein theoretisches Modell eines Computers, das Alan Turing 1936 definierte. Es dient in der theoretischen Informatik als Grundlage, um die Berechenbarkeit von Algorithmen zu untersuchen, wurde aber nie als physische Maschine gebaut.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der IBM PC von 1981 nutzte ein von IBM selbst entwickeltes, geschlossenes Betriebssystem.",
+      "explanation": "Falsch — IBM entschied sich, das Betriebssystem von einer kleinen Firma namens Microsoft zu lizenzieren. Dieses System wurde als PC-DOS (von IBM) bzw. MS-DOS (von Microsoft) bekannt und war der Grundstein für Microsofts späteren Erfolg.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die 'Integrierte Schaltung' (IC), die mehrere Transistoren auf einem Chip vereint, ist das Kennzeichen der Dritten Computergeneration.",
+      "explanation": "Stimmt! Die Erfindung der integrierten Schaltung (IC) durch Jack Kilby und Robert Noyce Ende der 1950er Jahre ermöglichte noch kleinere und leistungsfähigere Computer und definierte die Dritte Generation.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Die erste Computer-Maus wurde in den 1980er Jahren von Apple für den Macintosh entwickelt.",
+      "explanation": "Falsch — Die erste Computer-Maus wurde bereits in den 1960er Jahren von Douglas Engelbart am Stanford Research Institute (SRI) erfunden. Apple hat die Maus später lediglich populär gemacht.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Linus Torvalds entwickelte sowohl den Linux-Kernel als auch das GNU-Betriebssystem.",
+      "explanation": "Falsch — Linus Torvalds entwickelte den Linux-Kernel. Das GNU-Projekt, das viele der grundlegenden Systemwerkzeuge (wie den Compiler GCC und die Shell) bereitstellte, wurde von Richard Stallman initiiert. Die Kombination wird oft als GNU/Linux bezeichnet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Konrad Zuses Z3 von 1941 gilt als der erste funktionsfähige, programmgesteuerte digitale Computer der Welt.",
+      "explanation": "Stimmt! Die Z3 von Konrad Zuse war der erste vollautomatische, programmgesteuerte und frei programmierbare Rechner, der in binärer Gleitkommarechnung arbeitete.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der Commodore 64 (C64) war kommerziell erfolglos.",
+      "explanation": "Falsch — Der C64, 1982 eingeführt, ist der meistverkaufte Heimcomputer aller Zeiten. Mit Schätzungen von 12 bis 17 Millionen verkauften Einheiten war er ein enormer kommerzieller Erfolg.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Das Mooresche Gesetz besagt, dass sich die Leistung von CPUs jedes Jahr verdoppelt.",
+      "explanation": "Falsch — Das Mooresche Gesetz (von 1965) besagt, dass sich die Anzahl der Transistoren auf einem integrierten Schaltkreis etwa alle 18 bis 24 Monate verdoppelt. Dies führt zwar zu einer Leistungssteigerung, aber die Aussage ist unpräzise.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Programmiersprache Java wurde ursprünglich für interaktives Fernsehen entwickelt.",
+      "explanation": "Stimmt! Das 'Green Project' bei Sun Microsystems, aus dem Java hervorging, zielte ursprünglich auf die Entwicklung von Software für interaktive Set-Top-Boxen ab. Das Projekt fand dann mit dem Aufkommen des WWW eine neue, viel größere Bestimmung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der Schachcomputer 'Deep Blue' verlor 1997 ein komplettes Match gegen den amtierenden Schachweltmeister Garri Kasparow.",
+      "explanation": "Falsch — Deep Blue von IBM gewann das Match 1997 gegen Kasparow. Es war das erste Mal, dass ein Computer einen amtierenden Schachweltmeister unter Turnierbedingungen besiegte und markierte einen Meilenstein für künstliche Intelligenz.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Xerox PARC war ein Forschungszentrum, das viele grundlegende Technologien wie die grafische Benutzeroberfläche (GUI) und die Computer-Maus entwickelte.",
+      "explanation": "Stimmt! Das Xerox Palo Alto Research Center (PARC) war in den 1970er Jahren Pionier für viele Technologien, die heute selbstverständlich sind, darunter die GUI, Ethernet, die Maus und die objektorientierte Programmierung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das Domain Name System (DNS) wurde eingeführt, um E-Mails zu verschlüsseln.",
+      "explanation": "Falsch — DNS wurde 1983 eingeführt, um menschenlesbare Domainnamen (wie 'www.google.com') in maschinenlesbare IP-Adressen (wie '172.217.16.35') zu übersetzen. Es ist quasi das Telefonbuch des Internets.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Programmiersprache Python ist nach der Schlangenart benannt.",
+      "explanation": "Falsch — Guido van Rossum, der Erfinder von Python, benannte die Sprache nach der britischen Komikergruppe 'Monty Python's Flying Circus', deren Fan er war.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der erste Laptop, der kommerziell erfolgreich war, war der 'Grid Compass' von 1982.",
+      "explanation": "Stimmt! Der Grid Compass 1101, entworfen von Bill Moggridge, gilt als einer der ersten Laptops. Sein 'Clamshell'-Design (aufklappbar) wurde zum Standard für fast alle nachfolgenden Laptops. Er wurde sogar an Bord des Space Shuttles eingesetzt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Die Programmiersprache C wurde nach B benannt, weil sie deren direkter Nachfolger war.",
+      "explanation": "Stimmt! Die Sprache C wurde von Dennis Ritchie in den Bell Labs entwickelt und war stark von der früheren Sprache B beeinflusst, die von Ken Thompson stammte. Der Name folgt einfach dem Alphabet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der 'Colossus'-Computer wurde von den Briten im Zweiten Weltkrieg gebaut, um die deutsche Enigma-Verschlüsselung zu brechen.",
+      "explanation": "Falsch — Colossus wurde entwickelt, um die deutsche Lorenz-Schlüssel-Zusatz (SZ42)-Verschlüsselung zu brechen, die für die Kommunikation des deutschen Oberkommandos genutzt wurde. Für die Enigma-Maschine wurde die 'Turing-Bombe' eingesetzt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ethernet wurde am Forschungszentrum Xerox PARC erfunden.",
+      "explanation": "Stimmt! Robert Metcalfe und sein Team entwickelten die Ethernet-Technologie in den frühen 1970er Jahren bei Xerox PARC als Methode zur Vernetzung von Computern in einem lokalen Netzwerk (LAN).",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das erste Videospiel, 'Pong', wurde 1972 von Nintendo veröffentlicht.",
+      "explanation": "Falsch — Pong wurde 1972 von Atari veröffentlicht und wurde zu einem der ersten kommerziell erfolgreichen Videospiele. Nintendo stieg erst später in den Videospielmarkt ein.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein 'Bit' ist die kleinste Informationseinheit in der Computertechnik und kann nur die Werte 0 oder 1 annehmen.",
+      "explanation": "Stimmt! Der Begriff 'Bit' ist eine Abkürzung für 'binary digit' (Binärziffer). Alle Daten in einem Computer werden letztendlich als eine Abfolge von Bits dargestellt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Steve Jobs und Steve Wozniak gründeten Apple Computer, um Software zu verkaufen.",
+      "explanation": "Falsch — Das Hauptprodukt war Hardware. Steve Wozniak entwickelte den Apple I und Apple II, und das ursprüngliche Ziel war, diese Computer-Hardware (zuerst als Bausatz, dann als Fertiggerät) zu verkaufen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der erste IBM-kompatible PC-Klon wurde von Apple hergestellt.",
+      "explanation": "Falsch — Apple verfolgte stets eine eigene, geschlossene Architektur. Der erste IBM-kompatible PC wurde von Columbia Data Products hergestellt, aber Compaq wurde durch sein Modell von 1983 als erster großer Hersteller von Klonen bekannt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Sprache 'Pascal' wurde nach dem französischen Mathematiker Blaise Pascal benannt.",
+      "explanation": "Stimmt! Niklaus Wirth entwickelte Pascal in den späten 1960er Jahren als Lehrsprache und benannte sie zu Ehren von Blaise Pascal, der im 17. Jahrhundert eine mechanische Rechenmaschine erfunden hatte.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein 'Compiler' übersetzt den Quellcode eines Programms Zeile für Zeile während der Ausführung.",
+      "explanation": "Falsch — Das beschreibt einen 'Interpreter'. Ein 'Compiler' übersetzt das gesamte Programm vor der Ausführung in Maschinencode, der dann direkt vom Prozessor ausgeführt werden kann.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der Altair 8800 von 1974 gilt als der Funke, der die Heimcomputer-Revolution auslöste.",
+      "explanation": "Stimmt! Der Altair 8800, als Bausatz verkauft, war einer der ersten erschwinglichen Personal Computer. Er inspirierte eine ganze Generation von Enthusiasten, einschließlich Paul Allen und Bill Gates, die ihren BASIC-Interpreter dafür schrieben.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Die 'Von-Neumann-Architektur' beschreibt ein Computerdesign, bei dem das Betriebssystem auf einem separaten Chip gespeichert wird.",
+      "explanation": "Falsch — Die Von-Neumann-Architektur beschreibt das grundlegende Design, bei dem Befehle und Daten im selben Speicher gehalten werden. Dies ermöglicht es einem Computer, seine eigenen Programme zu modifizieren, und ist die Grundlage fast aller modernen Computer.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der erste Webbrowser hieß 'Internet Explorer'.",
+      "explanation": "Falsch — Der erste Webbrowser wurde von Tim Berners-Lee entwickelt und hieß 'WorldWideWeb'. Später wurde er in 'Nexus' umbenannt, um Verwechslungen mit dem World Wide Web selbst zu vermeiden. Der erste populäre grafische Browser war 'Mosaic'.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die erste Festplatte, die IBM 350, konnte mehrere Gigabyte an Daten speichern.",
+      "explanation": "Falsch — Die 1956 eingeführte IBM 350 war riesig, wog über eine Tonne und konnte nur etwa 3,75 Megabyte speichern. Die Speicherkapazität hat sich seitdem exponentiell erhöht.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Programmiersprache LISP ist für ihre starke Verwendung in der künstlichen Intelligenz bekannt.",
+      "explanation": "Stimmt! LISP (List Processing), entwickelt in den späten 1950er Jahren, war eine der ersten Sprachen für die KI-Forschung. Ihre Fähigkeit, Code als Daten zu behandeln (Homoikonizität), machte sie besonders geeignet für symbolische Berechnungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das 'Y2K-Problem' bezog sich auf einen Virus, der im Jahr 2000 alle Computer infizieren sollte.",
+      "explanation": "Falsch — Das Y2K-Problem war ein Programmierfehler. Viele ältere Systeme speicherten Jahreszahlen nur zweistellig (z.B. '99' für 1999). Man befürchtete, dass diese Systeme beim Wechsel auf das Jahr 2000 ('00') dieses als 1900 interpretieren und abstürzen würden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Firma Intel wurde hauptsächlich gegründet, um Software zu entwickeln.",
+      "explanation": "Falsch — Intel (gegründet 1968 von Robert Noyce und Gordon Moore) konzentrierte sich von Anfang an auf die Herstellung von Halbleiter-Hardware, insbesondere Speicherchips und später Mikroprozessoren. Ihr Name steht für 'Integrated Electronics'.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "'Open Source' bedeutet, dass die Software immer kostenlos ist.",
+      "explanation": "Falsch — 'Open Source' bedeutet, dass der Quellcode frei zugänglich ist und modifiziert und weitergegeben werden darf. Unternehmen können aber immer noch Geld für Support, Dienstleistungen oder spezielle Versionen der Software verlangen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Cray-1 war ein berühmter Supercomputer der 1970er Jahre, der für seine einzigartige, C-förmige Bauweise bekannt war.",
+      "explanation": "Stimmt! Die von Seymour Cray entworfene Cray-1 war nicht nur extrem leistungsfähig für ihre Zeit, sondern auch ikonisch im Design. Die C-Form half, die Kabellängen zu minimieren und so die Geschwindigkeit zu maximieren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Die erste E-Mail wurde in den 1990er Jahren mit dem Aufkommen des WWW verschickt.",
+      "explanation": "Falsch — Die erste E-Mail wurde bereits 1971 von Ray Tomlinson im ARPANET verschickt. Er führte auch die '@'-Notation ein, um den Benutzernamen vom Hostnamen zu trennen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der Begriff 'Hacker' bezog sich ursprünglich auf talentierte Programmierer, die kreative Lösungen für technische Probleme fanden.",
+      "explanation": "Stimmt! In den Anfängen der Computerkultur am MIT war ein 'Hack' eine clevere technische Meisterleistung. Die negative Konnotation des kriminellen Eindringens in Systeme kam erst später in den Medien auf.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wi-Fi (WLAN) wurde in den 1970er Jahren als drahtlose Version des ARPANET entwickelt.",
+      "explanation": "Falsch — Die Grundlagen für Wi-Fi (IEEE 802.11 Standards) wurden erst in den 1990er Jahren entwickelt und kommerziell verfügbar. Das ALOHAnet auf Hawaii in den 70ern war ein früher Vorläufer drahtloser Netzwerke, aber nicht Wi-Fi.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der Amiga 500 war ein Heimcomputer, der für seine fortschrittlichen Grafik- und Soundfähigkeiten bekannt war.",
+      "explanation": "Stimmt! Der 1987 veröffentlichte Amiga 500 war seiner Zeit in Bezug auf Multimedia weit voraus und wurde besonders in der Gaming- und Demoszene sehr beliebt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Die Programmiersprache FORTRAN wurde speziell für die Webentwicklung konzipiert.",
+      "explanation": "Falsch — FORTRAN (Formula Translation), entwickelt in den 1950er Jahren, war die erste höhere Programmiersprache und wurde für numerische und wissenschaftliche Berechnungen optimiert. Das Web gab es damals noch nicht.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Das 'Client-Server-Modell' beschreibt eine Architektur, bei der alle Computer im Netzwerk gleichberechtigt sind.",
+      "explanation": "Falsch — Das beschreibt ein 'Peer-to-Peer'-Netzwerk. Im Client-Server-Modell fordern 'Clients' Dienste von einem zentralen 'Server' an, der diese bereitstellt (z.B. ein Webserver, der eine Webseite an einen Browser liefert).",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der Quellcode für das Betriebssystem Windows wurde von Anfang an als Open Source veröffentlicht.",
+      "explanation": "Falsch — Windows war und ist ein proprietäres, kommerzielles Betriebssystem von Microsoft. Sein Quellcode ist ein streng gehütetes Geschäftsgeheimnis, im Gegensatz zu Open-Source-Betriebssystemen wie Linux.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der Lochstreifen ist ein Speichermedium, das vor der Erfindung der Magnetbänder verwendet wurde.",
+      "explanation": "Stimmt! Lochstreifen und Lochkarten waren frühe, weit verbreitete Datenträger zur Speicherung von Programmen und Daten, bevor magnetische Speichermedien wie Bänder und später Festplatten aufkamen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der erste voll funktionsfähige Quantencomputer wurde in den 1980er Jahren von IBM gebaut.",
+      "explanation": "Falsch — Quantencomputing ist ein sehr aktuelles Forschungsfeld. Während die theoretischen Grundlagen in den 80ern gelegt wurden, sind die ersten experimentellen und noch sehr eingeschränkten Quantencomputer ein Phänomen des 21. Jahrhunderts.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein 'Daemon' in einem Unix-System ist ein bösartiges Programm, das im Hintergrund läuft.",
+      "explanation": "Falsch — Ein Daemon ist ein Systemprozess, der im Hintergrund läuft und Dienste bereitstellt (z.B. ein Webserver-Daemon oder ein Druck-Daemon). Der Begriff hat trotz seines Namens keine negative Bedeutung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Webseite 'Amazon.com' startete ursprünglich als Online-Buchhandlung.",
+      "explanation": "Stimmt! Jeff Bezos gründete Amazon 1994 als Online-Marktplatz für Bücher. Das Unternehmen expandierte erst später massiv in andere Produktkategorien und Cloud-Dienste (AWS).",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das 'GPL' (General Public License) ist eine Softwarelizenz, die es erlaubt, Open-Source-Code in proprietäre, geschlossene Software zu integrieren.",
+      "explanation": "Falsch — Die GPL ist eine 'Copyleft'-Lizenz. Sie stellt sicher, dass jede Software, die GPL-lizenzierten Code enthält, ebenfalls unter der GPL veröffentlicht werden muss. Dies verhindert, dass offener Code in geschlossene Projekte überführt wird.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der Befehl 'format c:' unter MS-DOS diente dazu, den Bildschirm zu löschen.",
+      "explanation": "Falsch — Dies ist ein berüchtigter Befehl. 'format c:' löschte unwiderruflich alle Daten auf der Festplatte (Laufwerk C:). Zum Löschen des Bildschirms diente der Befehl 'cls'.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "RISC (Reduced Instruction Set Computer) ist eine Prozessorarchitektur, die auf einen kleinen Satz einfacher, schneller Befehle setzt.",
+      "explanation": "Stimmt! Im Gegensatz zu CISC (Complex Instruction Set Computer), die viele komplexe Befehle haben, zielt RISC auf Effizienz durch einen minimalistischen Befehlssatz ab. Moderne Architekturen wie ARM basieren auf diesem Prinzip.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das Spiel 'Doom' (1993) gilt als technisch unbedeutend für die Entwicklung von 3D-Spielen.",
+      "explanation": "Falsch — 'Doom' war ein technischer Meilenstein. Es popularisierte das Genre der Ego-Shooter und seine 3D-Engine war revolutionär in Bezug auf schnelle Texturen, unterschiedliche Lichtlevel und Sounddesign.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Google wurde in den 1980er Jahren als Forschungsprojekt von IBM gegründet.",
+      "explanation": "Falsch — Google entstand 1996 als Forschungsprojekt namens 'Backrub' von Larry Page und Sergey Brin, zwei Doktoranden an der Stanford University. Die Firma Google wurde 1998 gegründet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein 'Kernel' ist der zentrale Teil eines Betriebssystems, der die Hardware verwaltet.",
+      "explanation": "Stimmt! Der Kernel ist das Herzstück des Betriebssystems. Er verwaltet die CPU-Zeit, den Speicher und die Peripheriegeräte und stellt eine Schnittstelle für Anwendungsprogramme bereit.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Die Programmiersprache BASIC wurde für erfahrene Systemprogrammierer entwickelt.",
+      "explanation": "Falsch — BASIC (Beginner's All-purpose Symbolic Instruction Code) wurde in den 1960er Jahren als einfache, anfängerfreundliche Sprache konzipiert, um Studenten den Einstieg in die Programmierung zu erleichtern.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "RAID (Redundant Array of Independent Disks) ist eine Technologie zur Steigerung der CPU-Leistung.",
+      "explanation": "Falsch — RAID ist eine Speichertechnologie. Sie kombiniert mehrere physische Festplatten zu einer logischen Einheit, um die Leistung und/oder die Ausfallsicherheit von Daten zu erhöhen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Das 'Request for Comments' (RFC) ist ein Dokumentationsformat, das zur Standardisierung von Internet-Technologien verwendet wird.",
+      "explanation": "Stimmt! RFCs sind eine Reihe von technischen und organisatorischen Dokumenten über das Internet. Protokolle wie TCP/IP, HTTP und SMTP sind in RFCs detailliert beschrieben.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der Sinclair ZX81 war ein Heimcomputer, der für seinen riesigen Arbeitsspeicher von 1 Megabyte bekannt war.",
+      "explanation": "Falsch — Der Sinclair ZX81 (1981) war ein sehr günstiger Einsteigercomputer und hatte standardmäßig nur 1 Kilobyte (KB) Arbeitsspeicher. 1 Megabyte war zu dieser Zeit für Heimcomputer unvorstellbar.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der Begriff 'Cloud Computing' wurde von Amazon mit der Einführung von AWS im Jahr 2006 populär gemacht.",
+      "explanation": "Stimmt! Obwohl das Konzept der verteilten Rechenleistung älter ist, hat Amazon Web Services (AWS) das Modell des 'Infrastructure as a Service' (IaaS) kommerzialisiert und den Begriff 'Cloud' fest im Mainstream etabliert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein 'Stack Overflow' ist ein wünschenswerter Zustand, der anzeigt, dass ein Programm besonders effizient läuft.",
+      "explanation": "Falsch — Ein 'Stack Overflow' ist ein schwerwiegender Programmfehler. Er tritt auf, wenn der Aufrufstapel (call stack), meist durch zu viele oder unendliche Funktionsaufrufe (Rekursion), überläuft. Die beliebte Programmierer-Webseite ist nach diesem Fehler benannt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der erste Laptop mit integriertem Touchpad wurde von Apple in den 1990er Jahren eingeführt.",
+      "explanation": "Stimmt! Das PowerBook 500 von 1994 war der erste Laptop, der anstelle eines Trackballs ein Touchpad als Mausersatz verwendete, eine Innovation, die schnell zum Industriestandard wurde.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Die Programmiersprache 'C++' wurde als eine objektorientierte Erweiterung von 'C' entwickelt.",
+      "explanation": "Stimmt! Bjarne Stroustrup entwickelte C++ in den frühen 1980er Jahren, indem er die prozedurale Sprache C um Konzepte der objektorientierten Programmierung wie Klassen und Objekte erweiterte.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der USB-Anschluss (Universal Serial Bus) wurde von IBM in den 1970er Jahren entwickelt.",
+      "explanation": "Falsch — Der USB-Standard wurde Mitte der 1990er Jahre von einem Konsortium aus sieben Unternehmen (darunter Intel und Microsoft) entwickelt, um die Vielzahl unterschiedlicher Anschlüsse für Peripheriegeräte zu ersetzen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Das 'Wasserfallmodell' ist eine agile Methode der Softwareentwicklung.",
+      "explanation": "Falsch — Das Wasserfallmodell ist das Gegenteil von agil. Es ist ein sequentielles Modell, bei dem eine Phase (Analyse, Design, Implementierung etc.) vollständig abgeschlossen sein muss, bevor die nächste beginnt. Agile Methoden sind iterativ und flexibel.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der erste 'Smiley' :-) in der digitalen Kommunikation wurde 1982 von Scott Fahlman vorgeschlagen.",
+      "explanation": "Stimmt! Um in Online-Diskussionsforen zwischen ernsten und humorvollen Beiträgen zu unterscheiden, schlug der Informatiker Scott Fahlman die Verwendung von :-) und :-( vor. Dies gilt als die Geburt der Emoticons.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der ASCII-Code dient dazu, Bilder und Videos in Text umzuwandeln.",
+      "explanation": "Falsch — ASCII (American Standard Code for Information Interchange) ist ein Zeichenkodierungsstandard, der Buchstaben, Zahlen und Sonderzeichen in Zahlen umwandelt, die ein Computer verarbeiten kann. Er ist nicht für komplexe Medien wie Bilder gedacht.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Firma 'Oracle' wurde berühmt durch die Entwicklung des ersten grafischen Webbrowsers.",
+      "explanation": "Falsch — Oracle ist vor allem für seine relationalen Datenbanksysteme bekannt und war einer der Pioniere in diesem Bereich. Der erste populäre grafische Browser war Mosaic, entwickelt am NCSA.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Das 'BIOS' (Basic Input/Output System) ist eine Firmware, die beim Start eines PCs als erstes ausgeführt wird.",
+      "explanation": "Stimmt! Das BIOS ist auf einem Chip auf dem Motherboard gespeichert. Es testet die Hardware (POST) und lädt dann das Betriebssystem von der Festplatte oder einem anderen Medium in den Arbeitsspeicher.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "'Spaghetti-Code' ist ein anerkennender Begriff für besonders eleganten und gut strukturierten Programmcode.",
+      "explanation": "Falsch — 'Spaghetti-Code' ist ein abfälliger Begriff für unstrukturierten, schwer lesbaren und kaum wartbaren Programmcode, der oft durch übermäßige Verwendung von GOTO-Sprüngen entsteht. Sein Kontrollfluss ist so verworren wie ein Teller Spaghetti.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die CPU-Architektur 'x86' wurde ursprünglich für RISC-Prozessoren entwickelt.",
+      "explanation": "Falsch — Die x86-Architektur, die mit dem Intel 8086 begann, ist der Inbegriff eines CISC-Designs (Complex Instruction Set Computer) mit einem großen und komplexen Befehlssatz.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der Begriff 'Firewall' in der Netzwerktechnik ist von Brandschutzwänden in Gebäuden abgeleitet.",
+      "explanation": "Stimmt! Genau wie eine Brandschutzwand die Ausbreitung eines Feuers verhindern soll, soll eine Netzwerk-Firewall den unkontrollierten Datenverkehr zwischen Netzwerken (z.B. dem Internet und einem lokalen Netzwerk) unterbinden und nur autorisierten Verkehr durchlassen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der erste Palm Pilot von 1996 wurde mit einer Miniatur-Festplatte ausgeliefert.",
+      "explanation": "Falsch — Der Palm Pilot und andere frühe PDAs (Personal Digital Assistants) verwendeten flüchtigen Speicher (RAM), der durch Batterien gestützt wurde, und hatten keine beweglichen Teile wie Festplatten. Das machte sie robust und stromsparend.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Bill Gates schrieb den Großteil des ursprünglichen MS-DOS-Betriebssystems selbst.",
+      "explanation": "Falsch — Microsoft kaufte ein bestehendes Betriebssystem namens QDOS (Quick and Dirty Operating System) von der Firma Seattle Computer Products und passte es für IBM an. Tim Paterson war der ursprüngliche Entwickler von QDOS.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Das 'TCP/IP'-Protokoll wurde von der UNO als globaler Standard für die Netzwerkkommunikation festgelegt.",
+      "explanation": "Falsch — TCP/IP hat sich als De-facto-Standard durch seine Verwendung im ARPANET und späteren Internet durchgesetzt. Es wurde nicht von einer Organisation wie der UNO, sondern von der Internet Engineering Task Force (IETF) und ihren Vorgängern entwickelt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein 'Algorithmus' ist eine präzise, schrittweise Anleitung zur Lösung eines Problems.",
+      "explanation": "Stimmt! Ein Algorithmus ist wie ein Kochrezept für einen Computer. Er muss eindeutig, ausführbar und endlich sein, um zu einem Ergebnis zu führen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Die Programmiersprache Perl wurde als einfache Skriptsprache für die Textverarbeitung und Report-Erstellung populär.",
+      "explanation": "Stimmt! Larry Wall entwickelte Perl in den späten 1980er Jahren. Es wurde schnell zum 'Schweizer Taschenmesser' für Systemadministratoren und Web-Entwickler (durch CGI) dank seiner Stärken im Umgang mit Text und regulären Ausdrücken.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der 'Apple Lisa' von 1983 war ein großer kommerzieller Erfolg, der die GUI etablierte.",
+      "explanation": "Falsch — Der Apple Lisa war zwar technologisch wegweisend mit seiner grafischen Benutzeroberfläche (GUI) und Maus, aber er war mit fast 10.000 US-Dollar viel zu teuer und somit ein kommerzieller Flop. Erst der günstigere Macintosh ein Jahr später machte die GUI populär.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein 'Trojanisches Pferd' ist eine Art von Schadsoftware, die sich selbst repliziert und in Netzwerken verbreitet.",
+      "explanation": "Falsch — Das beschreibt einen 'Wurm'. Ein Trojanisches Pferd ist eine Schadsoftware, die sich als nützliches Programm tarnt, um auf ein System zu gelangen. Einmal ausgeführt, entfaltet sie ihre schädliche Wirkung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der erste elektronische, rein digitale Taschenrechner wurde in den 1960er Jahren entwickelt.",
+      "explanation": "Stimmt! Der 'Cal-Tech' von Texas Instruments (1967) und der HP-9100A (1968) waren frühe Beispiele für elektronische Taschenrechner, die den Weg für die kompakten Geräte der 1970er Jahre ebneten.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Die 'Harvard-Architektur' trennt den Speicher für Befehle und Daten physisch voneinander.",
+      "explanation": "Stimmt! Im Gegensatz zur Von-Neumann-Architektur, die einen gemeinsamen Speicher nutzt, verwendet die Harvard-Architektur getrennte Speicher. Dies kann die Leistung erhöhen, da gleichzeitig auf Befehle und Daten zugegriffen werden kann. Viele moderne CPUs nutzen eine modifizierte Form davon.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der Supercomputer 'ASCI Red' war im Jahr 2000 der erste Computer, der die Leistungsgrenze von einem Petaflop überschritt.",
+      "explanation": "Falsch — ASCI Red war der erste, der die Teraflop-Grenze (10^12 Rechenoperationen pro Sekunde) im Jahr 1996 durchbrach. Die Petaflop-Grenze (10^15) wurde erst 2008 vom IBM Roadrunner erreicht.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die Programmiersprache 'JavaScript' wurde als vereinfachte Version von 'Java' entwickelt.",
+      "explanation": "Falsch — Trotz des Namens, der aus Marketinggründen gewählt wurde, ist JavaScript eine eigenständige Sprache. Sie wurde bei Netscape für die Web-Browser-Programmierung entwickelt und hat eine andere Syntax und ein anderes Typsystem als Java.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der 'Napster'-Dienst in den späten 1990ern war ein zentralisierter Peer-to-Peer-Dienst zum Tausch von Musikdateien.",
+      "explanation": "Stimmt! Obwohl die Dateien direkt zwischen den Nutzern (Peers) ausgetauscht wurden, nutzte Napster einen zentralen Server, um die Liste der verfügbaren Dateien zu verwalten. Dieser zentrale Punkt machte den Dienst anfällig für Klagen und führte letztendlich zu seiner Abschaltung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der 'Atari 2600' war eine Spielkonsole, die austauschbare Spielmodule verwendete.",
+      "explanation": "Stimmt! Der Atari 2600 (1977) popularisierte das Konzept der Heimvideospielkonsole mit austauschbaren Modulen (Cartridges), was eine viel größere Spielvielfalt ermöglichte als bei Geräten mit fest eingebauten Spielen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das 'SOLID'-Prinzip in der Softwareentwicklung wurde von Linus Torvalds formuliert.",
+      "explanation": "Falsch — Die SOLID-Prinzipien der objektorientierten Programmierung wurden größtenteils von Robert C. Martin ('Uncle Bob') formuliert und popularisiert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Eine 'GPU' (Graphics Processing Unit) ist ein spezialisierter Prozessor, der ursprünglich nur für die Darstellung von 3D-Grafiken entwickelt wurde.",
+      "explanation": "Stimmt! GPUs sind für die massiv parallele Verarbeitung von Daten optimiert, was für die Berechnung von 3D-Grafiken unerlässlich ist. Heute werden sie wegen dieser Fähigkeit auch für viele andere rechenintensive Aufgaben wie KI-Training eingesetzt (GPGPU).",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das erste soziale Netzwerk, 'Facebook', wurde 2004 von Mark Zuckerberg gestartet.",
+      "explanation": "Falsch — Facebook war nicht das erste soziale Netzwerk. Lange davor gab es Dienste wie 'SixDegrees' (1997), 'Friendster' (2002) und 'MySpace' (2003). Facebook wurde aber mit Abstand das erfolgreichste.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die 'Enigma'-Maschine wurde von den Alliierten im Zweiten Weltkrieg zur Verschlüsselung ihrer Nachrichten verwendet.",
+      "explanation": "Falsch — Die Enigma war die Verschlüsselungsmaschine des deutschen Militärs. Die Alliierten, insbesondere die Briten in Bletchley Park, unternahmen immense Anstrengungen, um die Enigma-Codes zu brechen, was den Kriegsverlauf maßgeblich beeinflusste.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein 'ROM' (Read-Only Memory) Chip verliert seine Daten, wenn der Strom abgeschaltet wird.",
+      "explanation": "Falsch — ROM ist ein nichtflüchtiger Speicher. Die Daten werden fest eingebrannt und bleiben auch ohne Stromversorgung erhalten. RAM (Random-Access Memory) ist der flüchtige Speicher, der seine Daten verliert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Der 'Geist in der Maschine' ist ein philosophisches Konzept, das eng mit Alan Turings Überlegungen zur künstlichen Intelligenz verbunden ist.",
+      "explanation": "Stimmt! Der Ausdruck stammt vom Philosophen Gilbert Ryle, aber Turing griff die Idee in seinem berühmten 'Turing-Test' auf, um die Frage zu untersuchen, ob eine Maschine denken kann, indem er die Unterscheidbarkeit ihres Verhaltens von dem eines Menschen testet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der erste 'Personal Digital Assistant' (PDA) wurde von Apple entwickelt.",
+      "explanation": "Falsch — Einer der ersten kommerziell erfolgreichen PDAs war der 'Psion Organiser' von 1984. Apple trat erst 1993 mit dem 'Newton MessagePad' in den Markt ein, der technologisch fortschrittlich, aber kommerziell nicht sehr erfolgreich war.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "SQL (Structured Query Language) ist eine Programmiersprache zur Erstellung von Betriebssystemen.",
+      "explanation": "Falsch — SQL ist eine Datenbanksprache, die speziell für die Kommunikation mit relationalen Datenbanken entwickelt wurde. Man verwendet sie, um Daten abzufragen, einzufügen, zu aktualisieren und zu löschen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Das 'Agile Manifest' von 2001 betont die Wichtigkeit von Prozessen und Werkzeugen über Individuen und Interaktionen.",
+      "explanation": "Falsch — Das Agile Manifest betont genau das Gegenteil. Sein erster und wichtigster Leitsatz lautet: 'Individuen und Interaktionen mehr als Prozesse und Werkzeuge'.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Virtual Reality (VR) ist ein Konzept, das erst im 21. Jahrhundert mit dem Aufkommen leistungsfähiger Grafikkarten entwickelt wurde.",
+      "explanation": "Falsch — Die Vision von VR ist viel älter. Ivan Sutherland baute bereits in den 1960er Jahren mit dem 'Sword of Damocles' das erste Head-Mounted Display. Die Technologie war damals jedoch extrem unhandlich und teuer.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Richtig",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    }
+  ]
+}

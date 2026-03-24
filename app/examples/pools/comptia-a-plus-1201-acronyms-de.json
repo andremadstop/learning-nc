@@ -1,0 +1,6769 @@
+{
+  "pool_name": "CompTIA A+ 220-1201 Acronyms (DE)",
+  "source": "Inspired by CompTIA A+ Core 2 220-1201 exam objectives, paraphrased and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "exam_reference": "CompTIA A+ Core 2 220-1201",
+  "questions": [
+    {
+      "text": "Welche Haupthardwarekomponente eines Computers ist für die Ausführung von Anweisungen und die Verarbeitung von Daten verantwortlich?",
+      "explanation": "Die CPU ist der Hauptprozessor, der Systemanweisungen und Rechenaufgaben ausführt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "GPU",
+          "is_correct": false
+        },
+        {
+          "text": "ALU",
+          "is_correct": false
+        },
+        {
+          "text": "CPU",
+          "is_correct": true
+        },
+        {
+          "text": "FPU",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Cyberangriff, der darauf abzielt, eine Website, einen Dienst oder ein Netzwerk für Benutzer nicht mehr verfügbar zu machen, indem er mit Datenverkehr oder böswilligen Anfragen überlastet wird, wird als Folgendes bezeichnet:",
+      "explanation": "DoS-Angriffe überlasten ein Ziel mit Datenverkehr, um Dienste zu unterbrechen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SQLi",
+          "is_correct": false
+        },
+        {
+          "text": "XSS",
+          "is_correct": false
+        },
+        {
+          "text": "DoS",
+          "is_correct": true
+        },
+        {
+          "text": "CSRF",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wie heißt ein Netzwerkprotokoll, das den Webverkehr über SSL/TLS-Verschlüsselung sichert?",
+      "explanation": "HTTPS verschlüsselt die Kommunikation zwischen Browsern und Webservern.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "IPSec",
+          "is_correct": false
+        },
+        {
+          "text": "SSH",
+          "is_correct": false
+        },
+        {
+          "text": "HTTPS",
+          "is_correct": true
+        },
+        {
+          "text": "VPN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein rechtsgültiger Vertrag, der eine Partei daran hindert, vertrauliche Informationen offenzulegen, ist bekannt als:",
+      "explanation": "Eine Geheimhaltungsvereinbarung schützt vertrauliche Informationen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ISA",
+          "is_correct": false
+        },
+        {
+          "text": "NDA",
+          "is_correct": true
+        },
+        {
+          "text": "BPA",
+          "is_correct": false
+        },
+        {
+          "text": "SLA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche drahtlose Technologie ermöglicht die Identifizierung und Verfolgung markierter Objekte?",
+      "explanation": "RFID nutzt Radiowellen, um markierte Gegenstände zu verfolgen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "WTLS",
+          "is_correct": false
+        },
+        {
+          "text": "GPS",
+          "is_correct": false
+        },
+        {
+          "text": "NFC",
+          "is_correct": false
+        },
+        {
+          "text": "RFID",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welches Protokoll ermöglicht den sicheren Remote-Befehlszeilenzugriff?",
+      "explanation": "SSH verschlüsselt den Remote-Terminalzugriff und die Remote-Verwaltung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RSH",
+          "is_correct": false
+        },
+        {
+          "text": "RDP",
+          "is_correct": false
+        },
+        {
+          "text": "VNC",
+          "is_correct": false
+        },
+        {
+          "text": "SSH",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welches Akronym bezieht sich auf den sichtbaren Netzwerknamen im WLAN?",
+      "explanation": "Die SSID identifiziert ein drahtloses Netzwerk für Benutzer.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ESS",
+          "is_correct": false
+        },
+        {
+          "text": "SSID",
+          "is_correct": true
+        },
+        {
+          "text": "BSS",
+          "is_correct": false
+        },
+        {
+          "text": "BSSID",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wie werden Protokolle bezeichnet, die zur Übertragung von Sprache über IP-Netzwerke verwendet werden?",
+      "explanation": "VoIP überträgt Sprache über paketvermittelte Netzwerke.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ISDN",
+          "is_correct": false
+        },
+        {
+          "text": "PBX",
+          "is_correct": false
+        },
+        {
+          "text": "VoIP",
+          "is_correct": true
+        },
+        {
+          "text": "PSTN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Netzwerk, das mehrere LANs in einer Stadt verbindet, heißt:",
+      "explanation": "MAN deckt ein größeres städtisches geografisches Gebiet ab als ein LAN.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PAN",
+          "is_correct": false
+        },
+        {
+          "text": "SAN",
+          "is_correct": false
+        },
+        {
+          "text": "MAN",
+          "is_correct": true
+        },
+        {
+          "text": "CAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "LDAP ist ein Beispiel für:",
+      "explanation": "LDAP stellt Verzeichnisdienste bereit, beispielsweise die Benutzerauthentifizierung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Datenverschlüsselungsprotokoll",
+          "is_correct": false
+        },
+        {
+          "text": "Adressauflösungsprotokoll",
+          "is_correct": false
+        },
+        {
+          "text": "Verzeichniszugriffsprotokoll",
+          "is_correct": true
+        },
+        {
+          "text": "Dateiaustauschprotokoll",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Protokoll definiert die Formatierung und Adressierung von Paketen?",
+      "explanation": "IP ist für die Adressierung und Weiterleitung von Paketen verantwortlich.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "UDP",
+          "is_correct": false
+        },
+        {
+          "text": "IP",
+          "is_correct": true
+        },
+        {
+          "text": "TCP",
+          "is_correct": false
+        },
+        {
+          "text": "NetBIOS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Medienschnittstelle überträgt sowohl Video als auch Audio?",
+      "explanation": "HDMI unterstützt die digitale Audio- und Videoübertragung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "S/PDIF",
+          "is_correct": false
+        },
+        {
+          "text": "DVI",
+          "is_correct": false
+        },
+        {
+          "text": "VGA",
+          "is_correct": false
+        },
+        {
+          "text": "HDMI",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Regelwerk, das Zugriffsberechtigungen für Benutzer und Prozesse definiert:",
+      "explanation": "Zugriffskontrolllisten geben zulässige Vorgänge für Ressourcen an.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ACL",
+          "is_correct": true
+        },
+        {
+          "text": "MFA",
+          "is_correct": false
+        },
+        {
+          "text": "NAC",
+          "is_correct": false
+        },
+        {
+          "text": "AUP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "TCP ist verbindungsorientiert und unterstützt Neuübertragung, Flusskontrolle und Sequenzierung:",
+      "explanation": "TCP sorgt per Handshake für eine zuverlässige, geordnete Zustellung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "In Telefonen verwendete Smartcard zur Identifizierung des Teilnehmers:",
+      "explanation": "SIM speichert die Identitätsdaten des Teilnehmers sicher.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "IMSI",
+          "is_correct": false
+        },
+        {
+          "text": "SIM",
+          "is_correct": true
+        },
+        {
+          "text": "IMEI",
+          "is_correct": false
+        },
+        {
+          "text": "eSIM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche AAA-Komponente überprüft die Benutzeridentität?",
+      "explanation": "Durch die Authentifizierung wird bestätigt, dass Benutzer die sind, für die sie sich ausgeben.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Wirtschaftsprüfung",
+          "is_correct": false
+        },
+        {
+          "text": "Authentifizierung",
+          "is_correct": true
+        },
+        {
+          "text": "Autorisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Buchhaltung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "System ordnet Domänennamen IP-Adressen und zugehörigen Daten zu:",
+      "explanation": "DNS löst Hostnamen in IP-Adressen auf.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "TCP/IP",
+          "is_correct": false
+        },
+        {
+          "text": "DNS",
+          "is_correct": true
+        },
+        {
+          "text": "SQL",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Multifunktionsgerät, das Scannen, Kopieren, Drucken, Faxen kombiniert:",
+      "explanation": "MFP bedeutet Multifunktionsdrucker/Peripheriegerät.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MFD",
+          "is_correct": false
+        },
+        {
+          "text": "AIO",
+          "is_correct": false
+        },
+        {
+          "text": "DMS",
+          "is_correct": false
+        },
+        {
+          "text": "MFP",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Wandelt Wechselstrom in nutzbaren Gleichstrom für folgende Komponenten um:",
+      "explanation": "PSU Netzteil versorgt interne Komponenten mit Strom.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SVC",
+          "is_correct": false
+        },
+        {
+          "text": "UPS",
+          "is_correct": false
+        },
+        {
+          "text": "VRM",
+          "is_correct": false
+        },
+        {
+          "text": "PSU",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Vermittlungssoftware zwischen Benutzer-Apps und Hardware:",
+      "explanation": "Betriebssysteme verwalten Hardware und führen Apps aus.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "API",
+          "is_correct": false
+        },
+        {
+          "text": "BIOS",
+          "is_correct": false
+        },
+        {
+          "text": "OS",
+          "is_correct": true
+        },
+        {
+          "text": "GUI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Sichere Dateiübertragung über SSH:",
+      "explanation": "SFTP läuft über SSH für eine sichere Dateiübertragung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "FTPS",
+          "is_correct": false
+        },
+        {
+          "text": "SFTP",
+          "is_correct": true
+        },
+        {
+          "text": "FTP",
+          "is_correct": false
+        },
+        {
+          "text": "TFTP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Zweck von S.M.A.R.T. in Laufwerken:",
+      "explanation": "S.M.A.R.T. meldet den Zustand, um Ausfälle zu antizipieren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Korrigiert Fehler",
+          "is_correct": false
+        },
+        {
+          "text": "Reguliert die Leistung",
+          "is_correct": false
+        },
+        {
+          "text": "Prognostiziert Laufwerksausfälle",
+          "is_correct": true
+        },
+        {
+          "text": "Optimiert Geschwindigkeiten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Stromversorgung über Ethernet-Kabel:",
+      "explanation": "PoE versorgt Geräte wie APs über Ethernet mit Strom.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PLC",
+          "is_correct": false
+        },
+        {
+          "text": "ECP",
+          "is_correct": false
+        },
+        {
+          "text": "PoE",
+          "is_correct": true
+        },
+        {
+          "text": "EPP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "IMAP wird verwendet für:",
+      "explanation": "IMAP ruft E-Mails geräteübergreifend ab und synchronisiert sie.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Bereitstellung von Webseiten",
+          "is_correct": false
+        },
+        {
+          "text": "DNS-Auflösung",
+          "is_correct": false
+        },
+        {
+          "text": "E-Mail abrufen",
+          "is_correct": true
+        },
+        {
+          "text": "E-Mail senden",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Speicher, der mehrere Festplatten für Leistung/Redundanz kombiniert:",
+      "explanation": "RAID verbessert Kapazität, Geschwindigkeit oder Fehlertoleranz.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SAN",
+          "is_correct": false
+        },
+        {
+          "text": "RAID",
+          "is_correct": true
+        },
+        {
+          "text": "NAS",
+          "is_correct": false
+        },
+        {
+          "text": "JBOD",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Primärspeicher für Arbeitsdaten und Code:",
+      "explanation": "RAM bietet schnellen temporären Speicherzugriff.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "GPR",
+          "is_correct": false
+        },
+        {
+          "text": "RAM",
+          "is_correct": true
+        },
+        {
+          "text": "FPR",
+          "is_correct": false
+        },
+        {
+          "text": "ROM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Jedem Netzwerkadapter wird eine eindeutige 48-Bit-Adresse zugewiesen:",
+      "explanation": "MAC identifizieren Netzwerkschnittstellen eindeutig.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EUI",
+          "is_correct": false
+        },
+        {
+          "text": "SSID",
+          "is_correct": false
+        },
+        {
+          "text": "IP",
+          "is_correct": false
+        },
+        {
+          "text": "MAC",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Funktion von FTP:",
+      "explanation": "FTP ermöglicht die Dateiübertragung zwischen Systemen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "E-Mail-Service",
+          "is_correct": false
+        },
+        {
+          "text": "Verzeichniszugriff",
+          "is_correct": false
+        },
+        {
+          "text": "Bereitstellung von Webseiten",
+          "is_correct": false
+        },
+        {
+          "text": "Dateiaustausch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Mechanische Speicherung mittels Magnetplatten und beweglichen Teilen:",
+      "explanation": "Festplatten speichern Daten magnetisch und verfügen über rotierende Platten.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "HDD",
+          "is_correct": true
+        },
+        {
+          "text": "SD",
+          "is_correct": false
+        },
+        {
+          "text": "ROM",
+          "is_correct": false
+        },
+        {
+          "text": "SSD",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Gerät zur Steuerung mehrerer Hosts mit einer Tastatur, Maus, Bildschirm:",
+      "explanation": "KVM ermöglichen die Steuerung mehrerer Systeme von einer Station aus.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MFD",
+          "is_correct": false
+        },
+        {
+          "text": "KVM",
+          "is_correct": true
+        },
+        {
+          "text": "MMC",
+          "is_correct": false
+        },
+        {
+          "text": "UTM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Infrarottechnologie für die drahtlose Steuerung über kurze Distanzen:",
+      "explanation": "Infrarot wird häufig in Fernbedienungen verwendet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NFC",
+          "is_correct": false
+        },
+        {
+          "text": "IR",
+          "is_correct": true
+        },
+        {
+          "text": "WLAN",
+          "is_correct": false
+        },
+        {
+          "text": "RF",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "PCIe ist ein Ersatz für PCI, PCI-X und AGP:",
+      "explanation": "PCIe ist ein schneller serieller Erweiterungsschnittstellenstandard.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Firmware-Schnittstelle ersetzt herkömmliches BIOS:",
+      "explanation": "UEFI modernisiert das Booten und unterstützt große Festplatten.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "UEFI",
+          "is_correct": true
+        },
+        {
+          "text": "GUI",
+          "is_correct": false
+        },
+        {
+          "text": "ACPI",
+          "is_correct": false
+        },
+        {
+          "text": "CMOS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Allzweckcomputer für den individuellen Gebrauch:",
+      "explanation": "Ein PC ist ein Personalcomputer, der für die Einzelbenutzernutzung konzipiert ist.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MFD",
+          "is_correct": false
+        },
+        {
+          "text": "PDA",
+          "is_correct": false
+        },
+        {
+          "text": "PC",
+          "is_correct": true
+        },
+        {
+          "text": "PED",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Häufigster Formfaktor für Desktop-Motherboards:",
+      "explanation": "ATX ist die Standardgröße in modernen Desktop-PCs.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ATX",
+          "is_correct": true
+        },
+        {
+          "text": "mATX",
+          "is_correct": false
+        },
+        {
+          "text": "ITX",
+          "is_correct": false
+        },
+        {
+          "text": "mITX",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Stärkster aufgeführter kryptografischer Algorithmus:",
+      "explanation": "AES ist modern und sicher im Vergleich zu älteren Verschlüsselungsverfahren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "AES",
+          "is_correct": true
+        },
+        {
+          "text": "DES",
+          "is_correct": false
+        },
+        {
+          "text": "RC4",
+          "is_correct": false
+        },
+        {
+          "text": "3DES",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Persönliches Gerätenetzwerk mit kurzer Reichweite:",
+      "explanation": "PAN verbindet Geräte in der Nähe einer Person.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PAN",
+          "is_correct": true
+        },
+        {
+          "text": "LAN",
+          "is_correct": false
+        },
+        {
+          "text": "SAN",
+          "is_correct": false
+        },
+        {
+          "text": "MAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Führt beim Booten erste Hardwareprüfungen durch:",
+      "explanation": "BIOS BIOS führt POST aus, um die Hardware zu initialisieren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CMOS",
+          "is_correct": false
+        },
+        {
+          "text": "ROM",
+          "is_correct": false
+        },
+        {
+          "text": "BIOS",
+          "is_correct": true
+        },
+        {
+          "text": "EPROM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Mitarbeiter nutzen private Mobiltelefone für den geschäftlichen Zugriff:",
+      "explanation": "BYOD ermöglicht persönliche Geräte in Unternehmensumgebungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "COPE",
+          "is_correct": false
+        },
+        {
+          "text": "BYOD",
+          "is_correct": true
+        },
+        {
+          "text": "JBOD",
+          "is_correct": false
+        },
+        {
+          "text": "CYOD",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "PnP-Schnittstelle zum Anschluss von Peripheriegeräten:",
+      "explanation": "USB unterstützt den Plug & Play-Anschluss von Peripheriegeräten.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PCIe",
+          "is_correct": false
+        },
+        {
+          "text": "IDE",
+          "is_correct": false
+        },
+        {
+          "text": "USB",
+          "is_correct": true
+        },
+        {
+          "text": "eSATA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Schutzmaßnahmen gegen statische Entladung:",
+      "explanation": "ESD ESD-Schutz verhindert statische Schäden an der Elektronik.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RFI",
+          "is_correct": false
+        },
+        {
+          "text": "ESD",
+          "is_correct": true
+        },
+        {
+          "text": "EFT",
+          "is_correct": false
+        },
+        {
+          "text": "EMI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Mit APIPA kann Windows lokale IPs selbst zuweisen:",
+      "explanation": "APIPA weist 169.254.x.x-Adressen zu, wenn DHCP fehlschlägt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Verfolgen der Benutzeraktivität für Abrechnung/Berichterstellung:",
+      "explanation": "Die Buchhaltung protokolliert die Nutzung und Ereignisse in AAA.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Authentifizierung",
+          "is_correct": false
+        },
+        {
+          "text": "Wirtschaftsprüfung",
+          "is_correct": false
+        },
+        {
+          "text": "Buchhaltung",
+          "is_correct": true
+        },
+        {
+          "text": "Autorisierung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "CPU-Hersteller für PCs:",
+      "explanation": "AMD produziert Consumer- und Server-CPUs.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ASUS",
+          "is_correct": false
+        },
+        {
+          "text": "nVidia",
+          "is_correct": false
+        },
+        {
+          "text": "AMD",
+          "is_correct": true
+        },
+        {
+          "text": "EVGA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Komponente, die UEFI/BIOS-Einstellungen mit Batteriestrom speichert:",
+      "explanation": "CMOS speichert die Firmware-Konfiguration mit Batterieunterstützung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CMOS",
+          "is_correct": true
+        },
+        {
+          "text": "SRAM",
+          "is_correct": false
+        },
+        {
+          "text": "ROM",
+          "is_correct": false
+        },
+        {
+          "text": "EEPROM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Vereinbarung zur Festlegung der Leistungsanforderungen des Anbieters:",
+      "explanation": "SLAs spezifizieren Servicequalität und Verfügbarkeit.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MSA",
+          "is_correct": false
+        },
+        {
+          "text": "SLA",
+          "is_correct": true
+        },
+        {
+          "text": "MOU",
+          "is_correct": false
+        },
+        {
+          "text": "SOW",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Netzwerk in einem kleinen geografischen Gebiet wie einem Gebäude:",
+      "explanation": "LAN deckt lokale kleine Bereiche ab.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PAN",
+          "is_correct": false
+        },
+        {
+          "text": "LAN",
+          "is_correct": true
+        },
+        {
+          "text": "MAN",
+          "is_correct": false
+        },
+        {
+          "text": "WAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Am häufigsten verwendete Laptop-Display-Technologie:",
+      "explanation": "LCD dominieren Laptop-Displays.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CRT",
+          "is_correct": false
+        },
+        {
+          "text": "OLED",
+          "is_correct": false
+        },
+        {
+          "text": "LCD",
+          "is_correct": true
+        },
+        {
+          "text": "HDR",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bestes Cloud-Modell für einen Webentwickler zum Erstellen von Apps:",
+      "explanation": "PaaS bietet Laufzeit- und Entwicklungsumgebung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "XaaS",
+          "is_correct": false
+        },
+        {
+          "text": "SaaS",
+          "is_correct": false
+        },
+        {
+          "text": "PaaS",
+          "is_correct": true
+        },
+        {
+          "text": "IaaS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Protokoll zum Abrufen von Inhalten von einem Webserver:",
+      "explanation": "HTTP überträgt Webinhalte und -seiten.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CIFS",
+          "is_correct": false
+        },
+        {
+          "text": "FTP",
+          "is_correct": false
+        },
+        {
+          "text": "SSH",
+          "is_correct": false
+        },
+        {
+          "text": "HTTP",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Physisches Netzwerk, unterteilt in logische Broadcast-Domänen:",
+      "explanation": "VLANs isolieren den Datenverkehr, indem sie Netzwerke logisch segmentieren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "VPN",
+          "is_correct": false
+        },
+        {
+          "text": "DMZ",
+          "is_correct": false
+        },
+        {
+          "text": "VLAN",
+          "is_correct": true
+        },
+        {
+          "text": "WAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Funktionen zur Optimierung der Verarbeitung mehrseitiger Dokumente:",
+      "explanation": "ADF ADF führt automatisch Seiten zum Scannen/Drucken zu.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ALU",
+          "is_correct": false
+        },
+        {
+          "text": "API",
+          "is_correct": false
+        },
+        {
+          "text": "ASIC",
+          "is_correct": false
+        },
+        {
+          "text": "ADF",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Abonnementbasierter Zugriff auf gehostete Anwendungen:",
+      "explanation": "SaaS stellt gebrauchsfertige Anwendungen online bereit.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PaaS",
+          "is_correct": false
+        },
+        {
+          "text": "SaaS",
+          "is_correct": true
+        },
+        {
+          "text": "IaaS",
+          "is_correct": false
+        },
+        {
+          "text": "DaaS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Netzwerk intelligenter vernetzter Geräte wie Wearables:",
+      "explanation": "IoT-Geräte kommunizieren und automatisieren Aufgaben.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ICS",
+          "is_correct": false
+        },
+        {
+          "text": "PAN",
+          "is_correct": false
+        },
+        {
+          "text": "IoT",
+          "is_correct": true
+        },
+        {
+          "text": "SoC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Zeichnen Sie die Zuordnung der Domäne zur Mailserverliste auf:",
+      "explanation": "MXäge geben Mailserver für Domänen an.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SPF",
+          "is_correct": false
+        },
+        {
+          "text": "NS",
+          "is_correct": false
+        },
+        {
+          "text": "MX",
+          "is_correct": true
+        },
+        {
+          "text": "PTR",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Automatische IP-Zuweisung als Alternative zur manuellen Konfiguration:",
+      "explanation": "DHCP weist die IP-Konfiguration automatisch zu.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DNS",
+          "is_correct": false
+        },
+        {
+          "text": "SNMP",
+          "is_correct": false
+        },
+        {
+          "text": "NAT",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Älterer veralteter Busstandard für Peripheriegeräte:",
+      "explanation": "PCI ist ein älterer paralleler Erweiterungsbus, der inzwischen größtenteils ersetzt wurde.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PCI",
+          "is_correct": true
+        },
+        {
+          "text": "S/PDIF",
+          "is_correct": false
+        },
+        {
+          "text": "COM",
+          "is_correct": false
+        },
+        {
+          "text": "PS/2",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SMS steht für:",
+      "explanation": "SMS ist der grundlegende Textnachrichtenstandard.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SMS-Dienste",
+          "is_correct": true
+        },
+        {
+          "text": "Erweiterte Messaging-Dienste",
+          "is_correct": false
+        },
+        {
+          "text": "Multimedia-Messaging-Dienste",
+          "is_correct": false
+        },
+        {
+          "text": "Umfangreiche Kommunikationsdienste",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "RJ11 verwendet für (3 Antworten):",
+      "explanation": "RJ11 wird üblicherweise für Telefonleitungen und Einwahlverbindungen auf Twisted-Pair-Kupfer verwendet.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ethernet-Netzwerkverkabelung",
+          "is_correct": false
+        },
+        {
+          "text": "Telefonausrüstung",
+          "is_correct": true
+        },
+        {
+          "text": "Glasfaserverkabelung",
+          "is_correct": false
+        },
+        {
+          "text": "Koaxialverkabelung",
+          "is_correct": false
+        },
+        {
+          "text": "DFÜ-Netzwerk",
+          "is_correct": true
+        },
+        {
+          "text": "Twisted-Pair-Kupferverkabelung",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Häufigster Formfaktor für Laptop-Speicher:",
+      "explanation": "SODIMM passt in kompakte Laptop-Systeme.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ECC-RAM",
+          "is_correct": false
+        },
+        {
+          "text": "DIMM",
+          "is_correct": false
+        },
+        {
+          "text": "SODIMM",
+          "is_correct": true
+        },
+        {
+          "text": "CRIMM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Die gebräuchlichste Laptop-Hintergrundbeleuchtungstechnologie:",
+      "explanation": "LED ersetzte die ältere CCFL-Technologie.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CCFL",
+          "is_correct": false
+        },
+        {
+          "text": "CRT",
+          "is_correct": false
+        },
+        {
+          "text": "OLED",
+          "is_correct": false
+        },
+        {
+          "text": "LED",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Für die Verbindung müssen die WLAN-Sicherheitseinstellungen übereinstimmen:",
+      "explanation": "Clients müssen den WAP-Verschlüsselungs-/Sicherheitseinstellungen entsprechen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Single-Point-Schutz-Appliance gegen Bedrohungen:",
+      "explanation": "UTM integriert Firewall, AV, IPS in einem Gerät.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "IDP",
+          "is_correct": false
+        },
+        {
+          "text": "AV",
+          "is_correct": false
+        },
+        {
+          "text": "UTM",
+          "is_correct": true
+        },
+        {
+          "text": "NGFW",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Führen Sie Programme mit anderen Benutzeranmeldeinformationen aus:",
+      "explanation": "UAC steuert die Erhöhung für Verwaltungsaufgaben.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "OTP",
+          "is_correct": false
+        },
+        {
+          "text": "MMC",
+          "is_correct": false
+        },
+        {
+          "text": "GPO",
+          "is_correct": false
+        },
+        {
+          "text": "UAC",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Software zur Simulation physischer Hardware:",
+      "explanation": "VMs emulieren vollständige Computersysteme.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SDN",
+          "is_correct": false
+        },
+        {
+          "text": "SaaS",
+          "is_correct": false
+        },
+        {
+          "text": "VM",
+          "is_correct": true
+        },
+        {
+          "text": "SoC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Charakteristische Merkmale von RJ45 (2 Antworten):",
+      "explanation": "RJ45 unterstützt Ethernet mit Twisted-Pair-Verkabelung.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Glasfaserverkabelung",
+          "is_correct": false
+        },
+        {
+          "text": "Koaxialverkabelung",
+          "is_correct": false
+        },
+        {
+          "text": "DFÜ-Netzwerk",
+          "is_correct": false
+        },
+        {
+          "text": "Twisted-Pair-Kupferverkabelung",
+          "is_correct": true
+        },
+        {
+          "text": "Telefonausrüstung",
+          "is_correct": false
+        },
+        {
+          "text": "Ethernet-Netzwerkverkabelung",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Für Anzeige und GPU-Zugriff optimierter Speicher:",
+      "explanation": "VRAM speichert Texturen/Frame-Puffer für schnellen GPU-Zugriff.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DRAM",
+          "is_correct": false
+        },
+        {
+          "text": "VRAM",
+          "is_correct": true
+        },
+        {
+          "text": "ROM",
+          "is_correct": false
+        },
+        {
+          "text": "SRAM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Erkennt und verhindert unbefugte Datenübertragungen:",
+      "explanation": "DLP schützt vor dem Verlust sensibler Daten.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EDR",
+          "is_correct": false
+        },
+        {
+          "text": "DEP",
+          "is_correct": false
+        },
+        {
+          "text": "XDR",
+          "is_correct": false
+        },
+        {
+          "text": "DLP",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Hardwarebeschleunigtes visuelles Rendering:",
+      "explanation": "GPUs übernehmen komplexe parallele Grafikberechnungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "TPU",
+          "is_correct": false
+        },
+        {
+          "text": "GPU",
+          "is_correct": true
+        },
+        {
+          "text": "DSP",
+          "is_correct": false
+        },
+        {
+          "text": "CPU",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Uhren über Netzwerke hinweg synchronisieren:",
+      "explanation": "NTP bietet eine genaue Remote-Zeitsynchronisierung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NTP",
+          "is_correct": true
+        },
+        {
+          "text": "VTP",
+          "is_correct": false
+        },
+        {
+          "text": "NNTP",
+          "is_correct": false
+        },
+        {
+          "text": "RTP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SMB-Protokoll verwendet für:",
+      "explanation": "SMB ermöglicht Datei- und Druckdienste in LANs.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Datei- und Druckerfreigabe",
+          "is_correct": true
+        },
+        {
+          "text": "Diagnostische Überwachung",
+          "is_correct": false
+        },
+        {
+          "text": "Routing zwischen Subnetzen",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP-Verwaltung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Microsoft-Dateisystem mit erweiterten Sicherheitsfunktionen:",
+      "explanation": "NTFS umfasst Berechtigungen, Verschlüsselung und Unterstützung für große Datenträger.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "FAT32",
+          "is_correct": false
+        },
+        {
+          "text": "HFS+",
+          "is_correct": false
+        },
+        {
+          "text": "exFAT",
+          "is_correct": false
+        },
+        {
+          "text": "NTFS",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "AAA-Komponente, die den Zugriff gewährt oder verweigert:",
+      "explanation": "Die Autorisierung erfolgt nach der Authentifizierung, um Ressourcen zuzulassen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Autorisierung",
+          "is_correct": true
+        },
+        {
+          "text": "Buchhaltung",
+          "is_correct": false
+        },
+        {
+          "text": "Wirtschaftsprüfung",
+          "is_correct": false
+        },
+        {
+          "text": "Authentifizierung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Lösung zur Priorisierung des Datenverkehrs:",
+      "explanation": "QoS priorisiert verzögerungsempfindlichen Datenverkehr wie Sprache.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NAC",
+          "is_correct": false
+        },
+        {
+          "text": "QoS",
+          "is_correct": true
+        },
+        {
+          "text": "NAT",
+          "is_correct": false
+        },
+        {
+          "text": "UTM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Funktion von POP3:",
+      "explanation": "POP3 lädt E-Mails von einem Server herunter.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Namensauflösung",
+          "is_correct": false
+        },
+        {
+          "text": "E-Mail senden",
+          "is_correct": false
+        },
+        {
+          "text": "Dateiaustausch",
+          "is_correct": false
+        },
+        {
+          "text": "E-Mail-Abruf",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Nahbereichstechnologie für kontaktloses Bezahlen:",
+      "explanation": "NFC sorgt für sichere Proximity-Kommunikation.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "BLE",
+          "is_correct": false
+        },
+        {
+          "text": "IR",
+          "is_correct": false
+        },
+        {
+          "text": "RFID",
+          "is_correct": false
+        },
+        {
+          "text": "NFC",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "UDP ist ein verbindungsloses und unzuverlässiges Best-Effort-Protokoll:",
+      "explanation": "UDP gewährleistet keine erneute Übertragung → Streaming mit geringer Latenz nutzt es.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Drahtloses Gerät, das Wi-Fi-Clients mit kabelgebundenen Netzwerken verbindet:",
+      "explanation": "Access Points überbrücken drahtlose und kabelgebundene Netzwerksegmente.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "WAF",
+          "is_correct": false
+        },
+        {
+          "text": "AP",
+          "is_correct": true
+        },
+        {
+          "text": "RAS",
+          "is_correct": false
+        },
+        {
+          "text": "NIC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Produkt wird nicht mehr produziert oder verkauft:",
+      "explanation": "EOL bedeutet, dass das Produkt nicht mehr verfügbar ist oder unterstützt wird.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EOS",
+          "is_correct": false
+        },
+        {
+          "text": "EOF",
+          "is_correct": false
+        },
+        {
+          "text": "EOL",
+          "is_correct": true
+        },
+        {
+          "text": "EOA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist ein Welpe? (3 Antworten):",
+      "explanation": "PUPs sind unerwünschte Software, die oft gebündelt wird und Auswirkungen auf Datenschutz/Sicherheit hat.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Nicht streng als Malware eingestuft",
+          "is_correct": true
+        },
+        {
+          "text": "Illegale App ohne Zustimmung installiert",
+          "is_correct": false
+        },
+        {
+          "text": "Kann Leistung/Datenschutz beeinträchtigen oder Werbung anzeigen",
+          "is_correct": true
+        },
+        {
+          "text": "Wird mit teilweiser Zustimmung des Benutzers installiert (im Paket enthalten)",
+          "is_correct": true
+        },
+        {
+          "text": "Explizit als Malware eingestuft",
+          "is_correct": false
+        },
+        {
+          "text": "Kostenloses Dienstprogramm, das in kostenpflichtigen Apps enthalten ist",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Hilfreiche Metrik zur Diagnose einer nachlassenden Laufwerksleistung:",
+      "explanation": "IOPS misst die Eingabe-/Ausgabeleistung direkt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PPM",
+          "is_correct": false
+        },
+        {
+          "text": "MTBF",
+          "is_correct": false
+        },
+        {
+          "text": "RPM",
+          "is_correct": false
+        },
+        {
+          "text": "IOPS",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Gerät, das den Netzwerkzugriff ermöglicht:",
+      "explanation": "NIC bietet physische und logische Netzwerkkonnektivität.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CPU",
+          "is_correct": false
+        },
+        {
+          "text": "PSU",
+          "is_correct": false
+        },
+        {
+          "text": "NIC",
+          "is_correct": true
+        },
+        {
+          "text": "GPU",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Zentralisierte Steuerung der mobilen Geräte der Organisation:",
+      "explanation": "MDM verwaltet Konfiguration, Sicherheit und Updates aus der Ferne.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MDR",
+          "is_correct": false
+        },
+        {
+          "text": "IAM",
+          "is_correct": false
+        },
+        {
+          "text": "SIEM",
+          "is_correct": false
+        },
+        {
+          "text": "MDM",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Drahtloses Netzwerk, das Geräte über Funksignale verbindet:",
+      "explanation": "WLAN nutzt WLAN-Funkkommunikation in lokalen Bereichen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EPN",
+          "is_correct": false
+        },
+        {
+          "text": "WLAN",
+          "is_correct": true
+        },
+        {
+          "text": "WAN",
+          "is_correct": false
+        },
+        {
+          "text": "PAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Kauf von Computerressourcen als ausgelagerte Dienstleistung:",
+      "explanation": "IaaS bietet virtualisierte Infrastruktur wie Server und Speicher.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SaaS",
+          "is_correct": false
+        },
+        {
+          "text": "DaaS",
+          "is_correct": false
+        },
+        {
+          "text": "PaaS",
+          "is_correct": false
+        },
+        {
+          "text": "IaaS",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Microsoft GUI-Remotezugriffsprotokoll:",
+      "explanation": "RDP bietet grafische Remote-Desktop-Sitzungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "VDI",
+          "is_correct": false
+        },
+        {
+          "text": "RDP",
+          "is_correct": true
+        },
+        {
+          "text": "SSH",
+          "is_correct": false
+        },
+        {
+          "text": "VNC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "WAN mit Mobilfunkmasten:",
+      "explanation": "WWAN nutzt Mobilfunkinfrastruktur für Weitverkehrskonnektivität.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "WiMAX",
+          "is_correct": false
+        },
+        {
+          "text": "WMN",
+          "is_correct": false
+        },
+        {
+          "text": "ATM",
+          "is_correct": false
+        },
+        {
+          "text": "WWAN",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Analoger Monitoranschluss, der vor dem digitalen weit verbreitet war:",
+      "explanation": "VGA sendet analoge Videosignale.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "XGA",
+          "is_correct": false
+        },
+        {
+          "text": "HDMI",
+          "is_correct": false
+        },
+        {
+          "text": "VGA",
+          "is_correct": true
+        },
+        {
+          "text": "DVI-I",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Auf Gesichtsmerkmalen basierende Identifizierungstechnologie:",
+      "explanation": "Die Gesichtserkennungstechnologie analysiert Gesichtsmerkmale.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "VAM",
+          "is_correct": false
+        },
+        {
+          "text": "IRIS",
+          "is_correct": false
+        },
+        {
+          "text": "FRT",
+          "is_correct": true
+        },
+        {
+          "text": "AFIS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Stop-Fehlername in Windows:",
+      "explanation": "BSoD zeigt einen kritischen Systemabsturz mit Bluescreen an.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "BYOD",
+          "is_correct": false
+        },
+        {
+          "text": "JBOD",
+          "is_correct": false
+        },
+        {
+          "text": "BSoD",
+          "is_correct": true
+        },
+        {
+          "text": "DDoS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Standard zur Verbesserung von WEP-Schwächen eingeführt:",
+      "explanation": "WPA verbesserte die Verschlüsselungszuverlässigkeit gegenüber WEP.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "TKIP",
+          "is_correct": false
+        },
+        {
+          "text": "AES",
+          "is_correct": false
+        },
+        {
+          "text": "WPA",
+          "is_correct": true
+        },
+        {
+          "text": "CCMP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "ECC-RAM-Fähigkeit:",
+      "explanation": "ECC korrigiert Bitfehler automatisch aus Gründen der Zuverlässigkeit.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Nur erkennen",
+          "is_correct": false
+        },
+        {
+          "text": "Paritäts-RAM-Äquivalent",
+          "is_correct": false
+        },
+        {
+          "text": "Schneller als Nicht-ECC",
+          "is_correct": false
+        },
+        {
+          "text": "Fehler erkennen und beheben",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Globale Organisation zur Entwicklung von Standards:",
+      "explanation": "ISO definiert die internationale Standardisierung branchenübergreifend.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NIST",
+          "is_correct": false
+        },
+        {
+          "text": "ISO",
+          "is_correct": true
+        },
+        {
+          "text": "IEEE",
+          "is_correct": false
+        },
+        {
+          "text": "ANSI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dediziertes lokales Netzwerk gemeinsam genutzter Speichergeräte:",
+      "explanation": "SAN zentralisiert den Speicher für Hochleistungsanwendungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SDN",
+          "is_correct": false
+        },
+        {
+          "text": "NAS",
+          "is_correct": false
+        },
+        {
+          "text": "iSCSI",
+          "is_correct": false
+        },
+        {
+          "text": "SAN",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "DDoS nutzt mehrere kompromittierte Systeme:",
+      "explanation": "DDoS = verteiltes DoS mit Botnetzen oder mehreren Hosts.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Programmiersprache für die Datenbankverwaltung:",
+      "explanation": "SQL wird zur Verwaltung strukturierter Datenbanken verwendet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PHP",
+          "is_correct": false
+        },
+        {
+          "text": "C",
+          "is_correct": false
+        },
+        {
+          "text": "SQL",
+          "is_correct": true
+        },
+        {
+          "text": "JS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Verschlüsselte Verbindungen über öffentliche Netzwerke:",
+      "explanation": "VPN gewährleistet sicheres Tunneln über nicht vertrauenswürdige Netzwerke.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "WWAN",
+          "is_correct": false
+        },
+        {
+          "text": "VPN",
+          "is_correct": true
+        },
+        {
+          "text": "PAN",
+          "is_correct": false
+        },
+        {
+          "text": "VLAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SMTP-Nutzung (2 Antworten):",
+      "explanation": "SMTP übernimmt das Senden von E-Mails sowohl von Server zu Server als auch von Clients.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Senden zwischen Mailservern",
+          "is_correct": true
+        },
+        {
+          "text": "Namensauflösung",
+          "is_correct": false
+        },
+        {
+          "text": "Bereitstellung von Webseiten",
+          "is_correct": false
+        },
+        {
+          "text": "Von Servern abrufen",
+          "is_correct": false
+        },
+        {
+          "text": "Senden vom Client zum Mailserver",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Single-Login-Zugriff auf mehrere Systeme:",
+      "explanation": "SSO führt eine einmalige Authentifizierung für mehrere Dienste durch.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NAC",
+          "is_correct": false
+        },
+        {
+          "text": "SSO",
+          "is_correct": true
+        },
+        {
+          "text": "AAA",
+          "is_correct": false
+        },
+        {
+          "text": "MFA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dateisystem des Apple-Betriebssystems:",
+      "explanation": "APFS ist für Apple-Geräte und Flash-Speicher optimiert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "XFS",
+          "is_correct": false
+        },
+        {
+          "text": "APFS",
+          "is_correct": true
+        },
+        {
+          "text": "EFS",
+          "is_correct": false
+        },
+        {
+          "text": "CIFS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "LAN-Begriff für Kleinunternehmen:",
+      "explanation": "SOHO bezieht sich auf kleine Büro-/Home-Office-Umgebungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "BAN",
+          "is_correct": false
+        },
+        {
+          "text": "SOHO",
+          "is_correct": true
+        },
+        {
+          "text": "MWN",
+          "is_correct": false
+        },
+        {
+          "text": "WLAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Sich als Geschäftskontakte ausgeben, um Mitarbeiter auszutricksen:",
+      "explanation": "BECügereien nutzen das Vertrauen in die Geschäftskommunikation aus.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "XSS",
+          "is_correct": false
+        },
+        {
+          "text": "CSRF",
+          "is_correct": false
+        },
+        {
+          "text": "APT",
+          "is_correct": false
+        },
+        {
+          "text": "BEC",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Primärer flüchtiger Arbeitsspeicher des Computers:",
+      "explanation": "RAM speichert Daten vorübergehend für den schnellen Zugriff durch die CPU.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "GPR",
+          "is_correct": false
+        },
+        {
+          "text": "RAM",
+          "is_correct": true
+        },
+        {
+          "text": "FPR",
+          "is_correct": false
+        },
+        {
+          "text": "ROM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eindeutige MAC-identifizierende Netzwerkadapter:",
+      "explanation": "Die MAC-Adresse identifiziert eine Netzwerkschnittstelle eindeutig.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EUI",
+          "is_correct": false
+        },
+        {
+          "text": "SSID",
+          "is_correct": false
+        },
+        {
+          "text": "IP",
+          "is_correct": false
+        },
+        {
+          "text": "MAC",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "FTP-Hauptfunktion:",
+      "explanation": "FTP ermöglicht die Übertragung von Dateien zwischen Systemen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "E-Mail-Service",
+          "is_correct": false
+        },
+        {
+          "text": "Verzeichniszugriff",
+          "is_correct": false
+        },
+        {
+          "text": "Bereitstellung von Webseiten",
+          "is_correct": false
+        },
+        {
+          "text": "Dateiaustausch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Magnetisches Spinning-Disk-Speichermedium:",
+      "explanation": "HDD Festplatte ist mechanisch und verwendet Festplatten und einen Lese-/Schreibkopf.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "HDD",
+          "is_correct": true
+        },
+        {
+          "text": "SD",
+          "is_correct": false
+        },
+        {
+          "text": "ROM",
+          "is_correct": false
+        },
+        {
+          "text": "SSD",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Teilt Tastatur/Maus/Display mit mehreren Hosts:",
+      "explanation": "Ein KVM-Switch steuert mehrere Computer mit einem Setup.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MFD",
+          "is_correct": false
+        },
+        {
+          "text": "KVM",
+          "is_correct": true
+        },
+        {
+          "text": "MMC",
+          "is_correct": false
+        },
+        {
+          "text": "UTM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Infrarot-Technologie für die Fernsteuerungskommunikation:",
+      "explanation": "IR nutzt Licht zur Sichtliniensteuerung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NFC",
+          "is_correct": false
+        },
+        {
+          "text": "IR",
+          "is_correct": true
+        },
+        {
+          "text": "WLAN",
+          "is_correct": false
+        },
+        {
+          "text": "RF",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "PCIe ersetzt PCI, PCI-X, AGP:",
+      "explanation": "PCIe ist der moderne, schnellere Schnittstellenstandard.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Moderner Ersatz für klassisches BIOS:",
+      "explanation": "UEFI fügt sicheren Start, Unterstützung für große Festplatten usw. hinzu.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "UEFI",
+          "is_correct": true
+        },
+        {
+          "text": "GUI",
+          "is_correct": false
+        },
+        {
+          "text": "ACPI",
+          "is_correct": false
+        },
+        {
+          "text": "CMOS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Allzweckgerät für den individuellen Einsatz:",
+      "explanation": "Ein PC ist für Personal-Computing-Aufgaben konzipiert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MFD",
+          "is_correct": false
+        },
+        {
+          "text": "PDA",
+          "is_correct": false
+        },
+        {
+          "text": "PC",
+          "is_correct": true
+        },
+        {
+          "text": "PED",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Stärkster aufgeführter Algorithmus:",
+      "explanation": "AES Gegensatz zu herkömmlichen Verschlüsselungsverfahren ist AES modern und sicher.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "AES",
+          "is_correct": true
+        },
+        {
+          "text": "DES",
+          "is_correct": false
+        },
+        {
+          "text": "RC4",
+          "is_correct": false
+        },
+        {
+          "text": "3DES",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nahbereichsnetzwerk persönlicher Geräte:",
+      "explanation": "PAN verbindet Geräte in der Nähe eines Benutzers.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PAN",
+          "is_correct": true
+        },
+        {
+          "text": "LAN",
+          "is_correct": false
+        },
+        {
+          "text": "SAN",
+          "is_correct": false
+        },
+        {
+          "text": "MAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Führt POST-Hardwareprüfungen beim Booten durch:",
+      "explanation": "BIOS BIOS initialisiert Komponenten und startet das Laden des Betriebssystems.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CMOS",
+          "is_correct": false
+        },
+        {
+          "text": "ROM",
+          "is_correct": false
+        },
+        {
+          "text": "BIOS",
+          "is_correct": true
+        },
+        {
+          "text": "EPROM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Mitarbeiter nutzen private Geräte für geschäftliche Apps:",
+      "explanation": "BYOD erweitert die Geräteflexibilität durch Sicherheitsmanagement.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "COPE",
+          "is_correct": false
+        },
+        {
+          "text": "BYOD",
+          "is_correct": true
+        },
+        {
+          "text": "JBOD",
+          "is_correct": false
+        },
+        {
+          "text": "CYOD",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Gemeinsame PnP-Peripherieschnittstelle:",
+      "explanation": "USB konfiguriert Geräte automatisch und liefert etwas Strom.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PCIe",
+          "is_correct": false
+        },
+        {
+          "text": "IDE",
+          "is_correct": false
+        },
+        {
+          "text": "USB",
+          "is_correct": true
+        },
+        {
+          "text": "eSATA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Gegenmaßnahmen gegen statische Entladung:",
+      "explanation": "ESD schützen Komponenten während der Handhabung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RFI",
+          "is_correct": false
+        },
+        {
+          "text": "ESD",
+          "is_correct": true
+        },
+        {
+          "text": "EFT",
+          "is_correct": false
+        },
+        {
+          "text": "EMI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "APIPA weist IPv4-Adressen selbst zu, wenn DHCP fehlschlägt:",
+      "explanation": "APIPA verwendet 169.254.x.x für verbindungslokale Kommunikation.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "AAA: Nutzungsverfolgung und Berichterstattung:",
+      "explanation": "Die Buchhaltung protokolliert Aktivitäten für Abrechnung und Prüfung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Authentifizierung",
+          "is_correct": false
+        },
+        {
+          "text": "Wirtschaftsprüfung",
+          "is_correct": false
+        },
+        {
+          "text": "Buchhaltung",
+          "is_correct": true
+        },
+        {
+          "text": "Autorisierung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Großer PC-CPU-Hersteller:",
+      "explanation": "AMD ist einer der beiden x86-CPU-Giganten.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ASUS",
+          "is_correct": false
+        },
+        {
+          "text": "nVidia",
+          "is_correct": false
+        },
+        {
+          "text": "AMD",
+          "is_correct": true
+        },
+        {
+          "text": "EVGA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Speichert die BIOS/UEFI-Konfiguration im Batteriebetrieb:",
+      "explanation": "CMOS behält die Einstellungen bei, wenn das System ausgeschaltet wird.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CMOS",
+          "is_correct": true
+        },
+        {
+          "text": "SRAM",
+          "is_correct": false
+        },
+        {
+          "text": "ROM",
+          "is_correct": false
+        },
+        {
+          "text": "EEPROM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Definiert die Leistungsanforderungen des Anbieters:",
+      "explanation": "SLAs legen Betriebszeit, Reaktionszeit und Serviceziele fest.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MSA",
+          "is_correct": false
+        },
+        {
+          "text": "SLA",
+          "is_correct": true
+        },
+        {
+          "text": "MOU",
+          "is_correct": false
+        },
+        {
+          "text": "SOW",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Netzwerk in einem Gebäude oder Campus:",
+      "explanation": "LAN deckt einen begrenzten Standort wie Büroetagen ab.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PAN",
+          "is_correct": false
+        },
+        {
+          "text": "LAN",
+          "is_correct": true
+        },
+        {
+          "text": "MAN",
+          "is_correct": false
+        },
+        {
+          "text": "WAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "In Laptops am häufigsten verwendete Technologie:",
+      "explanation": "LCD bleibt die Standard-Panel-Technologie.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CRT",
+          "is_correct": false
+        },
+        {
+          "text": "OLED",
+          "is_correct": false
+        },
+        {
+          "text": "LCD",
+          "is_correct": true
+        },
+        {
+          "text": "HDR",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bestes Modell zum Erstellen/Bereitstellen von Web-Apps:",
+      "explanation": "PaaS umfasst Laufzeitumgebungen und Entwicklungstools.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "XaaS",
+          "is_correct": false
+        },
+        {
+          "text": "SaaS",
+          "is_correct": false
+        },
+        {
+          "text": "PaaS",
+          "is_correct": true
+        },
+        {
+          "text": "IaaS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Zum Abrufen von Webinhalten verwendetes Protokoll:",
+      "explanation": "HTTP ist das primäre Web-Kommunikationsprotokoll.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CIFS",
+          "is_correct": false
+        },
+        {
+          "text": "FTP",
+          "is_correct": false
+        },
+        {
+          "text": "SSH",
+          "is_correct": false
+        },
+        {
+          "text": "HTTP",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Verschlüsselt einzelne Dateien in Windows:",
+      "explanation": "EFS bietet dateibasierte Verschlüsselung auf NTFS-Ebene.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EFS",
+          "is_correct": true
+        },
+        {
+          "text": "TPM",
+          "is_correct": false
+        },
+        {
+          "text": "DFS",
+          "is_correct": false
+        },
+        {
+          "text": "AES",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Alternatives Protokoll für sicheren Remote-Shell-Zugriff, der Telnet ersetzt:",
+      "explanation": "SSH verschlüsselt Remote-Befehlszeilensitzungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RDP",
+          "is_correct": false
+        },
+        {
+          "text": "RSH",
+          "is_correct": false
+        },
+        {
+          "text": "SSH",
+          "is_correct": true
+        },
+        {
+          "text": "VNC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eintrag, der mehrere Domänennamen für dieselbe IP zulässt:",
+      "explanation": "CNAME ordnet Aliasnamen einer kanonischen Domäne zu.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MX",
+          "is_correct": false
+        },
+        {
+          "text": "CNAME",
+          "is_correct": true
+        },
+        {
+          "text": "AAAA",
+          "is_correct": false
+        },
+        {
+          "text": "PTR",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dateisystem mit einer Dateigrößenbeschränkung von 4 GB:",
+      "explanation": "FAT32ür FAT32 gelten alte Größenbeschränkungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NTFS",
+          "is_correct": false
+        },
+        {
+          "text": "FAT32",
+          "is_correct": true
+        },
+        {
+          "text": "NFS",
+          "is_correct": false
+        },
+        {
+          "text": "exFAT",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "GPT-Merkmale (3 Antworten):",
+      "explanation": "GPT unterstützt UEFI und viele Partitionen auf großen Laufwerken.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Unterstützt Festplatten mit mehr als 2 TB",
+          "is_correct": true
+        },
+        {
+          "text": "Maximal 4 primäre Partitionen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Legacy-BIOS",
+          "is_correct": false
+        },
+        {
+          "text": "Bis zu 128 primäre Partitionen",
+          "is_correct": true
+        },
+        {
+          "text": "UEFI-BIOS-Unterstützung",
+          "is_correct": true
+        },
+        {
+          "text": "Maximale Festplattenbegrenzung 2 TB",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eindeutige ID für Hardware-/Softwareobjekte:",
+      "explanation": "GUIDs identifizieren Objekte weltweit eindeutig.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "OID",
+          "is_correct": false
+        },
+        {
+          "text": "GUID",
+          "is_correct": true
+        },
+        {
+          "text": "URI",
+          "is_correct": false
+        },
+        {
+          "text": "OUI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Definition von Service Level, Qualität & Verfügbarkeit:",
+      "explanation": "SLAs definieren messbare Serviceleistungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SOW",
+          "is_correct": false
+        },
+        {
+          "text": "MSA",
+          "is_correct": false
+        },
+        {
+          "text": "SLA",
+          "is_correct": true
+        },
+        {
+          "text": "MOU",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Authentifizierungs-/Autorisierungslösung innerhalb von Organisationen:",
+      "explanation": "IAM verwaltet Benutzer, Rollen und Zugriffsberechtigungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CIA",
+          "is_correct": false
+        },
+        {
+          "text": "IAM",
+          "is_correct": true
+        },
+        {
+          "text": "AAA",
+          "is_correct": false
+        },
+        {
+          "text": "ICS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "IPS, TN, VA und OLED sind allesamt LCD-Technologie:",
+      "explanation": "OLED ist **kein** LCD, weil es sein eigenes Licht aussendet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Glasfasergerät am Abgrenzungspunkt:",
+      "explanation": "ONT wandelt Glasfaser in Kundennetzwerkverbindungen um.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MDI",
+          "is_correct": false
+        },
+        {
+          "text": "IDF",
+          "is_correct": false
+        },
+        {
+          "text": "ONT",
+          "is_correct": true
+        },
+        {
+          "text": "MDF",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eigenschaften des BNC-Steckers (3 Antworten):",
+      "explanation": "BNC ist koaxial mit Bajonettverschluss.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Bajonett-Drehverschluss",
+          "is_correct": true
+        },
+        {
+          "text": "Twisted-Pair-Verkabelung",
+          "is_correct": false
+        },
+        {
+          "text": "Wird in CCTV- und Testgeräten verwendet",
+          "is_correct": true
+        },
+        {
+          "text": "Koaxialverkabelung",
+          "is_correct": true
+        },
+        {
+          "text": "Nutzung von Kabelfernsehen/Breitband",
+          "is_correct": false
+        },
+        {
+          "text": "Schraubverbinder mit Gewinde",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Gerät, das bei Ausfall Notstrom liefert:",
+      "explanation": "UPS USV verhindert eine Abschaltung bei Stromausfall.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "UPS",
+          "is_correct": true
+        },
+        {
+          "text": "PoE",
+          "is_correct": false
+        },
+        {
+          "text": "SVC",
+          "is_correct": false
+        },
+        {
+          "text": "PSU",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "GPT-Partitionen haben eindeutige GUIDs:",
+      "explanation": "Jede GPT-Partition verfügt über eine GUID-Kennung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Formfaktor eines kleinen Industrie-Motherboards mit geringem Stromverbrauch:",
+      "explanation": "ITX ist ein kompakter Standard für Embedded-/Industrie-PCs.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NLX",
+          "is_correct": false
+        },
+        {
+          "text": "ITX",
+          "is_correct": true
+        },
+        {
+          "text": "ATX",
+          "is_correct": false
+        },
+        {
+          "text": "LPX",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Verhindert das Kopieren/Nutzungsmissbrauch digitaler Inhalte:",
+      "explanation": "DRM kontrolliert den Zugriff und die Nutzung von Inhalten.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "OEM",
+          "is_correct": false
+        },
+        {
+          "text": "EULA",
+          "is_correct": false
+        },
+        {
+          "text": "DRM",
+          "is_correct": true
+        },
+        {
+          "text": "AUP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Sicherheitslücke, die das Einschleusen von Skripten in Webseiten ermöglicht:",
+      "explanation": "XSS schleust bösartige Skripte in vertrauenswürdige Websites ein.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CSRF",
+          "is_correct": false
+        },
+        {
+          "text": "XSS",
+          "is_correct": true
+        },
+        {
+          "text": "SQLi",
+          "is_correct": false
+        },
+        {
+          "text": "XSRF",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Verwendet UDP und kombiniert Authentifizierung und Autorisierung:",
+      "explanation": "RADIUS wird häufig für die Wi-Fi/VPN-Authentifizierung verwendet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RADIUS",
+          "is_correct": true
+        },
+        {
+          "text": "LDAP",
+          "is_correct": false
+        },
+        {
+          "text": "TACACS+",
+          "is_correct": false
+        },
+        {
+          "text": "Kerberos",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Unter Multi-Faktor-Authentifizierung versteht man:",
+      "explanation": "MFA erfordert mehrere unabhängige Authentifizierungsfaktoren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "UAC",
+          "is_correct": false
+        },
+        {
+          "text": "SSO",
+          "is_correct": false
+        },
+        {
+          "text": "ACL",
+          "is_correct": false
+        },
+        {
+          "text": "MFA",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Optimiertes Microsoft FS für Flash-Laufwerke:",
+      "explanation": "exFAT unterstützt große Dateien, ideal für Flash-Speicher.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "FAT32",
+          "is_correct": false
+        },
+        {
+          "text": "NFS",
+          "is_correct": false
+        },
+        {
+          "text": "exFAT",
+          "is_correct": true
+        },
+        {
+          "text": "CDFS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SMB/CIFS-Merkmale (2 Antworten):",
+      "explanation": "SMB stellt Datei- und Druckdienste in Windows-Netzwerken bereit.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Optimiert für sicheren Internetzugang",
+          "is_correct": false
+        },
+        {
+          "text": "Wird hauptsächlich in Windows-Umgebungen verwendet",
+          "is_correct": true
+        },
+        {
+          "text": "Freigegebene Dateien, Ordner und Geräte",
+          "is_correct": true
+        },
+        {
+          "text": "Sprach-/Multimedia-Kommunikation",
+          "is_correct": false
+        },
+        {
+          "text": "Entwickelt für Linux-Umgebungen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Älterer tragbarer SSD-Formfaktor durch M.2 ersetzt:",
+      "explanation": "mSATA wurde durch den flexibleren M.2-Formfaktor ersetzt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SATA",
+          "is_correct": false
+        },
+        {
+          "text": "NVMe",
+          "is_correct": false
+        },
+        {
+          "text": "mSATA",
+          "is_correct": true
+        },
+        {
+          "text": "PCIe",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Merkmale des ST-Steckers (3 Antworten):",
+      "explanation": "ST ist älter, mit Bajonettverschluss und runder Form.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Bajonett-Drehverschluss",
+          "is_correct": true
+        },
+        {
+          "text": "Rechenzentren mit hoher Dichte",
+          "is_correct": false
+        },
+        {
+          "text": "Große zylindrische Form",
+          "is_correct": true
+        },
+        {
+          "text": "Ältere Netzwerke und Multimode-Glasfaser",
+          "is_correct": true
+        },
+        {
+          "text": "Kleiner Formfaktor",
+          "is_correct": false
+        },
+        {
+          "text": "Riegel im RJ45-Stil",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Temporärer Code zur Identitätsüberprüfung:",
+      "explanation": "Einmalpasswörter ermöglichen eine kurzlebige sichere Anmeldung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "OTP",
+          "is_correct": true
+        },
+        {
+          "text": "CAPTCHA",
+          "is_correct": false
+        },
+        {
+          "text": "SSO",
+          "is_correct": false
+        },
+        {
+          "text": "HMAC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dokument mit Gefahrenbeschreibung und Handhabungshinweisen:",
+      "explanation": "MSDS Sicherheitsdatenblatt enthält Sicherheitsinformationen für Chemikalien.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EPA",
+          "is_correct": false
+        },
+        {
+          "text": "MSDS",
+          "is_correct": true
+        },
+        {
+          "text": "MSRP",
+          "is_correct": false
+        },
+        {
+          "text": "SOP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Hauptmerkmale des System-RAM (2 Antworten):",
+      "explanation": "Consumer-RAM ist normalerweise Nicht-ECC-DRAM.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SODIMM",
+          "is_correct": false
+        },
+        {
+          "text": "Nicht-ECC-Speicher",
+          "is_correct": true
+        },
+        {
+          "text": "Statischer RAM",
+          "is_correct": false
+        },
+        {
+          "text": "MicroDIMM",
+          "is_correct": false
+        },
+        {
+          "text": "Dynamischer RAM",
+          "is_correct": true
+        },
+        {
+          "text": "ECC-Speicher",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Erster Laufwerkssektor mit Partitionstabelle und Bootcode:",
+      "explanation": "MBR speichert Bootloader- und Partitionsinformationen auf älteren Systemen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MBR",
+          "is_correct": true
+        },
+        {
+          "text": "GPT",
+          "is_correct": false
+        },
+        {
+          "text": "LBA",
+          "is_correct": false
+        },
+        {
+          "text": "GUID",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Gegenseitige Vertraulichkeitsvereinbarung zwischen den Parteien:",
+      "explanation": "MNDA stellt sicher, dass vertrauliche Informationen von beiden Parteien geschützt werden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MNDA",
+          "is_correct": true
+        },
+        {
+          "text": "SLA",
+          "is_correct": false
+        },
+        {
+          "text": "MSA",
+          "is_correct": false
+        },
+        {
+          "text": "EULA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Funktionen des SC-Steckers (2 Antworten):",
+      "explanation": "SC verwendet Push-Pull-Latch und ist in modernen Glasfasernetzen üblich.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Weit verbreitet in der Telekommunikation/Datenkommunikation",
+          "is_correct": true
+        },
+        {
+          "text": "Riegel im RJ-45-Stil",
+          "is_correct": false
+        },
+        {
+          "text": "Bajonett-Drehverschluss",
+          "is_correct": false
+        },
+        {
+          "text": "Push-Pull-Verriegelungsmechanismus",
+          "is_correct": true
+        },
+        {
+          "text": "Wird in älteren Netzwerken verwendet",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nicht proprietäres GUI-Fernsteuerungsprotokoll:",
+      "explanation": "VNC gibt den Remote-Bildschirm mithilfe von Standardprotokollen frei.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "VTP",
+          "is_correct": false
+        },
+        {
+          "text": "VRF",
+          "is_correct": false
+        },
+        {
+          "text": "VTC",
+          "is_correct": false
+        },
+        {
+          "text": "VNC",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Auflösungsstandard für 720p/1080p HD-Video:",
+      "explanation": "HD bezieht sich im Allgemeinen auf 1280×720 oder 1920×1080.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "HD",
+          "is_correct": true
+        },
+        {
+          "text": "QHD",
+          "is_correct": false
+        },
+        {
+          "text": "SD",
+          "is_correct": false
+        },
+        {
+          "text": "UHD",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "API, die die LAN-Host-Kommunikation ermöglicht:",
+      "explanation": "NetBIOS unterstützt grundlegende Namensdienste und Messaging.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DNS",
+          "is_correct": false
+        },
+        {
+          "text": "TCP/IP",
+          "is_correct": false
+        },
+        {
+          "text": "NetBIOS",
+          "is_correct": true
+        },
+        {
+          "text": "DHCP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "VA-Anzeigeeigenschaften (3 Antworten):",
+      "explanation": "VA bietet starken Kontrast und eine gute Anzeige-/Farbqualität.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Hohe Kontrastverhältnisse",
+          "is_correct": true
+        },
+        {
+          "text": "Geringe Farbqualität",
+          "is_correct": false
+        },
+        {
+          "text": "Gute Blickwinkel",
+          "is_correct": true
+        },
+        {
+          "text": "Niedrige Kontrastverhältnisse",
+          "is_correct": false
+        },
+        {
+          "text": "Gute Farbqualität",
+          "is_correct": true
+        },
+        {
+          "text": "Niedrige Betrachtungswinkel",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Überträgt Daten bei steigenden und fallenden Taktflanken:",
+      "explanation": "DDR verdoppelt den Durchsatz pro Taktzyklus.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SDR",
+          "is_correct": false
+        },
+        {
+          "text": "DDR",
+          "is_correct": true
+        },
+        {
+          "text": "QDR",
+          "is_correct": false
+        },
+        {
+          "text": "ODR",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Sicherer Start, Verschlüsselungs- und Integritätskomponente:",
+      "explanation": "TPM schützt Kryptoschlüssel und überprüft die Boot-Integrität.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "TPM",
+          "is_correct": true
+        },
+        {
+          "text": "SoC",
+          "is_correct": false
+        },
+        {
+          "text": "UEFI",
+          "is_correct": false
+        },
+        {
+          "text": "HSM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Primärfarbmodell für Digitalanzeigen:",
+      "explanation": "RGB mischt Rot-Grün-Blau-Licht für Bildschirme.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "HSV",
+          "is_correct": false
+        },
+        {
+          "text": "RGB",
+          "is_correct": true
+        },
+        {
+          "text": "CMYK",
+          "is_correct": false
+        },
+        {
+          "text": "LAB",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Toolsammlung zur Verwaltung von Windows-Ressourcen:",
+      "explanation": "MMC hostet administrative Snap-Ins wie Device Manager und ADUC.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SDK",
+          "is_correct": false
+        },
+        {
+          "text": "MMC",
+          "is_correct": true
+        },
+        {
+          "text": "API",
+          "is_correct": false
+        },
+        {
+          "text": ".NET",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Unternehmensdateisystem für große Speicherkapazität://",
+      "explanation": "ReFS bietet Ausfallsicherheit und Integrität für Windows-Server.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "XFS",
+          "is_correct": false
+        },
+        {
+          "text": "Btrfs",
+          "is_correct": false
+        },
+        {
+          "text": "ZFS",
+          "is_correct": false
+        },
+        {
+          "text": "ReFS",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Protokoll zur Remote-Befehlsautomatisierung unter Windows:",
+      "explanation": "WinRM ermöglicht sicheres Remote-PowerShell und Automatisierung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RDP",
+          "is_correct": false
+        },
+        {
+          "text": "VNC",
+          "is_correct": false
+        },
+        {
+          "text": "WinRM",
+          "is_correct": true
+        },
+        {
+          "text": "ICS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Serielle Hochgeschwindigkeitsschnittstelle für Unternehmensspeicher:",
+      "explanation": "SAS ist für hochzuverlässige Laufwerke der Serverklasse konzipiert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SAS",
+          "is_correct": true
+        },
+        {
+          "text": "PCIe",
+          "is_correct": false
+        },
+        {
+          "text": "USB",
+          "is_correct": false
+        },
+        {
+          "text": "SATA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Verwalteter Bedrohungserkennungs- und Reaktionsdienst:",
+      "explanation": "MDR nutzt einen Anbieter zur Überwachung und Reaktion auf Bedrohungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EDR",
+          "is_correct": false
+        },
+        {
+          "text": "MDR",
+          "is_correct": true
+        },
+        {
+          "text": "IAM",
+          "is_correct": false
+        },
+        {
+          "text": "XDR",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Verwaltung erhöhter Konten:",
+      "explanation": "PAM kontrolliert privilegierte Anmeldeinformationen und Rollen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "OAuth",
+          "is_correct": false
+        },
+        {
+          "text": "IAM",
+          "is_correct": false
+        },
+        {
+          "text": "RBAC",
+          "is_correct": false
+        },
+        {
+          "text": "PAM",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Gerät, das kryptografische Schlüssel und Vorgänge verwaltet:",
+      "explanation": "HSMs generieren und speichern Kryptoschlüssel sicher.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EFS",
+          "is_correct": false
+        },
+        {
+          "text": "HSM",
+          "is_correct": true
+        },
+        {
+          "text": "SFC",
+          "is_correct": false
+        },
+        {
+          "text": "TPM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Gemeinsame Schnittstelle für Consumer-HDDs und SSDs:",
+      "explanation": "SATA verbindet interne Laufwerke in den meisten Desktops/Laptops.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SATA",
+          "is_correct": true
+        },
+        {
+          "text": "USB",
+          "is_correct": false
+        },
+        {
+          "text": "SAS",
+          "is_correct": false
+        },
+        {
+          "text": "PCIe",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Richtlinie zum Umgang mit Authentifizierungsfehlern in E-Mails:",
+      "explanation": "DMARC definiert, wie Empfänger fehlgeschlagene E-Mail-Authentifizierungsprüfungen behandeln.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DKIM",
+          "is_correct": false
+        },
+        {
+          "text": "SPF",
+          "is_correct": false
+        },
+        {
+          "text": "PGP",
+          "is_correct": false
+        },
+        {
+          "text": "DMARC",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Zeitbasiertes Einmalpasswortsystem:",
+      "explanation": "TOTP verwendet die aktuelle Zeit und den geheimen Schlüssel, um Codes zu generieren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "OAuth",
+          "is_correct": false
+        },
+        {
+          "text": "TOTP",
+          "is_correct": true
+        },
+        {
+          "text": "RADIUS",
+          "is_correct": false
+        },
+        {
+          "text": "HOTP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Hochleistungs-FS unter Linux/UNIX:",
+      "explanation": "XFS verarbeitet sehr große Volumina effizient.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ReFS",
+          "is_correct": false
+        },
+        {
+          "text": "DFS",
+          "is_correct": false
+        },
+        {
+          "text": "XFS",
+          "is_correct": true
+        },
+        {
+          "text": "exFAT",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Liste der autorisierten Mailserver aufzeichnen:",
+      "explanation": "SPF definiert, welche Hosts E-Mails für eine Domain senden dürfen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DKIM",
+          "is_correct": false
+        },
+        {
+          "text": "SRV",
+          "is_correct": false
+        },
+        {
+          "text": "CNAME",
+          "is_correct": false
+        },
+        {
+          "text": "SPF",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Serieller Kupferanschluss auf älteren Geräten:",
+      "explanation": "DB-9 wurde für die serielle RS-232-Kommunikation verwendet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RG-6",
+          "is_correct": false
+        },
+        {
+          "text": "PS/2",
+          "is_correct": false
+        },
+        {
+          "text": "RG-59",
+          "is_correct": false
+        },
+        {
+          "text": "DB-9",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Zentrales Repository für IT-Assets und -Beziehungen:",
+      "explanation": "CMDB bildet Systeme und Abhängigkeiten für den Betrieb ab.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CMDB",
+          "is_correct": true
+        },
+        {
+          "text": "NoSQL",
+          "is_correct": false
+        },
+        {
+          "text": "LDAP",
+          "is_correct": false
+        },
+        {
+          "text": "DBMS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "In WPA eingeführtes Protokoll, das WEP ersetzt:",
+      "explanation": "TKIP war eine Übergangsverschlüsselungserweiterung gegenüber WEP.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "AES",
+          "is_correct": false
+        },
+        {
+          "text": "TKIP",
+          "is_correct": true
+        },
+        {
+          "text": "CCMP",
+          "is_correct": false
+        },
+        {
+          "text": "EAP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ansatz für ein dynamisches Erkennungsnetzwerk ohne Konfiguration:",
+      "explanation": "UPnP ermöglicht Geräten die automatische Erkennung von Diensten in einem LAN.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SSDP",
+          "is_correct": false
+        },
+        {
+          "text": "UPnP",
+          "is_correct": true
+        },
+        {
+          "text": "PXE",
+          "is_correct": false
+        },
+        {
+          "text": "BOOTP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nichtflüchtige Speicherung ohne bewegliche Teile, schneller Zugriff:",
+      "explanation": "SSDs nutzen Flash-Speicher und sind schneller als HDDs.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SATA",
+          "is_correct": false
+        },
+        {
+          "text": "SD",
+          "is_correct": false
+        },
+        {
+          "text": "SCSI",
+          "is_correct": false
+        },
+        {
+          "text": "SSD",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Merkmale der ARM-Architektur (4 Antworten):",
+      "explanation": "ARM = energieeffizientes RISC für mobile und eingebettete Systeme.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Geringerer Stromverbrauch",
+          "is_correct": true
+        },
+        {
+          "text": "Wird hauptsächlich in PCs und Servern verwendet",
+          "is_correct": false
+        },
+        {
+          "text": "Vereinfachter Befehlssatz für Effizienz",
+          "is_correct": true
+        },
+        {
+          "text": "Schwerpunkt auf komplexe Unterrichtsunterstützung",
+          "is_correct": false
+        },
+        {
+          "text": "Häufig bei mobilen/eingebetteten Geräten",
+          "is_correct": true
+        },
+        {
+          "text": "Geeignet für batteriebetriebene Geräte",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "SSD-Formfaktoren (2 Antworten):",
+      "explanation": "M.2 und mSATA sind physische SSD-Formfaktoren.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PCIe",
+          "is_correct": false
+        },
+        {
+          "text": "M.2",
+          "is_correct": true
+        },
+        {
+          "text": "mSATA",
+          "is_correct": true
+        },
+        {
+          "text": "NVMe",
+          "is_correct": false
+        },
+        {
+          "text": "SATA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Fernüberwachung großer Industrieprozesse:",
+      "explanation": "SCADA überwacht und steuert verteilte Remote-Systeme.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DCS",
+          "is_correct": false
+        },
+        {
+          "text": "SCADA",
+          "is_correct": true
+        },
+        {
+          "text": "PLC",
+          "is_correct": false
+        },
+        {
+          "text": "RTOS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Fügt ausgehenden E-Mails eine digitale Signatur hinzu:",
+      "explanation": "DKIM signiert E-Mails, um Spoofing zu verhindern.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SPF",
+          "is_correct": false
+        },
+        {
+          "text": "DKIM",
+          "is_correct": true
+        },
+        {
+          "text": "SRV",
+          "is_correct": false
+        },
+        {
+          "text": "DMARC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Erkennung und Reaktion von Bedrohungen in Echtzeit auf Geräteebene:",
+      "explanation": "EDR schützt Endpunkte vor hochentwickelten Bedrohungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SWG",
+          "is_correct": false
+        },
+        {
+          "text": "CASB",
+          "is_correct": false
+        },
+        {
+          "text": "EDR",
+          "is_correct": true
+        },
+        {
+          "text": "NGFW",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eigenschaften des TN-Displays (3 Antworten):",
+      "explanation": "TN ist schnell, hat aber schlechte Farben und schlechte Betrachtungswinkel.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Niedrige Betrachtungswinkel",
+          "is_correct": true
+        },
+        {
+          "text": "Schnelle Reaktionszeiten",
+          "is_correct": true
+        },
+        {
+          "text": "Geringe Farbqualität",
+          "is_correct": true
+        },
+        {
+          "text": "Hohe Farbqualität",
+          "is_correct": false
+        },
+        {
+          "text": "Langsame Reaktionszeiten",
+          "is_correct": false
+        },
+        {
+          "text": "Große Betrachtungswinkel",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Logische Schnittstelle für PCIe NVMe SSD-Zugriff:",
+      "explanation": "NVMe ist das optimierte Protokoll für PCIe-Speicher.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "GDI",
+          "is_correct": false
+        },
+        {
+          "text": "NVMe",
+          "is_correct": true
+        },
+        {
+          "text": "SLI",
+          "is_correct": false
+        },
+        {
+          "text": "MAPI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Rollenbasierte granulare Zugriffskontrolle:",
+      "explanation": "IAM erzwingt den Zugriff basierend auf Identität und Rollen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EDR",
+          "is_correct": false
+        },
+        {
+          "text": "IAM",
+          "is_correct": true
+        },
+        {
+          "text": "AAA",
+          "is_correct": false
+        },
+        {
+          "text": "IPS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Plattform, die Benutzern virtuelle Desktops bereitstellt:",
+      "explanation": "VDI hostet zentralisierte virtuelle Desktop-Umgebungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "VDE",
+          "is_correct": false
+        },
+        {
+          "text": "VNC",
+          "is_correct": false
+        },
+        {
+          "text": "VDI",
+          "is_correct": true
+        },
+        {
+          "text": "RDP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Vereinfachte Anleitung für Geschwindigkeit und Effizienz:",
+      "explanation": "RISC reduzieren die Komplexität für Leistungssteigerungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CISC",
+          "is_correct": false
+        },
+        {
+          "text": "RISC",
+          "is_correct": true
+        },
+        {
+          "text": "x86",
+          "is_correct": false
+        },
+        {
+          "text": "EPIC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Reversibler, schneller USB-Anschluss für mobile Geräte:",
+      "explanation": "USB-C ist reversibel mit hoher Bandbreite und Ladeunterstützung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "USB Typ-B",
+          "is_correct": false
+        },
+        {
+          "text": "MiniUSB",
+          "is_correct": false
+        },
+        {
+          "text": "USB-C",
+          "is_correct": true
+        },
+        {
+          "text": "MicroUSB",
+          "is_correct": false
+        },
+        {
+          "text": "USB Typ-A",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Sichere Ausweiskarte des US-Verteidigungsministeriums:",
+      "explanation": "CAC bietet Authentifizierung und Zugriff für DoD-Benutzer.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "eSIM",
+          "is_correct": false
+        },
+        {
+          "text": "PIV",
+          "is_correct": false
+        },
+        {
+          "text": "CAC",
+          "is_correct": true
+        },
+        {
+          "text": "EMV",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dokument mit standardisierten Aufgabenausführungsschritten:",
+      "explanation": "SOP stellt sicher, dass Prozesse konsistenten Anweisungen folgen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "AUP",
+          "is_correct": false
+        },
+        {
+          "text": "SOW",
+          "is_correct": false
+        },
+        {
+          "text": "TOS",
+          "is_correct": false
+        },
+        {
+          "text": "SOP",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Bedrohungsreaktion in der gesamten Umgebung:",
+      "explanation": "XDR vereinheitlicht Telemetrie, um komplexe Bedrohungen zu erkennen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EDR",
+          "is_correct": false
+        },
+        {
+          "text": "SIEM",
+          "is_correct": false
+        },
+        {
+          "text": "XDR",
+          "is_correct": true
+        },
+        {
+          "text": "NDR",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Daten, die eine Person eindeutig identifizieren:",
+      "explanation": "PII umfasst Name, ID-Nummern, biometrische Daten usw.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PHI",
+          "is_correct": false
+        },
+        {
+          "text": "PIV",
+          "is_correct": false
+        },
+        {
+          "text": "PII",
+          "is_correct": true
+        },
+        {
+          "text": "PKI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei der Paarungsüberprüfung verwendete Funktion:",
+      "explanation": "Bluetooth verwendet die PIN-Eingabe, um die Geräteidentität zu bestätigen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "TLS",
+          "is_correct": false
+        },
+        {
+          "text": "PIN",
+          "is_correct": true
+        },
+        {
+          "text": "OTP",
+          "is_correct": false
+        },
+        {
+          "text": "ACL",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Betriebssysteminstallation per Netzwerkboot:",
+      "explanation": "PXE lädt Boot-Images über LAN über DHCP/TFTP.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NFS",
+          "is_correct": false
+        },
+        {
+          "text": "MMC",
+          "is_correct": false
+        },
+        {
+          "text": "PXE",
+          "is_correct": true
+        },
+        {
+          "text": "WDS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Auszeichnungssprache für den Authentifizierungsdatenaustausch:",
+      "explanation": "SAML verarbeitet Authentifizierungsmetadaten zwischen Identitäts- und Dienstanbietern.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SAML",
+          "is_correct": true
+        },
+        {
+          "text": "XML",
+          "is_correct": false
+        },
+        {
+          "text": "SOAP",
+          "is_correct": false
+        },
+        {
+          "text": "XHTML",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Zeitkritischer Mechanismus für schnelle Sicherheitsaktualisierungen:",
+      "explanation": "RSR stellt kritische Patches außerhalb wichtiger Betriebssystem-Updates bereit.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "YUM",
+          "is_correct": false
+        },
+        {
+          "text": "RSR",
+          "is_correct": true
+        },
+        {
+          "text": "APT",
+          "is_correct": false
+        },
+        {
+          "text": "RPM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "System zur Remote-Client-Überwachung und -Aktualisierung:",
+      "explanation": "RMM ermöglicht proaktive Wartung und Fernunterstützung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RMM",
+          "is_correct": true
+        },
+        {
+          "text": "SSH",
+          "is_correct": false
+        },
+        {
+          "text": "VNC",
+          "is_correct": false
+        },
+        {
+          "text": "RDP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Smartcard-basierter Authentifizierungsstandard (US-Regierung):",
+      "explanation": "PIV überprüfen die Identität von Bundesangestellten.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PIV",
+          "is_correct": true
+        },
+        {
+          "text": "MFA",
+          "is_correct": false
+        },
+        {
+          "text": "SAE",
+          "is_correct": false
+        },
+        {
+          "text": "PKI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Rahmenwerk zur Verbesserung von Entwicklungsprozessen:",
+      "explanation": "SPICE bietet Reifegradmodelle zur Prozessverbesserung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SPICE",
+          "is_correct": true
+        },
+        {
+          "text": "QA",
+          "is_correct": false
+        },
+        {
+          "text": "ISO",
+          "is_correct": false
+        },
+        {
+          "text": "SDLC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ersetztes WEP in der WPA-Sicherheitssuite:",
+      "explanation": "TKIP verstärkte die Verschlüsselung gegenüber WEP.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "AES",
+          "is_correct": false
+        },
+        {
+          "text": "TKIP",
+          "is_correct": true
+        },
+        {
+          "text": "CCMP",
+          "is_correct": false
+        },
+        {
+          "text": "EAP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dynamische Netzwerktechnologie für automatische Gerätekonfiguration:",
+      "explanation": "UPnP ermöglicht die Erkennung und Konfiguration ohne manuelle Einrichtung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SSDP",
+          "is_correct": false
+        },
+        {
+          "text": "UPnP",
+          "is_correct": true
+        },
+        {
+          "text": "PXE",
+          "is_correct": false
+        },
+        {
+          "text": "BOOTP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Apple APFS-Nutzungsszenario:",
+      "explanation": "APFS ist für SSD/Flash auf Apple-Systemen optimiert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Nur Server",
+          "is_correct": false
+        },
+        {
+          "text": "Flash-basierte Apple-Geräte",
+          "is_correct": true
+        },
+        {
+          "text": "Booten Sie nur Laufwerke",
+          "is_correct": false
+        },
+        {
+          "text": "Optische Medien",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Netzwerktyp für kleine Büros:",
+      "explanation": "SOHO bedienen private und sehr kleine Unternehmensumgebungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "BAN",
+          "is_correct": false
+        },
+        {
+          "text": "SOHO",
+          "is_correct": true
+        },
+        {
+          "text": "MWN",
+          "is_correct": false
+        },
+        {
+          "text": "WLAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "BEC-Angriffsziel:",
+      "explanation": "BEC setzt auf Social Engineering, um Organisationen zu betrügen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Markenerweiterung",
+          "is_correct": false
+        },
+        {
+          "text": "Sich als Geschäftskontakt ausgeben, um Gelder/Informationen zu stehlen",
+          "is_correct": true
+        },
+        {
+          "text": "Ändern Sie das App-Verhalten aus der Ferne",
+          "is_correct": false
+        },
+        {
+          "text": "Unterbrechen Sie den physischen Betrieb",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "DVI-Typ mit *keine analoge* Unterstützung:",
+      "explanation": "DVI-D ist nur digital.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DVI-D",
+          "is_correct": true
+        },
+        {
+          "text": "DVI-A",
+          "is_correct": false
+        },
+        {
+          "text": "DVI-I",
+          "is_correct": false
+        },
+        {
+          "text": "DVI-A/D",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "eSATA-Gerät kann über Gehäusehalterung oder Mobo-Steckplatz angeschlossen werden:",
+      "explanation": "Nicht alle Motherboards unterstützen eSATA über integrierte Anschlüsse.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Backup-Rotationsschema:",
+      "explanation": "GFS = Großvater-Vater-Sohn-Methode.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "LIFO",
+          "is_correct": false
+        },
+        {
+          "text": "GFS",
+          "is_correct": true
+        },
+        {
+          "text": "EFS",
+          "is_correct": false
+        },
+        {
+          "text": "FIFO",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dokument, das Benutzerverhaltensregeln definiert:",
+      "explanation": "AUP definiert die erlaubte Systemnutzung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SLA",
+          "is_correct": false
+        },
+        {
+          "text": "EULA",
+          "is_correct": false
+        },
+        {
+          "text": "AUP",
+          "is_correct": true
+        },
+        {
+          "text": "BPA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "OLED-Funktionen (3 Antworten):",
+      "explanation": "OLED emittiert selbst Licht mit hohem Kontrast, aber manchmal geringerer Helligkeit.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Funktioniert ohne Hintergrundbeleuchtung",
+          "is_correct": true
+        },
+        {
+          "text": "Minderwertiger Kontrast",
+          "is_correct": false
+        },
+        {
+          "text": "Geringere Helligkeit als LCDs",
+          "is_correct": true
+        },
+        {
+          "text": "Kommt häufig bei modernen Laptops vor",
+          "is_correct": false
+        },
+        {
+          "text": "Besserer Kontrast und bessere Farben",
+          "is_correct": true
+        },
+        {
+          "text": "Erfordert Hintergrundbeleuchtung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der Geräteadministrator in Unternehmensnetzwerken verwendet häufig Folgendes:",
+      "explanation": "TACACS+ trennt Authentifizierung/Autorisierung/Buchhaltung vollständig für den Administratorzugriff.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "OAuth",
+          "is_correct": false
+        },
+        {
+          "text": "TACACS+",
+          "is_correct": true
+        },
+        {
+          "text": "SAML",
+          "is_correct": false
+        },
+        {
+          "text": "RADIUS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "TXT-Eintrag verwendet (2 Antworten):",
+      "explanation": "TXT speichert Metainformationen wie SPF/DKIM und leitet den Datenverkehr nicht weiter.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Reverse-Lookup",
+          "is_correct": false
+        },
+        {
+          "text": "Mail-Routing",
+          "is_correct": false
+        },
+        {
+          "text": "Textbasierter Domänendatenspeicher",
+          "is_correct": true
+        },
+        {
+          "text": "Nicht an die Verkehrslenkung gewöhnt",
+          "is_correct": true
+        },
+        {
+          "text": "IP-Aliasing",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wireless-ISP-Definition:",
+      "explanation": "WISP stellt Internet über drahtlose Verbindungen bereit.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NSP",
+          "is_correct": false
+        },
+        {
+          "text": "WISP",
+          "is_correct": true
+        },
+        {
+          "text": "TSP",
+          "is_correct": false
+        },
+        {
+          "text": "NaaS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Hardware-Check beim Hochfahren:",
+      "explanation": "POST testet die Hardware, bevor das Betriebssystem geladen wird.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "BIT",
+          "is_correct": false
+        },
+        {
+          "text": "POST",
+          "is_correct": true
+        },
+        {
+          "text": "CRC",
+          "is_correct": false
+        },
+        {
+          "text": "MBIST",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "DVI-Typ ohne digitale Unterstützung:",
+      "explanation": "DVI-A überträgt nur analoge Signale.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DVI-D",
+          "is_correct": false
+        },
+        {
+          "text": "DVI-A",
+          "is_correct": true
+        },
+        {
+          "text": "DVI-I",
+          "is_correct": false
+        },
+        {
+          "text": "DVI-A/D",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Merkmale des LC-Steckers (3 Antworten):",
+      "explanation": "LC ist klein, verriegelt und wird in Rechenzentren mit hoher Dichte verwendet.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Große Zylinderform",
+          "is_correct": false
+        },
+        {
+          "text": "Älterer Netzwerktyp",
+          "is_correct": false
+        },
+        {
+          "text": "Bajonett-Drehverschluss",
+          "is_correct": false
+        },
+        {
+          "text": "Riegel wie RJ45",
+          "is_correct": true
+        },
+        {
+          "text": "Umgebungen mit hoher Dichte",
+          "is_correct": true
+        },
+        {
+          "text": "Kleiner Formfaktor",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Eigenschaften des IPS-Panels (3 Antworten):",
+      "explanation": "IPS bietet Farb- und Winkelwerte, ist jedoch langsamer als TN.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Hohe Farbqualität",
+          "is_correct": true
+        },
+        {
+          "text": "Schnelle Reaktion",
+          "is_correct": false
+        },
+        {
+          "text": "Große Betrachtungswinkel",
+          "is_correct": true
+        },
+        {
+          "text": "Geringe Farbqualität",
+          "is_correct": false
+        },
+        {
+          "text": "Langsame Reaktionszeiten",
+          "is_correct": true
+        },
+        {
+          "text": "Niedrige Betrachtungswinkel",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Regelbasierte Zugriffskontrolle auf Netzwerkgeräte:",
+      "explanation": "ACL filtert den Datenverkehr anhand von Regeln.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MAC",
+          "is_correct": false
+        },
+        {
+          "text": "AUP",
+          "is_correct": false
+        },
+        {
+          "text": "DAC",
+          "is_correct": false
+        },
+        {
+          "text": "ACL",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Paralleler Schnittstellenstandard für Peripheriegeräte:",
+      "explanation": "SCSI ist eine ältere parallele Speicherschnittstelle.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SCSI",
+          "is_correct": true
+        },
+        {
+          "text": "NVMe",
+          "is_correct": false
+        },
+        {
+          "text": "SATA",
+          "is_correct": false
+        },
+        {
+          "text": "PCIe",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Liefermodell für jede Rechenleistung im Abonnement:",
+      "explanation": "XaaS verallgemeinert Everything-as-a-Service.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "AaaS",
+          "is_correct": false
+        },
+        {
+          "text": "FaaS",
+          "is_correct": false
+        },
+        {
+          "text": "XaaS",
+          "is_correct": true
+        },
+        {
+          "text": "EaaS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Integrierte Ortungsdienste basieren auf:",
+      "explanation": "GPS unterstützt die Geolokalisierung auf Geräten.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "IMSI",
+          "is_correct": false
+        },
+        {
+          "text": "GSM",
+          "is_correct": false
+        },
+        {
+          "text": "IMEI",
+          "is_correct": false
+        },
+        {
+          "text": "GPS",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "DVI-I unterstützt beide Signaltypen:",
+      "explanation": "DVI-I integriert sowohl digitale als auch analoge Pins.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Seitenbeschreibungssprache für Drucker:",
+      "explanation": "PCL steuert Druckformate und Textwiedergabe.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "LPD",
+          "is_correct": false
+        },
+        {
+          "text": "IPP",
+          "is_correct": false
+        },
+        {
+          "text": "PCL",
+          "is_correct": true
+        },
+        {
+          "text": "LPR",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dual-Inline-Modul mit Kontakten auf beiden Seiten:",
+      "explanation": "DIMMs haben separate Kontakte, während SIMMs die Pins spiegeln.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SRAM",
+          "is_correct": false
+        },
+        {
+          "text": "DIMM",
+          "is_correct": true
+        },
+        {
+          "text": "DRAM",
+          "is_correct": false
+        },
+        {
+          "text": "SIMM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Großes geografisches Netzwerk aus mehreren kleineren Netzwerken:",
+      "explanation": "WAN erstreckt sich über weite geografische Gebiete und mehrere Netzwerke.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MAN",
+          "is_correct": false
+        },
+        {
+          "text": "WLAN",
+          "is_correct": false
+        },
+        {
+          "text": "SAN",
+          "is_correct": false
+        },
+        {
+          "text": "WAN",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ping-IP funktioniert, Ping-Hostname schlägt fehl → Ursache:",
+      "explanation": "Der Hostname schlägt fehl, wenn die DNS-Auflösung nicht funktioniert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ICMP",
+          "is_correct": false
+        },
+        {
+          "text": "DNS",
+          "is_correct": true
+        },
+        {
+          "text": "HTTP",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "IMAP-Eigenschaften (2 Antworten):",
+      "explanation": "IMAP verbessert die serverseitige Verwaltung im Vergleich zu POP3.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Mehr Funktionen als POP3",
+          "is_correct": true
+        },
+        {
+          "text": "Gleiche Funktion wie POP3",
+          "is_correct": true
+        },
+        {
+          "text": "Wird zum Versenden von E-Mails verwendet",
+          "is_correct": false
+        },
+        {
+          "text": "Weniger Funktionen als POP3",
+          "is_correct": false
+        },
+        {
+          "text": "Tauschen Sie E-Mails zwischen Servern aus",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Eigenschaften gelten für DSL? (3 Antworten):",
+      "explanation": "DSL nutzt bestehende Telefon-Kupferleitungen als Last-Mile-Internet.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Mietleitungen",
+          "is_correct": false
+        },
+        {
+          "text": "Kupferverkabelung",
+          "is_correct": true
+        },
+        {
+          "text": "Telefonleitungen",
+          "is_correct": true
+        },
+        {
+          "text": "Glasfaserverkabelung",
+          "is_correct": false
+        },
+        {
+          "text": "Lösung für die letzte Meile",
+          "is_correct": true
+        },
+        {
+          "text": "WAN-Verbindung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Vereinbarung zur Einräumung von Nutzungsrechten an Software:",
+      "explanation": "EULA definiert Softwarenutzungsrechte und -beschränkungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "AUP",
+          "is_correct": false
+        },
+        {
+          "text": "ToS",
+          "is_correct": false
+        },
+        {
+          "text": "EULA",
+          "is_correct": true
+        },
+        {
+          "text": "SLA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Sicherer Ersatz für Telnet:",
+      "explanation": "SSH verschlüsselt Remote-Shell-Sitzungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RDP",
+          "is_correct": false
+        },
+        {
+          "text": "RSH",
+          "is_correct": false
+        },
+        {
+          "text": "SSH",
+          "is_correct": true
+        },
+        {
+          "text": "VNC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Datensatztyp, der Aliase für einen Zielhost zulässt:",
+      "explanation": "CNAME verweist von einem Hostnamen auf einen anderen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MX",
+          "is_correct": false
+        },
+        {
+          "text": "CNAME",
+          "is_correct": true
+        },
+        {
+          "text": "AAAA",
+          "is_correct": false
+        },
+        {
+          "text": "PTR",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dateisystem mit Volumenbeschränkung von 2 TB und maximal 4 GB Datei:",
+      "explanation": "FAT32 ist durch alte Strukturen eingeschränkt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NTFS",
+          "is_correct": false
+        },
+        {
+          "text": "FAT32",
+          "is_correct": true
+        },
+        {
+          "text": "NFS",
+          "is_correct": false
+        },
+        {
+          "text": "exFAT",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "GPT unterstützt (3 Antworten):",
+      "explanation": "GPT unterstützt große Laufwerke, viele Partitionen und UEFI.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": ">2-TB-Festplatten",
+          "is_correct": true
+        },
+        {
+          "text": "Nur maximal 4 Partitionen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Legacy-BIOS",
+          "is_correct": false
+        },
+        {
+          "text": "Bis zu 128 primäre Partitionen",
+          "is_correct": true
+        },
+        {
+          "text": "UEFI-Unterstützung",
+          "is_correct": true
+        },
+        {
+          "text": "Maximal 2 TB Festplatten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eindeutige globale ID, die Objekten zugewiesen wird:",
+      "explanation": "GUID = global eindeutige Kennung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "OID",
+          "is_correct": false
+        },
+        {
+          "text": "GUID",
+          "is_correct": true
+        },
+        {
+          "text": "URI",
+          "is_correct": false
+        },
+        {
+          "text": "OUI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Definiert Verfügbarkeit und Servicequalität:",
+      "explanation": "SLAs umfassen Verfügbarkeits- und Reaktionsmetriken.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SOW",
+          "is_correct": false
+        },
+        {
+          "text": "MSA",
+          "is_correct": false
+        },
+        {
+          "text": "SLA",
+          "is_correct": true
+        },
+        {
+          "text": "MOU",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Lösung zur Verwaltung von Identitäten und Zugriffen innerhalb von Organisationen:",
+      "explanation": "IAM steuert Authentifizierung, Rollen und Berechtigungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CIA",
+          "is_correct": false
+        },
+        {
+          "text": "IAM",
+          "is_correct": true
+        },
+        {
+          "text": "AAA",
+          "is_correct": false
+        },
+        {
+          "text": "ICS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Aussage: Alle IPS, TN, VA, OLED sind LCD-Technologie:",
+      "explanation": "OLED ist anders → selbstemittierend, keine LCD-Schicht.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Glasfasergerät an der Kundengrenze in Netzwerken:",
+      "explanation": "ONT terminiert die Glasfaser beim Kunden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MDI",
+          "is_correct": false
+        },
+        {
+          "text": "IDF",
+          "is_correct": false
+        },
+        {
+          "text": "ONT",
+          "is_correct": true
+        },
+        {
+          "text": "MDF",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "BNC-Funktionen (3 Antworten):",
+      "explanation": "BNC verwendet Bajonett + Koax in CCTV/Labor.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Bajonett-Drehverschluss",
+          "is_correct": true
+        },
+        {
+          "text": "Twisted-Pair-Kabel",
+          "is_correct": false
+        },
+        {
+          "text": "Verwendung von Videoüberwachungs-/Testgeräten",
+          "is_correct": true
+        },
+        {
+          "text": "Koaxialverkabelung",
+          "is_correct": true
+        },
+        {
+          "text": "Satellitenfernsehen/Breitband",
+          "is_correct": false
+        },
+        {
+          "text": "Gewindeanschluss",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Notfall-Backup bei Stromausfall:",
+      "explanation": "UPS USV liefert vorübergehende Notstromversorgung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "UPS",
+          "is_correct": true
+        },
+        {
+          "text": "PoE",
+          "is_correct": false
+        },
+        {
+          "text": "SVC",
+          "is_correct": false
+        },
+        {
+          "text": "PSU",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "GPT weist Partitionen GUIDs zu:",
+      "explanation": "Jede GPT-Partition ist eindeutig identifiziert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Stimmt",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Kleiner Formfaktor für Embedded-PCs:",
+      "explanation": "ITX ist kompakt und in eingebetteten Builds üblich.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NLX",
+          "is_correct": false
+        },
+        {
+          "text": "ITX",
+          "is_correct": true
+        },
+        {
+          "text": "ATX",
+          "is_correct": false
+        },
+        {
+          "text": "LPX",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Verhindert Missbrauch beim Kopieren digitaler Medien:",
+      "explanation": "DRM schränkt den Zugriff/die Nutzung urheberrechtlich geschützter Inhalte ein.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "OEM",
+          "is_correct": false
+        },
+        {
+          "text": "EULA",
+          "is_correct": false
+        },
+        {
+          "text": "DRM",
+          "is_correct": true
+        },
+        {
+          "text": "AUP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Angriff, bei dem schädliche Skripte in Webseiten eingeschleust werden:",
+      "explanation": "XSS führt Skripte in den Browsern der Opfer aus.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CSRF",
+          "is_correct": false
+        },
+        {
+          "text": "XSS",
+          "is_correct": true
+        },
+        {
+          "text": "SQLi",
+          "is_correct": false
+        },
+        {
+          "text": "XSRF",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "UDP-basiertes Protokoll, das Authentifizierung und Autorisierung kombiniert:",
+      "explanation": "RADIUS ist für WLAN- und VPN-Anmeldungen üblich.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RADIUS",
+          "is_correct": true
+        },
+        {
+          "text": "LDAP",
+          "is_correct": false
+        },
+        {
+          "text": "TACACS+",
+          "is_correct": false
+        },
+        {
+          "text": "Kerberos",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist MFA?",
+      "explanation": "MFA verwendet mehr als zwei unabhängige Authentifizierungsfaktoren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "UAC",
+          "is_correct": false
+        },
+        {
+          "text": "SSO",
+          "is_correct": false
+        },
+        {
+          "text": "ACL",
+          "is_correct": false
+        },
+        {
+          "text": "MFA",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Optimiert für Flash-Medien in Windows:",
+      "explanation": "exFAT hebt FAT32-Größenbeschränkungen für Flash-Speicher auf.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "FAT32",
+          "is_correct": false
+        },
+        {
+          "text": "NFS",
+          "is_correct": false
+        },
+        {
+          "text": "exFAT",
+          "is_correct": true
+        },
+        {
+          "text": "CDFS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SMB/CIFS-Merkmale (2 Antworten):",
+      "explanation": "SMB ermöglicht das Drucken/Freigeben von Dateien in Windows-LANs.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Sichere Internetfreigabe optimiert",
+          "is_correct": false
+        },
+        {
+          "text": "Primäre Verwendung in der Windows-Umgebung",
+          "is_correct": true
+        },
+        {
+          "text": "Datei-/Ordner-/Gerätefreigabe",
+          "is_correct": true
+        },
+        {
+          "text": "Sprach-/Multimediakommunikation",
+          "is_correct": false
+        },
+        {
+          "text": "Nur-Linux-Protokoll",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Legacy-Mini-SSD-Formfaktor durch M.2 ersetzt:",
+      "explanation": "Das kleinere mSATA-SSD-Format wurde mittlerweile größtenteils ersetzt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SATA",
+          "is_correct": false
+        },
+        {
+          "text": "NVMe",
+          "is_correct": false
+        },
+        {
+          "text": "mSATA",
+          "is_correct": true
+        },
+        {
+          "text": "PCIe",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eigenschaften des ST-Steckers (3 Antworten):",
+      "explanation": "ST ist älter und sperrig mit Bajonett-Stil.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Bajonettverschluss",
+          "is_correct": true
+        },
+        {
+          "text": "Rechenzentren mit hoher Dichte",
+          "is_correct": false
+        },
+        {
+          "text": "Großer zylindrischer Körper",
+          "is_correct": true
+        },
+        {
+          "text": "Ältere/Multimode-Nutzung",
+          "is_correct": true
+        },
+        {
+          "text": "Kleiner Formfaktor",
+          "is_correct": false
+        },
+        {
+          "text": "Riegel im RJ45-Stil",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Temporärer einmaliger Zugangscode:",
+      "explanation": "OTP nur einmal gültig für starke Authentifizierung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "OTP",
+          "is_correct": true
+        },
+        {
+          "text": "CAPTCHA",
+          "is_correct": false
+        },
+        {
+          "text": "SSO",
+          "is_correct": false
+        },
+        {
+          "text": "HMAC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dokument zum Umgang mit Chemikalien und Gefahren:",
+      "explanation": "MSDS Sicherheitsdatenblatt enthält Sicherheitsdaten und Gefahreninformationen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "EPA",
+          "is_correct": false
+        },
+        {
+          "text": "MSDS",
+          "is_correct": true
+        },
+        {
+          "text": "MSRP",
+          "is_correct": false
+        },
+        {
+          "text": "SOP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Häufigster Hauptspeichertyp für PCs (2 Antworten):",
+      "explanation": "Consumer-Desktops verwenden Nicht-ECC-DRAM.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SODIMM",
+          "is_correct": false
+        },
+        {
+          "text": "Nicht-ECC-Speicher",
+          "is_correct": true
+        },
+        {
+          "text": "Statischer RAM",
+          "is_correct": false
+        },
+        {
+          "text": "MicroDIMM",
+          "is_correct": false
+        },
+        {
+          "text": "Dynamischer RAM",
+          "is_correct": true
+        },
+        {
+          "text": "ECC-Speicher",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Protokoll löst Domänennamen in IP-Adressen auf?",
+      "explanation": "DNS übernimmt die erforderliche Namensauflösung, bevor Verbindungen hergestellt werden können.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SMTP",
+          "is_correct": false
+        },
+        {
+          "text": "DNS",
+          "is_correct": true
+        },
+        {
+          "text": "SNMP",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Protokoll weist Hosts automatisch eine IP-Adressierung zu?",
+      "explanation": "DHCP stellt die IP-, Subnetz- und Gateway-Konfiguration dynamisch bereit.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DNS",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP",
+          "is_correct": true
+        },
+        {
+          "text": "HTTP",
+          "is_correct": false
+        },
+        {
+          "text": "SNMP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Begriff bezieht sich auf die Erkennung und Eindämmung unbefugten Zugriffs?",
+      "explanation": "IDS erkennt Angriffe, während IPS schädlichen Datenverkehr aktiv blockiert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "IDS/IPS",
+          "is_correct": true
+        },
+        {
+          "text": "DHCP",
+          "is_correct": false
+        },
+        {
+          "text": "SMTP",
+          "is_correct": false
+        },
+        {
+          "text": "QoS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "On-Demand-Zugriff auf Computerressourcen über das Internet:",
+      "explanation": "IaaS stellt virtualisierte Rechenressourcen als Service bereit.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "IaaS",
+          "is_correct": true
+        },
+        {
+          "text": "BIOS",
+          "is_correct": false
+        },
+        {
+          "text": "DSL",
+          "is_correct": false
+        },
+        {
+          "text": "PoE",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Technologie, die Nahfeldkommunikation mit Tap-Payment ermöglicht:",
+      "explanation": "NFC wird für kontaktlose Zahlungssysteme innerhalb weniger Zentimeter verwendet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NFC",
+          "is_correct": true
+        },
+        {
+          "text": "Zigbee",
+          "is_correct": false
+        },
+        {
+          "text": "Bluetooth-Klassiker",
+          "is_correct": false
+        },
+        {
+          "text": "WiMAX",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Technologie speichert Daten auf NAND-Flash-Chips?",
+      "explanation": "SSDs nutzen Flash-Speicher für Hochgeschwindigkeitszugriff und Haltbarkeit.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "HDD",
+          "is_correct": false
+        },
+        {
+          "text": "SSD",
+          "is_correct": true
+        },
+        {
+          "text": "Klebeband",
+          "is_correct": false
+        },
+        {
+          "text": "Blu-ray",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Protokoll verschlüsselt den Webverkehr über TLS/SSL?",
+      "explanation": "HTTPS bietet eine sichere Browser-zu-Server-Kommunikation.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "HTTP",
+          "is_correct": false
+        },
+        {
+          "text": "HTTPS",
+          "is_correct": true
+        },
+        {
+          "text": "TFTP",
+          "is_correct": false
+        },
+        {
+          "text": "FTP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Interne Karte zur Netzwerkkommunikation:",
+      "explanation": "Die Netzwerkkarte bietet Netzwerkzugriffsfunktionen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "GPU",
+          "is_correct": false
+        },
+        {
+          "text": "NIC",
+          "is_correct": true
+        },
+        {
+          "text": "PSU",
+          "is_correct": false
+        },
+        {
+          "text": "TPM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Verkabelung wird für PoE verwendet?",
+      "explanation": "PoE basiert auf Twisted-Pair-Kupfer-Ethernet-Kabeln.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Koaxial",
+          "is_correct": false
+        },
+        {
+          "text": "Twisted-Pair-Ethernet",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Glasfaser-SM",
+          "is_correct": false
+        },
+        {
+          "text": "HDMI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Worauf bezieht sich SSID?",
+      "explanation": "SSID ist die Kennung, die Clients im WLAN sehen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Signalgeschwindigkeit",
+          "is_correct": false
+        },
+        {
+          "text": "Name des drahtlosen Netzwerks",
+          "is_correct": true
+        },
+        {
+          "text": "Verschlüsselungsmethode",
+          "is_correct": false
+        },
+        {
+          "text": "Kanalnummer",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist ein Hauptziel der Authentifizierung?",
+      "explanation": "Durch die Authentifizierung wird sichergestellt, dass Benutzer die sind, für die sie sich ausgeben.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Konfigurieren Sie Berechtigungen",
+          "is_correct": false
+        },
+        {
+          "text": "Überprüfen Sie die Benutzeridentität",
+          "is_correct": true
+        },
+        {
+          "text": "Verfolgen Sie die Benutzeraktivität",
+          "is_correct": false
+        },
+        {
+          "text": "Dateien verschlüsseln",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Modell bietet vollständig verwaltete Anwendungen per Abonnement?",
+      "explanation": "SaaS liefert komplette Softwarelösungen über die Cloud.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SaaS",
+          "is_correct": true
+        },
+        {
+          "text": "PaaS",
+          "is_correct": false
+        },
+        {
+          "text": "IaaS",
+          "is_correct": false
+        },
+        {
+          "text": "MPLS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Stecker ist Standard für die Ethernet-Verkabelung?",
+      "explanation": "RJ45 = Twisted-Pair-Ethernet-Anschluss.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RJ11",
+          "is_correct": false
+        },
+        {
+          "text": "LC",
+          "is_correct": false
+        },
+        {
+          "text": "RJ45",
+          "is_correct": true
+        },
+        {
+          "text": "USB-C",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Zweck der SIM-Karte:",
+      "explanation": "SIM SIM-Karte speichert die für den Zugriff erforderlichen Teilnehmerinformationen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Speichert die Identität des Abonnenten",
+          "is_correct": true
+        },
+        {
+          "text": "Speichert die Kalibrierung des Telefonakkus",
+          "is_correct": false
+        },
+        {
+          "text": "Aktiviert eine externe GPU",
+          "is_correct": false
+        },
+        {
+          "text": "Bietet nur WLAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Akronym bezieht sich auf Multi-Faktor-Authentifizierung?",
+      "explanation": "MFA erfordert mehr als zwei unabhängige Verifizierungsmethoden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MFA",
+          "is_correct": true
+        },
+        {
+          "text": "SSO",
+          "is_correct": false
+        },
+        {
+          "text": "ACL",
+          "is_correct": false
+        },
+        {
+          "text": "BIOS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Schnittstelle überträgt Video + Audio in einem Kabel?",
+      "explanation": "HDMI transportiert digitale Audio- und Videosignale gemeinsam.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "VGA",
+          "is_correct": false
+        },
+        {
+          "text": "HDMI",
+          "is_correct": true
+        },
+        {
+          "text": "DVI-A",
+          "is_correct": false
+        },
+        {
+          "text": "Koax RG59",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Protokoll ruft E-Mails ab und behält sie auf dem Server?",
+      "explanation": "IMAP synchronisiert E-Mails direkt auf dem Server.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "POP3",
+          "is_correct": false
+        },
+        {
+          "text": "IMAP",
+          "is_correct": true
+        },
+        {
+          "text": "SMTP",
+          "is_correct": false
+        },
+        {
+          "text": "SMB",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was verwaltet ACL?",
+      "explanation": "ACLs definieren, welche Benutzer auf welche Ressourcen zugreifen können.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Firmware-Einstellungen",
+          "is_correct": false
+        },
+        {
+          "text": "Zugriffsberechtigungen für Ressourcen",
+          "is_correct": true
+        },
+        {
+          "text": "WLAN-Qualität",
+          "is_correct": false
+        },
+        {
+          "text": "BIOS-Startreihenfolge",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Netzwerktyp deckt eine ganze Stadt ab?:",
+      "explanation": "MAN verbindet LANs über stadtweite Distanzen hinweg.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PAN",
+          "is_correct": false
+        },
+        {
+          "text": "LAN",
+          "is_correct": false
+        },
+        {
+          "text": "MAN",
+          "is_correct": true
+        },
+        {
+          "text": "WAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Komponente, die Wand-Wechselstrom in Gleichstrom in einem PC umwandelt:",
+      "explanation": "Das Netzteil wandelt nutzbaren Gleichstrom um und liefert ihn.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PSU",
+          "is_correct": true
+        },
+        {
+          "text": "NIC",
+          "is_correct": false
+        },
+        {
+          "text": "SSD",
+          "is_correct": false
+        },
+        {
+          "text": "GPU",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "IMEI identifiziert was?",
+      "explanation": "IMEI identifiziert das Hardware-Mobilteil eindeutig.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Abonnentenidentität",
+          "is_correct": false
+        },
+        {
+          "text": "Netzwerkname",
+          "is_correct": false
+        },
+        {
+          "text": "Physisches Mobilgerät",
+          "is_correct": true
+        },
+        {
+          "text": "Nur SIM-Anbieter",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Komponente verbessert die Grafikwiedergabe?",
+      "explanation": "GPUs beschleunigen parallele grafische Berechnungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PSU",
+          "is_correct": false
+        },
+        {
+          "text": "GPU",
+          "is_correct": true
+        },
+        {
+          "text": "CPU",
+          "is_correct": false
+        },
+        {
+          "text": "TPM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Protokoll, das für die Datei-/Druckerfreigabe in Windows verwendet wird:",
+      "explanation": "SMB bietet LAN-Datei- und Druckerfreigabedienste.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SMB",
+          "is_correct": true
+        },
+        {
+          "text": "SSH",
+          "is_correct": false
+        },
+        {
+          "text": "RDP",
+          "is_correct": false
+        },
+        {
+          "text": "HTTPS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Protokoll sichert den Remote-Befehls-Shell-Zugriff?",
+      "explanation": "SSH verschlüsselt Terminalsitzungen über Netzwerke hinweg.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Telnet",
+          "is_correct": false
+        },
+        {
+          "text": "SSH",
+          "is_correct": true
+        },
+        {
+          "text": "FTP",
+          "is_correct": false
+        },
+        {
+          "text": "ARP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wird verwendet, um die Zeit zwischen Netzwerkgeräten zu synchronisieren?",
+      "explanation": "NTP hält die Uhren in verteilten Systemen synchron.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NTP",
+          "is_correct": true
+        },
+        {
+          "text": "DNS",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP",
+          "is_correct": false
+        },
+        {
+          "text": "FTP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Gerät zur Konvertierung von Glasfaser-WAN in Ethernet-LAN in Heimnetzwerken:",
+      "explanation": "ONT terminiert Glasfaser und Handsoff über Ethernet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ONT",
+          "is_correct": true
+        },
+        {
+          "text": "KVM",
+          "is_correct": false
+        },
+        {
+          "text": "RMM",
+          "is_correct": false
+        },
+        {
+          "text": "VLAN",
+          "is_correct": false
+        }
+      ]
+    }
+  ]
+}

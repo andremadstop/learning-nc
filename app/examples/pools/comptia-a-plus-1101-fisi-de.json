@@ -1,0 +1,3037 @@
+{
+  "pool_name": "CompTIA A+ 220-1101 FisiTraining (DE)",
+  "source": "Inspired by CompTIA A+ Core 1 220-1101 exam objectives, paraphrased and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "exam_reference": "CompTIA A+ Core 1 220-1101",
+  "questions": [
+    {
+      "text": "Ein IT-Techniker untersucht ein Multifunktions-Laserdruckgerät, das beim Kopieren und Scannen eine vertikale Linie auf dem Ausdruck zeigt. Wenn Benutzer jedoch drucken oder Faxe empfangen, ist der Ausdruck einwandfrei. Welche Komponenten sollte der Techniker überprüfen, um die Ursache des Problems zu ermitteln?",
+      "explanation": "Für vertikale Linien beim Kopieren, aber nicht beim Drucken: Einzugsrollen prüfen\nBei doppelten Bildern nach langer Wartung: Transferwalze\nFür vertikale Linien auf Ausdrucke: Roller überprüfen\nUrsachen für vertikale Streifen: Koronadraht",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Trommeleinheit",
+          "is_correct": false
+        },
+        {
+          "text": "Dokumenteneinzug",
+          "is_correct": true
+        },
+        {
+          "text": "Einzugsrollen",
+          "is_correct": false
+        },
+        {
+          "text": "Koronadraht",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Auf der Ausgabe eines Laserdruckers erscheinen vertikale Streifen. Welcher Punkte ist die wahrscheinlichste Ursache?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Roller",
+          "is_correct": false
+        },
+        {
+          "text": "Band",
+          "is_correct": false
+        },
+        {
+          "text": "Transferband",
+          "is_correct": false
+        },
+        {
+          "text": "Trommel",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Bei der Implementierung einer drahtlosen Backhaul-Verbindung ohne Trägerqualität stellt ein Techniker fest, dass die aktuelle Kanalauswahl extrem mit verschiedenen HF-Signalen belastet ist. Bei der Durchführung einer Spektralanalyse entdeckt der Techniker einen Kanal, der fast keine HF-Belastung aufweist. Leider ist der Techniker nicht in der Lage, diesen Kanal auszuwählen. Welcher Punkte ist der wahrscheinlichste Grund für dieses Problem?",
+      "explanation": "Bestimmte Funkkanäle sind für lizenzierte Nutzung (z.B. Militär, Rettungsdienste, kommerzielle Anbieter) reserviert. Consumer-Geräte haben keinen Zugriff auf diese Kanäle, auch wenn Spektralanalyse sie als frei anzeigt. Regulierungsbehörden erzwingen diese Einschränkungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Das Gerät benötigt ein Firmware-Update, um den Kanal zu entsperren",
+          "is_correct": false
+        },
+        {
+          "text": "Die Kanalauswahl ist defekt, wenden Sie sich an den Hersteller",
+          "is_correct": false
+        },
+        {
+          "text": "Der Kanal ist für die lizenzierte Bandnutzung reserviert",
+          "is_correct": true
+        },
+        {
+          "text": "Der Kanal muss vom Anbieter freigeschaltet werden",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer hat ein Support-Ticket eingereicht, das besagt, dass alle Ausdrucke von einem Laserdrucker anscheinend doppelte Bilder enthalten. Eine Überprüfung früherer Support-Tickets für Drucker zeigt, dass seit mehr als einem Jahr kein Wartungskit installiert wurde. Welches Druckerverbrauchsmaterialien verursacht das Problem höchstwahrscheinlich?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Fixiereinheit",
+          "is_correct": false
+        },
+        {
+          "text": "Tintenpatrone",
+          "is_correct": false
+        },
+        {
+          "text": "Trennpolster",
+          "is_correct": false
+        },
+        {
+          "text": "Transferwalze",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker konfiguriert eine Arbeitsstation, die als VM-Host verwendet werden soll. Nach der Installation der erforderlichen Software kann der Techniker keine VMs erstellen. Welche Aktionen sollen durchgeführt werden?",
+      "explanation": "Die Antwort \"Hyper-Threading aktivieren\" ist korrekt für diese Frage im Bereich Vm. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Deaktivieren Sie das BIOS-Passwort",
+          "is_correct": false
+        },
+        {
+          "text": "Schnellstart aktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "TPM aktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Hyper-Threading aktivieren",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer, der versucht, eine Präsentation über einen Projektor in einem Konferenzraum zu halten, berichtet, dass der Projektor Bild, aber kein Ton hat. Welche Maßnahmen löst das Problem am ehesten?",
+      "explanation": "Die Antwort \"Verwendung einer HDMI-Verbindung\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Verwendung einer HDMI-Verbindung",
+          "is_correct": true
+        },
+        {
+          "text": "Ändern der Bildwiederholfrequenz des Projektors",
+          "is_correct": false
+        },
+        {
+          "text": "Ändern der Ausgabe am PC auf DVI",
+          "is_correct": false
+        },
+        {
+          "text": "Ändern des Eingangs am Projektor auf VGA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Kunde berichtet, dass ein Computer selbst bei Verwendung einer Gigabit-LAN-Karte nie mehr als 100 Mbit/s Übertragungsdatenrate erreichen kann. Bei der Fehlerbehebung stellt der Techniker fest, dass das Netzwerkkabel ausgetauscht werden muss. Welche Kabelkategorien begrenzt die Übertragungsgeschwindigkeit?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Cat 6a",
+          "is_correct": false
+        },
+        {
+          "text": "Cat 5e",
+          "is_correct": false
+        },
+        {
+          "text": "Cat 5",
+          "is_correct": true
+        },
+        {
+          "text": "Cat 6",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Während der Verwendung eines gängigen Videokonferenzprogramms wählt der Benutzer eine Webcam aus, aber die Software kann die Webcam nicht öffnen. Am Vortag funktionierte die Webcam. Welche Maßnahmen sollten ergriffen werden, um dieses Problem zu beheben?",
+      "explanation": "Die Antwort \"Andere Videosoftware schließen und erneut versuchen.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Andere Videosoftware schließen und erneut versuchen.",
+          "is_correct": true
+        },
+        {
+          "text": "Stellen Sie die Konferenzsoftware auf eine kompatible Auflösung ein.",
+          "is_correct": false
+        },
+        {
+          "text": "Schalten Sie das Video von der Webcam in den „Konferenz“-Modus.",
+          "is_correct": false
+        },
+        {
+          "text": "Setzen Sie die Webcam neu ein oder ersetzen Sie sie.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer konnte sich keinen Zugang zum Eingang eines Gebäudes verschaffen, nachdem die Sicherheitsmaßnahmen am Eingang letzte Woche verbessert wurden. Das Unternehmen implementierte das 13,56-MHz-Kurzfrequenzband, und Benutzer können sich jetzt mit ihren Mobilgeräten authentifizieren. Welche Optionen muss aktiviert sein, damit sich das mobile Gerät authentifizieren kann?",
+      "explanation": "Die Antwort \"NFC\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Biometrie",
+          "is_correct": false
+        },
+        {
+          "text": "NFC",
+          "is_correct": true
+        },
+        {
+          "text": "Bluetooth",
+          "is_correct": false
+        },
+        {
+          "text": "PIN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Standards unterstützt die MIMO-Technologie?",
+      "explanation": "Die Antwort \"802.11n\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "802.11g",
+          "is_correct": false
+        },
+        {
+          "text": "802.11b",
+          "is_correct": false
+        },
+        {
+          "text": "802.11a",
+          "is_correct": false
+        },
+        {
+          "text": "802.11n",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker schaltet einen PC und seinen Monitor ein und sieht die folgende Fehlermeldung:Kein Eingangssignal erkannt. Die Anzeigeleuchten am Computer leuchten. Welche ist eine mögliche Lösung?",
+      "explanation": "Die Antwort \"Ändern der Anschlusseinstellung am Monitor\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Überprüfung des Netzsteckers am Monitor",
+          "is_correct": false
+        },
+        {
+          "text": "Überprüfung des Netzsteckers am PC",
+          "is_correct": false
+        },
+        {
+          "text": "Ändern der Anschlusseinstellung am Monitor",
+          "is_correct": true
+        },
+        {
+          "text": "Ändern der BIOS-Einstellungen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker packte einen neuen Computer aus, schloss ihn an eine USV an und schloss die angeforderten Peripheriegeräte an. Die Computerlichter und -lüfter schalten sich ein, aber der Techniker hört während des Hochfahrens drei laute, aufeinanderfolgende Pieptöne. Welche Maßnahmen wird das Problem beheben?",
+      "explanation": "Die Antwort \"Wiedereinsetzen des RAM\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ersetzen der USV",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzen des Netzteils",
+          "is_correct": false
+        },
+        {
+          "text": "Wiedereinsetzen des RAM",
+          "is_correct": true
+        },
+        {
+          "text": "Wechseln der CMOS-Batterie",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Manager entdeckte, dass jeden Tag Hunderte von Seiten gedruckter Materialien recycelt werden, weil die Materialien auf dem Druckerfach liegen bleiben, anstatt von den Benutzern abgeholt zu werden. Welche Maßnahmen würde diese Verschwendung am BESTEN verhindern?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Jeder Abteilung die überschüssigen Materialkosten in Rechnung stellen.",
+          "is_correct": false
+        },
+        {
+          "text": "Senden Sie freundliche Erinnerungen, um nicht unnötig zu drucken.",
+          "is_correct": false
+        },
+        {
+          "text": "Duplexdruck aktivieren, um den Papierverbrauch zu reduzieren.",
+          "is_correct": false
+        },
+        {
+          "text": "Fordern Sie einen Code oder ein Abzeichen an, bevor Sie einen Druckauftrag freigeben.",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Online-Händler möchte Geld sparen und erwägt, in die Public Cloud zu migrieren, damit Kapazität während der Haupteinkaufssaison hinzugefügt und automatisch entfernt werden kann, wenn die Haupteinkaufssaison vorbei ist. Welche Aussagen beschreibt diesen Aspekt des Cloud Computing am BESTEN?",
+      "explanation": "Cloud-Computing bietet skalierbare IT-Ressourcen über Internet. IaaS (Infrastructure) bietet VMs, PaaS (Platform) bietet Entwicklungsumgebungen, SaaS (Software) bietet fertige Anwendungen. Public Clouds sind multi-tenant, Private Clouds dediziert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Verbrauchsabhängige Nutzung",
+          "is_correct": false
+        },
+        {
+          "text": "Gemeinsame Ressourcen",
+          "is_correct": false
+        },
+        {
+          "text": "Hohe Verfügbarkeit",
+          "is_correct": false
+        },
+        {
+          "text": "Rasche Elastizität (Rapid Elasticity)",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker erhält Berichte, dass das gesamte Büro im Laufe des Tages sporadisch die Netzwerkverbindung verliert. Der Techniker bestimmt die Grundursache als EMI. Welches Kabelmedien wäre am kostengünstigsten, ohne die Systemleistung zu beeinträchtigen?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Plenum Cat. 5e",
+          "is_correct": false
+        },
+        {
+          "text": "Coaxial",
+          "is_correct": false
+        },
+        {
+          "text": "Abgeschirmte Cat 6",
+          "is_correct": true
+        },
+        {
+          "text": "Multimode-Faser",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Organisation pflegt verschiedene Arten von Aufzeichnungen, einschließlich Gesundheits- und Strafjustizaufzeichnungen. Welche Cloud-Umgebungen wird das Unternehmen höchstwahrscheinlich verwenden, um die Angriffsfläche zu begrenzen?",
+      "explanation": "Cloud-Computing bietet skalierbare IT-Ressourcen über Internet. IaaS (Infrastructure) bietet VMs, PaaS (Platform) bietet Entwicklungsumgebungen, SaaS (Software) bietet fertige Anwendungen. Public Clouds sind multi-tenant, Private Clouds dediziert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Hybrid",
+          "is_correct": false
+        },
+        {
+          "text": "Community",
+          "is_correct": false
+        },
+        {
+          "text": "Private",
+          "is_correct": true
+        },
+        {
+          "text": "Public",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussagen beschreibt die gemessene Nutzung von Cloud-Ressourcen?",
+      "explanation": "Cloud-Computing bietet skalierbare IT-Ressourcen über Internet. IaaS (Infrastructure) bietet VMs, PaaS (Platform) bietet Entwicklungsumgebungen, SaaS (Software) bietet fertige Anwendungen. Public Clouds sind multi-tenant, Private Clouds dediziert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ressourcen gepoolt, um die Rechenleistung zu erhöhen",
+          "is_correct": false
+        },
+        {
+          "text": "Sofort bereitgestellte Ressourcen",
+          "is_correct": false
+        },
+        {
+          "text": "Zahlungen nur für genutzte Ressourcen",
+          "is_correct": true
+        },
+        {
+          "text": "Umsetzung der schnellen Elastizität",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer in einem SOHO-Netzwerk kann selbst bei 240 Pixeln keine Online-Videos ansehen. Der Techniker führt ipconfig auf dem Computer des Benutzers aus und zeichnet Folgendes auf:\nVerbindungsspezifisches DNS-Suffix .: lan\nLink-local IPv6-Adresse.........: fe80::1585:7fb2:b05f:7102%12\nIPv4-Adresse ....................: 192.168.1.131\nSubnetzmaske.......................: 255.255. 255.0\nStandard-Gateway.................: 192.168.1.1\n\nDer Techniker schließt dann einen Test-Laptop über das Cat-5-Kabel des Benutzers an den Router an und zeichnet die folgenden Informationen auf:\n\nDownload: 85 Mbit/s\nUpload: 22 Mbit/s\nPing: 28 ms\n\nWelche Ursachen verursacht höchstwahrscheinlich das Problem des Benutzers?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Falsche IP-Adresse",
+          "is_correct": false
+        },
+        {
+          "text": "Fehlerhafte NIC",
+          "is_correct": true
+        },
+        {
+          "text": "Schlechtes Netzwerkkabel",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch konfiguriertes Standard-Gateway",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Kollege hat einen Laptop, der seit mehreren Jahren wie erwartet funktioniert, aber der Laptop hat jetzt eine kleine Ausbuchtung im unteren Gehäuse und überhitzt gelegentlich, wenn er an eine Steckdose angeschlossen ist. Die am ehesten zu ersetzende Komponente ist die:",
+      "explanation": "Die Antwort \"Akku\" ist korrekt für diese Frage im Bereich Hardware. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Akku",
+          "is_correct": true
+        },
+        {
+          "text": "Systemlüfter",
+          "is_correct": false
+        },
+        {
+          "text": "Festplatte",
+          "is_correct": false
+        },
+        {
+          "text": "Netzteil",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen hat gerade einen Drucker gekauft, der automatisch beide Seiten des Papiers bedrucken kann. Nach der Installation kann der Techniker das Papier jedoch nur manuell beidseitig bedrucken. Welche Maßnahmen sollte der Techniker ergreifen, um das Problem zu beheben?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Installieren Sie die Druckersoftware und die Treiber neu und starten Sie den Drucker neu.",
+          "is_correct": false
+        },
+        {
+          "text": "Wenden Sie sich wegen eines Hardwareaustauschs an den Anbieter.",
+          "is_correct": false
+        },
+        {
+          "text": "Installieren Sie das neueste Firmware-Upgrade, das für den Drucker verfügbar ist.",
+          "is_correct": false
+        },
+        {
+          "text": "Lesen Sie das Installationshandbuch und konfigurieren Sie die Duplexeinstellungen.",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein kleines Büro verfügt über ein drahtloses Netzwerk mit mehreren Zugriffspunkten für die Roaming-Laptop-Nutzung. Benutzer berichten gelegentlich, dass die drahtlose Verbindung abbricht oder sehr langsam wird. Benutzer haben bestätigt, dass dieses Problem nur auftritt, wenn es mit dem drahtlosen Büronetzwerk verbunden ist. Welche wäre am wahrscheinlichsten die Ursache?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Hohe ISP-Latenz",
+          "is_correct": false
+        },
+        {
+          "text": "Flattern des Ethernet-Anschlusses",
+          "is_correct": false
+        },
+        {
+          "text": "Gerätestörung",
+          "is_correct": true
+        },
+        {
+          "text": "Versteckte SSID",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Laptop wurde zur Bildschirmreparatur zurückgesendet. Der Besitzer besteht darauf, dass der Bildschirm kaputt ist, aber gelegentlich ist bei sehr hellen Einstellungen auf dem Desktop ein verblasstes Bild zu sehen. Welchen Schritte sollte der Reparaturtechniker ZUERST ausführen?",
+      "explanation": "Die Antwort \"Stellen Sie sicher, dass die Hintergrundbeleuchtung wie erwartet funktioniert.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ersetzen Sie die Grafikkarte.",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzen Sie den Bildschirm, wie der Kunde darauf besteht.",
+          "is_correct": false
+        },
+        {
+          "text": "Stellen Sie sicher, dass die Hintergrundbeleuchtung wie erwartet funktioniert.",
+          "is_correct": true
+        },
+        {
+          "text": "Empfehlen Sie stattdessen die Verwendung eines externen Displays.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Laptop-PC-Benutzer meldet Probleme mit der Festplatte. Eine Dateisystemprüfung zeigt, dass auf alle Dateien zugegriffen werden kann und das Dateisystem sauber ist. Nach der Prüfung gibt der PC immer noch eine Festplattenfehlermeldung aus. Welche Ursachen ist am wahrscheinlichsten für den Fehler?",
+      "explanation": "Die Antwort \"SMART-Fehler\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SMART-Fehler",
+          "is_correct": true
+        },
+        {
+          "text": "DIMM-Fehler",
+          "is_correct": false
+        },
+        {
+          "text": "IOPS-Fehler",
+          "is_correct": false
+        },
+        {
+          "text": "RAID-Fehler",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer startet eine Maschine neu. Beim Neustart hört der Benutzer einen Piepton und dann wird eine Fehlermeldung angezeigt. Welche Faktoren verursachen dieses Problem am ehesten? (Wähle zwei.)",
+      "explanation": "Die Antwort \"RAM-Modul, Grafikkarte\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RAM-Modul",
+          "is_correct": true
+        },
+        {
+          "text": "Prozessor",
+          "is_correct": false
+        },
+        {
+          "text": "Grafikkarte",
+          "is_correct": true
+        },
+        {
+          "text": "USB-Flash-Laufwerk",
+          "is_correct": false
+        },
+        {
+          "text": "Stromversorgung",
+          "is_correct": false
+        },
+        {
+          "text": "Startreihenfolge",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker hat ein Motherboard auf einem Server ausgetauscht, und jetzt wird der 64-Bit-Hypervisor nicht richtig geladen. Welche Optionen muss aktiviert werden, damit der Hypervisor ausgeführt werden kann?",
+      "explanation": "Die Antwort \"VT-d\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "vPro",
+          "is_correct": false
+        },
+        {
+          "text": "Hardware-Prefetcher",
+          "is_correct": false
+        },
+        {
+          "text": "VT-d",
+          "is_correct": true
+        },
+        {
+          "text": "Hyperthreading",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das Mobiltelefon eines Benutzers fühlt sich sehr heiß an und behält keine Ladung. Der Benutzer berichtet auch, dass das Telefon sehr langsam ist, insbesondere während des Ladevorgangs. Welche Ursachen verursacht diese Symptome am ehesten?",
+      "explanation": "Die Antwort \"Akku defekt\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ausfall des Digitizers",
+          "is_correct": false
+        },
+        {
+          "text": "Defekter Ladeanschluss",
+          "is_correct": false
+        },
+        {
+          "text": "Akku defekt",
+          "is_correct": true
+        },
+        {
+          "text": "CPU-Überhitzung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Microsoft Windows-Benutzer bereitet sich darauf vor, in einem anderen Land zu arbeiten, und muss beim Kopieren von Dateien auf tragbare Medien die Unternehmensrichtlinie zum Datenschutz einhalten. Welche Lösungen würde diese Anforderung am ehesten erfüllen?",
+      "explanation": "Die Antwort \"Ein USB 3.1-Flashlaufwerk mit installiertem BitLocker to Go\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Eine SD-Speicherkarte mit NTFS",
+          "is_correct": false
+        },
+        {
+          "text": "Ein USB 3.1-Flashlaufwerk mit installiertem BitLocker to Go",
+          "is_correct": true
+        },
+        {
+          "text": "Eine tragbare Festplatte mit FAT32",
+          "is_correct": false
+        },
+        {
+          "text": "Eine xD-Speicherkarte mit ext3",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Netzwerkgeräte wird zum Trennen von Broadcast-Domänen verwendet?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Router",
+          "is_correct": true
+        },
+        {
+          "text": "Hub",
+          "is_correct": false
+        },
+        {
+          "text": "Wireless Access Point",
+          "is_correct": false
+        },
+        {
+          "text": "Switch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer in einer Arztpraxis kontaktiert einen Techniker bezüglich eines Druckers, der zum Drucken von Etiketten im A4-Format verwendet wird. Nachdem die Etiketten gedruckt wurden, enthalten sie weiße Flächen in der Mitte der Seite, die eigentlich nicht weiß sein sollten. Welcher Schritte sollte zur Behebung dieses Problems unternommen werden? Welche der folgenden wäre am wahrscheinlichsten die Ursache?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Fixiereinheit",
+          "is_correct": true
+        },
+        {
+          "text": "Rollen",
+          "is_correct": false
+        },
+        {
+          "text": "Papierstau",
+          "is_correct": false
+        },
+        {
+          "text": "Seitenausrichtung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Beim Booten einer Workstation hört ein Techniker ein deutliches Klickgeräusch, nachdem die Hauptplatine mit Strom versorgt wird. Welche wäre am wahrscheinlichsten die Ursache?",
+      "explanation": "Die Antwort \"HDD\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RAID",
+          "is_correct": false
+        },
+        {
+          "text": "SSD",
+          "is_correct": false
+        },
+        {
+          "text": "SMART",
+          "is_correct": false
+        },
+        {
+          "text": "HDD",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker identifizierte ein Problem auf einer Workstation, holte Details vom Benutzer ein und erstellte eine Sicherungskopie des Systems. Was sollte der Techniker als NÄCHSTES tun?",
+      "explanation": "Die Antwort \"Erstellen Sie eine Theorie der wahrscheinlichen Ursache, indem Sie nach Bedarf intern oder extern recherchieren.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Dokumentieren Sie die Ergebnisse, Maßnahmen und Ergebnisse.",
+          "is_correct": false
+        },
+        {
+          "text": "Erstellen Sie eine Theorie der wahrscheinlichen Ursache, indem Sie nach Bedarf intern oder extern recherchieren.",
+          "is_correct": true
+        },
+        {
+          "text": "Entwerfen Sie einen Aktionsplan zur Lösung des Problems und implementieren Sie die Lösung.",
+          "is_correct": false
+        },
+        {
+          "text": "Bestimmen Sie die nächsten Schritte zur Lösung des Problems und dokumentieren Sie es.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Organisation hat einige Computer, auf denen macOS ausgeführt wird, und einige Computer, auf denen Windows ausgeführt wird. Auf den Computern, auf denen macOS ausgeführt wird, muss auch eine Software ausgeführt werden, die nur unter Windows verfügbar ist. Welche Aussagen beschreibt am BESTEN die Lösung zum Ausführen von Windows-Software auf einem Computer mit macOS?",
+      "explanation": "Die Antwort \"Plattformübergreifende Virtualisierung\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Spoofing des Betriebssystems",
+          "is_correct": false
+        },
+        {
+          "text": "Indirekte Softwareimplementierung",
+          "is_correct": false
+        },
+        {
+          "text": "Plattformübergreifende Virtualisierung",
+          "is_correct": true
+        },
+        {
+          "text": "Remote-Softwarebereitstellung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Online-Händler möchte seine Kapazitäten erweitern, um den Umsatz zu steigern. Es wurden zusätzliche Server installiert. Welche Maßnahmen sollte ergriffen werden, um sicherzustellen, dass jeder neue Server richtig genutzt wird?",
+      "explanation": "Die Antwort \"Load-Balancer\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Round-Robin-DNS",
+          "is_correct": false
+        },
+        {
+          "text": "Clustering",
+          "is_correct": false
+        },
+        {
+          "text": "Virtualisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Load-Balancer",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer wendet sich mit Hinweis auf einen fehlerhaften Fingerabdruckscanner an den Helpdesk. Der Benutzer gibt an, dass der Scanner gestern korrekt funktioniert hat. Welche Schritte zur Fehlerbehebung sollten ZUERST durchgeführt werden, nachdem das Ticket eingereicht wurde?",
+      "explanation": "Die Antwort \"Erkundigen Sie sich nach möglichen Änderungen.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Erkundigen Sie sich nach möglichen Änderungen.",
+          "is_correct": true
+        },
+        {
+          "text": "Reichen Sie einen Schadensbericht ein.",
+          "is_correct": false
+        },
+        {
+          "text": "Fordern Sie einen neuen Scanner an.",
+          "is_correct": false
+        },
+        {
+          "text": "Versuchen Sie, den Scanner zu reinigen.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen möchte clientseitige Virtualisierung für Anwendungstests verwenden. Welche Konfigurationen würde dieses Ziel am BESTEN unterstützen?",
+      "explanation": "Die Antwort \"CPU 2,5 GHz - 4 Kerne 16 GB DDR4 RAM 1 TB SSD\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CPU 2,5 GHz - 2 Kerne 16 GB DDR4 RAM 4 x 1 TB HDD RAID 5",
+          "is_correct": false
+        },
+        {
+          "text": "CPU 3,2 GHz - 4 Kerne 8 GB DDR4 RAM 500 GB HDD",
+          "is_correct": false
+        },
+        {
+          "text": "CPU 3,2 GHz - 1 Kern 16 GB DDR4 RAM 4 TB SSD",
+          "is_correct": false
+        },
+        {
+          "text": "CPU 2,5 GHz - 4 Kerne 16 GB DDR4 RAM 1 TB SSD",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer hat ein Ticket eingereicht, um ein Problem mit einem neuen Drucker zu melden, der keine neuen Druckaufträge mehr annimmt. Der Techniker überprüft, ob der Drucker eingeschaltet ist, und stellt fest, dass auf dem LCD-Bildschirm des Druckers die folgende Fehlermeldung angezeigt wird:\nPaper Jam, Jam in Fuser\n\nWelcher Schritte ist der effizienteste nächste Schritt, den der Techniker ausführen sollte?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Bringen Sie ein Wartungskit am Drucker an.",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzen Sie die Fixiereinheit.",
+          "is_correct": false
+        },
+        {
+          "text": "Schalten Sie den Drucker ein und aus, um zu sehen, ob der Fehler behoben wird.",
+          "is_correct": false
+        },
+        {
+          "text": "Überprüfen Sie den Papierpfad des Druckers, um Hindernisse zu finden.",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welche ist eine gültige Verwendung für PaaS?",
+      "explanation": "Die Antwort \"Eine Anwendungsentwicklungsumgebung\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ein Installations- und Konfigurationsmodell für virtuelle Server",
+          "is_correct": false
+        },
+        {
+          "text": "Eine Webanwendung für die Vermögensverwaltung",
+          "is_correct": false
+        },
+        {
+          "text": "Eine Anwendungsentwicklungsumgebung",
+          "is_correct": true
+        },
+        {
+          "text": "Offsite-Backups",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker nimmt eine Workstation in Betrieb, die über gespiegelten Speicher verfügen muss, wobei zwei 4-TB-Laufwerke verwendet werden, die einen Ausfall unterstützen. Welche erfüllt diese Anforderungen am BESTEN?",
+      "explanation": "Speichertechnologien haben sich von mechanischen Festplatten zu elektronischen SSDs entwickelt. Moderne Systeme nutzen NVMe für maximale Performance, während HDDs noch für Massenspeicher verwendet werden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RAID 1",
+          "is_correct": true
+        },
+        {
+          "text": "RAID 0",
+          "is_correct": false
+        },
+        {
+          "text": "RAID 10",
+          "is_correct": false
+        },
+        {
+          "text": "RAID 5",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Die Software der externen Webcam eines Laptops läuft, aber es wird kein Bild oder Video angezeigt. Welche Maßnahmen sollte ein Techniker ZUERST durchführen?",
+      "explanation": "Die Antwort \"Verbinden Sie der Webcam erneut.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Installieren Sie die Webcam-Software und -Treiber neu.",
+          "is_correct": false
+        },
+        {
+          "text": "Starten Sie den Computer neu und führen Sie die Systemdiagnose durch.",
+          "is_correct": false
+        },
+        {
+          "text": "Verbinden Sie der Webcam erneut.",
+          "is_correct": true
+        },
+        {
+          "text": "Suchen Sie nach neuer Webcam-Firmware.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Ingenieur erlebt beim Rendern komplexer 3D-Modelle unerwartete Neustarts auf einer Grafik-Workstation. Die Workstation ist mit einem 115-V-Netzteil mit einer Nennleistung von 200 W konfiguriert und an eine USV angeschlossen. Die Zentraleinheit enthält 16 Hyperthread-Kerne, und eine diskrete Grafiklösung, die einen 8-poligen Stromanschluss verwendet, ist in einem PCI-Express-x16-Steckplatz installiert. Welche Aussagen gibt an, wo der Techniker mit der Fehlersuche beginnen sollte?",
+      "explanation": "Die Antwort \"Die Stromversorgung, da 200 W nicht ausreichen, wenn die GPU stark beansprucht wird\" ist korrekt für diese Frage im Bereich Hardware. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Das Motherboard, da nur Standard-PCI-Steckplätze für High-End-Grafikkarten verwendet werden sollten, nicht PCI-Express-Steckplätze",
+          "is_correct": false
+        },
+        {
+          "text": "Die USV, da 115 V für die Konfiguration nicht ausreichen und auf 220 V erhöht werden sollten",
+          "is_correct": false
+        },
+        {
+          "text": "Die Grafikkarte, da sie die Komponente ist, die die unerwarteten Neustarts auslöst",
+          "is_correct": false
+        },
+        {
+          "text": "Die Stromversorgung, da 200 W nicht ausreichen, wenn die GPU stark beansprucht wird",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welche Technologien ermöglicht es, dass mehrere Netzwerke durch einen Switch geleitet werden können?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "VLAN",
+          "is_correct": true
+        },
+        {
+          "text": "VRRP",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP",
+          "is_correct": false
+        },
+        {
+          "text": "VPN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Endbenutzer meldet, dass sich die Uhrzeit und das Datum eines Desktop-PCs nach dem Herunterfahren zurückgesetzt haben und das Gerät danach neu gestartet wurde. Am nächsten Tag lädt der Desktop das Betriebssystem nicht und bleibt bei einem schwarzen Bildschirm mit Meldung hängen:\nDatum/Uhrzeit nicht festgelegt\nDrücken Sie F1, um das Setup auszuführen\n\nWelche der folgenden Maßnahmen wäre die beste als Nächstes?",
+      "explanation": "Die Antwort \"Ersetzen Sie die CMOS-Batterie.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Schließen Sie die Stromanschlüsse des Motherboards neu an.",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzen Sie die CMOS-Batterie.",
+          "is_correct": true
+        },
+        {
+          "text": "Setzen Sie das BIOS auf die Werkseinstellungen zurück.",
+          "is_correct": false
+        },
+        {
+          "text": "Wechseln Sie das Motherboard.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer berichtet, dass ein PC gelegentlich nicht bootet. Der Benutzer startet den PC neu, aber die Leistung lässt nach. Der Techniker hört ein seltsames, sich wiederholendes, tickendes Geräusch aus dem PC. Was sollte der Techniker ZUERST tun?",
+      "explanation": "Die Antwort \"Versuchen Sie, Daten zu extrahieren.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Überprüfen Sie den Lüfter.",
+          "is_correct": false
+        },
+        {
+          "text": "Überprüfen Sie das CD-Fach.",
+          "is_correct": false
+        },
+        {
+          "text": "Versuchen Sie, Daten zu extrahieren.",
+          "is_correct": true
+        },
+        {
+          "text": "Setzen Sie die RAM-Module neu ein.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker tauscht ein fehlerhaftes Mainboard aus, das von einem Endbenutzer für einen alten, hochwertigen Desktop-Computer bestellt wurde. Der Techniker kann die CPU jedoch nicht in den Sockel einbauen. Bei näherer Betrachtung bemerkt der Techniker, dass die Pins der CPU nicht mit dem Sockel übereinstimmen. Welche Maßnahmen wäre die beste Vorgehensweise für den Techniker als NÄCHSTES?",
+      "explanation": "Die Antwort \"Finden Sie ein kompatibles Motherboard für die CPU.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Überprüfen Sie den Sockel-Typ und den Hersteller.",
+          "is_correct": false
+        },
+        {
+          "text": "Installieren Sie einen Adapter, um eine universelle Steckdose zu schaffen.",
+          "is_correct": false
+        },
+        {
+          "text": "Finden Sie ein kompatibles Motherboard für die CPU.",
+          "is_correct": true
+        },
+        {
+          "text": "Versuchen Sie, so viele Stifte wie möglich zu setzen.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein entfernter Benutzer meldet Verbindungsprobleme mit dem lokalen Internetanbieter. Auch nachdem ein Techniker das vom ISP bereitgestellte Modem neu gestartet hat, bleibt das Problem bestehen. Welche Möglichkeiten würde die Verbindung am BESTEN in kürzester Zeit herstellen?",
+      "explanation": "Die Antwort \"Mobiler Hotspot\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Glasfaser",
+          "is_correct": false
+        },
+        {
+          "text": "Mobiler Hotspot",
+          "is_correct": true
+        },
+        {
+          "text": "Hochfrequenz-ISP",
+          "is_correct": false
+        },
+        {
+          "text": "WI-FI des Nachbarn",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen möchte Entwicklern von Drittanbietern über Desktop-Umgebungen, die das Unternehmen kontrollieren kann, Zugriff auf das Unternehmensnetzwerk gewähren. Mit welcher Optionen können diese Anforderungen am BESTEN erfüllt werden?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SaaS",
+          "is_correct": false
+        },
+        {
+          "text": "Private Cloud",
+          "is_correct": false
+        },
+        {
+          "text": "VDI",
+          "is_correct": true
+        },
+        {
+          "text": "Sandkasten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker muss ein Problem mit einem Cat-5-Kabel beheben. Das Kabel, das an eine Netzwerkbuchse angeschlossen ist, funktioniert nicht mehr, wenn es bewegt wird. Welche Gegenstände muss der Techniker verwenden, um das Problem zu beheben? (Wählen Sie zwei aus.)",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Crimper",
+          "is_correct": true
+        },
+        {
+          "text": "RJ45-Anschluss",
+          "is_correct": true
+        },
+        {
+          "text": "Netzwerkabgriff",
+          "is_correct": false
+        },
+        {
+          "text": "Magnetisierter Schraubendreher",
+          "is_correct": false
+        },
+        {
+          "text": "Schere",
+          "is_correct": false
+        },
+        {
+          "text": "Tongenerator",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer hat eine neue Workstation erworben und versucht, mehrere große Excel-Dateien gleichzeitig zu öffnen. Der Benutzer stellt fest, dass die Leistung bei der Ausführung solch großer Anfragen nicht den Erwartungen entspricht. Was sollte ein Techniker ZUERST tun?",
+      "explanation": "Die Antwort \"Rüsten Sie den RAM in der Workstation auf.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Aktualisieren Sie die CPU in der Workstation.",
+          "is_correct": false
+        },
+        {
+          "text": "Rüsten Sie das Netzteil in der Workstation auf.",
+          "is_correct": false
+        },
+        {
+          "text": "Rüsten Sie den RAM in der Workstation auf.",
+          "is_correct": true
+        },
+        {
+          "text": "Erhöhen Sie die Swap-Partition.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche verwendet die TCP-Ports 20/21 und überträgt Daten im Klartext?",
+      "explanation": "Die Antwort \"FTP\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SSH",
+          "is_correct": false
+        },
+        {
+          "text": "SNMP",
+          "is_correct": false
+        },
+        {
+          "text": "Telnet",
+          "is_correct": false
+        },
+        {
+          "text": "FTP",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Eine Organisation möchte die Verarbeitungsfähigkeit ihrer Computer verbessern. Die meisten Benutzer berichten, dass sich die Reaktionszeit des Systems drastisch verlangsamt, wenn mehrere Anwendungen verwendet werden. Wenn nur eine Anwendung geöffnet ist, ist die Antwortzeit akzeptabel. Welche sollte ZUERST aktualisiert werden?",
+      "explanation": "Die Antwort \"RAM\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Festplatte",
+          "is_correct": false
+        },
+        {
+          "text": "SSD",
+          "is_correct": false
+        },
+        {
+          "text": "CPU",
+          "is_correct": false
+        },
+        {
+          "text": "RAM",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Clientseitige Virtualisierung-Gastmaschinen haben ähnliche Sicherheitsanforderungen wie physische Maschinen, aber sie müssen auch eine Trennung von anderen Gastmaschinen sicherstellen. Welche Aussagen beschreibt diese clientseitige Gastsicherheitsanforderung am BESTEN?",
+      "explanation": "Die Antwort \"Isolierung\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Härtung",
+          "is_correct": false
+        },
+        {
+          "text": "Isolierung",
+          "is_correct": true
+        },
+        {
+          "text": "Autorisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Authentifizierung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer verbindet ein Smartphone mit einem Laptop. Welche Arten von Netzwerken hat der Benutzer erstellt?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PAN",
+          "is_correct": true
+        },
+        {
+          "text": "WLAN",
+          "is_correct": false
+        },
+        {
+          "text": "LAN",
+          "is_correct": false
+        },
+        {
+          "text": "MAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Kürzlich hat eine Organisation eine Reihe von Spam-E-Mails erhalten, die das Spam-Gateway passiert haben. Diese E-Mails enthielten im Allgemeinen die gleichen Informationen, aber die Absenderdomänen waren unterschiedlich. Welche Lösungen würde am BESTEN helfen, das Problem zu mindern?",
+      "explanation": "Die Antwort \"Aktualisierung der Keyword-Filterung\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Bearbeitung des Absenderregelwerks",
+          "is_correct": false
+        },
+        {
+          "text": "Überprüfen, dass DMARC aktiviert ist",
+          "is_correct": false
+        },
+        {
+          "text": "Kontaktaufnahme mit dem Gateway-Anbieter",
+          "is_correct": false
+        },
+        {
+          "text": "Aktualisierung der Keyword-Filterung",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Mehrere Benutzer, die sich einen Multifunktionsdrucker in einem Büro teilen, haben unbeabsichtigte, dünne, vertikale Linien gemeldet, die die gesamte Höhe jeder vom Drucker gedruckten Seite bedecken. Welche Schritte sollte ein Techniker ausführen, um dieses Problem am wahrscheinlichsten zu lösen?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ersetzen Sie das Druckerpapier durch einen neuen Stapel.",
+          "is_correct": false
+        },
+        {
+          "text": "Führen Sie das Trommelreinigungsverfahren durch.",
+          "is_correct": true
+        },
+        {
+          "text": "Installieren Sie den Druckertreiber auf jedem Computer neu.",
+          "is_correct": false
+        },
+        {
+          "text": "Löschen Sie den Druckerspooler auf jedem Computer.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Maßnahmen sollte der Hardwaretechniker des Rechenzentrums implementieren, um eine maximale Betriebszeit für die virtuellen Maschinen der Kunden sicherzustellen?",
+      "explanation": "Die Antwort \"Unterbrechungsfreie Stromversorgung\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Wechselspannungsregler",
+          "is_correct": false
+        },
+        {
+          "text": "Leitungskonditionierer",
+          "is_correct": false
+        },
+        {
+          "text": "Unterbrechungsfreie Stromversorgung",
+          "is_correct": true
+        },
+        {
+          "text": "Cloud-Speichersicherung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker muss die Gesamtreaktionszeit einer Workstation für häufig verwendete Anwendungen und Daten verbessern, ohne die aktuelle Festplatte zu entfernen. Welche Speichergeräte sollte der Techniker installieren, um das Ziel am BESTEN zu erreichen?",
+      "explanation": "Speichertechnologien haben sich von mechanischen Festplatten zu elektronischen SSDs entwickelt. Moderne Systeme nutzen NVMe für maximale Performance, während HDDs noch für Massenspeicher verwendet werden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "M.2",
+          "is_correct": true
+        },
+        {
+          "text": "HDD",
+          "is_correct": false
+        },
+        {
+          "text": "SAS",
+          "is_correct": false
+        },
+        {
+          "text": "SCSI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker richtet ein Gerät für die Zwei-Faktor-Authentifizierung ein. Welche Möglichkeiten erfüllt diese Anforderung?",
+      "explanation": "Die Antwort \"Passwort/Daumenabdruck\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Passwort/PIN",
+          "is_correct": false
+        },
+        {
+          "text": "Passwort/Daumenabdruck",
+          "is_correct": true
+        },
+        {
+          "text": "Fingerabdruck/Netzhautscan",
+          "is_correct": false
+        },
+        {
+          "text": "Passwort/Passwort",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussagen beschreibt am BESTEN die Hauptfunktion eines Webservers?",
+      "explanation": "Die Antwort \"Hosting von Homepages und Unternehmensportale\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Speichern von Dateien und Steuern des Benutzerzugriffs",
+          "is_correct": false
+        },
+        {
+          "text": "Bereitstellung von IP-Adressen und Druckdiensten",
+          "is_correct": false
+        },
+        {
+          "text": "Persönliche Postfächer und Kalender einrichten",
+          "is_correct": false
+        },
+        {
+          "text": "Hosting von Homepages und Unternehmensportale",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer bringt einen älteren Laptop zum Helpdesk und meldet Probleme mit der Tastatur. Bei der Inspektion sieht der Techniker keine äußeren Schäden, bemerkt aber, dass viele Tastenanschläge in einem Textverarbeitungsprogramm nicht registriert werden. Der Laptop funktioniert einwandfrei, wenn der Techniker ihn mit einer externen Tastatur testet. Welche Maßnahmen würde das Problem am wahrscheinlichsten lösen?",
+      "explanation": "Die Antwort \"Reinigen Sie die Tastatur.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Deaktivieren Sie die Sticky Keys-Funktion.",
+          "is_correct": false
+        },
+        {
+          "text": "Reinigen Sie die Tastatur.",
+          "is_correct": true
+        },
+        {
+          "text": "Setzen Sie die BIOS-Einstellungen auf die Standardeinstellungen zurück.",
+          "is_correct": false
+        },
+        {
+          "text": "Laden Sie den Laptop auf.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Netzwerkadministrator konfiguriert ein unternehmenseigenes Smartphone für einen neuen Manager. Das Unternehmen benötigt die Möglichkeit, die Daten des Telefons bei Verlust oder Diebstahl aus der Ferne zu löschen, und die Fähigkeit, auf dem Telefon installierte Anwendungen zu genehmigen. Welches Tools würde diesen Bedarf am BESTEN erfüllen?",
+      "explanation": "Die Antwort \"Mobile Device Management\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "WPA2-Enterpise-WLAN",
+          "is_correct": false
+        },
+        {
+          "text": "Tethering mit einem unternehmenseigenen Laptop",
+          "is_correct": false
+        },
+        {
+          "text": "Mobile Device Management",
+          "is_correct": true
+        },
+        {
+          "text": "Unternehmens-E-Mail",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer berichtet, dass der Belegdrucker über das gesamte Bild hinweg schwarze Flecken aufweist. Der Text ist zwar noch vorhanden, aber sehr dunkel und manchmal unleserlich. Welche Punkte sind die wahrscheinlichste Ursache und Lösung für das Druckerproblem?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Die blaue Tintenpatrone wurde mit schwarzer Tinte geladen. Füllen Sie die richtige Tinte ein und reinigen Sie den Druckkopf.",
+          "is_correct": false
+        },
+        {
+          "text": "Der Drucker ist mit der falschen Papiersorte geladen. Ersetzen Sie das Quittungspapier durch Kohlepapier.",
+          "is_correct": false
+        },
+        {
+          "text": "Der Druckkopf ist defekt. Tauschen Sie den Druckkopf aus und kalibrieren Sie ihn neu.",
+          "is_correct": true
+        },
+        {
+          "text": "Das Farbband ist gestaut und reibt auf dem Papier. Entfernen Sie das defekte Farbband und führen Sie es ordnungsgemäß durch.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Entwickler bittet um Erlaubnis, clientseitige Virtualisierung zu verwenden. Der Entwickler möchte Code in einer Umgebung schreiben, die von anderer Infrastruktur isoliert ist, um negative Auswirkungen von experimentellem Code zu vermeiden. Welche bietet die beste Lösung für den Entwickler?",
+      "explanation": "Die Antwort \"Sandbox Umgebung\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Softwarekompatibilität",
+          "is_correct": false
+        },
+        {
+          "text": "Plattformübergreifende Funktionalität",
+          "is_correct": false
+        },
+        {
+          "text": "Entwicklung von Testfällen",
+          "is_correct": false
+        },
+        {
+          "text": "Sandbox Umgebung",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer bringt ein Tablet zu einem Techniker, weil der Cursor darauf ständig abdriftet. Der Techniker stellt fest, dass der Bildschirm nicht beschädigt zu sein scheint. Welche Ursachen ist am wahrscheinlichsten für das Cursorproblem?",
+      "explanation": "Die Antwort \"Der Bildschirm muss neu kalibriert werden.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Die Touch-Pen-Batterie ist leer.",
+          "is_correct": false
+        },
+        {
+          "text": "Der Bildschirm ist physisch beschädigt.",
+          "is_correct": false
+        },
+        {
+          "text": "Der Bildschirm muss neu kalibriert werden.",
+          "is_correct": true
+        },
+        {
+          "text": "Die Bildschirmdrehung ist falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer meldet Probleme mit einem Smartphone, nachdem er es fallen gelassen hat. Die Symbole auf dem Bildschirm sehen alle normal aus, aber wenn der Benutzer beispielsweise das E-Mail-Symbol berührt, passiert nichts. Welche Ursachen ist am wahrscheinlichsten?",
+      "explanation": "Die Antwort \"Probleme mit dem Digitizer\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Probleme mit dem Digitizer",
+          "is_correct": true
+        },
+        {
+          "text": "Malware",
+          "is_correct": false
+        },
+        {
+          "text": "Überhitzung",
+          "is_correct": false
+        },
+        {
+          "text": "Defekter Bildschirm",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker wird damit beauftragt, den Arbeitsspeicher eines Laptops aufzurüsten. Welchen Schritte sollte der Techniker ZUERST ausführen?",
+      "explanation": "Speichertechnologien haben sich von mechanischen Festplatten zu elektronischen SSDs entwickelt. Moderne Systeme nutzen NVMe für maximale Performance, während HDDs noch für Massenspeicher verwendet werden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Überprüfen Sie die Speicheranforderungen des Motherboards.",
+          "is_correct": true
+        },
+        {
+          "text": "Schließen Sie ein elektrostatisches Entladungsband an.",
+          "is_correct": false
+        },
+        {
+          "text": "Bestätigen Sie, dass sowohl der aktuelle als auch der neue Speicher von derselben Marke sind.",
+          "is_correct": false
+        },
+        {
+          "text": "Führen Sie einen Diagnosetest für den aktuellen Speicher durch.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Startup möchte sein Rechenzentrum sofort erweitern, hat aber nicht das Personal oder den Platz, um alles intern zu verwalten. Das Unternehmen verfügt über mehrere kleine Büros und entfernte Benutzer mit großen Anforderungen an Rechen- und Speicherlösungen. Die Finanzierung ist für das Unternehmen kein Thema. Welche Maßnahmen kann die Unternehmensziele am BESTEN erreichen?",
+      "explanation": "Speichertechnologien haben sich von mechanischen Festplatten zu elektronischen SSDs entwickelt. Moderne Systeme nutzen NVMe für maximale Performance, während HDDs noch für Massenspeicher verwendet werden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ISP",
+          "is_correct": false
+        },
+        {
+          "text": "IaaS",
+          "is_correct": true
+        },
+        {
+          "text": "SaaS",
+          "is_correct": false
+        },
+        {
+          "text": "SDN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker konfiguriert eine neue CAD-Workstation mit vier großen Festplatten. Die Workstation wird zum Bearbeiten großer, kritischer Dateien verwendet, daher sollte die Speicherkonfiguration sowohl schnell als auch redundant sein. Welcher RAID-Level erfüllt diese Anforderungen am BESTEN?",
+      "explanation": "Speichertechnologien haben sich von mechanischen Festplatten zu elektronischen SSDs entwickelt. Moderne Systeme nutzen NVMe für maximale Performance, während HDDs noch für Massenspeicher verwendet werden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RAID 10",
+          "is_correct": true
+        },
+        {
+          "text": "RAID 5",
+          "is_correct": false
+        },
+        {
+          "text": "RAID 0",
+          "is_correct": false
+        },
+        {
+          "text": "RAID 1",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker erhält ein Ticket, das besagt, dass ein mobiles Zahlungsgerät Probleme mit seiner kontaktlosen Zahlungsfunktion hat. Das Gerät erkennt keine Zahlungsoptionen. Welche Ursachen ist am wahrscheinlichsten für das Problem?",
+      "explanation": "Die Antwort \"NFC\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NFC",
+          "is_correct": true
+        },
+        {
+          "text": "Bluetooth",
+          "is_correct": false
+        },
+        {
+          "text": "Lightning-Adapter",
+          "is_correct": false
+        },
+        {
+          "text": "WLAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer ruft den Helpdesk an, um Unterstützung bei der Konfiguration eines Android-Telefons mit einem neuen NFC-fähigen Lautsprecher zu erhalten, der für eine bevorstehende Telefonkonferenz verwendet wird. Der Benutzer konnte den Ton des Telefons nicht an den NFC-Lautsprecher leiten. Welche Sequenzen sollte der Helpdesk-Techniker mit dem Kunden führen, um diese Aufgabe zu erfüllen?",
+      "explanation": "Die Antwort \"Aktivieren Sie NFC und Bluetooth auf dem Android-Telefon. Tippen und halten Sie das Android-Telefon an der Stelle des Lautsprechers, an der das NFC-Logo angezeigt wird. Akzeptieren Sie die Verbindung zum Lautsprecher, wenn die Eingabeaufforderung auf dem Bildschirm des Telefons angezeigt wird.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Aktivieren Sie NFC auf dem Lautsprecher. Stellen Sie sicher, dass der Lautsprecher weniger als 10 m vom Android-Telefon entfernt ist. Wählen Sie im Bluetooth-Einstellungsmenü des Telefons für Verbundene Geräte die Option Neues Gerät koppeln. Tippen Sie auf , um die Verbindung zum Lautsprecher zu akzeptieren, wenn die Eingabeaufforderung auf dem Bildschirm des Telefons angezeigt wird.",
+          "is_correct": false
+        },
+        {
+          "text": "Aktivieren Sie NFC und Bluetooth auf dem Android-Telefon. Wählen Sie im Bluetooth-Einstellungsmenü des Android-Telefons für verbundene Geräte die Option Zuvor verbundene Geräte. Wählen Sie ein aufgeführtes Gerät aus, das dem Lautsprecher am ehesten entspricht. Tippen Sie auf , um die Verbindung zum Lautsprecher zu akzeptieren, wenn die Eingabeaufforderung auf dem Bildschirm des Telefons angezeigt wird.",
+          "is_correct": false
+        },
+        {
+          "text": "Aktivieren Sie NFC und Bluetooth auf dem Android-Telefon. Tippen und halten Sie das Android-Telefon an der Stelle des Lautsprechers, an der das NFC-Logo angezeigt wird. Akzeptieren Sie die Verbindung zum Lautsprecher, wenn die Eingabeaufforderung auf dem Bildschirm des Telefons angezeigt wird.",
+          "is_correct": true
+        },
+        {
+          "text": "Aktivieren Sie Wi-Fi auf dem Lautsprecher. Aktivieren Sie Wi-Fi auf dem Android-Telefon. Tippen und halten Sie das Android-Telefon an der Stelle des Lautsprechers, an der das NFC-Logo angezeigt wird. Akzeptieren Sie die Verbindung zum Lautsprecher, wenn die Eingabeaufforderung auf dem Bildschirm des Telefons angezeigt wird.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer möchte einen zweiten Monitor auf einem Laptop installieren. Die VGA/DVI- oder HDMI-Kabel sind bereits angeschlossen. Was sollte der Techniker tun, um den Laptop so zu konfigurieren, dass beide Bildschirme angezeigt werden?",
+      "explanation": "HDMI und DisplayPort sind digitale Videostandards mit Audio-Support. DisplayPort unterstützt höhere Auflösungen/Refresh-Rates und Daisy-Chaining. HDMI ist Consumer-Standard, DisplayPort in Professional-Umgebungen. VGA ist analog und veraltet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Schalten Sie den Monitor aus und wieder ein.",
+          "is_correct": false
+        },
+        {
+          "text": "Passen Sie die Anzeigeeinstellungen des Monitors an.",
+          "is_correct": true
+        },
+        {
+          "text": "Schließen Sie den Monitor an den USB-Anschluss an.",
+          "is_correct": false
+        },
+        {
+          "text": "Schalten Sie den Laptop aus und wieder ein.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker behebt ein sporadisch auftretendes unscharfes Video auf einem Computer, der einen VGA-zu-DisplayPort-Adapter zum Anschluss an einen Monitor verwendet. Der Monitor mit einem VGA-Anschluss funktionierte zuvor bei einem anderen Benutzer problemlos. Der Techniker tauscht den Adapter aus, das Problem bleibt jedoch bestehen. Welche Maßnahmen sollte der Techniker als Nächstes ergreifen?",
+      "explanation": "HDMI und DisplayPort sind digitale Videostandards mit Audio-Support. DisplayPort unterstützt höhere Auflösungen/Refresh-Rates und Daisy-Chaining. HDMI ist Consumer-Standard, DisplayPort in Professional-Umgebungen. VGA ist analog und veraltet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Das Problem weiter untersuchen und eine neue Hypothese zum Testen formulieren.",
+          "is_correct": true
+        },
+        {
+          "text": "Verwenden Sie einen VGA-zu-DisplayPort-Adapter einer anderen Marke.",
+          "is_correct": false
+        },
+        {
+          "text": "Dokumentieren Sie die ergriffenen Maßnahmen und das Ergebnis.",
+          "is_correct": false
+        },
+        {
+          "text": "Stellen Sie dem Benutzer zusätzliche klärende Fragen zu dem Problem.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer im Marketingteam verwendet verschiedene Multimedia-Anwendungen, die viel Speicher verbrauchen. Der Benutzer muss mehr RAM installieren, um diese Anwendungen effektiv auszuführen. Wenn der Benutzer das Computergehäuse öffnet, sieht der Benutzer vier Schlitze in zwei Farbsätzen. Welcher Speichertypen wird am wahrscheinlichsten benötigt?",
+      "explanation": "Speichertechnologien haben sich von mechanischen Festplatten zu elektronischen SSDs entwickelt. Moderne Systeme nutzen NVMe für maximale Performance, während HDDs noch für Massenspeicher verwendet werden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Dual-Channel",
+          "is_correct": true
+        },
+        {
+          "text": "Quad-Channel",
+          "is_correct": false
+        },
+        {
+          "text": "Triple-Channel",
+          "is_correct": false
+        },
+        {
+          "text": "Single-Channel",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Optionen ermöglicht es allen VMs in einer virtuellen Umgebung, RAM zur Verwendung zuzuweisen?",
+      "explanation": "Die Antwort \"Ressourcen-Pooling\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Gemessener Service",
+          "is_correct": false
+        },
+        {
+          "text": "Synchronisation",
+          "is_correct": false
+        },
+        {
+          "text": "Ressourcen-Pooling",
+          "is_correct": true
+        },
+        {
+          "text": "Containerisierung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher 802.11-Standards unterstützt sowohl 5-GHz- als auch 2,4-GHz-Kanalfrequenzen?",
+      "explanation": "Die Antwort \"802.11ax\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "802.11a",
+          "is_correct": false
+        },
+        {
+          "text": "802.11b",
+          "is_correct": false
+        },
+        {
+          "text": "802.11g",
+          "is_correct": false
+        },
+        {
+          "text": "802.11ac",
+          "is_correct": false
+        },
+        {
+          "text": "802.11ax",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Hardwaretechniker konfiguriert einen Laptop, und der Netzwerkadministrator verlangt, dass die Netzwerkeinstellungen statisch sind. Der Techniker pingt die Server erfolgreich nach IP-Adresse, kann aber den UNC-Pfad nicht pingen. Welche Ursachen hat dieses Problem?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Gateway",
+          "is_correct": false
+        },
+        {
+          "text": "Subnetz",
+          "is_correct": false
+        },
+        {
+          "text": "IP-Adresse",
+          "is_correct": false
+        },
+        {
+          "text": "Domain Name System",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker richtet einen Projektor für ein Videokonferenzsystem ein. Wenn der Benutzer versucht, einen Laptop an das System anzuschließen, zeigt das System die folgende Fehlermeldung an:\nKeine Quelle gefunden\nDer Benutzer probiert mehrere Kabel und Eingaben am Projektor aus. Welche Möglichkeiten sollte der Benutzer als Nächstes versuchen?",
+      "explanation": "Die Antwort \"Überprüfen Sie die Anzeigeeinstellungen auf dem Computer und stellen Sie sie auf Erweitern/Duplizieren ein.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ersetzen Sie die Videokarte auf dem Gerät, das an den Projektor angeschlossen ist, da sie defekt ist.",
+          "is_correct": false
+        },
+        {
+          "text": "Überprüfen Sie die Glühbirne am Projektor und ersetzen Sie sie durch eine neue.",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzen Sie den Projektor durch einen anderen als funktionierend und versuchen Sie es erneut.",
+          "is_correct": false
+        },
+        {
+          "text": "Überprüfen Sie die Anzeigeeinstellungen auf dem Computer und stellen Sie sie auf Erweitern/Duplizieren ein.",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welche Methoden kann verwendet werden, um den Laptop eines Remote-Benutzers sicher mit einem Unternehmensserver zu verbinden?",
+      "explanation": "Die Antwort \"VPN\" ist korrekt für diese Frage im Bereich Netzwerk. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DHCP",
+          "is_correct": false
+        },
+        {
+          "text": "WAN",
+          "is_correct": false
+        },
+        {
+          "text": "SSL",
+          "is_correct": false
+        },
+        {
+          "text": "VPN",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker inspiziert einen Projektor, der unscharfe Bilder anzeigt. Welche Maßnahmen wäre die beste Lösung?",
+      "explanation": "Die Antwort \"Einstellen des Objektives\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Erneutes Einsetzen der Lampe",
+          "is_correct": false
+        },
+        {
+          "text": "Einstellen des Objektives",
+          "is_correct": true
+        },
+        {
+          "text": "Filterwechsel",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzen des Videokabels",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Endbenutzer hat festgestellt, dass die Touchscreen-Funktionen auf einem Windows-Gerät nicht mehr funktionieren. Welche Punkte sollte ein Techniker prüfen?",
+      "explanation": "Die Antwort \"Tablet/PC-Einstellungen\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Leistungsüberwachung",
+          "is_correct": false
+        },
+        {
+          "text": "Anzeigeeinstellungen",
+          "is_correct": false
+        },
+        {
+          "text": "Tablet/PC-Einstellungen",
+          "is_correct": true
+        },
+        {
+          "text": "Systemkonfiguration",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Helpdesk-Techniker wurde mit der Installation eines IP-Telefons in einem kleinen Büro mit einem nicht verwalteten Switch beauftragt. Bei Anschluss an eine RJ45-Buchse fährt das Telefon nicht hoch. Was ist der SCHNELLSTE Weg, um dieses Problem zu lösen?",
+      "explanation": "Die Antwort \"Installieren Sie einen PoE-Injektor.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ersetzen Sie das Telefon.",
+          "is_correct": false
+        },
+        {
+          "text": "Portwechsel am Switch.",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzen Sie das Ethernet-Kabel durch eines, das den neuesten Spezifikationen entspricht.",
+          "is_correct": false
+        },
+        {
+          "text": "Installieren Sie einen PoE-Injektor.",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welcher Netzwerkdienste ermöglicht es, einem vernetzten Gerät immer dieselbe IP-Adresse basierend auf der MAC-Adresse des Geräts zuzuweisen?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DNS",
+          "is_correct": false
+        },
+        {
+          "text": "LDAP",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP",
+          "is_correct": true
+        },
+        {
+          "text": "UTM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker installiert einen neuen Drucker für eine Arbeitsstation und versucht, eine Testseite zu drucken, aber die Seite wird nicht gedruckt. Der Techniker sieht sich die Druckwarteschlange an und stellt fest, dass der Drucker „Allgemeiner Drucker“ heißt. Welche Aussagen beschreibt am BESTEN, was der Techniker tun sollte, um dieses Problem zu beheben?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Schließen Sie den Drucker mit einem USB-Kabel und nicht über das Netzwerk an.",
+          "is_correct": false
+        },
+        {
+          "text": "Setzen Sie den richtigen Toner in den Drucker ein.",
+          "is_correct": false
+        },
+        {
+          "text": "Stellen Sie die Druckerfächer so ein, dass Duplexdruck möglich ist.",
+          "is_correct": false
+        },
+        {
+          "text": "Installieren Sie die entsprechenden Druckertreiber für das Betriebssystem.",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer erstellt ein Support-Ticket, um einen nicht funktionierenden Konferenzraumprojektor zu melden. Der Benutzer gibt an, dass auf dem Projektorbildschirm die folgende Fehlermeldung angezeigt wird, obwohl die mitgelieferten Kabel verwendet werden:\nKein Signaleingang\nWelche Aussagen beschreibt die ERSTE Maßnahme, die ergriffen werden sollte?",
+      "explanation": "Die Antwort \"Überprüfen Sie das Videokabel und ersetzen Sie es gegebenenfalls.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Vergewissern Sie sich, dass der Projektor eingeschaltet ist.",
+          "is_correct": false
+        },
+        {
+          "text": "Überprüfen Sie das Videokabel und ersetzen Sie es gegebenenfalls.",
+          "is_correct": true
+        },
+        {
+          "text": "Stellen Sie sicher, dass der Benutzer ein zugelassenes Betriebssystem verwendet.",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzen Sie die Projektorlampe",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer hat ein Helpdesk-Ticket eingegeben, das besagt, dass die neuesten Kalenderaktualisierungen seit mehreren Tagen nicht auf dem mobilen Unternehmensgerät des Benutzers angezeigt wurden, obwohl Aktualisierungen auf dem Laptop des Benutzers angezeigt werden. Welche Aktionen werden höchstwahrscheinlich Kalenderbenachrichtigungen aktivieren?",
+      "explanation": "Die Antwort \"Sicherstellen, dass das Unternehmenspasswort korrekt in der Kalenderanwendung gespeichert wird\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Sicherstellen, dass das Unternehmenspasswort korrekt in der Kalenderanwendung gespeichert wird",
+          "is_correct": true
+        },
+        {
+          "text": "Fernbereinigung des Mobilgeräts und Neuinstallation aller Anwendungen",
+          "is_correct": false
+        },
+        {
+          "text": "Installieren einer Kalenderanwendung eines Drittanbieters und Synchronisieren mit dem Unternehmenskalender",
+          "is_correct": false
+        },
+        {
+          "text": "Prüfen, ob die Ruftonlautstärke des Geräts hoch genug ist, um hörbar zu sein",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein technischer Leiter möchte alle gängigen Geschäftsanwendungen, einschließlich E-Mail und Dateifreigaben, in die Cloud migrieren. Welche Cloud-Konzepte sollten verwendet werden?",
+      "explanation": "Cloud-Computing bietet skalierbare IT-Ressourcen über Internet. IaaS (Infrastructure) bietet VMs, PaaS (Platform) bietet Entwicklungsumgebungen, SaaS (Software) bietet fertige Anwendungen. Public Clouds sind multi-tenant, Private Clouds dediziert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SaaS",
+          "is_correct": true
+        },
+        {
+          "text": "PaaS",
+          "is_correct": false
+        },
+        {
+          "text": "MaaS",
+          "is_correct": false
+        },
+        {
+          "text": "IaaS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine neue Version von Windows wurde veröffentlicht und eine Software, die für die Konstruktionsabteilung von entscheidender Bedeutung ist, wird auf der neuen Version nicht ausgeführt. Welche Möglichkeiten ist die BESTE, damit diese Abteilung diese Software weiterhin verwenden kann?",
+      "explanation": "Die Antwort \"Aktualisieren Sie alle Workstations und stellen Sie eine virtuelle Umgebung für die Legacy-Software bereit.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Kauf neuer Workstations für die technische Abteilung.",
+          "is_correct": false
+        },
+        {
+          "text": "Aktualisieren Sie alle Workstations und stellen Sie eine virtuelle Umgebung für die Legacy-Software bereit.",
+          "is_correct": true
+        },
+        {
+          "text": "Aktualisieren Sie keine Workstations innerhalb der Organisation.",
+          "is_correct": false
+        },
+        {
+          "text": "Aktualisieren Sie alle Workstations mit Ausnahme derjenigen, die von der technischen Abteilung verwendet werden.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker hat mehrere Upgrades an einem Computer vorgenommen und dann festgestellt, dass die Stromversorgung durch das Netzteil unzureichend ist. Welcher Punkte würde die Beeinträchtigung am ehesten verursachen? (Wähle zwei.)",
+      "explanation": "Die Antwort \"Hinzufügen eines optischen Laufwerks, Aufrüsten der Grafikkarte\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Aktualisieren der Firmware",
+          "is_correct": false
+        },
+        {
+          "text": "Hinzufügen von mehr RAM",
+          "is_correct": false
+        },
+        {
+          "text": "Hinzufügen einer CMOS-Batterie",
+          "is_correct": false
+        },
+        {
+          "text": "Hinzufügen eines optischen Laufwerks",
+          "is_correct": true
+        },
+        {
+          "text": "Ersetzen der Festplatte durch eine SSD",
+          "is_correct": false
+        },
+        {
+          "text": "Aufrüsten der Grafikkarte",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker ersetzt einen Computer mit einem angeschlossenen Point-of-Sale-System unter Verwendung eines 9-poligen seriellen Adapters. Der neue Computer hat keinen 9-poligen seriellen Anschluss. An welchen Ports kann ein Adapter installiert werden, um eine Verbindung zum Point-of-Sale-System herzustellen?",
+      "explanation": "Die Antwort \"USB\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Lightning",
+          "is_correct": false
+        },
+        {
+          "text": "HDMI",
+          "is_correct": false
+        },
+        {
+          "text": "Bluetooth",
+          "is_correct": false
+        },
+        {
+          "text": "USB",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Desktop-Support-Techniker hat die Aufgabe, einen Laptop aufzurüsten, damit er den schnellstmöglichen Datenzugriff hat. Welche Bedingungen erfüllt diese Anforderung am BESTEN?",
+      "explanation": "Die Antwort \"M.2 NVMe SSD\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "M.2 NVMe SSD",
+          "is_correct": true
+        },
+        {
+          "text": "mSATA SSD",
+          "is_correct": false
+        },
+        {
+          "text": "2.5 SAS HDD",
+          "is_correct": false
+        },
+        {
+          "text": "2.5 SATA SSD",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer sendet einen Druckauftrag an einen Netzwerkdrucker und der Druckauftrag verbraucht doppelt so viel Papier wie erwartet. Welche Optionen sollte der Benutzer konfigurieren, um das solches Ergebnis zu erzielen?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Duplex",
+          "is_correct": true
+        },
+        {
+          "text": "Sortieren",
+          "is_correct": false
+        },
+        {
+          "text": "Querformat",
+          "is_correct": false
+        },
+        {
+          "text": "Transparenz",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Helpdesk-Techniker glaubt, dass ein Desktop-PC aufgrund eines defekten Netzteils ausgefallen ist. Welchen Schritte sollte der Techniker als NÄCHSTES unternehmen?",
+      "explanation": "Die Antwort \"Durchführung externer oder interner Untersuchungen auf der Grundlage von Symptomen.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Durchführung externer oder interner Untersuchungen auf der Grundlage von Symptomen.",
+          "is_correct": true
+        },
+        {
+          "text": "Dokumentieren Sie die Erkenntnisse, Maßnahmen und Ergebnisse.",
+          "is_correct": false
+        },
+        {
+          "text": "Erkundigen Sie sich nach Umgebungs- oder Infrastrukturänderungen.",
+          "is_correct": false
+        },
+        {
+          "text": "Erstellen Sie einen Aktionsplan zur Lösung des Problems und implementieren Sie die Lösung.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Startup-Unternehmen wächst aus seinen derzeitigen Büroräumen heraus und verlangt von seinen Mitarbeitern, dass sie aus der Ferne arbeiten. Das Unternehmen muss die von der Regierung erzwungenen Anforderungen zum Schutz aller Aspekte von Daten erfüllen, daher plant die IT-Abteilung, die vollständige Kontrolle über die Betriebssysteme der Benutzer zu behalten. Welche Möglichkeiten sollte die IT-Abteilung nutzen?",
+      "explanation": "Die Antwort \"VDI\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "VPN",
+          "is_correct": false
+        },
+        {
+          "text": "VDI",
+          "is_correct": true
+        },
+        {
+          "text": "SaaS",
+          "is_correct": false
+        },
+        {
+          "text": "IaaS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Gründe wäre der beste Grund, eine virtuelle Maschine als Sandbox zu verwenden?",
+      "explanation": "Die Antwort \"Um neue Software in einer sicheren Umgebung zu testen\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Um neue Software in einer sicheren Umgebung zu testen",
+          "is_correct": true
+        },
+        {
+          "text": "Um mehrere Maschinen auf derselben Hardware auszuführen",
+          "is_correct": false
+        },
+        {
+          "text": "Dedizierte Hardware für ein einzelnes System zu haben",
+          "is_correct": false
+        },
+        {
+          "text": "Um die effiziente Nutzung von Rechenressourcen zu erhöhen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Optionen würde am ehesten verwendet werden, um ein oder mehrere Geräte in einem SOHO mit dem Internet zu verbinden?",
+      "explanation": "Die Antwort \"Router\" ist korrekt für diese Frage im Bereich Netzwerk. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ethernet Gateway",
+          "is_correct": false
+        },
+        {
+          "text": "Wireless Access Point",
+          "is_correct": false
+        },
+        {
+          "text": "Router",
+          "is_correct": true
+        },
+        {
+          "text": "Hub",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche primären Sicherheitsbedenken gibt es bei der Migration einer virtuellen Maschine?",
+      "explanation": "Die Antwort \"Kompromittierung des Hypervisors\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Übernutzung von Ressourcen",
+          "is_correct": false
+        },
+        {
+          "text": "Kompromittierung des Hypervisors",
+          "is_correct": true
+        },
+        {
+          "text": "Bösartige virtuelle Maschinen, die auf dem Hypervisor installiert sind",
+          "is_correct": false
+        },
+        {
+          "text": "Cross-Site-Scripting",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Manager fordert das Unternehmen auf, neue Kabel zu kaufen, die mit F-Steckern verwendet werden sollen, die bereits im Haus vorhanden sind. Welche Kabel sollte das Unternehmen kaufen?",
+      "explanation": "Netzwerkkabel unterscheiden sich in Geschwindigkeit, Distanz und Abschirmung. Cat5e unterstützt Gigabit bis 100m, Cat6/6a bis 10Gbit, Fiber für lange Distanzen ohne Signalverlust. Shielded-Kabel (STP) reduzieren EMI in industriellen Umgebungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Fiber",
+          "is_correct": false
+        },
+        {
+          "text": "Koaxial",
+          "is_correct": true
+        },
+        {
+          "text": "Plenum",
+          "is_correct": false
+        },
+        {
+          "text": "Cat 5e",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer meldet, dass sein Mobiltelefon heiß wird. Welche Ursachen sind am ehesten denkbar? (Wählen Sie drei aus.)",
+      "explanation": "Die Antwort \"Verwendung des Geräts als WLAN-Hotspot, Zu viele offene Anwendungen\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Wiederkehrende Aufforderungen zur Installation von Betriebssystemaktualisierungen",
+          "is_correct": false
+        },
+        {
+          "text": "Weniger als 15 % freier Speicherplatz auf dem Telefon",
+          "is_correct": false
+        },
+        {
+          "text": "Verwendung des Geräts als WLAN-Hotspot",
+          "is_correct": true
+        },
+        {
+          "text": "Zu viele offene Anwendungen",
+          "is_correct": true
+        },
+        {
+          "text": "Privilegierte Kontrolle",
+          "is_correct": false
+        },
+        {
+          "text": "Erteilung von zu vielen Anwendungskameraberechtigungen",
+          "is_correct": false
+        },
+        {
+          "text": "Eine fehlerhafte Batterie",
+          "is_correct": true
+        },
+        {
+          "text": "Ein zerbrochener Bildschirm",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker diagnostiziert eine Workstation, die sich während eines Burn-in-Tests unerwartet abschaltet. Welcher Punkte ist die wahrscheinlichste Ursache für dieses Symptom?",
+      "explanation": "Die Antwort \"Überhitzung\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Überhitzung",
+          "is_correct": true
+        },
+        {
+          "text": "Problem mit der Betriebssystemaktualisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Fehlerhafte CMOS-Batterie",
+          "is_correct": false
+        },
+        {
+          "text": "Fehlerhafter RAM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der Helpdesk hat ein Ticket bezüglich Problemen mit einem Laserdrucker erhalten. Der Drucker wurde zuvor aufgrund von Scanproblemen repariert. Derzeit haftet der gedruckte Text nicht richtig auf dem Papier. Welche Komponenten sollte ersetzt werden, um dieses Problem zu beheben?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Walze",
+          "is_correct": false
+        },
+        {
+          "text": "Toner",
+          "is_correct": false
+        },
+        {
+          "text": "Abfallbehälter",
+          "is_correct": false
+        },
+        {
+          "text": "Fixierer",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welcher Gerätetypen verwendet AM MEISTEN ein Thunderbolt-Kabel?",
+      "explanation": "Die Antwort \"Apple-Laptop\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Chromebook",
+          "is_correct": false
+        },
+        {
+          "text": "Linux-PC",
+          "is_correct": false
+        },
+        {
+          "text": "Apple-Laptop",
+          "is_correct": true
+        },
+        {
+          "text": "Android-Handy",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer meldet eingeschränkte oder keine Konnektivität auf einem Laptop. Ein Techniker führt ipconfig /all mit folgendem Ergebnis aus:\nIPv4-Konnektivität ... eingeschränkt oder keine\n\nIPv4-Adresse ... 169.254.254.1\nSubnetzmaske ... 255.255.0.0\nStandard-Gateway ...\n\nWelche Ursachen ist am wahrscheinlichsten dieses Problems?",
+      "explanation": "IP-Adressierung basiert auf Subnetzmasken, die Netzwerk- und Hostanteile trennen. Private IP-Bereiche (10.x, 172.16-31.x, 192.168.x) werden intern genutzt, während öffentliche IPs von ISPs zugewiesen werden. Gateway verbindet Subnetze.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DHCP-Fehler",
+          "is_correct": true
+        },
+        {
+          "text": "DNS-Auflösung",
+          "is_correct": false
+        },
+        {
+          "text": "ARP-Cache",
+          "is_correct": false
+        },
+        {
+          "text": "Doppelte IP-Adresse",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Wi-Fi-Mesh-Netzwerk wurde optimiert, um Bereiche mit schlechter Abdeckung zu eliminieren, dennoch erleben Benutzer immer noch eine verringerte Bandbreite und Verbindungsprobleme. Welche Maßnahmen sollte der Techniker als NÄCHSTES ergreifen?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Verwenden Sie einen Wi-Fi-Analysator, um festzustellen, ob der verwendete Kanal überfüllt ist, und um zu ermitteln, welchen Kanal das Mesh-Netzwerk für die beste Leistung verwenden sollte.",
+          "is_correct": true
+        },
+        {
+          "text": "Verlagern Sie alle großen, dichten, massiven und metallischen Objekte, wie Spiegel und Aktenschränke, im Abdeckungsbereich des Maschennetzwerks in den Perimeter, sodass Reflexionen, Absorptionen und Okklusionen des drahtlosen Netzwerks minimiert werden.",
+          "is_correct": false
+        },
+        {
+          "text": "Verwenden Sie den Signalstärke-Indikator auf einem mobilen Gerät, um das Versorgungsgebiet zu durchstreifen und eine Übersichtskarte zu erstellen, um Zonen mit schwachen Signalen zu isolieren.",
+          "is_correct": false
+        },
+        {
+          "text": "Deaktivieren Sie die Übertragung der SSID im Mesh-Netzwerk, damit andere Netzwerke sie nicht sehen können.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Ports sind Standardports für HTTP- und HTTPS-Datenverkehr? (Wähle zwei.)",
+      "explanation": "Die Antwort \"443, 80\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "389",
+          "is_correct": false
+        },
+        {
+          "text": "143",
+          "is_correct": false
+        },
+        {
+          "text": "23",
+          "is_correct": false
+        },
+        {
+          "text": "443",
+          "is_correct": true
+        },
+        {
+          "text": "80",
+          "is_correct": true
+        },
+        {
+          "text": "25",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dokumente werden bei einer Konferenz nicht korrekt von einem Laserdrucker ausgedruckt. Ein Teil des Drucks fehlt und die Seiten sind nicht lesbar. Was sollte ein Techniker tun, um dieses Problem zu beheben?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Beseitigen Sie den Papierstau.",
+          "is_correct": false
+        },
+        {
+          "text": "Tauschen Sie die Übertragungswalze aus.",
+          "is_correct": true
+        },
+        {
+          "text": "Kalibrieren Sie den Drucker neu.",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzen Sie die Fixiereinheit.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Endbenutzer kontaktierte einen Techniker wegen eines Laserdruckers, der keine Bilder mehr auf der linken Seite der Seite druckte. Der Techniker hat die Tonerkartusche ausgetauscht, aber das Problem besteht weiterhin. Welche Maßnahmen sollte der Techniker als Nächstes durchführen?",
+      "explanation": "Toner-bezogene Probleme in Laserdruckern manifestieren sich durch Druckqualitätsmängel. Regelmäßige Wartung und rechtzeitiger Austausch von Verbrauchsmaterialien sind essentiell für gleichbleibende Druckqualität.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Kalibrieren Sie den Drucker",
+          "is_correct": false
+        },
+        {
+          "text": "Richten Sie die Einzugsrollen neu aus.",
+          "is_correct": false
+        },
+        {
+          "text": "Tauschen Sie die Bildtrommel aus",
+          "is_correct": true
+        },
+        {
+          "text": "Reinigen Sie die Duplexeinheit.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Systemadministrator wurde damit beauftragt, den SMTP-Datenverkehr durch die hostbasierte Firewall des Systems zuzulassen. Welche Ports sollte der Administrator freigeben?",
+      "explanation": "Die Antwort \"25\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "23",
+          "is_correct": false
+        },
+        {
+          "text": "161",
+          "is_correct": false
+        },
+        {
+          "text": "25",
+          "is_correct": true
+        },
+        {
+          "text": "80",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Einem neuen Mitarbeiter wurde ein Firmen-Laptop zugeteilt. Der Mitarbeiter fordert ein Zubehör mit einer einzigen Stromquelle an, das über eine kabelgebundene Netzwerkkonnektivität verfügt und eine Tastatur, Maus, Lautsprecher und zwei Monitore unterstützt. Welches Zubehörteile sollte der Systemadministrator am BESTEN einsetzen, um die Anforderungen des neuen Benutzers zu erfüllen?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "USB-C-Hub mit Power Delivery",
+          "is_correct": false
+        },
+        {
+          "text": "Dockingstation mit DisplayPort",
+          "is_correct": true
+        },
+        {
+          "text": "PoE-Switch",
+          "is_correct": false
+        },
+        {
+          "text": "KVM-Switch mit Audio",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen muss einen Durchsatz von 10 Gbit/s unterstützen. Welche ist die MINDESTENS Kabelkategorie, die verwendet werden könnte?",
+      "explanation": "Netzwerkkabel unterscheiden sich in Geschwindigkeit, Distanz und Abschirmung. Cat5e unterstützt Gigabit bis 100m, Cat6/6a bis 10Gbit, Fiber für lange Distanzen ohne Signalverlust. Shielded-Kabel (STP) reduzieren EMI in industriellen Umgebungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Cat 5e",
+          "is_correct": false
+        },
+        {
+          "text": "Cat 6a",
+          "is_correct": true
+        },
+        {
+          "text": "Cat 5",
+          "is_correct": false
+        },
+        {
+          "text": "Cat 6",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Nutzer wendet sich an den Helpdesk und berichtet, dass es mehr als einen Tag dauert, bis sein Smartphone vollständig aufgeladen ist. Der Benutzer hat bereits mehrere Steckdosen getestet und das Ladekabel ausgetauscht, aber die Ergebnisse sind die gleichen. Welche Maßnahmen sollte der Techniker ZUERST ergreifen?",
+      "explanation": "Die Antwort \"Überprüfen Sie die Nennleistung des Ladegeräts.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Überprüfen Sie die Nennleistung des Ladegeräts.",
+          "is_correct": true
+        },
+        {
+          "text": "Setzen Sie das Telefon auf die Werkseinstellungen zurück.",
+          "is_correct": false
+        },
+        {
+          "text": "Stellen Sie sicher, dass alle unnötigen Konnektivitätsfunktionen deaktiviert sind.",
+          "is_correct": false
+        },
+        {
+          "text": "Überprüfen Sie, ob alle fehlenden Updates des Smartphone-Betriebssystems angewendet wurden.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer, der im Vertrieb arbeitet, berichtet, dass die Ausgabe auf jeder Seite, die von einem Laserdrucker gedruckt wird, doppelte Bilder enthält. Welche Maßnahmen sollte ZUERST durchgeführt werden, um die Geisterbilder zu beseitigen?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ersetzen Sie die Fixiereinheit des Druckers.",
+          "is_correct": false
+        },
+        {
+          "text": "Aktualisieren Sie die Drucker-Firmware.",
+          "is_correct": false
+        },
+        {
+          "text": "Reinigen Sie die Tonertrommeln und -walzen.",
+          "is_correct": true
+        },
+        {
+          "text": "Ändern Sie die Papiergewichtseinstellung.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Laufwerk ist auf einem Server ausgefallen, der eine RAID-Festplattenkonfiguration nutzte. Der Serveradministrator möchte das Array neu erstellen, damit es einem potenziellen Ausfall mehrerer Laufwerke in der Zukunft standhalten kann. Welche RAID-Konfigurationen wird der Administrator höchstwahrscheinlich auswählen?",
+      "explanation": "Die Antwort \"RAID 10\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RAID 5",
+          "is_correct": false
+        },
+        {
+          "text": "RAID 0",
+          "is_correct": false
+        },
+        {
+          "text": "RAID 1",
+          "is_correct": false
+        },
+        {
+          "text": "RAID 10",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Um die Kosten zu kontrollieren, stellt ein Unternehmen einer begrenzten Anzahl von Benutzern Firmentelefone zur Verfügung. Einer dieser Benutzer öffnet ein Support-Ticket, weil das Telefon das Surfen im Internet über eine Mobilfunkverbindung nicht mehr zulässt. Der Benutzer erkennt an, dass das Telefon funktionierte, bevor das Kind des Benutzers mehrere Filme mit dem Gerät gestreamt hat. Welche Aussagen beschreibt, warum das Telefon nicht im Internet surfen kann?",
+      "explanation": "Die Antwort \"Das Gerät hat eine Datenbeschränkung und die Leistung wurde gedrosselt.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Die Gruppenrichtlinie des Unternehmens hat das Gerät deaktiviert.",
+          "is_correct": false
+        },
+        {
+          "text": "Das Kind hat sich versehentlich mit dem WLAN eines Nachbarn verbunden.",
+          "is_correct": false
+        },
+        {
+          "text": "Das Gerät hat eine Datenbeschränkung und die Leistung wurde gedrosselt.",
+          "is_correct": true
+        },
+        {
+          "text": "Der Tarif für das Gerät wurde nicht bezahlt.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der Desktop-Computer eines Benutzers wird nach einigen Minuten der Nutzung langsamer und die Lüfter wechseln zwischen leise und sehr laut. Welche Maßnahmen schlägt am wahrscheinlichsten fehl und verursacht daher diese Symptome?",
+      "explanation": "Die Antwort \"CPU-Lüfter\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CPU-Lüfter",
+          "is_correct": true
+        },
+        {
+          "text": "Festplatte",
+          "is_correct": false
+        },
+        {
+          "text": "Stromversorgung",
+          "is_correct": false
+        },
+        {
+          "text": "Arbeitsspeicher",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Bank möchte Cloud Computing nutzen, möchte aber eine Cloud-Lösung, bei der die Infrastruktur mit Unternehmen derselben Branche geteilt wird. Welches Cloud-Modelle würde den Anforderungen der Bank am BESTEN gerecht werden?",
+      "explanation": "Cloud-Computing bietet skalierbare IT-Ressourcen über Internet. IaaS (Infrastructure) bietet VMs, PaaS (Platform) bietet Entwicklungsumgebungen, SaaS (Software) bietet fertige Anwendungen. Public Clouds sind multi-tenant, Private Clouds dediziert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Hybrid",
+          "is_correct": false
+        },
+        {
+          "text": "Community",
+          "is_correct": true
+        },
+        {
+          "text": "Privat",
+          "is_correct": false
+        },
+        {
+          "text": "Öffentlich",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "In mehreren Windows-Desktops wurden neue Speichermodule installiert, einige Benutzer berichten jedoch immer noch von Leistungsproblemen. Bei der Untersuchung stellt ein Systemadministrator fest, dass der Desktop die neuen Speichermodule nicht erkannt hat. Welche Maßnahmen sollte der Systemadministrator durchführen, um dieses Problem zu beheben?",
+      "explanation": "Speichertechnologien haben sich von mechanischen Festplatten zu elektronischen SSDs entwickelt. Moderne Systeme nutzen NVMe für maximale Performance, während HDDs noch für Massenspeicher verwendet werden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Installieren Sie die erforderlichen Treiber über die Systemsteuerung.",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzen Sie den RAM.",
+          "is_correct": false
+        },
+        {
+          "text": "Ändern Sie die Datei boot.ini.",
+          "is_correct": false
+        },
+        {
+          "text": "Konfigurieren Sie die entsprechenden Einstellungen im BIOS.",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker installiert neue Netzteile für die Arbeitsplätze der Anwendungstechnik. Das Management-Team hat noch keine Entscheidung über die Installation von Dual-Grafikkarten getroffen, will das Projekt aber trotzdem fortsetzen. Welches Netzteile wäre die beste Lösung?",
+      "explanation": "Die Antwort \"1000 W 24-poliges modulares Netzteil\" ist korrekt für diese Frage im Bereich Hardware. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "220VAC 9000J Überspannungsschutz",
+          "is_correct": false
+        },
+        {
+          "text": "Redundantes 500-W-Netzteil",
+          "is_correct": false
+        },
+        {
+          "text": "1000 W 24-poliges modulares Netzteil",
+          "is_correct": true
+        },
+        {
+          "text": "2000VA unterbrechungsfreie Stromversorgung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Funktionen übernimmt die Touchscreen-Bedienung auf einem Mobilgerät?",
+      "explanation": "Die Antwort \"Digitalisierer\" ist korrekt für diese Frage im Bereich Hardware. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Flüssigkristallanzeige",
+          "is_correct": false
+        },
+        {
+          "text": "Digitalisierer",
+          "is_correct": true
+        },
+        {
+          "text": "Stift",
+          "is_correct": false
+        },
+        {
+          "text": "Prozessor",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker baut eine Workstation für die Videoproduktion, die aus zwei High-End-GPUs bestehen soll. Der Techniker verwendet ein vorhandenes ATX-Gehäuse weiter. Welche Optionen sollte der Techniker als den am besten geeigneten Stromversorgungs-Typ auswählen?",
+      "explanation": "Die Antwort \"Modulares Netzteil mit 1.200 W\" ist korrekt für diese Frage im Bereich Hardware. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Modulares Netzteil mit 1.200 W",
+          "is_correct": true
+        },
+        {
+          "text": "2x 600W redundante Netzteile",
+          "is_correct": false
+        },
+        {
+          "text": "1.500 W unterbrechungsfreie Stromversorgung",
+          "is_correct": false
+        },
+        {
+          "text": "Externes 400-W-Netzteil",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Abteilung reicht ein Ticket ein, um zu melden, dass ein Drucker nicht funktioniert. Der reagierende Techniker stellt fest, dass Papier an der Fixiereinheit klebt, die viel heißer als normal ist. Wie aus der Wartungshistorie hervorgeht, wurde die Fixiereinheit erst vor ein paar Wochen installiert. Welche Maßnahmen sollte der Techniker als NÄCHSTES durchführen?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Trennen Sie den Drucker zur Fehlerbehebung von der Stromversorgung.",
+          "is_correct": true
+        },
+        {
+          "text": "Ersetzen Sie die überhitzte Fixiereinheit.",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzen Sie das Papier durch dickeres Papier.",
+          "is_correct": false
+        },
+        {
+          "text": "Installieren Sie ein Druckerwalzenset.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker schließt einen neuen Computer ans Internet an und öffnet dann den Verkabelungsschrank. Obwohl alle Kabel aufgelegt sind, ist im Verkabelungsschrank nichts beschriftet. Welches Werkzeuge sollte der Techniker verwenden, um die Aufgabe abzuschließen?",
+      "explanation": "Die Antwort \"Tonersonde\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Punchdown-Tool",
+          "is_correct": false
+        },
+        {
+          "text": "Tonersonde",
+          "is_correct": true
+        },
+        {
+          "text": "Kabeltester",
+          "is_correct": false
+        },
+        {
+          "text": "Loopback-Stecker",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Online-Händler arbeitet daran, durch die Installation zusätzlicher Server höhere Umsätze zu erzielen und die Serverkapazität zu erhöhen. Welche Maßnahmen sollten angewendet werden, um sicherzustellen, dass jeder neue Server ordnungsgemäß genutzt wird?",
+      "explanation": "Die Antwort \"Load Balancer\" ist korrekt für diese Frage im Bereich Netzwerk. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Load Balancer",
+          "is_correct": true
+        },
+        {
+          "text": "Clustering",
+          "is_correct": false
+        },
+        {
+          "text": "DNS",
+          "is_correct": false
+        },
+        {
+          "text": "Virtualisierung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker muss feststellen, wo ein Drucker an einem Patchpanel angeschlossen ist. Welches Tools ist für den Techniker am besten geeignet, um den Anschluss zu lokalisieren?",
+      "explanation": "Druckertechnologie erfordert Verständnis der mechanischen und elektronischen Komponenten. Troubleshooting folgt systematischen Prozessen zur Identifikation defekter Teile.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Loopback-Stecker",
+          "is_correct": false
+        },
+        {
+          "text": "WiFi-Analysator",
+          "is_correct": false
+        },
+        {
+          "text": "Kabeltester",
+          "is_correct": false
+        },
+        {
+          "text": "Tonersonde",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer versucht, einen Laptop an einen Projektor anzuschließen, erhält jedoch die folgende Meldung vom Projektor:\nOut of Range\nWelche Punkte müssen zuerst angegangen werden?",
+      "explanation": "Die Antwort \"Ändern Sie die Auflösungseinstellungen.\" ist korrekt für diese Frage im Bereich Nan. Diese Konzepte sind fundamental für CompTIA A+ Prüfungen und praktische IT-Administration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Ändern Sie die Auflösungseinstellungen.",
+          "is_correct": true
+        },
+        {
+          "text": "Überprüfen Sie das Videokabel und ersetzen Sie es gegebenenfalls.",
+          "is_correct": false
+        },
+        {
+          "text": "Stellen Sie sicher, dass der Laptop-Grafikkartentreiber die aktuellste Version ist.",
+          "is_correct": false
+        },
+        {
+          "text": "Stellen Sie die Anzeigeeinstellungen des Computers auf Erweitern/Duplizieren ein.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Netzwerkgeräte wird benötigt, um Pakete an Netzwerke außerhalb des LAN weiterzuleiten?",
+      "explanation": "Netzwerktechnologien basieren auf standardisierten Protokollen und Hardware-Komponenten. Verständnis der OSI-Schichten und TCP/IP ist fundamental für effektives Troubleshooting und Konfiguration.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Switch",
+          "is_correct": false
+        },
+        {
+          "text": "Router",
+          "is_correct": true
+        },
+        {
+          "text": "Bridge",
+          "is_correct": false
+        },
+        {
+          "text": "Hub",
+          "is_correct": false
+        }
+      ]
+    }
+  ]
+}

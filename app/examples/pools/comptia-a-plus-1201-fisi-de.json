@@ -1,0 +1,1937 @@
+{
+  "pool_name": "CompTIA A+ 220-1201 FisiTraining (DE)",
+  "source": "Inspired by CompTIA A+ Core 2 220-1201 exam objectives, paraphrased and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "exam_reference": "CompTIA A+ Core 2 220-1201",
+  "questions": [
+    {
+      "text": "Ein IT-Techniker richtet einen Projektor im Konferenzraum ein, der zeitweise flackert. Der Projektor ist über ein HDMI-Kabel mit einem Laptop verbunden. Als der Techniker den Laptop mit demselben Kabel an einen Monitor anschließt, tritt das Flackern erneut auf. Welche Maßnahmen sollte der Techniker zur weiteren Fehlerbehebung durchführen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Das HDMI-Kabel durch ein neues ersetzen“, weil der Test zeigt, dass das Flackern unabhängig vom Anzeigegerät (Projektor oder Monitor) auftritt, es also nicht am Projektor liegt, sondern an einem gemeinsamen Faktor, nämlich dem HDMI-Kabel. HDMI-Kabel können mit der Zeit Kontaktprobleme, Knickstellen oder Abschirmungsdefekte entwickeln, die bei höheren Auflösungen oder Bildwiederholraten zu Signalstörungen oder Flackern führen.\nEin einfaches Austauschen des Kabels ist daher der schnellste und effektivste nächste Schritt, um die Signalstabilität sicherzustellen.\n\nWarum die anderen Optionen nicht helfen:\n\nAuflösungseinstellungen anpassen:\nEine zu hohe Auflösung kann zwar Bildprobleme verursachen, aber da das Flackern auch mit einem anderen Display auftritt, liegt das Problem nicht an der Einstellung, sondern an der Signalübertragung.\n\nProjektor austauschen:\nDa der Fehler auch mit einem anderen Display (Monitor) auftritt, ist der Projektor eindeutig nicht die Ursache.\n\nBildwiederholfrequenz überprüfen:\nEin falscher Refresh Rate-Wert könnte theoretisch zu Ruckeln oder unsauberem Bildaufbau führen, aber nicht zu sporadischem Flackern auf mehreren Geräten. Die Ursache ist eindeutig hardwarebezogen (Kabel).\nWenn die Bildwiederholfrequenz (Refresh Rate) falsch eingestellt ist (z.B. 75 Hz, obwohl der Projektor nur 60 Hz unterstützt), dann zeigt sich das Problem nur auf dem betreffenden Gerät.\nWenn du dann ein anderes Display anschließt, würde das zweite Gerät korrekt funktionieren, nicht ebenfalls flackern.\nHier jedoch flackern beide Geräte (Projektor + Monitor) mit demselben Kabel. Das zeigt eindeutig: Das Problem liegt an der Signalübertragung, nicht an der Frequenzeinstellung.\nEine falsche Bildwiederholfrequenz erzeugt außerdem kein zufälliges Flackern, sondern ein konstantes Problem (z.B. „Kein Signal“ oder dauerhaft instabiles Bild).\nIn der Frage steht jedoch, dass es „intermittierend flackert“ - also nur zeitweise. Das deutet klar auf Kontaktprobleme oder Kabeldefekte hin.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Die Auflösungseinstellungen des Laptops anpassen",
+          "is_correct": false
+        },
+        {
+          "text": "Das HDMI-Kabel durch ein neues ersetzen",
+          "is_correct": true
+        },
+        {
+          "text": "Die Bildwiederholfrequenz überprüfen und konfigurieren",
+          "is_correct": false
+        },
+        {
+          "text": "Den Projektor austauschen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Bluetooth-Netzwerk ist ein Beispiel für welche Netzwerkarten?",
+      "explanation": "Die richtige Antwort ist PAN (Personal Area Network), weil Bluetooth verwendet wird, um Geräte in unmittelbarer Nähe, typischerweise innerhalb von 1 bis 10 Metern, miteinander zu verbinden. Ein PAN ist ein kleines, persönliches Netzwerk, das Geräte wie Smartphones, Kopfhörer, Smartwatches, Tastaturen oder Laptops direkt miteinander kommunizieren lässt. Bluetooth ist die typischste Technologie für diese Art von Netzwerk, weil sie kabellos, energiesparend und kurzreichweitig ist.\n\nWarum die anderen Optionen nicht helfen:\n\nLAN (Local Area Network):\nDeckt ein größeres Gebiet ab (z.B. ein Büro oder Haus) und nutzt meist Ethernet oder WLAN, nicht Bluetooth.\n\nWAN (Wide Area Network):\nVerbindet mehrere LANs über große Entfernungen (z.B. das Internet), Bluetooth hat dafür zu geringe Reichweite.\n\nSAN (Storage Area Network):\nEin spezielles Netzwerk zum Datenspeicherzugriff in Rechenzentren, hat nichts mit Bluetooth oder persönlichen Geräten zu tun.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SAN",
+          "is_correct": false
+        },
+        {
+          "text": "LAN",
+          "is_correct": false
+        },
+        {
+          "text": "PAN",
+          "is_correct": true
+        },
+        {
+          "text": "WAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das Domänenpasswort eines Benutzers läuft ab, während er im Homeoffice arbeitet. Der Benutzer versucht, das Passwort mit Strg + Alt + Entf zu ändern, erhält jedoch folgende Meldung:\n\n„Konfigurationsinformationen konnten nicht vom Domänencontroller gelesen werden, entweder weil der Computer nicht verfügbar ist oder weil der Zugriff verweigert wurde.“\n\nWelche Maßnahmen wird das Problem lösen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Mit dem VPN verbinden“, weil das Passwort eines Domänenkontos nur geändert werden kann, wenn der Computer eine Verbindung zum Domänencontroller des Unternehmens herstellen kann. Im Homeoffice befindet sich der Rechner außerhalb des Firmennetzwerks, sodass er keinen direkten Kontakt zum Domänencontroller hat. Wenn der Benutzer sich jedoch über das VPN (Virtual Private Network) verbindet, wird eine sichere Verbindung ins Unternehmensnetzwerk hergestellt.\nDadurch kann der Rechner wieder mit dem Domänencontroller kommunizieren, und das Passwort kann erfolgreich geändert und synchronisiert werden.\n\nWarum die anderen Optionen nicht helfen:\n\nComputer neu starten:\nEin Neustart ändert nichts an der fehlenden Verbindung zum Domänencontroller.\n\nKonto in Active Directory zurücksetzen:\nDas kann zwar ein Administrator tun, aber der Benutzer könnte sich trotzdem nicht anmelden, bis der Laptop das neue Passwort über VPN synchronisiert hat.\n\nMit dem WLAN verbinden:\nDas lokale WLAN (z.B. Heimnetzwerk) ermöglicht nur Internetzugang, aber keine Verbindung zur Unternehmensdomäne, solange kein VPN aktiv ist.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Computer neu starten",
+          "is_correct": false
+        },
+        {
+          "text": "Mit WLAN verbinden",
+          "is_correct": false
+        },
+        {
+          "text": "Mit VPN verbinden",
+          "is_correct": true
+        },
+        {
+          "text": "AD-Konto zurücksetzen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nachdem ein Techniker ein neues Mainboard installiert hat, startet der Computer nicht und besteht den POST-Test (Power-On Self-Test) nicht. Der Techniker bestätigt, dass das Netzteil ordnungsgemäß funktioniert und die CPU korrekt eingesetzt ist. Welche Maßnahmen sollte der Techniker als Nächstes durchführen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „RAM neu einsetzen“, weil fehlerhaft installierter Arbeitsspeicher (RAM) einer der häufigsten Gründe ist, warum ein Computer den POST-Test nicht besteht oder gar nicht startet. Beim Einbau eines neuen Mainboards kann es leicht passieren, dass ein RAM-Modul nicht vollständig eingerastet ist oder im falschen Steckplatz sitzt. Der nächste logische Schritt in der Fehlersuche besteht also darin, die RAM-Module zu entfernen, die Kontakte zu prüfen und sie korrekt wieder einzusetzen (Reseating). Wenn der RAM richtig erkannt wird, sollte der Computer anschließend den POST-Test erfolgreich abschließen.\n\nWarum die anderen Optionen nicht helfen:\n\nFlash des BIOS:\nDas BIOS kann nicht aktualisiert werden, wenn das System nicht einmal startet oder POST erreicht.\n\nCMOS-Batterie prüfen:\nEine schwache Batterie kann die BIOS-Einstellungen zurücksetzen, führt aber nicht dazu, dass das System gar nicht startet.\n\nAltes Mainboard wieder einbauen:\nDas ist nicht notwendig, solange die Ursache noch nicht gefunden wurde, es ist besser, zuerst die einfachen Hardwarefehler (wie RAM-Sitz) zu prüfen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "CMOS-Batterie prüfen",
+          "is_correct": false
+        },
+        {
+          "text": "BIOS flashen",
+          "is_correct": false
+        },
+        {
+          "text": "RAM neu einsetzen",
+          "is_correct": true
+        },
+        {
+          "text": "Altes Mainboard wieder einbauen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer versucht, einen Monitor an einen Laptop anzuschließen, um einen zusätzlichen Bildschirm für die Arbeit zu haben, aber beide Bildschirme zeigen denselben Inhalt an. Was sollte der Benutzer tun, um das Problem zu lösen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Öffnen der Anzeigeeinstellungen und Konfigurieren des externen Monitors als Erweiterung“, weil der Laptop standardmäßig oft im Duplikatmodus startet, wenn ein externer Bildschirm angeschlossen wird. In diesem Modus wird auf beiden Displays derselbe Bildinhalt angezeigt.\n\nUm zwei getrennte Arbeitsbereiche zu haben, muss der Benutzer in den Anzeigeeinstellungen (Display Settings) die Option „Erweitern dieser Anzeigen“ auswählen. Dadurch wird der externe Monitor als zusätzlicher Bildschirm eingerichtet, auf dem sich Fenster unabhängig vom Laptop-Display bewegen lassen.\n\nIn Windows kann man diese Einstellung schnell mit der Tastenkombination Windows-Taste + P ändern und „Erweitern“ auswählen.\n\nWarum die anderen Optionen nicht helfen:\n\nVerwenden des Assistenten „Neue Hardware hinzufügen“:\nWird für ältere Geräte genutzt, moderne Monitore werden automatisch erkannt. Das löst das Anzeigeproblem nicht.\n\nKauf einer Dockingstation:\nEine Dockingstation ist nur nötig, wenn mehrere Anschlüsse fehlen, aber das Problem liegt hier an der Anzeigekonfiguration, nicht an der Hardware.\n\nKonfigurieren der Windows-Kachelansicht:\nDas betrifft nur die Fensteranordnung auf demselben Bildschirm, nicht die Nutzung von zwei separaten Monitoren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Kauf einer Dockingstation, um sowohl den Laptop als auch den Monitor anzuschließen.",
+          "is_correct": false
+        },
+        {
+          "text": "Öffnen der Anzeigeeinstellungen und Konfigurieren des externen Monitors als Erweiterung.",
+          "is_correct": true
+        },
+        {
+          "text": "Verwenden des Assistenten „Neue Hardware hinzufügen“, um den Monitor hinzuzufügen und die erforderlichen Einstellungen vorzunehmen.",
+          "is_correct": false
+        },
+        {
+          "text": "Konfigurieren der Windows-Kachelansicht, um mehrere Fenster anzuzeigen.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Cloud-Modelle nutzt ausschließlich ein lokales Rechenzentrum?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Private Cloud“, weil eine Private Cloud eine Cloud-Umgebung ist, die ausschließlich von einer einzigen Organisation genutzt wird und oft im eigenen lokalen Rechenzentrum (On-Premises) betrieben wird.\n\nDas bedeutet:\n\n- Die Hardware und Infrastruktur gehören dem Unternehmen.\n- Der Zugriff ist auf interne Benutzer beschränkt.\n- Es werden keine externen Cloud-Dienste genutzt.\n\nDadurch behält das Unternehmen volle Kontrolle über Sicherheit, Datenschutz und Verwaltung, nutzt aber trotzdem Cloud-Technologien wie Virtualisierung und Self-Service-Ressourcenverwaltung.\n\nBeispiel:\nEin Unternehmen betreibt seine eigene Cloud mit VMware oder OpenStack im eigenen Serverraum oder Rechenzentrum.\n\nWarum die anderen Optionen nicht helfen:\n\nPublic Cloud:\nWird von externen Anbietern (z.B. AWS, Azure, Google Cloud) betrieben und nicht lokal im Unternehmen gehostet.\n\nHybrid Cloud:\nKombiniert lokale (Private) und öffentliche (Public) Cloud-Ressourcen, nutzt also nicht ausschließlich das lokale Rechenzentrum.\n\nCommunity Cloud:\nWird von mehreren Organisationen mit ähnlichen Anforderungen geteilt (z.B. mehrere Behörden oder Krankenhäuser), ist also nicht exklusiv lokal für ein einzelnes Unternehmen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Public",
+          "is_correct": false
+        },
+        {
+          "text": "Hybrid",
+          "is_correct": false
+        },
+        {
+          "text": "Community",
+          "is_correct": false
+        },
+        {
+          "text": "Private",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker behebt Probleme auf dem Mobilgerät eines Benutzers. Die Anwendungen und das Betriebssystem reagieren langsam, selbst bei einfachen Aufgaben wie dem Schreiben einer E-Mail. Zudem starten neue Apps gelegentlich nicht. Welche Maßnahmen sollte der Techniker als Nächstes durchführen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Unnötige Programme schließen“, weil zu viele geöffnete Anwendungen im Hintergrund die Systemressourcen (CPU und RAM) eines Mobilgeräts stark belasten können. Wenn das Gerät dadurch träge reagiert, kann es zu langsamen App-Starts, Einfrierungen oder nicht startenden Anwendungen kommen.\nDurch das Schließen ungenutzter Apps werden diese Ressourcen freigegeben, was in der Regel sofort eine spürbare Leistungsverbesserung bewirkt. Dies ist der erste und einfachste Schritt in der Fehlersuche, bevor tiefere Eingriffe wie ein Reset oder Hardwareprüfungen vorgenommen werden.\n\nWarum die anderen Optionen nicht helfen:\n\nDas Gerät in einen kühleren Raum bringen:\nEine zu hohe Temperatur kann zwar Leistung drosseln, aber hier wird kein Überhitzungsproblem beschrieben, die Symptome deuten klar auf Überlastung der Ressourcen hin.\n\nAuf Werkseinstellungen zurücksetzen:\nDas ist ein letzter Schritt, nicht der nächste. Ein Reset sollte nur erfolgen, wenn einfache Maßnahmen wie das Schließen von Apps keine Wirkung zeigen.\n\nÜberprüfen Sie den Gesundheitszustand der Akkus des Geräts:\nEin schlechter Akku führt typischerweise zu Symptomen wie:\n\n- Das Gerät schaltet sich plötzlich ab\n- Der Akkustand springt unregelmäßig\n- Das Gerät lädt langsam oder gar nicht\n- Es gibt Überhitzung oder Aufblähen des Akkus\n\nAber:\nEin schlechter Akku verursacht keine systemweiten Leistungsprobleme, wie langsame Reaktionszeiten oder Apps, die nicht starten.\nDiese Symptome hängen eher mit überlasteter CPU oder RAM-Nutzung zusammen, also Software-/Ressourcenproblemen, nicht mit der Energieversorgung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Überprüfen Sie den Gesundheitszustand der Akkus des Geräts.",
+          "is_correct": false
+        },
+        {
+          "text": "Das Gerät in einen kühleren Raum bringen",
+          "is_correct": false
+        },
+        {
+          "text": "Auf Werkseinstellungen zurücksetzen",
+          "is_correct": false
+        },
+        {
+          "text": "Unnötige Programme schließen",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Kunde meldet, dass das Netzwerk sehr langsam ist. Welche Komponenten fällt am wahrscheinlichsten aus?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist NIC (Network Interface Card), weil die Netzwerkkarte direkt für die Datenübertragung im Netzwerk verantwortlich ist. Wenn eine NIC teilweise defekt, überhitzt oder veraltete Treiber verwendet, kann dies zu langsamen oder unzuverlässigen Netzwerkverbindungen führen.\nTypische Anzeichen sind:\n\n- Langsamer Datentransfer über LAN oder WLAN\n- Abbrüche oder Paketverluste\n- Unstabile Verbindungsgeschwindigkeit\n\nEin Austausch oder ein Treiber-Update der Netzwerkkarte löst das Problem in den meisten Fällen.\n\nWarum die anderen Optionen nicht helfen:\n\nCPU:\nEine schwache oder ausgelastete CPU kann Programme verlangsamen, beeinflusst aber nicht direkt die Netzwerkübertragungsgeschwindigkeit.\n\nHDD (Festplatte):\nEine defekte oder langsame Festplatte macht das System insgesamt träge, aber das Netzwerk selbst bleibt normal schnell.\n\nRAM:\nZu wenig Arbeitsspeicher kann das System verlangsamen, aber nicht gezielt die Netzwerkleistung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NIC",
+          "is_correct": true
+        },
+        {
+          "text": "RAM",
+          "is_correct": false
+        },
+        {
+          "text": "HDD",
+          "is_correct": false
+        },
+        {
+          "text": "CPU",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Netzwerkadministrator muss sicherstellen, dass ein Drucker immer eine bestimmte IP-Adresse erhält – selbst dann, wenn alle anderen Adressen im DHCP-Pool bereits vergeben sind. Welches Netzwerk-Konzepte beschreibt diese Konfiguration am besten?",
+      "explanation": "Wenn Geräte ihre IP-Adresse automatisch über DHCP (Dynamic Host Configuration Protocol) erhalten, werden Adressen normalerweise aus einem festgelegten Adresspool zugewiesen.\nSobald dieser Pool erschöpft ist, können keine neuen Adressen mehr vergeben werden.\nEine DHCP-Reservation (Reservierung) stellt sicher, dass ein bestimmtes Gerät (in diesem Fall der Drucker) immer dieselbe IP-Adresse bekommt, die für seine MAC-Adresse fest im DHCP-Server hinterlegt ist. Auch wenn der Adresspool erschöpft ist, bleibt diese reservierte IP-Adresse für genau dieses Gerät freigehalten.\nWarum die anderen Antworten falsch sind:\nVLAN (Virtual LAN):\nEin logisches Teilnetzwerk, das Datenverkehr trennt, aber hat nichts mit IP-Vergabe oder Adressmanagement zu tun.\nLease (Leasingzeit):\nBeschreibt, wie lange ein Gerät eine IP-Adresse behalten darf, bevor sie erneuert wird – sichert keine feste Adresse.\nExclusion (Ausschluss):\nBestimmt Adressen, die nicht vom DHCP-Server vergeben werden dürfen, wird oft für Geräte mit statischer IP genutzt, aber garantiert keine automatische Zuweisung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Lease",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschluss",
+          "is_correct": false
+        },
+        {
+          "text": "VLAN",
+          "is_correct": false
+        },
+        {
+          "text": "Reservierung",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker behebt Probleme mit Eingabestiften auf identischen, firmeneigenen Tablets. Die Benutzer dürfen jedoch eigene Zubehörteile kaufen. Einige Benutzer haben keine Probleme, während andere melden, dass ihre Stylus-Stifte nur unregelmäßig laden und häufig entladen sind. Was ist die wahrscheinlichste Ursache für dieses Problem?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Bestimmte Schutzhüllen verursachen Ladeprobleme“, weil das Szenario darauf hinweist, dass die Tablets identisch sind, aber die Benutzer eigenes Zubehör verwenden. Viele moderne Stylus-Stifte werden magnetisch an der Seite des Tablets befestigt und dort geladen.\nWenn ein Benutzer eine dicke oder ungeeignete Hülle verwendet, kann diese den Kontakt oder die magnetische Verbindung zwischen Stylus und Tablet blockieren.\nDas führt dazu, dass der Stift nur gelegentlich lädt oder sich schnell entlädt, weil er nicht richtig aufgeladen wurde. Das Problem liegt also nicht an der Hardware oder Software, sondern an der physischen Beeinträchtigung durch das Zubehör.\n\nWarum die anderen Optionen nicht helfen:\n\nTablets müssen aktualisiert werden:\nEin Software-Update kann die allgemeine Funktion verbessern, würde aber nicht erklären, warum nur einige Benutzer betroffen sind.\n\nEinige Tablets haben Herstellungsfehler:\nDa die Geräte identisch sind und nur bestimmte Benutzer Probleme haben, ist ein Produktionsfehler unwahrscheinlich.\n\nStylus-Stifte benötigen Firmware-Updates:\nFirmware-Probleme würden alle Stifte gleicher Baureihe betreffen, nicht nur diejenigen, die mit bestimmten Hüllen verwendet werden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Die Tablets müssen aktualisiert werden",
+          "is_correct": false
+        },
+        {
+          "text": "Einige Tablets haben Herstellungsfehler",
+          "is_correct": false
+        },
+        {
+          "text": "Die fehlerhaften Stylus-Stifte benötigen Firmware-Updates",
+          "is_correct": false
+        },
+        {
+          "text": "Bestimmte Schutzhüllen verursachen Ladeprobleme",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welche Frequenzen kann physische Hindernisse (wie Wände) am besten durchdringen?",
+      "explanation": "Erklärung: \nDie beste Durchdringung durch Wände erreichen in der Regel niedrigere Frequenzen, weil sie eine längere Wellenlänge haben und dadurch weniger stark durch Materialien gedämpft werden.\n\n2.4 GHz hat eine längere Wellenlänge als 5 GHz und 6 GHz und erfährt daher weniger Dämpfung beim Durchgang durch Wände und andere Hindernisse.\n\n5 GHz und besonders 6 GHz bieten zwar höhere Datenraten, haben aber eine kürzere Wellenlänge und dadurch schlechtere Durchdringung und geringere Reichweite in Innenräumen.\n\nNFC (typisch ~13,56 MHz) arbeitet zwar auf einer viel niedrigeren Frequenz, ist aber für Kurzstreckenkommunikation (einige Zentimeter) ausgelegt und nicht für Durchdringung/Weitverkehr—deshalb ist NFC hier nicht relevant.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "2.4 GHz",
+          "is_correct": true
+        },
+        {
+          "text": "6 GHz",
+          "is_correct": false
+        },
+        {
+          "text": "5 GHz",
+          "is_correct": false
+        },
+        {
+          "text": "NFC",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer druckt eine Tabellenkalkulation im Duplex-Modus. Das Ergebnis ist schwer lesbar, weil einige Spalten auf die Rückseite der Seite überlaufen. Was sollte der Benutzer tun, um das Problem zu vermeiden, aber trotzdem beidseitig drucken zu können?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Die Seitenorientierung ändern“, weil das Problem entsteht, wenn zu viele Spalten auf einer Seite gedruckt werden und nicht in das Hochformat (Portrait) passen. Durch das Ändern der Seitenorientierung von Hochformat auf Querformat (Landscape) steht mehr Platz in der Breite zur Verfügung, sodass alle Spalten auf einer Seite bleiben und der Druck weiterhin beidseitig (Duplex) erfolgen kann. Dies ist die einfachste und effektivste Lösung, um Tabellen oder breite Dokumente lesbar zu drucken, ohne den Duplex-Modus zu deaktivieren.\n\nWarum die anderen Optionen nicht helfen:\n\nDuplex-Druck deaktivieren:\nWürde das Problem zwar vermeiden, aber der Benutzer möchte weiterhin beidseitig drucken, also keine sinnvolle Lösung.\n\nKleinere Schriftgröße verwenden:\nKönnte das Problem verringern, macht aber das Dokument schwerer lesbar und ist nicht immer ausreichend, wenn viele Spalten vorhanden sind.\n\nAnderen Druckertreiber verwenden:\nHat keinen Einfluss auf das Layout oder die Spaltenbreite, sondern nur auf Druckerfunktionen, das löst das eigentliche Formatierungsproblem nicht.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Seitenorientierung ändern",
+          "is_correct": true
+        },
+        {
+          "text": "Anderen Druckertreiber",
+          "is_correct": false
+        },
+        {
+          "text": "Duplex deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Kleinere Schriftgröße",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Optionen ist eine häufige Funktion von Managed Switches?",
+      "explanation": "Erklärung\nDie richtige Antwort ist Port-VLAN-Zuweisung, weil Managed Switches erweiterte Verwaltungsfunktionen bieten, mit denen Administratoren den Netzwerkverkehr gezielt steuern und segmentieren können. Ein wichtiger Bestandteil davon ist die Zuweisung von Ports zu VLANs (Virtual Local Area Networks). Dadurch lassen sich Netzwerkbereiche logisch trennen, z.B. nach Abteilungen oder Sicherheitsstufen, ohne dass zusätzliche physische Switches erforderlich sind. Diese Funktion erhöht Sicherheit, Übersichtlichkeit und Effizienz im Netzwerkmanagement.\n\nWarum die anderen Optionen nicht helfen:\n\nRemote-Geräte-Stromversorgung:\nDas bezieht sich auf Power over Ethernet (PoE), eine Funktion, die auch bei unmanaged oder PoE-fähigen Switches vorkommen kann, aber kein typisches Verwaltungsmerkmal eines Managed Switches ist.\n\nInhaltsfilterung:\nDas ist eine Funktion von Firewalls oder Proxy-Servern, nicht von Switches. Switches leiten Daten weiter, sie analysieren keine Inhalte.\n\nLastverteilung:\nDas ist eine Funktion von Load Balancern oder Routern, nicht von Switches, deren Hauptaufgabe die Weiterleitung von Frames innerhalb eines Netzwerks ist.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Inhaltsfilterung",
+          "is_correct": false
+        },
+        {
+          "text": "Lastverteilung",
+          "is_correct": false
+        },
+        {
+          "text": "Remote-Geräte-Stromversorgung",
+          "is_correct": false
+        },
+        {
+          "text": "Port-VLAN-Zuweisung",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welche Eigenschaften ist typisch für Type-2-Hypervisoren?",
+      "explanation": "Erklärung\nDie richtige Antwort ist „Erfordern ein zugrunde liegendes Betriebssystem“, weil Type-2-Hypervisoren (auch Hosted Hypervisors genannt), auf einem bereits installierten Betriebssystem laufen. Das bedeutet, dass sie wie eine normale Anwendung innerhalb des OS ausgeführt werden. Beispiele sind VMware Workstation, Oracle VirtualBox oder Parallels Desktop.\n\nDer Hypervisor nutzt die Ressourcen (CPU, RAM, Festplatte) des Host-Betriebssystems, um virtuelle Maschinen (VMs) zu erstellen und zu verwalten. Dies ist einfacher zu installieren, aber meist langsamer als ein Type-1-Hypervisor, weil er eine zusätzliche Softwareschicht (das Host-OS) zwischen Hardware und Hypervisor hat.\n\nWarum die anderen Optionen nicht helfen:\n\nBare-Metal-Installation:\nDas beschreibt Type-1-Hypervisoren, die direkt auf der Hardware laufen (z.B. VMware ESXi, Microsoft Hyper-V Server). Type-2-Hypervisoren benötigen dagegen ein Host-OS.\n\nNur lokale Verwaltung:\nDas kann bei manchen Type-2-Hypervisoren zutreffen, ist aber kein definiertes Merkmal. Viele Type-1-Systeme werden ebenfalls lokal oder remote verwaltet.\n\nSpezifische Hardwareanforderungen:\nHypervisoren profitieren zwar von bestimmter Hardware (z.B. Virtualisierungserweiterungen der CPU), aber das gilt für beide Typen und ist kein Unterscheidungsmerkmal von Type-2-Hypervisoren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Benötigt ein Host-Betriebssystem",
+          "is_correct": true
+        },
+        {
+          "text": "Nur lokale Verwaltung",
+          "is_correct": false
+        },
+        {
+          "text": "Bare-Metal-Installation",
+          "is_correct": false
+        },
+        {
+          "text": "Spezifische Hardwareanforderungen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker muss PC-Komponenten auswählen, bei denen so wenige sichtbare interne Kabel wie möglich zu sehen sind. Welche Komponenten sollte der Techniker verwenden?",
+      "explanation": "Erklärung\nEin modulares Netzteil erlaubt es, nur die Kabel anzuschließen, die tatsächlich benötigt werden. Im Gegensatz zu Standard-Netzteilen, bei denen alle Kabel dauerhaft am Netzteil befestigt sind, können beim modularen Netzteil nicht benötigte Kabel weggelassen werden. Das reduziert Kabelgewirr im Gehäuse, verbessert die Luftzirkulation und sorgt für ein sauberes Erscheinungsbild.\n\nWarum die anderen Optionen nicht passen:\n\nSATA-Laufwerksverbindungen:\nDiese Kabel sind immer noch notwendig, um Festplatten oder SSDs anzuschließen – sie reduzieren nicht automatisch die Anzahl sichtbarer Kabel.\nFlüssigkeitskühlung:\nFlüssigkeitskühler können Kabel für Lüfter oder Pumpe haben; sie reduzieren nicht automatisch die Anzahl der sichtbaren Kabel im gesamten System.\nWireless-Netzwerkkarte:\nVermeidet nur ein Ethernet-Kabel, hat aber keinen Einfluss auf Strom- oder SATA-Kabel im Gehäuse.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Wireless-Netzwerkkarte",
+          "is_correct": false
+        },
+        {
+          "text": "Modulares Netzteil",
+          "is_correct": true
+        },
+        {
+          "text": "Flüssigkeitskühlung",
+          "is_correct": false
+        },
+        {
+          "text": "SATA-Laufwerksverbindungen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Projektor schaltet sich nach etwa 30 Minuten Betrieb automatisch aus und verströmt dabei einen ungewöhnlichen Geruch. Der Techniker bestätigt, dass die Stromquelle nicht die Ursache ist. Welche Maßnahmen sollte der Techniker als Nächstes durchführen, um das Problem zu beheben?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Den Filter reinigen“, weil Projektoren regelmäßig überhitzten, wenn sich im Luftfilter Staub und Schmutz ansammeln. Der Filter schützt die internen Komponenten vor Staubansammlung, aber wenn er verstopft ist, kann die heiße Luft nicht richtig abgeführt werden.\nDas führt zu:\n\n- Überhitzung nach längerer Laufzeit (z.B. 30 Minuten)\n- automatischer Abschaltung zum Selbstschutz\n- und häufig einem brennenden oder verschmorten Geruch\n\nDas Reinigen oder Ersetzen des Luftfilters ist daher der erste und sinnvollste Schritt, um die Kühlung wiederherzustellen und das Problem zu beheben.\n\nWarum die anderen Optionen nicht helfen:\n\nLampe austauschen:\nEine alte Lampe kann zwar dunkler oder flackernd werden, aber sie verursacht keinen Überhitzungsgeruch oder zeitgesteuerte Abschaltung.\n\nProjektorkonfiguration überprüfen:\nSoftwareeinstellungen (z.B. Energiesparmodus) haben keinen Einfluss auf Temperaturprobleme.\n\nGamma-Einstellungen anpassen:\nDiese betreffen Farb- und Helligkeitswerte, nicht die Hardware oder Kühlung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Den Filter reinigen.",
+          "is_correct": true
+        },
+        {
+          "text": "Die Gamma-Einstellungen anpassen.",
+          "is_correct": false
+        },
+        {
+          "text": "Die Projektorkonfiguration überprüfen.",
+          "is_correct": false
+        },
+        {
+          "text": "Die Lampe austauschen.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Punkte ist ein Vorteil der Verwendung von VDI?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Weniger manuelle Konfiguration pro Workstation erforderlich“, weil bei einer VDI (Virtual Desktop Infrastructure) alle virtuellen Desktops zentral auf einem Server verwaltet werden. Dadurch muss der Administrator nicht jede einzelne Workstation manuell konfigurieren oder aktualisieren, sondern kann Updates, Softwareinstallationen und Einstellungen zentral ausrollen. Die Benutzer verbinden sich einfach über ein Netzwerk oder das Internet mit ihrer virtuellen Desktop-Instanz, die vom Administrator verwaltet wird. Das reduziert Wartungsaufwand, Supportzeiten und sorgt für einheitliche Konfigurationen.\n\nWarum die anderen Optionen nicht helfen:\n\nAuthentifizierung ist nicht erforderlich: Falsch - VDI-Systeme sind in der Regel in eine Domäne eingebunden, und Benutzer müssen sich normal anmelden, z. B. mit Active Directory-Zugangsdaten.\n\nLizenzkosten werden minimiert:\nIm Gegenteil – VDI kann höhere Lizenzkosten verursachen, weil zusätzliche Server-, Virtualisierungs- und Zugriffslizenzen erforderlich sind.\n\nVirus wird lokal isoliert:\nEin Virus kann nicht automatisch lokal isoliert werden; in einer VDI-Umgebung läuft der Desktop auf einem zentralen Server, und eine Infektion betrifft die virtuelle Instanz, nicht unbedingt den Client selbst.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Die Authentifizierung in einer Domäne ist nicht erforderlich",
+          "is_correct": false
+        },
+        {
+          "text": "Ein Virus wird automatisch lokal isoliert",
+          "is_correct": false
+        },
+        {
+          "text": "Weniger manuelle Konfiguration pro Workstation erforderlich",
+          "is_correct": true
+        },
+        {
+          "text": "Lizenzkosten werden minimiert",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Beispiele beschreibt am besten VDI?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Streaming einer GUI von einem Server zu Thin Clients“, weil genau das die Grundidee von VDI (Virtual Desktop Infrastructure) ist. Bei einer VDI-Umgebung laufen die virtuellen Desktops zentral auf einem Server oder in einer Cloud. Benutzer greifen über Thin Clients oder Remote-Desktop-Verbindungen darauf zu. Das bedeutet:\n\n- Die Rechenleistung und Datenverarbeitung erfolgen auf dem Server.\n- Der Benutzer sieht nur die grafische Oberfläche (GUI) des Desktops auf seinem Client-Gerät.\n\nDies bietet Vorteile wie zentrale Verwaltung, höhere Sicherheit, einfaches Backup und die Möglichkeit, ortsunabhängig auf denselben virtuellen Desktop zuzugreifen.\n\nWarum die anderen Optionen nicht helfen:\n\nBereitstellen einer Sandbox als Testumgebung:\nDas ist eine isolierte Umgebung für Softwaretests, das hat nichts mit virtuellen Desktops für Benutzer zu tun.\n\nBereitstellen von Hochleistungs-Workstations mit lokalem Betriebssystem:\nHier läuft das OS direkt auf der Hardware, nicht virtuell gestreamt oder zentral verwaltet, also keine VDI.\n\nStarten eines virtuellen Maschinenservers auf einem Hypervisor:\nDas beschreibt Servervirtualisierung, nicht die Bereitstellung von virtuellen Benutzer-Desktops.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Starten eines virtuellen Maschinenservers auf einem Hypervisor",
+          "is_correct": false
+        },
+        {
+          "text": "Bereitstellen von Hochleistungs-Workstations mit lokalem Betriebssystem",
+          "is_correct": false
+        },
+        {
+          "text": "Streaming einer GUI von einem Server zu Thin Clients",
+          "is_correct": true
+        },
+        {
+          "text": "Bereitstellen einer Sandbox als Testumgebung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker behebt ein Konnektivitätsproblem eines Laptops, der über seinen USB-C-Port mit einem Projektor verbunden werden soll. Der gleiche Laptop funktioniert einwandfrei, wenn er an eine USB-C-Dockingstation angeschlossen ist. Der Projektor ist korrekt konfiguriert, und das USB-C-Kabel wurde erfolgreich an einem Ladeanschluss getestet. Welches Probleme könnte vorliegen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Das USB-C-Kabel ist nicht mit Thunderbolt-Technologie kompatibel“, weil nicht jedes USB-C-Kabel Videoübertragung (DisplayPort oder Thunderbolt) unterstützt. Viele USB-C-Ports können sowohl Daten, Strom als auch Video übertragen, aber nur, wenn das verwendete Kabel diese Funktionen ebenfalls unterstützt. Ein einfaches Ladekabel kann zwar Strom übertragen, aber kein Videosignal an einen Projektor oder Monitor weitergeben. Da das Kabel im Ladeanschluss funktioniert, ist klar, dass es elektrisch in Ordnung ist, aber es unterstützt keine Videoausgabe (Display Alternate Mode) oder Thunderbolt-Funktionalität. Deshalb funktioniert die Verbindung über die Dockingstation (die das Signal korrekt umsetzt), aber nicht direkt mit dem Projektor.\n\nWarum die anderen Optionen nicht helfen:\n\nUSB-C-Kabel benötigt einen Strominjektor:\nDas ist bei Daten- oder Videosignalen nicht nötig. Ein Strominjektor wird nur bei speziellen Geräten oder sehr langen Kabeln verwendet.\n\nUSB-C-Kabel benötigt einen Adapter:\nWenn sowohl Laptop als auch Projektor über USB-C-Ports verfügen, wird kein Adapter benötigt – nur ein kompatibles Kabel.\n\nUSB-C-Kabel unterstützt nicht genügend Leistung:\nDie Leistung (Power Delivery) betrifft das Laden, nicht die Videoübertragung – das Kabel funktioniert beim Laden, also ist das kein Problem.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Das USB-C-Kabel unterstützt nicht genügend Leistung",
+          "is_correct": false
+        },
+        {
+          "text": "Das USB-C-Kabel ist nicht mit Thunderbolt-Technologie kompatibel",
+          "is_correct": true
+        },
+        {
+          "text": "Das USB-C-Kabel benötigt einen Strominjektor",
+          "is_correct": false
+        },
+        {
+          "text": "Das USB-C-Kabel benötigt einen Adapter, um mit dem Laptop zu funktionieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer möchte Dateien aus einem Auslandsbüro drucken, die sich in einem freigegebenen Netzwerkordner befinden. Der Laptop des Benutzers hat keine öffentliche Internetverbindung. Welche Optionen kann verwendet werden, um aus dem freigegebenen Netzwerkordner zu drucken?",
+      "explanation": "Erklärung\nDie richtige Antwort ist SMB (Server Message Block), weil dieses Protokoll zum Zugriff auf freigegebene Dateien und Drucker in einem lokalen Netzwerk (LAN oder VPN) verwendet wird. SMB ermöglicht es, dass ein Benutzer Dateien in einem freigegebenen Netzwerkordner öffnet oder druckt, ohne eine öffentliche Internetverbindung zu benötigen. Wenn der Laptop des Benutzers mit dem gleichen internen Netzwerk (z.B. per VPN) verbunden ist, kann über SMB auf den Drucker oder die Datei im freigegebenen Ordner zugegriffen werden.\n\nWarum die anderen Optionen nicht helfen:\n\nADF:\nSteht für Automatic Document Feeder – ein mechanisches Gerät am Drucker, das Papier automatisch einzieht. Hat nichts mit Netzwerk- oder Dateiübertragung zu tun.\n\nUSB:\nErlaubt die direkte Verbindung eines Geräts mit dem Drucker per Kabel, funktioniert aber nicht über das Netzwerk oder bei freigegebenen Netzwerkordnern.\n\nPCL:\nSteht für Printer Command Language, eine Druckersprache, die angibt, wie der Drucker Daten interpretiert – kein Netzwerkprotokoll.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "ADF",
+          "is_correct": false
+        },
+        {
+          "text": "PCL",
+          "is_correct": false
+        },
+        {
+          "text": "USB",
+          "is_correct": false
+        },
+        {
+          "text": "SMB",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Nachdem der Techniker den Drucker registriert hat, erhält er eine E-Mail vom Hersteller, in der steht, dass es eine Sicherheitslücke gibt, die behoben werden kann. Welche Maßnahmen sollte der Techniker als Nächstes durchführen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Firmware aktualisieren“, weil eine Firmware-Aktualisierung die effektivste Methode ist, um eine Sicherheitslücke im Drucker zu schließen. Firmware ist die interne Software, die die Hardware-Funktionen des Druckers steuert.\nHersteller veröffentlichen regelmäßig Firmware-Updates, um Sicherheitsprobleme zu beheben, Leistungsverbesserungen vorzunehmen oder neue Funktionen bereitzustellen. Wenn der Hersteller also ausdrücklich auf eine Schwachstelle hinweist, ist der nächste logische Schritt, die aktuellste Firmware-Version zu installieren, um das Gerät sicher zu halten und zukünftige Angriffe zu verhindern.\n\nWarum die anderen Optionen nicht helfen:\n\nDrahtlose Verbindung deaktivieren:\nDas würde zwar das Risiko verringern, aber die Sicherheitslücke bleibt weiterhin im System bestehen. Es ist keine Lösung, sondern nur eine vorübergehende Maßnahme.\n\nÜberwachungsprotokollierung aktivieren:\nHilft dabei, Aktivitäten zu überwachen, behebt jedoch keine vorhandene Sicherheitslücke.\n\nStandard-Gateway deaktivieren:\nWürde die Netzwerkkommunikation des Druckers unterbrechen, was ihn unbrauchbar macht, ohne die Schwachstelle zu beseitigen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Firmware aktualisieren",
+          "is_correct": true
+        },
+        {
+          "text": "Standard-Gateway des Druckers deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Drahtlose Verbindung deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Überwachungsprotokollierung aktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche RAM-Arten ist am besten dafür geeignet, Fehler innerhalb des Speichermoduls selbst zu erkennen und zu korrigieren?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „ECC (Error-Correcting Code)“, weil ECC-RAM speziell entwickelt wurde, um Speicherfehler automatisch zu erkennen und zu korrigieren, bevor sie zu Systemabstürzen oder Datenfehlern führen. ECC-RAM arbeitet mit einem zusätzlichen Parity-Bit bzw. Fehlerkorrekturcode, der jeden Datenblock überprüft. Wenn ein einzelner Bitfehler auftritt, kann ECC diesen automatisch korrigieren, und in vielen Fällen sogar mehrere Fehler erkennen.\nECC wird vor allem eingesetzt in:\n\n- Servern\n- Workstations\n- kritischen Unternehmenssystemen, wo Datenintegrität und Zuverlässigkeit wichtiger sind als maximale Geschwindigkeit.\n\nWarum die anderen Optionen nicht helfen:\n\nDIMM:\nSteht für Dual Inline Memory Module – das ist nur die Bauform eines RAM-Moduls, nicht die Art der Fehlerkorrektur.\n\nDual Channel:\nBeschreibt eine Mainboard-Konfiguration, bei der zwei RAM-Kanäle parallel genutzt werden, um die Bandbreite zu erhöhen, hat aber nichts mit Fehlerkorrektur zu tun.\n\nSODIMM:\nSteht für Small Outline DIMM, die kompakte Version von RAM-Modulen für Laptops oder Mini-PCs, aber ebenfalls ohne Fehlerkorrekturfunktion.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DIMM",
+          "is_correct": false
+        },
+        {
+          "text": "ECC",
+          "is_correct": true
+        },
+        {
+          "text": "Dual Channel",
+          "is_correct": false
+        },
+        {
+          "text": "SODIMM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Möglichkeiten könnte ein Benutzer nutzen, um die Modulbandbreite bei der Auswahl des Speichers für einen High-End-Gaming-Computer zu maximieren?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Channel Configuration (Kanal-Konfiguration)“, weil die Bandbreite des Arbeitsspeichers stark davon abhängt, ob der Speicher im Single-, Dual-, Triple- oder Quad-Channel-Modus betrieben wird. Ein Dual-Channel- oder Quad-Channel-Setup erlaubt es, dass mehrere Speicherkanäle parallel arbeiten. Dadurch verdoppelt oder vervierfacht sich die effektive Datenübertragungsrate zwischen RAM und CPU-Speichercontroller.\n\nBeispiel:\n\n- Single Channel: 1 Datenweg → begrenzte Bandbreite\n- Dual Channel: 2 Datenwege → doppelte Bandbreite\n- Quad Channel: 4 Datenwege → vierfache Bandbreite\n\nGerade bei Gaming-PCs führt eine höhere Speicherbandbreite zu besseren Ladezeiten, flüssigerem Gameplay und einer stabileren Framerate, insbesondere bei speicherintensiven Spielen.\n\nWarum die anderen Optionen nicht helfen:\n\nError Correction (ECC):\nWird für Fehlerkorrektur in Servern verwendet, nicht in Gaming-PCs – es erhöht die Zuverlässigkeit, aber nicht die Bandbreite oder Geschwindigkeit.\n\nRAM Voltage:\nEine leicht erhöhte Spannung kann Overclocking ermöglichen, hat aber keinen direkten Einfluss auf die Bandbreite, sondern eher auf die Stabilität und Leistung.\n\nPhysical Module Size:\nBezieht sich auf die Speicherkapazität (z.B. 8 GB, 16 GB), nicht auf die Übertragungsrate pro Sekunde. Mehr Speicher bedeutet größere Kapazität, aber nicht mehr Bandbreite.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Kanalkonfiguration",
+          "is_correct": true
+        },
+        {
+          "text": "Physische Modulgröße",
+          "is_correct": false
+        },
+        {
+          "text": "RAM-Spannung",
+          "is_correct": false
+        },
+        {
+          "text": "Fehlerkorrektur",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen hat eine Hauptniederlassung und 20 Zweigstellen. Das Unternehmen möchte eine Backup-Netzwerkverbindung einrichten, damit bei einem Ausfall der Haupt-Glasfaserleitung weiterhin Konnektivität besteht. Es soll keine neue Infrastruktur aufgebaut werden. Welche Optionen sollte das Unternehmen verwenden?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Cellular (Mobilfunk)“, weil eine Mobilfunkverbindung (LTE, 5G) eine drahtlose Backup-Lösung bietet, die keine zusätzliche physische Infrastruktur wie neue Leitungen oder Glasfasern erfordert. Mit einer Cellular-Verbindung kann das Unternehmen bei Ausfall der Hauptleitung automatisch auf eine mobile Datenverbindung umschalten. Dies geschieht häufig über einen Router mit Dual-WAN oder 4G/5G-Failover-Funktion, der beim Erkennen eines Ausfalls sofort auf den mobilen Datenkanal wechselt. Vorteile dieser Lösung:\n\n- Kein zusätzlicher Bau oder Kabelverlegung nötig\n- Schnelle Implementierung über vorhandene Mobilfunknetze\n- Hohe Verfügbarkeit durch unabhängige Technologie (Mobilfunk statt Glasfaser)\n- Ideal für Standorte mit vielen Zweigstellen\n\nWarum die anderen Optionen nicht helfen:\n\nCable (Kabel):\nErfordert eine physische Verkabelung durch den Anbieter und somit neue Infrastruktur, was hier ausgeschlossen wurde.\n\nDSL:\nBenötigt ebenfalls eine bestehende Telefonleitung und ist in vielen Fällen langsamer oder nicht verfügbar, insbesondere an Unternehmensstandorten mit Glasfaseranschluss.\n\nSAN (Storage Area Network):\nHat nichts mit Netzwerkverbindungen oder Internetzugang zu tun, es dient zur Speichervernetzung innerhalb von Rechenzentren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DSL",
+          "is_correct": false
+        },
+        {
+          "text": "SAN",
+          "is_correct": false
+        },
+        {
+          "text": "Kabel",
+          "is_correct": false
+        },
+        {
+          "text": "Mobilfunk",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen möchte sein RAID-Array so konfigurieren, dass es mehrere Laufwerksausfälle verkraften kann und trotzdem Datenredundanz beibehält. Welche RAID-Konfigurationen sollte das Unternehmen wählen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „RAID 6“, weil RAID 6 speziell dafür ausgelegt ist, dass zwei Festplatten gleichzeitig ausfallen können, ohne dass Daten verloren gehen. RAID 6 verwendet:\n\n- Block-Level Striping (wie RAID 5)\n- Zwei Paritätsblöcke pro Datenblock\n\nDas bedeutet:\nSelbst wenn zwei Laufwerke ausfallen, können die verbleibenden Festplatten mithilfe der zweifachen Parität die fehlenden Daten wiederherstellen. Dadurch bietet RAID 6 eine höhere Ausfallsicherheit als RAID 5, jedoch auf Kosten von etwas reduzierter Schreibgeschwindigkeit und mehr benötigtem Speicherplatz für Paritätsdaten.\n\nWarum die anderen Optionen nicht helfen:\n\nRAID 0:\nBietet keine Redundanz – wenn eine einzige Festplatte ausfällt, sind alle Daten verloren.\n\nRAID 1:\nBietet Redundanz, aber nur zwischen zwei Laufwerken. Wenn mehr als ein Laufwerk ausfällt, sind die Daten nicht mehr sicher.\n\nRAID 5:\nKann den Ausfall von nur einem Laufwerk verkraften. Wenn zwei Laufwerke gleichzeitig ausfallen, gehen alle Daten verloren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RAID 1",
+          "is_correct": false
+        },
+        {
+          "text": "RAID 5",
+          "is_correct": false
+        },
+        {
+          "text": "RAID 0",
+          "is_correct": false
+        },
+        {
+          "text": "RAID 6",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welchen DNS-Einträge würde ein Administrator ändern, um den E-Mail-Verkehr umzuleiten?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist MX (Mail Exchanger), weil der MX-Eintrag im DNS (Domain Name System) angibt, welcher Mailserver für den Empfang von E-Mails einer bestimmten Domain zuständig ist. Wenn ein Administrator den E-Mail-Verkehr umleiten möchte, zum Beispiel auf einen neuen Mailserver oder Cloud-Dienst (z. B. Microsoft 365, Google Workspace), muss er den MX-Eintrag auf die neue Serveradresse zeigen lassen.\n\nBeispiel:\n\n- Vorher: mail.firma-alt.de\n- Nachher: mail.firma-neu.com\n\nDadurch werden alle E-Mails an die neue Mailinfrastruktur weitergeleitet.\n\nWarum die anderen Optionen nicht helfen:\n\nTXT:\nWird für Textinformationen im DNS genutzt, z.B. für Verifizierungen oder Sicherheitsrichtlinien (SPF, DKIM), beeinflusst aber nicht direkt den Mailfluss.\n\nSPF:\nIst ein spezieller TXT-Eintrag, der angibt, welche Server E-Mails versenden dürfen, er steuert nicht, wohin E-Mails empfangen werden.\n\nCNAME:\nEin Alias-Eintrag, der eine Domain auf eine andere verweist, wird meist für Webdienste oder Subdomains verwendet, nicht für die Steuerung des E-Mail-Verkehrs.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MX",
+          "is_correct": true
+        },
+        {
+          "text": "SPF",
+          "is_correct": false
+        },
+        {
+          "text": "TXT",
+          "is_correct": false
+        },
+        {
+          "text": "CNAME",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Geräte liefert Strom über Netzwerkkabel an andere Geräte?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist PoE-Switch (Power over Ethernet Switch), weil dieser elektrische Energie und Datensignale über dasselbe Ethernet-Kabel bereitstellt. PoE (Power over Ethernet) ermöglicht es, Geräte wie IP-Kameras, Access Points, VoIP-Telefone oder kleine Netzwerkgeräte direkt über das Netzwerkkabel mit Strom zu versorgen, ohne dass ein separates Netzteil erforderlich ist. Dadurch wird die Installation einfacher, die Kabelmenge reduziert und es ermöglicht eine zentralisierte Stromverwaltung über den Switch.\n\nWarum die anderen Optionen nicht helfen:\n\nEdge-Router:\nVerbindet Netzwerke (z.B. internes LAN mit dem Internet), liefert aber keinen Strom über Ethernet.\n\nAccess Point:\nKann selbst über PoE mit Strom versorgt werden, gibt aber keinen Strom weiter, er empfängt ihn nur.\n\nPatchpanel:\nDient zur Verkabelungsorganisation, hat aber keine aktive Strom- oder Datenverarbeitungsfunktion.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PoE-Switch",
+          "is_correct": true
+        },
+        {
+          "text": "Access Point",
+          "is_correct": false
+        },
+        {
+          "text": "Edge-Router",
+          "is_correct": false
+        },
+        {
+          "text": "Patchpanel",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Optionen nutzt spezielle Anschlüsse an einem Laptop, um die lokalen Verbindungsmöglichkeiten zu erweitern?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Dockingstation“, weil eine Dockingstation speziell dafür entwickelt ist, einen Laptop über dedizierte oder proprietäre Anschlüsse mit mehreren Peripheriegeräten zu verbinden. Eine Dockingstation ermöglicht:\n\n- Den Anschluss mehrerer Monitore\n- USB-, Netzwerk- und Audioverbindungen\n- Schnelles Verbinden und Trennen mit nur einem Stecker\n\nViele Business-Laptops (z.B. von Dell, HP, Lenovo) haben spezielle Dockingports oder Thunderbolt-Anschlüsse, über die Dockingstationen Strom, Daten und Video gleichzeitig übertragen. Damit wird der Laptop im Büro praktisch zu einem vollwertigen Desktop-Arbeitsplatz, ohne dass ständig Kabel einzeln angeschlossen werden müssen.\n\nWarum die anderen Optionen nicht helfen:\n\nNFC-Adapter:\nDient der drahtlosen Nahfeldkommunikation (z.B. für Zahlungen oder Authentifizierung), erweitert aber keine physischen Anschlussmöglichkeiten.\n\nPortreplikator:\nEin Portreplikator bietet zwar ähnliche Funktionen, nutzt aber meist Standardanschlüsse (z.B. USB) und keine spezialisierten Ports wie eine echte Dockingstation. Er ist also eine einfachere und günstigere Variante, aber nicht so leistungsfähig oder integriert.\n\nUSB-Dongle:\nWird über einen einzelnen USB-Port verbunden, um z.B. WLAN oder Bluetooth hinzuzufügen, bietet aber keine umfangreiche Anschlussvielfalt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Dockingstation",
+          "is_correct": true
+        },
+        {
+          "text": "NFC-Adapter",
+          "is_correct": false
+        },
+        {
+          "text": "USB-Dongle",
+          "is_correct": false
+        },
+        {
+          "text": "Portreplikator",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker behebt ein Verbindungsproblem an einem Netzwerkcomputer. Der Techniker führt ipconfig in einer Eingabeaufforderung aus und erhält die folgende IP-Adresse: 169.254.0.6. Welche Arten von IP-Adressen wird hier wahrscheinlich vergeben?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Sich selbst zugewiesen“, weil IP-Adressen im Bereich 169.254.x.x automatisch vom Betriebssystem vergeben werden, wenn kein DHCP-Server erreichbar ist. Diese sogenannten APIPA-Adressen (Automatic Private IP Addressing) werden verwendet, wenn ein Computer auf DHCP eingestellt ist, aber keine Antwort vom DHCP-Server erhält. In diesem Fall:\n\n- Die Netzwerkkarte funktioniert grundsätzlich.\n- Es besteht keine Verbindung zum DHCP-Server.\n- Der Rechner kann nicht ins Internet oder andere Subnetze, aber lokale Geräte mit ebenfalls 169.254-Adressen erreichen.\n\nDas bedeutet, der PC weist sich selbst eine IP-Adresse zu, um eine minimale lokale Kommunikation zu ermöglichen.\n\nWarum die anderen Optionen nicht helfen:\n\nDHCP-Reservierung:\nWird vom DHCP-Server festgelegt und gibt einem bestimmten Gerät immer dieselbe Adresse, hier ist aber kein DHCP-Server erreichbar, also keine Reservierung möglich.\n\nDynamische Zuweisung:\nKommt ebenfalls vom DHCP-Server, hier schlägt diese Zuweisung fehl, daher greift die Selbstzuweisung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "DHCP-Reservierung",
+          "is_correct": false
+        },
+        {
+          "text": "Selbst zugewiesen",
+          "is_correct": true
+        },
+        {
+          "text": "Dynamisch",
+          "is_correct": false
+        },
+        {
+          "text": "Statisch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Laufwerksschnittstellen wird typischerweise in Serversystemen verwendet, aber nicht in Heimcomputern?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „SAS (Serial Attached SCSI)“, weil SAS eine professionelle Laufwerksschnittstelle ist, die vor allem in Servern und Enterprise-Umgebungen eingesetzt wird.\nSAS bietet:\n\n- Höhere Zuverlässigkeit und Fehlerkorrekturfunktionen\n- Unterstützung für mehrere gleichzeitige Verbindungen (Multi-Path I/O)\n- Dauerbetrieb (24/7) und höhere Drehzahlen\n- Bessere Datenintegrität im Vergleich zu herkömmlichen SATA-Laufwerken\n\nDiese Eigenschaften machen SAS ideal für Rechenzentren und Server, wo Datensicherheit, Stabilität und Performance entscheidend sind. In Heim-PCs wird SAS kaum verwendet, weil die Hardware teurer ist und SATA oder NVMe völlig ausreichen.\n\nWarum die anderen Optionen nicht helfen:\n\nNVMe:\nWird über den PCIe-Bus angebunden und ist heute auch in High-End-Heimcomputern sehr verbreitet (z.B. M.2-SSDs).\n\nSATA:\nIst die Standard-Schnittstelle für Festplatten und SSDs in Heimcomputern, nicht exklusiv für Server gedacht.\n\nPCIe:\nBezeichnet den Datenbus, über den viele Geräte (Grafikkarten, NVMe-SSDs, Netzwerkkarten) kommunizieren, ist also kein reiner Laufwerksstandard und wird auch in Heim-PCs verwendet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "PCIe",
+          "is_correct": false
+        },
+        {
+          "text": "NVMe",
+          "is_correct": false
+        },
+        {
+          "text": "SATA",
+          "is_correct": false
+        },
+        {
+          "text": "SAS",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker muss eine Workstation in ein anderes logisches Netzwerksegment verschieben. Welche Technologien sollte der Techniker dafür verwenden?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „VLAN (Virtual Local Area Network)“, weil ein VLAN verwendet wird, um logische Netzwerksegmente innerhalb eines physischen Netzwerks zu erstellen. Mit VLANs können Administratoren Geräte trennen oder gruppieren, ohne dass eine physische Änderung der Verkabelung nötig ist.\nEin Techniker kann also eine Workstation einfach in ein anderes VLAN umschalten, um sie einem neuen logischen Netzwerksegment zuzuordnen. VLANs werden über Managed Switches konfiguriert und sind eine häufige Methode, um Sicherheitszonen oder Abteilungen im selben Netzwerk zu trennen.\n\nWarum die anderen Optionen nicht helfen:\n\nDHCP:\nWeist IP-Adressen automatisch zu, ändert aber nicht das logische Netzwerksegment.\n\nDNS:\nÜbersetzt Domainnamen in IP-Adressen, hat jedoch nichts mit Netzwerksegmentierung zu tun.\n\nVPN:\nStellt eine sichere Verbindung über das Internet zu einem anderen Netzwerk her, aber ändert nicht das interne logische Segment einer Workstation.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "VLAN",
+          "is_correct": true
+        },
+        {
+          "text": "DHCP",
+          "is_correct": false
+        },
+        {
+          "text": "VPN",
+          "is_correct": false
+        },
+        {
+          "text": "DNS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Portnummern wird für Dateiübertragungen (File Transfer) verwendet?",
+      "explanation": "Erklärung\nDie richtige Antwort ist Port 21, weil dieser Port vom FTP-Protokoll (File Transfer Protocol) verwendet wird. FTP dient dem Übertragen von Dateien zwischen einem Client und einem Server über ein Netzwerk. Dabei wird Port 21 für die Steuerverbindung (Kontrollkanal) genutzt, über die Befehle gesendet werden. Für die eigentlichen Datenübertragungen kann zusätzlich Port 20 (Datenkanal) verwendet werden.\n\nWarum die anderen Optionen nicht helfen:\n\n53:\nWird für DNS (Domain Name System) genutzt – dient der Namensauflösung von Domainnamen zu IP-Adressen, nicht für Dateiübertragung.\n\n68:\nWird von DHCP-Clients verwendet, um IP-Adressen automatisch zu erhalten – kein Dateitransferprotokoll.\n\n389:\nWird von LDAP (Lightweight Directory Access Protocol) verwendet, das zur Verzeichnisabfrage und Benutzerverwaltung dient – ebenfalls keine Dateiübertragung.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "389",
+          "is_correct": false
+        },
+        {
+          "text": "21",
+          "is_correct": true
+        },
+        {
+          "text": "53",
+          "is_correct": false
+        },
+        {
+          "text": "68",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker arbeitet an einem RAID 1-Array, das offensichtlich defekt ist. Er überprüft, ob RAM und Stromversorgung wie erwartet funktionieren. Welche Maßnahmen kann der Techniker ergreifen, um das Problem weiter einzugrenzen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Einzelne Laufwerksdiagnosen durchführen“, weil bei einem degradierten RAID-1-Array (Spiegelung) eine der beiden Festplatten fehlerhaft oder ausgefallen sein kann. RAID 1 besteht aus zwei identischen Laufwerken, die dieselben Daten speichern. Wenn der Status „degraded“ angezeigt wird, bedeutet das, dass eine Festplatte nicht mehr korrekt arbeitet, während die andere noch funktioniert. Der nächste logische Schritt ist daher, jedes Laufwerk einzeln zu testen, um herauszufinden:\n\n- Welche Festplatte Fehler aufweist (z.B. Sektorenfehler oder SMART-Warnungen),\n- Und ob sie ersetzt werden muss.\n- Sobald die defekte Platte identifiziert ist, kann sie ersetzt und das Array automatisch neu aufgebaut (rebuild) werden.\n\nWarum die anderen Optionen nicht helfen:\n\nchkdsk /f ausführen:\nDieser Befehl prüft und repariert Dateisystemfehler, nicht jedoch physische Laufwerksfehler oder RAID-Probleme.\n\nRAID-Array neu aufbauen:\nDas sollte erst nach der Diagnose geschehen. Ein Rebuild mit einer defekten Festplatte kann Datenverluste verursachen.\n\nRAID als RAID 0 neu konfigurieren:\nDas würde alle Daten löschen und keine Redundanz mehr bieten, damit wäre das eigentliche Ziel von RAID 1 (Datenspiegelung) verloren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Das RAID-Array neu aufbauen",
+          "is_correct": false
+        },
+        {
+          "text": "Das Array als RAID 0 neu konfigurieren",
+          "is_correct": false
+        },
+        {
+          "text": "Einzelne Laufwerksdiagnosen durchführen",
+          "is_correct": true
+        },
+        {
+          "text": "Den Befehl chkdsk /f ausführen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Kunde betreibt mehrere Bare-Metal-Server, auf denen eine Mischung aus Windows-, Linux- und Unix-Betriebssystemen läuft. Der Kunde möchte diese Server konsolidieren, macht sich jedoch Sorgen um Datenschutz und wiederkehrende Kosten.\nWelche Lösungen sollte ein Techniker empfehlen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Type-2-Hypervisor“, weil ein Type-2-Hypervisor eine Virtualisierungssoftware ist, die auf einem vorhandenen Betriebssystem installiert wird und es ermöglicht, mehrere virtuelle Maschinen (VMs) auf einem einzigen physischen Server auszuführen.\n\nDas ist ideal, wenn:\n\n- Mehrere Betriebssysteme (Windows, Linux, Unix) gleichzeitig benötigt werden,\n- Die Daten privat und lokal bleiben sollen,\n- Und keine wiederkehrenden Cloud-Kosten entstehen sollen.\n\nBeispiele für Type-2-Hypervisoren sind:\n\n- VMware Workstation / Fusion\n- Oracle VirtualBox\n- Microsoft Hyper-V (Desktop-Version)\n\nDer Kunde kann so alle Systeme auf einer oder wenigen physischen Maschinen betreiben, die lokal im eigenen Rechenzentrum stehen, ohne Cloud-Abhängigkeit oder laufende Gebühren.\n\nWarum die anderen Optionen nicht helfen:\n\nIaaS (Infrastructure as a Service):\nErfordert eine Public- oder Hybrid-Cloud-Umgebung und verursacht regelmäßige Kosten (z.B. AWS, Azure). Das widerspricht dem Wunsch nach Datenschutz und Kosteneinsparung.\n\nContainer:\nSind leichtgewichtig, teilen aber denselben Kernel. Da der Kunde verschiedene Betriebssysteme (auch Unix) benötigt, sind Container nicht geeignet, weil sie kein anderes OS emulieren.\n\nVDI (Virtual Desktop Infrastructure):\nDient der Bereitstellung von virtuellen Benutzer-Desktops, nicht der Server-Konsolidierung. Es löst also nicht das beschriebene Problem.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Container",
+          "is_correct": false
+        },
+        {
+          "text": "Type-2-Hypervisor",
+          "is_correct": true
+        },
+        {
+          "text": "VDI",
+          "is_correct": false
+        },
+        {
+          "text": "IaaS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer reist international. Er kann Telefonanrufe tätigen und empfangen, aber keine E-Mails senden oder empfangen. Welche Maßnahmen würde dieses Problem wahrscheinlich lösen?",
+      "explanation": "Erklärung\nWenn ein Benutzer international unterwegs ist:\n- Telefonanrufe funktionieren über das Sprachnetzwerk, das meist automatisch mit dem lokalen Mobilfunkanbieter verbunden wird.\n- E-Mail und andere Internetdienste erfordern Datenverbindungen.\n- Viele Smartphones deaktivieren standardmäßig Daten-Roaming, um hohe Gebühren im Ausland zu vermeiden.\n\nDas bedeutet:\nMobile Daten sind aktiv, aber nur im Heimatnetz nutzbar.\nOhne aktiviertes Daten-Roaming kann der Benutzer keine E-Mails oder andere mobile Datenanwendungen nutzen, auch wenn Telefonanrufe möglich sind.\n\nWarum die anderen Optionen nicht helfen:\n\nGPS deaktivieren:\nGPS beeinflusst nur Standortdienste, nicht die Internetverbindung.\nNur 4G-Nutzung konfigurieren:\nBeschränkt den Mobilfunkstandard, löst aber nicht das Problem, wenn Daten-Roaming deaktiviert ist.\nVerbindung über Hotspot herstellen:\nDas würde funktionieren, ist aber nicht notwendig, wenn die mobile Datenverbindung richtig eingerichtet ist.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Nur 4G-Nutzung konfigurieren",
+          "is_correct": false
+        },
+        {
+          "text": "Daten-Roaming aktivieren",
+          "is_correct": true
+        },
+        {
+          "text": "GPS deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Verbindung über einen Hotspot herstellen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Kabelarten ist zu verwenden, wenn Netzwerkkabel im Deckenhohlraum einer abgehängten Decke verlegt werden, der als Teil des Lüftungssystems dient?",
+      "explanation": "Erklärung\nWenn Netzwerkkabel über einer abgehängten Decke installiert werden, liegt darüber ein Hohlraum:\n\n– Dieser Bereich wird oft für die Luftzirkulation der Heizung oder Klimaanlage genutzt.\n– Die Luft strömt dort frei durch den Deckenhohlraum, ohne geschlossene Lüftungsrohre.\n– Dadurch ist dieser Hohlraum Teil des Lüftungssystems (Plenumraum).\n– Bei einem Brand könnten sich Rauch und giftige Dämpfe schnell im gesamten Gebäude verteilen.\n– Um dies zu verhindern, müssen dort Plenum-rated Kabel eingesetzt werden.\n– Diese Kabel sind schwer entflammbar, raucharm und erfüllen strenge Brandschutzvorschriften (z.B. NEC/UL-Standards).\n\nWarum die anderen Optionen nicht helfen:\n\n– Shielded twisted (STP):\nBietet nur elektromagnetische Abschirmung gegen Störungen. Hat nichts mit Brandschutz zu tun. Ein STP-Kabel kann plenum-rated sein – muss es aber nicht.\n\n– Optical (Glasfaser):\nGlasfaser selbst brennt nicht, aber der Kabelmantel kann brennbar sein. Nur plenum-zertifizierte Glasfaserkabel dürfen in Luftführungsräumen verwendet werden.\n\n– Coaxial:\nWird häufig für TV- oder Videoverbindungen eingesetzt. Auch hier gilt: Nur plenum-rated Varianten sind in Lufträumen erlaubt. Normales Koaxialkabel erfüllt diese Brandschutzanforderungen nicht.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Koaxial",
+          "is_correct": false
+        },
+        {
+          "text": "Geschirmtes-Twisted-Pair",
+          "is_correct": false
+        },
+        {
+          "text": "Glasfaser",
+          "is_correct": false
+        },
+        {
+          "text": "Plenum",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen muss eine Disaster-Recovery-Lösung entwickeln, die auf virtuellen Maschinen basiert. Welches Servicemodelle ist dafür am besten geeignet?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist Infrastructure as a Service (IaaS), weil dieses Servicemodell dem Unternehmen ermöglicht, virtuelle Maschinen, Speicher, Netzwerke und Server in der Cloud bereitzustellen und zu verwalten. Bei einer Disaster-Recovery-Lösung geht es darum, den Betrieb nach einem Systemausfall schnell wiederherzustellen. Mit IaaS kann das Unternehmen:\n\n- Virtuelle Server in der Cloud replizieren oder sichern\n- VM-Snapshots und Backups verwalten\n- Bei einem Ausfall die gesamte Infrastruktur in der Cloud neu starten\n- Dadurch lässt sich die Umgebung schnell wiederherstellen, ohne dass physische Hardware vor Ort benötigt wird.\n\nTypische Anbieter: AWS EC2, Microsoft Azure, Google Compute Engine\n\nWarum die anderen Optionen nicht helfen:\n\nSecurity as a Service (SECaaS):\nDient der Bereitstellung von Sicherheitsdiensten (z. B. Antivirus, Firewall, Authentifizierung), aber nicht der Infrastruktur für virtuelle Maschinen.\n\nPlatform as a Service (PaaS):\nBietet eine Umgebung zur Entwicklung und Bereitstellung von Anwendungen, nicht zur Verwaltung von virtuellen Servern oder Disaster-Recovery-Systemen.\n\nSoftware as a Service (SaaS):\nStellt fertige Anwendungen über das Internet bereit (z.B. E-Mail oder CRM-Systeme), aber keine vollständige Infrastruktur oder virtuelle Maschinen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Infrastructure as a Service",
+          "is_correct": true
+        },
+        {
+          "text": "Platform as a Service",
+          "is_correct": false
+        },
+        {
+          "text": "Security as a Service",
+          "is_correct": false
+        },
+        {
+          "text": "Software as a Service",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Spezialist vergleicht Bluetooth- und NFC-Technologien im Hinblick auf die Konnektivität mobiler Geräte. Welche Aussagen beschreibt einen wesentlichen Unterschied zwischen den beiden Technologien korrekt?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „NFC funktioniert am besten innerhalb weniger Zentimeter, während Bluetooth Geräte bis zu 10 m (32 ft) verbinden kann“, weil der größte Unterschied zwischen NFC (Near Field Communication) und Bluetooth die Reichweite ist.\nNFC:\n\n- Arbeitet mit sehr kurzer Reichweite (typisch bis zu 4 cm)\n- Wird meist für kontaktlose Zahlungen, Geräte-Kopplung oder Authentifizierung verwendet\n- Benötigt keine manuelle Kopplung, die Verbindung wird automatisch hergestellt, sobald sich Geräte in unmittelbarer Nähe befinden\n\nBluetooth:\n\n- Hat eine Reichweite von ca. 10 m (32 ft), bei Bluetooth 5 sogar mehr\n- Eignet sich für dauerhafte Verbindungen wie Kopfhörer, Tastaturen oder Dateiaustausch\n- Benötigt in der Regel ein Pairing zur Authentifizierung\n\nDaher gilt:\nNFC = sehr kurze Reichweite, Bluetooth = größere Reichweite und dauerhafte Verbindung.\n\nWarum die anderen Optionen nicht helfen:\n\nNFC ist schneller als Bluetooth:\nBluetooth ist deutlich schneller (bis zu mehrere Mbit/s), während NFC nur kleine Datenmengen sehr langsam überträgt.\n\nNFC verbraucht mehr Strom als Bluetooth:\nNFC verbraucht viel weniger Energie und ist daher energiesparender als Bluetooth.\n\nNFC erfordert Pairing:\nNFC braucht kein Pairing, da die Verbindung automatisch durch Nähe der Geräte aufgebaut wird.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NFC verbraucht mehr Strom",
+          "is_correct": false
+        },
+        {
+          "text": "NFC erfordert Kopplung",
+          "is_correct": false
+        },
+        {
+          "text": "NFC wenige cm, Bluetooth ~10 m",
+          "is_correct": true
+        },
+        {
+          "text": "NFC ist schneller für große Dateien",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker stellt fest, dass ein Laptop langsame Startzeiten hat. Welche Komponenten verursacht dieses Problem am wahrscheinlichsten?",
+      "explanation": "Langsame Startzeiten (Bootvorgang des Betriebssystems) sind sehr häufig auf eine mechanische Festplatte (HDD) zurückzuführen.\nMechanische Festplatten sind deutlich langsamer als moderne Solid-State-Drives (SSD), da sie sich drehende Platten und einen beweglichen Schreib-/Lesekopf verwenden.\nDas führt zu längeren Zugriffszeiten und geringerer Datenübertragungsrate, besonders beim Systemstart, wenn viele Dateien gleichzeitig gelesen werden müssen.\nEin Upgrade von HDD auf SSD ist eine der effektivsten Möglichkeiten, um Startzeiten und Systemleistung spürbar zu verbessern.\nWarum die anderen Antworten falsch sind:\nRAM:\nZu wenig Arbeitsspeicher kann die allgemeine Leistung im Betriebssystem verlangsamen, verursacht aber nicht primär einen langen Systemstart (das wirkt sich mehr auf Multitasking aus).\nNIC (Network Interface Card):\nHat nichts mit Startzeiten zu tun – betrifft Netzwerkverbindungen.\nBIOS:\nFehler im BIOS könnten theoretisch Startprobleme verursachen, aber nicht regelmäßig langsame Bootzeiten, solange keine falschen Einstellungen vorliegen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "BIOS",
+          "is_correct": false
+        },
+        {
+          "text": "RAM",
+          "is_correct": false
+        },
+        {
+          "text": "NIC",
+          "is_correct": false
+        },
+        {
+          "text": "HDD",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Helpdesk-Techniker muss an einem Hochleistungsdrucker arbeiten. Benutzer haben gelegentlich Papierstau und Schmierflecken auf den Ausdrucken gemeldet. Welche Maßnahmen sollte der Techniker als Nächstes durchführen, um diese Probleme zu beheben?",
+      "explanation": "Erklärung: \nEin Hochleistungs-Laserdrucker, der Papierstaus und Schmierflecken produziert, hat fast immer ein Problem mit der Fixiereinheit (Fuser).\n\nWas macht die Fixiereinheit?\n\n- erhitzt den Toner,\n- presst ihn mit einer Druckwalze ins Papier,\n- sorgt dafür, dass der Toner nicht verschmiert, sondern eingebrannt ist.\n\nWas passiert, wenn die Fixiereinheit defekt ist?\n\n- Wird sie nicht heiß genug, bleibt Toner locker → Schmierflecken.\n- Sind die Walzen abgenutzt, rutschen sie → Papierstaus. (mit Fixiereinheit verbunden)\n- Verschmutzte Fuserrollen drücken Tonerreste erneut aufs Papier → verschmierte Ausdrucke.\n\nDeshalb verursacht ein defekter Fuser genau die beiden beschriebenen Probleme gleichzeitig.\n\nWarum die anderen Lösungen nicht passen\n\n„Rollen überprüfen und reinigen“ - Hilft bei Einzugsproblemen (Papierstau im Einzugsbereich) , aber behebt keine Tonerschmierflecken. Sie machen aber keine Schmierflecken.\n\n„Alle Toner-/Tintenpatronen austauschen“ - Eine Kartusche kann blass drucken, aber kein Schmieren und keine Papierstaus verursachen.\n\n„Werksreset durchführen“ - Software-Reset löst keine mechanischen Probleme.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Werksreset",
+          "is_correct": false
+        },
+        {
+          "text": "Fixiereinheit ersetzen",
+          "is_correct": true
+        },
+        {
+          "text": "Toner austauschen",
+          "is_correct": false
+        },
+        {
+          "text": "Rollen überprüfen und reinigen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussagen beschreibt einen Vorteil der Nutzung einer Hybrid Cloud im Vergleich zu einer Public Cloud?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Fähigkeit, Anforderungen an die Datenresidenz zu erfüllen“, weil eine Hybrid Cloud es Unternehmen ermöglicht, sensible oder regulierte Daten lokal (on-premises) zu speichern, während sie gleichzeitig öffentliche Cloud-Dienste für weniger sensible Workloads oder Skalierbarkeit nutzen können.\nDas ist besonders wichtig für Unternehmen, die gesetzliche oder branchenspezifische Vorschriften einhalten müssen, zum Beispiel die DSGVO (Datenschutz-Grundverordnung), die vorschreibt, dass personenbezogene Daten in bestimmten geografischen Regionen verbleiben müssen.\n\nDurch die Hybrid-Architektur lässt sich also sicherstellen, dass vertrauliche Daten innerhalb des eigenen Landes oder Rechenzentrums bleiben, während man dennoch die Flexibilität und Skalierbarkeit der Public Cloud nutzen kann.\n\nWarum die anderen Optionen nicht helfen:\n\nFähigkeit, den Verwaltungsaufwand zu reduzieren:\nHybrid Clouds erhöhen in der Regel den Verwaltungsaufwand, weil sowohl lokale als auch Cloud-Umgebungen koordiniert und überwacht werden müssen.\n\nFähigkeit, plattformübergreifende Virtualisierung zu verwenden:\nDas ist keine Cloud-spezifische Funktion, sondern hängt von der Virtualisierungssoftware (z. B. VMware, Hyper-V) ab.\n\nFähigkeit, IaaS und PaaS zu nutzen:\nDas ist auch mit einer reinen Public Cloud möglichund daher kein exklusiver Vorteil der Hybrid Cloud.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Fähigkeit, IaaS und PaaS zu nutzen",
+          "is_correct": false
+        },
+        {
+          "text": "Möglichkeit, plattformübergreifende Virtualisierung zu verwenden",
+          "is_correct": false
+        },
+        {
+          "text": "Möglichkeit, Anforderungen an die Datenresidenz zu erfüllen",
+          "is_correct": true
+        },
+        {
+          "text": "Möglichkeit, den Verwaltungsaufwand zu reduzieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Helpdesk-Techniker untersucht die Tastatur eines Laptops, weil eine einzelne Taste nicht mehr funktioniert. Der Techniker überprüft die Tastatur auf Schmutz oder Fremdkörper. Welche Maßnahmen sollte der Techniker als Nächstes durchführen, um das Problem kosteneffizient zu beheben?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Die Tastenkappe (Keycap) ersetzen“, weil das Entfernen und Ersetzen der Keycap (also der Tastenkappe) eine einfachste und kostengünstigste Methode ist, um mechanische Probleme mit einer einzelnen Taste zu beheben. Wenn eine Taste klemmt, wackelt oder nicht richtig reagiert, liegt die Ursache oft an:\n\n- einer verkanteten Keycap,\n- einem gelockerten Halteclip,\n- oder an leichten mechanischen Beschädigungen der Kappe.\n\nDas Austauschen oder Neuaufsetzen der Tastenabdeckung ist schnell, günstig und erfordert keine Ersatzteile auf Mainboard-Ebene.\n\nWarum die anderen Optionen nicht helfen:\n\nTastatur ersetzen:\nDas wäre teurer und nur sinnvoll, wenn mehrere Tasten oder die gesamte Matrix defekt sind.\n\nTastenschalter ersetzen:\nBei Laptop-Tastaturen sind die Schalter integriert und nicht einzeln tauschbar, daher wäre dies nicht praktikabel oder wirtschaftlich.\n\nLeiterplatte ersetzen:\nDie Tastatur-Leiterfolie oder das Mainboard auszutauschen wäre unverhältnismäßig teuer und nicht nötig, wenn nur eine Taste betroffen ist.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Tastatur austauschen",
+          "is_correct": false
+        },
+        {
+          "text": "Tastenschalter austauschen",
+          "is_correct": false
+        },
+        {
+          "text": "Tastenkappe austauschen",
+          "is_correct": true
+        },
+        {
+          "text": "Platine austauschen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der Drucker in einer Hauptniederlassung klemmt immer wieder (Papierstaus). Welche Maßnahmen sollte ein Support-Techniker durchführen, um das Problem zu beheben?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Ein Wartungskit anwenden“, weil wiederholte Papierstaus oft auf abgenutzte oder verschmutzte Druckerkomponenten zurückzuführen sind. Ein Wartungskit (Maintenance Kit) enthält typischerweise Walzen (Roller), Transferbänder und eine Fixiereinheit (Fuser), die bei Laser- oder Büro-Druckern regelmäßig gewartet oder ersetzt werden müssen. Wenn diese Teile abgenutzt oder verschmutzt sind, kann das Papier nicht mehr richtig eingezogen oder transportiert werden, was zu häufigen Papierstaus führt. Das Anwenden eines Wartungskits behebt dieses Problem zuverlässig.\n\nWarum die anderen Optionen nicht helfen:\n\nToner- oder Tintenpatronen austauschen:\nDiese beeinflussen nur die Druckqualität, nicht den Papiertransport. Ein Patronenwechsel löst daher keinen Papierstau.\n\nNeues Farbband installieren:\nBetrifft nur Nadeldrucker (Dot-Matrix). Ein solcher Drucker ist hier unwahrscheinlich, da im Büro meist Laser- oder Tintenstrahldrucker eingesetzt werden.\n\nDruckkopf austauschen:\nWird bei Tintenstrahldruckern wegen schlechter Druckqualität gemacht, hat aber keinen Einfluss auf Papierstaus.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Wartungskit anwenden",
+          "is_correct": true
+        },
+        {
+          "text": "Toner/Tinte austauschen",
+          "is_correct": false
+        },
+        {
+          "text": "Farbband installieren",
+          "is_correct": false
+        },
+        {
+          "text": "Druckkopf austauschen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SOHO-Kunde verwendet ein Betriebssystem auf einem Bare-Metal-Server, das seit fast zehn Jahren EOL ist und Anzeichen von Hardwareversagen zeigt. Die darauf laufende Anwendung erfüllt alle Anforderungen des Kunden, doch der Entwickler existiert nicht mehr, sodass keine Aktualisierung möglich ist. Der Techniker vermutet, dass das alte Betriebssystem auf moderner Hardware nicht mehr lauffähig ist. Welche Lösungen ermöglicht dem Kunden, die Anwendung langfristig weiter zu nutzen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Das gesamte System unter einem kompatiblen Hypervisor virtualisieren“, weil Virtualisierung es ermöglicht, ein veraltetes Betriebssystem und seine Anwendungen in einer virtuellen Maschine (VM) weiter zu betreiben, unabhängig von der modernen Hardware, auf der sie läuft.\n\nVorteile dieser Lösung:\n\n- Das alte OS kann unverändert weiter betrieben werden.\n- Es ist isoliert von der physischen Hardware, die künftig ersetzt oder modernisiert werden kann.\n- Der Kunde kann Backups der VM erstellen und diese auf anderen Hosts wiederherstellen.\n- Das Risiko eines Hardwareausfalls wird minimiert, da die virtuelle Umgebung auf neuer, stabiler Hardware läuft.\n- Der Techniker würde dazu das alte System z.B. mit P2V (Physical-to-Virtual)-Software konvertieren und es in einem Hypervisor wie VMware, Hyper-V oder VirtualBox betreiben.\n\nDamit bleibt die alte Anwendung voll funktionsfähig, ohne dass der Kunde die veraltete Hardware weiter nutzen muss.\n\nWarum die anderen Optionen nicht helfen:\n\nContinue to use the current system until failure:\nDas bedeutet, nichts zu tun, bis das System endgültig ausfällt. Dann wäre die Anwendung verloren — keine langfristige Lösung.\n\nContainerize the application in a multitenant cloud environment:\nContainerisierung (z.B. mit Docker) erfordert, dass die Anwendung und das OS kompatibel sind. Da es sich um ein veraltetes OS und eine alte Anwendung handelt, funktioniert das nicht ohne Quellcode oder Anpassungen.\n\nClone the disks and run the application from a USB enclosure:\nDas Klonen auf ein USB-Laufwerk sichert zwar die Daten, aber das alte Betriebssystem kann nicht vom USB-Gehäuse performant oder zuverlässig gebootet werden, und die Hardware-Inkompatibilität bleibt bestehen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Das aktuelle System weiterverwenden, bis es ausfällt",
+          "is_correct": false
+        },
+        {
+          "text": "Die Anwendung in einer Multi-Tenant-Cloud-Umgebung containerisieren",
+          "is_correct": false
+        },
+        {
+          "text": "Das gesamte System unter einem kompatiblen Hypervisor virtualisierenrichtig",
+          "is_correct": true
+        },
+        {
+          "text": "Die Festplatten klonen und die Anwendung über ein USB-Gehäuse ausführen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer druckt ein Dokument mit einem Laserdrucker. Nachdem der Benutzer über die Seite wischt, lösen sich die Wörter und Bilder ab. Der Techniker tauscht die Tonerkartusche aus, aber das Problem bleibt bestehen. Welche Komponenten sollte der Techniker als Nächstes austauschen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist Fixiereinheit (Fuser), weil der Fuser in einem Laserdrucker dafür verantwortlich ist, den Toner dauerhaft auf das Papier zu schmelzen. Wenn der Fuser defekt ist oder nicht richtig aufheizt, wird der Toner zwar aufgetragen, aber nicht fest mit dem Papier verbunden. Dadurch bleibt der Toner lose auf der Oberfläche und kann sich leicht abwischen oder verschmieren, so wie im beschriebenen Szenario. Das Austauschen der Tonerkartusche hilft in diesem Fall nicht, weil das Problem mechanisch bzw. thermisch im Fuser liegt, nicht im Toner selbst.\n\nWarum die anderen Optionen nicht helfen:\n\nBildtrommel (Drum):\nDie Trommel überträgt den Toner auf das Papier, hat aber nichts mit dem Fixiervorgang zu tun. Ein Defekt würde zu fehlenden oder blassen Bildern führen, nicht zu abwischbarem Toner.\n\nEntwicklerwalze (Developer Roller):\nSteuert die Verteilung des Toners auf der Trommel. Ein Defekt würde unregelmäßige Toneraufträge verursachen, aber der Toner würde sich trotzdem fixieren.\n\nEntladungslampe (Discharge Lamp):\nWird verwendet, um die Restladung auf der Trommel zu entfernen, hat aber keinen Einfluss auf das Aufschmelzen des Toners.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Entladungslampe",
+          "is_correct": false
+        },
+        {
+          "text": "Bildtrommel",
+          "is_correct": false
+        },
+        {
+          "text": "Entwicklerwalze",
+          "is_correct": false
+        },
+        {
+          "text": "Fixiereinheit",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Kunde berichtet, dass sein Tablet kürzlich auf den Boden gefallen ist. Das Tablet hat einen kleinen Riss in einer Ecke des Displays und lädt nicht, wenn es angeschlossen wird. Was sollte ein Techniker zuerst tun?",
+      "explanation": "Da das Tablet fallen gelassen wurde und nicht mehr lädt, liegt der Verdacht nahe, dass der physische Ladeanschluss (USB-C-Port) beschädigt oder locker ist.\nEin defekter oder verschobener Anschluss ist eine häufige Folge eines Sturzes und würde genau dieses Verhalten erklären:\n- Gerät reagiert nicht beim Einstecken des Ladekabels\n- Kein Ladesymbol\n- Kabel sitzt locker oder nur in bestimmter Position\nDeshalb ist der erste Schritt die visuelle und physische Inspektion des Anschlusses – eventuell mit einer Taschenlampe oder Lupe.\nWarum die anderen Antworten falsch sind:\nHard Restart (Neustart):\nHilft bei Softwareproblemen, aber nicht bei physischen Schäden oder Ladeproblemen.\nBatterie ersetzen:\nDer Akku könnte betroffen sein, aber bevor man ihn austauscht, muss geprüft werden, ob das Gerät überhaupt Strom bekommt – also zuerst den Ladeanschluss prüfen.\nDiagnose des Digitizers:\nDer Digitizer betrifft die Touch-Funktion, hat nichts mit dem Ladeproblem zu tun.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Den USB-C-Anschluss auf Schäden überprüfen.",
+          "is_correct": true
+        },
+        {
+          "text": "Den Akku austauschen.",
+          "is_correct": false
+        },
+        {
+          "text": "Einen Hard-Reset durchführen.",
+          "is_correct": false
+        },
+        {
+          "text": "Diagnosen am Touchscreen durchführen.",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker verbindet ein freisprechendes Fahrzeugsystem über Bluetooth. Welche Sicherheitsfunktionen sollte für diese Aufgabe verwendet werden?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist PIN-Code, weil bei der Bluetooth-Kopplung eine Authentifizierung erforderlich ist, um sicherzustellen, dass die Verbindung nicht von unbefugten Geräten hergestellt wird. Beim Koppeln zweier Bluetooth-Geräte (z.B. Smartphone und Freisprecheinrichtung) müssen beide Geräte denselben PIN-Code oder eine Bestätigungscodesequenz eingeben oder bestätigen. Dies verhindert, dass sich fremde Geräte ohne Erlaubnis verbinden, und schützt die Datenübertragung vor unerlaubtem Zugriff. Diese Methode ist einfach, aber effektiv für Kurzstreckenverbindungen wie Bluetooth.\n\nWarum die anderen Optionen nicht helfen:\n\nBitLocker:\nEine Festplattenverschlüsselung von Windows, die vor Datenverlust bei gestohlenen Geräten schützt – nicht relevant für Bluetooth-Verbindungen.\n\nBiometrie:\nDient zur Benutzerauthentifizierung (z.B. Fingerabdruck, Gesichtserkennung), nicht zur Geräteverbindung über Bluetooth.\n\nTPM (Trusted Platform Module):\nEin Hardware-ChipSystemverschlüsselung, nicht bei Bluetooth-Kopplungen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "BitLocker",
+          "is_correct": false
+        },
+        {
+          "text": "TPM",
+          "is_correct": false
+        },
+        {
+          "text": "PIN-Code",
+          "is_correct": true
+        },
+        {
+          "text": "Biometrie",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Systemadministrator implementiert BitLocker auf allen Geräten. Einer der Desktop-PCs kann jedoch das Bootlaufwerk nicht verschlüsseln. Welche Komponenten sollte der Administrator überprüfen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „TPM (Trusted Platform Module)“, weil BitLocker standardmäßig das TPM-Modul verwendet, um die Verschlüsselungsschlüssel sicher zu speichern und den Systemstart zu verifizieren. TPM ist ein Sicherheitschip auf dem Mainboard, der überprüft, ob sich das System nicht verändert hat (z.B. BIOS-Manipulation oder Bootloader-Angriffe), bevor der Zugriff auf das verschlüsselte Laufwerk gewährt wird. Wenn BitLocker die Verschlüsselung des Bootlaufwerks verweigert, liegt das häufig daran, dass:\n\n- kein TPM-Chip vorhanden ist,\n- das TPM im BIOS/UEFI deaktiviert ist, oder\n- die TPM-Version zu alt ist (BitLocker erfordert TPM 2.0 für neuere Windows-Versionen).\n\nDer Administrator sollte daher zuerst prüfen, ob das TPM aktiviert, erkannt und initialisiert wurde.\n\nWarum die anderen Optionen nicht helfen:\n\nCPU:\nDie CPU ist für die Verarbeitungsgeschwindigkeit zuständig, hat aber keinen Einfluss auf die Verschlüsselungsfähigkeit mit BitLocker.\n\nRAM:\nArbeitsspeicher beeinflusst Leistung, aber nicht die Fähigkeit zur Laufwerksverschlüsselung.\n\nHDD:\nEine defekte oder inkompatible Festplatte könnte Fehler verursachen, aber sie verhindert nicht gezielt die BitLocker-Verschlüsselung des Bootlaufwerks.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "RAM",
+          "is_correct": false
+        },
+        {
+          "text": "CPU",
+          "is_correct": false
+        },
+        {
+          "text": "TPM",
+          "is_correct": true
+        },
+        {
+          "text": "HDD",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Servertypen wird verwendet, um Daten und Informationen über Ereignisse von einem netzwerkverbundenen Host zu sammeln?",
+      "explanation": "Ein Syslog-Server (System Log Server) wird in Netzwerken verwendet, um Protokoll- und Ereignisdaten von verschiedenen Geräten zentral zu sammeln und zu speichern.\nDas betrifft zum Beispiel: Router, Switches, Firewalls, Server, Netzwerkdrucker, Betriebssysteme\nDiese Geräte senden ihre Log-Meldungen (z.B. Warnungen, Fehler, Statusinformationen) über das Syslog-Protokoll (UDP Port 514) an den zentralen Server. Dort können Administratoren die Ereignisse überwachen, analysieren und archivieren.\nWarum die anderen Antworten falsch sind:\nDNS (Domain Name System):\nZuständig für die Auflösung von Domainnamen in IP-Adressen – keine Ereignisprotokollierung.\nMail-Server:\nSendet und empfängt E-Mails, sammelt aber keine Systemereignisse von Hosts.\nPrint-Server:\nVerarbeitet Druckaufträge im Netzwerk, überwacht aber keine allgemeinen Ereignisse oder Logs.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Syslog",
+          "is_correct": true
+        },
+        {
+          "text": "Mail",
+          "is_correct": false
+        },
+        {
+          "text": "DNS",
+          "is_correct": false
+        },
+        {
+          "text": "Print",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker behebt ein Netzwerkproblem.\nBenutzer melden, dass die Verbindung ständig abbricht und sich alle paar Sekunden wieder verbindet. Der Techniker führt folgende Schritte aus:\n\n- Überprüft, dass die Netzwerkkonfiguration auf der Workstation korrekt ist\n- Testet das Netzwerkkabel vom Arbeitsplatz bis zum Switch – keine Probleme festgestellt\n- Verwendet eine funktionierende Test-Workstation am selben Kabel und reproduziert das Problem\n\nWelche Maßnahmen sollte der Techniker als Nächstes durchführen?",
+      "explanation": "Erklärung: \nDa das Problem mit einer funktionierenden Test-Workstation reproduzierbar ist, liegt der Fehler nicht an der Workstation oder am Kabel, sondern höchstwahrscheinlich am Switch-Port oder an der Netzwerkhardware. Ein typisches Symptom, wenn sich eine Verbindung ständig trennt und wieder verbindet, ist Port-Flapping, das bedeutet, dass der Switch-Port ständig zwischen „up“ und „down“ wechselt. Der nächste logische Schritt ist daher, die Switch-Logs zu prüfen, um zu sehen, ob Port-Flapping oder Link-Fehler gemeldet werden.\n\nWarum die anderen Optionen nicht helfen:\n\nNeue Netzwerkhardware hinzufügen:\nÜberlastung führt zu langsamen Verbindungen, nicht zu ständigen Trennungen.\n\nStatische IP zuweisen:\nDas Problem ist physikalisch oder hardwarebezogen, nicht auf IP-Adressierung zurückzuführen.\n\nUmgebung auf Störeinflüsse prüfen:\nDas wäre relevant bei drahtlosen Verbindungen (WLAN), aber hier handelt es sich um eine verkabelte Verbindung – also nicht zutreffend.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Neue Netzwerkhardware hinzufügen, um Überlastung zu verringern",
+          "is_correct": false
+        },
+        {
+          "text": "Die Umgebung auf externe Störeinflüsse überprüfen",
+          "is_correct": false
+        },
+        {
+          "text": "Die Netzprotokolle auf Hinweise zu Port-Flapping überprüfen",
+          "is_correct": true
+        },
+        {
+          "text": "Den betroffenen Workstations eine statische IP zuweisen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Spezialist richtet in einer SOHO-Umgebung einen drahtlosen Router ein. Danach können mehrere Geräte nicht auf das Internet zugreifen und erhalten IP-Adressen, die mit 169.254 beginnen. Welche Maßnahmen ist am besten geeignet, um das Problem zu beheben?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Den WLAN-Router neu starten“, weil IP-Adressen, die mit 169.254.x.x beginnen, vom System selbst vergeben werden, wenn kein DHCP-Server erreichbar ist. Diese sogenannten APIPA-Adressen (Automatic Private IP Addressing) weisen darauf hin, dass der Router oder DHCP-Dienst nicht korrekt funktioniert. Ein Neustart des Routers behebt in vielen Fällen:\n\n- Blockierte oder abgestürzte DHCP-Dienste\n- Zwischengespeicherte Konfigurationsfehler\n- Temporäre Netzwerkstörungen\n\nNach dem Neustart sollte der Router wieder gültige IP-Adressen (z.B. 192.168.x.x) an die Geräte vergeben, und die Internetverbindung wird wiederhergestellt.\n\nWarum die anderen Optionen nicht helfen:\n\nLease-Dauer verkürzen:\nDie Lease-Time steuert, wie lange eine IP-Adresse gültig bleibt, nicht, ob sie überhaupt vergeben wird.\n\nStatische IP-Adressen verwenden:\nDas wäre nur eine Notlösung, würde das Problem des nicht funktionierenden DHCP-Servers nicht beheben.\n\nDHCP-Pool vergrößern:\nEin zu kleiner Adresspool führt zwar ebenfalls zu Adressproblemen, aber hier bekommen die Geräte gar keine DHCP-Adresse, sondern eine 169.254-APIPA-Adresse, also ist der DHCP-Dienst selbst betroffen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Lease-Dauer verkürzen",
+          "is_correct": false
+        },
+        {
+          "text": "Router neu starten",
+          "is_correct": true
+        },
+        {
+          "text": "Statische IP nutzen",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP-Pool vergrößern",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Optionen beschreibt am besten den Zweck von NFC?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Kurzstreckenfunkverbindungen zwischen zwei Geräten“, weil NFC (Near Field Communication) eine kabellose Kommunikationstechnologie ist, die eine Verbindung zwischen zwei Geräten über sehr kurze Distanzen (typischerweise unter 10 cm) ermöglicht NFC wird häufig für kontaktlose Zahlungen (z.B. mit Smartphone oder Kreditkarte), das Koppeln von Geräten (z.B. Bluetooth-Lautsprecher) oder das Austauschen kleiner Datenmengen verwendet. Die Verbindung erfolgt automatisch, sobald sich die Geräte sehr nahe beieinander befinden, ohne dass eine manuelle Kopplung oder Internetverbindung erforderlich ist.\n\nWarum die anderen Optionen nicht helfen:\n\nVerkabelte Verbindungen zwischen mehreren Geräten:\nNFC ist eine drahtlose Technologie, daher keine Kabelverbindung.\n\nDrahtlose Verbindungen zwischen mehreren Geräten gleichzeitig:\nDas trifft eher auf Wi-Fi oder Bluetooth zu, NFC verbindet immer nur zwei Geräte gleichzeitig.\n\nDirekte Verbindung zweier Computer zum Dateiaustausch:\nDas würde eher über Ethernet, Bluetooth oder Wi-Fi Direct geschehen – nicht über NFC, da es nur für kleine Datenmengen und sehr kurze Distanzen gedacht ist.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Drahtlose Verbindungen zwischen mehreren Geräten gleichzeitig",
+          "is_correct": false
+        },
+        {
+          "text": "Direkte Verbindung zweier Computer zum Dateiaustausch",
+          "is_correct": false
+        },
+        {
+          "text": "Kurzstreckenfunkverbindungen zwischen zwei Geräten",
+          "is_correct": true
+        },
+        {
+          "text": "Verkabelte Verbindungen zwischen mehreren Geräten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine High-End-Workstation mit einem RAID-5-Array zeigt langsame Datenzugriffsgeschwindigkeiten und gelegentliche Fehler beim Abrufen von Dateien. Der Techniker untersucht das Problem und bemerkt, dass eine der Festplatten im RAID-Array ein gelbes (bernsteinfarbenes) Licht zeigt. Welche Maßnahmen sollte der Techniker ergreifen, um das Problem zu beheben?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Die fehlerhafte Festplatte austauschen und den RAID-Controller das Array neu aufbauen lassen“, weil das bernsteinfarbene Licht an einer RAID-Festplatte in der Regel anzeigt, dass die Festplatte ausgefallen oder kurz vor dem Ausfall steht. In einem RAID-5-Array sind die Daten auf mehrere Laufwerke verteilt, und es wird eine Paritätsinformation gespeichert, die es erlaubt, eine defekte Festplatte ohne Datenverlust zu ersetzen. Langsame Zugriffsgeschwindigkeiten und Fehler treten auf, weil der RAID-Controller versucht, Daten aus den verbliebenen Laufwerken mithilfe der Parität rekonstruiert zu lesen. Der richtige nächste Schritt ist also:\n\n- Die defekte Festplatte identifizieren (anhand der Status-LED).\n- Sie austauschen.\n- Den RAID-Controller das Array automatisch neu aufbauen (rebuild) lassen.\n- Nach Abschluss des Rebuild-Prozesses sollte die Leistung wieder normal sein.\n\nWarum die anderen Optionen nicht helfen:\n\nNetzwerkprobleme prüfen:\nDie Workstation hat ein lokales RAID, kein Netzwerk-basiertes Speicherproblem. Netzwerkfehler haben hier keinen Einfluss.\n\nAlle RAID-Festplatten auf größere Modelle aufrüsten:\nDas würde nicht die Ursache (eine fehlerhafte Platte) beheben und könnte sogar zu Inkompatibilitäten führen.\n\nAlle Festplatten formatieren:\nDas würde alle Daten löschen und das Problem nicht gezielt lösen. RAID-Systeme sind dafür ausgelegt, bei einem Einzellaufwerksausfall weiterzuarbeiten, ohne dass ein vollständiges Formatieren nötig ist.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Die fehlerhafte Festplatte austauschen und den RAID-Controller das Array neu aufbauen lassen",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Festplatten im RAID-Array formatieren",
+          "is_correct": false
+        },
+        {
+          "text": "Netzwerkprobleme prüfen",
+          "is_correct": false
+        },
+        {
+          "text": "Alle RAID-Festplatten auf größere Modelle aufrüsten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Kunde muss einen neuen Drucker in sein Netzwerk integrieren. Der Kunde berichtet, dass Benutzer bei früheren Druckern zeitweise Verbindungsprobleme hatten. Welche Einstellungen sollte der Techniker am neuen Drucker konfigurieren, um dieses Problem zu vermeiden?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Statische IP-Adresse“, weil bei Druckern, die über DHCP automatisch eine IP-Adresse erhalten, diese sich ändern kann, wenn der DHCP-Lease abläuft oder der Router neu gestartet wird. Wenn sich die IP-Adresse ändert, verlieren die Computer ihre gespeicherte Druckerzuordnung, das führt zu den beschriebenen Verbindungsproblemen. Durch die Zuweisung einer statischen IP-Adresse bleibt die Netzwerkadresse des Druckers immer gleich, und alle Benutzer können zuverlässig auf ihn zugreifen. Optional kann der Techniker die statische IP außerhalb des DHCP-Bereichs wählen, um Konflikte zu vermeiden.\n\nWarum die anderen Optionen nicht helfen:\n\nGateway-IP-Adresse:\nWird nur benötigt, wenn der Drucker über Subnetze hinweg oder ins Internet drucken soll. Innerhalb eines lokalen Netzwerks ist sie nicht die Ursache für Verbindungsprobleme.\n\nDHCP-IP-Adresse:\nGenau das sollte vermieden werden, weil sich die Adresse dynamisch ändern kann, was zu den intermittierenden Verbindungsproblemen führt.\n\nÖffentliche IP-Adresse:\nEin Drucker sollte niemals eine öffentliche IP-Adresse haben, da dies ein hohes Sicherheitsrisiko darstellt. Er sollte immer im internen privaten Netzwerk bleiben.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Gateway-IP-Adresse",
+          "is_correct": false
+        },
+        {
+          "text": "Statische IP-Adresse",
+          "is_correct": true
+        },
+        {
+          "text": "Öffentliche IP-Adresse",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP-IP-Adresse",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Support-Techniker erhält einen Anruf, dass ein Benutzer ein neues Gerät zum Netzwerk hinzugefügt hat. Der Benutzer hat dabei dieselben Netzwerkeinstellungen wie bei einer anderen Workstation verwendet. Wenn beide Workstations eingeschaltet sind, können keine von beiden zuverlässig auf das Netzwerk zugreifen. Was ist die wahrscheinlichste Ursache für dieses Problem?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Der neue Computer hat eine doppelte IP-Adresse“, weil das Kopieren derselben Netzwerkkonfiguration (IP-Adresse, Gateway, DNS usw.) von einem anderen Gerät dazu führt, dass beide Computer dieselbe IP-Adresse im Netzwerk verwenden. In einem Netzwerk muss jede IP-Adresse eindeutig sein. Wenn zwei Geräte dieselbe Adresse haben, entsteht ein IP-Adresskonflikt, wodurch:\n\n- Die Geräte abwechselnd aus dem Netzwerk fliegen,\n- Paketverluste oder ARP-Konflikte auftreten,\n- Und keine stabile Verbindung möglich ist.\n\nDie Lösung ist einfach:\n- Dem neuen Gerät eine eigene, eindeutige IP-Adresse zuweisen\n- oder die Konfiguration auf automatische Adressvergabe (DHCP) umstellen.\n\nWarum die anderen Optionen nicht helfen:\n\nDNS-Server registriert beide Hostnamen:\nSelbst wenn zwei Geräte denselben Hostnamen hätten, würden sie weiterhin eine IP-Adresse erhalten und Netzwerkzugriff haben.\nDas verursacht keine Verbindungsabbrüche.\n\nNetzwerkkabel wurde falsch aufgelegt:\nEin falsch aufgelegtes Kabel würde nur ein einzelnes Gerät betreffen, nicht beide gleichzeitig.\n\nSicherheit am Switchport zurücksetzen:\nPort-Security am Switch könnte einzelne Geräte blockieren, aber nicht beide Geräte gleichzeitig mit demselben Problem, wenn sie auf verschiedenen Ports angeschlossen sind.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Der neue Computer hat eine doppelte IP-Adresse",
+          "is_correct": true
+        },
+        {
+          "text": "Der DNS-Server registriert beide Hostnamen",
+          "is_correct": false
+        },
+        {
+          "text": "Die Sicherheit am Switchport muss zurückgesetzt werden",
+          "is_correct": false
+        },
+        {
+          "text": "Das Netzwerkkabel wurde falsch aufgelegt",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Auflösungen ist allgemein als Ultra HD bekannt?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist 3840×2160, weil dies die standardisierte Auflösung für Ultra High Definition (UHD oder 4K UHD) ist.\nSie bietet eine viermal höhere Auflösung als Full HD (1920×1080) und liefert dadurch ein deutlich schärferes und detaillierteres Bild. UHD wird typischerweise bei Fernsehern, Monitoren und Streaming-Inhalten verwendet. Die Bezeichnung „4K“ stammt ursprünglich aus dem Kino-Standard (4096×2160), wird aber im Consumer-Bereich als Synonym für 3840×2160 verwendet.\n\nWarum die anderen Optionen nicht helfen:\n\n1920×1080:\nDas ist Full HD (FHD), die Standardauflösung für viele Monitore und Fernseher – nicht UHD.\n\n2048×1080:\nDas ist der DCI-4K-Kinostandard (Digital Cinema Initiatives), wird in der Filmproduktion verwendet, aber nicht als „Ultra HD“ bezeichnet.\n\n7680×4320:\nDas ist 8K UHD, eine noch höhere Auflösung, die über die gängige „Ultra HD“-Bezeichnung hinausgeht.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "1920×1080",
+          "is_correct": false
+        },
+        {
+          "text": "7680×4320",
+          "is_correct": false
+        },
+        {
+          "text": "3840×2160",
+          "is_correct": true
+        },
+        {
+          "text": "2048×1080",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer meldet, dass sein Desktop-PC nicht eingeschaltet werden kann. Welche Komponenten würde am wahrscheinlichsten die Ursache des Problems sein?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist PSU (Power Supply Unit), weil das Netzteil die Komponente ist, die den gesamten Computer mit Strom versorgt.\nWenn der PC überhaupt nicht reagiert, kein Lüfter, kein Licht, kein Geräusch, ist die häufigste Ursache ein defektes oder nicht angeschlossenes Netzteil. Das Netzteil wandelt den Wechselstrom (AC) aus der Steckdose in Gleichstrom (DC) um, den die internen Komponenten wie Mainboard, CPU, GPU und Laufwerke benötigen. Ist das Netzteil beschädigt oder liefert keine Spannung, erhält der Computer keine Energie und bleibt vollständig aus.\n\nWarum die anderen Optionen nicht helfen:\n\nGPU (Grafikkarte):\nEin defekter Grafikprozessor kann kein Bild liefern, aber der PC würde trotzdem einschalten (Lüfter, LED usw.).\n\nRAM (Arbeitsspeicher):\nFehlerhafter Arbeitsspeicher kann den Startvorgang abbrechen oder Pieptöne verursachen, aber der Computer würde sich einschalten.\n\nCPU (Prozessor):\nEine defekte CPU kann den Startvorgang verhindern, aber in den meisten Fällen würde der Lüfter trotzdem anlaufen, da die Stromversorgung noch funktioniert.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "GPU",
+          "is_correct": false
+        },
+        {
+          "text": "RAM",
+          "is_correct": false
+        },
+        {
+          "text": "PSU",
+          "is_correct": true
+        },
+        {
+          "text": "CPU",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer schließt seinen Laptop an einen Projektor im Konferenzraum an. Nach dem Anschließen berichtet der Benutzer, dass das projizierte Bild unten kleiner ist als oben. Der Benutzer hat bereits versucht, den Laptop neu zu starten und das Kabel zu trennen und wieder zu verbinden. Welche Maßnahmen sollte ein Techniker ergreifen, um das Problem zu beheben?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Trapezverzerrung einstellen“, weil das beschriebene Problem, das Bild ist trapezförmig (unten kleiner als oben), ein klassischer Fall von Keystone-Verzerrung (Trapezverzerrung) ist. Keystone-Korrektur ist eine Einstellung am Projektor, mit der das Bild geometrisch korrigiert wird, wenn der Projektor nicht direkt senkrecht zur Projektionsfläche steht, z.B. wenn er zu hoch, zu niedrig oder seitlich versetzt positioniert ist. Durch Anpassen der Keystone-Einstellung (meist über Tasten am Projektor oder Fernbedienung) wird das Bild gleichmäßig rechteckig dargestellt, ohne dass Änderungen an der Laptop-Auflösung oder Kabel nötig sind.\n\nWarum die anderen Optionen nicht helfen:\n\nHDMI-Kabel austauschen:\nEin defektes Kabel kann zu Signalverlusten oder Flackern, aber nicht zu einer geometrischen Bildverzerrung führen.\n\nProjektor neu starten (Power Cycle):\nEin Neustart behebt keine Ausrichtungsprobleme, sondern nur Software- oder Verbindungsfehler.\n\nAuflösung erhöhen:\nDie Auflösung beeinflusst Bildschärfe und Größe, aber nicht die Form des Bildes, das Trapez bleibt bestehen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Auflösung erhöhen",
+          "is_correct": false
+        },
+        {
+          "text": "HDMI-Kabel ersetzen",
+          "is_correct": false
+        },
+        {
+          "text": "Trapezverzerrung einstellen",
+          "is_correct": true
+        },
+        {
+          "text": "Projektor neu starten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker behebt Internetverbindungsprobleme, die nach einem Firewall-Update aufgetreten sind. Benutzer berichten, dass sie lokale Netzwerkressourcen (z.B. Drucker und Freigaben) erreichen können, aber keinen Zugriff auf das Internet haben. Welche Einstellungen verursacht höchstwahrscheinlich das Problem?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Standard-Gateway“, weil das Standard-Gateway die Verbindung vom lokalen Netzwerk ins Internet herstellt. Wenn Benutzer lokale Ressourcen (Drucker, Server, Dateifreigaben) erreichen, bedeutet das, dass ihre IP-Adresse, Subnetzmaske und DNS-Einstellungen korrekt sind und die interne Kommunikation funktioniert. Wenn sie jedoch nicht ins Internet gelangen, liegt das fast immer an einem falschen oder blockierten Gateway, zum Beispiel:\n\n- Das Gateway wurde durch das Firewall-Update geändert oder deaktiviert\n- Die Firewall blockiert den Datenverkehr zum Gateway\n- Oder der Gateway-Eintrag auf den Clients ist falsch konfiguriert\n\nDas Gateway ist die Adresse des Geräts (z.B. Router oder Firewall), das Pakete ins Internet weiterleitet. Ohne ein funktionierendes Gateway bleiben die Geräte im lokalen Netzwerk „gefangen“.\n\nWarum die anderen Optionen nicht helfen:\n\nStatische IP-Zuweisungen:\nWenn diese falsch wären, könnten Benutzer nicht einmal lokale Ressourcen erreichen, das ist also nicht die Ursache.\n\nSubnetzmaske:\nEine falsche Subnetzmaske würde die lokale Kommunikation stören, aber hier funktioniert sie, also korrekt konfiguriert.\n\nVLANs:\nVLAN-Probleme würden bestimmte Netzwerksegmente trennen, nicht gezielt den Internetzugang für alle blockieren.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Standard-Gateway",
+          "is_correct": true
+        },
+        {
+          "text": "Subnetzmaske",
+          "is_correct": false
+        },
+        {
+          "text": "VLANs",
+          "is_correct": false
+        },
+        {
+          "text": "Statische IP-Zuweisungen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Optionen ist am besten geeignet, um eine Datei auf mögliche Malware zu testen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist Sandbox, weil eine Sandbox eine isolierte, sichere Testumgebung ist, in der verdächtige Dateien ausgeführt oder geöffnet werden können, ohne dass das eigentliche System gefährdet wird. Eine Sandbox trennt den Testprozess vollständig vom Betriebssystem, sodass Malware, selbst wenn sie aktiv wird, keinen Zugriff auf echte Dateien, Netzwerke oder Systeme erhält. Diese Methode wird häufig von Sicherheitsforschern, Antivirenprogrammen und Systemadministratoren verwendet, um das Verhalten verdächtiger Dateien zu beobachten, bevor sie in eine produktive Umgebung gelangen.\n\nWarum die anderen Optionen nicht helfen:\n\nMultimandantenbetrieb (Multitenancy):\nBezieht sich auf Cloud-Architekturen, in denen mehrere Benutzer eine gemeinsame Infrastruktur nutzen – keine Methode zur Malware-Analyse.\n\nTestentwicklung:\nBezieht sich auf den Softwareentwicklungsprozess, nicht auf Sicherheits- oder Malwaretests.\n\nPlattformübergreifende Virtualisierung:\nErmöglicht das Ausführen unterschiedlicher Betriebssysteme auf einer Plattform, dient aber nicht speziell der sicheren Malware-Isolation.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Multimandantenbetrieb",
+          "is_correct": false
+        },
+        {
+          "text": "Testentwicklung",
+          "is_correct": false
+        },
+        {
+          "text": "Plattformübergreifende Virtualisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Sandbox",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker hat einen neuen Computer zusammengebaut. Beim ersten Start besteht der Computer den POST-Test, aber das Betriebssystem startet nicht. Welche Komponenten ist wahrscheinlich ausgefallen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist Festplatte (HDD), weil der POST-Test (Power-On Self-Test) nur überprüft, ob die grundlegende Hardware, wie CPU, RAM, Mainboard und Grafiksystem, funktioniert. Wenn der POST-Test erfolgreich ist, das System aber kein Betriebssystem lädt, liegt das Problem sehr wahrscheinlich an der Festplatte oder an der Boot-Konfiguration. Das bedeutet, dass das System kein Laufwerk mit einem startfähigen OS finden kann oder die Festplatte selbst defektTypische Symptome:\n\n- Meldung wie „No boot device found“ oder „Operating system not found“\n- System bleibt nach dem POST-Bildschirm hängen\n\nWarum die anderen Optionen nicht helfen:\n\nAudiokarte:\nHat keinen Einfluss auf den Startvorgang. Ein PC ohne Soundkarte würde trotzdem normal booten.\n\nCPU:\nWenn die CPU defektNetzteil:\nDas Netzteil funktioniert, da der Computer einschaltet und den POST-Test abschließt. Ein defektes Netzteil würde verhindern, dass das System überhaupt startet.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Netzteil",
+          "is_correct": false
+        },
+        {
+          "text": "CPU",
+          "is_correct": false
+        },
+        {
+          "text": "Audiokarte",
+          "is_correct": false
+        },
+        {
+          "text": "Festplatte",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Eine Gruppe von Freunden trifft sich in einem Raum, um Videospiele zu spielen. Einer der Freunde besitzt einen eigenen Spiele-Server. Welchen Netzwerktyp sollte die Gruppe verwenden, damit sich alle mit demselben Server und dem Internet verbinden können?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist LAN (Local Area Network), weil ein LAN ein lokales Netzwerk ist, das Geräte innerhalb eines begrenzten Bereichs, wie einem Raum, Haus oder Gebäude, verbindet. Ein LAN ermöglicht es den Freunden, ihre Computer oder Konsolen über einen Router oder Switch miteinander zu verbinden, sodass sie gemeinsam auf den Spielserver zugreifen können. Der Router kann gleichzeitig eine Internetverbindung bereitstellen, damit sie sowohl lokal spielen als auch online-Funktionen nutzen können. Typischerweise erfolgt die Verbindung über Ethernet-Kabel oder WLAN.\n\nWarum die anderen Optionen nicht helfen:\n\nSAN (Storage Area Network):\nWird für den Zugriff auf gemeinsame Speicherressourcen (z.B. Festplatten in Rechenzentren) genutzt, nicht für Spiele oder Benutzerverbindungen.\n\nMAN (Metropolitan Area Network):\nDeckt ein städtisches Gebiet oder mehrere Standorte ab, ist also viel größer als nötig für eine kleine Spielgruppe in einem Raum.\n\nPAN (Personal Area Network):\nVerbinde Geräte einer einzelnen Person (z.B. Smartphone, Kopfhörer, Smartwatch) – nicht geeignet, um mehrere Computer miteinander und mit dem Internet zu verbinden.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SAN",
+          "is_correct": false
+        },
+        {
+          "text": "PAN",
+          "is_correct": false
+        },
+        {
+          "text": "LAN",
+          "is_correct": true
+        },
+        {
+          "text": "MAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer hat Probleme beim Laden eines Geräts mit einem Lightning-Kabel. Das Kabel wird nicht erkannt, wenn es eingesteckt wird. Das Problem lässt sich meist beheben, wenn man das Kabel umdreht. Bei anderen Geräten des gleichen Typs tritt dieses Problem nicht auf. Was ist wahrscheinlich die Ursache des Problems?",
+      "explanation": "Der Lightning-Anschluss (wie bei iPhones oder iPads) ist reversibel, das heißt, man kann das Kabel in beide Richtungen einstecken.\nWenn es aber nur in einer Richtung funktioniert, deutet das darauf hin, dass eine Seite des Anschlusses (im Gerät oder im Stecker) verunreinigt oder beschädigt ist.\nTypische Ursachen:\n- Staub, Fusseln oder Schmutz im Ladeport.\n- Oxidierte oder verbogene Kontakte.\n- Leichter mechanischer Schaden durch häufiges Ein- und Ausstecken.\nDas erklärt auch, warum andere Geräte mit demselben Kabel keine Probleme haben – also liegt der Fehler nicht am Kabel, sondern am Anschluss des betroffenen Geräts.\nWarum die anderen Antworten falsch sind:\nDas Gerät muss neu gestartet werden:\nEin Neustart behebt Softwarefehler, aber nicht physische Kontaktprobleme.\nDer Akku bläht sich auf:\nEin aufgeblähter Akku kann Ladeprobleme verursachen, aber nicht so selektiv, dass das Kabel nur in einer Richtung funktioniert.\nDas Kabel ist defekt:\nWenn das Kabel defekt wäre, würde das Problem bei allen Geräten auftreten, nicht nur bei einem.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Das Kabel ist defekt und muss ersetzt werden.",
+          "is_correct": false
+        },
+        {
+          "text": "Der Akku bläht sich auf und sollte überprüft werden.",
+          "is_correct": false
+        },
+        {
+          "text": "Das Gerät muss neu gestartet werden.",
+          "is_correct": false
+        },
+        {
+          "text": "Der Ladeanschluss ist verschmutzt oder beschädigt.",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker untersucht ein Multifunktions-Laserdruckgerät, das beim Kopieren und Scannen eine vertikale Linie auf dem Ausdruck zeigt. Wenn Benutzer jedoch drucken oder Faxe empfangen, ist der Ausdruck einwandfrei. Welche Komponenten sollte der Techniker überprüfen, um die Ursache des Problems zu ermitteln?",
+      "explanation": "Wenn ein Multifunktions-Laserdrucker nur beim Scannen und Kopieren (also beim Erfassen von Vorlagen) eine senkrechte Linie erzeugt, beim Drucken oder beim Ausgeben empfangener Faxe aber keine Fehler erscheinen, liegt das Problem sehr wahrscheinlich nicht in der Druck-/Toner-Engine (Trommel, Korona etc.), sondern in der Scan-/Einzugs-Einheit — also am Dokumenteneinzug (ADF) oder am Flachbett-Scanner (Glas / Sensor).\nWarum genau der Dokumenteneinzug / Scanner?\nKopieren und Scannen verwenden die Scan-Hardware (ADF oder Flachbett-Sensor). Beim Drucken bzw. beim Ausdrucken empfangener Faxe wird dagegen nur die Druck-Engine benutzt.\nEine konstante senkrechte Linie deutet typischerweise auf:\nSchmutz/Staub oder Kratzer auf dem Scanner-Glas oder auf dem schmalen Glasstreifen, über den das ADF liest, oder einen defekten Kanal im CIS/CCD-Sensor (bei ADFs oft CIS).\nWenn das Problem nur beim Einsatz des ADF auftritt (nicht bei direktem Flachbett-Scan), ist ganz konkret das ADF-Glas, der ADF-weißstreifen oder die ADF-Sensorik schuld.\n\nWarum die anderen Optionen eher ausgeschlossen sind\n- Die Einzugsrollen (Pickup rollers)\nVerantwortlich für das Greifen und Transportieren von Papier.\nFehler hier führen zu Fehlzuführung, Papierstau oder schief eingezogenem Papier — nicht zu einer senkrechten Bildlinie.\n- Der Koronadraht (Corona wire)\nTeil der Druckelektronik (lädt den Trommelzylinder elektrostatisch).\nEin Problem hier würde beim Drucken (unabhängig von Quelle) sichtbare Artefakte oder Streifen produzieren — aber die Drucke sind ja in Ordnung.\n- Die Trommeleinheit (Drum assembly)\nDefekte Trommel erzeugt wiederkehrende, meist horizontale/regelmäßig periodische Streifen auf allen Ausgaben (Drucken, Kopien, Faxe).\nDa nur Kopien/Scans betroffen sind, ist die Trommel sehr unwahrscheinlich.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Die Einzugsrollen",
+          "is_correct": false
+        },
+        {
+          "text": "Die Trommeleinheit",
+          "is_correct": false
+        },
+        {
+          "text": "Den Koronadraht",
+          "is_correct": false
+        },
+        {
+          "text": "Den Dokumenteneinzug",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer meldet, dass Ausdrucke eines Laserdruckers Linien und Schmierflecken aufweisen. Außerdem kommt es gelegentlich zu Fehleinzügen des Papiers. Welches Bauteile sollte ein Techniker austauschen, um dieses Problem zu beheben?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Maintenance Kit (Wartungskit)“, weil ein Wartungskit alle verschleißanfälligen Teile eines Laserdruckers enthält, die genau diese Symptome verursachen können – also Linien, Schmierflecken und Papierfehleinzüge. Ein typisches Maintenance Kit (Wartungskit) beinhaltet:\n\n- den Fuser (Fixiereinheit) – erhitzt und fixiert den Toner auf dem Papier,\n- die Einzugs- und Trennrollen – verhindern Papierstaus und Fehleinzüge,\n- manchmal auch Transfer- oder Reinigungsrollen.\n\nDa der Drucker sowohl Qualitätsprobleme (Linien/Schmierflecken) als auch mechanische Probleme (Fehleinzug) zeigt, liegt die Ursache höchstwahrscheinlich an mehreren verschlissenen Komponenten, und somit ist der Austausch des gesamten Maintenance Kits die effektivste Lösung.\n\nWarum die anderen Optionen nicht helfen:\n\nFixiereinheit (Fuser):\nEin defekter Fuser kann zwar Schmierflecken oder nicht fixierten Toner verursachen, aber nicht die Probleme beim Papiereinzug.\n\nKoronadraht (Corona Wire):\nEin verschmutzter oder defekter Koronadraht verursacht dunkle Linien oder Punkte, aber keine Fehleinzüge.\n\nTonerkartusche (Toner Cartridge):\nEine schlechte Tonerpatrone kann Streifen oder Flecken erzeugen, aber nicht die mechanischen Zuführungsprobleme lösen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Wartungskit",
+          "is_correct": true
+        },
+        {
+          "text": "Koronadraht",
+          "is_correct": false
+        },
+        {
+          "text": "Tonerkartusche",
+          "is_correct": false
+        },
+        {
+          "text": "Fixiereinheit",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen stellt Servermaschinen in einer Public Cloud bereit. Welches Cloud-Service-Modelle beschreibt dieses Szenario am besten?",
+      "explanation": "Beispiele:\n\n- Ein Unternehmen mietet virtuelle Maschinen (VMs) bei AWS EC2, Microsoft Azure, oder Google Compute Engine.\n- Es kann Server einrichten, skalieren und konfigurieren, ohne physische Hardware kaufen oder warten zu müssen.\n\nDas passt genau zur Beschreibung:\n\n„Servermaschinen werden in einer Public Cloud bereitgestellt.“\n\nWarum die anderen Optionen nicht helfen:\n\nPlatform as a Service (PaaS):\nBietet eine Entwicklungsplattform (z.B. Datenbanken, Laufzeitumgebungen), nicht aber direkte Kontrolle über virtuelle Server.\n\nAnything as a Service (XaaS):\nIst ein allgemeiner Oberbegriff für alle Cloud-Modelle, aber keine spezifische Serviceform, daher zu ungenau.\n\nSoftware as a Service (SaaS):\nBietet fertige Anwendungen (z.B. Microsoft 365, Google Workspace), nicht virtuelle Server oder Infrastruktur.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "SaaS",
+          "is_correct": false
+        },
+        {
+          "text": "PaaS",
+          "is_correct": false
+        },
+        {
+          "text": "XaaS",
+          "is_correct": false
+        },
+        {
+          "text": "IaaS",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer kann auf seinem Tablet von zu Hause aus nicht auf sichere Anwendungen zugreifen, wenn er ein paar Tage pro Woche im Homeoffice arbeitet. Im Büro funktionieren die Anwendungen jedoch einwandfrei. Welcher Dienste muss wahrscheinlich neu konfiguriert werden, um den Fernzugriff zu ermöglichen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Mobile Device Management (MDM)“, weil MDM-Systeme häufig Sicherheitsrichtlinien und Zugriffsregeln steuern, die festlegen, wann und von wo ein Gerät auf unternehmensinterne Anwendungen zugreifen darf. Wenn die sicheren Apps im Büro funktionieren, aber nicht im Homeoffice, liegt das oft daran, dass das MDM-Profil oder die VPN-/Zugriffsrichtlinien so konfiguriert sind, dass nur interne IP-Adressen oder bekannte Standorte erlaubt sind. Eine Neukonfiguration des MDM-Systems kann den Fernzugriff zulassen, z.B. durch:\n\n- Aktivieren von Remote-Zugriffsrichtlinien\n- Einrichten eines sicheren VPN-Profils\n- Zulassen externer Netzwerke für bestimmte Benutzergruppen\n\nDadurch kann der Benutzer die Anwendungen auch außerhalb des Firmennetzwerks sicher verwenden.\n\nWarum die anderen Optionen nicht helfen:\n\nGlobal Positioning System (GPS):\nDient nur zur Ortung und Navigation, hat aber keinen Einfluss auf App-Zugriffsrechte oder Sicherheit.\n\nWi-Fi Protected Access (WPA):\nBezieht sich auf die Verschlüsselung lokaler WLAN-Verbindungen, nicht auf den Zugriff auf Unternehmensanwendungen.\n\nNear-Field Communication (NFC):\nWird für Kurzstreckenkommunikation (z.B. kontaktloses Bezahlen oder Geräte-Kopplung) genutzt, hat aber nichts mit Remote-App-Zugriff oder MDM-Sicherheit zu tun.\n\nFrage 67 von 80",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "NFC",
+          "is_correct": false
+        },
+        {
+          "text": "GPS",
+          "is_correct": false
+        },
+        {
+          "text": "WPA",
+          "is_correct": false
+        },
+        {
+          "text": "Mobile Device Management",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welche Werkzeuge würde ein Techniker verwenden, um Kabel an einen RJ45-Stecker anzuschließen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Crimper“, weil ein Crimpwerkzeug (Crimpzange) verwendet wird, um die Adern eines Netzwerkkabels (z.B. Cat5e, Cat6) fest in die Kontaktpins eines RJ45-Steckers zu verpressen (crimpen). Der Crimper sorgt dafür, dass:\n\n- Jede Kupferader sicher mit dem Metallkontakt verbunden wird,\n- Der Stecker fest am Kabel sitzt,\n- Und das Kabel einsatzbereit für Netzwerkverbindungen ist.\n\nDies ist der letzte Schritt beim Herstellen eines Ethernet-Kabels, nachdem die Adern abisoliert und richtig angeordnet wurden.\n\nWarum die anderen Optionen nicht helfen:\n\nKabelabisolierer:\nDient nur zum Entfernen der Kabelisolierung, stellt aber keine Verbindung zwischen Adern und Stecker her.\n\nAuflegewerkzeug (Punchdown):\nWird verwendet, um Kabel in Patchpanels oder Keystone-Buchsen einzusetzen, nicht in RJ45-Stecker.\n\nLoopback-Stecker:\nDient zum Testen von Netzwerkports oder Verbindungen, aber nicht zum Anschließen oder Crimpen von Kabeln.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Kabelabisolierer",
+          "is_correct": false
+        },
+        {
+          "text": "Loopback-Stecker",
+          "is_correct": false
+        },
+        {
+          "text": "Auflegewerkzeug",
+          "is_correct": false
+        },
+        {
+          "text": "Crimper",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Welche Speicheroptionen würde ein Techniker am ehesten empfehlen, wenn es darum geht, viel Speicherplatz zu einem günstigen Preis zu haben, und die Lesegeschwindigkeit keine große Rolle spielt, für die Verwendung in einem Desktop-Computer?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „2TB SATA 3.5\" 5.400 U/min HDD“, weil eine herkömmliche SATA-Festplatte mit niedriger Drehzahl (5.400 U/min) die kostengünstigste Option ist, um große Speichermengen bereitzustellen. Diese Art von Festplatte bietet:\n\n- Hohe Kapazität (z.B. 2 TB oder mehr)\n- Geringen Preis pro Gigabyte\n- Ausreichende Leistung für Datenspeicherung, Backups oder Archivdateien\n- Niedrigen Stromverbrauch und leisen Betrieb\n\nDa in der Frage ausdrücklich steht, dass Lesegeschwindigkeit keine große Rolle spielt, ist eine langsamere, aber günstige HDD die beste Wahl.\n\nWarum die anderen Optionen nicht helfen:\n\n750GB NVMe M.2 SSD:\nSehr schnell, aber deutlich teurer pro GB und zu wenig Kapazität, wenn „große Mengen Speicher“ gefragt sind.\n\n2×1TB PCIe SSD in RAID 1:\nRAID 1 halbiert den nutzbaren Speicher auf 1TB und ist teuer, da zwei schnelle SSDs benötigt werden. Zudem ist die Leistung hier überdimensioniert für den geforderten Zweck.\n\n4TB SAS 2.5\" 15.000 U/min HDD:\nSAS-Laufwerke sind für Server und Rechenzentren gedacht. Die sind teuer, laut, mit hohem Stromverbrauch und nicht ideal oder nötig für einen Desktop-PC.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "750GB NVMe M.2 SSD",
+          "is_correct": false
+        },
+        {
+          "text": "2TB SATA 3.5\" 5.400 U/min HDD",
+          "is_correct": true
+        },
+        {
+          "text": "4TB SAS 2.5\" 15.000 U/min HDD",
+          "is_correct": false
+        },
+        {
+          "text": "2×1TB PCIe SSD in RAID 1",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Cloud-Modelle würden mehrere Organisationen derselben Branche am wahrscheinlichsten verwenden?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist Community Cloud (Gemeinschafts-Cloud), weil dieses Modell speziell dafür entwickelt wurde, dass mehrere Organisationen mit gemeinsamen Interessen oder Anforderungen eine Cloud-Infrastruktur teilen können. Eine Community Cloud wird oft von Unternehmen aus derselben Branche oder mit ähnlichen Sicherheits- und Compliance-Vorgaben genutzt, zum Beispiel im Gesundheitswesen, Bildungswesen oder Finanzsektor. Die Ressourcen werden gemeinsam genutzt, aber der Zugriff ist auf diese bestimmte Gruppe von Organisationen beschränkt. Dadurch kombiniert sie Vorteile aus der Private Cloud (Kontrolle und Sicherheit) und der Public Cloud (geteilte Kosten und Skalierbarkeit).\n\nWarum die anderen Optionen nicht helfen:\n\nPublic Cloud:\nWird von der breiten Öffentlichkeit genutzt (z.B. AWS, Azure, Google Cloud). Organisationen aus derselben Branche hätten hier keine eigene, geschützte Umgebung.\n\nHybrid Cloud:\nKombiniert Private und Public Cloud, wird aber innerhalb einer einzelnen Organisation genutzt, nicht gemeinsam von mehreren.\n\nPrivate Cloud:\nWird ausschließlich von einem Unternehmen betrieben, nicht von mehreren Organisationen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Community",
+          "is_correct": true
+        },
+        {
+          "text": "Private",
+          "is_correct": false
+        },
+        {
+          "text": "Public",
+          "is_correct": false
+        },
+        {
+          "text": "Hybrid",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer meldet, dass die Integrationsfunktionen des Smartphones (z.B. Android Auto oder Apple CarPlay) ständig stoppen und neu starten, wenn das Telefon im Auto geladen wird. Ein Techniker überprüft das Telefon und stellt fest, dass keine schädlichen Apps installiert sind. Welche Maßnahmen sollte der Techniker durchführen, um das Problem zu beheben?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Den Anschluss reinigen“, weil Verschmutzungen oder Staub im Lade-/Datenanschluss häufig zu Kontaktunterbrechungen führen, insbesondere wenn das Telefon im Auto bewegt wird. Wenn der Anschluss nicht stabil verbunden ist, kann die Verbindung zwischen Smartphone und Auto-Infotainmentsystem ständig neu erkannt und getrennt werden, was dazu führt, dass CarPlay oder Android Auto wiederholt starten und abbrechen. Eine einfache Reinigung mit Druckluft, einem weichen Zahnstocher, oder einem antistatischen Pinsel beseitigt Staub, Fusseln oder Oxidation und sorgt für eine stabile Verbindung sowohl für Laden als auch für Datenübertragung.\n\nWarum die anderen Optionen nicht helfen:\n\nLängeres Kabel verwenden:\nDie Kabellänge beeinflusst die Signalstabilität kaum – häufiger ist der Stecker oder Anschluss selbst das Problem.\n\nMDM-Software neu installieren:\nEin MDM (Mobile Device Management) steuert Richtlinien, hat aber keinen Einfluss auf physische oder elektrische Verbindungsprobleme.\n\nAkku entladen:\nDas Entladen des Akkus ändert nichts an einem Kontaktproblem und ist in diesem Fall nicht relevant.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "MDM neu installieren",
+          "is_correct": false
+        },
+        {
+          "text": "Akku entladen",
+          "is_correct": false
+        },
+        {
+          "text": "Längeres Kabel verwenden",
+          "is_correct": false
+        },
+        {
+          "text": "Anschluss reinigen",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker untersucht einen Desktop-PC, der an eine USV (unterbrechungsfreie Stromversorgung) angeschlossen ist. Nach jedem Stromausfall verliert der PC das Systemdatum und die Uhrzeit. Welche zwei Maßnahmen sollte der Techniker ergreifen, um das Problem zu beheben? (Wählen Sie zwei.)",
+      "explanation": "Erklärung: \nDie richtigen Antworten sind „CMOS-Batterie austauschen“ und „Backup-Stromquelle reparieren“, weil beide direkt mit dem Verlust von Datum und Uhrzeit nach einem Stromausfall zusammenhängen.\nCMOS-Batterie austauschen:\nDie CMOS-Batterie (meist CR2032) auf dem Mainboard speichert die BIOS-Einstellungen und die Systemzeit,\nwenn der PC vom Strom getrennt ist. Wenn diese Batterie leer oder defekt ist, werden die Uhrzeit und BIOS-Einstellungen nach jedem Neustart zurückgesetzt. Der Austausch der Batterie behebt dieses Problem in den meisten Fällen dauerhaft.\n\nBackup-Stromquelle (UPS) reparieren:\nWenn die unterbrechungsfreie Stromversorgung (UPS) selbst nicht mehr korrekt arbeitet, liefert sie bei einem Stromausfall keine Spannung mehr. Das führt dazu, dass der PC komplett abschaltet, anstatt sicher weiterzulaufen oder herunterzufahren. Eine defekte oder alte USV-Batterie sollte daher geprüft oder ersetzt werden.\n\nWarum die anderen Optionen nicht helfen:\n\nBIOS-Update:\nAktualisiert nur die Firmware, hat keinen Einfluss auf das Speichern der Uhrzeit bei Stromverlust.\n\nRAM austauschen:\nDer Arbeitsspeicher speichert nur temporäre Daten während des Betriebs - kein Zusammenhang mit Datum oder BIOS-Einstellungen.\n\nNTP deaktivieren:\nDas Network Time Protocol synchronisiert die Uhrzeit über das Internet – das Deaktivieren würde das Problem verschlimmern, nicht beheben.\n\nÜberspannungsschutz installieren:\nSchützt nur vor Spannungsspitzen, aber nicht vor Datenverlust im CMOS oder Stromausfällen.",
+      "question_type": "multi",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "USV reparieren",
+          "is_correct": true
+        },
+        {
+          "text": "CMOS-Batterie ersetzen",
+          "is_correct": true
+        },
+        {
+          "text": "RAM austauschen",
+          "is_correct": false
+        },
+        {
+          "text": "Überspannungsschutz installieren",
+          "is_correct": false
+        },
+        {
+          "text": "NTP deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "BIOS-Update ausführen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Während der Nutzung eines Computers berichtet ein Benutzer, dass der Systemlüfter laut zu laufen beginnt und die Anzeige auf dem Bildschirm verzerrt wird. Was passiert in diesem Fall wahrscheinlich?",
+      "explanation": "Erklärung\nDie richtige Antwort ist Überhitzung, weil der Systemlüfter laut läuft, um die hohe Temperatur auszugleichen. Bei steigender Hitze versucht der Computer, mehr Luft zu zirkulieren, um die Komponenten zu kühlen. Wenn jedoch die Kühlleistung nicht ausreicht, wird die Grafikkarte oder der Prozessor instabil, was sich durch verzerrte oder flackernde Bilder auf dem Bildschirm zeigt. Steigt die Temperatur weiter, kann sich das System automatisch abschalten, um Hardware-Schäden zu verhindern. Häufige Ursachen sind Staub in den Lüftungsschlitzen, defekte Lüfter, blockierte Luftzufuhr oder veraltete Wärmeleitpaste.\n\nWarum die anderen Optionen nicht helfen:\n\nLangsame Systemleistung:\nBedeutet, dass der Computer träge reagiert, z.B. beim Öffnen von Programmen. Hat nichts mit lautem Lüfter oder Grafikfehlern zu tun.\n\nÜbertakten der CPU:\nKann Überhitzung verursachen, aber im beschriebenen Fall gibt es keinen Hinweis darauf. Die Symptome zeigen nur die Folge (Hitze), nicht die Ursache (Übertaktung).\n\nAbstürzende Anwendungen:\nHierbei frieren Programme ein oder schließen sich unerwartet, aber das Display bleibt normal, und der Lüfter wird nicht lauter.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Langsame Systemleistung",
+          "is_correct": false
+        },
+        {
+          "text": "Abstürzende Anwendungen",
+          "is_correct": false
+        },
+        {
+          "text": "Überhitzung",
+          "is_correct": true
+        },
+        {
+          "text": "Übertakten der CPU",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Computer zeigt beim Installieren von Anwendungen eine Fehlermeldung an, dass nicht genügend Speicherplatz vorhanden ist. Der Benutzer berichtet außerdem über langsame Ladezeiten von Anwendungen. Welche Ersatzkomponenten würde dieses Problem am besten lösen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „SSD (Solid-State Drive)“, weil eine SSD sowohl mehr Speicherplatz bereitstellen als auch die Leistung erheblich verbessern kann. Wenn der Computer meldet, dass kein Speicherplatz mehr verfügbar ist, liegt das an einer vollen oder veralteten Festplatte (meist HDD). Zudem führen mechanische Festplatten (HDDs) zu langsamen Ladezeiten, da sie deutlich geringere Lese-/Schreibgeschwindigkeiten haben als SSDs. Durch den Austausch der HDD gegen eine SSD erreicht man:\n\n- Mehr freien Speicherplatz (wenn größere SSD eingebaut wird)\n- Schnellere System- und Programmstarts\n- Geringere Ladezeiten und höhere Gesamtleistung\n\nEine SSD ist damit die beste Lösung, um Platzmangel und langsame Ladezeiten gleichzeitig zu beheben.\n\nWarum die anderen Optionen nicht helfen:\n\nUSB:\nEin USB-Stick ist kein dauerhafter Systemdatenträger und eignet sich nicht für Programminstallationen oder Leistungssteigerung.\n\nHDD:\nEine weitere HDD würde zwar Speicherplatz schaffen, aber nicht die Performance verbessern, HDDs sind deutlich langsamer als SSDs.\n\nRAM:\nMehr Arbeitsspeicher kann die Leistung bei multitasking-intensiven Anwendungen verbessern, aber nicht den Fehler „zu wenig Speicherplatz“ lösen – dieser bezieht sich auf Massenspeicher, nicht auf Arbeitsspeicher.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "HDD",
+          "is_correct": false
+        },
+        {
+          "text": "RAM",
+          "is_correct": false
+        },
+        {
+          "text": "USB",
+          "is_correct": false
+        },
+        {
+          "text": "SSD",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker muss sicherstellen, dass Desktop-PCs für eine weltweite, externe Belegschaft bereitgestellt werden können. Welche Spezifikationen sollte der Techniker überprüfen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Eingangsspannung“, weil in verschiedenen Regionen der Welt unterschiedliche Netzspannungen und Steckertypen verwendet werden.\nBeispiele:\n\n- In den USA beträgt die Netzspannung typischerweise 110–120 Volt bei 60 Hz.\n- In Europa, Asien und Afrika sind es meist 220–240 Volt bei 50 Hz.\n\nDamit Desktop-PCs weltweit einsetzbar sind, muss das Netzteil (PSU) den universellen Eingangsspannungsbereich unterstützen – meist 100–240 V, 50/60 Hz. Wenn das Netzteil nur für eine bestimmte Spannung ausgelegt ist, kann es bei falscher Verwendung überhitzen oder ausfallen, und der PC wäre nicht für den internationalen Einsatz geeignet.\n\nWarum die anderen Optionen nicht helfen:\n\nBIOS-Sprachunterstützung:\nDie Sprache im BIOS ist nicht entscheidend für die Einsatzfähigkeit weltweit, da das Betriebssystem und Anwendungen unabhängig davon konfiguriert werden können.\n\nSicherheitsaspekte in der Lieferkette:\nDiese sind wichtig für die Unternehmenssicherheit, aber nicht technisch erforderlich, damit ein PC in anderen Ländern funktioniert.\n\nEnergieeffizienz:\nEine hohe Energieeffizienz ist zwar wünschenswert, aber sie entscheidet nicht darüber, ob ein PC international einsetzbar ist.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Energieeffizienz",
+          "is_correct": false
+        },
+        {
+          "text": "Eingangsspannung",
+          "is_correct": true
+        },
+        {
+          "text": "Sicherheitsaspekte Lieferkette",
+          "is_correct": false
+        },
+        {
+          "text": "BIOS-Sprachunterstützung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Optionen würde verhindern, dass eine virtuelle Maschine mit anderen Geräten im Netzwerk oder dem Internet kommunizieren kann?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Sandbox“, weil eine Sandbox eine isolierte, sichere Umgebung ist, in der Software oder virtuelle Maschinen vom restlichen Netzwerk getrennt ausgeführt werden. In einer Sandbox kann eine VM keine externe Verbindung herstellen, weder ins lokale Netzwerk noch ins Internet. Das dient dem Schutz des Systems, z.B. beim Testen unbekannter Software oder beim Analysieren potenzieller Malware. Durch diese vollständige Netzwerkisolierung kann sich Schadcode nicht ausbreiten und keine Daten an externe Server senden.\n\nWarum die anderen Optionen nicht helfen:\n\nVDI (Virtual Desktop Infrastructure):\nBietet virtuelle Desktops, die normal mit dem Netzwerk verbunden sind, keine Isolation.\n\nPrivate Cloud:\nBezeichnet eine dedizierte Cloud-Umgebung für ein Unternehmen, aber VMs innerhalb dieser Umgebung haben Netzwerkzugriff.\n\nType-1-Hypervisor:\nLäuft direkt auf der Hardware (Bare-Metal), verwaltet VMs, schränkt aber Netzwerkzugriff nicht automatisch ein.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Sandbox",
+          "is_correct": true
+        },
+        {
+          "text": "Private Cloud",
+          "is_correct": false
+        },
+        {
+          "text": "VDI",
+          "is_correct": false
+        },
+        {
+          "text": "Type-1-Hypervisor",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Kabeltypen kann sowohl Daten als auch Video übertragen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „USB-C“, weil USB-C ein universeller Anschlussstandard ist, der mehrere Signalarten gleichzeitig übertragen kann, darunter:\n\n- Datenübertragung (z.B. USB 3.x, Thunderbolt, Ethernet)\n- Videoausgabe (über DisplayPort- oder HDMI-Alternate-Mode)\n- Stromversorgung (Power Delivery – bis zu 100 W oder mehr)\n\nDas macht USB-C besonders flexibel, z.B. bei modernen Laptops, Tablets und Dockingstations, wo ein einziges Kabel gleichzeitig für Laden, Daten und Bildausgabe genutzt wird.\n\nBeispiel:\nEin Laptop mit USB-C-Port kann über ein einziges Kabel:\n\n- Mit einem Monitor verbunden werden (Video),\n- Externe Laufwerke ansprechen (Daten),\n- Und gleichzeitig geladen werden (Strom).\n\nWarum die anderen Optionen nicht helfen:\n\nHDMI:\nÜberträgt Video und Audio, aber keine Datenverbindungen wie Dateiübertragung oder Netzwerkkommunikation.\n\nDisplayPort:\nÜberträgt ebenfalls Video und Audio, aber keine allgemeinen Daten, er dient rein der Bildübertragung.\n\nVGA:\nEin veralteter analoger Standard, überträgt nur Videosignale, ohne Audio oder Daten.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "VGA",
+          "is_correct": false
+        },
+        {
+          "text": "HDMI",
+          "is_correct": false
+        },
+        {
+          "text": "USB-C",
+          "is_correct": true
+        },
+        {
+          "text": "DisplayPort",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IT-Techniker hat kürzlich die Firmware (BIOS/UEFI) auf einem Mainboard mit Dual-BIOS-Funktion aktualisiert. Nach dem Update bleibt das System in einer Boot-Schleife (Boot Loop) hängen und kann kein Betriebssystem von internen oder externen Geräten starten. Der Techniker kann auch nicht auf das UEFI-Menü zugreifen. Was sollte der Techniker als Nächstes tun?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Die sekundäre Konfiguration aktivieren“ (auch bekannt als zweites BIOS oder Backup-BIOS). Ein Dual-BIOS-Mainboard besitzt zwei separate BIOS-Chips:\n\n- Einen primären (Main BIOS), der normalerweise aktiv ist\n- Einen sekundären (Backup BIOS), der verwendet wird, wenn der primäre fehlschlägt\n\nWenn nach einem Firmware-Update das System nicht mehr startet oder in einer Boot-Schleife hängt, bedeutet das, dass das Haupt-BIOS beschädigt wurde.\nIn diesem Fall kann der Techniker das sekundäre BIOS aktivieren, um das System wieder zum Starten zu bringen.\n\nVon dort aus kann er:\n\n- Das beschädigte Haupt-BIOS wiederherstellen\n- Oder die Firmware erneut sauber installieren\n\nDiese Funktion ist genau für solche Szenarien vorgesehen, ein fehlgeschlagenes BIOS-Update ist einer der häufigsten Gründe für Boot-Loops.\n\nWarum die anderen Optionen nicht helfen:\n\nFirmware über USB downgraden:\nDas ist nicht möglich, wenn das System nicht bis zum UEFI-Menü oder Bootloader kommt. Man kann das Downgrade erst durchführen, nachdem das Backup-BIOS aktiv ist.\n\nGarantiewartung des Mainboards:\nNoch nicht nötig – die Dual-BIOS-Funktion soll genau solche Probleme ohne Austausch lösen.\n\nNeue Wärmeleitpaste auftragen:\nHat nichts mit dem BIOS oder Boot-Vorgang zu tun; das würde nur bei Überhitzungsproblemen helfen.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Firmware via USB downgraden",
+          "is_correct": false
+        },
+        {
+          "text": "Eine Garantiewartung des Mainboards starten",
+          "is_correct": false
+        },
+        {
+          "text": "Sekundäre Konfiguration aktivieren",
+          "is_correct": true
+        },
+        {
+          "text": "Neue Wärmeleitpaste auf die CPU auftragen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Benutzer meldet langsames Internet-Browsing. Der Techniker stellt fest, dass die CPU- und Speicherauslastung sehr hoch ist und Pop-up-Fenster etwa jede Minute erscheinen. Welche Maßnahmen sollte der Techniker als Nächstes durchführen?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist „Die Anti-Malware-Signaturen aktualisieren und das System scannen“, weil die beschriebenen Symptome, hohe CPU- und Speicherauslastung, regelmäßige Pop-ups und langsames Surfen, starke Anzeichen für eine Malware- oder Spyware-Infektion sind. Der Techniker sollte zuerst die Signaturen der Antiviren- oder Anti-Malware-Software aktualisieren, um sicherzustellen, dass die neuesten Bedrohungen erkannt werden können, und anschließend einen vollständigen Systemscan durchführen. Ein solcher Scan entfernt Schadprogramme, die Ressourcen überlasten, Pop-ups erzeugen und die Netzwerkleistung beeinträchtigen.\n\nWarum die anderen Optionen nicht helfen:\n\nAn das Netzwerkteam eskalieren:\nDas Problem liegt lokal am Computer, nicht an der Netzwerkverbindung. Die Pop-ups und hohe CPU-Last deuten eindeutig auf Malware hin.\n\nNeueste Treiber installieren:\nVeraltete Treiber können Systemprobleme verursachen, aber keine Pop-ups oder regelmäßige Malware-Symptome.\n\nWLAN- und DHCP-Einstellungen überprüfen:\nDiese betreffen Netzwerkkonfiguration und IP-Adressen, haben aber nichts mit CPU-Überlastung oder Pop-ups zu tun.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "An das Netzwerkteam eskalieren",
+          "is_correct": false
+        },
+        {
+          "text": "WLAN/DHCP prüfen",
+          "is_correct": false
+        },
+        {
+          "text": "Anti-Malware-Signaturen aktualisieren und scannen",
+          "is_correct": true
+        },
+        {
+          "text": "Treiber installieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Begriffe beschreibt, wie ein Benutzer die mobile Internetverbindung seines Smartphones mit seinem Laptop teilen kann?",
+      "explanation": "Erklärung: \nDie richtige Antwort ist Tethering, weil dieser Begriff das Teilen einer mobilen Internetverbindung eines Smartphones mit einem anderen Gerät, z.B. einem Laptop, bezeichnet. Beim Tethering kann die Verbindung auf verschiedene Arten hergestellt werden:\n\nUSB-Tethering: Verbindung per Kabel, stabil und energiesparend.\nWi-Fi-Hotspot: Das Smartphone erstellt ein eigenes WLAN, über das der Laptop sich verbindet.\nBluetooth-Tethering: Langsamer, aber energiesparender Weg für die Verbindung.\n\nSo kann der Laptop das mobile Datennetz des Telefons nutzen, auch wenn kein WLAN verfügbar ist.\n\nWarum die anderen Optionen nicht helfen:\n\nIR (Infrarot):\nEine veraltete Technologie für den Datenaustausch auf kurze Distanz, ungeeignet für die Internetfreigabe.\n\nNFC (Near Field Communication):\nDient dem Datenaustausch auf sehr kurze Distanz (z.B. kontaktlose Zahlung), nicht für Internetverbindungen.\n\nWi-Fi Direct:\nErlaubt eine direkte WLAN-Verbindung zwischen Geräten, aber teilt keine mobile Internetverbindung. Es wird eher für den Dateiaustausch oder Drucker-Verbindungen genutzt.",
+      "question_type": "single",
+      "difficulty": null,
+      "answers": [
+        {
+          "text": "Wi-Fi Direct",
+          "is_correct": false
+        },
+        {
+          "text": "Tethering",
+          "is_correct": true
+        },
+        {
+          "text": "NFC",
+          "is_correct": false
+        },
+        {
+          "text": "IR",
+          "is_correct": false
+        }
+      ]
+    }
+  ]
+}

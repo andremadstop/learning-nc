@@ -1,0 +1,2888 @@
+{
+  "pool_name": "Security+ MCQ (DE)",
+  "source": "AI-generated (Claude/Gemini), reviewed and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "questions": [
+    {
+      "text": "Welche Massnahme reduziert Passwort-Hash-Rainbow-Table-Angriffe?",
+      "explanation": "Salt macht gleiche Passwoerter zu unterschiedlichen Hashes.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Salting",
+          "is_correct": true
+        },
+        {
+          "text": "Port Mirroring",
+          "is_correct": false
+        },
+        {
+          "text": "Load Balancing",
+          "is_correct": false
+        },
+        {
+          "text": "Token Ring",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Framework beschreibt standardisierte Incident-Response-Phasen?",
+      "explanation": "NIST beschreibt Prepare, Detect, Contain, Eradicate, Recover, Lessons Learned.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "CIA Triad",
+          "is_correct": false
+        },
+        {
+          "text": "NIST IR Lifecycle",
+          "is_correct": true
+        },
+        {
+          "text": "OSI Layer",
+          "is_correct": false
+        },
+        {
+          "text": "Bell-LaPadula",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Technik schuetzt am besten gegen die Folgen gestohlener Passwoerter?",
+      "explanation": "MFA reduziert das Risiko bei kompromittierten Credentials stark.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Port Security",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Snooping",
+          "is_correct": false
+        },
+        {
+          "text": "SNMPv2c",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Begriff beschreibt die maximal tolerierbare Ausfallzeit?",
+      "explanation": "RTO = Recovery Time Objective.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "RPO",
+          "is_correct": false
+        },
+        {
+          "text": "SLA",
+          "is_correct": false
+        },
+        {
+          "text": "RTO",
+          "is_correct": true
+        },
+        {
+          "text": "MTBF",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Datenklassifikation erfordert meist die strengsten Kontrollen?",
+      "explanation": "Restricted/Confidential benoetigt starke Schutzmassnahmen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Public",
+          "is_correct": false
+        },
+        {
+          "text": "Internal",
+          "is_correct": false
+        },
+        {
+          "text": "Restricted",
+          "is_correct": true
+        },
+        {
+          "text": "Marketing",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Kontrollart erkennt Angriffe, statt sie primaer zu verhindern?",
+      "explanation": "Detective Controls identifizieren Vorfaelle, z.B. IDS/SIEM-Alerts.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Preventive",
+          "is_correct": false
+        },
+        {
+          "text": "Detective",
+          "is_correct": true
+        },
+        {
+          "text": "Directive",
+          "is_correct": false
+        },
+        {
+          "text": "Deterrent",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Massnahme adressiert am direktesten Credential Stuffing?",
+      "explanation": "MFA und Limits reduzieren Erfolg automatisierter Login-Angriffe stark.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "MFA plus Rate Limiting",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Passwortlaenge auf 8 setzen",
+          "is_correct": false
+        },
+        {
+          "text": "Port 443 aendern",
+          "is_correct": false
+        },
+        {
+          "text": "DNS TTL senken",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage beschreibt Non-Repudiation am besten?",
+      "explanation": "Digitale Signaturen sind ein klassischer Mechanismus fuer Non-Repudiation.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Verfuegbarkeit von Backups",
+          "is_correct": false
+        },
+        {
+          "text": "Nachweisbarkeit, dass eine Aktion von einer Entitaet stammt",
+          "is_correct": true
+        },
+        {
+          "text": "Netzwerksegmentierung",
+          "is_correct": false
+        },
+        {
+          "text": "Anonymisierung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wozu dient ein Risk Register in der Security Governance?",
+      "explanation": "Ein Risk Register ist Kern der strukturierten Risikosteuerung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Inventar fuer Hardware",
+          "is_correct": false
+        },
+        {
+          "text": "Dokumentation von Risiken inkl. Bewertung, Owner und Behandlung",
+          "is_correct": true
+        },
+        {
+          "text": "Ausschliesslich Ticketnummern",
+          "is_correct": false
+        },
+        {
+          "text": "Passwortspeicher",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Option passt am besten zu \"Compensating Control\"?",
+      "explanation": "Compensating Controls mildern Risiken alternativ ab.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Ersatzkontrolle, wenn Primarkontrolle nicht moeglich ist",
+          "is_correct": true
+        },
+        {
+          "text": "Kontrolle fuer Bonuszahlungen",
+          "is_correct": false
+        },
+        {
+          "text": "Automatisch privilegierter Zugriff",
+          "is_correct": false
+        },
+        {
+          "text": "Nur physische Zugangskontrolle",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Methode schuetzt ruhende Daten auf mobilen Endgeraeten am effektivsten?",
+      "explanation": "Vollverschluesselung reduziert Schaden bei Geraeteverlust.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Full-Disk Encryption",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Hostname aendern",
+          "is_correct": false
+        },
+        {
+          "text": "NTP aktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Reservation",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Prinzip reduziert lateral movement nach einem initialen Kompromiss?",
+      "explanation": "Segmentierung und minimale Rechte begrenzen Bewegungsfreiheit von Angreifern.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Flat Network Design",
+          "is_correct": false
+        },
+        {
+          "text": "Mikrosegmentierung + Least Privilege",
+          "is_correct": true
+        },
+        {
+          "text": "Gast-WLAN im selben VLAN",
+          "is_correct": false
+        },
+        {
+          "text": "Gemeinsame Admin-Konten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Incident-Response-Aktivitaet folgt typischerweise auf Containment?",
+      "explanation": "Nach Eindammung werden Ursachen/Artefakte entfernt (Eradication).",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Lessons learned sofort",
+          "is_correct": false
+        },
+        {
+          "text": "Eradication",
+          "is_correct": true
+        },
+        {
+          "text": "Policy sign-off",
+          "is_correct": false
+        },
+        {
+          "text": "Data classification",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Loesung adressiert Data Exfiltration ueber Cloud-Apps am besten?",
+      "explanation": "CASB/DLP kann Datenbewegung in Cloud-Diensten kontrollieren.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "CASB/DLP Policies",
+          "is_correct": true
+        },
+        {
+          "text": "Nur ICMP blockieren",
+          "is_correct": false
+        },
+        {
+          "text": "ARP statisch setzen",
+          "is_correct": false
+        },
+        {
+          "text": "Syslog deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Angriffsvektor nutzt gefaelschte Support-Anrufe zur Credential-Erschleichung?",
+      "explanation": "Vishing ist Voice-Phishing ueber Telefon.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Vishing",
+          "is_correct": true
+        },
+        {
+          "text": "SQLi",
+          "is_correct": false
+        },
+        {
+          "text": "XSS",
+          "is_correct": false
+        },
+        {
+          "text": "ARP poisoning",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Massnahme ist am geeignetsten gegen unsichere Standardkonfigurationen?",
+      "explanation": "Sichere Baselines + Drift-Kontrolle reduzieren Fehlkonfigurationen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Baseline Hardening und Configuration Management",
+          "is_correct": true
+        },
+        {
+          "text": "Nur neue Wallpaper-Richtlinie",
+          "is_correct": false
+        },
+        {
+          "text": "DNS Forwarder wechseln",
+          "is_correct": false
+        },
+        {
+          "text": "Printer Queue loeschen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Option ist ein starkes Indiz fuer Insider-Risiko?",
+      "explanation": "Anomales Benutzerverhalten ist ein typischer Insider-Indikator.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Ungewoehnliche Datenabzuege ausserhalb der Arbeitszeit",
+          "is_correct": true
+        },
+        {
+          "text": "Normale DHCP-Lease-Erneuerung",
+          "is_correct": false
+        },
+        {
+          "text": "Regelmaessige NTP-Syncs",
+          "is_correct": false
+        },
+        {
+          "text": "TLS 1.3 Nutzung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Compliance-Aktivitaet gehoert zu Governance?",
+      "explanation": "Governance umfasst Steuerung, Verantwortlichkeiten und Nachweisfuehrung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Rollen, Policies, Kontrollnachweise und Audits koordinieren",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Router rebooten",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Wi-Fi Passwort rotieren",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Ticketprioritaet setzen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage trifft auf Zero Trust am ehesten zu?",
+      "explanation": "Zero Trust setzt auf kontinuierliche Bewertung statt implizites Vertrauen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Einmal intern authentisiert = dauerhaft vertraut",
+          "is_correct": false
+        },
+        {
+          "text": "Kontinuierliche Verifikation von Identitaet, Kontext und Geraet",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Netzwerkfirewall am Rand",
+          "is_correct": false
+        },
+        {
+          "text": "Keine Protokollierung noetig",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Technik verhindert am ehesten Session Hijacking durch gestohlene Cookies?",
+      "explanation": "Mehrere Schichten reduzieren Missbrauch kompromittierter Sessions.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Session-Bindung, kurze Lifetimes, MFA-Reauth, secure flags",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Hostnamen aendern",
+          "is_correct": false
+        },
+        {
+          "text": "SNMP abschalten",
+          "is_correct": false
+        },
+        {
+          "text": "DNS TXT-Record",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten beobachtet erhoehtes Risiko beim Thema Phishing-resistente MFA. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Phishing-resistente Faktoren sind origin-gebunden und reduzieren Account-Takeover signifikant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "FIDO2/WebAuthn fuer privilegierte und kritische Konten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten beobachtet erhoehtes Risiko beim Thema Cloud-Fehlkonfiguration. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Praeventive Guardrails blockieren riskante Einstellungen schon vor Produktion.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Policy-as-Code mit deny-public-default fuer Storage und IAM",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten beobachtet erhoehtes Risiko beim Thema Ransomware-Resilienz. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Isolierte Wiederherstellungspunkte reduzieren Erpressungswirkung und beschleunigen Recovery.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "3-2-1-Backup mit unveraenderbarer und offline Kopie",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten beobachtet erhoehtes Risiko beim Thema Laterale Bewegung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Feingranulare Ost-West-Regeln begrenzen den Blast Radius nach Erstkompromittierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mikrosegmentierung mit deny-by-default zwischen Workloads",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten beobachtet erhoehtes Risiko beim Thema Incident-Erkennung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Zentrale Sichtbarkeit ueber Endpunkt- und Logdaten verbessert MTTD und Priorisierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SIEM-Korrelation plus EDR-Telemetrie mit abgestimmten Use-Cases",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten beobachtet erhoehtes Risiko beim Thema Privilegierte Zugriffe. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Temporale Privilegien und Auditierbarkeit reduzieren Missbrauchsrisiko deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAM mit JIT-Rechten, Session Recording und MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten beobachtet erhoehtes Risiko beim Thema SaaS/Cloud-Datenverlust. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Shared Responsibility erfordert kundenseitige Wiederherstellbarkeit und Testnachweise.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regelmaessiger Export plus getestete Restore-Runbooks fuer kritische Daten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten beobachtet erhoehtes Risiko beim Thema Phishing-resistente MFA. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Phishing-resistente Faktoren sind origin-gebunden und reduzieren Account-Takeover signifikant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "FIDO2/WebAuthn fuer privilegierte und kritische Konten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten beobachtet erhoehtes Risiko beim Thema Cloud-Fehlkonfiguration. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Praeventive Guardrails blockieren riskante Einstellungen schon vor Produktion.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Policy-as-Code mit deny-public-default fuer Storage und IAM",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten beobachtet erhoehtes Risiko beim Thema Ransomware-Resilienz. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Isolierte Wiederherstellungspunkte reduzieren Erpressungswirkung und beschleunigen Recovery.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "3-2-1-Backup mit unveraenderbarer und offline Kopie",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten beobachtet erhoehtes Risiko beim Thema Laterale Bewegung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Feingranulare Ost-West-Regeln begrenzen den Blast Radius nach Erstkompromittierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mikrosegmentierung mit deny-by-default zwischen Workloads",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten beobachtet erhoehtes Risiko beim Thema Incident-Erkennung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Zentrale Sichtbarkeit ueber Endpunkt- und Logdaten verbessert MTTD und Priorisierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SIEM-Korrelation plus EDR-Telemetrie mit abgestimmten Use-Cases",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten beobachtet erhoehtes Risiko beim Thema Privilegierte Zugriffe. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Temporale Privilegien und Auditierbarkeit reduzieren Missbrauchsrisiko deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAM mit JIT-Rechten, Session Recording und MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten beobachtet erhoehtes Risiko beim Thema SaaS/Cloud-Datenverlust. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Shared Responsibility erfordert kundenseitige Wiederherstellbarkeit und Testnachweise.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regelmaessiger Export plus getestete Restore-Runbooks fuer kritische Daten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb beobachtet erhoehtes Risiko beim Thema Phishing-resistente MFA. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Phishing-resistente Faktoren sind origin-gebunden und reduzieren Account-Takeover signifikant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "FIDO2/WebAuthn fuer privilegierte und kritische Konten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb beobachtet erhoehtes Risiko beim Thema Cloud-Fehlkonfiguration. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Praeventive Guardrails blockieren riskante Einstellungen schon vor Produktion.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Policy-as-Code mit deny-public-default fuer Storage und IAM",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb beobachtet erhoehtes Risiko beim Thema Ransomware-Resilienz. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Isolierte Wiederherstellungspunkte reduzieren Erpressungswirkung und beschleunigen Recovery.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "3-2-1-Backup mit unveraenderbarer und offline Kopie",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb beobachtet erhoehtes Risiko beim Thema Laterale Bewegung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Feingranulare Ost-West-Regeln begrenzen den Blast Radius nach Erstkompromittierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mikrosegmentierung mit deny-by-default zwischen Workloads",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb beobachtet erhoehtes Risiko beim Thema Incident-Erkennung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Zentrale Sichtbarkeit ueber Endpunkt- und Logdaten verbessert MTTD und Priorisierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SIEM-Korrelation plus EDR-Telemetrie mit abgestimmten Use-Cases",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb beobachtet erhoehtes Risiko beim Thema Privilegierte Zugriffe. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Temporale Privilegien und Auditierbarkeit reduzieren Missbrauchsrisiko deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAM mit JIT-Rechten, Session Recording und MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb beobachtet erhoehtes Risiko beim Thema SaaS/Cloud-Datenverlust. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Shared Responsibility erfordert kundenseitige Wiederherstellbarkeit und Testnachweise.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regelmaessiger Export plus getestete Restore-Runbooks fuer kritische Daten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud beobachtet erhoehtes Risiko beim Thema Phishing-resistente MFA. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Phishing-resistente Faktoren sind origin-gebunden und reduzieren Account-Takeover signifikant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "FIDO2/WebAuthn fuer privilegierte und kritische Konten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud beobachtet erhoehtes Risiko beim Thema Cloud-Fehlkonfiguration. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Praeventive Guardrails blockieren riskante Einstellungen schon vor Produktion.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Policy-as-Code mit deny-public-default fuer Storage und IAM",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud beobachtet erhoehtes Risiko beim Thema Ransomware-Resilienz. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Isolierte Wiederherstellungspunkte reduzieren Erpressungswirkung und beschleunigen Recovery.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "3-2-1-Backup mit unveraenderbarer und offline Kopie",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud beobachtet erhoehtes Risiko beim Thema Laterale Bewegung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Feingranulare Ost-West-Regeln begrenzen den Blast Radius nach Erstkompromittierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mikrosegmentierung mit deny-by-default zwischen Workloads",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud beobachtet erhoehtes Risiko beim Thema Incident-Erkennung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Zentrale Sichtbarkeit ueber Endpunkt- und Logdaten verbessert MTTD und Priorisierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SIEM-Korrelation plus EDR-Telemetrie mit abgestimmten Use-Cases",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud beobachtet erhoehtes Risiko beim Thema Privilegierte Zugriffe. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Temporale Privilegien und Auditierbarkeit reduzieren Missbrauchsrisiko deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAM mit JIT-Rechten, Session Recording und MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud beobachtet erhoehtes Risiko beim Thema SaaS/Cloud-Datenverlust. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Shared Responsibility erfordert kundenseitige Wiederherstellbarkeit und Testnachweise.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regelmaessiger Export plus getestete Restore-Runbooks fuer kritische Daten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben beobachtet erhoehtes Risiko beim Thema Phishing-resistente MFA. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Phishing-resistente Faktoren sind origin-gebunden und reduzieren Account-Takeover signifikant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "FIDO2/WebAuthn fuer privilegierte und kritische Konten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben beobachtet erhoehtes Risiko beim Thema Cloud-Fehlkonfiguration. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Praeventive Guardrails blockieren riskante Einstellungen schon vor Produktion.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Policy-as-Code mit deny-public-default fuer Storage und IAM",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben beobachtet erhoehtes Risiko beim Thema Ransomware-Resilienz. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Isolierte Wiederherstellungspunkte reduzieren Erpressungswirkung und beschleunigen Recovery.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "3-2-1-Backup mit unveraenderbarer und offline Kopie",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben beobachtet erhoehtes Risiko beim Thema Laterale Bewegung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Feingranulare Ost-West-Regeln begrenzen den Blast Radius nach Erstkompromittierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mikrosegmentierung mit deny-by-default zwischen Workloads",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben beobachtet erhoehtes Risiko beim Thema Incident-Erkennung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Zentrale Sichtbarkeit ueber Endpunkt- und Logdaten verbessert MTTD und Priorisierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SIEM-Korrelation plus EDR-Telemetrie mit abgestimmten Use-Cases",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben beobachtet erhoehtes Risiko beim Thema Privilegierte Zugriffe. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Temporale Privilegien und Auditierbarkeit reduzieren Missbrauchsrisiko deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAM mit JIT-Rechten, Session Recording und MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben beobachtet erhoehtes Risiko beim Thema SaaS/Cloud-Datenverlust. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Shared Responsibility erfordert kundenseitige Wiederherstellbarkeit und Testnachweise.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regelmaessiger Export plus getestete Restore-Runbooks fuer kritische Daten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus beobachtet erhoehtes Risiko beim Thema Phishing-resistente MFA. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Phishing-resistente Faktoren sind origin-gebunden und reduzieren Account-Takeover signifikant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "FIDO2/WebAuthn fuer privilegierte und kritische Konten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus beobachtet erhoehtes Risiko beim Thema Cloud-Fehlkonfiguration. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Praeventive Guardrails blockieren riskante Einstellungen schon vor Produktion.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Policy-as-Code mit deny-public-default fuer Storage und IAM",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus beobachtet erhoehtes Risiko beim Thema Ransomware-Resilienz. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Isolierte Wiederherstellungspunkte reduzieren Erpressungswirkung und beschleunigen Recovery.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "3-2-1-Backup mit unveraenderbarer und offline Kopie",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus beobachtet erhoehtes Risiko beim Thema Laterale Bewegung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Feingranulare Ost-West-Regeln begrenzen den Blast Radius nach Erstkompromittierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mikrosegmentierung mit deny-by-default zwischen Workloads",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus beobachtet erhoehtes Risiko beim Thema Incident-Erkennung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Zentrale Sichtbarkeit ueber Endpunkt- und Logdaten verbessert MTTD und Priorisierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SIEM-Korrelation plus EDR-Telemetrie mit abgestimmten Use-Cases",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus beobachtet erhoehtes Risiko beim Thema Privilegierte Zugriffe. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Temporale Privilegien und Auditierbarkeit reduzieren Missbrauchsrisiko deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAM mit JIT-Rechten, Session Recording und MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus beobachtet erhoehtes Risiko beim Thema SaaS/Cloud-Datenverlust. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Shared Responsibility erfordert kundenseitige Wiederherstellbarkeit und Testnachweise.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regelmaessiger Export plus getestete Restore-Runbooks fuer kritische Daten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern beobachtet erhoehtes Risiko beim Thema Phishing-resistente MFA. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Phishing-resistente Faktoren sind origin-gebunden und reduzieren Account-Takeover signifikant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "FIDO2/WebAuthn fuer privilegierte und kritische Konten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern beobachtet erhoehtes Risiko beim Thema Cloud-Fehlkonfiguration. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Praeventive Guardrails blockieren riskante Einstellungen schon vor Produktion.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Policy-as-Code mit deny-public-default fuer Storage und IAM",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern beobachtet erhoehtes Risiko beim Thema Ransomware-Resilienz. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Isolierte Wiederherstellungspunkte reduzieren Erpressungswirkung und beschleunigen Recovery.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "3-2-1-Backup mit unveraenderbarer und offline Kopie",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern beobachtet erhoehtes Risiko beim Thema Laterale Bewegung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Feingranulare Ost-West-Regeln begrenzen den Blast Radius nach Erstkompromittierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mikrosegmentierung mit deny-by-default zwischen Workloads",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern beobachtet erhoehtes Risiko beim Thema Incident-Erkennung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Zentrale Sichtbarkeit ueber Endpunkt- und Logdaten verbessert MTTD und Priorisierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SIEM-Korrelation plus EDR-Telemetrie mit abgestimmten Use-Cases",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern beobachtet erhoehtes Risiko beim Thema Privilegierte Zugriffe. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Temporale Privilegien und Auditierbarkeit reduzieren Missbrauchsrisiko deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAM mit JIT-Rechten, Session Recording und MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern beobachtet erhoehtes Risiko beim Thema SaaS/Cloud-Datenverlust. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Shared Responsibility erfordert kundenseitige Wiederherstellbarkeit und Testnachweise.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regelmaessiger Export plus getestete Restore-Runbooks fuer kritische Daten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion beobachtet erhoehtes Risiko beim Thema Phishing-resistente MFA. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Phishing-resistente Faktoren sind origin-gebunden und reduzieren Account-Takeover signifikant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "FIDO2/WebAuthn fuer privilegierte und kritische Konten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion beobachtet erhoehtes Risiko beim Thema Cloud-Fehlkonfiguration. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Praeventive Guardrails blockieren riskante Einstellungen schon vor Produktion.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Policy-as-Code mit deny-public-default fuer Storage und IAM",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion beobachtet erhoehtes Risiko beim Thema Ransomware-Resilienz. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Isolierte Wiederherstellungspunkte reduzieren Erpressungswirkung und beschleunigen Recovery.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "3-2-1-Backup mit unveraenderbarer und offline Kopie",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion beobachtet erhoehtes Risiko beim Thema Laterale Bewegung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Feingranulare Ost-West-Regeln begrenzen den Blast Radius nach Erstkompromittierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mikrosegmentierung mit deny-by-default zwischen Workloads",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion beobachtet erhoehtes Risiko beim Thema Incident-Erkennung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Zentrale Sichtbarkeit ueber Endpunkt- und Logdaten verbessert MTTD und Priorisierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SIEM-Korrelation plus EDR-Telemetrie mit abgestimmten Use-Cases",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion beobachtet erhoehtes Risiko beim Thema Privilegierte Zugriffe. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Temporale Privilegien und Auditierbarkeit reduzieren Missbrauchsrisiko deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAM mit JIT-Rechten, Session Recording und MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion beobachtet erhoehtes Risiko beim Thema SaaS/Cloud-Datenverlust. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Shared Responsibility erfordert kundenseitige Wiederherstellbarkeit und Testnachweise.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regelmaessiger Export plus getestete Restore-Runbooks fuer kritische Daten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD beobachtet erhoehtes Risiko beim Thema Phishing-resistente MFA. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Phishing-resistente Faktoren sind origin-gebunden und reduzieren Account-Takeover signifikant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "FIDO2/WebAuthn fuer privilegierte und kritische Konten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD beobachtet erhoehtes Risiko beim Thema Cloud-Fehlkonfiguration. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Praeventive Guardrails blockieren riskante Einstellungen schon vor Produktion.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Policy-as-Code mit deny-public-default fuer Storage und IAM",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD beobachtet erhoehtes Risiko beim Thema Ransomware-Resilienz. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Isolierte Wiederherstellungspunkte reduzieren Erpressungswirkung und beschleunigen Recovery.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "3-2-1-Backup mit unveraenderbarer und offline Kopie",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD beobachtet erhoehtes Risiko beim Thema Laterale Bewegung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Feingranulare Ost-West-Regeln begrenzen den Blast Radius nach Erstkompromittierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mikrosegmentierung mit deny-by-default zwischen Workloads",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD beobachtet erhoehtes Risiko beim Thema Incident-Erkennung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Zentrale Sichtbarkeit ueber Endpunkt- und Logdaten verbessert MTTD und Priorisierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SIEM-Korrelation plus EDR-Telemetrie mit abgestimmten Use-Cases",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD beobachtet erhoehtes Risiko beim Thema Privilegierte Zugriffe. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Temporale Privilegien und Auditierbarkeit reduzieren Missbrauchsrisiko deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAM mit JIT-Rechten, Session Recording und MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD beobachtet erhoehtes Risiko beim Thema SaaS/Cloud-Datenverlust. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Shared Responsibility erfordert kundenseitige Wiederherstellbarkeit und Testnachweise.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regelmaessiger Export plus getestete Restore-Runbooks fuer kritische Daten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb beobachtet erhoehtes Risiko beim Thema Phishing-resistente MFA. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Phishing-resistente Faktoren sind origin-gebunden und reduzieren Account-Takeover signifikant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "FIDO2/WebAuthn fuer privilegierte und kritische Konten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb beobachtet erhoehtes Risiko beim Thema Cloud-Fehlkonfiguration. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Praeventive Guardrails blockieren riskante Einstellungen schon vor Produktion.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Policy-as-Code mit deny-public-default fuer Storage und IAM",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb beobachtet erhoehtes Risiko beim Thema Ransomware-Resilienz. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Isolierte Wiederherstellungspunkte reduzieren Erpressungswirkung und beschleunigen Recovery.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "3-2-1-Backup mit unveraenderbarer und offline Kopie",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb beobachtet erhoehtes Risiko beim Thema Laterale Bewegung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Feingranulare Ost-West-Regeln begrenzen den Blast Radius nach Erstkompromittierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mikrosegmentierung mit deny-by-default zwischen Workloads",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb beobachtet erhoehtes Risiko beim Thema Incident-Erkennung. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Zentrale Sichtbarkeit ueber Endpunkt- und Logdaten verbessert MTTD und Priorisierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SIEM-Korrelation plus EDR-Telemetrie mit abgestimmten Use-Cases",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb beobachtet erhoehtes Risiko beim Thema Privilegierte Zugriffe. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Temporale Privilegien und Auditierbarkeit reduzieren Missbrauchsrisiko deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAM mit JIT-Rechten, Session Recording und MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb beobachtet erhoehtes Risiko beim Thema SaaS/Cloud-Datenverlust. Welche Massnahme ist am sinnvollsten?",
+      "explanation": "Shared Responsibility erfordert kundenseitige Wiederherstellbarkeit und Testnachweise.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regelmaessiger Export plus getestete Restore-Runbooks fuer kritische Daten",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Admin-Konto fuer schnellere Freigaben",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich manuelle Kontrollen ohne Automatisierung",
+          "is_correct": false
+        },
+        {
+          "text": "Legacy-Protokolle aktiv lassen und Logs minimieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen fuehrt Zero Trust ein. Ein Admin meldet sich von einem neuen Geraet in einem unbekannten Land an und will auf Produktions-Keys zugreifen. Welche Kontrolle sollte den Zugriff primaer steuern?",
+      "explanation": "Zero Trust prueft Kontext laufend. Hochrisiko-Ereignisse loesen adaptive Kontrollen aus.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Continuous Access Evaluation mit Risiko-Score und Step-up MFA",
+          "is_correct": true
+        },
+        {
+          "text": "Einmalige VPN-Anmeldung pro Schicht ohne Re-Authentifizierung",
+          "is_correct": false
+        },
+        {
+          "text": "Pauschale Allowlist fuer alle Admin-Konten",
+          "is_correct": false
+        },
+        {
+          "text": "Deaktivierung von Geo-Informationen zur Privatsphaere",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nach einem Credential-Stuffing-Angriff sollen Service-Accounts gehaertet werden. Welche Massnahme reduziert das Risiko am effektivsten?",
+      "explanation": "Kurzlebige, plattformverwaltete Identitaeten vermeiden geleakte Langzeit-Secrets.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Managed Identities ohne statische Geheimnisse",
+          "is_correct": true
+        },
+        {
+          "text": "Lange statische Passwoerter, jaehrlich rotiert",
+          "is_correct": false
+        },
+        {
+          "text": "Gemeinsamer API-Key fuer alle Microservices",
+          "is_correct": false
+        },
+        {
+          "text": "Speicherung von Zugangsdaten in Quellcode-Kommentaren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Incident-Response-Team braucht schnell forensisch belastbare Zeitlinien aus mehreren Clouds. Was ist die beste Vorbereitung?",
+      "explanation": "Integritaetsgeschuetzte, zentral korrelierbare Logs beschleunigen Detektion und Beweissicherung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Zentralisiertes, unveraenderbares Logging mit synchronisierter Zeitquelle",
+          "is_correct": true
+        },
+        {
+          "text": "Nur lokale Syslogs je Workload ohne Retention-Policy",
+          "is_correct": false
+        },
+        {
+          "text": "Logs nur bei kritischen Fehlern sammeln",
+          "is_correct": false
+        },
+        {
+          "text": "Manuelles Exportieren nach jedem Incident",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Bank bewertet Drittanbieter-Risiken nach NIST-Ansatz. Welche Kennzahl ist fuer Governance am hilfreichsten?",
+      "explanation": "Diese Kennzahl bildet Reife und Compliance kritischer Abhaengigkeiten direkt ab.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Prozentsatz kritischer Lieferanten mit aktueller SOC-2/ISO-27001-Bestaetigung",
+          "is_correct": true
+        },
+        {
+          "text": "Anzahl E-Mails pro Lieferant",
+          "is_correct": false
+        },
+        {
+          "text": "Durchschnittliche Meeting-Dauer mit Lieferanten",
+          "is_correct": false
+        },
+        {
+          "text": "Gesamtzahl installierter Browser-Plugins",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Team muss Daten in Ruhe und bei Uebertragung schuetzen. Welche Kombination ist angemessen?",
+      "explanation": "AES verschluesselt Daten, TLS 1.3 sichert Vertraulichkeit und Integritaet im Transit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "AES-256 fuer ruhende Daten und TLS 1.3 fuer Transport",
+          "is_correct": true
+        },
+        {
+          "text": "MD5 fuer ruhende Daten und HTTP fuer Transport",
+          "is_correct": false
+        },
+        {
+          "text": "Base64 fuer ruhende Daten und FTP fuer Transport",
+          "is_correct": false
+        },
+        {
+          "text": "SHA-1 fuer ruhende Daten und Telnet fuer Transport",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SOC entdeckt aktive Ransomware in einem Segment. Welcher Incident-Response-Schritt folgt zuerst auf die Bestaetigung?",
+      "explanation": "Nach Identifikation muss die Ausbreitung gestoppt werden, bevor Eradication/Recovery starten.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Containment durch Isolation betroffener Systeme",
+          "is_correct": true
+        },
+        {
+          "text": "Lessons Learned Meeting ansetzen",
+          "is_correct": false
+        },
+        {
+          "text": "Sofortige Rueckkehr in Normalbetrieb",
+          "is_correct": false
+        },
+        {
+          "text": "Alle Logs loeschen um Speicher zu sparen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Fuer Business Continuity soll ein ERP-System bei maximal 15 Minuten Datenverlust wieder laufen. Welche Kennzahl beschreibt den Datenverlust?",
+      "explanation": "Recovery Point Objective definiert den tolerierbaren Datenverlust in der Zeit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "RPO",
+          "is_correct": true
+        },
+        {
+          "text": "MTTR",
+          "is_correct": false
+        },
+        {
+          "text": "SLA",
+          "is_correct": false
+        },
+        {
+          "text": "ARO",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Cloud-Team will lateral movement zwischen Workloads minimieren. Was passt am besten zu Zero-Trust-Networking?",
+      "explanation": "Kleine Trust-Boundaries mit deny-by-default begrenzen Bewegungsfreiheit von Angreifern.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mikrosegmentierung mit default deny zwischen Zonen",
+          "is_correct": true
+        },
+        {
+          "text": "Ein flaches VPC-Netz fuer alle Services",
+          "is_correct": false
+        },
+        {
+          "text": "Globale Security Group mit allow any-any intern",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Perimeter-Firewall, intern voll vertraut",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen braucht nicht-abstreitbare digitale Signaturen fuer Vertragsdokumente. Welche PKI-Komponente ist zentral?",
+      "explanation": "Nichtabstreitbarkeit setzt individuellen Schluesselbesitz und Zertifikatsbindung voraus.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Private Key des Unterzeichners unter starker Schluesselkontrolle",
+          "is_correct": true
+        },
+        {
+          "text": "Gemeinsames Team-Passwort fuer Signaturportal",
+          "is_correct": false
+        },
+        {
+          "text": "Hash ohne Zertifikat und ohne Identitaetsbindung",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Zeitstempel ohne Signatur",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Massnahme adressiert Governance-Anforderungen bei privilegierten Datenbankzugriffen am direktesten?",
+      "explanation": "PAM reduziert Privilegienzeitfenster und verbessert Nachvollziehbarkeit fuer Audits.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAM mit Just-in-Time-Rechten und Session-Recording",
+          "is_correct": true
+        },
+        {
+          "text": "Dauerhafte DBA-Adminrechte fuer On-Call-Teams",
+          "is_correct": false
+        },
+        {
+          "text": "Geteiltes Root-Konto fuer schnellere Wartung",
+          "is_correct": false
+        },
+        {
+          "text": "Abschalten der Audit-Logs fuer Performance",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nach einem Phishing-Fall soll die Erkennung verbessert werden. Welche Telemetrie ist fuer fruehe Detektion am wertvollsten?",
+      "explanation": "Phishing-Indikatoren entstehen oft ueber mehrere Kontrollpunkte hinweg und muessen korreliert werden.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Korrelation von Mail-Events, Identity-Logs und Endpoint-Alarms",
+          "is_correct": true
+        },
+        {
+          "text": "Nur CPU-Auslastung der Mailserver",
+          "is_correct": false
+        },
+        {
+          "text": "Nur monatliche Passwortalter-Liste",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Netzwerklatenz im WAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Startup verarbeitet Kreditkartendaten in Kubernetes. Welche Architektur reduziert Scope und Risiko am staerksten?",
+      "explanation": "Tokenisierung minimiert sensible Daten im eigenen Umfeld und erleichtert Compliance.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Tokenisierung und Auslagerung an PCI-konformen Payment-Provider",
+          "is_correct": true
+        },
+        {
+          "text": "Speicherung voller PAN in App-Logs",
+          "is_correct": false
+        },
+        {
+          "text": "Gemeinsame Datenbank fuer Test und Produktion",
+          "is_correct": false
+        },
+        {
+          "text": "Unverschluesselte Backups im Objekt-Storage",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei der Risikobewertung eines neuen SaaS-Tools ist unklar, ob Datenschutzauflagen eingehalten werden. Was ist der beste naechste Schritt?",
+      "explanation": "DPIA strukturiert Risiken fuer personenbezogene Daten und dokumentiert Gegenmassnahmen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Data Protection Impact Assessment mit Rechts- und Security-Team",
+          "is_correct": true
+        },
+        {
+          "text": "Sofortige Freischaltung fuer alle Nutzer",
+          "is_correct": false
+        },
+        {
+          "text": "Verzicht auf Vertragspruefung bei guenstigem Preis",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Marketing-Referenzen als Nachweis nutzen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Analyst prueft Datei-Integritaet nach einem Servervorfall. Welche Technik ist geeignet?",
+      "explanation": "Starke Hashes zeigen Veraenderungen am Inhalt verlässlich an.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Vergleich kryptographischer Hashes mit bekannten Baselines",
+          "is_correct": true
+        },
+        {
+          "text": "Dateinamen alphabetisch sortieren",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Dateigroessen betrachten",
+          "is_correct": false
+        },
+        {
+          "text": "Zeitstempel manuell im Editor aendern",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen moechte Zugriff auf sensible HR-Daten auf Need-to-know begrenzen. Welches Modell passt am besten?",
+      "explanation": "Rollen mit Review-Prozess setzen Least Privilege und Governance praktisch um.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "RBAC mit fein granularen Rollen und regelmaessiger Rezertifizierung",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Mitarbeiter in einer globalen Leserolle",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Netzwerkstandort als Zugriffskriterium",
+          "is_correct": false
+        },
+        {
+          "text": "Freigabe per informeller Chat-Nachricht",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Fuer Notfallwiederherstellung ist ein Offsite-Backup gefordert, das gegen Ransomware robust ist. Was ist am sinnvollsten?",
+      "explanation": "Unveraenderbarkeit plus getestete Wiederherstellung erhoeht Resilienz gegen Verschluesselungstrojaner.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Immutable Backups mit Air-Gap-Option und regelmaessigen Restore-Tests",
+          "is_correct": true
+        },
+        {
+          "text": "Ein einziges beschreibbares NAS ohne Versionierung",
+          "is_correct": false
+        },
+        {
+          "text": "Backup nur auf demselben Host wie Produktion",
+          "is_correct": false
+        },
+        {
+          "text": "Backups ohne Verschluesselung und ohne Zugriffskontrolle",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei einem Cloud-Breach wurde ein zu weit gefasstes IAM-Policy entdeckt. Welche Korrektur ist prioritaer?",
+      "explanation": "Fein definierte Rechte reduzieren Angriffsoberflaeche und Missbrauchspotenzial.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Least-Privilege-Policies mit expliziten Aktionen und Ressourcen",
+          "is_correct": true
+        },
+        {
+          "text": "Administratorzugriff fuer alle Entwickler waehrend Sprint",
+          "is_correct": false
+        },
+        {
+          "text": "Temporare Abschaltung von IAM-Logs",
+          "is_correct": false
+        },
+        {
+          "text": "Verwendung eines gemeinsamen Root-Users",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Massnahme verbessert die Sicherheit von Schluesselmaterial in einer Cloud-Umgebung am deutlichsten?",
+      "explanation": "HSM/KMS schuetzt Schluesselzugriff technisch und organisatorisch, Rotation begrenzt Schadensfenster.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nutzung von HSM-gestuetztem KMS mit Key-Rotation",
+          "is_correct": true
+        },
+        {
+          "text": "Ablage privater Keys in Wiki-Seiten",
+          "is_correct": false
+        },
+        {
+          "text": "Deaktivierte Rotation fuer langfristige Stabilitaet",
+          "is_correct": false
+        },
+        {
+          "text": "Versand von Keys per unverschluesselter E-Mail",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein CISO will Governance verbessern und Security-Investitionen priorisieren. Welche Methode passt am besten?",
+      "explanation": "Risikomodelle schaffen nachvollziehbare Entscheidungsgrundlagen fuer Governance.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Risikobasierte Priorisierung nach Eintrittswahrscheinlichkeit und Auswirkung",
+          "is_correct": true
+        },
+        {
+          "text": "Massnahmen nur nach Popularitaet in sozialen Medien",
+          "is_correct": false
+        },
+        {
+          "text": "Budget gleichmaessig ohne Risikoanalyse verteilen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur vergangene Vorfaelle ohne Zukunftsszenarien betrachten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen uebt Incident Response mit externer Forensik. Welcher Punkt ist fuer rechtssichere Uebergabe zentral?",
+      "explanation": "Nachvollziehbare Besitzkette ist entscheidend fuer Integritaet und Verwertbarkeit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Lueckenlose Chain of Custody fuer Beweismittel",
+          "is_correct": true
+        },
+        {
+          "text": "Beweise ohne Dokumentation per Messenger teilen",
+          "is_correct": false
+        },
+        {
+          "text": "Originaldatentraeger vor Analyse formatieren",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Screenshots statt Artefakten sammeln",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen fuehrt Passkeys ein. Welcher Rest-Risikoaspekt muss weiterhin aktiv adressiert werden?",
+      "explanation": "Passkeys reduzieren Credential-Phishing, ersetzen aber keine Session-/Endpoint-Schutzmassnahmen.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Phishing ist damit immer unmoeglich",
+          "is_correct": false
+        },
+        {
+          "text": "Session-Token-Diebstahl und Device-Compromise bleiben relevant",
+          "is_correct": true
+        },
+        {
+          "text": "IAM-Governance wird ueberfluessig",
+          "is_correct": false
+        },
+        {
+          "text": "Netzsegmentierung kann entfallen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nach einem Cloud-Misconfiguration-Incident soll Wiederholung verhindert werden. Welche Massnahme hat den staerksten Praeventiveffekt?",
+      "explanation": "Technische Guardrails vor Deployment verhindern unsichere States fruehzeitig.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Nur monatliche Awareness-Mail",
+          "is_correct": false
+        },
+        {
+          "text": "Policy-as-Code mit pre-deploy Compliance Gates",
+          "is_correct": true
+        },
+        {
+          "text": "Adminrechte fuer alle Devs",
+          "is_correct": false
+        },
+        {
+          "text": "Logging reduzieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Ransomware-Playbook wird aktualisiert. Welche Reihenfolge ist in der Praxis meist sinnvoll?",
+      "explanation": "Eindammung und Evidenzsicherung vor Bereinigung verhindern weitere Ausbreitung und Beweisverlust.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Eradication vor Containment",
+          "is_correct": false
+        },
+        {
+          "text": "Containment, Beweissicherung, Eradication, Recovery, Lessons Learned",
+          "is_correct": true
+        },
+        {
+          "text": "Recovery zuerst, dann Detection",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Backups pruefen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Audit beanstandet fehlende SoD. Welche Massnahme adressiert das direkt?",
+      "explanation": "Segregation of Duties reduziert Missbrauchs- und Fraud-Risiken durch Vier-Augen-Prinzip.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Ein gemeinsames Root-Konto",
+          "is_correct": false
+        },
+        {
+          "text": "Trennung von Beantragung, Freigabe und Umsetzung privilegierter Aenderungen",
+          "is_correct": true
+        },
+        {
+          "text": "MFA deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Passwortlaenge erhoehen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Control-Mix schuetzt am besten gegen Insider-Exfiltration von sensiblen Daten?",
+      "explanation": "Kombinierte praeventive und detektive Kontrollen sind bei Insider-Risiken entscheidend.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Nur VPN erzwingen",
+          "is_correct": false
+        },
+        {
+          "text": "DLP + UEBA + Least Privilege + konsequentes Logging",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Endpoint-Hintergrundbild aendern",
+          "is_correct": false
+        },
+        {
+          "text": "Nur E-Mail-Signatur",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IR-Team braucht rechtssichere Nachvollziehbarkeit. Was ist zentral?",
+      "explanation": "Lueckenlose Dokumentation erhaelt Integritaet und Verwertbarkeit von Beweisen.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Memos ohne Zeitstempel",
+          "is_correct": false
+        },
+        {
+          "text": "Chain-of-Custody mit Hashes und dokumentierten Uebergaben",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Screenshots ohne Kontext",
+          "is_correct": false
+        },
+        {
+          "text": "Logs nach 24h loeschen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei Business-Continuity-Planung wird RTO stark verfehlt. Welche Ableitung ist korrekt?",
+      "explanation": "RTO-Verfehlung deutet auf operative Recovery-Luecken hin, nicht auf kosmetische Themen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mehr Badge-Icons anzeigen",
+          "is_correct": false
+        },
+        {
+          "text": "Recovery-Architektur, Runbooks und Uebungen muessen verbessert werden",
+          "is_correct": true
+        },
+        {
+          "text": "Phishing-Training stoppen",
+          "is_correct": false
+        },
+        {
+          "text": "Alle Dienste in ein VLAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen fuehrt CASB ein. Welcher Nutzen ist am treffendsten?",
+      "explanation": "CASB adressiert Cloud-App-Risiken durch Kontrollen auf Daten und Sessions.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Ersetzt IAM komplett",
+          "is_correct": false
+        },
+        {
+          "text": "Sichtbarkeit und Policy-Durchsetzung fuer SaaS-Nutzung und Datenfluss",
+          "is_correct": true
+        },
+        {
+          "text": "Ersetzt Firewalls in OT",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Lizenzmanagement",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage passt am besten zu Zero Trust in hybriden Umgebungen?",
+      "explanation": "Zero Trust erfordert laufende Verifikation statt einmaligem Vertrauensentscheid.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Interne Netze sind per Definition vertrauenswuerdig",
+          "is_correct": false
+        },
+        {
+          "text": "Kontinuierliche Kontextpruefung von Identitaet, Geraet und Zugriffspfad",
+          "is_correct": true
+        },
+        {
+          "text": "Nur perimeterbasierte ACLs",
+          "is_correct": false
+        },
+        {
+          "text": "Keine Telemetrie noetig",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Security-Incident betrifft mehrere Regionen. Was ist fuer Krisenkommunikation am wichtigsten?",
+      "explanation": "Konsistente, entscheidungsorientierte Kommunikation reduziert Chaos im Incident.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur technische Rohdaten ohne Einordnung",
+          "is_correct": false
+        },
+        {
+          "text": "Einheitliches Lagebild mit Impact, Entscheidungen, Ownern und naechsten Schritten",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Marketing-Statement",
+          "is_correct": false
+        },
+        {
+          "text": "Ticketnummer ohne Inhalt",
+          "is_correct": false
+        }
+      ]
+    }
+  ]
+}

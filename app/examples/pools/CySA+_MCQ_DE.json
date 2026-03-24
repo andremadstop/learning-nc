@@ -1,0 +1,2888 @@
+{
+  "pool_name": "CySA+ MCQ (DE)",
+  "source": "AI-generated (Claude/Gemini), reviewed and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "questions": [
+    {
+      "text": "Welche Quelle liefert meist die frueheste Sicht auf Endpunkt-Anomalien?",
+      "explanation": "EDR sammelt Prozess-, Datei- und Verhaltensdaten am Endpunkt.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "NTP-Server",
+          "is_correct": false
+        },
+        {
+          "text": "EDR-Telemetrie",
+          "is_correct": true
+        },
+        {
+          "text": "DHCP-Lease-Tabelle",
+          "is_correct": false
+        },
+        {
+          "text": "Drucker-Queue",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist ein sinnvoller erster Schritt bei einem verdaechtigen Host im IR?",
+      "explanation": "Containment + Forensik vor blinder Veraenderung des Systems.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sofort neu installieren ohne Analyse",
+          "is_correct": false
+        },
+        {
+          "text": "Containment einleiten und Beweise sichern",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Logs loeschen",
+          "is_correct": false
+        },
+        {
+          "text": "Nichts tun",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Metrik hilft, SOC-Erkennungsleistung zu bewerten?",
+      "explanation": "MTTD misst Zeit bis zur Entdeckung von Vorfaellen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "MTTD",
+          "is_correct": true
+        },
+        {
+          "text": "CPU-Taktrate",
+          "is_correct": false
+        },
+        {
+          "text": "IPv6-Prefixlaenge",
+          "is_correct": false
+        },
+        {
+          "text": "USV-Laufzeit",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Datei ist fuer Linux-Auth-Fehleranalysen oft relevant?",
+      "explanation": "Auth-Events liegen in Auth-Logs oder systemd-Journal.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "/var/log/auth.log oder journalctl",
+          "is_correct": true
+        },
+        {
+          "text": "/etc/fstab",
+          "is_correct": false
+        },
+        {
+          "text": "/boot/grub.cfg",
+          "is_correct": false
+        },
+        {
+          "text": "/tmp/.X11-unix",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Schritt ist bei Alert Triage zuerst sinnvoll?",
+      "explanation": "Saubere Triage priorisiert echte Risiken und vermeidet Blindreaktionen.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Direkt produktive Systeme neu starten",
+          "is_correct": false
+        },
+        {
+          "text": "Kontext sammeln: Asset-Kritikalitaet, Alert-Quelle, Zeitfenster, Baseline",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Logs loeschen",
+          "is_correct": false
+        },
+        {
+          "text": "Ticket ohne Analyse schliessen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Kombination ist fuer Priorisierung von Schwachstellen am aussagekraeftigsten?",
+      "explanation": "Risikobasiertes Priorisieren braucht technischen und geschaeftlichen Kontext.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur CVSS Base Score",
+          "is_correct": false
+        },
+        {
+          "text": "CVSS + Asset-Kritikalitaet + Exponierung + Exploit-Status",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Anzahl Findings",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Scanner-Name",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Datenquelle ist fuer Endpoint-Lateral-Movement besonders hilfreich?",
+      "explanation": "Prozessketten und Auth-Ereignisse zeigen Bewegungsmuster im Netz.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "EDR Process Tree + Auth Logs",
+          "is_correct": true
+        },
+        {
+          "text": "NTP peer list",
+          "is_correct": false
+        },
+        {
+          "text": "Printer status page",
+          "is_correct": false
+        },
+        {
+          "text": "Static route comments",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Alarm meldet viele fehlgeschlagene Logins von einem Service-Account. Was ist ein valider erster IR-Schritt?",
+      "explanation": "Eindammung plus Ursachenanalyse mit Betriebsabwaegung ist zentral.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Service-Account dauerhaft mit Domain Admin versehen",
+          "is_correct": false
+        },
+        {
+          "text": "Betroffenen Account isoliert behandeln: Credential reset, Scope analysieren, Abhaengigkeiten pruefen",
+          "is_correct": true
+        },
+        {
+          "text": "Logs abschalten",
+          "is_correct": false
+        },
+        {
+          "text": "Alarmregel loeschen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Rolle hat Baseline-Verhalten in Security Analytics?",
+      "explanation": "Anomalieerkennung basiert auf normalem Referenzverhalten.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Es verhindert jede Anomalie",
+          "is_correct": false
+        },
+        {
+          "text": "Es liefert Vergleichswerte, um Abweichungen schneller zu erkennen",
+          "is_correct": true
+        },
+        {
+          "text": "Es ersetzt IDS",
+          "is_correct": false
+        },
+        {
+          "text": "Es ist nur fuer Compliance",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aktivitaet gehoert am ehesten zu Reporting & Communication (CySA)?",
+      "explanation": "Stakeholdergerechte Kommunikation ist eigener CySA-Domain-Schwerpunkt.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Executive Summary mit Risiko, Impact, naechsten Schritten und Metriken",
+          "is_correct": true
+        },
+        {
+          "text": "Switch-Port neu patchen",
+          "is_correct": false
+        },
+        {
+          "text": "BIOS flashen",
+          "is_correct": false
+        },
+        {
+          "text": "DNS root hints editieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SIEM-Use-Case erzeugt zu viele FPs. Welche Verbesserung ist oft wirksam?",
+      "explanation": "Kontextualisierung und Tuning steigern Signal-zu-Rausch-Verhaeltnis.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Thresholds/Korrelation mit Asset- und Threat-Context tunen",
+          "is_correct": true
+        },
+        {
+          "text": "Use-Case deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Alle Events droppen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Wochenende monitoren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage zu Forensic Chain of Custody ist korrekt?",
+      "explanation": "Lueckenlose Nachvollziehbarkeit ist fuer Beweiskraft zentral.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur fuer physische Datentraeger relevant",
+          "is_correct": false
+        },
+        {
+          "text": "Dokumentiert Beweisfluss und Integritaet ueber den gesamten Lebenszyklus",
+          "is_correct": true
+        },
+        {
+          "text": "Optional bei kritischen Vorfaellen",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzt Hashing",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Kennzahl zeigt die durchschnittliche Zeit bis zur Eindammung eines Incidents?",
+      "explanation": "Containment-Zeit ist direkt fuer SOC-Reaktionsleistung relevant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "MTTI",
+          "is_correct": false
+        },
+        {
+          "text": "MTTC/Containment Time",
+          "is_correct": true
+        },
+        {
+          "text": "RPO",
+          "is_correct": false
+        },
+        {
+          "text": "SLA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Datenqualitaetsmassnahme verbessert SIEM-Korrelationen deutlich?",
+      "explanation": "Normalisierte Logs + korrekte Zeit sind Basis fuer verlaessliche Korrelation.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Einheitliche Felder/Normalisierung und Zeit-Sync ueber Quellen",
+          "is_correct": true
+        },
+        {
+          "text": "Nur mehr Daten ohne Struktur",
+          "is_correct": false
+        },
+        {
+          "text": "Alle Low-Severity-Events loeschen",
+          "is_correct": false
+        },
+        {
+          "text": "Regex in Produktivsystemen deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aktion ist bei bestatigter C2-Kommunikation typischerweise angemessen?",
+      "explanation": "Schnelles Eindammen mit dokumentiertem Change reduziert weiteren Schaden.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Containment des Hosts und Netzwerk-Blockade der IOCs mit Change-Tracking",
+          "is_correct": true
+        },
+        {
+          "text": "Alarm ignorieren, falls nur ein Host betroffen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Passwortpolicy anpassen",
+          "is_correct": false
+        },
+        {
+          "text": "Snapshots loeschen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum sind Time-Skew-Probleme in SOCs kritisch?",
+      "explanation": "Fehlende Zeitkonsistenz erschwert Ursache-Wirkung-Analysen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur NTP-Server werden langsamer",
+          "is_correct": false
+        },
+        {
+          "text": "Korrelation und Incident-Timeline werden unzuverlaessig",
+          "is_correct": true
+        },
+        {
+          "text": "EDR stoppt automatisch",
+          "is_correct": false
+        },
+        {
+          "text": "TLS wird deaktiviert",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage beschreibt \"blast radius\" bei Incident Response?",
+      "explanation": "Blast Radius hilft bei Priorisierung und Containment-Strategie.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Anzahl genutzter Scanner",
+          "is_correct": false
+        },
+        {
+          "text": "Ausbreitungs- und Schadensumfang eines Vorfalls",
+          "is_correct": true
+        },
+        {
+          "text": "CPU-Auslastung im SIEM",
+          "is_correct": false
+        },
+        {
+          "text": "Groesse des Datenzentrums",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Webserver zeigt ploetzlich viele 500er + ausgehende unbekannte Verbindungen. Naechster sinnvoller Schritt?",
+      "explanation": "Beweise sichern + Containment ist fuer belastbare IR entscheidend.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Nur Restart ohne Sicherung",
+          "is_correct": false
+        },
+        {
+          "text": "Host isolieren, volatile Artefakte sichern, Log-/Image-Sicherung starten",
+          "is_correct": true
+        },
+        {
+          "text": "System sofort patchen ohne Analyse",
+          "is_correct": false
+        },
+        {
+          "text": "Alert-Regel stummschalten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Technik passt am besten zu Detection-as-Code?",
+      "explanation": "Versionierung, Tests und Review verbessern Qualitaet und Nachvollziehbarkeit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Signaturen/Detections versioniert testen und ausrollen",
+          "is_correct": true
+        },
+        {
+          "text": "Nur manuelle Regelpflege ohne Review",
+          "is_correct": false
+        },
+        {
+          "text": "Dokumentation vermeiden",
+          "is_correct": false
+        },
+        {
+          "text": "SIEM-Konfiguration direkt in Produktion editieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Stakeholder-Info ist fuer Management-Updates waehrend eines Incidents am wichtigsten?",
+      "explanation": "Management braucht entscheidungsrelevanten, verdichteten Kontext.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur technische Rohlogs",
+          "is_correct": false
+        },
+        {
+          "text": "Business Impact, aktueller Status, Risiken, naechste Entscheidungen",
+          "is_correct": true
+        },
+        {
+          "text": "Nur CVE-Listen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Packet Captures",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Im SOC steigt die Anzahl fehlgeschlagener Logins auf vielen Accounts in 10 Minuten stark an. Welche erste Massnahme ist am sinnvollsten?",
+      "explanation": "Ein kurzer Baseline-Abgleich reduziert False Positives und hilft bei schneller Priorisierung. Erst danach sollten einschneidende Containment-Schritte folgen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Source-IP sofort in der Firewall global blocken",
+          "is_correct": false
+        },
+        {
+          "text": "Alert mit Baseline vergleichen und betroffene Accounts priorisieren",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Benutzerpasswoerter zwangsweise zuruecksetzen",
+          "is_correct": false
+        },
+        {
+          "text": "Den Domain Controller neu starten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Kennzahl zeigt am besten, ob ein Detection-Use-Case im Alltag zu viel Rauschen erzeugt?",
+      "explanation": "Die False-Positive-Rate beschreibt direkt den Anteil unnoetiger Alerts. Hohe Werte belasten Analysten und verlaengern Reaktionszeiten.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mean Time To Detect",
+          "is_correct": false
+        },
+        {
+          "text": "False-Positive-Rate",
+          "is_correct": true
+        },
+        {
+          "text": "Anzahl installierter Agents",
+          "is_correct": false
+        },
+        {
+          "text": "CPU-Last des SIEM",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Tier-1-Analyst sieht einen Alert auf PowerShell mit Base64-Encoded Command. Was ist der naechste beste Schritt?",
+      "explanation": "Die Dekodierung und Prozesskette liefern Kontext zur Tatsaechlichkeit des Vorfalls. Ohne diese Analyse ist keine fundierte Entscheidung moeglich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Host sofort formatieren",
+          "is_correct": false
+        },
+        {
+          "text": "Command dekodieren und Prozesskette pruefen",
+          "is_correct": true
+        },
+        {
+          "text": "Ticket ohne weitere Pruefung schliessen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur den Benutzer telefonisch verwarnen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Ziel verfolgt ein gut gepflegtes SOC-Runbook primaer?",
+      "explanation": "Runbooks standardisieren Entscheidungen und reduzieren Abhaengigkeit von Einzelpersonen. Dadurch sinken Fehlerquote und Bearbeitungszeit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mehr SIEM-Datenvolumen erzeugen",
+          "is_correct": false
+        },
+        {
+          "text": "Einheitliche und reproduzierbare Incident-Bearbeitung",
+          "is_correct": true
+        },
+        {
+          "text": "EDR-Lizenzen einsparen",
+          "is_correct": false
+        },
+        {
+          "text": "Patchzyklen automatisch verkuerzen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Alarmierungsstrategie reduziert Alert Fatigue am besten?",
+      "explanation": "Korrelation und Tuning entfernen redundante oder schwache Signale. Deduplizierung verhindert Ticket-Flut bei gleichem Ereignis.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Jede Regel als High Severity markieren",
+          "is_correct": false
+        },
+        {
+          "text": "Korrelation, Tuning und deduplizierte Benachrichtigung",
+          "is_correct": true
+        },
+        {
+          "text": "Nur nachts alarmieren",
+          "is_correct": false
+        },
+        {
+          "text": "Alerts erst woechentlich sammeln",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SOC will Schichtuebergaben verbessern. Welche Information darf in einer guten Handover-Notiz nicht fehlen?",
+      "explanation": "Schichtuebergaben muessen entscheidungsrelevante Fakten und klare Verantwortlichkeiten enthalten. So gehen keine kritischen Aufgaben verloren.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Private Meinung des Analysts",
+          "is_correct": false
+        },
+        {
+          "text": "Aktueller Status, naechste Schritte, Risiken und Owner",
+          "is_correct": true
+        },
+        {
+          "text": "Vollstaendige Rohlogs aller Systeme",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Ticket-ID ohne Kontext",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist der wichtigste Nutzen von Asset-Kritikalitaet im Alerting?",
+      "explanation": "Mit Kritikalitaet wird ein identischer technischer Alert je nach Business-Impact unterschiedlich priorisiert. Das beschleunigt risikobasiertes Handeln.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sie ersetzt forensische Analyse",
+          "is_correct": false
+        },
+        {
+          "text": "Sie verbessert Priorisierung nach Geschaeftsauswirkung",
+          "is_correct": true
+        },
+        {
+          "text": "Sie senkt Speicherbedarf im SIEM",
+          "is_correct": false
+        },
+        {
+          "text": "Sie verhindert alle Phishing-Mails",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Prozess gehoert typischerweise in Security Operations, nicht in reine Compliance?",
+      "explanation": "Security Operations fokussiert auf kontinuierliche Erkennung und Reaktion. Compliance ist eher kontroll- und nachweisorientiert.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Evidence fuer Audit sammeln",
+          "is_correct": false
+        },
+        {
+          "text": "24/7 Monitoring und Incident-Triage",
+          "is_correct": true
+        },
+        {
+          "text": "Richtlinienfreigabe durch Vorstand",
+          "is_correct": false
+        },
+        {
+          "text": "Jahresabschluss pruefen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Analyst eskaliert einen moeglichen Ransomware-Fall. Welche Information ist fuer Incident Commander zuerst am wichtigsten?",
+      "explanation": "Incident Command braucht frueh ein klares Lagebild mit Scope und Impact. Daraus werden Containment und Kommunikation abgeleitet.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Lieblings-EDR-Tool des Teams",
+          "is_correct": false
+        },
+        {
+          "text": "Scope, betroffene Systeme und aktueller Impact",
+          "is_correct": true
+        },
+        {
+          "text": "Historie aller SOC-Mitarbeiter",
+          "is_correct": false
+        },
+        {
+          "text": "Anzahl alter Tickets im Backlog",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Massnahme verbessert die Qualitaet von Tier-1-Triage am staerksten?",
+      "explanation": "Definierte Kriterien machen Entscheidungen konsistent und messbar. Beispiele pro Severity reduzieren Interpretationsspielraum.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mehr unstrukturierte Chat-Nachrichten",
+          "is_correct": false
+        },
+        {
+          "text": "Klare Triage-Kriterien mit Beispielen pro Severity",
+          "is_correct": true
+        },
+        {
+          "text": "Weniger Dokumentation",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Senior-Analysten duerfen Tickets ansehen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Datenquelle ist fuer Korrelation von Konto-Kompromittierung besonders wichtig?",
+      "explanation": "Sign-in-Logs enthalten Authentifizierungsdetails wie Ort, MFA und Fehlversuche. Sie sind zentral fuer Account-Missbrauchserkennung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Drucker-Statuslogs",
+          "is_correct": false
+        },
+        {
+          "text": "Identity Provider Sign-in Logs",
+          "is_correct": true
+        },
+        {
+          "text": "Raumtemperatur-Sensoren",
+          "is_correct": false
+        },
+        {
+          "text": "Backup-Fortschritt",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SIEM-Use-Case soll 'Impossible Travel' erkennen. Welche Felder sind zwingend?",
+      "explanation": "Nur mit Zeit und Standort pro Identitaet kann unplausible Reisezeit berechnet werden. Zusaetzliche Felder verbessern spaeteres Tuning.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Hostname und RAM-Auslastung",
+          "is_correct": false
+        },
+        {
+          "text": "Timestamp, User-ID und Geo-Standort",
+          "is_correct": true
+        },
+        {
+          "text": "Dateigroesse und Hash",
+          "is_correct": false
+        },
+        {
+          "text": "Ticket-Prioritaet und SLA",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum ist Log-Normalisierung in einem SIEM wichtig?",
+      "explanation": "Normalisierte Felder erlauben dieselbe Regel ueber mehrere Quellen hinweg. Ohne Standardisierung brechen Korrelationen leicht.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sie verschluesselt automatisch alle Events",
+          "is_correct": false
+        },
+        {
+          "text": "Sie vereinheitlicht Felder fuer robuste Korrelation",
+          "is_correct": true
+        },
+        {
+          "text": "Sie ersetzt den Parser",
+          "is_correct": false
+        },
+        {
+          "text": "Sie macht Retention unnoetig",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist ein typischer Nachteil zu kurzer SIEM-Retention?",
+      "explanation": "Kurze Aufbewahrung erschwert Rueckblick auf langsam laufende Angriffe. Threat Hunting und Forensik leiden direkt darunter.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Weniger False Positives",
+          "is_correct": false
+        },
+        {
+          "text": "Eingeschraenkte historische Analyse und Jagd",
+          "is_correct": true
+        },
+        {
+          "text": "Schnellere MFA",
+          "is_correct": false
+        },
+        {
+          "text": "Bessere Verschluesselung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche SIEM-Query ist fuer erste Triage bei verdaechtigem Service Account am hilfreichsten?",
+      "explanation": "Kombination aus Login-Ort, Hostwechsel und Privileg-Aktionen zeigt Missbrauchsmuster schnell. Eine Einzelmetrik reicht selten.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur letzte erfolgreiche Anmeldung",
+          "is_correct": false
+        },
+        {
+          "text": "Authentifizierungen, neue Hosts und privilegierte Aktionen im Zeitfenster",
+          "is_correct": true
+        },
+        {
+          "text": "Alle DNS-Events der letzten 2 Jahre",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Antivirus-Versionen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Alert feuert tausendfach wegen identischem Event. Welche SIEM-Funktion hilft zuerst?",
+      "explanation": "Aggregation reduziert Ticket-Sturm und erhaelt trotzdem Signalwert. Danach kann die zugrunde liegende Regel verbessert werden.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Cold Storage aktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Aggregation/Deduplication pro Entity und Zeitfenster",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Parser deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Retention verdoppeln",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wofuer dient ein SIEM-Health-Use-Case?",
+      "explanation": "Ohne Datenqualitaet sind selbst gute Detektionsregeln blind. Health-Monitoring deckt Luecken frueh auf.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Compliance-Report optisch aufhuebschen",
+          "is_correct": false
+        },
+        {
+          "text": "Ingestion-Ausfaelle, Parsing-Fehler und Zeitdrift erkennen",
+          "is_correct": true
+        },
+        {
+          "text": "Endpoint verschluesseln",
+          "is_correct": false
+        },
+        {
+          "text": "Phishing trainieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Ansatz verbessert SIEM-Kostenkontrolle ohne blind zu werden?",
+      "explanation": "Risikobasiertes Onboarding priorisiert wertvolle Quellen. Unterschiedliche Retention-Stufen balancieren Kosten und Analysefaehigkeit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Alle Low-Value Logs loeschen",
+          "is_correct": false
+        },
+        {
+          "text": "Risikobasierte Datenselektion und abgestufte Retention",
+          "is_correct": true
+        },
+        {
+          "text": "Nur noch Syslog von Firewalls",
+          "is_correct": false
+        },
+        {
+          "text": "SIEM nur montags betreiben",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist bei SIEM-Zeitstempeln fuer Incident-Timeline am kritischsten?",
+      "explanation": "Unsynchrone Zeitstempel verfalschen Reihenfolgen und erschweren Kausalitaet. NTP und einheitliche Zeitzonen sind grundlegend.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Farbschema des Dashboards",
+          "is_correct": false
+        },
+        {
+          "text": "Synchronisierte Zeitzonen und NTP-Konsistenz",
+          "is_correct": true
+        },
+        {
+          "text": "Hostnamen in Grossbuchstaben",
+          "is_correct": false
+        },
+        {
+          "text": "CSV statt JSON",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein neuer Cloud-Service wird eingefuehrt. Was sollte im SIEM zuerst passieren?",
+      "explanation": "Ein geplanter Onboarding-Start mit klaren Mindestdetektionen verhindert blinde Flecken. Blindes Copy-Paste erzeugt oft Rauschen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur monatliche PDF-Reports erstellen",
+          "is_correct": false
+        },
+        {
+          "text": "Log-Quellen inventarisieren und Mindest-Use-Cases definieren",
+          "is_correct": true
+        },
+        {
+          "text": "Sofort alle Legacy-Regeln kopieren",
+          "is_correct": false
+        },
+        {
+          "text": "Alle alten Daten archivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher EDR-Befund ist am staerksten mit Living-off-the-Land verbunden?",
+      "explanation": "LOLBin-Missbrauch nutzt legitime Tools fuer malizioese Aktionen. Diese Muster sind klassische EDR-Detektionssignale.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Signiertes Office-Update",
+          "is_correct": false
+        },
+        {
+          "text": "Missbrauch von certutil, rundll32 oder mshta",
+          "is_correct": true
+        },
+        {
+          "text": "Geplanter Neustart nach Patch",
+          "is_correct": false
+        },
+        {
+          "text": "Browser-Cache-Loeschung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Host zeigt ploetzlich viele Prozesse mit gleicher Parent-Child-Kette und zufaelligen Namen. Was deutet das eher an?",
+      "explanation": "Repetitive Ketten mit zufaelligen Namen sind untypisch fuer normale Administration. Sie deuten auf automatisierte Schadaktivitaet hin.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Normales Software-Update",
+          "is_correct": false
+        },
+        {
+          "text": "Moegliche Malware-Persistenz oder Prozess-Injektion",
+          "is_correct": true
+        },
+        {
+          "text": "Druckertreiberinstallation",
+          "is_correct": false
+        },
+        {
+          "text": "Zeitsynchronisierung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche EDR-Aktion ist im fruehen Containment oft am effektivsten?",
+      "explanation": "Isolation stoppt laterale Bewegung schnell und erhaelt den Host fuer Untersuchung. Ausnahmen sichern Ermittlungs- und Remediation-Workflows.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Nutzer informieren",
+          "is_correct": false
+        },
+        {
+          "text": "Host-Netzwerkisolation mit Ausnahmen fuer Forensik",
+          "is_correct": true
+        },
+        {
+          "text": "Domain-Admin Passwort in Klartext senden",
+          "is_correct": false
+        },
+        {
+          "text": "Backup sofort loeschen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wofuer ist ein EDR-Detection Rule Suppression Window sinnvoll?",
+      "explanation": "Geplante Wartung erzeugt erwartbares Rauschen. Zeitlich begrenzte Suppression verhindert Alert-Flut ohne dauerhafte Blindheit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Angreifer zu verbergen",
+          "is_correct": false
+        },
+        {
+          "text": "Wartungsbedingte Noise-Spitzen kontrolliert abfangen",
+          "is_correct": true
+        },
+        {
+          "text": "Retention zu umgehen",
+          "is_correct": false
+        },
+        {
+          "text": "MFA abzuschalten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Telemetrie ist fuer EDR-Ransomware-Erkennung besonders relevant?",
+      "explanation": "Schnelle, massenhafte Dateioperationen mit untypischen Erweiterungen sind stark indikativ. Prozesskontext ermoeglicht gezieltes Eingreifen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Bildschirmhelligkeit",
+          "is_correct": false
+        },
+        {
+          "text": "Massive File-Rename/Encrypt-Muster pro Prozess",
+          "is_correct": true
+        },
+        {
+          "text": "Mausbewegungen",
+          "is_correct": false
+        },
+        {
+          "text": "CPU-Temperatur",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein EDR meldet LSASS-Access durch unbekannten Prozess. Was ist die beste erste Einschaetzung?",
+      "explanation": "Ungewohnter Zugriff auf LSASS ist ein klassischer Hinweis auf Credential Theft. Der Vorfall sollte priorisiert untersucht werden.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Unkritisch, immer normal",
+          "is_correct": false
+        },
+        {
+          "text": "Moeglicher Credential-Dump, hohes Risiko",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Datenschutzthema",
+          "is_correct": false
+        },
+        {
+          "text": "Netzwerkproblem",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Kombination reduziert EDR-False-Positives nachhaltig?",
+      "explanation": "Mehrere Signale mit Umgebungskontext liefern robustere Erkennung. Rein statische Einzelmerkmale sind fehleranfaellig.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Alles auf Block setzen",
+          "is_correct": false
+        },
+        {
+          "text": "Baselines, Allowlisting und verhaltensbasierte Signale kombinieren",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Dateiname pruefen",
+          "is_correct": false
+        },
+        {
+          "text": "Alerts manuell ignorieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist bei EDR-Tamper-Protection der Hauptnutzen?",
+      "explanation": "Tamper-Protection schuetzt die Kontrollfaehigkeit des SOC auf kompromittierten Hosts. Ohne Agent bleibt Aktivitaet haeufig unsichtbar.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Schnellere GUI",
+          "is_correct": false
+        },
+        {
+          "text": "Erschwert Deaktivierung des Agents durch Angreifer",
+          "is_correct": true
+        },
+        {
+          "text": "Weniger RAM-Verbrauch",
+          "is_correct": false
+        },
+        {
+          "text": "Automatische Audit-Zertifizierung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein EDR-Alert zeigt 'Remote service creation' zwischen zwei Workstations. Welcher MITRE-Taktikbereich passt am ehesten?",
+      "explanation": "Remote Service Creation ist ein typischer Mechanismus fuer seitliche Ausbreitung. Das gehoert klar in Lateral Movement.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Reconnaissance",
+          "is_correct": false
+        },
+        {
+          "text": "Lateral Movement",
+          "is_correct": true
+        },
+        {
+          "text": "Impact nur lokal",
+          "is_correct": false
+        },
+        {
+          "text": "Resource Development",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche EDR-Rueckfrage an IT-Operations ist fuer Triage am wertvollsten?",
+      "explanation": "Abgleich mit geplanten Aenderungen trennt Wartung von Angriffssignal. Das spart Zeit und verhindert Fehlalarme.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Welches Wallpaper genutzt wird",
+          "is_correct": false
+        },
+        {
+          "text": "Ob zum Alertzeitpunkt legitime Admin-Aktivitaet geplant war",
+          "is_correct": true
+        },
+        {
+          "text": "Wie viele Monitore im Buero stehen",
+          "is_correct": false
+        },
+        {
+          "text": "Ob Kantine offen hat",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wozu dient Detection-as-Code primaer?",
+      "explanation": "Versionierung und Tests erhoehen Qualitaet und Reproduzierbarkeit von Regeln. Aenderungen werden transparent und reviewbar.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Logs zu komprimieren",
+          "is_correct": false
+        },
+        {
+          "text": "Detektionsregeln versioniert, testbar und nachvollziehbar zu verwalten",
+          "is_correct": true
+        },
+        {
+          "text": "Antivirus zu ersetzen",
+          "is_correct": false
+        },
+        {
+          "text": "Tickets automatisch zu schliessen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Komponente gehoert zu einem guten Detection-Use-Case-Template?",
+      "explanation": "Ein strukturiertes Template verbindet Erkennung mit operativem Handeln. Dadurch sinkt die Zeit von Alert bis Entscheidung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Regelname",
+          "is_correct": false
+        },
+        {
+          "text": "Datenquellen, Logik, Tuning, Response-Hinweise",
+          "is_correct": true
+        },
+        {
+          "text": "Mitarbeitergeburtstage",
+          "is_correct": false
+        },
+        {
+          "text": "Lizenzschluessel",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum sind Unit-Tests fuer SIEM-Regeln sinnvoll?",
+      "explanation": "Tests verhindern Regressionen bei Regelupdates. Bekannte True/False-Samples sichern die beabsichtigte Erkennungslogik.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sie ersetzen Pentests",
+          "is_correct": false
+        },
+        {
+          "text": "Sie pruefen, ob bekannte Samples korrekt triggern oder nicht",
+          "is_correct": true
+        },
+        {
+          "text": "Sie machen Monitoring unnoetig",
+          "is_correct": false
+        },
+        {
+          "text": "Sie verhindern alle Zero-Days",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein neues Detection-Pattern feuert zu oft. Welche Reihenfolge ist am besten?",
+      "explanation": "Erst Daten und Logik verbessern, dann Risiko-Einstufung nachziehen. Sonst bleibt Ursache ungelost.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regel sofort loeschen",
+          "is_correct": false
+        },
+        {
+          "text": "Datenqualitaet pruefen, Filter verfeinern, dann Severity anpassen",
+          "is_correct": true
+        },
+        {
+          "text": "Severity auf kritisch setzen",
+          "is_correct": false
+        },
+        {
+          "text": "Benachrichtigung abschalten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Metrik passt am besten zu Detection Engineering Reife?",
+      "explanation": "Coverage gegen relevante TTPs misst, wie gut reale Risiken adressiert werden. Reine Mengenmetriken sind wenig aussagekraeftig.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Anzahl PowerPoint-Folien",
+          "is_correct": false
+        },
+        {
+          "text": "Detection Coverage gegen priorisierte Angriffstechniken",
+          "is_correct": true
+        },
+        {
+          "text": "Anzahl installierter Monitore",
+          "is_correct": false
+        },
+        {
+          "text": "Durchschnittliche Meetingdauer",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist der Vorteil von ATT&CK-Mapping pro Detection?",
+      "explanation": "Mapping zeigt, welche Techniken abgedeckt oder unentdeckt sind. So kann Detection-Backlog risikoorientiert geplant werden.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Marketing",
+          "is_correct": false
+        },
+        {
+          "text": "Lueckenanalyse und priorisierte Ausbauplanung",
+          "is_correct": true
+        },
+        {
+          "text": "Kuerzere Passwortlaenge",
+          "is_correct": false
+        },
+        {
+          "text": "Niedrigere Latenz im WLAN",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aenderung sollte bei produktiven Detection-Regeln zwingend dokumentiert werden?",
+      "explanation": "Aenderungsgrund und Rollback sichern Nachvollziehbarkeit und Betriebssicherheit. Das ist essenziell fuer kontrollierte Releases.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Name des Analysts",
+          "is_correct": false
+        },
+        {
+          "text": "Grund der Aenderung, erwarteter Effekt und Rollback-Plan",
+          "is_correct": true
+        },
+        {
+          "text": "Bueroadresse",
+          "is_correct": false
+        },
+        {
+          "text": "Tastaturlayout",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum sind 'high fidelity' Regeln besonders wertvoll?",
+      "explanation": "High-Fidelity-Detections beschleunigen Reaktion, weil Analysten den Signalen vertrauen koennen. Das reduziert Eskalationskosten.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sie erzeugen die meisten Alerts",
+          "is_correct": false
+        },
+        {
+          "text": "Sie liefern bei geringem Rauschen gut handhabbare Treffer",
+          "is_correct": true
+        },
+        {
+          "text": "Sie sind immer kostenlos",
+          "is_correct": false
+        },
+        {
+          "text": "Sie funktionieren ohne Daten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Quelle eignet sich besonders fuer neue Detection-Ideen?",
+      "explanation": "Reale Vorfaelle liefern konkrete Angriffspfade und Luecken. Daraus entstehen praxisnahe, wirksame Regeln.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Werbebroschueren",
+          "is_correct": false
+        },
+        {
+          "text": "Incident Postmortems und Hunt-Ergebnisse",
+          "is_correct": true
+        },
+        {
+          "text": "Beliebige Social-Media-Kommentare",
+          "is_correct": false
+        },
+        {
+          "text": "Patchnotes ohne Sicherheitsbezug",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist bei Detection-Tuning ein haeufiger Fehler?",
+      "explanation": "Unbefristete globale Ausnahmen erzeugen blinde Flecken. Ausnahmen brauchen Scope, Begruendung und Review-Datum.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Kontextfelder hinzufuegen",
+          "is_correct": false
+        },
+        {
+          "text": "Globale Ausnahmen ohne Ablaufdatum",
+          "is_correct": true
+        },
+        {
+          "text": "Rule-Tests automatisieren",
+          "is_correct": false
+        },
+        {
+          "text": "Stakeholder einbinden",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Threat Hunting ist am wirksamsten, wenn es auf was basiert?",
+      "explanation": "Hypothesengetriebenes Hunting strukturiert Suche und Erfolgsmessung. So werden reproduzierbare Ergebnisse moeglich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Reinem Zufall",
+          "is_correct": false
+        },
+        {
+          "text": "Hypothesen zu Gegnerverhalten und Umgebungsdaten",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Compliance-Fragen",
+          "is_correct": false
+        },
+        {
+          "text": "Offenen Tickets ohne Daten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hunter sucht nach C2-Beacons. Welches Muster ist am typischsten?",
+      "explanation": "Beaconing zeigt oft periodische Netzwerkkontakte mit aehnlicher Groesse. Dieses Muster ist in Zeitreihen gut erkennbar.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Einmalige grosse Downloads",
+          "is_correct": false
+        },
+        {
+          "text": "Regelmaessige, kleine Verbindungen mit konstanter Periodik",
+          "is_correct": true
+        },
+        {
+          "text": "Nur lokale Dateioperationen",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich DNSSEC-Fehler",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Datenquelle ist fuer Hunt nach Credential Abuse in AD besonders nuetzlich?",
+      "explanation": "Kerberos- und Logon-Events zeigen Ticketmissbrauch und untypische Anmeldepfade. Sie sind zentral fuer AD-Hunts.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Klimasensor-Logs",
+          "is_correct": false
+        },
+        {
+          "text": "Kerberos- und Authentifizierungs-Events",
+          "is_correct": true
+        },
+        {
+          "text": "Druckerpapierstand",
+          "is_correct": false
+        },
+        {
+          "text": "Webcam-Aufloesung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wodurch unterscheidet sich Hunting von Alert-Triage?",
+      "explanation": "Triage arbeitet reaktiv auf eingehende Alerts. Hunting ist proaktiv und sucht auch ohne vorhandenen Alarm.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Hunting reagiert nur auf bekannte Alarme",
+          "is_correct": false
+        },
+        {
+          "text": "Hunting sucht proaktiv nach unbekannten Mustern",
+          "is_correct": true
+        },
+        {
+          "text": "Hunting braucht keine Daten",
+          "is_correct": false
+        },
+        {
+          "text": "Hunting ist nur Reporting",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hunt findet verdaechtige Scheduled Tasks mit obfuskierten Commands. Was ist ein sinnvoller Folgeschritt?",
+      "explanation": "Hunt-Ergebnisse sollten in dauerhafte Kontrollen fliessen. Sonst bleibt der Gewinn einmalig statt nachhaltig.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Fund ignorieren",
+          "is_correct": false
+        },
+        {
+          "text": "Erkenntnis als neue Detection und Hardening-Massnahme ueberfuehren",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Tasks global loeschen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Monatsreport aktualisieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Kennzahl passt zu Hunt-Programmsteuerung?",
+      "explanation": "Der operative Nutzen zeigt sich in validierten Ergebnissen und umgesetzten Verbesserungen. Vanity Metrics helfen hier nicht.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Anzahl Slack-Reaktionen",
+          "is_correct": false
+        },
+        {
+          "text": "Anteil Hunts mit validierten Findings oder neuen Detections",
+          "is_correct": true
+        },
+        {
+          "text": "Monatlicher Kaffeeverbrauch",
+          "is_correct": false
+        },
+        {
+          "text": "Anzahl Bildschirmfotos",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist ein typischer Startpunkt fuer Cloud Threat Hunting?",
+      "explanation": "Identitaets- und API-Logs zeigen Missbrauch in Cloud-Umgebungen sehr frueh. Besonders kritisch sind neue Schluessel und Privileg-Aenderungen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur lokale Windows-Events",
+          "is_correct": false
+        },
+        {
+          "text": "IAM-Aenderungen, neue Access Keys und ungewoehnliche API-Calls",
+          "is_correct": true
+        },
+        {
+          "text": "Druckertreiber-Updates",
+          "is_correct": false
+        },
+        {
+          "text": "Bios-Einstellungen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei Hunt nach Datenexfiltration ist welches Signal besonders stark?",
+      "explanation": "Plötzliche Egress-Spitzen zu unbekannten Zielen sind ein klassisches Exfil-Indiz. Kontext wie Uhrzeit und Prozess macht den Unterschied.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Normale Backup-Jobs",
+          "is_correct": false
+        },
+        {
+          "text": "Ungewoehnlich hoher ausgehender Traffic zu neuen Zielen",
+          "is_correct": true
+        },
+        {
+          "text": "CPU im Leerlauf",
+          "is_correct": false
+        },
+        {
+          "text": "Stabile NTP-Synchronisation",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Ansatz verbessert Hunt-Erfolg in grossen Umgebungen?",
+      "explanation": "Risikobasierte Fokussierung auf kritische Assets maximiert Nutzen begrenzter Zeit. Vollabdeckung ist selten realistisch.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur manuelles Klicken",
+          "is_correct": false
+        },
+        {
+          "text": "Priorisierung nach Kronjuwelen und Risiko-Hypothesen",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Systeme gleich tief pruefen",
+          "is_correct": false
+        },
+        {
+          "text": "Keine Dokumentation",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was sollte ein Hunt-Report mindestens enthalten?",
+      "explanation": "Strukturierte Reports machen Ergebnisse nachvollziehbar und wiederholbar. Das erleichtert Uebergabe und Governance.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Schlussfolgerung",
+          "is_correct": false
+        },
+        {
+          "text": "Hypothese, Datenquellen, Methode, Findings und naechste Aktionen",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Screenshot vom Dashboard",
+          "is_correct": false
+        },
+        {
+          "text": "Private Notizen ohne Datum",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei Incident Response ist der erste Schritt nach Bestaetigung eines echten Vorfalls typischerweise welcher?",
+      "explanation": "Nach der Bestaetigung muss Ausbreitung kontrolliert werden. Koordiniertes Containment hat vor langfristiger Aufarbeitung Prioritaet.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Lessons Learned sofort schreiben",
+          "is_correct": false
+        },
+        {
+          "text": "Containment-Strategie festlegen und koordinieren",
+          "is_correct": true
+        },
+        {
+          "text": "Systeme pauschal neu installieren",
+          "is_correct": false
+        },
+        {
+          "text": "Medien informieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist der Hauptzweck von Forensic Chain of Custody?",
+      "explanation": "Dokumentierte Uebergaben sichern die Verwertbarkeit von Artefakten. Ohne Kette ist Beweiswert angreifbar.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Schnellere Netzwerkperformance",
+          "is_correct": false
+        },
+        {
+          "text": "Nachvollziehbarkeit und Integritaet von Beweismitteln",
+          "is_correct": true
+        },
+        {
+          "text": "Automatische Malware-Entfernung",
+          "is_correct": false
+        },
+        {
+          "text": "Niedrigere Lizenzkosten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein betroffenes System hostet kritische Produktion. Welche Containment-Entscheidung ist oft angemessen?",
+      "explanation": "Containment muss Risiko und Betriebswirkung balancieren. Gemeinsame Entscheidung reduziert Folgeschaeden.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sofort Strom ziehen ohne Abstimmung",
+          "is_correct": false
+        },
+        {
+          "text": "Abgestuftes Containment mit Business-Owner und IR-Leitung abstimmen",
+          "is_correct": true
+        },
+        {
+          "text": "Alles ignorieren bis Monatsende",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Logging deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Information gehoert in einen initialen Incident-Statusbericht?",
+      "explanation": "Ein initiales Lagebild braucht Klarheit zu Ereignis, Scope und Aktion. Das ermoeglicht schnelle Fuehrungsentscheidungen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Persoenliche Vermutungen",
+          "is_correct": false
+        },
+        {
+          "text": "Was ist passiert, was ist betroffen, was wird als naechstes getan",
+          "is_correct": true
+        },
+        {
+          "text": "Nur technische Hashwerte",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Kostenprognose fuer naechstes Jahr",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wann sollte ein Incident offiziell geschlossen werden?",
+      "explanation": "Ein Incident gilt erst nach vollstaendiger Wiederherstellung und Nachbereitung als abgeschlossen. Sonst bleiben Rest-Risiken.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sobald ein Alert verschwindet",
+          "is_correct": false
+        },
+        {
+          "text": "Wenn Containment, Eradication, Recovery und Lessons Learned abgeschlossen sind",
+          "is_correct": true
+        },
+        {
+          "text": "Nach Schichtende",
+          "is_correct": false
+        },
+        {
+          "text": "Nach erstem Reboot",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Artefakt ist fuer Ransomware-IR besonders wichtig?",
+      "explanation": "Diese Artefakte helfen bei Attribution des Angriffswegs und bei Wiederanlaufstrategie. Sie sind fuer Entscheidung und Kommunikation zentral.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Browser-Lesezeichen",
+          "is_correct": false
+        },
+        {
+          "text": "Verschluesselungsnotiz, Prozessdaten und initialer Access-Pfad",
+          "is_correct": true
+        },
+        {
+          "text": "Desktop-Hintergrund",
+          "is_correct": false
+        },
+        {
+          "text": "Meeting-Einladung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist ein typischer Fehler in Eradication-Phase?",
+      "explanation": "Wenn nur sichtbare Malware entfernt wird, bleibt der Angreifer oft im Netz. Root Cause und Persistenz muessen geschlossen werden.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Root Cause analysieren",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Symptome entfernen ohne initialen Zugriffspfad zu schliessen",
+          "is_correct": true
+        },
+        {
+          "text": "Passwoerter rotieren",
+          "is_correct": false
+        },
+        {
+          "text": "Persistenz pruefen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Rolle hat ein Communications Lead waehrend eines Major Incidents?",
+      "explanation": "Klare Kommunikation verhindert Geruechte und Fehlentscheidungen. Sie haelt Stakeholder synchron zum Lagebild.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Firewall-Regeln schreiben",
+          "is_correct": false
+        },
+        {
+          "text": "Konsistente interne und externe Kommunikation steuern",
+          "is_correct": true
+        },
+        {
+          "text": "Memory Dump analysieren",
+          "is_correct": false
+        },
+        {
+          "text": "SIEM-Parser bauen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Uebung verbessert IR-Readiness am staerksten?",
+      "explanation": "Tabletops testen Prozesse, Rollen und Kommunikationswege ohne Produktionsrisiko. Dabei werden Luecken frueh sichtbar.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Ungeplante Produktiv-Ausfaelle",
+          "is_correct": false
+        },
+        {
+          "text": "Regelmaessige Tabletop-Exercises mit realistischen Szenarien",
+          "is_correct": true
+        },
+        {
+          "text": "Nur neue Logos im SOC",
+          "is_correct": false
+        },
+        {
+          "text": "Archivierung alter Tickets",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum ist ein Post-Incident-Review wichtig?",
+      "explanation": "Wirksame Reviews sind lernorientiert und liefern umsetzbare Verbesserungen. Das erhoeht Resilienz fuer kommende Vorfaelle.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur um Schuldige zu suchen",
+          "is_correct": false
+        },
+        {
+          "text": "Um Ursachen, Kontrollluecken und konkrete Verbesserungen abzuleiten",
+          "is_correct": true
+        },
+        {
+          "text": "Um Ticketnummern zu aendern",
+          "is_correct": false
+        },
+        {
+          "text": "Um SIEM abzuschalten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Priorisierung ist im Vulnerability Management am sinnvollsten?",
+      "explanation": "Reines CVSS ignoriert Kontext. Risiko entsteht aus Ausnutzbarkeit plus Geschaeftsbedeutung des betroffenen Assets.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur nach CVSS Basiswert",
+          "is_correct": false
+        },
+        {
+          "text": "Nach Exploitability, Asset-Kritikalitaet und Exposition",
+          "is_correct": true
+        },
+        {
+          "text": "Nach Dateigroesse des Patches",
+          "is_correct": false
+        },
+        {
+          "text": "Nach Alphabet des Herstellers",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein kritischer Patch kann nicht sofort installiert werden. Was ist die beste Zwischenmassnahme?",
+      "explanation": "Kompensierende Kontrollen reduzieren Risiko bis zur finalen Behebung. So bleibt Betrieb moeglich und Angriffsfenster kleiner.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nichts tun",
+          "is_correct": false
+        },
+        {
+          "text": "Kompensierende Kontrollen wie IPS-Regeln, Segmentierung oder Feature-Disable",
+          "is_correct": true
+        },
+        {
+          "text": "Patch-Management deinstallieren",
+          "is_correct": false
+        },
+        {
+          "text": "Alle Logs abschalten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Kennzahl eignet sich fuer Wirksamkeit des Patch-Prozesses?",
+      "explanation": "MTTR je Risikoklasse zeigt, wie schnell relevante Schwachstellen geschlossen werden. Das ist direkt steuerungsrelevant.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Anzahl E-Mails pro Woche",
+          "is_correct": false
+        },
+        {
+          "text": "Mean Time To Remediate nach Risiko-Klasse",
+          "is_correct": true
+        },
+        {
+          "text": "CPU-Last auf Clients",
+          "is_correct": false
+        },
+        {
+          "text": "Anzahl Wallpaper-Wechsel",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum sind authenticated Scans oft wertvoller als unauthenticated?",
+      "explanation": "Mit Authentifizierung sieht der Scanner tatsaechlichen Patch- und Konfigurationsstand. Das reduziert False Negatives deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sie sind immer schneller",
+          "is_correct": false
+        },
+        {
+          "text": "Sie liefern tiefere und genauere Schwachstelleninformationen",
+          "is_correct": true
+        },
+        {
+          "text": "Sie brauchen keine Zugangsdaten",
+          "is_correct": false
+        },
+        {
+          "text": "Sie ersetzen Patch-Tests",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wie sollte ein Exception-Prozess fuer offene Schwachstellen gestaltet sein?",
+      "explanation": "Ausnahmen brauchen Verantwortung und zeitliche Begrenzung. Sonst entstehen dauerhafte, unkontrollierte Risiken.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Ohne Ablaufdatum",
+          "is_correct": false
+        },
+        {
+          "text": "Mit Risikoakzeptanz, Owner, Begruendung und Review-Termin",
+          "is_correct": true
+        },
+        {
+          "text": "Nur muendlich",
+          "is_correct": false
+        },
+        {
+          "text": "Nur vom Praktikanten freigeben",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Schritt gehoert zur Validierung nach Patch-Rollout?",
+      "explanation": "Ohne technische und funktionale Verifikation ist unklar, ob Risiko wirklich reduziert wurde. Status allein reicht nicht.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Ticket auf 'done' setzen",
+          "is_correct": false
+        },
+        {
+          "text": "Rescan und Funktionstest der betroffenen Systeme",
+          "is_correct": true
+        },
+        {
+          "text": "Agent deinstallieren",
+          "is_correct": false
+        },
+        {
+          "text": "Monitoring pausieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage macht einen guten Security-Report fuer Management aus?",
+      "explanation": "Management braucht Entscheidungsgrundlagen, keine Datenflut. Risiko, Trend und Optionen schaffen Handlungsfaehigkeit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur rohe IOC-Listen",
+          "is_correct": false
+        },
+        {
+          "text": "Risikoorientierte Kernaussagen mit Trend und Handlungsoptionen",
+          "is_correct": true
+        },
+        {
+          "text": "Moeglichst viele Fachabkuerzungen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur SIEM-Screenshots",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei einer Stakeholder-Kommunikation waehrend Incident gilt was?",
+      "explanation": "Unterschiedliche Zielgruppen brauchen unterschiedliche Detailtiefe. Strukturierte Updates reduzieren Missverstaendnisse und Panik.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Technische Details ungefiltert an alle",
+          "is_correct": false
+        },
+        {
+          "text": "Botschaften an Zielgruppe und Informationsbedarf anpassen",
+          "is_correct": true
+        },
+        {
+          "text": "Keine Updates bis alles vorbei ist",
+          "is_correct": false
+        },
+        {
+          "text": "Nur muendliche Weitergabe",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Visualisierung eignet sich fuer SOC-Leistungsueberblick am besten?",
+      "explanation": "Zeitreihen machen Verbesserungen oder Rueckschritte sichtbar. Kombinierte Metriken zeigen Geschwindigkeit und Qualitaet zugleich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Beliebige Clipart",
+          "is_correct": false
+        },
+        {
+          "text": "Trenddiagramme fuer MTTD, MTTR und Alert-Qualitaet",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Textblock ohne Zahlen",
+          "is_correct": false
+        },
+        {
+          "text": "Hash-Listen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist bei Executive Briefings nach einem Incident wichtig?",
+      "explanation": "Fuehrungskraefte brauchen Impact, Restrisiko und Entscheidungsoptionen. Das beschleunigt Priorisierung und Freigaben.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Namen einzelner Analysten hervorheben",
+          "is_correct": false
+        },
+        {
+          "text": "Business-Impact, Rest-Risiko und naechste Entscheidungen klar darstellen",
+          "is_correct": true
+        },
+        {
+          "text": "Nur technische Logzeilen vorlesen",
+          "is_correct": false
+        },
+        {
+          "text": "Den Vorfall herunterspielen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SOC sieht taeglich tausende gleichartige EDR-Alerts fuer ein legitimes Admin-Skript. Welche Massnahme reduziert am besten Alert-Fatigue ohne Blindheit zu erzeugen?",
+      "explanation": "Kontextbasiertes Tuning unter mehreren Bedingungen senkt Rauschen und behaelt echte Abweichungen sichtbar.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Globales Whitelisting des Script-Namens",
+          "is_correct": false
+        },
+        {
+          "text": "Rule Tuning mit Publisher-Hash, Pfad und Signaturbedingungen",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Alerts dieses Hosts dauerhaft stummschalten",
+          "is_correct": false
+        },
+        {
+          "text": "Nur noch Alerts mit Severity Critical anzeigen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei der Triage eines Phishing-Vorfalls ist der wichtigste erste Schritt?",
+      "explanation": "Ohne saubere Scope-Bestimmung sind Containment und Priorisierung oft ineffizient oder falsch.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Direkt alle Mailboxen loeschen",
+          "is_correct": false
+        },
+        {
+          "text": "IOC-Liste an das Management senden",
+          "is_correct": false
+        },
+        {
+          "text": "Scope und betroffene Nutzer/Artefakte bestimmen",
+          "is_correct": true
+        },
+        {
+          "text": "Passwort-Reset fuer alle Mitarbeitenden erzwingen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Host erzeugt PowerShell-Events mit Base64-Encodestrings. Welche Datenquelle erhoeht die Erkennungsqualitaet am staerksten?",
+      "explanation": "Script-Block-Inhalte plus Commandline liefern direkten Kontext zu obfuskierten PowerShell-Aktivitaeten.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur NetFlow",
+          "is_correct": false
+        },
+        {
+          "text": "Script Block Logging und Prozess-Commandline",
+          "is_correct": true
+        },
+        {
+          "text": "DHCP-Lease-Historie",
+          "is_correct": false
+        },
+        {
+          "text": "Printer-Logs",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher KPI ist am besten geeignet, um die Effektivitaet von Detection Tuning im SOC zu messen?",
+      "explanation": "MTTD und False-Positive-Rate bilden Erkennungszeit und Signalqualitaet direkt ab.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Anzahl installierter Agents",
+          "is_correct": false
+        },
+        {
+          "text": "Mean Time to Detect (MTTD) und False-Positive-Rate",
+          "is_correct": true
+        },
+        {
+          "text": "Anzahl taeglicher Tickets insgesamt",
+          "is_correct": false
+        },
+        {
+          "text": "Lizenzkosten pro Endpoint",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Jagdhypothese passt zu verdachtigem Credential Access auf Windows-Clients?",
+      "explanation": "Unerwarteter Zugriff auf LSASS ist ein starker Indikator fuer Credential-Dumping-Techniken.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Suche nach ausgehenden DNS-Requests auf Port 80",
+          "is_correct": false
+        },
+        {
+          "text": "Suche nach LSASS-Handle-Zugriffen durch ungewoehnliche Prozesse",
+          "is_correct": true
+        },
+        {
+          "text": "Suche nach hoher CPU-Last durch Browser",
+          "is_correct": false
+        },
+        {
+          "text": "Suche nach fehlenden Windows-Updates",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Incident Commander fordert schnellen Containment-Entscheid. Welche Information ist dafuer am wichtigsten?",
+      "explanation": "Containment priorisiert Business Impact und aktuelle Bewegung des Angreifers.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Anzahl offener Jira-Tickets",
+          "is_correct": false
+        },
+        {
+          "text": "Kritikalitaet der betroffenen Assets und aktuelle Ausbreitung",
+          "is_correct": true
+        },
+        {
+          "text": "Historie alter Phishing-Kampagnen",
+          "is_correct": false
+        },
+        {
+          "text": "Monatliches SOC-Budget",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Ansatz priorisiert Schwachstellen am besten fuer Patch-Planung?",
+      "explanation": "Risikobasierte Priorisierung braucht technische Schwere plus Angriffsrealitaet und Geschaeftskontext.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur CVSS Base Score absteigend",
+          "is_correct": false
+        },
+        {
+          "text": "CVSS, Exploit-Verfuegbarkeit, Asset-Kritikalitaet und Exposure kombinieren",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Alter der Schwachstelle",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Anzahl betroffener Systeme",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Im SIEM feuert eine Regel auf 'failed logon' zu oft durch Service-Accounts. Was ist die beste naechste Tuning-Aktion?",
+      "explanation": "Typ-spezifische Thresholds reduzieren Rauschen, ohne ganze Konto-Klassen blind auszuschliessen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regel komplett deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Schwellwert und Zeitfenster je Konto-Typ differenzieren",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Service-Accounts ausschliessen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Domain Controller auswerten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Reihenfolge ist fuer Incident Response am sinnvollsten?",
+      "explanation": "Das entspricht gaengigen IR-Phasen nach etablierten Frameworks.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Eradication, Detection, Recovery, Lessons Learned",
+          "is_correct": false
+        },
+        {
+          "text": "Preparation, Detection/Analysis, Containment/Eradication/Recovery, Post-Incident",
+          "is_correct": true
+        },
+        {
+          "text": "Containment, Reporting, Preparation, Recovery",
+          "is_correct": false
+        },
+        {
+          "text": "Recovery, Containment, Analysis, Preparation",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Beobachtung weist am ehesten auf C2-Beaconing hin?",
+      "explanation": "Konstante, kleine und periodische Verbindungen sind typisch fuer Beaconing.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Viele grosse Datei-Downloads zur Mittagszeit",
+          "is_correct": false
+        },
+        {
+          "text": "Periodische, kleine Verbindungen mit konstantem Intervall zu derselben externen IP",
+          "is_correct": true
+        },
+        {
+          "text": "Einmaliger DNS-Lookup auf internen Host",
+          "is_correct": false
+        },
+        {
+          "text": "Unregelmaessige Verbindungen zu lokalen Druckern",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Analyst findet verdachtige Prozesse, aber keine Netzverbindungen. Welche Aktion hat Prioritaet?",
+      "explanation": "Volatile Daten gehen schnell verloren und sind fuer Ursache und Timeline oft entscheidend.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Host forensisch sichern und volatile Daten erfassen",
+          "is_correct": true
+        },
+        {
+          "text": "System sofort neu starten",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Antiviren-Quick-Scan starten",
+          "is_correct": false
+        },
+        {
+          "text": "Eventlogs loeschen, um Platz zu schaffen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Bericht ist fuer das Management am hilfreichsten nach einem SOC-Vorfall?",
+      "explanation": "Management braucht entscheidungsrelevante Kerndaten statt unstrukturierter Telemetrie.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Roh-Logdump mit allen Events",
+          "is_correct": false
+        },
+        {
+          "text": "Kurzfassung mit Impact, Ursache, Massnahmen, Restrisiko und naechsten Schritten",
+          "is_correct": true
+        },
+        {
+          "text": "Nur MITRE ATT&CK IDs ohne Kontext",
+          "is_correct": false
+        },
+        {
+          "text": "Ausschliesslich technische IoCs",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Query ist fuer Threat Hunting auf Lateral Movement am zielfuehrendsten?",
+      "explanation": "Abweichende Admin-RDP-Muster zeigen haeufig fruehe laterale Bewegung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Alle erfolgreichen lokalen Logins auf Workstations",
+          "is_correct": false
+        },
+        {
+          "text": "Neue RDP-Quellhosts mit Admin-Login ausserhalb Baseline-Zeiten",
+          "is_correct": true
+        },
+        {
+          "text": "Alle DNS-Anfragen interner Clients",
+          "is_correct": false
+        },
+        {
+          "text": "Alle installierten Browser-Plugins",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist der beste Grund, Detection-Regeln mit ATT&CK-Techniken zu mappen?",
+      "explanation": "ATT&CK-Mapping ermoeglicht strukturiertes Gap-Assessment pro Taktik/Technik.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Um SIEM-Lizenzkosten zu reduzieren",
+          "is_correct": false
+        },
+        {
+          "text": "Um Coverage-Luecken systematisch sichtbar zu machen",
+          "is_correct": true
+        },
+        {
+          "text": "Um alle Regeln auf Critical zu setzen",
+          "is_correct": false
+        },
+        {
+          "text": "Um Logs kuerzer zu speichern",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein EDR-Alert meldet 'rundll32.exe' mit ungewoehnlicher Commandline. Welche Kombination bestaetigt Missbrauch am ehesten?",
+      "explanation": "Ungewohnte Parent-Kette, User-Pfad-DLL und C2-Verhalten ergeben starkes Missbrauchsmuster.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Signierte DLL aus System32 und bekannte Parent-Process-Kette",
+          "is_correct": false
+        },
+        {
+          "text": "Temporare DLL aus User-Pfad plus Office-Parent und Netzbeaconing",
+          "is_correct": true
+        },
+        {
+          "text": "Hohe RAM-Nutzung ohne weitere Indikatoren",
+          "is_correct": false
+        },
+        {
+          "text": "Gleicher Prozessname auf mehreren Servern",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Metrik ist fuer Vulnerability-Reporting an Asset-Owner am aussagekraeftigsten?",
+      "explanation": "Service-bezogene, exponierte Critical Findings verbinden Technik mit realem Risiko.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Anzahl Findings ohne Schweregrad",
+          "is_correct": false
+        },
+        {
+          "text": "Anteil internetexponierter Critical Findings pro Business-Service",
+          "is_correct": true
+        },
+        {
+          "text": "Gesamtzahl aller Ports im Netz",
+          "is_correct": false
+        },
+        {
+          "text": "Anzahl eingesetzter Scanner",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei einem moeglichen Data-Exfil-Event: Welche Validierung zuerst?",
+      "explanation": "Exfil-Bestaetigung braucht Netzwerkindikatoren plus Inhalt/Business-Kontext.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Ob die CPU-Auslastung am Gateway normal ist",
+          "is_correct": false
+        },
+        {
+          "text": "Ob ausgehende Datenvolumen, Ziel-Domain-Reputation und Datenklassifikation korrelieren",
+          "is_correct": true
+        },
+        {
+          "text": "Ob User sein Passwort geaendert hat",
+          "is_correct": false
+        },
+        {
+          "text": "Ob Endpoint-Hintergrundbild manipuliert wurde",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aktion verbessert die Qualitaet von Tier-1-Triage nachhaltig?",
+      "explanation": "Standardisierte Playbooks reduzieren Varianz und verbessern Nachvollziehbarkeit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Alerts ungeprueft an Tier-2 eskalieren",
+          "is_correct": false
+        },
+        {
+          "text": "Playbooks mit klaren Entscheidungskriterien und Pflichtartefakten",
+          "is_correct": true
+        },
+        {
+          "text": "Nur erfahrene Analysten fuer Nachtschicht einsetzen",
+          "is_correct": false
+        },
+        {
+          "text": "Triage komplett automatisieren ohne Review",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Logquelle ist fuer Erkennung von Web-Shell-Aktivitaet auf IIS am direktesten?",
+      "explanation": "HTTP-Muster plus lokale Prozess/Datei-Spuren zeigen Ausfuehrung und Persistenz.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "DHCP-Logs",
+          "is_correct": false
+        },
+        {
+          "text": "IIS Access Logs kombiniert mit Prozess- und Datei-Aenderungs-Events",
+          "is_correct": true
+        },
+        {
+          "text": "NTP-Logs",
+          "is_correct": false
+        },
+        {
+          "text": "SNMP Polling-Daten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SOC fuehrt ein neues Detection Use Case ein. Was gehoert zwingend zur Abnahme?",
+      "explanation": "Ohne testbare Kriterien und dokumentierte Annahmen ist die Regelqualitaet nicht belastbar.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Regel speichern und aktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Testfaelle fuer True Positive, False Positive und Dokumentation von Tuning-Annahmen",
+          "is_correct": true
+        },
+        {
+          "text": "Mindestens ein Dashboard-Screenshot",
+          "is_correct": false
+        },
+        {
+          "text": "Freigabe nur durch Procurement",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Im SIEM treten ploetzlich viele authentische Alerts aus einer neuen Quelle auf. Was ist der beste erste Schritt?",
+      "explanation": "Vor Tuning muss Datenqualitaet gesichert werden, sonst werden falsche Annahmen automatisiert.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Quelle sofort abschalten",
+          "is_correct": false
+        },
+        {
+          "text": "Parser-/Mapping-Qualitaet und Event-Kontext validieren, dann Tuning",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Rules deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Dashboard-Farbe aendern",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SOC will MTTD verbessern. Welche Massnahme bringt typischerweise den groessten Hebel?",
+      "explanation": "Qualitative Detection plus klare Reaktionswege verbessert echte Erkennungszeit nachhaltig.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur mehr Alerts erzeugen",
+          "is_correct": false
+        },
+        {
+          "text": "Use-Case-Qualitaet, Log-Abdeckung und on-call Runbooks verbessern",
+          "is_correct": true
+        },
+        {
+          "text": "Retention verkuerzen",
+          "is_correct": false
+        },
+        {
+          "text": "Alle Tickets als Low setzen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Priorisierung ist bei Vulnerability Management am reifsten?",
+      "explanation": "Risikobasierte Priorisierung kombiniert technische und geschaeftliche Faktoren.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Nur nach CVSS sortieren",
+          "is_correct": false
+        },
+        {
+          "text": "CVSS + Asset-Kritikalitaet + Exponierung + aktive Exploit-Infos",
+          "is_correct": true
+        },
+        {
+          "text": "Nur nach Alter des Tickets",
+          "is_correct": false
+        },
+        {
+          "text": "Nur nach Teamwunsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Incident erfordert Host-Isolation, aber ein Produktionsprozess darf nicht stoppen. Was ist sinnvoll?",
+      "explanation": "Kontrolliertes Containment balanciert Sicherheit und Betriebsanforderungen.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Isolation ablehnen",
+          "is_correct": false
+        },
+        {
+          "text": "Gezielte Containment-Regel mit notwendigen Ausnahmen und engmaschigem Monitoring",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Systeme neu starten",
+          "is_correct": false
+        },
+        {
+          "text": "EDR deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage zu Detection-as-Code ist korrekt?",
+      "explanation": "DaC verbessert Nachvollziehbarkeit und Qualitaetskontrolle von Detektionen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur fuer DevOps-Metriken",
+          "is_correct": false
+        },
+        {
+          "text": "Versionierte Regeln mit Tests/Review reduzieren Fehlalarme und Regressionen",
+          "is_correct": true
+        },
+        {
+          "text": "Ersetzt Threat Hunting",
+          "is_correct": false
+        },
+        {
+          "text": "Ist nur fuer Cloud nicht on-prem",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hunt sucht nach LSASS-Credential-Access. Welche Datenquelle ist am wertvollsten?",
+      "explanation": "Credential Access zeigt sich haeufig in Prozess-/Memory-Zugriffsmustern auf Endpunkten.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Raumbelegungssensoren",
+          "is_correct": false
+        },
+        {
+          "text": "EDR Prozess- und Memory-Access-Telemetrie",
+          "is_correct": true
+        },
+        {
+          "text": "Druckerspooler",
+          "is_correct": false
+        },
+        {
+          "text": "DNS MX-Records",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Im Management-Update waehrend eines Incidents sollte zuerst berichtet werden:",
+      "explanation": "Management braucht entscheidungsrelevante Information statt Low-Level-Rohdaten.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Alle Rohlogs im Detail",
+          "is_correct": false
+        },
+        {
+          "text": "Business Impact, aktueller Scope, Risiken und Entscheidungsbedarf",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Analystenmeinung",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Ticket-ID",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Alert auf verdaechtige PowerShell trifft auf ein Golden-Image-Rollout-Fenster. Beste Reaktion?",
+      "explanation": "Change-Kontext verhindert Fehlklassifikation und ermoeglicht dennoch sichere Verifikation.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Alert pauschal ignorieren",
+          "is_correct": false
+        },
+        {
+          "text": "Change-Kontext pruefen, Artefakte verifizieren, dann klassifizieren",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Admin-Konten sperren",
+          "is_correct": false
+        },
+        {
+          "text": "SIEM ausschalten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Kennzahl hilft am besten, Alarmmuedigkeit im SOC zu messen?",
+      "explanation": "Die FP-Rate zeigt direkt unproduktive Last durch ungenaue Regeln.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Anzahl Kaffeemaschinen",
+          "is_correct": false
+        },
+        {
+          "text": "False-Positive-Rate pro Use-Case und Analyst",
+          "is_correct": true
+        },
+        {
+          "text": "Patch-Fenster pro Monat",
+          "is_correct": false
+        },
+        {
+          "text": "Durchschnittliches Passwortalter",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum ist Zeit-Synchronisation fuer Incident-Timelines kritisch?",
+      "explanation": "Zeitdrift fuehrt zu fehlerhafter Rekonstruktion von Angriffsablaeufen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur fuer Reporting-Optik",
+          "is_correct": false
+        },
+        {
+          "text": "Ohne konsistente Zeitstempel werden Kausalitaet und Sequenzen unzuverlaessig",
+          "is_correct": true
+        },
+        {
+          "text": "Nur fuer Backup noetig",
+          "is_correct": false
+        },
+        {
+          "text": "Nur fuer DHCP relevant",
+          "is_correct": false
+        }
+      ]
+    }
+  ]
+}

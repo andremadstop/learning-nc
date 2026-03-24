@@ -1,0 +1,1928 @@
+{
+  "pool_name": "Network+ Wahr/Falsch (DE)",
+  "source": "AI-generated (Claude/Gemini), reviewed and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "questions": [
+    {
+      "text": "Ein unmanaged Switch unterstuetzt in der Regel kein VLAN-Tagging-Management.",
+      "explanation": "Unmanaged Geraete bieten meist keine konfigurierbaren VLAN-Funktionen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "DNS verwendet standardmaessig ausschliesslich TCP Port 53.",
+      "explanation": "DNS nutzt primaer UDP 53, TCP zusaetzlich z.B. fuer Zone-Transfers.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein /30-Netz bietet bei IPv4 genau 2 nutzbare Hostadressen.",
+      "explanation": "Bei /30 bleiben nach Netz- und Broadcastadresse zwei Hosts.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "STP wird eingesetzt, um Routing-Schleifen zwischen AS zu vermeiden.",
+      "explanation": "STP verhindert Layer-2-Schleifen, nicht BGP-AS-Schleifen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "NAT kann helfen, private IPv4-Adressen ins Internet zu uebersetzen.",
+      "explanation": "PAT/NAT uebersetzt private auf oeffentliche Adressen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Ping testet typischerweise ICMP-Erreichbarkeit.",
+      "explanation": "Ping nutzt ICMP Echo Request/Reply.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei Voll-Duplex Ethernet treten Kollisionen regelmaessig auf.",
+      "explanation": "Kollisionen sind ein Halbduplex-Thema.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "LLDP dient der Nachbarschaftserkennung auf Layer 2.",
+      "explanation": "LLDP informiert ueber direkt verbundene Geraete.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "802.1Q fuegt VLAN-Tagging in Ethernet-Frames ein.",
+      "explanation": "802.1Q ist der uebliche VLAN-Tagging-Standard.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein /24-Netz enthaelt 1024 Adressen.",
+      "explanation": "/24 enthaelt 256 Adressen insgesamt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "DNS over HTTPS kann klassische DNS-Sichtbarkeit in manchen Netzwerken reduzieren.",
+      "explanation": "DoH kapselt DNS in HTTPS und erschwert bestimmte klassische DNS-Inspektion.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "QoS kann Bandbreite physisch vergroessern.",
+      "explanation": "QoS priorisiert nur vorhandene Ressourcen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "DHCP Snooping kann als Grundlage fuer Dynamic ARP Inspection dienen.",
+      "explanation": "DAI nutzt u.a. DHCP-Bindings zur Validierung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "OSPF ist ein Distance-Vector-Protokoll.",
+      "explanation": "OSPF ist Link-State.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "VLANs trennen Broadcast-Domaenen logisch.",
+      "explanation": "Jedes VLAN bildet eine eigene Broadcast-Domaene.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "NTP ist nur fuer Desktop-Uhren relevant, nicht fuer Security.",
+      "explanation": "Konsistente Zeit ist fuer SIEM, Forensik und Zertifikate essenziell.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Access Port transportiert typischerweise nur ein VLAN untagged.",
+      "explanation": "Das ist das typische Verhalten fuer Endgeraeteports.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Traceroute kann helfen, Routing-Schleifen sichtbar zu machen.",
+      "explanation": "Wiederkehrende Hops und TTL-Verhalten deuten darauf hin.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "PoE ist ein Layer-3-Routingprotokoll.",
+      "explanation": "PoE ist Stromversorgung ueber Ethernet, kein Routingprotokoll.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "MDF und IDF sind relevante Begriffe fuer physische Netzwerkinstallationen.",
+      "explanation": "Sie beschreiben zentrale/verteilte Verteilerstrukturen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SNMPv2c sendet Community-Strings typischerweise unverschluesselt.",
+      "explanation": "Daher wird oft SNMPv3 bevorzugt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei hoher Latenz sollte man immer zuerst DNS aendern.",
+      "explanation": "Ursachenanalyse sollte methodisch und datenbasiert erfolgen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Link-Local IPv6-Adressen beginnen typischerweise mit fe80::/10.",
+      "explanation": "Das ist der reservierte Bereich fuer Link-Local.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "STP deaktivieren in einem redundanten Layer-2-Design ist meist eine gute Idee.",
+      "explanation": "Ohne Schutz drohen Layer-2-Schleifen/Broadcast-Storms.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "CIDR /29 bietet 6 nutzbare Hosts.",
+      "explanation": "8 Gesamtadressen minus Netz und Broadcast ergeben 6 nutzbare.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein /27 hat 30 nutzbare Hosts.",
+      "explanation": "32 Gesamtadressen minus 2 reservierte.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "PortFast gehoert auf Endgeraeteports, nicht auf Trunks.",
+      "explanation": "Auf Trunks kann es Loops schneller wirksam machen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "LACP ist ein IEEE Standard.",
+      "explanation": "Es ist vendor-neutral im Gegensatz zu PAgP.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Native VLAN mismatch kann untagged Traffic fehlleiten.",
+      "explanation": "Beide Trunk-Seiten interpretieren untagged Frames sonst unterschiedlich.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "DAI kann ohne Referenzdaten oft nicht sauber validieren.",
+      "explanation": "Typisch werden DHCP Snooping Bindings genutzt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SNMPv1 verschluesselt Managementdaten standardmaessig.",
+      "explanation": "SNMPv1 sendet unverschluesselt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "SNMPv3 authPriv bietet Integritaet und Vertraulichkeit.",
+      "explanation": "Auth plus Encryption sind beide vorhanden.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Syslog ueber UDP garantiert Zustellung.",
+      "explanation": "UDP bietet keine Zustellgarantie.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Flow Telemetrie ist fuer Top-Talker Analyse geeignet.",
+      "explanation": "NetFlow/IPFIX zeigt Volumen pro Flow.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Traceroute-Fehler bedeuten immer App-Ausfall.",
+      "explanation": "ICMP kann gefiltert sein, waehrend App-Verkehr geht.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "NTP Synchronisierung verbessert Security-Korrelation.",
+      "explanation": "Konsistente Timestamps sind fuer Incident-Analyse zentral.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "WPA3-Enterprise basiert auf 802.1X/EAP.",
+      "explanation": "Es nutzt zentrale AAA-Authentifizierung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SSID-Hiding ersetzt Verschluesselung.",
+      "explanation": "Es ist keine robuste Sicherheitsmassnahme.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Rogue AP Detection ist Aufgabe eines WIDS/WIPS.",
+      "explanation": "Diese Systeme erkennen verdaechtige Funkquellen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Captive Portal allein garantiert Segmentierung.",
+      "explanation": "Es braucht zusaetzliche Isolation und Firewall-Regeln.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Zero Trust nimmt implizites Vertrauen im LAN an.",
+      "explanation": "Zero Trust validiert jeden Zugriff explizit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Honeypot ist ein produktiver Primardienst.",
+      "explanation": "Er ist ein kontrolliertes Lockziel.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Containment ist oft ein frueher Incident-Response-Schritt.",
+      "explanation": "So wird Ausbreitung schnell begrenzt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "ACLs werden bei den meisten Plattformen top-down ausgewertet.",
+      "explanation": "Die erste passende Regel greift.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "BGP ist typisch fuer Multi-ISP Szenarien.",
+      "explanation": "Es erlaubt Policy-basierte Pfadsteuerung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "OSPF hat typischerweise niedrigere AD als statische Route.",
+      "explanation": "Statisch ist ueblich niedriger als OSPF.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Inter-VLAN Verkehr benoetigt Layer-3 Routing.",
+      "explanation": "VLANs sind auf Layer 2 getrennt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "STP verhindert Layer-2 Loops.",
+      "explanation": "Es blockiert redundante Pfade logisch.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "VRRP stellt Gateway-Redundanz mit virtueller IP bereit.",
+      "explanation": "Backup-Router kann bei Ausfall uebernehmen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Duplex-Mismatch kann hohe Fehlerquoten erzeugen.",
+      "explanation": "Asymmetrische Einstellungen verursachen Performanceprobleme.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Split Pair ist ein Layer-3 Thema.",
+      "explanation": "Es ist ein Verkabelungsproblem auf Layer 1.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "PoE Budget-Ueberschreitung kann Portflaps verursachen.",
+      "explanation": "Wenn Leistung fehlt, priorisiert oder deaktiviert der Switch Ports.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "VPC Peering ist standardmaessig transitiv.",
+      "explanation": "Transit ueber dritte VPC wird normalerweise nicht unterstuetzt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Conditional Forwarder helfen bei Hybrid-DNS.",
+      "explanation": "Bestimmte Zonen werden gezielt weitergeleitet.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Promiscuous Mode auf vSwitch sollte nur gezielt aktiviert werden.",
+      "explanation": "Erhoehtes Mitschnittpotenzial ist ein Risiko.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Microsegmentation reduziert laterale Bewegung.",
+      "explanation": "Feingranulare East-West Policies begrenzen Ausbreitung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "NAT ersetzt eine Firewall vollstaendig.",
+      "explanation": "NAT ist keine vollwertige Security-Kontrolle.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "DNSSEC verschluesselt DNS Verkehr automatisch.",
+      "explanation": "DNSSEC signiert Daten, verschluesselt aber nicht den Transport.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "QoS schafft neue Bandbreite.",
+      "explanation": "QoS verteilt vorhandene Bandbreite priorisiert.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Shaping puffert, Policing verwirft/markiert Ueberschuesse.",
+      "explanation": "Das ist der praktische Unterschied bei Rate-Kontrolle.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "EF ist eine gaengige QoS-Klasse fuer Sprache.",
+      "explanation": "EF priorisiert latenzkritischen Verkehr.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "mDNS funktioniert ohne Hilfsmittel VLAN-uebergreifend.",
+      "explanation": "Es ist link-local und braucht Reflector/Gateway.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "RA Guard blockt unerwuenschte Router Advertisements auf Access-Ports.",
+      "explanation": "Das schuetzt IPv6 Clients vor Rogue RA.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "NAT64/DNS64 verbindet IPv6-only Clients mit IPv4 Diensten.",
+      "explanation": "Es ist eine klassische Uebergangstechnik.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "APIPA (169.254.0.0/16) deutet oft auf DHCP-Probleme.",
+      "explanation": "Adresse wird gesetzt, wenn keine Lease kommt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Route-Tags helfen bei Redistribution gegen Loops.",
+      "explanation": "Markierungen erlauben gezielte Filterregeln.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "10G-SR und 10G-LR sind immer kompatibel.",
+      "explanation": "Optik und Faserparameter muessen passen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Mikrobiegungen in LWL koennen CRC Fehler erhoehen.",
+      "explanation": "Optische Daempfung/Reflexion verschlechtert Signalqualitaet.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Site Survey vor WLAN Rollout ist entbehrlich.",
+      "explanation": "Er ist wichtig fuer Funkplanung und Kapazitaet.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "WIDS kann Evil-Twin Muster erkennen.",
+      "explanation": "Identische SSID mit verdaechtigen Merkmalen wird erkannt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "TCP Window Scaling kann bei hoher RTT Throughput verbessern.",
+      "explanation": "Groessere Fenster nutzen die Bandbreite besser aus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Backups ohne Restore-Test sind ausreichend verifiziert.",
+      "explanation": "Nur ein erfolgreicher Restore beweist Nutzbarkeit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "As-Built Dokumentation nach Changes beschleunigt Troubleshooting.",
+      "explanation": "Aktuelle Doku reduziert Suchaufwand deutlich.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bottom-up Troubleshooting startet auf Layer 1/2.",
+      "explanation": "Fundamentale Fehler werden so frueh ausgeschlossen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "GET ist die typische HTTP Methode zum Erzeugen neuer Ressourcen.",
+      "explanation": "Fuer Create wird in der Regel POST genutzt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "JSON ist in REST-Netzwerk-APIs gaengig.",
+      "explanation": "Es ist leicht maschinell verarbeitbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Idempotente Automatisierung verhindert unkontrollierten Drift bei Wiederholung.",
+      "explanation": "Mehrfachlauf fuehrt stabil zum Sollzustand.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "IaC ohne Versionskontrolle ist fuer Audits gleich gut.",
+      "explanation": "Ohne Historie fehlen Nachvollziehbarkeit und Review.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Pre-Deployment Checks senken Change-Risiko.",
+      "explanation": "Validierungen verhindern viele Produktionsfehler.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "TLS Offloading am Reverse Proxy kann Backends entlasten.",
+      "explanation": "Kryptolast und Zertifikatsmanagement werden zentralisiert.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Cookie-Persistenz ist ein typisches Layer-7-LB Feature.",
+      "explanation": "Session-basierte Anwendungen profitieren davon.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SD-WAN kann Pfade anhand von Jitter/Delay dynamisch waehlen.",
+      "explanation": "SLA-basierte Pfadwahl ist eine Kernfunktion.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "VRFs erlauben ueberlappende RFC1918 Netze bei Providern.",
+      "explanation": "Getrennte Routingtabellen isolieren Kundennetze.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Link Aggregation vervielfacht immer die Single-Flow-Bandbreite.",
+      "explanation": "Ein einzelner Flow wird meist auf einen Member-Link gehasht.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Cloud Security Groups sind haeufig stateful.",
+      "explanation": "Rueckverkehr ist typischerweise ohne Extra-Regel erlaubt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Out-of-Band Management hilft bei Ausfall des Produktionsnetzes.",
+      "explanation": "Separater Zugriffsweg erleichtert Recovery.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Layer-1 Down kann durch ACL Aenderung direkt repariert werden.",
+      "explanation": "Physische Stoerungen muessen physisch behoben werden.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "BGP ersetzt in Campus-Netzen automatisch STP.",
+      "explanation": "BGP und STP loesen unterschiedliche Probleme.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "DHCP Snooping sollte Access-Ports meistens als untrusted behandeln.",
+      "explanation": "So werden Rogue-Serverantworten blockiert.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "EAP-TLS haengt von gueltigen Zertifikaten ab.",
+      "explanation": "Abgelaufene Zertifikate verhindern Authentifizierung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SIEM korreliert Logs aus mehreren Quellen.",
+      "explanation": "Dadurch werden Angriffsmuster besser erkennbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Baseline ist fuer Performance-Analysen unnoetig.",
+      "explanation": "Ohne Referenz sind Abweichungen schwer belegbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Peering zwischen Clouds ist immer automatisch verschluesselt Ende-zu-Ende.",
+      "explanation": "Verschluesselung und Policies haengen von Architektur und Konfig ab.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "IPv6 braucht keine Security-Policies mehr.",
+      "explanation": "Auch IPv6 erfordert Firewalling und Segmentierung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Bei IPv4 liefert ein /30-Subnetz genau zwei nutzbare Host-Adressen.",
+      "explanation": "Ein /30 hat 4 Gesamtadressen, davon Netzwerk- und Broadcast-Adresse reserviert. Es bleiben 2 Hosts.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "STP kann Layer-2-Schleifen durch Blockieren redundanter Pfade verhindern.",
+      "explanation": "STP waehlt einen Loop-free Tree und setzt bestimmte Ports in Blocking/Discarding. So wird Broadcast-Sturm vermieden.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "WPA3-Personal basiert auf SAE statt auf PSK-Handshakes wie WPA2.",
+      "explanation": "WPA3-Personal nutzt Simultaneous Authentication of Equals. Das verbessert Schutz gegen Offline-Woerterbuchangriffe.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SNMPv2c verschluesselt Management-Traffic standardmaessig.",
+      "explanation": "SNMPv2c nutzt Community Strings, aber keine echte Verschluesselung. SNMPv3 bietet Authentifizierung und Privacy.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein ACL-Eintrag mit 'deny ip any any' am Anfang blockiert nachfolgende Allow-Regeln effektiv.",
+      "explanation": "ACLs werden sequenziell ausgewertet und der erste Treffer gewinnt. Ein fruehes deny-all stoppt den Rest.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "802.1Q tagging wird auf Access-Ports fuer Endgeraete zwingend benoetigt.",
+      "explanation": "Access-Ports transportieren ueblicherweise untagged Frames eines VLANs. Tags sind primär auf Trunks relevant.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "CIDR ermoeglicht variabel lange Praefixe statt klassenbasierter starrer Grenzen.",
+      "explanation": "Mit CIDR lassen sich Netze granular planen und Routen effizient aggregieren. Das reduziert Routingtabellen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine hohe BER auf einem Glasfaserlink kann zu CRC-Fehlern und Retransmits fuehren.",
+      "explanation": "Bitfehler verursachen fehlerhafte Frames, die verworfen oder neu uebertragen werden. Das verschlechtert Durchsatz und Latenz.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "DHCP Snooping vertraut standardmaessig jedem Switch-Port.",
+      "explanation": "Standardmaessig sind Ports untrusted, bis explizit als trusted gesetzt. Das ist der Schutz gegen Rogue DHCP.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein AP auf Kanal 1 in 2.4 GHz ueberlappt nicht mit Kanal 6.",
+      "explanation": "Kanaele 1, 6 und 11 gelten in vielen Regionen als nicht ueberlappend. Das minimiert Adjacent-Channel-Interference.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Default Gateway wird nur fuer Ziele ausserhalb des lokalen Subnetzes genutzt.",
+      "explanation": "Lokale Ziele werden per ARP/Neighbor Discovery direkt erreicht. Nur fremde Netze gehen zum Gateway.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Link Aggregation erhoeht immer die Bandbreite einer einzelnen TCP-Session linear.",
+      "explanation": "Hash-basierte Verteilung legt einzelne Flows meist auf einen physischen Link. Mehrbandbreite zeigt sich ueber viele Flows.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "RADIUS kombiniert typischerweise Authentication, Authorization und Accounting fuer Netzwerkzugang.",
+      "explanation": "RADIUS ist ein verbreitetes AAA-Protokoll fuer 802.1X, WLAN und VPN-Zugriffe. Accounting liefert zusaetzliche Sitzungsdaten.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei NAT wird immer auch die Zieladresse des Pakets umgeschrieben.",
+      "explanation": "Bei Source NAT wird vor allem die Quelladresse uebersetzt. Zieladress-Uebersetzung passiert nur in speziellen Szenarien wie DNAT.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Syslog Severity 0 steht fuer Emergency und ist kritischer als Severity 5.",
+      "explanation": "Kleinere Severity-Zahlen bedeuten hoehere Dringlichkeit. 0 ist der hoechste Schweregrad.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Router trifft Forwarding-Entscheidungen auf Basis der MAC-Adresse des finalen Zielhosts.",
+      "explanation": "Routing basiert auf Layer-3-Zieladressen, also IP-Praefixen. MAC-Adressen werden pro Hop fuer lokale Zustellung genutzt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "802.1X ist ein Verfahren zur Port-basierten Zugriffskontrolle in kabelgebundenen und WLAN-Netzen.",
+      "explanation": "802.1X erzwingt Authentifizierung vor vollem Netzwerkzugang. Es wird oft mit RADIUS gekoppelt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Jumbo Frames koennen Overhead reduzieren, muessen aber end-to-end konsistent konfiguriert sein.",
+      "explanation": "MTU-Inkonsistenzen fuehren sonst zu Fragmentierung oder Drops. Einheitliche Konfiguration ist entscheidend.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "ARP arbeitet bei IPv6 unveraendert weiter wie bei IPv4.",
+      "explanation": "IPv6 nutzt Neighbor Discovery (ICMPv6) statt ARP. Die Funktion ist aehnlich, das Protokoll aber anders.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein SIEM dient nur zur Langzeitarchivierung und nicht zur Korrelation von Sicherheitsereignissen.",
+      "explanation": "SIEM korreliert Events aus vielen Quellen fuer Erkennung und Alarmierung. Archivierung ist nur ein Teilaspekt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Bei asymmetrischem Routing kann eine Stateful Firewall Sessions falsch bewerten und Traffic droppen.",
+      "explanation": "Wenn Hin- und Rueckweg verschiedene Firewalls passieren, fehlt ggf. der Session-State. Das fuehrt zu unerwarteten Drops.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "PoE+ nach 802.3at liefert typischerweise mehr Leistung als 802.3af.",
+      "explanation": "802.3at erhoeht das Leistungsbudget gegenueber 802.3af. Das ist relevant fuer APs, Kameras und andere Lasten.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "NetFlow und sFlow sind nur fuer Fehlerlogs geeignet, nicht fuer Traffic-Analyse.",
+      "explanation": "Beide liefern Flussdaten zur Analyse von Auslastung, Top-Talkern und Anomalien. Sie sind zentrale Monitoring-Werkzeuge.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Broadcast-Domain-Grenze wird typischerweise durch Router oder Layer-3-Interfaces gesetzt.",
+      "explanation": "Layer-2-Broadcasts werden nicht ueber Layer-3-Grenzen weitergeleitet. VLAN-Interfaces trennen Broadcast-Domaenen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wenn DNS ausfaellt, kann ein Ping auf eine IP trotzdem erfolgreich sein.",
+      "explanation": "DNS wird fuer Namensaufloesung benoetigt, nicht fuer reine IP-Konnektivitaet. Direkte IP-Tests funktionieren oft weiterhin.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Trunk-Port uebertraegt standardmaessig mehrere VLANs, waehrend ein Access-Port typischerweise nur ein untagged VLAN fuehrt.",
+      "explanation": "Trunking dient dem Transport mehrerer VLANs zwischen Netzwerkgeraeten, Access-Ports binden Endgeraete meist an ein einzelnes VLAN.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    }
+  ]
+}

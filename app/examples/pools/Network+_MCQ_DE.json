@@ -1,0 +1,2888 @@
+{
+  "pool_name": "Network+ MCQ (DE)",
+  "source": "AI-generated (Claude/Gemini), reviewed and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "questions": [
+    {
+      "text": "Welches Protokoll ordnet MAC-Adressen zu IPv4-Adressen auf einem lokalen Netz auf?",
+      "explanation": "ARP loest IP zu MAC innerhalb eines Broadcast-Domains auf.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "DNS",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP",
+          "is_correct": false
+        },
+        {
+          "text": "ARP",
+          "is_correct": true
+        },
+        {
+          "text": "NTP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche CIDR-Notation entspricht einer Subnetzmaske von 255.255.255.0?",
+      "explanation": "255.255.255.0 entspricht 24 gesetzten Bits.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "/16",
+          "is_correct": false
+        },
+        {
+          "text": "/24",
+          "is_correct": true
+        },
+        {
+          "text": "/25",
+          "is_correct": false
+        },
+        {
+          "text": "/30",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Geraet segmentiert ein LAN logisch per VLAN auf Layer 2?",
+      "explanation": "Switches trennen Broadcast-Domaenen mittels VLANs.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Router",
+          "is_correct": false
+        },
+        {
+          "text": "Switch",
+          "is_correct": true
+        },
+        {
+          "text": "Hub",
+          "is_correct": false
+        },
+        {
+          "text": "Repeater",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Routing-Protokollklasse ist OSPF?",
+      "explanation": "OSPF ist ein Link-State-Protokoll.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Distance Vector",
+          "is_correct": false
+        },
+        {
+          "text": "Link State",
+          "is_correct": true
+        },
+        {
+          "text": "Path Vector",
+          "is_correct": false
+        },
+        {
+          "text": "Static",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher DNS-Record wird fuer IPv6-Adressen genutzt?",
+      "explanation": "AAAA enthaelt IPv6-Adressen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "A",
+          "is_correct": false
+        },
+        {
+          "text": "PTR",
+          "is_correct": false
+        },
+        {
+          "text": "AAAA",
+          "is_correct": true
+        },
+        {
+          "text": "MX",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche WLAN-Verschluesselung gilt heute als Mindeststandard fuer Enterprise-Netze?",
+      "explanation": "WPA2/WPA3 mit starker Authentisierung ist aktueller Standard.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "WEP",
+          "is_correct": false
+        },
+        {
+          "text": "WPA",
+          "is_correct": false
+        },
+        {
+          "text": "WPA2/WPA3",
+          "is_correct": true
+        },
+        {
+          "text": "TKIP-only",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage trifft auf SD-WAN am ehesten zu?",
+      "explanation": "SD-WAN steuert dynamisch mehrere Transportwege.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur MPLS ohne Internet",
+          "is_correct": false
+        },
+        {
+          "text": "Zentrale Steuerung mehrerer WAN-Links per Policies",
+          "is_correct": true
+        },
+        {
+          "text": "Ersatz fuer DNS",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Layer-1-Technik",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Metrik ist fuer VoIP-Qualitaet besonders kritisch?",
+      "explanation": "Jitter beeinflusst Sprachqualitaet direkt.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Jitter",
+          "is_correct": true
+        },
+        {
+          "text": "Festplatten-I/O",
+          "is_correct": false
+        },
+        {
+          "text": "CPU-Cache-Hitrate",
+          "is_correct": false
+        },
+        {
+          "text": "TLS-Zertifikatslaenge",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du planst ein WLAN fuer hohe Dichte in einem Buero. Welche Massnahme reduziert Co-Channel-Interference am besten?",
+      "explanation": "Hohe Dichte braucht saubere Kanal- und Power-Planung, sonst stoeren sich APs gegenseitig.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Alle APs auf Kanal 1 setzen",
+          "is_correct": false
+        },
+        {
+          "text": "Kanalplanung mit abgestimmten, nicht ueberlappenden Kanaelen und Sendeleistung",
+          "is_correct": true
+        },
+        {
+          "text": "2.4 GHz only verwenden",
+          "is_correct": false
+        },
+        {
+          "text": "Broadcast-Power maximal erhoehen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Protokoll wird typischerweise fuer Zeitsynchronisation in Netzwerken genutzt?",
+      "explanation": "NTP sorgt fuer konsistente Zeitstempel und ist fuer Logging/Forensik zentral.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SNMP",
+          "is_correct": false
+        },
+        {
+          "text": "NTP",
+          "is_correct": true
+        },
+        {
+          "text": "LDAP",
+          "is_correct": false
+        },
+        {
+          "text": "SIP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt unter Linux den Layer-3 Routing-Table modern an?",
+      "explanation": "ip route ist Standard in iproute2 fuer Routingtabellen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ip route",
+          "is_correct": true
+        },
+        {
+          "text": "arp -a",
+          "is_correct": false
+        },
+        {
+          "text": "nslookup",
+          "is_correct": false
+        },
+        {
+          "text": "traceroute -m",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "In einem Trunk-Link muessen mehrere VLANs uebertragen werden. Welcher Standard wird typischerweise genutzt?",
+      "explanation": "802.1Q taggt Frames fuer VLAN-Trunks.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "802.1X",
+          "is_correct": false
+        },
+        {
+          "text": "802.1Q",
+          "is_correct": true
+        },
+        {
+          "text": "802.11ax",
+          "is_correct": false
+        },
+        {
+          "text": "802.3af",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage beschreibt QoS bei Echtzeitverkehr korrekt?",
+      "explanation": "QoS priorisiert kritische Klassen, eliminiert aber physische Engpaesse nicht vollstaendig.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "QoS entfernt Paketverlust vollstaendig",
+          "is_correct": false
+        },
+        {
+          "text": "QoS priorisiert Verkehrsklassen wie Voice/Video",
+          "is_correct": true
+        },
+        {
+          "text": "QoS funktioniert nur im WAN",
+          "is_correct": false
+        },
+        {
+          "text": "QoS ersetzt VLANs",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Adresse ist in IPv4 eine APIPA-Adresse?",
+      "explanation": "169.254.0.0/16 wird per Link-Local (APIPA) vergeben, wenn kein DHCP erreichbar ist.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "10.0.0.10",
+          "is_correct": false
+        },
+        {
+          "text": "169.254.10.20",
+          "is_correct": true
+        },
+        {
+          "text": "172.16.1.5",
+          "is_correct": false
+        },
+        {
+          "text": "192.168.1.100",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du misst hohe Latenz nur bei einem Hop. Welches Tool zeigt den Weg mit Hop-Informationen?",
+      "explanation": "traceroute zeigt Hops und Laufzeiten pro Zwischenstation.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "dig",
+          "is_correct": false
+        },
+        {
+          "text": "traceroute",
+          "is_correct": true
+        },
+        {
+          "text": "arping",
+          "is_correct": false
+        },
+        {
+          "text": "ifconfig",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist der Hauptzweck von ACLs auf Routern/Switches?",
+      "explanation": "ACLs erlauben/blockieren Verkehr nach Source/Destination/Protokoll/Port.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Bandbreite erhoehen",
+          "is_correct": false
+        },
+        {
+          "text": "Verkehr anhand definierter Regeln filtern",
+          "is_correct": true
+        },
+        {
+          "text": "ARP ersetzen",
+          "is_correct": false
+        },
+        {
+          "text": "DNS-Caching aktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage zu NAT/PAT ist korrekt?",
+      "explanation": "PAT multiplexed viele Verbindungen ueber Port-Uebersetzung auf einer Public-IP.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PAT nutzt fuer jede interne Verbindung zwingend eigene oeffentliche IP",
+          "is_correct": false
+        },
+        {
+          "text": "PAT kann viele interne Sessions ueber eine oeffentliche IP und verschiedene Ports abbilden",
+          "is_correct": true
+        },
+        {
+          "text": "NAT funktioniert nur mit IPv6",
+          "is_correct": false
+        },
+        {
+          "text": "PAT ersetzt Firewall-Regeln",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du willst ein Segment fuer Gaeste isolieren. Welche Loesung ist am direktesten?",
+      "explanation": "Segmentierung plus ACL erzwingt Isolation effektiv.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Ein separates VLAN mit restriktiven ACLs",
+          "is_correct": true
+        },
+        {
+          "text": "Nur SSID umbenennen",
+          "is_correct": false
+        },
+        {
+          "text": "MTU verkleinern",
+          "is_correct": false
+        },
+        {
+          "text": "DNS-Server wechseln",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Ursache passt am besten zu Duplex-Mismatch?",
+      "explanation": "Duplex-Mismatch fuehrt zu Fehlern/Kollisionen und schlechten Performancewerten.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sehr niedrige CPU-Last",
+          "is_correct": false
+        },
+        {
+          "text": "Spikes bei CRC/late collisions und schlechter Durchsatz",
+          "is_correct": true
+        },
+        {
+          "text": "DHCP lease expired",
+          "is_correct": false
+        },
+        {
+          "text": "Falscher NTP-Server",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Technologie erweitert Layer-2-Segmente in grossen Datacenter-Fabrics?",
+      "explanation": "VxLAN kapselt L2 ueber L3 und skaliert besser als traditionelle VLAN-Grenzen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "VxLAN",
+          "is_correct": true
+        },
+        {
+          "text": "PPP",
+          "is_correct": false
+        },
+        {
+          "text": "RIP",
+          "is_correct": false
+        },
+        {
+          "text": "S/MIME",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Security-Feature verhindert DHCP-Server-Spoofing auf Access-Switches?",
+      "explanation": "DHCP Snooping markiert trusted ports und blockt unerlaubte DHCP-Offers.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Port Mirroring",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Snooping",
+          "is_correct": true
+        },
+        {
+          "text": "STP Guard Timer",
+          "is_correct": false
+        },
+        {
+          "text": "CDP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wofuer steht RTO in Netzwerk-/Service-Continuity?",
+      "explanation": "RTO ist die maximal akzeptierte Wiederherstellungsdauer.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Recovery Time Objective",
+          "is_correct": true
+        },
+        {
+          "text": "Routing Table Override",
+          "is_correct": false
+        },
+        {
+          "text": "Real-Time Operation",
+          "is_correct": false
+        },
+        {
+          "text": "Risk Transfer Option",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Metrik ist besonders fuer WAN-Links mit Sprachverkehr kritisch?",
+      "explanation": "Schwankende Laufzeit (Jitter) verschlechtert Sprachqualitaet deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "TTL",
+          "is_correct": false
+        },
+        {
+          "text": "Jitter",
+          "is_correct": true
+        },
+        {
+          "text": "ARP cache age",
+          "is_correct": false
+        },
+        {
+          "text": "MAC table size",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Access Point zeigt viele Retries und niedrige Datenrate. Was ist ein plausibler erster Schritt?",
+      "explanation": "Retries deuten oft auf Funkstoerung/fehlende Kanalplanung hin.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sendeleistung und Kanalbelegung analysieren",
+          "is_correct": true
+        },
+        {
+          "text": "DHCP deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "MTU auf 576 setzen",
+          "is_correct": false
+        },
+        {
+          "text": "Switch auf Hub-Modus",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Rolle hat SNMPv3 gegenueber SNMPv2c?",
+      "explanation": "SNMPv3 bringt Security-Features, die v2c nicht hat.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur schneller Polling-Intervall",
+          "is_correct": false
+        },
+        {
+          "text": "Authentifizierung und Verschluesselung fuer Management-Traffic",
+          "is_correct": true
+        },
+        {
+          "text": "Ersetzt Syslog",
+          "is_correct": false
+        },
+        {
+          "text": "Nur fuer Wireless nutzbar",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Vorgehen ist bei strukturiertem Troubleshooting am sinnvollsten?",
+      "explanation": "Methodisches, reproduzierbares Troubleshooting verhindert Folgeschaeden.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Blindes Aendern mehrerer Parameter gleichzeitig",
+          "is_correct": false
+        },
+        {
+          "text": "Hypothese bilden, Aenderung isoliert testen, Ergebnis dokumentieren",
+          "is_correct": true
+        },
+        {
+          "text": "Immer zuerst rebooten",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Layer 1 pruefen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein User kommt ins Internet, aber interne Namen werden nicht aufgeloest. Welche Komponente pruefst du zuerst?",
+      "explanation": "Wenn nur Namensaufloesung fehlschlaegt, ist DNS die wahrscheinlichste Ursache.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Internen DNS Resolver",
+          "is_correct": true
+        },
+        {
+          "text": "Default Gateway",
+          "is_correct": false
+        },
+        {
+          "text": "STP Priority",
+          "is_correct": false
+        },
+        {
+          "text": "LACP Hash",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nach WAN-Umstellung laden Seiten nur teilweise, kleine Pings gehen. Was passt am besten?",
+      "explanation": "Teilweise funktionierender Verkehr mit Problemen bei grossen Paketen spricht fuer MTU/MSS.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "MTU/MSS Fehlanpassung",
+          "is_correct": true
+        },
+        {
+          "text": "Defekter DHCP Scope",
+          "is_correct": false
+        },
+        {
+          "text": "Falsche SNMP Community",
+          "is_correct": false
+        },
+        {
+          "text": "Zu viele VLAN Namen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Client erhaelt 169.254.22.10. Was bedeutet das?",
+      "explanation": "APIPA wird gesetzt, wenn kein DHCP Offer/ACK erfolgreich ist.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Kein DHCP Lease erhalten",
+          "is_correct": true
+        },
+        {
+          "text": "DNS Server nicht erreichbar",
+          "is_correct": false
+        },
+        {
+          "text": "NTP Server falsch",
+          "is_correct": false
+        },
+        {
+          "text": "BGP Session down",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Adresse ist in 10.10.5.0/24 die Broadcast-Adresse?",
+      "explanation": "Bei /24 ist die letzte Adresse der Broadcast.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "10.10.5.255",
+          "is_correct": true
+        },
+        {
+          "text": "10.10.5.0",
+          "is_correct": false
+        },
+        {
+          "text": "10.10.5.1",
+          "is_correct": false
+        },
+        {
+          "text": "10.10.255.255",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "In welchem OSI-Layer arbeitet ein klassischer Switch primaer?",
+      "explanation": "Switching basiert auf MAC-Adressen auf Layer 2.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Layer 2",
+          "is_correct": true
+        },
+        {
+          "text": "Layer 1",
+          "is_correct": false
+        },
+        {
+          "text": "Layer 3",
+          "is_correct": false
+        },
+        {
+          "text": "Layer 7",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Technik reduziert Broadcast-Domains in einem Campus am effektivsten?",
+      "explanation": "VLANs trennen Layer-2 Broadcast-Bereiche.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "VLAN Segmentierung",
+          "is_correct": true
+        },
+        {
+          "text": "ARP Cache vergroessern",
+          "is_correct": false
+        },
+        {
+          "text": "Port Speed fixieren",
+          "is_correct": false
+        },
+        {
+          "text": "ICMP blockieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Host kann IPs pingen, aber keine FQDNs. Was ist die wahrscheinlichste Stoerung?",
+      "explanation": "Wenn IP-Konnektivitaet steht, ist DNS oft der Fehlerpfad.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "DNS Aufloesung",
+          "is_correct": true
+        },
+        {
+          "text": "Routing Loop",
+          "is_correct": false
+        },
+        {
+          "text": "STP Root Wechsel",
+          "is_correct": false
+        },
+        {
+          "text": "PoE Budget",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Angabe gehoert zu einem IPv4 Header, nicht zu Ethernet?",
+      "explanation": "TTL ist ein Feld im IP Header.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "TTL",
+          "is_correct": true
+        },
+        {
+          "text": "Source MAC",
+          "is_correct": false
+        },
+        {
+          "text": "FCS",
+          "is_correct": false
+        },
+        {
+          "text": "EtherType",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du brauchst mindestens 30 Hosts. Welche kleinste Maske passt?",
+      "explanation": "/27 bietet 32 Adressen, 30 nutzbar.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "/27",
+          "is_correct": true
+        },
+        {
+          "text": "/28",
+          "is_correct": false
+        },
+        {
+          "text": "/29",
+          "is_correct": false
+        },
+        {
+          "text": "/30",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du brauchst mindestens 126 Hosts. Welche Maske?",
+      "explanation": "/25 hat 126 nutzbare Hosts.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "/25",
+          "is_correct": true
+        },
+        {
+          "text": "/26",
+          "is_correct": false
+        },
+        {
+          "text": "/27",
+          "is_correct": false
+        },
+        {
+          "text": "/24",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist die Netzadresse von 192.168.34.77/27?",
+      "explanation": "/27 Bloecke springen in 32er-Schritten; 77 liegt im Block 64-95.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "192.168.34.64",
+          "is_correct": true
+        },
+        {
+          "text": "192.168.34.32",
+          "is_correct": false
+        },
+        {
+          "text": "192.168.34.77",
+          "is_correct": false
+        },
+        {
+          "text": "192.168.34.96",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche CIDR-Zusammenfassung passt fuer 10.20.16.0 bis 10.20.31.255?",
+      "explanation": "Der Bereich deckt genau 16 /24 Netze ab, entsprechend /20.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "10.20.16.0/20",
+          "is_correct": true
+        },
+        {
+          "text": "10.20.0.0/20",
+          "is_correct": false
+        },
+        {
+          "text": "10.20.16.0/24",
+          "is_correct": false
+        },
+        {
+          "text": "10.20.16.0/19",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Subnetz ist am effizientesten fuer 50 Hosts?",
+      "explanation": "/26 liefert 62 nutzbare Hosts und ist die kleinste passende Wahl.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "/26",
+          "is_correct": true
+        },
+        {
+          "text": "/25",
+          "is_correct": false
+        },
+        {
+          "text": "/27",
+          "is_correct": false
+        },
+        {
+          "text": "/28",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Team will VLSM statt FLSM nutzen. Hauptvorteil?",
+      "explanation": "VLSM erlaubt netzgrosse Anpassung pro Segment und spart Adressen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Bessere Adressausnutzung",
+          "is_correct": true
+        },
+        {
+          "text": "Weniger Routingtabellen",
+          "is_correct": false
+        },
+        {
+          "text": "Keine Gateways mehr",
+          "is_correct": false
+        },
+        {
+          "text": "Automatische Verschluesselung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Statische und OSPF Route zum selben Prefix vorhanden. Welche gewinnt standardmaessig?",
+      "explanation": "Administrative Distance bevorzugt standardmaessig statische Routen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Statische Route",
+          "is_correct": true
+        },
+        {
+          "text": "OSPF Route",
+          "is_correct": false
+        },
+        {
+          "text": "ECMP immer",
+          "is_correct": false
+        },
+        {
+          "text": "Die mit mehr Hops",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was beeinflusst OSPF DR-Wahl in Broadcast-Netzen direkt?",
+      "explanation": "Die Priority steuert DR/BDR-Wahl direkt.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "OSPF Interface Priority",
+          "is_correct": true
+        },
+        {
+          "text": "ARP Timeout",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Lease Time",
+          "is_correct": false
+        },
+        {
+          "text": "MTU allein",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Inter-VLAN Kommunikation zwischen VLAN 10 und 20 ist noetig. Was brauchst du?",
+      "explanation": "Zwischen VLANs ist Routing erforderlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Layer-3 Interface (SVI oder Router-on-a-stick)",
+          "is_correct": true
+        },
+        {
+          "text": "Nur STP",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Access Ports",
+          "is_correct": false
+        },
+        {
+          "text": "Nur LACP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum ist PortFast auf Trunk-Uplink problematisch?",
+      "explanation": "PortFast uebergeht STP-Phasen und ist fuer Endgeraete gedacht.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Es kann Loops schneller wirksam machen",
+          "is_correct": true
+        },
+        {
+          "text": "Es deaktiviert VLAN Tagging",
+          "is_correct": false
+        },
+        {
+          "text": "Es loescht CAM Tabellen",
+          "is_correct": false
+        },
+        {
+          "text": "Es schaltet PoE ab",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aggregation ist standardisiert und vendor-neutral?",
+      "explanation": "LACP ist IEEE-basiert und interoperabel.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "LACP",
+          "is_correct": true
+        },
+        {
+          "text": "PAgP",
+          "is_correct": false
+        },
+        {
+          "text": "GLBP",
+          "is_correct": false
+        },
+        {
+          "text": "HSRP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Native VLAN mismatch auf Trunk fuehrt typischerweise zu?",
+      "explanation": "Beide Seiten interpretieren untagged Traffic unterschiedlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Fehlzuordnung untagged Frames",
+          "is_correct": true
+        },
+        {
+          "text": "OSPF Auth Fehler",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Snooping Aus",
+          "is_correct": false
+        },
+        {
+          "text": "SNMP Trap Storm",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche FHRP Option bietet virtuelle Gateway-IP mit Master/Backup?",
+      "explanation": "VRRP stellt Gateway-Redundanz ueber virtuelle IP bereit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "VRRP",
+          "is_correct": true
+        },
+        {
+          "text": "RIP",
+          "is_correct": false
+        },
+        {
+          "text": "BFD",
+          "is_correct": false
+        },
+        {
+          "text": "LLDP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei Redistribution treten Loops auf. Welche Massnahme hilft?",
+      "explanation": "Tags markieren Herkunft und verhindern Rueckverteilungsschleifen.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Route-Tags setzen und filtern",
+          "is_correct": true
+        },
+        {
+          "text": "MTU erhoehen",
+          "is_correct": false
+        },
+        {
+          "text": "VLAN zusammenlegen",
+          "is_correct": false
+        },
+        {
+          "text": "NTP deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "In 2.4 GHz hoher Stoerpegel. Welche Kanalstrategie nutzt du?",
+      "explanation": "Nicht ueberlappende Kanaele reduzieren Interferenz.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Kanaele 1, 6, 11 planen",
+          "is_correct": true
+        },
+        {
+          "text": "Kanaele 1,2,3 nutzen",
+          "is_correct": false
+        },
+        {
+          "text": "80 MHz erzwingen",
+          "is_correct": false
+        },
+        {
+          "text": "Sendeleistung aller APs maximieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "WPA3-Enterprise benoetigt typischerweise?",
+      "explanation": "Enterprise-WLAN arbeitet ueber zentralisierte Authentifizierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "802.1X mit RADIUS",
+          "is_correct": true
+        },
+        {
+          "text": "Nur PSK",
+          "is_correct": false
+        },
+        {
+          "text": "WEP Kompatibilitaet",
+          "is_correct": false
+        },
+        {
+          "text": "NAT auf AP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Clients bleiben am schwachen AP haengen. Welche Optimierung ist sinnvoll?",
+      "explanation": "Roaming verbessert sich durch saubere Zellgroessen und RSSI-Schwellen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Min-RSSI/Power-Tuning fuer Roaming",
+          "is_correct": true
+        },
+        {
+          "text": "DHCP Lease verlaengern",
+          "is_correct": false
+        },
+        {
+          "text": "DNS TTL senken",
+          "is_correct": false
+        },
+        {
+          "text": "NTP Pool wechseln",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Gastnetz mit Captive Portal soll internes LAN strikt trennen. Wichtig?",
+      "explanation": "Portal allein ersetzt keine Segmentierung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Client Isolation plus Firewall Regeln",
+          "is_correct": true
+        },
+        {
+          "text": "SSID verstecken",
+          "is_correct": false
+        },
+        {
+          "text": "Nur 5 GHz",
+          "is_correct": false
+        },
+        {
+          "text": "Beacon-Intervall erhoehen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Vor AP Rollout in Lagerhalle ist der beste erste Schritt?",
+      "explanation": "Survey erfasst Abdeckung und Interferenz vor der Planung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Site Survey",
+          "is_correct": true
+        },
+        {
+          "text": "SSID Broadcast deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Renew erzwingen",
+          "is_correct": false
+        },
+        {
+          "text": "Switches rebooten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "WIDS meldet Evil Twin mit gleicher SSID. Erste Aktion?",
+      "explanation": "Schnelles Containment reduziert Credential-Risiko.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Rogue AP lokalisieren und isolieren",
+          "is_correct": true
+        },
+        {
+          "text": "Alle SSIDs loeschen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Passwort aendern",
+          "is_correct": false
+        },
+        {
+          "text": "Core Router rebooten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "802.11k/v/r werden im Enterprise WLAN oft genutzt fuer?",
+      "explanation": "Diese Erweiterungen verbessern Uebergaben zwischen APs.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Schnelleres Roaming",
+          "is_correct": true
+        },
+        {
+          "text": "Hoehere Glasfaserreichweite",
+          "is_correct": false
+        },
+        {
+          "text": "Routing zwischen AS",
+          "is_correct": false
+        },
+        {
+          "text": "SNMP Verschluesselung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was reduziert Co-Channel Interference am besten?",
+      "explanation": "Planung von Leistung und Kanalnutzung senkt gegenseitige Stoerung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "AP Dichte und Sendeleistung sauber abstimmen",
+          "is_correct": true
+        },
+        {
+          "text": "Alle APs auf denselben Kanal",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Hidden SSID",
+          "is_correct": false
+        },
+        {
+          "text": "NAT auf AP aktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Neue ACL blockiert legitimen Verkehr. Haeufigste Ursache?",
+      "explanation": "ACLs werden top-down ausgewertet.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Regelreihenfolge trifft frueh auf deny",
+          "is_correct": true
+        },
+        {
+          "text": "MTU zu klein",
+          "is_correct": false
+        },
+        {
+          "text": "PoE fehlt",
+          "is_correct": false
+        },
+        {
+          "text": "LACP hash",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Site-to-Site VPN kommt nicht hoch, Logs zeigen Proposal mismatch. Was pruefen?",
+      "explanation": "Phase-1/2 Parameter muessen kompatibel sein.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "IKE Parameter auf beiden Seiten angleichen",
+          "is_correct": true
+        },
+        {
+          "text": "Nur DNS Forwarder",
+          "is_correct": false
+        },
+        {
+          "text": "Nur VLAN IDs",
+          "is_correct": false
+        },
+        {
+          "text": "Nur MAC Tabellen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "EAP-TLS Auth bricht bei vielen Clients gleichzeitig. Plausibel?",
+      "explanation": "Abgelaufene Zertifikate fuehren zu breitflaechigem Auth-Ausfall.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Zertifikate abgelaufen",
+          "is_correct": true
+        },
+        {
+          "text": "Ein einzelnes Patchkabel defekt",
+          "is_correct": false
+        },
+        {
+          "text": "Router Hostname falsch",
+          "is_correct": false
+        },
+        {
+          "text": "Zu viele SSIDs",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Massnahme blockiert bekannte Malware-Domains ohne Agent auf Endgeraet?",
+      "explanation": "Policy-DNS kann Aufloesung bekannter C2-Domains verhindern.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "DNS Sinkhole",
+          "is_correct": true
+        },
+        {
+          "text": "STP Tuning",
+          "is_correct": false
+        },
+        {
+          "text": "ARP Cache flush",
+          "is_correct": false
+        },
+        {
+          "text": "PoE Prioritaet",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SNMP soll sicher betrieben werden. Welche Version/Konfig ist passend?",
+      "explanation": "SNMPv3 authPriv bietet Authentifizierung und Verschluesselung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SNMPv3 authPriv",
+          "is_correct": true
+        },
+        {
+          "text": "SNMPv1 public",
+          "is_correct": false
+        },
+        {
+          "text": "SNMPv2c ohne ACL",
+          "is_correct": false
+        },
+        {
+          "text": "SNMP read-only ohne Auth",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Kompromittierter Endpoint scannt intern. Erste Incident-Massnahme?",
+      "explanation": "Containment zuerst stoppt Ausbreitung und erhaelt Spuren.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Host isolieren und dann forensisch sichern",
+          "is_correct": true
+        },
+        {
+          "text": "Sofort neu installieren",
+          "is_correct": false
+        },
+        {
+          "text": "Alle Switches rebooten",
+          "is_correct": false
+        },
+        {
+          "text": "Firewall deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Top-Talker auf WAN-Link identifizieren. Welches Tool ist am passendsten?",
+      "explanation": "Flow-Daten zeigen Verkehrsvolumen pro Quelle/Ziel.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "NetFlow/IPFIX",
+          "is_correct": true
+        },
+        {
+          "text": "STP Root Guard",
+          "is_correct": false
+        },
+        {
+          "text": "LLDP nur",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Snooping",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Syslog ueber UDP verliert Meldungen. Was verbessert Zuverlaessigkeit und Sicherheit?",
+      "explanation": "TCP reduziert Verlust, TLS schuetzt Transport.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Syslog ueber TCP/TLS",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Syslog Severity aendern",
+          "is_correct": false
+        },
+        {
+          "text": "ARP Timeout senken",
+          "is_correct": false
+        },
+        {
+          "text": "VLAN vergroessern",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum ist NTP fuer Monitoring und Security wichtig?",
+      "explanation": "Ohne Zeitkonsistenz sind Eventketten schwer auswertbar.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Konsistente Zeitstempel fuer Korrelation",
+          "is_correct": true
+        },
+        {
+          "text": "Hoehere WLAN Reichweite",
+          "is_correct": false
+        },
+        {
+          "text": "Mehr PoE Leistung",
+          "is_correct": false
+        },
+        {
+          "text": "Weniger Trunk Ports",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist bei Paketanalyse unter Last oft besser als SPAN?",
+      "explanation": "TAP liefert verlaessliche Mitschnitte mit wenig Einfluss auf Produktion.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Passiver TAP",
+          "is_correct": true
+        },
+        {
+          "text": "PortFast",
+          "is_correct": false
+        },
+        {
+          "text": "VRRP Preempt",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Relay",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein strukturierter Troubleshooting-Ansatz bei unklaren Stoerungen ist?",
+      "explanation": "Schichtweise Analyse verhindert das Uebersehen grundlegender Fehler.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Bottom-up von Layer 1 bis Layer 7",
+          "is_correct": true
+        },
+        {
+          "text": "Nur App-Logs lesen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur Neustart",
+          "is_correct": false
+        },
+        {
+          "text": "Nur ACL loeschen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Traceroute stoppt an Perimeter, App funktioniert. Wahrscheinlich?",
+      "explanation": "Traceroute kann fehlschlagen, obwohl produktiver Traffic erlaubt ist.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ICMP Time-Exceeded wird gefiltert",
+          "is_correct": true
+        },
+        {
+          "text": "Routing komplett down",
+          "is_correct": false
+        },
+        {
+          "text": "Alle VLANs disabled",
+          "is_correct": false
+        },
+        {
+          "text": "Switch Stack defekt",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Viele CRC/Late Collision aehnliche Symptome auf Kupfer. Was passt?",
+      "explanation": "Mismatch zwischen Full/Half Duplex erzeugt klassische Fehlerbilder.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Duplex-Mismatch",
+          "is_correct": true
+        },
+        {
+          "text": "OSPF Area Drift",
+          "is_correct": false
+        },
+        {
+          "text": "DNSSEC Fehler",
+          "is_correct": false
+        },
+        {
+          "text": "Cloud SG",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nach Change stieg RTT um 30 ms. Beste erste Validierung?",
+      "explanation": "Baseline macht das Delta objektiv sichtbar.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mit Baseline-Messung vor Change vergleichen",
+          "is_correct": true
+        },
+        {
+          "text": "Nur aus Erinnerung schaetzen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur CPU eines Servers pruefen",
+          "is_correct": false
+        },
+        {
+          "text": "Nur STP Counter ansehen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "VPC A peert mit B, B mit C, A erreicht C nicht. Warum?",
+      "explanation": "Klassisches VPC Peering erlaubt keinen Transit ueber dritte VPC.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Peering ist nicht transitiv",
+          "is_correct": true
+        },
+        {
+          "text": "Security Groups sind immer stateless",
+          "is_correct": false
+        },
+        {
+          "text": "CIDR muss /24 sein",
+          "is_correct": false
+        },
+        {
+          "text": "NAT ersetzt Transit",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "On-Prem Clients koennen private Cloud-Zone nicht aufloesen. Typische Loesung?",
+      "explanation": "Gezielte DNS-Weiterleitung loest hybride Namensraume.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Conditional DNS Forwarder",
+          "is_correct": true
+        },
+        {
+          "text": "STP Root in Cloud",
+          "is_correct": false
+        },
+        {
+          "text": "APIPA erzwingen",
+          "is_correct": false
+        },
+        {
+          "text": "Port Security abschalten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine VM sieht fremde Frames am vSwitch. Welche Option ist vermutlich aktiv?",
+      "explanation": "Promiscuous Mode erlaubt Empfang nicht adressierter Frames.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Promiscuous Mode",
+          "is_correct": true
+        },
+        {
+          "text": "BPDU Guard",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Relay",
+          "is_correct": false
+        },
+        {
+          "text": "RA Guard",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Container East-West Traffic soll strikt begrenzt werden. Was hilft?",
+      "explanation": "Feingranulare Regeln begrenzen laterale Bewegung zwischen Workloads.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Microsegmentation Policies",
+          "is_correct": true
+        },
+        {
+          "text": "Flat Network fuer alle Pods",
+          "is_correct": false
+        },
+        {
+          "text": "DNS Round-Robin",
+          "is_correct": false
+        },
+        {
+          "text": "ARP static",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "IPv6-only Segment braucht Zugriff auf IPv4 Dienst. Welche Technik?",
+      "explanation": "NAT64 verbindet IPv6 Clients mit IPv4 Zielen.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "NAT64 mit DNS64",
+          "is_correct": true
+        },
+        {
+          "text": "PAT overload",
+          "is_correct": false
+        },
+        {
+          "text": "STP fast",
+          "is_correct": false
+        },
+        {
+          "text": "LACP active/active",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "IPv6 Client nutzt SLAAC fuer Adresse und DHCPv6 fuer DNS. Wie heisst das?",
+      "explanation": "Adresse kommt aus RA/SLAAC, Zusatzinfos via DHCPv6.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Stateless DHCPv6",
+          "is_correct": true
+        },
+        {
+          "text": "Stateful DHCPv6 only",
+          "is_correct": false
+        },
+        {
+          "text": "NAT66",
+          "is_correct": false
+        },
+        {
+          "text": "APIPA v6",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Team will reproduzierbare Netzkonfigurationen mit Review. Kernansatz?",
+      "explanation": "IaC plus Versionskontrolle verbessert Nachvollziehbarkeit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Infrastructure as Code mit Git",
+          "is_correct": true
+        },
+        {
+          "text": "Nur manuelle CLI",
+          "is_correct": false
+        },
+        {
+          "text": "Screenshots statt Repo",
+          "is_correct": false
+        },
+        {
+          "text": "Aenderungen ohne Tickets",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum ist Idempotenz bei Ansible relevant?",
+      "explanation": "Idempotenz fuehrt stabil zum Sollzustand.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Mehrfachlauf erzeugt keinen unkontrollierten Drift",
+          "is_correct": true
+        },
+        {
+          "text": "Playbooks ersetzen Routing",
+          "is_correct": false
+        },
+        {
+          "text": "Macht WLAN schneller",
+          "is_correct": false
+        },
+        {
+          "text": "Deaktiviert ACLs",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Neue Ressource per Controller-API anlegen: uebliche HTTP Methode?",
+      "explanation": "POST wird meist fuer Create-Operationen verwendet.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "POST",
+          "is_correct": true
+        },
+        {
+          "text": "GET",
+          "is_correct": false
+        },
+        {
+          "text": "TRACE",
+          "is_correct": false
+        },
+        {
+          "text": "OPTIONS",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum wird JSON in Netz-APIs oft genutzt?",
+      "explanation": "JSON ist standardisiert und in Toolchains leicht nutzbar.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Maschinenlesbar und weit unterstuetzt",
+          "is_correct": true
+        },
+        {
+          "text": "Nur fuer Binardaten",
+          "is_correct": false
+        },
+        {
+          "text": "Ersetzt TLS",
+          "is_correct": false
+        },
+        {
+          "text": "Nur fuer CLI",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Change Automation soll Risiko minimieren. Was ist zentral?",
+      "explanation": "Validierung vorab und rueckrollbarer Ablauf senken Ausfallrisiko.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Pre-Checks plus Rollback-Plan",
+          "is_correct": true
+        },
+        {
+          "text": "Direkter Produktivlauf ohne Test",
+          "is_correct": false
+        },
+        {
+          "text": "Nur muendliche Freigabe",
+          "is_correct": false
+        },
+        {
+          "text": "Aenderung ohne Logging",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was bringt versionierte Config-Backups zusaetzlich?",
+      "explanation": "Versionen erlauben gezielten Restore auf bekannten Zustand.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Historie und differenzierbare Restore-Punkte",
+          "is_correct": true
+        },
+        {
+          "text": "Weniger VLAN Bedarf",
+          "is_correct": false
+        },
+        {
+          "text": "Mehr PoE",
+          "is_correct": false
+        },
+        {
+          "text": "Kein Monitoring mehr noetig",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Netzwerkgeraete sollen zentral per API inventarisiert werden. Welches Datenformat ist am gaengigsten?",
+      "explanation": "Die meisten REST-Schnittstellen liefern JSON.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "JSON",
+          "is_correct": true
+        },
+        {
+          "text": "CSV Binary Stream",
+          "is_correct": false
+        },
+        {
+          "text": "Raw PCAP",
+          "is_correct": false
+        },
+        {
+          "text": "RSTP Frames",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "In einem Access-Layer sollen unerlaubte BPDUs von Endgeraeten sofort geblockt werden. Welche Funktion hilft?",
+      "explanation": "BPDU Guard deaktiviert den Port bei BPDU-Empfang und schuetzt vor Fehlanschluessen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "BPDU Guard",
+          "is_correct": true
+        },
+        {
+          "text": "Root Guard am Endgeraet",
+          "is_correct": false
+        },
+        {
+          "text": "Port Mirroring",
+          "is_correct": false
+        },
+        {
+          "text": "HSRP Preempt",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Provider betreibt mehrere Kunden mit ueberlappenden RFC1918-Netzen. Welche Technologie isoliert sauber?",
+      "explanation": "VRFs trennen Routingtabellen logisch und erlauben gleiche IP-Bereiche.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "VRF pro Kunde",
+          "is_correct": true
+        },
+        {
+          "text": "Ein gemeinsames VLAN fuer alle",
+          "is_correct": false
+        },
+        {
+          "text": "Nur NAT am Access-Switch",
+          "is_correct": false
+        },
+        {
+          "text": "STP pro Kunde",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Voice ueber SD-WAN soll immer den Pfad mit niedrigstem Jitter nutzen. Was wird benoetigt?",
+      "explanation": "SD-WAN kann Metriken wie Jitter/Delay/Loss fuer Pfadwahl nutzen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SLA-basierte Dynamic Path Selection",
+          "is_correct": true
+        },
+        {
+          "text": "Round-Robin ohne Messung",
+          "is_correct": false
+        },
+        {
+          "text": "Nur statische Default Route",
+          "is_correct": false
+        },
+        {
+          "text": "STP Cost Tuning",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Web-App mit Login-Session verliert Zustand beim Lastwechsel. Welche LB-Funktion hilft?",
+      "explanation": "Persistenz bindet Requests eines Users an denselben Backend-Server.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Cookie-basierte Session Persistenz",
+          "is_correct": true
+        },
+        {
+          "text": "Nur ECMP auf Layer 3",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Snooping",
+          "is_correct": false
+        },
+        {
+          "text": "Port Security",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Change-Management-Praxis reduziert Netzwerkrisiko am meisten?",
+      "explanation": "Ein geplanter Rollback verkleinert Ausfallzeit bei Fehlschlag.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Getesteter Rollback-Plan",
+          "is_correct": true
+        },
+        {
+          "text": "Deployment ohne Wartungsfenster",
+          "is_correct": false
+        },
+        {
+          "text": "Aenderung ohne Dokumentation",
+          "is_correct": false
+        },
+        {
+          "text": "Nur muendliche Abnahme",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein IoT-Dienst nutzt mDNS und soll zwischen zwei VLANs funktionieren. Was ist typisch noetig?",
+      "explanation": "mDNS ist lokal-link-begrenzt und braucht kontrollierte Weiterleitung.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "mDNS Reflector/Gateway",
+          "is_correct": true
+        },
+        {
+          "text": "Nur statische ARP-Eintraege",
+          "is_correct": false
+        },
+        {
+          "text": "PortFast auf Uplink",
+          "is_correct": false
+        },
+        {
+          "text": "BGP Route Reflector",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "IPv6 Campus: Clients erhalten falsche Default-Routes durch Rogue RA. Welche Gegenmassnahme?",
+      "explanation": "RA Guard blockt unerlaubte Router Advertisements von Endports.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "RA Guard auf Access-Ports",
+          "is_correct": true
+        },
+        {
+          "text": "LLDP deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "NTP Server wechseln",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Snooping ausschalten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Standort hat 62 Hosts pro VLAN und moechte moeglichst wenig Adressverschwendung. Welche IPv4-Maske ist passend?",
+      "explanation": "Ein /26-Netz hat 64 Adressen, davon 62 nutzbar. Das deckt den Bedarf exakt und minimiert Verschwendung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "/26",
+          "is_correct": true
+        },
+        {
+          "text": "/25",
+          "is_correct": false
+        },
+        {
+          "text": "/27",
+          "is_correct": false
+        },
+        {
+          "text": "/24",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du sollst 10.10.8.0/22 in gleich grosse Netze fuer genau 4 Niederlassungen teilen. Welche neue Praefixlaenge nutzt du?",
+      "explanation": "Von /22 auf /24 erhaeltst du 4 gleich grosse Subnetze. Jedes /24 kann dann einer Niederlassung zugewiesen werden.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "/23",
+          "is_correct": false
+        },
+        {
+          "text": "/24",
+          "is_correct": true
+        },
+        {
+          "text": "/25",
+          "is_correct": false
+        },
+        {
+          "text": "/26",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Routing-Protokoll nutzt standardmaessig den Metric-Wert 'Cost' basierend auf Bandbreite?",
+      "explanation": "OSPF berechnet den Pfad ueber Cost, der typischerweise aus der Referenzbandbreite abgeleitet wird. RIP nutzt dagegen Hop Count.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "RIP",
+          "is_correct": false
+        },
+        {
+          "text": "OSPF",
+          "is_correct": true
+        },
+        {
+          "text": "BGP",
+          "is_correct": false
+        },
+        {
+          "text": "EIGRP",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Core-Switch hat viele MAC-Flaps auf einem Uplink. Welche Ursache ist am wahrscheinlichsten?",
+      "explanation": "MAC-Flapping deutet oft auf Frames hin, die wegen einer Schleife ueber mehrere Ports zurueckkommen. STP-Probleme sind dabei haeufig.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "MTU-Mismatch",
+          "is_correct": false
+        },
+        {
+          "text": "Layer-2-Schleife",
+          "is_correct": true
+        },
+        {
+          "text": "DNS-Fehler",
+          "is_correct": false
+        },
+        {
+          "text": "NTP-Drift",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Client im WLAN verbindet sich, bekommt aber keine IP-Adresse. Was ist der sinnvollste erste Check auf dem WLAN-Controller?",
+      "explanation": "Wenn die Association klappt, aber keine Adresse vergeben wird, liegt der Fehler oft in DHCP. Relay-Konfiguration und Scope-Auslastung sind erste Pruefpunkte.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "DHCP Relay oder DHCP Scope",
+          "is_correct": true
+        },
+        {
+          "text": "SMTP Relay",
+          "is_correct": false
+        },
+        {
+          "text": "Syslog Rotation",
+          "is_correct": false
+        },
+        {
+          "text": "SNMP Community",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Security Control-Typ ist ein Beispiel fuer eine technische praeventive Massnahme?",
+      "explanation": "Eine Firewall-Regel blockiert ungewollten Verkehr aktiv und praeventiv. Die anderen Optionen sind organisatorisch oder detektiv/nachgelagert.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Firewall-Regel",
+          "is_correct": true
+        },
+        {
+          "text": "Lessons Learned Meeting",
+          "is_correct": false
+        },
+        {
+          "text": "Audit-Report",
+          "is_correct": false
+        },
+        {
+          "text": "Forensik-Bericht",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche CIDR-Route ist am spezifischsten und wird bei Longest Prefix Match bevorzugt?",
+      "explanation": "Beim Longest Prefix Match gewinnt die laengste Maske. /22 ist spezifischer als /20, /18 und /16.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "172.16.0.0/16",
+          "is_correct": false
+        },
+        {
+          "text": "172.16.64.0/18",
+          "is_correct": false
+        },
+        {
+          "text": "172.16.64.0/22",
+          "is_correct": true
+        },
+        {
+          "text": "172.16.0.0/20",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du konfigurierst Redundanz per LACP. Welche Einstellung muss auf beiden Seiten zueinander passen?",
+      "explanation": "LACP-Buendel brauchen kompatible Parameter wie LACP-Modus, Speed und Duplex. Sonst werden Links nicht sauber aggregiert.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Native VLAN Name",
+          "is_correct": false
+        },
+        {
+          "text": "Port-Channel-Modus und Geschwindigkeit",
+          "is_correct": true
+        },
+        {
+          "text": "DNS Server",
+          "is_correct": false
+        },
+        {
+          "text": "Spanning-Tree Priority des Access-Switches",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches WLAN-Design reduziert Co-Channel Interference in dicht belegten Bueroetagen am besten?",
+      "explanation": "Ein sauberer Kanalplan und angepasste Leistung reduzieren Ueberdeckung und Co-Channel Interference. Zu hohe Leistung verschlechtert oft die Zellplanung.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Maximale Sendeleistung auf allen APs",
+          "is_correct": false
+        },
+        {
+          "text": "Ueberlappung aller Kanaele",
+          "is_correct": false
+        },
+        {
+          "text": "Sorgfaeltiger Kanalplan mit niedrigerer AP-Leistung",
+          "is_correct": true
+        },
+        {
+          "text": "Nur 2.4 GHz aktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Admin will Management-Zugriff auf Switches absichern. Welche Option ist am besten?",
+      "explanation": "SSH verschluesselt den Zugriff und AAA ermoeglicht zentrale Authentifizierung und Accounting. Telnet und unverschluesseltes HTTP sind unsicher.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Telnet mit ACL",
+          "is_correct": false
+        },
+        {
+          "text": "HTTP mit lokalem Passwort",
+          "is_correct": false
+        },
+        {
+          "text": "SSH mit AAA",
+          "is_correct": true
+        },
+        {
+          "text": "SNMPv2c nur intern",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei einer Stoerung zeigt `traceroute`, dass der Pfad ab Hop 4 wechselt und Latenz schwankt stark. Welche Ursache ist plausibel?",
+      "explanation": "Wechselnde Hops und variierende RTT sprechen fuer Lastverteilung oder instabile Routing-Entscheidungen. Client-Kabeldefekte erklaeren den Hop-Wechsel nicht.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "ECMP oder dynamische Routing-Neuberechnung",
+          "is_correct": true
+        },
+        {
+          "text": "Defektes Patchkabel am Client",
+          "is_correct": false
+        },
+        {
+          "text": "Fehlende ARP-Tabelle",
+          "is_correct": false
+        },
+        {
+          "text": "Nicht synchronisierte Uhrzeit am Syslog-Server",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Monitoring-Verfahren eignet sich am besten, um Paketverluste zwischen zwei Standorten proaktiv zu messen?",
+      "explanation": "Aktive Probes liefern kontinuierliche Messwerte zu Verlust, Latenz und Jitter. Logs allein sind oft reaktiv und unvollstaendig.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "NetFlow Export auf dem Access-Point",
+          "is_correct": false
+        },
+        {
+          "text": "Synthetische ICMP/UDP Probes in festen Intervallen",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Eventlogs lesen",
+          "is_correct": false
+        },
+        {
+          "text": "Einmaliger Speedtest pro Quartal",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Route zu 0.0.0.0/0 zeigt auf den ISP, interne Netze sind aber nicht erreichbar. Welcher Fehler ist am wahrscheinlichsten?",
+      "explanation": "Wenn nur die Hinroute existiert, scheitert der Rueckweg und Verbindungen brechen. Besonders bei mehreren internen Praefixen ist Rueckrouting kritisch.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Default Route fehlt",
+          "is_correct": false
+        },
+        {
+          "text": "Rueckroute im Upstream oder intern fehlt",
+          "is_correct": true
+        },
+        {
+          "text": "MTU ist zu gross",
+          "is_correct": false
+        },
+        {
+          "text": "PoE Budget ist aufgebraucht",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Massnahme schuetzt am direktesten gegen Rogue DHCP Server in einem Access-VLAN?",
+      "explanation": "DHCP Snooping erlaubt DHCP-Antworten nur auf vertrauenswuerdigen Ports. Damit werden unerlaubte DHCP-Angebote blockiert.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Port Mirroring",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP Snooping",
+          "is_correct": true
+        },
+        {
+          "text": "LLDP aktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "NAT auf dem Router",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du siehst hohe CPU auf einem Router waehrend eines DDoS auf eine oeffentliche IP. Welche Massnahme hilft kurzfristig am ehesten?",
+      "explanation": "Traffic sollte moeglichst frueh verworfen werden, idealerweise beim Provider oder am Edge. RTBH/ACL senkt Last auf dem Router schneller als lokale Optimierungen.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "QoS fuer Voice priorisieren",
+          "is_correct": false
+        },
+        {
+          "text": "ACL/RTBH Upstream-Filter aktivieren",
+          "is_correct": true
+        },
+        {
+          "text": "NTP Server wechseln",
+          "is_correct": false
+        },
+        {
+          "text": "STP neu initialisieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage beschreibt den Unterschied zwischen Stateful Firewall und stateless ACL korrekt?",
+      "explanation": "Stateful Firewalls fuehren Verbindungstabellen und erlauben Rueckverkehr kontextbasiert. Stateless ACLs bewerten Pakete ohne Session-Kontext.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Stateful Firewalls pruefen nur Quell-IP",
+          "is_correct": false
+        },
+        {
+          "text": "Stateless ACLs verfolgen Sitzungszustand",
+          "is_correct": false
+        },
+        {
+          "text": "Stateful Firewalls koennen Rueckverkehr anhand Verbindungszustand erlauben",
+          "is_correct": true
+        },
+        {
+          "text": "Beide arbeiten ausschliesslich auf Layer 2",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Access-Port soll genau ein Endgeraet erlauben und bei Verstoss alarmieren, aber den Port nicht abschalten. Welche Port-Security-Aktion passt?",
+      "explanation": "`restrict` verwirft unerlaubte Frames und zaehlt/loggt Verstosse. `shutdown` wuerde den Port deaktivieren.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "protect",
+          "is_correct": false
+        },
+        {
+          "text": "shutdown",
+          "is_correct": false
+        },
+        {
+          "text": "restrict",
+          "is_correct": true
+        },
+        {
+          "text": "errdisable recovery",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Schritt ist im Troubleshooting-Modell nach dem Eingrenzen des Problems typisch als naechstes?",
+      "explanation": "Nach der Problemidentifikation folgt die Hypothese zur Ursache. Danach wird ein Testplan erstellt und geprueft.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Dokumentation ueberspringen",
+          "is_correct": false
+        },
+        {
+          "text": "Theorie zur Ursache aufstellen",
+          "is_correct": true
+        },
+        {
+          "text": "Firmware blind upgraden",
+          "is_correct": false
+        },
+        {
+          "text": "Alle VLANs loeschen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen migriert auf IPv6. Welche Adresse ist eine gueltige Link-Local-Adresse?",
+      "explanation": "Link-Local-Adressen liegen im Bereich fe80::/10. Sie werden fuer Nachbarschaft und lokale Segmentkommunikation genutzt.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "2001:db8::10",
+          "is_correct": false
+        },
+        {
+          "text": "fe80::1",
+          "is_correct": true
+        },
+        {
+          "text": "fc00::1234",
+          "is_correct": false
+        },
+        {
+          "text": "::ffff:192.0.2.1",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher KPI ist am aussagekraeftigsten, um WLAN-Qualitaet fuer Echtzeit-Calls zu bewerten?",
+      "explanation": "Echtzeit-Anwendungen reagieren stark auf Jitter und Verlust. Diese Metriken sind direkter als rein infrastrukturelle Zaehler.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Jitter und Packet Loss",
+          "is_correct": true
+        },
+        {
+          "text": "Anzahl installierter APs",
+          "is_correct": false
+        },
+        {
+          "text": "Rack-Temperatur",
+          "is_correct": false
+        },
+        {
+          "text": "CPU-Auslastung des Fileservers",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Unternehmen migriert einen Standort auf SD-WAN mit MPLS und Internet-Uplink. Welches Design minimiert Ausfaelle bei Link-Problemen am besten?",
+      "explanation": "SLA-basierte Pfadauswahl erkennt degradierte Links und lenkt Verkehr automatisch auf bessere Pfade.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Nur statische Default-Route ohne Health Checks",
+          "is_correct": false
+        },
+        {
+          "text": "Dynamisches Path-Selection mit SLA-Messung fuer Latenz/Jitter/Packet Loss",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Standorte auf denselben Kanal im WLAN setzen",
+          "is_correct": false
+        },
+        {
+          "text": "NAT auf allen Clients deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei Inter-VLAN-Routing sind manche Subnetze erreichbar, andere nicht. Welche Pruefung ist zuerst am sinnvollsten?",
+      "explanation": "Fehler liegen oft in VLAN-Zuordnung, SVI-Adressierung oder ACL-Order und sollten systematisch geprueft werden.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Nur DNS-Cache auf Clients loeschen",
+          "is_correct": false
+        },
+        {
+          "text": "VLAN-Tagging, SVI-IP/Maske und ACL-Reihenfolge auf dem L3-Switch pruefen",
+          "is_correct": true
+        },
+        {
+          "text": "Sofort alle Switches rebooten",
+          "is_correct": false
+        },
+        {
+          "text": "MTU global auf 9000 setzen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein VoIP-Netz zeigt sporadische Sprachabbrueche trotz ausreichender Bandbreite. Welche Kennzahl ist fuer die Ursache am aussagekraeftigsten?",
+      "explanation": "VoIP reagiert stark auf Jitter und Laufzeit; reine Bandbreite erklaert Echtzeitqualitaet nicht allein.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "CPU-Temperatur des Firewalls",
+          "is_correct": false
+        },
+        {
+          "text": "Jitter und One-Way-Delay pro WAN-Pfad",
+          "is_correct": true
+        },
+        {
+          "text": "Anzahl Druckauftraege",
+          "is_correct": false
+        },
+        {
+          "text": "Gruesse des ARP-Caches",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "In einer NAC-Umgebung erhalten unbekannte Geraete Netz, aber keinen Zugriff auf interne Systeme. Welche Architektur ist am passendsten?",
+      "explanation": "Quarantaene-Netze reduzieren Risiko und erlauben kontrollierte Remediation.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Unbekannte Geraete direkt in Produktions-VLAN",
+          "is_correct": false
+        },
+        {
+          "text": "Quarantaene-/Guest-VLAN mit begrenzten Freigaben bis zur Compliance",
+          "is_correct": true
+        },
+        {
+          "text": "802.1X komplett deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Alle Ports als Trunk konfigurieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nach Aktivierung von DHCP Snooping funktionieren einige Legacy-Clients nicht mehr. Was ist der beste naechste Schritt?",
+      "explanation": "Meist sind Port-Trust oder Relay-/Option-82-Details fehlerhaft, nicht das Feature an sich.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "DHCP Snooping global abschalten",
+          "is_correct": false
+        },
+        {
+          "text": "Trusted/Untrusted Ports und Option-82-Verhalten gezielt validieren",
+          "is_correct": true
+        },
+        {
+          "text": "Alle VLANs zusammenlegen",
+          "is_correct": false
+        },
+        {
+          "text": "Spanning Tree deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Datacenter nutzt VXLAN/EVPN. Welcher Vorteil gegenueber reinem VLAN-Stretch trifft am ehesten zu?",
+      "explanation": "EVPN bietet skalierbare Control-Plane fuer Overlay-Netze in grossen Fabrics.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Keine BGP-Kenntnisse noetig",
+          "is_correct": false
+        },
+        {
+          "text": "Bessere Skalierung und kontrollierte Layer-2-Extension ueber Layer-3-Fabric",
+          "is_correct": true
+        },
+        {
+          "text": "Automatische Malware-Entfernung",
+          "is_correct": false
+        },
+        {
+          "text": "Ersatz fuer Firewalls",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei Standortkopplung soll Ausfallzeit bei Router-Upgrade minimiert werden. Welche Vorgehensweise ist am risikoaermsten?",
+      "explanation": "Blue/Green plus Rollback reduziert Change-Risiko deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Direkt-Upgrade in Produktionszeit ohne Rollback-Plan",
+          "is_correct": false
+        },
+        {
+          "text": "Blue/Green mit Vorabtests und dokumentiertem Fallback",
+          "is_correct": true
+        },
+        {
+          "text": "Nur SNMP deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "Alle ACLs loeschen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Security-Review verlangt DNS-Hardening fuer Filialen. Welche Kombination ist am sinnvollsten?",
+      "explanation": "DNSSEC-Validation und begrenzte Recursion reduzieren Missbrauch und Manipulationsrisiken.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Open Resolver fuer alle Netze",
+          "is_correct": false
+        },
+        {
+          "text": "DNSSEC-Validierung plus restriktive Recursion und Logging",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Hosts-Dateien verteilen",
+          "is_correct": false
+        },
+        {
+          "text": "DNS ueber Telnet",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "WLAN-Roaming ist in einem Krankenhaus zu langsam. Welche Konfiguration hilft am meisten bei Voice-Endgeraeten?",
+      "explanation": "Fast-Roaming-Mechanismen und saubere Funkplanung reduzieren Handover-Latenz.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "802.11r/k/v mit abgestimmter AP-Planung",
+          "is_correct": true
+        },
+        {
+          "text": "2.4 GHz only erzwingen",
+          "is_correct": false
+        },
+        {
+          "text": "SSID pro AP einzigartig setzen",
+          "is_correct": false
+        },
+        {
+          "text": "WPA deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Core-Switch meldet steigende CRC-Fehler auf einem Uplink. Was ist die priorisierte Pruefung?",
+      "explanation": "CRC-Fehler deuten primaer auf physische Probleme oder Link-Parametermismatch hin.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "QoS-Policies entfernen",
+          "is_correct": false
+        },
+        {
+          "text": "Physische Layer-Checks: Kabel/SFP/Speed-Duplex und Optikwerte",
+          "is_correct": true
+        },
+        {
+          "text": "DNS-Records neu erzeugen",
+          "is_correct": false
+        },
+        {
+          "text": "DHCP-Leases kuerzen",
+          "is_correct": false
+        }
+      ]
+    }
+  ]
+}

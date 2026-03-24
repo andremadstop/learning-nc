@@ -1,0 +1,2888 @@
+{
+  "pool_name": "Linux Admin 1 MCQ (DE)",
+  "source": "AI-generated (Claude/Gemini), reviewed and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "questions": [
+    {
+      "text": "Welcher Befehl zeigt laufende systemd-Services?",
+      "explanation": "systemctl list-units ist der Standard unter systemd.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "systemctl list-units --type=service",
+          "is_correct": true
+        },
+        {
+          "text": "service --all",
+          "is_correct": false
+        },
+        {
+          "text": "chkconfig --list-only",
+          "is_correct": false
+        },
+        {
+          "text": "netstat -svc",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Datei enthaelt Benutzerkonteninformationen?",
+      "explanation": "/etc/passwd enthaelt Userstammdaten, /etc/shadow Passwort-Hashes.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "/etc/shadow",
+          "is_correct": false
+        },
+        {
+          "text": "/etc/passwd",
+          "is_correct": true
+        },
+        {
+          "text": "/etc/group",
+          "is_correct": false
+        },
+        {
+          "text": "/etc/login.defs",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt offene TCP/UDP-Sockets modern an?",
+      "explanation": "ss ersetzt in vielen Faellen netstat.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ss -tulpen",
+          "is_correct": true
+        },
+        {
+          "text": "route -n",
+          "is_correct": false
+        },
+        {
+          "text": "ifup -a",
+          "is_correct": false
+        },
+        {
+          "text": "mkfs.ext4",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wie plant man einen taeglichen Cronjob fuer 03:15 Uhr?",
+      "explanation": "Cron-Reihenfolge: Minute Stunde Tag Monat Wochentag.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "15 3 * * *",
+          "is_correct": true
+        },
+        {
+          "text": "3 15 * * *",
+          "is_correct": false
+        },
+        {
+          "text": "* 3 15 * *",
+          "is_correct": false
+        },
+        {
+          "text": "15 * * 3 *",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Datei steuert sudo-Berechtigungen zentral?",
+      "explanation": "sudoers definiert, wer welche Kommandos mit sudo darf.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "/etc/sudoers",
+          "is_correct": true
+        },
+        {
+          "text": "/etc/securetty",
+          "is_correct": false
+        },
+        {
+          "text": "/etc/profile",
+          "is_correct": false
+        },
+        {
+          "text": "/etc/environment",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Womit pruefst du den freien Speicherplatz der Dateisysteme?",
+      "explanation": "df zeigt Filesystem-Auslastung, free zeigt RAM.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "free -h",
+          "is_correct": false
+        },
+        {
+          "text": "df -h",
+          "is_correct": true
+        },
+        {
+          "text": "du -sh /",
+          "is_correct": false
+        },
+        {
+          "text": "lsblk -f",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl erstellt ein gz-komprimiertes tar-Archiv?",
+      "explanation": "c=create, z=gzip, f=file.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "tar -czf backup.tar.gz /daten",
+          "is_correct": true
+        },
+        {
+          "text": "tar -xzf backup.tar.gz /daten",
+          "is_correct": false
+        },
+        {
+          "text": "gzip backup.tar /daten",
+          "is_correct": false
+        },
+        {
+          "text": "zip -r backup.tar.gz /daten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt fehlgeschlagene systemd-Service-Units seit dem letzten Boot?",
+      "explanation": "systemctl --failed listet Units mit Fehlerstatus.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "systemctl --failed",
+          "is_correct": true
+        },
+        {
+          "text": "journalctl -k only",
+          "is_correct": false
+        },
+        {
+          "text": "lsmod --failed",
+          "is_correct": false
+        },
+        {
+          "text": "service failed",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Datei sollte fuer sichere sudo-Aenderungen bevorzugt mit Editor-Check bearbeitet werden?",
+      "explanation": "visudo validiert Syntax und verhindert Lockout.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "/etc/sudoers via visudo",
+          "is_correct": true
+        },
+        {
+          "text": "/etc/passwd direkt mit nano",
+          "is_correct": false
+        },
+        {
+          "text": "/etc/hosts via echo",
+          "is_correct": false
+        },
+        {
+          "text": "/etc/shadow per cat >",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt den belegten Platz pro Verzeichnis rekursiv zusammengefasst?",
+      "explanation": "du -sh * eignet sich fuer grobe Verzeichnisanalyse.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "df -h",
+          "is_correct": false
+        },
+        {
+          "text": "du -sh *",
+          "is_correct": true
+        },
+        {
+          "text": "free -m",
+          "is_correct": false
+        },
+        {
+          "text": "ls -lh /",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Werkzeug konfiguriert Firewall-Regeln auf vielen aktuellen Distros benutzerfreundlich?",
+      "explanation": "firewalld verwaltet Zonen/Regeln dynamisch.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "firewalld/firewall-cmd",
+          "is_correct": true
+        },
+        {
+          "text": "fdisk",
+          "is_correct": false
+        },
+        {
+          "text": "mkfs",
+          "is_correct": false
+        },
+        {
+          "text": "chroot",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du willst einen Dienst beim Boot aktivieren. Welcher Befehl ist korrekt?",
+      "explanation": "enable legt Autostart-Symlinks fuer die Unit an.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "systemctl enable nginx",
+          "is_correct": true
+        },
+        {
+          "text": "systemctl run nginx",
+          "is_correct": false
+        },
+        {
+          "text": "service nginx boot",
+          "is_correct": false
+        },
+        {
+          "text": "chkconfig start nginx now",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt aktuelle Route und Interface-Infos fuer Netzwerkdiagnose?",
+      "explanation": "ip addr/ip route liefern zentrale L3-Diagnosedaten.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ip addr && ip route",
+          "is_correct": true
+        },
+        {
+          "text": "passwd && chage",
+          "is_correct": false
+        },
+        {
+          "text": "useradd && groupadd",
+          "is_correct": false
+        },
+        {
+          "text": "top && htop",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Option ist fuer Log-Suche in Journal nach Unit sinnvoll?",
+      "explanation": "journalctl -u filtert auf einen Dienst.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "journalctl -u sshd",
+          "is_correct": true
+        },
+        {
+          "text": "journalctl -f /var/log/messages",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl --mkfs",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl -grp sshd",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist der Hauptvorteil von SSH Key Authentication gegenueber Passwort-only?",
+      "explanation": "Keys sind bei sauberem Umgang robuster als reine Passwoerter.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Weniger CPU-Verbrauch",
+          "is_correct": false
+        },
+        {
+          "text": "Starker Schutz gegen brute force/password reuse bei korrekter Handhabung",
+          "is_correct": true
+        },
+        {
+          "text": "Automatisch root Login erlaubt",
+          "is_correct": false
+        },
+        {
+          "text": "Kein Backup mehr noetig",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Kombination prueft Dateisystemintegritaet beim Booten typischerweise?",
+      "explanation": "fsck erkennt und behebt Dateisysteminkonsistenzen je nach FS.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "fsck in Wartungs-/Bootprozess",
+          "is_correct": true
+        },
+        {
+          "text": "iptables-save",
+          "is_correct": false
+        },
+        {
+          "text": "sysctl -a only",
+          "is_correct": false
+        },
+        {
+          "text": "lsblk -d",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du willst Prozesse nach Speicherverbrauch sortiert sehen. Welche Option ist sinnvoll?",
+      "explanation": "ps kann nach Speicherkriterien sortieren.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ps aux --sort=-%mem",
+          "is_correct": true
+        },
+        {
+          "text": "ls -mem",
+          "is_correct": false
+        },
+        {
+          "text": "grep mem /proc",
+          "is_correct": false
+        },
+        {
+          "text": "chmod 600 /proc",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage zu SELinux/AppArmor trifft am besten zu?",
+      "explanation": "MAC-Frameworks begrenzen Prozessrechte ueber DAC hinaus.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sie ersetzen Backups",
+          "is_correct": false
+        },
+        {
+          "text": "Sie erzwingen zusaetzliche Mandatory Access Controls",
+          "is_correct": true
+        },
+        {
+          "text": "Sie sind nur fuer Desktop-Themes",
+          "is_correct": false
+        },
+        {
+          "text": "Sie deaktivieren Dateirechte",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl erstellt einen neuen Benutzer mit Home-Verzeichnis?",
+      "explanation": "useradd -m erzeugt Benutzer plus Home-Directory.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "useradd -m alice",
+          "is_correct": true
+        },
+        {
+          "text": "addgroup -h alice",
+          "is_correct": false
+        },
+        {
+          "text": "passwd -m alice",
+          "is_correct": false
+        },
+        {
+          "text": "usermod --new alice",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist ein typischer Zweck von rsync im Admin-Alltag?",
+      "explanation": "rsync uebertraegt effizient nur Aenderungen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Inkrementelle Dateisynchronisation/Backups",
+          "is_correct": true
+        },
+        {
+          "text": "Partitionstabelle erstellen",
+          "is_correct": false
+        },
+        {
+          "text": "Kernel kompilieren zwingend",
+          "is_correct": false
+        },
+        {
+          "text": "DNS Resolver ersetzen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Option in sshd_config reduziert Risiko direkt?",
+      "explanation": "Direkter Root-Login per SSH sollte i.d.R. deaktiviert werden.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PermitRootLogin no",
+          "is_correct": true
+        },
+        {
+          "text": "UseDNS no zwingend",
+          "is_correct": false
+        },
+        {
+          "text": "PrintMotd yes",
+          "is_correct": false
+        },
+        {
+          "text": "Compression yes immer",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage zu chmod 600 private_key ist richtig?",
+      "explanation": "Private Keys sollten streng auf Owner begrenzt sein.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Owner rw, sonst niemand Zugriff",
+          "is_correct": true
+        },
+        {
+          "text": "Group rw, others r",
+          "is_correct": false
+        },
+        {
+          "text": "Owner execute only",
+          "is_correct": false
+        },
+        {
+          "text": "Alle lesen, keiner schreiben",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wie pruefst du offene Ports auf lokalem Linux-System am schnellsten bordmittelnah?",
+      "explanation": "ss zeigt Listening-Sockets inkl. Prozessbezug.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ss -tulpen",
+          "is_correct": true
+        },
+        {
+          "text": "mount -a",
+          "is_correct": false
+        },
+        {
+          "text": "id -a",
+          "is_correct": false
+        },
+        {
+          "text": "df -i",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Strategie ist bei Paketupdates auf produktiven Servern sinnvoll?",
+      "explanation": "Kontrollierte Change-Praxis minimiert Betriebsrisiken.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Direkt ungetestet in Produktion auf allen Hosts",
+          "is_correct": false
+        },
+        {
+          "text": "Staging/Test, Rollout-Plan, Wartungsfenster, Rollback-Option",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Kernel updaten, Rest ignorieren",
+          "is_correct": false
+        },
+        {
+          "text": "Nie patchen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wofuer ist /etc/resolv.conf typischerweise relevant?",
+      "explanation": "resolv.conf steuert Nameserver/Suchdomainen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "DNS Resolver Konfiguration",
+          "is_correct": true
+        },
+        {
+          "text": "User Passwort Hashes",
+          "is_correct": false
+        },
+        {
+          "text": "Cron Zeitplaene",
+          "is_correct": false
+        },
+        {
+          "text": "Systemd Unit-Definitionen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt auch versteckte Dateien im aktuellen Verzeichnis?",
+      "explanation": "ls -a zeigt Dotfiles. Mit ls -la siehst du zusaetzlich Details wie Rechte und Owner.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ls -l",
+          "is_correct": false
+        },
+        {
+          "text": "ls -a",
+          "is_correct": true
+        },
+        {
+          "text": "find . -maxdepth 1",
+          "is_correct": false
+        },
+        {
+          "text": "tree -L 1",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wofuer steht der Punkt (.) in einem absoluten Dateipfad?",
+      "explanation": "Der Punkt steht fuer das aktuelle Verzeichnis. Absolut beginnt aber immer mit /.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Home-Verzeichnis des Users",
+          "is_correct": false
+        },
+        {
+          "text": "Aktuelles Verzeichnis",
+          "is_correct": true
+        },
+        {
+          "text": "Root-Verzeichnis",
+          "is_correct": false
+        },
+        {
+          "text": "Parent-Verzeichnis",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl wechselt in das vorherige Verzeichnis?",
+      "explanation": "cd - springt zum letzten Arbeitsverzeichnis und zeigt den Zielpfad an.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "cd ..",
+          "is_correct": false
+        },
+        {
+          "text": "cd ~",
+          "is_correct": false
+        },
+        {
+          "text": "cd -",
+          "is_correct": true
+        },
+        {
+          "text": "pwd -",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl sucht rekursiv nach dem Text \"ERROR\" unter /var/log?",
+      "explanation": "grep -R durchsucht rekursiv alle Dateien im Verzeichnisbaum.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "grep ERROR /var/log",
+          "is_correct": false
+        },
+        {
+          "text": "grep -R \"ERROR\" /var/log",
+          "is_correct": true
+        },
+        {
+          "text": "find /var/log -name ERROR",
+          "is_correct": false
+        },
+        {
+          "text": "awk ERROR /var/log",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl erstellt ein gzip-komprimiertes tar-Archiv backup.tar.gz aus /etc?",
+      "explanation": "c=create, z=gzip, f=Dateiname. Damit wird das Archiv neu erzeugt.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "tar -cvf backup.tar.gz /etc",
+          "is_correct": false
+        },
+        {
+          "text": "tar -xzf backup.tar.gz /etc",
+          "is_correct": false
+        },
+        {
+          "text": "tar -czf backup.tar.gz /etc",
+          "is_correct": true
+        },
+        {
+          "text": "gzip -r /etc > backup.tar.gz",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Option bei rsync behaelt Rechte, Zeiten und Owner moeglichst vollstaendig?",
+      "explanation": "-a ist Archivmodus und fasst mehrere wichtige Preserve-Optionen zusammen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "-v",
+          "is_correct": false
+        },
+        {
+          "text": "-a",
+          "is_correct": true
+        },
+        {
+          "text": "-z",
+          "is_correct": false
+        },
+        {
+          "text": "-n",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt freien Speicherplatz pro Dateisystem in menschenlesbarer Form?",
+      "explanation": "df -h zeigt Belegung pro eingehangenem Dateisystem.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "du -sh /",
+          "is_correct": false
+        },
+        {
+          "text": "df -h",
+          "is_correct": true
+        },
+        {
+          "text": "lsblk -f",
+          "is_correct": false
+        },
+        {
+          "text": "free -h",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt die Groesse eines Verzeichnisses inklusive Unterordner als Summe?",
+      "explanation": "du -sh liefert eine kompakte Gesamtgroesse fuer das Verzeichnis.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "du -sh /var/log",
+          "is_correct": true
+        },
+        {
+          "text": "df -h /var/log",
+          "is_correct": false
+        },
+        {
+          "text": "stat /var/log",
+          "is_correct": false
+        },
+        {
+          "text": "ls -lh /var/log",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Womit pruefst du, ob Inodes knapp werden?",
+      "explanation": "df -i zeigt inode-Auslastung. Volle Inodes koennen trotz freiem Platz Probleme machen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "df -i",
+          "is_correct": true
+        },
+        {
+          "text": "du -i",
+          "is_correct": false
+        },
+        {
+          "text": "ls -i /",
+          "is_correct": false
+        },
+        {
+          "text": "stat -i /",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Berechtigung setzt chmod 640 auf eine Datei?",
+      "explanation": "6=rw fuer Owner, 4=r fuer Group, 0=keine Rechte fuer Others.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "rw-r-----",
+          "is_correct": true
+        },
+        {
+          "text": "rw-r--r--",
+          "is_correct": false
+        },
+        {
+          "text": "rwxr-----",
+          "is_correct": false
+        },
+        {
+          "text": "rw-rw----",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl setzt Owner auf root und Group auf adm fuer file.log?",
+      "explanation": "chown owner:group ist die korrekte Syntax fuer Datei-Besitz.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "chgrp root:adm file.log",
+          "is_correct": false
+        },
+        {
+          "text": "chown root:adm file.log",
+          "is_correct": true
+        },
+        {
+          "text": "chmod root:adm file.log",
+          "is_correct": false
+        },
+        {
+          "text": "usermod root:adm file.log",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was bewirkt das setgid-Bit auf einem Verzeichnis?",
+      "explanation": "Mit setgid auf Verzeichnissen bleibt Team-Group-Konsistenz bei neuen Dateien erhalten.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Neue Dateien erben den Owner des Verzeichnisses",
+          "is_correct": false
+        },
+        {
+          "text": "Neue Dateien erben die Group des Verzeichnisses",
+          "is_correct": true
+        },
+        {
+          "text": "Nur root darf schreiben",
+          "is_correct": false
+        },
+        {
+          "text": "Dateien werden automatisch ausfuehrbar",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche umask ist typisch fuer ein restriktives Team-Setup mit Standardrechten 640/750?",
+      "explanation": "Umask 027 nimmt Others alle Rechte und Group Schreibrechte bei neuen Dateien.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "002",
+          "is_correct": false
+        },
+        {
+          "text": "022",
+          "is_correct": false
+        },
+        {
+          "text": "027",
+          "is_correct": true
+        },
+        {
+          "text": "077",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl gibt User alice Lesezugriff per ACL auf report.txt?",
+      "explanation": "setfacl -m setzt oder aendert ACL-Eintraege fuer User/Group.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "setfacl -m u:alice:r report.txt",
+          "is_correct": true
+        },
+        {
+          "text": "chmod u+acl:alice:r report.txt",
+          "is_correct": false
+        },
+        {
+          "text": "chacl alice:r report.txt",
+          "is_correct": false
+        },
+        {
+          "text": "setfattr alice:r report.txt",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Warum ist /tmp oft mit 1777 gesetzt?",
+      "explanation": "Bei 1777 duerfen alle schreiben, aber dank sticky bit keine fremden Dateien loeschen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur root darf lesen",
+          "is_correct": false
+        },
+        {
+          "text": "setgid fuer Gruppenvererbung",
+          "is_correct": false
+        },
+        {
+          "text": "sticky bit verhindert Loeschen fremder Dateien",
+          "is_correct": true
+        },
+        {
+          "text": "alle Dateien sind versteckt",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt alle Prozesse detailreich in BSD-Notation?",
+      "explanation": "ps aux ist im Admin-Alltag ein schneller Vollueberblick ueber laufende Prozesse.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ps -ef",
+          "is_correct": false
+        },
+        {
+          "text": "ps aux",
+          "is_correct": true
+        },
+        {
+          "text": "top",
+          "is_correct": false
+        },
+        {
+          "text": "jobs -l",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Signal versucht zuerst einen sauberen Prozess-Stopp?",
+      "explanation": "SIGTERM erlaubt dem Prozess Cleanup durchzufuehren, SIGKILL beendet hart.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "SIGKILL (9)",
+          "is_correct": false
+        },
+        {
+          "text": "SIGTERM (15)",
+          "is_correct": true
+        },
+        {
+          "text": "SIGHUP (1)",
+          "is_correct": false
+        },
+        {
+          "text": "SIGSTOP (19)",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl findet die PID eines laufenden nginx-Prozesses?",
+      "explanation": "pgrep sucht Prozesse per Namen/Pattern und gibt passende PIDs aus.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "pidofall nginx",
+          "is_correct": false
+        },
+        {
+          "text": "pgrep nginx",
+          "is_correct": true
+        },
+        {
+          "text": "psid nginx",
+          "is_correct": false
+        },
+        {
+          "text": "kill -l nginx",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt den Status des Dienstes ssh (systemd)?",
+      "explanation": "Unter systemd ist systemctl status der Standardweg fuer Dienststatus und letzte Logs.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "service ssh status",
+          "is_correct": false
+        },
+        {
+          "text": "systemctl status ssh",
+          "is_correct": true
+        },
+        {
+          "text": "systemd status ssh",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl ssh status",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was macht systemctl enable --now nginx?",
+      "explanation": "enable legt Symlinks fuer Boot an, --now fuehrt zusaetzlich direkt start aus.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Startet nginx einmalig",
+          "is_correct": false
+        },
+        {
+          "text": "Aktiviert Autostart und startet sofort",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Boot-Start ohne Start jetzt",
+          "is_correct": false
+        },
+        {
+          "text": "Deaktiviert und stoppt nginx",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt nur Logs des ssh-Dienstes seit aktuellem Boot?",
+      "explanation": "-b filtert auf aktuelles Boot, -u auf die Unit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "journalctl -u ssh",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl -b -u ssh",
+          "is_correct": true
+        },
+        {
+          "text": "journalctl --since today ssh",
+          "is_correct": false
+        },
+        {
+          "text": "dmesg | grep ssh",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Womit verfolgst du Journal-Logs live aehnlich wie tail -f?",
+      "explanation": "-f folgt neuen Eintraegen in Echtzeit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "journalctl -x",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl -r",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl -f",
+          "is_correct": true
+        },
+        {
+          "text": "journalctl -n",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wann ist systemctl daemon-reload noetig?",
+      "explanation": "Geaenderte Unit-Definitionen werden erst nach daemon-reload neu eingelesen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nach jeder Paketinstallation",
+          "is_correct": false
+        },
+        {
+          "text": "Nach Aenderung von Unit-Dateien",
+          "is_correct": true
+        },
+        {
+          "text": "Nach jedem reboot",
+          "is_correct": false
+        },
+        {
+          "text": "Nach jedem journalctl-Aufruf",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt offene TCP/UDP-Ports inklusive Prozessinfo?",
+      "explanation": "ss -tulpen zeigt listening sockets, Protokolle, PIDs und Namen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "netstat -r",
+          "is_correct": false
+        },
+        {
+          "text": "ss -tulpen",
+          "is_correct": true
+        },
+        {
+          "text": "ip route show",
+          "is_correct": false
+        },
+        {
+          "text": "lsof /etc/services",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl testet DNS-Aufloesung kompakt fuer example.com?",
+      "explanation": "dig +short gibt nur aufgeloeste Records ohne viel Zusatztext aus.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ping example.com",
+          "is_correct": false
+        },
+        {
+          "text": "dig +short example.com",
+          "is_correct": true
+        },
+        {
+          "text": "arp -a example.com",
+          "is_correct": false
+        },
+        {
+          "text": "ip addr show example.com",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welches Tool zeigt den Pfad ueber Router-Hops zum Ziel?",
+      "explanation": "traceroute identifiziert Zwischenstationen und hilft bei Layer-3-Analyse.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "mtroute",
+          "is_correct": false
+        },
+        {
+          "text": "traceroute",
+          "is_correct": true
+        },
+        {
+          "text": "ss",
+          "is_correct": false
+        },
+        {
+          "text": "host",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher tcpdump-Filter zeichnet DNS-Verkehr auf Interface eth0 auf?",
+      "explanation": "DNS nutzt meist Port 53 (UDP/TCP), daher ist port 53 ein gaengiger Filter.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "tcpdump -i eth0 port 53",
+          "is_correct": true
+        },
+        {
+          "text": "tcpdump eth0 dns",
+          "is_correct": false
+        },
+        {
+          "text": "tcpdump -p 53",
+          "is_correct": false
+        },
+        {
+          "text": "tcpdump -i 53 eth0",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche SSH-Server-Einstellung reduziert Risiko durch direkte root-Logins?",
+      "explanation": "PermitRootLogin no erzwingt Login ueber normale Accounts mit sudo.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PermitRootLogin yes",
+          "is_correct": false
+        },
+        {
+          "text": "PermitRootLogin no",
+          "is_correct": true
+        },
+        {
+          "text": "UsePAM yes",
+          "is_correct": false
+        },
+        {
+          "text": "X11Forwarding yes",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Kombination ist fuer key-only SSH-Zugriff typisch?",
+      "explanation": "Damit sind Passwort-Logins aus und nur Schluessel-Auth aktiv.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "PasswordAuthentication yes, PubkeyAuthentication no",
+          "is_correct": false
+        },
+        {
+          "text": "PasswordAuthentication no, PubkeyAuthentication yes",
+          "is_correct": true
+        },
+        {
+          "text": "ChallengeResponseAuthentication yes, PubkeyAuthentication no",
+          "is_correct": false
+        },
+        {
+          "text": "PermitEmptyPasswords yes",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Rechte sind fuer ~/.ssh und ~/.ssh/authorized_keys typischerweise korrekt?",
+      "explanation": "Zu offene Rechte fuehren oft dazu, dass sshd Keys aus Sicherheitsgruenden ignoriert.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "755 und 644",
+          "is_correct": false
+        },
+        {
+          "text": "700 und 600",
+          "is_correct": true
+        },
+        {
+          "text": "777 und 666",
+          "is_correct": false
+        },
+        {
+          "text": "750 und 640",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl aktualisiert unter Debian/Ubuntu zuerst Paketlisten?",
+      "explanation": "apt update laedt Repo-Metadaten, erst danach ist upgrade sinnvoll.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "apt upgrade",
+          "is_correct": false
+        },
+        {
+          "text": "apt update",
+          "is_correct": true
+        },
+        {
+          "text": "apt install",
+          "is_correct": false
+        },
+        {
+          "text": "apt clean",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was macht apt upgrade im Unterschied zu apt update?",
+      "explanation": "upgrade aktualisiert installierte Pakete, veraendert aber typischerweise keine Paketbasis radikal.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Entfernt alte Kernels",
+          "is_correct": false
+        },
+        {
+          "text": "Installiert neue Paketversionen anhand aktueller Listen",
+          "is_correct": true
+        },
+        {
+          "text": "Fuegt neue Repos hinzu",
+          "is_correct": false
+        },
+        {
+          "text": "Bereinigt Cache",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl entfernt ungenutzte Abhaengigkeiten unter apt?",
+      "explanation": "autoremove raeumt automatisch nicht mehr benoetigte Abhaengigkeiten auf.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "apt purge",
+          "is_correct": false
+        },
+        {
+          "text": "apt autoremove",
+          "is_correct": true
+        },
+        {
+          "text": "apt autoclean",
+          "is_correct": false
+        },
+        {
+          "text": "apt policy",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl aktualisiert ein Arch-Linux System vollstaendig?",
+      "explanation": "Bei Arch ist -Syu der uebliche Full-Upgrade-Weg (sync + refresh + upgrade).",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "pacman -Sy",
+          "is_correct": false
+        },
+        {
+          "text": "pacman -Syu",
+          "is_correct": true
+        },
+        {
+          "text": "pacman -Su",
+          "is_correct": false
+        },
+        {
+          "text": "pacman -Ryu",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl listet installierte Debian-Pakete?",
+      "explanation": "dpkg -l zeigt lokal installierte .deb-Pakete an.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "dpkg -l",
+          "is_correct": true
+        },
+        {
+          "text": "apt list repos",
+          "is_correct": false
+        },
+        {
+          "text": "rpm -qa",
+          "is_correct": false
+        },
+        {
+          "text": "snap ls all",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Schritt ist bei LVM-Grundeinrichtung korrekt?",
+      "explanation": "LVM wird von unten nach oben gebaut: PV -> VG -> LV -> Filesystem -> Mount.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "lvcreate vor vgcreate",
+          "is_correct": false
+        },
+        {
+          "text": "pvcreate, dann vgcreate, dann lvcreate",
+          "is_correct": true
+        },
+        {
+          "text": "mkfs vor pvcreate",
+          "is_correct": false
+        },
+        {
+          "text": "mount vor lvcreate",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wie vergroesserst du ein ext4-Dateisystem auf einem bereits erweiterten LV online?",
+      "explanation": "resize2fs vergroessert ext2/3/4. Reihenfolge mit LV-Resize beachten.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "xfs_growfs",
+          "is_correct": false
+        },
+        {
+          "text": "resize2fs",
+          "is_correct": true
+        },
+        {
+          "text": "fsck -f",
+          "is_correct": false
+        },
+        {
+          "text": "tune2fs -E resize",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl vergroessert ein XFS-Dateisystem auf /data?",
+      "explanation": "XFS wird mit xfs_growfs vergroessert, nicht mit resize2fs.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "resize2fs /data",
+          "is_correct": false
+        },
+        {
+          "text": "xfs_growfs /data",
+          "is_correct": true
+        },
+        {
+          "text": "fsck.xfs -f /data",
+          "is_correct": false
+        },
+        {
+          "text": "xfs_repair -n /data",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist fuer /etc/fstab am robustesten, wenn Device-Namen wechseln koennen?",
+      "explanation": "UUIDs bleiben stabiler als dynamische Geraetenamen wie /dev/sdX.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Direkt /dev/sda1 nutzen",
+          "is_correct": false
+        },
+        {
+          "text": "UUID verwenden",
+          "is_correct": true
+        },
+        {
+          "text": "nur Mountpoint angeben",
+          "is_correct": false
+        },
+        {
+          "text": "Hostname statt Device",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wann darf fsck auf einem Dateisystem sicher ausgefuehrt werden?",
+      "explanation": "fsck auf aktivem rw-Dateisystem kann Daten beschaedigen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Immer waehrend Schreiblast",
+          "is_correct": false
+        },
+        {
+          "text": "Nur wenn es read-write gemountet ist",
+          "is_correct": false
+        },
+        {
+          "text": "Im Regelfall ungemountet oder read-only/offline",
+          "is_correct": true
+        },
+        {
+          "text": "Nur bei ext4 verboten",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage beschreibt die 3-2-1 Backup-Regel korrekt?",
+      "explanation": "Die Regel reduziert Risiko durch Medien- und Standorttrennung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "3 Kopien, 2 Clouds, 1 Tape",
+          "is_correct": false
+        },
+        {
+          "text": "3 Kopien, 2 verschiedene Medien, 1 Kopie extern/offsite",
+          "is_correct": true
+        },
+        {
+          "text": "3 Snapshots, 2 Deltas, 1 Full",
+          "is_correct": false
+        },
+        {
+          "text": "3 Server, 2 RAID-Level, 1 Restore",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche rsync-Option kann am Ziel Dateien loeschen, die in der Quelle fehlen?",
+      "explanation": "--delete ist nuetzlich fuer Spiegelung, aber gefaehrlich ohne Tests.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "--checksum",
+          "is_correct": false
+        },
+        {
+          "text": "--delete",
+          "is_correct": true
+        },
+        {
+          "text": "--partial",
+          "is_correct": false
+        },
+        {
+          "text": "--inplace",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Cron-Eintrag startet ein Script taeglich um 02:00?",
+      "explanation": "Felder: Minute Stunde Tag Monat Wochentag. 0 2 bedeutet 02:00.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "0 2 * * * /usr/local/bin/backup.sh",
+          "is_correct": true
+        },
+        {
+          "text": "2 0 * * * /usr/local/bin/backup.sh",
+          "is_correct": false
+        },
+        {
+          "text": "0 */2 * * * /usr/local/bin/backup.sh",
+          "is_correct": false
+        },
+        {
+          "text": "* 2 * * * /usr/local/bin/backup.sh",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Vorteil von systemd Timern gegenueber cron ist korrekt?",
+      "explanation": "Mit Persistent=true kann ein verpasster Lauf beim naechsten Start nachgeholt werden.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Timer koennen nie Logs erzeugen",
+          "is_correct": false
+        },
+        {
+          "text": "Timer koennen verpasste Runs nachholen (Persistent)",
+          "is_correct": true
+        },
+        {
+          "text": "Timer laufen ohne Unit-Datei",
+          "is_correct": false
+        },
+        {
+          "text": "Timer ersetzen journalctl",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei \"failed\" Service ist welcher erste Diagnosebefehl sinnvoll?",
+      "explanation": "journalctl -xeu zeigt die relevanten Fehlermeldungen fuer die Unit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "journalctl -xeu <unit>",
+          "is_correct": true
+        },
+        {
+          "text": "reboot",
+          "is_correct": false
+        },
+        {
+          "text": "kill -9 1",
+          "is_correct": false
+        },
+        {
+          "text": "rm -rf /var/log",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt aktuell eingeloggte Benutzer?",
+      "explanation": "w zeigt eingeloggte User, Herkunft, Idle-Zeit und laufende Kommandos.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "id",
+          "is_correct": false
+        },
+        {
+          "text": "w",
+          "is_correct": true
+        },
+        {
+          "text": "passwd",
+          "is_correct": false
+        },
+        {
+          "text": "su -",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wie bearbeitest du sudoers sicher?",
+      "explanation": "visudo prueft Syntax und verhindert Lockout durch fehlerhafte Eintraege.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "nano /etc/sudoers",
+          "is_correct": false
+        },
+        {
+          "text": "echo >> /etc/sudoers",
+          "is_correct": false
+        },
+        {
+          "text": "visudo",
+          "is_correct": true
+        },
+        {
+          "text": "chmod 777 /etc/sudoers",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt IP-Adressen der Interfaces modern an?",
+      "explanation": "ip addr show ist Teil von iproute2 und Standard auf modernen Systemen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ifconfig -a",
+          "is_correct": false
+        },
+        {
+          "text": "ip addr show",
+          "is_correct": true
+        },
+        {
+          "text": "route -n",
+          "is_correct": false
+        },
+        {
+          "text": "hostname -A",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl fuegt eine temporaere Route hinzu?",
+      "explanation": "ip route add setzt eine Laufzeitroute bis zum Neustart oder Netz-Neustart.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ip route add 10.10.20.0/24 via 10.10.10.1",
+          "is_correct": true
+        },
+        {
+          "text": "echo route >> /etc/hosts",
+          "is_correct": false
+        },
+        {
+          "text": "ss add route",
+          "is_correct": false
+        },
+        {
+          "text": "nmcli dev ping",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wie findest du den Prozess, der auf Port 8080 lauscht?",
+      "explanation": "lsof -i :PORT zeigt Prozesse mit Netzwerk-Handles auf diesem Port.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "lsof -i :8080",
+          "is_correct": true
+        },
+        {
+          "text": "ps -p 8080",
+          "is_correct": false
+        },
+        {
+          "text": "df -h 8080",
+          "is_correct": false
+        },
+        {
+          "text": "dig :8080",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Option bei ssh verhindert Name-Aufloesungs-Verzoegerung im Server-Log?",
+      "explanation": "UseDNS no vermeidet reverse-DNS Lookup beim Login und kann Login beschleunigen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "UseDNS no",
+          "is_correct": true
+        },
+        {
+          "text": "PermitTTY no",
+          "is_correct": false
+        },
+        {
+          "text": "AllowTcpForwarding no",
+          "is_correct": false
+        },
+        {
+          "text": "PrintMotd no",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl erzeugt eine 2 GiB Swap-Datei korrekt (vereinfacht)?",
+      "explanation": "Swap-Datei braucht Inhalt, mkswap Signatur und anschliessend swapon.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "dd if=/dev/zero of=/swapfile bs=1M count=2048 && mkswap /swapfile && swapon /swapfile",
+          "is_correct": true
+        },
+        {
+          "text": "mkfs.ext4 /swapfile && swapon /swapfile",
+          "is_correct": false
+        },
+        {
+          "text": "touch /swapfile && swapon /swapfile",
+          "is_correct": false
+        },
+        {
+          "text": "fdisk /swapfile && mount /swapfile",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Dateiberechtigung sollte eine private SSH-Key-Datei haben?",
+      "explanation": "Private Keys muessen strikt geschuetzt sein, typischerweise chmod 600.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "644",
+          "is_correct": false
+        },
+        {
+          "text": "600",
+          "is_correct": true
+        },
+        {
+          "text": "664",
+          "is_correct": false
+        },
+        {
+          "text": "777",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was pruefst du zuerst bei \"No space left on device\", obwohl df -h noch Platz zeigt?",
+      "explanation": "Inode-Erschoepfung ist ein haeufiger Grund fuer diesen scheinbaren Widerspruch.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "CPU-Auslastung",
+          "is_correct": false
+        },
+        {
+          "text": "Inodes mit df -i",
+          "is_correct": true
+        },
+        {
+          "text": "DNS-Cache",
+          "is_correct": false
+        },
+        {
+          "text": "Kernel-Version",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt Blockgeraete, Partitionen und Mountpoints uebersichtlich?",
+      "explanation": "lsblk ist oft der schnellste Start fuer Storage-Uebersicht und Troubleshooting.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "lsblk",
+          "is_correct": true
+        },
+        {
+          "text": "blkid -o listall",
+          "is_correct": false
+        },
+        {
+          "text": "fdisk --all",
+          "is_correct": false
+        },
+        {
+          "text": "mount -v -l -f",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wie machst du vor riskantem chmod/chown bei vielen Dateien einen sicheren Testlauf mit find?",
+      "explanation": "-ok fragt interaktiv nach Bestaetigung je Treffer und reduziert Fehlbedienung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "find ... -exec ... \\;",
+          "is_correct": false
+        },
+        {
+          "text": "find ... -ok ... \\;",
+          "is_correct": true
+        },
+        {
+          "text": "find ... -dry-run ...",
+          "is_correct": false
+        },
+        {
+          "text": "find ... -touch ...",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt Kernel-Meldungen, z.B. bei Hardware- oder Treiberproblemen?",
+      "explanation": "dmesg liest den Kernel-Ringbuffer und hilft bei Low-Level-Diagnosen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "journalctl -u kernel",
+          "is_correct": false
+        },
+        {
+          "text": "dmesg",
+          "is_correct": true
+        },
+        {
+          "text": "uname -a",
+          "is_correct": false
+        },
+        {
+          "text": "lsmod -v -k",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Was ist der Unterschied zwischen Hardlink und Symlink?",
+      "explanation": "Hardlinks teilen Inode (gleiches FS), Symlinks sind eigene Dateien mit Pfadziel.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Hardlink zeigt auf Dateinamen, Symlink auf Inode",
+          "is_correct": false
+        },
+        {
+          "text": "Hardlink auf gleichen Inode, Symlink ist separater Verweis-Pfad",
+          "is_correct": true
+        },
+        {
+          "text": "Hardlink funktioniert nur ueber Dateisysteme hinweg",
+          "is_correct": false
+        },
+        {
+          "text": "Symlink erhoeht inode link count gleichwertig",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt Dateisystem-Typen und UUIDs?",
+      "explanation": "blkid liefert UUID/LABEL/TYPE und ist hilfreich fuer fstab-Eintraege.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "mount -t all",
+          "is_correct": false
+        },
+        {
+          "text": "blkid",
+          "is_correct": true
+        },
+        {
+          "text": "df -T -u",
+          "is_correct": false
+        },
+        {
+          "text": "ls -uuid",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt fehlgeschlagene Logins bei systemd-journald am ehesten?",
+      "explanation": "Mit Unit-Filter plus grep findest du gezielt fehlgeschlagene SSH-Anmeldungen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "journalctl -u ssh --grep \"Failed\"",
+          "is_correct": true
+        },
+        {
+          "text": "last reboot",
+          "is_correct": false
+        },
+        {
+          "text": "whoami",
+          "is_correct": false
+        },
+        {
+          "text": "passwd -S",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Womit pruefst du DNS, Route und HTTP in einer minimalen Kette am schnellsten?",
+      "explanation": "Die Kombination deckt Name-Aufloesung, Layer-3-Pfad und Anwendungstest ab.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "dig, ip route, curl -I",
+          "is_correct": true
+        },
+        {
+          "text": "ifconfig, route, lynx",
+          "is_correct": false
+        },
+        {
+          "text": "arp, whois, ftp",
+          "is_correct": false
+        },
+        {
+          "text": "uptime, free, top",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Unit ist meist fuer Netzwerk unter systemd verantwortlich (distroabhaengig variierend)?",
+      "explanation": "network-online.target signalisiert, dass Netzwerk fuer Services verfuegbar sein soll.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "network.target",
+          "is_correct": false
+        },
+        {
+          "text": "network-online.target",
+          "is_correct": true
+        },
+        {
+          "text": "sshd.target",
+          "is_correct": false
+        },
+        {
+          "text": "kernel.target",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt den letzten Systemstart und vorherige Reboots?",
+      "explanation": "last reboot liest wtmp und zeigt Reboot-Historie.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "uptime --all",
+          "is_correct": false
+        },
+        {
+          "text": "last reboot",
+          "is_correct": true
+        },
+        {
+          "text": "journalctl --boots-only",
+          "is_correct": false
+        },
+        {
+          "text": "who -b -a -x",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wozu dient \"sudo -l\" fuer einen User?",
+      "explanation": "sudo -l ist wichtig, um Berechtigungen und Least-Privilege zu pruefen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Zeigt Login-Historie",
+          "is_correct": false
+        },
+        {
+          "text": "Zeigt erlaubte sudo-Kommandos laut Policy",
+          "is_correct": true
+        },
+        {
+          "text": "Setzt sudo-Passwort zurueck",
+          "is_correct": false
+        },
+        {
+          "text": "Loescht sudo-Cache",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Aussage zu /var/log und journalctl trifft zu?",
+      "explanation": "Viele Distributionen loggen primar ins Journal; Textlogs koennen optional sein.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Bei systemd gibt es nie Textlogs",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl kann zentrale Logs auch ohne einzelne Textdateien liefern",
+          "is_correct": true
+        },
+        {
+          "text": "journalctl zeigt nur Kernel-Logs",
+          "is_correct": false
+        },
+        {
+          "text": "Textlogs sind immer aktueller als Journal",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt fehlgeschlagene systemd-Units auf einen Blick?",
+      "explanation": "systemctl list-failed listet alle Units im Zustand failed und ist ein guter Start fuer Incident-Triage.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "systemctl list-failed",
+          "is_correct": true
+        },
+        {
+          "text": "journalctl --failed",
+          "is_correct": false
+        },
+        {
+          "text": "systemd-analyze blame",
+          "is_correct": false
+        },
+        {
+          "text": "service --status-all",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du hast eine Unit-Datei geaendert. Was ist der korrekte naechste Schritt vor einem Restart der Unit?",
+      "explanation": "Nach Aenderungen an Unit-Dateien muss systemd die Definitionen mit daemon-reload neu einlesen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "journalctl --rotate",
+          "is_correct": false
+        },
+        {
+          "text": "systemctl daemon-reload",
+          "is_correct": true
+        },
+        {
+          "text": "systemctl preset-all",
+          "is_correct": false
+        },
+        {
+          "text": "systemctl isolate multi-user.target",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt den letzten Reboot-Boot im Journal?",
+      "explanation": "-b -1 adressiert den vorherigen Boot und hilft bei Fehlern vor dem letzten Neustart.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "journalctl -b",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl -b -1",
+          "is_correct": true
+        },
+        {
+          "text": "journalctl --since reboot",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl -k -1",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt nur IPv4-Adressen aller Interfaces?",
+      "explanation": "ip -4 addr show filtert sauber auf IPv4-Adressen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ip link show",
+          "is_correct": false
+        },
+        {
+          "text": "ip -6 addr",
+          "is_correct": false
+        },
+        {
+          "text": "ip -4 addr show",
+          "is_correct": true
+        },
+        {
+          "text": "ss -4l",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du willst testen, ob ein Dienst auf TCP/443 von einem Host erreichbar ist. Welcher Befehl ist dafuer direkt geeignet?",
+      "explanation": "nc im Zero-I/O-Modus prueft gezielt, ob ein TCP-Port angenommen wird.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "ping host 443",
+          "is_correct": false
+        },
+        {
+          "text": "nc -zv host 443",
+          "is_correct": true
+        },
+        {
+          "text": "ip route get host:443",
+          "is_correct": false
+        },
+        {
+          "text": "dig host 443",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Berechtigung ist fuer private SSH-Keys wie ~/.ssh/id_ed25519 korrekt?",
+      "explanation": "Private Keys muessen nur fuer den Owner lesbar sein, sonst verweigert SSH oft die Nutzung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "0644",
+          "is_correct": false
+        },
+        {
+          "text": "0600",
+          "is_correct": true
+        },
+        {
+          "text": "0755",
+          "is_correct": false
+        },
+        {
+          "text": "0660",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche sshd_config-Option begrenzt die maximalen Passwortversuche pro Verbindung?",
+      "explanation": "MaxAuthTries reduziert Brute-Force-Fenster pro Session.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "LoginGraceTime",
+          "is_correct": false
+        },
+        {
+          "text": "MaxAuthTries",
+          "is_correct": true
+        },
+        {
+          "text": "ClientAliveCountMax",
+          "is_correct": false
+        },
+        {
+          "text": "PermitTunnel",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Ansatz ist fuer Produktions-Updates am sichersten?",
+      "explanation": "Canary plus gestaffeltes Rollout senkt Blast Radius und erhoeht Kontrollierbarkeit.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Direkt Full-Upgrade auf allen Hosts ohne Test",
+          "is_correct": false
+        },
+        {
+          "text": "Canary-Rollout auf kleinem Ring, dann gestaffelt",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Security-Updates, niemals Functional Updates",
+          "is_correct": false
+        },
+        {
+          "text": "Updates nur bei kompletten Reinstallationen",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher apt-Befehl installiert ausschliesslich Security-Updates auf Debian/Ubuntu typischerweise nicht?",
+      "explanation": "unattended-upgrade kann gezielt Security-Origins anwenden, wenn korrekt konfiguriert.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "unattended-upgrade",
+          "is_correct": true
+        },
+        {
+          "text": "apt-get dist-upgrade",
+          "is_correct": false
+        },
+        {
+          "text": "apt update && apt upgrade",
+          "is_correct": false
+        },
+        {
+          "text": "apt-mark showhold",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Reihenfolge ist fuer LVM-Erweiterung einer ext4-Datenpartition korrekt?",
+      "explanation": "Erst das LV vergroessern, danach das ext4-Dateisystem mit resize2fs nachziehen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "resize2fs, dann lvextend",
+          "is_correct": false
+        },
+        {
+          "text": "pvcreate, dann mkfs, dann mount",
+          "is_correct": false
+        },
+        {
+          "text": "lvextend, dann resize2fs",
+          "is_correct": true
+        },
+        {
+          "text": "fsck -y waehrend write load",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt freie/benutzte Extents in einer Volume Group?",
+      "explanation": "vgs gibt VG-Gesamtgroesse, freie PE und weitere Kennzahlen fuer Capacity-Planung aus.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "vgs",
+          "is_correct": true
+        },
+        {
+          "text": "lvs -a",
+          "is_correct": false
+        },
+        {
+          "text": "pvs --segments",
+          "is_correct": false
+        },
+        {
+          "text": "lsblk -o NAME,FSTYPE",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Check ist fuer Backup-Qualitaet entscheidend?",
+      "explanation": "Nur ein erfolgreicher Restore beweist, dass das Backup im Notfall nutzbar ist.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Backup-Job erfolgreich markieren",
+          "is_correct": false
+        },
+        {
+          "text": "Regelmaessige Restore-Tests mit Stichproben",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Dateianzahl im Ziel vergleichen",
+          "is_correct": false
+        },
+        {
+          "text": "Backup ohne Versionierung",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Du willst Journal-Logs zwischen zwei Zeitpunkten sehen. Welcher Aufruf passt?",
+      "explanation": "--since und --until sind die korrekten Zeitfilter fuer journalctl.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "journalctl --between '10:00' '11:00'",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl --since '2026-03-11 10:00' --until '2026-03-11 11:00'",
+          "is_correct": true
+        },
+        {
+          "text": "journalctl -r --hour 10",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl --time-window 60m",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt zuletzt fehlgeschlagene SSH-Logins im Journal auf Debian/Ubuntu meist am zielgerichtetsten?",
+      "explanation": "Unit-Filter plus grep auf Failed password reduziert Rauschen deutlich.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "journalctl -u ssh --grep 'Failed password'",
+          "is_correct": true
+        },
+        {
+          "text": "journalctl --grep sshd",
+          "is_correct": false
+        },
+        {
+          "text": "dmesg | grep ssh",
+          "is_correct": false
+        },
+        {
+          "text": "last -f /var/log/auth.log",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Option bei rsync ist fuer sichere Dry-Run-Pruefung vor --delete wichtig?",
+      "explanation": "--dry-run zeigt geplante Aenderungen ohne echte Loeschungen oder Schreibzugriffe.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "--inplace",
+          "is_correct": false
+        },
+        {
+          "text": "--numeric-ids",
+          "is_correct": false
+        },
+        {
+          "text": "--dry-run",
+          "is_correct": true
+        },
+        {
+          "text": "--append-verify",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Mount faellt nach Reboot weg. Welche Datei ist zuerst zu pruefen?",
+      "explanation": "Persistente Mounts werden in /etc/fstab definiert; Syntaxfehler dort sind haeufig.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "/etc/mtab",
+          "is_correct": false
+        },
+        {
+          "text": "/etc/fstab",
+          "is_correct": true
+        },
+        {
+          "text": "/proc/mounts",
+          "is_correct": false
+        },
+        {
+          "text": "/var/lib/systemd/mount",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche systemd-Option in einer Service-Unit hilft bei automatischem Neustart nach Crash?",
+      "explanation": "Restart=always startet den Dienst nach Abbruch erneut, je nach StartLimit-Regeln.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Restart=always",
+          "is_correct": true
+        },
+        {
+          "text": "Type=forking",
+          "is_correct": false
+        },
+        {
+          "text": "RemainAfterExit=yes",
+          "is_correct": false
+        },
+        {
+          "text": "ExecReload=/bin/true",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Befehl zeigt Dateirechte inkl. ACL-Hinweis auf einen Blick?",
+      "explanation": "ls -l zeigt bei gesetzter ACL oft ein Pluszeichen hinter dem Modus, z.B. rw-r-----+.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "stat -c %a file",
+          "is_correct": false
+        },
+        {
+          "text": "ls -l file",
+          "is_correct": true
+        },
+        {
+          "text": "namei -om file",
+          "is_correct": false
+        },
+        {
+          "text": "getfacl file",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welcher Ablauf ist bei Troubleshooting am professionellsten?",
+      "explanation": "Ein reproduzierbarer Diagnosezyklus vermeidet Zufallstreffer und reduziert Folgerisiken.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Sofort rebooten, dann spaeter analysieren",
+          "is_correct": false
+        },
+        {
+          "text": "Hypothese bilden, messen, aendern, Ergebnis verifizieren",
+          "is_correct": true
+        },
+        {
+          "text": "Mehrere Aenderungen gleichzeitig testen",
+          "is_correct": false
+        },
+        {
+          "text": "Direkt Konfigdateien loeschen und neu installieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein produktiver Linux-Dienst startet nach Update nicht mehr. Welcher Ablauf ist am besten?",
+      "explanation": "Status/Journald liefern Ursache; kontrollierter Rollback minimiert Ausfallzeit.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Sofort Neuinstallation des Hosts",
+          "is_correct": false
+        },
+        {
+          "text": "systemctl status + journalctl -u + gezieltes Rollback/Config-Check",
+          "is_correct": true
+        },
+        {
+          "text": "Alle Logs loeschen",
+          "is_correct": false
+        },
+        {
+          "text": "Firewall deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Praxis reduziert Risiko bei sudo-Berechtigungen am staerksten?",
+      "explanation": "Granulare Regeln plus Review verhindern Privilegienausweitung und Konfig-Fehler.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Breite NOPASSWD-Regeln fuer alle Admins",
+          "is_correct": false
+        },
+        {
+          "text": "Least-Privilege in /etc/sudoers.d mit visudo-Validierung und regelmaessiger Review",
+          "is_correct": true
+        },
+        {
+          "text": "Root-Passwort im Wiki",
+          "is_correct": false
+        },
+        {
+          "text": "Sudo komplett deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Host verliert sporadisch DNS-Aufloesung. Was pruefst du zuerst?",
+      "explanation": "Resolver-Konfiguration und Upstream-Connectivity sind primare Fehlerquellen.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Wallpaper-Einstellungen",
+          "is_correct": false
+        },
+        {
+          "text": "resolv.conf, systemd-resolved Status und Upstream-Erreichbarkeit",
+          "is_correct": true
+        },
+        {
+          "text": "Nur CPU-Frequenz",
+          "is_correct": false
+        },
+        {
+          "text": "Crontab leeren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei hoher I/O-Wait auf Datenbankserver ist sinnvoll:",
+      "explanation": "Messwerte auf Block-I/O-Ebene zeigen Engpaesse und leiten zielgerichtete Massnahmen ab.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Nur RAM aufruesten ohne Messung",
+          "is_correct": false
+        },
+        {
+          "text": "iostat/vmstat + Storage-Latenzpfad analysieren und Hotspots isolieren",
+          "is_correct": true
+        },
+        {
+          "text": "SSH-Port aendern",
+          "is_correct": false
+        },
+        {
+          "text": "syslog deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Backup-Strategie ist fuer kritische Systeme am robustesten?",
+      "explanation": "Wiederherstellbarkeit muss getestet sein; reine Backup-Existenz reicht nicht.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur lokale Tageskopie auf derselben Platte",
+          "is_correct": false
+        },
+        {
+          "text": "3-2-1 mit regelmaessigen Restore-Tests und dokumentierten RTO/RPO",
+          "is_correct": true
+        },
+        {
+          "text": "Nur manuelle USB-Sicherung ohne Test",
+          "is_correct": false
+        },
+        {
+          "text": "Snapshots ohne externe Kopie",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SSH-Server wird haeufig gescannt. Welche Kombination haertet am effektivsten?",
+      "explanation": "Mehrschichtige SSH-Haertung reduziert Angriffsoberflaeche deutlich.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "PermitRootLogin yes + PasswordAuthentication yes",
+          "is_correct": false
+        },
+        {
+          "text": "Schluesselauth, Root-Login aus, ggf. MFA/AllowLists und Fail2ban",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Bannertext anpassen",
+          "is_correct": false
+        },
+        {
+          "text": "NTP deaktivieren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Methode ist fuer Paketupdates in Produktion am sichersten?",
+      "explanation": "Stufenweiser Rollout senkt Risiko systemischer Ausfaelle.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Direkt auf allen Hosts ohne Test",
+          "is_correct": false
+        },
+        {
+          "text": "Staged Rollout mit Canary, Wartungsfenster und dokumentiertem Rollback",
+          "is_correct": true
+        },
+        {
+          "text": "Nur Security-Updates ignorieren",
+          "is_correct": false
+        },
+        {
+          "text": "Random Reboots",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Service laeuft, liefert aber falsche Ergebnisse. Bester naechster Schritt?",
+      "explanation": "Funktionaler Fehler erfordert Kontextanalyse statt blinden Neustart.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Nur Restart in Endlosschleife",
+          "is_correct": false
+        },
+        {
+          "text": "Applikationslogs, Config-Drift und Abhaengigkeiten zielgerichtet vergleichen",
+          "is_correct": true
+        },
+        {
+          "text": "Dateirechte auf 777 setzen",
+          "is_correct": false
+        },
+        {
+          "text": "Alle User sperren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei LVM-Verwaltung ist vor Resize in Produktion wichtig:",
+      "explanation": "Resize ist typabhaengig; Fehlreihenfolge fuehrt zu Datenverlust.",
+      "question_type": "single",
+      "difficulty": "hard",
+      "answers": [
+        {
+          "text": "Nur freien Platz schaetzen",
+          "is_correct": false
+        },
+        {
+          "text": "Dateisystem-/Volume-Typ pruefen, Backup und getesteten Resize-Pfad nutzen",
+          "is_correct": true
+        },
+        {
+          "text": "Swap deaktivieren",
+          "is_correct": false
+        },
+        {
+          "text": "journalctl leeren",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Cronjob scheitert nur nachts. Was ist oft die Ursache?",
+      "explanation": "Cron nutzt anderes Environment als interaktive Shell; explizite Pfade vermeiden Fehler.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Zu viele Browser-Tabs",
+          "is_correct": false
+        },
+        {
+          "text": "Abweichende PATH/ENV in non-interaktiver Shell",
+          "is_correct": true
+        },
+        {
+          "text": "IPv6 immer deaktiviert",
+          "is_correct": false
+        },
+        {
+          "text": "Falsche Wallpaper-Datei",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Welche Beobachtung spricht eher fuer Memory Leak als CPU-Lastspitze?",
+      "explanation": "Leak zeigt langfristigen Speicheranstieg ohne proportionale Lastaenderung.",
+      "question_type": "single",
+      "difficulty": "medium",
+      "answers": [
+        {
+          "text": "Kurzfristig 100% CPU bei stabilem RAM",
+          "is_correct": false
+        },
+        {
+          "text": "Kontinuierlich steigender RSS-Speicher bei konstantem Workload",
+          "is_correct": true
+        },
+        {
+          "text": "Einmaliger Paketverlust",
+          "is_correct": false
+        },
+        {
+          "text": "Neue SSH-Hostkeys",
+          "is_correct": false
+        }
+      ]
+    }
+  ]
+}

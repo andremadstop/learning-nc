@@ -3,74 +3,70 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>learning</id>
     <name>Learning</name>
-    <summary>Spaced Repetition Learning with Leitner System</summary>
-    <description><![CDATA[**Learning** is a powerful flashcard and quiz app for Nextcloud with a built-in Leitner 5-box spaced repetition system.
+    <summary>Spaced Repetition, Story-RPG Campaigns, AI Tutor &amp; Gamification for Nextcloud</summary>
+    <description><![CDATA[**Learning** turns Nextcloud into a full-featured learning platform with spaced repetition, story-driven campaigns, AI tutoring, and competitive game modes.
 
-Create question pools, share them with your team, and study efficiently using scientifically-proven spaced repetition.
+## Story RPG — "Abenteuer" Mode
+
+Play through 20 real-world IT incident campaigns (SolarWinds, WannaCry, Colonial Pipeline, and more). Choose your character class, make decisions, pass skill checks, and learn through narrative. AI-powered narrator generates dynamic NPC dialog and validates freetext actions.
+
+## Hack Through Time — "Zeitreise"
+
+Travel through 7 epochs of hacking history — from 1960s Phone Phreaking to Quantum Dawn. Each epoch has its own CSS theme, character classes, museum facts, and campaign scenarios.
 
 ## Learning Modes
 
-- **Smart Queue** — One-click "Jetzt Lernen" button reviews all due cards across every pool, prioritized by urgency
-- **Leitner Spaced Repetition** — 5-box system with automatic scheduling (1d, 3d, 7d, 14d intervals)
-- **Training Mode** — Quick quiz sessions with immediate feedback and score tracking
-- **Exam Mode** — Timed exams with configurable question count and animated snake timer
-- **Wahr/Falsch Mode** — Touch-friendly swipe-based true/false flashcard review
-- **Trouble Spots** — Focused practice on your hardest questions (3+ wrong, &lt;30% accuracy)
-- **Daily Challenge** — One question per day with bonus XP reward for correct answers
+- **Smart Queue** — One-click review of all due cards, prioritized by urgency
+- **Leitner Spaced Repetition** — 5-box system (1d, 3d, 7d, 14d intervals)
+- **Training Mode** — Quick quiz sessions with immediate feedback
+- **Exam Mode** — Timed exams with configurable question count
+- **PBQ Simulations** — Performance-based questions with CLI terminals, dropdowns, network topology placement
+- **Trouble Spots** — Focused practice on your hardest questions
+- **Daily Challenge** — One question per day with bonus XP
+
+## Competitive Modes
+
+- **Live Duel** — 1v1 real-time quiz battles with invite system
+- **Sprint** — 2-5 players, fastest correct answer scores highest
+- **Elimination** — Last player standing, 3 lives each
+- **Liga** — Seasonal league with weekly rankings
+- **Oldschool** — Board games: Lernwuerfel (dice) and Wissensturm (tower)
+
+## AI Features (optional, requires Gemini API key)
+
+- **VirtuProf** — AI learning assistant with chat, RAG-powered course material answers with source citations
+- **AI Question Generator** — Generate questions from pasted text
+- **Note Generator** — AI-powered topic summaries saved to Nextcloud Files
+- **Ticket Triage** — AI classification of student support tickets
+
+## Tools
+
+- **Subnet Calculator** — IPv4 subnet calculator with binary display and VLSM planner
 
 ## Question Types
 
-- **Multiple Choice** — Questions with 2-8 answers, explanations, difficulty levels, multi-select support
-- **Free Text** — Open-ended questions with fuzzy answer matching (case-insensitive, typo-tolerant via Levenshtein distance)
-- **AI Question Generator** — Paste text (lecture notes, textbook excerpts), let AI generate questions with editable preview before import
+- Multiple Choice, Free Text (fuzzy matching), PBQ Simulations
+- CSV/JSON Import &amp; Export, Pool Sharing, Multi-Language Translations
 
 ## Gamification
 
-- **XP & Levels** — Experience points from sessions, reviews, accuracy bonuses
-- **14 Badges** — Achievements across 6 categories (sessions, performance, mastery, streak, social, fun)
-- **XP Streak Multipliers** — Tier-based XP bonuses: 1.5x at 3-day streak, 2x at 7-day, 3x at 30-day
-- **Daily Goal** — Configurable daily review target with visual progress ring and XP bonus
-- **Level-Up Celebration** — Animated overlay when reaching a new level
+- XP &amp; Levels, 14 Badges, Streak Multipliers, Daily Goal, Level-Up Celebration
 
 ## Course Management
 
-- **Courses** — Instructors create courses, assign pools, enroll students
-- **Leaderboard** — Ranked by XP with medal indicators and student detail drill-down
-- **Student Progress** — Per-student XP, badges, streak, Leitner boxes per pool, session history
-- **At-Risk Warning** — Instructors see which students are falling behind with risk scores and reasons
-- **Role-Based UX** — Students start at Courses, instructors at Pools. Each feature has a dismissible explanation hint
-
-## Data & Sharing
-
-- **CSV/JSON Import** — Bulk import questions from CSV or JSON files
-- **CSV/JSON Export** — Export question pools for backup or sharing, roundtrip-compatible with import
-- **Pool Sharing** — Share pools with other users (read or edit permissions)
-- **Multi-Language Support** — Translate questions and answers into any language
-- **Search** — Full-text search across all your question pools
-
-## Integration
-
-- **Dashboard Widget** — See due questions at a glance from the Nextcloud Dashboard
-- **Activity Integration** — Badge unlocks appear in Nextcloud Activity stream
-- **Progress Tracking** — Stats, accuracy, mastery percentage per pool
-- **Mobile Optimized** — Touch-friendly responsive design
-
-## Use Cases
-
-- Employee Onboarding & Compliance Training
-- IT Certification Prep (CompTIA, Cisco, AWS)
-- University Courses &amp; Exam Preparation
-- Language Learning Vocabulary
-- General Knowledge Retention
+- Instructor courses with pool assignment, student enrollment, leaderboard
+- Per-student progress tracking, at-risk warnings, role-based UX
+- Course material upload with RAG integration
 
 ## Requirements
 
 - Nextcloud 29, 30, or 31
 - PHP 8.1+
 - PostgreSQL 13+ or MySQL 8+
+- Optional: Google Gemini API key for AI features
     ]]></description>
 
-    <version>2.8.0</version>
+    <version>3.0.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>
@@ -96,14 +92,14 @@ Create question pools, share them with your team, and study efficiently using sc
         </privacyPolicies>
     </privacy>
 
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/01-pool-list.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/02-smart-queue.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/03-leitner-boxes.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/04-training-result.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/05-achievements.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/06-leaderboard.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/07-exam-mode.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/08-course-instructor.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/01-courses-overview.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/02-training-mode.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/03-adventure-campaigns.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/04-adventure-scene.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/05-time-travel.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/06-subnet-calculator.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/07-leitner-boxes.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/08-instructor-leaderboard.png</screenshot>
 
     <dependencies>
         <nextcloud min-version="29" max-version="31"/>

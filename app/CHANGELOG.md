@@ -2,6 +2,76 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - 2026-03-24
+
+### Added — Story RPG "Abenteuer" Mode
+- **Story Engine**: Full campaign-based RPG learning mode with branching narratives, skill checks, and character classes (Architect, Security, SysAdmin, Helpdesk). 20 campaigns across CompTIA Network+, Security+, CySA+, Linux+, and A+.
+- **KI-Erzähler**: Gemini-powered dynamic narrator with freetext player actions, NPC dialog generation, and role-based prompts. Fallback to static text when AI unavailable.
+- **Skill Checks**: In-story quiz phases with 3 questions per check, batch submission, pass/fail branching to different scenes.
+- **20 Campaigns**: Real-world IT incident scenarios — SolarWinds, WannaCry, Log4Shell, Colonial Pipeline, Equifax, plus 6 Security+ exam-oriented campaigns (Phishing, Zero Trust, Crypto, Compliance, IR, Cloud) and an AI Security campaign.
+- **Coop Mode**: Infrastructure for multiplayer campaign sessions (UI placeholder, backend ready).
+
+### Added — "Zeitreise" Hack Through Time
+- **7 Epoch Campaign System**: Phone Phreaking (1960s), WarGames (1980s), The Worm (1990s), Bobby Tables (2000s), Shadow Brokers (2010s), Supply Chain (2020s), Quantum Dawn (Future).
+- **Period-Accurate CSS Themes**: Each epoch has its own visual theme (terminal-green, amber-on-black, retro-web, etc.).
+- **CHRONOS Guide**: AI narrator character that guides players through hacking history.
+- **Museum Facts**: Historical sidebars with real dates, events, and technical details.
+- **Character Classes**: Epoch-specific roles (Phreaker, Hacker, Script Kiddie, Analyst, etc.).
+
+### Added — Visual Identity System
+- **Design Tokens**: CSS custom property layer (`--lnc-*`) with dark/light scopes and motion utilities.
+- **13 Character Registry**: SVG silhouette avatars with emotion states (idle, celebrate, alert) for all NPCs.
+- **Campaign Intro Animation**: Full-screen intro with title, difficulty badge, and character reveal.
+- **Dialogue Stage**: NPC dialog component with portrait, speech bubble, and emotion tags.
+- **Paper & Circuits Narrative Skin**: Dark theme for adventure mode with subtle circuit-board patterns.
+
+### Added — RAG & Document Intelligence (v4.1)
+- **Document Upload & Extraction**: Instructors can link Nextcloud folders as course material, scan for files, and extract text from PDF/Markdown.
+- **Chunking Pipeline**: Automatic text chunking with keyword extraction for semantic search.
+- **Multi-Source RAG Context**: VirtuProf answers now cite course materials with `[Quelle: filename, Kap. X]` format.
+- **4000-Token Budget**: Smart context window management prioritizing relevant chunks.
+
+### Added — Oldschool Board Games (v5.0)
+- **Lernwürfel**: "Mensch ärgere dich nicht" inspired board game with dice rolls and question challenges.
+- **Wissensturm**: Trivial Pursuit tower game with category-based progression.
+
+### Added — Personal Learning Bot (v4.0)
+- **GeminiService**: 5-layer security stack (API key isolation, input sanitization, output filtering, rate limiting, audit logging).
+- **VirtuProf Chat**: AI-powered learning assistant with chat-first UI, language auto-detection, and chat memory.
+- **Note Generator**: Gemini-based topic summaries saved to Nextcloud Files.
+- **Lernprofil**: Passive user learning profile with weekly study plan generation.
+- **Auto-Triggers**: Exam auto-notes, wrong-answer threshold alerts, weekly plan background job.
+- **Ticket Triage**: AI-powered support ticket classification and draft FAQ responses.
+- **AI Consent**: Opt-in consent overlay before first AI interaction, GDPR-compliant.
+
+### Added — Tools
+- **Subnet Calculator**: Browser-based IPv4 subnet calculator with CIDR/mask input, binary display, and VLSM planner.
+- **Subnetting Question Pool**: 50+ subnet calculation practice questions.
+
+### Added — Quality & Testing
+- **ESLint**: Vue/JS linting with `no-v-html` error rule, 0 errors enforced.
+- **Pre-Push Hook**: 4-gate quality check (Security scan, ESLint, Vitest 67 tests, PHPStan Level 5).
+- **Playwright Browser Tests**: 67 automated checks covering navigation, campaigns, time travel, tools, VirtuProf, security. 52 PASS / 11 FAIL / 4 SKIP.
+- **PHPUnit**: 12 service-level unit tests (Training, Leitner, Analytics, Course).
+- **Test Strategy**: 4-gate pyramid documented in CLAUDE.md.
+
+### Fixed
+- Campaign skill-checks now always use pre-loaded questions from scene response (no separate API call).
+- Campaign start always creates fresh session (no stale resume from previous play).
+- Missing Abenteuer/Oldschool/Zeitreise toggles in course mode settings.
+- WannaCry campaign: corrected from email dropper to SMB worm narrative.
+- PBQ subtype auto-detection from config structure when `pbq_subtype` not set.
+- Empty skill-check pools handled gracefully (skip to next scene instead of crash).
+- Narrative garbage fallback when Gemini returns malformed text.
+- AI rate-limits on VirtuProf available()/status() endpoints.
+- ESLint: empty catch blocks, v-if with v-for separation, escaped quotes in templates.
+
+### Security
+- Gemini language mirroring prevention (no prompt echo).
+- Story mode injection guards on freetext actions.
+- Story mode rate-limits (10 starts/min, 60 scenes/min).
+- Pre-push security scan for hardcoded secrets.
+
 ## [2.7.0] - 2026-03-21
 
 ### Added

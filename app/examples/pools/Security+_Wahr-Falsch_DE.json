@@ -1,0 +1,1928 @@
+{
+  "pool_name": "Security+ Wahr/Falsch (DE)",
+  "source": "AI-generated (Claude/Gemini), reviewed and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "questions": [
+    {
+      "text": "Least Privilege bedeutet, nur die minimal noetigen Rechte zu vergeben.",
+      "explanation": "Das reduziert Angriffsoberflaeche und Missbrauchsrisiko.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Phishing ist ein rein technischer Buffer-Overflow-Angriff.",
+      "explanation": "Phishing ist primaer Social Engineering.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Hashing ist fuer Integritaetspruefung geeignet.",
+      "explanation": "Hashes erkennen Veraenderungen an Daten.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Backup-Plan ersetzt Incident Response vollstaendig.",
+      "explanation": "Backups sind nur ein Teil von Resilience/Recovery.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "MFA kann auch mit Besitzfaktor plus Wissensfaktor umgesetzt werden.",
+      "explanation": "Z.B. Passwort + Hardware-Token.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Patch-Management hat keinen Einfluss auf Angriffsrisiken.",
+      "explanation": "Fehlende Patches sind ein zentraler Angriffsvektor.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Security Awareness Training kann das Risiko erfolgreicher Phishing-Angriffe senken.",
+      "explanation": "Nutzerverhalten ist ein wichtiger Schutzfaktor.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "VPN-Traffic ist per Definition immer malware-frei.",
+      "explanation": "Verschluesselung ersetzt keine Inhaltspruefung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "MFA kann den Schaden durch kompromittierte Passwoerter deutlich begrenzen.",
+      "explanation": "Zusatzfaktoren erschweren Missbrauch.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SIEM ersetzt Incident-Response-Prozesse vollstaendig.",
+      "explanation": "SIEM unterstuetzt Detection, ersetzt aber keine Prozesse/Teams.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Least Privilege gilt fuer Benutzer und Service-Accounts.",
+      "explanation": "Beide sind relevante Angriffsziele.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Salted Password Hashes erschweren Precomputed-Angriffe.",
+      "explanation": "Salt verhindert identische Hashes fuer gleiche Passwoerter.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Business Impact Analysis hilft bei Priorisierung von Recovery-Zielen.",
+      "explanation": "BIA liefert Grundlage fuer RTO/RPO.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Non-repudiation bedeutet, dass Daten immer verfuegbar sind.",
+      "explanation": "Das waere Availability, nicht Non-Repudiation.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Change Management kann Security-Risiken durch ungepruefte Aenderungen senken.",
+      "explanation": "Kontrollierte Changes reduzieren Fehlkonfigurationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "DLP ist nur fuer E-Mail relevant.",
+      "explanation": "DLP adressiert Daten in Use, Motion und Rest.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Shadow IT kann Compliance- und Security-Risiken erhoehen.",
+      "explanation": "Unkontrollierte Systeme entziehen sich Governance.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Zero Trust setzt auf \"never trust, always verify\".",
+      "explanation": "Kernprinzip des Modells.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Playbook sollte nur technische Schritte enthalten, nicht Kommunikation.",
+      "explanation": "Kommunikations- und Eskalationswege sind zentral.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Vulnerability Scans allein garantieren sichere Systeme.",
+      "explanation": "Bewertung, Priorisierung und Remediation sind ebenfalls noetig.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Segregation of Duties reduziert Missbrauch durch Einzelpersonen.",
+      "explanation": "Aufgabentrennung senkt Fraud-/Fehler-Risiken.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SOC-Metriken wie MTTD und MTTR sind fuer Reifegradbewertung nutzbar.",
+      "explanation": "Sie zeigen Detection- und Reaktionsfaehigkeit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Hashing und Verschluesselung sind austauschbar.",
+      "explanation": "Hashing ist Einweg, Verschluesselung reversibel mit Schluessel.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Incident-Lessons-Learned sollten in Kontrollen und Runbooks zurueckfliessen.",
+      "explanation": "Kontinuierliche Verbesserung ist wesentlich.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten: Zero Trust verlangt kontinuierliche Verifikation statt implizitem internem Vertrauen.",
+      "explanation": "Zero Trust basiert auf expliziter Pruefung von Identitaet, Kontext und Geraetestatus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten: RPO beschreibt die maximal tolerierbare Wiederanlaufzeit eines Dienstes.",
+      "explanation": "RPO beschreibt Datenverlust in Zeit; Wiederanlaufzeit ist RTO.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten: Unveraenderbare Backups helfen gegen Ransomware, weil sie nicht einfach ueberschrieben werden koennen.",
+      "explanation": "Immutable Speicher senkt das Risiko manipulierter Sicherungen im Vorfall.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten: CVSS allein reicht immer fuer Business-Priorisierung von Schwachstellen.",
+      "explanation": "Asset-Kritikalitaet, Exposition und Bedrohungskontext muessen zusaetzlich einfliessen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten: DMARC mit SPF und DKIM kann Domain-Spoofing im E-Mail-Verkehr erschweren.",
+      "explanation": "Authentizitaetspruefung reduziert Erfolg von BEC und Phishing-Kampagnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten: Shared Responsibility in Cloud bedeutet, dass der Kunde keine IAM-Verantwortung hat.",
+      "explanation": "Kunden tragen weiterhin Verantwortung fuer Identitaeten, Daten und Konfigurationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Krankenhaus mit vernetzten Geraeten: Regelmaessige BC/DR-Uebungen mit dokumentierten Lessons Learned verbessern die Resilienz.",
+      "explanation": "Tests validieren Annahmen und decken operative Luecken in Runbooks auf.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten: Zero Trust verlangt kontinuierliche Verifikation statt implizitem internem Vertrauen.",
+      "explanation": "Zero Trust basiert auf expliziter Pruefung von Identitaet, Kontext und Geraetestatus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten: RPO beschreibt die maximal tolerierbare Wiederanlaufzeit eines Dienstes.",
+      "explanation": "RPO beschreibt Datenverlust in Zeit; Wiederanlaufzeit ist RTO.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten: Unveraenderbare Backups helfen gegen Ransomware, weil sie nicht einfach ueberschrieben werden koennen.",
+      "explanation": "Immutable Speicher senkt das Risiko manipulierter Sicherungen im Vorfall.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten: CVSS allein reicht immer fuer Business-Priorisierung von Schwachstellen.",
+      "explanation": "Asset-Kritikalitaet, Exposition und Bedrohungskontext muessen zusaetzlich einfliessen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten: DMARC mit SPF und DKIM kann Domain-Spoofing im E-Mail-Verkehr erschweren.",
+      "explanation": "Authentizitaetspruefung reduziert Erfolg von BEC und Phishing-Kampagnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten: Shared Responsibility in Cloud bedeutet, dass der Kunde keine IAM-Verantwortung hat.",
+      "explanation": "Kunden tragen weiterhin Verantwortung fuer Identitaeten, Daten und Konfigurationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Fertigungsbetrieb mit OT-Segmenten: Regelmaessige BC/DR-Uebungen mit dokumentierten Lessons Learned verbessern die Resilienz.",
+      "explanation": "Tests validieren Annahmen und decken operative Luecken in Runbooks auf.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb: Zero Trust verlangt kontinuierliche Verifikation statt implizitem internem Vertrauen.",
+      "explanation": "Zero Trust basiert auf expliziter Pruefung von Identitaet, Kontext und Geraetestatus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb: RPO beschreibt die maximal tolerierbare Wiederanlaufzeit eines Dienstes.",
+      "explanation": "RPO beschreibt Datenverlust in Zeit; Wiederanlaufzeit ist RTO.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb: Unveraenderbare Backups helfen gegen Ransomware, weil sie nicht einfach ueberschrieben werden koennen.",
+      "explanation": "Immutable Speicher senkt das Risiko manipulierter Sicherungen im Vorfall.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb: CVSS allein reicht immer fuer Business-Priorisierung von Schwachstellen.",
+      "explanation": "Asset-Kritikalitaet, Exposition und Bedrohungskontext muessen zusaetzlich einfliessen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb: DMARC mit SPF und DKIM kann Domain-Spoofing im E-Mail-Verkehr erschweren.",
+      "explanation": "Authentizitaetspruefung reduziert Erfolg von BEC und Phishing-Kampagnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb: Shared Responsibility in Cloud bedeutet, dass der Kunde keine IAM-Verantwortung hat.",
+      "explanation": "Kunden tragen weiterhin Verantwortung fuer Identitaeten, Daten und Konfigurationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Finanzdienstleister mit mobilem Vertrieb: Regelmaessige BC/DR-Uebungen mit dokumentierten Lessons Learned verbessern die Resilienz.",
+      "explanation": "Tests validieren Annahmen und decken operative Luecken in Runbooks auf.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud: Zero Trust verlangt kontinuierliche Verifikation statt implizitem internem Vertrauen.",
+      "explanation": "Zero Trust basiert auf expliziter Pruefung von Identitaet, Kontext und Geraetestatus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud: RPO beschreibt die maximal tolerierbare Wiederanlaufzeit eines Dienstes.",
+      "explanation": "RPO beschreibt Datenverlust in Zeit; Wiederanlaufzeit ist RTO.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud: Unveraenderbare Backups helfen gegen Ransomware, weil sie nicht einfach ueberschrieben werden koennen.",
+      "explanation": "Immutable Speicher senkt das Risiko manipulierter Sicherungen im Vorfall.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud: CVSS allein reicht immer fuer Business-Priorisierung von Schwachstellen.",
+      "explanation": "Asset-Kritikalitaet, Exposition und Bedrohungskontext muessen zusaetzlich einfliessen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud: DMARC mit SPF und DKIM kann Domain-Spoofing im E-Mail-Verkehr erschweren.",
+      "explanation": "Authentizitaetspruefung reduziert Erfolg von BEC und Phishing-Kampagnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud: Shared Responsibility in Cloud bedeutet, dass der Kunde keine IAM-Verantwortung hat.",
+      "explanation": "Kunden tragen weiterhin Verantwortung fuer Identitaeten, Daten und Konfigurationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein E-Commerce-Anbieter in Multi-Cloud: Regelmaessige BC/DR-Uebungen mit dokumentierten Lessons Learned verbessern die Resilienz.",
+      "explanation": "Tests validieren Annahmen und decken operative Luecken in Runbooks auf.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben: Zero Trust verlangt kontinuierliche Verifikation statt implizitem internem Vertrauen.",
+      "explanation": "Zero Trust basiert auf expliziter Pruefung von Identitaet, Kontext und Geraetestatus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben: RPO beschreibt die maximal tolerierbare Wiederanlaufzeit eines Dienstes.",
+      "explanation": "RPO beschreibt Datenverlust in Zeit; Wiederanlaufzeit ist RTO.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben: Unveraenderbare Backups helfen gegen Ransomware, weil sie nicht einfach ueberschrieben werden koennen.",
+      "explanation": "Immutable Speicher senkt das Risiko manipulierter Sicherungen im Vorfall.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben: CVSS allein reicht immer fuer Business-Priorisierung von Schwachstellen.",
+      "explanation": "Asset-Kritikalitaet, Exposition und Bedrohungskontext muessen zusaetzlich einfliessen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben: DMARC mit SPF und DKIM kann Domain-Spoofing im E-Mail-Verkehr erschweren.",
+      "explanation": "Authentizitaetspruefung reduziert Erfolg von BEC und Phishing-Kampagnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben: Shared Responsibility in Cloud bedeutet, dass der Kunde keine IAM-Verantwortung hat.",
+      "explanation": "Kunden tragen weiterhin Verantwortung fuer Identitaeten, Daten und Konfigurationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Eine Behoerde mit strengen Compliance-Vorgaben: Regelmaessige BC/DR-Uebungen mit dokumentierten Lessons Learned verbessern die Resilienz.",
+      "explanation": "Tests validieren Annahmen und decken operative Luecken in Runbooks auf.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus: Zero Trust verlangt kontinuierliche Verifikation statt implizitem internem Vertrauen.",
+      "explanation": "Zero Trust basiert auf expliziter Pruefung von Identitaet, Kontext und Geraetestatus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus: RPO beschreibt die maximal tolerierbare Wiederanlaufzeit eines Dienstes.",
+      "explanation": "RPO beschreibt Datenverlust in Zeit; Wiederanlaufzeit ist RTO.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus: Unveraenderbare Backups helfen gegen Ransomware, weil sie nicht einfach ueberschrieben werden koennen.",
+      "explanation": "Immutable Speicher senkt das Risiko manipulierter Sicherungen im Vorfall.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus: CVSS allein reicht immer fuer Business-Priorisierung von Schwachstellen.",
+      "explanation": "Asset-Kritikalitaet, Exposition und Bedrohungskontext muessen zusaetzlich einfliessen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus: DMARC mit SPF und DKIM kann Domain-Spoofing im E-Mail-Verkehr erschweren.",
+      "explanation": "Authentizitaetspruefung reduziert Erfolg von BEC und Phishing-Kampagnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus: Shared Responsibility in Cloud bedeutet, dass der Kunde keine IAM-Verantwortung hat.",
+      "explanation": "Kunden tragen weiterhin Verantwortung fuer Identitaeten, Daten und Konfigurationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein SaaS-Startup mit schnellem Release-Zyklus: Regelmaessige BC/DR-Uebungen mit dokumentierten Lessons Learned verbessern die Resilienz.",
+      "explanation": "Tests validieren Annahmen und decken operative Luecken in Runbooks auf.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern: Zero Trust verlangt kontinuierliche Verifikation statt implizitem internem Vertrauen.",
+      "explanation": "Zero Trust basiert auf expliziter Pruefung von Identitaet, Kontext und Geraetestatus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern: RPO beschreibt die maximal tolerierbare Wiederanlaufzeit eines Dienstes.",
+      "explanation": "RPO beschreibt Datenverlust in Zeit; Wiederanlaufzeit ist RTO.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern: Unveraenderbare Backups helfen gegen Ransomware, weil sie nicht einfach ueberschrieben werden koennen.",
+      "explanation": "Immutable Speicher senkt das Risiko manipulierter Sicherungen im Vorfall.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern: CVSS allein reicht immer fuer Business-Priorisierung von Schwachstellen.",
+      "explanation": "Asset-Kritikalitaet, Exposition und Bedrohungskontext muessen zusaetzlich einfliessen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern: DMARC mit SPF und DKIM kann Domain-Spoofing im E-Mail-Verkehr erschweren.",
+      "explanation": "Authentizitaetspruefung reduziert Erfolg von BEC und Phishing-Kampagnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern: Shared Responsibility in Cloud bedeutet, dass der Kunde keine IAM-Verantwortung hat.",
+      "explanation": "Kunden tragen weiterhin Verantwortung fuer Identitaeten, Daten und Konfigurationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Logistikunternehmen mit vielen Drittpartnern: Regelmaessige BC/DR-Uebungen mit dokumentierten Lessons Learned verbessern die Resilienz.",
+      "explanation": "Tests validieren Annahmen und decken operative Luecken in Runbooks auf.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion: Zero Trust verlangt kontinuierliche Verifikation statt implizitem internem Vertrauen.",
+      "explanation": "Zero Trust basiert auf expliziter Pruefung von Identitaet, Kontext und Geraetestatus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion: RPO beschreibt die maximal tolerierbare Wiederanlaufzeit eines Dienstes.",
+      "explanation": "RPO beschreibt Datenverlust in Zeit; Wiederanlaufzeit ist RTO.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion: Unveraenderbare Backups helfen gegen Ransomware, weil sie nicht einfach ueberschrieben werden koennen.",
+      "explanation": "Immutable Speicher senkt das Risiko manipulierter Sicherungen im Vorfall.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion: CVSS allein reicht immer fuer Business-Priorisierung von Schwachstellen.",
+      "explanation": "Asset-Kritikalitaet, Exposition und Bedrohungskontext muessen zusaetzlich einfliessen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion: DMARC mit SPF und DKIM kann Domain-Spoofing im E-Mail-Verkehr erschweren.",
+      "explanation": "Authentizitaetspruefung reduziert Erfolg von BEC und Phishing-Kampagnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion: Shared Responsibility in Cloud bedeutet, dass der Kunde keine IAM-Verantwortung hat.",
+      "explanation": "Kunden tragen weiterhin Verantwortung fuer Identitaeten, Daten und Konfigurationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Medienhaus mit Remote-Redaktion: Regelmaessige BC/DR-Uebungen mit dokumentierten Lessons Learned verbessern die Resilienz.",
+      "explanation": "Tests validieren Annahmen und decken operative Luecken in Runbooks auf.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD: Zero Trust verlangt kontinuierliche Verifikation statt implizitem internem Vertrauen.",
+      "explanation": "Zero Trust basiert auf expliziter Pruefung von Identitaet, Kontext und Geraetestatus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD: RPO beschreibt die maximal tolerierbare Wiederanlaufzeit eines Dienstes.",
+      "explanation": "RPO beschreibt Datenverlust in Zeit; Wiederanlaufzeit ist RTO.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD: Unveraenderbare Backups helfen gegen Ransomware, weil sie nicht einfach ueberschrieben werden koennen.",
+      "explanation": "Immutable Speicher senkt das Risiko manipulierter Sicherungen im Vorfall.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD: CVSS allein reicht immer fuer Business-Priorisierung von Schwachstellen.",
+      "explanation": "Asset-Kritikalitaet, Exposition und Bedrohungskontext muessen zusaetzlich einfliessen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD: DMARC mit SPF und DKIM kann Domain-Spoofing im E-Mail-Verkehr erschweren.",
+      "explanation": "Authentizitaetspruefung reduziert Erfolg von BEC und Phishing-Kampagnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD: Shared Responsibility in Cloud bedeutet, dass der Kunde keine IAM-Verantwortung hat.",
+      "explanation": "Kunden tragen weiterhin Verantwortung fuer Identitaeten, Daten und Konfigurationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Hochschulverbund mit BYOD: Regelmaessige BC/DR-Uebungen mit dokumentierten Lessons Learned verbessern die Resilienz.",
+      "explanation": "Tests validieren Annahmen und decken operative Luecken in Runbooks auf.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb: Zero Trust verlangt kontinuierliche Verifikation statt implizitem internem Vertrauen.",
+      "explanation": "Zero Trust basiert auf expliziter Pruefung von Identitaet, Kontext und Geraetestatus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb: RPO beschreibt die maximal tolerierbare Wiederanlaufzeit eines Dienstes.",
+      "explanation": "RPO beschreibt Datenverlust in Zeit; Wiederanlaufzeit ist RTO.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb: Unveraenderbare Backups helfen gegen Ransomware, weil sie nicht einfach ueberschrieben werden koennen.",
+      "explanation": "Immutable Speicher senkt das Risiko manipulierter Sicherungen im Vorfall.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb: CVSS allein reicht immer fuer Business-Priorisierung von Schwachstellen.",
+      "explanation": "Asset-Kritikalitaet, Exposition und Bedrohungskontext muessen zusaetzlich einfliessen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb: DMARC mit SPF und DKIM kann Domain-Spoofing im E-Mail-Verkehr erschweren.",
+      "explanation": "Authentizitaetspruefung reduziert Erfolg von BEC und Phishing-Kampagnen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb: Shared Responsibility in Cloud bedeutet, dass der Kunde keine IAM-Verantwortung hat.",
+      "explanation": "Kunden tragen weiterhin Verantwortung fuer Identitaeten, Daten und Konfigurationen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Energiedienstleister mit 24/7-Betrieb: Regelmaessige BC/DR-Uebungen mit dokumentierten Lessons Learned verbessern die Resilienz.",
+      "explanation": "Tests validieren Annahmen und decken operative Luecken in Runbooks auf.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Zero Trust bedeutet, dass auch interne Verbindungen standardmaessig verifiziert und autorisiert werden muessen.",
+      "explanation": "Es gibt kein implizites Vertrauen nur aufgrund des Netzstandorts.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein gemeinsames Admin-Konto verbessert die Nachvollziehbarkeit in Audits.",
+      "explanation": "Geteilte Konten erschweren Attribution und verletzen Governance-Prinzipien.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "MFA ist am wirksamsten, wenn ein Faktor phishing-resistent ist, zum Beispiel FIDO2.",
+      "explanation": "Origin-gebundene Faktoren reduzieren Credential-Phishing deutlich.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "RPO beschreibt die maximal akzeptable Zeit bis zur Wiederherstellung eines Services.",
+      "explanation": "Das ist RTO; RPO beschreibt tolerierbaren Datenverlust.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Immutable Backups koennen helfen, Ransomware-Folgen zu begrenzen.",
+      "explanation": "Unveraenderbare Sicherungen verhindern nachtraegliche Manipulation.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "TLS 1.3 schuetzt nur Vertraulichkeit, aber nicht Integritaet der Daten im Transit.",
+      "explanation": "TLS bietet auch Integritaetsschutz ueber kryptographische Pruefungen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Least Privilege reduziert die Auswirkungen kompromittierter Konten.",
+      "explanation": "Begrenzte Rechte verringern moegliche Schadensausbreitung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SIEM ist nutzlos, wenn Logs aus Cloud und Endpoint kombiniert werden.",
+      "explanation": "Gerade Korrelation ueber mehrere Quellen ist ein Kernnutzen von SIEM.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Chain of Custody dokumentiert Besitz- und Zugriffswechsel von Beweismitteln waehrend eines Incidents.",
+      "explanation": "Diese Dokumentation stuetzt forensische Integritaet und rechtliche Verwertbarkeit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Hashing ersetzt Verschluesselung, wenn Daten vertraulich gespeichert werden sollen.",
+      "explanation": "Hashing ist nicht umkehrbar und nicht fuer Vertraulichkeit gespeicherter Daten gedacht.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "RBAC kann Governance unterstuetzen, wenn Rollen regelmaessig rezertifiziert werden.",
+      "explanation": "Regelmaessige Reviews verhindern schleichende Rechteausweitung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Air-Gap-Backup ist immer online mit der Produktions-Domain verbunden.",
+      "explanation": "Air Gap bedeutet logische oder physische Trennung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Tokenisierung kann PCI-Scope verringern, wenn PAN im eigenen System nicht mehr verarbeitet wird.",
+      "explanation": "Weniger direkte Kartenverarbeitung reduziert Compliance-Aufwand und Risiko.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Default allow zwischen Mikrosegmenten ist ein zentrales Prinzip von Zero Trust.",
+      "explanation": "Zero Trust bevorzugt default deny und explizite Freigaben.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "KMS mit HSM-Unterstuetzung verbessert den Schutz kryptographischer Schluessel in der Cloud.",
+      "explanation": "HSM-gestuetzte Verwaltung haertet Schluesselzugriff und Betrieb.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Incident-Response-Plan sollte nur Security enthalten; Fachbereiche sind nicht relevant.",
+      "explanation": "Business, Recht und Kommunikation sind fuer wirksame Reaktion entscheidend.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "DPIA hilft, Datenschutzrisiken vor Einfuehrung neuer Verarbeitungstaetigkeiten strukturiert zu bewerten.",
+      "explanation": "Die Analyse dokumentiert Risiken und erforderliche Massnahmen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Statische Zugangsdaten in CI/CD-Pipelines sind aus IAM-Sicht Best Practice.",
+      "explanation": "Kurzlebige Tokens oder Workload-Identitaeten sind sicherer.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Risikoregister und regelmaessige Reviews sind Teil wirksamer Security-Governance.",
+      "explanation": "Sie machen Risiken transparent und priorisierbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Bei aktiver Malware sollte man zuerst den Abschlussbericht schreiben und spaeter isolieren.",
+      "explanation": "Containment hat Prioritaet, um weitere Ausbreitung zu stoppen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Certificate Pinning kann Man-in-the-Middle-Risiken in bestimmten Client-Szenarien reduzieren.",
+      "explanation": "Zusatzbindung an erwartete Zertifikate erschwert manipulative Zwischenstellen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wenn ein Lieferant kritisch ist, kann auf Security Due Diligence verzichtet werden, solange der Preis stimmt.",
+      "explanation": "Kritische Drittparteien brauchen belastbare Sicherheitspruefung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Business Continuity umfasst auch organisatorische Prozesse, nicht nur technische Wiederherstellung.",
+      "explanation": "Personal, Kommunikation und Betriebsablaeufe gehoeren dazu.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Schatten-IT senkt grundsaetzlich das Risiko, weil Teams schneller liefern.",
+      "explanation": "Unkontrollierte Tools erhoehen meist Risiko und Compliance-Luecken.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "JIT-Privilegien begrenzen die Dauer erhöhter Rechte und reduzieren Missbrauchsfenster.",
+      "explanation": "Rechte werden nur fuer einen konkreten Zeitraum vergeben.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Governance bedeutet ausschliesslich technische Hardening-Massnahmen auf Servern.",
+      "explanation": "Governance umfasst Richtlinien, Rollen, Kontrolle und Entscheidungsprozesse.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    }
+  ]
+}

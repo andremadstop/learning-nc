@@ -571,13 +571,29 @@ export default {
   position: absolute;
   right: 0;
   bottom: 96px;
-  width: min(320px, calc(100vw - 48px));
+  width: min(400px, calc(100vw - 32px));
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
   background: var(--color-main-background);
   border: 1px solid var(--color-border);
   border-radius: 14px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
   padding: 16px;
   animation: bubble-appear 0.25s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 480px) {
+  .virtuprof-bubble {
+    position: fixed;
+    inset: 60px 0 0 0;
+    width: 100%;
+    max-height: none;
+    border-radius: 16px 16px 0 0;
+    bottom: 0;
+    z-index: 10000;
+  }
 }
 
 .bubble-content {
@@ -856,13 +872,21 @@ export default {
 
 /* ── Chat section ─────────────────────────────────── */
 .chat-history {
-  max-height: 240px;
+  max-height: min(360px, 50vh);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-bottom: 8px;
   scroll-behavior: smooth;
+  flex: 1;
+}
+
+@media (max-width: 480px) {
+  .chat-history {
+    max-height: none;
+    flex: 1;
+  }
 }
 
 .chat-msg {

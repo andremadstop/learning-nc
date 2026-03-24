@@ -1,0 +1,1928 @@
+{
+  "pool_name": "Linux Admin 1 Wahr/Falsch (DE)",
+  "source": "AI-generated (Claude/Gemini), reviewed and curated",
+  "license": "CC BY-SA 4.0",
+  "language": "de",
+  "questions": [
+    {
+      "text": "Der Root-User hat standardmaessig uneingeschraenkte Rechte im System.",
+      "explanation": "Root umgeht normale Permission-Grenzen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "chmod a+r datei entfernt Leserechte fuer alle.",
+      "explanation": "a+r fuegt Leserechte fuer alle hinzu.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "journalctl kann Logs von systemd-Diensten anzeigen.",
+      "explanation": "journalctl -u dienstname ist ein typischer Workflow.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SSH auf Port 22 zu belassen ist automatisch unsicher und immer verboten.",
+      "explanation": "Portwechsel kann helfen, ersetzt aber keine echte Haertung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Neustart des Dienstes kann mit systemctl restart <dienst> erfolgen.",
+      "explanation": "Das ist der Standardbefehl unter systemd.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Mit chown kann man Besitzer und Gruppe einer Datei aendern.",
+      "explanation": "Beispiel: chown user:gruppe datei.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "df -h zeigt Arbeitsspeicherbelegung (RAM).",
+      "explanation": "df zeigt Dateisysteme; RAM zeigt free -h.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein sudoers-Fehler kann den Admin-Zugang sperren, deshalb visudo nutzen.",
+      "explanation": "visudo prueft Syntax vor dem Speichern.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "visudo prueft die Syntax der sudoers-Datei vor dem Speichern.",
+      "explanation": "Das reduziert das Risiko, sich auszusperren.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "chmod 777 ist fuer sensible Produktionsdateien meist Best Practice.",
+      "explanation": "Zu breite Rechte erhoehen Risiko deutlich.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "systemctl status <dienst> liefert schnelle Erstdiagnose bei Serviceproblemen.",
+      "explanation": "Status zeigt Unit-Zustand und letzte Meldungen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "journalctl -xe kann bei Fehleranalyse nuetzlich sein.",
+      "explanation": "Es zeigt erweiterte Journal-Eintraege rund um Fehler.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein fehlender Backup-Test kann Recovery-Fehler im Ernstfall verursachen.",
+      "explanation": "Restore-Tests sind zentraler Teil der Backup-Strategie.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SSH Keys sollten idealerweise durch Passphrase und sauberes Key-Management geschuetzt werden.",
+      "explanation": "Das reduziert Risiko bei Key-Diebstahl.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "root-Login per SSH zu verbieten kann Angriffsflaeche reduzieren.",
+      "explanation": "Adminzugriff ueber individuelle Konten + sudo ist meist besser.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "df zeigt Dateigroessen einzelner Dateien detailliert.",
+      "explanation": "df zeigt Dateisystem-Auslastung, nicht per-file Groessen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "du kann helfen, Speicherfresser in Verzeichnissen zu finden.",
+      "explanation": "du aggregiert Nutzung pro Pfad.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein blindes Kill -9 auf Produktionsprozesse ist immer der beste erste Schritt.",
+      "explanation": "Erst Ursache und Auswirkung analysieren.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "fstab-Fehler koennen Bootprobleme verursachen.",
+      "explanation": "Falsche Mount-Eintraege koennen Start blockieren oder verzoegern.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Systemzeit-Divergenz kann Auth- und TLS-Probleme verstaerken.",
+      "explanation": "Viele Security-Mechanismen sind zeitabhaengig.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Package Pinning/Version-Management kann unkontrollierte Aenderungen begrenzen.",
+      "explanation": "Es unterstuetzt stabile, reproduzierbare Deployments.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Dateirechte allein ersetzen keine Netzwerkfirewall.",
+      "explanation": "Host- und Netzwerkschutz sind komplementaer.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "LVM-Snapshots sind kein vollwertiger Ersatz fuer externe Backups.",
+      "explanation": "Snapshots schuetzen nicht gegen alle Ausfallszenarien.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Cronjobs sollten Logging/Monitoring haben, damit Fehler auffallen.",
+      "explanation": "Unsichtbare Job-Fehler bleiben sonst lange unentdeckt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Der Befehl \"pwd\" zeigt das aktuelle Arbeitsverzeichnis an.",
+      "explanation": "pwd gibt den absoluten Pfad des aktuellen Verzeichnisses aus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "\"cd ..\" wechselt immer ins Home-Verzeichnis.",
+      "explanation": "cd .. geht eine Ebene nach oben, nicht zwingend ins Home.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Mit \"ls -a\" werden auch versteckte Dateien angezeigt.",
+      "explanation": "Dotfiles beginnen mit einem Punkt und werden mit -a sichtbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "\"rm -r\" ist ungefaehrlich, weil Linux vor jedem Loeschen nachfragt.",
+      "explanation": "Ohne -i fragt rm normalerweise nicht nach und kann rekursiv viel loeschen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Symlink kann auf ein Ziel in einem anderen Dateisystem zeigen.",
+      "explanation": "Symlinks speichern einen Pfad und sind nicht auf ein FS begrenzt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Hardlink auf ein Verzeichnis ist im normalen Betrieb fuer User meist erlaubt.",
+      "explanation": "Hardlinks auf Verzeichnisse sind aus Konsistenzgruenden stark eingeschraenkt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "chmod 755 setzt bei Dateien standardmaessig execute fuer alle.",
+      "explanation": "7/5/5 enthalten jeweils x-Bit, also ist die Datei ausfuehrbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Mit chown kann nur die Group geaendert werden, nicht der Owner.",
+      "explanation": "chown kann Owner und optional Group setzen; nur Group geht auch via chgrp.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die umask bestimmt, welche Rechte bei neu erstellten Dateien entfernt werden.",
+      "explanation": "Umask subtrahiert Bits vom Standardmodus neuer Dateien/Verzeichnisse.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Das sticky bit auf /tmp verhindert, dass User eigene Dateien loeschen.",
+      "explanation": "Es verhindert das Loeschen fremder Dateien, eigene koennen geloescht werden.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "setfacl erweitert das klassische rwx-Rechteschema um feinere Regeln.",
+      "explanation": "ACLs erlauben zusaetzliche User/Group-spezifische Rechte.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "ps aux zeigt nur Prozesse des aktuellen Users.",
+      "explanation": "ps aux zeigt systemweit Prozesse, nicht nur den eigenen User.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "SIGTERM erlaubt Prozessen, sauber zu beenden.",
+      "explanation": "Prozesse koennen auf SIGTERM reagieren und Cleanup durchfuehren.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "SIGKILL kann vom Prozess abgefangen werden.",
+      "explanation": "SIGKILL kann nicht gefangen oder ignoriert werden.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "killall und pkill koennen mehrere Prozesse anhand Namen treffen.",
+      "explanation": "Beide arbeiten namensbasiert und koennen mehrere Treffer erzeugen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "top zeigt standardmaessig nur CPU-Last, keine Speicherwerte.",
+      "explanation": "top zeigt u.a. CPU, RAM, Swap und pro Prozess RES/VIRT.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "systemctl status zeigt oft die letzten Journal-Zeilen zur Unit.",
+      "explanation": "Statusansicht enthaelt Kurzlogs fuer schnellere Diagnose.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "systemctl enable startet einen Dienst sofort.",
+      "explanation": "enable konfiguriert Boot-Start; fuer sofortigen Start braucht man start oder --now.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "journalctl -b filtert Logs auf das aktuelle Boot.",
+      "explanation": "-b grenzt Journal-Ausgabe auf den aktuellen Boot-Vorgang ein.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "journalctl -f folgt neuen Logeintraegen in Echtzeit.",
+      "explanation": "Aehnlich zu tail -f, aber fuer das Journal.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Nach Unit-Datei-Aenderungen ist daemon-reload unnoetig.",
+      "explanation": "Ohne daemon-reload kennt systemd die Aenderungen oft nicht.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "ss -tulpen kann Listening Ports mit Prozessinfos anzeigen.",
+      "explanation": "Die Optionen zeigen TCP/UDP, listening, Nutzer und PID/Prozess.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "ip route zeigt ARP-Eintraege.",
+      "explanation": "ARP/Nachbarn zeigt ip neigh, nicht ip route.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "ping prueft primaer Erreichbarkeit auf IP-Ebene.",
+      "explanation": "Ping nutzt ICMP Echo und testet Layer-3/Netzpfad grob.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "traceroute kann helfen, den Hop mit hoher Latenz zu finden.",
+      "explanation": "Es zeigt Zwischenstationen und RTT pro Hop.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "dig +short liefert kompaktes DNS-Output ohne viel Zusatz.",
+      "explanation": "Ideal fuer schnelle Skripte und Checks.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "tcpdump arbeitet nur mit TCP, nicht mit UDP.",
+      "explanation": "tcpdump kann alle IP-Protokolle sniffen, inkl. UDP/ICMP.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "PermitRootLogin no ist eine gaengige SSH-Hardening-Massnahme.",
+      "explanation": "Direkter Root-Login wird unterbunden und Angriffsvektor verkleinert.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "PasswordAuthentication no deaktiviert Public-Key-Login.",
+      "explanation": "Es deaktiviert Passwort-Login; Key-Login bleibt mit PubkeyAuthentication aktiv.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Zu offene Rechte auf ~/.ssh koennen Key-Login verhindern.",
+      "explanation": "sshd lehnt unsichere Dateirechte aus Sicherheitsgruenden ab.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "apt update installiert automatisch alle verfuegbaren Updates.",
+      "explanation": "apt update aktualisiert nur Paketlisten, nicht die Pakete selbst.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "apt autoremove kann alte, ungenutzte Abhaengigkeiten entfernen.",
+      "explanation": "Nutzt Paketmetadaten, um nicht mehr benoetigte Pakete zu loeschen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "pacman -Syu ist unter Arch ein typischer Full-Upgrade-Befehl.",
+      "explanation": "Synchronisiert Datenbanken und aktualisiert installierte Pakete.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "dpkg -l zeigt installierte Debian-Pakete an.",
+      "explanation": "Listet Pakete mit Status und Versionen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "LVM besteht immer aus exakt einer Volume Group pro System.",
+      "explanation": "Es koennen mehrere VGs parallel existieren.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Vor lvcreate muss mindestens ein PV und eine VG existieren.",
+      "explanation": "LVs werden innerhalb einer VG aus PV-Kapazitaet erstellt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "resize2fs ist fuer XFS-Dateisysteme geeignet.",
+      "explanation": "XFS vergroesserst du mit xfs_growfs.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "UUIDs in /etc/fstab sind oft robuster als /dev/sdX-Namen.",
+      "explanation": "Device-Namen koennen sich aendern, UUIDs sind stabiler.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "fsck sollte auf einem aktiv beschreibbaren Dateisystem laufen.",
+      "explanation": "Das ist riskant; besser ungemountet oder read-only/offline.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Die 3-2-1 Regel verlangt mindestens eine externe Kopie.",
+      "explanation": "Offsite-Kopie schuetzt z.B. vor Brand oder Diebstahl.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein erfolgreiches Backup-Log ersetzt Restore-Tests vollstaendig.",
+      "explanation": "Nur ein getesteter Restore belegt echte Wiederherstellbarkeit.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "rsync --delete kann am Ziel Daten loeschen.",
+      "explanation": "Fehlende Quelldateien werden am Ziel entfernt, wenn Option gesetzt ist.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Cron-Ausdruck \"0 2 * * *\" bedeutet taeglich um 02:00.",
+      "explanation": "Minute 0, Stunde 2, jeden Tag/Monat/Wochentag.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Systemd Timer koennen verpasste Runs nachholen, wenn persistent konfiguriert.",
+      "explanation": "Mit Persistent=true wird Nachholen beim naechsten Start moeglich.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "visudo prueft sudoers-Syntax vor dem Speichern.",
+      "explanation": "Damit sinkt das Risiko, sich aus sudo auszusperren.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "\"w\" zeigt, welche User aktuell eingeloggt sind und was sie tun.",
+      "explanation": "Es zeigt Session-Details inkl. Source und Prozessinfo.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "ifconfig ist auf modernen Systemen immer der einzige gueltige Weg.",
+      "explanation": "iproute2 (ip addr, ip route) ist heute Standard.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "ip route add setzt ohne Persistenz meist nur Laufzeit-Routen.",
+      "explanation": "Nach Reboot sind solche Routen ohne Konfigdatei typischerweise weg.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "lsof -i :443 kann den Prozess hinter Port 443 zeigen.",
+      "explanation": "Hilfreich bei Port-Konflikten und Service-Analyse.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "dmesg zeigt ausschliesslich Anwendungslogs aus /var/log.",
+      "explanation": "dmesg zeigt Kernel-Meldungen aus dem Ringbuffer.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Bei voller Inode-Anzahl koennen Dateierstellungen scheitern, obwohl Speicherplatz frei ist.",
+      "explanation": "Inodes sind ein separates Limit neben Blockspeicher.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "journalctl -u ssh --grep Failed kann Login-Fehler eingrenzen.",
+      "explanation": "Unit-Filter plus grep fokussiert auf relevante SSH-Fehler.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "AllowUsers in sshd_config kann den Login auf bestimmte Accounts begrenzen.",
+      "explanation": "Das reduziert Angriffsflaeche auf explizit erlaubte User.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "UseDNS no in sshd kann Login-Verzoegerungen reduzieren.",
+      "explanation": "Reverse-Lookups koennen sonst Wartezeiten erzeugen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "sudo -l zeigt einem User seine erlaubten sudo-Kommandos.",
+      "explanation": "Wichtig fuer Rechtepruefung und Troubleshooting bei denied Aktionen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "last reboot liest Informationen aus wtmp.",
+      "explanation": "So laesst sich Reboot-Historie nachvollziehen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Service-Status \"active (running)\" schliesst Fehler im Journal aus.",
+      "explanation": "Ein Dienst kann laufen und trotzdem wiederkehrende Fehler loggen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Systemd startet Units in definierter Abhaengigkeitsreihenfolge.",
+      "explanation": "After/Requires und Targets steuern Startlogik.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "network-online.target bedeutet nur, dass ein Interface existiert, nicht zwingend Internetzugang.",
+      "explanation": "Es signalisiert lokale Netzwerkbereitschaft, nicht End-to-End-Konnektivitaet.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "cat /proc/mdstat ist nutzlos fuer Software-RAID-Diagnose.",
+      "explanation": "Es ist eine zentrale, schnelle Quelle fuer mdadm-Arraystatus.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "lvextend -r kann LV und Dateisystem in einem Schritt vergroessern.",
+      "explanation": "Viele Setups nutzen -r fuer komfortable Online-Erweiterung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Eine Swap-Datei braucht typischerweise mkswap vor swapon.",
+      "explanation": "Ohne Swap-Signatur wird die Datei nicht korrekt als Swap genutzt.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "chmod 777 ist eine gute Standardwahl fuer sensible Konfigdateien.",
+      "explanation": "Zu offen und sicherheitskritisch; Least Privilege ist Pflicht.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "\"tail -f /var/log/syslog\" funktioniert auf jeder Distribution identisch.",
+      "explanation": "Nicht jede Distribution nutzt diese Datei; oft ist Journal zentral.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein Neustart ist immer der beste erste Troubleshooting-Schritt.",
+      "explanation": "Zuerst messen, Logs pruefen und Ursache eingrenzen ist professioneller.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Backups ohne Verschluesselung koennen bei Offsite-Lagerung ein Datenschutzrisiko sein.",
+      "explanation": "Externe Kopien sollten gegen unbefugten Zugriff geschuetzt werden.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Paketupdate kann Konfigdateien ueberschreiben oder Migrationsschritte ausloesen.",
+      "explanation": "Daher sind Change-Review und Backup vor Updates wichtig.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein SSH-Schluessel ohne Passphrase ist in jedem Kontext gleich sicher wie mit Passphrase.",
+      "explanation": "Ohne Passphrase ist gestohlener Key sofort nutzbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Dokumentierte Restore-Prozeduren sind Teil von Betriebsstabilitaet.",
+      "explanation": "Im Incident sparen klare Runbooks Zeit und Fehler.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Troubleshooting sollte reproduzierbar und mit Zeitstempeln dokumentiert werden.",
+      "explanation": "Das hilft Teamarbeit, Auditierbarkeit und spaetere Ursachenanalyse.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "systemctl is-enabled ssh gibt Auskunft, ob ein Dienst beim Boot gestartet wird.",
+      "explanation": "is-enabled prueft den Enable-Status unabhaengig vom aktuellen Laufzustand.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "systemctl stop beendet den Dienst dauerhaft fuer alle zukuenftigen Boots.",
+      "explanation": "stop wirkt nur aktuell; fuer Boot-Verhalten sind enable/disable relevant.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "journalctl -p err..alert zeigt nur Meldungen mit Prioritaet error bis alert.",
+      "explanation": "Der Prioritaetsbereich hilft, kritische Logs schneller einzugrenzen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "ip neigh zeigt Nachbarn auf Layer 2, z.B. ARP-Eintraege.",
+      "explanation": "Das ist nuetzlich bei LAN-Problemen und Duplicate-IP-Faellen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "ss -s liefert eine kompakte Zusammenfassung von Socket-Statistiken.",
+      "explanation": "ss -s ist gut fuer schnellen Gesamtzustand ohne Detailflut.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Host kann auf Ping antworten, obwohl ein spezifischer TCP-Port geschlossen ist.",
+      "explanation": "ICMP-Erreichbarkeit bedeutet nicht automatisch, dass Applikationsports offen sind.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "PermitEmptyPasswords yes ist eine empfohlene SSH-Hardening-Einstellung.",
+      "explanation": "Leere Passwoerter vergroessern Angriffsrisiko massiv und sind zu vermeiden.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "AllowUsers kann in sshd_config die Login-Berechtigung auf definierte Accounts einschraenken.",
+      "explanation": "Damit sinkt die Angriffsoberflaeche auf einen klaren User-Kreis.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Aenderungen in sshd_config sollten vor Reload mit sshd -t auf Syntax geprueft werden.",
+      "explanation": "Ein Syntaxcheck verhindert Lockout durch fehlerhafte Konfiguration.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "apt-mark hold kann Pakete von automatischen Upgrades ausschliessen.",
+      "explanation": "Hold friert Versionen gezielt ein, z.B. bei bekannten Inkompatibilitaeten.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Rolling-Releases sollten ohne Changelog-Review blind auf produktiven Hosts aktualisiert werden.",
+      "explanation": "Bei Rolling-Modellen sind Release-Notes und Timing besonders wichtig.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Ein LVM-Snapshot ist kein vollwertiger Ersatz fuer ein externes Backup.",
+      "explanation": "Snapshots schuetzen nicht gegen Host-Ausfall, Ransomware oder Standortverlust.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "xfs_growfs kann ein XFS-Dateisystem nur vergroessern, nicht verkleinern.",
+      "explanation": "XFS-Shrink wird nicht unterstuetzt, daher Capacity-Planung beachten.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ext4 kann typischerweise online vergroessert werden, wenn das darunterliegende LV gewachsen ist.",
+      "explanation": "In vielen Produktionsfaellen ist Online-Growth moeglich, Shrink bleibt kritischer.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein Backup gilt als verifiziert, wenn nur die Dateianzahl zwischen Quelle und Ziel identisch ist.",
+      "explanation": "Integritaet und Wiederherstellbarkeit brauchen mehr als reine Anzahlpruefung.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Bei Restore-Tests sollte auch die benoetigte Recovery-Zeit gemessen werden.",
+      "explanation": "RTO ist ein Betriebsziel und muss praktisch validiert werden.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "rsync --delete sollte ohne Vorschau produktiv nie ein Risiko darstellen.",
+      "explanation": "Falsche Quelle/Ziel-Pfade koennen schnell zu Datenverlust fuehren.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "journalctl --disk-usage zeigt den belegten Speicher durch Journal-Dateien.",
+      "explanation": "Damit laesst sich Log-Wachstum ueberwachen und begrenzen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "logrotate ist fuer Textlogs relevant, waehrend systemd-journal eigene Rotationsmechanismen nutzt.",
+      "explanation": "Journal und klassische Dateilogs haben unterschiedliche Verwaltungswege.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "chmod 640 auf einer privaten Datei bedeutet: Others haben keinen Zugriff.",
+      "explanation": "0 fuer Others entzieht Lese-, Schreib- und Execute-Rechte.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "setgid auf Team-Verzeichnissen sorgt dafuer, dass neue Dateien die Verzeichnisgruppe erben.",
+      "explanation": "Das vereinfacht kollaborative Schreibbereiche deutlich.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "getfacl hilft beim Troubleshooting, wenn klassische rwx-Rechte den Zugriff nicht erklaeren.",
+      "explanation": "ACL-Eintraege koennen effektive Rechte stark beeinflussen.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Wenn ein Systemd-Dienst dauernd neu startet, sind StartLimit-Einstellungen und Exit-Codes wichtige Hinweise.",
+      "explanation": "Restart-Loops sind oft nur mit diesen Metadaten sauber zu bewerten.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Troubleshooting sollte idealerweise immer nur eine Aenderung pro Schritt testen.",
+      "explanation": "So bleibt Ursache-Wirkung nachvollziehbar und reproduzierbar.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    },
+    {
+      "text": "Ein sofortiger Reboot ist die beste Standardreaktion bei jedem Linux-Problem.",
+      "explanation": "Zuerst Befund aufnehmen, Logs sichern und gezielt eingrenzen ist professioneller.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": false
+        },
+        {
+          "text": "Falsch",
+          "is_correct": true
+        }
+      ]
+    },
+    {
+      "text": "Dokumentierte Postmortems helfen, wiederkehrende Stoerungen langfristig zu reduzieren.",
+      "explanation": "Lernschleifen aus Incidents verbessern Betrieb und Team-Qualitaet nachhaltig.",
+      "question_type": "single",
+      "difficulty": "easy",
+      "answers": [
+        {
+          "text": "Wahr",
+          "is_correct": true
+        },
+        {
+          "text": "Falsch",
+          "is_correct": false
+        }
+      ]
+    }
+  ]
+}
