@@ -86,7 +86,7 @@
 
         <NcNoteCard type="info" class="dpa-hint">
           <span>
-            {{ t('learning', 'When AI is enabled, user questions are sent to Google Gemini (an external AI service). Admins subject to GDPR/DSGVO must review and accept the') }}
+            {{ t('learning', 'When AI is enabled, user questions and the currently displayed quiz question (text, answer options, explanation) are sent to Google Gemini (an external AI service). In exam mode, the correct answer is never transmitted. Error reports stay local and are not sent to Gemini. Admins subject to GDPR/DSGVO must review and accept the') }}
             {{ ' ' }}
             <a
               href="https://cloud.google.com/terms/data-processing-addendum"

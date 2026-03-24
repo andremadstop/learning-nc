@@ -1123,6 +1123,7 @@
     "tagged im Uplink": "tagged im Uplink",
     "untagged": "untagged",
     "Übung": "Übung",
-    "Übung starten": "Übung starten"
+    "Übung starten": "Übung starten",
+    "When AI is enabled, user questions and the currently displayed quiz question (text, answer options, explanation) are sent to Google Gemini (an external AI service). In exam mode, the correct answer is never transmitted. Error reports stay local and are not sent to Gemini. Admins subject to GDPR/DSGVO must review and accept the": "Wenn KI aktiviert ist, werden User-Nachrichten und die aktuell angezeigte Quizfrage (Text, Antwortoptionen, Erklärung) an Google Gemini (einen externen KI-Dienst) gesendet. Im Prüfungsmodus wird die korrekte Antwort niemals übermittelt. Fehlermeldungen bleiben lokal und werden nicht an Gemini gesendet. Admins die der DSGVO unterliegen müssen das"
   }
 }
