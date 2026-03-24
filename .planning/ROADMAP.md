@@ -423,7 +423,7 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 52. Bugfix & Release | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
 | 53. Content-Bereinigung | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
 | 54. Content-Verteilung | 1/1 | Complete    | 2026-03-24 | - |
-| 55. DevCloud-Hygiene | v4.0 Housekeeping | 0/2 | Planned | - |
+| 55. DevCloud-Hygiene | 1/2 | In Progress|  | - |
 | 56. Toggle-Spalten | 1/1 | Complete    | 2026-03-24 | - |
 | 57. IPv6 Math + UI | 1/1 | Complete    | 2026-03-24 | - |
 | 58. Uebungsmodus Engine | 2/2 | Complete   | 2026-03-24 | - |
