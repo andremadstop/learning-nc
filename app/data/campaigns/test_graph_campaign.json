@@ -1,0 +1,136 @@
+{
+  "campaign_id": "test_graph_campaign",
+  "title": "Graph Engine Test: Network Breach",
+  "description": "A small test campaign to validate graph traversal, state-bag, and conditions.",
+  "duration_minutes": 10,
+  "difficulty": "beginner",
+  "focus_areas": ["network-basics"],
+  "character_recommendations": ["security"],
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "title": "The Alert",
+        "narrative": "Your SIEM dashboard lights up with alerts. A suspicious login from an unknown IP. What do you do?",
+        "start": true,
+        "act": 1,
+        "effects": []
+      },
+      {
+        "id": "investigate_logs",
+        "title": "Log Analysis",
+        "narrative": "You pull the auth logs and find 3 failed attempts before a successful login. The IP traces to an external VPN.",
+        "act": 1,
+        "effects": [
+          {"set_flag": "has_evidence"},
+          {"add_reputation": {"security": 2}}
+        ]
+      },
+      {
+        "id": "alert_team",
+        "title": "Team Alert",
+        "narrative": "You notify the security team. They start monitoring the session in real-time.",
+        "act": 1,
+        "effects": [
+          {"add_reputation": {"management": 1}}
+        ]
+      },
+      {
+        "id": "isolate_host",
+        "title": "Host Isolation",
+        "narrative": "With evidence in hand, you isolate the compromised host from the network. The attacker's session drops.",
+        "act": 2,
+        "effects": [
+          {"set_flag": "host_isolated"},
+          {"add_item": "incident_report"},
+          {"add_reputation": {"security": 3}}
+        ]
+      },
+      {
+        "id": "confront_blind",
+        "title": "Blind Confrontation",
+        "narrative": "Without evidence, you try to isolate the host but pick the wrong one. The attacker notices and covers their tracks.",
+        "act": 2,
+        "effects": [
+          {"add_reputation": {"security": -2}}
+        ]
+      },
+      {
+        "id": "write_report",
+        "title": "Incident Report",
+        "narrative": "You compile a full incident report with timeline, IOCs, and remediation steps. Case closed.",
+        "act": 3,
+        "is_ending": true,
+        "effects": [
+          {"add_reputation": {"security": 2, "management": 2}}
+        ]
+      },
+      {
+        "id": "escalate_incomplete",
+        "title": "Incomplete Escalation",
+        "narrative": "You escalate but without proper evidence. Management is unimpressed. More training needed.",
+        "act": 3,
+        "is_ending": true,
+        "effects": []
+      }
+    ],
+    "edges": [
+      {
+        "id": "e1_investigate",
+        "from": "start",
+        "to": "investigate_logs",
+        "label": "Check the authentication logs"
+      },
+      {
+        "id": "e2_alert",
+        "from": "start",
+        "to": "alert_team",
+        "label": "Alert the security team immediately"
+      },
+      {
+        "id": "e3_isolate_with_evidence",
+        "from": "investigate_logs",
+        "to": "isolate_host",
+        "label": "Isolate the compromised host",
+        "conditions": {"requires_flag": "has_evidence"}
+      },
+      {
+        "id": "e4_alert_after_logs",
+        "from": "investigate_logs",
+        "to": "alert_team",
+        "label": "Alert the team with your findings"
+      },
+      {
+        "id": "e5_isolate_blind",
+        "from": "alert_team",
+        "to": "confront_blind",
+        "label": "Try to isolate the host without evidence"
+      },
+      {
+        "id": "e6_investigate_from_team",
+        "from": "alert_team",
+        "to": "investigate_logs",
+        "label": "Go back and check the logs first"
+      },
+      {
+        "id": "e7_report",
+        "from": "isolate_host",
+        "to": "write_report",
+        "label": "Write the incident report",
+        "conditions": {"requires_item": "incident_report", "min_reputation": {"security": 3}}
+      },
+      {
+        "id": "e8_escalate_incomplete",
+        "from": "confront_blind",
+        "to": "escalate_incomplete",
+        "label": "Escalate to management"
+      },
+      {
+        "id": "e9_retry_investigate",
+        "from": "confront_blind",
+        "to": "investigate_logs",
+        "label": "Go back and gather evidence"
+      }
+    ]
+  }
+}
