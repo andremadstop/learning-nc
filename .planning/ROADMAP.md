@@ -579,7 +579,7 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 68. NAT-Tabelle | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
 | 69. Wireshark-Lite | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
 | 70. 802.1X Auth-Flow | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
-| 71. Graph-Engine + DB-Migration | 1/2 | In Progress|  | - |
+| 71. Graph-Engine + DB-Migration | 2/2 | Complete   | 2026-03-24 | - |
 | 72. Akt-Struktur + Save/Resume + API | v10.0 Campaign Engine v2 | 0/TBD | Not started | - |
 | 73. Rollen-System + Simulator-Integration | v10.0 Campaign Engine v2 | 0/TBD | Not started | - |
 | 74. DAU-Bot | v10.0 Campaign Engine v2 | 0/TBD | Not started | - |
@@ -590,7 +590,7 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 
 **Milestone Goal:** Kampagnen-System von linearer Slideshow zu einem echten RPG-artigen Erlebnis umbauen — gerichteter Szenen-Graph, State-Machine mit Flags/Items/Reputation, rollenspezifische Pfade, eingebettete Simulatoren als Aufgaben, KI-Gegner, 60-120 min pro Kampagne. Backend-only (app/lib/, app/appinfo/).
 
-- [ ] **Phase 71: Graph-Engine + DB-Migration** - Gerichteter Szenen-Graph, State-Bag, Bedingungssystem und campaign_state Tabelle
+- [x] **Phase 71: Graph-Engine + DB-Migration** - Gerichteter Szenen-Graph, State-Bag, Bedingungssystem und campaign_state Tabelle (completed 2026-03-24)
 - [ ] **Phase 72: Akt-Struktur + Save/Resume + API** - Akt-basierte Progression, persistenter Spielstand, REST-Endpoints
 - [ ] **Phase 73: Rollen-System + Simulator-Integration** - Rollenspezifische Pfade, Simulator-Aufgaben als Szenen-Elemente mit Timer
 - [ ] **Phase 74: DAU-Bot** - KI-Gegner der Anfaengerfehler macht, User korrigiert als Lern-Mechanik

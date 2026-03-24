@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Housekeeping + Content-Rollout
 status: executing
-stopped_at: Completed 71-01-PLAN.md (Graph Engine DB). Ready for 71-02.
+stopped_at: Completed 71-02-PLAN.md (Graph Engine Integration). Phase 71 complete.
 last_updated: "2026-03-24T13:30:49.526Z"
-last_activity: 2026-03-24 — Completed 71-01 Graph Engine DB
+last_activity: 2026-03-24 — Completed 71-02 Graph Engine Integration (Phase 71 complete)
 progress:
   total_phases: 43
   completed_phases: 29
@@ -26,22 +26,23 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 71 of 74 (Graph-Engine + DB-Migration)
-Plan: 1 of 2 complete
-Status: Executing
-Last activity: 2026-03-24 — Completed 71-01 Graph Engine DB
+Plan: 2 of 2 complete
+Status: Phase Complete
+Last activity: 2026-03-24 — Completed 71-02 Graph Engine Integration
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 7min
-- Total execution time: 0.1 hours
+- Total plans completed: 2
+- Average duration: 8min
+- Total execution time: 0.3 hours
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 71    | 01   | 7min     | 2     | 4     |
+| 71    | 02   | 9min     | 2     | 4     |
 
 ## Accumulated Context
 
@@ -56,6 +57,9 @@ Progress: [░░░░░░░░░░] 0%
 - BIGINT for timestamps (consistent with epoch pattern)
 - Immutable state-bag via json deep-copy
 - Unknown effects logged as warnings (graceful degradation)
+- Graph delegation via early-return guards (zero changes to linear paths)
+- Effects-as-list iteration (array of individual effect objects)
+- Version bump 3.1.0 to trigger campaign_state migration
 
 ### Existing Architecture
 
@@ -77,5 +81,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: Completed 71-01-PLAN.md (Graph Engine DB). Ready for 71-02.
+Stopped at: Completed 71-02-PLAN.md (Graph Engine Integration). Phase 71 complete.
 Resume file: None
