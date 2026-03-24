@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Housekeeping + Content-Rollout
-status: completed
-stopped_at: Completed 57-01-PLAN.md
-last_updated: "2026-03-24T08:46:14.348Z"
-last_activity: 2026-03-24 — Toggle-Spalten implemented (togglePresets.js + SubnetCalculator toggle UI)
+status: in_progress
+stopped_at: Completed 57.5-01-PLAN.md
+last_updated: "2026-03-24T09:02:00Z"
+last_activity: 2026-03-24 — subnetExplainer utility with step-by-step IPv4/IPv6 calculation explanations
 progress:
   total_phases: 29
   completed_phases: 23
-  total_plans: 38
-  completed_plans: 37
+  total_plans: 40
+  completed_plans: 38
   percent: 100
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: 57 of 60 (IPv6 Math + UI) — complete
-Plan: 01 of 01 — complete
-Status: Phase 57 complete, ready for Phase 58
-Last activity: 2026-03-24 — IPv6 math utility + SubnetCalculator IPv6 tab with 128-bit binary display
+Phase: 57.5 of 60 (Rechenweg-Erklaer-Modus) — in progress
+Plan: 01 of 02 — complete
+Status: Plan 01 complete, ready for Plan 02
+Last activity: 2026-03-24 — subnetExplainer utility with step-by-step IPv4/IPv6 calculation explanations
 
 Progress: [██████████] 100%
 
@@ -51,6 +51,7 @@ Progress: [██████████] 100%
 - VLAN-Tab parallel zu Uebungsmodus moeglich (abhaengig nur von Phase 56)
 - [Phase 56]: Test files in tests/unit/ (vitest config), not src/utils/__tests__/ (plan)
 - [Phase 57]: Native BigInt for 128-bit IPv6 arithmetic, full expanded format for display clarity
+- [Phase 57.5]: Self-contained explainer module with inlined helpers to avoid cross-dependency on subnetMath
 
 ### Existing Architecture
 
@@ -58,6 +59,7 @@ Progress: [██████████] 100%
 - togglePresets.js: Pure utility for row visibility presets (ROW_KEYS, PRESETS, getVisibleRows)
 - subnetMath.js: Pure utility (~305 Zeilen), IPv4-only
 - ipv6Math.js: Pure utility (~180 Zeilen), BigInt-based IPv6 arithmetic
+- subnetExplainer.js: Pure utility (~213 Zeilen), step-by-step explanations for IPv4/IPv6
 - Design-Token-System (--lnc-* CSS Variablen)
 - Vue 2.7 mit Options API
 
@@ -71,6 +73,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T08:46:14.339Z
-Stopped at: Completed 57-01-PLAN.md
+Last session: 2026-03-24T09:02:00Z
+Stopped at: Completed 57.5-01-PLAN.md
 Resume file: None
