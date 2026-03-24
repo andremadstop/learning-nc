@@ -1,64 +1,80 @@
-# Requirements: Learning-NC v8.0 VirtuProf v2
+# Requirements: Learning-NC v10.0 Campaign Engine v2
 
 **Defined:** 2026-03-24
-**Core Value:** VirtuProf wird kontextbewusst — der Bot weiss welche Frage der User sieht, gibt gestufte Hints und ist im Pruefungsmodus gesperrt.
+**Core Value:** Kampagnen werden zu echten 60-120 min RPG-Erlebnissen mit Pfadbaum, State-Machine und eingebetteten Simulatoren.
 
-## v8.0 Requirements
+## v10.0 Requirements
 
-### Kontext-Mapping
+### State-Machine & Graph
 
-- [x] **CTX-01**: Frontend sendet die aktuell angezeigte Frage (Text + Optionen + korrekte Antwort + Erklaerung) als Kontext an die Chat-API
-- [x] **CTX-02**: GeminiService baut den Fragen-Kontext in den System-Prompt ein sodass der Bot weiss welche Frage der User gerade sieht
-- [ ] **CTX-03**: Bot kann auf "Erklaer mir diese Frage" oder "Warum ist B richtig?" direkt antworten ohne dass der User die Frage kopieren muss
+- [x] **ENG-01**: Kampagnen nutzen einen gerichteten Szenen-Graph statt linearer Kette (30-50 Knoten pro Kampagne)
+- [x] **ENG-02**: State-Bag speichert Flags, Items und Reputation die sich ueber die Kampagne akkumulieren und spaetere Szenen beeinflussen
+- [x] **ENG-03**: Szenen koennen Bedingungen haben (z.B. "nur wenn Flag X gesetzt" oder "nur wenn Reputation > 5")
 
-### Hint-System
+### Akte & Dauer
 
-- [ ] **HINT-01**: User kann "Tipp" oder "Hint" schreiben und bekommt eine gestufte Hilfe (Richtung → konkreter → fast die Antwort) statt sofort die Loesung
-- [ ] **HINT-02**: Der Hint-Level wird pro Frage getrackt (1→2→3), bei neuer Frage reset
-- [ ] **HINT-03**: Nach Hint 3 bietet der Bot an die vollstaendige Erklaerung zu zeigen
+- [ ] **ENG-04**: Kampagnen sind in 3-4 Akte strukturiert (Setup → Investigation → Eskalation → Showdown) mit je 5-15 Szenen
+- [ ] **ENG-05**: Save/Resume: Spielstand persistiert, Session kann ueber Tage unterbrochen und fortgesetzt werden
 
-### Pruefungsmodus-Sperre
+### Rollen-System
 
-- [ ] **EXAM-01**: Im Exam-Mode ist die VirtuProf-Bubble ausgeblendet oder der Chat-Input deaktiviert — keine KI-Hilfe waehrend der Pruefung
-- [ ] **EXAM-02**: Der Sperr-Zustand wird vom ExamMode-Kontext gesteuert, nicht manuell
+- [ ] **ROLE-01**: Charakterklasse beeinflusst verfuegbare Szenen und Pfade (nicht nur Difficulty-Modifier)
+- [ ] **ROLE-02**: Exklusive Szenen pro Rolle (Architect sieht Netzwerk-Szenen, Security sieht Forensik-Szenen)
 
-### Fehler-Report
+### Aufgaben-Integration
 
-- [ ] **REP-01**: User kann per Button oder Kommando ("Fehler melden") ein Problem mit der aktuellen Frage melden (falsche Antwort, schlechte Uebersetzung, unklare Formulierung)
-- [ ] **REP-02**: Der Report enthaelt automatisch die Fragen-ID, den aktuellen Modus und optional User-Kommentar
+- [ ] **TASK-01**: Szenen koennen eingebettete Simulatoren als Aufgaben referenzieren (DNS, Firewall, Port-Scanner etc.)
+- [ ] **TASK-02**: Simulator-Ergebnis (bestanden/nicht bestanden) beeinflusst Szenen-Fortschritt und State-Bag
+- [ ] **TASK-03**: Timer-basierte Aufgaben moeglich (z.B. "Finde den kompromittierten Host in 5 Minuten")
+
+### KI-Gegner (DAU-Bot)
+
+- [ ] **BOT-01**: KI-Gegner der typische Anfaengerfehler macht (Default-Passwoerter, offene Ports, keine Backups)
+- [ ] **BOT-02**: User muss die Fehler des Bots korrigieren als Teil des Szenarios
+
+### API & DB
+
+- [ ] **API-01**: REST-Endpoints fuer Graph-Traversal, State-Management, Save/Resume
+- [x] **DB-01**: Migration: campaign_state Tabelle mit state_bag (JSON), act_number, graph_position, timestamps
 
 ## Future Requirements
 
-- **FUT-01**: QA-Scanner — Bot prueft automatisch alle Fragen auf Konsistenz
-- **FUT-02**: Proaktive Hinweise ("Dieses Thema kommt in 3 weiteren Fragen vor")
-- **FUT-03**: Lernstatistik-Integration ("Du hast bei diesem Thema 40% falsch")
+- **MP-01**: Multiplayer Live-Sessions mit Rollenverteilung (2-4 Spieler)
+- **MP-02**: Competitive-Modus (Wer loest das Szenario schneller/besser?)
+- **FE-01**: Frontend-Redesign des Abenteuer-Modus fuer Graph-Navigation
+- **CONT-01**: 3+ grosse Kampagnen (je 30-50 Knoten, 60-120 min)
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Multi-Bot-Swarm | Zu teuer (API-Kosten), ein schlauer Bot reicht |
-| Eigener LLM statt Gemini | Infra-Aufwand, Gemini funktioniert |
-| Kontext fuer Subnetzrechner | Subnetzrechner hat eigenen Erklaer-Modus |
+| Frontend-Redesign | Eigener Milestone nach Engine-Stabilisierung |
+| Multiplayer Live | Nach Engine steht, eigener Milestone |
+| Neuer Kampagnen-Content | Gemini liefert separat |
+| Zeitreise-Ueberarbeitung | Baut auf Engine v2 auf, eigener Milestone |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CTX-01 | Phase 61 | Complete |
-| CTX-02 | Phase 61 | Complete |
-| CTX-03 | Phase 61 | Pending |
-| HINT-01 | Phase 62 | Pending |
-| HINT-02 | Phase 62 | Pending |
-| HINT-03 | Phase 62 | Pending |
-| EXAM-01 | Phase 63 | Pending |
-| EXAM-02 | Phase 63 | Pending |
-| REP-01 | Phase 63 | Pending |
-| REP-02 | Phase 63 | Pending |
+| ENG-01 | Phase 71 | Complete |
+| ENG-02 | Phase 71 | Complete |
+| ENG-03 | Phase 71 | Complete |
+| ENG-04 | Phase 72 | Pending |
+| ENG-05 | Phase 72 | Pending |
+| ROLE-01 | Phase 73 | Pending |
+| ROLE-02 | Phase 73 | Pending |
+| TASK-01 | Phase 73 | Pending |
+| TASK-02 | Phase 73 | Pending |
+| TASK-03 | Phase 73 | Pending |
+| BOT-01 | Phase 74 | Pending |
+| BOT-02 | Phase 74 | Pending |
+| API-01 | Phase 72 | Pending |
+| DB-01 | Phase 71 | Complete |
 
 **Coverage:**
-- v8.0 requirements: 10 total
-- Mapped to phases: 10
+- v10.0 requirements: 14 total
+- Mapped to phases: 14
 - Unmapped: 0
 
 ---

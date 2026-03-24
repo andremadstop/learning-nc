@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v10.0
-milestone_name: Campaign Engine v2
-status: ready_to_plan
-stopped_at: null
-last_updated: "2026-03-24T13:12:47Z"
-last_activity: 2026-03-24 — Phase 62 Plan 01 (Hint-System) completed
+milestone: v4.0
+milestone_name: Housekeeping + Content-Rollout
+status: executing
+stopped_at: Completed 71-01-PLAN.md (Graph Engine DB). Ready for 71-02.
+last_updated: "2026-03-24T13:30:49.526Z"
+last_activity: 2026-03-24 — Completed 71-01 Graph Engine DB
 progress:
-  total_phases: 4
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_phases: 43
+  completed_phases: 29
+  total_plans: 50
+  completed_plans: 49
+  percent: 2
 ---
 
 # Project State
@@ -26,18 +26,22 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 ## Current Position
 
 Phase: 71 of 74 (Graph-Engine + DB-Migration)
-Plan: Not yet planned
-Status: Ready to plan
-Last activity: 2026-03-24 — Roadmap created
+Plan: 1 of 2 complete
+Status: Executing
+Last activity: 2026-03-24 — Completed 71-01 Graph Engine DB
 
 Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 7min
+- Total execution time: 0.1 hours
+
+| Phase | Plan | Duration | Tasks | Files |
+|-------|------|----------|-------|-------|
+| 71    | 01   | 7min     | 2     | 4     |
 
 ## Accumulated Context
 
@@ -49,6 +53,9 @@ Progress: [░░░░░░░░░░] 0%
 - Backend-first, Frontend spaeter
 - Simulatoren (v9.0 Codex) als einbettbare Aufgaben
 - Sequential phases: 71 → 72 → 73 → 74
+- BIGINT for timestamps (consistent with epoch pattern)
+- Immutable state-bag via json deep-copy
+- Unknown effects logged as warnings (graceful degradation)
 
 ### Existing Architecture
 
@@ -70,5 +77,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: Completed 62-01-PLAN.md (Hint-System). Ready to plan Phase 71.
+Stopped at: Completed 71-01-PLAN.md (Graph Engine DB). Ready for 71-02.
 Resume file: None
