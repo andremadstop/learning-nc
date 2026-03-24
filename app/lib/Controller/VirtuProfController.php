@@ -202,7 +202,8 @@ class VirtuProfController extends Controller {
 
         // TICKET-INTENT: detect bug reports, feedback, support requests
         if ($this->isTicketIntent($lowerMessage)) {
-            return $this->handleTicketIntent($message, $poolId, $courseId);
+            $ticketQuestionId = $questionContext['questionId'] ?? null;
+            return $this->handleTicketIntent($message, $poolId, $courseId, $ticketQuestionId);
         }
 
         // Sanitize questionContext if provided
@@ -396,7 +397,7 @@ class VirtuProfController extends Controller {
         return false;
     }
 
-    private function handleTicketIntent(string $message, ?int $poolId, ?int $courseId): DataResponse {
+    private function handleTicketIntent(string $message, ?int $poolId, ?int $courseId, ?int $questionId = null): DataResponse {
         // Extract the actual bug description — remove the intent keywords
         $description = $message;
 
@@ -407,6 +408,13 @@ class VirtuProfController extends Controller {
         if ($poolId !== null) {
             $context['poolId'] = $poolId;
         }
+        if ($questionId !== null) {
+            $context['questionId'] = $questionId;
+            $context['mode'] = 'question_error_report';
+        }
+
+        // Route question error reports to course instructor instead of admin
+        $category = ($questionId !== null) ? 'course_content' : 'technical';
 
         try {
             $ticket = $this->ticketService->create(
@@ -414,7 +422,7 @@ class VirtuProfController extends Controller {
                 null, // auto-generated subject
                 $description,
                 $context,
-                'technical'
+                $category
             );
 
             $ticketId = $ticket->getId();

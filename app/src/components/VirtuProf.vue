@@ -981,6 +981,14 @@ export default {
         this.chatMessages = []
       }
     },
+    handleReportError() {
+      const qId = this.currentContext?.questionContext?.questionId
+      if (!qId) {
+        return
+      }
+      const message = 'Fehler melden: Frage #' + qId
+      this.handleChatSend(message)
+    },
 
     isHintRequest(message) {
       const lower = message.toLowerCase().trim()
