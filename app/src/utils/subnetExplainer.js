@@ -63,7 +63,32 @@ export function generateIPv4Steps(r) {
 		result: formatOctets(r.mask),
 	})
 
-	// Step 4: Network = IP AND Mask
+	// Step 4: Binary breakdown of the interesting octet (like a teacher on the whiteboard)
+	if (r.prefix > 0 && r.prefix < 32) {
+		const interestingOctet = Math.floor((r.prefix - 1) / 8)
+		const ipByte = r.ip[interestingOctet]
+		const maskByte = r.mask[interestingOctet]
+		const netByte = r.network[interestingOctet]
+		const bitsInOctet = r.prefix - (interestingOctet * 8)
+		const hostBitsInOctet = 8 - bitsInOctet
+
+		if (bitsInOctet > 0 && bitsInOctet < 8) {
+			const ipBin = ipByte.toString(2).padStart(8, '0')
+			const netPart = ipBin.substring(0, bitsInOctet)
+			const hostPart = ipBin.substring(bitsInOctet)
+			const netBin = netPart + '0'.repeat(hostBitsInOctet)
+			const bcBin = netPart + '1'.repeat(hostBitsInOctet)
+			const bcByte = parseInt(bcBin, 2)
+
+			steps.push({
+				label: 'Binaer-Rechnung',
+				formula: `.${ipByte} = ${netPart} | ${hostPart}  (${bitsInOctet} Netz | ${hostBitsInOctet} Host)`,
+				result: `Netz-Bits auf 0 = ${netBin} = .${netByte}  |  auf 1 = ${bcBin} = .${bcByte}`,
+			})
+		}
+	}
+
+	// Step 5: Network = IP AND Mask
 	steps.push({
 		label: 'Netzadresse',
 		formula: `IP AND Maske = ${formatOctets(r.ip)} AND ${formatOctets(r.mask)}`,
@@ -85,14 +110,14 @@ export function generateIPv4Steps(r) {
 		return steps
 	}
 
-	// Step 5: Wildcard
+	// Step 6: Wildcard
 	steps.push({
 		label: 'Wildcard',
 		formula: `NOT Maske = NOT ${formatOctets(r.mask)}`,
 		result: formatOctets(r.wildcard),
 	})
 
-	// Step 6: Broadcast
+	// Step 7: Broadcast
 	steps.push({
 		label: 'Broadcast',
 		formula: `Netzadresse OR Wildcard = ${formatOctets(r.network)} OR ${formatOctets(r.wildcard)}`,

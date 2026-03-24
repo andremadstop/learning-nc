@@ -74,10 +74,14 @@ describe('generateIPv4Steps', () => {
 		}
 
 		const steps = generateIPv4Steps(result)
-		expect(steps).toHaveLength(7)
+		expect(steps).toHaveLength(8)
 		expect(steps[0].result).toContain('7 Host-Bits')
 		expect(steps[1].result).toContain('128')
-		expect(steps[6].result).toContain('126')
+		// Step 3 is binary breakdown of the interesting octet
+		expect(steps[3].label).toBe('Binaer-Rechnung')
+		expect(steps[3].formula).toContain('1 Netz')
+		expect(steps[3].formula).toContain('7 Host')
+		expect(steps[7].result).toContain('126')
 	})
 
 	it('returns correct steps for /32 (single host)', () => {
