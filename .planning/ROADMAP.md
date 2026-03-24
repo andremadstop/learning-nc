@@ -464,7 +464,10 @@ Plans:
   2. Die Sperre aktiviert sich automatisch wenn der ExamMode-Kontext aktiv ist und deaktiviert sich automatisch nach Pruefungsende — kein manuelles Ein/Ausschalten noetig
   3. Der User kann per Button oder Kommando ("Fehler melden") ein Problem mit der aktuellen Frage melden und der Report enthaelt automatisch die Fragen-ID und den aktuellen Modus — der User muss nur noch optional einen Kommentar ergaenzen
   4. Gemeldete Fehler sind fuer den Dozenten/Admin einsehbar (z.B. ueber das bestehende SupportTicketService) — kein Report geht verloren
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 63-01-PLAN.md — Exam-Sperre (VirtuProf deaktiviert) + Fehler-Report Button mit automatischer Fragen-ID
 
 
 ---
@@ -579,7 +582,7 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 68. NAT-Tabelle | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
 | 69. Wireshark-Lite | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
 | 70. 802.1X Auth-Flow | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
-| 71. Graph-Engine + DB-Migration | 2/2 | Complete   | 2026-03-24 | - |
+| 71. Graph-Engine + DB-Migration | 2/2 | Complete    | 2026-03-24 | - |
 | 72. Akt-Struktur + Save/Resume + API | v10.0 Campaign Engine v2 | 0/TBD | Not started | - |
 | 73. Rollen-System + Simulator-Integration | v10.0 Campaign Engine v2 | 0/TBD | Not started | - |
 | 74. DAU-Bot | v10.0 Campaign Engine v2 | 0/TBD | Not started | - |
