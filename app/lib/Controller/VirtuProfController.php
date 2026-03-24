@@ -8,6 +8,7 @@ use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\LernplanService;
 use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\RagContextService;
+use OCA\Learning\Service\SupportTicketService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
@@ -23,6 +24,7 @@ class VirtuProfController extends Controller {
     private AiChatMemoryService $chatMemoryService;
     private NoteGeneratorService $noteGeneratorService;
     private LernplanService $lernplanService;
+    private SupportTicketService $ticketService;
 
     public function __construct(
         string $appName,
@@ -33,7 +35,8 @@ class VirtuProfController extends Controller {
         RagContextService $ragContextService,
         AiChatMemoryService $chatMemoryService,
         NoteGeneratorService $noteGeneratorService,
-        LernplanService $lernplanService
+        LernplanService $lernplanService,
+        SupportTicketService $ticketService
     ) {
         parent::__construct($appName, $request);
         $this->config = $config;
@@ -43,6 +46,7 @@ class VirtuProfController extends Controller {
         $this->chatMemoryService = $chatMemoryService;
         $this->noteGeneratorService = $noteGeneratorService;
         $this->lernplanService = $lernplanService;
+        $this->ticketService = $ticketService;
     }
 
     /**
@@ -194,6 +198,11 @@ class VirtuProfController extends Controller {
             return $this->handleFileIntent($lowerMessage, $poolId, $courseId);
         }
 
+        // TICKET-INTENT: detect bug reports, feedback, support requests
+        if ($this->isTicketIntent($lowerMessage)) {
+            return $this->handleTicketIntent($message, $poolId, $courseId);
+        }
+
         // Build RAG context when the frontend provides learning context params
         $ragContext = [];
         if ($poolId !== null || $courseId !== null || $lastWrongQuestionId !== null) {
@@ -320,6 +329,71 @@ class VirtuProfController extends Controller {
         } catch (\Throwable $e) {
             return new DataResponse([
                 'answer' => 'Die Datei konnte leider nicht erstellt werden. Bitte versuche es später erneut.',
+                'fallback' => false,
+            ]);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // TICKET-INTENT helpers
+    // -------------------------------------------------------------------------
+
+    private function isTicketIntent(string $lowerMessage): bool {
+        $patterns = [
+            'bug melden', 'fehler melden', 'problem melden',
+            'bug report', 'report a bug', 'report bug',
+            'ticket erstellen', 'ticket anlegen', 'support ticket',
+            'feedback geben', 'feedback senden',
+            'etwas funktioniert nicht', 'geht nicht', 'ist kaputt',
+            'something is broken', 'not working', "doesn't work",
+            'ich möchte einen fehler', 'ich will einen bug',
+            'kann ich bei dir einen bug', 'kann ich einen fehler',
+            'fehler gefunden', 'bug gefunden',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (str_contains($lowerMessage, $pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function handleTicketIntent(string $message, ?int $poolId, ?int $courseId): DataResponse {
+        // Extract the actual bug description — remove the intent keywords
+        $description = $message;
+
+        $context = [];
+        if ($courseId !== null) {
+            $context['courseId'] = $courseId;
+        }
+        if ($poolId !== null) {
+            $context['poolId'] = $poolId;
+        }
+
+        try {
+            $ticket = $this->ticketService->create(
+                $this->userId,
+                null, // auto-generated subject
+                $description,
+                $context,
+                'technical'
+            );
+
+            $ticketId = $ticket->getId();
+            $answer = "Danke für deine Meldung! Ich habe ein Support-Ticket erstellt (#{$ticketId}). "
+                . "Dein Dozent oder Admin wird sich darum kümmern. "
+                . "Du kannst den Status unter \"More options\" → \"Meine Tickets\" einsehen.";
+
+            return new DataResponse([
+                'answer' => $answer,
+                'fallback' => false,
+                'ticket_id' => $ticketId,
+            ]);
+        } catch (\Exception $e) {
+            return new DataResponse([
+                'answer' => 'Deine Meldung konnte leider nicht gespeichert werden. '
+                    . 'Bitte versuche es erneut oder wende dich direkt an deinen Dozenten.',
                 'fallback' => false,
             ]);
         }
