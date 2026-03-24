@@ -433,7 +433,11 @@ Plans:
   2. Der Bot kann auf "Warum ist B richtig?" direkt antworten indem er die Antwortoptionen und die korrekte Antwort aus dem Kontext kennt — ohne dass der User die Optionen abtippen muss
   3. Bei Fragenwechsel (naechste Frage im Lernmodus) aktualisiert sich der Kontext automatisch — der Bot bezieht sich nicht mehr auf die alte Frage
   4. Die Chat-API akzeptiert den Fragen-Kontext als optionalen Parameter — bestehende Chat-Aufrufe ohne Kontext funktionieren weiterhin (Rueckwaertskompatibilitaet)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 61-01-PLAN.md — Backend: VirtuProfController + GeminiService accept and use question context
+- [ ] 61-02-PLAN.md — Frontend: Learning modes emit question context, VirtuProf sends it
 
 ### Phase 62: Hint-System
 **Goal**: User bekommen gestufte Hilfe statt sofort die Loesung — der Bot fuehrt den User schrittweise zur richtigen Antwort
@@ -467,12 +471,12 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 52. Bugfix & Release | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
 | 53. Content-Bereinigung | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
 | 54. Content-Verteilung | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
-| 55. DevCloud-Hygiene | 2/2 | Complete   | 2026-03-24 | - |
+| 55. DevCloud-Hygiene | 2/2 | Complete    | 2026-03-24 | - |
 | 56. Toggle-Spalten | v7.2 Subnetzrechner Pro | 1/1 | Complete | 2026-03-24 |
 | 57. IPv6 Math + UI | v7.2 Subnetzrechner Pro | 1/1 | Complete | 2026-03-24 |
 | 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 2/2 | Complete | 2026-03-24 |
 | 59. Szenarien-Content | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
-| 61. Kontext-Mapping | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
+| 61. Kontext-Mapping | v8.0 VirtuProf v2 | 0/2 | Not started | - |
 | 62. Hint-System | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
 | 63. Exam-Sperre + Fehler-Report | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
