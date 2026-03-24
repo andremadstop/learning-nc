@@ -401,6 +401,23 @@ export default {
     questionLanguage() {
       this.refreshExamQuestionsForLanguage();
     },
+    currentQuestion: {
+      handler(q) {
+        if (!q) return;
+        this.$root.$emit('virtuprof:context', {
+          poolId: this.poolId,
+          courseId: this.courseId,
+          questionContext: {
+            questionText: q.text || q.question || '',
+            answers: (q.answers || []).map(a => a.text || a),
+            correctAnswerIndex: null, // NEVER send correct answer in exam mode
+            explanation: null,        // NEVER send explanation in exam mode
+            questionId: q.id || null,
+          },
+        });
+      },
+      immediate: true,
+    },
   },
   methods: {
     emitVirtuProf(triggerId, context = {}) {
@@ -1008,6 +1025,7 @@ export default {
   },
 
   beforeDestroy() {
+    this.$root.$emit('virtuprof:context', { questionContext: null });
     window.removeEventListener('keydown', this.handleExamHotkeys);
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.stopStatusPolling();

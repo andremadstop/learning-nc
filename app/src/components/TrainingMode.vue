@@ -349,6 +349,23 @@ export default {
         this.restartTraining();
       }
     },
+    currentQuestion: {
+      handler(q) {
+        if (!q) return;
+        this.$root.$emit('virtuprof:context', {
+          poolId: this.poolId,
+          courseId: this.courseId,
+          questionContext: {
+            questionText: q.text || '',
+            answers: (q.answers || []).map(a => a.text || a),
+            correctAnswerIndex: this.getCorrectAnswerIndex(q),
+            explanation: q.explanation || null,
+            questionId: q.id || null,
+          },
+        });
+      },
+      immediate: true,
+    },
   },
   computed: {
     currentQuestion() { return this.questions[this.currentIndex] || null; },
@@ -380,7 +397,15 @@ export default {
       };
     },
   },
+  beforeDestroy() {
+    this.$root.$emit('virtuprof:context', { questionContext: null });
+  },
   methods: {
+    getCorrectAnswerIndex(q) {
+      if (!q || !q.answers) return null;
+      const idx = q.answers.findIndex(a => a.is_correct || a.correct);
+      return idx >= 0 ? idx : null;
+    },
     emitVirtuProf(triggerId, context = {}) {
       this.$root.$emit('virtuprof:trigger', triggerId, context);
     },
