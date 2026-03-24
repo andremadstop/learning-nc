@@ -325,7 +325,8 @@ Plans:
 **Milestone Goal:** Subnetzrechner zum interaktiven Lernwerkzeug ausbauen — Toggle-Spalten fuer schrittweises Lernen, Uebungsmodus mit realistischen CompTIA-Szenarien, VLAN-Visualisierung und IPv6-Support. Nur Frontend (app/src/, app/js/).
 
 - [x] **Phase 56: Toggle-Spalten** - Ergebnis-Zeilen ein/ausblenden mit Lern-Presets und Session-Persistenz (completed 2026-03-24)
-- [ ] **Phase 57: IPv6 Math + UI** - subnetMath.js um IPv6 erweitern, neuer Tab/Bereich mit 128-Bit Binaer-Display
+- [x] **Phase 57: IPv6 Math + UI** - subnetMath.js um IPv6 erweitern, neuer Tab/Bereich mit 128-Bit Binaer-Display (completed 2026-03-24)
+- [ ] **Phase 57.5: Rechenweg / Erklaer-Modus** - Schritt-fuer-Schritt Berechnung wie der Dozent, Warum-Toggles, Kompakt/Erklaer-Umschalter
 - [ ] **Phase 58: Uebungsmodus Engine** - Aufgaben-Framework mit Zufallsauswahl, Eingabefelder, Prueflogik, Fortschritt
 - [ ] **Phase 59: Szenarien-Content** - 25+ Aufgaben (Subnetting, VLSM, Praxis, IPv6) mit Schwierigkeitsgraden
 - [ ] **Phase 60: VLAN-Tab** - VLAN-ID Zuordnung, Access/Trunk Visualisierung, Inter-VLAN Routing
@@ -355,6 +356,16 @@ Plans:
 
 Plans:
 - [ ] 57-01-PLAN.md — ipv6Math.js utility (TDD) + SubnetCalculator IPv6 tab with 128-bit binary display
+
+### Phase 57.5: Rechenweg / Erklaer-Modus
+**Goal**: Anfaenger sehen den vollstaendigen Rechenweg wie ein Dozent ihn an der Tafel erklaeren wuerde — Profis koennen ihn ausblenden
+**Depends on**: Phase 57 (IPv6 muss funktionieren, Rechenweg gilt fuer IPv4 + IPv6)
+**Requirements**: ERK-01, ERK-02, ERK-03
+**Success Criteria** (what must be TRUE):
+  1. Im Binaer-Tab erscheint unter dem Bit-Grid ein Rechenweg-Panel das zeigt: Prefix → Host-Bits → Blockgroesse → Maske binaer → Netzadresse-Formel → Broadcast-Formel — Schritt fuer Schritt wie der Dozent es erklaert
+  2. Jedes Ergebnis-Feld im Rechner-Tab hat einen "Warum?"-Toggle der die Herleitung einblendet (z.B. "Broadcast = Netzadresse OR Wildcard = 192.168.0.0 OR 0.0.0.31 = 192.168.0.31")
+  3. Ein Kompakt/Erklaer-Umschalter erlaubt dem User zwischen reiner Ergebnis-Ansicht und ausfuehrlicher Erklaer-Ansicht zu wechseln — die Einstellung bleibt wie die Toggles session-persistent
+**Plans**: TBD
 
 ### Phase 58: Uebungsmodus Engine
 **Goal**: Der Subnetzrechner bietet einen interaktiven Uebungsmodus in dem User Netzwerk-Aufgaben loesen, sofortiges Feedback bekommen und ihren Fortschritt verfolgen
@@ -402,7 +413,7 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 54. Content-Verteilung | v4.0 Housekeeping | 0/1 | Not started | - |
 | 55. DevCloud-Hygiene | v4.0 Housekeeping | 0/TBD | Not started | - |
 | 56. Toggle-Spalten | 1/1 | Complete    | 2026-03-24 | - |
-| 57. IPv6 Math + UI | v7.2 Subnetzrechner Pro | 0/1 | Not started | - |
+| 57. IPv6 Math + UI | 1/1 | Complete   | 2026-03-24 | - |
 | 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 59. Szenarien-Content | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |

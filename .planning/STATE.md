@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v7.2
-milestone_name: Subnetzrechner Pro
-status: executing
-stopped_at: Completed 56-01-PLAN.md
-last_updated: "2026-03-24T08:22:39.684Z"
-last_activity: 2026-03-24 — Phase 56 Toggle-Spalten complete (1/1 plans)
+milestone: v4.0
+milestone_name: Housekeeping + Content-Rollout
+status: completed
+stopped_at: Completed 57-01-PLAN.md
+last_updated: "2026-03-24T08:46:14.348Z"
+last_activity: 2026-03-24 — Toggle-Spalten implemented (togglePresets.js + SubnetCalculator toggle UI)
 progress:
-  total_phases: 28
-  completed_phases: 22
-  total_plans: 37
-  completed_plans: 36
-  percent: 0
+  total_phases: 29
+  completed_phases: 23
+  total_plans: 38
+  completed_plans: 37
+  percent: 100
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: 56 of 60 (Toggle-Spalten) — complete
+Phase: 57 of 60 (IPv6 Math + UI) — complete
 Plan: 01 of 01 — complete
-Status: Phase 56 complete, ready for Phase 57
-Last activity: 2026-03-24 — Toggle-Spalten implemented (togglePresets.js + SubnetCalculator toggle UI)
+Status: Phase 57 complete, ready for Phase 58
+Last activity: 2026-03-24 — IPv6 math utility + SubnetCalculator IPv6 tab with 128-bit binary display
 
 Progress: [██████████] 100%
 
@@ -50,12 +50,14 @@ Progress: [██████████] 100%
 - IPv6-Math VOR Uebungsmodus (damit Engine beide Protokolle unterstuetzen kann)
 - VLAN-Tab parallel zu Uebungsmodus moeglich (abhaengig nur von Phase 56)
 - [Phase 56]: Test files in tests/unit/ (vitest config), not src/utils/__tests__/ (plan)
+- [Phase 57]: Native BigInt for 128-bit IPv6 arithmetic, full expanded format for display clarity
 
 ### Existing Architecture
 
-- SubnetCalculator.vue: 3 Tabs (Rechner, Binaer, VLSM), ~790 Zeilen, toggle presets integrated
+- SubnetCalculator.vue: 4 Tabs (Rechner, Binaer, VLSM, IPv6), ~960 Zeilen, toggle presets integrated
 - togglePresets.js: Pure utility for row visibility presets (ROW_KEYS, PRESETS, getVisibleRows)
 - subnetMath.js: Pure utility (~305 Zeilen), IPv4-only
+- ipv6Math.js: Pure utility (~180 Zeilen), BigInt-based IPv6 arithmetic
 - Design-Token-System (--lnc-* CSS Variablen)
 - Vue 2.7 mit Options API
 
@@ -69,6 +71,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T08:22:39.671Z
-Stopped at: Completed 56-01-PLAN.md
+Last session: 2026-03-24T08:46:14.339Z
+Stopped at: Completed 57-01-PLAN.md
 Resume file: None

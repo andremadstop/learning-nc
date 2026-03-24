@@ -31,11 +31,22 @@
 - [ ] **VLAN-02**: Visualisierung von Access vs Trunk Ports mit 802.1Q Tagging (welcher Frame bekommt welchen Tag)
 - [ ] **VLAN-03**: Inter-VLAN Routing Darstellung (Router-on-a-Stick oder L3-Switch, Subinterfaces mit VLAN-Zuordnung)
 
+### Rechenweg / Erklaer-Modus
+
+- [ ] **ERK-01**: Im Binaer-Tab wird unter dem Bit-Grid ein Rechenweg-Panel angezeigt das Schritt fuer Schritt die Berechnung erklaert (Prefix → Host-Bits → Blockgroesse → Maske binär → Broadcast-Formel)
+- [ ] **ERK-02**: Jedes Ergebnis-Feld im Rechner-Tab hat einen optionalen "Warum?"-Toggle der die Herleitung zeigt (z.B. "Broadcast = Netzadresse OR Wildcard = 192.168.0.0 OR 0.0.0.31 = 192.168.0.31")
+- [ ] **ERK-03**: User kann zwischen Kompakt-Ansicht (nur Ergebnisse) und Erklaer-Ansicht (mit Rechenweg) umschalten — Anfaenger sehen Erklaerungen, Profis blenden sie aus
+
 ### IPv6
 
-- [ ] **IPV6-01**: User kann IPv6-Adressen mit Prefix eingeben und Netzadresse, Host-Range, Typ (Link-Local, Global Unicast, Multicast) berechnen
-- [ ] **IPV6-02**: Binaer-Display zeigt 128-Bit Darstellung mit farblich markiertem Prefix/Interface-ID
+- [x] **IPV6-01**: User kann IPv6-Adressen mit Prefix eingeben und Netzadresse, Host-Range, Typ (Link-Local, Global Unicast, Multicast) berechnen
+- [x] **IPV6-02**: Binaer-Display zeigt 128-Bit Darstellung mit farblich markiertem Prefix/Interface-ID
 - [ ] **IPV6-03**: Mindestens 5 IPv6-Uebungsszenarien (Prefix-Berechnung, Subnetting eines /48, EUI-64, Link-Local Erkennung)
+
+### Mehrsprachigkeit
+
+- [ ] **I18N-01**: Alle UI-Strings im Subnetzrechner nutzen t('learning', '...') und haben englische Uebersetzungen in l10n/ — kein hardcoded Deutsch
+- [ ] **I18N-02**: Fachbegriffe sind korrekt uebersetzt (Netzadresse/Network Address, Subnetzmaske/Subnet Mask, Hostanteil/Host Portion etc.)
 
 ## Future Requirements
 
@@ -59,8 +70,8 @@
 | TOG-01 | Phase 56 | Complete |
 | TOG-02 | Phase 56 | Complete |
 | TOG-03 | Phase 56 | Complete |
-| IPV6-01 | Phase 57 | Pending |
-| IPV6-02 | Phase 57 | Pending |
+| IPV6-01 | Phase 57 | Complete |
+| IPV6-02 | Phase 57 | Complete |
 | UEB-01 | Phase 58 | Pending |
 | UEB-02 | Phase 58 | Pending |
 | UEB-03 | Phase 58 | Pending |
