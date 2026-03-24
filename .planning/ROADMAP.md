@@ -16,6 +16,7 @@
 - ✅ **v7.0 Hacker-Zeitreise "Hack Through Time"** — Phases 48-51 (shipped 2026-03-23)
 - 🚧 **v4.0 Housekeeping + Content-Rollout** — Phases 52-55 (in progress)
 - 📋 **v7.2 Subnetzrechner Pro** — Phases 56-60 (planned)
+- 📋 **v8.0 VirtuProf v2** — Phases 61-63 (planned)
 
 ## Phases
 
@@ -265,7 +266,7 @@ Plans:
 - [x] **Phase 52: Bugfix & Release** - Binary Tab Fix deployen, App Store Token erneuern + Release hochladen (completed 2026-03-24)
 - [x] **Phase 53: Content-Bereinigung** - Wireshark/Nmap/Network+ Guides von persoenlichen Referenzen bereinigen (completed 2026-03-24)
 - [x] **Phase 54: Content-Verteilung** - Shared Folder einrichten, Guides ablegen, RAG-Quellen registrieren (completed 2026-03-24)
-- [ ] **Phase 55: DevCloud-Hygiene** - Ordner-Redundanzcheck, Aufraeumen, OSSU-Evaluation
+- [x] **Phase 55: DevCloud-Hygiene** - Ordner-Redundanzcheck, Aufraeumen, OSSU-Evaluation (completed 2026-03-24)
 
 ## Phase Details
 
@@ -413,19 +414,65 @@ Plans:
 
 **Plans**: TBD
 
+---
+
+### v8.0 VirtuProf v2 (Phases 61-63)
+
+**Milestone Goal:** VirtuProf wird kontextbewusst — der Bot weiss welche Frage der User gerade sieht, gibt gestufte Hints statt sofort die Antwort, ist im Pruefungsmodus gesperrt, und User koennen Fehler direkt melden.
+
+- [ ] **Phase 61: Kontext-Mapping** - Frontend sendet Fragen-Kontext an Chat-API, GeminiService nutzt ihn im System-Prompt
+- [ ] **Phase 62: Hint-System** - Gestufte Tipps (Richtung, konkreter, fast die Antwort) mit Per-Frage-Tracking
+- [ ] **Phase 63: Exam-Sperre + Fehler-Report** - VirtuProf im Exam-Mode deaktiviert, Fehler-Melde-Funktion mit automatischer Fragen-ID
+
+### Phase 61: Kontext-Mapping
+**Goal**: VirtuProf weiss welche Frage der User gerade sieht und kann direkt darauf eingehen — ohne dass der User die Frage kopieren oder beschreiben muss
+**Depends on**: Phase 60 (v7.2 abgeschlossen) oder eigenstaendig startbar (keine harte Abhaengigkeit auf Subnetzrechner)
+**Requirements**: CTX-01, CTX-02, CTX-03
+**Success Criteria** (what must be TRUE):
+  1. Wenn der User in einem Lernmodus (Training, Leitner, Exam, Abenteuer) eine Frage sieht und den VirtuProf-Chat oeffnet, kennt der Bot die aktuelle Frage — der User kann "Erklaer mir diese Frage" schreiben und bekommt eine kontextbezogene Antwort
+  2. Der Bot kann auf "Warum ist B richtig?" direkt antworten indem er die Antwortoptionen und die korrekte Antwort aus dem Kontext kennt — ohne dass der User die Optionen abtippen muss
+  3. Bei Fragenwechsel (naechste Frage im Lernmodus) aktualisiert sich der Kontext automatisch — der Bot bezieht sich nicht mehr auf die alte Frage
+  4. Die Chat-API akzeptiert den Fragen-Kontext als optionalen Parameter — bestehende Chat-Aufrufe ohne Kontext funktionieren weiterhin (Rueckwaertskompatibilitaet)
+**Plans**: TBD
+
+### Phase 62: Hint-System
+**Goal**: User bekommen gestufte Hilfe statt sofort die Loesung — der Bot fuehrt den User schrittweise zur richtigen Antwort
+**Depends on**: Phase 61 (Fragen-Kontext muss verfuegbar sein damit Hints zur aktuellen Frage passen)
+**Requirements**: HINT-01, HINT-02, HINT-03
+**Success Criteria** (what must be TRUE):
+  1. Der User schreibt "Tipp" oder "Hint" und bekommt eine erste Hilfestellung die nur die Richtung andeutet (z.B. "Denk an OSI-Schicht 3") — nicht die volle Erklaerung
+  2. Beim zweiten "Tipp" wird die Hilfe konkreter (z.B. "Es hat mit Routing-Protokollen zu tun, schau dir die Optionen B und D genauer an") — immer noch nicht die Antwort
+  3. Beim dritten "Tipp" bietet der Bot an die vollstaendige Erklaerung zu zeigen — erst nach expliziter Zustimmung des Users kommt die Loesung
+  4. Bei Wechsel zur naechsten Frage startet der Hint-Zaehler wieder bei 1 — alte Hint-Level haben keinen Einfluss auf die neue Frage
+**Plans**: TBD
+
+### Phase 63: Exam-Sperre + Fehler-Report
+**Goal**: VirtuProf ist im Pruefungsmodus nicht verfuegbar (faire Pruefungsbedingungen) und User koennen Fehler in Fragen direkt aus dem Chat melden
+**Depends on**: Phase 61 (Fragen-Kontext wird fuer den Fehler-Report benoetigt — automatische Fragen-ID)
+**Requirements**: EXAM-01, EXAM-02, REP-01, REP-02
+**Success Criteria** (what must be TRUE):
+  1. Im Exam-Mode ist die VirtuProf-Bubble entweder ausgeblendet oder der Chat-Input ist deaktiviert mit einem Hinweis "Waehrend der Pruefung nicht verfuegbar" — kein Weg KI-Hilfe zu bekommen
+  2. Die Sperre aktiviert sich automatisch wenn der ExamMode-Kontext aktiv ist und deaktiviert sich automatisch nach Pruefungsende — kein manuelles Ein/Ausschalten noetig
+  3. Der User kann per Button oder Kommando ("Fehler melden") ein Problem mit der aktuellen Frage melden und der Report enthaelt automatisch die Fragen-ID und den aktuellen Modus — der User muss nur noch optional einen Kommentar ergaenzen
+  4. Gemeldete Fehler sind fuer den Dozenten/Admin einsehbar (z.B. ueber das bestehende SupportTicketService) — kein Report geht verloren
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 -> 60
+Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 52. Bugfix & Release | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
 | 53. Content-Bereinigung | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
-| 54. Content-Verteilung | 1/1 | Complete    | 2026-03-24 | - |
-| 55. DevCloud-Hygiene | 1/2 | In Progress|  | - |
-| 56. Toggle-Spalten | 1/1 | Complete    | 2026-03-24 | - |
-| 57. IPv6 Math + UI | 1/1 | Complete    | 2026-03-24 | - |
-| 58. Uebungsmodus Engine | 2/2 | Complete   | 2026-03-24 | - |
+| 54. Content-Verteilung | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
+| 55. DevCloud-Hygiene | 2/2 | Complete   | 2026-03-24 | - |
+| 56. Toggle-Spalten | v7.2 Subnetzrechner Pro | 1/1 | Complete | 2026-03-24 |
+| 57. IPv6 Math + UI | v7.2 Subnetzrechner Pro | 1/1 | Complete | 2026-03-24 |
+| 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 2/2 | Complete | 2026-03-24 |
 | 59. Szenarien-Content | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
+| 61. Kontext-Mapping | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
+| 62. Hint-System | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
+| 63. Exam-Sperre + Fehler-Report | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
