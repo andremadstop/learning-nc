@@ -1,16 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: Housekeeping + Content-Rollout
-status: Defining requirements
-stopped_at: Completed 61-02-PLAN.md
-last_updated: "2026-03-24T12:15:55.688Z"
-last_activity: 2026-03-24 — Milestone v9.0 started
+milestone: v10.0
+milestone_name: Campaign Engine v2
+status: ready_to_plan
+stopped_at: null
+last_updated: "2026-03-24T13:12:47Z"
+last_activity: 2026-03-24 — Phase 62 Plan 01 (Hint-System) completed
 progress:
-  total_phases: 39
-  completed_phases: 28
-  total_plans: 46
-  completed_plans: 46
+  total_phases: 4
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -20,33 +21,43 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** Defining requirements for v9.0 Simulator-Werkzeuge
+**Current focus:** v10.0 Campaign Engine v2 — Phase 71: Graph-Engine + DB-Migration
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-24 — Milestone v9.0 started
+Phase: 71 of 74 (Graph-Engine + DB-Migration)
+Plan: Not yet planned
+Status: Ready to plan
+Last activity: 2026-03-24 — Roadmap created
+
+Progress: [░░░░░░░░░░] 0%
+
+## Performance Metrics
+
+**Velocity:**
+- Total plans completed: 0
+- Average duration: —
+- Total execution time: 0 hours
 
 ## Accumulated Context
 
 ### Decisions
 
-- Alle 7 Simulatoren in Scope (DNS, Firewall, Port-Scanner, Routing, NAT, Wireshark-Lite, 802.1X)
-- Rein Frontend, kein Backend
-- Kampagnenfaehig (einbettbar in Abenteuer/Zeitreise)
-- Gleiche UX-Patterns wie Subnetzrechner (Toggle, Uebungsmodus, Erklaer-Modus)
-- [Phase 61]: Vue computed watchers with immediate:true for question context emission ensures sync regardless of navigation method
-- [Phase 61]: ExamMode enforces answer omission at frontend emission point as defense-in-depth alongside backend null-check
+- Gerichteter Graph statt linear (30-50 Knoten)
+- State-Bag als JSON (Flags, Items, Reputation)
+- Abwaertskompatibel mit 20 bestehenden Kampagnen
+- Backend-first, Frontend spaeter
+- Simulatoren (v9.0 Codex) als einbettbare Aufgaben
+- Sequential phases: 71 → 72 → 73 → 74
 
 ### Existing Architecture
 
-- Werkzeuge-Tab in App.vue (Subnetzrechner + VLAN)
-- CLI State Machine (cliStateMachine.js) fuer Terminal-Simulationen
-- SVG Topology Renderer (NetworkTopologySvg.vue) fuer Netzwerk-Diagramme
-- Subnetzrechner Patterns: togglePresets.js, practiceEngine.js, subnetExplainer.js
-- AbenteuerMode.vue mit simulation-Feld fuer eingebettete Simulatoren
+- StoryEngineService.php (1520 Zeilen) — aktuell linear
+- StoryController.php (330 Zeilen) — 9 REST-Endpoints
+- StoryProgress Entity + Mapper — story_progress Tabelle
+- 20 Kampagnen-JSONs in app/data/campaigns/
+- AbenteuerMode.vue mit simulation-Feld
+- GeminiService fuer narrator_mode, dynamic_choices, freetext
 
 ### Pending Todos
 
@@ -58,6 +69,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T12:15:55.684Z
-Stopped at: Completed 61-02-PLAN.md
+Last session: 2026-03-24
+Stopped at: Completed 62-01-PLAN.md (Hint-System). Ready to plan Phase 71.
 Resume file: None

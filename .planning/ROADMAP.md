@@ -18,6 +18,7 @@
 - 📋 **v7.2 Subnetzrechner Pro** — Phases 56-60 (planned)
 - 📋 **v8.0 VirtuProf v2** — Phases 61-63 (planned)
 - 📋 **v9.0 Simulator-Werkzeuge** — Phases 64-70 (planned)
+- 📋 **v10.0 Campaign Engine v2** — Phases 71-74 (planned)
 
 ## Phases
 
@@ -422,7 +423,7 @@ Plans:
 **Milestone Goal:** VirtuProf wird kontextbewusst — der Bot weiss welche Frage der User gerade sieht, gibt gestufte Hints statt sofort die Antwort, ist im Pruefungsmodus gesperrt, und User koennen Fehler direkt melden.
 
 - [x] **Phase 61: Kontext-Mapping** - Frontend sendet Fragen-Kontext an Chat-API, GeminiService nutzt ihn im System-Prompt (completed 2026-03-24)
-- [ ] **Phase 62: Hint-System** - Gestufte Tipps (Richtung, konkreter, fast die Antwort) mit Per-Frage-Tracking
+- [x] **Phase 62: Hint-System** - Gestufte Tipps (Richtung, konkreter, fast die Antwort) mit Per-Frage-Tracking (completed 2026-03-24)
 - [ ] **Phase 63: Exam-Sperre + Fehler-Report** - VirtuProf im Exam-Mode deaktiviert, Fehler-Melde-Funktion mit automatischer Fragen-ID
 
 ### Phase 61: Kontext-Mapping
@@ -449,7 +450,10 @@ Plans:
   2. Beim zweiten "Tipp" wird die Hilfe konkreter (z.B. "Es hat mit Routing-Protokollen zu tun, schau dir die Optionen B und D genauer an") — immer noch nicht die Antwort
   3. Beim dritten "Tipp" bietet der Bot an die vollstaendige Erklaerung zu zeigen — erst nach expliziter Zustimmung des Users kommt die Loesung
   4. Bei Wechsel zur naechsten Frage startet der Hint-Zaehler wieder bei 1 — alte Hint-Level haben keinen Einfluss auf die neue Frage
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [x] 62-01-PLAN.md — Backend hintLevel + graduated prompts, Frontend hint tracking + keyword detection
 
 ### Phase 63: Exam-Sperre + Fehler-Report
 **Goal**: VirtuProf ist im Pruefungsmodus nicht verfuegbar (faire Pruefungsbedingungen) und User koennen Fehler in Fragen direkt aus dem Chat melden
@@ -552,7 +556,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 -> 64 -> 65 -> 66 -> 67 -> 68 -> 69 -> 70
+Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 -> 60 -> 61 -> 62 -> 63 -> 64 -> 65 -> 66 -> 67 -> 68 -> 69 -> 70 -> 71 -> 72 -> 73 -> 74
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -565,7 +569,7 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 2/2 | Complete | 2026-03-24 |
 | 59. Szenarien-Content | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
-| 61. Kontext-Mapping | 2/2 | Complete   | 2026-03-24 | - |
+| 61. Kontext-Mapping | 2/2 | Complete    | 2026-03-24 | - |
 | 62. Hint-System | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
 | 63. Exam-Sperre + Fehler-Report | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
 | 64. DNS-Resolver | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
@@ -575,3 +579,58 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 68. NAT-Tabelle | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
 | 69. Wireshark-Lite | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
 | 70. 802.1X Auth-Flow | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
+| 71. Graph-Engine + DB-Migration | v10.0 Campaign Engine v2 | 0/TBD | Not started | - |
+| 72. Akt-Struktur + Save/Resume + API | v10.0 Campaign Engine v2 | 0/TBD | Not started | - |
+| 73. Rollen-System + Simulator-Integration | v10.0 Campaign Engine v2 | 0/TBD | Not started | - |
+| 74. DAU-Bot | v10.0 Campaign Engine v2 | 0/TBD | Not started | - |
+
+---
+
+### v10.0 Campaign Engine v2 (Phases 71-74)
+
+**Milestone Goal:** Kampagnen-System von linearer Slideshow zu einem echten RPG-artigen Erlebnis umbauen — gerichteter Szenen-Graph, State-Machine mit Flags/Items/Reputation, rollenspezifische Pfade, eingebettete Simulatoren als Aufgaben, KI-Gegner, 60-120 min pro Kampagne. Backend-only (app/lib/, app/appinfo/).
+
+- [ ] **Phase 71: Graph-Engine + DB-Migration** - Gerichteter Szenen-Graph, State-Bag, Bedingungssystem und campaign_state Tabelle
+- [ ] **Phase 72: Akt-Struktur + Save/Resume + API** - Akt-basierte Progression, persistenter Spielstand, REST-Endpoints
+- [ ] **Phase 73: Rollen-System + Simulator-Integration** - Rollenspezifische Pfade, Simulator-Aufgaben als Szenen-Elemente mit Timer
+- [ ] **Phase 74: DAU-Bot** - KI-Gegner der Anfaengerfehler macht, User korrigiert als Lern-Mechanik
+
+### Phase 71: Graph-Engine + DB-Migration
+**Goal**: Das Kampagnen-System verarbeitet gerichtete Szenen-Graphen (30-50 Knoten) statt linearer Ketten, verwaltet einen State-Bag mit Flags/Items/Reputation und wertet Szenen-Bedingungen dynamisch aus
+**Depends on**: Phase 70 (v9.0 abgeschlossen)
+**Requirements**: ENG-01, ENG-02, ENG-03, DB-01
+**Success Criteria** (what must be TRUE):
+  1. Ein Kampagnen-JSON mit Graph-Struktur (nodes + edges statt linearer scene-Liste) wird korrekt geladen und die Engine traversiert den Graph anhand der User-Entscheidungen — bei jeder Szene stehen nur die per Edge erreichbaren Nachfolge-Szenen zur Verfuegung
+  2. Der State-Bag akkumuliert Flags, Items und Reputation-Werte ueber Szenen hinweg — eine Szene kann z.B. ein Flag setzen ("has_evidence") und eine spaetere Szene kann dieses Flag lesen und darauf reagieren
+  3. Szenen mit Bedingungen (z.B. "requires: has_evidence" oder "min_reputation: 5") werden nur angeboten wenn die Bedingung im State-Bag erfuellt ist — nicht erfuellte Pfade sind unsichtbar
+  4. Die DB-Migration erstellt die campaign_state Tabelle (state_bag JSON, act_number, graph_position, timestamps) ohne bestehende story_progress Daten zu zerstoeren — alte lineare Kampagnen funktionieren weiterhin
+**Plans**: TBD
+
+### Phase 72: Akt-Struktur + Save/Resume + API
+**Goal**: Kampagnen haben eine dramaturgische Akt-Struktur, der Spielstand persistiert zuverlaessig ueber Tage und REST-Endpoints ermoeglichen Graph-Traversal und State-Management
+**Depends on**: Phase 71 (Graph-Engine und campaign_state Tabelle muessen existieren)
+**Requirements**: ENG-04, ENG-05, API-01
+**Success Criteria** (what must be TRUE):
+  1. Szenen sind in 3-4 Akte gruppiert (Setup, Investigation, Eskalation, Showdown) und die Engine erzwingt die Akt-Reihenfolge — ein User kann nicht in den Showdown springen ohne die vorherigen Akte durchlaufen zu haben
+  2. Der Spielstand (aktuelle Szene, State-Bag, Akt-Nummer, verstrichene Zeit) wird bei jeder Szenen-Transition automatisch in campaign_state gespeichert — nach Browser-Schluss und erneutem Oeffnen Tage spaeter laeuft die Kampagne exakt an der letzten Position weiter
+  3. REST-Endpoints fuer Graph-Navigation (naechste Szene laden, Entscheidung senden), State-Abfrage (aktueller State-Bag, Position) und Save/Resume (Spielstand laden) sind funktional und per curl testbar — mit korrekter Fehlerbehandlung bei ungueltigen Transitionen
+**Plans**: TBD
+
+### Phase 73: Rollen-System + Simulator-Integration
+**Goal**: Charakterklassen beeinflussen den Kampagnenverlauf durch exklusive Szenen und Pfade, und v9.0-Simulatoren koennen als Aufgaben in Szenen eingebettet werden — mit Ergebnis-Rueckfluss in den State-Bag
+**Depends on**: Phase 72 (Save/Resume und API muessen stehen, Akt-Struktur fuer sinnvolle Pfad-Verzweigung)
+**Requirements**: ROLE-01, ROLE-02, TASK-01, TASK-02, TASK-03
+**Success Criteria** (what must be TRUE):
+  1. Eine Kampagne kann Szenen als rollenexklusiv markieren (z.B. "role: architect" oder "role: security") und die Engine blendet nur die Szenen ein die zur Charakterklasse des Users passen — ein Architect sieht Netzwerk-Szenen, ein Security-Spezialist sieht Forensik-Szenen
+  2. Die Charakterklasse beeinflusst nicht nur welche Szenen sichtbar sind sondern auch welche Pfade im Graph verfuegbar werden — verschiedene Rollen erleben strukturell unterschiedliche Kampagnenverlaeufe (nicht nur kosmetische Unterschiede)
+  3. Eine Szene kann einen Simulator (DNS, Firewall, Port-Scanner etc.) als Aufgabe referenzieren und das Simulator-Ergebnis (bestanden/nicht bestanden, Score, verstrichene Zeit) fliesst in den State-Bag zurueck — eine bestandene Firewall-Aufgabe kann z.B. das Flag "firewall_configured" setzen
+  4. Timer-basierte Aufgaben sind moeglich: die Engine startet einen Countdown und wertet bei Ablauf automatisch als "nicht bestanden" — der Timer-Status ist im State-Bag gespeichert und ueberlebt Save/Resume
+**Plans**: TBD
+
+### Phase 74: DAU-Bot
+**Goal**: Ein KI-Gegner macht typische Anfaengerfehler die der User als Lern-Aufgabe korrigieren muss — der Bot wird zum paedagogischen Werkzeug
+**Depends on**: Phase 73 (Simulator-Integration fuer Aufgaben-Kontext, Rollen-System fuer Szenen-Einbettung)
+**Requirements**: BOT-01, BOT-02
+**Success Criteria** (what must be TRUE):
+  1. Der DAU-Bot generiert realistische Anfaengerfehler in Szenen-Kontext (z.B. Default-Passwoerter setzen, Firewall-Ports offen lassen, Backups vergessen) — die Fehler sind fachlich korrekt modelliert und nicht zufaellig
+  2. Der User bekommt die Bot-Konfiguration/Entscheidung praesentiert und muss die Fehler identifizieren und korrigieren — das Korrektur-Ergebnis (richtig erkannt / uebersehen / falsch korrigiert) fliesst als Score in den State-Bag und beeinflusst den weiteren Kampagnenverlauf
