@@ -326,7 +326,7 @@ Plans:
 
 - [x] **Phase 56: Toggle-Spalten** - Ergebnis-Zeilen ein/ausblenden mit Lern-Presets und Session-Persistenz (completed 2026-03-24)
 - [x] **Phase 57: IPv6 Math + UI** - subnetMath.js um IPv6 erweitern, neuer Tab/Bereich mit 128-Bit Binaer-Display (completed 2026-03-24)
-- [ ] **Phase 57.5: Rechenweg / Erklaer-Modus** - Schritt-fuer-Schritt Berechnung wie der Dozent, Warum-Toggles, Kompakt/Erklaer-Umschalter
+- [x] **Phase 57.5: Rechenweg / Erklaer-Modus** - Schritt-fuer-Schritt Berechnung wie der Dozent, Warum-Toggles, Kompakt/Erklaer-Umschalter (completed 2026-03-24)
 - [ ] **Phase 58: Uebungsmodus Engine** - Aufgaben-Framework mit Zufallsauswahl, Eingabefelder, Prueflogik, Fortschritt
 - [ ] **Phase 59: Szenarien-Content** - 25+ Aufgaben (Subnetting, VLSM, Praxis, IPv6) mit Schwierigkeitsgraden
 - [ ] **Phase 60: VLAN-Tab** - VLAN-ID Zuordnung, Access/Trunk Visualisierung, Inter-VLAN Routing

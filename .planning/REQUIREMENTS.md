@@ -35,7 +35,7 @@
 
 - [x] **ERK-01**: Im Binaer-Tab wird unter dem Bit-Grid ein Rechenweg-Panel angezeigt das Schritt fuer Schritt die Berechnung erklaert (Prefix → Host-Bits → Blockgroesse → Maske binär → Broadcast-Formel)
 - [x] **ERK-02**: Jedes Ergebnis-Feld im Rechner-Tab hat einen optionalen "Warum?"-Toggle der die Herleitung zeigt (z.B. "Broadcast = Netzadresse OR Wildcard = 192.168.0.0 OR 0.0.0.31 = 192.168.0.31")
-- [ ] **ERK-03**: User kann zwischen Kompakt-Ansicht (nur Ergebnisse) und Erklaer-Ansicht (mit Rechenweg) umschalten — Anfaenger sehen Erklaerungen, Profis blenden sie aus
+- [x] **ERK-03**: User kann zwischen Kompakt-Ansicht (nur Ergebnisse) und Erklaer-Ansicht (mit Rechenweg) umschalten — Anfaenger sehen Erklaerungen, Profis blenden sie aus
 
 ### IPv6
 

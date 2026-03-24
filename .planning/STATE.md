@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Housekeeping + Content-Rollout
 status: in_progress
-stopped_at: Completed 57.5-01-PLAN.md
-last_updated: "2026-03-24T09:02:00Z"
-last_activity: 2026-03-24 — subnetExplainer utility with step-by-step IPv4/IPv6 calculation explanations
+stopped_at: Completed 57.5-02-PLAN.md
+last_updated: "2026-03-24T09:18:00Z"
+last_activity: 2026-03-24 — Erklaer-Modus UI with Rechenweg panels and Warum toggles in SubnetCalculator
 progress:
   total_phases: 29
-  completed_phases: 23
+  completed_phases: 24
   total_plans: 40
-  completed_plans: 38
+  completed_plans: 39
   percent: 100
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: 57.5 of 60 (Rechenweg-Erklaer-Modus) — in progress
-Plan: 01 of 02 — complete
-Status: Plan 01 complete, ready for Plan 02
-Last activity: 2026-03-24 — subnetExplainer utility with step-by-step IPv4/IPv6 calculation explanations
+Phase: 57.5 of 60 (Rechenweg-Erklaer-Modus) — complete
+Plan: 02 of 02 — complete
+Status: Phase 57.5 complete, ready for next phase
+Last activity: 2026-03-24 — Erklaer-Modus UI with Rechenweg panels and Warum toggles in SubnetCalculator
 
 Progress: [██████████] 100%
 
@@ -52,10 +52,12 @@ Progress: [██████████] 100%
 - [Phase 56]: Test files in tests/unit/ (vitest config), not src/utils/__tests__/ (plan)
 - [Phase 57]: Native BigInt for 128-bit IPv6 arithmetic, full expanded format for display clarity
 - [Phase 57.5]: Self-contained explainer module with inlined helpers to avoid cross-dependency on subnetMath
+- [Phase 57.5]: Session-persistent explainMode (Vue data, not localStorage) — survives tab switches, resets on page reload
+- [Phase 57.5]: calculatorRowsWithKeys computed merges ROW_KEYS and whyExplanations into row structure
 
 ### Existing Architecture
 
-- SubnetCalculator.vue: 4 Tabs (Rechner, Binaer, VLSM, IPv6), ~960 Zeilen, toggle presets integrated
+- SubnetCalculator.vue: 4 Tabs (Rechner, Binaer, VLSM, IPv6), ~1150 Zeilen, toggle presets + Erklaer-Modus integrated
 - togglePresets.js: Pure utility for row visibility presets (ROW_KEYS, PRESETS, getVisibleRows)
 - subnetMath.js: Pure utility (~305 Zeilen), IPv4-only
 - ipv6Math.js: Pure utility (~180 Zeilen), BigInt-based IPv6 arithmetic
@@ -73,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T09:02:00Z
-Stopped at: Completed 57.5-01-PLAN.md
+Last session: 2026-03-24T09:18:00Z
+Stopped at: Completed 57.5-02-PLAN.md
 Resume file: None
