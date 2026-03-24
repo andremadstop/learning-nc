@@ -179,6 +179,64 @@
 				</tbody>
 			</table>
 		</section>
+
+		<section v-if="isIpv6Tab" class="subnet-panel" role="tabpanel">
+			<label class="subnet-label" for="ipv6-input">{{ t('learning', 'IPv6-Adresse / Prefix') }}</label>
+			<input
+				id="ipv6-input"
+				v-model.trim="ipv6Input"
+				class="subnet-input"
+				:class="ipv6InputClass"
+				type="text"
+				:placeholder="t('learning', 'Beispiel: 2001:db8::1/48 oder fe80::1/10')">
+			<p class="subnet-help">{{ t('learning', 'Die Berechnung aktualisiert sich sofort waehrend der Eingabe.') }}</p>
+			<p v-if="ipv6Error" class="subnet-state subnet-state--error">{{ ipv6Error }}</p>
+			<p v-else-if="ipv6Result" class="subnet-state subnet-state--valid">{{ t('learning', 'Gueltige Eingabe erkannt.') }}</p>
+
+			<table v-if="ipv6Result" class="subnet-table">
+				<tbody>
+					<tr v-for="row in ipv6Rows" :key="row.label">
+						<th scope="row">{{ row.label }}</th>
+						<td>{{ row.value }}</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<div v-if="ipv6Result" class="binary-panel">
+				<div class="binary-legend">
+					<span class="binary-legend__item"><span class="binary-legend__swatch binary-legend__swatch--network"></span>{{ t('learning', 'Prefix') }}</span>
+					<span class="binary-legend__item"><span class="binary-legend__swatch binary-legend__swatch--host"></span>{{ t('learning', 'Interface-ID') }}</span>
+				</div>
+
+				<div class="binary-scroll">
+					<div
+						class="ipv6-binary-grid"
+						:aria-label="t('learning', 'Prefix: {prefix} Bits, Interface-ID: {iid} Bits', { prefix: ipv6Parsed.prefix, iid: 128 - ipv6Parsed.prefix })"
+						role="img">
+						<div
+							v-for="bit in ipv6BitCells"
+							:key="'ipv6bit-' + bit.index"
+							class="binary-grid__bit binary-grid__bit--ipv6"
+							:class="[
+								bit.kind === 'prefix' ? 'binary-grid__bit--network' : 'binary-grid__bit--host',
+								{ 'binary-grid__bit--group-end': bit.isGroupEnd },
+							]"
+							:title="bit.title"
+							:aria-label="bit.title">
+							<span class="binary-grid__value">{{ bit.value }}</span>
+							<span class="binary-grid__index">{{ bit.index }}</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="ipv6-groups">
+					<div v-for="group in ipv6Groups" :key="group.label" class="binary-octets__row">
+						<span class="binary-octets__label">{{ group.label }}</span>
+						<span class="binary-octets__value">{{ group.value }}</span>
+					</div>
+				</div>
+			</div>
+		</section>
 	</section>
 </template>
 
@@ -190,6 +248,13 @@ import {
 	vlsmAllocate,
 } from '../utils/subnetMath.js'
 import { ROW_KEYS, getVisibleRows } from '../utils/togglePresets.js'
+import {
+	parseIPv6,
+	calculateIPv6Subnet,
+	ipv6AddressType,
+	ipv6ToBitArray,
+	formatIPv6,
+} from '../utils/ipv6Math.js'
 
 export default {
 	name: 'SubnetCalculator',
@@ -208,6 +273,7 @@ export default {
 			nextRequirementId: 3,
 			vlsmResults: [],
 			vlsmError: '',
+			ipv6Input: '2001:db8::1/48',
 		}
 	},
 
@@ -215,11 +281,13 @@ export default {
 		isCalculatorTab() { return this.activeTab === 'calculator' },
 		isBinaryTab() { return this.activeTab === 'binary' },
 		isVlsmTab() { return this.activeTab === 'vlsm' },
+		isIpv6Tab() { return this.activeTab === 'ipv6' },
 		tabs() {
 			return [
 				{ id: 'calculator', label: t('learning', 'Rechner') },
 				{ id: 'binary', label: t('learning', 'Binaer-Display') },
 				{ id: 'vlsm', label: t('learning', 'VLSM') },
+				{ id: 'ipv6', label: t('learning', 'IPv6') },
 			]
 		},
 
@@ -306,6 +374,71 @@ export default {
 				'subnet-input--valid': !!this.vlsmParsed,
 				'subnet-input--error': !!this.vlsmInput && !this.vlsmParsed,
 			}
+		},
+
+		ipv6Parsed() {
+			return parseIPv6(this.ipv6Input)
+		},
+
+		ipv6Result() {
+			if (!this.ipv6Parsed) return null
+			const result = calculateIPv6Subnet(
+				this.ipv6Parsed.groups.map(g => g.toString(16)).join(':'),
+				this.ipv6Parsed.prefix,
+			)
+			if (!result) return null
+			result.type = ipv6AddressType(this.ipv6Parsed.groups)
+			return result
+		},
+
+		ipv6Error() {
+			if (!this.ipv6Input) return ''
+			return this.ipv6Result ? '' : t('learning', 'Bitte eine gueltige IPv6-Adresse mit Prefix eingeben (z.B. 2001:db8::1/48).')
+		},
+
+		ipv6InputClass() {
+			return {
+				'subnet-input--valid': !!this.ipv6Result,
+				'subnet-input--error': !!this.ipv6Error,
+			}
+		},
+
+		ipv6Rows() {
+			if (!this.ipv6Result) return []
+			return [
+				{ label: t('learning', 'Netzadresse'), value: formatIPv6(this.ipv6Result.networkGroups) },
+				{ label: t('learning', 'Prefix'), value: '/' + this.ipv6Result.prefix },
+				{ label: t('learning', 'Adresstyp'), value: this.ipv6Result.type },
+				{ label: t('learning', 'Erster Host'), value: formatIPv6(this.ipv6Result.firstHostGroups) },
+				{ label: t('learning', 'Letzter Host'), value: formatIPv6(this.ipv6Result.lastHostGroups) },
+				{ label: t('learning', 'Adressen'), value: this.ipv6Result.hostCount.toString() },
+			]
+		},
+
+		ipv6BitCells() {
+			if (!this.ipv6Parsed) return []
+			const bits = ipv6ToBitArray(this.ipv6Parsed.groups)
+			const prefix = this.ipv6Parsed.prefix
+			return bits.map((value, index) => {
+				const kind = index < prefix ? 'prefix' : 'interface'
+				const group = Math.floor(index / 16) + 1
+				const posInGroup = index % 16
+				return {
+					index,
+					value,
+					kind,
+					isGroupEnd: (index + 1) % 16 === 0 && index !== 127,
+					title: `${t('learning', 'Bit')} ${index} - ${kind === 'prefix' ? t('learning', 'Prefix') : t('learning', 'Interface-ID')} - ${t('learning', 'Gruppe')} ${group} / ${t('learning', 'Position')} ${posInGroup}`,
+				}
+			})
+		},
+
+		ipv6Groups() {
+			if (!this.ipv6Parsed) return []
+			return this.ipv6Parsed.groups.map((g, i) => ({
+				label: t('learning', 'Gruppe {n}', { n: i + 1 }),
+				value: g.toString(16).padStart(4, '0'),
+			}))
 		},
 	},
 
@@ -747,9 +880,43 @@ export default {
 	cursor: pointer;
 }
 
+.ipv6-binary-grid {
+	display: inline-grid;
+	gap: 0;
+	grid-template-columns: repeat(128, minmax(22px, 1fr));
+	min-width: 2816px;
+}
+
+.binary-grid__bit--ipv6 {
+	min-height: 56px;
+	padding: 6px 2px;
+}
+
+.binary-grid__bit--ipv6 .binary-grid__value {
+	font-size: 0.95rem;
+}
+
+.binary-grid__bit--ipv6 .binary-grid__index {
+	font-size: 0.65rem;
+}
+
+.binary-grid__bit--group-end {
+	border-right: 3px solid var(--lnc-primary);
+}
+
+.ipv6-groups {
+	display: grid;
+	gap: 10px;
+	grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
 @media (max-width: 900px) {
 	.binary-octets {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.ipv6-groups {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 
 	.vlsm-form__row {
@@ -769,6 +936,10 @@ export default {
 
 	.binary-octets {
 		grid-template-columns: 1fr;
+	}
+
+	.ipv6-groups {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
 	.toggle-controls {
