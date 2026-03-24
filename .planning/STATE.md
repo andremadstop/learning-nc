@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Housekeeping + Content-Rollout
-status: executing
-stopped_at: Completed 71-02-PLAN.md (Graph Engine Integration). Phase 71 complete.
-last_updated: "2026-03-24T13:30:49.526Z"
-last_activity: 2026-03-24 — Completed 71-02 Graph Engine Integration (Phase 71 complete)
+status: completed
+stopped_at: Completed 63-01-PLAN.md (Exam-Sperre + Fehler-Report). Phase 63 complete.
+last_updated: "2026-03-24T15:31:18Z"
+last_activity: 2026-03-24 — Completed 63-01 Exam-Sperre + Fehler-Report
 progress:
   total_phases: 43
-  completed_phases: 29
+  completed_phases: 30
   total_plans: 50
   completed_plans: 49
-  percent: 2
+  percent: 100
 ---
 
 # Project State
@@ -21,33 +21,37 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** v10.0 Campaign Engine v2 — Phase 71: Graph-Engine + DB-Migration
+**Current focus:** Phase 63: Exam-Sperre + Fehler-Report
 
 ## Current Position
 
-Phase: 71 of 74 (Graph-Engine + DB-Migration)
-Plan: 2 of 2 complete
+Phase: 63 (Exam-Sperre + Fehler-Report)
+Plan: 1 of 1 complete
 Status: Phase Complete
-Last activity: 2026-03-24 — Completed 71-02 Graph Engine Integration
+Last activity: 2026-03-24 — Completed 63-01 Exam-Sperre + Fehler-Report
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 8min
-- Total execution time: 0.3 hours
+- Total plans completed: 3
+- Average duration: 10min
+- Total execution time: 0.5 hours
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 71    | 01   | 7min     | 2     | 4     |
 | 71    | 02   | 9min     | 2     | 4     |
+| 63    | 01   | 13min    | 2     | 5     |
 
 ## Accumulated Context
 
 ### Decisions
 
+- Chat history visible during exam lock, only input/suggestions hidden
+- Report button reuses ticket-intent pipeline via structured message
+- Question error tickets use course_content category for instructor routing
 - Gerichteter Graph statt linear (30-50 Knoten)
 - State-Bag als JSON (Flags, Items, Reputation)
 - Abwaertskompatibel mit 20 bestehenden Kampagnen
@@ -81,5 +85,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: Completed 71-02-PLAN.md (Graph Engine Integration). Phase 71 complete.
+Stopped at: Completed 63-01-PLAN.md (Exam-Sperre + Fehler-Report). Phase 63 complete.
 Resume file: None

@@ -424,7 +424,7 @@ Plans:
 
 - [x] **Phase 61: Kontext-Mapping** - Frontend sendet Fragen-Kontext an Chat-API, GeminiService nutzt ihn im System-Prompt (completed 2026-03-24)
 - [x] **Phase 62: Hint-System** - Gestufte Tipps (Richtung, konkreter, fast die Antwort) mit Per-Frage-Tracking (completed 2026-03-24)
-- [ ] **Phase 63: Exam-Sperre + Fehler-Report** - VirtuProf im Exam-Mode deaktiviert, Fehler-Melde-Funktion mit automatischer Fragen-ID
+- [x] **Phase 63: Exam-Sperre + Fehler-Report** - VirtuProf im Exam-Mode deaktiviert, Fehler-Melde-Funktion mit automatischer Fragen-ID (completed 2026-03-24)
 
 ### Phase 61: Kontext-Mapping
 **Goal**: VirtuProf weiss welche Frage der User gerade sieht und kann direkt darauf eingehen — ohne dass der User die Frage kopieren oder beschreiben muss
@@ -467,7 +467,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 63-01-PLAN.md — Exam-Sperre (VirtuProf deaktiviert) + Fehler-Report Button mit automatischer Fragen-ID
+- [x] 63-01-PLAN.md — Exam-Sperre (VirtuProf deaktiviert) + Fehler-Report Button mit automatischer Fragen-ID
 
 
 ---
@@ -574,7 +574,7 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 61. Kontext-Mapping | 2/2 | Complete    | 2026-03-24 | - |
 | 62. Hint-System | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
-| 63. Exam-Sperre + Fehler-Report | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
+| 63. Exam-Sperre + Fehler-Report | v8.0 VirtuProf v2 | 1/1 | Complete | 2026-03-24 |
 | 64. DNS-Resolver | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
 | 65. Firewall/ACL-Builder | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
 | 66. Port-Scanner | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
