@@ -181,7 +181,8 @@ class VirtuProfController extends Controller {
         string $message,
         ?int $poolId = null,
         ?int $courseId = null,
-        ?int $lastWrongQuestionId = null
+        ?int $lastWrongQuestionId = null,
+        ?array $questionContext = null
     ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -203,6 +204,34 @@ class VirtuProfController extends Controller {
             return $this->handleTicketIntent($message, $poolId, $courseId);
         }
 
+        // Sanitize questionContext if provided
+        if ($questionContext !== null && is_array($questionContext)) {
+            $questionContext['questionText'] = mb_substr(
+                strip_tags((string)($questionContext['questionText'] ?? '')), 0, 500
+            );
+            if (!empty($questionContext['answers']) && is_array($questionContext['answers'])) {
+                $questionContext['answers'] = array_map(
+                    static fn($a) => mb_substr(strip_tags((string)$a), 0, 200),
+                    array_slice($questionContext['answers'], 0, 8)
+                );
+            } else {
+                $questionContext['answers'] = [];
+            }
+            if (isset($questionContext['explanation'])) {
+                $questionContext['explanation'] = mb_substr(
+                    strip_tags((string)$questionContext['explanation']), 0, 500
+                );
+            }
+            if (isset($questionContext['questionId'])) {
+                $questionContext['questionId'] = (int)$questionContext['questionId'];
+            }
+            if (isset($questionContext['correctAnswerIndex']) && $questionContext['correctAnswerIndex'] !== null) {
+                $questionContext['correctAnswerIndex'] = (int)$questionContext['correctAnswerIndex'];
+            }
+        } else {
+            $questionContext = null;
+        }
+
         // Build RAG context when the frontend provides learning context params
         $ragContext = [];
         if ($poolId !== null || $courseId !== null || $lastWrongQuestionId !== null) {
@@ -218,7 +247,7 @@ class VirtuProfController extends Controller {
         // MEM-01: Load persistent chat memory (last 10 entries, oldest-first)
         $memoryEntries = $this->chatMemoryService->loadMemory($this->userId);
 
-        $result = $this->geminiService->chat($message, $this->userId, $ragContext, $memoryEntries);
+        $result = $this->geminiService->chat($message, $this->userId, $ragContext, $memoryEntries, $questionContext);
 
         // SEC-01: invalid_input is a client error
         if (($result['reason'] ?? '') === 'invalid_input') {
