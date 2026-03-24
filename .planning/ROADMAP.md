@@ -380,7 +380,11 @@ Plans:
   2. Pro Aufgabe gibt es Eingabefelder fuer die erwarteten Antworten (Netzadresse, Broadcast, CIDR, Host-Anzahl etc.) — der User tippt seine Loesung ein statt sie auszuwaehlen
   3. Nach Abgabe prueft der Simulator automatisch alle Felder und zeigt pro Feld gruenes Haekchen oder rotes X mit der korrekten Loesung — der User sieht sofort wo er richtig/falsch lag
   4. Ein Fortschritts-Tracker zeigt "X von Y richtig" und die aktuelle Serie (Streak) an — der User erkennt seinen Lernfortschritt innerhalb der Session
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 58-01-PLAN.md — practiceEngine.js utility (TDD) with scenario pool, answer checking, progress tracking
+- [ ] 58-02-PLAN.md — SubnetCalculator.vue practice tab integration + human verification
 
 ### Phase 59: Szenarien-Content
 **Goal**: Mindestens 25 realistische Uebungsszenarien auf CompTIA Network+ Niveau decken Subnetting, VLSM, Praxis-Kontexte und IPv6 ab — mit Schwierigkeitsgraden und typischen Fallstricken
@@ -418,6 +422,6 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 55. DevCloud-Hygiene | v4.0 Housekeeping | 0/TBD | Not started | - |
 | 56. Toggle-Spalten | 1/1 | Complete    | 2026-03-24 | - |
 | 57. IPv6 Math + UI | 1/1 | Complete    | 2026-03-24 | - |
-| 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
+| 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 0/2 | Not started | - |
 | 59. Szenarien-Content | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
