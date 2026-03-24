@@ -109,6 +109,9 @@ export default {
       pendingChatMessage: null,
       // AI global enabled flag (PRIV-02)
       aiEnabled: false,
+      // HINT: graduated hint tracking per question
+      hintLevel: 0,
+      lastHintQuestionId: null,
     }
   },
   computed: {
@@ -262,6 +265,13 @@ export default {
       this.currentContext = {
         ...this.currentContext,
         ...(context || {}),
+      }
+      // HINT-03: Reset hint counter when question changes
+      const newQuestionId = this.currentContext?.questionContext?.questionId
+        || this.currentContext?.questionId || null
+      if (newQuestionId !== this.lastHintQuestionId) {
+        this.hintLevel = 0
+        this.lastHintQuestionId = newQuestionId
       }
     },
     shouldShow(triggerId, script) {
@@ -959,6 +969,11 @@ export default {
       }
     },
 
+    isHintRequest(message) {
+      const lower = message.toLowerCase().trim()
+      const hintKeywords = ['tipp', 'hint', 'hilfe', 'help me', 'einen tipp', 'give me a hint', 'gib mir einen tipp']
+      return hintKeywords.some(kw => lower === kw || lower.startsWith(kw + ' ') || lower.endsWith(' ' + kw))
+    },
     async handleChatSend(message) {
       if (!message || this.chatLoading) {
         return
@@ -1013,6 +1028,12 @@ export default {
       }
       if (this.currentContext?.questionContext) {
         payload.questionContext = this.currentContext.questionContext
+      }
+
+      // HINT: detect hint requests and increment level
+      if (this.isHintRequest(message) && this.currentContext?.questionContext) {
+        this.hintLevel = Math.min(this.hintLevel + 1, 3)
+        payload.hintLevel = this.hintLevel
       }
 
       try {
