@@ -4,11 +4,11 @@
 			<div>
 				<p class="subnet-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
 				<h2 class="subnet-tool__title">{{ t('learning', 'Subnetzrechner') }}</h2>
-				<p class="subnet-tool__subtitle">{{ t('learning', 'Netzadresse, Broadcast, Binardarstellung und VLSM direkt im Browser berechnen.') }}</p>
+				<p class="subnet-tool__subtitle">{{ t('learning', 'Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen.') }}</p>
 			</div>
 			<div class="explain-toggle">
 				<label class="explain-toggle__label" for="explain-mode-toggle">
-					{{ explainMode ? t('learning', 'Erklaer-Modus') : t('learning', 'Kompakt') }}
+					{{ explainMode ? t('learning', 'Erklär-Modus') : t('learning', 'Kompakt') }}
 				</label>
 				<button
 					id="explain-mode-toggle"
@@ -44,9 +44,9 @@
 				:class="calculatorInputClass"
 				type="text"
 				:placeholder="t('learning', 'Beispiel: 192.168.1.0/24 oder 192.168.1.0 255.255.255.0')">
-			<p class="subnet-help">{{ t('learning', 'Die Berechnung aktualisiert sich sofort waehrend der Eingabe.') }}</p>
+			<p class="subnet-help">{{ t('learning', 'Die Berechnung aktualisiert sich sofort während der Eingabe.') }}</p>
 			<p v-if="calculatorError" class="subnet-state subnet-state--error">{{ calculatorError }}</p>
-			<p v-else-if="calculatorResult" class="subnet-state subnet-state--valid">{{ t('learning', 'Gueltige Eingabe erkannt.') }}</p>
+			<p v-else-if="calculatorResult" class="subnet-state subnet-state--valid">{{ t('learning', 'Gültige Eingabe erkannt.') }}</p>
 
 			<div v-if="calculatorResult" class="toggle-controls">
 				<div class="toggle-controls__preset">
@@ -57,7 +57,7 @@
 						:value="activePreset"
 						@change="applyPreset($event.target.value)">
 						<option value="all">{{ t('learning', 'Alle Felder') }}</option>
-						<option value="beginner">{{ t('learning', 'Anfaenger') }}</option>
+						<option value="beginner">{{ t('learning', 'Anfänger') }}</option>
 						<option value="advanced">{{ t('learning', 'Fortgeschritten') }}</option>
 						<option value="basics">{{ t('learning', 'Nur Basics') }}</option>
 						<option v-if="activePreset === 'custom'" value="custom" disabled>{{ t('learning', 'Benutzerdefiniert') }}</option>
@@ -91,7 +91,7 @@
 
 		<section v-if="isBinaryTab" class="subnet-panel" role="tabpanel">
 			<p class="subnet-help">{{ t('learning', 'Netz-Bits sind cyan, Host-Bits amber markiert.') }}</p>
-			<p v-if="!calculatorResult" class="subnet-empty">{{ t('learning', 'Gib zuerst im Rechner-Tab eine gueltige IPv4-Adresse mit Prefix oder Maske ein.') }}</p>
+			<p v-if="!calculatorResult" class="subnet-empty">{{ t('learning', 'Gib zuerst im Rechner-Tab eine gültige IPv4-Adresse mit Prefix oder Maske ein.') }}</p>
 
 			<div v-else class="binary-panel">
 				<div class="binary-legend">
@@ -180,7 +180,7 @@
 
 				<div class="vlsm-form__actions">
 					<button class="subnet-button subnet-button--secondary" type="button" @click="addRequirement">
-						{{ t('learning', 'Subnetz hinzufuegen') }}
+						{{ t('learning', 'Subnetz hinzufügen') }}
 					</button>
 					<button class="subnet-button subnet-button--primary" type="button" @click="calculateVlsm">
 						{{ t('learning', 'Berechnen') }}
@@ -188,7 +188,7 @@
 				</div>
 			</div>
 
-			<p class="subnet-help">{{ t('learning', 'VLSM allociert immer groesste Netze zuerst und nutzt die Netzadresse des eingegebenen Blocks.') }}</p>
+			<p class="subnet-help">{{ t('learning', 'VLSM allociert immer größte Netze zuerst und nutzt die Netzadresse des eingegebenen Blocks.') }}</p>
 			<p v-if="vlsmError" class="subnet-state subnet-state--error">{{ vlsmError }}</p>
 
 			<table v-if="vlsmResults.length" class="subnet-table subnet-table--vlsm">
@@ -222,9 +222,9 @@
 				:class="ipv6InputClass"
 				type="text"
 				:placeholder="t('learning', 'Beispiel: 2001:db8::1/48 oder fe80::1/10')">
-			<p class="subnet-help">{{ t('learning', 'Die Berechnung aktualisiert sich sofort waehrend der Eingabe.') }}</p>
+			<p class="subnet-help">{{ t('learning', 'Die Berechnung aktualisiert sich sofort während der Eingabe.') }}</p>
 			<p v-if="ipv6Error" class="subnet-state subnet-state--error">{{ ipv6Error }}</p>
-			<p v-else-if="ipv6Result" class="subnet-state subnet-state--valid">{{ t('learning', 'Gueltige Eingabe erkannt.') }}</p>
+			<p v-else-if="ipv6Result" class="subnet-state subnet-state--valid">{{ t('learning', 'Gültige Eingabe erkannt.') }}</p>
 
 			<table v-if="ipv6Result" class="subnet-table">
 				<tbody>
@@ -284,9 +284,9 @@
 		<section v-if="isPracticeTab" class="subnet-panel" role="tabpanel">
 			<!-- Not started state -->
 			<div v-if="!practiceStarted" class="practice-start">
-				<p class="subnet-help">{{ t('learning', 'Teste dein Wissen mit zufaelligen Subnetting-Aufgaben. Du bekommst sofort Feedback zu jeder Antwort.') }}</p>
+				<p class="subnet-help">{{ t('learning', 'Teste dein Wissen mit zufälligen Subnetting-Aufgaben. Du bekommst sofort Feedback zu jeder Antwort.') }}</p>
 				<button class="subnet-button subnet-button--primary" @click="startPractice">
-					{{ t('learning', 'Uebung starten') }}
+					{{ t('learning', 'Übung starten') }}
 				</button>
 			</div>
 
@@ -349,13 +349,13 @@
 						v-if="practiceResults === null"
 						class="subnet-button subnet-button--primary"
 						@click="submitPracticeAnswer">
-						{{ t('learning', 'Pruefen') }}
+						{{ t('learning', 'Prüfen') }}
 					</button>
 					<button
 						v-else-if="practiceProgress.remaining > 0"
 						class="subnet-button subnet-button--primary"
 						@click="loadNextScenario">
-						{{ t('learning', 'Naechste Aufgabe') }}
+						{{ t('learning', 'Nächste Aufgabe') }}
 					</button>
 					<button
 						v-else
@@ -441,10 +441,10 @@ export default {
 		tabs() {
 			return [
 				{ id: 'calculator', label: t('learning', 'Rechner') },
-				{ id: 'binary', label: t('learning', 'Binaer-Display') },
+				{ id: 'binary', label: t('learning', 'Binär-Display') },
 				{ id: 'vlsm', label: t('learning', 'VLSM') },
 				{ id: 'ipv6', label: t('learning', 'IPv6') },
-				{ id: 'practice', label: t('learning', 'Uebung') },
+				{ id: 'practice', label: t('learning', 'Übung') },
 			]
 		},
 
@@ -459,7 +459,7 @@ export default {
 
 		calculatorError() {
 			if (!this.calculatorInput) return ''
-			return this.calculatorResult ? '' : t('learning', 'Bitte eine gueltige IPv4-Adresse mit Prefix oder Subnetzmaske eingeben.')
+			return this.calculatorResult ? '' : t('learning', 'Bitte eine gültige IPv4-Adresse mit Prefix oder Subnetzmaske eingeben.')
 		},
 
 		calculatorInputClass() {
@@ -579,7 +579,7 @@ export default {
 
 		ipv6Error() {
 			if (!this.ipv6Input) return ''
-			return this.ipv6Result ? '' : t('learning', 'Bitte eine gueltige IPv6-Adresse mit Prefix eingeben (z.B. 2001:db8::1/48).')
+			return this.ipv6Result ? '' : t('learning', 'Bitte eine gültige IPv6-Adresse mit Prefix eingeben (z.B. 2001:db8::1/48).')
 		},
 
 		ipv6InputClass() {
@@ -710,7 +710,7 @@ export default {
 			this.vlsmResults = []
 
 			if (!this.vlsmParsed) {
-				this.vlsmError = t('learning', 'Bitte ein gueltiges Ausgangsnetz fuer den VLSM-Rechner eingeben.')
+				this.vlsmError = t('learning', 'Bitte ein gültiges Ausgangsnetz fuer den VLSM-Rechner eingeben.')
 				return
 			}
 

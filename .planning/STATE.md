@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Housekeeping + Content-Rollout
 status: completed
-stopped_at: Completed 58-02-PLAN.md
-last_updated: "2026-03-24T10:12:24.854Z"
-last_activity: 2026-03-24 — TDD practiceEngine.js with scenario pool, answer normalization, streak tracking
+stopped_at: Completed 54-01-PLAN.md
+last_updated: "2026-03-24T10:24:55.354Z"
+last_activity: "2026-03-24 — Content distribution: 5 Network+ guides to all users via NC Shared Folder + RAG indexing"
 progress:
   total_phases: 29
-  completed_phases: 25
+  completed_phases: 26
   total_plans: 42
-  completed_plans: 41
+  completed_plans: 42
   percent: 100
 ---
 
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 Phase: 58 of 60 (Uebungsmodus-Engine) — complete
 Plan: 02 of 02 — complete
-Status: Phase 58 complete, ready for Phase 59
-Last activity: 2026-03-24 — Practice tab integration into SubnetCalculator with scenario display, feedback UI, progress tracker
+Status: Phase 58 complete, Phase 54 (content-verteilung) plan 01 complete
+Last activity: 2026-03-24 — Content distribution: 5 Network+ guides to all users via NC Shared Folder + RAG indexing
 
 Progress: [██████████] 100%
 
@@ -58,6 +58,8 @@ Progress: [██████████] 100%
 - [Phase 58]: normalizeAnswer strips leading zeros from dotted-quad octets for flexible comparison
 - [Phase 58]: CIDR matching strips leading slash from both sides for /24 vs 24 equivalence
 - [Phase 58]: Pre-build practiceUserAnswers object with all keys for Vue 2.7 reactivity
+- [Phase 54]: Individual user shares for material folder (not group share) for explicit access control
+- [Phase 54]: Material folder on existing Network+ course (ID 20) — no new course needed
 
 ### Existing Architecture
 
@@ -80,6 +82,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T10:12:24.841Z
-Stopped at: Completed 58-02-PLAN.md
+Last session: 2026-03-24T10:24:55.333Z
+Stopped at: Completed 54-01-PLAN.md
 Resume file: None

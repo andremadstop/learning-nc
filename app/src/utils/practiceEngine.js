@@ -152,7 +152,7 @@ export const DEMO_SCENARIOS = [
 		id: 'demo-subnet-easy-1',
 		type: 'subnet',
 		difficulty: 'easy',
-		question: 'Berechne Netzadresse und Broadcast fuer 192.168.10.0/26',
+		question: 'Berechne Netzadresse und Broadcast für 192.168.10.0/26',
 		context: null,
 		expectedAnswers: {
 			networkAddress: '192.168.10.0',
@@ -175,7 +175,7 @@ export const DEMO_SCENARIOS = [
 		id: 'demo-subnet-medium-1',
 		type: 'subnet',
 		difficulty: 'medium',
-		question: 'Bestimme die Netzadresse fuer die IP 172.16.45.130/20',
+		question: 'Bestimme die Netzadresse für die IP 172.16.45.130/20',
 		context: null,
 		expectedAnswers: {
 			networkAddress: '172.16.32.0',
@@ -187,7 +187,7 @@ export const DEMO_SCENARIOS = [
 		id: 'demo-vlsm-medium-1',
 		type: 'vlsm',
 		difficulty: 'medium',
-		question: 'Ein /24 Netz wird geteilt: 100 Hosts und 50 Hosts. Welchen Prefix bekommt das groessere Subnetz?',
+		question: 'Ein /24 Netz wird geteilt: 100 Hosts und 50 Hosts. Welchen Prefix bekommt das größere Subnetz?',
 		context: null,
 		expectedAnswers: {
 			cidr: '/25',

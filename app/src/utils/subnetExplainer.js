@@ -51,7 +51,7 @@ export function generateIPv4Steps(r) {
 
 	// Step 2: Block size
 	steps.push({
-		label: 'Blockgroesse',
+		label: 'Blockgröße',
 		formula: `2^${hostBits}`,
 		result: `${blockSize}`,
 	})
@@ -81,7 +81,7 @@ export function generateIPv4Steps(r) {
 			const bcByte = parseInt(bcBin, 2)
 
 			steps.push({
-				label: 'Binaer-Rechnung',
+				label: 'Binär-Rechnung',
 				formula: `.${ipByte} = ${netPart} | ${hostPart}  (${bitsInOctet} Netz | ${hostBitsInOctet} Host)`,
 				result: `Netz-Bits auf 0 = ${netBin} = .${netByte}  |  auf 1 = ${bcBin} = .${bcByte}`,
 			})
@@ -230,7 +230,7 @@ export function generateWhyExplanation(fieldKey, r) {
 		return `Broadcast - 1 = ${formatOctets(r.lastHost)}`
 
 	case 'cidr':
-		return `Anzahl der fuehrenden 1-Bits in der Maske = /${r.prefix}`
+		return `Anzahl der führenden 1-Bits in der Maske = /${r.prefix}`
 
 	default:
 		return null

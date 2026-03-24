@@ -78,7 +78,7 @@ describe('generateIPv4Steps', () => {
 		expect(steps[0].result).toContain('7 Host-Bits')
 		expect(steps[1].result).toContain('128')
 		// Step 3 is binary breakdown of the interesting octet
-		expect(steps[3].label).toBe('Binaer-Rechnung')
+		expect(steps[3].label).toBe('Binär-Rechnung')
 		expect(steps[3].formula).toContain('1 Netz')
 		expect(steps[3].formula).toContain('7 Host')
 		expect(steps[7].result).toContain('126')
