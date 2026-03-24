@@ -56,7 +56,7 @@
         </div>
 
         <!-- Quick suggestion chips (above input) -->
-        <div class="chat-suggestions" role="group" :aria-label="vt('Quick suggestions')">
+        <div v-if="!examBlocked" class="chat-suggestions" role="group" :aria-label="vt('Quick suggestions')">
           <button
             v-for="suggestion in quickSuggestions"
             :key="suggestion.key"
@@ -68,8 +68,14 @@
           </button>
         </div>
 
+        <!-- Exam blocked notice -->
+        <div v-if="examBlocked" class="exam-blocked-notice" role="status">
+          <span class="exam-blocked-icon">&#128274;</span>
+          {{ vt('Not available during exam') }}
+        </div>
+
         <!-- Chat input row -->
-        <div class="chat-input-row">
+        <div v-if="!examBlocked" class="chat-input-row">
           <input
             ref="chatInput"
             v-model="chatInput"
@@ -90,6 +96,16 @@
             </svg>
           </button>
         </div>
+
+        <!-- Report error button -->
+        <button
+          v-if="hasQuestionContext && !examBlocked"
+          type="button"
+          class="report-error-btn"
+          :disabled="chatLoading"
+          @click="$emit('report-error')">
+          &#9888; {{ vt('Report error in question') }}
+        </button>
 
         <!-- Clear row -->
         <div v-if="chatMessages.length > 0" class="chat-clear-row">
@@ -453,6 +469,14 @@ export default {
       default: false,
     },
     showConsentDialog: {
+      type: Boolean,
+      default: false,
+    },
+    examBlocked: {
+      type: Boolean,
+      default: false,
+    },
+    hasQuestionContext: {
       type: Boolean,
       default: false,
     },
@@ -1158,5 +1182,41 @@ export default {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* EXAM-01: Exam blocked notice */
+.exam-blocked-notice {
+  text-align: center;
+  color: #888;
+  padding: 12px;
+  font-style: italic;
+  border-top: 1px solid var(--color-border);
+}
+
+.exam-blocked-icon {
+  margin-right: 4px;
+}
+
+/* REP-01: Report error button */
+.report-error-btn {
+  text-align: left;
+  color: var(--color-warning-text, #c45911);
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  opacity: 0.8;
+  width: 100%;
+}
+
+.report-error-btn:hover:not(:disabled) {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.report-error-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 </style>

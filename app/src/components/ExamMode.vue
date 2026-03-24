@@ -581,6 +581,7 @@ export default {
         this.startTimer();
         this.startStatusPolling();
         this.screen = 'exam';
+        this.$root.$emit('virtuprof:exam-mode', true);
         this.$nextTick(() => {
           this.updateSnakeDimensions();
           if (typeof ResizeObserver !== 'undefined') {
@@ -732,6 +733,7 @@ export default {
       this.releaseExamLock()
       this.examEndTime = Math.floor(Date.now() / 1000)
       this.screen = 'results'
+      this.$root.$emit('virtuprof:exam-mode', false);
       this.isLoading = true
       try {
         const cr = await axios.post(generateUrl('/apps/learning/api/training/complete'), this.requestPayload({ sessionId: this.session }))
@@ -853,6 +855,7 @@ export default {
       this.examEndTime = Math.floor(Date.now() / 1000);
       this.isLoading = true;
       this.screen = 'results';
+      this.$root.$emit('virtuprof:exam-mode', false);
 
       try {
         // Collect answered questions into batch
@@ -989,6 +992,7 @@ export default {
       }
       this.stopStatusPolling();
       this.releaseExamLock();
+      this.$root.$emit('virtuprof:exam-mode', false);
       if (this.session) {
         try {
           await axios.post(generateUrl('/apps/learning/api/training/abort'), { sessionId: this.session });
@@ -1025,6 +1029,7 @@ export default {
   },
 
   beforeDestroy() {
+    this.$root.$emit('virtuprof:exam-mode', false);
     this.$root.$emit('virtuprof:context', { questionContext: null });
     window.removeEventListener('keydown', this.handleExamHotkeys);
     if (this.timerInterval) clearInterval(this.timerInterval);

@@ -20,6 +20,8 @@
         :chat-loading="chatLoading"
         :ai-enabled="aiEnabled"
         :show-consent-dialog="showAiConsentDialog"
+        :exam-blocked="isExamMode"
+        :has-question-context="hasActiveQuestionContext"
         @next="nextStep"
         @dismiss="dismiss"
         @action="handleAction"
@@ -27,6 +29,7 @@
         @update:ticketSubject="ticketSubject = $event"
         @update:ticketDraft="ticketDraft = $event"
         @chat-send="handleChatSend"
+        @report-error="handleReportError"
         @consent-accept="handleConsentAccept"
         @consent-decline="handleConsentDecline" />
       <VirtuProfAvatar
@@ -112,6 +115,8 @@ export default {
       // HINT: graduated hint tracking per question
       hintLevel: 0,
       lastHintQuestionId: null,
+      // EXAM-01: VirtuProf chat lock during exam mode
+      isExamMode: false,
     }
   },
   computed: {
@@ -156,6 +161,9 @@ export default {
     hasCourseContext() {
       return !!(this.currentContext && this.currentContext.courseTitle)
     },
+    hasActiveQuestionContext() {
+      return !!(this.currentContext?.questionContext?.questionId)
+    },
     categoryHint() {
       if (this.ticketCategory === 'course_content') {
         return this.vt('Your question will be sent to the course instructor.')
@@ -179,6 +187,7 @@ export default {
     }
     this.$root.$on('virtuprof:trigger', this.enqueue)
     this.$root.$on('virtuprof:context', this.updateContext)
+    this.$root.$on('virtuprof:exam-mode', this.setExamMode)
     this.$root.$on('virtuprof:refresh-duel-invites', this.handleInviteRefreshRequest)
     this.$root.$on('virtuprof:explain-question', this.handleExplainQuestion)
     await this.loadState()
@@ -193,6 +202,7 @@ export default {
   beforeDestroy() {
     this.$root.$off('virtuprof:trigger', this.enqueue)
     this.$root.$off('virtuprof:context', this.updateContext)
+    this.$root.$off('virtuprof:exam-mode', this.setExamMode)
     this.$root.$off('virtuprof:refresh-duel-invites', this.handleInviteRefreshRequest)
     this.$root.$off('virtuprof:explain-question', this.handleExplainQuestion)
     if (this.pendingTimer) {
@@ -260,6 +270,9 @@ export default {
       if (!this.processing && !this.isHelpOpen) {
         this.processNext()
       }
+    },
+    setExamMode(active) {
+      this.isExamMode = !!active
     },
     updateContext(context = {}) {
       this.currentContext = {
