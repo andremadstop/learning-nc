@@ -365,7 +365,11 @@ Plans:
   1. Im Binaer-Tab erscheint unter dem Bit-Grid ein Rechenweg-Panel das zeigt: Prefix → Host-Bits → Blockgroesse → Maske binaer → Netzadresse-Formel → Broadcast-Formel — Schritt fuer Schritt wie der Dozent es erklaert
   2. Jedes Ergebnis-Feld im Rechner-Tab hat einen "Warum?"-Toggle der die Herleitung einblendet (z.B. "Broadcast = Netzadresse OR Wildcard = 192.168.0.0 OR 0.0.0.31 = 192.168.0.31")
   3. Ein Kompakt/Erklaer-Umschalter erlaubt dem User zwischen reiner Ergebnis-Ansicht und ausfuehrlicher Erklaer-Ansicht zu wechseln — die Einstellung bleibt wie die Toggles session-persistent
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 57.5-01-PLAN.md — subnetExplainer.js utility (TDD) with IPv4+IPv6 step generation
+- [ ] 57.5-02-PLAN.md — SubnetCalculator.vue Erklaer-Modus UI integration + human verification
 
 ### Phase 58: Uebungsmodus Engine
 **Goal**: Der Subnetzrechner bietet einen interaktiven Uebungsmodus in dem User Netzwerk-Aufgaben loesen, sofortiges Feedback bekommen und ihren Fortschritt verfolgen
@@ -413,7 +417,7 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 54. Content-Verteilung | v4.0 Housekeeping | 0/1 | Not started | - |
 | 55. DevCloud-Hygiene | v4.0 Housekeeping | 0/TBD | Not started | - |
 | 56. Toggle-Spalten | 1/1 | Complete    | 2026-03-24 | - |
-| 57. IPv6 Math + UI | 1/1 | Complete   | 2026-03-24 | - |
+| 57. IPv6 Math + UI | 1/1 | Complete    | 2026-03-24 | - |
 | 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 59. Szenarien-Content | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
