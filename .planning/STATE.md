@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Housekeeping + Content-Rollout
-status: in_progress
-stopped_at: Completed 57.5-02-PLAN.md
-last_updated: "2026-03-24T09:18:00Z"
-last_activity: 2026-03-24 — Erklaer-Modus UI with Rechenweg panels and Warum toggles in SubnetCalculator
+status: completed
+stopped_at: Completed 58-02-PLAN.md
+last_updated: "2026-03-24T10:12:24.854Z"
+last_activity: 2026-03-24 — TDD practiceEngine.js with scenario pool, answer normalization, streak tracking
 progress:
   total_phases: 29
-  completed_phases: 24
-  total_plans: 40
-  completed_plans: 39
+  completed_phases: 25
+  total_plans: 42
+  completed_plans: 41
   percent: 100
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-24)
 
 ## Current Position
 
-Phase: 57.5 of 60 (Rechenweg-Erklaer-Modus) — complete
+Phase: 58 of 60 (Uebungsmodus-Engine) — complete
 Plan: 02 of 02 — complete
-Status: Phase 57.5 complete, ready for next phase
-Last activity: 2026-03-24 — Erklaer-Modus UI with Rechenweg panels and Warum toggles in SubnetCalculator
+Status: Phase 58 complete, ready for Phase 59
+Last activity: 2026-03-24 — Practice tab integration into SubnetCalculator with scenario display, feedback UI, progress tracker
 
 Progress: [██████████] 100%
 
@@ -54,6 +54,10 @@ Progress: [██████████] 100%
 - [Phase 57.5]: Self-contained explainer module with inlined helpers to avoid cross-dependency on subnetMath
 - [Phase 57.5]: Session-persistent explainMode (Vue data, not localStorage) — survives tab switches, resets on page reload
 - [Phase 57.5]: calculatorRowsWithKeys computed merges ROW_KEYS and whyExplanations into row structure
+- [Phase 58]: Engine is scenario-agnostic: scenarios carry pre-computed expectedAnswers, no subnetMath import needed
+- [Phase 58]: normalizeAnswer strips leading zeros from dotted-quad octets for flexible comparison
+- [Phase 58]: CIDR matching strips leading slash from both sides for /24 vs 24 equivalence
+- [Phase 58]: Pre-build practiceUserAnswers object with all keys for Vue 2.7 reactivity
 
 ### Existing Architecture
 
@@ -62,6 +66,7 @@ Progress: [██████████] 100%
 - subnetMath.js: Pure utility (~305 Zeilen), IPv4-only
 - ipv6Math.js: Pure utility (~180 Zeilen), BigInt-based IPv6 arithmetic
 - subnetExplainer.js: Pure utility (~213 Zeilen), step-by-step explanations for IPv4/IPv6
+- practiceEngine.js: Pure utility (~206 Zeilen), scenario pool, answer checking, session tracking
 - Design-Token-System (--lnc-* CSS Variablen)
 - Vue 2.7 mit Options API
 
@@ -75,6 +80,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-24T09:18:00Z
-Stopped at: Completed 57.5-02-PLAN.md
+Last session: 2026-03-24T10:12:24.841Z
+Stopped at: Completed 58-02-PLAN.md
 Resume file: None
