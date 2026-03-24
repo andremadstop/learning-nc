@@ -1,0 +1,33 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:vue/essential"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "rules": {
+    "vue/no-v-html": "error",
+    "vue/multi-word-component-names": "off",
+    "vue/no-mutating-props": "warn",
+    "no-console": "off",
+    "no-debugger": "error",
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+  },
+  "globals": {
+    "t": "readonly",
+    "n": "readonly",
+    "OC": "readonly",
+    "OCA": "readonly",
+    "OCP": "readonly"
+  }
+}

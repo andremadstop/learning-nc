@@ -100,6 +100,8 @@ class LeitnerServiceTest extends TestCase {
             ->willReturnCallback(static fn(array $items): array => $items);
         $config->method('getUserValue')->willReturn('');
 
+        $lernprofilService = $this->createMock(\OCA\Learning\Service\LernprofilService::class);
+
         return new LeitnerService(
             $db,
             $poolMapper,
@@ -110,7 +112,8 @@ class LeitnerServiceTest extends TestCase {
             new \OCA\Learning\Tests\Support\FakeCacheFactory(),
             $translationService,
             $config,
-            $courseService
+            $courseService,
+            $lernprofilService
         );
     }
 }

@@ -6,7 +6,7 @@ export default {
 		},
 		dismissHint(id) {
 			try { localStorage.setItem('learning-hint-' + id + '-dismissed', '1'); }
-			catch {}
+			catch (_e) { /* intentional */ }
 			this.$forceUpdate();
 		},
 	},

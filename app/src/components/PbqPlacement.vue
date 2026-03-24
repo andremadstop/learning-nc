@@ -26,8 +26,8 @@
         </div>
       </div>
       <!-- Hotspot overlays: only in image mode, not SVG topology mode -->
+      <template v-if="scenarioImage && !topologyConfig">
       <div
-        v-if="scenarioImage && !topologyConfig"
         v-for="pos in config.positions"
         :key="'hs-' + pos.id"
         class="pbq-hotspot"
@@ -39,6 +39,7 @@
         <span v-if="!value[pos.id]">?</span>
         <span v-else class="pbq-hotspot-label">{{ value[pos.id].substring(0,4) }}</span>
       </div>
+      </template>
 
       <!-- Inline picker overlay: only in SVG topology mode, positioned above clicked node -->
       <div

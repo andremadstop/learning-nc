@@ -16,12 +16,12 @@
 				:class="{ 'subnet-tool__tab--active': activeTab === tab.id }"
 				role="tab"
 				:aria-selected="activeTab === tab.id ? 'true' : 'false'"
-				@click="activeTab = tab.id">
+				@click="switchTab(tab.id)">
 				{{ tab.label }}
 			</button>
 		</nav>
 
-		<section v-if="activeTab === 'calculator'" class="subnet-panel" role="tabpanel">
+		<section v-if="isCalculatorTab" class="subnet-panel" role="tabpanel">
 			<label class="subnet-label" for="subnet-calculator-input">{{ t('learning', 'IP/CIDR oder IP + Maske') }}</label>
 			<input
 				id="subnet-calculator-input"
@@ -44,7 +44,7 @@
 			</table>
 		</section>
 
-		<section v-else-if="activeTab === 'binary'" class="subnet-panel" role="tabpanel">
+		<section v-if="isBinaryTab" class="subnet-panel" role="tabpanel">
 			<p class="subnet-help">{{ t('learning', 'Netz-Bits sind cyan, Host-Bits amber markiert.') }}</p>
 			<p v-if="!calculatorResult" class="subnet-empty">{{ t('learning', 'Gib zuerst im Rechner-Tab eine gueltige IPv4-Adresse mit Prefix oder Maske ein.') }}</p>
 
@@ -85,7 +85,7 @@
 			</div>
 		</section>
 
-		<section v-else class="subnet-panel" role="tabpanel">
+		<section v-if="isVlsmTab" class="subnet-panel" role="tabpanel">
 			<div class="vlsm-form">
 				<div class="vlsm-form__field">
 					<label class="subnet-label" for="vlsm-network-input">{{ t('learning', 'Ausgangsnetz') }}</label>
@@ -186,6 +186,9 @@ export default {
 	},
 
 	computed: {
+		isCalculatorTab() { return this.activeTab === 'calculator' },
+		isBinaryTab() { return this.activeTab === 'binary' },
+		isVlsmTab() { return this.activeTab === 'vlsm' },
 		tabs() {
 			return [
 				{ id: 'calculator', label: t('learning', 'Rechner') },
@@ -273,6 +276,9 @@ export default {
 	},
 
 	methods: {
+		switchTab(id) {
+			this.$set(this.$data, 'activeTab', id)
+		},
 		formatAddress(octets) {
 			return octets ? ipToString(octets) : '-'
 		},

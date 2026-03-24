@@ -181,7 +181,7 @@
                   v-model="freetextInput"
                   type="text"
                   class="ab-freetext-field"
-                  :placeholder="t('learning', 'Was tust du? (z.B. \"Ich trenne den Server vom Netz\")')"
+                  :placeholder="t('learning', 'Was tust du? (z.B. Ich trenne den Server vom Netz)')"
                   :disabled="freetextLoading"
                   maxlength="500"
                   @keydown.enter="submitFreetext"
@@ -559,6 +559,7 @@ export default {
 			characters: CHARACTERS,
 			selectedCampaign: null,
 			selectedCharacter: null,
+			forceNewCampaign: false,
 
 			// Scene
 			currentScene: null,
@@ -705,23 +706,7 @@ export default {
 			}
 			const cid = this.selectedCampaign.id
 
-			// Try to resume existing progress first
-			try {
-				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/scene`)
-				const resp = await axios.get(url)
-				if (resp.data?.scene?.id) {
-					this.phase = 'scene'
-					this.choiceMade = false
-					this.currentScene = resp.data.scene
-					this.loadingScene = false
-					this.startTypewriter(this.currentScene.narrative)
-					return
-				}
-			} catch (e) {
-				// No existing progress — start fresh
-			}
-
-			// Start new campaign
+			// Always start fresh — POST /start deletes old progress and creates new session
 			try {
 				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/start`)
 				const resp = await axios.post(url, {
@@ -1044,6 +1029,18 @@ export default {
 		 */
 		buildSimQuestion(simulation) {
 			const typeMap = {
+				cli: {
+					pbq_subtype: 'cli',
+					pbq_config: {
+						hint: simulation.description || t('learning', 'Nutze die Kommandozeile, um das Problem zu lösen.'),
+						domain: simulation.domain || 'cisco_ios',
+						terminals: simulation.terminals || [
+							{ name: 'SW1' },
+						],
+						command_outputs: simulation.command_outputs || {},
+						evaluation: simulation.evaluation || { required_commands: [] },
+					},
+				},
 				switch_config: {
 					pbq_subtype: 'switch_config',
 					pbq_config: {
@@ -1161,6 +1158,7 @@ export default {
 
 		restartCampaign() {
 			this.sessionStats = { scenesCompleted: 0, skillChecksPassed: 0, skillChecksTotal: 0, xpEarned: 0 }
+			this.forceNewCampaign = true
 			this.phase = 'character-select'
 		},
 

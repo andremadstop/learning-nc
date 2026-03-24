@@ -652,7 +652,7 @@ export default {
             this.lockDenied = true
             return false
           }
-        } catch {}
+        } catch (_e) { /* intentional */ }
       }
       localStorage.setItem(key, JSON.stringify({ tabId: this.tabLockId, ts: now }))
       this.lockDenied = false
@@ -678,7 +678,7 @@ export default {
         if (parsed.tabId === this.tabLockId) {
           localStorage.removeItem(key)
         }
-      } catch {}
+      } catch (_e) { /* intentional */ }
     },
     startStatusPolling() {
       if (this.statusPollTimer) clearInterval(this.statusPollTimer)
@@ -704,7 +704,7 @@ export default {
         if (s.completed) {
           await this.fetchCompletedResultOnly(!!s.timed_out)
         }
-      } catch {}
+      } catch (_e) { /* intentional */ }
     },
     async fetchCompletedResultOnly(forceTimedOut = false) {
       if (this.timerInterval) {
@@ -975,7 +975,7 @@ export default {
       if (this.session) {
         try {
           await axios.post(generateUrl('/apps/learning/api/training/abort'), { sessionId: this.session });
-        } catch {}
+        } catch (_e) { /* intentional */ }
       }
       this.$emit('back');
     },

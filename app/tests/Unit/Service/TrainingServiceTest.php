@@ -15,6 +15,8 @@ use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\TrainingService;
 use OCA\Learning\Service\TranslationService;
 use OCA\Learning\Service\XpService;
+use OCA\Learning\Service\LernprofilService;
+use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Tests\Support\FakeCacheFactory;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
@@ -180,6 +182,9 @@ class TrainingServiceTest extends TestCase {
         $config->method('getUserValue')->willReturn('');
         // logger->info() is void — no willReturn needed, mock accepts any call by default
 
+        $lernprofilService = $this->createMock(LernprofilService::class);
+        $noteGeneratorService = $this->createMock(NoteGeneratorService::class);
+
         return new TrainingService(
             $db,
             $questionMapper,
@@ -193,7 +198,9 @@ class TrainingServiceTest extends TestCase {
             $translationService,
             $config,
             $logger,
-            $courseService
+            $courseService,
+            $lernprofilService,
+            $noteGeneratorService
         );
     }
 
