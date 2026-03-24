@@ -15,6 +15,7 @@
 - ✅ **v6.2 Visual Identity + Charakter-Cast** — Phases 44-47 (shipped 2026-03-23)
 - ✅ **v7.0 Hacker-Zeitreise "Hack Through Time"** — Phases 48-51 (shipped 2026-03-23)
 - 🚧 **v4.0 Housekeeping + Content-Rollout** — Phases 52-55 (in progress)
+- 📋 **v7.2 Subnetzrechner Pro** — Phases 56-60 (planned)
 
 ## Phases
 
@@ -302,7 +303,10 @@ Plans:
   1. Ein Shared Folder "Kurs-Materialien" (oder aequivalent) existiert auf der Nextcloud-Instanz und ist fuer alle Kurs-User sichtbar — ein eingeloggter Student kann den Ordner in seiner Dateiansicht sehen
   2. Die bereinigten Network+ Guides (Wireshark, Nmap, Wissensbasis etc.) liegen im Shared Folder und sind lesbar — kein 404, keine Berechtigungsfehler
   3. VirtuProf kann eine inhaltliche Frage zu den Guides korrekt beantworten (z.B. "Wie starte ich einen Nmap SYN-Scan?") — die RAG-Quellen sind registriert und der Kontext fliesst in die Antwort ein
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 54-01-PLAN.md — NC Shared Folder + guide distribution + RAG indexing + VirtuProf verification
 
 ### Phase 55: DevCloud-Hygiene
 **Goal**: Die DevCloud-Umgebung ist aufgeraeumt, redundante Daten sind entfernt und OSSU als Kursstruktur ist bewertet
@@ -314,14 +318,88 @@ Plans:
   3. Eine dokumentierte Evaluation des OSSU Curriculum als Kursstruktur-Template liegt vor — mit Fazit ob und wie es als Kursstruktur in Learning-NC importiert werden kann
 **Plans**: TBD
 
+---
+
+### v7.2 Subnetzrechner Pro (Phases 56-60)
+
+**Milestone Goal:** Subnetzrechner zum interaktiven Lernwerkzeug ausbauen — Toggle-Spalten fuer schrittweises Lernen, Uebungsmodus mit realistischen CompTIA-Szenarien, VLAN-Visualisierung und IPv6-Support. Nur Frontend (app/src/, app/js/).
+
+- [ ] **Phase 56: Toggle-Spalten** - Ergebnis-Zeilen ein/ausblenden mit Lern-Presets und Session-Persistenz
+- [ ] **Phase 57: IPv6 Math + UI** - subnetMath.js um IPv6 erweitern, neuer Tab/Bereich mit 128-Bit Binaer-Display
+- [ ] **Phase 58: Uebungsmodus Engine** - Aufgaben-Framework mit Zufallsauswahl, Eingabefelder, Prueflogik, Fortschritt
+- [ ] **Phase 59: Szenarien-Content** - 25+ Aufgaben (Subnetting, VLSM, Praxis, IPv6) mit Schwierigkeitsgraden
+- [ ] **Phase 60: VLAN-Tab** - VLAN-ID Zuordnung, Access/Trunk Visualisierung, Inter-VLAN Routing
+
+### Phase 56: Toggle-Spalten
+**Goal**: User koennen im Subnetzrechner gezielt Ergebnis-Zeilen ein/ausblenden um schrittweise zu lernen — von Anfaenger-Presets bis zur vollen Anzeige
+**Depends on**: Phase 55 (v4.0 Housekeeping abgeschlossen)
+**Requirements**: TOG-01, TOG-02, TOG-03
+**Success Criteria** (what must be TRUE):
+  1. Im Rechner-Tab kann der User jede einzelne Ergebnis-Zeile (Netzadresse, Broadcast, CIDR, Subnetzmaske, Host-Anzahl, etc.) per Checkbox sichtbar oder unsichtbar schalten — verdeckte Zeilen sind nicht im DOM sichtbar
+  2. Ein Preset-Dropdown bietet mindestens 4 Optionen (Alle, Anfaenger, Fortgeschritten, Nur Basics) die jeweils eine sinnvolle Kombination von Zeilen aktivieren — der User erkennt sofort den Unterschied zwischen den Presets
+  3. Die Toggle-Einstellung bleibt beim Tab-Wechsel (Rechner/Binaer/VLSM) erhalten — nach Hin- und Zurueckwechseln ist die gleiche Konfiguration aktiv wie vorher
+**Plans**: 1 plan
+
+Plans:
+- [ ] 56-01-PLAN.md — Toggle-Presets utility + SubnetCalculator toggle UI
+
+### Phase 57: IPv6 Math + UI
+**Goal**: Der Subnetzrechner unterstuetzt IPv6-Adressen mit korrekter Berechnung und visueller 128-Bit Darstellung
+**Depends on**: Phase 56 (Toggle-System als UI-Pattern verfuegbar)
+**Requirements**: IPV6-01, IPV6-02
+**Success Criteria** (what must be TRUE):
+  1. Der User kann eine IPv6-Adresse mit Prefix (z.B. 2001:db8::1/48) eingeben und sieht korrekt berechnete Netzadresse, Host-Range und Adresstyp (Link-Local, Global Unicast, Multicast) — die Berechnung stimmt mit Referenz-Tools ueberein
+  2. Ein Binaer-Display zeigt die vollstaendige 128-Bit Darstellung der IPv6-Adresse mit farblicher Trennung von Prefix und Interface-ID — der User erkennt visuell wo die Netzgrenze liegt
+  3. subnetMath.js enthaelt reine IPv6-Funktionen (Parsing, Expansion, Prefix-Berechnung, Typ-Erkennung) die per Vitest getestet sind — mindestens 10 Unit-Tests fuer IPv6-Logik
+**Plans**: TBD
+
+### Phase 58: Uebungsmodus Engine
+**Goal**: Der Subnetzrechner bietet einen interaktiven Uebungsmodus in dem User Netzwerk-Aufgaben loesen, sofortiges Feedback bekommen und ihren Fortschritt verfolgen
+**Depends on**: Phase 57 (IPv6-Math verfuegbar fuer gemischte Aufgaben)
+**Requirements**: UEB-01, UEB-02, UEB-03, UEB-04
+**Success Criteria** (what must be TRUE):
+  1. Der User kann einen Uebungsmodus starten und bekommt eine zufaellig ausgewaehlte Aufgabe aus dem Szenario-Pool angezeigt — mit Aufgabentext und Kontext (z.B. "Berechne die Broadcast-Adresse fuer 192.168.10.0/26")
+  2. Pro Aufgabe gibt es Eingabefelder fuer die erwarteten Antworten (Netzadresse, Broadcast, CIDR, Host-Anzahl etc.) — der User tippt seine Loesung ein statt sie auszuwaehlen
+  3. Nach Abgabe prueft der Simulator automatisch alle Felder und zeigt pro Feld gruenes Haekchen oder rotes X mit der korrekten Loesung — der User sieht sofort wo er richtig/falsch lag
+  4. Ein Fortschritts-Tracker zeigt "X von Y richtig" und die aktuelle Serie (Streak) an — der User erkennt seinen Lernfortschritt innerhalb der Session
+**Plans**: TBD
+
+### Phase 59: Szenarien-Content
+**Goal**: Mindestens 25 realistische Uebungsszenarien auf CompTIA Network+ Niveau decken Subnetting, VLSM, Praxis-Kontexte und IPv6 ab — mit Schwierigkeitsgraden und typischen Fallstricken
+**Depends on**: Phase 58 (Uebungsmodus-Engine muss Szenarien laden koennen)
+**Requirements**: SCN-01, SCN-02, SCN-03, SCN-04, IPV6-03
+**Success Criteria** (what must be TRUE):
+  1. Mindestens 15 Subnetting-Aufgaben testen CIDR-Berechnung, Host-Ranges und nicht-aligned Adressen — der User begegnet realistischen Network+-Fragetypen
+  2. Mindestens 5 VLSM-Aufgaben verlangen das Aufteilen eines Netzwerks in mehrere Subnetze fuer verschiedene Abteilungen/Standorte — mit unterschiedlichen Host-Anforderungen pro Subnetz
+  3. Mindestens 5 Praxis-Szenarien beschreiben einen realen Kontext (Firma, Server-Rack, Filialstruktur) und fragen nach konkreten Netzwerk-Konfigurationen — der User uebt anwendungsbezogenes Denken
+  4. Mindestens 5 IPv6-Szenarien decken Prefix-Berechnung, /48-Subnetting, EUI-64 und Link-Local Erkennung ab — der User kann IPv6-Grundlagen im Uebungsmodus trainieren
+  5. Jede Aufgabe hat einen Schwierigkeitsgrad (Leicht/Mittel/Schwer) und die Sammlung deckt typische Fallstricke ab (Broadcast abziehen, Router-Interface beruecksichtigen, nicht auf Netzgrenze liegende Adressen)
+**Plans**: TBD
+
+### Phase 60: VLAN-Tab
+**Goal**: Ein neuer VLAN-Tab im Subnetzrechner visualisiert VLAN-Zuordnungen, 802.1Q Tagging und Inter-VLAN Routing — der User versteht die Zusammenhaenge zwischen VLANs und Subnetzen
+**Depends on**: Phase 56 (Toggle-Pattern fuer konsistente UI)
+**Requirements**: VLAN-01, VLAN-02, VLAN-03
+**Success Criteria** (what must be TRUE):
+  1. Ein neuer Tab "VLAN" ist im Subnetzrechner sichtbar und erlaubt dem User VLAN-IDs einzugeben und Subnetzen zuzuordnen — die Zuordnung ist sofort visuell erkennbar
+  2. Eine Visualisierung zeigt Access-Ports und Trunk-Ports mit 802.1Q Tagging — der User sieht welche Frames getaggt werden und welche nicht (untagged auf Access, tagged auf Trunk)
+  3. Eine Inter-VLAN Routing Darstellung zeigt Router-on-a-Stick oder L3-Switch Konfiguration mit Subinterfaces und VLAN-Zuordnung — der User versteht wie Pakete zwischen VLANs geroutet werden
+
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 52 -> 53 -> 54 -> 55
+Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 -> 60
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 52. Bugfix & Release | 1/1 | Complete    | 2026-03-24 | - |
-| 53. Content-Bereinigung | 1/1 | Complete   | 2026-03-24 | - |
-| 54. Content-Verteilung | v4.0 Housekeeping | 0/TBD | Not started | - |
+| 52. Bugfix & Release | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
+| 53. Content-Bereinigung | v4.0 Housekeeping | 1/1 | Complete | 2026-03-24 |
+| 54. Content-Verteilung | v4.0 Housekeeping | 0/1 | Not started | - |
 | 55. DevCloud-Hygiene | v4.0 Housekeeping | 0/TBD | Not started | - |
+| 56. Toggle-Spalten | v7.2 Subnetzrechner Pro | 0/1 | Not started | - |
+| 57. IPv6 Math + UI | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
+| 58. Uebungsmodus Engine | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
+| 59. Szenarien-Content | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
+| 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
