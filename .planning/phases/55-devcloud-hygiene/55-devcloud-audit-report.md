@@ -150,3 +150,48 @@ Authentisches Dozenten-Material (CompTIA-Network N10-009: 732 MB, CompTIA-A-Plus
 3. **Batch:** Alle `Mein-Wissensvault/` per NC occ files:scan nach Loeschung aktualisieren
 4. **Pruefung:** `admin/Learning/images/` auf Referenzen checken vor Loeschung
 5. **Optional:** `memories/` Verzeichnis bewerten — aktives Projekt oder archivierbar?
+
+## Cleanup-Ergebnis
+
+> Durchgefuehrt: 2026-03-24 | Genehmigt durch User vor Ausfuehrung
+
+### Geloeschte Pfade
+
+| # | Pfad | Groesse | Typ |
+|---|------|---------|-----|
+| 1 | `/var/www/html/data/nextcloud.log.1` (Container) | 1011 MB | NC Log (rotiert) |
+| 2 | `Mein-Wissensvault/` bei 12 Usern (Container) | 64.8 MB | Redundante Vault-Kopien |
+| 3 | `/var/www/html/data/admin/files/Kursmaterial/` (Container) | 5.4 MB | Alter Kurs-Ordner |
+| 4 | `/home/andre/stas-bundle/` (Host) | 5.4 MB | Obsoleter STAS-Bundle |
+| 5 | `/home/andre/memories/` (Host) | 503 MB | Inaktives Memories-Fork-Projekt |
+
+**Gesamt geloescht: ~1590 MB**
+
+### Behalten (mit Begruendung)
+
+| Pfad | Groesse | Grund |
+|------|---------|-------|
+| `admin/Learning/images/` | 82 MB | 112 Fragen referenzieren diese Bilder (DB: `oc_learning_questions.image_path`) |
+| `broecker/Dozenten-Material/` | 827 MB | Originaeres Dozenten-Material, kein Duplikat |
+| `Vorlagen/` (6 User) | 66 MB | NC-Standard, wird bei Login neu erstellt |
+
+### Konfigurationsaenderungen
+
+- **Log-Rotation**: `log_rotate_size` auf 52428800 (50 MB) gesetzt via `occ config:system:set`
+- **files:scan**: `occ files:scan --all` ausgefuehrt — 80 Dateien aus File-Cache entfernt, 0 Fehler
+
+### Vorher/Nachher Speichervergleich
+
+| Metrik | Vorher | Nachher | Delta |
+|--------|--------|---------|-------|
+| Disk Used (gesamt) | 14 GB (47%) | 13 GB (42%) | **-1 GB** |
+| User Home /home/andre/ | 925 MB | 416 MB | **-509 MB** |
+| NC Logs | 1033 MB | 31 MB | **-1002 MB** |
+| NC User Data (12 User) | ~1053 MB | ~983 MB | **-70 MB** |
+| **Gesamt freigegebener Speicher** | | | **~1.6 GB** |
+
+### Hinweise
+
+- Die tatsaechliche Disk-Einsparung (1 GB vs projizierte 1.6 GB) erklaert sich durch Docker Overlay-Filesystem-Overhead und Block-Alignment
+- `admin/Learning/images/` wurde NICHT geloescht — DB-Pruefung ergab 112 aktive Bild-Referenzen
+- Log-Rotation verhindert kuenftig das Anwachsen der Log-Dateien ueber 50 MB
