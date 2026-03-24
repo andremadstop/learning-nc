@@ -182,7 +182,8 @@ class VirtuProfController extends Controller {
         ?int $poolId = null,
         ?int $courseId = null,
         ?int $lastWrongQuestionId = null,
-        ?array $questionContext = null
+        ?array $questionContext = null,
+        ?int $hintLevel = null
     ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -232,6 +233,13 @@ class VirtuProfController extends Controller {
             $questionContext = null;
         }
 
+        // HINT: Validate and clamp hintLevel to 1-3 range
+        if ($hintLevel !== null && $hintLevel > 0) {
+            $hintLevel = max(1, min(3, $hintLevel));
+        } else {
+            $hintLevel = null;
+        }
+
         // Build RAG context when the frontend provides learning context params
         $ragContext = [];
         if ($poolId !== null || $courseId !== null || $lastWrongQuestionId !== null) {
@@ -247,7 +255,7 @@ class VirtuProfController extends Controller {
         // MEM-01: Load persistent chat memory (last 10 entries, oldest-first)
         $memoryEntries = $this->chatMemoryService->loadMemory($this->userId);
 
-        $result = $this->geminiService->chat($message, $this->userId, $ragContext, $memoryEntries, $questionContext);
+        $result = $this->geminiService->chat($message, $this->userId, $ragContext, $memoryEntries, $questionContext, $hintLevel);
 
         // SEC-01: invalid_input is a client error
         if (($result['reason'] ?? '') === 'invalid_input') {

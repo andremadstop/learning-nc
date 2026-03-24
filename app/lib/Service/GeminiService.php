@@ -45,7 +45,7 @@ class GeminiService {
      *
      * @return array{answer: string|null, fallback: bool, reason?: string, error?: string}
      */
-    public function chat(string $rawInput, string $userId, array $ragContext = [], array $memoryEntries = [], ?array $questionContext = null): array {
+    public function chat(string $rawInput, string $userId, array $ragContext = [], array $memoryEntries = [], ?array $questionContext = null, ?int $hintLevel = null): array {
         // Layer 4 — Rate limit (cheapest check first)
         $rateLimitResult = $this->checkRateLimit($userId);
         if ($rateLimitResult !== null) {
@@ -61,7 +61,7 @@ class GeminiService {
 
         // Layer 2 — Context isolation (SEC-02)
         $language = $this->config->getUserValue($userId, 'learning', 'content_language', '') ?: 'en';
-        $systemPrompt = $this->buildSystemPrompt($language, $ragContext, $memoryEntries, $questionContext);
+        $systemPrompt = $this->buildSystemPrompt($language, $ragContext, $memoryEntries, $questionContext, $hintLevel);
         $userMessage = $this->buildUserMessage($sanitizedInput);
 
         // API call with Layer 3 (output validation) and Layer 5 (audit log)
@@ -336,7 +336,7 @@ PROMPT;
      * @param array  $ragContext    Optional context from RagContextService::buildContext()
      * @param array  $memoryEntries Optional chat history entries [{role, message}, ...]
      */
-    private function buildSystemPrompt(string $language, array $ragContext = [], array $memoryEntries = [], ?array $questionContext = null): string {
+    private function buildSystemPrompt(string $language, array $ragContext = [], array $memoryEntries = [], ?array $questionContext = null, ?int $hintLevel = null): string {
         $langMap = [
             'de' => 'German',
             'en' => 'English',
@@ -367,7 +367,8 @@ PROMPT;
         $memoryAddendum = $this->buildMemoryAddendum($memoryEntries);
 
         $questionAddendum = $this->buildQuestionContextAddendum($questionContext);
-        $parts = array_filter([$base, $addendum, $memoryAddendum, $questionAddendum], static fn(string $s) => $s !== '');
+        $hintAddendum = $this->buildHintAddendum($hintLevel, $questionContext);
+        $parts = array_filter([$base, $addendum, $memoryAddendum, $questionAddendum, $hintAddendum], static fn(string $s) => $s !== '');
         return implode("\n\n", $parts);
     }
 
@@ -547,6 +548,38 @@ PROMPT;
             . 'Do not simply repeat the question — explain the concept behind it.';
 
         return implode("\n", $lines);
+    }
+
+    /**
+     * Build a graduated hint addendum for the system prompt.
+     *
+     * When a user asks for a hint (Level 1-3), this injects progressively more
+     * detailed instructions telling Gemini how much to reveal. Returns empty
+     * string when hintLevel is null or questionContext is missing.
+     */
+    private function buildHintAddendum(?int $hintLevel, ?array $questionContext): string {
+        if ($hintLevel === null || empty($questionContext)) {
+            return '';
+        }
+
+        switch ($hintLevel) {
+            case 1:
+                return 'HINT MODE (Level 1): The user asked for a hint. '
+                    . 'Give ONLY a brief directional nudge — mention the general topic area or concept involved '
+                    . '(e.g. "Think about OSI Layer 3" or "This relates to routing protocols"). '
+                    . 'Do NOT reveal which answer option is correct. Do NOT explain the full concept. '
+                    . 'Keep it to 1-2 sentences max.';
+            case 2:
+                return 'HINT MODE (Level 2): The user asked for a second hint. '
+                    . 'Be more specific — you may narrow it down to 2 answer options or mention a key distinguishing characteristic. '
+                    . 'Still do NOT directly state the correct answer. Keep it to 2-3 sentences.';
+            case 3:
+                return 'HINT MODE (Level 3): The user asked for a third hint. '
+                    . 'Now provide the full explanation — state the correct answer and explain WHY it is correct '
+                    . 'and why the other options are wrong. Be thorough but concise.';
+            default:
+                return '';
+        }
     }
 
     /**
