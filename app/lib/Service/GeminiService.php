@@ -45,7 +45,7 @@ class GeminiService {
      *
      * @return array{answer: string|null, fallback: bool, reason?: string, error?: string}
      */
-    public function chat(string $rawInput, string $userId, array $ragContext = [], array $memoryEntries = []): array {
+    public function chat(string $rawInput, string $userId, array $ragContext = [], array $memoryEntries = [], ?array $questionContext = null): array {
         // Layer 4 — Rate limit (cheapest check first)
         $rateLimitResult = $this->checkRateLimit($userId);
         if ($rateLimitResult !== null) {
@@ -61,7 +61,7 @@ class GeminiService {
 
         // Layer 2 — Context isolation (SEC-02)
         $language = $this->config->getUserValue($userId, 'learning', 'content_language', '') ?: 'en';
-        $systemPrompt = $this->buildSystemPrompt($language, $ragContext, $memoryEntries);
+        $systemPrompt = $this->buildSystemPrompt($language, $ragContext, $memoryEntries, $questionContext);
         $userMessage = $this->buildUserMessage($sanitizedInput);
 
         // API call with Layer 3 (output validation) and Layer 5 (audit log)
@@ -114,7 +114,7 @@ class GeminiService {
             ],
             'generationConfig' => [
                 'temperature' => 0.5,
-                'maxOutputTokens' => 800,
+                'maxOutputTokens' => 2048,
                 'candidateCount' => 1,
             ],
         ]);
@@ -124,7 +124,7 @@ class GeminiService {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_TIMEOUT => 15,
+            CURLOPT_TIMEOUT => 30,
             CURLOPT_CONNECTTIMEOUT => 5,
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
@@ -336,7 +336,7 @@ PROMPT;
      * @param array  $ragContext    Optional context from RagContextService::buildContext()
      * @param array  $memoryEntries Optional chat history entries [{role, message}, ...]
      */
-    private function buildSystemPrompt(string $language, array $ragContext = [], array $memoryEntries = []): string {
+    private function buildSystemPrompt(string $language, array $ragContext = [], array $memoryEntries = [], ?array $questionContext = null): string {
         $langMap = [
             'de' => 'German',
             'en' => 'English',
@@ -366,7 +366,8 @@ PROMPT;
         $addendum = $this->buildRagSystemAddendum($ragContext);
         $memoryAddendum = $this->buildMemoryAddendum($memoryEntries);
 
-        $parts = array_filter([$base, $addendum, $memoryAddendum], static fn(string $s) => $s !== '');
+        $questionAddendum = $this->buildQuestionContextAddendum($questionContext);
+        $parts = array_filter([$base, $addendum, $memoryAddendum, $questionAddendum], static fn(string $s) => $s !== '');
         return implode("\n\n", $parts);
     }
 
@@ -502,6 +503,53 @@ PROMPT;
     }
 
     /**
+     * Build a question context addendum for the system prompt.
+     *
+     * When the user is viewing a specific question in a learning mode, this injects
+     * the question text, answer options, correct answer (unless exam mode), and
+     * explanation into the system prompt so VirtuProf can give context-aware answers.
+     *
+     * Returns an empty string when $questionContext is null or has no questionText,
+     * ensuring zero impact on existing behaviour.
+     */
+    private function buildQuestionContextAddendum(?array $questionContext): string {
+        if (empty($questionContext) || empty($questionContext['questionText'])) {
+            return '';
+        }
+
+        $lines = [];
+        $lines[] = 'The user is currently looking at this question:';
+        $lines[] = 'Question: ' . mb_substr((string)($questionContext['questionText'] ?? ''), 0, 500);
+
+        if (!empty($questionContext['answers']) && is_array($questionContext['answers'])) {
+            $labels = range('A', 'Z');
+            foreach (array_slice($questionContext['answers'], 0, 8) as $i => $answer) {
+                $label = $labels[$i] ?? (string)($i + 1);
+                $lines[] = $label . ') ' . mb_substr(strip_tags((string)$answer), 0, 200);
+            }
+        }
+
+        // Only include correct answer if provided (NOT in exam mode)
+        if (isset($questionContext['correctAnswerIndex']) && $questionContext['correctAnswerIndex'] !== null) {
+            $idx = (int)$questionContext['correctAnswerIndex'];
+            $labels = range('A', 'Z');
+            $correctLabel = $labels[$idx] ?? (string)($idx + 1);
+            $lines[] = 'Correct answer: ' . $correctLabel;
+        }
+
+        if (!empty($questionContext['explanation'])) {
+            $lines[] = 'Explanation: ' . mb_substr(strip_tags((string)$questionContext['explanation']), 0, 500);
+        }
+
+        $lines[] = '';
+        $lines[] = 'When the user asks about "this question", "diese Frage", or refers to answer options by letter (A, B, C, D), '
+            . 'use the question context above to give a helpful, specific answer. '
+            . 'Do not simply repeat the question — explain the concept behind it.';
+
+        return implode("\n", $lines);
+    }
+
+    /**
      * Layer 2 — Wrap sanitized input in context isolation tags.
      */
     private function buildUserMessage(string $sanitizedInput): string {
@@ -531,7 +579,7 @@ PROMPT;
             ],
             'generationConfig' => [
                 'temperature' => 0.7,
-                'maxOutputTokens' => 512,
+                'maxOutputTokens' => 2048,
                 'candidateCount' => 1,
             ],
         ]);
@@ -541,7 +589,7 @@ PROMPT;
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_TIMEOUT => 10,
+            CURLOPT_TIMEOUT => 30,
             CURLOPT_CONNECTTIMEOUT => 5,
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
