@@ -1031,22 +1031,23 @@ export default {
 .bubble-content {
   position: relative;
   z-index: 1;
+  padding-top: 2px;
 }
 
 .bubble-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin: -2px 0 8px;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
 }
 
 .bubble-close-btn {
   background: none;
-  border: 1px solid var(--color-border-dark, #555);
+  border: none;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  font-size: 13px;
   line-height: 1;
   color: var(--color-text-maxcontrast, #999);
   cursor: pointer;
@@ -1058,9 +1059,7 @@ export default {
 }
 
 .bubble-close-btn:hover {
-  background: var(--color-error, #e64d4d);
-  color: #fff;
-  border-color: var(--color-error, #e64d4d);
+  color: var(--color-error, #e64d4d);
 }
 
 .bubble-title {
