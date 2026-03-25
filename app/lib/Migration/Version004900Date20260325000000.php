@@ -40,8 +40,8 @@ class Version004900Date20260325000000 extends SimpleMigrationStep {
             $table->addColumn('user_id', Types::STRING, ['notnull' => true, 'length' => 64]);
             $table->addColumn('display_name', Types::STRING, ['notnull' => true, 'length' => 255]);
             $table->addColumn('character_id', Types::STRING, ['notnull' => true, 'length' => 64]);
-            $table->addColumn('is_ready', Types::BOOLEAN, ['notnull' => true, 'default' => false]);
-            $table->addColumn('is_host', Types::BOOLEAN, ['notnull' => true, 'default' => false]);
+            $table->addColumn('is_ready', Types::SMALLINT, ['notnull' => true, 'default' => 0]);
+            $table->addColumn('is_host', Types::SMALLINT, ['notnull' => true, 'default' => 0]);
             $table->addColumn('joined_at', Types::BIGINT, ['notnull' => true]);
             $table->addColumn('last_heartbeat', Types::BIGINT, ['notnull' => true]);
             $table->setPrimaryKey(['id']);
@@ -60,8 +60,8 @@ class Version004900Date20260325000000 extends SimpleMigrationStep {
             $table->addColumn('edge_id', Types::STRING, ['notnull' => true, 'length' => 191]);
             $table->addColumn('voted_at', Types::BIGINT, ['notnull' => true]);
             $table->setPrimaryKey(['id']);
-            $table->addUniqueIndex(['session_id', 'user_id', 'node_id'], 'lcoop_vote_session_user_node_uidx');
-            $table->addIndex(['session_id', 'node_id'], 'lcoop_vote_session_node_idx');
+            $table->addUniqueIndex(['session_id', 'user_id', 'node_id'], 'lcoop_vote_ses_usr_nod_ux');
+            $table->addIndex(['session_id', 'node_id'], 'lcoop_vote_ses_nod_idx');
             $changed = true;
         }
 

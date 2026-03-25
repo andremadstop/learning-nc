@@ -75,6 +75,7 @@ class CoopService {
         $session->setCreatedAt($now);
         $session->setLastHeartbeat($now);
         $session->setMaxPlayers($normalizedMaxPlayers);
+        /** @var CoopSession $session */
         $session = $this->sessionMapper->insert($session);
 
         $hostPlayer = $this->buildPlayer(

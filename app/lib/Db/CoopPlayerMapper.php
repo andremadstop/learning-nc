@@ -26,6 +26,7 @@ class CoopPlayerMapper extends QBMapper {
         return $this->findEntities($qb);
     }
 
+    /** @return CoopPlayer */
     public function findBySessionAndUser(int $sessionId, string $userId): CoopPlayer {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
@@ -33,6 +34,7 @@ class CoopPlayerMapper extends QBMapper {
             ->where($qb->expr()->eq('session_id', $qb->createNamedParameter($sessionId, IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
 
+        /** @var CoopPlayer */
         return $this->findEntity($qb);
     }
 }

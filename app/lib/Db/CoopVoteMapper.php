@@ -26,6 +26,7 @@ class CoopVoteMapper extends QBMapper {
         return $this->findEntities($qb);
     }
 
+    /** @return CoopVote */
     public function findBySessionNodeAndUser(int $sessionId, string $nodeId, string $userId): CoopVote {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
@@ -34,6 +35,7 @@ class CoopVoteMapper extends QBMapper {
             ->andWhere($qb->expr()->eq('node_id', $qb->createNamedParameter($nodeId)))
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
 
+        /** @var CoopVote */
         return $this->findEntity($qb);
     }
 
