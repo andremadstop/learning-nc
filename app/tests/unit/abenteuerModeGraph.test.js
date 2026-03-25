@@ -20,16 +20,45 @@ import AbenteuerMode from '../../src/components/AbenteuerMode.vue'
 
 describe('onSimulatorComplete — stateBag Reaktivitaet', () => {
 	let vm
+	const methods = AbenteuerMode.methods
 
 	beforeEach(() => {
 		vm = {
 			isGraphMode: true,
 			selectedCampaign: { id: 'test_graph_campaign' },
+			selectedCharacter: { id: 'helpdesk' },
 			stateBag: { flags: {}, items: [] },
 			graphAvailableEdges: [{ id: 'e1' }],
 			currentGraphNode: { id: 'n1' },
 			currentGraphSimulator: null,
+			currentScene: null,
+			fullGraph: null,
 			phase: 'simulation',
+			makingChoice: false,
+			currentScore: 0,
+			currentActNumber: 1,
+			currentCharacterClass: 'helpdesk',
+			previousScore: 0,
+			previousReputation: {},
+			scoreDelta: null,
+			reputationDeltas: null,
+			currentTimer: null,
+			timerExpired: false,
+			currentBotCorrection: null,
+			botResult: null,
+			narrativeTyping: false,
+			displayedNarrative: '',
+			typewriterTimer: null,
+			_hudDeltaTimer: null,
+			_timerExpiryTimer: null,
+			_pendingBotResponse: null,
+			startTypewriter: vi.fn(),
+			hasReputationChanges: methods.hasReputationChanges,
+			scheduleHudDeltaReset: methods.scheduleHudDeltaReset,
+			applyGraphStateSnapshot: methods.applyGraphStateSnapshot,
+			applyGraphAuxiliaryPayloads: methods.applyGraphAuxiliaryPayloads,
+			showGraphSceneNode: methods.showGraphSceneNode,
+			applyGraphResponse: methods.applyGraphResponse,
 		}
 
 		axios.post.mockResolvedValue({

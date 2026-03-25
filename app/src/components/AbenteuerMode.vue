@@ -143,8 +143,37 @@
               </button>
             </div>
 
+            <GameTimer
+              v-if="currentTimer"
+              :deadline-at="currentTimer.deadlineAt"
+              :total-seconds="currentTimer.totalSeconds"
+              :reduced-motion="reducedMotion"
+              @expired="onTimerExpired"
+            />
+
+            <GameHud
+              v-if="isGraphMode"
+              :state-bag="stateBag"
+              :game-state="currentGameState"
+              :full-graph="fullGraph"
+              :score-delta="scoreDelta"
+              :reputation-deltas="reputationDeltas"
+            />
+
+            <DauBotDialog
+              v-if="currentBotCorrection"
+              :scenario="currentBotCorrection"
+              :reduced-motion="reducedMotion"
+              :result="botResult"
+              @submit="onBotSubmit"
+              @result-applied="onBotResultApplied"
+            />
+
             <!-- Narrative box -->
-            <div class="ab-narrative-box" :class="{ 'ab-typewriter': !reducedMotion }">
+            <div
+              v-if="!currentBotCorrection"
+              class="ab-narrative-box"
+              :class="{ 'ab-typewriter': !reducedMotion }">
               <p class="ab-narrative-text" :class="{ 'ab-typing': narrativeTyping }">
                 {{ displayedNarrative }}
               </p>
@@ -155,7 +184,7 @@
 
             <!-- NPC Dialog (portrait-based via DialogueStage) -->
             <DialogueStage
-              v-if="currentScene.npc_dialog && !narrativeTyping"
+              v-if="currentScene.npc_dialog && !narrativeTyping && !currentBotCorrection"
               :speakerId="resolveNpcCharacterId(currentScene.npc_dialog.speaker)"
               :speakerName="npcName(currentScene.npc_dialog.speaker)"
               :emotion="currentScene.npc_dialog.emotion || npcDefaultEmotion(currentScene.npc_dialog.speaker)"
@@ -164,7 +193,7 @@
             />
 
             <!-- Decision cards (linear mode) -->
-            <div v-if="currentScene.choices && !narrativeTyping && !choiceMade && !isGraphMode" class="ab-choices">
+            <div v-if="currentScene.choices && !narrativeTyping && !choiceMade && !isGraphMode && !currentBotCorrection" class="ab-choices">
               <h4 class="ab-choices-label">{{ t('learning', 'Was tust du?') }}</h4>
               <div class="ab-choice-grid">
                 <button
@@ -182,14 +211,14 @@
             </div>
 
             <!-- Edge choices (graph mode) -->
-            <div v-if="isGraphMode && graphAvailableEdges.length && !narrativeTyping && !choiceMade" class="ab-choices">
+            <div v-if="isGraphMode && graphAvailableEdges.length && !narrativeTyping && !choiceMade && !currentBotCorrection" class="ab-choices">
               <h4 class="ab-choices-label">{{ t('learning', 'Was tust du?') }}</h4>
               <div class="ab-choice-grid">
                 <button
                   v-for="edge in graphAvailableEdges"
                   :key="edge.id"
                   class="ab-choice-card"
-                  :disabled="makingChoice"
+                  :disabled="makingChoice || timerExpired"
                   @click="makeGraphChoice(edge.id)"
                 >
                   <span class="ab-choice-icon">{{ edge.icon || '🎯' }}</span>
@@ -199,7 +228,7 @@
             </div>
 
             <!-- Freetext input -->
-            <div v-if="currentScene.freetext_enabled && !narrativeTyping && !choiceMade" class="ab-freetext">
+            <div v-if="currentScene.freetext_enabled && !narrativeTyping && !choiceMade && !currentBotCorrection" class="ab-freetext">
               <h4 class="ab-freetext-label">{{ t('learning', '...oder beschreibe deine eigene Aktion:') }}</h4>
               <div class="ab-freetext-input-row">
                 <input
@@ -464,7 +493,11 @@ import DialogueStage from './DialogueStage.vue'
 import CharacterAvatar from './CharacterAvatar.vue'
 import SimulatorShell from './SimulatorShell.vue'
 import QuestMap from './QuestMap.vue'
+import GameHud from './GameHud.vue'
+import GameTimer from './GameTimer.vue'
+import DauBotDialog from './DauBotDialog.vue'
 import { getCharacter } from '../data/characters.js'
+import { computeScoreDelta, computeReputationDeltas } from '../utils/hudEngine.js'
 
 const STATIC_CAMPAIGNS = [
 	{
@@ -592,6 +625,9 @@ export default {
 		CharacterAvatar,
 		SimulatorShell,
 		QuestMap,
+		GameHud,
+		GameTimer,
+		DauBotDialog,
 	},
 
 	props: {
@@ -686,6 +722,17 @@ export default {
 			graphAvailableEdges: [],
 			currentGraphSimulator: null,
 			fullGraph: null,
+			currentScore: 0,
+			currentActNumber: 1,
+			currentCharacterClass: '',
+			previousScore: 0,
+			previousReputation: {},
+			scoreDelta: null,
+			reputationDeltas: null,
+			currentTimer: null,
+			timerExpired: false,
+			currentBotCorrection: null,
+			botResult: null,
 
 			// Freetext
 			freetextInput: '',
@@ -718,9 +765,20 @@ export default {
 			const current = this.sessionStats.scenesCompleted + 1
 			return `${current} / ${total}`
 		},
+
+		currentGameState() {
+			return {
+				score: this.currentScore,
+				act_number: this.currentActNumber || 1,
+				character_class: this.currentCharacterClass || this.selectedCharacter?.id || '',
+			}
+		},
 	},
 
 	mounted() {
+		this._pendingBotResponse = null
+		this._hudDeltaTimer = null
+		this._timerExpiryTimer = null
 		this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 		this.fetchCampaigns()
 	},
@@ -774,6 +832,144 @@ export default {
 			this.selectedCharacter = char
 		},
 
+		resetGraphUiState() {
+			this.stateBag = {}
+			this.currentGraphNode = null
+			this.graphAvailableEdges = []
+			this.currentGraphSimulator = null
+			this.fullGraph = null
+			this.currentScore = 0
+			this.currentActNumber = 1
+			this.currentCharacterClass = this.selectedCharacter?.id || ''
+			this.previousScore = 0
+			this.previousReputation = {}
+			this.scoreDelta = null
+			this.reputationDeltas = null
+			this.currentTimer = null
+			this.timerExpired = false
+			this.currentBotCorrection = null
+			this.botResult = null
+			this._pendingBotResponse = null
+			if (this._hudDeltaTimer) {
+				clearTimeout(this._hudDeltaTimer)
+				this._hudDeltaTimer = null
+			}
+			if (this._timerExpiryTimer) {
+				clearTimeout(this._timerExpiryTimer)
+				this._timerExpiryTimer = null
+			}
+		},
+
+		hasReputationChanges(deltas) {
+			return Object.values(deltas || {}).some(delta => Number(delta) !== 0)
+		},
+
+		scheduleHudDeltaReset() {
+			if (this._hudDeltaTimer) {
+				clearTimeout(this._hudDeltaTimer)
+			}
+			const hasScoreDelta = this.scoreDelta && this.scoreDelta.direction !== 'none'
+			const hasRepDelta = this.hasReputationChanges(this.reputationDeltas)
+			if (!hasScoreDelta && !hasRepDelta) {
+				this.scoreDelta = null
+				this.reputationDeltas = null
+				this._hudDeltaTimer = null
+				return
+			}
+			this._hudDeltaTimer = setTimeout(() => {
+				this.scoreDelta = null
+				this.reputationDeltas = null
+				this._hudDeltaTimer = null
+			}, 2000)
+		},
+
+		applyGraphStateSnapshot(graphState, computeDeltas = true) {
+			const safeState = graphState || {}
+			const newScore = Number(safeState.score) || 0
+			const newReputation = { ...(safeState.stateBag?.reputation || {}) }
+
+			if (computeDeltas) {
+				this.scoreDelta = computeScoreDelta(this.previousScore, newScore)
+				this.reputationDeltas = computeReputationDeltas(this.previousReputation, newReputation)
+				this.scheduleHudDeltaReset()
+			} else {
+				this.scoreDelta = null
+				this.reputationDeltas = null
+			}
+
+			this.previousScore = newScore
+			this.previousReputation = { ...newReputation }
+			this.currentScore = newScore
+			this.currentActNumber = Number(safeState.act_number) || 1
+			this.currentCharacterClass = safeState.character_class || this.currentCharacterClass || this.selectedCharacter?.id || ''
+			this.stateBag = { ...(safeState.stateBag || {}) }
+		},
+
+		applyGraphAuxiliaryPayloads(respData, preserveBotResult = false) {
+			if (this._timerExpiryTimer) {
+				clearTimeout(this._timerExpiryTimer)
+				this._timerExpiryTimer = null
+			}
+			this.currentTimer = respData.timer && !respData.timer.expired
+				? {
+					deadlineAt: respData.timer.deadline_at,
+					totalSeconds: respData.timer.seconds,
+				}
+				: null
+			this.timerExpired = false
+			this.currentBotCorrection = respData.bot_correction && !respData.bot_correction.completed
+				? respData.bot_correction
+				: null
+			if (!preserveBotResult) {
+				this.botResult = null
+			}
+		},
+
+		showGraphSceneNode(node) {
+			this.currentGraphSimulator = null
+			this.currentScene = node
+			this.phase = 'scene'
+			this.choiceMade = false
+			if (this.typewriterTimer) {
+				clearTimeout(this.typewriterTimer)
+				this.typewriterTimer = null
+			}
+			if (!node?.narrative) {
+				this.displayedNarrative = ''
+				this.narrativeTyping = false
+				return
+			}
+			if (this.currentBotCorrection) {
+				this.displayedNarrative = node.narrative
+				this.narrativeTyping = false
+				return
+			}
+			this.startTypewriter(node.narrative)
+		},
+
+		applyGraphResponse(respData, options = {}) {
+			const computeDeltas = options.computeDeltas !== false
+			this.applyGraphStateSnapshot(respData.state || {}, computeDeltas)
+			this.currentGraphNode = respData.node || this.currentGraphNode
+			this.graphAvailableEdges = respData.available_edges || []
+			this.fullGraph = respData.full_graph || this.fullGraph
+			this.applyGraphAuxiliaryPayloads(respData, Boolean(options.preserveBotResult))
+
+			if (respData.simulator) {
+				this.currentGraphSimulator = respData.simulator
+				this.phase = 'simulation'
+				return
+			}
+
+			if (respData.node?.type === 'ending') {
+				this.currentGraphSimulator = null
+				this.phase = 'epilog'
+				return
+			}
+
+			this.showGraphSceneNode(respData.node)
+		},
+
 		async startCampaign() {
 			if (!this.selectedCharacter) return
 			if (this.coopMode) {
@@ -785,6 +981,8 @@ export default {
 			// Graph-mode: use /graph-start instead of /start
 			if (this.selectedCampaign.is_graph) {
 				this.isGraphMode = true
+				this.resetGraphUiState()
+				this.currentCharacterClass = this.selectedCharacter.id
 				try {
 					const resp = await axios.post(
 						generateUrl(`/apps/learning/api/story/campaigns/${cid}/graph-start`),
@@ -793,24 +991,11 @@ export default {
 							courseId: this.courseId || null,
 						},
 					)
-					this.stateBag = { ...resp.data.state?.stateBag }
-					this.currentGraphNode = resp.data.node
-					this.graphAvailableEdges = resp.data.available_edges || []
-					this.fullGraph = resp.data.full_graph || null
-					if (resp.data.simulator) {
-						this.currentGraphSimulator = resp.data.simulator
-						this.phase = 'simulation'
-					} else {
-						this.currentGraphSimulator = null
-						this.currentScene = resp.data.node
-						this.phase = 'scene'
-						if (resp.data.node?.narrative) {
-							this.startTypewriter(resp.data.node.narrative)
-						}
-					}
+					this.applyGraphResponse(resp.data, { computeDeltas: false })
 				} catch (e) {
 					// Fallback: disable graph mode and try linear start
 					this.isGraphMode = false
+					this.resetGraphUiState()
 					this.beginScene()
 				}
 				return
@@ -1275,6 +1460,7 @@ export default {
 			}
 
 			try {
+				this.makingChoice = true
 				const resp = await axios.post(
 					generateUrl(`/apps/learning/api/story/campaigns/${this.selectedCampaign.id}/graph-traverse`),
 					{
@@ -1284,62 +1470,36 @@ export default {
 						simulator_result: JSON.stringify(result),
 					},
 				)
-				// MUST be new reference (Vue 2 reactivity — Pitfall H1):
-				this.stateBag = { ...resp.data.state?.stateBag }
-				this.currentGraphNode = resp.data.node
-				this.graphAvailableEdges = resp.data.available_edges || []
-				this.fullGraph = resp.data.full_graph || this.fullGraph
-
-				if (resp.data.simulator) {
-					this.currentGraphSimulator = resp.data.simulator
-					this.phase = 'simulation'
-				} else if (resp.data.node?.type === 'ending') {
-					this.phase = 'epilog'
-				} else {
-					this.currentGraphSimulator = null
-					this.currentScene = resp.data.node
-					this.phase = 'scene'
-					if (resp.data.node?.narrative) {
-						this.choiceMade = false
-						this.startTypewriter(resp.data.node.narrative)
-					}
-				}
+				this.applyGraphResponse(resp.data)
 			} catch (e) {
 				console.error('graph-traverse failed', e)
 				// Error state: user stays on simulation phase, can retry
+			} finally {
+				this.makingChoice = false
 			}
 		},
 
 		/**
 		 * Graph-mode choice handler: traverse an edge from scene phase.
 		 */
-		async makeGraphChoice(edgeId) {
+		async makeGraphChoice(edgeId, options = {}) {
+			if (!edgeId || this.makingChoice) {
+				return
+			}
+			if (this.timerExpired && !options.fromTimer) {
+				return
+			}
 			try {
+				this.makingChoice = true
 				const resp = await axios.post(
 					generateUrl(`/apps/learning/api/story/campaigns/${this.selectedCampaign.id}/graph-traverse`),
 					{ edgeId },
 				)
-				this.stateBag = { ...resp.data.state?.stateBag }
-				this.currentGraphNode = resp.data.node
-				this.graphAvailableEdges = resp.data.available_edges || []
-				this.fullGraph = resp.data.full_graph || this.fullGraph
-
-				if (resp.data.simulator) {
-					this.currentGraphSimulator = resp.data.simulator
-					this.phase = 'simulation'
-				} else if (resp.data.node?.type === 'ending') {
-					this.phase = 'epilog'
-				} else {
-					this.currentGraphSimulator = null
-					this.currentScene = resp.data.node
-					this.phase = 'scene'
-					if (resp.data.node?.narrative) {
-						this.choiceMade = false
-						this.startTypewriter(resp.data.node.narrative)
-					}
-				}
+				this.applyGraphResponse(resp.data)
 			} catch (e) {
 				console.error('graph-traverse (choice) failed', e)
+			} finally {
+				this.makingChoice = false
 			}
 		},
 
@@ -1347,7 +1507,68 @@ export default {
 		 * Quest-Map navigation handler: delegate to makeGraphChoice.
 		 */
 		handleQuestMapNavigate(edgeId) {
+			if (this.currentBotCorrection || this.timerExpired) {
+				return
+			}
 			this.makeGraphChoice(edgeId)
+		},
+
+		async onTimerExpired() {
+			if (this.timerExpired) {
+				return
+			}
+			this.timerExpired = true
+			if (this.makingChoice) {
+				return
+			}
+			const fallbackEdge = this.graphAvailableEdges[0]
+			this._timerExpiryTimer = setTimeout(async () => {
+				this._timerExpiryTimer = null
+				this.currentTimer = null
+				if (fallbackEdge) {
+					await this.makeGraphChoice(fallbackEdge.id, { fromTimer: true })
+				}
+			}, 2000)
+		},
+
+		async onBotSubmit({ errorId, fixId }) {
+			if (!errorId || !fixId) {
+				return
+			}
+			const targetEdge = this.graphAvailableEdges[0]
+			if (!targetEdge) {
+				return
+			}
+			try {
+				const cid = this.selectedCampaign.id
+				const resp = await axios.post(
+					generateUrl(`/apps/learning/api/story/campaigns/${cid}/graph-traverse`),
+					{
+						edgeId: targetEdge.id,
+						bot_error_id: errorId,
+						bot_fix_id: fixId,
+					},
+				)
+				this.applyGraphStateSnapshot(resp.data.state || {})
+				this.botResult = {
+					passed: Boolean(resp.data.bot_correction?.passed),
+					bot_correction: resp.data.bot_correction || null,
+				}
+				this._pendingBotResponse = resp.data
+			} catch (e) {
+				console.error('bot submit failed', e)
+			}
+		},
+
+		onBotResultApplied() {
+			const pendingResponse = this._pendingBotResponse
+			if (!pendingResponse) {
+				return
+			}
+			this.currentBotCorrection = null
+			this.botResult = null
+			this._pendingBotResponse = null
+			this.applyGraphResponse(pendingResponse, { computeDeltas: false })
 		},
 
 		/**
@@ -1376,6 +1597,7 @@ export default {
 		restartCampaign() {
 			this.sessionStats = { scenesCompleted: 0, skillChecksPassed: 0, skillChecksTotal: 0, xpEarned: 0 }
 			this.forceNewCampaign = true
+			this.resetGraphUiState()
 			this.phase = 'character-select'
 		},
 
@@ -1426,6 +1648,7 @@ export default {
 		abortCampaign() {
 			this.showAbortConfirm = false
 			this.clearTimers()
+			this.resetGraphUiState()
 			this.phase = 'campaign-select'
 			this.currentScene = null
 			this.selectedCharacter = null
@@ -1514,6 +1737,8 @@ export default {
 			if (this.typewriterTimer) clearTimeout(this.typewriterTimer)
 			if (this.advanceTimer) clearTimeout(this.advanceTimer)
 			if (this.coopPollTimer) clearInterval(this.coopPollTimer)
+			if (this._hudDeltaTimer) clearTimeout(this._hudDeltaTimer)
+			if (this._timerExpiryTimer) clearTimeout(this._timerExpiryTimer)
 		},
 	},
 }
