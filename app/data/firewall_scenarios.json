@@ -1,0 +1,75 @@
+[
+  {
+    "id": "web-only",
+    "title": "HTTP/HTTPS only",
+    "question": "Welche Regel muss das Paket erlauben?",
+    "packet": { "srcIp": "10.0.1.25", "srcPort": 51515, "dstIp": "172.16.0.10", "dstPort": 443, "protocol": "tcp" },
+    "rules": [
+      { "id": "allow-web", "action": "allow", "protocol": "tcp", "srcIp": "any", "srcPort": "any", "dstIp": "172.16.0.10", "dstPort": "80,443", "log": true }
+    ],
+    "options": [
+      { "id": "allow", "label": "Allow ueber allow-web" },
+      { "id": "deny", "label": "Implicit deny" }
+    ],
+    "answer": "allow"
+  },
+  {
+    "id": "ssh-admin-net",
+    "title": "SSH nur aus dem Admin-Netz",
+    "question": "Wird SSH von 10.0.1.55 zur Firewall erlaubt?",
+    "packet": { "srcIp": "10.0.1.55", "srcPort": 53022, "dstIp": "172.16.0.1", "dstPort": 22, "protocol": "tcp" },
+    "rules": [
+      { "id": "allow-admin-ssh", "action": "allow", "protocol": "tcp", "srcIp": "10.0.1.0/24", "srcPort": "any", "dstIp": "172.16.0.1", "dstPort": "22", "log": true },
+      { "id": "deny-ssh", "action": "deny", "protocol": "tcp", "srcIp": "any", "srcPort": "any", "dstIp": "172.16.0.1", "dstPort": "22", "log": true }
+    ],
+    "options": [
+      { "id": "allow", "label": "Erlaubt" },
+      { "id": "deny", "label": "Geblockt" }
+    ],
+    "answer": "allow"
+  },
+  {
+    "id": "icmp-external",
+    "title": "Ping von aussen blockieren",
+    "question": "Was passiert mit einem ICMP Echo von 198.51.100.8?",
+    "packet": { "srcIp": "198.51.100.8", "srcPort": 0, "dstIp": "172.16.0.20", "dstPort": 0, "protocol": "icmp" },
+    "rules": [
+      { "id": "deny-external-icmp", "action": "deny", "protocol": "icmp", "srcIp": "198.51.100.0/24", "srcPort": "any", "dstIp": "172.16.0.0/24", "dstPort": "any", "log": true },
+      { "id": "allow-inside-icmp", "action": "allow", "protocol": "icmp", "srcIp": "10.0.0.0/8", "srcPort": "any", "dstIp": "172.16.0.0/24", "dstPort": "any", "log": false }
+    ],
+    "options": [
+      { "id": "deny", "label": "Geblockt durch deny-external-icmp" },
+      { "id": "allow", "label": "Erlaubt" }
+    ],
+    "answer": "deny"
+  },
+  {
+    "id": "dmz-lan",
+    "title": "DMZ ohne LAN-Zugriff",
+    "question": "Darf der DMZ-Webserver 172.16.50.20 auf das LAN 10.0.0.25 zugreifen?",
+    "packet": { "srcIp": "172.16.50.20", "srcPort": 44300, "dstIp": "10.0.0.25", "dstPort": 445, "protocol": "tcp" },
+    "rules": [
+      { "id": "allow-web-to-dmz", "action": "allow", "protocol": "tcp", "srcIp": "any", "srcPort": "any", "dstIp": "172.16.50.20", "dstPort": "80,443", "log": true },
+      { "id": "deny-dmz-to-lan", "action": "deny", "protocol": "tcp", "srcIp": "172.16.50.0/24", "srcPort": "any", "dstIp": "10.0.0.0/24", "dstPort": "any", "log": true }
+    ],
+    "options": [
+      { "id": "deny", "label": "Nein, deny-dmz-to-lan blockiert" },
+      { "id": "allow", "label": "Ja, erlaubt" }
+    ],
+    "answer": "deny"
+  },
+  {
+    "id": "vpn-udp",
+    "title": "OpenVPN nur auf 1194/UDP",
+    "question": "Welches Paket wird erlaubt?",
+    "packet": { "srcIp": "203.0.113.11", "srcPort": 50123, "dstIp": "172.16.0.5", "dstPort": 1194, "protocol": "udp" },
+    "rules": [
+      { "id": "allow-vpn", "action": "allow", "protocol": "udp", "srcIp": "any", "srcPort": "any", "dstIp": "172.16.0.5", "dstPort": "1194", "log": true }
+    ],
+    "options": [
+      { "id": "allow", "label": "UDP/1194 wird erlaubt" },
+      { "id": "deny", "label": "Alles wird geblockt" }
+    ],
+    "answer": "allow"
+  }
+]

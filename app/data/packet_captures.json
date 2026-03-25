@@ -1,0 +1,176 @@
+{
+  "captures": [
+    {
+      "id": "tcp-handshake",
+      "title": "TCP 3-Way Handshake",
+      "packets": [
+        {
+          "id": "pkt-1",
+          "timestamp": "00.001",
+          "summary": "Client SYN",
+          "ethernet": { "srcMac": "aa:aa:aa:aa:aa:aa", "dstMac": "bb:bb:bb:bb:bb:bb", "type": "0x0800" },
+          "ip": { "version": 4, "ttl": 64, "srcIp": "192.168.1.10", "dstIp": "93.184.216.34", "protocol": "TCP" },
+          "tcp": { "srcPort": 49152, "dstPort": 443, "seq": 1000, "ack": 0, "flags": ["SYN"] }
+        },
+        {
+          "id": "pkt-2",
+          "timestamp": "00.015",
+          "summary": "Server SYN-ACK",
+          "ethernet": { "srcMac": "bb:bb:bb:bb:bb:bb", "dstMac": "aa:aa:aa:aa:aa:aa", "type": "0x0800" },
+          "ip": { "version": 4, "ttl": 58, "srcIp": "93.184.216.34", "dstIp": "192.168.1.10", "protocol": "TCP" },
+          "tcp": { "srcPort": 443, "dstPort": 49152, "seq": 5000, "ack": 1001, "flags": ["SYN", "ACK"] }
+        },
+        {
+          "id": "pkt-3",
+          "timestamp": "00.029",
+          "summary": "Client ACK",
+          "ethernet": { "srcMac": "aa:aa:aa:aa:aa:aa", "dstMac": "bb:bb:bb:bb:bb:bb", "type": "0x0800" },
+          "ip": { "version": 4, "ttl": 64, "srcIp": "192.168.1.10", "dstIp": "93.184.216.34", "protocol": "TCP" },
+          "tcp": { "srcPort": 49152, "dstPort": 443, "seq": 1001, "ack": 5001, "flags": ["ACK"] }
+        }
+      ]
+    },
+    {
+      "id": "dns-query-response",
+      "title": "DNS Query + Response",
+      "packets": [
+        {
+          "id": "pkt-4",
+          "timestamp": "10.001",
+          "summary": "DNS Query",
+          "ethernet": { "srcMac": "aa:aa:aa:aa:aa:aa", "dstMac": "cc:cc:cc:cc:cc:cc", "type": "0x0800" },
+          "ip": { "version": 4, "ttl": 64, "srcIp": "192.168.1.10", "dstIp": "8.8.8.8", "protocol": "UDP" },
+          "udp": { "srcPort": 53000, "dstPort": 53, "length": 48 },
+          "dns": { "query": "example.com", "recordType": "A", "answer": "" }
+        },
+        {
+          "id": "pkt-5",
+          "timestamp": "10.020",
+          "summary": "DNS Response",
+          "ethernet": { "srcMac": "cc:cc:cc:cc:cc:cc", "dstMac": "aa:aa:aa:aa:aa:aa", "type": "0x0800" },
+          "ip": { "version": 4, "ttl": 58, "srcIp": "8.8.8.8", "dstIp": "192.168.1.10", "protocol": "UDP" },
+          "udp": { "srcPort": 53, "dstPort": 53000, "length": 76 },
+          "dns": { "query": "example.com", "recordType": "A", "answer": "93.184.216.34" }
+        }
+      ]
+    },
+    {
+      "id": "http-get",
+      "title": "HTTP GET",
+      "packets": [
+        {
+          "id": "pkt-6",
+          "timestamp": "20.000",
+          "summary": "HTTP GET /",
+          "ethernet": { "srcMac": "aa:aa:aa:aa:aa:aa", "dstMac": "bb:bb:bb:bb:bb:bb", "type": "0x0800" },
+          "ip": { "version": 4, "ttl": 64, "srcIp": "192.168.1.10", "dstIp": "93.184.216.34", "protocol": "TCP" },
+          "tcp": { "srcPort": 49160, "dstPort": 80, "seq": 2000, "ack": 6000, "flags": ["ACK", "PSH"] },
+          "http": { "method": "GET", "path": "/", "status": "" }
+        },
+        {
+          "id": "pkt-7",
+          "timestamp": "20.030",
+          "summary": "HTTP 200 OK",
+          "ethernet": { "srcMac": "bb:bb:bb:bb:bb:bb", "dstMac": "aa:aa:aa:aa:aa:aa", "type": "0x0800" },
+          "ip": { "version": 4, "ttl": 58, "srcIp": "93.184.216.34", "dstIp": "192.168.1.10", "protocol": "TCP" },
+          "tcp": { "srcPort": 80, "dstPort": 49160, "seq": 6000, "ack": 2001, "flags": ["ACK", "PSH"] },
+          "http": { "method": "", "path": "", "status": "200 OK" }
+        }
+      ]
+    },
+    {
+      "id": "arp",
+      "title": "ARP Request + Reply",
+      "packets": [
+        {
+          "id": "pkt-8",
+          "timestamp": "30.001",
+          "summary": "Who has 10.0.0.1?",
+          "ethernet": { "srcMac": "aa:aa:aa:aa:aa:aa", "dstMac": "ff:ff:ff:ff:ff:ff", "type": "0x0806" },
+          "arp": { "op": "request", "senderIp": "10.0.0.20", "targetIp": "10.0.0.1" }
+        },
+        {
+          "id": "pkt-9",
+          "timestamp": "30.006",
+          "summary": "10.0.0.1 is at bb:bb:bb:bb:bb:bb",
+          "ethernet": { "srcMac": "bb:bb:bb:bb:bb:bb", "dstMac": "aa:aa:aa:aa:aa:aa", "type": "0x0806" },
+          "arp": { "op": "reply", "senderIp": "10.0.0.1", "targetIp": "10.0.0.20" }
+        }
+      ]
+    },
+    {
+      "id": "icmp-ping-problem",
+      "title": "ICMP Ping with TTL exceeded",
+      "packets": [
+        {
+          "id": "pkt-10",
+          "timestamp": "40.001",
+          "summary": "Echo Request",
+          "ethernet": { "srcMac": "aa:aa:aa:aa:aa:aa", "dstMac": "cc:cc:cc:cc:cc:cc", "type": "0x0800" },
+          "ip": { "version": 4, "ttl": 1, "srcIp": "10.0.0.10", "dstIp": "8.8.8.8", "protocol": "ICMP" },
+          "icmp": { "type": 8, "code": 0, "detail": "Echo request" }
+        },
+        {
+          "id": "pkt-11",
+          "timestamp": "40.020",
+          "summary": "TTL Exceeded",
+          "ethernet": { "srcMac": "cc:cc:cc:cc:cc:cc", "dstMac": "aa:aa:aa:aa:aa:aa", "type": "0x0800" },
+          "ip": { "version": 4, "ttl": 64, "srcIp": "10.0.0.1", "dstIp": "10.0.0.10", "protocol": "ICMP" },
+          "icmp": { "type": 11, "code": 0, "detail": "TTL exceeded" }
+        }
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "find-retransmission",
+      "captureId": "tcp-handshake",
+      "question": "Welches Zusatzpaket wuerde eine Retransmission zeigen?",
+      "options": [
+        { "id": "same-seq", "label": "Noch einmal dasselbe SYN mit gleicher Seq" },
+        { "id": "arp", "label": "Ein ARP Reply" }
+      ],
+      "answer": "same-seq"
+    },
+    {
+      "id": "connection-reset",
+      "captureId": "http-get",
+      "question": "Welches TCP-Flag wuerde einen abrupten Verbindungsabbruch markieren?",
+      "options": [
+        { "id": "RST", "label": "RST" },
+        { "id": "ACK", "label": "ACK" }
+      ],
+      "answer": "RST"
+    },
+    {
+      "id": "ttl-exceeded",
+      "captureId": "icmp-ping-problem",
+      "question": "Worauf deutet TTL exceeded typischerweise hin?",
+      "options": [
+        { "id": "loop", "label": "Auf einen Routing-Loop oder zu viele Hops" },
+        { "id": "arp", "label": "Auf ARP-Spoofing" }
+      ],
+      "answer": "loop"
+    },
+    {
+      "id": "protocol-8080",
+      "captureId": "http-get",
+      "question": "Welches Protokoll laeuft haeufig auf Port 8080?",
+      "options": [
+        { "id": "http", "label": "HTTP / Web-Proxy" },
+        { "id": "dns", "label": "DNS" }
+      ],
+      "answer": "http"
+    },
+    {
+      "id": "dns-spoofing",
+      "captureId": "dns-query-response",
+      "question": "Woran wuerdest du DNS-Spoofing erkennen?",
+      "options": [
+        { "id": "two-answers", "label": "Zwei Antworten mit unterschiedlichen IPs auf dieselbe Query" },
+        { "id": "one-query", "label": "Nur eine einzige Query" }
+      ],
+      "answer": "two-answers"
+    }
+  ]
+}

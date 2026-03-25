@@ -1,0 +1,67 @@
+[
+  {
+    "id": "identify-mail",
+    "title": "Servertyp erkennen",
+    "question": "Welcher Servertyp ist das?",
+    "profileId": "mailserver",
+    "options": [
+      { "id": "mailserver", "label": "Mailserver" },
+      { "id": "webserver", "label": "Webserver" },
+      { "id": "database", "label": "Datenbank" }
+    ],
+    "answer": "mailserver"
+  },
+  {
+    "id": "compromised-host",
+    "title": "Kompromittierten Host finden",
+    "question": "Welcher Host wirkt kompromittiert?",
+    "profileId": "compromised-host",
+    "options": [
+      { "id": "compromised-host", "label": "Host mit Backdoor-Port" },
+      { "id": "network-device", "label": "Router/Switch" },
+      { "id": "webserver", "label": "Webserver" }
+    ],
+    "answer": "compromised-host"
+  },
+  {
+    "id": "web-filtered",
+    "title": "Warum ist der Webserver nicht erreichbar?",
+    "question": "Welcher Port ist hier gefiltert?",
+    "profileId": "webserver",
+    "overrides": {
+      "ports": [
+        { "port": 80, "state": "filtered" }
+      ]
+    },
+    "options": [
+      { "id": "80", "label": "Port 80" },
+      { "id": "22", "label": "Port 22" },
+      { "id": "443", "label": "Port 443" }
+    ],
+    "answer": "80"
+  },
+  {
+    "id": "insecure-service",
+    "title": "Ungesicherten Dienst finden",
+    "question": "Welcher Dienst ist hier problematisch?",
+    "profileId": "network-device",
+    "options": [
+      { "id": "23", "label": "Telnet auf Port 23" },
+      { "id": "22", "label": "SSH auf Port 22" },
+      { "id": "161", "label": "SNMP auf Port 161" }
+    ],
+    "answer": "23"
+  },
+  {
+    "id": "scan-types",
+    "title": "Nmap Scan-Typen",
+    "question": "Welcher Scan-Typ arbeitet halb-offen?",
+    "profileId": "webserver",
+    "options": [
+      { "id": "syn", "label": "SYN Scan" },
+      { "id": "connect", "label": "Connect Scan" },
+      { "id": "udp", "label": "UDP Scan" }
+    ],
+    "answer": "syn"
+  }
+]
