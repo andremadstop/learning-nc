@@ -35,6 +35,8 @@ class StoryEngineService {
 
     /** Directory (relative to app root) where campaign JSON files live. */
     private string $campaignDir;
+    /** @var array<string, mixed>|null */
+    private ?array $campaignSchema = null;
 
     private StoryProgressMapper $progressMapper;
     private IDBConnection $db;
@@ -88,6 +90,9 @@ class StoryEngineService {
             return $campaigns;
         }
         foreach (glob($this->campaignDir . '/*.json') as $file) {
+            if ($this->isCampaignSchemaFile($file)) {
+                continue;
+            }
             try {
                 $data = $this->loadCampaignFile($file);
                 $campaigns[] = [
@@ -98,6 +103,9 @@ class StoryEngineService {
                     'difficulty'               => $data['difficulty'] ?? 'intermediate',
                     'focus_areas'              => $data['focus_areas'] ?? [],
                     'character_recommendations'=> $data['character_recommendations'] ?? [],
+                    'icon'                     => $data['icon'] ?? '',
+                    'version'                  => $data['version'] ?? null,
+                    'workplace_npcs'           => $data['workplace_npcs'] ?? [],
                     'graph_mode'               => isset($data['graph']),
                 ];
             } catch (\RuntimeException $e) {
@@ -158,9 +166,15 @@ class StoryEngineService {
             }
         }
 
+        $schema = null;
+        if ($this->shouldValidateAgainstSchema($data, $filename)) {
+            $schema = $this->loadCampaignSchema();
+            $this->validateCampaignAgainstSchema($data, $filename, $schema);
+        }
+
         // Graph-format campaigns: validate graph structure instead of scenes
         if (isset($data['graph']['nodes']) && isset($data['graph']['edges'])) {
-            $this->validateGraphStructure($data['graph'], $filename);
+            $this->validateGraphStructure($data['graph'], $filename, $schema);
             return;
         }
 
@@ -200,7 +214,7 @@ class StoryEngineService {
      * @param array<string, mixed> $graph
      * @throws \RuntimeException
      */
-    private function validateGraphStructure(array $graph, string $filename): void {
+    private function validateGraphStructure(array $graph, string $filename, ?array $schema = null): void {
         if (!is_array($graph['nodes']) || empty($graph['nodes'])) {
             throw new \RuntimeException("Campaign {$filename} graph has no nodes");
         }
@@ -210,39 +224,102 @@ class StoryEngineService {
 
         // Build node ID set
         $nodeIds = [];
+        $incomingEdges = [];
+        $outgoingEdges = [];
+        $startNodeIds = [];
         foreach ($graph['nodes'] as $node) {
             if (empty($node['id'])) {
                 throw new \RuntimeException("Campaign {$filename} graph has a node missing 'id'");
             }
+            $nodeId = (string)$node['id'];
+            if (isset($nodeIds[$nodeId])) {
+                throw new \RuntimeException("Campaign {$filename} graph has duplicate node id '{$nodeId}'");
+            }
+            $this->validateSchemaRequiredFields(
+                $node,
+                $schema['graph']['node_required'] ?? [],
+                "Campaign {$filename} graph node '{$nodeId}'"
+            );
+            $this->validateSchemaEnum(
+                isset($node['type']) ? (string)$node['type'] : null,
+                $schema['graph']['node_type_enum'] ?? [],
+                "Campaign {$filename} graph node '{$nodeId}' type"
+            );
             $this->validateGraphRoleFilter(
                 $node['role_filter'] ?? [],
-                "Campaign {$filename} graph node '{$node['id']}'"
+                "Campaign {$filename} graph node '{$nodeId}'"
             );
             $this->validateGraphNodeMetadata($node, $filename);
-            $nodeIds[(string)$node['id']] = true;
+            $nodeIds[$nodeId] = true;
+            $incomingEdges[$nodeId] = 0;
+            $outgoingEdges[$nodeId] = 0;
+            if (!empty($node['start'])) {
+                $startNodeIds[] = $nodeId;
+            }
         }
 
         // Validate edges
+        $edgeIds = [];
         foreach ($graph['edges'] as $edge) {
             if (empty($edge['id'])) {
                 throw new \RuntimeException("Campaign {$filename} graph has an edge missing 'id'");
             }
+            $edgeId = (string)$edge['id'];
+            if (isset($edgeIds[$edgeId])) {
+                throw new \RuntimeException("Campaign {$filename} graph has duplicate edge id '{$edgeId}'");
+            }
+            $edgeIds[$edgeId] = true;
+            $this->validateSchemaRequiredFields(
+                $edge,
+                $schema['graph']['edge_required'] ?? [],
+                "Campaign {$filename} graph edge '{$edgeId}'"
+            );
             foreach (['from', 'to'] as $key) {
                 if (empty($edge[$key])) {
                     throw new \RuntimeException(
-                        "Campaign {$filename} graph edge '{$edge['id']}' missing '{$key}'"
+                        "Campaign {$filename} graph edge '{$edgeId}' missing '{$key}'"
                     );
                 }
                 if (!isset($nodeIds[(string)$edge[$key]])) {
                     throw new \RuntimeException(
-                        "Campaign {$filename} graph edge '{$edge['id']}' references unknown node '{$edge[$key]}'"
+                        "Campaign {$filename} graph edge '{$edgeId}' references unknown node '{$edge[$key]}'"
                     );
                 }
             }
+            $this->validateGraphConditions(
+                $edge['conditions'] ?? [],
+                $schema['graph']['condition_keys'] ?? [],
+                "Campaign {$filename} graph edge '{$edgeId}'"
+            );
             $this->validateGraphRoleFilter(
                 $edge['role_filter'] ?? [],
-                "Campaign {$filename} graph edge '{$edge['id']}'"
+                "Campaign {$filename} graph edge '{$edgeId}'"
             );
+            $fromNodeId = (string)$edge['from'];
+            $toNodeId = (string)$edge['to'];
+            $outgoingEdges[$fromNodeId] = ($outgoingEdges[$fromNodeId] ?? 0) + 1;
+            $incomingEdges[$toNodeId] = ($incomingEdges[$toNodeId] ?? 0) + 1;
+        }
+
+        if (count($startNodeIds) !== 1) {
+            throw new \RuntimeException(
+                "Campaign {$filename} graph must contain exactly one start node"
+            );
+        }
+
+        foreach ($graph['nodes'] as $node) {
+            $nodeId = (string)$node['id'];
+            $isEnding = !empty($node['is_ending']) || (string)($node['type'] ?? '') === 'ending';
+            if (!$isEnding && ($outgoingEdges[$nodeId] ?? 0) === 0) {
+                throw new \RuntimeException(
+                    "Campaign {$filename} graph node '{$nodeId}' has no outgoing edges"
+                );
+            }
+            if ($isEnding && ($incomingEdges[$nodeId] ?? 0) === 0) {
+                throw new \RuntimeException(
+                    "Campaign {$filename} ending node '{$nodeId}' is unreachable"
+                );
+            }
         }
 
         if (!isset($graph['acts'])) {
@@ -259,6 +336,11 @@ class StoryEngineService {
             if (!is_array($act)) {
                 throw new \RuntimeException("Campaign {$filename} act {$actNumber} is malformed");
             }
+            $this->validateSchemaRequiredFields(
+                $act,
+                $schema['graph']['act_required'] ?? [],
+                "Campaign {$filename} act {$actNumber}"
+            );
             if (empty($act['name'])) {
                 throw new \RuntimeException("Campaign {$filename} act {$actNumber} missing name");
             }
@@ -346,6 +428,11 @@ class StoryEngineService {
                     "Campaign {$filename} node '{$node['id']}' simulator must be an object"
                 );
             }
+            $this->validateSchemaEnum(
+                (string)($simulator['type'] ?? ''),
+                $this->loadCampaignSchema()['graph']['simulator_type_enum'] ?? [],
+                "Campaign {$filename} node '{$node['id']}' simulator type"
+            );
             foreach (['type', 'scenario', 'pass_flag'] as $field) {
                 if (trim((string)($simulator[$field] ?? '')) === '') {
                     throw new \RuntimeException(
@@ -375,6 +462,11 @@ class StoryEngineService {
         }
 
         $config = $node['bot_correction'];
+        $this->validateSchemaEnum(
+            isset($config['category']) ? (string)$config['category'] : null,
+            $this->loadCampaignSchema()['graph']['bot_category_enum'] ?? [],
+            "Campaign {$filename} node '{$node['id']}' bot_correction category"
+        );
         $hasExplicitScenario = array_key_exists('error_options', $config)
             || array_key_exists('fix_options', $config)
             || array_key_exists('expected_error_id', $config)
@@ -427,6 +519,160 @@ class StoryEngineService {
                 throw new \RuntimeException("{$context} entries must contain non-empty id and label");
             }
         }
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $schema
+     * @throws \RuntimeException
+     */
+    private function validateCampaignAgainstSchema(array $data, string $filename, array $schema): void {
+        $expectedVersion = trim((string)($schema['campaign_version'] ?? ''));
+        $actualVersion = trim((string)($data['version'] ?? ''));
+        if ($expectedVersion !== '' && $actualVersion !== $expectedVersion) {
+            throw new \RuntimeException('Kampagne aktualisiert — bitte neu starten');
+        }
+
+        $this->validateSchemaRequiredFields(
+            $data,
+            $schema['campaign']['required'] ?? [],
+            "Campaign {$filename}"
+        );
+
+        $this->validateSchemaEnum(
+            isset($data['difficulty']) ? (string)$data['difficulty'] : null,
+            $schema['campaign']['difficulty_enum'] ?? [],
+            "Campaign {$filename} difficulty"
+        );
+
+        foreach (['focus_areas', 'character_recommendations'] as $field) {
+            if (!isset($data[$field]) || !is_array($data[$field]) || empty($data[$field])) {
+                throw new \RuntimeException("Campaign {$filename} field '{$field}' must be a non-empty array");
+            }
+        }
+
+        if (!isset($data['graph']) || !is_array($data['graph'])) {
+            throw new \RuntimeException("Campaign {$filename} missing graph definition");
+        }
+
+        $this->validateSchemaRequiredFields(
+            $data['graph'],
+            $schema['graph']['required'] ?? [],
+            "Campaign {$filename} graph"
+        );
+
+        if (!empty($data['workplace_npcs'])) {
+            if (!is_array($data['workplace_npcs'])) {
+                throw new \RuntimeException("Campaign {$filename} workplace_npcs must be an array");
+            }
+            foreach ($data['workplace_npcs'] as $index => $npc) {
+                if (!is_array($npc)) {
+                    throw new \RuntimeException("Campaign {$filename} workplace_npcs entry {$index} is malformed");
+                }
+                $this->validateSchemaRequiredFields(
+                    $npc,
+                    $schema['workplace_npc']['required'] ?? [],
+                    "Campaign {$filename} workplace_npc #{$index}"
+                );
+            }
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @param array<int, mixed> $requiredFields
+     * @throws \RuntimeException
+     */
+    private function validateSchemaRequiredFields(array $payload, array $requiredFields, string $context): void {
+        foreach ($requiredFields as $field) {
+            $fieldName = trim((string)$field);
+            if ($fieldName === '') {
+                continue;
+            }
+            if (!array_key_exists($fieldName, $payload)) {
+                throw new \RuntimeException("{$context} missing required field: {$fieldName}");
+            }
+        }
+    }
+
+    /**
+     * @param array<int, mixed> $allowedValues
+     * @throws \RuntimeException
+     */
+    private function validateSchemaEnum(?string $value, array $allowedValues, string $context): void {
+        if ($value === null || $value === '' || empty($allowedValues)) {
+            return;
+        }
+
+        $normalizedAllowed = array_values(array_filter(array_map('strval', $allowedValues)));
+        if (!in_array($value, $normalizedAllowed, true)) {
+            throw new \RuntimeException("{$context} contains unsupported value '{$value}'");
+        }
+    }
+
+    /**
+     * @param mixed $conditions
+     * @param array<int, mixed> $allowedKeys
+     * @throws \RuntimeException
+     */
+    private function validateGraphConditions($conditions, array $allowedKeys, string $context): void {
+        if ($conditions === [] || $conditions === null) {
+            return;
+        }
+        if (!is_array($conditions)) {
+            throw new \RuntimeException("{$context} conditions must be an object");
+        }
+        if (empty($allowedKeys)) {
+            return;
+        }
+
+        $normalizedAllowed = array_values(array_filter(array_map('strval', $allowedKeys)));
+        foreach (array_keys($conditions) as $key) {
+            $conditionKey = (string)$key;
+            if (!in_array($conditionKey, $normalizedAllowed, true)) {
+                throw new \RuntimeException("{$context} conditions use unsupported key '{$conditionKey}'");
+            }
+        }
+    }
+
+    private function isCampaignSchemaFile(string $file): bool {
+        return basename($file) === 'campaign-schema.json';
+    }
+
+    /**
+     * Keep legacy campaigns readable while enforcing schema rules for versioned content.
+     */
+    private function shouldValidateAgainstSchema(array $data, string $filename): bool {
+        if ($this->isCampaignSchemaFile($filename)) {
+            return false;
+        }
+
+        return array_key_exists('version', $data) || basename($filename) === 'der_grosse_ausfall.json';
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws \RuntimeException
+     */
+    private function loadCampaignSchema(): array {
+        if ($this->campaignSchema !== null) {
+            return $this->campaignSchema;
+        }
+
+        $schemaPath = $this->campaignDir . '/campaign-schema.json';
+        $raw = @file_get_contents($schemaPath);
+        if ($raw === false) {
+            throw new \RuntimeException('Cannot read campaign schema: campaign-schema.json');
+        }
+
+        $schema = json_decode($raw, true);
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($schema)) {
+            throw new \RuntimeException('Malformed JSON in campaign-schema.json: ' . json_last_error_msg());
+        }
+
+        $this->campaignSchema = $schema;
+
+        return $this->campaignSchema;
     }
 
     // ─── Graph Response Transformer ──────────────────────────────────────────
