@@ -236,6 +236,14 @@ return [
         ['name' => 'story#submitSkillBatch',       'url' => '/api/story/campaigns/{campaignId}/batch',                           'verb' => 'POST'],
         ['name' => 'story#submitFreetext',         'url' => '/api/story/campaigns/{campaignId}/freetext',                        'verb' => 'POST'],
 
+        // Coop Story (Phase 84)
+        ['name' => 'coop#create',                  'url' => '/api/v1/coop/sessions',                                             'verb' => 'POST'],
+        ['name' => 'coop#join',                    'url' => '/api/v1/coop/sessions/{code}/join',                                 'verb' => 'POST'],
+        ['name' => 'coop#lobby',                   'url' => '/api/v1/coop/sessions/{id}/lobby',                                  'verb' => 'GET'],
+        ['name' => 'coop#ready',                   'url' => '/api/v1/coop/sessions/{id}/ready',                                  'verb' => 'POST'],
+        ['name' => 'coop#state',                   'url' => '/api/v1/coop/sessions/{id}/state',                                  'verb' => 'GET'],
+        ['name' => 'coop#vote',                    'url' => '/api/v1/coop/sessions/{id}/vote',                                   'verb' => 'POST'],
+
         // Document Upload & Extraction (Phase 36)
         ['name' => 'document#setFolder',   'url' => '/api/courses/{courseId}/material-folder',               'verb' => 'POST'],
         ['name' => 'document#getFolder',   'url' => '/api/courses/{courseId}/material-folder',               'verb' => 'GET'],
