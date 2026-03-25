@@ -58,6 +58,9 @@
         <NcButton type="primary" :disabled="loading || selectedPoolId === 0" @click="createDuel">
           {{ createButtonLabel }}
         </NcButton>
+        <NcButton type="secondary" :disabled="loading || selectedPoolId === 0" @click="startBotDuel">
+          🤓 {{ t('learning', 'Gegen Klaus spielen') }}
+        </NcButton>
         <NcButton type="tertiary" :disabled="loading" @click="$emit('back')">
           {{ t('learning', 'Zurück') }}
         </NcButton>
@@ -113,7 +116,12 @@
     <div v-else-if="phase === 'question'" class="duel-question">
       <div class="progress-area">
         <div class="progress-text">
-          {{ (duelState && duelState.current_question_index + 1) || 1 }} / {{ duelState && duelState.total_questions || 10 }}
+          <template v-if="botMode">
+            {{ botLocalState.currentIndex + 1 }} / {{ botLocalState.totalQuestions }}
+          </template>
+          <template v-else>
+            {{ (duelState && duelState.current_question_index + 1) || 1 }} / {{ duelState && duelState.total_questions || 10 }}
+          </template>
         </div>
         <NcProgressBar :value="progressPercent" />
       </div>
@@ -122,6 +130,12 @@
         <span class="my-score">{{ myScore }}</span>
         <span class="score-divider">:</span>
         <span class="opp-score">{{ opponentScore }}</span>
+      </div>
+
+      <!-- Klaus-Status (nur im Bot-Modus) -->
+      <div v-if="botMode && botPhrase" class="bot-status-bar">
+        <span class="bot-avatar">🤓</span>
+        <span class="bot-speech">{{ botPhrase }}</span>
       </div>
 
       <div class="duel-card">
@@ -207,26 +221,53 @@
     <div v-else-if="phase === 'finished'" class="duel-finished">
       <h3>{{ t('learning', 'Duell beendet!') }}</h3>
 
-      <div class="final-scores">
-        <div class="final-player">
-          <span class="player-name">{{ duelState && duelState.creator_uid }}</span>
-          <span class="final-score">{{ duelState && duelState.creator_score }}</span>
+      <!-- Bot-Modus Ergebnis -->
+      <template v-if="botMode">
+        <div class="final-scores">
+          <div class="final-player">
+            <span class="player-name">{{ t('learning', 'Du') }}</span>
+            <span class="final-score">{{ botLocalState.myScore }}</span>
+          </div>
+          <span class="score-divider">:</span>
+          <div class="final-player">
+            <span class="player-name">🤓 Klaus</span>
+            <span class="final-score">{{ botLocalState.botScore }}</span>
+          </div>
         </div>
-        <span class="score-divider">:</span>
-        <div class="final-player">
-          <span class="player-name">{{ duelState && duelState.opponent_uid }}</span>
-          <span class="final-score">{{ duelState && duelState.opponent_score }}</span>
+        <p class="winner-announce">{{ botWinnerText }}</p>
+        <div v-if="botKlausEndPhrase" class="bot-status-bar bot-end-phrase">
+          <span class="bot-avatar">🤓</span>
+          <span class="bot-speech">{{ botKlausEndPhrase }}</span>
         </div>
-      </div>
+        <div class="start-actions">
+          <NcButton type="primary" :disabled="loading" @click="startBotDuel">
+            {{ t('learning', 'Rematch gegen Klaus') }}
+          </NcButton>
+          <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
+        </div>
+      </template>
 
-      <p class="winner-announce">{{ winnerText }}</p>
-
-      <div class="start-actions">
-        <NcButton type="primary" :disabled="loading" @click="doRematch">
-          {{ loading ? t('learning', 'Starte...') : t('learning', 'Rematch') }}
-        </NcButton>
-        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
-      </div>
+      <!-- Normales Duell-Ergebnis -->
+      <template v-else>
+        <div class="final-scores">
+          <div class="final-player">
+            <span class="player-name">{{ duelState && duelState.creator_uid }}</span>
+            <span class="final-score">{{ duelState && duelState.creator_score }}</span>
+          </div>
+          <span class="score-divider">:</span>
+          <div class="final-player">
+            <span class="player-name">{{ duelState && duelState.opponent_uid }}</span>
+            <span class="final-score">{{ duelState && duelState.opponent_score }}</span>
+          </div>
+        </div>
+        <p class="winner-announce">{{ winnerText }}</p>
+        <div class="start-actions">
+          <NcButton type="primary" :disabled="loading" @click="doRematch">
+            {{ loading ? t('learning', 'Starte...') : t('learning', 'Rematch') }}
+          </NcButton>
+          <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
+        </div>
+      </template>
     </div>
 
     <!-- ===== EXPIRED PHASE ===== -->
@@ -249,6 +290,7 @@ import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
+import { botChooseAnswer, botResponseDelay, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
 
 export default {
   name: 'DuelMode',
@@ -308,6 +350,21 @@ export default {
       consecutivePollErrors: 0,
       disconnectDetected: false,
       restoringFromStorage: false,
+
+      // ---- Bot-Modus ----
+      botMode: false,
+      botLocalState: {
+        questions: [],          // Aus API geladene Fragen
+        currentIndex: 0,
+        totalQuestions: 10,
+        myScore: 0,
+        botScore: 0,
+        botAnswerTimeout: null,
+        difficulty: 'medium',
+      },
+      botPhrase: '',            // Aktuell angezeigte Klaus-Sprechblase
+      botKlausEndPhrase: '',    // Endsatz am Spielende
+      botHasAnswered: false,    // Klaus hat diese Frage schon beantwortet
     };
   },
 
@@ -316,12 +373,14 @@ export default {
       return this.duelState ? this.duelState.my_role : null;
     },
     myScore() {
+      if (this.botMode) return this.botLocalState.myScore;
       if (!this.duelState) return 0;
       return this.duelState.my_role === 'creator'
         ? this.duelState.creator_score
         : this.duelState.opponent_score;
     },
     opponentScore() {
+      if (this.botMode) return this.botLocalState.botScore;
       if (!this.duelState) return 0;
       return this.duelState.my_role === 'creator'
         ? this.duelState.opponent_score
@@ -331,9 +390,16 @@ export default {
       return this.duelState ? this.duelState.opponent_uid : null;
     },
     currentQuestion() {
+      if (this.botMode) {
+        const idx = this.botLocalState.currentIndex;
+        return this.botLocalState.questions[idx] || null;
+      }
       return this.duelState ? this.duelState.current_question : null;
     },
     progressPercent() {
+      if (this.botMode) {
+        return Math.round((this.botLocalState.currentIndex / this.botLocalState.totalQuestions) * 100);
+      }
       if (!this.duelState) return 0;
       return Math.round((this.duelState.current_question_index / this.duelState.total_questions) * 100);
     },
@@ -354,6 +420,12 @@ export default {
       if (cs === os) return t('learning', 'Unentschieden!');
       const iWon = (isCreator && cs > os) || (!isCreator && os > cs);
       return iWon ? t('learning', 'Du hast gewonnen!') : t('learning', 'Gegner gewinnt');
+    },
+    botWinnerText() {
+      const my = this.botLocalState.myScore;
+      const bot = this.botLocalState.botScore;
+      if (my === bot) return t('learning', 'Unentschieden!');
+      return my > bot ? t('learning', 'Du hast gewonnen!') : '🤓 Klaus gewinnt!';
     },
     createButtonLabel() {
       if (this.loading) {
@@ -421,6 +493,7 @@ export default {
 
   destroyed() {
     this.stopPolling();
+    this.clearBotTimeout();
   },
 
   watch: {
@@ -680,7 +753,16 @@ export default {
       }
     },
 
+    clearBotTimeout() {
+      if (this.botLocalState.botAnswerTimeout) {
+        clearTimeout(this.botLocalState.botAnswerTimeout);
+        this.botLocalState.botAnswerTimeout = null;
+      }
+    },
+
     cancelDuel() {
+      this.clearBotTimeout();
+      this.botMode = false;
       localStorage.removeItem('learning_duel_session');
       this.stopPolling();
       this.phase = 'join';
@@ -699,6 +781,35 @@ export default {
       if (this.hasAnswered) return;
       this.hasAnswered = true;
       this.selectedAnswerId = answerId;
+
+      // ---- Bot-Modus: lokale Antwortverarbeitung ----
+      if (this.botMode) {
+        const question = this.currentQuestion;
+        const correct = question && question.answers
+          ? question.answers.find(a => a.is_correct)
+          : null;
+        this.correctAnswerId = correct ? correct.id : null;
+        this.answeredCorrect = correct ? answerId === correct.id : false;
+        if (this.answeredCorrect) {
+          this.botLocalState.myScore += 10;
+        }
+        this.lastPoints = this.answeredCorrect ? 10 : 0;
+        this.lastQuestion = question;
+
+        // Klaus eventuell aufziehen
+        if (!this.botHasAnswered) {
+          this.botPhrase = getBotPhrase('taunt');
+        }
+
+        if (this.botHasAnswered) {
+          // Klaus hat schon geantwortet — sofort weiter
+          this.botAdvanceQuestion();
+        }
+        // Sonst wartet onAnswer bis Klaus fertig ist (scheduleBotAnswer ruft botAdvanceQuestion auf)
+        return;
+      }
+
+      // ---- Normaler Duell-Modus ----
       this.lastQuestion = this.currentQuestion;
       this.scoreBeforeAnswer = this.myScore;
       this.loading = true;
@@ -796,6 +907,122 @@ export default {
           this.disconnectDetected = true;
         }
       }
+    },
+
+    // -------- Bot-Modus --------
+
+    async startBotDuel() {
+      if (!this.selectedPoolId) return;
+      this.loading = true;
+      this.error = null;
+      this.botMode = true;
+      this.stopPolling();
+
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/pools/' + this.selectedPoolId + '/questions'));
+        const allQuestions = (r.data || []).filter(q => q.answers && q.answers.length > 0);
+        if (allQuestions.length === 0) {
+          this.error = t('learning', 'Keine Fragen im Pool gefunden.');
+          this.botMode = false;
+          this.loading = false;
+          return;
+        }
+
+        // Mische Fragen und nehme bis zu numQuestions
+        const shuffled = allQuestions.sort(() => Math.random() - 0.5);
+        const total = Math.min(this.numQuestions, shuffled.length);
+
+        this.botLocalState = {
+          questions: shuffled.slice(0, total),
+          currentIndex: 0,
+          totalQuestions: total,
+          myScore: 0,
+          botScore: 0,
+          botAnswerTimeout: null,
+          difficulty: 'medium',
+        };
+        this.hasAnswered = false;
+        this.botHasAnswered = false;
+        this.botPhrase = getBotPhrase('join');
+        this.botKlausEndPhrase = '';
+        this.phase = 'question';
+
+        // Klaus tippt seine Antwort nach Delay
+        this.scheduleBotAnswer();
+      } catch (e) {
+        this.error = t('learning', 'Fragen konnten nicht geladen werden');
+        this.botMode = false;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    scheduleBotAnswer() {
+      if (this.botLocalState.botAnswerTimeout) {
+        clearTimeout(this.botLocalState.botAnswerTimeout);
+      }
+      const delay = botResponseDelay(this.botLocalState.difficulty);
+      this.botPhrase = getBotPhrase('thinking');
+      this.botLocalState.botAnswerTimeout = setTimeout(() => {
+        this.botExecuteAnswer();
+      }, delay);
+    },
+
+    botExecuteAnswer() {
+      if (this.botHasAnswered) return;
+      const question = this.currentQuestion;
+      if (!question || !question.answers) return;
+
+      this.botHasAnswered = true;
+      const chosen = botChooseAnswer(question.answers, this.botLocalState.difficulty);
+      const isCorrect = chosen && chosen.is_correct;
+
+      if (isCorrect) {
+        this.botLocalState.botScore += 10;
+        this.botPhrase = getBotPhrase('correct');
+      } else {
+        this.botPhrase = getBotPhrase('wrong');
+      }
+
+      // Wenn auch der User schon geantwortet hat, Frage wechseln
+      if (this.hasAnswered) {
+        this.botAdvanceQuestion();
+      }
+      // Sonst wartet Klaus bis der User antwortet — onAnswer() merkt das
+    },
+
+    botAdvanceQuestion() {
+      const next = this.botLocalState.currentIndex + 1;
+      if (next >= this.botLocalState.totalQuestions) {
+        // Spiel vorbei
+        setTimeout(() => {
+          const my = this.botLocalState.myScore;
+          const bot = this.botLocalState.botScore;
+          if (my > bot) {
+            this.botKlausEndPhrase = getBotPhrase('lose');
+          } else if (bot > my) {
+            this.botKlausEndPhrase = getBotPhrase('win');
+          } else {
+            this.botKlausEndPhrase = getBotPhrase('taunt');
+          }
+          this.phase = 'finished';
+        }, 1000);
+        return;
+      }
+
+      // Kurze Feedback-Pause dann nächste Frage
+      this.phase = 'feedback';
+      setTimeout(() => {
+        this.botLocalState.currentIndex = next;
+        this.hasAnswered = false;
+        this.botHasAnswered = false;
+        this.selectedAnswerId = null;
+        this.correctAnswerId = null;
+        this.answeredCorrect = false;
+        this.botPhrase = '';
+        this.phase = 'question';
+        this.scheduleBotAnswer();
+      }, 1500);
     },
 
     applyStateTransitions(state) {
@@ -1427,5 +1654,30 @@ export default {
 @media (prefers-reduced-motion: reduce) {
   .feedback-wait { animation: none; }
   .answer-btn { transition: none; }
+}
+
+/* ===== Klaus Bot-Status ===== */
+.bot-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-background-dark, #f4f4f4);
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: var(--border-radius-large, 8px);
+  padding: 8px 14px;
+  margin: 8px 0;
+  font-size: 14px;
+  color: var(--color-main-text);
+}
+.bot-avatar {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.bot-speech {
+  font-style: italic;
+}
+.bot-end-phrase {
+  margin-top: 12px;
+  background: var(--color-background-hover, #eef);
 }
 </style>

@@ -46,6 +46,9 @@
         <NcButton type="primary" :disabled="loading || selectedPoolId === 0" @click="createGame">
           {{ loading ? t('learning', 'Erstelle...') : t('learning', 'Neues Spiel starten') }}
         </NcButton>
+        <NcButton type="secondary" :disabled="loading || selectedPoolId === 0" @click="startBotGame">
+          🤓 {{ t('learning', 'Gegen Klaus spielen') }}
+        </NcButton>
         <NcButton type="tertiary" :disabled="loading" @click="$emit('back')">
           {{ t('learning', 'Zurück') }}
         </NcButton>
@@ -198,6 +201,10 @@
       <div v-else-if="!isMyTurn && boardPhase === 'roll'" class="lw-wait-roll">
         <p>{{ t('learning', '{name} ist dran...', { name: activePlayerName }) }}</p>
         <NcLoadingIcon :size="24" />
+        <div v-if="botMode && botPhrase" class="bot-status-bar">
+          <span class="bot-avatar">🤓</span>
+          <span class="bot-speech">{{ botPhrase }}</span>
+        </div>
       </div>
 
       <!-- Special effect notification -->
@@ -234,6 +241,10 @@
       <div v-else-if="!isMyTurn && boardPhase === 'question'" class="lw-wait-answer">
         <p>{{ t('learning', '{name} beantwortet eine Frage...', { name: activePlayerName }) }}</p>
         <NcLoadingIcon :size="24" />
+        <div v-if="botMode && botPhrase" class="bot-status-bar">
+          <span class="bot-avatar">🤓</span>
+          <span class="bot-speech">{{ botPhrase }}</span>
+        </div>
       </div>
 
       <!-- Answer feedback overlay -->
@@ -299,6 +310,7 @@ import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue'
+import { botChooseAnswer, botResponseDelay, botRollDice, botPhrase as getBotPhrase } from '../utils/botPlayer.js'
 
 /** Special field definitions matching the backend constants */
 const SPECIAL_FIELDS = {
@@ -417,11 +429,34 @@ export default {
 
       // Celebration
       finishedCelebrated: false,
+
+      // ---- Bot-Modus ----
+      botMode: false,
+      botLocalState: {
+        questions: [],       // Alle Fragen aus dem Pool
+        position: 0,         // Aktuelle Position auf dem Brett (0-30)
+        score: 0,
+        botAnswerTimeout: null,
+        difficulty: 'medium',
+      },
+      myBotPosition: 0,      // Position des Users (0-30)
+      myBotScore: 0,
+      botPhrase: '',
+      botBoardPhase: 'roll', // 'roll' | 'question' — lokale Kopie
+      botCurrentQuestion: null,
+      botActiveTurn: 0,      // 0 = User, 1 = Klaus
+      botTurnDice: null,     // Würfelergebnis des aktuellen Zugs
     }
   },
 
   computed: {
     activePlayers() {
+      if (this.botMode) {
+        return [
+          { user_id: 'me', display_name: t('learning', 'Du'), slot: 0, score: this.myBotScore, is_ready: true },
+          { user_id: 'bot-klaus', display_name: 'Klaus', slot: 1, score: this.botLocalState.score, is_ready: true, is_bot: true },
+        ];
+      }
       if (!this.state || !this.state.players) return []
       return this.state.players.filter(p => !p.is_removed)
     },
@@ -432,6 +467,7 @@ export default {
     },
 
     mySlot() {
+      if (this.botMode) return 0;
       return this.state ? this.state.my_slot : null
     },
 
@@ -440,23 +476,28 @@ export default {
     },
 
     boardPhase() {
+      if (this.botMode) return this.botBoardPhase;
       return this.boardState ? this.boardState.phase : 'roll'
     },
 
     activePlayerIndex() {
+      if (this.botMode) return this.botActiveTurn;
       return this.boardState ? (this.boardState.active_player_index ?? 0) : 0
     },
 
     isMyTurn() {
+      if (this.botMode) return this.botActiveTurn === 0;
       return this.mySlot === this.activePlayerIndex
     },
 
     activePlayerName() {
+      if (this.botMode) return this.botActiveTurn === 0 ? t('learning', 'Du') : 'Klaus';
       const active = this.activePlayers.find(p => p.slot === this.activePlayerIndex)
       return active ? (active.display_name || active.user_id) : ''
     },
 
     currentQuestion() {
+      if (this.botMode) return this.botCurrentQuestion;
       return this.state ? this.state.current_question : null
     },
 
@@ -469,6 +510,15 @@ export default {
     },
 
     winnerPlayer() {
+      if (this.botMode) {
+        if (this.myBotPosition >= BOARD_SIZE) {
+          return this.activePlayers.find(p => p.slot === 0) || null;
+        }
+        if (this.botLocalState.position >= BOARD_SIZE) {
+          return this.activePlayers.find(p => p.slot === 1) || null;
+        }
+        return null;
+      }
       if (!this.state) return null
       if (this.state.winner_user_id) {
         return this.activePlayers.find(p => p.user_id === this.state.winner_user_id) || null
@@ -547,12 +597,129 @@ export default {
 
   destroyed() {
     this.stopPolling()
+    this.clearBotTimeout()
   },
 
   methods: {
+    // -------- Bot-Modus --------
+
+    async startBotGame() {
+      if (!this.selectedPoolId) return
+      this.loading = true
+      this.error = null
+      this.botMode = true
+      this.stopPolling()
+
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/pools/' + this.selectedPoolId + '/questions'))
+        const allQuestions = (r.data || []).filter(q => q.answers && q.answers.length > 0)
+        if (allQuestions.length === 0) {
+          this.error = t('learning', 'Keine Fragen im Pool gefunden.')
+          this.botMode = false
+          this.loading = false
+          return
+        }
+
+        // Mische Fragen
+        const shuffled = allQuestions.sort(() => Math.random() - 0.5)
+
+        this.botLocalState = {
+          questions: shuffled,
+          position: 0,
+          score: 0,
+          botAnswerTimeout: null,
+          difficulty: 'medium',
+        }
+        this.myBotPosition = 0
+        this.myBotScore = 0
+        this.botActiveTurn = 0    // User fängt an
+        this.botBoardPhase = 'roll'
+        this.botCurrentQuestion = null
+        this.botPhrase = getBotPhrase('join')
+        this.hasAnswered = false
+        this.showAnswerFeedback = false
+        this.phase = 'board'
+      } catch (e) {
+        this.error = t('learning', 'Fragen konnten nicht geladen werden')
+        this.botMode = false
+      } finally {
+        this.loading = false
+      }
+    },
+
+    clearBotTimeout() {
+      if (this.botLocalState && this.botLocalState.botAnswerTimeout) {
+        clearTimeout(this.botLocalState.botAnswerTimeout)
+        this.botLocalState.botAnswerTimeout = null
+      }
+    },
+
+    // Bot ist dran: würfelt nach Delay, dann beantwortet Frage nach Delay
+    botTakeTurn() {
+      this.botBoardPhase = 'roll'
+      this.botPhrase = getBotPhrase('thinking')
+      this.clearBotTimeout()
+
+      const rollDelay = 1200 + Math.random() * 1000
+      this.botLocalState.botAnswerTimeout = setTimeout(() => {
+        const roll = botRollDice()
+        this.botTurnDice = roll
+        this.diceDisplayValue = roll
+        this.diceResult = roll
+
+        // Zieht auf Feld
+        this.botLocalState.position = Math.min(BOARD_SIZE, this.botLocalState.position + roll)
+
+        if (this.botLocalState.position >= BOARD_SIZE) {
+          // Klaus hat gewonnen
+          this.phase = 'finished'
+          this.botPhrase = getBotPhrase('win')
+          return
+        }
+
+        // Bot muss eine Frage beantworten
+        this.botBoardPhase = 'question'
+        const questions = this.botLocalState.questions
+        if (questions.length === 0) {
+          // Keine Fragen — Zug weitergeben
+          this.botEndTurn()
+          return
+        }
+        const randomQ = questions[Math.floor(Math.random() * questions.length)]
+        this.botCurrentQuestion = randomQ
+
+        const answerDelay = botResponseDelay(this.botLocalState.difficulty)
+        this.botPhrase = getBotPhrase('thinking')
+        this.botLocalState.botAnswerTimeout = setTimeout(() => {
+          const chosen = botChooseAnswer(randomQ.answers, this.botLocalState.difficulty)
+          const isCorrect = chosen && chosen.is_correct
+          if (isCorrect) {
+            this.botLocalState.score += 10
+            this.botPhrase = getBotPhrase('correct')
+          } else {
+            // Klaus hat falsch geantwortet — Position bleibt (Frage war für Feld-Fortschritt)
+            this.botPhrase = getBotPhrase('wrong')
+          }
+          this.botEndTurn()
+        }, answerDelay)
+      }, rollDelay)
+    },
+
+    botEndTurn() {
+      this.botBoardPhase = 'roll'
+      this.botCurrentQuestion = null
+      // Kurze Pause dann User wieder dran
+      setTimeout(() => {
+        this.botActiveTurn = 0
+      }, 600)
+    },
+
     // -------- Board helpers --------
 
     playerPosition(player) {
+      if (this.botMode) {
+        return player.slot === 0 ? this.myBotPosition : this.botLocalState.position;
+      }
       if (!this.boardState || !this.boardState.positions) return 0
       return this.boardState.positions[String(player.slot)] ?? 0
     },
@@ -838,6 +1005,8 @@ export default {
     },
 
     cancelGame() {
+      this.clearBotTimeout()
+      this.botMode = false
       localStorage.removeItem('learning_lernwuerfel_session')
       this.stopPolling()
       this.phase = 'join'
@@ -855,6 +1024,39 @@ export default {
 
     async rollDice() {
       if (this.loading || this.diceRolling) return
+
+      // ---- Bot-Modus ----
+      if (this.botMode) {
+        this.diceRolling = true
+        const roll = botRollDice()
+        this.diceDisplayValue = roll
+        this.diceResult = roll
+        this.myBotPosition = Math.min(BOARD_SIZE, this.myBotPosition + roll)
+        this.hasAnswered = false
+        this.showAnswerFeedback = false
+
+        if (this.myBotPosition >= BOARD_SIZE) {
+          this.phase = 'finished'
+          this.diceRolling = false
+          return
+        }
+
+        // Lade zufällige Frage aus Pool
+        const questions = this.botLocalState.questions
+        if (questions.length > 0) {
+          this.botCurrentQuestion = questions[Math.floor(Math.random() * questions.length)]
+          this.botBoardPhase = 'question'
+        } else {
+          // Keine Fragen — Zug sofort zu Klaus
+          this.botActiveTurn = 1
+          this.botBoardPhase = 'roll'
+          setTimeout(() => { this.botTakeTurn() }, 800)
+        }
+        this.diceRolling = false
+        return
+      }
+
+      // ---- Normaler Modus ----
       this.loading = true
       this.diceRolling = true
       this.error = null
@@ -906,6 +1108,35 @@ export default {
 
     async onAnswer(answerId) {
       if (this.hasAnswered || this.loading) return
+
+      // ---- Bot-Modus ----
+      if (this.botMode) {
+        this.hasAnswered = true
+        this.selectedAnswerId = answerId
+        const question = this.botCurrentQuestion
+        const correct = question && question.answers
+          ? question.answers.find(a => a.is_correct)
+          : null
+        this.lastAnswerCorrect = correct ? answerId === correct.id : false
+        if (this.lastAnswerCorrect) {
+          this.myBotScore += 10
+        }
+        this.showAnswerFeedback = true
+
+        setTimeout(() => {
+          this.showAnswerFeedback = false
+          this.hasAnswered = false
+          this.selectedAnswerId = null
+          this.botBoardPhase = 'roll'
+          this.botCurrentQuestion = null
+          // Zug zu Klaus
+          this.botActiveTurn = 1
+          this.botTakeTurn()
+        }, 1400)
+        return
+      }
+
+      // ---- Normaler Modus ----
       this.hasAnswered = true
       this.selectedAnswerId = answerId
       this.loading = true
@@ -1503,4 +1734,19 @@ export default {
   text-align: center;
   padding: 24px;
 }
+
+/* ===== Bot-Modus ===== */
+.bot-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-background-dark, #f4f4f4);
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: var(--border-radius-large, 8px);
+  padding: 8px 14px;
+  margin: 8px 0;
+  font-size: 14px;
+}
+.bot-avatar { font-size: 22px; flex-shrink: 0; }
+.bot-speech { font-style: italic; }
 </style>

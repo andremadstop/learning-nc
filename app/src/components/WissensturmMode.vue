@@ -49,6 +49,9 @@
         <NcButton type="primary" :disabled="loading" @click="createGame">
           {{ loading ? t('learning', 'Erstelle...') : t('learning', 'Neues Spiel starten') }}
         </NcButton>
+        <NcButton type="secondary" :disabled="loading || !coursePools || coursePools.length === 0" @click="startBotGame">
+          🤓 {{ t('learning', 'Gegen Klaus spielen') }}
+        </NcButton>
         <NcButton type="tertiary" :disabled="loading" @click="$emit('back')">
           {{ t('learning', 'Zur\u00fcck') }}
         </NcButton>
@@ -149,6 +152,12 @@
         <span v-else>
           {{ t('learning', '{name} ist am Zug...', { name: activePlayerName }) }}
         </span>
+      </div>
+
+      <!-- Klaus-Sprechblase (nur im Bot-Modus) -->
+      <div v-if="botMode && botPhrase" class="bot-status-bar">
+        <span class="bot-avatar">🤓</span>
+        <span class="bot-speech">{{ botPhrase }}</span>
       </div>
 
       <!-- Category selection (only for active player in roll phase) -->
@@ -288,6 +297,7 @@ import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
+import { botChooseAnswer, botResponseDelay, botChooseCategory, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
 
 const COLORS = ['#2196f3', '#e53935', '#4caf50', '#ffc107', '#9c27b0'];
 const WIN_BLOCKS = 5;
@@ -343,6 +353,16 @@ export default {
       stealNotification: null,
       recentGainSlot: null,
       finishedCelebrated: false,
+
+      // ---- Bot-Modus ----
+      botMode: false,
+      botLocalTowers: { 0: [], 1: [] },  // slot -> array of poolIds
+      botActiveTurn: 0,                   // 0=User, 1=Klaus
+      botBoardPhase: 'roll',              // 'roll' | 'question'
+      botCurrentQuestion: null,
+      botAnswerTimeout: null,
+      botPhrase: '',
+      botDifficulty: 'medium',
     };
   },
 
@@ -368,6 +388,12 @@ export default {
     },
 
     activePlayers() {
+      if (this.botMode) {
+        return [
+          { user_id: 'me', display_name: t('learning', 'Du'), slot: 0, is_ready: true },
+          { user_id: 'bot-klaus', display_name: 'Klaus', slot: 1, is_ready: true, is_bot: true },
+        ];
+      }
       if (!this.state || !this.state.players) return [];
       return this.state.players.filter(p => !p.is_removed);
     },
@@ -378,6 +404,7 @@ export default {
     },
 
     mySlot() {
+      if (this.botMode) return 0;
       return this.state ? this.state.my_slot : null;
     },
 
@@ -386,23 +413,28 @@ export default {
     },
 
     boardPhase() {
+      if (this.botMode) return this.botBoardPhase;
       return this.boardState ? (this.boardState.phase || 'roll') : 'roll';
     },
 
     activePlayerIndex() {
+      if (this.botMode) return this.botActiveTurn;
       return this.boardState ? (this.boardState.active_player_index ?? 0) : 0;
     },
 
     isMyTurn() {
+      if (this.botMode) return this.botActiveTurn === 0;
       return this.mySlot === this.activePlayerIndex;
     },
 
     activePlayerName() {
+      if (this.botMode) return this.botActiveTurn === 0 ? t('learning', 'Du') : 'Klaus';
       const player = this.activePlayers.find(p => p.slot === this.activePlayerIndex);
       return player ? (player.display_name || player.user_id) : '';
     },
 
     currentQuestion() {
+      if (this.botMode) return this.botCurrentQuestion;
       if (!this.state) return null;
       // After selectCategory, override question comes from board_state
       if (this.boardState && this.boardState.current_question_override) {
@@ -430,6 +462,15 @@ export default {
     },
 
     winner() {
+      if (this.botMode) {
+        if ((this.botLocalTowers[0] || []).length >= WIN_BLOCKS) {
+          return this.activePlayers.find(p => p.slot === 0) || null;
+        }
+        if ((this.botLocalTowers[1] || []).length >= WIN_BLOCKS) {
+          return this.activePlayers.find(p => p.slot === 1) || null;
+        }
+        return null;
+      }
       if (!this.state) return null;
       if (this.state.winner_user_id) {
         return this.activePlayers.find(p => p.user_id === this.state.winner_user_id) || null;
@@ -464,9 +505,111 @@ export default {
 
   destroyed() {
     this.stopPolling();
+    this.clearBotTimeout();
   },
 
   methods: {
+    // ---------- Bot-Modus ----------
+
+    startBotGame() {
+      if (!this.coursePools || this.coursePools.length === 0) {
+        this.error = t('learning', 'Kein Pool verf\u00fcgbar.');
+        return;
+      }
+      this.botMode = true;
+      this.stopPolling();
+      this.botLocalTowers = { 0: [], 1: [] };
+      this.botActiveTurn = 0;
+      this.botBoardPhase = 'roll';
+      this.botCurrentQuestion = null;
+      this.botPhrase = getBotPhrase('join');
+      this.resetRoundState();
+      this.phase = 'game';
+    },
+
+    clearBotTimeout() {
+      if (this.botAnswerTimeout) {
+        clearTimeout(this.botAnswerTimeout);
+        this.botAnswerTimeout = null;
+      }
+    },
+
+    // Holt eine Frage aus dem angegebenen Pool via API (Bot-Modus)
+    async botFetchQuestion(poolId) {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/pools/' + poolId + '/questions'));
+        const qs = (r.data || []).filter(q => q.answers && q.answers.length > 0);
+        if (qs.length === 0) return null;
+        return qs[Math.floor(Math.random() * qs.length)];
+      } catch (e) {
+        return null;
+      }
+    },
+
+    // Klaus nimmt seinen Zug
+    async botTakeTurn() {
+      this.botBoardPhase = 'roll';
+      this.botPhrase = getBotPhrase('thinking');
+
+      // Klaus wählt eine Kategorie nach Delay
+      const rollDelay = 1500 + Math.random() * 1000;
+      this.botAnswerTimeout = setTimeout(async () => {
+        // Wähle Kategorie — bevorzuge fehlende
+        const missingCats = this.categories.filter(
+          cat => !(this.botLocalTowers[1] || []).map(id => parseInt(id, 10)).includes(cat.poolId)
+        );
+        const availableCats = missingCats.length > 0 ? missingCats : this.categories;
+        const chosen = botChooseCategory(availableCats);
+        if (!chosen) {
+          this.botEndTurn();
+          return;
+        }
+
+        // Lade Frage
+        this.botBoardPhase = 'question';
+        const question = await this.botFetchQuestion(chosen.poolId);
+        if (!question) {
+          this.botEndTurn();
+          return;
+        }
+
+        this.botCurrentQuestion = question;
+
+        // Klaus antwortet nach Delay
+        const answerDelay = botResponseDelay(this.botDifficulty);
+        this.botAnswerTimeout = setTimeout(() => {
+          const answered = botChooseAnswer(question.answers, this.botDifficulty);
+          const isCorrect = answered && answered.is_correct;
+          if (isCorrect) {
+            // Block auf Klaus' Turm
+            const newTower = [...(this.botLocalTowers[1] || []), String(chosen.poolId)];
+            this.botLocalTowers = { ...this.botLocalTowers, 1: newTower };
+            this.botPhrase = getBotPhrase('correct');
+
+            // Prüfe Gewinn-Bedingung
+            const uniqueBlocks = new Set(newTower.map(id => parseInt(id, 10)));
+            if (uniqueBlocks.size >= WIN_BLOCKS) {
+              this.botPhrase = getBotPhrase('win');
+              this.phase = 'finished';
+              return;
+            }
+          } else {
+            this.botPhrase = getBotPhrase('wrong');
+          }
+          this.botCurrentQuestion = null;
+          this.botEndTurn();
+        }, answerDelay);
+      }, rollDelay);
+    },
+
+    botEndTurn() {
+      this.botBoardPhase = 'roll';
+      this.botCurrentQuestion = null;
+      setTimeout(() => {
+        this.botActiveTurn = 0;
+      }, 600);
+    },
+
     // ---------- Helpers ----------
 
     emitVirtuProf(triggerId, context = {}) {
@@ -474,6 +617,9 @@ export default {
     },
 
     towerBlocks(player) {
+      if (this.botMode) {
+        return this.botLocalTowers[player.slot] || [];
+      }
       if (!this.boardState || !this.boardState.towers) return [];
       const key = String(player.slot);
       return this.boardState.towers[key] || [];
@@ -498,6 +644,9 @@ export default {
     },
 
     myTowerHasCategory(poolId) {
+      if (this.botMode) {
+        return (this.botLocalTowers[0] || []).map(id => parseInt(id, 10)).includes(poolId);
+      }
       if (!this.boardState || this.mySlot === null) return false;
       const key = String(this.mySlot);
       const tower = this.boardState.towers ? (this.boardState.towers[key] || []) : [];
@@ -637,6 +786,8 @@ export default {
     },
 
     cancelGame() {
+      this.clearBotTimeout();
+      this.botMode = false;
       localStorage.removeItem('learning_wissensturm_session');
       this.stopPolling();
       this.phase = 'join';
@@ -675,6 +826,24 @@ export default {
 
     async onSelectCategory(poolId, catIndex) {
       if (this.loading || !this.isMyTurn) return;
+
+      // ---- Bot-Modus: Frage lokal laden ----
+      if (this.botMode) {
+        this.loading = true;
+        this.selectedCategoryIndex = catIndex;
+        this.botBoardPhase = 'question';
+        const question = await this.botFetchQuestion(poolId);
+        if (!question) {
+          this.error = t('learning', 'Keine Fragen in dieser Kategorie.');
+          this.botBoardPhase = 'roll';
+          this.loading = false;
+          return;
+        }
+        this.botCurrentQuestion = question;
+        this.loading = false;
+        return;
+      }
+
       this.loading = true;
       this.error = null;
 
@@ -712,6 +881,42 @@ export default {
 
     async onAnswer(answerId) {
       if (this.hasAnswered || this.loading) return;
+
+      // ---- Bot-Modus: lokale Antwort ----
+      if (this.botMode) {
+        this.hasAnswered = true;
+        this.selectedAnswerId = answerId;
+        const question = this.botCurrentQuestion;
+        const correct = question && question.answers
+          ? question.answers.find(a => a.is_correct)
+          : null;
+        this.correctAnswerId = correct ? correct.id : null;
+        this.answeredCorrect = correct ? answerId === correct.id : false;
+
+        if (this.answeredCorrect) {
+          // Block auf User-Turm
+          const poolId = this.categories[this.selectedCategoryIndex]
+            ? String(this.categories[this.selectedCategoryIndex].poolId)
+            : null;
+          if (poolId) {
+            const newTower = [...(this.botLocalTowers[0] || []), poolId];
+            this.botLocalTowers = { ...this.botLocalTowers, 0: newTower };
+            this.recentGainSlot = 0;
+            setTimeout(() => { this.recentGainSlot = null; }, 1200);
+
+            const uniqueBlocks = new Set(newTower.map(id => parseInt(id, 10)));
+            if (uniqueBlocks.size >= WIN_BLOCKS) {
+              this.phase = 'finished';
+              return;
+            }
+          }
+        }
+
+        this.showFeedbackThenBotTurn();
+        return;
+      }
+
+      // ---- Normaler Modus ----
       this.hasAnswered = true;
       this.selectedAnswerId = answerId;
       this.loading = true;
@@ -772,6 +977,19 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+
+    showFeedbackThenBotTurn() {
+      this.phase = 'feedback';
+      setTimeout(() => {
+        this.resetRoundState();
+        this.botBoardPhase = 'roll';
+        this.botCurrentQuestion = null;
+        this.phase = 'game';
+        // Zug zu Klaus
+        this.botActiveTurn = 1;
+        this.botTakeTurn();
+      }, 1800);
     },
 
     showFeedbackThenResume() {
@@ -1480,4 +1698,19 @@ export default {
   padding: 40px 20px;
   text-align: center;
 }
+
+/* ===== Bot-Modus ===== */
+.bot-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-background-dark, #f4f4f4);
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: var(--border-radius-large, 8px);
+  padding: 8px 14px;
+  margin: 8px 0;
+  font-size: 14px;
+}
+.bot-avatar { font-size: 22px; flex-shrink: 0; }
+.bot-speech { font-style: italic; }
 </style>

@@ -45,6 +45,9 @@
         <NcButton type="primary" :disabled="loading || selectedPoolId === 0" @click="createGame">
           {{ loading ? t('learning', 'Erstelle...') : t('learning', 'Neue Gameshow erstellen') }}
         </NcButton>
+        <NcButton type="secondary" :disabled="loading || selectedPoolId === 0" @click="startBotGame">
+          🤓 {{ t('learning', 'Gegen Klaus spielen') }}
+        </NcButton>
         <NcButton type="tertiary" :disabled="loading" @click="$emit('back')">
           {{ t('learning', 'Zurueck') }}
         </NcButton>
@@ -162,6 +165,16 @@
       <div v-else class="gs-score-bar">
         <span class="my-score-label">{{ t('learning', 'Punkte') }}:</span>
         <span class="my-score">{{ myScore }}</span>
+        <template v-if="botMode">
+          <span class="gs-bot-score-label">🤓 Klaus:</span>
+          <span class="gs-bot-score">{{ botLocalState.botScore }}</span>
+        </template>
+      </div>
+
+      <!-- Klaus-Sprechblase (nur im Bot-Modus) -->
+      <div v-if="botMode && botPhrase" class="bot-status-bar">
+        <span class="bot-avatar">🤓</span>
+        <span class="bot-speech">{{ botPhrase }}</span>
       </div>
 
       <div class="gs-card" :class="{ 'sudden-death-frame': isEliminationMode && isSuddenDeath }">
@@ -433,8 +446,29 @@
         </div>
       </template>
 
+      <!-- Bot-Modus Ergebnis -->
+      <div v-if="botMode" class="bot-final-result">
+        <div class="bot-final-scores">
+          <div class="bot-final-player">
+            <span class="bot-final-name">{{ t('learning', 'Du') }}</span>
+            <span class="bot-final-score">{{ botLocalState.myScore }}</span>
+          </div>
+          <span class="bot-final-vs">vs</span>
+          <div class="bot-final-player">
+            <span class="bot-final-name">🤓 Klaus</span>
+            <span class="bot-final-score">{{ botLocalState.botScore }}</span>
+          </div>
+        </div>
+        <p class="bot-winner-text">{{ botWinnerText }}</p>
+        <div v-if="botKlausEndPhrase" class="bot-status-bar">
+          <span class="bot-avatar">🤓</span>
+          <span class="bot-speech">{{ botKlausEndPhrase }}</span>
+        </div>
+      </div>
+
       <div class="start-actions">
-        <NcButton type="primary" @click="newRound">{{ t('learning', 'Neue Runde') }}</NcButton>
+        <NcButton v-if="botMode" type="primary" @click="startBotGame">{{ t('learning', 'Rematch gegen Klaus') }}</NcButton>
+        <NcButton v-else type="primary" @click="newRound">{{ t('learning', 'Neue Runde') }}</NcButton>
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Zurueck') }}</NcButton>
       </div>
     </div>
@@ -458,6 +492,7 @@ import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
+import { botChooseAnswer, botResponseDelay, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
 
 export default {
   name: 'GameshowMode',
@@ -525,6 +560,21 @@ export default {
       historyLoading: false,
       consecutivePollErrors: 0,
       disconnectDetected: false,
+
+      // ---- Bot-Modus ----
+      botMode: false,
+      botLocalState: {
+        questions: [],
+        currentIndex: 0,
+        totalQuestions: 15,
+        myScore: 0,
+        botScore: 0,
+        botAnswerTimeout: null,
+        difficulty: 'medium',
+      },
+      botPhrase: '',
+      botKlausEndPhrase: '',
+      botHasAnswered: false,
     };
   },
 
@@ -571,6 +621,7 @@ export default {
       return this.state ? this.state.my_slot : null;
     },
     myScore() {
+      if (this.botMode) return this.botLocalState.myScore;
       if (!this.state || !this.state.players) return 0;
       const me = this.state.players.find(p => p.slot === this.state.my_slot);
       return me ? me.score : 0;
@@ -594,18 +645,32 @@ export default {
       return Boolean(this.isEliminationMode && (this.state?.sudden_death || this.remainingPlayerCount === 2));
     },
     currentQuestion() {
+      if (this.botMode) {
+        return this.botLocalState.questions[this.botLocalState.currentIndex] || null;
+      }
       return this.state ? this.state.current_question : null;
     },
     questionDisplay() {
+      if (this.botMode) return this.botLocalState.currentIndex + 1;
       if (!this.state) return 1;
       return this.state.current_question_index + 1;
     },
     totalQuestions() {
+      if (this.botMode) return this.botLocalState.totalQuestions;
       return this.state ? this.state.total_questions : 15;
     },
     progressPercent() {
+      if (this.botMode) {
+        return Math.round((this.botLocalState.currentIndex / this.botLocalState.totalQuestions) * 100);
+      }
       if (!this.state) return 0;
       return Math.round((this.state.current_question_index / this.state.total_questions) * 100);
+    },
+    botWinnerText() {
+      const my = this.botLocalState.myScore;
+      const bot = this.botLocalState.botScore;
+      if (my === bot) return t('learning', 'Unentschieden!');
+      return my > bot ? t('learning', 'Du hast gewonnen!') : '🤓 Klaus gewinnt!';
     },
     timerExpired() {
       return this.timerValue <= 0;
@@ -698,6 +763,7 @@ export default {
   destroyed() {
     this.stopPolling();
     this.stopTimer();
+    this.clearBotTimeout();
   },
 
   watch: {
@@ -715,6 +781,117 @@ export default {
   },
 
   methods: {
+    // -------- Bot-Modus --------
+
+    async startBotGame() {
+      if (!this.selectedPoolId) return;
+      this.loading = true;
+      this.error = null;
+      this.botMode = true;
+      this.stopPolling();
+      this.stopTimer();
+
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/pools/' + this.selectedPoolId + '/questions'));
+        const allQuestions = (r.data || []).filter(q => q.answers && q.answers.length > 0);
+        if (allQuestions.length === 0) {
+          this.error = t('learning', 'Keine Fragen im Pool gefunden.');
+          this.botMode = false;
+          this.loading = false;
+          return;
+        }
+
+        const shuffled = allQuestions.sort(() => Math.random() - 0.5);
+        const total = Math.min(15, shuffled.length);
+
+        this.botLocalState = {
+          questions: shuffled.slice(0, total),
+          currentIndex: 0,
+          totalQuestions: total,
+          myScore: 0,
+          botScore: 0,
+          botAnswerTimeout: null,
+          difficulty: 'medium',
+        };
+        this.resetRoundState();
+        this.botHasAnswered = false;
+        this.botPhrase = getBotPhrase('join');
+        this.botKlausEndPhrase = '';
+        this.phase = 'question';
+        this.scheduleBotAnswer();
+      } catch (e) {
+        this.error = t('learning', 'Fragen konnten nicht geladen werden');
+        this.botMode = false;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    clearBotTimeout() {
+      if (this.botLocalState.botAnswerTimeout) {
+        clearTimeout(this.botLocalState.botAnswerTimeout);
+        this.botLocalState.botAnswerTimeout = null;
+      }
+    },
+
+    scheduleBotAnswer() {
+      this.clearBotTimeout();
+      const delay = botResponseDelay(this.botLocalState.difficulty);
+      this.botPhrase = getBotPhrase('thinking');
+      this.botLocalState.botAnswerTimeout = setTimeout(() => {
+        this.botExecuteAnswer();
+      }, delay);
+    },
+
+    botExecuteAnswer() {
+      if (this.botHasAnswered) return;
+      const question = this.currentQuestion;
+      if (!question || !question.answers) return;
+
+      this.botHasAnswered = true;
+      const chosen = botChooseAnswer(question.answers, this.botLocalState.difficulty);
+      const isCorrect = chosen && chosen.is_correct;
+
+      if (isCorrect) {
+        this.botLocalState.botScore += 10;
+        this.botPhrase = getBotPhrase('correct');
+      } else {
+        this.botPhrase = getBotPhrase('wrong');
+      }
+
+      if (this.hasAnswered) {
+        this.botAdvanceQuestion();
+      }
+    },
+
+    botAdvanceQuestion() {
+      const next = this.botLocalState.currentIndex + 1;
+      if (next >= this.botLocalState.totalQuestions) {
+        setTimeout(() => {
+          const my = this.botLocalState.myScore;
+          const bot = this.botLocalState.botScore;
+          this.botKlausEndPhrase = my > bot
+            ? getBotPhrase('lose')
+            : (bot > my ? getBotPhrase('win') : getBotPhrase('taunt'));
+          this.phase = 'finished';
+        }, 1000);
+        return;
+      }
+
+      this.phase = 'feedback';
+      setTimeout(() => {
+        this.botLocalState.currentIndex = next;
+        this.hasAnswered = false;
+        this.botHasAnswered = false;
+        this.selectedAnswerId = null;
+        this.correctAnswerId = null;
+        this.answeredCorrect = false;
+        this.botPhrase = '';
+        this.phase = 'question';
+        this.scheduleBotAnswer();
+      }, 1800);
+    },
+
     emitVirtuProf(triggerId, context = {}) {
       this.$root.$emit('virtuprof:trigger', triggerId, context);
     },
@@ -1113,6 +1290,8 @@ export default {
     },
 
     cancelGame() {
+      this.clearBotTimeout();
+      this.botMode = false;
       localStorage.removeItem('learning_gameshow_session');
       this.stopPolling();
       this.stopTimer();
@@ -1130,6 +1309,32 @@ export default {
 
     async onAnswer(answerId) {
       if (this.hasAnswered || this.timerExpired || this.amIEliminated) return;
+
+      // ---- Bot-Modus: lokale Verarbeitung ----
+      if (this.botMode) {
+        this.hasAnswered = true;
+        this.selectedAnswerId = answerId;
+        const question = this.currentQuestion;
+        const correct = question && question.answers
+          ? question.answers.find(a => a.is_correct)
+          : null;
+        this.correctAnswerId = correct ? correct.id : null;
+        this.answeredCorrect = correct ? answerId === correct.id : false;
+        this.lastQuestion = question;
+        if (this.answeredCorrect) {
+          this.botLocalState.myScore += 10;
+        }
+        this.lastPoints = this.answeredCorrect ? 10 : 0;
+        if (!this.botHasAnswered) {
+          this.botPhrase = getBotPhrase('taunt');
+        }
+        if (this.botHasAnswered) {
+          this.botAdvanceQuestion();
+        }
+        return;
+      }
+
+      // ---- Normaler Modus ----
       const prevState = this.state;
       this.hasAnswered = true;
       this.selectedAnswerId = answerId;
@@ -2705,4 +2910,40 @@ export default {
   border-radius: 12px;
   color: var(--color-text-maxcontrast);
 }
+
+/* ===== Bot-Modus ===== */
+.bot-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-background-dark, #f4f4f4);
+  border: 1px solid var(--color-border, #ddd);
+  border-radius: var(--border-radius-large, 8px);
+  padding: 8px 14px;
+  margin: 8px 0;
+  font-size: 14px;
+}
+.bot-avatar { font-size: 22px; flex-shrink: 0; }
+.bot-speech { font-style: italic; }
+.gs-bot-score-label { margin-left: 16px; font-size: 13px; }
+.gs-bot-score { font-weight: 700; margin-left: 4px; }
+.bot-final-result {
+  text-align: center;
+  padding: 16px;
+  background: var(--color-background-dark, #f4f4f4);
+  border-radius: var(--border-radius-large, 8px);
+  margin-bottom: 16px;
+}
+.bot-final-scores {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 8px;
+}
+.bot-final-player { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.bot-final-name { font-size: 14px; color: var(--color-text-maxcontrast); }
+.bot-final-score { font-size: 36px; font-weight: 700; }
+.bot-final-vs { font-size: 18px; color: var(--color-text-maxcontrast); }
+.bot-winner-text { font-size: 18px; font-weight: 600; margin: 8px 0; }
 </style>
