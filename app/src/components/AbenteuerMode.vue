@@ -110,6 +110,13 @@
         >
           {{ t('learning', 'Kampagne starten') }}
         </button>
+        <button
+          class="ab-btn ab-btn-secondary"
+          :disabled="!selectedCharacter || !selectedCampaign || !selectedCampaign.is_graph"
+          @click="openCoopLobby"
+        >
+          {{ t('learning', 'Coop starten') }}
+        </button>
       </div>
     </div>
 
@@ -161,12 +168,19 @@
             />
 
             <DauBotDialog
-              v-if="currentBotCorrection"
+              v-if="currentBotCorrection && !showCoopWaiting"
               :scenario="currentBotCorrection"
               :reduced-motion="reducedMotion"
               :result="botResult"
               @submit="onBotSubmit"
               @result-applied="onBotResultApplied"
+            />
+
+            <CoopWaiting
+              v-if="showCoopWaiting"
+              :active-player="coopWaitingPlayer"
+              :simulator-type="coopWaitingType"
+              :progress="coopWaitingProgress"
             />
 
             <!-- Narrative box -->
@@ -251,19 +265,16 @@
               <p v-if="freetextError" class="ab-freetext-error">{{ freetextError }}</p>
             </div>
 
-            <!-- Coop voting overlay -->
-            <div v-if="coopMode && coopVoting" class="ab-coop-overlay" role="dialog" aria-modal="true" aria-label="Abstimmung">
-              <div class="ab-coop-dialog">
-                <h3>{{ t('learning', 'Abstimmung läuft...') }}</h3>
-                <p>{{ t('learning', '{n} von {total} Spieler haben gewählt', { n: coopVotes, total: coopTotal }) }}</p>
-                <div class="ab-coop-choices">
-                  <div v-for="cv in coopChoiceVotes" :key="cv.choiceId" class="ab-coop-vote-row">
-                    <span>{{ cv.text }}</span>
-                    <span class="ab-coop-vote-count">{{ cv.votes }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <CoopVoteOverlay
+              v-if="showCoopVoteOverlay"
+              :choices="graphAvailableEdges"
+              :votes="coopVotes"
+              :players="coopPlayers"
+              :selected-choice-id="currentUserVoteId"
+              :poll-interval-ms="coopPollIntervalMs"
+              :disabled="makingChoice || coopBusy || coopAdvancing || timerExpired"
+              @vote="makeGraphChoice"
+            />
           </template>
         </div>
       </transition>
@@ -332,11 +343,18 @@
         <span class="ab-sim-context">{{ currentGraphSimulator.description || '' }}</span>
       </div>
       <SimulatorShell
+        v-if="!showCoopWaiting"
         :type="currentGraphSimulator.type"
         :scenario-id="currentGraphSimulator.scenario || ''"
         :scenario-override="currentGraphSimulator.scenario_override || null"
         :node-id="currentGraphNode && currentGraphNode.id || ''"
         @complete="onSimulatorComplete"
+      />
+      <CoopWaiting
+        v-else
+        :active-player="coopWaitingPlayer"
+        :simulator-type="coopWaitingType"
+        :progress="coopWaitingProgress"
       />
     </div>
 
@@ -419,39 +437,26 @@
     <!-- ===== COOP LOBBY PHASE ===== -->
     <div v-else-if="phase === 'coop-lobby'" class="ab-coop-lobby">
       <div class="ab-header">
-        <button class="ab-back-btn" @click="phase = 'character-select'">←</button>
+        <button class="ab-back-btn" @click="handleCoopLeave">←</button>
         <h2 class="ab-title">{{ t('learning', 'Koop-Lobby') }}</h2>
       </div>
-
-      <div class="ab-lobby-code-box">
-        <span class="ab-lobby-code-label">{{ t('learning', 'Beitrittscode') }}</span>
-        <span class="ab-lobby-code">{{ coopSessionCode }}</span>
-        <button class="ab-btn ab-btn-secondary" @click="copyCoopCode">
-          {{ t('learning', 'Code kopieren') }}
-        </button>
-      </div>
-
-      <div class="ab-lobby-players">
-        <div
-          v-for="player in coopPlayers"
-          :key="player.user_id"
-          class="ab-lobby-player"
-          :class="{ 'ab-player-ready': player.is_ready }"
-        >
-          <span class="ab-player-name">{{ player.display_name || player.user_id }}</span>
-          <span v-if="player.character" class="ab-player-char">{{ characterPortrait(player.character) }}</span>
-          <span class="ab-player-status">{{ player.is_ready ? '✓' : '...' }}</span>
-        </div>
-      </div>
-
-      <div class="ab-lobby-actions">
-        <button class="ab-btn ab-btn-primary" :disabled="coopPlayers.length < 2" @click="coopSetReady">
-          {{ t('learning', 'Bereit!') }}
-        </button>
-        <button class="ab-btn ab-btn-ghost" @click="phase = 'character-select'">
-          {{ t('learning', 'Abbrechen') }}
-        </button>
-      </div>
+      <CoopLobby
+        :session-code="coopSessionCode"
+        :players="coopPlayers"
+        :is-host="isCurrentCoopHost"
+        :is-ready="isCurrentCoopReady"
+        :can-start="coopCanStart"
+        :join-code="coopJoinCode"
+        :busy="coopBusy"
+        :error="coopError"
+        :status="coopSessionStatus"
+        @ready="handleCoopReady"
+        @start="handleCoopStart"
+        @leave="handleCoopLeave"
+        @join="handleCoopJoin"
+        @copy="copyCoopCode"
+        @update:joinCode="coopJoinCode = $event"
+      />
     </div>
 
     <!-- ===== ABORT CONFIRMATION ===== -->
@@ -496,8 +501,19 @@ import QuestMap from './QuestMap.vue'
 import GameHud from './GameHud.vue'
 import GameTimer from './GameTimer.vue'
 import DauBotDialog from './DauBotDialog.vue'
+import CoopLobby from './CoopLobby.vue'
+import CoopVoteOverlay from './CoopVoteOverlay.vue'
+import CoopWaiting from './CoopWaiting.vue'
 import { getCharacter } from '../data/characters.js'
 import { computeScoreDelta, computeReputationDeltas } from '../utils/hudEngine.js'
+import {
+	createCoopSession,
+	joinCoopSession,
+	setCoopReady,
+	pollCoopLobby,
+	pollCoopState,
+	submitVote,
+} from '../utils/coopEngine.js'
 
 const STATIC_CAMPAIGNS = [
 	{
@@ -628,6 +644,9 @@ export default {
 		GameHud,
 		GameTimer,
 		DauBotDialog,
+		CoopLobby,
+		CoopVoteOverlay,
+		CoopWaiting,
 	},
 
 	props: {
@@ -643,9 +662,13 @@ export default {
 			type: String,
 			default: '',
 		},
-		coopMode: {
+		initialCoopMode: {
 			type: Boolean,
 			default: false,
+		},
+		initialCoopCode: {
+			type: String,
+			default: '',
 		},
 	},
 
@@ -697,13 +720,26 @@ export default {
 			},
 
 			// Coop
+			coopMode: Boolean(this.initialCoopMode),
+			coopSessionId: null,
 			coopSessionCode: '',
 			coopPlayers: [],
+			coopSessionStatus: 'setup',
 			coopVoting: false,
-			coopVotes: 0,
-			coopTotal: 1,
-			coopChoiceVotes: [],
+			coopVotes: {},
+			coopJoinCode: String(this.initialCoopCode || '').trim().toUpperCase(),
 			coopPollTimer: null,
+			coopPollMode: 'lobby',
+			coopPollIntervalMs: 3000,
+			coopBusy: false,
+			coopError: '',
+			coopAdvancing: false,
+			coopPollInFlight: false,
+			coopLobbyCanStart: false,
+			coopLastNodeId: '',
+			coopSimulatorProgress: [],
+			coopBotProgress: [],
+			currentUserId: '',
 
 			// Abort
 			showAbortConfirm: false,
@@ -773,6 +809,81 @@ export default {
 				character_class: this.currentCharacterClass || this.selectedCharacter?.id || '',
 			}
 		},
+
+		currentCoopPlayer() {
+			return this.coopPlayers.find(player => player.user_id === this.currentUserId) || null
+		},
+
+		isCurrentCoopHost() {
+			return Boolean(this.currentCoopPlayer?.is_host)
+		},
+
+		isCurrentCoopReady() {
+			return Boolean(this.currentCoopPlayer?.is_ready)
+		},
+
+		coopCanStart() {
+			return this.coopLobbyCanStart
+				|| (this.coopPlayers.length >= 2 && this.coopPlayers.every(player => Boolean(player.is_ready)))
+		},
+
+		currentUserVoteId() {
+			return this.coopVotes?.player_votes?.[this.currentUserId] || ''
+		},
+
+		coopActiveProgressPlayer() {
+			const source = this.currentGraphSimulator ? this.coopSimulatorProgress : this.coopBotProgress
+			if (Array.isArray(source) && source.length) {
+				const latest = [...source].sort((left, right) => {
+					return Number(right.updated_at || 0) - Number(left.updated_at || 0)
+				})[0]
+				return this.coopPlayers.find(player => player.user_id === latest.user_id) || latest
+			}
+			return this.coopPlayers.find(player => player.is_host) || this.currentCoopPlayer || null
+		},
+
+		coopWaitingPlayer() {
+			return this.coopActiveProgressPlayer
+		},
+
+		coopWaitingType() {
+			if (this.currentGraphSimulator?.type) {
+				return this.currentGraphSimulator.type
+			}
+			if (this.currentBotCorrection) {
+				return t('learning', 'DauBot-Fall')
+			}
+			return ''
+		},
+
+		coopWaitingProgress() {
+			if (this.currentGraphSimulator) {
+				return this.coopSimulatorProgress
+			}
+			if (this.currentBotCorrection) {
+				return this.coopBotProgress
+			}
+			return []
+		},
+
+		showCoopWaiting() {
+			if (!this.coopMode || !this.coopSessionId || !this.coopPlayers.length) {
+				return false
+			}
+			const hasInteraction = Boolean(this.currentGraphSimulator || this.currentBotCorrection)
+			return hasInteraction && !this.isCurrentCoopHost
+		},
+
+		showCoopVoteOverlay() {
+			return Boolean(
+				this.coopMode
+				&& this.coopVoting
+				&& this.phase === 'scene'
+				&& !this.narrativeTyping
+				&& this.graphAvailableEdges.length
+				&& this.coopSessionStatus === 'playing',
+			)
+		},
 	},
 
 	mounted() {
@@ -780,6 +891,7 @@ export default {
 		this._hudDeltaTimer = null
 		this._timerExpiryTimer = null
 		this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		this.currentUserId = this.resolveCurrentUserId()
 		this.fetchCampaigns()
 	},
 
@@ -830,6 +942,64 @@ export default {
 
 		selectCharacter(char) {
 			this.selectedCharacter = char
+			if ((this.initialCoopMode || this.initialCoopCode) && !this.coopSessionId) {
+				this.openCoopLobby()
+			}
+		},
+
+		resolveCurrentUserId() {
+			if (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function') {
+				return OC.getCurrentUser()?.uid || ''
+			}
+			return ''
+		},
+
+		extractCoopErrorMessage(error, fallback) {
+			return error?.response?.data?.error || fallback
+		},
+
+		syncSelectedCampaignById(campaignId) {
+			if (!campaignId || this.selectedCampaign?.id === campaignId) {
+				return
+			}
+			const matchingCampaign = this.campaigns.find(campaign => campaign.id === campaignId)
+			if (matchingCampaign) {
+				this.selectedCampaign = matchingCampaign
+			}
+		},
+
+		openCoopLobby() {
+			if (!this.selectedCharacter || !this.selectedCampaign?.is_graph) {
+				return
+			}
+			this.coopMode = true
+			this.coopError = ''
+			this.phase = 'coop-lobby'
+			this.isGraphMode = true
+		},
+
+		resetCoopState(options = {}) {
+			const preserveJoinCode = Boolean(options.preserveJoinCode)
+			this.stopCoopPolling()
+			this.coopMode = false
+			this.coopSessionId = null
+			this.coopSessionCode = ''
+			this.coopSessionStatus = 'setup'
+			this.coopPlayers = []
+			this.coopVoting = false
+			this.coopVotes = {}
+			this.coopPollMode = 'lobby'
+			this.coopPollIntervalMs = 3000
+			this.coopBusy = false
+			this.coopAdvancing = false
+			this.coopPollInFlight = false
+			this.coopLobbyCanStart = false
+			this.coopLastNodeId = ''
+			this.coopSimulatorProgress = []
+			this.coopBotProgress = []
+			if (!preserveJoinCode) {
+				this.coopJoinCode = ''
+			}
 		},
 
 		resetGraphUiState() {
@@ -972,10 +1142,6 @@ export default {
 
 		async startCampaign() {
 			if (!this.selectedCharacter) return
-			if (this.coopMode) {
-				this.initCoopSession()
-				return
-			}
 			const cid = this.selectedCampaign.id
 
 			// Graph-mode: use /graph-start instead of /start
@@ -1109,11 +1275,8 @@ export default {
 			this.makingChoice = true
 			this.choiceMade = true
 
-			// If coop: enter voting mode
 			if (this.coopMode) {
-				this.coopVoting = true
-				this.coopVotes = 1
-				this.startCoopPoll(choice.id)
+				this.makingChoice = false
 				return
 			}
 
@@ -1445,6 +1608,15 @@ export default {
 		 */
 		async onSimulatorComplete(passed, score, result) {
 			if (!this.isGraphMode) return
+			if (this.coopMode) {
+				await this.submitCoopVote('', {
+					simulatorCompleted: true,
+					simulatorPassed: passed,
+					simulatorScore: Math.round(score * 100),
+					simulatorResult: JSON.stringify(result),
+				})
+				return
+			}
 
 			// Find target edge based on pass status
 			const targetEdge = this.graphAvailableEdges.find(e =>
@@ -1489,6 +1661,10 @@ export default {
 			if (this.timerExpired && !options.fromTimer) {
 				return
 			}
+			if (this.coopMode) {
+				await this.submitCoopVote(edgeId)
+				return
+			}
 			try {
 				this.makingChoice = true
 				const resp = await axios.post(
@@ -1526,6 +1702,10 @@ export default {
 				this._timerExpiryTimer = null
 				this.currentTimer = null
 				if (fallbackEdge) {
+					if (this.coopMode) {
+						await this.submitCoopVote(fallbackEdge.id)
+						return
+					}
 					await this.makeGraphChoice(fallbackEdge.id, { fromTimer: true })
 				}
 			}, 2000)
@@ -1533,6 +1713,13 @@ export default {
 
 		async onBotSubmit({ errorId, fixId }) {
 			if (!errorId || !fixId) {
+				return
+			}
+			if (this.coopMode) {
+				await this.submitCoopVote('', {
+					botErrorId: errorId,
+					botFixId: fixId,
+				})
 				return
 			}
 			const targetEdge = this.graphAvailableEdges[0]
@@ -1598,39 +1785,379 @@ export default {
 			this.sessionStats = { scenesCompleted: 0, skillChecksPassed: 0, skillChecksTotal: 0, xpEarned: 0 }
 			this.forceNewCampaign = true
 			this.resetGraphUiState()
+			this.resetCoopState({ preserveJoinCode: true })
 			this.phase = 'character-select'
 		},
 
 		// ===== COOP =====
 
-		initCoopSession() {
-			// Coop is not yet implemented (no backend routes) — show message
-			alert(t('learning', 'Koop-Modus ist noch in Entwicklung und wird in einem zukünftigen Update verfügbar sein.'))
+		normalizeCoopJoinCode(code) {
+			return String(code || '').trim().toUpperCase()
 		},
 
-		coopSetReady() {
-			this.beginScene()
+		normalizeCoopScene(scene) {
+			return {
+				id: scene?.id || '',
+				title: scene?.title || '',
+				narrative: scene?.narrative || '',
+				type: scene?.type || 'graph_scene',
+				act: Number(scene?.act) || 1,
+				is_ending: Boolean(scene?.is_ending),
+			}
 		},
 
-		startCoopPoll(choiceId) {
-			this.coopPollTimer = setInterval(async () => {
-				try {
-					const resp = await axios.get(generateUrl('/apps/learning/api/story/coop/poll'), {
-						params: { sessionCode: this.coopSessionCode },
-					})
-					if (resp.data.phase === 'scene') {
-						this.clearTimers()
-						this.coopVoting = false
-						const nextScene = resp.data.next_scene
-						await this.advanceToScene(nextScene)
-					}
-					this.coopVotes = resp.data.votes_cast || 1
-					this.coopTotal = resp.data.total_players || 1
-					this.coopChoiceVotes = resp.data.choice_votes || []
-				} catch (e) {
-					// Ignore poll errors
+		hasCoopSimulatorProgress(progressEntries) {
+			return (progressEntries || []).some(entry => Boolean(entry?.completed))
+		},
+
+		hasCoopBotProgress(progressEntries) {
+			return (progressEntries || []).some(entry => {
+				return Boolean(
+					entry?.completed
+					|| entry?.submitted_error_id
+					|| entry?.submitted_fix_id,
+				)
+			})
+		},
+
+		applyCoopSharedState(sharedState) {
+			const safeState = sharedState || {}
+			const newReputation = { ...(safeState.reputation || {}) }
+			const repDelta = computeReputationDeltas(this.previousReputation, newReputation)
+			this.scoreDelta = null
+			this.reputationDeltas = this.hasReputationChanges(repDelta) ? repDelta : null
+			if (this.reputationDeltas) {
+				this.scheduleHudDeltaReset()
+			}
+			this.previousReputation = { ...newReputation }
+			this.currentActNumber = Number(safeState.act_number) || this.currentActNumber || 1
+			this.stateBag = {
+				flags: { ...(safeState.flags || {}) },
+				items: Array.isArray(safeState.items) ? [...safeState.items] : [],
+				reputation: newReputation,
+			}
+		},
+
+		handleCoopSessionEnded(message) {
+			const preservedJoinCode = this.coopSessionCode || this.coopJoinCode
+			this.resetGraphUiState()
+			this.resetCoopState({ preserveJoinCode: true })
+			this.coopJoinCode = preservedJoinCode
+			this.coopMode = true
+			this.coopError = message || t('learning', 'Die Coop-Session wurde beendet.')
+			this.phase = 'coop-lobby'
+		},
+
+		applyCoopLobbyPayload(payload) {
+			const session = payload?.session || {}
+			this.syncSelectedCampaignById(session.campaign_id)
+			this.coopSessionId = session.id || this.coopSessionId
+			this.coopSessionCode = session.code || this.coopSessionCode
+			this.coopSessionStatus = session.status || 'lobby'
+			this.coopPlayers = Array.isArray(payload?.players) ? payload.players : []
+			this.coopLobbyCanStart = Boolean(payload?.lobby?.can_start)
+			this.coopPollIntervalMs = Number(session.poll_interval_ms) || this.coopPollIntervalMs
+			this.coopVoting = false
+			this.coopVotes = {}
+			this.coopError = ''
+			this.loadingScene = false
+
+			if (this.coopSessionStatus === 'finished') {
+				this.handleCoopSessionEnded(t('learning', 'Die Coop-Session wurde beendet.'))
+				return 'lobby'
+			}
+
+			this.phase = 'coop-lobby'
+			return 'lobby'
+		},
+
+		applyCoopStatePayload(payload) {
+			const session = payload?.session || {}
+			const scene = payload?.scene || {}
+			const normalizedScene = this.normalizeCoopScene(scene)
+			const previousNodeId = this.coopLastNodeId
+			const hadInteractionOpen = Boolean(this.currentGraphSimulator || this.currentBotCorrection)
+
+			this.syncSelectedCampaignById(session.campaign_id)
+			this.coopSessionId = session.id || this.coopSessionId
+			this.coopSessionCode = session.code || this.coopSessionCode
+			this.coopSessionStatus = session.status || this.coopSessionStatus || 'playing'
+			this.coopPlayers = Array.isArray(payload?.players) ? payload.players : []
+			this.coopVotes = payload?.votes || {}
+			this.coopPollIntervalMs = Number(session.poll_interval_ms) || this.coopPollIntervalMs
+			this.coopSimulatorProgress = Array.isArray(payload?.simulator_progress) ? payload.simulator_progress : []
+			this.coopBotProgress = Array.isArray(payload?.bot_progress) ? payload.bot_progress : []
+			this.coopError = ''
+			this.loadingScene = false
+			this.choiceMade = false
+			this.applyCoopSharedState(payload?.shared_state || {})
+
+			if (this._timerExpiryTimer) {
+				clearTimeout(this._timerExpiryTimer)
+				this._timerExpiryTimer = null
+			}
+
+			this.currentScene = normalizedScene
+			this.currentGraphNode = normalizedScene
+			this.graphAvailableEdges = Array.isArray(payload?.available_edges) ? payload.available_edges : []
+			this.currentTimer = scene.timer && !scene.timer.expired
+				? {
+					deadlineAt: scene.timer.deadline_at,
+					totalSeconds: scene.timer.seconds,
 				}
-			}, 2000)
+				: null
+			this.timerExpired = Boolean(scene.timer?.expired)
+
+			const simulatorHandled = this.hasCoopSimulatorProgress(this.coopSimulatorProgress)
+			const botHandled = this.hasCoopBotProgress(this.coopBotProgress)
+			this.currentGraphSimulator = scene.simulator && !simulatorHandled
+				? scene.simulator
+				: null
+			this.currentBotCorrection = scene.bot_correction && !botHandled
+				? scene.bot_correction
+				: null
+			this.botResult = botHandled
+				? { passed: this.coopBotProgress.some(entry => entry?.passed === true) }
+				: null
+			this.coopVoting = Boolean(
+				this.graphAvailableEdges.length
+				&& !normalizedScene.is_ending
+				&& !this.currentGraphSimulator
+				&& !this.currentBotCorrection
+				&& this.coopSessionStatus === 'playing',
+			)
+
+			if (this.coopSessionStatus === 'finished' && !normalizedScene.is_ending) {
+				this.handleCoopSessionEnded(t('learning', 'Der Host hat die Coop-Session beendet.'))
+				return 'lobby'
+			}
+
+			if (normalizedScene.is_ending) {
+				this.coopLastNodeId = normalizedScene.id || this.coopLastNodeId
+				this.currentGraphSimulator = null
+				this.currentBotCorrection = null
+				this.displayedNarrative = normalizedScene.narrative || ''
+				this.narrativeTyping = false
+				this.epilogData = {
+					outcome: 'success',
+					narrative: normalizedScene.narrative || t('learning', 'Die Coop-Kampagne ist abgeschlossen.'),
+				}
+				this.phase = 'epilog'
+				return 'state'
+			}
+
+			if (this.currentGraphSimulator) {
+				this.coopLastNodeId = normalizedScene.id || this.coopLastNodeId
+				this.displayedNarrative = normalizedScene.narrative || this.displayedNarrative
+				this.narrativeTyping = false
+				this.phase = 'simulation'
+				return 'state'
+			}
+
+			const nodeChanged = Boolean(normalizedScene.id && normalizedScene.id !== previousNodeId)
+			this.coopLastNodeId = normalizedScene.id || this.coopLastNodeId
+
+			if (nodeChanged) {
+				this.showGraphSceneNode(normalizedScene)
+				return 'state'
+			}
+
+			this.phase = 'scene'
+			if (hadInteractionOpen && !this.currentBotCorrection) {
+				this.displayedNarrative = normalizedScene.narrative || this.displayedNarrative
+				this.narrativeTyping = false
+			}
+			return 'state'
+		},
+
+		applyCoopPayload(payload) {
+			if (payload?.scene) {
+				return this.applyCoopStatePayload(payload)
+			}
+			return this.applyCoopLobbyPayload(payload)
+		},
+
+		stopCoopPolling() {
+			if (this.coopPollTimer) {
+				clearInterval(this.coopPollTimer)
+				this.coopPollTimer = null
+			}
+		},
+
+		startCoopPolling(mode = 'state') {
+			if (!this.coopSessionId) {
+				return
+			}
+			this.stopCoopPolling()
+			this.coopPollMode = mode
+			const intervalMs = mode === 'lobby' ? 3000 : this.coopPollIntervalMs
+
+			const pollFn = async() => {
+				if (!this.coopSessionId || this.coopPollInFlight || this.coopAdvancing) {
+					return
+				}
+				this.coopPollInFlight = true
+				try {
+					const payload = mode === 'lobby'
+						? await pollCoopLobby(this.coopSessionId)
+						: await pollCoopState(this.coopSessionId)
+					const nextMode = this.applyCoopPayload(payload)
+					if (nextMode && nextMode !== this.coopPollMode && !this.coopAdvancing) {
+						this.startCoopPolling(nextMode)
+						return
+					}
+				} catch (error) {
+					this.coopError = this.extractCoopErrorMessage(error, t('learning', 'Coop-Synchronisierung fehlgeschlagen.'))
+				} finally {
+					this.coopPollInFlight = false
+				}
+			}
+
+			this.coopPollTimer = setInterval(pollFn, intervalMs)
+			pollFn()
+		},
+
+		beginCoopAdvance() {
+			this.stopCoopPolling()
+			this.coopAdvancing = true
+		},
+
+		finishCoopAdvance(nextMode = 'state') {
+			this.coopAdvancing = false
+			if (this.coopSessionId) {
+				this.startCoopPolling(nextMode)
+			}
+		},
+
+		async handleCoopCreate() {
+			if (!this.selectedCampaign?.is_graph || !this.selectedCharacter) {
+				return
+			}
+			this.coopBusy = true
+			this.coopError = ''
+			this.coopMode = true
+			this.isGraphMode = true
+			this.resetGraphUiState()
+			this.currentCharacterClass = this.selectedCharacter.id
+			try {
+				const payload = await createCoopSession(this.selectedCampaign.id, {
+					characterId: this.selectedCharacter.id,
+				})
+				const nextMode = this.applyCoopPayload(payload)
+				this.startCoopPolling(nextMode)
+			} catch (error) {
+				this.coopError = this.extractCoopErrorMessage(error, t('learning', 'Coop-Session konnte nicht erstellt werden.'))
+			} finally {
+				this.coopBusy = false
+			}
+		},
+
+		async handleCoopJoin(code) {
+			if (!this.selectedCharacter) {
+				return
+			}
+			const normalizedCode = this.normalizeCoopJoinCode(code || this.coopJoinCode)
+			if (!normalizedCode) {
+				this.coopError = t('learning', 'Bitte gib einen Session-Code ein.')
+				return
+			}
+			this.coopBusy = true
+			this.coopError = ''
+			this.coopMode = true
+			this.isGraphMode = true
+			this.coopJoinCode = normalizedCode
+			this.resetGraphUiState()
+			this.currentCharacterClass = this.selectedCharacter.id
+			try {
+				const payload = await joinCoopSession(normalizedCode, {
+					characterId: this.selectedCharacter.id,
+				})
+				const nextMode = this.applyCoopPayload(payload)
+				this.startCoopPolling(nextMode)
+			} catch (error) {
+				this.coopError = this.extractCoopErrorMessage(error, t('learning', 'Beitritt zur Coop-Session fehlgeschlagen.'))
+			} finally {
+				this.coopBusy = false
+			}
+		},
+
+		async handleCoopReady(forceReady = false) {
+			if (!this.coopSessionId) {
+				return
+			}
+			this.coopBusy = true
+			this.coopError = ''
+			this.beginCoopAdvance()
+			let nextMode = 'lobby'
+			try {
+				const payload = await setCoopReady(
+					this.coopSessionId,
+					forceReady ? { ready: true } : {},
+				)
+				nextMode = this.applyCoopPayload(payload)
+			} catch (error) {
+				this.coopError = this.extractCoopErrorMessage(error, t('learning', 'Bereitschaft konnte nicht aktualisiert werden.'))
+			} finally {
+				this.coopBusy = false
+				this.finishCoopAdvance(nextMode)
+			}
+		},
+
+		handleCoopStart() {
+			if (this.coopSessionId) {
+				return this.handleCoopReady(true)
+			}
+			return this.handleCoopCreate()
+		},
+
+		async submitCoopVote(edgeId, payload = {}) {
+			if (!this.coopSessionId || this.coopBusy) {
+				return
+			}
+			this.coopBusy = true
+			this.makingChoice = true
+			this.coopError = ''
+			this.beginCoopAdvance()
+			let nextMode = 'state'
+			try {
+				const response = await submitVote(this.coopSessionId, edgeId, payload)
+				nextMode = this.applyCoopPayload(response)
+			} catch (error) {
+				this.coopError = this.extractCoopErrorMessage(error, t('learning', 'Stimme konnte nicht uebermittelt werden.'))
+			} finally {
+				this.coopBusy = false
+				this.makingChoice = false
+				this.finishCoopAdvance(nextMode)
+			}
+		},
+
+		async endCoopSession() {
+			if (!this.coopSessionId) {
+				return
+			}
+			this.coopBusy = true
+			this.coopError = ''
+			this.beginCoopAdvance()
+			try {
+				await setCoopReady(this.coopSessionId, { action: 'end' })
+				this.handleCoopSessionEnded(t('learning', 'Die Coop-Session wurde beendet.'))
+			} catch (error) {
+				this.coopError = this.extractCoopErrorMessage(error, t('learning', 'Coop-Session konnte nicht beendet werden.'))
+				this.coopAdvancing = false
+				this.startCoopPolling(this.coopPollMode)
+			} finally {
+				this.coopBusy = false
+			}
+		},
+
+		async handleCoopLeave() {
+			if (this.isCurrentCoopHost && this.coopSessionId) {
+				await this.endCoopSession()
+				return
+			}
+			this.resetGraphUiState()
+			this.resetCoopState({ preserveJoinCode: true })
+			this.phase = 'character-select'
 		},
 
 		copyCoopCode() {
@@ -1647,8 +2174,13 @@ export default {
 
 		abortCampaign() {
 			this.showAbortConfirm = false
+			if (this.coopMode && this.coopSessionId) {
+				this.handleCoopLeave()
+				return
+			}
 			this.clearTimers()
 			this.resetGraphUiState()
+			this.resetCoopState({ preserveJoinCode: true })
 			this.phase = 'campaign-select'
 			this.currentScene = null
 			this.selectedCharacter = null
@@ -1734,11 +2266,23 @@ export default {
 		},
 
 		clearTimers() {
-			if (this.typewriterTimer) clearTimeout(this.typewriterTimer)
-			if (this.advanceTimer) clearTimeout(this.advanceTimer)
-			if (this.coopPollTimer) clearInterval(this.coopPollTimer)
-			if (this._hudDeltaTimer) clearTimeout(this._hudDeltaTimer)
-			if (this._timerExpiryTimer) clearTimeout(this._timerExpiryTimer)
+			if (this.typewriterTimer) {
+				clearTimeout(this.typewriterTimer)
+				this.typewriterTimer = null
+			}
+			if (this.advanceTimer) {
+				clearTimeout(this.advanceTimer)
+				this.advanceTimer = null
+			}
+			this.stopCoopPolling()
+			if (this._hudDeltaTimer) {
+				clearTimeout(this._hudDeltaTimer)
+				this._hudDeltaTimer = null
+			}
+			if (this._timerExpiryTimer) {
+				clearTimeout(this._timerExpiryTimer)
+				this._timerExpiryTimer = null
+			}
 		},
 	},
 }

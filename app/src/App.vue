@@ -53,6 +53,8 @@
       <AbenteuerMode
         v-else-if="currentView === 'abenteuer'"
         :contentLanguage="contentLanguage"
+        :initial-coop-mode="adventureRoute.coop"
+        :initial-coop-code="adventureRoute.code"
         @back="backToPools"
       />
 
@@ -378,6 +380,10 @@ export default {
         courseId: null,
         duelCode: '',
       },
+      adventureRoute: {
+        coop: false,
+        code: '',
+      },
     };
   },
   computed: {
@@ -421,6 +427,7 @@ export default {
   },
   async created() {
     await Promise.all([this.fetchRole(), this.fetchPersonalSettings(), this.fetchEnabledTools()]);
+    this.applyInitialAdventureRoute();
     this.appInitialized = true;
     this.$root.$on('course:tab-change', (tabId) => {
       this.courseTab = tabId;
@@ -953,6 +960,29 @@ export default {
       // Both students and instructors start on Kurse view
     },
 
+    applyInitialAdventureRoute() {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search || '');
+      const requestedView = params.get('learningView');
+      const coopParam = params.get('learningCoop');
+      const coopCode = String(params.get('learningCoopCode') || '').trim().toUpperCase();
+      const wantsCoop = ['1', 'true', 'yes'].includes(String(coopParam || '').toLowerCase()) || coopCode.length > 0;
+
+      if (requestedView !== 'abenteuer' && !wantsCoop) {
+        return;
+      }
+
+      this.mainView = 'pools';
+      this.currentView = 'abenteuer';
+      this.adventureRoute = {
+        coop: wantsCoop,
+        code: coopCode,
+      };
+    },
+
     switchMainView(view) {
       this.mainView = view;
       if (view === 'courses') {
@@ -990,6 +1020,10 @@ export default {
       this.error = null;
       this.poolFromCourse = false;
       this.poolFromCourseObj = null;
+      this.adventureRoute = {
+        coop: false,
+        code: '',
+      };
     },
     backToCourse() {
       const course = this.poolFromCourseObj;
