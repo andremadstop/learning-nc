@@ -731,3 +731,136 @@ select:focus-visible,
     scroll-behavior: auto !important;
   }
 }
+
+/* ========== QUEST MAP ========== */
+
+/* Backdrop (clickable overlay behind panel) */
+.quest-map-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 9998;
+}
+
+/* Slide-in overlay panel */
+.quest-map-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 60%;
+  height: 100%;
+  background: rgba(10, 15, 30, 0.95);
+  border-left: 2px solid #00e5ff;
+  transform: translateX(100%);
+  transition: transform 300ms ease;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.quest-map-open {
+  transform: translateX(0);
+}
+
+/* Close button */
+.quest-map-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #00e5ff;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+  line-height: 1;
+  padding: 4px 8px;
+}
+
+.quest-map-close-btn:hover {
+  color: #ffffff;
+}
+
+/* SVG fills the panel */
+.quest-map-overlay svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Node states */
+.quest-node--visited polygon {
+  fill: #00ff88;
+  filter: drop-shadow(0 0 6px rgba(0, 255, 136, 0.5));
+}
+
+.quest-node--current polygon {
+  fill: #00e5ff;
+  animation: quest-pulse 1.5s ease-in-out infinite;
+}
+
+.quest-node--reachable polygon {
+  fill: #4488ff;
+  filter: drop-shadow(0 0 6px rgba(68, 136, 255, 0.5));
+}
+
+.quest-node--locked polygon {
+  fill: #444444;
+  opacity: 0.4;
+}
+
+/* Cursor states */
+.quest-node--reachable,
+.quest-node--visited {
+  cursor: pointer;
+}
+
+.quest-node--current {
+  cursor: default;
+}
+
+.quest-node--locked {
+  cursor: not-allowed;
+}
+
+/* Shake animation for locked node click */
+.quest-node--shake {
+  animation: quest-shake 0.4s ease;
+}
+
+/* Pulse keyframes — glow oscillation for current node */
+@keyframes quest-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(0, 229, 255, 0.8));
+  }
+}
+
+/* Shake keyframes — horizontal jitter for locked click */
+@keyframes quest-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+/* Reduced motion for quest map */
+@media (prefers-reduced-motion: reduce) {
+  .quest-map-overlay {
+    transition: none !important;
+  }
+
+  .quest-node--current polygon {
+    animation: none !important;
+    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6));
+  }
+
+  .quest-node--shake {
+    animation: none !important;
+  }
+}
