@@ -9,7 +9,7 @@
 
 - [ ] **SIM-01**: User kann in einer Kampagnen-Szene eine eingebettete Simulator-Challenge loesen (Firewall, DNS, Routing, NAT, PortScanner, Wireshark, AuthFlow)
 - [ ] **SIM-02**: Simulator-Ergebnis (bestanden/nicht bestanden, Score) wird an die Graph-Engine zurueckgemeldet und setzt pass_flag im State-Bag
-- [ ] **SIM-03**: Alle 7 Simulator-Komponenten haben saubere Lifecycle-Hooks (beforeDestroy Cleanup) fuer eingebetteten Betrieb
+- [x] **SIM-03**: Alle 7 Simulator-Komponenten haben saubere Lifecycle-Hooks (beforeDestroy Cleanup) fuer eingebetteten Betrieb
 - [x] **SIM-04**: SimulatorShell-Wrapper mappt Kampagnen-Node-Payload automatisch auf die richtige Simulator-Komponente
 - [x] **SIM-05**: Kampagnen-Autor kann pro Node ein Simulator-Szenario definieren (type, scenario, pass_flag, optional: scenario_override fuer Inline-Config)
 
@@ -88,7 +88,7 @@
 |-------------|-------|--------|
 | SIM-01 | Phase 80 | Pending |
 | SIM-02 | Phase 80 | Pending |
-| SIM-03 | Phase 80 | Pending |
+| SIM-03 | Phase 80 | Complete |
 | SIM-04 | Phase 80 | Complete |
 | SIM-05 | Phase 80 | Complete |
 | MAP-01 | Phase 81 | Pending |

@@ -271,7 +271,22 @@
       </div>
     </div>
 
-    <!-- ===== SIMULATION PHASE ===== -->
+    <!-- ===== SIMULATION PHASE (Graph-Mode: SimulatorShell) ===== -->
+    <div v-else-if="phase === 'simulation' && isGraphMode && currentGraphSimulator" class="ab-simulation campaign-simulator">
+      <div class="ab-sim-header">
+        <span class="ab-sim-badge">💻 {{ t('learning', 'Simulation') }}</span>
+        <span class="ab-sim-context">{{ currentGraphSimulator.description || '' }}</span>
+      </div>
+      <SimulatorShell
+        :type="currentGraphSimulator.type"
+        :scenario-id="currentGraphSimulator.scenario || ''"
+        :scenario-override="currentGraphSimulator.scenario_override || null"
+        :node-id="currentGraphNode && currentGraphNode.id || ''"
+        @complete="onSimulatorComplete"
+      />
+    </div>
+
+    <!-- ===== SIMULATION PHASE (Linear-Mode: PbqRenderer) ===== -->
     <div v-else-if="phase === 'simulation'" class="ab-simulation">
       <div class="ab-sim-header">
         <span class="ab-sim-badge">💻 {{ t('learning', 'Simulation') }}</span>
@@ -411,6 +426,7 @@ import PbqRenderer from './PbqRenderer.vue'
 import CampaignIntro from './CampaignIntro.vue'
 import DialogueStage from './DialogueStage.vue'
 import CharacterAvatar from './CharacterAvatar.vue'
+import SimulatorShell from './SimulatorShell.vue'
 import { getCharacter } from '../data/characters.js'
 
 const STATIC_CAMPAIGNS = [
@@ -424,6 +440,7 @@ const STATIC_CAMPAIGNS = [
 		duration_minutes: 60,
 		progress: 'not_started',
 		current_scene: null,
+		is_graph: true,
 	},
 	{
 		id: 'einbruch_im_netz',
@@ -468,6 +485,18 @@ const STATIC_CAMPAIGNS = [
 		duration_minutes: 75,
 		progress: 'not_started',
 		current_scene: null,
+	},
+	{
+		id: 'test_graph_campaign',
+		icon: '🧪',
+		title: 'Test Graph Kampagne',
+		description: 'Interne Test-Kampagne fuer den Graph-Modus mit Simulator-Challenges.',
+		difficulty: 'intermediate',
+		focus_areas: ['Network+'],
+		duration_minutes: 30,
+		progress: 'not_started',
+		current_scene: null,
+		is_graph: true,
 	},
 ]
 
@@ -524,6 +553,7 @@ export default {
 		CampaignIntro,
 		DialogueStage,
 		CharacterAvatar,
+		SimulatorShell,
 	},
 
 	props: {
@@ -610,6 +640,13 @@ export default {
 			simAnswer: {},
 			simSubmitted: false,
 			simPassed: false,
+
+			// Graph-Mode State
+			isGraphMode: false,
+			stateBag: {},
+			currentGraphNode: null,
+			graphAvailableEdges: [],
+			currentGraphSimulator: null,
 
 			// Freetext
 			freetextInput: '',
@@ -706,7 +743,40 @@ export default {
 			}
 			const cid = this.selectedCampaign.id
 
-			// Always start fresh — POST /start deletes old progress and creates new session
+			// Graph-mode: use /graph-start instead of /start
+			if (this.selectedCampaign.is_graph) {
+				this.isGraphMode = true
+				try {
+					const resp = await axios.post(
+						generateUrl(`/apps/learning/api/story/campaigns/${cid}/graph-start`),
+						{
+							characterClass: this.selectedCharacter.id,
+							courseId: this.courseId || null,
+						},
+					)
+					this.stateBag = { ...resp.data.state?.stateBag }
+					this.currentGraphNode = resp.data.node
+					this.graphAvailableEdges = resp.data.available_edges || []
+					if (resp.data.simulator) {
+						this.currentGraphSimulator = resp.data.simulator
+						this.phase = 'simulation'
+					} else {
+						this.currentGraphSimulator = null
+						this.currentScene = resp.data.node
+						this.phase = 'scene'
+						if (resp.data.node?.narrative) {
+							this.startTypewriter(resp.data.node.narrative)
+						}
+					}
+				} catch (e) {
+					// Fallback: disable graph mode and try linear start
+					this.isGraphMode = false
+					this.beginScene()
+				}
+				return
+			}
+
+			// Linear mode: Always start fresh — POST /start deletes old progress and creates new session
 			try {
 				const url = generateUrl(`/apps/learning/api/story/campaigns/${cid}/start`)
 				const resp = await axios.post(url, {
@@ -1140,6 +1210,11 @@ export default {
 		finishSimulation() {
 			const outcome = this.simPassed ? 'success' : 'partial'
 			this.showEpilog(outcome)
+		},
+
+		// Graph-mode simulator completion — implemented in Task 2
+		async onSimulatorComplete(/* passed, score, result */) {
+			// Stub — full implementation in Task 2
 		},
 
 		// ===== EPILOG =====

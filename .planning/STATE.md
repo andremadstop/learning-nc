@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Housekeeping + Content-Rollout
 status: executing
-stopped_at: Completed 80-02-PLAN.md (SimulatorShell wrapper)
-last_updated: "2026-03-25T10:32:27.280Z"
+stopped_at: Completed 80-01-PLAN.md (simulator lifecycle hooks)
+last_updated: "2026-03-25T10:33:56.692Z"
 last_activity: 2026-03-25 — Completed 80-02 SimulatorShell wrapper
 progress:
   total_phases: 53
   completed_phases: 31
   total_plans: 53
-  completed_plans: 51
+  completed_plans: 52
   percent: 50
 ---
 
@@ -45,7 +45,7 @@ Phase 85: Coop-Frontend               [ ] Not started
 
 ### Decisions
 
-- Extract Vue component logic into pure JS utils for Vitest testing (no vue plugin configured)
+- Installed @vitejs/plugin-vue2 + happy-dom — vitest can now import .vue SFC files directly
 - normalizeResult returns structured object for pure-function testing instead of direct $emit
 - Quest-Map RPG + Escape-Room Challenges (beides mischen)
 - 1 polierte Vorzeige-Kampagne ("Der grosse Ausfall")
@@ -98,7 +98,7 @@ Phase 85: Coop-Frontend               [ ] Not started
 
 ## Session Continuity
 
-Last session: 2026-03-25T10:32:26.610Z
-Stopped at: Completed 80-02-PLAN.md (SimulatorShell wrapper)
+Last session: 2026-03-25T10:33:56.672Z
+Stopped at: Completed 80-01-PLAN.md (simulator lifecycle hooks)
 Resume file: None
 Next action: Execute 80-03-PLAN.md (AbenteuerMode graph-mode wiring)
