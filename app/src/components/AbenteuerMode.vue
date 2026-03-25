@@ -133,6 +133,14 @@
                 {{ t('learning', 'Endanwender am Telefon') }}
               </span>
               <span class="ab-scene-progress">{{ sceneProgressLabel }}</span>
+              <button
+                v-if="isGraphMode && fullGraph"
+                class="ab-map-btn"
+                :title="t('learning', 'Quest-Map')"
+                @click="$refs.questMap && $refs.questMap.open()"
+              >
+                &#x1F5FA;
+              </button>
             </div>
 
             <!-- Narrative box -->
@@ -433,6 +441,17 @@
       </div>
     </div>
 
+    <QuestMap
+      v-if="isGraphMode && fullGraph"
+      ref="questMap"
+      :graph="fullGraph"
+      :state-bag="stateBag"
+      :current-node-id="currentGraphNode && currentGraphNode.id || ''"
+      :available-edges="graphAvailableEdges"
+      @navigate="handleQuestMapNavigate"
+      @close="() => {}"
+    />
+
   </div>
 </template>
 
@@ -444,6 +463,7 @@ import CampaignIntro from './CampaignIntro.vue'
 import DialogueStage from './DialogueStage.vue'
 import CharacterAvatar from './CharacterAvatar.vue'
 import SimulatorShell from './SimulatorShell.vue'
+import QuestMap from './QuestMap.vue'
 import { getCharacter } from '../data/characters.js'
 
 const STATIC_CAMPAIGNS = [
@@ -571,6 +591,7 @@ export default {
 		DialogueStage,
 		CharacterAvatar,
 		SimulatorShell,
+		QuestMap,
 	},
 
 	props: {
@@ -664,6 +685,7 @@ export default {
 			currentGraphNode: null,
 			graphAvailableEdges: [],
 			currentGraphSimulator: null,
+			fullGraph: null,
 
 			// Freetext
 			freetextInput: '',
@@ -774,6 +796,7 @@ export default {
 					this.stateBag = { ...resp.data.state?.stateBag }
 					this.currentGraphNode = resp.data.node
 					this.graphAvailableEdges = resp.data.available_edges || []
+					this.fullGraph = resp.data.full_graph || null
 					if (resp.data.simulator) {
 						this.currentGraphSimulator = resp.data.simulator
 						this.phase = 'simulation'
@@ -1265,6 +1288,7 @@ export default {
 				this.stateBag = { ...resp.data.state?.stateBag }
 				this.currentGraphNode = resp.data.node
 				this.graphAvailableEdges = resp.data.available_edges || []
+				this.fullGraph = resp.data.full_graph || this.fullGraph
 
 				if (resp.data.simulator) {
 					this.currentGraphSimulator = resp.data.simulator
@@ -1298,6 +1322,7 @@ export default {
 				this.stateBag = { ...resp.data.state?.stateBag }
 				this.currentGraphNode = resp.data.node
 				this.graphAvailableEdges = resp.data.available_edges || []
+				this.fullGraph = resp.data.full_graph || this.fullGraph
 
 				if (resp.data.simulator) {
 					this.currentGraphSimulator = resp.data.simulator
@@ -1316,6 +1341,13 @@ export default {
 			} catch (e) {
 				console.error('graph-traverse (choice) failed', e)
 			}
+		},
+
+		/**
+		 * Quest-Map navigation handler: delegate to makeGraphChoice.
+		 */
+		handleQuestMapNavigate(edgeId) {
+			this.makeGraphChoice(edgeId)
 		},
 
 		/**
@@ -1805,6 +1837,19 @@ export default {
 .ab-scene-progress {
   font-size: 0.8rem;
   color: var(--lnc-text-secondary);
+}
+.ab-map-btn {
+  background: none;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 6px;
+  color: #00e5ff;
+  font-size: 18px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.ab-map-btn:hover {
+  border-color: #00e5ff;
 }
 
 .ab-narrative-box {
