@@ -155,8 +155,8 @@
               :isNarrator="false"
             />
 
-            <!-- Decision cards -->
-            <div v-if="currentScene.choices && !narrativeTyping && !choiceMade" class="ab-choices">
+            <!-- Decision cards (linear mode) -->
+            <div v-if="currentScene.choices && !narrativeTyping && !choiceMade && !isGraphMode" class="ab-choices">
               <h4 class="ab-choices-label">{{ t('learning', 'Was tust du?') }}</h4>
               <div class="ab-choice-grid">
                 <button
@@ -169,6 +169,23 @@
                   <span v-if="choice.dynamic" class="ab-choice-dynamic-badge">KI</span>
                   <span class="ab-choice-icon">{{ choice.icon || '🎯' }}</span>
                   <span class="ab-choice-text">{{ choice.text }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Edge choices (graph mode) -->
+            <div v-if="isGraphMode && graphAvailableEdges.length && !narrativeTyping && !choiceMade" class="ab-choices">
+              <h4 class="ab-choices-label">{{ t('learning', 'Was tust du?') }}</h4>
+              <div class="ab-choice-grid">
+                <button
+                  v-for="edge in graphAvailableEdges"
+                  :key="edge.id"
+                  class="ab-choice-card"
+                  :disabled="makingChoice"
+                  @click="makeGraphChoice(edge.id)"
+                >
+                  <span class="ab-choice-icon">{{ edge.icon || '🎯' }}</span>
+                  <span class="ab-choice-text">{{ edge.label || edge.id }}</span>
                 </button>
               </div>
             </div>
@@ -1212,9 +1229,102 @@ export default {
 			this.showEpilog(outcome)
 		},
 
-		// Graph-mode simulator completion — implemented in Task 2
-		async onSimulatorComplete(/* passed, score, result */) {
-			// Stub — full implementation in Task 2
+		// ===== GRAPH-MODE METHODS =====
+
+		/**
+		 * Called when SimulatorShell emits @complete in graph-mode.
+		 * Sends graph-traverse with simulator results, updates stateBag as new reference.
+		 */
+		async onSimulatorComplete(passed, score, result) {
+			if (!this.isGraphMode) return
+
+			// Find target edge based on pass status
+			const targetEdge = this.graphAvailableEdges.find(e =>
+				passed
+					? (!e.requires_flag || this.stateBag.flags?.[e.requires_flag])
+					: true,
+			) || this.graphAvailableEdges[0]
+
+			if (!targetEdge) {
+				// No edge available — show epilog
+				this.phase = 'epilog'
+				return
+			}
+
+			try {
+				const resp = await axios.post(
+					generateUrl(`/apps/learning/api/story/campaigns/${this.selectedCampaign.id}/graph-traverse`),
+					{
+						edgeId: targetEdge.id,
+						simulator_passed: passed,
+						simulator_score: Math.round(score * 100),
+						simulator_result: JSON.stringify(result),
+					},
+				)
+				// MUST be new reference (Vue 2 reactivity — Pitfall H1):
+				this.stateBag = { ...resp.data.state?.stateBag }
+				this.currentGraphNode = resp.data.node
+				this.graphAvailableEdges = resp.data.available_edges || []
+
+				if (resp.data.simulator) {
+					this.currentGraphSimulator = resp.data.simulator
+					this.phase = 'simulation'
+				} else if (resp.data.node?.type === 'ending') {
+					this.phase = 'epilog'
+				} else {
+					this.currentGraphSimulator = null
+					this.currentScene = resp.data.node
+					this.phase = 'scene'
+					if (resp.data.node?.narrative) {
+						this.choiceMade = false
+						this.startTypewriter(resp.data.node.narrative)
+					}
+				}
+			} catch (e) {
+				console.error('graph-traverse failed', e)
+				// Error state: user stays on simulation phase, can retry
+			}
+		},
+
+		/**
+		 * Graph-mode choice handler: traverse an edge from scene phase.
+		 */
+		async makeGraphChoice(edgeId) {
+			try {
+				const resp = await axios.post(
+					generateUrl(`/apps/learning/api/story/campaigns/${this.selectedCampaign.id}/graph-traverse`),
+					{ edgeId },
+				)
+				this.stateBag = { ...resp.data.state?.stateBag }
+				this.currentGraphNode = resp.data.node
+				this.graphAvailableEdges = resp.data.available_edges || []
+
+				if (resp.data.simulator) {
+					this.currentGraphSimulator = resp.data.simulator
+					this.phase = 'simulation'
+				} else if (resp.data.node?.type === 'ending') {
+					this.phase = 'epilog'
+				} else {
+					this.currentGraphSimulator = null
+					this.currentScene = resp.data.node
+					this.phase = 'scene'
+					if (resp.data.node?.narrative) {
+						this.choiceMade = false
+						this.startTypewriter(resp.data.node.narrative)
+					}
+				}
+			} catch (e) {
+				console.error('graph-traverse (choice) failed', e)
+			}
+		},
+
+		/**
+		 * Retry the current simulator challenge by changing nodeId key.
+		 */
+		retrySimulator() {
+			if (this.currentGraphNode) {
+				this.currentGraphNode = { ...this.currentGraphNode, _retryKey: Date.now() }
+			}
 		},
 
 		// ===== EPILOG =====
