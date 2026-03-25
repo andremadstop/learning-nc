@@ -13,10 +13,207 @@
             {{ option.toUpperCase() }}
           </button>
         </div>
+        <button
+          type="button"
+          class="bubble-close-btn"
+          :aria-label="vt('Schliessen')"
+          :title="vt('Schliessen')"
+          @click="$emit('dismiss')">
+          ✕
+        </button>
       </div>
 
+      <template v-if="step.kind === 'telos-form'">
+        <p v-if="step.title" class="bubble-title">{{ step.title }}</p>
+        <p v-if="step.text" class="bubble-text">{{ step.text }}</p>
+
+        <div class="telos-form">
+          <div class="telos-grid">
+            <div class="telos-field">
+              <label class="ticket-label" for="telos-role">{{ vt('Current role / background') }}</label>
+              <input
+                id="telos-role"
+                class="ticket-input"
+                type="text"
+                :value="telosForm.telos?.role || ''"
+                :placeholder="vt('e.g. career changer, trainee, admin')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.role', value: $event.target.value })">
+            </div>
+
+            <div class="telos-field">
+              <label class="ticket-label" for="telos-experience">{{ vt('Experience level') }}</label>
+              <select
+                id="telos-experience"
+                class="ticket-select"
+                :value="telosForm.telos?.experience_level || 'beginner'"
+                @change="$emit('action', { type: 'update-telos-field', field: 'telos.experience_level', value: $event.target.value })">
+                <option value="beginner">{{ vt('Beginner') }}</option>
+                <option value="intermediate">{{ vt('Intermediate') }}</option>
+                <option value="advanced">{{ vt('Advanced') }}</option>
+              </select>
+            </div>
+
+            <div class="telos-field">
+              <label class="ticket-label" for="telos-target-cert">{{ vt('Target certification') }}</label>
+              <input
+                id="telos-target-cert"
+                class="ticket-input"
+                type="text"
+                :value="telosForm.telos?.target_cert || ''"
+                :placeholder="vt('e.g. Network+, CCNA')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.target_cert', value: $event.target.value })">
+            </div>
+
+            <div class="telos-field">
+              <label class="ticket-label" for="telos-target-date">{{ vt('Target date') }}</label>
+              <input
+                id="telos-target-date"
+                class="ticket-input"
+                type="date"
+                :value="telosForm.telos?.target_date || ''"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.target_date', value: $event.target.value })">
+            </div>
+
+            <div class="telos-field">
+              <label class="ticket-label" for="telos-hours">{{ vt('Hours per week') }}</label>
+              <input
+                id="telos-hours"
+                class="ticket-input"
+                type="number"
+                min="0"
+                step="0.5"
+                :value="telosForm.telos?.hours_per_week || ''"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.hours_per_week', value: $event.target.value })">
+            </div>
+
+            <div class="telos-field">
+              <label class="ticket-label" for="telos-learning-style">{{ vt('Learning style') }}</label>
+              <select
+                id="telos-learning-style"
+                class="ticket-select"
+                :value="telosForm.telos?.learning_style || 'solo'"
+                @change="$emit('action', { type: 'update-telos-field', field: 'telos.learning_style', value: $event.target.value })">
+                <option value="solo">{{ vt('Solo') }}</option>
+                <option value="group">{{ vt('Group') }}</option>
+                <option value="mixed">{{ vt('Mixed') }}</option>
+              </select>
+            </div>
+
+            <div class="telos-field telos-field--full">
+              <label class="ticket-label" for="telos-strengths">{{ vt('Strengths') }}</label>
+              <textarea
+                id="telos-strengths"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.telos?.strengths || ''"
+                :placeholder="vt('Comma-separated topics you already know well')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.strengths', value: $event.target.value })" />
+            </div>
+
+            <div class="telos-field telos-field--full">
+              <label class="ticket-label" for="telos-weaknesses">{{ vt('Weaknesses') }}</label>
+              <textarea
+                id="telos-weaknesses"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.telos?.weaknesses || ''"
+                :placeholder="vt('Comma-separated topics you still struggle with')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.weaknesses', value: $event.target.value })" />
+            </div>
+
+            <div class="telos-field telos-field--full">
+              <label class="ticket-label" for="telos-motivation">{{ vt('Motivation') }}</label>
+              <textarea
+                id="telos-motivation"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.telos?.motivation || ''"
+                :placeholder="vt('Why are you learning this right now?')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.motivation', value: $event.target.value })" />
+            </div>
+
+            <div class="telos-field telos-field--full">
+              <label class="ticket-label" for="telos-notes">{{ vt('Notes') }}</label>
+              <textarea
+                id="telos-notes"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.telos?.notes || ''"
+                :placeholder="vt('Anything else that matters for your learning plan')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.notes', value: $event.target.value })" />
+            </div>
+
+            <div class="telos-field telos-field--full">
+              <label class="ticket-label" for="telos-bio">{{ vt('Short bio') }}</label>
+              <textarea
+                id="telos-bio"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.bio || ''"
+                :placeholder="vt('Optional short introduction for peers and instructors')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'bio', value: $event.target.value })" />
+            </div>
+
+            <div class="telos-field telos-field--full">
+              <label class="ticket-label" for="telos-help-offer">{{ vt('I can help with...') }}</label>
+              <textarea
+                id="telos-help-offer"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.help_offer || ''"
+                :placeholder="vt('Comma-separated topics you can explain to others')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'help_offer', value: $event.target.value })" />
+            </div>
+
+            <div class="telos-field telos-field--full">
+              <label class="ticket-label" for="telos-help-wanted">{{ vt('I need help with...') }}</label>
+              <textarea
+                id="telos-help-wanted"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.help_wanted || ''"
+                :placeholder="vt('Comma-separated topics you want support with')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'help_wanted', value: $event.target.value })" />
+            </div>
+
+            <div class="telos-field">
+              <label class="ticket-label" for="telos-visibility">{{ vt('Visibility') }}</label>
+              <select
+                id="telos-visibility"
+                class="ticket-select"
+                :value="telosForm.visibility || 'private'"
+                @change="$emit('action', { type: 'update-telos-field', field: 'visibility', value: $event.target.value })">
+                <option value="private">{{ vt('Private') }}</option>
+                <option value="course">{{ vt('Course') }}</option>
+                <option value="public">{{ vt('Public') }}</option>
+              </select>
+            </div>
+          </div>
+
+          <p v-if="telosError" class="ticket-error">{{ telosError }}</p>
+          <p v-if="telosSaved" class="ticket-success">{{ vt('Learning profile saved.') }}</p>
+        </div>
+
+        <div class="bubble-actions stacked">
+          <NcButton
+            type="primary"
+            size="small"
+            :disabled="telosSaving"
+            @click="$emit('action', { type: 'submit-telos-form' })">
+            {{ telosSaving ? vt('Saving...') : vt('Save learning profile') }}
+          </NcButton>
+          <NcButton
+            type="secondary"
+            size="small"
+            :disabled="telosSaving"
+            @click="$emit('action', { type: 'postpone-telos-onboarding' })">
+            {{ vt('Later') }}
+          </NcButton>
+        </div>
+      </template>
+
       <!-- ── AI-first layout (aiEnabled=true) ──────────────────── -->
-      <template v-if="aiEnabled">
+      <template v-else-if="aiEnabled">
         <!-- AI consent dialog: shown before first chat use -->
         <div v-if="showConsentDialog" class="ai-consent-overlay" role="dialog" aria-modal="true" :aria-label="vt('AI consent required')">
           <p class="ai-consent-text">{{ vt('Your question will be sent to Google Gemini (an external AI service). Do you agree?') }}</p>
@@ -24,6 +221,11 @@
             <NcButton type="primary" size="small" @click="$emit('consent-accept')">{{ vt('I agree') }}</NcButton>
             <NcButton type="secondary" size="small" @click="$emit('consent-decline')">{{ vt('Cancel') }}</NcButton>
           </div>
+        </div>
+
+        <div v-if="step.showIntroInline && (step.title || step.text)" class="chat-step-intro">
+          <p v-if="step.title" class="bubble-title">{{ step.title }}</p>
+          <p v-if="step.text" class="bubble-text">{{ step.text }}</p>
         </div>
 
         <!-- Chat history (primary content) -->
@@ -38,7 +240,21 @@
             :key="idx"
             class="chat-msg"
             :class="msg.role === 'user' ? 'chat-msg--user' : 'chat-msg--assistant'">
-            <span>{{ msg.text }}</span>
+            <div class="chat-msg-body">
+              <span class="chat-msg-text">{{ msg.text }}</span>
+              <button
+                v-if="msg.role === 'assistant' && supportsSpeechSynthesis && msg.text"
+                type="button"
+                class="chat-audio-btn"
+                :aria-label="vt('Read aloud')"
+                :title="vt('Read aloud')"
+                @click="speakText(msg.text)">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                  <path d="M2 6h3l3-3v10L5 10H2z" fill="currentColor" />
+                  <path d="M10.5 5.2a3.4 3.4 0 010 5.6M12.2 3.5a5.8 5.8 0 010 9" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                </svg>
+              </button>
+            </div>
             <a
               v-if="msg.filePath"
               :href="ncFileUrl(msg.filePath)"
@@ -56,7 +272,7 @@
         </div>
 
         <!-- Quick suggestion chips (above input) -->
-        <div v-if="!examBlocked" class="chat-suggestions" role="group" :aria-label="vt('Quick suggestions')">
+        <div v-if="!examBlocked && !step.disableSuggestions" class="chat-suggestions" role="group" :aria-label="vt('Quick suggestions')">
           <button
             v-for="suggestion in quickSuggestions"
             :key="suggestion.key"
@@ -76,12 +292,31 @@
 
         <!-- Chat input row -->
         <div v-if="!examBlocked" class="chat-input-row">
+          <button
+            v-if="sttEnabled && supportsSpeechRecognition"
+            type="button"
+            class="chat-mic-btn"
+            :class="{ active: isListening }"
+            :disabled="chatLoading"
+            :aria-label="isListening ? vt('Listening...') : vt('Hold to talk')"
+            :title="isListening ? vt('Listening...') : vt('Hold to talk')"
+            @mousedown.prevent="startListening"
+            @mouseup.prevent="stopListening"
+            @mouseleave="stopListening"
+            @touchstart.prevent="startListening"
+            @touchend.prevent="stopListening"
+            @touchcancel.prevent="stopListening">
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path d="M8 2.5a2 2 0 00-2 2V8a2 2 0 004 0V4.5a2 2 0 00-2-2z" fill="currentColor" />
+              <path d="M4 7.5a4 4 0 008 0M8 11.5v2.5M5.5 14h5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+            </svg>
+          </button>
           <input
             ref="chatInput"
             v-model="chatInput"
             class="chat-input"
             type="text"
-            :placeholder="vt('Ask VirtuProf...')"
+            :placeholder="step.chatPlaceholder || vt('Ask VirtuProf...')"
             :disabled="chatLoading"
             maxlength="500"
             @keyup.enter="sendChat">
@@ -96,20 +331,38 @@
             </svg>
           </button>
         </div>
+        <div v-if="isListening" class="chat-listening" role="status">
+          <span class="chat-listening-dot" />
+          {{ vt('Listening...') }}
+        </div>
+        <p v-else-if="speechError" class="chat-voice-error">{{ speechError }}</p>
 
-        <!-- Report error button -->
-        <button
-          v-if="hasQuestionContext && !examBlocked"
-          type="button"
-          class="report-error-btn"
-          :disabled="chatLoading"
-          @click="$emit('report-error')">
-          &#9888; {{ vt('Report error in question') }}
-        </button>
+        <div
+          v-if="step.renderActionsInline && step.actions && step.actions.length"
+          class="bubble-actions"
+          :class="{ stacked: step.actionLayout === 'stacked' || step.actions.length > 3 }">
+          <NcButton
+            v-for="action in step.actions"
+            :key="action.label"
+            type="secondary"
+            size="small"
+            @click="$emit('action', action)">
+            {{ action.label }}
+          </NcButton>
+        </div>
 
-        <!-- Clear row -->
-        <div v-if="chatMessages.length > 0" class="chat-clear-row">
+        <!-- Actions row: report + clear on same line -->
+        <div class="chat-actions-row">
           <button
+            v-if="hasQuestionContext && !examBlocked"
+            type="button"
+            class="chat-clear-btn"
+            :disabled="chatLoading"
+            @click="$emit('report-error')">
+            {{ vt('Report error') }}
+          </button>
+          <button
+            v-if="chatMessages.length > 0"
             type="button"
             class="chat-clear-btn"
             @click="$emit('action', { type: 'clear-chat-history' })">
@@ -118,7 +371,7 @@
         </div>
 
         <!-- Collapsible "Mehr Optionen" section -->
-        <div class="mehr-optionen">
+        <div v-if="!step.hideMoreOptions" class="mehr-optionen">
           <button
             type="button"
             class="mehr-optionen-toggle"
@@ -480,11 +733,50 @@ export default {
       type: Boolean,
       default: false,
     },
+    telosForm: {
+      type: Object,
+      default: () => ({
+        telos: {},
+        bio: '',
+        help_offer: '',
+        help_wanted: '',
+        visibility: 'private',
+      }),
+    },
+    telosSaving: {
+      type: Boolean,
+      default: false,
+    },
+    telosError: {
+      type: String,
+      default: '',
+    },
+    telosSaved: {
+      type: Boolean,
+      default: false,
+    },
+    ttsEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    sttEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    voiceLang: {
+      type: String,
+      default: '',
+    },
   },
   data() {
     return {
       chatInput: '',
       moreOptionsOpen: false,
+      supportsSpeechSynthesis: false,
+      supportsSpeechRecognition: false,
+      speechRecognition: null,
+      isListening: false,
+      speechError: '',
     }
   },
   computed: {
@@ -508,11 +800,31 @@ export default {
       ]
     },
   },
+  mounted() {
+    if (typeof window === 'undefined') {
+      return
+    }
+    this.supportsSpeechSynthesis = 'speechSynthesis' in window
+    this.supportsSpeechRecognition = !!(window.SpeechRecognition || window.webkitSpeechRecognition)
+    if (this.supportsSpeechRecognition) {
+      this.setupSpeechRecognition()
+    }
+  },
+  beforeDestroy() {
+    this.stopListening()
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel()
+    }
+  },
   watch: {
-    chatMessages() {
+    chatMessages(newMessages) {
       this.$nextTick(() => {
         this.scrollChatToBottom()
       })
+      const lastMessage = Array.isArray(newMessages) ? newMessages[newMessages.length - 1] : null
+      if (this.ttsEnabled && this.supportsSpeechSynthesis && lastMessage?.role === 'assistant' && lastMessage?.speakable === true) {
+        this.speakText(lastMessage.text)
+      }
     },
     chatLoading(newVal) {
       if (!newVal) {
@@ -523,6 +835,9 @@ export default {
           }
         })
       }
+    },
+    voiceLang() {
+      this.updateSpeechRecognitionLanguage()
     },
   },
   methods: {
@@ -575,6 +890,111 @@ export default {
       }
       this.$emit('chat-send', text)
     },
+    resolvedVoiceLang() {
+      if (this.voiceLang) {
+        return this.voiceLang
+      }
+      if (typeof navigator !== 'undefined' && navigator.language) {
+        return navigator.language
+      }
+      return 'de-DE'
+    },
+    speakText(text) {
+      if (!this.supportsSpeechSynthesis || typeof window === 'undefined' || !window.speechSynthesis) {
+        return
+      }
+      const normalized = String(text || '').trim()
+      if (!normalized) {
+        return
+      }
+
+      window.speechSynthesis.cancel()
+
+      const utterance = new window.SpeechSynthesisUtterance(normalized)
+      utterance.lang = this.resolvedVoiceLang()
+      utterance.rate = 0.95
+      utterance.pitch = 1
+
+      const preferredLang = utterance.lang.split('-')[0].toLowerCase()
+      const voices = window.speechSynthesis.getVoices()
+      const preferredVoice = voices.find((voice) => {
+        const voiceLang = String(voice.lang || '').toLowerCase()
+        return voiceLang.startsWith(preferredLang) && String(voice.name || '').includes('Google')
+      }) || voices.find((voice) => String(voice.lang || '').toLowerCase().startsWith(preferredLang))
+
+      if (preferredVoice) {
+        utterance.voice = preferredVoice
+      }
+
+      window.speechSynthesis.speak(utterance)
+    },
+    setupSpeechRecognition() {
+      if (typeof window === 'undefined') {
+        return
+      }
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+      if (!SpeechRecognition) {
+        this.supportsSpeechRecognition = false
+        return
+      }
+
+      const recognition = new SpeechRecognition()
+      recognition.lang = this.resolvedVoiceLang()
+      recognition.interimResults = false
+      recognition.maxAlternatives = 1
+      recognition.onresult = (event) => {
+        const transcript = event?.results?.[0]?.[0]?.transcript || ''
+        if (transcript) {
+          const current = this.chatInput.trim()
+          this.chatInput = current ? `${current} ${transcript.trim()}` : transcript.trim()
+          this.$nextTick(() => this.$refs.chatInput?.focus())
+        }
+      }
+      recognition.onerror = () => {
+        this.speechError = this.vt('Voice input is currently unavailable.')
+        this.isListening = false
+      }
+      recognition.onend = () => {
+        this.isListening = false
+      }
+      this.speechRecognition = recognition
+    },
+    updateSpeechRecognitionLanguage() {
+      if (this.speechRecognition) {
+        this.speechRecognition.lang = this.resolvedVoiceLang()
+      }
+    },
+    startListening() {
+      if (!this.sttEnabled || !this.supportsSpeechRecognition || this.chatLoading) {
+        return
+      }
+      if (!this.speechRecognition) {
+        this.setupSpeechRecognition()
+      }
+      if (!this.speechRecognition || this.isListening) {
+        return
+      }
+
+      this.speechError = ''
+      this.updateSpeechRecognitionLanguage()
+      try {
+        this.isListening = true
+        this.speechRecognition.start()
+      } catch (e) {
+        this.isListening = false
+        this.speechError = this.vt('Voice input is currently unavailable.')
+      }
+    },
+    stopListening() {
+      if (!this.speechRecognition) {
+        return
+      }
+      try {
+        this.speechRecognition.stop()
+      } catch (e) {
+        this.isListening = false
+      }
+    },
     scrollChatToBottom() {
       const el = this.$refs.chatHistory
       if (el) {
@@ -583,7 +1003,6 @@ export default {
     },
     ncFileUrl(path) {
       // Build a Nextcloud Files URL for a path like /Learning/Lernplan.md
-      const encoded = encodeURIComponent(path)
       return '/apps/files/?dir=' + encodeURIComponent(path.substring(0, path.lastIndexOf('/'))) + '&scrollto=' + encodeURIComponent(path.split('/').pop())
     },
   },
@@ -627,13 +1046,37 @@ export default {
 
 .bubble-toolbar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin: -2px 0 8px;
 }
 
 .bubble-language-toggle {
   display: inline-flex;
   gap: 4px;
+}
+
+.bubble-close-btn {
+  background: none;
+  border: 1px solid var(--color-border-dark, #555);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--color-text-maxcontrast, #999);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.bubble-close-btn:hover {
+  background: var(--color-error, #e64d4d);
+  color: #fff;
+  border-color: var(--color-error, #e64d4d);
 }
 
 .bubble-language-btn {
@@ -667,14 +1110,45 @@ export default {
   font-size: 13px;
   line-height: 1.55;
   color: var(--color-main-text);
+  white-space: pre-wrap;
+}
+
+.chat-step-intro {
+  margin-bottom: 10px;
 }
 
 .ticket-form,
 .ticket-list,
-.invite-list {
+.invite-list,
+.telos-form {
   display: grid;
   gap: 8px;
   margin-bottom: 12px;
+}
+
+.telos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.telos-field {
+  display: grid;
+  gap: 4px;
+}
+
+.telos-field--full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 520px) {
+  .telos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .telos-field--full {
+    grid-column: auto;
+  }
 }
 
 .invite-group {
@@ -925,6 +1399,18 @@ export default {
   gap: 4px;
 }
 
+.chat-msg-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.chat-msg-text {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+}
+
 .chat-msg--user {
   align-self: flex-end;
   background: color-mix(in srgb, var(--color-primary-element) 15%, transparent);
@@ -962,6 +1448,42 @@ export default {
 
 .chat-file-link:hover {
   opacity: 0.8;
+}
+
+.chat-audio-btn,
+.chat-mic-btn {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-maxcontrast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease, transform 0.12s ease;
+}
+
+.chat-audio-btn:hover,
+.chat-mic-btn:hover {
+  border-color: var(--color-primary-element);
+  color: var(--color-primary-element);
+}
+
+.chat-mic-btn.active {
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 16%, transparent);
+  animation: virtuprof-pulse 0.9s ease-in-out infinite;
+}
+
+.chat-audio-btn:disabled,
+.chat-mic-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .chat-typing {
@@ -1087,6 +1609,28 @@ export default {
   cursor: not-allowed;
 }
 
+.chat-listening,
+.chat-voice-error {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--color-text-maxcontrast);
+}
+
+.chat-listening {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-listening-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-error);
+  box-shadow: 0 0 0 0 rgba(235, 87, 87, 0.35);
+  animation: virtuprof-pulse-dot 1s ease-in-out infinite;
+}
+
 /* ── Chat clear button ─────────────────────────────── */
 .chat-clear-row {
   display: flex;
@@ -1107,6 +1651,27 @@ export default {
 
 .chat-clear-btn:hover {
   color: var(--color-error);
+}
+
+@keyframes virtuprof-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes virtuprof-pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(235, 87, 87, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(235, 87, 87, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(235, 87, 87, 0);
+  }
 }
 
 /* ── Mehr Optionen collapsible ────────────────────── */
@@ -1198,6 +1763,13 @@ export default {
 }
 
 /* REP-01: Report error button */
+.chat-actions-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 4px 0;
+}
+
 .report-error-btn {
   text-align: left;
   color: var(--color-warning-text, #c45911);

@@ -9,14 +9,52 @@ use OCA\Learning\Service\LernplanService;
 use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\RagContextService;
 use OCA\Learning\Service\SupportTicketService;
+use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IConfig;
 use OCP\IRequest;
+use OCP\IUserManager;
 
 class VirtuProfController extends Controller {
+    private const ALLOWED_INTERFACE_LANGUAGES = ['', 'de', 'en', 'ru', 'ar'];
+    private const ALLOWED_VOICE_LANGUAGES = [
+        'de-DE',
+        'en-US',
+        'ru-RU',
+        'ar-SA',
+        'tr-TR',
+        'fr-FR',
+        'es-ES',
+        'zh-CN',
+        'ja-JP',
+        'ko-KR',
+        'pt-BR',
+        'it-IT',
+        'pl-PL',
+        'nl-NL',
+        'uk-UA',
+    ];
+    private const VOICE_LANGUAGE_MAP = [
+        'de' => 'de-DE',
+        'en' => 'en-US',
+        'ru' => 'ru-RU',
+        'ar' => 'ar-SA',
+        'tr' => 'tr-TR',
+        'fr' => 'fr-FR',
+        'es' => 'es-ES',
+        'zh' => 'zh-CN',
+        'ja' => 'ja-JP',
+        'ko' => 'ko-KR',
+        'pt' => 'pt-BR',
+        'it' => 'it-IT',
+        'pl' => 'pl-PL',
+        'nl' => 'nl-NL',
+        'uk' => 'uk-UA',
+    ];
+
     private IConfig $config;
     private ?string $userId;
     private GeminiService $geminiService;
@@ -25,6 +63,8 @@ class VirtuProfController extends Controller {
     private NoteGeneratorService $noteGeneratorService;
     private LernplanService $lernplanService;
     private SupportTicketService $ticketService;
+    private TelosService $telosService;
+    private IUserManager $userManager;
 
     public function __construct(
         string $appName,
@@ -36,7 +76,9 @@ class VirtuProfController extends Controller {
         AiChatMemoryService $chatMemoryService,
         NoteGeneratorService $noteGeneratorService,
         LernplanService $lernplanService,
-        SupportTicketService $ticketService
+        SupportTicketService $ticketService,
+        TelosService $telosService,
+        IUserManager $userManager
     ) {
         parent::__construct($appName, $request);
         $this->config = $config;
@@ -47,6 +89,120 @@ class VirtuProfController extends Controller {
         $this->noteGeneratorService = $noteGeneratorService;
         $this->lernplanService = $lernplanService;
         $this->ticketService = $ticketService;
+        $this->telosService = $telosService;
+        $this->userManager = $userManager;
+    }
+
+    /**
+     * Get the user's first name (display name up to first space).
+     */
+    private function getUserFirstName(): string {
+        if ($this->userId === null) {
+            return '';
+        }
+        $user = $this->userManager->get($this->userId);
+        if ($user === null) {
+            return '';
+        }
+        $displayName = $user->getDisplayName();
+        $parts = explode(' ', trim($displayName), 2);
+        return $parts[0] ?? '';
+    }
+
+    /**
+     * @return array{dismissed: array<int, string>, enabled: bool, language: string, visited_tools: array<int, string>, ai_enabled: bool, tts_enabled: bool, stt_enabled: bool, voice_lang: string, onboarding_reminder_count: int}
+     */
+    private function buildStatePayload(): array {
+        $dismissed = json_decode(
+            $this->config->getUserValue($this->userId, 'learning', 'virtuprof_dismissed', '[]'),
+            true
+        );
+        $visitedTools = json_decode(
+            $this->config->getUserValue($this->userId, 'learning', 'visited_tools', '[]'),
+            true
+        );
+
+        return [
+            'dismissed' => is_array($dismissed) ? array_values($dismissed) : [],
+            'enabled' => $this->config->getUserValue($this->userId, 'learning', 'virtuprof_enabled', 'yes') === 'yes',
+            'language' => $this->normalizeInterfaceLanguage(
+                $this->config->getUserValue($this->userId, 'learning', 'virtuprof_language', '')
+            ),
+            'visited_tools' => is_array($visitedTools) ? array_values($visitedTools) : [],
+            'ai_enabled' => $this->config->getAppValue('learning', 'ai_enabled', 'no') === 'yes',
+            'tts_enabled' => $this->getTtsEnabled(),
+            'stt_enabled' => $this->getSttEnabled(),
+            'voice_lang' => $this->getVoiceLanguage(),
+            'onboarding_reminder_count' => $this->getOnboardingReminderCount(),
+        ];
+    }
+
+    private function getTtsEnabled(): bool {
+        return $this->config->getUserValue($this->userId, 'learning', 'virtuprof_tts_enabled', 'no') === 'yes';
+    }
+
+    private function getSttEnabled(): bool {
+        return $this->config->getUserValue($this->userId, 'learning', 'virtuprof_stt_enabled', 'no') === 'yes';
+    }
+
+    private function getVoiceLanguage(): string {
+        $stored = $this->normalizeVoiceLanguage(
+            $this->config->getUserValue($this->userId, 'learning', 'virtuprof_voice_lang', '')
+        );
+        if ($stored !== '') {
+            return $stored;
+        }
+
+        $contentLanguage = strtolower(trim($this->config->getUserValue($this->userId, 'learning', 'content_language', '')));
+        if (isset(self::VOICE_LANGUAGE_MAP[$contentLanguage])) {
+            return self::VOICE_LANGUAGE_MAP[$contentLanguage];
+        }
+
+        $interfaceLanguage = $this->normalizeInterfaceLanguage(
+            $this->config->getUserValue($this->userId, 'learning', 'virtuprof_language', '')
+        );
+        return self::VOICE_LANGUAGE_MAP[$interfaceLanguage] ?? '';
+    }
+
+    private function getOnboardingReminderCount(): int {
+        $raw = (int)$this->config->getUserValue($this->userId, 'learning', 'onboarding_reminder_count', '0');
+        return max(0, min(3, $raw));
+    }
+
+    private function normalizeInterfaceLanguage(string $language): string {
+        $normalized = strtolower(trim($language));
+        return in_array($normalized, self::ALLOWED_INTERFACE_LANGUAGES, true) ? $normalized : '';
+    }
+
+    private function normalizeVoiceLanguage(string $language): string {
+        $normalized = trim($language);
+        return in_array($normalized, self::ALLOWED_VOICE_LANGUAGES, true) ? $normalized : '';
+    }
+
+    /**
+     * @param array<int, mixed> $history
+     * @return array<int, array{question: string, answer: string}>
+     */
+    private function sanitizeInterviewHistory(array $history): array {
+        $sanitized = [];
+        foreach (array_slice($history, 0, 10) as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+
+            $question = mb_substr(trim(strip_tags((string)($entry['question'] ?? ''))), 0, 240);
+            $answer = mb_substr(trim(strip_tags((string)($entry['answer'] ?? ''))), 0, 500);
+            if ($question === '' || $answer === '') {
+                continue;
+            }
+
+            $sanitized[] = [
+                'question' => $question,
+                'answer' => $answer,
+            ];
+        }
+
+        return $sanitized;
     }
 
     /**
@@ -58,17 +214,39 @@ class VirtuProfController extends Controller {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
 
-        $dismissed = json_decode(
-            $this->config->getUserValue($this->userId, 'learning', 'virtuprof_dismissed', '[]'),
+        return new DataResponse($this->buildStatePayload());
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 120, period: 60)]
+    public function markVisited(string $guideKey): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        $guideKey = strtolower(trim($guideKey));
+        if ($guideKey === '' || !preg_match('/^[a-z0-9:_-]{1,64}$/', $guideKey)) {
+            return new DataResponse(['error' => 'Invalid guide key'], Http::STATUS_BAD_REQUEST);
+        }
+
+        $visitedTools = json_decode(
+            $this->config->getUserValue($this->userId, 'learning', 'visited_tools', '[]'),
             true
         );
+        if (!is_array($visitedTools)) {
+            $visitedTools = [];
+        }
+
+        if (!in_array($guideKey, $visitedTools, true)) {
+            $visitedTools[] = $guideKey;
+            $this->config->setUserValue($this->userId, 'learning', 'visited_tools', json_encode(array_values($visitedTools)));
+        }
 
         return new DataResponse([
-            'dismissed' => is_array($dismissed) ? array_values($dismissed) : [],
-            'enabled' => $this->config->getUserValue($this->userId, 'learning', 'virtuprof_enabled', 'yes') === 'yes',
-            'language' => $this->config->getUserValue($this->userId, 'learning', 'virtuprof_language', ''),
-            // PRIV-02: expose global AI toggle so frontend can hide chat section when disabled
-            'ai_enabled' => $this->config->getAppValue('learning', 'ai_enabled', 'no') === 'yes',
+            'ok' => true,
+            'visited_tools' => array_values($visitedTools),
         ]);
     }
 
@@ -126,14 +304,100 @@ class VirtuProfController extends Controller {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
 
-        $normalized = strtolower(trim($language));
-        if (!in_array($normalized, ['', 'de', 'en', 'ru', 'ar'], true)) {
-            $normalized = '';
-        }
+        $normalized = $this->normalizeInterfaceLanguage($language);
 
         $this->config->setUserValue($this->userId, 'learning', 'virtuprof_language', $normalized);
 
         return new DataResponse(['ok' => true, 'language' => $normalized]);
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function savePreferences(
+        ?bool $ttsEnabled = null,
+        ?bool $sttEnabled = null,
+        ?string $voiceLang = null,
+        ?int $onboardingReminderCount = null
+    ): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        if ($ttsEnabled !== null) {
+            $this->config->setUserValue($this->userId, 'learning', 'virtuprof_tts_enabled', $ttsEnabled ? 'yes' : 'no');
+        }
+        if ($sttEnabled !== null) {
+            $this->config->setUserValue($this->userId, 'learning', 'virtuprof_stt_enabled', $sttEnabled ? 'yes' : 'no');
+        }
+        if ($voiceLang !== null) {
+            $this->config->setUserValue(
+                $this->userId,
+                'learning',
+                'virtuprof_voice_lang',
+                $this->normalizeVoiceLanguage($voiceLang)
+            );
+        }
+        if ($onboardingReminderCount !== null) {
+            $this->config->setUserValue(
+                $this->userId,
+                'learning',
+                'onboarding_reminder_count',
+                (string)max(0, min(3, $onboardingReminderCount))
+            );
+        }
+
+        return new DataResponse(['ok' => true] + $this->buildStatePayload());
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 15, period: 60)]
+    public function interviewTurn(array $history = [], int $nextQuestionNumber = 2): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        if ($this->config->getAppValue('learning', 'ai_enabled', 'no') !== 'yes') {
+            return new DataResponse(['error' => 'AI feature disabled'], Http::STATUS_SERVICE_UNAVAILABLE);
+        }
+
+        $sanitizedHistory = $this->sanitizeInterviewHistory($history);
+        if ($sanitizedHistory === []) {
+            return new DataResponse(['error' => 'Interview history is required'], Http::STATUS_BAD_REQUEST);
+        }
+
+        $nextQuestionNumber = max(2, min(10, $nextQuestionNumber));
+        $language = $this->normalizeInterfaceLanguage(
+            $this->config->getUserValue($this->userId, 'learning', 'content_language', '')
+        );
+        if ($language === '') {
+            $language = $this->normalizeInterfaceLanguage(
+                $this->config->getUserValue($this->userId, 'learning', 'virtuprof_language', 'de')
+            ) ?: 'de';
+        }
+
+        $result = $this->geminiService->generateInterviewTurn(
+            $sanitizedHistory,
+            $nextQuestionNumber,
+            $this->userId,
+            $this->getUserFirstName(),
+            $language
+        );
+
+        if (($result['reason'] ?? '') === 'rate_limit') {
+            return new DataResponse(['error' => 'Rate limit exceeded'], Http::STATUS_TOO_MANY_REQUESTS);
+        }
+        if (($result['fallback'] ?? true) || $result['answer'] === null) {
+            return new DataResponse(['error' => 'Interview turn unavailable'], Http::STATUS_SERVICE_UNAVAILABLE);
+        }
+
+        return new DataResponse([
+            'answer' => $result['answer'],
+            'next_question_number' => $nextQuestionNumber,
+        ]);
     }
 
     /**
@@ -256,7 +520,19 @@ class VirtuProfController extends Controller {
         // MEM-01: Load persistent chat memory (last 10 entries, oldest-first)
         $memoryEntries = $this->chatMemoryService->loadMemory($this->userId);
 
-        $result = $this->geminiService->chat($message, $this->userId, $ragContext, $memoryEntries, $questionContext, $hintLevel);
+        $firstName = $this->getUserFirstName();
+        $telos = $this->telosService->getTelos($this->userId);
+        $result = $this->geminiService->chat(
+            $message,
+            $this->userId,
+            $ragContext,
+            $memoryEntries,
+            $questionContext,
+            $hintLevel,
+            $firstName,
+            is_array($telos['telos'] ?? null) ? $telos['telos'] : null,
+            $this->isDetailedRequest($lowerMessage)
+        );
 
         // SEC-01: invalid_input is a client error
         if (($result['reason'] ?? '') === 'invalid_input') {
@@ -297,6 +573,30 @@ class VirtuProfController extends Controller {
             'learning plan',
             'lernplan',
             'fortschritt',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (str_contains($lowerMessage, $pattern)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function isDetailedRequest(string $lowerMessage): bool {
+        $patterns = [
+            'erklär genauer',
+            'erklaer genauer',
+            'mehr details',
+            'geh ins detail',
+            'ausführlicher',
+            'ausfuehrlicher',
+            'detaillierter',
+            'explain in more detail',
+            'more details',
+            'go deeper',
+            'be more detailed',
         ];
 
         foreach ($patterns as $pattern) {

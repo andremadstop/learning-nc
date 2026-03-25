@@ -359,6 +359,80 @@
 				</NcEmptyContent>
 			</div>
 
+			<div v-if="currentTab === 'class-profile' && isInstructor" class="class-profile-section">
+				<div class="section-header">
+					<h4>{{ t('learning', 'Class Profile') }}</h4>
+					<NcButton type="tertiary" @click="fetchTelosAggregate">
+						{{ t('learning', 'Refresh') }}
+					</NcButton>
+				</div>
+
+				<NcNoteCard type="info" class="class-profile-note">
+					{{ t('learning', 'This area aggregates students\' own learning goals and self-assessment. Only completed Telos profiles appear in the detailed distributions.') }}
+				</NcNoteCard>
+
+				<div v-if="telosAggregateLoading" class="loading-container">
+					<NcLoadingIcon :size="44" />
+					<p>{{ t('learning', 'Loading class profile...') }}</p>
+				</div>
+
+				<NcNoteCard v-else-if="telosAggregateError" type="error">
+					{{ telosAggregateError }}
+				</NcNoteCard>
+
+				<div v-else class="class-profile-body">
+					<div class="class-profile-cards">
+						<div class="class-profile-card">
+							<span class="class-profile-label">{{ t('learning', 'Students') }}</span>
+							<strong class="class-profile-value">{{ telosAggregate.total || 0 }}</strong>
+						</div>
+						<div class="class-profile-card">
+							<span class="class-profile-label">{{ t('learning', 'Onboarded') }}</span>
+							<strong class="class-profile-value">{{ telosAggregate.onboarded || 0 }}</strong>
+						</div>
+						<div class="class-profile-card">
+							<span class="class-profile-label">{{ t('learning', 'Avg. hours / week') }}</span>
+							<strong class="class-profile-value">{{ telosAggregate.avg_hours_per_week || 0 }}</strong>
+						</div>
+					</div>
+
+					<div class="class-profile-grid">
+						<div class="class-profile-panel">
+							<h5>{{ t('learning', 'Experience levels') }}</h5>
+							<ul v-if="sortedDistributionEntries(telosAggregate.experience_levels).length" class="class-profile-list">
+								<li v-for="entry in sortedDistributionEntries(telosAggregate.experience_levels)" :key="'exp-' + entry.key">
+									<span>{{ entry.key }}</span>
+									<strong>{{ entry.value }}</strong>
+								</li>
+							</ul>
+							<p v-else class="class-profile-empty">{{ t('learning', 'No onboarding data yet.') }}</p>
+						</div>
+
+						<div class="class-profile-panel">
+							<h5>{{ t('learning', 'Target certifications') }}</h5>
+							<ul v-if="sortedDistributionEntries(telosAggregate.target_certs).length" class="class-profile-list">
+								<li v-for="entry in sortedDistributionEntries(telosAggregate.target_certs)" :key="'cert-' + entry.key">
+									<span>{{ entry.key }}</span>
+									<strong>{{ entry.value }}</strong>
+								</li>
+							</ul>
+							<p v-else class="class-profile-empty">{{ t('learning', 'No target certifications recorded yet.') }}</p>
+						</div>
+					</div>
+
+					<div class="class-profile-panel">
+						<h5>{{ t('learning', 'Upcoming exams') }}</h5>
+						<ul v-if="(telosAggregate.upcoming_exams || []).length" class="class-profile-list">
+							<li v-for="exam in telosAggregate.upcoming_exams" :key="exam.user_id + '-' + exam.target_date">
+								<span>{{ exam.user_id }} · {{ exam.target_cert || t('learning', 'Exam') }}</span>
+								<strong>{{ exam.target_date }} · {{ t('learning', '{n} days', { n: exam.days_until }) }}</strong>
+							</li>
+						</ul>
+						<p v-else class="class-profile-empty">{{ t('learning', 'No upcoming exam dates in the next 180 days.') }}</p>
+					</div>
+				</div>
+			</div>
+
 			<div v-if="isStudentLearningTab" class="student-learning-section">
 				<div v-if="!selectedLearningPool" class="pools-section">
 					<div class="section-header">
@@ -841,6 +915,29 @@
 			{{ savingModeConfig ? t('learning', 'Saving...') : t('learning', 'Save') }}
 		</NcButton>
 		<NcNoteCard v-if="modeConfigSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
+
+		<div class="tool-config-section">
+			<h3>{{ t('learning', 'Kursregeln — Werkzeuge') }}</h3>
+			<p class="mode-config-hint">{{ t('learning', 'Hier kannst du die acht Simulatoren pro Kurs einschränken. Global deaktivierte Werkzeuge bleiben gesperrt.') }}</p>
+			<div v-if="loadingToolConfig" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
+			<div v-else class="mode-toggles">
+				<div v-for="tool in toolConfigKeys" :key="tool.key" class="mode-toggle-row">
+					<label class="mode-toggle-label">
+						<input
+							type="checkbox"
+							:checked="toolConfigLocal[tool.key] !== false"
+							:disabled="!isAdminToolEnabled(tool.key)"
+							@change="toggleCourseTool(tool.key, $event.target.checked)" />
+						{{ tool.label }}
+					</label>
+					<small v-if="!isAdminToolEnabled(tool.key)" class="mode-config-note">{{ t('learning', 'Global deaktiviert') }}</small>
+				</div>
+			</div>
+			<NcButton type="primary" :disabled="savingToolConfig || loadingToolConfig" @click="saveToolConfig">
+				{{ savingToolConfig ? t('learning', 'Saving...') : t('learning', 'Save tools') }}
+			</NcButton>
+			<NcNoteCard v-if="toolConfigSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
+		</div>
 	</div>
 
 	<div v-if="currentTab === 'materials' && isInstructor" class="tab-content materials-section">
@@ -1042,6 +1139,7 @@ import WissensturmMode from './WissensturmMode.vue'
 import LernwuerfelMode from './LernwuerfelMode.vue'
 import AbenteuerMode from './AbenteuerMode.vue'
 import CourseMaterials from './CourseMaterials.vue'
+import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 
 export default {
 	name: 'CourseDetail',
@@ -1177,6 +1275,16 @@ export default {
 			// At-Risk
 			atRiskStudents: [],
 			atRiskCollapsed: false,
+			telosAggregateLoading: false,
+			telosAggregateError: '',
+			telosAggregate: {
+				total: 0,
+				onboarded: 0,
+				avg_hours_per_week: 0,
+				experience_levels: {},
+				target_certs: {},
+				upcoming_exams: [],
+			},
 
 			// Heatmap
 			loadingHeatmap: false,
@@ -1207,6 +1315,11 @@ export default {
 			modeConfigLocal: {},
 			savingModeConfig: false,
 			modeConfigSaved: false,
+			adminEnabledTools: [...ALL_TOOL_IDS],
+			toolConfigLocal: {},
+			loadingToolConfig: false,
+			savingToolConfig: false,
+			toolConfigSaved: false,
 
 			// Arena sub-mode
 			arenaSubMode: null, // 'duel' | 'sprint' | 'elimination' | null
@@ -1241,12 +1354,19 @@ export default {
 				{ key: 'zeitreise', label: t('learning', 'Zeitreise') },
 			]
 		},
+		toolConfigKeys() {
+			return TOOL_CATALOG.map((tool) => ({
+				key: tool.id,
+				label: t('learning', tool.labelKey),
+			}))
+		},
 		visibleTabs() {
 			if (this.isInstructor) {
 				return [
 					{ id: 'pools', label: t('learning', 'Pools') },
 					{ id: 'members', label: t('learning', 'Members') },
 					{ id: 'progress', label: t('learning', 'Progress') },
+					{ id: 'class-profile', label: t('learning', 'Klassen-Profil') },
 					{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
 					{ id: 'league', label: t('learning', 'Liga') },
 					{ id: 'arena', label: t('learning', 'Arena') },
@@ -1372,6 +1492,9 @@ export default {
 				this.fetchProgress()
 				this.fetchAtRisk()
 			}
+			if (tab === 'class-profile' && this.isInstructor) {
+				this.fetchTelosAggregate()
+			}
 			if (tab === 'leaderboard') {
 				this.fetchLeaderboard()
 			}
@@ -1396,8 +1519,10 @@ export default {
 			if (tab === 'mode-config' && this.isInstructor) {
 				this.modeConfigLocal = Object.assign({}, this.course?.mode_config || {})
 				this.modeConfigSaved = false
+				this.loadToolSettings()
 			}
 			this.emitVirtuProfContext()
+			this.emitLearningGuide()
 		},
 		activeLearningMode() {
 			this.emitVirtuProfContext()
@@ -1448,6 +1573,68 @@ export default {
 					courseTitle: this.course?.title || '',
 					poolName: this.selectedLearningPool?.pool_name || '',
 				})
+			},
+			emitLearningGuide() {
+				if (this.isInstructor) {
+					return
+				}
+				const payload = this.learningGuidePayload(this.currentTab)
+				if (payload) {
+					this.$root.$emit('virtuprof:guide', payload)
+				}
+			},
+			learningGuidePayload(tabId) {
+				const guides = {
+					training: {
+						key: 'mode:course-training',
+						title: t('learning', 'Training'),
+						text: t('learning', 'Training gives immediate feedback after every answer. It is the best mode for active practice when you still want explanations and quick correction.'),
+						shortText: t('learning', 'Training is the direct-feedback mode for quick practice.'),
+					},
+					leitner: {
+						key: 'mode:course-leitner',
+						title: t('learning', 'Leitner'),
+						text: t('learning', 'Leitner focuses on spaced repetition. Hard cards return faster, mastered cards disappear for longer, and that makes it your main long-term retention mode.'),
+						shortText: t('learning', 'Leitner repeats weak cards more often and mastered cards less often.'),
+					},
+					exam: {
+						key: 'mode:course-exam',
+						title: t('learning', 'Exam'),
+						text: t('learning', 'Exam mode hides feedback until the end so you can simulate a real test run. Use it when you want pressure, pacing and a cleaner score signal.'),
+						shortText: t('learning', 'Exam mode saves feedback until the end of the run.'),
+					},
+					leaderboard: {
+						key: 'mode:course-leaderboard',
+						title: t('learning', 'Leaderboard'),
+						text: t('learning', 'The leaderboard compares course activity and mastery. It is useful for spotting momentum, not just raw ranking, especially when active-only filtering is enabled.'),
+						shortText: t('learning', 'The leaderboard compares XP, mastery and recent activity inside the course.'),
+					},
+					league: {
+						key: 'mode:course-league',
+						title: t('learning', 'Liga'),
+						text: t('learning', 'Liga tracks longer-running competitive progress across the course. It is less about one session and more about sustained learning performance over time.'),
+						shortText: t('learning', 'Liga highlights sustained course progress over time.'),
+					},
+					arena: {
+						key: 'mode:course-arena',
+						title: t('learning', 'Arena'),
+						text: t('learning', 'Arena is for competitive formats like duel, sprint and elimination. Use it when you want speed, pressure and direct comparison with other learners.'),
+						shortText: t('learning', 'Arena bundles the competitive learning modes.'),
+					},
+					abenteuer: {
+						key: 'mode:course-abenteuer',
+						title: t('learning', 'Abenteuer'),
+						text: t('learning', 'Adventure mode wraps learning in narrative progression. It is useful when you want more atmosphere and a slower, guided rhythm than raw quiz mode.'),
+						shortText: t('learning', 'Adventure mode adds narrative progression around the questions.'),
+					},
+					'my-progress': {
+						key: 'mode:course-my-progress',
+						title: t('learning', 'My Progress'),
+						text: t('learning', 'This area summarizes your own learning state in the course. Use it to see where mastery is building and where gaps still remain.'),
+						shortText: t('learning', 'My Progress shows your current state across the course.'),
+					},
+				}
+				return guides[tabId] || null
 			},
 			selectTab(tabId) {
 				this.currentTab = tabId
@@ -2047,6 +2234,36 @@ export default {
 			}
 		},
 
+		async fetchTelosAggregate() {
+			this.telosAggregateLoading = true
+			this.telosAggregateError = ''
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/telos', { courseId: this.courseId })
+				const response = await axios.get(url)
+				this.telosAggregate = {
+					total: Number(response.data?.total || 0),
+					onboarded: Number(response.data?.onboarded || 0),
+					avg_hours_per_week: Number(response.data?.avg_hours_per_week || 0),
+					experience_levels: response.data?.experience_levels || {},
+					target_certs: response.data?.target_certs || {},
+					upcoming_exams: Array.isArray(response.data?.upcoming_exams) ? response.data.upcoming_exams : [],
+				}
+			} catch (err) {
+				console.error('Failed to fetch class profile:', err)
+				this.telosAggregateError = t('learning', 'Failed to load class profile.')
+			} finally {
+				this.telosAggregateLoading = false
+			}
+		},
+		sortedDistributionEntries(source) {
+			if (!source || typeof source !== 'object') {
+				return []
+			}
+			return Object.entries(source)
+				.map(([key, value]) => ({ key, value: Number(value || 0) }))
+				.sort((left, right) => right.value - left.value || left.key.localeCompare(right.key))
+		},
+
 		async fetchCurriculumScope() {
 			this.loadingCurriculum = true
 			try {
@@ -2272,6 +2489,26 @@ export default {
 			this.$set(this.modeConfigLocal, key, value)
 		},
 
+		normalizeToolSelection(enabledTools = null, adminEnabledTools = this.adminEnabledTools) {
+			const adminSource = Array.isArray(adminEnabledTools) ? adminEnabledTools : ALL_TOOL_IDS
+			const effectiveTools = Array.isArray(enabledTools) ? enabledTools : adminSource
+			return this.toolConfigKeys.reduce((acc, tool) => {
+				acc[tool.key] = adminSource.includes(tool.key) && effectiveTools.includes(tool.key)
+				return acc
+			}, {})
+		},
+
+		isAdminToolEnabled(toolId) {
+			return this.adminEnabledTools.includes(toolId)
+		},
+
+		toggleCourseTool(key, value) {
+			if (!this.isAdminToolEnabled(key)) {
+				return
+			}
+			this.$set(this.toolConfigLocal, key, value)
+		},
+
 		async saveModeConfig() {
 			this.savingModeConfig = true
 			try {
@@ -2287,6 +2524,56 @@ export default {
 				console.error('Failed to save mode config', e)
 			} finally {
 				this.savingModeConfig = false
+			}
+		},
+
+		async loadToolSettings() {
+			this.loadingToolConfig = true
+			try {
+				const [adminResponse, courseResponse] = await Promise.all([
+					axios.get(generateUrl('/apps/learning/api/settings/tools')),
+					axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/tools`)),
+				])
+				this.adminEnabledTools = ALL_TOOL_IDS.filter((toolId) =>
+					(adminResponse.data?.enabled_tools || ALL_TOOL_IDS).includes(toolId)
+				)
+				const enabledTools = courseResponse.data?.enabled_tools ?? null
+				this.toolConfigLocal = this.normalizeToolSelection(enabledTools, this.adminEnabledTools)
+				if (this.course) {
+					this.course.enabled_tools = enabledTools
+				}
+				this.toolConfigSaved = false
+			} catch (e) {
+				this.adminEnabledTools = [...ALL_TOOL_IDS]
+				this.toolConfigLocal = this.normalizeToolSelection(this.course?.enabled_tools ?? null, this.adminEnabledTools)
+			} finally {
+				this.loadingToolConfig = false
+			}
+		},
+
+		async saveToolConfig() {
+			this.savingToolConfig = true
+			try {
+				const selectedTools = this.toolConfigKeys
+					.map((tool) => tool.key)
+					.filter((toolId) => this.isAdminToolEnabled(toolId) && this.toolConfigLocal[toolId] !== false)
+				const normalizedAdminTools = ALL_TOOL_IDS.filter((toolId) => this.adminEnabledTools.includes(toolId))
+				const payloadEnabledTools = JSON.stringify(selectedTools) === JSON.stringify(normalizedAdminTools)
+					? null
+					: selectedTools
+				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/tools`), {
+					enabledTools: payloadEnabledTools,
+				})
+				if (this.course) {
+					this.course.enabled_tools = res.data?.enabled_tools ?? payloadEnabledTools
+				}
+				this.toolConfigLocal = this.normalizeToolSelection(this.course?.enabled_tools ?? null, this.adminEnabledTools)
+				this.toolConfigSaved = true
+				setTimeout(() => { this.toolConfigSaved = false }, 3000)
+			} catch (e) {
+				console.error('Failed to save tool config', e)
+			} finally {
+				this.savingToolConfig = false
 			}
 		},
 	},
@@ -3344,6 +3631,20 @@ td.mastery-low {
 .ticket-reply-cd { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
 .ticket-answer-cd { margin-top: 8px; padding: 8px; background: var(--color-background-dark); border-radius: 4px; font-size: 0.9em; }
 
+/* Class profile */
+.class-profile-note { margin-bottom: 16px; }
+.class-profile-body { display: grid; gap: 16px; }
+.class-profile-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.class-profile-card,
+.class-profile-panel { border: 1px solid var(--color-border); border-radius: 10px; background: var(--color-main-background); padding: 14px; }
+.class-profile-label { display: block; color: var(--color-text-maxcontrast); font-size: 0.85em; margin-bottom: 6px; }
+.class-profile-value { font-size: 1.6em; line-height: 1.1; }
+.class-profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.class-profile-panel h5 { margin: 0 0 10px; font-size: 1em; }
+.class-profile-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.class-profile-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.class-profile-empty { margin: 0; color: var(--color-text-maxcontrast); font-size: 0.9em; }
+
 /* AdminSettings ticket filter note */
 .ticket-filter-note { margin-bottom: 8px; }
 
@@ -3351,9 +3652,12 @@ td.mastery-low {
 .mode-config-section { padding: 16px 0; }
 .mode-config-hint { color: var(--color-text-maxcontrast); margin-bottom: 16px; font-size: 0.9em; }
 .mode-toggles { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-.mode-toggle-row { display: flex; align-items: center; }
+.mode-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .mode-toggle-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1em; }
 .mode-toggle-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 .mode-toggle-label input[type="checkbox"]:disabled { opacity: 0.5; cursor: not-allowed; }
 .mode-config-saved { margin-top: 12px; }
+.mode-config-note { color: var(--color-text-maxcontrast); font-size: 0.85em; }
+.tool-config-section { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--color-border); }
+.tool-config-section h3 { margin: 0 0 8px; }
 </style>
