@@ -1,0 +1,4852 @@
+[
+  {
+    "text": "Was ist das Hauptziel einer 'Business Impact Analysis' (BIA)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die Auswahl einer neuen Firewall",
+        "is_correct": false
+      },
+      {
+        "text": "Die Identifizierung kritischer Geschäftsprozesse und der Auswirkungen ihres Ausfalls",
+        "is_correct": true
+      },
+      {
+        "text": "Das Testen von Backup-Bändern",
+        "is_correct": false
+      },
+      {
+        "text": "Die Überprüfung von Mitarbeiterhintergründen",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welche Metrik definiert die maximal tolerierbare Zeitspanne, in der ein Geschäftsprozess nach einem Ausfall wiederhergestellt sein muss?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RPO (Recovery Point Objective)",
+        "is_correct": false
+      },
+      {
+        "text": "RTO (Recovery Time Objective)",
+        "is_correct": true
+      },
+      {
+        "text": "MTBF (Mean Time Between Failures)",
+        "is_correct": false
+      },
+      {
+        "text": "MTTR (Mean Time to Repair)",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was beschreibt das 'Recovery Point Objective' (RPO)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die Zeit, die für die Reparatur eines Servers benötigt wird",
+        "is_correct": false
+      },
+      {
+        "text": "Der maximal akzeptable Datenverlust, gemessen in Zeit (z.B. seit dem letzten Backup)",
+        "is_correct": true
+      },
+      {
+        "text": "Die Kosten für die Wiederherstellung",
+        "is_correct": false
+      },
+      {
+        "text": "Die Anzahl der betroffenen Benutzer",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welche EU-Verordnung regelt den Schutz personenbezogener Daten und den freien Datenverkehr?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "HIPAA",
+        "is_correct": false
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": true
+      },
+      {
+        "text": "PCI DSS",
+        "is_correct": false
+      },
+      {
+        "text": "Sarbanes-Oxley Act",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Zweck des NIST Cybersecurity Frameworks?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Es ist ein Gesetz, das bei Nichtbeachtung zu Gefängnisstrafen führt",
+        "is_correct": false
+      },
+      {
+        "text": "Es bietet einen freiwilligen Rahmen aus Standards und Best Practices zur Steigerung der Cybersicherheit kritischer Infrastrukturen",
+        "is_correct": true
+      },
+      {
+        "text": "Es dient ausschließlich der Zertifizierung von Cloud-Anbietern",
+        "is_correct": false
+      },
+      {
+        "text": "Es ist ein Tool zur automatischen Abwehr von Malware",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welche Art von Sicherheitskontrolle ist eine Firewall?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Administrative Kontrolle",
+        "is_correct": false
+      },
+      {
+        "text": "Physische Kontrolle",
+        "is_correct": false
+      },
+      {
+        "text": "Technische (logische) Kontrolle",
+        "is_correct": true
+      },
+      {
+        "text": "Kompensierende Kontrolle",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Ein Unternehmen führt ein Audit durch, um die Einhaltung interner Richtlinien zu prüfen. Wie nennt man diese Art von Audit?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Externes Audit",
+        "is_correct": false
+      },
+      {
+        "text": "Internes Audit",
+        "is_correct": true
+      },
+      {
+        "text": "Zertifizierungsaudit",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Audit",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Unterschied zwischen qualitativer und quantitativer Risikobewertung?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Es gibt keinen praktischen Unterschied",
+        "is_correct": false
+      },
+      {
+        "text": "Qualitativ nutzt numerische Werte und Geldbeträge; quantitativ nutzt subjektive Skalen (z.B. niedrig, mittel, hoch)",
+        "is_correct": false
+      },
+      {
+        "text": "Quantitativ nutzt numerische Daten und Berechnungen (z.B. SLE, ALE); qualitativ nutzt Expertenmeinungen und Kategorien",
+        "is_correct": true
+      },
+      {
+        "text": "Qualitative Bewertung ist immer genauer als quantitative",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was bedeutet 'Risk Transference' (Risikoübertragung)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Risiko vollständig ignorieren",
+        "is_correct": false
+      },
+      {
+        "text": "Das Risiko durch technische Maßnahmen minimieren",
+        "is_correct": false
+      },
+      {
+        "text": "Die finanziellen Auswirkungen eines Risikos auf einen Dritten (z.B. Versicherung) verlagern",
+        "is_correct": true
+      },
+      {
+        "text": "Den Prozess einstellen, der das Risiko verursacht",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Risk Acceptance' (Risikoakzeptanz)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die bewusste Entscheidung, ein Restrisiko ohne weitere Gegenmaßnahmen zu tragen, da die Kosten für die Reduzierung den Nutzen übersteigen",
+        "is_correct": true
+      },
+      {
+        "text": "Das Risiko an eine Versicherung übertragen",
+        "is_correct": false
+      },
+      {
+        "text": "Das Risiko durch eine Firewall eliminieren",
+        "is_correct": false
+      },
+      {
+        "text": "Leugnen, dass ein Risiko existiert",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welches Dokument definiert die erlaubten und verbotenen Aktivitäten für Benutzer in einem Unternehmensnetzwerk?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Service Level Agreement (SLA)",
+        "is_correct": false
+      },
+      {
+        "text": "Acceptable Use Policy (AUP)",
+        "is_correct": true
+      },
+      {
+        "text": "Non-Disclosure Agreement (NDA)",
+        "is_correct": false
+      },
+      {
+        "text": "Business Continuity Plan (BCP)",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Wofür steht die Abkürzung HIPAA?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "High Intensity Private Access Agreement",
+        "is_correct": false
+      },
+      {
+        "text": "Health Insurance Portability and Accountability Act",
+        "is_correct": true
+      },
+      {
+        "text": "Hardware Interface for Personal Authentication Applications",
+        "is_correct": false
+      },
+      {
+        "text": "Host Intrusion Prevention and Analysis Association",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Zweck eines 'Exit Interview' aus Sicherheitssicht?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Um dem Mitarbeiter alles Gute zu wünschen",
+        "is_correct": false
+      },
+      {
+        "text": "Um den Mitarbeiter an seine andauernden Geheimhaltungspflichten zu erinnern und die Rückgabe von Firmeneigentum sicherzustellen",
+        "is_correct": true
+      },
+      {
+        "text": "Um ein neues Jobangebot zu machen",
+        "is_correct": false
+      },
+      {
+        "text": "Um das Gehalt für den letzten Monat zu verhandeln",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welcher Standard konzentriert sich auf die Sicherheit von Kreditkartendaten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ISO 27001",
+        "is_correct": false
+      },
+      {
+        "text": "PCI DSS",
+        "is_correct": true
+      },
+      {
+        "text": "SOC 2",
+        "is_correct": false
+      },
+      {
+        "text": "COBIT",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist eine 'Vulnerability Assessment' im Vergleich zu einem 'Penetration Test'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Ein Penetration Test ist nur eine Liste von Schwachstellen",
+        "is_correct": false
+      },
+      {
+        "text": "Vulnerability Assessment identifiziert Schwachstellen; Penetration Testing versucht, diese aktiv auszunutzen",
+        "is_correct": true
+      },
+      {
+        "text": "Vulnerability Assessment ist immer manuell",
+        "is_correct": false
+      },
+      {
+        "text": "Es gibt keinen Unterschied",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist das Ziel von 'Change Management'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Sicherstellen, dass alle Änderungen dokumentiert, getestet und genehmigt sind, um ungeplante Unterbrechungen zu vermeiden",
+        "is_correct": true
+      },
+      {
+        "text": "Die IT-Abteilung komplett umzustrukturieren",
+        "is_correct": false
+      },
+      {
+        "text": "Jede Woche neue Hardware zu kaufen",
+        "is_correct": false
+      },
+      {
+        "text": "Benutzerpasswörter täglich zu ändern",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist eine 'Kompensierende Kontrolle'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eine Kontrolle, die eine primäre Sicherheitsmaßnahme ersetzt, die nicht umsetzbar ist",
+        "is_correct": true
+      },
+      {
+        "text": "Eine Geldstrafe für Mitarbeiter",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Backup-System",
+        "is_correct": false
+      },
+      {
+        "text": "Eine physische Wache vor dem Tor",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Due Diligence'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das tatsächliche Umsetzen von Sicherheitsmaßnahmen",
+        "is_correct": false
+      },
+      {
+        "text": "Die rechtliche und geschäftliche Sorgfaltspflicht, um sicherzustellen, dass Sicherheitsanforderungen erfüllt werden",
+        "is_correct": true
+      },
+      {
+        "text": "Das Bezahlen von Rechnungen",
+        "is_correct": false
+      },
+      {
+        "text": "Die Durchführung eines Portscans",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was beschreibt 'Due Care'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die Erstellung einer Richtlinie",
+        "is_correct": false
+      },
+      {
+        "text": "Das Ergreifen vernünftiger Maßnahmen, um Schäden zu verhindern (Handeln nach Best Practices)",
+        "is_correct": true
+      },
+      {
+        "text": "Die Versicherung gegen Diebstahl",
+        "is_correct": false
+      },
+      {
+        "text": "Die Kündigung eines Vertrags",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Hauptfokus von ISO 27001?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Qualitätsmanagement in der Produktion",
+        "is_correct": false
+      },
+      {
+        "text": "Anforderungen für die Einrichtung, Umsetzung, Aufrechterhaltung und fortlaufende Verbesserung eines Informationssicherheits-Managementsystems (ISMS)",
+        "is_correct": true
+      },
+      {
+        "text": "Umweltschutzstandards",
+        "is_correct": false
+      },
+      {
+        "text": "Programmierung in C++",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welche Rolle ist letztendlich für den Schutz der Daten in einer Organisation verantwortlich?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Der Systemadministrator",
+        "is_correct": false
+      },
+      {
+        "text": "Der Data Owner (Dateneigentümer)",
+        "is_correct": true
+      },
+      {
+        "text": "Der Praktikant",
+        "is_correct": false
+      },
+      {
+        "text": "Der externe Auditor",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Zweck eines 'Memorandum of Understanding' (MOU)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Ein rechtsverbindlicher Vertrag mit Strafandrohung",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Dokument, das eine Absichtserklärung und die Zusammenarbeit zwischen zwei Parteien beschreibt, oft ohne rechtliche Bindung",
+        "is_correct": true
+      },
+      {
+        "text": "Eine Liste von Passwörtern",
+        "is_correct": false
+      },
+      {
+        "text": "Ein technisches Handbuch für Router",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Asset Management'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die Verwaltung von Aktien",
+        "is_correct": false
+      },
+      {
+        "text": "Der Prozess der Identifizierung, Inventarisierung und Verwaltung aller Hardware- und Software-Ressourcen eines Unternehmens",
+        "is_correct": true
+      },
+      {
+        "text": "Das Löschen alter E-Mails",
+        "is_correct": false
+      },
+      {
+        "text": "Die Einstellung neuer Administratoren",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Risk Mitigation' (Risikominderung)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Risiko ignorieren",
+        "is_correct": false
+      },
+      {
+        "text": "Die Implementierung von Kontrollen, um die Wahrscheinlichkeit oder Auswirkung eines Risikos zu verringern",
+        "is_correct": true
+      },
+      {
+        "text": "Das Risiko an eine Versicherung verkaufen",
+        "is_correct": false
+      },
+      {
+        "text": "Den gesamten Geschäftszweig schließen",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist das 'Single Loss Expectancy' (SLE)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die jährliche Schadenserwartung",
+        "is_correct": false
+      },
+      {
+        "text": "Der erwartete Geldverlust bei einem einzelnen Schadensereignis (Asset Value x Exposure Factor)",
+        "is_correct": true
+      },
+      {
+        "text": "Die Zeit bis zum nächsten Ausfall",
+        "is_correct": false
+      },
+      {
+        "text": "Die Kosten für eine Firewall",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist das 'Annual Loss Expectancy' (ALE)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die Kosten für eine Versicherung",
+        "is_correct": false
+      },
+      {
+        "text": "Die jährlich zu erwartenden Kosten durch ein spezifisches Risiko (SLE x ARO)",
+        "is_correct": true
+      },
+      {
+        "text": "Der Wert aller IT-Assets",
+        "is_correct": false
+      },
+      {
+        "text": "Das Gehalt des CISO",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was beschreibt die 'Annual Rate of Occurrence' (ARO)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die Kosten eines Vorfalls",
+        "is_correct": false
+      },
+      {
+        "text": "Die geschätzte Häufigkeit, mit der ein spezifisches Risiko innerhalb eines Jahres eintritt",
+        "is_correct": true
+      },
+      {
+        "text": "Die Anzahl der Mitarbeiter im SOC",
+        "is_correct": false
+      },
+      {
+        "text": "Die Bandbreite des Netzwerks",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Risk Avoidance' (Risikovermeidung)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die Einstellung einer Tätigkeit oder der Verzicht auf eine Technologie, die das Risiko verursacht",
+        "is_correct": true
+      },
+      {
+        "text": "Die Installation eines Antivirenprogramms",
+        "is_correct": false
+      },
+      {
+        "text": "Der Abschluss einer Cyber-Versicherung",
+        "is_correct": false
+      },
+      {
+        "text": "Das Ignorieren des Risikos",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist eine 'Business Continuity Plan' (BCP)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Ein technisches Dokument zum Wiederherstellen von Datenbanken",
+        "is_correct": false
+      },
+      {
+        "text": "Ein umfassender Plan, der sicherstellt, dass kritische Geschäftsprozesse während und nach einer Katastrophe fortgeführt werden können",
+        "is_correct": true
+      },
+      {
+        "text": "Ein Marketingplan für neue Produkte",
+        "is_correct": false
+      },
+      {
+        "text": "Eine Liste von Telefonnummern der Mitarbeiter",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist ein 'Disaster Recovery Plan' (DRP)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Ein Teil des BCP, der sich speziell auf die Wiederherstellung der IT-Infrastruktur und Systeme nach einem katastrophalen Ereignis konzentriert",
+        "is_correct": true
+      },
+      {
+        "text": "Ein Plan zur Vermeidung von Autounfällen",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Dokument zur Urlaubsplanung",
+        "is_correct": false
+      },
+      {
+        "text": "Die Versicherungspolice des Unternehmens",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Zweck von 'Job Rotation' aus Sicherheitsperspektive?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Damit sich die Mitarbeiter nicht langweilen",
+        "is_correct": false
+      },
+      {
+        "text": "Um Betrug aufzudecken und zu verhindern, indem niemand zu lange die alleinige Kontrolle über einen sensiblen Prozess hat",
+        "is_correct": true
+      },
+      {
+        "text": "Um Personalkosten zu sparen",
+        "is_correct": false
+      },
+      {
+        "text": "Um die Einarbeitungszeit zu verkürzen",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was bedeutet 'Separation of Duties' (Aufgabentrennung)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Dass jeder Mitarbeiter ein eigenes Büro hat",
+        "is_correct": false
+      },
+      {
+        "text": "Dass kritische Aufgaben auf mehrere Personen verteilt werden, sodass niemand eine schädliche Aktion alleine durchführen kann",
+        "is_correct": true
+      },
+      {
+        "text": "Dass IT und Marketing in verschiedenen Gebäuden sind",
+        "is_correct": false
+      },
+      {
+        "text": "Dass Teilzeitkräfte weniger Rechte haben",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist eine 'Service Level Agreement' (SLA)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Ein technisches Protokoll für E-Mails",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Vertrag zwischen einem Dienstleister und einem Kunden, der das erwartete Serviceniveau (z.B. Verfügbarkeit) festlegt",
+        "is_correct": true
+      },
+      {
+        "text": "Ein Passwort-Manager",
+        "is_correct": false
+      },
+      {
+        "text": "Eine interne Richtlinie für das Kantinenessen",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was beschreibt der Begriff 'Privacy Impact Assessment' (PIA)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Ein Test der Firewall-Performance",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Prozess zur Identifizierung und Minimierung von Datenschutzrisiken bei neuen Projekten oder Systemen",
+        "is_correct": true
+      },
+      {
+        "text": "Die Überprüfung der physischen Schlösser",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Audit der Finanzabteilung",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Data Sovereignty' (Datensouveränität)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Dass Daten immer verschlüsselt sein müssen",
+        "is_correct": false
+      },
+      {
+        "text": "Das Konzept, dass Daten den Gesetzen des Landes unterliegen, in dem sie physisch gespeichert sind",
+        "is_correct": true
+      },
+      {
+        "text": "Dass jeder Benutzer seine eigenen Daten löschen darf",
+        "is_correct": false
+      },
+      {
+        "text": "Dass Backups auf Bändern gespeichert werden",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welche Art von Kontrolle ist eine jährliche Sicherheitsunterweisung für Mitarbeiter?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Technische Kontrolle",
+        "is_correct": false
+      },
+      {
+        "text": "Administrative (organisatorische) Kontrolle",
+        "is_correct": true
+      },
+      {
+        "text": "Physische Kontrolle",
+        "is_correct": false
+      },
+      {
+        "text": "Detektive Kontrolle",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Zweck eines 'Non-Disclosure Agreement' (NDA)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Den Internetzugriff zu regeln",
+        "is_correct": false
+      },
+      {
+        "text": "Eine vertragliche Verpflichtung zur Geheimhaltung vertraulicher Informationen",
+        "is_correct": true
+      },
+      {
+        "text": "Die Arbeitszeiten festzulegen",
+        "is_correct": false
+      },
+      {
+        "text": "Software-Lizenzen zu verwalten",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was bedeutet 'Mandatory Vacations' (Zwangsurlaub) im Sicherheitskontext?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Mitarbeiter zur Erholung zu zwingen",
+        "is_correct": false
+      },
+      {
+        "text": "Eine Sicherheitsmaßnahme, um Unregelmäßigkeiten oder Betrug aufzudecken, während der Mitarbeiter abwesend ist",
+        "is_correct": true
+      },
+      {
+        "text": "Urlaubstage einzusparen",
+        "is_correct": false
+      },
+      {
+        "text": "Die Teambildung zu fördern",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welche SOC-Berichtsart (Service Organization Control) ist speziell für die Veröffentlichung und allgemeine Nutzung gedacht (Public Report)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SOC 1 Type 1",
+        "is_correct": false
+      },
+      {
+        "text": "SOC 2 Type 2",
+        "is_correct": false
+      },
+      {
+        "text": "SOC 3",
+        "is_correct": true
+      },
+      {
+        "text": "SOC 1 Type 2",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Unterschied zwischen einem SOC 2 Type 1 und einem SOC 2 Type 2 Bericht?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Type 1 ist für Finanzen, Type 2 für IT",
+        "is_correct": false
+      },
+      {
+        "text": "Type 1 prüft das Design der Kontrollen zu einem bestimmten Zeitpunkt; Type 2 prüft die operative Wirksamkeit über einen Zeitraum",
+        "is_correct": true
+      },
+      {
+        "text": "Type 2 ist immer geheim",
+        "is_correct": false
+      },
+      {
+        "text": "Es gibt keinen Unterschied",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was beschreibt 'Supply Chain Risk Management'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Nur die Auswahl des billigsten Anbieters",
+        "is_correct": false
+      },
+      {
+        "text": "Die Identifizierung und Minimierung von Risiken, die durch Drittanbieter, Zulieferer und deren Produkte/Dienstleistungen entstehen",
+        "is_correct": true
+      },
+      {
+        "text": "Das Management der internen Lagerbestände",
+        "is_correct": false
+      },
+      {
+        "text": "Die Optimierung der Lieferrouten",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist eine 'Standard Operating Procedure' (SOP)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eine allgemeine Vision des Unternehmens",
+        "is_correct": false
+      },
+      {
+        "text": "Eine detaillierte, schrittweise Anleitung zur Durchführung einer Routineaufgabe oder eines Prozesses",
+        "is_correct": true
+      },
+      {
+        "text": "Ein Gesetzestext",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Programmieralgorithmus",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Risk Appetite' (Risikoappetit)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die Menge an Risiko, die eine Organisation bereit ist einzugehen, um ihre Ziele zu erreichen",
+        "is_correct": true
+      },
+      {
+        "text": "Die Angst vor Hackern",
+        "is_correct": false
+      },
+      {
+        "text": "Die Gesamtkosten aller Versicherungen",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Hungergefühl bei Sicherheitsanalysten",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Zweck von 'Continuous Monitoring' im Rahmen von GRC?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Mitarbeiter permanent per Kamera zu beobachten",
+        "is_correct": false
+      },
+      {
+        "text": "Die laufende Überprüfung der Wirksamkeit von Sicherheitskontrollen und der Compliance-Status in Echtzeit oder fast Echtzeit",
+        "is_correct": true
+      },
+      {
+        "text": "Nur einmal im Jahr ein Audit durchzuführen",
+        "is_correct": false
+      },
+      {
+        "text": "Backups stündlich zu machen",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welcher Begriff beschreibt die Einhaltung von Gesetzen, Vorschriften und Richtlinien?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Governance",
+        "is_correct": false
+      },
+      {
+        "text": "Compliance",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Management",
+        "is_correct": false
+      },
+      {
+        "text": "Resilience",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist das Hauptziel von 'Information Governance'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Löschen aller Daten",
+        "is_correct": false
+      },
+      {
+        "text": "Die strategische Verwaltung von Informationen über ihren gesamten Lebenszyklus hinweg unter Berücksichtigung von Sicherheit und Compliance",
+        "is_correct": true
+      },
+      {
+        "text": "Das Kaufen von neuen Festplatten",
+        "is_correct": false
+      },
+      {
+        "text": "Das Blockieren von Social Media",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Data Classification'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Sortieren von Dateien nach Alphabet",
+        "is_correct": false
+      },
+      {
+        "text": "Die Kategorisierung von Daten basierend auf ihrer Sensibilität und ihrem Wert für die Organisation (z.B. öffentlich, intern, vertraulich)",
+        "is_correct": true
+      },
+      {
+        "text": "Das Komprimieren von Datenbanken",
+        "is_correct": false
+      },
+      {
+        "text": "Das Zählen aller E-Mails",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist eine 'Gap Analysis'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die Untersuchung von Sicherheitslücken in einer Firewall",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Vergleich zwischen dem aktuellen Sicherheitsstatus und dem gewünschten Zielzustand oder einem Standard",
+        "is_correct": true
+      },
+      {
+        "text": "Eine Analyse des Netzwerkverkehrs",
+        "is_correct": false
+      },
+      {
+        "text": "Das Suchen nach Fehlern im Quellcode",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was beschreibt 'Inherent Risk' (inhärentes Risiko)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Risiko, das nach Implementierung aller Kontrollen übrig bleibt",
+        "is_correct": false
+      },
+      {
+        "text": "Das natürliche Risikoniveau ohne jegliche Sicherheitsmaßnahmen oder Kontrollen",
+        "is_correct": true
+      },
+      {
+        "text": "Ein Risiko, das nur in der Cloud existiert",
+        "is_correct": false
+      },
+      {
+        "text": "Die Kosten einer Versicherung",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Residual Risk' (Restrisiko)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Risiko vor Anwendung von Kontrollen",
+        "is_correct": false
+      },
+      {
+        "text": "Das Risiko, das verbleibt, nachdem Sicherheitskontrollen implementiert wurden",
+        "is_correct": true
+      },
+      {
+        "text": "Das Risiko, das durch eine Versicherung gedeckt ist",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Risiko, das ignoriert wurde",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Die Organisation möchte identifizierte Risiken, Eigentümer, Eintrittswahrscheinlichkeit und Gegenmaßnahmen zentral zu dokumentieren. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Ein Risk Register sammelt und pflegt die wesentlichen Informationen zu identifizierten Risiken und deren Behandlung.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um identifizierte Risiken, Eigentümer, Eintrittswahrscheinlichkeit und Gegenmaßnahmen zentral zu dokumentieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Inherent Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": true
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Risk Register sammelt und pflegt die wesentlichen Informationen zu identifizierten Risiken und deren Behandlung.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um identifizierte Risiken, Eigentümer, Eintrittswahrscheinlichkeit und Gegenmaßnahmen zentral zu dokumentieren. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": true
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Risk Register sammelt und pflegt die wesentlichen Informationen zu identifizierten Risiken und deren Behandlung.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man identifizierte Risiken, Eigentümer, Eintrittswahrscheinlichkeit und Gegenmaßnahmen zentral zu dokumentieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Ein Risk Register sammelt und pflegt die wesentlichen Informationen zu identifizierten Risiken und deren Behandlung.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Das Management plant identifizierte Risiken, Eigentümer, Eintrittswahrscheinlichkeit und Gegenmaßnahmen zentral zu dokumentieren. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": true
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Risk Register sammelt und pflegt die wesentlichen Informationen zu identifizierten Risiken und deren Behandlung.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Die Organisation möchte das generelle Maß an Risiko festzulegen, das die Unternehmensleitung bewusst akzeptieren will. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risk Appetite beschreibt die grundsätzliche Risikobereitschaft einer Organisation auf strategischer Ebene.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um das generelle Maß an Risiko festzulegen, das die Unternehmensleitung bewusst akzeptieren will?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Risk Appetite beschreibt die grundsätzliche Risikobereitschaft einer Organisation auf strategischer Ebene.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um das generelle Maß an Risiko festzulegen, das die Unternehmensleitung bewusst akzeptieren will. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Risk Appetite beschreibt die grundsätzliche Risikobereitschaft einer Organisation auf strategischer Ebene.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man das generelle Maß an Risiko festzulegen, das die Unternehmensleitung bewusst akzeptieren will?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risk Appetite beschreibt die grundsätzliche Risikobereitschaft einer Organisation auf strategischer Ebene.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Das Management plant das generelle Maß an Risiko festzulegen, das die Unternehmensleitung bewusst akzeptieren will. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Appetite",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      },
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risk Appetite beschreibt die grundsätzliche Risikobereitschaft einer Organisation auf strategischer Ebene.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Die Organisation möchte Grenzwerte festzulegen, ab wann ein einzelner Risikowert nicht mehr akzeptabel ist. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": true
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risk Tolerance konkretisiert, wie weit einzelne Risiken innerhalb der allgemeinen Risikobereitschaft gehen dürfen.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um Grenzwerte festzulegen, ab wann ein einzelner Risikowert nicht mehr akzeptabel ist?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ARO",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": true
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risk Tolerance konkretisiert, wie weit einzelne Risiken innerhalb der allgemeinen Risikobereitschaft gehen dürfen.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um Grenzwerte festzulegen, ab wann ein einzelner Risikowert nicht mehr akzeptabel ist. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Register",
+        "is_correct": false
+      },
+      {
+        "text": "Inherent Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risk Tolerance konkretisiert, wie weit einzelne Risiken innerhalb der allgemeinen Risikobereitschaft gehen dürfen.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man Grenzwerte festzulegen, ab wann ein einzelner Risikowert nicht mehr akzeptabel ist?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Tolerance",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risk Tolerance konkretisiert, wie weit einzelne Risiken innerhalb der allgemeinen Risikobereitschaft gehen dürfen.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Das Management plant Grenzwerte festzulegen, ab wann ein einzelner Risikowert nicht mehr akzeptabel ist. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Tolerance",
+        "is_correct": true
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "ALE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risk Tolerance konkretisiert, wie weit einzelne Risiken innerhalb der allgemeinen Risikobereitschaft gehen dürfen.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Die Organisation möchte das Ausgangsrisiko vor dem Einsatz zusätzlicher Kontrollen zu bewerten. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "Inherent Risk",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Inherent Risk ist das ursprüngliche Risiko ohne Berücksichtigung bereits geplanter oder eingesetzter Kontrollen.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um das Ausgangsrisiko vor dem Einsatz zusätzlicher Kontrollen zu bewerten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "Inherent Risk",
+        "is_correct": true
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Inherent Risk ist das ursprüngliche Risiko ohne Berücksichtigung bereits geplanter oder eingesetzter Kontrollen.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um das Ausgangsrisiko vor dem Einsatz zusätzlicher Kontrollen zu bewerten. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ARO",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": false
+      },
+      {
+        "text": "Inherent Risk",
+        "is_correct": true
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Inherent Risk ist das ursprüngliche Risiko ohne Berücksichtigung bereits geplanter oder eingesetzter Kontrollen.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man das Ausgangsrisiko vor dem Einsatz zusätzlicher Kontrollen zu bewerten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Inherent Risk",
+        "is_correct": true
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Inherent Risk ist das ursprüngliche Risiko ohne Berücksichtigung bereits geplanter oder eingesetzter Kontrollen.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Das Management plant das Ausgangsrisiko vor dem Einsatz zusätzlicher Kontrollen zu bewerten. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      },
+      {
+        "text": "Inherent Risk",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Inherent Risk ist das ursprüngliche Risiko ohne Berücksichtigung bereits geplanter oder eingesetzter Kontrollen.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Die Organisation möchte das verbleibende Risiko nach der Umsetzung von Kontrollen zu bestimmen. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Residual Risk",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Residual Risk ist das Risiko, das nach Anwendung von Schutzmaßnahmen bestehen bleibt.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um das verbleibende Risiko nach der Umsetzung von Kontrollen zu bestimmen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Residual Risk ist das Risiko, das nach Anwendung von Schutzmaßnahmen bestehen bleibt.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um das verbleibende Risiko nach der Umsetzung von Kontrollen zu bestimmen. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Register",
+        "is_correct": false
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": true
+      },
+      {
+        "text": "Inherent Risk",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Residual Risk ist das Risiko, das nach Anwendung von Schutzmaßnahmen bestehen bleibt.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man das verbleibende Risiko nach der Umsetzung von Kontrollen zu bestimmen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Register",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Residual Risk ist das Risiko, das nach Anwendung von Schutzmaßnahmen bestehen bleibt.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Das Management plant das verbleibende Risiko nach der Umsetzung von Kontrollen zu bestimmen. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": false
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": true
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Residual Risk ist das Risiko, das nach Anwendung von Schutzmaßnahmen bestehen bleibt.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Die Organisation möchte den finanziellen Schaden eines einzelnen erfolgreichen Vorfalls zu beziffern. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SLE",
+        "is_correct": true
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      },
+      {
+        "text": "ALE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Single Loss Expectancy beschreibt den erwarteten Verlust aus einem einzelnen Schadensereignis.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um den finanziellen Schaden eines einzelnen erfolgreichen Vorfalls zu beziffern?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SLE",
+        "is_correct": true
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Single Loss Expectancy beschreibt den erwarteten Verlust aus einem einzelnen Schadensereignis.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um den finanziellen Schaden eines einzelnen erfolgreichen Vorfalls zu beziffern. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": true
+      },
+      {
+        "text": "ALE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Single Loss Expectancy beschreibt den erwarteten Verlust aus einem einzelnen Schadensereignis.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man den finanziellen Schaden eines einzelnen erfolgreichen Vorfalls zu beziffern?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": true
+      },
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Single Loss Expectancy beschreibt den erwarteten Verlust aus einem einzelnen Schadensereignis.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Das Management plant den finanziellen Schaden eines einzelnen erfolgreichen Vorfalls zu beziffern. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SLE",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Single Loss Expectancy beschreibt den erwarteten Verlust aus einem einzelnen Schadensereignis.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Die Organisation möchte die erwartete Häufigkeit eines Ereignisses pro Jahr zu schätzen. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Inherent Risk",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": true
+      },
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Annualized Rate of Occurrence modelliert, wie oft ein bestimmter Vorfall statistisch pro Jahr eintritt.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um die erwartete Häufigkeit eines Ereignisses pro Jahr zu schätzen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Annualized Rate of Occurrence modelliert, wie oft ein bestimmter Vorfall statistisch pro Jahr eintritt.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um die erwartete Häufigkeit eines Ereignisses pro Jahr zu schätzen. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": true
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      },
+      {
+        "text": "Inherent Risk",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Annualized Rate of Occurrence modelliert, wie oft ein bestimmter Vorfall statistisch pro Jahr eintritt.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man die erwartete Häufigkeit eines Ereignisses pro Jahr zu schätzen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ARO",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Annualized Rate of Occurrence modelliert, wie oft ein bestimmter Vorfall statistisch pro Jahr eintritt.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Das Management plant die erwartete Häufigkeit eines Ereignisses pro Jahr zu schätzen. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": true
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Annualized Rate of Occurrence modelliert, wie oft ein bestimmter Vorfall statistisch pro Jahr eintritt.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Die Organisation möchte den erwarteten jährlichen Verlust auf Basis von SLE und ARO zu berechnen. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      },
+      {
+        "text": "ALE",
+        "is_correct": true
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Annualized Loss Expectancy verbindet Schadenshöhe und Eintrittshäufigkeit zu einer Jahresverlustschätzung.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um den erwarteten jährlichen Verlust auf Basis von SLE und ARO zu berechnen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "ALE",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Annualized Loss Expectancy verbindet Schadenshöhe und Eintrittshäufigkeit zu einer Jahresverlustschätzung.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um den erwarteten jährlichen Verlust auf Basis von SLE und ARO zu berechnen. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": false
+      },
+      {
+        "text": "ALE",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Annualized Loss Expectancy verbindet Schadenshöhe und Eintrittshäufigkeit zu einer Jahresverlustschätzung.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man den erwarteten jährlichen Verlust auf Basis von SLE und ARO zu berechnen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ARO",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "ALE",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Annualized Loss Expectancy verbindet Schadenshöhe und Eintrittshäufigkeit zu einer Jahresverlustschätzung.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Das Management plant den erwarteten jährlichen Verlust auf Basis von SLE und ARO zu berechnen. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "ALE",
+        "is_correct": true
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Annualized Loss Expectancy verbindet Schadenshöhe und Eintrittshäufigkeit zu einer Jahresverlustschätzung.",
+    "difficulty": "medium",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Die Organisation möchte finanzielle Folgen eines Risikos vertraglich an Dritte wie Versicherer zu verlagern. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": true
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Beim Risikotransfer werden Kostenfolgen oder Teile des Risikos an einen Dritten abgegeben.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um finanzielle Folgen eines Risikos vertraglich an Dritte wie Versicherer zu verlagern?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": true
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Beim Risikotransfer werden Kostenfolgen oder Teile des Risikos an einen Dritten abgegeben.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um finanzielle Folgen eines Risikos vertraglich an Dritte wie Versicherer zu verlagern. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": true
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Beim Risikotransfer werden Kostenfolgen oder Teile des Risikos an einen Dritten abgegeben.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man finanzielle Folgen eines Risikos vertraglich an Dritte wie Versicherer zu verlagern?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Inherent Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Beim Risikotransfer werden Kostenfolgen oder Teile des Risikos an einen Dritten abgegeben.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Das Management plant finanzielle Folgen eines Risikos vertraglich an Dritte wie Versicherer zu verlagern. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": true
+      },
+      {
+        "text": "Risk Register",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Beim Risikotransfer werden Kostenfolgen oder Teile des Risikos an einen Dritten abgegeben.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Die Organisation möchte die Eintrittswahrscheinlichkeit oder Auswirkung eines Risikos durch zusätzliche Kontrollen zu reduzieren. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Appetite",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": true
+      },
+      {
+        "text": "ALE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risikominderung senkt Wahrscheinlichkeit oder Auswirkung eines Risikos durch Maßnahmen und Kontrollen.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um die Eintrittswahrscheinlichkeit oder Auswirkung eines Risikos durch zusätzliche Kontrollen zu reduzieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "ARO",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": true
+      },
+      {
+        "text": "Inherent Risk",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risikominderung senkt Wahrscheinlichkeit oder Auswirkung eines Risikos durch Maßnahmen und Kontrollen.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um die Eintrittswahrscheinlichkeit oder Auswirkung eines Risikos durch zusätzliche Kontrollen zu reduzieren. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Register",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": true
+      },
+      {
+        "text": "Residual Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risikominderung senkt Wahrscheinlichkeit oder Auswirkung eines Risikos durch Maßnahmen und Kontrollen.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man die Eintrittswahrscheinlichkeit oder Auswirkung eines Risikos durch zusätzliche Kontrollen zu reduzieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Risk Mitigation",
+        "is_correct": true
+      },
+      {
+        "text": "Inherent Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Transference",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Tolerance",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risikominderung senkt Wahrscheinlichkeit oder Auswirkung eines Risikos durch Maßnahmen und Kontrollen.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Das Management plant die Eintrittswahrscheinlichkeit oder Auswirkung eines Risikos durch zusätzliche Kontrollen zu reduzieren. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Inherent Risk",
+        "is_correct": false
+      },
+      {
+        "text": "Risk Mitigation",
+        "is_correct": true
+      },
+      {
+        "text": "ALE",
+        "is_correct": false
+      },
+      {
+        "text": "SLE",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Risikominderung senkt Wahrscheinlichkeit oder Auswirkung eines Risikos durch Maßnahmen und Kontrollen.",
+    "difficulty": "easy",
+    "exam_objective": "5.1 Explain governance, risk, and compliance concepts"
+  },
+  {
+    "text": "Die Organisation möchte kritische Geschäftsprozesse und die Folgen ihres Ausfalls systematisch zu priorisieren. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      },
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      },
+      {
+        "text": "BIA",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Die Business Impact Analysis bestimmt geschäftskritische Prozesse und bewertet die Auswirkungen ihrer Unterbrechung.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um kritische Geschäftsprozesse und die Folgen ihres Ausfalls systematisch zu priorisieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      },
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "BIA",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Die Business Impact Analysis bestimmt geschäftskritische Prozesse und bewertet die Auswirkungen ihrer Unterbrechung.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um kritische Geschäftsprozesse und die Folgen ihres Ausfalls systematisch zu priorisieren. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "MTD",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "BIA",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Die Business Impact Analysis bestimmt geschäftskritische Prozesse und bewertet die Auswirkungen ihrer Unterbrechung.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man kritische Geschäftsprozesse und die Folgen ihres Ausfalls systematisch zu priorisieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      },
+      {
+        "text": "BIA",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Die Business Impact Analysis bestimmt geschäftskritische Prozesse und bewertet die Auswirkungen ihrer Unterbrechung.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Das Management plant kritische Geschäftsprozesse und die Folgen ihres Ausfalls systematisch zu priorisieren. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "BIA",
+        "is_correct": true
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Die Business Impact Analysis bestimmt geschäftskritische Prozesse und bewertet die Auswirkungen ihrer Unterbrechung.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Die Organisation möchte die maximal akzeptable Wiederherstellungsdauer eines Dienstes festzulegen. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "RTO",
+        "is_correct": true
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery Time Objective definiert, wie schnell ein Prozess oder System wiederhergestellt sein muss.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um die maximal akzeptable Wiederherstellungsdauer eines Dienstes festzulegen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      },
+      {
+        "text": "RTO",
+        "is_correct": true
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery Time Objective definiert, wie schnell ein Prozess oder System wiederhergestellt sein muss.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um die maximal akzeptable Wiederherstellungsdauer eines Dienstes festzulegen. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "RTO",
+        "is_correct": true
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      },
+      {
+        "text": "RPO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery Time Objective definiert, wie schnell ein Prozess oder System wiederhergestellt sein muss.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man die maximal akzeptable Wiederherstellungsdauer eines Dienstes festzulegen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "RTO",
+        "is_correct": true
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery Time Objective definiert, wie schnell ein Prozess oder System wiederhergestellt sein muss.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Das Management plant die maximal akzeptable Wiederherstellungsdauer eines Dienstes festzulegen. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RTO",
+        "is_correct": true
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "RPO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery Time Objective definiert, wie schnell ein Prozess oder System wiederhergestellt sein muss.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Die Organisation möchte den maximal tolerierbaren Datenverlust in Zeit zwischen Sicherungspunkten festzulegen. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RPO",
+        "is_correct": true
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery Point Objective beschreibt, wie viel Datenverlust in Zeit gemessen tolerierbar ist.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um den maximal tolerierbaren Datenverlust in Zeit zwischen Sicherungspunkten festzulegen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "RPO",
+        "is_correct": true
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery Point Objective beschreibt, wie viel Datenverlust in Zeit gemessen tolerierbar ist.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um den maximal tolerierbaren Datenverlust in Zeit zwischen Sicherungspunkten festzulegen. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RPO",
+        "is_correct": true
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      },
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery Point Objective beschreibt, wie viel Datenverlust in Zeit gemessen tolerierbar ist.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man den maximal tolerierbaren Datenverlust in Zeit zwischen Sicherungspunkten festzulegen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      },
+      {
+        "text": "RPO",
+        "is_correct": true
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "RTO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery Point Objective beschreibt, wie viel Datenverlust in Zeit gemessen tolerierbar ist.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Das Management plant den maximal tolerierbaren Datenverlust in Zeit zwischen Sicherungspunkten festzulegen. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "MTD",
+        "is_correct": false
+      },
+      {
+        "text": "RPO",
+        "is_correct": true
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery Point Objective beschreibt, wie viel Datenverlust in Zeit gemessen tolerierbar ist.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Die Organisation möchte die längste Zeitspanne zu bestimmen, die ein Geschäftsprozess insgesamt ausfallen darf. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "MTD",
+        "is_correct": true
+      },
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Maximum Tolerable Downtime beschreibt die äußerste tolerierbare Gesamtausfallzeit eines Geschäftsprozesses.",
+    "difficulty": "medium",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um die längste Zeitspanne zu bestimmen, die ein Geschäftsprozess insgesamt ausfallen darf?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "MTD",
+        "is_correct": true
+      },
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "BIA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Maximum Tolerable Downtime beschreibt die äußerste tolerierbare Gesamtausfallzeit eines Geschäftsprozesses.",
+    "difficulty": "medium",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um die längste Zeitspanne zu bestimmen, die ein Geschäftsprozess insgesamt ausfallen darf. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": true
+      },
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Maximum Tolerable Downtime beschreibt die äußerste tolerierbare Gesamtausfallzeit eines Geschäftsprozesses.",
+    "difficulty": "medium",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man die längste Zeitspanne zu bestimmen, die ein Geschäftsprozess insgesamt ausfallen darf?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": true
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Maximum Tolerable Downtime beschreibt die äußerste tolerierbare Gesamtausfallzeit eines Geschäftsprozesses.",
+    "difficulty": "medium",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Das Management plant die längste Zeitspanne zu bestimmen, die ein Geschäftsprozess insgesamt ausfallen darf. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": true
+      },
+      {
+        "text": "RTO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Maximum Tolerable Downtime beschreibt die äußerste tolerierbare Gesamtausfallzeit eines Geschäftsprozesses.",
+    "difficulty": "medium",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Die Organisation möchte einen nahezu sofort einsatzbereiten Ersatzstandort mit aktiven Systemen vorzuhalten. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Hot Site",
+        "is_correct": true
+      },
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Hot Site verfügt über weitgehend betriebsbereite Infrastruktur und kann sehr schnell übernehmen.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um einen nahezu sofort einsatzbereiten Ersatzstandort mit aktiven Systemen vorzuhalten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": true
+      },
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Hot Site verfügt über weitgehend betriebsbereite Infrastruktur und kann sehr schnell übernehmen.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um einen nahezu sofort einsatzbereiten Ersatzstandort mit aktiven Systemen vorzuhalten. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": true
+      },
+      {
+        "text": "RPO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Hot Site verfügt über weitgehend betriebsbereite Infrastruktur und kann sehr schnell übernehmen.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man einen nahezu sofort einsatzbereiten Ersatzstandort mit aktiven Systemen vorzuhalten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": true
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Hot Site verfügt über weitgehend betriebsbereite Infrastruktur und kann sehr schnell übernehmen.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Das Management plant einen nahezu sofort einsatzbereiten Ersatzstandort mit aktiven Systemen vorzuhalten. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": true
+      },
+      {
+        "text": "RTO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Hot Site verfügt über weitgehend betriebsbereite Infrastruktur und kann sehr schnell übernehmen.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Die Organisation möchte einen teilvorbereiteten Ersatzstandort mit Hardware und Basisdiensten bereitzuhalten. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": true
+      },
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Warm Site bietet mehr Vorbereitung als ein Cold Site, benötigt aber noch Konfiguration und Datenbereitstellung.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um einen teilvorbereiteten Ersatzstandort mit Hardware und Basisdiensten bereitzuhalten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": true
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "RTO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Warm Site bietet mehr Vorbereitung als ein Cold Site, benötigt aber noch Konfiguration und Datenbereitstellung.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um einen teilvorbereiteten Ersatzstandort mit Hardware und Basisdiensten bereitzuhalten. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": true
+      },
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Warm Site bietet mehr Vorbereitung als ein Cold Site, benötigt aber noch Konfiguration und Datenbereitstellung.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man einen teilvorbereiteten Ersatzstandort mit Hardware und Basisdiensten bereitzuhalten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Ein Warm Site bietet mehr Vorbereitung als ein Cold Site, benötigt aber noch Konfiguration und Datenbereitstellung.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Das Management plant einen teilvorbereiteten Ersatzstandort mit Hardware und Basisdiensten bereitzuhalten. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Warm Site",
+        "is_correct": true
+      },
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Warm Site bietet mehr Vorbereitung als ein Cold Site, benötigt aber noch Konfiguration und Datenbereitstellung.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Die Organisation möchte einen Ausweichstandort mit Räumlichkeiten, aber nur minimal vorbereiteter Technik vorzuhalten. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": true
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Cold Site ist günstiger, erfordert aber im Ernstfall erheblichen Aufbauaufwand.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um einen Ausweichstandort mit Räumlichkeiten, aber nur minimal vorbereiteter Technik vorzuhalten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "RPO",
+        "is_correct": false
+      },
+      {
+        "text": "MTD",
+        "is_correct": false
+      },
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Ein Cold Site ist günstiger, erfordert aber im Ernstfall erheblichen Aufbauaufwand.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um einen Ausweichstandort mit Räumlichkeiten, aber nur minimal vorbereiteter Technik vorzuhalten. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "MTD",
+        "is_correct": false
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": true
+      },
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "RPO",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Cold Site ist günstiger, erfordert aber im Ernstfall erheblichen Aufbauaufwand.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man einen Ausweichstandort mit Räumlichkeiten, aber nur minimal vorbereiteter Technik vorzuhalten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Cold Site",
+        "is_correct": true
+      },
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "RTO",
+        "is_correct": false
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Cold Site ist günstiger, erfordert aber im Ernstfall erheblichen Aufbauaufwand.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Das Management plant einen Ausweichstandort mit Räumlichkeiten, aber nur minimal vorbereiteter Technik vorzuhalten. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Hot Site",
+        "is_correct": false
+      },
+      {
+        "text": "BIA",
+        "is_correct": false
+      },
+      {
+        "text": "Cold Site",
+        "is_correct": true
+      },
+      {
+        "text": "Warm Site",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Cold Site ist günstiger, erfordert aber im Ernstfall erheblichen Aufbauaufwand.",
+    "difficulty": "easy",
+    "exam_objective": "5.2 Explain business continuity and disaster recovery concepts"
+  },
+  {
+    "text": "Die Organisation möchte eine übergeordnete verbindliche Managementvorgabe für den Sicherheitsrahmen zu formulieren. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": true
+      },
+      {
+        "text": "Procedure",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Policy definiert Leitplanken, Ziele und verbindliche Grundsätze auf hoher Ebene.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um eine übergeordnete verbindliche Managementvorgabe für den Sicherheitsrahmen zu formulieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": true
+      },
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Policy definiert Leitplanken, Ziele und verbindliche Grundsätze auf hoher Ebene.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um eine übergeordnete verbindliche Managementvorgabe für den Sicherheitsrahmen zu formulieren. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      },
+      {
+        "text": "Procedure",
+        "is_correct": false
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Eine Policy definiert Leitplanken, Ziele und verbindliche Grundsätze auf hoher Ebene.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man eine übergeordnete verbindliche Managementvorgabe für den Sicherheitsrahmen zu formulieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      },
+      {
+        "text": "Procedure",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Eine Policy definiert Leitplanken, Ziele und verbindliche Grundsätze auf hoher Ebene.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Das Management plant eine übergeordnete verbindliche Managementvorgabe für den Sicherheitsrahmen zu formulieren. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Procedure",
+        "is_correct": false
+      },
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": true
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Policy definiert Leitplanken, Ziele und verbindliche Grundsätze auf hoher Ebene.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Die Organisation möchte konkrete verbindliche technische Vorgaben abzuleiten, die aus einer Policy folgen. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Standard",
+        "is_correct": true
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Standards konkretisieren Policies durch messbare und einheitliche Anforderungen.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um konkrete verbindliche technische Vorgaben abzuleiten, die aus einer Policy folgen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Guideline",
+        "is_correct": false
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      },
+      {
+        "text": "Standard",
+        "is_correct": true
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Standards konkretisieren Policies durch messbare und einheitliche Anforderungen.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um konkrete verbindliche technische Vorgaben abzuleiten, die aus einer Policy folgen. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Guideline",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      },
+      {
+        "text": "Standard",
+        "is_correct": true
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Standards konkretisieren Policies durch messbare und einheitliche Anforderungen.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man konkrete verbindliche technische Vorgaben abzuleiten, die aus einer Policy folgen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Standard",
+        "is_correct": true
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      },
+      {
+        "text": "Procedure",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Standards konkretisieren Policies durch messbare und einheitliche Anforderungen.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Das Management plant konkrete verbindliche technische Vorgaben abzuleiten, die aus einer Policy folgen. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Guideline",
+        "is_correct": false
+      },
+      {
+        "text": "Standard",
+        "is_correct": true
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Standards konkretisieren Policies durch messbare und einheitliche Anforderungen.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Die Organisation möchte einen festgelegten Schritt-für-Schritt-Ablauf für eine Tätigkeit zu dokumentieren. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      },
+      {
+        "text": "Procedure",
+        "is_correct": true
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Procedures beschreiben im Detail, wie eine Aufgabe praktisch ausgeführt wird.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um einen festgelegten Schritt-für-Schritt-Ablauf für eine Tätigkeit zu dokumentieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      },
+      {
+        "text": "Procedure",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Procedures beschreiben im Detail, wie eine Aufgabe praktisch ausgeführt wird.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um einen festgelegten Schritt-für-Schritt-Ablauf für eine Tätigkeit zu dokumentieren. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      },
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Procedure",
+        "is_correct": true
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Procedures beschreiben im Detail, wie eine Aufgabe praktisch ausgeführt wird.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man einen festgelegten Schritt-für-Schritt-Ablauf für eine Tätigkeit zu dokumentieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Procedure",
+        "is_correct": true
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      },
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Procedures beschreiben im Detail, wie eine Aufgabe praktisch ausgeführt wird.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Das Management plant einen festgelegten Schritt-für-Schritt-Ablauf für eine Tätigkeit zu dokumentieren. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Procedure",
+        "is_correct": true
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Procedures beschreiben im Detail, wie eine Aufgabe praktisch ausgeführt wird.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Die Organisation möchte empfohlene, aber nicht zwingend verbindliche Vorgehensweisen zu beschreiben. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Guideline",
+        "is_correct": true
+      },
+      {
+        "text": "Procedure",
+        "is_correct": false
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Guidelines geben Orientierung und Best Practices, ohne den gleichen Verbindlichkeitsgrad wie Standards zu haben.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um empfohlene, aber nicht zwingend verbindliche Vorgehensweisen zu beschreiben?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": true
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Guidelines geben Orientierung und Best Practices, ohne den gleichen Verbindlichkeitsgrad wie Standards zu haben.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um empfohlene, aber nicht zwingend verbindliche Vorgehensweisen zu beschreiben. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Procedure",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": true
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Guidelines geben Orientierung und Best Practices, ohne den gleichen Verbindlichkeitsgrad wie Standards zu haben.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man empfohlene, aber nicht zwingend verbindliche Vorgehensweisen zu beschreiben?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Guideline",
+        "is_correct": true
+      },
+      {
+        "text": "Procedure",
+        "is_correct": false
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      },
+      {
+        "text": "Standard",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Guidelines geben Orientierung und Best Practices, ohne den gleichen Verbindlichkeitsgrad wie Standards zu haben.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Das Management plant empfohlene, aber nicht zwingend verbindliche Vorgehensweisen zu beschreiben. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Procedure",
+        "is_correct": false
+      },
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Guidelines geben Orientierung und Best Practices, ohne den gleichen Verbindlichkeitsgrad wie Standards zu haben.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Die Organisation möchte Mitarbeiter regelmäßig zu sicheren Verhaltensweisen und typischen Bedrohungen zu schulen. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Guideline",
+        "is_correct": false
+      },
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Awareness-Programme verbessern das Sicherheitsverhalten von Mitarbeitern durch wiederkehrende Schulung.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um Mitarbeiter regelmäßig zu sicheren Verhaltensweisen und typischen Bedrohungen zu schulen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": true
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Awareness-Programme verbessern das Sicherheitsverhalten von Mitarbeitern durch wiederkehrende Schulung.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um Mitarbeiter regelmäßig zu sicheren Verhaltensweisen und typischen Bedrohungen zu schulen. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Awareness-Programme verbessern das Sicherheitsverhalten von Mitarbeitern durch wiederkehrende Schulung.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man Mitarbeiter regelmäßig zu sicheren Verhaltensweisen und typischen Bedrohungen zu schulen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      },
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": true
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Awareness-Programme verbessern das Sicherheitsverhalten von Mitarbeitern durch wiederkehrende Schulung.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Das Management plant Mitarbeiter regelmäßig zu sicheren Verhaltensweisen und typischen Bedrohungen zu schulen. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Guideline",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": true
+      },
+      {
+        "text": "Procedure",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Awareness-Programme verbessern das Sicherheitsverhalten von Mitarbeitern durch wiederkehrende Schulung.",
+    "difficulty": "easy",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Die Organisation möchte Sicherheits- und Datenschutzrisiken eines Dienstleisters vor Vertragsabschluss zu bewerten. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": true
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      },
+      {
+        "text": "Procedure",
+        "is_correct": false
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Vendor Risk Assessments prüfen Lieferanten auf Risiken, Reifegrad und Kontrollumsetzung.",
+    "difficulty": "medium",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um Sicherheits- und Datenschutzrisiken eines Dienstleisters vor Vertragsabschluss zu bewerten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Policy",
+        "is_correct": false
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": true
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Vendor Risk Assessments prüfen Lieferanten auf Risiken, Reifegrad und Kontrollumsetzung.",
+    "difficulty": "medium",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um Sicherheits- und Datenschutzrisiken eines Dienstleisters vor Vertragsabschluss zu bewerten. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": true
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      },
+      {
+        "text": "Procedure",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Vendor Risk Assessments prüfen Lieferanten auf Risiken, Reifegrad und Kontrollumsetzung.",
+    "difficulty": "medium",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man Sicherheits- und Datenschutzrisiken eines Dienstleisters vor Vertragsabschluss zu bewerten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": true
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      },
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Vendor Risk Assessments prüfen Lieferanten auf Risiken, Reifegrad und Kontrollumsetzung.",
+    "difficulty": "medium",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Das Management plant Sicherheits- und Datenschutzrisiken eines Dienstleisters vor Vertragsabschluss zu bewerten. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": true
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Vendor Risk Assessments prüfen Lieferanten auf Risiken, Reifegrad und Kontrollumsetzung.",
+    "difficulty": "medium",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Die Organisation möchte vertraglich zu sichern, dass ein Kunde die Kontrollen eines Dienstleisters prüfen darf. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": true
+      },
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Policy",
+        "is_correct": false
+      },
+      {
+        "text": "Procedure",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Right-to-Audit schafft die vertragliche Grundlage für Audits oder Prüfungen beim Lieferanten.",
+    "difficulty": "medium",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um vertraglich zu sichern, dass ein Kunde die Kontrollen eines Dienstleisters prüfen darf?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": true
+      },
+      {
+        "text": "Procedure",
+        "is_correct": false
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Right-to-Audit schafft die vertragliche Grundlage für Audits oder Prüfungen beim Lieferanten.",
+    "difficulty": "medium",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um vertraglich zu sichern, dass ein Kunde die Kontrollen eines Dienstleisters prüfen darf. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Procedure",
+        "is_correct": false
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": true
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Right-to-Audit schafft die vertragliche Grundlage für Audits oder Prüfungen beim Lieferanten.",
+    "difficulty": "medium",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man vertraglich zu sichern, dass ein Kunde die Kontrollen eines Dienstleisters prüfen darf?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Policy",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      },
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": true
+      },
+      {
+        "text": "Vendor Risk Assessment",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Right-to-Audit schafft die vertragliche Grundlage für Audits oder Prüfungen beim Lieferanten.",
+    "difficulty": "medium",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Das Management plant vertraglich zu sichern, dass ein Kunde die Kontrollen eines Dienstleisters prüfen darf. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Right-to-Audit Clause",
+        "is_correct": true
+      },
+      {
+        "text": "Standard",
+        "is_correct": false
+      },
+      {
+        "text": "Security Awareness Training",
+        "is_correct": false
+      },
+      {
+        "text": "Guideline",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Right-to-Audit schafft die vertragliche Grundlage für Audits oder Prüfungen beim Lieferanten.",
+    "difficulty": "medium",
+    "exam_objective": "5.3 Explain security policies, awareness, and vendor management concepts"
+  },
+  {
+    "text": "Die Organisation möchte nur die personenbezogenen Daten zu erheben, die für den Zweck wirklich erforderlich sind. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": true
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Datenminimierung reduziert unnötige Datenerhebung und damit Datenschutz- und Sicherheitsrisiken.",
+    "difficulty": "easy",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um nur die personenbezogenen Daten zu erheben, die für den Zweck wirklich erforderlich sind?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": true
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Datenminimierung reduziert unnötige Datenerhebung und damit Datenschutz- und Sicherheitsrisiken.",
+    "difficulty": "easy",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um nur die personenbezogenen Daten zu erheben, die für den Zweck wirklich erforderlich sind. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Data Minimization",
+        "is_correct": true
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Datenminimierung reduziert unnötige Datenerhebung und damit Datenschutz- und Sicherheitsrisiken.",
+    "difficulty": "easy",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man nur die personenbezogenen Daten zu erheben, die für den Zweck wirklich erforderlich sind?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Anonymization",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": true
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Datenminimierung reduziert unnötige Datenerhebung und damit Datenschutz- und Sicherheitsrisiken.",
+    "difficulty": "easy",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Das Management plant nur die personenbezogenen Daten zu erheben, die für den Zweck wirklich erforderlich sind. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": true
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Datenminimierung reduziert unnötige Datenerhebung und damit Datenschutz- und Sicherheitsrisiken.",
+    "difficulty": "easy",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Die Organisation möchte sensible Werte durch bedeutungslose Platzhalter zu ersetzen, deren Original separat verwaltet wird. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Tokenization",
+        "is_correct": true
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tokenization ersetzt sensible Daten durch Tokens und hält die Zuordnung geschützt getrennt.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um sensible Werte durch bedeutungslose Platzhalter zu ersetzen, deren Original separat verwaltet wird?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Tokenization ersetzt sensible Daten durch Tokens und hält die Zuordnung geschützt getrennt.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um sensible Werte durch bedeutungslose Platzhalter zu ersetzen, deren Original separat verwaltet wird. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Tokenization",
+        "is_correct": true
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tokenization ersetzt sensible Daten durch Tokens und hält die Zuordnung geschützt getrennt.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man sensible Werte durch bedeutungslose Platzhalter zu ersetzen, deren Original separat verwaltet wird?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": true
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tokenization ersetzt sensible Daten durch Tokens und hält die Zuordnung geschützt getrennt.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Das Management plant sensible Werte durch bedeutungslose Platzhalter zu ersetzen, deren Original separat verwaltet wird. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": true
+      },
+      {
+        "text": "Pseudonymization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tokenization ersetzt sensible Daten durch Tokens und hält die Zuordnung geschützt getrennt.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Die Organisation möchte personenbezogene Daten so zu verändern, dass die betroffene Person nicht mehr identifizierbar ist. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      },
+      {
+        "text": "Pseudonymization",
+        "is_correct": false
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Anonymisierte Daten können keiner Person mehr mit vertretbarem Aufwand zugeordnet werden.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um personenbezogene Daten so zu verändern, dass die betroffene Person nicht mehr identifizierbar ist?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "DPIA",
+        "is_correct": false
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": true
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Anonymisierte Daten können keiner Person mehr mit vertretbarem Aufwand zugeordnet werden.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um personenbezogene Daten so zu verändern, dass die betroffene Person nicht mehr identifizierbar ist. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Anonymization",
+        "is_correct": true
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Anonymisierte Daten können keiner Person mehr mit vertretbarem Aufwand zugeordnet werden.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man personenbezogene Daten so zu verändern, dass die betroffene Person nicht mehr identifizierbar ist?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": true
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Anonymisierte Daten können keiner Person mehr mit vertretbarem Aufwand zugeordnet werden.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Das Management plant personenbezogene Daten so zu verändern, dass die betroffene Person nicht mehr identifizierbar ist. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": true
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Anonymisierte Daten können keiner Person mehr mit vertretbarem Aufwand zugeordnet werden.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Die Organisation möchte personenbezogene Daten durch Kennungen zu ersetzen, während ein separater Zuordnungsschlüssel erhalten bleibt. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": false
+      },
+      {
+        "text": "Pseudonymization",
+        "is_correct": true
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Pseudonymisierung verringert Risiken, bleibt aber prinzipiell rückführbar, wenn der Schlüssel existiert.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um personenbezogene Daten durch Kennungen zu ersetzen, während ein separater Zuordnungsschlüssel erhalten bleibt?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Pseudonymization",
+        "is_correct": true
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Pseudonymisierung verringert Risiken, bleibt aber prinzipiell rückführbar, wenn der Schlüssel existiert.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um personenbezogene Daten durch Kennungen zu ersetzen, während ein separater Zuordnungsschlüssel erhalten bleibt. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      },
+      {
+        "text": "Pseudonymization",
+        "is_correct": true
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Pseudonymisierung verringert Risiken, bleibt aber prinzipiell rückführbar, wenn der Schlüssel existiert.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man personenbezogene Daten durch Kennungen zu ersetzen, während ein separater Zuordnungsschlüssel erhalten bleibt?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Pseudonymization",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Pseudonymisierung verringert Risiken, bleibt aber prinzipiell rückführbar, wenn der Schlüssel existiert.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Das Management plant personenbezogene Daten durch Kennungen zu ersetzen, während ein separater Zuordnungsschlüssel erhalten bleibt. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Pseudonymization",
+        "is_correct": true
+      },
+      {
+        "text": "DPIA",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Pseudonymisierung verringert Risiken, bleibt aber prinzipiell rückführbar, wenn der Schlüssel existiert.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Die Organisation möchte betroffene Personen transparent über Zweck, Rechtsgrundlage und Verarbeitung ihrer Daten zu informieren. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Anonymization",
+        "is_correct": false
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": true
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Privacy Notice erklärt Betroffenen verständlich, wie und warum ihre Daten verarbeitet werden.",
+    "difficulty": "easy",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um betroffene Personen transparent über Zweck, Rechtsgrundlage und Verarbeitung ihrer Daten zu informieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": true
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Privacy Notice erklärt Betroffenen verständlich, wie und warum ihre Daten verarbeitet werden.",
+    "difficulty": "easy",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um betroffene Personen transparent über Zweck, Rechtsgrundlage und Verarbeitung ihrer Daten zu informieren. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Privacy Notice",
+        "is_correct": true
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": false
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      },
+      {
+        "text": "Pseudonymization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Privacy Notice erklärt Betroffenen verständlich, wie und warum ihre Daten verarbeitet werden.",
+    "difficulty": "easy",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man betroffene Personen transparent über Zweck, Rechtsgrundlage und Verarbeitung ihrer Daten zu informieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Anonymization",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": true
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Privacy Notice erklärt Betroffenen verständlich, wie und warum ihre Daten verarbeitet werden.",
+    "difficulty": "easy",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Das Management plant betroffene Personen transparent über Zweck, Rechtsgrundlage und Verarbeitung ihrer Daten zu informieren. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": true
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Privacy Notice erklärt Betroffenen verständlich, wie und warum ihre Daten verarbeitet werden.",
+    "difficulty": "easy",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Die Organisation möchte vor einer risikoreichen Verarbeitung die Auswirkungen auf die Rechte betroffener Personen systematisch zu bewerten. Welches Konzept ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": true
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      },
+      {
+        "text": "Pseudonymization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Datenschutz-Folgenabschätzung bewertet Risiken für Betroffene und dokumentiert Gegenmaßnahmen.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff wird typischerweise verwendet, um vor einer risikoreichen Verarbeitung die Auswirkungen auf die Rechte betroffener Personen systematisch zu bewerten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Pseudonymization",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": true
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Datenschutz-Folgenabschätzung bewertet Risiken für Betroffene und dokumentiert Gegenmaßnahmen.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Ein Auditor verlangt eine Maßnahme, um vor einer risikoreichen Verarbeitung die Auswirkungen auf die Rechte betroffener Personen systematisch zu bewerten. Welche Antwort ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Pseudonymization",
+        "is_correct": false
+      },
+      {
+        "text": "DPIA",
+        "is_correct": true
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Tokenization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Datenschutz-Folgenabschätzung bewertet Risiken für Betroffene und dokumentiert Gegenmaßnahmen.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess oder ein Dokument, mit dem man vor einer risikoreichen Verarbeitung die Auswirkungen auf die Rechte betroffener Personen systematisch zu bewerten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "DPIA",
+        "is_correct": true
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "Anonymization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Datenschutz-Folgenabschätzung bewertet Risiken für Betroffene und dokumentiert Gegenmaßnahmen.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  },
+  {
+    "text": "Das Management plant vor einer risikoreichen Verarbeitung die Auswirkungen auf die Rechte betroffener Personen systematisch zu bewerten. Welche Option passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "DPIA",
+        "is_correct": true
+      },
+      {
+        "text": "Privacy Notice",
+        "is_correct": false
+      },
+      {
+        "text": "GDPR (DSGVO)",
+        "is_correct": false
+      },
+      {
+        "text": "Data Minimization",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Datenschutz-Folgenabschätzung bewertet Risiken für Betroffene und dokumentiert Gegenmaßnahmen.",
+    "difficulty": "medium",
+    "exam_objective": "5.4 Explain privacy and data protection concepts"
+  }
+]
