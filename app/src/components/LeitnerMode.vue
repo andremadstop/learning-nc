@@ -68,7 +68,7 @@
         <NcProgressBar :value="reviewProgress" />
       </div>
       <div v-if="currentItem" class="review-card">
-        <QuestionLanguageSwitcher v-model="questionLanguage" />
+        <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentItem" />
         <div class="review-box-indicator">{{ t('learning', 'Box') }} {{ currentItem.box }} &rarr; {{ answered ? (lastAnswer ? t('learning', 'Box') + ' ' + lastMoveTarget : t('learning', 'Box') + ' 1') : '?' }}</div>
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>

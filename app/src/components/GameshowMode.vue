@@ -178,7 +178,7 @@
       </div>
 
       <div class="gs-card" :class="{ 'sudden-death-frame': isEliminationMode && isSuddenDeath }">
-        <QuestionLanguageSwitcher v-model="questionLanguage" />
+        <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
         <img
           v-if="currentQuestion && currentQuestion.image_path"
           :src="questionImageUrl(currentQuestion.id)"
@@ -261,7 +261,7 @@
         SUDDEN DEATH
       </div>
 
-      <QuestionLanguageSwitcher v-model="questionLanguage" />
+      <QuestionLanguageSwitcher v-model="questionLanguage" :question="lastQuestion || currentQuestion" />
       <div class="feedback-card" :class="[answeredCorrect ? 'feedback-correct' : 'feedback-incorrect', { 'sudden-death-frame': isEliminationMode && isSuddenDeath }]">
         <span class="feedback-icon">{{ answeredCorrect ? '✓' : '✗' }}</span>
         <span class="feedback-label">{{ answeredCorrect ? t('learning', 'Richtig!') : t('learning', 'Falsch!') }}</span>

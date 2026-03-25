@@ -139,7 +139,7 @@
       </div>
 
       <div class="duel-card">
-        <QuestionLanguageSwitcher v-model="questionLanguage" />
+        <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
         <img
           v-if="currentQuestion && currentQuestion.image_path"
           :src="questionImageUrl(currentQuestion.id)"
@@ -182,7 +182,7 @@
 
     <!-- ===== FEEDBACK PHASE ===== -->
     <div v-else-if="phase === 'feedback'" class="duel-feedback">
-      <QuestionLanguageSwitcher v-model="questionLanguage" />
+      <QuestionLanguageSwitcher v-model="questionLanguage" :question="lastQuestion || currentQuestion" />
       <div class="feedback-card" :class="answeredCorrect ? 'feedback-correct' : 'feedback-incorrect'">
         <span class="feedback-icon">{{ answeredCorrect ? '✓' : '✗' }}</span>
         <span class="feedback-label">{{ answeredCorrect ? t('learning', 'Richtig!') : t('learning', 'Falsch!') }}</span>

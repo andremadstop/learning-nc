@@ -45,7 +45,7 @@
           @pointerup="onPointerUp"
           @pointercancel="onPointerUp"
         >
-          <QuestionLanguageSwitcher v-model="questionLanguage" />
+          <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
           <div v-if="showFeedback && !isDragging" class="feedback-overlay" :class="isCorrect ? 'feedback-correct' : 'feedback-incorrect'">
             <span class="feedback-icon">{{ isCorrect ? '\u2713' : '\u2717' }}</span>
             <span class="feedback-label">{{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Wrong') }}</span>
@@ -82,7 +82,7 @@
 
       <!-- MC card block -->
       <div v-if="!localWfMode && currentQuestion" class="question-card">
-        <QuestionLanguageSwitcher v-model="questionLanguage" />
+        <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
         <img v-if="currentQuestion.image_path" :src="questionImageUrl(currentQuestion.id)" :alt="currentQuestion.image_alt || t('learning', 'Diagram for question')" class="question-image" />
         <div class="question-text">{{ currentQuestion.text }}</div>
 

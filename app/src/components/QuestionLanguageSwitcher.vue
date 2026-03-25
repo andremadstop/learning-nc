@@ -1,5 +1,10 @@
 <template>
-  <div class="question-language-switcher" :aria-label="t('learning', 'Question language')" role="group">
+  <div
+    v-if="isVisible"
+    class="question-language-switcher"
+    :aria-label="t('learning', 'Question language')"
+    role="group"
+  >
     <button
       v-for="option in normalizedOptions"
       :key="option.value"
@@ -22,14 +27,13 @@ export default {
       type: String,
       default: '',
     },
+    question: {
+      type: Object,
+      default: null,
+    },
     options: {
       type: Array,
-      default: () => ([
-        { value: '', label: 'DE' },
-        { value: 'en', label: 'EN' },
-        { value: 'ru', label: 'RU' },
-        { value: 'ar', label: 'AR' },
-      ]),
+      default: null,
     },
   },
   computed: {
@@ -37,7 +41,57 @@ export default {
       return this.value || '';
     },
     normalizedOptions() {
-      return Array.isArray(this.options) ? this.options : [];
+      if (Array.isArray(this.options) && this.options.length > 0) {
+        return this.options;
+      }
+
+      const translations = this.question?.translations;
+      if (!translations || (Array.isArray(translations) && translations.length === 0)) {
+        return [];
+      }
+
+      const labels = {
+        '': 'DE',
+        de: 'DE',
+        en: 'EN',
+        ru: 'RU',
+        ar: 'AR',
+      };
+      const languages = new Set(['']);
+      const addLanguage = (lang) => {
+        if (typeof lang !== 'string') {
+          return;
+        }
+        const normalized = lang.trim().toLowerCase();
+        if (!normalized) {
+          return;
+        }
+        languages.add(normalized === 'de' ? '' : normalized);
+      };
+
+      if (Array.isArray(translations)) {
+        translations.forEach((entry) => {
+          if (typeof entry === 'string') {
+            addLanguage(entry);
+            return;
+          }
+          if (entry && typeof entry === 'object') {
+            addLanguage(entry.lang || entry.value || entry.code);
+          }
+        });
+      } else if (typeof translations === 'object') {
+        Object.keys(translations).forEach(addLanguage);
+      }
+
+      return Array.from(languages)
+        .filter((lang) => lang === '' || labels[lang] || /^[a-z]{2}$/u.test(lang))
+        .map((lang) => ({
+          value: lang,
+          label: labels[lang] || lang.toUpperCase(),
+        }));
+    },
+    isVisible() {
+      return this.normalizedOptions.length > 1;
     },
   },
 };
@@ -46,10 +100,10 @@ export default {
 <style scoped>
 .question-language-switcher {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 6px;
+  right: 6px;
   display: inline-flex;
-  gap: 3px;
+  gap: 2px;
   z-index: 3;
   padding: 0;
   background: transparent;
@@ -57,11 +111,11 @@ export default {
 }
 
 .lang-btn {
-  min-width: 28px;
+  min-width: 24px;
   border: 0;
   border-radius: 999px;
-  padding: 4px 7px;
-  font-size: 9px;
+  padding: 2px 6px;
+  font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: #d7e7ff;

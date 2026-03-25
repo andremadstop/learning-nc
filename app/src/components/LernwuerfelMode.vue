@@ -215,7 +215,7 @@
       <!-- Question card (my turn, question phase) -->
       <div v-if="isMyTurn && boardPhase === 'question' && currentQuestion" class="lw-question-card">
         <p class="lw-dice-rolled">{{ t('learning', 'Gewürfelt: {n}', { n: diceResult }) }}</p>
-        <QuestionLanguageSwitcher v-model="questionLanguage" />
+        <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
         <img
           v-if="currentQuestion.image_path"
           :src="questionImageUrl(currentQuestion.id)"

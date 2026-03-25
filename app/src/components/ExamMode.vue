@@ -60,7 +60,7 @@
       <div class="progress-label">{{ answeredCount }} / {{ questions.length }} {{ t('learning', 'answered') }}</div>
 
       <div v-if="currentQuestion" ref="questionCard" class="question-card">
-        <QuestionLanguageSwitcher v-model="questionLanguage" />
+        <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
         <!-- Snake timer border -->
         <svg v-if="snakeReady"
              :class="['snake-svg', snakeColorClass]"

@@ -23,7 +23,7 @@
         <NcProgressBar :value="reviewProgress" />
       </div>
       <div v-if="currentItem" class="review-card">
-        <QuestionLanguageSwitcher v-model="questionLanguage" />
+        <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentItem" />
         <div class="pool-badge">{{ currentItem.pool_name }}</div>
         <div class="review-box-indicator">{{ t('learning', 'Box {n}', { n: currentItem.box }) }}</div>
         <NcNoteCard v-if="currentIndex === 0 && !hintDismissed('box-movement')" type="info" class="onboarding-hint">
