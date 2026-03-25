@@ -6,9 +6,15 @@ vendor/
 app/js/*.map
 app/js/*.LICENSE.txt
 
-# Internal planning & build files
+# Internal planning, tooling & dev files
 .planning/
 .githooks/
+CLAUDE.md
+starter-kit/
+tests/
+!app/tests/
+playwright.config.mjs
+screenshots/
 CODEX_HANDOFF*.md
 CODEX_PLAN_*.md
 GEMINI*.md
