@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import SimulatorShell, { SIMULATOR_MAP } from '../../src/components/SimulatorShell.vue'
+import {
+	SIMULATOR_MAP,
+	normalizeResult,
+	resolveScenario,
+} from '../../src/utils/simulatorShellLogic.js'
 
 describe('SIMULATOR_MAP', () => {
 	it('has exactly 7 keys', () => {
@@ -18,102 +22,65 @@ describe('SIMULATOR_MAP', () => {
 	})
 })
 
-describe('onResult normalization', () => {
-	function callOnResult(payload, type = 'firewall') {
-		const vm = {
-			type,
-			scenarioId: '',
-			scenarioOverride: null,
-			emitted: [],
-			$emit(event, ...args) { this.emitted.push([event, ...args]) },
-		}
-		SimulatorShell.methods.onResult.call(vm, payload)
-		return vm.emitted
-	}
-
-	it('{ correct: true } emits complete with passed=true, score=1.0', () => {
-		const emitted = callOnResult({ correct: true })
-		expect(emitted).toHaveLength(1)
-		expect(emitted[0][0]).toBe('complete')
-		expect(emitted[0][1]).toBe(true)
-		expect(emitted[0][2]).toBe(1.0)
-		expect(emitted[0][3]).toEqual({ correct: true })
+describe('normalizeResult', () => {
+	it('{ correct: true } returns passed=true, score=1.0', () => {
+		const result = normalizeResult({ correct: true })
+		expect(result.passed).toBe(true)
+		expect(result.score).toBe(1.0)
+		expect(result.rawResult).toEqual({ correct: true })
 	})
 
-	it('{ correct: false } emits complete with passed=false, score=0.0', () => {
-		const emitted = callOnResult({ correct: false })
-		expect(emitted).toHaveLength(1)
-		expect(emitted[0][0]).toBe('complete')
-		expect(emitted[0][1]).toBe(false)
-		expect(emitted[0][2]).toBe(0.0)
+	it('{ correct: false } returns passed=false, score=0.0', () => {
+		const result = normalizeResult({ correct: false })
+		expect(result.passed).toBe(false)
+		expect(result.score).toBe(0.0)
 	})
 
-	it('{ passed: true } (AuthFlowSimulator) emits complete with passed=true', () => {
-		const emitted = callOnResult({ passed: true, errors: [] }, 'authflow')
-		expect(emitted).toHaveLength(1)
-		expect(emitted[0][0]).toBe('complete')
-		expect(emitted[0][1]).toBe(true)
-		expect(emitted[0][2]).toBe(1.0)
+	it('{ passed: true } (AuthFlowSimulator) returns passed=true', () => {
+		const result = normalizeResult({ passed: true, errors: [] })
+		expect(result.passed).toBe(true)
+		expect(result.score).toBe(1.0)
 	})
 
-	it('{ passed: false } (AuthFlowSimulator) emits complete with passed=false', () => {
-		const emitted = callOnResult({ passed: false, errors: ['wrong step'] }, 'authflow')
-		expect(emitted).toHaveLength(1)
-		expect(emitted[0][1]).toBe(false)
-		expect(emitted[0][2]).toBe(0.0)
+	it('{ passed: false } (AuthFlowSimulator) returns passed=false', () => {
+		const result = normalizeResult({ passed: false, errors: ['wrong step'] })
+		expect(result.passed).toBe(false)
+		expect(result.score).toBe(0.0)
 	})
 
-	it('{ kind: "lookup" } does NOT emit complete (DNS free-lookup ignored)', () => {
-		const emitted = callOnResult({ kind: 'lookup', answer: '1.2.3.4' }, 'dns')
-		expect(emitted).toHaveLength(0)
+	it('{ kind: "lookup" } returns null (DNS free-lookup ignored)', () => {
+		const result = normalizeResult({ kind: 'lookup', answer: '1.2.3.4' })
+		expect(result).toBeNull()
 	})
 
-	it('{ kind: "exercise", correct: true } emits complete with passed=true', () => {
-		const emitted = callOnResult({ kind: 'exercise', correct: true }, 'dns')
-		expect(emitted).toHaveLength(1)
-		expect(emitted[0][0]).toBe('complete')
-		expect(emitted[0][1]).toBe(true)
-		expect(emitted[0][2]).toBe(1.0)
+	it('{ kind: "exercise", correct: true } returns passed=true', () => {
+		const result = normalizeResult({ kind: 'exercise', correct: true })
+		expect(result.passed).toBe(true)
+		expect(result.score).toBe(1.0)
 	})
 
-	it('{ kind: "exercise", correct: false } emits complete with passed=false', () => {
-		const emitted = callOnResult({ kind: 'exercise', correct: false }, 'dns')
-		expect(emitted).toHaveLength(1)
-		expect(emitted[0][1]).toBe(false)
-		expect(emitted[0][2]).toBe(0.0)
+	it('{ kind: "exercise", correct: false } returns passed=false', () => {
+		const result = normalizeResult({ kind: 'exercise', correct: false })
+		expect(result.passed).toBe(false)
+		expect(result.score).toBe(0.0)
 	})
 })
 
-describe('resolvedScenario', () => {
+describe('resolveScenario', () => {
 	it('returns scenarioOverride when set (takes precedence over scenarioId)', () => {
 		const override = { id: 'custom', name: 'Custom Scenario' }
-		const vm = {
-			type: 'firewall',
-			scenarioId: 'web-only',
-			scenarioOverride: override,
-		}
-		const result = SimulatorShell.computed.resolvedScenario.call(vm)
+		const result = resolveScenario('firewall', 'web-only', override)
 		expect(result).toBe(override)
 	})
 
 	it('looks up scenario by id in SCENARIOS[type] when no override', () => {
-		const vm = {
-			type: 'firewall',
-			scenarioId: 'web-only',
-			scenarioOverride: null,
-		}
-		const result = SimulatorShell.computed.resolvedScenario.call(vm)
+		const result = resolveScenario('firewall', 'web-only', null)
 		expect(result).not.toBeNull()
 		expect(result.id).toBe('web-only')
 	})
 
 	it('returns null when scenarioId not found and no override', () => {
-		const vm = {
-			type: 'firewall',
-			scenarioId: 'nonexistent-scenario-xyz',
-			scenarioOverride: null,
-		}
-		const result = SimulatorShell.computed.resolvedScenario.call(vm)
+		const result = resolveScenario('firewall', 'nonexistent-scenario-xyz', null)
 		expect(result).toBeNull()
 	})
 })
