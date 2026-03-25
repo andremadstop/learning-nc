@@ -367,6 +367,7 @@ export default {
       selectedCourse: null,
       selectedStudent: null,
       courseView: 'list',
+      courseTab: 'training',
       toolsView: 'subnet',
       enabledTools: [...ALL_TOOL_IDS],
       contentLanguage: '',
@@ -421,6 +422,10 @@ export default {
   async created() {
     await Promise.all([this.fetchRole(), this.fetchPersonalSettings(), this.fetchEnabledTools()]);
     this.appInitialized = true;
+    this.$root.$on('course:tab-change', (tabId) => {
+      this.courseTab = tabId;
+      this.emitViewGuide();
+    });
     this.$nextTick(() => {
       this.emitVirtuProfContext();
     });
@@ -530,7 +535,31 @@ export default {
       }
       if (this.mainView === 'courses') {
         if (this.selectedCourse) {
-          return 'view:course-detail';
+          // Map CourseDetail tabs to view keys
+          const tabMap = {
+            'training': 'view:course-training',
+            'leitner': 'view:course-leitner',
+            'exam': 'view:course-exam',
+            'my-progress': 'view:course-my-progress',
+            'leaderboard': 'view:course-leaderboard',
+            'league': 'view:course-league',
+            'arena': 'view:course-arena',
+            'oldschool': 'view:course-oldschool',
+            'abenteuer': 'view:course-abenteuer',
+            'pools': 'view:course-pools',
+            'members': 'view:course-members',
+            'progress': 'view:course-progress',
+            'class-profile': 'view:course-class-profile',
+            'heatmap': 'view:course-heatmap',
+            'weak-questions': 'view:course-weak-questions',
+            'announcements': 'view:course-announcements',
+            'exam-slot': 'view:course-exam-slot',
+            'requests': 'view:course-requests',
+            'mode-config': 'view:course-mode-config',
+            'materials': 'view:course-materials',
+            'curriculum': 'view:course-curriculum',
+          };
+          return tabMap[this.courseTab] || 'view:course-detail';
         }
         return 'view:courses';
       }
@@ -548,7 +577,6 @@ export default {
           if (this.mode === 'manage') {
             return 'view:pool-manage';
           }
-          // train and other modes
           return 'view:training';
         }
         return 'view:pools';
@@ -580,6 +608,114 @@ export default {
           text: t('learning', 'In this course you can start Training, Leitner, True/False or Exam mode. Choose the mode that fits your current learning goal.'),
           shortText: t('learning', 'Start Training, Leitner, Exam or Arena from this course.'),
         },
+        // Student course tabs
+        'view:course-training': {
+          title: t('learning', 'Training'),
+          text: t('learning', 'Training is the direct-feedback mode for quick practice. Pick a pool, answer questions and see immediately whether you got it right.'),
+          shortText: t('learning', 'Quick practice with immediate feedback.'),
+        },
+        'view:course-leitner': {
+          title: t('learning', 'Leitner System'),
+          text: t('learning', 'The Leitner system shows you due cards based on your progress. The more often you answer a card correctly, the less often it appears — until it is mastered.'),
+          shortText: t('learning', 'Answer due cards. Correct ones move forward, wrong ones go back.'),
+        },
+        'view:course-exam': {
+          title: t('learning', 'Exam Simulation'),
+          text: t('learning', 'Exam mode simulates a real test: no hints, a time limit and your result only at the end. Use it to check whether you are ready.'),
+          shortText: t('learning', 'Simulated exam — result shown after all questions.'),
+        },
+        'view:course-my-progress': {
+          title: t('learning', 'My Progress'),
+          text: t('learning', 'Here you see your personal learning progress in this course: mastered questions, current streak, XP and level. Track how far you have come.'),
+          shortText: t('learning', 'Your personal stats: mastered, streak, XP.'),
+        },
+        'view:course-leaderboard': {
+          title: t('learning', 'Leaderboard'),
+          text: t('learning', 'The leaderboard ranks all course members by XP and mastered questions. See where you stand compared to your classmates.'),
+          shortText: t('learning', 'Course ranking by XP and mastered questions.'),
+        },
+        'view:course-league': {
+          title: t('learning', 'League'),
+          text: t('learning', 'The league system groups learners into tiers based on weekly activity. Stay active to climb up — or risk dropping a tier.'),
+          shortText: t('learning', 'Weekly competition tiers based on activity.'),
+        },
+        'view:course-arena': {
+          title: t('learning', 'Arena'),
+          text: t('learning', 'Arena mode lets you compete in real-time quiz battles: Sprint (speed round) or Elimination (last one standing). Challenge your course mates!'),
+          shortText: t('learning', 'Real-time quiz battles: Sprint or Elimination.'),
+        },
+        'view:course-oldschool': {
+          title: t('learning', 'Oldschool'),
+          text: t('learning', 'Classic board-game style learning: Lernwürfel (dice + questions) and Wissenssturm (5 categories, steal mechanics). Play with 2-4 people at the same screen.'),
+          shortText: t('learning', 'Board-game learning: dice, categories, steal.'),
+        },
+        'view:course-abenteuer': {
+          title: t('learning', 'Adventure'),
+          text: t('learning', 'Adventure mode wraps learning in a story with branching paths. Solve network problems, make decisions and reach different endings.'),
+          shortText: t('learning', 'Story-driven learning with branching paths.'),
+        },
+        // Instructor course tabs
+        'view:course-pools': {
+          title: t('learning', 'Course Pools'),
+          text: t('learning', 'Manage question pools assigned to this course. Add or remove pools, set them as required or optional for students.'),
+          shortText: t('learning', 'Manage pools for this course.'),
+        },
+        'view:course-members': {
+          title: t('learning', 'Members'),
+          text: t('learning', 'View and manage course members. Add students, assign roles or remove inactive members.'),
+          shortText: t('learning', 'Manage course members and roles.'),
+        },
+        'view:course-progress': {
+          title: t('learning', 'Student Progress'),
+          text: t('learning', 'Overview of all students: mastered questions, XP, last activity. Identify who needs help and who is ahead.'),
+          shortText: t('learning', 'Track student progress and identify at-risk learners.'),
+        },
+        'view:course-class-profile': {
+          title: t('learning', 'Class Profile'),
+          text: t('learning', 'Aggregated class profile from Telos onboarding: experience levels, target certifications, learning goals. Understand your class at a glance.'),
+          shortText: t('learning', 'Aggregated student profiles and learning goals.'),
+        },
+        'view:course-heatmap': {
+          title: t('learning', 'Heatmap'),
+          text: t('learning', 'Visual heatmap showing which questions are easy (green) and which are hard (red) across the whole class. Spot trouble areas quickly.'),
+          shortText: t('learning', 'Question difficulty heatmap across all students.'),
+        },
+        'view:course-weak-questions': {
+          title: t('learning', 'Weak Questions'),
+          text: t('learning', 'Questions with the highest error rate across all students. These are the topics your class struggles with most — focus your teaching here.'),
+          shortText: t('learning', 'Questions students get wrong most often.'),
+        },
+        'view:course-announcements': {
+          title: t('learning', 'Announcements'),
+          text: t('learning', 'Post announcements visible to all course members. Use for exam reminders, schedule changes or study tips.'),
+          shortText: t('learning', 'Post messages visible to all students.'),
+        },
+        'view:course-exam-slot': {
+          title: t('learning', 'Exam Slot'),
+          text: t('learning', 'Schedule exam time windows: set start/end, choose pools and configure time limits. Students can only take the exam during the slot.'),
+          shortText: t('learning', 'Schedule timed exam windows for students.'),
+        },
+        'view:course-requests': {
+          title: t('learning', 'Requests'),
+          text: t('learning', 'Student requests and error reports. Review flagged questions, respond to help requests and improve your content.'),
+          shortText: t('learning', 'Review student requests and error reports.'),
+        },
+        'view:course-mode-config': {
+          title: t('learning', 'Mode Config'),
+          text: t('learning', 'Enable or disable learning modes for this course: Training, Leitner, Exam, Arena, Oldschool, Adventure. Control what students can access.'),
+          shortText: t('learning', 'Enable/disable learning modes for students.'),
+        },
+        'view:course-materials': {
+          title: t('learning', 'Materials'),
+          text: t('learning', 'Upload and manage learning materials: PDFs, links, documents. Students see these as reference material alongside their questions.'),
+          shortText: t('learning', 'Upload reference materials for students.'),
+        },
+        'view:course-curriculum': {
+          title: t('learning', 'Curriculum'),
+          text: t('learning', 'Structure your course content into chapters and topics. Map questions to curriculum objectives for targeted learning.'),
+          shortText: t('learning', 'Organize content into chapters and topics.'),
+        },
+        // Pool-level views (outside courses)
         'view:training': {
           title: t('learning', 'Training'),
           text: t('learning', 'Here you practise questions in flashcard style. After each answer you immediately see whether it was correct. Correct answers move up to higher Leitner boxes.'),

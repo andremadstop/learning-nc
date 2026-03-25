@@ -1638,6 +1638,7 @@ export default {
 			},
 			selectTab(tabId) {
 				this.currentTab = tabId
+				this.$root.$emit('course:tab-change', tabId)
 				if (tabId !== 'arena') {
 					this.arenaSubMode = null
 				}
