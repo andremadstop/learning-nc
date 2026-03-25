@@ -15,11 +15,11 @@
 
 ### Quest-Map (MAP)
 
-- [ ] **MAP-01**: User sieht eine 2D-Karte aller Kampagnen-Knoten mit Verbindungen (Edges) als interaktive SVG-Grafik
-- [ ] **MAP-02**: Knoten zeigen visuell ihren Status: besucht (gruen), aktuell (pulsierend), erreichbar (hell), gesperrt (grau/Schloss-Icon)
-- [ ] **MAP-03**: Edge-Labels sind sichtbar und zeigen die Entscheidungsoption
-- [ ] **MAP-04**: Gesperrte Edges zeigen per Tooltip welche Bedingung fehlt (Flag, Item, Reputation)
-- [ ] **MAP-05**: User kann durch Klick auf einen erreichbaren Knoten dorthin navigieren
+- [x] **MAP-01**: User sieht eine 2D-Karte aller Kampagnen-Knoten mit Verbindungen (Edges) als interaktive SVG-Grafik
+- [x] **MAP-02**: Knoten zeigen visuell ihren Status: besucht (gruen), aktuell (pulsierend), erreichbar (hell), gesperrt (grau/Schloss-Icon)
+- [x] **MAP-03**: Edge-Labels sind sichtbar und zeigen die Entscheidungsoption
+- [x] **MAP-04**: Gesperrte Edges zeigen per Tooltip welche Bedingung fehlt (Flag, Item, Reputation)
+- [x] **MAP-05**: User kann durch Klick auf einen erreichbaren Knoten dorthin navigieren
 - [ ] **MAP-06**: Quest-Map hat Zoom und Pan fuer groessere Kampagnen
 
 ### HUD / Game-UI (HUD)
@@ -91,11 +91,11 @@
 | SIM-03 | Phase 80 | Complete |
 | SIM-04 | Phase 80 | Complete |
 | SIM-05 | Phase 80 | Complete |
-| MAP-01 | Phase 81 | Pending |
-| MAP-02 | Phase 81 | Pending |
-| MAP-03 | Phase 81 | Pending |
-| MAP-04 | Phase 81 | Pending |
-| MAP-05 | Phase 81 | Pending |
+| MAP-01 | Phase 81 | Complete |
+| MAP-02 | Phase 81 | Complete |
+| MAP-03 | Phase 81 | Complete |
+| MAP-04 | Phase 81 | Complete |
+| MAP-05 | Phase 81 | Complete |
 | MAP-06 | Phase 81 | Pending |
 | HUD-01 | Phase 82 | Pending |
 | HUD-02 | Phase 82 | Pending |

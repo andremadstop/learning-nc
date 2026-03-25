@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Housekeeping + Content-Rollout
 status: executing
-stopped_at: Completed 80-03-PLAN.md (AbenteuerMode graph-mode wiring)
-last_updated: "2026-03-25T10:33:56.692Z"
-last_activity: 2026-03-25 — Completed 80-03 AbenteuerMode graph-mode wiring
+stopped_at: Completed 81-01-PLAN.md
+last_updated: "2026-03-25T12:00:55.640Z"
+last_activity: 2026-03-25 — Completed 81-01 questMapEngine + backend full_graph
 progress:
-  total_phases: 53
-  completed_phases: 31
-  total_plans: 53
-  completed_plans: 52
+  total_phases: 54
+  completed_phases: 32
+  total_plans: 56
+  completed_plans: 54
   percent: 50
 ---
 
@@ -25,16 +25,16 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Phase: 80 (in progress)
-Plan: 03 of 4 complete
-Status: Executing Phase 80 plans
-Last activity: 2026-03-25 — Completed 80-03 AbenteuerMode graph-mode wiring
+Phase: 81 (in progress)
+Plan: 01 of 3 complete
+Status: Executing Phase 81 plans
+Last activity: 2026-03-25 — Completed 81-01 questMapEngine + backend full_graph
 
 Progress: [█████░░░░░] 50%
 
 ```
 Phase 80: SimulatorShell + Wiring     [~] In progress (3/4 plans)
-Phase 81: Quest-Map                   [ ] Not started
+Phase 81: Quest-Map                   [~] In progress (1/3 plans)
 Phase 82: HUD + Timer + DauBot-UI     [ ] Not started
 Phase 83: Kampagnen-Content           [ ] Not started
 Phase 84: Coop-Backend                [ ] Not started
@@ -56,6 +56,8 @@ Phase 85: Coop-Frontend               [ ] Not started
 - Coop via Polling (3s Intervall) — kein WebSocket, NC-Infrastruktur hat keinen WS-Server
 - Coop tie-breaking: NOCH OFFEN — muss vor Phase 84 entschieden werden (random vs host wins)
 - [Phase 80]: Extract Vue component logic into pure JS utils for Vitest testing
+- [Phase 81]: Node state priority: current > reachable > visited > locked
+- [Phase 81]: _visited_nodes tracked as array in stateBag, initialized on session start
 
 ### Phase-Reihenfolge Rationale
 
@@ -102,7 +104,7 @@ Phase 85: Coop-Frontend               [ ] Not started
 
 ## Session Continuity
 
-Last session: 2026-03-25T10:33:56.672Z
-Stopped at: Completed 80-03-PLAN.md (AbenteuerMode graph-mode wiring)
-Resume file: None
-Next action: Execute 80-04-PLAN.md
+Last session: 2026-03-25T11:59:31Z
+Stopped at: Completed 81-01-PLAN.md
+Resume file: .planning/phases/81-quest-map/81-01-SUMMARY.md
+Next action: Execute 81-02-PLAN.md
