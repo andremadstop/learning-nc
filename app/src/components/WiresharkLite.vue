@@ -147,6 +147,10 @@ export default {
       this.loadScenario(this.scenario)
     }
   },
+  beforeDestroy() {
+    // Keine aktiven Timer oder globalen Event-Listener registriert.
+    // Hook vorhanden fuer sauberes Embedded-Rendering in SimulatorShell.
+  },
   methods: {
     loadScenario(entry) {
       this.activeScenario = entry
