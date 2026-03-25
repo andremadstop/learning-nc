@@ -2,17 +2,6 @@
   <div class="virtuprof-bubble" :dir="textDirection">
     <div class="bubble-content">
       <div class="bubble-toolbar">
-        <div class="bubble-language-toggle" role="group" aria-label="VirtuProf language">
-          <button
-            v-for="option in languageOptions"
-            :key="option"
-            type="button"
-            class="bubble-language-btn"
-            :class="{ active: option === effectiveLanguage }"
-            @click="$emit('language-change', option)">
-            {{ option.toUpperCase() }}
-          </button>
-        </div>
         <button
           type="button"
           class="bubble-close-btn"
@@ -1046,14 +1035,9 @@ export default {
 
 .bubble-toolbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin: -2px 0 8px;
-}
-
-.bubble-language-toggle {
-  display: inline-flex;
-  gap: 4px;
 }
 
 .bubble-close-btn {
@@ -1077,23 +1061,6 @@ export default {
   background: var(--color-error, #e64d4d);
   color: #fff;
   border-color: var(--color-error, #e64d4d);
-}
-
-.bubble-language-btn {
-  border: 1px solid var(--color-border);
-  background: transparent;
-  color: var(--color-text-maxcontrast);
-  border-radius: 999px;
-  padding: 2px 6px;
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.2;
-  cursor: pointer;
-}
-
-.bubble-language-btn.active {
-  border-color: var(--color-primary-element);
-  color: var(--color-primary-element);
 }
 
 .bubble-title {
