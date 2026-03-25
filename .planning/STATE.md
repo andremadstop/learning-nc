@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Housekeeping + Content-Rollout
 status: executing
-stopped_at: Completed 80-01-PLAN.md (simulator lifecycle hooks)
+stopped_at: Completed 80-03-PLAN.md (AbenteuerMode graph-mode wiring)
 last_updated: "2026-03-25T10:33:56.692Z"
-last_activity: 2026-03-25 — Completed 80-02 SimulatorShell wrapper
+last_activity: 2026-03-25 — Completed 80-03 AbenteuerMode graph-mode wiring
 progress:
   total_phases: 53
   completed_phases: 31
@@ -26,14 +26,14 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 ## Current Position
 
 Phase: 80 (in progress)
-Plan: 02 of 4 complete
+Plan: 03 of 4 complete
 Status: Executing Phase 80 plans
-Last activity: 2026-03-25 — Completed 80-02 SimulatorShell wrapper
+Last activity: 2026-03-25 — Completed 80-03 AbenteuerMode graph-mode wiring
 
 Progress: [█████░░░░░] 50%
 
 ```
-Phase 80: SimulatorShell + Wiring     [~] In progress (2/4 plans)
+Phase 80: SimulatorShell + Wiring     [~] In progress (3/4 plans)
 Phase 81: Quest-Map                   [ ] Not started
 Phase 82: HUD + Timer + DauBot-UI     [ ] Not started
 Phase 83: Kampagnen-Content           [ ] Not started
@@ -91,6 +91,10 @@ Phase 85: Coop-Frontend               [ ] Not started
 - anime.js v4 Import-Pfad unter Webpack 5 verifizieren bei Phase 81 Start (`import anime from 'animejs'` vs `import { animate } from 'animejs'`)
 - D3-Bundle-Groesse nach Installation pruefen: `npx webpack --analyze`, Ziel < 50 KB
 
+### Roadmap Evolution
+
+- Phase 80.1 inserted after Phase 80: Bot-Gegner für Multiplayer-Modi (URGENT) — deterministischer Bot-Spieler damit alle Multiplayer-Modi alleine spielbar/testbar sind
+
 ### Blockers/Concerns
 
 - Coop tie-breaking: unentschieden, muss vor Phase 84 als explizite Entscheidung dokumentiert sein
@@ -99,6 +103,6 @@ Phase 85: Coop-Frontend               [ ] Not started
 ## Session Continuity
 
 Last session: 2026-03-25T10:33:56.672Z
-Stopped at: Completed 80-01-PLAN.md (simulator lifecycle hooks)
+Stopped at: Completed 80-03-PLAN.md (AbenteuerMode graph-mode wiring)
 Resume file: None
-Next action: Execute 80-03-PLAN.md (AbenteuerMode graph-mode wiring)
+Next action: Execute 80-04-PLAN.md

@@ -563,7 +563,7 @@ Plans:
 
 **Milestone Goal:** Die bestehende Graph-Engine mit den 7 Netzwerk-Simulatoren zu einem echten Spielerlebnis verschmelzen. Kampagnen sollen sich wie ein kleines RPG anfuehlen — mit Quest-Map, eingebetteten Simulator-Challenges, humorvollen ueberzeichneten Charakteren, Inventory, Reputation, Timer-Countdown und Coop-Multiplayer.
 
-- [ ] **Phase 80: SimulatorShell + Wiring** - SIM-01 bis SIM-05 — Simulator-Wrapper, Lifecycle-Hooks, pass_flag-Wiring
+- [x] **Phase 80: SimulatorShell + Wiring** - SIM-01 bis SIM-05 — Simulator-Wrapper, Lifecycle-Hooks, pass_flag-Wiring (completed 2026-03-25)
 - [ ] **Phase 81: Quest-Map** - MAP-01 bis MAP-06 — D3.js SVG-Karte, Knoten-Zustaende, Zoom/Pan
 - [ ] **Phase 82: HUD + Timer + DauBot-UI** - HUD-01 bis HUD-06, BOT-01 bis BOT-05 — StateBagHUD, Timer-Countdown, DauBot-Dialog
 - [ ] **Phase 83: Kampagnen-Content "Der grosse Ausfall"** - CAMP-01 bis CAMP-07 — 15+ Knoten, 3 Akte, 3 Enden, NPCs, Items, Reputation
@@ -586,6 +586,16 @@ Plans:
 - [ ] 80-01-PLAN.md — beforeDestroy-Lifecycle-Hooks fuer 5 Simulatoren + Test-Scaffold
 - [ ] 80-02-PLAN.md — SimulatorShell.vue mit SIMULATOR_MAP + @result-Normierung
 - [ ] 80-03-PLAN.md — AbenteuerMode Graph-Mode Wiring + SimulatorShell-Integration
+
+### Phase 80.1: Bot-Gegner für Multiplayer-Modi (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 80
+**Plans:** 3/3 plans complete
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 80.1 to break down)
 
 ### Phase 81: Quest-Map
 **Goal**: User sehen eine interaktive 2D-Karte aller Kampagnen-Knoten als SVG-Overlay mit D3.js, koennen Knoten-Zustaende (besucht/aktuell/erreichbar/gesperrt) ablesen und per Klick oder Zoom navigieren
@@ -791,7 +801,7 @@ Plans:
 | 76. Onboarding-Frontend | v11.0 | 0/? | Not started | - |
 | 77. Profil + Dozenten-Sicht | v11.0 | 0/? | Not started | - |
 | 78. Guide-Modus + Antwortlaengen | v11.0 | 0/? | Not started | - |
-| 80. SimulatorShell + Wiring | 2/3 | In Progress|  | - |
+| 80. SimulatorShell + Wiring | 3/3 | Complete   | 2026-03-25 | - |
 | 81. Quest-Map | v12.0 | 0/? | Not started | - |
 | 82. HUD + Timer + DauBot-UI | v12.0 | 0/? | Not started | - |
 | 83. Kampagnen-Content | v12.0 | 0/? | Not started | - |
