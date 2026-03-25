@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "campaign_version": "1.0.0",
+  "campaign": {
+    "required": [
+      "campaign_id",
+      "version",
+      "title",
+      "description",
+      "duration_minutes",
+      "difficulty",
+      "focus_areas",
+      "character_recommendations",
+      "graph"
+    ],
+    "difficulty_enum": [
+      "beginner",
+      "intermediate",
+      "advanced"
+    ],
+    "optional": [
+      "icon",
+      "workplace_npcs"
+    ]
+  },
+  "graph": {
+    "required": [
+      "nodes",
+      "edges",
+      "acts"
+    ],
+    "node_required": [
+      "id",
+      "title",
+      "narrative",
+      "act"
+    ],
+    "edge_required": [
+      "id",
+      "from",
+      "to",
+      "label"
+    ],
+    "act_required": [
+      "name",
+      "node_ids"
+    ],
+    "node_type_enum": [
+      "story",
+      "simulator",
+      "bot_correction",
+      "ending"
+    ],
+    "simulator_type_enum": [
+      "firewall",
+      "dns",
+      "routing",
+      "nat",
+      "portscan",
+      "wireshark",
+      "authflow"
+    ],
+    "bot_category_enum": [
+      "default",
+      "firewall",
+      "dns",
+      "routing",
+      "nat"
+    ],
+    "condition_keys": [
+      "requires_flag",
+      "requires_item",
+      "min_reputation",
+      "max_reputation"
+    ]
+  },
+  "workplace_npc": {
+    "required": [
+      "character_id",
+      "role_in_story"
+    ]
+  }
+}
