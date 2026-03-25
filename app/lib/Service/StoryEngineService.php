@@ -98,6 +98,7 @@ class StoryEngineService {
                     'difficulty'               => $data['difficulty'] ?? 'intermediate',
                     'focus_areas'              => $data['focus_areas'] ?? [],
                     'character_recommendations'=> $data['character_recommendations'] ?? [],
+                    'graph_mode'               => isset($data['graph']),
                 ];
             } catch (\RuntimeException $e) {
                 $this->logger->warning('StoryEngine: skipping invalid campaign file {file}: {err}', [
@@ -213,6 +214,11 @@ class StoryEngineService {
             if (empty($node['id'])) {
                 throw new \RuntimeException("Campaign {$filename} graph has a node missing 'id'");
             }
+            $this->validateGraphRoleFilter(
+                $node['role_filter'] ?? [],
+                "Campaign {$filename} graph node '{$node['id']}'"
+            );
+            $this->validateGraphNodeMetadata($node, $filename);
             $nodeIds[(string)$node['id']] = true;
         }
 
@@ -233,6 +239,193 @@ class StoryEngineService {
                     );
                 }
             }
+            $this->validateGraphRoleFilter(
+                $edge['role_filter'] ?? [],
+                "Campaign {$filename} graph edge '{$edge['id']}'"
+            );
+        }
+
+        if (!isset($graph['acts'])) {
+            return;
+        }
+
+        if (!is_array($graph['acts']) || empty($graph['acts'])) {
+            throw new \RuntimeException("Campaign {$filename} graph acts must be a non-empty array");
+        }
+
+        $assignedNodeIds = [];
+        foreach ($graph['acts'] as $index => $act) {
+            $actNumber = $index + 1;
+            if (!is_array($act)) {
+                throw new \RuntimeException("Campaign {$filename} act {$actNumber} is malformed");
+            }
+            if (empty($act['name'])) {
+                throw new \RuntimeException("Campaign {$filename} act {$actNumber} missing name");
+            }
+            if (!isset($act['node_ids']) || !is_array($act['node_ids']) || empty($act['node_ids'])) {
+                throw new \RuntimeException("Campaign {$filename} act '{$act['name']}' missing node_ids");
+            }
+
+            foreach ($act['node_ids'] as $nodeId) {
+                $nodeKey = (string)$nodeId;
+                if (!isset($nodeIds[$nodeKey])) {
+                    throw new \RuntimeException(
+                        "Campaign {$filename} act '{$act['name']}' references unknown node '{$nodeKey}'"
+                    );
+                }
+                if (isset($assignedNodeIds[$nodeKey])) {
+                    throw new \RuntimeException(
+                        "Campaign {$filename} node '{$nodeKey}' is assigned to multiple acts"
+                    );
+                }
+                $assignedNodeIds[$nodeKey] = true;
+            }
+        }
+
+        $missingNodeIds = array_diff(array_keys($nodeIds), array_keys($assignedNodeIds));
+        if (!empty($missingNodeIds)) {
+            throw new \RuntimeException(
+                "Campaign {$filename} acts are incomplete, missing nodes: " . implode(', ', $missingNodeIds)
+            );
+        }
+
+        $startNodeId = null;
+        foreach ($graph['nodes'] as $node) {
+            if (!empty($node['start'])) {
+                $startNodeId = (string)$node['id'];
+                break;
+            }
+        }
+        if ($startNodeId !== null) {
+            $firstActNodeIds = array_map('strval', $graph['acts'][0]['node_ids']);
+            if (!in_array($startNodeId, $firstActNodeIds, true)) {
+                throw new \RuntimeException(
+                    "Campaign {$filename} start node '{$startNodeId}' must belong to the first act"
+                );
+            }
+        }
+    }
+
+    /**
+     * @param mixed $roleFilter
+     * @throws \RuntimeException
+     */
+    private function validateGraphRoleFilter($roleFilter, string $context): void {
+        if ($roleFilter === [] || $roleFilter === null) {
+            return;
+        }
+        if (!is_array($roleFilter)) {
+            throw new \RuntimeException("{$context} role_filter must be a non-empty array");
+        }
+
+        foreach ($roleFilter as $role) {
+            $roleName = trim((string)$role);
+            if ($roleName === '' || !in_array($roleName, self::VALID_CLASSES, true)) {
+                throw new \RuntimeException(
+                    "{$context} role_filter contains invalid role '{$roleName}'"
+                );
+            }
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     * @throws \RuntimeException
+     */
+    private function validateGraphNodeMetadata(array $node, string $filename): void {
+        if (isset($node['type']) && !is_string($node['type'])) {
+            throw new \RuntimeException(
+                "Campaign {$filename} node '{$node['id']}' has invalid type metadata"
+            );
+        }
+
+        $simulator = $node['simulator'] ?? $node['simulation'] ?? null;
+        if ($simulator !== null) {
+            if (!is_array($simulator)) {
+                throw new \RuntimeException(
+                    "Campaign {$filename} node '{$node['id']}' simulator must be an object"
+                );
+            }
+            foreach (['type', 'scenario', 'pass_flag'] as $field) {
+                if (trim((string)($simulator[$field] ?? '')) === '') {
+                    throw new \RuntimeException(
+                        "Campaign {$filename} node '{$node['id']}' simulator missing {$field}"
+                    );
+                }
+            }
+        }
+
+        if (isset($node['timer_seconds'])) {
+            $timerSeconds = (int)$node['timer_seconds'];
+            if ($timerSeconds <= 0) {
+                throw new \RuntimeException(
+                    "Campaign {$filename} node '{$node['id']}' timer_seconds must be > 0"
+                );
+            }
+        }
+
+        if (!isset($node['bot_correction'])) {
+            return;
+        }
+
+        if (!is_array($node['bot_correction'])) {
+            throw new \RuntimeException(
+                "Campaign {$filename} node '{$node['id']}' bot_correction must be an object"
+            );
+        }
+
+        $config = $node['bot_correction'];
+        $hasExplicitScenario = array_key_exists('error_options', $config)
+            || array_key_exists('fix_options', $config)
+            || array_key_exists('expected_error_id', $config)
+            || array_key_exists('expected_fix_id', $config);
+
+        if (!$hasExplicitScenario) {
+            return;
+        }
+
+        if (empty($config['error_options']) || !is_array($config['error_options'])) {
+            throw new \RuntimeException(
+                "Campaign {$filename} node '{$node['id']}' bot_correction missing error_options"
+            );
+        }
+        $this->validateBotCorrectionOptions(
+            $config['error_options'],
+            "Campaign {$filename} node '{$node['id']}' bot_correction error_options"
+        );
+        if (empty($config['fix_options']) || !is_array($config['fix_options'])) {
+            throw new \RuntimeException(
+                "Campaign {$filename} node '{$node['id']}' bot_correction missing fix_options"
+            );
+        }
+        $this->validateBotCorrectionOptions(
+            $config['fix_options'],
+            "Campaign {$filename} node '{$node['id']}' bot_correction fix_options"
+        );
+        if (trim((string)($config['expected_error_id'] ?? '')) === '') {
+            throw new \RuntimeException(
+                "Campaign {$filename} node '{$node['id']}' bot_correction missing expected_error_id"
+            );
+        }
+        if (trim((string)($config['expected_fix_id'] ?? '')) === '') {
+            throw new \RuntimeException(
+                "Campaign {$filename} node '{$node['id']}' bot_correction missing expected_fix_id"
+            );
+        }
+    }
+
+    /**
+     * @param array<int, mixed> $options
+     * @throws \RuntimeException
+     */
+    private function validateBotCorrectionOptions(array $options, string $context): void {
+        foreach ($options as $option) {
+            if (!is_array($option)) {
+                throw new \RuntimeException("{$context} must contain objects with id and label");
+            }
+            if (trim((string)($option['id'] ?? '')) === '' || trim((string)($option['label'] ?? '')) === '') {
+                throw new \RuntimeException("{$context} entries must contain non-empty id and label");
+            }
         }
     }
 
@@ -244,18 +437,24 @@ class StoryEngineService {
      *
      * @param array{state: array<string, mixed>, node: array<string, mixed>, available_edges: list<array<string, mixed>>} $graphResult
      * @param array<string, mixed> $campaign
-     * @return array{progress: array<string, mixed>, scene: array<string, mixed>}
+     * @return array{progress: array<string, mixed>, scene: array<string, mixed>, state: array<string, mixed>, available_edges: list<array<string, mixed>>}
      */
     private function transformGraphResponse(array $graphResult, array $campaign): array {
         $node = $graphResult['node'];
         $edges = $graphResult['available_edges'] ?? [];
         $state = $graphResult['state'];
+        $simulator = $graphResult['simulator'] ?? ($node['simulator'] ?? $node['simulation'] ?? null);
+        $timer = $graphResult['timer'] ?? null;
+        $dauBot = $graphResult['dau_bot'] ?? null;
+        $botCorrection = $graphResult['bot_correction'] ?? null;
 
         // Map edges to choices format the frontend understands
         $choices = array_map(static fn(array $edge) => [
             'id' => $edge['id'],
             'text' => $edge['label'] ?? $edge['id'],
-            'skill_check' => null, // Phase 73 will add simulator refs
+            'skill_check' => null,
+            'role_filter' => $edge['role_filter'] ?? [],
+            'to_act' => $edge['to_act'] ?? null,
         ], $edges);
 
         return [
@@ -266,6 +465,8 @@ class StoryEngineService {
                 'score' => $state['score'] ?? 0,
                 'status' => $state['status'] ?? 'in_progress',
                 'state_bag' => $state['state_bag'] ?? [],
+                'act_number' => $state['act_number'] ?? 1,
+                'graph_mode' => true,
             ],
             'scene' => [
                 'id' => $node['id'],
@@ -275,10 +476,106 @@ class StoryEngineService {
                 'act' => $node['act'] ?? $state['act_number'] ?? 1,
                 'is_ending' => empty($edges) && !empty($node['is_ending']),
                 'characters' => $node['characters'] ?? [],
-                'simulation' => $node['simulation'] ?? null,
+                'type' => $node['type'] ?? 'graph_scene',
+                'role_filter' => $node['role_filter'] ?? [],
+                'simulator' => $simulator,
+                'simulation' => $simulator,
+                'timer' => $timer,
+                'dau_bot' => $dauBot,
+                'bot_correction' => $botCorrection,
                 'graph_mode' => true,
             ],
+            'state' => $state,
+            'available_edges' => $edges,
+            'timer' => $timer,
+            'simulator' => $simulator,
+            'dau_bot' => $dauBot,
+            'bot_correction' => $botCorrection,
         ];
+    }
+
+    /**
+     * Start a graph campaign via the dedicated graph API.
+     *
+     * @return array{progress: array<string, mixed>, scene: array<string, mixed>, state: array<string, mixed>, available_edges: list<array<string, mixed>>}
+     */
+    public function startGraphCampaign(string $userId, string $campaignId, string $characterClass): array {
+        $this->validateCharacterClass($characterClass);
+        $campaign = $this->loadCampaign($campaignId);
+        if (!$this->graphService->isGraphCampaign($campaign)) {
+            throw new \InvalidArgumentException("Campaign '{$campaignId}' is not a graph campaign");
+        }
+
+        $result = $this->graphService->initGraphSession(
+            $userId,
+            $campaignId,
+            $characterClass,
+            $campaign['graph']
+        );
+
+        return $this->transformGraphResponse($result, $campaign);
+    }
+
+    /**
+     * Resume a graph campaign via the dedicated graph API.
+     *
+     * @return array{progress: array<string, mixed>, scene: array<string, mixed>, state: array<string, mixed>, available_edges: list<array<string, mixed>>}
+     */
+    public function getGraphScene(string $userId, string $campaignId): array {
+        $campaign = $this->loadCampaign($campaignId);
+        if (!$this->graphService->isGraphCampaign($campaign)) {
+            throw new \InvalidArgumentException("Campaign '{$campaignId}' is not a graph campaign");
+        }
+
+        $result = $this->graphService->getGraphScene($userId, $campaignId, $campaign['graph']);
+
+        return $this->transformGraphResponse($result, $campaign);
+    }
+
+    /**
+     * Traverse one graph edge via the dedicated graph API.
+     *
+     * @return array{progress: array<string, mixed>, scene: array<string, mixed>, state: array<string, mixed>, available_edges: list<array<string, mixed>>}
+     */
+    public function traverseGraphEdge(
+        string $userId,
+        string $campaignId,
+        string $edgeId,
+        array $interactionContext = []
+    ): array {
+        if ($edgeId === '') {
+            throw new \InvalidArgumentException('edgeId is required');
+        }
+
+        $campaign = $this->loadCampaign($campaignId);
+        if (!$this->graphService->isGraphCampaign($campaign)) {
+            throw new \InvalidArgumentException("Campaign '{$campaignId}' is not a graph campaign");
+        }
+
+        $result = $this->graphService->traverseEdge(
+            $userId,
+            $campaignId,
+            $edgeId,
+            $campaign['graph'],
+            $campaign,
+            $interactionContext
+        );
+
+        return $this->transformGraphResponse($result, $campaign);
+    }
+
+    /**
+     * Return the persisted graph state-bag and cursor for a running graph campaign.
+     *
+     * @return array<string, mixed>
+     */
+    public function getGraphState(string $userId, string $campaignId): array {
+        $campaign = $this->loadCampaign($campaignId);
+        if (!$this->graphService->isGraphCampaign($campaign)) {
+            throw new \InvalidArgumentException("Campaign '{$campaignId}' is not a graph campaign");
+        }
+
+        return $this->graphService->getGraphState($userId, $campaignId);
     }
 
     // ─── Progress Management ─────────────────────────────────────────────────
@@ -297,10 +594,7 @@ class StoryEngineService {
 
         // Graph-mode delegation — early return, linear logic below unchanged
         if ($this->graphService->isGraphCampaign($campaign)) {
-            $result = $this->graphService->initGraphSession(
-                $userId, $campaignId, $characterClass, $campaign['graph']
-            );
-            return $this->transformGraphResponse($result, $campaign);
+            return $this->startGraphCampaign($userId, $campaignId, $characterClass);
         }
 
         $firstScene = $campaign['scenes'][0] ?? null;
@@ -347,8 +641,7 @@ class StoryEngineService {
 
         // Graph-mode delegation — early return, linear logic below unchanged
         if ($this->graphService->isGraphCampaign($campaign)) {
-            $result = $this->graphService->getGraphScene($userId, $campaignId, $campaign['graph']);
-            return $this->transformGraphResponse($result, $campaign);
+            return $this->getGraphScene($userId, $campaignId);
         }
 
         $progress = $this->requireProgress($userId, $campaignId);
@@ -380,16 +673,14 @@ class StoryEngineService {
         string $campaignId,
         string $choiceId,
         ?int   $questionId = null,
-        ?int   $answerId   = null
+        ?int   $answerId   = null,
+        array  $interactionContext = []
     ): array {
         $campaign  = $this->loadCampaign($campaignId);
 
         // Graph-mode delegation — in graph mode, choiceId = edge ID
         if ($this->graphService->isGraphCampaign($campaign)) {
-            $result = $this->graphService->traverseEdge(
-                $userId, $campaignId, $choiceId, $campaign['graph'], $campaign
-            );
-            return $this->transformGraphResponse($result, $campaign);
+            return $this->traverseGraphEdge($userId, $campaignId, $choiceId, $interactionContext);
         }
 
         $progress = $this->requireProgress($userId, $campaignId);

@@ -34,9 +34,9 @@ class CampaignState extends Entity {
     }
 
     /**
-     * Decode state_bag JSON into an associative array.
+     * Decode state_bag JSON into an associative array while preserving runtime metadata.
      *
-     * @return array{flags: array<string, bool>, items: list<string>, reputation: array<string, int|float>}
+     * @return array<string, mixed>
      */
     public function getStateBagDecoded(): array {
         if ($this->stateBag === null || $this->stateBag === '' || $this->stateBag === '{}') {
@@ -46,11 +46,18 @@ class CampaignState extends Entity {
         if (!is_array($decoded)) {
             return ['flags' => [], 'items' => [], 'reputation' => []];
         }
-        return [
-            'flags' => $decoded['flags'] ?? [],
-            'items' => $decoded['items'] ?? [],
-            'reputation' => $decoded['reputation'] ?? [],
-        ];
+
+        if (!isset($decoded['flags']) || !is_array($decoded['flags'])) {
+            $decoded['flags'] = [];
+        }
+        if (!isset($decoded['items']) || !is_array($decoded['items'])) {
+            $decoded['items'] = [];
+        }
+        if (!isset($decoded['reputation']) || !is_array($decoded['reputation'])) {
+            $decoded['reputation'] = [];
+        }
+
+        return $decoded;
     }
 
     /**

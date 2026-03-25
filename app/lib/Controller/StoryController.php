@@ -17,6 +17,10 @@ use OCP\IRequest;
  *   GET  /api/story/campaigns                         → listCampaigns
  *   POST /api/story/campaigns/{campaignId}/start      → startCampaign
  *   GET  /api/story/campaigns/{campaignId}/scene      → getScene
+ *   POST /api/story/campaigns/{campaignId}/graph-start → graphStart
+ *   GET  /api/story/campaigns/{campaignId}/graph-scene → graphScene
+ *   POST /api/story/campaigns/{campaignId}/graph-traverse → graphTraverse
+ *   GET  /api/story/campaigns/{campaignId}/graph-state → graphState
  *   GET  /api/story/campaigns/{campaignId}/scene/{sceneId}/questions/{choiceId}
  *                                                     → getSkillCheckQuestions
  *   POST /api/story/campaigns/{campaignId}/choice     → makeChoice
@@ -136,6 +140,107 @@ class StoryController extends Controller {
         }
     }
 
+    /**
+     * Start a graph campaign via dedicated graph endpoint.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function graphStart(string $campaignId, string $characterClass = 'helpdesk'): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            $result = $this->service->startGraphCampaign($this->userId, $campaignId, $characterClass);
+            return new DataResponse($result, Http::STATUS_CREATED);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\RuntimeException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to start graph campaign'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Resume a graph campaign from persisted state.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 60, period: 60)]
+    public function graphScene(string $campaignId): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            $result = $this->service->getGraphScene($this->userId, $campaignId);
+            return new DataResponse($result);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\RuntimeException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to get graph scene'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Traverse one edge in a graph campaign.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function graphTraverse(string $campaignId, string $edgeId = ''): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        if ($edgeId === '') {
+            $edgeId = (string)($this->request->getParam('edgeId', '') ?: $this->request->getParam('edge_id', ''));
+        }
+        if ($edgeId === '') {
+            return new DataResponse(['error' => 'edgeId is required'], Http::STATUS_BAD_REQUEST);
+        }
+
+        try {
+            $result = $this->service->traverseGraphEdge(
+                $this->userId,
+                $campaignId,
+                $edgeId,
+                $this->collectGraphInteractionContext()
+            );
+            return new DataResponse($result);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\RuntimeException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to traverse graph edge'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Read the persisted state-bag of a graph campaign.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function graphState(string $campaignId): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            $result = $this->service->getGraphState($this->userId, $campaignId);
+            return new DataResponse($result);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\RuntimeException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => $e->getMessage() ?: 'Failed to load graph state'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     // ─── Skill Check Questions ────────────────────────────────────────────────
 
     /**
@@ -194,7 +299,8 @@ class StoryController extends Controller {
                 $campaignId,
                 $choiceId,
                 $questionId > 0 ? $questionId : null,
-                $answerId   > 0 ? $answerId   : null
+                $answerId   > 0 ? $answerId   : null,
+                $this->collectGraphInteractionContext()
             );
             return new DataResponse($result);
         } catch (\InvalidArgumentException $e) {
@@ -325,5 +431,92 @@ class StoryController extends Controller {
                 Http::STATUS_INTERNAL_SERVER_ERROR
             );
         }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function collectGraphInteractionContext(): array {
+        $context = [];
+        $interaction = $this->request->getParam('interaction', null);
+
+        if (is_string($interaction) && trim($interaction) !== '') {
+            $decoded = json_decode($interaction, true);
+            if (is_array($decoded)) {
+                $context = $decoded;
+            }
+        } elseif (is_array($interaction)) {
+            $context = $interaction;
+        }
+
+        $simulatorPassed = $this->normalizeBooleanParam(
+            $this->request->getParam('simulator_passed', $this->request->getParam('simulatorPassed', null))
+        );
+        if ($simulatorPassed !== null) {
+            $context['simulator_passed'] = $simulatorPassed;
+        }
+
+        $simulatorScore = $this->request->getParam('simulator_score', $this->request->getParam('simulatorScore', null));
+        if ($simulatorScore !== null && $simulatorScore !== '') {
+            $context['simulator_score'] = (int)$simulatorScore;
+        }
+
+        $simulatorResult = $this->request->getParam('simulator_result', $this->request->getParam('simulatorResult', null));
+        if ($simulatorResult !== null && $simulatorResult !== '') {
+            $context['simulator_result'] = $this->normalizeStructuredParam($simulatorResult);
+        }
+
+        $botErrorId = trim((string)($this->request->getParam('bot_error_id', $this->request->getParam('botErrorId', ''))));
+        if ($botErrorId !== '') {
+            $context['bot_error_id'] = $botErrorId;
+        }
+
+        $botFixId = trim((string)($this->request->getParam('bot_fix_id', $this->request->getParam('botFixId', ''))));
+        if ($botFixId !== '') {
+            $context['bot_fix_id'] = $botFixId;
+        }
+
+        $botCorrectionPassed = $this->normalizeBooleanParam(
+            $this->request->getParam('bot_correction_passed', $this->request->getParam('botCorrectionPassed', null))
+        );
+        if ($botCorrectionPassed !== null) {
+            $context['bot_correction_passed'] = $botCorrectionPassed;
+        }
+
+        return $context;
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function normalizeBooleanParam($value): ?bool {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if (is_int($value)) {
+            return $value !== 0;
+        }
+        if (!is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+    }
+
+    /**
+     * @param mixed $value
+     * @return mixed
+     */
+    private function normalizeStructuredParam($value) {
+        if (!is_string($value)) {
+            return $value;
+        }
+
+        $decoded = json_decode($value, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $decoded;
+        }
+
+        return $value;
     }
 }

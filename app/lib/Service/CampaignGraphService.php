@@ -10,13 +10,16 @@ use Psr\Log\LoggerInterface;
 class CampaignGraphService {
     private CampaignStateMapper $stateMapper;
     private LoggerInterface $logger;
+    private DauBotService $dauBotService;
 
     public function __construct(
         CampaignStateMapper $stateMapper,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        DauBotService $dauBotService
     ) {
         $this->stateMapper = $stateMapper;
         $this->logger = $logger;
+        $this->dauBotService = $dauBotService;
     }
 
     /**
@@ -48,6 +51,353 @@ class CampaignGraphService {
     }
 
     /**
+     * Resolve the act number for a node, preferring the graph-level acts[] structure.
+     *
+     * @param array{nodes: list<array<string, mixed>>, edges: list<array<string, mixed>>, acts?: list<array<string, mixed>>} $graph
+     */
+    private function getNodeActNumber(array $graph, string $nodeId): int {
+        if (!empty($graph['acts']) && is_array($graph['acts'])) {
+            foreach ($graph['acts'] as $index => $act) {
+                $nodeIds = $act['node_ids'] ?? [];
+                if (!is_array($nodeIds)) {
+                    continue;
+                }
+                foreach ($nodeIds as $candidateNodeId) {
+                    if ((string)$candidateNodeId === $nodeId) {
+                        return $index + 1;
+                    }
+                }
+            }
+        }
+
+        $node = $this->findNode($graph, $nodeId);
+        $actValue = $node['act'] ?? $node['act_number'] ?? 1;
+
+        return max(1, (int)$actValue);
+    }
+
+    private function isAllowedActTransition(int $currentActNumber, int $targetActNumber): bool {
+        return $targetActNumber >= $currentActNumber
+            && $targetActNumber <= ($currentActNumber + 1);
+    }
+
+    /**
+     * @param mixed $roleFilter
+     * @return list<string>
+     */
+    private function normalizeRoleFilter($roleFilter): array {
+        if (!is_array($roleFilter)) {
+            return [];
+        }
+
+        $normalized = [];
+        foreach ($roleFilter as $role) {
+            $value = trim((string)$role);
+            if ($value !== '' && !in_array($value, $normalized, true)) {
+                $normalized[] = $value;
+            }
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    private function isRoleAllowed(array $payload, ?string $characterClass): bool {
+        $roleFilter = $this->normalizeRoleFilter($payload['role_filter'] ?? []);
+        if ($roleFilter === [] || $characterClass === null || $characterClass === '') {
+            return true;
+        }
+
+        return in_array($characterClass, $roleFilter, true);
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     */
+    private function assertNodeAccessible(array $node, string $characterClass): void {
+        if ($this->isRoleAllowed($node, $characterClass)) {
+            return;
+        }
+
+        $nodeId = (string)($node['id'] ?? 'unknown');
+        throw new \RuntimeException("Character class '{$characterClass}' cannot access node '{$nodeId}'");
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     * @return array<string, mixed>|null
+     */
+    private function getNodeSimulator(array $node): ?array {
+        $simulator = $node['simulator'] ?? $node['simulation'] ?? null;
+        if (!is_array($simulator)) {
+            return null;
+        }
+
+        return $simulator;
+    }
+
+    /**
+     * @param array<string, mixed> $stateBag
+     * @return array<string, mixed>
+     */
+    private function normalizeStateBag(array $stateBag): array {
+        if (!isset($stateBag['flags']) || !is_array($stateBag['flags'])) {
+            $stateBag['flags'] = [];
+        }
+        if (!isset($stateBag['items']) || !is_array($stateBag['items'])) {
+            $stateBag['items'] = [];
+        }
+        if (!isset($stateBag['reputation']) || !is_array($stateBag['reputation'])) {
+            $stateBag['reputation'] = [];
+        }
+
+        return $stateBag;
+    }
+
+    /**
+     * Seed runtime-only node metadata in the state-bag on first visit.
+     *
+     * @param array<string, mixed> $node
+     * @param array<string, mixed> $stateBag
+     * @return array<string, mixed>
+     */
+    private function initializeNodeRuntimeState(array $node, array $stateBag): array {
+        $bag = $this->normalizeStateBag($stateBag);
+        $nodeId = (string)($node['id'] ?? '');
+        $now = time();
+
+        $timerSeconds = max(0, (int)($node['timer_seconds'] ?? 0));
+        if ($timerSeconds > 0) {
+            if (!isset($bag['timers']) || !is_array($bag['timers'])) {
+                $bag['timers'] = [];
+            }
+            if (!isset($bag['timers'][$nodeId]) || !is_array($bag['timers'][$nodeId])) {
+                $bag['timers'][$nodeId] = [
+                    'started_at' => $now,
+                    'duration_seconds' => $timerSeconds,
+                    'deadline_at' => $now + $timerSeconds,
+                ];
+            }
+        }
+
+        $simulator = $this->getNodeSimulator($node);
+        if ($simulator !== null) {
+            if (!isset($bag['simulators']) || !is_array($bag['simulators'])) {
+                $bag['simulators'] = [];
+            }
+            if (!isset($bag['simulators'][$nodeId]) || !is_array($bag['simulators'][$nodeId])) {
+                $bag['simulators'][$nodeId] = [
+                    'type' => (string)($simulator['type'] ?? ''),
+                    'scenario' => (string)($simulator['scenario'] ?? ''),
+                    'pass_flag' => (string)($simulator['pass_flag'] ?? ''),
+                    'completed' => false,
+                    'passed' => false,
+                ];
+            }
+        }
+
+        if ((string)($node['type'] ?? '') === 'bot_correction') {
+            if (!isset($bag['bot_corrections']) || !is_array($bag['bot_corrections'])) {
+                $bag['bot_corrections'] = [];
+            }
+            if (!isset($bag['bot_corrections'][$nodeId]) || !is_array($bag['bot_corrections'][$nodeId])) {
+                $bag['bot_corrections'][$nodeId] = [
+                    'scenario' => $this->dauBotService->buildBotCorrectionScenario($node, $bag),
+                    'completed' => false,
+                    'passed' => false,
+                    'created_at' => $now,
+                ];
+            }
+        }
+
+        return $bag;
+    }
+
+    /**
+     * Apply simulator / bot-correction results for the current node before edge validation.
+     *
+     * @param array<string, mixed> $node
+     * @param array<string, mixed> $stateBag
+     * @param array<string, mixed> $interactionContext
+     * @return array<string, mixed>
+     */
+    private function applyNodeInteractionContext(array $node, array $stateBag, array $interactionContext): array {
+        $bag = $this->initializeNodeRuntimeState($node, $stateBag);
+        $nodeId = (string)($node['id'] ?? '');
+        $now = time();
+
+        $simulator = $this->getNodeSimulator($node);
+        $hasSimulatorInput = array_key_exists('simulator_passed', $interactionContext)
+            || array_key_exists('simulator_score', $interactionContext)
+            || array_key_exists('simulator_result', $interactionContext);
+
+        if ($simulator !== null && $hasSimulatorInput) {
+            $simulatorState = is_array($bag['simulators'][$nodeId] ?? null)
+                ? $bag['simulators'][$nodeId]
+                : [];
+            $passed = array_key_exists('simulator_passed', $interactionContext)
+                ? (bool)$interactionContext['simulator_passed']
+                : (bool)($simulatorState['passed'] ?? false);
+
+            $simulatorState['type'] = (string)($simulator['type'] ?? ($simulatorState['type'] ?? ''));
+            $simulatorState['scenario'] = (string)($simulator['scenario'] ?? ($simulatorState['scenario'] ?? ''));
+            $simulatorState['pass_flag'] = (string)($simulator['pass_flag'] ?? ($simulatorState['pass_flag'] ?? ''));
+            $simulatorState['completed'] = true;
+            $simulatorState['passed'] = $passed;
+            $simulatorState['updated_at'] = $now;
+
+            if (array_key_exists('simulator_score', $interactionContext)) {
+                $simulatorState['score'] = (int)$interactionContext['simulator_score'];
+            }
+            if (array_key_exists('simulator_result', $interactionContext)) {
+                $simulatorState['result'] = $interactionContext['simulator_result'];
+            }
+
+            $bag['simulators'][$nodeId] = $simulatorState;
+
+            $passFlag = (string)($simulator['pass_flag'] ?? '');
+            if ($passFlag !== '' && $passed) {
+                $bag['flags'][$passFlag] = true;
+            }
+        }
+
+        $isBotCorrectionNode = (string)($node['type'] ?? '') === 'bot_correction';
+        $hasBotInput = array_key_exists('bot_error_id', $interactionContext)
+            || array_key_exists('bot_fix_id', $interactionContext)
+            || array_key_exists('bot_correction_passed', $interactionContext);
+
+        if ($isBotCorrectionNode && $hasBotInput) {
+            $correctionState = is_array($bag['bot_corrections'][$nodeId] ?? null)
+                ? $bag['bot_corrections'][$nodeId]
+                : [];
+            $scenario = is_array($correctionState['scenario'] ?? null)
+                ? $correctionState['scenario']
+                : $this->dauBotService->buildBotCorrectionScenario($node, $bag);
+
+            $submittedErrorId = trim((string)($interactionContext['bot_error_id'] ?? ''));
+            $submittedFixId = trim((string)($interactionContext['bot_fix_id'] ?? ''));
+            $passed = null;
+
+            if (array_key_exists('bot_correction_passed', $interactionContext)) {
+                $passed = (bool)$interactionContext['bot_correction_passed'];
+            } elseif ($submittedErrorId !== '' && $submittedFixId !== '') {
+                $passed = $submittedErrorId === (string)($scenario['expected_error_id'] ?? '')
+                    && $submittedFixId === (string)($scenario['expected_fix_id'] ?? '');
+            }
+
+            if ($submittedErrorId !== '') {
+                $correctionState['submitted_error_id'] = $submittedErrorId;
+            }
+            if ($submittedFixId !== '') {
+                $correctionState['submitted_fix_id'] = $submittedFixId;
+            }
+            if ($passed !== null) {
+                $correctionState['completed'] = true;
+                $correctionState['passed'] = $passed;
+                $correctionState['updated_at'] = $now;
+
+                $passFlag = trim((string)($scenario['pass_flag'] ?? ''));
+                if ($passFlag !== '' && $passed) {
+                    $bag['flags'][$passFlag] = true;
+                }
+            }
+
+            $correctionState['scenario'] = $scenario;
+            $bag['bot_corrections'][$nodeId] = $correctionState;
+        }
+
+        return $bag;
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     * @param array<string, mixed> $stateBag
+     * @return array<string, mixed>|null
+     */
+    private function buildTimerPayload(array $node, array $stateBag): ?array {
+        $timerSeconds = max(0, (int)($node['timer_seconds'] ?? 0));
+        if ($timerSeconds === 0) {
+            return null;
+        }
+
+        $nodeId = (string)($node['id'] ?? '');
+        $timerState = is_array($stateBag['timers'][$nodeId] ?? null)
+            ? $stateBag['timers'][$nodeId]
+            : [];
+        $startedAt = max(0, (int)($timerState['started_at'] ?? 0));
+        if ($startedAt === 0) {
+            $startedAt = time();
+        }
+        $deadlineAt = max($startedAt, (int)($timerState['deadline_at'] ?? ($startedAt + $timerSeconds)));
+        $remainingSeconds = max(0, $deadlineAt - time());
+
+        return [
+            'seconds' => $timerSeconds,
+            'started_at' => $startedAt,
+            'deadline_at' => $deadlineAt,
+            'remaining_seconds' => $remainingSeconds,
+            'expired' => $remainingSeconds === 0,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     * @param array<string, mixed> $stateBag
+     * @return array<string, mixed>|null
+     */
+    private function buildSimulatorPayload(array $node, array $stateBag): ?array {
+        $simulator = $this->getNodeSimulator($node);
+        if ($simulator === null) {
+            return null;
+        }
+
+        $nodeId = (string)($node['id'] ?? '');
+        $simulatorState = is_array($stateBag['simulators'][$nodeId] ?? null)
+            ? $stateBag['simulators'][$nodeId]
+            : [];
+
+        return [
+            'type' => (string)($simulator['type'] ?? ''),
+            'scenario' => (string)($simulator['scenario'] ?? ''),
+            'pass_flag' => (string)($simulator['pass_flag'] ?? ''),
+            'completed' => (bool)($simulatorState['completed'] ?? false),
+            'passed' => (bool)($simulatorState['passed'] ?? false),
+            'score' => isset($simulatorState['score']) ? (int)$simulatorState['score'] : null,
+            'result' => $simulatorState['result'] ?? null,
+            'updated_at' => isset($simulatorState['updated_at']) ? (int)$simulatorState['updated_at'] : null,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $node
+     * @param array<string, mixed> $stateBag
+     * @return array<string, mixed>|null
+     */
+    private function buildBotCorrectionPayload(array $node, array $stateBag): ?array {
+        if ((string)($node['type'] ?? '') !== 'bot_correction') {
+            return null;
+        }
+
+        $nodeId = (string)($node['id'] ?? '');
+        $correctionState = is_array($stateBag['bot_corrections'][$nodeId] ?? null)
+            ? $stateBag['bot_corrections'][$nodeId]
+            : [];
+        $scenario = is_array($correctionState['scenario'] ?? null)
+            ? $correctionState['scenario']
+            : $this->dauBotService->buildBotCorrectionScenario($node, $stateBag);
+
+        $publicScenario = $this->dauBotService->toPublicBotCorrectionScenario($scenario);
+        $publicScenario['completed'] = (bool)($correctionState['completed'] ?? false);
+        $publicScenario['passed'] = (bool)($correctionState['passed'] ?? false);
+        $publicScenario['submitted_error_id'] = $correctionState['submitted_error_id'] ?? null;
+        $publicScenario['submitted_fix_id'] = $correctionState['submitted_fix_id'] ?? null;
+
+        return $publicScenario;
+    }
+
+    /**
      * Find a node by ID in the graph.
      *
      * @param array{nodes: list<array<string, mixed>>, edges: list<array<string, mixed>>} $graph
@@ -70,20 +420,42 @@ class CampaignGraphService {
      * @param array<string, mixed> $stateBag
      * @return list<array<string, mixed>>
      */
-    public function getAvailableEdges(array $graph, string $fromNodeId, array $stateBag): array {
+    public function getAvailableEdges(
+        array $graph,
+        string $fromNodeId,
+        array $stateBag,
+        ?int $currentActNumber = null,
+        ?string $characterClass = null
+    ): array {
         $available = [];
         foreach ($graph['edges'] as $edge) {
             if ((string)($edge['from'] ?? '') !== $fromNodeId) {
                 continue;
             }
+            if (!$this->isRoleAllowed($edge, $characterClass)) {
+                continue;
+            }
+
             $conditions = $edge['conditions'] ?? [];
             if ($this->evaluateConditions($conditions, $stateBag)) {
+                $targetNodeId = (string)($edge['to'] ?? '');
+                $targetNode = $this->findNode($graph, $targetNodeId);
+                if (!$this->isRoleAllowed($targetNode, $characterClass)) {
+                    continue;
+                }
+                $targetActNumber = $this->getNodeActNumber($graph, $targetNodeId);
+                if ($currentActNumber !== null
+                    && !$this->isAllowedActTransition($currentActNumber, $targetActNumber)) {
+                    continue;
+                }
                 $available[] = [
                     'id' => (string)($edge['id'] ?? ''),
                     'from' => (string)($edge['from'] ?? ''),
-                    'to' => (string)($edge['to'] ?? ''),
+                    'to' => $targetNodeId,
                     'label' => (string)($edge['label'] ?? ''),
                     'conditions' => $conditions,
+                    'to_act' => $targetActNumber,
+                    'role_filter' => $this->normalizeRoleFilter($edge['role_filter'] ?? []),
                 ];
             }
         }
@@ -200,6 +572,40 @@ class CampaignGraphService {
     }
 
     /**
+     * Build the enriched graph response payload for the current node.
+     *
+     * @param array{nodes: list<array<string, mixed>>, edges: list<array<string, mixed>>} $graph
+     * @param array<string, mixed> $node
+     * @param array<string, mixed> $stateBag
+     * @return array<string, mixed>
+     */
+    private function buildGraphResponse(CampaignState $state, array $graph, array $node, array $stateBag): array {
+        $currentActNumber = max(
+            1,
+            $state->getActNumber() > 0
+                ? $state->getActNumber()
+                : $this->getNodeActNumber($graph, (string)($node['id'] ?? ''))
+        );
+        $characterClass = $state->getCharacterClass();
+
+        return [
+            'state' => $this->serializeState($state),
+            'node' => $node,
+            'available_edges' => $this->getAvailableEdges(
+                $graph,
+                (string)($node['id'] ?? ''),
+                $stateBag,
+                $currentActNumber,
+                $characterClass
+            ),
+            'timer' => $this->buildTimerPayload($node, $stateBag),
+            'simulator' => $this->buildSimulatorPayload($node, $stateBag),
+            'dau_bot' => $this->dauBotService->buildSceneSuggestion($node, $stateBag),
+            'bot_correction' => $this->buildBotCorrectionPayload($node, $stateBag),
+        ];
+    }
+
+    /**
      * Traverse an edge: validate, apply effects, update DB, return new state.
      *
      * @param array{nodes: list<array<string, mixed>>, edges: list<array<string, mixed>>} $graph
@@ -207,11 +613,21 @@ class CampaignGraphService {
      * @return array{state: array<string, mixed>, node: array<string, mixed>, available_edges: list<array<string, mixed>>}
      * @throws \RuntimeException on invalid traversal
      */
-    public function traverseEdge(string $userId, string $campaignId, string $edgeId, array $graph, array $campaignData): array {
+    public function traverseEdge(
+        string $userId,
+        string $campaignId,
+        string $edgeId,
+        array $graph,
+        array $campaignData,
+        array $interactionContext = []
+    ): array {
         $state = $this->stateMapper->findByUserAndCampaign($userId, $campaignId);
         if ($state === null) {
             throw new \RuntimeException("No campaign state found for user {$userId}, campaign {$campaignId}");
         }
+        $characterClass = $state->getCharacterClass();
+        $currentNode = $this->findNode($graph, $state->getGraphPosition());
+        $this->assertNodeAccessible($currentNode, $characterClass);
 
         // Find the edge
         $targetEdge = null;
@@ -231,8 +647,15 @@ class CampaignGraphService {
         }
 
         // Validate conditions
-        $currentBag = $state->getStateBagDecoded();
+        $currentBag = $this->applyNodeInteractionContext(
+            $currentNode,
+            $state->getStateBagDecoded(),
+            $interactionContext
+        );
         $conditions = $targetEdge['conditions'] ?? [];
+        if (!$this->isRoleAllowed($targetEdge, $characterClass)) {
+            throw new \RuntimeException("Character class '{$characterClass}' cannot use edge '{$edgeId}'");
+        }
         if (!$this->evaluateConditions($conditions, $currentBag)) {
             throw new \RuntimeException("Conditions not met for edge {$edgeId}");
         }
@@ -240,6 +663,20 @@ class CampaignGraphService {
         // Find target node
         $targetNodeId = (string)($targetEdge['to'] ?? '');
         $targetNode = $this->findNode($graph, $targetNodeId);
+        $this->assertNodeAccessible($targetNode, $characterClass);
+        $currentActNumber = max(
+            1,
+            $state->getActNumber() > 0
+                ? $state->getActNumber()
+                : $this->getNodeActNumber($graph, $state->getGraphPosition())
+        );
+        $targetActNumber = $this->getNodeActNumber($graph, $targetNodeId);
+
+        if (!$this->isAllowedActTransition($currentActNumber, $targetActNumber)) {
+            throw new \RuntimeException(
+                "Edge {$edgeId} would skip act order ({$currentActNumber} -> {$targetActNumber})"
+            );
+        }
 
         // Apply node effects if any (effects is a list of individual effect objects)
         $newBag = $currentBag;
@@ -250,25 +687,16 @@ class CampaignGraphService {
                 }
             }
         }
+        $newBag = $this->initializeNodeRuntimeState($targetNode, $newBag);
 
         // Update state
         $state->setGraphPosition($targetNodeId);
         $state->setStateBagFromArray($newBag);
-        // Support both 'act' (JSON convention) and 'act_number' field names
-        $actValue = $targetNode['act'] ?? $targetNode['act_number'] ?? null;
-        if ($actValue !== null) {
-            $state->setActNumber((int)$actValue);
-        }
+        $state->setActNumber($targetActNumber);
         $state->setUpdatedAt(time());
         $this->stateMapper->update($state);
 
-        $availableEdges = $this->getAvailableEdges($graph, $targetNodeId, $newBag);
-
-        return [
-            'state' => $this->serializeState($state),
-            'node' => $targetNode,
-            'available_edges' => $availableEdges,
-        ];
+        return $this->buildGraphResponse($state, $graph, $targetNode, $newBag);
     }
 
     /**
@@ -286,6 +714,7 @@ class CampaignGraphService {
 
         $startNodeId = $this->getStartNodeId($graph);
         $startNode = $this->findNode($graph, $startNodeId);
+        $this->assertNodeAccessible($startNode, $characterClass);
 
         $emptyBag = ['flags' => [], 'items' => [], 'reputation' => []];
 
@@ -298,6 +727,7 @@ class CampaignGraphService {
                 }
             }
         }
+        $bag = $this->initializeNodeRuntimeState($startNode, $bag);
 
         $now = time();
         $state = new CampaignState();
@@ -305,7 +735,7 @@ class CampaignGraphService {
         $state->setCampaignId($campaignId);
         $state->setGraphPosition($startNodeId);
         $state->setStateBagFromArray($bag);
-        $state->setActNumber(1);
+        $state->setActNumber($this->getNodeActNumber($graph, $startNodeId));
         $state->setStatus('in_progress');
         $state->setCharacterClass($characterClass);
         $state->setScore(0);
@@ -315,13 +745,7 @@ class CampaignGraphService {
         /** @var CampaignState $state */
         $state = $this->stateMapper->insert($state);
 
-        $availableEdges = $this->getAvailableEdges($graph, $startNodeId, $bag);
-
-        return [
-            'state' => $this->serializeState($state),
-            'node' => $startNode,
-            'available_edges' => $availableEdges,
-        ];
+        return $this->buildGraphResponse($state, $graph, $startNode, $bag);
     }
 
     /**
@@ -339,13 +763,31 @@ class CampaignGraphService {
 
         $currentBag = $state->getStateBagDecoded();
         $currentNode = $this->findNode($graph, $state->getGraphPosition());
-        $availableEdges = $this->getAvailableEdges($graph, $state->getGraphPosition(), $currentBag);
+        $this->assertNodeAccessible($currentNode, $state->getCharacterClass());
+        $preparedBag = $this->initializeNodeRuntimeState($currentNode, $currentBag);
 
-        return [
-            'state' => $this->serializeState($state),
-            'node' => $currentNode,
-            'available_edges' => $availableEdges,
-        ];
+        if ($preparedBag !== $currentBag) {
+            $state->setStateBagFromArray($preparedBag);
+            $state->setUpdatedAt(time());
+            $this->stateMapper->update($state);
+            $currentBag = $preparedBag;
+        }
+
+        return $this->buildGraphResponse($state, $graph, $currentNode, $currentBag);
+    }
+
+    /**
+     * Return only the serialized graph state for save/resume API calls.
+     *
+     * @return array<string, mixed>
+     */
+    public function getGraphState(string $userId, string $campaignId): array {
+        $state = $this->stateMapper->findByUserAndCampaign($userId, $campaignId);
+        if ($state === null) {
+            throw new \RuntimeException("No campaign state found for user {$userId}, campaign {$campaignId}");
+        }
+
+        return $this->serializeState($state);
     }
 
     /**

@@ -40,6 +40,13 @@
         "title": "Host Isolation",
         "narrative": "With evidence in hand, you isolate the compromised host from the network. The attacker's session drops.",
         "act": 2,
+        "role_filter": ["security", "sysadmin"],
+        "timer_seconds": 300,
+        "simulator": {
+          "type": "firewall",
+          "scenario": "dmz_setup",
+          "pass_flag": "firewall_configured"
+        },
         "effects": [
           {"set_flag": "host_isolated"},
           {"add_item": "incident_report"},
@@ -51,6 +58,8 @@
         "title": "Blind Confrontation",
         "narrative": "Without evidence, you try to isolate the host but pick the wrong one. The attacker notices and covers their tracks.",
         "act": 2,
+        "type": "bot_correction",
+        "pass_flag": "bot_corrected_confront_blind",
         "effects": [
           {"add_reputation": {"security": -2}}
         ]
@@ -92,6 +101,7 @@
         "from": "investigate_logs",
         "to": "isolate_host",
         "label": "Isolate the compromised host",
+        "role_filter": ["security", "sysadmin"],
         "conditions": {"requires_flag": "has_evidence"}
       },
       {
@@ -117,7 +127,7 @@
         "from": "isolate_host",
         "to": "write_report",
         "label": "Write the incident report",
-        "conditions": {"requires_item": "incident_report", "min_reputation": {"security": 3}}
+        "conditions": {"requires_flag": "firewall_configured", "requires_item": "incident_report", "min_reputation": {"security": 3}}
       },
       {
         "id": "e8_escalate_incomplete",
@@ -130,6 +140,20 @@
         "from": "confront_blind",
         "to": "investigate_logs",
         "label": "Go back and gather evidence"
+      }
+    ],
+    "acts": [
+      {
+        "name": "Detection",
+        "node_ids": ["start", "investigate_logs", "alert_team"]
+      },
+      {
+        "name": "Containment",
+        "node_ids": ["isolate_host", "confront_blind"]
+      },
+      {
+        "name": "Closure",
+        "node_ids": ["write_report", "escalate_incomplete"]
       }
     ]
   }
