@@ -21,8 +21,8 @@ class CoopPlayer extends Entity {
         $this->addType('userId', 'string');
         $this->addType('displayName', 'string');
         $this->addType('characterId', 'string');
-        $this->addType('isReady', 'boolean');
-        $this->addType('isHost', 'boolean');
+        $this->addType('isReady', 'integer');
+        $this->addType('isHost', 'integer');
         $this->addType('joinedAt', 'integer');
         $this->addType('lastHeartbeat', 'integer');
     }

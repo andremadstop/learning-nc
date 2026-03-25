@@ -170,7 +170,7 @@ class CoopService {
         $now = time();
 
         if ($action === 'end') {
-            if (!$player->getIsHost()) {
+            if (!(bool)$player->getIsHost()) {
                 throw new \RuntimeException('Only the host can end this session');
             }
 
@@ -418,7 +418,7 @@ class CoopService {
 
     private function areAllPlayersReady(array $players): bool {
         foreach ($players as $player) {
-            if (!$player->getIsReady()) {
+            if (!(bool)$player->getIsReady()) {
                 return false;
             }
         }
@@ -870,7 +870,7 @@ class CoopService {
      * @return array<string, mixed>
      */
     private function buildLobbyPayload(CoopSession $session, array $players): array {
-        $readyCount = count(array_filter($players, static fn(CoopPlayer $player): bool => $player->getIsReady()));
+        $readyCount = count(array_filter($players, static fn(CoopPlayer $player): bool => (bool)$player->getIsReady()));
 
         return [
             'session' => [
@@ -1051,8 +1051,8 @@ class CoopService {
                 'user_id' => $player->getUserId(),
                 'display_name' => $player->getDisplayName(),
                 'character_id' => $player->getCharacterId(),
-                'is_host' => $player->getIsHost(),
-                'is_ready' => $player->getIsReady(),
+                'is_host' => (bool)$player->getIsHost(),
+                'is_ready' => (bool)$player->getIsReady(),
                 'is_online' => $this->isPlayerOnline($player, $now),
                 'joined_at' => $player->getJoinedAt(),
                 'last_heartbeat' => $player->getLastHeartbeat(),
