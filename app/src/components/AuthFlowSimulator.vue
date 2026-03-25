@@ -10,7 +10,7 @@
 
     <nav v-if="!isEmbedded" class="sim-tool__tabs" role="tablist">
       <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'simulator' }" @click="view = 'simulator'">{{ t('learning', 'Simulator') }}</button>
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">{{ t('learning', 'Uebung') }}</button>
+      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">{{ t('learning', 'Übung') }}</button>
     </nav>
 
     <section v-if="currentView === 'simulator'" class="sim-tool__panel">
@@ -75,8 +75,8 @@
 
       <NcEmptyContent
         v-if="!activeScenario"
-        :name="t('learning', 'Noch keine 802.1X-Uebung')"
-        :description="t('learning', 'Waehle ein Auth-Flow-Szenario aus.')"
+        :name="t('learning', 'Noch keine 802.1X-Übung')"
+        :description="t('learning', 'Wähle ein Auth-Flow-Szenario aus.')"
       />
 
       <div v-else class="auth-tool__exercise">
@@ -94,7 +94,7 @@
             </div>
           </li>
         </ol>
-        <button class="sim-tool__btn" type="button" @click="checkSequence">{{ t('learning', 'Reihenfolge pruefen') }}</button>
+        <button class="sim-tool__btn" type="button" @click="checkSequence">{{ t('learning', 'Reihenfolge prüfen') }}</button>
         <NcNoteCard v-if="validation" :type="validation.isCorrect ? 'success' : 'error'">
           {{ validation.isCorrect
             ? t('learning', 'Perfekt. Die 802.1X-Sequenz ist korrekt.')

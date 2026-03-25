@@ -1229,7 +1229,7 @@ export default {
 					this.freetextInput = ''
 					this.showFreetextNarrative(data.narrative)
 				} else {
-					this.freetextError = data.narrative || t('learning', 'Aktion nicht moeglich')
+					this.freetextError = data.narrative || t('learning', 'Aktion nicht möglich')
 				}
 			} catch (err) {
 				this.freetextError = err.response?.data?.error || t('learning', 'Fehler bei der Verarbeitung')

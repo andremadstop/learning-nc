@@ -5,7 +5,7 @@
         <p class="sim-tool__eyebrow dns-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
         <h2 class="sim-tool__title dns-tool__title">{{ t('learning', 'DNS-Resolver') }}</h2>
         <p class="sim-tool__subtitle dns-tool__subtitle">
-          {{ t('learning', 'Verfolge Root, TLD und autoritative Nameserver Schritt fuer Schritt und uebe typische DNS-Fehlerbilder.') }}
+          {{ t('learning', 'Verfolge Root, TLD und autoritative Nameserver Schritt für Schritt und übe typische DNS-Fehlerbilder.') }}
         </p>
       </div>
     </header>
@@ -32,7 +32,7 @@
         :aria-selected="currentView === 'exercise' ? 'true' : 'false'"
         @click="view = 'exercise'"
       >
-        {{ t('learning', 'Uebung') }}
+        {{ t('learning', 'Übung') }}
       </button>
     </nav>
 
@@ -62,7 +62,7 @@
             {{ t('learning', 'Lookup starten') }}
           </button>
           <button class="sim-tool__btn sim-tool__btn--secondary" type="button" @click="advanceStep" :disabled="!lookupResult || isLastStep">
-            {{ t('learning', 'Naechster Schritt') }}
+            {{ t('learning', 'Nächster Schritt') }}
           </button>
           <button class="sim-tool__btn sim-tool__btn--secondary" type="button" @click="restartAnimation" :disabled="!lookupResult">
             {{ t('learning', 'Animation neu starten') }}
@@ -80,7 +80,7 @@
           :key="type.id"
           class="sim-tool__scenario dns-record-card"
           type="button"
-          :aria-label="t('learning', 'Beispiel-Lookup fuer {type}', { type: type.id })"
+          :aria-label="t('learning', 'Beispiel-Lookup für {type}', { type: type.id })"
           @click="runRecordTypeExample(type.id)"
         >
           <strong>{{ type.id }}</strong>
@@ -108,7 +108,7 @@
       <NcEmptyContent
         v-if="!activeScenario"
         :name="t('learning', 'Noch kein Szenario geladen')"
-        :description="t('learning', 'Waehle ein DNS-Szenario aus, um die Lookup-Kette zu analysieren.')"
+        :description="t('learning', 'Wähle ein DNS-Szenario aus, um die Lookup-Kette zu analysieren.')"
       />
 
       <div v-else class="dns-exercise">
@@ -150,7 +150,7 @@
       :class="{ 'dns-visuals--summary-only': !lookupResult.steps.length }"
     >
       <div v-if="lookupResult.steps.length" class="dns-stage">
-        <div class="dns-stage__actors" role="img" :aria-label="t('learning', 'DNS-Aufloesung mit Client, Resolver, Root, TLD und autoritativem Server')">
+        <div class="dns-stage__actors" role="img" :aria-label="t('learning', 'DNS-Auflösung mit Client, Resolver, Root, TLD und autoritativem Server')">
           <div
             v-for="actor in actors"
             :key="actor.id"
@@ -259,7 +259,7 @@ const STATUS_LABELS = Object.freeze({
   missing_domain: 'NXDOMAIN',
   dnssec_failure: 'SERVFAIL',
   cname_loop: 'SERVFAIL',
-  invalid_request: 'Ungueltig',
+  invalid_request: 'Ungültig',
 });
 
 export default {

@@ -66,15 +66,15 @@ import {
   createTelosForm,
 } from '../utils/telosProfile.js'
 
-const TELOS_ONBOARDING_INTRO = `Hey! Schoen dass du da bist. 👋
+const TELOS_ONBOARDING_INTRO = `Hey! Schön dass du da bist. 👋
 
-Ich bin VirtuProf — dein persoenlicher Lernassistent hier in der DevCloud.
+Ich bin VirtuProf — dein persönlicher Lernassistent hier in der DevCloud.
 
-Ich kann dir Themen erklaeren, Tipps geben wenn du nicht weiterkommst, und dir helfen die richtigen Uebungen zu finden.
+Ich kann dir Themen erklären, Tipps geben wenn du nicht weiterkommst, und dir helfen die richtigen Übungen zu finden.
 
-Je besser ich dich kenne, desto besser kann ich dir helfen. Dafuer wuerde ich dir gern ein paar Fragen stellen — ganz entspannt, kein Test. Dauert 2-3 Minuten.
+Je besser ich dich kenne, desto besser kann ich dir helfen. Dafür würde ich dir gern ein paar Fragen stellen — ganz entspannt, kein Test. Dauert 2-3 Minuten.
 
-Du kannst auch jederzeit "Spaeter" sagen.`
+Du kannst auch jederzeit "Später" sagen.`
 
 const VOICE_LANGUAGE_OPTIONS = [
   { value: 'de-DE', label: 'Deutsch' },
@@ -1173,11 +1173,11 @@ export default {
 ${role}
 Ziel: ${targetCert} bis ${targetDate}
 Stark: ${strengths}
-Ueben: ${weaknesses}
+Üben: ${weaknesses}
 ${this.formatTelosHours(telos.hours_per_week)}
 ${learningStyle}-Lerner
 
-Ich passe meine Erklaerungen ab jetzt an dich an. Soll ich dir die App zeigen, oder willst du direkt loslegen?`,
+Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, oder willst du direkt loslegen?`,
         hideMoreOptions: true,
         showIntroInline: true,
         renderActionsInline: true,

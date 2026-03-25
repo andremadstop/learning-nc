@@ -27,7 +27,7 @@ import { getCharacter } from '../data/characters.js'
 const MODE_MAP = {
 	training: { icon: '\uD83D\uDCDA', label: 'Training' },
 	leitner: { icon: '\uD83D\uDCE6', label: 'Leitner-System' },
-	exam: { icon: '\uD83D\uDCDD', label: 'Pruefung' },
+	exam: { icon: '\uD83D\uDCDD', label: 'Prüfung' },
 	duel: { icon: '\u2694\uFE0F', label: 'Duell' },
 	gameshow: { icon: '\uD83C\uDFAA', label: 'Gameshow' },
 	abenteuer: { icon: '\uD83D\uDDFA', label: 'Abenteuer' },

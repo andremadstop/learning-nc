@@ -4,19 +4,19 @@
       <div>
         <p class="sim-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
         <h2 class="sim-tool__title">{{ t('learning', 'Routing-Tabelle') }}</h2>
-        <p class="sim-tool__subtitle">{{ t('learning', 'Pruefe Longest Prefix Match, Default-Routes und Metriken mit einer editierbaren Tabelle.') }}</p>
+        <p class="sim-tool__subtitle">{{ t('learning', 'Prüfe Longest Prefix Match, Default-Routes und Metriken mit einer editierbaren Tabelle.') }}</p>
       </div>
     </header>
 
     <nav v-if="!isEmbedded" class="sim-tool__tabs" role="tablist">
       <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'simulator' }" @click="view = 'simulator'">{{ t('learning', 'Simulator') }}</button>
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">{{ t('learning', 'Uebung') }}</button>
+      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">{{ t('learning', 'Übung') }}</button>
     </nav>
 
     <section v-if="currentView === 'simulator'" class="sim-tool__panel">
       <div class="sim-tool__section-header">
         <h3>{{ t('learning', 'Routen') }}</h3>
-        <button class="sim-tool__btn sim-tool__btn--secondary" type="button" @click="addRoute">{{ t('learning', 'Route hinzufuegen') }}</button>
+        <button class="sim-tool__btn sim-tool__btn--secondary" type="button" @click="addRoute">{{ t('learning', 'Route hinzufügen') }}</button>
       </div>
       <div class="sim-tool__table-wrap">
         <table class="sim-tool__table">
@@ -77,7 +77,7 @@
         </div>
         <NcNoteCard :type="decision.bestRoute ? 'success' : 'error'">
           <template v-if="decision.bestRoute">
-            {{ t('learning', 'Beste Route: {destination}/{prefix} ueber {gateway}', { destination: decision.bestRoute.destination, prefix: decision.bestRoute.prefix, gateway: decision.bestRoute.gateway }) }}
+            {{ t('learning', 'Beste Route: {destination}/{prefix} über {gateway}', { destination: decision.bestRoute.destination, prefix: decision.bestRoute.prefix, gateway: decision.bestRoute.gateway }) }}
           </template>
           <template v-else>
             {{ t('learning', 'Kein Match gefunden: Destination Unreachable') }}
@@ -96,8 +96,8 @@
 
       <NcEmptyContent
         v-if="!activeScenario"
-        :name="t('learning', 'Noch keine Routing-Uebung')"
-        :description="t('learning', 'Waehle ein Szenario oder uebergib eins eingebettet.')"
+        :name="t('learning', 'Noch keine Routing-Übung')"
+        :description="t('learning', 'Wähle ein Szenario oder übergib eins eingebettet.')"
       />
 
       <div v-else class="route-tool__exercise">
@@ -215,8 +215,8 @@ export default {
       this.feedback = {
         correct,
         message: correct
-          ? t('learning', 'Richtig. Longest Prefix Match und Metrik fuehren genau zu diesem Ergebnis.')
-          : t('learning', 'Noch nicht. Vergleiche Praefixlaenge, dann erst die Metrik.'),
+          ? t('learning', 'Richtig. Longest Prefix Match und Metrik führen genau zu diesem Ergebnis.')
+          : t('learning', 'Noch nicht. Vergleiche Präfixlänge, dann erst die Metrik.'),
       }
       this.$emit('result', {
         scenarioId: this.activeScenario.id,

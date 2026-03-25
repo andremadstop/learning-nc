@@ -61,7 +61,7 @@
 						<th>{{ t('learning', 'Dateiname') }}</th>
 						<th>{{ t('learning', 'Typ') }}</th>
 						<th>{{ t('learning', 'Status') }}</th>
-						<th>{{ t('learning', 'Groesse') }}</th>
+						<th>{{ t('learning', 'Größe') }}</th>
 						<th>{{ t('learning', 'Hochgeladen') }}</th>
 						<th v-if="isInstructor">{{ t('learning', 'Aktion') }}</th>
 					</tr>

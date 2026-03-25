@@ -22,7 +22,7 @@ const RECORD_TYPE_CATALOG = Object.freeze([
 	{
 		id: 'MX',
 		example: '10 mail.example.com',
-		description: 'Mailserver mit Prioritaet',
+		description: 'Mailserver mit Priorität',
 		exampleDomain: 'example.com',
 	},
 	{
@@ -52,7 +52,7 @@ const RECORD_TYPE_CATALOG = Object.freeze([
 	{
 		id: 'TXT',
 		example: 'v=spf1 include:_spf.example.com -all',
-		description: 'Freitext fuer SPF, DKIM oder Verifikation',
+		description: 'Freitext für SPF, DKIM oder Verifikation',
 		exampleDomain: 'example.com',
 	},
 ])
@@ -164,23 +164,23 @@ function guessAuthoritativeServer(domain) {
 
 function summarizeAuthoritativeAnswer(domain, recordType, resolution) {
 	if (resolution.status === 'ok' && resolution.aliasChain.length) {
-		return `Alias aufgeloest: ${resolution.aliasChain.join(', ')}. Finaler ${recordType}-Record fuer ${resolution.canonicalName}: ${resolution.answers.join(', ')}`
+		return `Alias aufgelöst: ${resolution.aliasChain.join(', ')}. Finaler ${recordType}-Record für ${resolution.canonicalName}: ${resolution.answers.join(', ')}`
 	}
 
 	if (resolution.status === 'ok') {
-		return `${recordType}-Antwort fuer ${domain}: ${resolution.answers.join(', ')}`
+		return `${recordType}-Antwort für ${domain}: ${resolution.answers.join(', ')}`
 	}
 
 	if (resolution.status === 'dnssec_failure') {
-		return `DNSSEC-Pruefung fuer ${domain} fehlgeschlagen. Antwort wird verworfen.`
+		return `DNSSEC-Prüfung für ${domain} fehlgeschlagen. Antwort wird verworfen.`
 	}
 
 	if (resolution.status === 'cname_loop') {
-		return `CNAME-Schleife erkannt. Resolver stoppt die Aufloesung fuer ${domain}.`
+		return `CNAME-Schleife erkannt. Resolver stoppt die Auflösung für ${domain}.`
 	}
 
 	if (resolution.status === 'missing_record') {
-		return `Kein ${recordType}-Record fuer ${domain} vorhanden.`
+		return `Kein ${recordType}-Record für ${domain} vorhanden.`
 	}
 
 	return `${domain} ist in keiner bekannten Zone eingetragen.`
@@ -192,18 +192,18 @@ function summarizeClientAnswer(domain, recordType, resolution) {
 	}
 
 	if (resolution.status === 'dnssec_failure') {
-		return `Client erhaelt SERVFAIL fuer ${domain}, weil DNSSEC die Antwort blockiert.`
+		return `Client erhält SERVFAIL für ${domain}, weil DNSSEC die Antwort blockiert.`
 	}
 
 	if (resolution.status === 'cname_loop') {
-		return `Client erhaelt SERVFAIL, weil der Alias fuer ${domain} in einer Schleife endet.`
+		return `Client erhält SERVFAIL, weil der Alias für ${domain} in einer Schleife endet.`
 	}
 
 	if (resolution.status === 'missing_record') {
-		return `Client erhaelt NODATA: Die Domain existiert, aber kein ${recordType}-Record ist vorhanden.`
+		return `Client erhält NODATA: Die Domain existiert, aber kein ${recordType}-Record ist vorhanden.`
 	}
 
-	return `Client erhaelt NXDOMAIN: ${domain} konnte nicht gefunden werden.`
+	return `Client erhält NXDOMAIN: ${domain} konnte nicht gefunden werden.`
 }
 
 function resolveFromAuthoritative(domain, recordType, dataset, visited = []) {
@@ -377,14 +377,14 @@ export function resolveDnsLookup(domain, recordType = 'A', dataset = DNS_SIMULAT
 				source: 'root',
 				target: 'resolver',
 				title: 'Root liefert die TLD-Referral',
-				detail: `Nutze ${tldServer} fuer ${tld === 'arpa' ? 'Reverse DNS' : `.${tld}`}.`,
+				detail: `Nutze ${tldServer} für ${tld === 'arpa' ? 'Reverse DNS' : `.${tld}`}.`,
 			},
 			{
 				id: 'resolver-tld',
 				source: 'resolver',
 				target: 'tld',
 				title: 'Resolver fragt den TLD-Server',
-				detail: `Bitte die zustaendige Zone fuer ${normalizedDomain}.`,
+				detail: `Bitte die zuständige Zone für ${normalizedDomain}.`,
 			},
 			{
 				id: 'tld-resolver',
@@ -404,7 +404,7 @@ export function resolveDnsLookup(domain, recordType = 'A', dataset = DNS_SIMULAT
 				id: 'resolver-client',
 				source: 'resolver',
 				target: 'client',
-				title: 'Antwort geht zurueck an den Client',
+				title: 'Antwort geht zurück an den Client',
 				detail: summarizeClientAnswer(normalizedDomain, normalizedRecordType, resolution),
 			},
 		],

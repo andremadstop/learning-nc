@@ -429,12 +429,15 @@ export default {
     mainView() {
       this.emitVirtuProfContext();
       this.emitToolGuide();
+      this.emitViewGuide();
     },
     currentView() {
       this.emitVirtuProfContext();
+      this.emitViewGuide();
     },
     mode() {
       this.emitVirtuProfContext();
+      this.emitViewGuide();
     },
     toolsView() {
       this.emitVirtuProfContext();
@@ -442,9 +445,11 @@ export default {
     },
     selectedPool() {
       this.emitVirtuProfContext();
+      this.emitViewGuide();
     },
     selectedCourse() {
       this.emitVirtuProfContext();
+      this.emitViewGuide();
     },
     selectedStudent() {
       this.emitVirtuProfContext();
@@ -518,6 +523,111 @@ export default {
       if (payload) {
         this.$root.$emit('virtuprof:guide', payload);
       }
+    },
+    currentViewKey() {
+      if (this.mainView === 'settings') {
+        return 'view:settings';
+      }
+      if (this.mainView === 'courses') {
+        if (this.selectedCourse) {
+          return 'view:course-detail';
+        }
+        return 'view:courses';
+      }
+      if (this.mainView === 'pools') {
+        if (this.currentView === 'abenteuer') {
+          return 'view:abenteuer';
+        }
+        if (this.currentView === 'questions' && this.selectedPool) {
+          if (this.mode === 'leitner') {
+            return 'view:leitner';
+          }
+          if (this.mode === 'exam') {
+            return 'view:exam';
+          }
+          if (this.mode === 'manage') {
+            return 'view:pool-manage';
+          }
+          // train and other modes
+          return 'view:training';
+        }
+        return 'view:pools';
+      }
+      return null;
+    },
+    emitViewGuide() {
+      if (!this.appInitialized || this.userRole !== 'student') {
+        return;
+      }
+      const viewKey = this.currentViewKey();
+      if (!viewKey) {
+        return;
+      }
+      const payload = this.viewGuidePayload(viewKey);
+      if (payload) {
+        this.$root.$emit('virtuprof:guide', payload);
+      }
+    },
+    viewGuidePayload(viewKey) {
+      const guides = {
+        'view:courses': {
+          title: t('learning', 'Courses'),
+          text: t('learning', 'Here you see all your courses. Select a course to open its learning modes. Courses can contain Training, Leitner, Exam and Arena.'),
+          shortText: t('learning', 'Select a course to open your learning modes.'),
+        },
+        'view:course-detail': {
+          title: t('learning', 'Course Detail'),
+          text: t('learning', 'In this course you can start Training, Leitner, True/False or Exam mode. Choose the mode that fits your current learning goal.'),
+          shortText: t('learning', 'Start Training, Leitner, Exam or Arena from this course.'),
+        },
+        'view:training': {
+          title: t('learning', 'Training'),
+          text: t('learning', 'Here you practise questions in flashcard style. After each answer you immediately see whether it was correct. Correct answers move up to higher Leitner boxes.'),
+          shortText: t('learning', 'Answer questions and learn from immediate feedback.'),
+        },
+        'view:leitner': {
+          title: t('learning', 'Leitner System'),
+          text: t('learning', 'The Leitner system shows you due cards based on your progress. The more often you answer a card correctly, the less often it appears — until it is mastered.'),
+          shortText: t('learning', 'Answer due cards. Correct ones move forward, wrong ones go back.'),
+        },
+        'view:exam': {
+          title: t('learning', 'Exam Simulation'),
+          text: t('learning', 'Exam mode: no hints, no immediate feedback, time limit like in the real exam. You see your result only at the end.'),
+          shortText: t('learning', 'Exam mode without hints — result shown after all questions.'),
+        },
+        'view:pool-manage': {
+          title: t('learning', 'Pool Management'),
+          text: t('learning', 'Here you create and manage questions in this pool. You can add, edit, delete and import questions via CSV or JSON.'),
+          shortText: t('learning', 'Add, edit, delete and import questions.'),
+        },
+        'view:pools': {
+          title: t('learning', 'Question Pools'),
+          text: t('learning', 'Here you see all your question pools. Select a pool to start practising. As an instructor you can also create and manage pools.'),
+          shortText: t('learning', 'Select a pool to start practising.'),
+        },
+        'view:abenteuer': {
+          title: t('learning', 'Adventure Mode'),
+          text: t('learning', 'Start a campaign and solve network problems in a story. Every decision moves you forward — mistakes cost life points.'),
+          shortText: t('learning', 'Solve network problems in an interactive story.'),
+        },
+        'view:settings': {
+          title: t('learning', 'Settings'),
+          text: t('learning', 'Personal settings: learning language, Telos profile and VirtuProf options. You can also enable or disable VirtuProf here.'),
+          shortText: t('learning', 'Set language, Telos profile and VirtuProf options.'),
+        },
+      };
+
+      const guide = guides[viewKey];
+      if (!guide) {
+        return null;
+      }
+
+      return {
+        key: viewKey,
+        title: guide.title,
+        text: guide.text,
+        shortText: guide.shortText,
+      };
     },
     toolGuidePayload(toolId) {
       const guides = {

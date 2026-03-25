@@ -20,8 +20,8 @@
           <span class="htt-guide-name">CHRONOS</span>
           <p class="htt-guide-text">
             {{ selectedClass
-              ? t('learning', 'Gut, {className}. Waehle eine Epoche und beweise dein Wissen.', { className: selectedClassName })
-              : t('learning', 'Willkommen, Zeitreisender. Waehle zuerst deine Spezialisierung, dann reisen wir durch 7 Epochen der IT-Security-Geschichte.')
+              ? t('learning', 'Gut, {className}. Wähle eine Epoche und beweise dein Wissen.', { className: selectedClassName })
+              : t('learning', 'Willkommen, Zeitreisender. Wähle zuerst deine Spezialisierung, dann reisen wir durch 7 Epochen der IT-Security-Geschichte.')
             }}
           </p>
         </div>
@@ -109,7 +109,7 @@
         <div class="htt-guide-speech">
           <span class="htt-guide-name">CHRONOS</span>
           <p class="htt-guide-text">
-            {{ t('learning', 'Waehle deine Spezialisierung, Zeitreisender. Jede Klasse hat Staerken und Schwaechen in bestimmten Epochen.') }}
+            {{ t('learning', 'Wähle deine Spezialisierung, Zeitreisender. Jede Klasse hat Stärken und Schwächen in bestimmten Epochen.') }}
           </p>
         </div>
       </div>
@@ -214,10 +214,10 @@
           {{ t('learning', '{className}-Bonus: Diese Epoche ist dein Spezialgebiet!', { className: selectedClassName }) }}
         </template>
         <template v-else-if="getAffinity(currentEpochId) === 'penalty'">
-          {{ t('learning', '{className}-Schwaeche: Diese Epoche ist nicht deine Staerke.', { className: selectedClassName }) }}
+          {{ t('learning', '{className}-Schwäche: Diese Epoche ist nicht deine Stärke.', { className: selectedClassName }) }}
         </template>
         <template v-else>
-          {{ t('learning', 'Neutrale Epoche fuer {className}.', { className: selectedClassName }) }}
+          {{ t('learning', 'Neutrale Epoche für {className}.', { className: selectedClassName }) }}
         </template>
       </div>
 
@@ -287,7 +287,7 @@
             {{ t('learning', 'Bonus-Epoche (leichterer Pass-Threshold)') }}
           </template>
           <template v-else-if="getAffinity(currentEpochId) === 'penalty'">
-            {{ t('learning', 'Schwaeche-Epoche (haerterer Pass-Threshold)') }}
+            {{ t('learning', 'Schwäche-Epoche (härterer Pass-Threshold)') }}
           </template>
           <template v-else>
             {{ t('learning', 'Neutral (Standard-Threshold)') }}
@@ -295,7 +295,7 @@
         </div>
         <div class="htt-result-actions">
           <button v-if="skillResult.passed" @click="goToOverview" class="htt-btn-primary">
-            {{ t('learning', 'Naechste Epoche') }}
+            {{ t('learning', 'Nächste Epoche') }}
           </button>
           <button v-else @click="retryEpoch" class="htt-btn-primary">
             {{ t('learning', 'Nochmal versuchen') }}

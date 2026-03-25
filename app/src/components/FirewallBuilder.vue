@@ -13,7 +13,7 @@
         {{ t('learning', 'Simulator') }}
       </button>
       <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">
-        {{ t('learning', 'Uebung') }}
+        {{ t('learning', 'Übung') }}
       </button>
     </nav>
 
@@ -21,7 +21,7 @@
       <div class="sim-tool__section-header">
         <h3>{{ t('learning', 'Regeltabelle') }}</h3>
         <button class="sim-tool__btn sim-tool__btn--secondary" type="button" @click="addRule">
-          {{ t('learning', 'Regel hinzufuegen') }}
+          {{ t('learning', 'Regel hinzufügen') }}
         </button>
       </div>
 
@@ -103,7 +103,7 @@
       <div class="sim-tool__section-header sim-tool__section-header--split">
         <h3>{{ t('learning', 'Paket-Test') }}</h3>
         <button class="sim-tool__btn" type="button" @click="evaluateCurrentPacket">
-          {{ t('learning', 'Paket pruefen') }}
+          {{ t('learning', 'Paket prüfen') }}
         </button>
       </div>
 
@@ -141,7 +141,7 @@
           </span>
         </div>
         <NcNoteCard :type="result.action === 'allow' ? 'success' : 'error'">
-          {{ t('learning', 'Ergebnis: {action} ueber {rule}', { action: result.action.toUpperCase(), rule: result.matchedRule.id }) }}
+          {{ t('learning', 'Ergebnis: {action} über {rule}', { action: result.action.toUpperCase(), rule: result.matchedRule.id }) }}
         </NcNoteCard>
       </div>
     </section>
@@ -163,7 +163,7 @@
       <NcEmptyContent
         v-if="!activeScenario"
         :name="t('learning', 'Noch kein Firewall-Szenario')"
-        :description="t('learning', 'Waehle eine Uebung aus oder uebergib ein eingebettetes Szenario.')"
+        :description="t('learning', 'Wähle eine Übung aus oder übergib ein eingebettetes Szenario.')"
       />
 
       <div v-else class="sim-tool__exercise">
@@ -282,8 +282,8 @@ export default {
       this.feedback = {
         correct,
         message: correct
-          ? t('learning', 'Richtig. Die ausgewaehlte Regel liefert genau diese Entscheidung.')
-          : t('learning', 'Nicht ganz. Pruefe erneut First-Match, Protokoll und IP-/Port-Filter.'),
+          ? t('learning', 'Richtig. Die ausgewählte Regel liefert genau diese Entscheidung.')
+          : t('learning', 'Nicht ganz. Prüfe erneut First-Match, Protokoll und IP-/Port-Filter.'),
       }
       this.$emit('result', {
         scenarioId: this.activeScenario.id,

@@ -4,13 +4,13 @@
       <div>
         <p class="sim-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
         <h2 class="sim-tool__title">{{ t('learning', 'NAT-Tabelle') }}</h2>
-        <p class="sim-tool__subtitle">{{ t('learning', 'Vergleiche Static NAT, Dynamic NAT und PAT direkt an einem uebersetzten Paketfluss.') }}</p>
+        <p class="sim-tool__subtitle">{{ t('learning', 'Vergleiche Static NAT, Dynamic NAT und PAT direkt an einem übersetzten Paketfluss.') }}</p>
       </div>
     </header>
 
     <nav v-if="!isEmbedded" class="sim-tool__tabs" role="tablist">
       <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'simulator' }" @click="view = 'simulator'">{{ t('learning', 'Simulator') }}</button>
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">{{ t('learning', 'Uebung') }}</button>
+      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">{{ t('learning', 'Übung') }}</button>
     </nav>
 
     <section v-if="currentView === 'simulator'" class="sim-tool__panel">
@@ -41,7 +41,7 @@
         </label>
       </div>
 
-      <button class="sim-tool__btn" type="button" @click="simulateCurrent">{{ t('learning', 'Uebersetzen') }}</button>
+      <button class="sim-tool__btn" type="button" @click="simulateCurrent">{{ t('learning', 'Übersetzen') }}</button>
 
       <div v-if="translation" class="nat-tool__flow">
         <article class="nat-tool__stage">
@@ -60,8 +60,8 @@
 
       <NcNoteCard v-if="translation" :type="translation.status === 'translated' ? 'success' : 'error'">
         {{ translation.status === 'translated'
-          ? t('learning', 'Die NAT-Uebersetzung wurde erfolgreich aufgebaut.')
-          : t('learning', 'Keine Uebersetzung moeglich: Pool oder Mapping pruefen.') }}
+          ? t('learning', 'Die NAT-Übersetzung wurde erfolgreich aufgebaut.')
+          : t('learning', 'Keine Übersetzung möglich: Pool oder Mapping prüfen.') }}
       </NcNoteCard>
 
       <div v-if="translation && translation.table.length" class="sim-tool__table-wrap">
@@ -98,8 +98,8 @@
 
       <NcEmptyContent
         v-if="!activeScenario"
-        :name="t('learning', 'Noch keine NAT-Uebung')"
-        :description="t('learning', 'Waehle ein NAT-Szenario aus.')"
+        :name="t('learning', 'Noch keine NAT-Übung')"
+        :description="t('learning', 'Wähle ein NAT-Szenario aus.')"
       />
 
       <div v-else class="nat-tool__exercise">
@@ -210,8 +210,8 @@ export default {
       this.feedback = {
         correct,
         message: correct
-          ? t('learning', 'Richtig. Die NAT-Uebersetzung passt genau zu diesem Typ oder Symptom.')
-          : t('learning', 'Noch nicht. Pruefe Mapping, Poolgroesse oder Port-Uebersetzung erneut.'),
+          ? t('learning', 'Richtig. Die NAT-Übersetzung passt genau zu diesem Typ oder Symptom.')
+          : t('learning', 'Noch nicht. Prüfe Mapping, Poolgröße oder Port-Übersetzung erneut.'),
       }
       this.$emit('result', {
         scenarioId: this.activeScenario.id,

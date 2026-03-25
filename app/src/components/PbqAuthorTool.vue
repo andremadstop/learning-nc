@@ -42,7 +42,7 @@
         <div class="author-field">
           <label class="author-label">Output-Zuordnung</label>
           <select v-model="cliForm.outputScope" class="author-select">
-            <option value="shared">Shared fuer alle Terminals</option>
+            <option value="shared">Shared für alle Terminals</option>
             <option value="per_terminal">Terminal-spezifisch</option>
           </select>
         </div>
@@ -345,7 +345,7 @@
       <pre class="author-json-output">{{ generatedJson }}</pre>
       <div class="author-button-row">
         <NcButton @click="copyJson">{{ copySuccess ? 'Kopiert!' : 'Config kopieren' }}</NcButton>
-        <NcButton type="primary" @click="applyConfig">Ins Formular uebernehmen</NcButton>
+        <NcButton type="primary" @click="applyConfig">Ins Formular übernehmen</NcButton>
       </div>
       <textarea v-if="showJsonFallback" :value="generatedJson" readonly class="author-json-fallback" rows="10" />
     </div>
@@ -626,7 +626,7 @@ export default {
         return ''
       }
       return parseJson(this.rawConfigForms[this.selectedSubtype]) === null
-        ? 'Ungueltiges JSON fuer diesen PBQ-Typ.'
+        ? 'Ungültiges JSON für diesen PBQ-Typ.'
         : ''
     },
     generatedConfig() {

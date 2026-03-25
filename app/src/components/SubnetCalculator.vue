@@ -222,7 +222,7 @@
 					<div class="vlan-card__header">
 						<div>
 							<h3 class="vlan-card__title">{{ t('learning', 'VLAN-Tabelle') }}</h3>
-							<p class="subnet-help">{{ t('learning', 'Pflege VLAN-ID, Name, Subnetz und Gateway fuer dein Segment-Design.') }}</p>
+							<p class="subnet-help">{{ t('learning', 'Pflege VLAN-ID, Name, Subnetz und Gateway für dein Segment-Design.') }}</p>
 						</div>
 						<button class="subnet-button subnet-button--secondary" type="button" @click="addVlanEntry">
 							{{ t('learning', 'VLAN hinzufügen') }}
@@ -297,7 +297,7 @@
 					<div class="vlan-card__header">
 						<div>
 							<h3 class="vlan-card__title">{{ t('learning', '802.1Q Frame') }}</h3>
-							<p class="subnet-help">{{ t('learning', 'Vergleiche den Ethernet-Frame fuer Access- und Trunk-Ports.') }}</p>
+							<p class="subnet-help">{{ t('learning', 'Vergleiche den Ethernet-Frame für Access- und Trunk-Ports.') }}</p>
 						</div>
 					</div>
 
@@ -319,7 +319,7 @@
 							</button>
 						</div>
 
-						<label class="subnet-label vlan-frame-controls__label" for="frame-vlan-select">{{ t('learning', 'VLAN fuer Vorschau') }}</label>
+						<label class="subnet-label vlan-frame-controls__label" for="frame-vlan-select">{{ t('learning', 'VLAN für Vorschau') }}</label>
 						<select id="frame-vlan-select" v-model.number="framePreviewVlanId" class="subnet-input vlan-frame-controls__select">
 							<option v-for="entry in validVlanEntries" :key="'frame-vlan-' + entry.vlanId" :value="entry.vlanId">
 								{{ entry.vlanId }} - {{ entry.name }}
@@ -342,7 +342,7 @@
 
 					<p class="vlan-frame__hint">
 						<span v-if="frameVisualization.tagged">{{ t('learning', 'Auf dem Trunk wird der 802.1Q-Tag gesetzt; der Native VLAN Traffic kann untagged bleiben.') }}</span>
-						<span v-else>{{ t('learning', 'Am Access-Port bleibt der Frame fuer Endgeraete untagged.') }}</span>
+						<span v-else>{{ t('learning', 'Am Access-Port bleibt der Frame für Endgeräte untagged.') }}</span>
 					</p>
 				</article>
 
@@ -350,7 +350,7 @@
 					<div class="vlan-card__header">
 						<div>
 							<h3 class="vlan-card__title">{{ t('learning', 'Inter-VLAN-Routing') }}</h3>
-							<p class="subnet-help">{{ t('learning', 'Router-on-a-Stick erstellt fuer jedes VLAN eine Subinterface mit dot1Q-Kapselung.') }}</p>
+							<p class="subnet-help">{{ t('learning', 'Router-on-a-Stick erstellt für jedes VLAN eine Subinterface mit dot1Q-Kapselung.') }}</p>
 						</div>
 					</div>
 
@@ -377,7 +377,7 @@
 						<li v-for="check in routeChecks" :key="check.id" class="vlan-route-checks__item">
 							<span>{{ check.label }}</span>
 							<strong :class="check.routable ? 'vlan-route-checks__status--ok' : 'vlan-route-checks__status--fail'">
-								{{ check.routable ? t('learning', 'Routing moeglich') : t('learning', 'Routing blockiert') }}
+								{{ check.routable ? t('learning', 'Routing möglich') : t('learning', 'Routing blockiert') }}
 							</strong>
 						</li>
 					</ul>
@@ -847,11 +847,11 @@ export default {
 			const duplicateIds = Object.keys(duplicates).filter((vlanId) => duplicates[vlanId] > 1)
 
 			if (invalidIds.length) {
-				return t('learning', 'Ungueltige VLAN-IDs gefunden. Erlaubt sind 1-4094, ausser 1002-1005.')
+				return t('learning', 'Ungültige VLAN-IDs gefunden. Erlaubt sind 1-4094, außer 1002-1005.')
 			}
 
 			if (duplicateIds.length) {
-				return t('learning', 'VLAN-IDs muessen eindeutig sein.')
+				return t('learning', 'VLAN-IDs müssen eindeutig sein.')
 			}
 
 			return ''
@@ -1101,7 +1101,7 @@ export default {
 			this.vlsmResults = []
 
 			if (!this.vlsmParsed) {
-				this.vlsmError = t('learning', 'Bitte ein gültiges Ausgangsnetz fuer den VLSM-Rechner eingeben.')
+				this.vlsmError = t('learning', 'Bitte ein gültiges Ausgangsnetz für den VLSM-Rechner eingeben.')
 				return
 			}
 
@@ -1123,7 +1123,7 @@ export default {
 
 			const allocations = vlsmAllocate(base.network, base.prefix, requirements)
 			if (!allocations) {
-				this.vlsmError = t('learning', 'Der Gesamtbedarf passt nicht in den verfuegbaren Adressraum.')
+				this.vlsmError = t('learning', 'Der Gesamtbedarf passt nicht in den verfügbaren Adressraum.')
 				return
 			}
 
@@ -1248,9 +1248,7 @@ export default {
 }
 
 .subnet-input--valid {
-	border-color: var(--lnc-green);
-	box-shadow: 0 0 0 1px rgba(0, 230, 118, 0.28);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--lnc-green) 55%, transparent);
+	border-color: color-mix(in srgb, var(--lnc-green) 50%, var(--sim-border));
 }
 
 .subnet-input--error {

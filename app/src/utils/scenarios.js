@@ -165,7 +165,7 @@ export const SCENARIO_SPECS = [
 		kind: 'subnetFromCidr',
 		input: '192.168.10.0/26',
 		fields: ['networkAddress', 'broadcast', 'hostCount'],
-		question: 'Berechne fuer 192.168.10.0/26 die Netzadresse, den Broadcast und die nutzbaren Hosts.',
+		question: 'Berechne für 192.168.10.0/26 die Netzadresse, den Broadcast und die nutzbaren Hosts.',
 		context: 'Eingabe: 192.168.10.0/26',
 	},
 	{
@@ -175,7 +175,7 @@ export const SCENARIO_SPECS = [
 		kind: 'subnetFromCidr',
 		input: '10.1.4.0/27',
 		fields: ['broadcast', 'hostCount', 'subnetMask'],
-		question: 'Welcher Broadcast, wie viele Hosts und welche Maske gehoeren zu 10.1.4.0/27?',
+		question: 'Welcher Broadcast, wie viele Hosts und welche Maske gehören zu 10.1.4.0/27?',
 		context: 'Eingabe: 10.1.4.0/27',
 	},
 	{
@@ -185,7 +185,7 @@ export const SCENARIO_SPECS = [
 		kind: 'subnetFromCidr',
 		input: '172.16.8.0/25',
 		fields: ['firstHost', 'lastHost', 'hostCount'],
-		question: 'Bestimme den ersten Host, den letzten Host und die Host-Anzahl fuer 172.16.8.0/25.',
+		question: 'Bestimme den ersten Host, den letzten Host und die Host-Anzahl für 172.16.8.0/25.',
 		context: 'Eingabe: 172.16.8.0/25',
 	},
 	{
@@ -195,7 +195,7 @@ export const SCENARIO_SPECS = [
 		kind: 'subnetFromCidr',
 		input: '192.168.77.128/28',
 		fields: ['networkAddress', 'broadcast', 'hostCount'],
-		question: 'Berechne Netzadresse, Broadcast und Host-Anzahl fuer 192.168.77.128/28.',
+		question: 'Berechne Netzadresse, Broadcast und Host-Anzahl für 192.168.77.128/28.',
 		context: 'Eingabe: 192.168.77.128/28',
 	},
 	{
@@ -205,7 +205,7 @@ export const SCENARIO_SPECS = [
 		kind: 'subnetFromCidr',
 		input: '10.20.30.64/30',
 		fields: ['broadcast', 'hostCount', 'subnetMask'],
-		question: 'Ein Punkt-zu-Punkt-Link nutzt 10.20.30.64/30. Welche Maske, welcher Broadcast und wie viele Hosts sind moeglich?',
+		question: 'Ein Punkt-zu-Punkt-Link nutzt 10.20.30.64/30. Welche Maske, welcher Broadcast und wie viele Hosts sind möglich?',
 		context: 'Eingabe: 10.20.30.64/30',
 	},
 	{
@@ -226,7 +226,7 @@ export const SCENARIO_SPECS = [
 		kind: 'subnetFromCidr',
 		input: '1.2.3.67/28',
 		fields: ['networkAddress', 'broadcast', 'hostCount', 'maxServers'],
-		question: 'Ein Server hat die IP 1.2.3.67/28. Was ist die Netzadresse, wie viele Server passen maximal rein (abzueglich Broadcast und Router)?',
+		question: 'Ein Server hat die IP 1.2.3.67/28. Was ist die Netzadresse, wie viele Server passen maximal rein (abzüglich Broadcast und Router)?',
 		context: 'Eingabe: 1.2.3.67/28 | 1 Router reserviert',
 	},
 	{
@@ -237,7 +237,7 @@ export const SCENARIO_SPECS = [
 		baseIp: '172.16.0.0',
 		requiredHosts: 509,
 		fields: ['cidr', 'subnetMask', 'hostCount'],
-		question: 'Ein Netzwerk fuer 509 PCs startet bei 172.16.0.0. Welches CIDR ist das kleinste passende?',
+		question: 'Ein Netzwerk für 509 PCs startet bei 172.16.0.0. Welches CIDR ist das kleinste passende?',
 		context: 'Hostbedarf: 509 | Basis: 172.16.0.0',
 	},
 	{
@@ -257,7 +257,7 @@ export const SCENARIO_SPECS = [
 		kind: 'subnetFromCidr',
 		input: '192.168.99.200/27',
 		fields: ['networkAddress', 'firstHost', 'lastHost', 'broadcast'],
-		question: 'Bestimme fuer 192.168.99.200/27 Netzadresse, ersten Host, letzten Host und Broadcast.',
+		question: 'Bestimme für 192.168.99.200/27 Netzadresse, ersten Host, letzten Host und Broadcast.',
 		context: 'Eingabe: 192.168.99.200/27',
 	},
 	{
@@ -297,7 +297,7 @@ export const SCENARIO_SPECS = [
 		kind: 'subnetFromCidr',
 		input: '198.51.100.130/26',
 		fields: ['networkAddress', 'broadcast', 'firstHost', 'lastHost'],
-		question: 'Ein Backup-Server haengt an 198.51.100.130/26. Berechne Netzadresse, Broadcast, ersten und letzten Host.',
+		question: 'Ein Backup-Server hängt an 198.51.100.130/26. Berechne Netzadresse, Broadcast, ersten und letzten Host.',
 		context: 'Eingabe: 198.51.100.130/26',
 	},
 	{
@@ -318,7 +318,7 @@ export const SCENARIO_SPECS = [
 		baseIp: '192.168.50.0',
 		requiredHosts: 13,
 		fields: ['cidr', 'subnetMask', 'hostCount'],
-		question: 'Ein kleines Buero hat 12 Clients und 1 Router-Interface im Netz 192.168.50.0. Welches minimale CIDR wird benoetigt?',
+		question: 'Ein kleines Büro hat 12 Clients und 1 Router-Interface im Netz 192.168.50.0. Welches minimale CIDR wird benötigt?',
 		context: 'Hostbedarf: 13 | Basis: 192.168.50.0',
 	},
 	{
@@ -351,8 +351,8 @@ export const SCENARIO_SPECS = [
 		baseIp: '10.0.0.0',
 		requiredHosts: 200,
 		fields: ['cidr', 'subnetMask', 'hostCount'],
-		question: 'Du planst eine AWS VPC mit 3 Availability Zones. Jede AZ braucht ein Public-Subnet (max 50 Hosts) und ein Private-Subnet (max 200 Hosts). Zusaetzlich ein /28 fuer NAT Gateways. Basis: 10.0.0.0/16. Welchen Prefix braucht das groesste Subnetz?',
-		context: 'Groesster Hostbedarf: 200 | Basis: 10.0.0.0/16',
+		question: 'Du planst eine AWS VPC mit 3 Availability Zones. Jede AZ braucht ein Public-Subnet (max 50 Hosts) und ein Private-Subnet (max 200 Hosts). Zusätzlich ein /28 für NAT Gateways. Basis: 10.0.0.0/16. Welchen Prefix braucht das größte Subnetz?',
+		context: 'Größter Hostbedarf: 200 | Basis: 10.0.0.0/16',
 	},
 	{
 		id: 'praxis-hard-02',
@@ -373,8 +373,8 @@ export const SCENARIO_SPECS = [
 		baseIp: '172.16.0.0',
 		requiredHosts: 500,
 		fields: ['cidr', 'subnetMask', 'hostCount'],
-		question: 'Ein Smart-Campus hat 500 Sensoren, 50 Kameras und 200 Steuergeraete. Jede Gruppe bekommt ein eigenes Subnetz aus 172.16.0.0/16. Welchen Prefix braucht das Sensor-Subnetz?',
-		context: 'Groesster Hostbedarf: 500 | Basis: 172.16.0.0/16',
+		question: 'Ein Smart-Campus hat 500 Sensoren, 50 Kameras und 200 Steuergeräte. Jede Gruppe bekommt ein eigenes Subnetz aus 172.16.0.0/16. Welchen Prefix braucht das Sensor-Subnetz?',
+		context: 'Größter Hostbedarf: 500 | Basis: 172.16.0.0/16',
 	},
 	{
 		id: 'vlsm-easy-01',
@@ -387,7 +387,7 @@ export const SCENARIO_SPECS = [
 			{ name: 'LAN B', hosts: 50 },
 		],
 		fields: ['cidr', 'totalUsed'],
-		question: 'Ein /24-Netz wird in 100 Hosts und 50 Hosts geteilt. Welchen Prefix bekommt das groessere Subnetz und wie viele Adressen werden insgesamt belegt?',
+		question: 'Ein /24-Netz wird in 100 Hosts und 50 Hosts geteilt. Welchen Prefix bekommt das größere Subnetz und wie viele Adressen werden insgesamt belegt?',
 		context: 'Supernetz: 10.0.0.0/24 | Hosts: 100, 50',
 	},
 	{
@@ -403,7 +403,7 @@ export const SCENARIO_SPECS = [
 			{ name: 'D', hosts: 20 },
 		],
 		fields: ['cidr', 'fitsInSupernet', 'totalUsed'],
-		question: 'Ein /24 wird in vier gleich grosse Netze fuer je 20 Hosts aufgeteilt. Welcher Prefix wird benoetigt, passt alles hinein und wie viele Adressen werden belegt?',
+		question: 'Ein /24 wird in vier gleich große Netze für je 20 Hosts aufgeteilt. Welcher Prefix wird benötigt, passt alles hinein und wie viele Adressen werden belegt?',
 		context: 'Supernetz: 192.168.10.0/24 | Hosts: 20, 20, 20, 20',
 	},
 	{
@@ -418,7 +418,7 @@ export const SCENARIO_SPECS = [
 			{ name: 'Mgmt', hosts: 30 },
 		],
 		fields: ['cidr', 'fitsInSupernet', 'totalUsed'],
-		question: 'Ein /23-Netz wird per VLSM in 120, 60 und 30 Hosts geteilt. Welcher Prefix wird fuer das groesste Netz benoetigt, passt alles und wie viele Adressen werden belegt?',
+		question: 'Ein /23-Netz wird per VLSM in 120, 60 und 30 Hosts geteilt. Welcher Prefix wird für das größte Netz benötigt, passt alles und wie viele Adressen werden belegt?',
 		context: 'Supernetz: 172.20.0.0/23 | Hosts: 120, 60, 30',
 	},
 	{
@@ -433,7 +433,7 @@ export const SCENARIO_SPECS = [
 			{ name: 'Printer', hosts: 10 },
 		],
 		fields: ['cidr', 'fitsInSupernet', 'totalUsed'],
-		question: 'Ein /25-Netz soll 50 Hosts, 30 Hosts und 10 Hosts aufnehmen. Welcher Prefix wird fuer das groesste Netz benoetigt, passt alles und wie viele Adressen werden belegt?',
+		question: 'Ein /25-Netz soll 50 Hosts, 30 Hosts und 10 Hosts aufnehmen. Welcher Prefix wird für das größte Netz benötigt, passt alles und wie viele Adressen werden belegt?',
 		context: 'Supernetz: 192.0.2.0/25 | Hosts: 50, 30, 10',
 	},
 	{
@@ -467,7 +467,7 @@ export const SCENARIO_SPECS = [
 		],
 		fields: ['cidr', 'hostCount'],
 		question: 'Eine Zentrale und 12 Filialen teilen sich 10.10.0.0/16. Jede Filiale braucht POS (30 Hosts), WLAN-Gast (100 Hosts), VoIP (20 Hosts). Die Zentrale braucht 500 Hosts. Welchen Prefix braucht die Zentrale?',
-		context: 'Supernetz: 10.10.0.0/16 | Groesster Hostbedarf: 500',
+		context: 'Supernetz: 10.10.0.0/16 | Größter Hostbedarf: 500',
 	},
 	{
 		id: 'ipv6-easy-01',
@@ -476,7 +476,7 @@ export const SCENARIO_SPECS = [
 		kind: 'ipv6Type',
 		input: 'fe80::1234/64',
 		fields: ['networkAddress', 'addressType'],
-		question: 'Welche Netzadresse und welcher Adresstyp gehoeren zu fe80::1234/64?',
+		question: 'Welche Netzadresse und welcher Adresstyp gehören zu fe80::1234/64?',
 		context: 'Eingabe: fe80::1234/64',
 	},
 	{
@@ -486,7 +486,7 @@ export const SCENARIO_SPECS = [
 		kind: 'ipv6Type',
 		input: 'fd00:abcd::1/64',
 		fields: ['networkAddress', 'addressType'],
-		question: 'Welche Netzadresse und welcher Adresstyp gehoeren zu fd00:abcd::1/64?',
+		question: 'Welche Netzadresse und welcher Adresstyp gehören zu fd00:abcd::1/64?',
 		context: 'Eingabe: fd00:abcd::1/64',
 	},
 	{
@@ -507,7 +507,7 @@ export const SCENARIO_SPECS = [
 		basePrefix: 56,
 		targetPrefix: 64,
 		fields: ['subnetCount'],
-		question: 'Ein Standort bekommt 2001:db8:beef::/56. Wie viele /64-Subnetze koennen daraus gebildet werden?',
+		question: 'Ein Standort bekommt 2001:db8:beef::/56. Wie viele /64-Subnetze können daraus gebildet werden?',
 		context: 'Supernetz: /56 | Zielprefix: /64',
 	},
 	{
@@ -518,7 +518,7 @@ export const SCENARIO_SPECS = [
 		basePrefix: 48,
 		targetPrefix: 64,
 		fields: ['subnetCount'],
-		question: 'Ein Unternehmen hat 2001:db8:cafe::/48 und braucht Subnetze fuer 4 Standorte. Wie viele /64-Subnetze sind verfuegbar?',
+		question: 'Ein Unternehmen hat 2001:db8:cafe::/48 und braucht Subnetze für 4 Standorte. Wie viele /64-Subnetze sind verfügbar?',
 		context: 'Supernetz: /48 | Zielprefix: /64',
 	},
 ]

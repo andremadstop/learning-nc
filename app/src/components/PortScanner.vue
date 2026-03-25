@@ -10,7 +10,7 @@
 
     <nav v-if="!isEmbedded" class="sim-tool__tabs" role="tablist">
       <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'simulator' }" @click="view = 'simulator'">{{ t('learning', 'Simulator') }}</button>
-      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">{{ t('learning', 'Uebung') }}</button>
+      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">{{ t('learning', 'Übung') }}</button>
     </nav>
 
     <section v-if="currentView === 'simulator'" class="sim-tool__panel">
@@ -99,7 +99,7 @@
       <NcEmptyContent
         v-if="!activeScenario"
         :name="t('learning', 'Noch kein Scan-Szenario')"
-        :description="t('learning', 'Waehle eine Port-Scanner-Uebung aus.')"
+        :description="t('learning', 'Wähle eine Port-Scanner-Übung aus.')"
       />
 
       <div v-else class="scan-tool__exercise">
