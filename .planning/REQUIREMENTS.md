@@ -20,7 +20,7 @@
 - [x] **MAP-03**: Edge-Labels sind sichtbar und zeigen die Entscheidungsoption
 - [x] **MAP-04**: Gesperrte Edges zeigen per Tooltip welche Bedingung fehlt (Flag, Item, Reputation)
 - [x] **MAP-05**: User kann durch Klick auf einen erreichbaren Knoten dorthin navigieren
-- [ ] **MAP-06**: Quest-Map hat Zoom und Pan fuer groessere Kampagnen
+- [x] **MAP-06**: Quest-Map hat Zoom und Pan fuer groessere Kampagnen
 
 ### HUD / Game-UI (HUD)
 
@@ -96,7 +96,7 @@
 | MAP-03 | Phase 81 | Complete |
 | MAP-04 | Phase 81 | Complete |
 | MAP-05 | Phase 81 | Complete |
-| MAP-06 | Phase 81 | Pending |
+| MAP-06 | Phase 81 | Complete |
 | HUD-01 | Phase 82 | Pending |
 | HUD-02 | Phase 82 | Pending |
 | HUD-03 | Phase 82 | Pending |

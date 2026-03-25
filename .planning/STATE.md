@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Housekeeping + Content-Rollout
 status: executing
-stopped_at: Completed 81-01-PLAN.md
-last_updated: "2026-03-25T12:00:55.640Z"
-last_activity: 2026-03-25 — Completed 81-01 questMapEngine + backend full_graph
+stopped_at: Completed 81-02-PLAN.md
+last_updated: "2026-03-25T12:07:30.315Z"
+last_activity: 2026-03-25 — Completed 81-02 D3 renderer + QuestMap.vue + CSS
 progress:
   total_phases: 54
   completed_phases: 32
   total_plans: 56
-  completed_plans: 54
+  completed_plans: 55
   percent: 50
 ---
 
@@ -26,15 +26,15 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 ## Current Position
 
 Phase: 81 (in progress)
-Plan: 01 of 3 complete
+Plan: 02 of 3 complete
 Status: Executing Phase 81 plans
-Last activity: 2026-03-25 — Completed 81-01 questMapEngine + backend full_graph
+Last activity: 2026-03-25 — Completed 81-02 D3 renderer + QuestMap.vue + CSS
 
 Progress: [█████░░░░░] 50%
 
 ```
 Phase 80: SimulatorShell + Wiring     [~] In progress (3/4 plans)
-Phase 81: Quest-Map                   [~] In progress (1/3 plans)
+Phase 81: Quest-Map                   [~] In progress (2/3 plans)
 Phase 82: HUD + Timer + DauBot-UI     [ ] Not started
 Phase 83: Kampagnen-Content           [ ] Not started
 Phase 84: Coop-Backend                [ ] Not started
@@ -58,6 +58,9 @@ Phase 85: Coop-Frontend               [ ] Not started
 - [Phase 80]: Extract Vue component logic into pure JS utils for Vitest testing
 - [Phase 81]: Node state priority: current > reachable > visited > locked
 - [Phase 81]: _visited_nodes tracked as array in stateBag, initialized on session start
+- [Phase 81]: D3 objects on this._ instance properties (non-reactive) to avoid Vue 2 reactivity conflicts
+- [Phase 81]: Slide-in overlay from right (60% width) with backdrop click-to-close
+- [Phase 81]: D3 objects on this._ instance properties (non-reactive) to avoid Vue 2 reactivity conflicts
 
 ### Phase-Reihenfolge Rationale
 
@@ -104,7 +107,7 @@ Phase 85: Coop-Frontend               [ ] Not started
 
 ## Session Continuity
 
-Last session: 2026-03-25T11:59:31Z
-Stopped at: Completed 81-01-PLAN.md
-Resume file: .planning/phases/81-quest-map/81-01-SUMMARY.md
-Next action: Execute 81-02-PLAN.md
+Last session: 2026-03-25T12:07:23.483Z
+Stopped at: Completed 81-02-PLAN.md
+Resume file: None
+Next action: Execute 81-03-PLAN.md

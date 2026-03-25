@@ -897,7 +897,7 @@ Plans:
 | 77. Profil + Dozenten-Sicht | v11.0 | 0/? | Not started | - |
 | 78. Guide-Modus + Antwortlaengen | v11.0 | 0/? | Not started | - |
 | 80. SimulatorShell + Wiring | 3/3 | Complete   | 2026-03-25 | - |
-| 81. Quest-Map | 1/3 | In Progress|  | - |
+| 81. Quest-Map | 2/3 | In Progress|  | - |
 | 82. HUD + Timer + DauBot-UI | v12.0 | 0/? | Not started | - |
 | 83. Kampagnen-Content | v12.0 | 0/? | Not started | - |
 | 84. Coop-Backend | v12.0 | 0/? | Not started | - |
