@@ -405,7 +405,12 @@ Plans:
   3. Mindestens 5 Praxis-Szenarien beschreiben einen realen Kontext (Firma, Server-Rack, Filialstruktur) und fragen nach konkreten Netzwerk-Konfigurationen — der User uebt anwendungsbezogenes Denken
   4. Mindestens 5 IPv6-Szenarien decken Prefix-Berechnung, /48-Subnetting, EUI-64 und Link-Local Erkennung ab — der User kann IPv6-Grundlagen im Uebungsmodus trainieren
   5. Jede Aufgabe hat einen Schwierigkeitsgrad (Leicht/Mittel/Schwer) und die Sammlung deckt typische Fallstricke ab (Broadcast abziehen, Router-Interface beruecksichtigen, nicht auf Netzgrenze liegende Adressen)
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 60: VLAN-Tab
 **Goal**: Ein neuer VLAN-Tab im Subnetzrechner visualisiert VLAN-Zuordnungen, 802.1Q Tagging und Inter-VLAN Routing — der User versteht die Zusammenhaenge zwischen VLANs und Subnetzen
@@ -416,7 +421,12 @@ Plans:
   2. Eine Visualisierung zeigt Access-Ports und Trunk-Ports mit 802.1Q Tagging — der User sieht welche Frames getaggt werden und welche nicht (untagged auf Access, tagged auf Trunk)
   3. Eine Inter-VLAN Routing Darstellung zeigt Router-on-a-Stick oder L3-Switch Konfiguration mit Subinterfaces und VLAN-Zuordnung — der User versteht wie Pakete zwischen VLANs geroutet werden
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ---
 
@@ -494,7 +504,12 @@ Plans:
   1. Der User gibt eine Domain ein und sieht eine animierte Schritt-fuer-Schritt Aufloesung (Root → TLD → Authoritative → IP) mit sichtbaren Zwischenstationen und erklaerenden Labels an jedem Schritt
   2. Der User kann Record-Typen (A, AAAA, MX, CNAME, PTR, NS, SOA, TXT) auswaehlen und sieht pro Typ eine visuelle Erklaerung mit Beispiel-Daten und typischem Einsatzzweck
   3. Im Uebungsmodus bekommt der User eine manipulierte DNS-Kette praesentiert ("Warum loest diese Domain nicht auf?") und muss das Problem identifizieren — mit Feedback ob die Analyse korrekt war
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 65: Firewall/ACL-Builder
 **Goal**: User koennen ein Firewall-Regelwerk in einer Tabelle aufbauen und simulierte Pakete dagegen testen — mit visueller Rueckmeldung ob ein Paket erlaubt oder blockiert wird
@@ -504,7 +519,12 @@ Plans:
   1. Der User kann Firewall-Regeln (Src-IP, Dst-IP, Port, Protocol, Action) in einer Tabelle anlegen, bearbeiten und per Drag-and-Drop umsortieren — die Reihenfolge bestimmt die Auswertung (First Match)
   2. Der User kann ein simuliertes Paket (Src, Dst, Port, Protocol) eingeben und sieht visuell welche Regel greift (gruen = erlaubt, rot = blockiert) — mit Markierung der matchenden Zeile im Regelwerk
   3. Im Uebungsmodus bekommt der User eine Anforderung ("Erlaube HTTP von Subnetz X, blockiere alles andere") und muss ein passendes Regelwerk erstellen — mit automatischer Pruefung gegen vordefinierte Test-Pakete
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 66: Port-Scanner
 **Goal**: User koennen einen simulierten Port-Scan gegen vordefinierte Host-Profile durchfuehren und lernen offene Ports, Services und verdaechtige Konfigurationen zu erkennen
@@ -514,7 +534,12 @@ Plans:
   1. Der User gibt eine IP ein und sieht einen animierten Scan der Port fuer Port durchgeht — offene Ports erscheinen mit Service-Name und Version (z.B. "80/tcp — HTTP — Apache 2.4")
   2. Mindestens 4 vordefinierte Host-Profile (Webserver, Mailserver, Router, Domain Controller) liefern realistische Port-Sets — der User kann zwischen Profilen wechseln und die Unterschiede erkennen
   3. Im Uebungsmodus muss der User Fragen beantworten wie "Welcher Service laeuft auf Port 3389?" oder "Welcher Host ist vermutlich kompromittiert?" — mit Erklaerung warum bestimmte offene Ports ein Sicherheitsrisiko darstellen
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 67: Routing-Tabelle
 **Goal**: User koennen eine Routing-Tabelle editieren und sehen wie Pakete anhand von Longest Prefix Match durch ein Netzwerk geroutet werden
@@ -524,7 +549,12 @@ Plans:
   1. Der User sieht eine editierbare Routing-Tabelle (Destination, Mask, Gateway, Interface, Metric) und kann Eintraege hinzufuegen, loeschen und aendern — inklusive Default-Route
   2. Bei Eingabe einer Ziel-IP zeigt eine Animation den Longest-Prefix-Match-Prozess: alle passenden Routen werden markiert, die spezifischste wird hervorgehoben und das Paket wird visuell ueber das gewaehlte Interface weitergeleitet
   3. Im Uebungsmodus bekommt der User ein Netzwerk-Szenario ("Subnetz 10.1.2.0/24 soll ueber Gateway 10.0.0.1 erreichbar sein") und muss die richtige Route eintragen — mit Verifikation durch Test-Pakete
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 68: NAT-Tabelle
 **Goal**: User verstehen Network Address Translation visuell — sie sehen wie interne Adressen in externe uebersetzt werden und koennen verschiedene NAT-Typen vergleichen
@@ -534,7 +564,12 @@ Plans:
   1. Eine Visualisierung zeigt den Paket-Weg von Inside Local ueber NAT-Device zu Inside Global und zum Outside-Ziel — mit sichtbarer Adress-Transformation an jedem Punkt
   2. Der User kann zwischen Static NAT, Dynamic NAT und PAT/Overload umschalten und sieht die Unterschiede in der Uebersetzungstabelle — bei PAT sind Port-Zuordnungen sichtbar, bei Static die 1:1-Zuordnung
   3. Im Uebungsmodus bekommt der User ein Szenario ("5 Clients, 1 oeffentliche IP — welche externe IP:Port Kombination sieht der Server?") und muss die korrekte Uebersetzung angeben
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 69: Wireshark-Lite
 **Goal**: User koennen Netzwerk-Pakete visuell untersuchen — vom Ethernet-Frame bis zum Payload — und lernen typische Protokoll-Muster und Fehlersituationen zu erkennen
@@ -545,7 +580,12 @@ Plans:
   2. Vordefinierte Captures (TCP 3-Way Handshake, DNS Query/Response, HTTP GET, ARP Request/Reply) zeigen jeweils eine Sequenz von Paketen mit erklaerenden Annotationen — der User kann Paket fuer Paket durchklicken
   3. Im Uebungsmodus bekommt der User einen Capture mit einem Problem (Retransmissions, RST-Flags, TTL exceeded) und muss das Problem identifizieren — mit Hinweisen auf welche Felder er achten soll
   4. Die Paket-Darstellung verwendet Farb-Kodierung nach Protokoll-Schicht (L2 blau, L3 gruen, L4 orange, L7 lila) — konsistent ueber alle Captures hinweg
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 70: 802.1X Auth-Flow
 **Goal**: User verstehen den 802.1X Authentifizierungs-Ablauf visuell — vom Supplicant ueber den Authenticator bis zum Auth-Server, mit allen EAP-Phasen und Protokoll-Vergleichen
@@ -556,7 +596,12 @@ Plans:
   2. Im Uebungsmodus muss der User die EAP-Nachrichten in die richtige Reihenfolge bringen (Drag-and-Drop) — mit Feedback welche Schritte vertauscht waren und warum die korrekte Reihenfolge wichtig ist
   3. Eine Vergleichsansicht zeigt EAP-TLS, PEAP und EAP-FAST nebeneinander mit Unterschieden in Zertifikat-Anforderungen, Tunnel-Aufbau und Sicherheitsniveau — der User erkennt auf einen Blick welches Protokoll wann geeignet ist
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 
 ### 📋 v12.0 Campaign Engine — Interaktives Kampagnen-RPG (Planned)
@@ -607,7 +652,12 @@ Plans:
   3. Edge-Labels zeigen die Entscheidungsoption, gesperrte Edges zeigen per Tooltip welche Bedingung fehlt (Flag-Name, Item-Name oder Reputation-Schwellwert)
   4. User kann per Klick auf einen erreichbaren Knoten dorthin navigieren — gesperrte Knoten sind nicht klickbar
   5. Zoom (Maus-Rad) und Pan (Drag) funktionieren auf groesseren Kampagnen — die Karte skaliert korrekt
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 82: HUD + Timer + DauBot-UI
 **Goal**: User sehen waehrend des Spiels ein kompaktes HUD mit Inventory und Reputation, einen visuellen Timer-Countdown bei zeitkritischen Szenen mit Konsequenzen bei Ablauf, und ein Dialog-UI fuer DauBot-Fehlerkorrekturen
@@ -619,7 +669,12 @@ Plans:
   3. Eine DauBot-Szene zeigt eine humorvolle Fehlerbeschreibung ("Klaus hat den Switch neu gestartet weil er geblinkt hat") plus Multiple-Choice-Auswahl fuer Fehlerdiagnose und Behebung
   4. Richtige DauBot-Antworten erhoehen Score und Reputation, falsche senken sie — der Effekt ist sofort im HUD sichtbar
   5. DauBot-Texte sind ueberzeichnet-humorvoll: panische Fehlerbeschreibungen, absurde Azubi-Ausreden, realistische Netzwerk-Fehler als Grundlage
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 83: Kampagnen-Content "Der grosse Ausfall"
 **Goal**: Eine vollstaendige spielbare Vorzeige-Kampagne "Der grosse Ausfall" mit 15+ Knoten, 3 Akten, 4 ueberzeichneten NPCs, 3 verschiedenen Enden, mind. 3 Simulator-Typen, Items, Reputation-Verzweigungen, 2 Timer-Szenen und Schema-Validierung
@@ -633,7 +688,12 @@ Plans:
   5. Security-Reputation beeinflusst mindestens einen Pfad (hoch = Zugang zu versteckter Route, niedrig = Pfad gesperrt) — Reputation-Werte sind im HUD sichtbar
   6. Zwei Timer-Szenen haben echten Zeitdruck: bei Ablauf verlaeuft die Story unguemstig (andere Edge) — die Konsequenz ist dem User durch Tooltip kommuniziert
   7. Das Campaign JSON hat ein version-Feld und wird beim Laden gegen ein Schema validiert — Versionsmismatch zeigt "Neustart erforderlich" statt stilles Reset
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 84: Coop-Backend
 **Goal**: Drei neue DB-Tabellen (coop_sessions, coop_players, coop_votes) und ein vollstaendiges Coop-Subsystem mit CoopService und CoopController sind deployed und per API testbar
@@ -644,7 +704,12 @@ Plans:
   2. Abstimmungs-Endpunkt (POST /coop/sessions/{id}/vote) nimmt Edge-Wahl entgegen und loest bei einfacher Mehrheit automatisch graph-traverse aus — Race-Condition ist durch server-seitigen status=advancing-Guard verhindert
   3. Inaktive Sessions werden nach konfigurierbarem Timeout (Standard: 30 Minuten ohne Heartbeat) automatisch bereinigt
   4. Alle 6 Endpoints (create, join, lobby, ready, state, vote) antworten mit korrekten HTTP-Status-Codes und validen JSON-Bodies — keine 500er bei normaler Nutzung
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 85: Coop-Frontend
 **Goal**: User koennen eine Coop-Session starten oder beitreten, sehen dieselbe Szene synchronisiert, stimmen ueber Entscheidungen ab und werden beim Session-Ende benachrichtigt
@@ -721,7 +786,12 @@ Plans:
   1. Szenen sind in 3-4 Akte gruppiert (Setup, Investigation, Eskalation, Showdown) und die Engine erzwingt die Akt-Reihenfolge — ein User kann nicht in den Showdown springen ohne die vorherigen Akte durchlaufen zu haben
   2. Der Spielstand (aktuelle Szene, State-Bag, Akt-Nummer, verstrichene Zeit) wird bei jeder Szenen-Transition automatisch in campaign_state gespeichert — nach Browser-Schluss und erneutem Oeffnen Tage spaeter laeuft die Kampagne exakt an der letzten Position weiter
   3. REST-Endpoints fuer Graph-Navigation (naechste Szene laden, Entscheidung senden), State-Abfrage (aktueller State-Bag, Position) und Save/Resume (Spielstand laden) sind funktional und per curl testbar — mit korrekter Fehlerbehandlung bei ungueltigen Transitionen
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 73: Rollen-System + Simulator-Integration
 **Goal**: Charakterklassen beeinflussen den Kampagnenverlauf durch exklusive Szenen und Pfade, und v9.0-Simulatoren koennen als Aufgaben in Szenen eingebettet werden — mit Ergebnis-Rueckfluss in den State-Bag
@@ -732,7 +802,12 @@ Plans:
   2. Die Charakterklasse beeinflusst nicht nur welche Szenen sichtbar sind sondern auch welche Pfade im Graph verfuegbar werden — verschiedene Rollen erleben strukturell unterschiedliche Kampagnenverlaeufe (nicht nur kosmetische Unterschiede)
   3. Eine Szene kann einen Simulator (DNS, Firewall, Port-Scanner etc.) als Aufgabe referenzieren und das Simulator-Ergebnis (bestanden/nicht bestanden, Score, verstrichene Zeit) fliesst in den State-Bag zurueck — eine bestandene Firewall-Aufgabe kann z.B. das Flag "firewall_configured" setzen
   4. Timer-basierte Aufgaben sind moeglich: die Engine startet einen Countdown und wertet bei Ablauf automatisch als "nicht bestanden" — der Timer-Status ist im State-Bag gespeichert und ueberlebt Save/Resume
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 74: DAU-Bot
 **Goal**: Ein KI-Gegner macht typische Anfaengerfehler die der User als Lern-Aufgabe korrigieren muss — der Bot wird zum paedagogischen Werkzeug
@@ -760,7 +835,12 @@ Plans:
   2. Die REST-Endpoints POST/GET/PUT /api/profile/telos sind per curl testbar — POST speichert ein Telos-JSON, GET liefert es zurueck, PUT aktualisiert einzelne Felder — mit korrekter Authentifizierung und Validierung
   3. VirtuProf fuehrt ueber die GeminiService-API ein 10-Fragen-Interview (Rolle, Erfahrung, Staerken, Schwaechen, Ziel, Zeitrahmen, Lernstil, Lernzeit, Motivation, Besonderes) und extrahiert aus den Antworten ein strukturiertes JSON das in user_telos gespeichert wird
   4. Das Interview startet automatisch beim ersten Login eines Users der noch kein Telos hat — bei bestehenden Usern mit Telos wird das Interview uebersprungen
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 76: Onboarding-Frontend + Formular-Fallback
 **Goal**: Neue User durchlaufen ein interaktives Onboarding das entweder als VirtuProf-Chat oder als Formular funktioniert — in beiden Faellen entsteht ein vollstaendiges Mini-Telos
@@ -770,7 +850,12 @@ Plans:
   1. Beim ersten App-Besuch oeffnet sich automatisch das VirtuProf-Interview als Chat-Dialog — der User beantwortet 10 Fragen in natuerlicher Sprache und sieht am Ende eine Zusammenfassung seines Lernprofils
   2. Wenn KI deaktiviert ist (kein Gemini API Key oder User-Praeferenz), erscheint stattdessen ein Formular mit Dropdowns und Textfeldern fuer dieselben 10 Felder — das Ergebnis ist dasselbe Telos-JSON wie beim Interview
   3. Der User kann das Onboarding ueberspringen ("Spaeter") und wird beim naechsten Login erneut darauf hingewiesen — nach drei Ablehnungen wird nicht mehr gefragt
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 77: Profil-Seite + Dozenten-Sicht
 **Goal**: User sehen ihr persoenliches Lernprofil mit Telos-Daten, Staerken/Schwaechen und Lernstatistiken, und Dozenten sehen ein aggregiertes Klassen-Profil ihrer Kurse
@@ -781,7 +866,12 @@ Plans:
   2. Der Sichtbarkeits-Toggle funktioniert: Profil auf "privat" ist nur fuer den User selbst sichtbar, "kurs" zeigt es Kursmitgliedern, "dozent" zeigt es nur dem Dozenten — die Einstellung wird sofort wirksam
   3. Der User kann sein Profil editieren: Telos-Daten aktualisieren, Bio hinzufuegen, "Ich kann helfen bei..." und "Ich suche Hilfe bei..." Felder pflegen — Aenderungen werden per PUT /api/profile/telos gespeichert
   4. Der Dozent sieht im Dozenten-Cockpit ein aggregiertes Klassen-Profil: Erfahrungslevel-Verteilung (Pie/Bar Chart), Ziel-Zertifizierungen, Durchschnitt Lernzeit/Woche und einen Pruefungs-Countdown pro User basierend auf target_date aus den Telos-Daten
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ### Phase 78: VirtuProf Guide-Modus + Antwortlaengen
 **Goal**: VirtuProf wird zum kontextbewussten App-Guide der beim ersten Besuch eines Tools proaktiv erklaert und seine Antwortlaenge dynamisch anpasst — unter Nutzung der Telos-Daten fuer personalisierte Erklaerungen
@@ -791,7 +881,12 @@ Plans:
   1. Wenn ein User zum ersten Mal ein Tool oder einen Modus oeffnet (Training, Leitner, Exam, PBQ, Subnetzrechner etc.), erscheint VirtuProf automatisch mit einer ausfuehrlichen Erklaerung — beim zweiten Besuch ist die Erklaerung kuerzer oder entfaellt, gesteuert ueber ein "first_visit" Tracking pro Tool
   2. VirtuProf antwortet standardmaessig kurz (~150 Tokens) — nur wenn der User eskaliert ("Erklaer genauer", "Mehr Details", "Warum?") wechselt VirtuProf auf ausfuehrliche Antworten (~2048 Tokens) fuer diese eine Antwort und kehrt dann zum kurzen Default zurueck
   3. VirtuProf nutzt die Telos-Daten des Users als Kontext in seinen Erklaerungen — ein Quereinsteiger bekommt grundlegendere Erklaerungen als ein erfahrener Admin, ein User mit Ziel "Security+" bekommt Security-relevante Beispiele bevorzugt
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
+- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
+- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
 
 ## Progress
 
