@@ -480,8 +480,6 @@ Plans:
 
 Plans:
 - [x] 63-01-PLAN.md — Exam-Sperre (VirtuProf deaktiviert) + Fehler-Report Button mit automatischer Fragen-ID
-
-
 ---
 
 ### v9.0 Simulator-Werkzeuge (Phases 64-70)
@@ -602,8 +600,6 @@ Plans:
 - [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
 - [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
 - [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
-
-
 ### 📋 v12.0 Campaign Engine — Interaktives Kampagnen-RPG (Planned)
 
 **Milestone Goal:** Die bestehende Graph-Engine mit den 7 Netzwerk-Simulatoren zu einem echten Spielerlebnis verschmelzen. Kampagnen sollen sich wie ein kleines RPG anfuehlen — mit Quest-Map, eingebetteten Simulator-Challenges, humorvollen ueberzeichneten Charakteren, Inventory, Reputation, Timer-Countdown und Coop-Multiplayer.
@@ -672,9 +668,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 81-01-PLAN.md — Backend full_graph endpoint + questMapEngine.js pure JS engine with tests
-- [ ] 81-02-PLAN.md — D3 renderer + QuestMap.vue component with hexagonal nodes and overlay
-- [ ] 81-03-PLAN.md — AbenteuerMode integration + visual verification
+- [ ] 82-01-PLAN.md — Pure JS engines (hudEngine, timerEngine, dauBotEngine) + TDD tests
+- [ ] 82-02-PLAN.md — Vue components (GameHud, GameTimer, DauBotDialog) + CSS
+- [ ] 82-03-PLAN.md — AbenteuerMode integration wiring + visual verification
 
 ### Phase 83: Kampagnen-Content "Der grosse Ausfall"
 **Goal**: Eine vollstaendige spielbare Vorzeige-Kampagne "Der grosse Ausfall" mit 15+ Knoten, 3 Akten, 4 ueberzeichneten NPCs, 3 verschiedenen Enden, mind. 3 Simulator-Typen, Items, Reputation-Verzweigungen, 2 Timer-Szenen und Schema-Validierung
@@ -897,7 +893,7 @@ Plans:
 | 77. Profil + Dozenten-Sicht | v11.0 | 0/? | Not started | - |
 | 78. Guide-Modus + Antwortlaengen | v11.0 | 0/? | Not started | - |
 | 80. SimulatorShell + Wiring | 3/3 | Complete   | 2026-03-25 | - |
-| 81. Quest-Map | 3/3 | Complete   | 2026-03-25 | - |
+| 81. Quest-Map | 3/3 | Complete    | 2026-03-25 | - |
 | 82. HUD + Timer + DauBot-UI | v12.0 | 0/? | Not started | - |
 | 83. Kampagnen-Content | v12.0 | 0/? | Not started | - |
 | 84. Coop-Backend | v12.0 | 0/? | Not started | - |
