@@ -542,6 +542,7 @@ export default {
       lastLivesLost: 0,
       scoreBeforeAnswer: 0,
       livesBeforeAnswer: 0,
+      roundBaselineState: null,
       readyClicked: false,
       lastQuestionIndex: -1,
       timerValue: 15,
@@ -980,10 +981,14 @@ export default {
 
     syncRoundOutcome(prevState, nextState) {
       if (this.isEliminationMode) {
-        const previousLives = this.findMyPlayer(prevState)?.lives ?? this.livesBeforeAnswer;
+        const baselineState = this.roundBaselineState || prevState;
+        const previousLives = this.findMyPlayer(baselineState)?.lives ?? this.livesBeforeAnswer;
         const currentLives = this.findMyPlayer(nextState)?.lives ?? 0;
-        this.lastLivesLost = Math.max(0, Number(previousLives || 0) - Number(currentLives || 0));
-        this.syncEliminationState(prevState, nextState);
+        this.lastLivesLost = Math.max(
+          this.lastLivesLost,
+          Math.max(0, Number(previousLives || 0) - Number(currentLives || 0))
+        );
+        this.syncEliminationState(baselineState, nextState);
         return;
       }
 
@@ -1026,6 +1031,7 @@ export default {
       this.answeredCorrect = false;
       this.scoreBeforeAnswer = 0;
       this.livesBeforeAnswer = 0;
+      this.roundBaselineState = null;
       this.correctAnswerId = null;
       this.selectedAnswerId = null;
       this.lastQuestion = null;
@@ -1341,6 +1347,7 @@ export default {
       this.lastQuestion = this.currentQuestion;
       this.scoreBeforeAnswer = this.myScore;
       this.livesBeforeAnswer = this.myLives;
+      this.roundBaselineState = prevState;
       this.loading = true;
       try {
         const r = await axios.post(
