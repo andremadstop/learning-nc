@@ -1,0 +1,4852 @@
+[
+  {
+    "text": "In welcher Phase des Incident Response Prozesses werden die gewonnenen Erkenntnisse genutzt, um zukünftige Vorfälle zu verhindern?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eindämmung (Containment)",
+        "is_correct": false
+      },
+      {
+        "text": "Beseitigung (Eradication)",
+        "is_correct": false
+      },
+      {
+        "text": "Lehren aus dem Vorfall (Lessons Learned)",
+        "is_correct": true
+      },
+      {
+        "text": "Wiederherstellung (Recovery)",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welches Tool wird primär verwendet, um Sicherheitsereignisse aus verschiedenen Quellen in Echtzeit zu sammeln, zu korrelieren und zu analysieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "DLP (Data Loss Prevention)",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM (Security Information and Event Management)",
+        "is_correct": true
+      },
+      {
+        "text": "IPS (Intrusion Prevention System)",
+        "is_correct": false
+      },
+      {
+        "text": "EDR (Endpoint Detection and Response)",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist das Hauptziel von SOAR (Security Orchestration, Automation, and Response)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die manuelle Analyse jedes einzelnen Pakets im Netzwerk",
+        "is_correct": false
+      },
+      {
+        "text": "Die Automatisierung von Standardantworten auf Sicherheitsereignisse",
+        "is_correct": true
+      },
+      {
+        "text": "Die Verschlüsselung aller Daten im Ruhezustand",
+        "is_correct": false
+      },
+      {
+        "text": "Die physische Absicherung des Rechenzentrums",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welches forensische Prinzip besagt, dass Beweise so behandelt werden müssen, dass ihre Integrität von der Sicherung bis zum Gerichtsprozess lückenlos nachgewiesen werden kann?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": true
+      },
+      {
+        "text": "Data Sovereignty",
+        "is_correct": false
+      },
+      {
+        "text": "Legal Hold",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Gemäß der 'Order of Volatility', welche Daten sollten bei einer digitalen Untersuchung zuerst gesichert werden?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Daten auf der Festplatte (SSD/HDD)",
+        "is_correct": false
+      },
+      {
+        "text": "CPU-Register und Cache",
+        "is_correct": true
+      },
+      {
+        "text": "Netzwerkfreigaben",
+        "is_correct": false
+      },
+      {
+        "text": "Backup-Bänder",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Hauptunterschied zwischen einem Full Backup und einem Incremental Backup?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Full Backup sichert nur geänderte Dateien",
+        "is_correct": false
+      },
+      {
+        "text": "Incremental Backup sichert alle Dateien seit dem letzten Full oder Incremental Backup",
+        "is_correct": true
+      },
+      {
+        "text": "Incremental Backup benötigt mehr Speicherplatz als ein Full Backup",
+        "is_correct": false
+      },
+      {
+        "text": "Incremental Backup ist schneller bei der Wiederherstellung als ein Full Backup",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Ein Administrator stellt fest, dass ein System kompromittiert wurde. Er isoliert das betroffene VLAN, um die Ausbreitung zu verhindern. Welche IR-Phase ist dies?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Identifizierung",
+        "is_correct": false
+      },
+      {
+        "text": "Eindämmung (Containment)",
+        "is_correct": true
+      },
+      {
+        "text": "Beseitigung (Eradication)",
+        "is_correct": false
+      },
+      {
+        "text": "Wiederherstellung",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welches Protokoll wird häufig verwendet, um Log-Daten von Netzwerkgeräten an einen zentralen Server zu senden?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "HTTP",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": true
+      },
+      {
+        "text": "FTP",
+        "is_correct": false
+      },
+      {
+        "text": "SNMP Walk",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was beschreibt 'Egress Filtering' im Kontext des Netzwerkmonitorings?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Filterung von eingehendem Datenverkehr",
+        "is_correct": false
+      },
+      {
+        "text": "Überwachung und Filterung von ausgehendem Datenverkehr aus dem internen Netzwerk",
+        "is_correct": true
+      },
+      {
+        "text": "Blockieren von Spam-E-Mails",
+        "is_correct": false
+      },
+      {
+        "text": "Verschlüsselung von VPN-Tunneln",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Ein Sicherheitsanalyst verwendet NetFlow-Daten. Welche Information kann er daraus am ehesten gewinnen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Den vollständigen Inhalt einer E-Mail",
+        "is_correct": false
+      },
+      {
+        "text": "Metadaten über Netzwerkverbindungen (Quelle, Ziel, Dauer, Volumen)",
+        "is_correct": true
+      },
+      {
+        "text": "Den Namen des angemeldeten Benutzers am Endgerät",
+        "is_correct": false
+      },
+      {
+        "text": "Den Klartext eines HTTPS-Requests",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Zweck eines 'Playbooks' in einer SOAR-Plattform?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Es ist ein Marketing-Dokument für Sicherheitssoftware",
+        "is_correct": false
+      },
+      {
+        "text": "Es definiert automatisierte Workflows und Schritte für die Reaktion auf spezifische Vorfälle",
+        "is_correct": true
+      },
+      {
+        "text": "Es enthält die Passwörter aller Administratoren",
+        "is_correct": false
+      },
+      {
+        "text": "Es dient der Inventarisierung von Hardware",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welche Art von Analyse konzentriert sich darauf, wie ein Angreifer in das Netzwerk gelangt ist und welche Schritte er unternommen hat?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Statistische Analyse",
+        "is_correct": false
+      },
+      {
+        "text": "Root Cause Analysis (Ursachenanalyse)",
+        "is_correct": true
+      },
+      {
+        "text": "Vulnerabilitätsscan",
+        "is_correct": false
+      },
+      {
+        "text": "Code-Review",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was bedeutet 'Data Sanitization' nach einem Vorfall?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Sichern von Daten für forensische Zwecke",
+        "is_correct": false
+      },
+      {
+        "text": "Das unwiederbringliche Löschen von sensiblen Daten von Speichermedien vor der Wiederverwendung oder Entsorgung",
+        "is_correct": true
+      },
+      {
+        "text": "Das Verschlüsseln von Datenbanken",
+        "is_correct": false
+      },
+      {
+        "text": "Das Sortieren von Log-Files",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Ein Unternehmen führt regelmäßige 'Tabletop Exercises' durch. Was ist das Hauptziel dieser Übungen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Testen der physischen Belastbarkeit von Servern",
+        "is_correct": false
+      },
+      {
+        "text": "Das theoretische Durchspielen von Incident-Szenarien zur Überprüfung von Plänen und Verantwortlichkeiten",
+        "is_correct": true
+      },
+      {
+        "text": "Das Installieren von Patches auf allen Workstations",
+        "is_correct": false
+      },
+      {
+        "text": "Die Schulung von Mitarbeitern im Umgang mit Feuerlöschern",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welches Tool wird verwendet, um den Speicherinhalt (RAM) eines laufenden Systems für forensische Analysen zu sichern?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Wireshark",
+        "is_correct": false
+      },
+      {
+        "text": "Memdump / FTK Imager",
+        "is_correct": true
+      },
+      {
+        "text": "Nmap",
+        "is_correct": false
+      },
+      {
+        "text": "Autopsy",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist eine 'Beweissicherung' (Legal Hold)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eine Geldstrafe für Sicherheitsverletzungen",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Prozess, bei dem alle relevanten Daten für potenzielle rechtliche Schritte aufbewahrt und vor Löschung geschützt werden",
+        "is_correct": true
+      },
+      {
+        "text": "Die Beschlagnahmung von Hardware durch die Polizei",
+        "is_correct": false
+      },
+      {
+        "text": "Die Sperrung eines Benutzerkontos",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welche Information liefert ein SIEM-Dashboard typischerweise NICHT?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Anzahl der fehlgeschlagenen Logins",
+        "is_correct": false
+      },
+      {
+        "text": "Geografische Herkunft von Angriffen",
+        "is_correct": false
+      },
+      {
+        "text": "Vollständiger Quellcode einer proprietären Anwendung",
+        "is_correct": true
+      },
+      {
+        "text": "Echtzeit-Warnmeldungen über kritische Ereignisse",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Ein Administrator konfiguriert SNMPv3. Was ist der Hauptvorteil gegenüber SNMPv2c?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Höhere Übertragungsgeschwindigkeit",
+        "is_correct": false
+      },
+      {
+        "text": "Unterstützung für Authentifizierung und Verschlüsselung",
+        "is_correct": true
+      },
+      {
+        "text": "Kompatibilität mit alten Druckern",
+        "is_correct": false
+      },
+      {
+        "text": "Verwendung von ICMP statt UDP",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Traffic Mirroring' (oder SPAN-Port)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Duplizieren von Netzwerkverkehr von einem oder mehreren Ports an einen anderen Port zur Überwachung",
+        "is_correct": true
+      },
+      {
+        "text": "Das Sichern von Festplatteninhalten",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Load-Balancing-Verfahren",
+        "is_correct": false
+      },
+      {
+        "text": "Eine Methode zur Abwehr von DDoS-Angriffen",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welches Konzept beschreibt die Sammlung und Analyse von Informationen über Bedrohungen, um die Verteidigung zu verbessern?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Asset Management",
+        "is_correct": false
+      },
+      {
+        "text": "Threat Intelligence",
+        "is_correct": true
+      },
+      {
+        "text": "Patch Management",
+        "is_correct": false
+      },
+      {
+        "text": "Change Management",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Zweck der 'Preparation' Phase im Incident Response Lifecycle?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Den Vorfall direkt stoppen",
+        "is_correct": false
+      },
+      {
+        "text": "Sicherstellen, dass das Team über die notwendigen Ressourcen, Schulungen und Tools verfügt, bevor ein Vorfall eintritt",
+        "is_correct": true
+      },
+      {
+        "text": "Den Angreifer strafrechtlich verfolgen",
+        "is_correct": false
+      },
+      {
+        "text": "Das System neu starten",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welches Tool kann verwendet werden, um festzustellen, welche Ports auf einem Server offen sind und welche Dienste dahinter laufen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Wireshark",
+        "is_correct": false
+      },
+      {
+        "text": "Nmap",
+        "is_correct": true
+      },
+      {
+        "text": "John the Ripper",
+        "is_correct": false
+      },
+      {
+        "text": "Metasploit",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Log Aggregation'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Löschen alter Logs",
+        "is_correct": false
+      },
+      {
+        "text": "Das Zusammenführen von Log-Daten aus verschiedenen Quellen an einem zentralen Ort",
+        "is_correct": true
+      },
+      {
+        "text": "Die Verschlüsselung lokaler Log-Dateien",
+        "is_correct": false
+      },
+      {
+        "text": "Das manuelle Lesen von System-Logs",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Ein Analyst untersucht einen Vorfall und findet heraus, dass ein Benutzer auf eine Phishing-E-Mail geklickt hat. Dies ist ein Beispiel für:",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Ein technisches Versagen",
+        "is_correct": false
+      },
+      {
+        "text": "Einen Angriffsvektor (Attack Vector)",
+        "is_correct": true
+      },
+      {
+        "text": "Ein Honeypot-Ergebnis",
+        "is_correct": false
+      },
+      {
+        "text": "Einen physischen Sicherheitsbruch",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Isolation' im Kontext von Incident Response?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Die Kündigung des betroffenen Mitarbeiters",
+        "is_correct": false
+      },
+      {
+        "text": "Das Trennen eines infizierten Systems vom restlichen Netzwerk, um weiteren Schaden zu verhindern",
+        "is_correct": true
+      },
+      {
+        "text": "Das Backup der Daten",
+        "is_correct": false
+      },
+      {
+        "text": "Das Ausschalten der Firewall",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Hauptzweck eines Honeypots in einem Netzwerk?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Als primärer Dateiserver zu dienen",
+        "is_correct": false
+      },
+      {
+        "text": "Angreifer abzulenken und Informationen über ihre Methoden zu sammeln",
+        "is_correct": true
+      },
+      {
+        "text": "Die Netzwerkgeschwindigkeit zu erhöhen",
+        "is_correct": false
+      },
+      {
+        "text": "Backups zu speichern",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welche Art von Scan wird verwendet, um bekannte Schwachstellen in Systemen und Anwendungen zu identifizieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Port Scan",
+        "is_correct": false
+      },
+      {
+        "text": "Vulnerability Scan",
+        "is_correct": true
+      },
+      {
+        "text": "Packet Sniffing",
+        "is_correct": false
+      },
+      {
+        "text": "Social Engineering",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Unterschied zwischen einem aktiven und einem passiven Monitoring-Ansatz?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Aktives Monitoring ist billiger",
+        "is_correct": false
+      },
+      {
+        "text": "Passives Monitoring sendet Testpakete in das Netzwerk",
+        "is_correct": false
+      },
+      {
+        "text": "Aktives Monitoring generiert eigenen Traffic, um die Performance zu messen; passives Monitoring beobachtet den vorhandenen Traffic",
+        "is_correct": true
+      },
+      {
+        "text": "Es gibt keinen Unterschied",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Ein Unternehmen setzt 'E-Discovery' ein. Wofür wird dieser Prozess primär genutzt?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Um neue Mitarbeiter zu finden",
+        "is_correct": false
+      },
+      {
+        "text": "Um elektronisch gespeicherte Informationen für rechtliche Verfahren zu identifizieren, zu sammeln und bereitzustellen",
+        "is_correct": true
+      },
+      {
+        "text": "Um Software-Updates automatisch zu verteilen",
+        "is_correct": false
+      },
+      {
+        "text": "Um die Web-Historie der Mitarbeiter zu löschen",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Hauptzweck von Log Rotation?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Verschlüsseln von Logs",
+        "is_correct": false
+      },
+      {
+        "text": "Das systematische Archivieren und Löschen alter Log-Dateien, um Speicherplatz zu sparen und die Performance zu erhalten",
+        "is_correct": true
+      },
+      {
+        "text": "Das Senden von Logs an das SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "Das Ändern der Log-Level während eines Angriffs",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Ein Sicherheitsvorfall wird als 'False Positive' eingestuft. Was bedeutet das?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Ein echter Angriff wurde erfolgreich abgewehrt",
+        "is_correct": false
+      },
+      {
+        "text": "Ein legitimes Ereignis wurde fälschlicherweise als Sicherheitsbedrohung gemeldet",
+        "is_correct": true
+      },
+      {
+        "text": "Ein Angriff wurde übersehen",
+        "is_correct": false
+      },
+      {
+        "text": "Das System funktioniert einwandfrei",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist das Ziel der 'Eradication' (Beseitigung) Phase im IR-Prozess?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Den Vorfall zu ignorieren",
+        "is_correct": false
+      },
+      {
+        "text": "Die Ursache des Vorfalls dauerhaft zu entfernen (z.B. Malware löschen, kompromittierte Konten schließen)",
+        "is_correct": true
+      },
+      {
+        "text": "Das System einfach nur neu zu starten",
+        "is_correct": false
+      },
+      {
+        "text": "Den Vorfall der Presse zu melden",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welches Tool wird oft für das Incident Management und Ticketing in einem SOC verwendet?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "ServiceNow oder Jira",
+        "is_correct": true
+      },
+      {
+        "text": "Adobe Photoshop",
+        "is_correct": false
+      },
+      {
+        "text": "Wireshark",
+        "is_correct": false
+      },
+      {
+        "text": "Nessus",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was beschreibt 'Configuration Validation'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Überprüfen, ob Systeme gemäß den Sicherheitsstandards und Richtlinien konfiguriert sind",
+        "is_correct": true
+      },
+      {
+        "text": "Das Installieren neuer Hardware",
+        "is_correct": false
+      },
+      {
+        "text": "Das Ändern von Benutzerpasswörtern",
+        "is_correct": false
+      },
+      {
+        "text": "Das Erstellen von Netzwerkplänen",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Vorteil von agentenbasierten Vulnerability Scans gegenüber netzwerkbasierten Scans?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Sie benötigen keine Installation auf dem Zielsystem",
+        "is_correct": false
+      },
+      {
+        "text": "Sie können auch Systeme scannen, die nicht permanent mit dem Netzwerk verbunden sind, und liefern tiefere Einblicke",
+        "is_correct": true
+      },
+      {
+        "text": "Sie sind immer schneller",
+        "is_correct": false
+      },
+      {
+        "text": "Sie können keine mobilen Geräte scannen",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist ein 'Jump Server' (oder Jump Box)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Ein Server, der nur für Backups genutzt wird",
+        "is_correct": false
+      },
+      {
+        "text": "Ein gehärteter Server, der als einziges Zugangstor zur Verwaltung von Systemen in einer Sicherheitszone dient",
+        "is_correct": true
+      },
+      {
+        "text": "Ein Webserver in der DMZ",
+        "is_correct": false
+      },
+      {
+        "text": "Ein DHCP-Relay-Agent",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welches Protokoll sollte für den sicheren Fernzugriff auf die CLI eines Netzwerkgeräts verwendet werden?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Telnet",
+        "is_correct": false
+      },
+      {
+        "text": "SSH (Secure Shell)",
+        "is_correct": true
+      },
+      {
+        "text": "HTTP",
+        "is_correct": false
+      },
+      {
+        "text": "FTP",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was bedeutet 'Persistence' im Kontext eines APT (Advanced Persistent Threat)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Der Angreifer gibt nach dem ersten Versuch auf",
+        "is_correct": false
+      },
+      {
+        "text": "Der Angreifer etabliert dauerhaften Zugriff auf das System, der auch Neustarts überdauert",
+        "is_correct": true
+      },
+      {
+        "text": "Der Angreifer verschlüsselt nur eine Datei",
+        "is_correct": false
+      },
+      {
+        "text": "Die Firewall blockiert den Angreifer dauerhaft",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'File Integrity Monitoring' (FIM)?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Ein Tool zum Komprimieren von Dateien",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Prozess zur Überwachung und Meldung von unbefugten Änderungen an kritischen Systemdateien",
+        "is_correct": true
+      },
+      {
+        "text": "Ein Backup-Verfahren",
+        "is_correct": false
+      },
+      {
+        "text": "Eine Methode zur Dateifreigabe",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "In der Forensik, was ist ein 'Write Blocker'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eine Software, die das Speichern von Dokumenten verhindert",
+        "is_correct": false
+      },
+      {
+        "text": "Ein Gerät, das verhindert, dass beim Auslesen eines Datenträgers versehentlich Daten darauf geschrieben oder verändert werden",
+        "is_correct": true
+      },
+      {
+        "text": "Ein Tool zum Blockieren von Spam",
+        "is_correct": false
+      },
+      {
+        "text": "Ein physisches Schloss für Festplatten",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Unterschied zwischen SIEM und SOAR?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SIEM ist nur für kleine Firmen",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM konzentriert sich auf Analyse und Alarmierung; SOAR fügt Automatisierung und Workflow-Orchestrierung hinzu",
+        "is_correct": true
+      },
+      {
+        "text": "SOAR ersetzt die Firewall vollständig",
+        "is_correct": false
+      },
+      {
+        "text": "Es gibt keinen Unterschied, es sind nur andere Namen",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist 'Sandboxing'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Reinigen von Hardware mit Sand",
+        "is_correct": false
+      },
+      {
+        "text": "Das Ausführen von verdächtigen Programmen in einer isolierten Umgebung zur Analyse",
+        "is_correct": true
+      },
+      {
+        "text": "Ein Backup-Konzept für Datenbanken",
+        "is_correct": false
+      },
+      {
+        "text": "Eine physische Sicherheitsbarriere vor dem Rechenzentrum",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist das Hauptmerkmal eines 'Credentialed Scans'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Der Scanner hat keine Login-Informationen",
+        "is_correct": false
+      },
+      {
+        "text": "Der Scanner nutzt gültige Zugangsdaten, um tiefergehende Prüfungen innerhalb des Systems durchzuführen",
+        "is_correct": true
+      },
+      {
+        "text": "Er ist immer gefährlicher für das Zielsystem",
+        "is_correct": false
+      },
+      {
+        "text": "Er wird nur von externen Angreifern genutzt",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welche Metrik gibt an, wie lange es im Durchschnitt dauert, einen Sicherheitsvorfall zu beheben?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "MTTR (Mean Time to Repair/Respond)",
+        "is_correct": true
+      },
+      {
+        "text": "MTBF (Mean Time Between Failures)",
+        "is_correct": false
+      },
+      {
+        "text": "RPO (Recovery Point Objective)",
+        "is_correct": false
+      },
+      {
+        "text": "SLA (Service Level Agreement)",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was bedeutet 'Hashing' in der digitalen Forensik?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Das Komprimieren von Beweisen",
+        "is_correct": false
+      },
+      {
+        "text": "Das Erzeugen eines digitalen Fingerabdrucks einer Datei oder eines Datenträgers zur Sicherstellung der Integrität",
+        "is_correct": true
+      },
+      {
+        "text": "Das Verschlüsseln von Passwörtern",
+        "is_correct": false
+      },
+      {
+        "text": "Das Löschen von Metadaten",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welches Dokument legt fest, wie lange Log-Daten aufbewahrt werden müssen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Acceptable Use Policy (AUP)",
+        "is_correct": false
+      },
+      {
+        "text": "Data Retention Policy (Datenaufbewahrungsrichtlinie)",
+        "is_correct": true
+      },
+      {
+        "text": "Non-Disclosure Agreement (NDA)",
+        "is_correct": false
+      },
+      {
+        "text": "Disaster Recovery Plan (DRP)",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Ein SOC-Analyst bemerkt einen Anstieg von DNS-Traffic zu einer unbekannten Domain. Welches Phänomen könnte dies sein?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Command and Control (C2) Kommunikation über DNS Tunneling",
+        "is_correct": true
+      },
+      {
+        "text": "Normales Web-Browsing",
+        "is_correct": false
+      },
+      {
+        "text": "Ein lokales Windows Update",
+        "is_correct": false
+      },
+      {
+        "text": "Eine DHCP-Anfrage",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Zweck von 'NetFlow'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Vollständige Paketaufnahme (Full Packet Capture)",
+        "is_correct": false
+      },
+      {
+        "text": "Sammeln von IP-Verkehrsstatistiken zur Überwachung des Netzwerkflusses",
+        "is_correct": true
+      },
+      {
+        "text": "Verschlüsselung von HTTP-Traffic",
+        "is_correct": false
+      },
+      {
+        "text": "Verwaltung von IP-Adressen",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Welche IR-Phase folgt unmittelbar auf die 'Identification'?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Recovery",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Containment (Eindämmung)",
+        "is_correct": true
+      },
+      {
+        "text": "Preparation",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Was ist der Hauptvorteil von Cloud-basierten SIEM-Lösungen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Sie benötigen keine Internetverbindung",
+        "is_correct": false
+      },
+      {
+        "text": "Skalierbarkeit und geringerer Wartungsaufwand für die Infrastruktur",
+        "is_correct": true
+      },
+      {
+        "text": "Sie sind immer kostenlos",
+        "is_correct": false
+      },
+      {
+        "text": "Sie können keine lokalen Logs verarbeiten",
+        "is_correct": false
+      }
+    ]
+  },
+  {
+    "text": "Das SOC möchte Sicherheitsereignisse aus vielen Quellen zentral zu sammeln, zu korrelieren und priorisiert auszuwerten. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SOAR",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "EDR",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Ein SIEM aggregiert Logs, korreliert Ereignisse und unterstützt Erkennung sowie Alarmierung.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um Sicherheitsereignisse aus vielen Quellen zentral zu sammeln, zu korrelieren und priorisiert auszuwerten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SOAR",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": true
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein SIEM aggregiert Logs, korreliert Ereignisse und unterstützt Erkennung sowie Alarmierung.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team Sicherheitsereignisse aus vielen Quellen zentral zu sammeln, zu korrelieren und priorisiert auszuwerten. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": true
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein SIEM aggregiert Logs, korreliert Ereignisse und unterstützt Erkennung sowie Alarmierung.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man Sicherheitsereignisse aus vielen Quellen zentral zu sammeln, zu korrelieren und priorisiert auszuwerten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SOAR",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Ein SIEM aggregiert Logs, korreliert Ereignisse und unterstützt Erkennung sowie Alarmierung.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Ein Incident Handler plant Sicherheitsereignisse aus vielen Quellen zentral zu sammeln, zu korrelieren und priorisiert auszuwerten. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SIEM",
+        "is_correct": true
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "NTP",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein SIEM aggregiert Logs, korreliert Ereignisse und unterstützt Erkennung sowie Alarmierung.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Das SOC möchte standardisierte Reaktionsschritte auf Warnmeldungen automatisiert auszulösen und Playbooks auszuführen. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "SOAR",
+        "is_correct": true
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "EDR",
+        "is_correct": false
+      }
+    ],
+    "explanation": "SOAR verbindet Orchestrierung, Automatisierung und Reaktion, um repetitive SOC-Abläufe zu beschleunigen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um standardisierte Reaktionsschritte auf Warnmeldungen automatisiert auszulösen und Playbooks auszuführen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "SOAR",
+        "is_correct": true
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      }
+    ],
+    "explanation": "SOAR verbindet Orchestrierung, Automatisierung und Reaktion, um repetitive SOC-Abläufe zu beschleunigen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team standardisierte Reaktionsschritte auf Warnmeldungen automatisiert auszulösen und Playbooks auszuführen. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "NTP",
+        "is_correct": false
+      },
+      {
+        "text": "SOAR",
+        "is_correct": true
+      }
+    ],
+    "explanation": "SOAR verbindet Orchestrierung, Automatisierung und Reaktion, um repetitive SOC-Abläufe zu beschleunigen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man standardisierte Reaktionsschritte auf Warnmeldungen automatisiert auszulösen und Playbooks auszuführen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SOAR",
+        "is_correct": true
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "SOAR verbindet Orchestrierung, Automatisierung und Reaktion, um repetitive SOC-Abläufe zu beschleunigen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Ein Incident Handler plant standardisierte Reaktionsschritte auf Warnmeldungen automatisiert auszulösen und Playbooks auszuführen. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "NTP",
+        "is_correct": false
+      },
+      {
+        "text": "SOAR",
+        "is_correct": true
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      }
+    ],
+    "explanation": "SOAR verbindet Orchestrierung, Automatisierung und Reaktion, um repetitive SOC-Abläufe zu beschleunigen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Das SOC möchte Endpunkte kontinuierlich auf verdächtiges Verhalten zu überwachen und Gegenmaßnahmen wie Isolierung auszulösen. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "EDR",
+        "is_correct": true
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Endpoint Detection and Response fokussiert Telemetrie, Erkennung und Reaktion auf Endgeräten.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um Endpunkte kontinuierlich auf verdächtiges Verhalten zu überwachen und Gegenmaßnahmen wie Isolierung auszulösen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "EDR",
+        "is_correct": true
+      },
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Endpoint Detection and Response fokussiert Telemetrie, Erkennung und Reaktion auf Endgeräten.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team Endpunkte kontinuierlich auf verdächtiges Verhalten zu überwachen und Gegenmaßnahmen wie Isolierung auszulösen. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "EDR",
+        "is_correct": true
+      },
+      {
+        "text": "NTP",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Endpoint Detection and Response fokussiert Telemetrie, Erkennung und Reaktion auf Endgeräten.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man Endpunkte kontinuierlich auf verdächtiges Verhalten zu überwachen und Gegenmaßnahmen wie Isolierung auszulösen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "EDR",
+        "is_correct": true
+      },
+      {
+        "text": "NTP",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Endpoint Detection and Response fokussiert Telemetrie, Erkennung und Reaktion auf Endgeräten.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Ein Incident Handler plant Endpunkte kontinuierlich auf verdächtiges Verhalten zu überwachen und Gegenmaßnahmen wie Isolierung auszulösen. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "EDR",
+        "is_correct": true
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Endpoint Detection and Response fokussiert Telemetrie, Erkennung und Reaktion auf Endgeräten.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Das SOC möchte Telemetrie aus Endpunkten, E-Mail, Cloud und Netzwerk in einer einheitlichen Erkennungsplattform zusammenzuführen. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "XDR",
+        "is_correct": true
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "SOAR",
+        "is_correct": false
+      }
+    ],
+    "explanation": "XDR erweitert die Erkennung über mehrere Kontrollpunkte hinweg und verknüpft deren Signale.",
+    "difficulty": "hard",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um Telemetrie aus Endpunkten, E-Mail, Cloud und Netzwerk in einer einheitlichen Erkennungsplattform zusammenzuführen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": true
+      }
+    ],
+    "explanation": "XDR erweitert die Erkennung über mehrere Kontrollpunkte hinweg und verknüpft deren Signale.",
+    "difficulty": "hard",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team Telemetrie aus Endpunkten, E-Mail, Cloud und Netzwerk in einer einheitlichen Erkennungsplattform zusammenzuführen. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": true
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "NTP",
+        "is_correct": false
+      }
+    ],
+    "explanation": "XDR erweitert die Erkennung über mehrere Kontrollpunkte hinweg und verknüpft deren Signale.",
+    "difficulty": "hard",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man Telemetrie aus Endpunkten, E-Mail, Cloud und Netzwerk in einer einheitlichen Erkennungsplattform zusammenzuführen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": true
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": false
+      }
+    ],
+    "explanation": "XDR erweitert die Erkennung über mehrere Kontrollpunkte hinweg und verknüpft deren Signale.",
+    "difficulty": "hard",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Ein Incident Handler plant Telemetrie aus Endpunkten, E-Mail, Cloud und Netzwerk in einer einheitlichen Erkennungsplattform zusammenzuführen. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "XDR",
+        "is_correct": true
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      }
+    ],
+    "explanation": "XDR erweitert die Erkennung über mehrere Kontrollpunkte hinweg und verknüpft deren Signale.",
+    "difficulty": "hard",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Das SOC möchte Auffälligkeiten im Verhalten von Benutzern und Entitäten gegenüber ihrem Normalzustand zu erkennen. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": true
+      },
+      {
+        "text": "NTP",
+        "is_correct": false
+      }
+    ],
+    "explanation": "UEBA nutzt Verhaltensanalysen, um Anomalien bei Benutzern, Geräten und Diensten sichtbar zu machen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um Auffälligkeiten im Verhalten von Benutzern und Entitäten gegenüber ihrem Normalzustand zu erkennen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      },
+      {
+        "text": "EDR",
+        "is_correct": false
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": true
+      }
+    ],
+    "explanation": "UEBA nutzt Verhaltensanalysen, um Anomalien bei Benutzern, Geräten und Diensten sichtbar zu machen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team Auffälligkeiten im Verhalten von Benutzern und Entitäten gegenüber ihrem Normalzustand zu erkennen. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": true
+      },
+      {
+        "text": "NTP",
+        "is_correct": false
+      }
+    ],
+    "explanation": "UEBA nutzt Verhaltensanalysen, um Anomalien bei Benutzern, Geräten und Diensten sichtbar zu machen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man Auffälligkeiten im Verhalten von Benutzern und Entitäten gegenüber ihrem Normalzustand zu erkennen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "SOAR",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": true
+      }
+    ],
+    "explanation": "UEBA nutzt Verhaltensanalysen, um Anomalien bei Benutzern, Geräten und Diensten sichtbar zu machen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Ein Incident Handler plant Auffälligkeiten im Verhalten von Benutzern und Entitäten gegenüber ihrem Normalzustand zu erkennen. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": true
+      },
+      {
+        "text": "SOAR",
+        "is_correct": false
+      }
+    ],
+    "explanation": "UEBA nutzt Verhaltensanalysen, um Anomalien bei Benutzern, Geräten und Diensten sichtbar zu machen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Das SOC möchte Kommunikationsmuster im Netzwerk auf Basis von Metadaten statt kompletter Paketinhalte zu analysieren. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "NetFlow",
+        "is_correct": true
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": false
+      }
+    ],
+    "explanation": "NetFlow bzw. Flow-Daten beschreiben Verbindungen kompakt und sind für Trend- und Anomalieanalysen nützlich.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um Kommunikationsmuster im Netzwerk auf Basis von Metadaten statt kompletter Paketinhalte zu analysieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": true
+      }
+    ],
+    "explanation": "NetFlow bzw. Flow-Daten beschreiben Verbindungen kompakt und sind für Trend- und Anomalieanalysen nützlich.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team Kommunikationsmuster im Netzwerk auf Basis von Metadaten statt kompletter Paketinhalte zu analysieren. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "NetFlow",
+        "is_correct": true
+      },
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "NTP",
+        "is_correct": false
+      }
+    ],
+    "explanation": "NetFlow bzw. Flow-Daten beschreiben Verbindungen kompakt und sind für Trend- und Anomalieanalysen nützlich.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man Kommunikationsmuster im Netzwerk auf Basis von Metadaten statt kompletter Paketinhalte zu analysieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "SOAR",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": true
+      }
+    ],
+    "explanation": "NetFlow bzw. Flow-Daten beschreiben Verbindungen kompakt und sind für Trend- und Anomalieanalysen nützlich.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Ein Incident Handler plant Kommunikationsmuster im Netzwerk auf Basis von Metadaten statt kompletter Paketinhalte zu analysieren. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": true
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "NetFlow bzw. Flow-Daten beschreiben Verbindungen kompakt und sind für Trend- und Anomalieanalysen nützlich.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Das SOC möchte Protokolle von Netzwerkgeräten und Linux-Systemen zentral an einen Log-Server zu senden. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SOAR",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": true
+      },
+      {
+        "text": "NTP",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Syslog ist ein weit verbreitetes Protokoll für zentrale Log-Weiterleitung und Ereigniserfassung.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um Protokolle von Netzwerkgeräten und Linux-Systemen zentral an einen Log-Server zu senden?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": true
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Syslog ist ein weit verbreitetes Protokoll für zentrale Log-Weiterleitung und Ereigniserfassung.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team Protokolle von Netzwerkgeräten und Linux-Systemen zentral an einen Log-Server zu senden. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "NTP",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": true
+      },
+      {
+        "text": "SOAR",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Syslog ist ein weit verbreitetes Protokoll für zentrale Log-Weiterleitung und Ereigniserfassung.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man Protokolle von Netzwerkgeräten und Linux-Systemen zentral an einen Log-Server zu senden?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "NTP",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Syslog ist ein weit verbreitetes Protokoll für zentrale Log-Weiterleitung und Ereigniserfassung.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Ein Incident Handler plant Protokolle von Netzwerkgeräten und Linux-Systemen zentral an einen Log-Server zu senden. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": true
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Syslog ist ein weit verbreitetes Protokoll für zentrale Log-Weiterleitung und Ereigniserfassung.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Das SOC möchte den vollständigen Netzwerkverkehr für eine tiefgehende Protokollanalyse aufzuzeichnen. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": true
+      },
+      {
+        "text": "SOAR",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Packet Captures enthalten den tatsächlichen Paketinhalt und erlauben detaillierte Untersuchungen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um den vollständigen Netzwerkverkehr für eine tiefgehende Protokollanalyse aufzuzeichnen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": true
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Packet Captures enthalten den tatsächlichen Paketinhalt und erlauben detaillierte Untersuchungen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team den vollständigen Netzwerkverkehr für eine tiefgehende Protokollanalyse aufzuzeichnen. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": true
+      },
+      {
+        "text": "EDR",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Packet Captures enthalten den tatsächlichen Paketinhalt und erlauben detaillierte Untersuchungen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man den vollständigen Netzwerkverkehr für eine tiefgehende Protokollanalyse aufzuzeichnen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Packet Capture",
+        "is_correct": true
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      },
+      {
+        "text": "SOAR",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Packet Captures enthalten den tatsächlichen Paketinhalt und erlauben detaillierte Untersuchungen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Ein Incident Handler plant den vollständigen Netzwerkverkehr für eine tiefgehende Protokollanalyse aufzuzeichnen. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "Syslog",
+        "is_correct": false
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Packet Captures enthalten den tatsächlichen Paketinhalt und erlauben detaillierte Untersuchungen.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Das SOC möchte Logdaten so abzulegen, dass sie nach dem Schreiben nicht mehr unbemerkt verändert werden können. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "EDR",
+        "is_correct": false
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Write Once Read Many schützt Protokolle vor nachträglicher Manipulation und erleichtert revisionssichere Aufbewahrung.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um Logdaten so abzulegen, dass sie nach dem Schreiben nicht mehr unbemerkt verändert werden können?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "EDR",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": true
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Write Once Read Many schützt Protokolle vor nachträglicher Manipulation und erleichtert revisionssichere Aufbewahrung.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team Logdaten so abzulegen, dass sie nach dem Schreiben nicht mehr unbemerkt verändert werden können. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SOAR",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": true
+      },
+      {
+        "text": "NTP",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Write Once Read Many schützt Protokolle vor nachträglicher Manipulation und erleichtert revisionssichere Aufbewahrung.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man Logdaten so abzulegen, dass sie nach dem Schreiben nicht mehr unbemerkt verändert werden können?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "EDR",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": true
+      },
+      {
+        "text": "Syslog",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Write Once Read Many schützt Protokolle vor nachträglicher Manipulation und erleichtert revisionssichere Aufbewahrung.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Ein Incident Handler plant Logdaten so abzulegen, dass sie nach dem Schreiben nicht mehr unbemerkt verändert werden können. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "SOAR",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Write Once Read Many schützt Protokolle vor nachträglicher Manipulation und erleichtert revisionssichere Aufbewahrung.",
+    "difficulty": "medium",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Das SOC möchte Zeitstempel auf Servern, Netzwerkgeräten und Sicherheitswerkzeugen konsistent zu halten. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "NTP",
+        "is_correct": true
+      },
+      {
+        "text": "UEBA",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine saubere Zeitsynchronisation ist essenziell für Korrelation, Alarmierung und Forensik.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um Zeitstempel auf Servern, Netzwerkgeräten und Sicherheitswerkzeugen konsistent zu halten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "NTP",
+        "is_correct": true
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "WORM-Speicher",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine saubere Zeitsynchronisation ist essenziell für Korrelation, Alarmierung und Forensik.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team Zeitstempel auf Servern, Netzwerkgeräten und Sicherheitswerkzeugen konsistent zu halten. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "NTP",
+        "is_correct": true
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      },
+      {
+        "text": "SOAR",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine saubere Zeitsynchronisation ist essenziell für Korrelation, Alarmierung und Forensik.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man Zeitstempel auf Servern, Netzwerkgeräten und Sicherheitswerkzeugen konsistent zu halten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "NTP",
+        "is_correct": true
+      },
+      {
+        "text": "NetFlow",
+        "is_correct": false
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      },
+      {
+        "text": "XDR",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine saubere Zeitsynchronisation ist essenziell für Korrelation, Alarmierung und Forensik.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Ein Incident Handler plant Zeitstempel auf Servern, Netzwerkgeräten und Sicherheitswerkzeugen konsistent zu halten. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "UEBA",
+        "is_correct": false
+      },
+      {
+        "text": "SIEM",
+        "is_correct": false
+      },
+      {
+        "text": "NTP",
+        "is_correct": true
+      },
+      {
+        "text": "Packet Capture",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine saubere Zeitsynchronisation ist essenziell für Korrelation, Alarmierung und Forensik.",
+    "difficulty": "easy",
+    "exam_objective": "4.1 Explain security monitoring and alerting concepts"
+  },
+  {
+    "text": "Das SOC möchte konkrete Artefakte wie Hashes, IP-Adressen oder Domains als Hinweis auf eine bekannte Bedrohung zu nutzen. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      },
+      {
+        "text": "IOC",
+        "is_correct": true
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Indicators of Compromise sind beobachtbare Spuren, die auf bereits bekannte Schadaktivität hindeuten.",
+    "difficulty": "easy",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um konkrete Artefakte wie Hashes, IP-Adressen oder Domains als Hinweis auf eine bekannte Bedrohung zu nutzen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "TTP",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "IOC",
+        "is_correct": true
+      },
+      {
+        "text": "False Positive Tuning",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Indicators of Compromise sind beobachtbare Spuren, die auf bereits bekannte Schadaktivität hindeuten.",
+    "difficulty": "easy",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team konkrete Artefakte wie Hashes, IP-Adressen oder Domains als Hinweis auf eine bekannte Bedrohung zu nutzen. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "IOC",
+        "is_correct": true
+      },
+      {
+        "text": "Honeypot",
+        "is_correct": false
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Indicators of Compromise sind beobachtbare Spuren, die auf bereits bekannte Schadaktivität hindeuten.",
+    "difficulty": "easy",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man konkrete Artefakte wie Hashes, IP-Adressen oder Domains als Hinweis auf eine bekannte Bedrohung zu nutzen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "IOC",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Indicators of Compromise sind beobachtbare Spuren, die auf bereits bekannte Schadaktivität hindeuten.",
+    "difficulty": "easy",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Ein Incident Handler plant konkrete Artefakte wie Hashes, IP-Adressen oder Domains als Hinweis auf eine bekannte Bedrohung zu nutzen. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "IOC",
+        "is_correct": true
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Indicators of Compromise sind beobachtbare Spuren, die auf bereits bekannte Schadaktivität hindeuten.",
+    "difficulty": "easy",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Das SOC möchte das Verhalten, die Werkzeuge und die Vorgehensweise eines Angreifers auf taktischer Ebene zu beschreiben. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": true
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tactics, Techniques and Procedures erfassen das Vorgehen eines Gegners über einzelne Artefakte hinaus.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um das Verhalten, die Werkzeuge und die Vorgehensweise eines Angreifers auf taktischer Ebene zu beschreiben?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": true
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tactics, Techniques and Procedures erfassen das Vorgehen eines Gegners über einzelne Artefakte hinaus.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team das Verhalten, die Werkzeuge und die Vorgehensweise eines Angreifers auf taktischer Ebene zu beschreiben. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "False Positive Tuning",
+        "is_correct": false
+      },
+      {
+        "text": "Honeypot",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Tactics, Techniques and Procedures erfassen das Vorgehen eines Gegners über einzelne Artefakte hinaus.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man das Verhalten, die Werkzeuge und die Vorgehensweise eines Angreifers auf taktischer Ebene zu beschreiben?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Honeypot",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Tactics, Techniques and Procedures erfassen das Vorgehen eines Gegners über einzelne Artefakte hinaus.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Ein Incident Handler plant das Verhalten, die Werkzeuge und die Vorgehensweise eines Angreifers auf taktischer Ebene zu beschreiben. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "TTP",
+        "is_correct": true
+      },
+      {
+        "text": "Honeypot",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "False Positive Tuning",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tactics, Techniques and Procedures erfassen das Vorgehen eines Gegners über einzelne Artefakte hinaus.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Das SOC möchte aktuelle Informationen über Bedrohungsakteure, Kampagnen und Indikatoren automatisiert in das SOC einzubinden. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "False Positive Tuning",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": true
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Threat Intelligence versorgt Erkennungs- und Reaktionssysteme mit externem Kontext zu Bedrohungen.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um aktuelle Informationen über Bedrohungsakteure, Kampagnen und Indikatoren automatisiert in das SOC einzubinden?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "TTP",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": true
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "False Positive Tuning",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Threat Intelligence versorgt Erkennungs- und Reaktionssysteme mit externem Kontext zu Bedrohungen.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team aktuelle Informationen über Bedrohungsakteure, Kampagnen und Indikatoren automatisiert in das SOC einzubinden. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "Honeypot",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Threat Intelligence versorgt Erkennungs- und Reaktionssysteme mit externem Kontext zu Bedrohungen.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man aktuelle Informationen über Bedrohungsakteure, Kampagnen und Indikatoren automatisiert in das SOC einzubinden?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "False Positive Tuning",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Threat Intelligence versorgt Erkennungs- und Reaktionssysteme mit externem Kontext zu Bedrohungen.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Ein Incident Handler plant aktuelle Informationen über Bedrohungsakteure, Kampagnen und Indikatoren automatisiert in das SOC einzubinden. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": true
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "False Positive Tuning",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Threat Intelligence versorgt Erkennungs- und Reaktionssysteme mit externem Kontext zu Bedrohungen.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Das SOC möchte einen stillen Köder zu platzieren, der bei unbefugtem Zugriff sofort Alarm auslöst. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "False Positive Tuning",
+        "is_correct": false
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": true
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Canary Tokens sind präparierte Ressourcen, deren Nutzung auf unerwartete Zugriffe hinweist.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um einen stillen Köder zu platzieren, der bei unbefugtem Zugriff sofort Alarm auslöst?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Canary Token",
+        "is_correct": true
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Canary Tokens sind präparierte Ressourcen, deren Nutzung auf unerwartete Zugriffe hinweist.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team einen stillen Köder zu platzieren, der bei unbefugtem Zugriff sofort Alarm auslöst. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Canary Token",
+        "is_correct": true
+      },
+      {
+        "text": "IOC",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Canary Tokens sind präparierte Ressourcen, deren Nutzung auf unerwartete Zugriffe hinweist.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man einen stillen Köder zu platzieren, der bei unbefugtem Zugriff sofort Alarm auslöst?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Canary Token",
+        "is_correct": true
+      },
+      {
+        "text": "IOC",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Canary Tokens sind präparierte Ressourcen, deren Nutzung auf unerwartete Zugriffe hinweist.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Ein Incident Handler plant einen stillen Köder zu platzieren, der bei unbefugtem Zugriff sofort Alarm auslöst. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Canary Tokens sind präparierte Ressourcen, deren Nutzung auf unerwartete Zugriffe hinweist.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Das SOC möchte einen bewusst täuschenden Dienst bereitzustellen, um Angreifer zu beobachten und vom echten Ziel abzulenken. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Honeypot",
+        "is_correct": true
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "False Positive Tuning",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Honeypot ist eine kontrollierte Täuschungsressource für Beobachtung und Analyse.",
+    "difficulty": "easy",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um einen bewusst täuschenden Dienst bereitzustellen, um Angreifer zu beobachten und vom echten Ziel abzulenken?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "Honeypot",
+        "is_correct": true
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Honeypot ist eine kontrollierte Täuschungsressource für Beobachtung und Analyse.",
+    "difficulty": "easy",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team einen bewusst täuschenden Dienst bereitzustellen, um Angreifer zu beobachten und vom echten Ziel abzulenken. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "Honeypot",
+        "is_correct": true
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Honeypot ist eine kontrollierte Täuschungsressource für Beobachtung und Analyse.",
+    "difficulty": "easy",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man einen bewusst täuschenden Dienst bereitzustellen, um Angreifer zu beobachten und vom echten Ziel abzulenken?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Honeypot",
+        "is_correct": true
+      },
+      {
+        "text": "False Positive Tuning",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Honeypot ist eine kontrollierte Täuschungsressource für Beobachtung und Analyse.",
+    "difficulty": "easy",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Ein Incident Handler plant einen bewusst täuschenden Dienst bereitzustellen, um Angreifer zu beobachten und vom echten Ziel abzulenken. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Honeypot",
+        "is_correct": true
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Honeypot ist eine kontrollierte Täuschungsressource für Beobachtung und Analyse.",
+    "difficulty": "easy",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Das SOC möchte verdächtige Dateien oder Prozesse kontrolliert in einer isolierten Umgebung auszuführen. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": true
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Sandbox erlaubt die Verhaltensanalyse ohne unmittelbares Risiko für Produktionssysteme.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um verdächtige Dateien oder Prozesse kontrolliert in einer isolierten Umgebung auszuführen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "IOC",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": true
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Sandbox erlaubt die Verhaltensanalyse ohne unmittelbares Risiko für Produktionssysteme.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team verdächtige Dateien oder Prozesse kontrolliert in einer isolierten Umgebung auszuführen. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Sandbox",
+        "is_correct": true
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "IOC",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Sandbox erlaubt die Verhaltensanalyse ohne unmittelbares Risiko für Produktionssysteme.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man verdächtige Dateien oder Prozesse kontrolliert in einer isolierten Umgebung auszuführen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "Honeypot",
+        "is_correct": false
+      },
+      {
+        "text": "IOC",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Eine Sandbox erlaubt die Verhaltensanalyse ohne unmittelbares Risiko für Produktionssysteme.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Ein Incident Handler plant verdächtige Dateien oder Prozesse kontrolliert in einer isolierten Umgebung auszuführen. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": true
+      },
+      {
+        "text": "Honeypot",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eine Sandbox erlaubt die Verhaltensanalyse ohne unmittelbares Risiko für Produktionssysteme.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Das SOC möchte eine Alarmierung auszulösen, weil die aktuelle Aktivität deutlich vom normalen Muster abweicht. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": true
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Viele Erkennungsmechanismen arbeiten gegen eine Baseline und markieren starke Abweichungen als Anomalie.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um eine Alarmierung auszulösen, weil die aktuelle Aktivität deutlich vom normalen Muster abweicht?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      },
+      {
+        "text": "Honeypot",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": true
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Viele Erkennungsmechanismen arbeiten gegen eine Baseline und markieren starke Abweichungen als Anomalie.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team eine Alarmierung auszulösen, weil die aktuelle Aktivität deutlich vom normalen Muster abweicht. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Honeypot",
+        "is_correct": false
+      },
+      {
+        "text": "IOC",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": true
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Viele Erkennungsmechanismen arbeiten gegen eine Baseline und markieren starke Abweichungen als Anomalie.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man eine Alarmierung auszulösen, weil die aktuelle Aktivität deutlich vom normalen Muster abweicht?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": true
+      },
+      {
+        "text": "Honeypot",
+        "is_correct": false
+      },
+      {
+        "text": "IOC",
+        "is_correct": false
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Viele Erkennungsmechanismen arbeiten gegen eine Baseline und markieren starke Abweichungen als Anomalie.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Ein Incident Handler plant eine Alarmierung auszulösen, weil die aktuelle Aktivität deutlich vom normalen Muster abweicht. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "TTP",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": true
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Viele Erkennungsmechanismen arbeiten gegen eine Baseline und markieren starke Abweichungen als Anomalie.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Das SOC möchte eine Erkennungsregel so anzupassen, dass harmlose Ereignisse seltener als echte Vorfälle gemeldet werden. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      },
+      {
+        "text": "False Positive Tuning",
+        "is_correct": true
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tuning reduziert unnötige Alarme und verbessert die Signalqualität für Analysten.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um eine Erkennungsregel so anzupassen, dass harmlose Ereignisse seltener als echte Vorfälle gemeldet werden?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "False Positive Tuning",
+        "is_correct": true
+      },
+      {
+        "text": "IOC",
+        "is_correct": false
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tuning reduziert unnötige Alarme und verbessert die Signalqualität für Analysten.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team eine Erkennungsregel so anzupassen, dass harmlose Ereignisse seltener als echte Vorfälle gemeldet werden. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      },
+      {
+        "text": "TTP",
+        "is_correct": false
+      },
+      {
+        "text": "False Positive Tuning",
+        "is_correct": true
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tuning reduziert unnötige Alarme und verbessert die Signalqualität für Analysten.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man eine Erkennungsregel so anzupassen, dass harmlose Ereignisse seltener als echte Vorfälle gemeldet werden?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Honeypot",
+        "is_correct": false
+      },
+      {
+        "text": "False Positive Tuning",
+        "is_correct": true
+      },
+      {
+        "text": "Threat-Intelligence-Feed",
+        "is_correct": false
+      },
+      {
+        "text": "Baseline-Abweichung",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tuning reduziert unnötige Alarme und verbessert die Signalqualität für Analysten.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Ein Incident Handler plant eine Erkennungsregel so anzupassen, dass harmlose Ereignisse seltener als echte Vorfälle gemeldet werden. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "False Positive Tuning",
+        "is_correct": true
+      },
+      {
+        "text": "Sandbox",
+        "is_correct": false
+      },
+      {
+        "text": "IOC",
+        "is_correct": false
+      },
+      {
+        "text": "Canary Token",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tuning reduziert unnötige Alarme und verbessert die Signalqualität für Analysten.",
+    "difficulty": "medium",
+    "exam_objective": "4.2 Given a scenario, analyze indicators of malicious activity"
+  },
+  {
+    "text": "Das SOC möchte die Ausbreitung eines bestätigten Sicherheitsvorfalls kurzfristig zu stoppen und betroffene Systeme zu isolieren. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Containment",
+        "is_correct": true
+      },
+      {
+        "text": "Recovery",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Containment begrenzt den Schaden, bevor vollständige Bereinigung und Wiederherstellung erfolgen.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um die Ausbreitung eines bestätigten Sicherheitsvorfalls kurzfristig zu stoppen und betroffene Systeme zu isolieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Containment",
+        "is_correct": true
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Containment begrenzt den Schaden, bevor vollständige Bereinigung und Wiederherstellung erfolgen.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team die Ausbreitung eines bestätigten Sicherheitsvorfalls kurzfristig zu stoppen und betroffene Systeme zu isolieren. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Containment",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Containment begrenzt den Schaden, bevor vollständige Bereinigung und Wiederherstellung erfolgen.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man die Ausbreitung eines bestätigten Sicherheitsvorfalls kurzfristig zu stoppen und betroffene Systeme zu isolieren?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Containment",
+        "is_correct": true
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Containment begrenzt den Schaden, bevor vollständige Bereinigung und Wiederherstellung erfolgen.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Ein Incident Handler plant die Ausbreitung eines bestätigten Sicherheitsvorfalls kurzfristig zu stoppen und betroffene Systeme zu isolieren. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Recovery",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Containment",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Containment begrenzt den Schaden, bevor vollständige Bereinigung und Wiederherstellung erfolgen.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Das SOC möchte einen kompromittierten Endpunkt vom restlichen Netzwerk logisch abzuschneiden, ohne ihn sofort auszuschalten. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": true
+      },
+      {
+        "text": "Recovery",
+        "is_correct": false
+      },
+      {
+        "text": "Containment",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Quarantäne isoliert Systeme kontrolliert, damit Analyse und Schadensbegrenzung parallel möglich bleiben.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um einen kompromittierten Endpunkt vom restlichen Netzwerk logisch abzuschneiden, ohne ihn sofort auszuschalten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Recovery",
+        "is_correct": false
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Quarantäne isoliert Systeme kontrolliert, damit Analyse und Schadensbegrenzung parallel möglich bleiben.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team einen kompromittierten Endpunkt vom restlichen Netzwerk logisch abzuschneiden, ohne ihn sofort auszuschalten. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Recovery",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": true
+      },
+      {
+        "text": "Eradication",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Quarantäne isoliert Systeme kontrolliert, damit Analyse und Schadensbegrenzung parallel möglich bleiben.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man einen kompromittierten Endpunkt vom restlichen Netzwerk logisch abzuschneiden, ohne ihn sofort auszuschalten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Quarantäne",
+        "is_correct": true
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Quarantäne isoliert Systeme kontrolliert, damit Analyse und Schadensbegrenzung parallel möglich bleiben.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Ein Incident Handler plant einen kompromittierten Endpunkt vom restlichen Netzwerk logisch abzuschneiden, ohne ihn sofort auszuschalten. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": true
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Recovery",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Quarantäne isoliert Systeme kontrolliert, damit Analyse und Schadensbegrenzung parallel möglich bleiben.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Das SOC möchte bösartige Artefakte, Persistenzmechanismen und Schwachstellen nach der Eindämmung vollständig zu entfernen. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Containment",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": true
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eradication beseitigt die eigentliche Ursache eines Vorfalls aus der Umgebung.",
+    "difficulty": "medium",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um bösartige Artefakte, Persistenzmechanismen und Schwachstellen nach der Eindämmung vollständig zu entfernen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": true
+      },
+      {
+        "text": "Recovery",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eradication beseitigt die eigentliche Ursache eines Vorfalls aus der Umgebung.",
+    "difficulty": "medium",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team bösartige Artefakte, Persistenzmechanismen und Schwachstellen nach der Eindämmung vollständig zu entfernen. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Containment",
+        "is_correct": false
+      },
+      {
+        "text": "Recovery",
+        "is_correct": false
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Eradication beseitigt die eigentliche Ursache eines Vorfalls aus der Umgebung.",
+    "difficulty": "medium",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man bösartige Artefakte, Persistenzmechanismen und Schwachstellen nach der Eindämmung vollständig zu entfernen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": true
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Containment",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eradication beseitigt die eigentliche Ursache eines Vorfalls aus der Umgebung.",
+    "difficulty": "medium",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Ein Incident Handler plant bösartige Artefakte, Persistenzmechanismen und Schwachstellen nach der Eindämmung vollständig zu entfernen. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": true
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Eradication beseitigt die eigentliche Ursache eines Vorfalls aus der Umgebung.",
+    "difficulty": "medium",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Das SOC möchte bereinigte Systeme wieder in den Regelbetrieb zurückzuführen und deren Stabilität eng zu überwachen. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Recovery",
+        "is_correct": true
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery bringt Services kontrolliert wieder online und überwacht sie auf Rückfälle oder Restspuren.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um bereinigte Systeme wieder in den Regelbetrieb zurückzuführen und deren Stabilität eng zu überwachen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Recovery",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Recovery bringt Services kontrolliert wieder online und überwacht sie auf Rückfälle oder Restspuren.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team bereinigte Systeme wieder in den Regelbetrieb zurückzuführen und deren Stabilität eng zu überwachen. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Containment",
+        "is_correct": false
+      },
+      {
+        "text": "Recovery",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Recovery bringt Services kontrolliert wieder online und überwacht sie auf Rückfälle oder Restspuren.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man bereinigte Systeme wieder in den Regelbetrieb zurückzuführen und deren Stabilität eng zu überwachen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Recovery",
+        "is_correct": true
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery bringt Services kontrolliert wieder online und überwacht sie auf Rückfälle oder Restspuren.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Ein Incident Handler plant bereinigte Systeme wieder in den Regelbetrieb zurückzuführen und deren Stabilität eng zu überwachen. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Containment",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Recovery",
+        "is_correct": true
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Recovery bringt Services kontrolliert wieder online und überwacht sie auf Rückfälle oder Restspuren.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Das SOC möchte nach einem Vorfall Verbesserungen in Prozessen, Regeln und Kontrollen aus den gewonnenen Erkenntnissen abzuleiten. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": true
+      },
+      {
+        "text": "Containment",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Lessons Learned schließt den Incident-Response-Zyklus mit nachhaltigen Verbesserungsmaßnahmen ab.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um nach einem Vorfall Verbesserungen in Prozessen, Regeln und Kontrollen aus den gewonnenen Erkenntnissen abzuleiten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": true
+      },
+      {
+        "text": "Containment",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Lessons Learned schließt den Incident-Response-Zyklus mit nachhaltigen Verbesserungsmaßnahmen ab.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team nach einem Vorfall Verbesserungen in Prozessen, Regeln und Kontrollen aus den gewonnenen Erkenntnissen abzuleiten. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Recovery",
+        "is_correct": false
+      },
+      {
+        "text": "Containment",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Lessons Learned schließt den Incident-Response-Zyklus mit nachhaltigen Verbesserungsmaßnahmen ab.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man nach einem Vorfall Verbesserungen in Prozessen, Regeln und Kontrollen aus den gewonnenen Erkenntnissen abzuleiten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": true
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Lessons Learned schließt den Incident-Response-Zyklus mit nachhaltigen Verbesserungsmaßnahmen ab.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Ein Incident Handler plant nach einem Vorfall Verbesserungen in Prozessen, Regeln und Kontrollen aus den gewonnenen Erkenntnissen abzuleiten. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": true
+      },
+      {
+        "text": "Containment",
+        "is_correct": false
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Lessons Learned schließt den Incident-Response-Zyklus mit nachhaltigen Verbesserungsmaßnahmen ab.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Das SOC möchte einen Incident-Response-Ablauf strukturiert durchzuspielen, ohne produktive Systeme tatsächlich zu verändern. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Tabletop-Übungen prüfen Rollen, Kommunikation und Entscheidungswege anhand realistischer Szenarien.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um einen Incident-Response-Ablauf strukturiert durchzuspielen, ohne produktive Systeme tatsächlich zu verändern?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Containment",
+        "is_correct": false
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": true
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tabletop-Übungen prüfen Rollen, Kommunikation und Entscheidungswege anhand realistischer Szenarien.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team einen Incident-Response-Ablauf strukturiert durchzuspielen, ohne produktive Systeme tatsächlich zu verändern. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Containment",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": true
+      },
+      {
+        "text": "Lessons Learned",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tabletop-Übungen prüfen Rollen, Kommunikation und Entscheidungswege anhand realistischer Szenarien.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man einen Incident-Response-Ablauf strukturiert durchzuspielen, ohne produktive Systeme tatsächlich zu verändern?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Quarantäne",
+        "is_correct": false
+      },
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Containment",
+        "is_correct": false
+      },
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Tabletop-Übungen prüfen Rollen, Kommunikation und Entscheidungswege anhand realistischer Szenarien.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Ein Incident Handler plant einen Incident-Response-Ablauf strukturiert durchzuspielen, ohne produktive Systeme tatsächlich zu verändern. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Tabletop Exercise",
+        "is_correct": true
+      },
+      {
+        "text": "Eradication",
+        "is_correct": false
+      },
+      {
+        "text": "Containment",
+        "is_correct": false
+      },
+      {
+        "text": "Recovery",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Tabletop-Übungen prüfen Rollen, Kommunikation und Entscheidungswege anhand realistischer Szenarien.",
+    "difficulty": "easy",
+    "exam_objective": "4.3 Given a scenario, respond to and recover from incidents"
+  },
+  {
+    "text": "Das SOC möchte bei Beweismitteln lückenlos zu dokumentieren, wer sie wann entgegengenommen, transportiert und bearbeitet hat. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": true
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Die Chain of Custody ist zentral für Nachvollziehbarkeit und rechtliche Verwertbarkeit von Beweisen.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um bei Beweismitteln lückenlos zu dokumentieren, wer sie wann entgegengenommen, transportiert und bearbeitet hat?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": true
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Die Chain of Custody ist zentral für Nachvollziehbarkeit und rechtliche Verwertbarkeit von Beweisen.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team bei Beweismitteln lückenlos zu dokumentieren, wer sie wann entgegengenommen, transportiert und bearbeitet hat. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Chain of Custody",
+        "is_correct": true
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      },
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Die Chain of Custody ist zentral für Nachvollziehbarkeit und rechtliche Verwertbarkeit von Beweisen.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man bei Beweismitteln lückenlos zu dokumentieren, wer sie wann entgegengenommen, transportiert und bearbeitet hat?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Die Chain of Custody ist zentral für Nachvollziehbarkeit und rechtliche Verwertbarkeit von Beweisen.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Ein Incident Handler plant bei Beweismitteln lückenlos zu dokumentieren, wer sie wann entgegengenommen, transportiert und bearbeitet hat. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Die Chain of Custody ist zentral für Nachvollziehbarkeit und rechtliche Verwertbarkeit von Beweisen.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Das SOC möchte beim Sichern digitaler Spuren zuerst die flüchtigsten Daten wie RAM oder aktive Netzverbindungen zu erfassen. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Order of Volatility",
+        "is_correct": true
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Die Order of Volatility priorisiert Beweise, die am schnellsten verloren gehen können.",
+    "difficulty": "hard",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um beim Sichern digitaler Spuren zuerst die flüchtigsten Daten wie RAM oder aktive Netzverbindungen zu erfassen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Order of Volatility",
+        "is_correct": true
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Die Order of Volatility priorisiert Beweise, die am schnellsten verloren gehen können.",
+    "difficulty": "hard",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team beim Sichern digitaler Spuren zuerst die flüchtigsten Daten wie RAM oder aktive Netzverbindungen zu erfassen. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Order of Volatility",
+        "is_correct": true
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Die Order of Volatility priorisiert Beweise, die am schnellsten verloren gehen können.",
+    "difficulty": "hard",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man beim Sichern digitaler Spuren zuerst die flüchtigsten Daten wie RAM oder aktive Netzverbindungen zu erfassen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Order of Volatility",
+        "is_correct": true
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Die Order of Volatility priorisiert Beweise, die am schnellsten verloren gehen können.",
+    "difficulty": "hard",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Ein Incident Handler plant beim Sichern digitaler Spuren zuerst die flüchtigsten Daten wie RAM oder aktive Netzverbindungen zu erfassen. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Order of Volatility",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Die Order of Volatility priorisiert Beweise, die am schnellsten verloren gehen können.",
+    "difficulty": "hard",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Das SOC möchte ein Datenträgermedium forensisch auszulesen, ohne versehentlich Änderungen auf das Original zu schreiben. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": true
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Write Blocker verhindern Schreibzugriffe auf das Originalmedium und schützen so die Beweisintegrität.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um ein Datenträgermedium forensisch auszulesen, ohne versehentlich Änderungen auf das Original zu schreiben?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Write Blocker verhindern Schreibzugriffe auf das Originalmedium und schützen so die Beweisintegrität.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team ein Datenträgermedium forensisch auszulesen, ohne versehentlich Änderungen auf das Original zu schreiben. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Write Blocker",
+        "is_correct": true
+      },
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Write Blocker verhindern Schreibzugriffe auf das Originalmedium und schützen so die Beweisintegrität.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man ein Datenträgermedium forensisch auszulesen, ohne versehentlich Änderungen auf das Original zu schreiben?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": true
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Write Blocker verhindern Schreibzugriffe auf das Originalmedium und schützen so die Beweisintegrität.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Ein Incident Handler plant ein Datenträgermedium forensisch auszulesen, ohne versehentlich Änderungen auf das Original zu schreiben. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Write Blocker verhindern Schreibzugriffe auf das Originalmedium und schützen so die Beweisintegrität.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Das SOC möchte eine bitgenaue Kopie eines Datenträgers für spätere Analyse und Beweisführung zu erstellen. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Forensisches Image",
+        "is_correct": true
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein forensisches Image enthält alle Bits eines Datenträgers und ermöglicht Untersuchungen ohne Arbeit am Original.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um eine bitgenaue Kopie eines Datenträgers für spätere Analyse und Beweisführung zu erstellen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": true
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein forensisches Image enthält alle Bits eines Datenträgers und ermöglicht Untersuchungen ohne Arbeit am Original.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team eine bitgenaue Kopie eines Datenträgers für spätere Analyse und Beweisführung zu erstellen. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Ein forensisches Image enthält alle Bits eines Datenträgers und ermöglicht Untersuchungen ohne Arbeit am Original.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man eine bitgenaue Kopie eines Datenträgers für spätere Analyse und Beweisführung zu erstellen?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Forensisches Image",
+        "is_correct": true
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein forensisches Image enthält alle Bits eines Datenträgers und ermöglicht Untersuchungen ohne Arbeit am Original.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Ein Incident Handler plant eine bitgenaue Kopie eines Datenträgers für spätere Analyse und Beweisführung zu erstellen. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": true
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein forensisches Image enthält alle Bits eines Datenträgers und ermöglicht Untersuchungen ohne Arbeit am Original.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Das SOC möchte vor und nach der Sicherung digitaler Beweise kryptografisch nachzuweisen, dass ihr Inhalt unverändert geblieben ist. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": true
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Hash-Werte zeigen Integrität und werden in der Forensik zur Verifikation von Images und Dateien genutzt.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um vor und nach der Sicherung digitaler Beweise kryptografisch nachzuweisen, dass ihr Inhalt unverändert geblieben ist?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": true
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Hash-Werte zeigen Integrität und werden in der Forensik zur Verifikation von Images und Dateien genutzt.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team vor und nach der Sicherung digitaler Beweise kryptografisch nachzuweisen, dass ihr Inhalt unverändert geblieben ist. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": true
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Hash-Werte zeigen Integrität und werden in der Forensik zur Verifikation von Images und Dateien genutzt.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man vor und nach der Sicherung digitaler Beweise kryptografisch nachzuweisen, dass ihr Inhalt unverändert geblieben ist?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Hash-Werte zeigen Integrität und werden in der Forensik zur Verifikation von Images und Dateien genutzt.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Ein Incident Handler plant vor und nach der Sicherung digitaler Beweise kryptografisch nachzuweisen, dass ihr Inhalt unverändert geblieben ist. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Hash-Werte zeigen Integrität und werden in der Forensik zur Verifikation von Images und Dateien genutzt.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Das SOC möchte flüchtige Prozesse, Netzwerkverbindungen und im RAM vorhandene Artefakte für eine spätere Untersuchung zu sichern. Welche Lösung ist am passendsten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Speicherabbild",
+        "is_correct": true
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Speicherabbild konserviert volatile Daten, die nach einem Neustart verloren wären.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welches Tool oder Verfahren wird typischerweise verwendet, um flüchtige Prozesse, Netzwerkverbindungen und im RAM vorhandene Artefakte für eine spätere Untersuchung zu sichern?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": true
+      }
+    ],
+    "explanation": "Ein Speicherabbild konserviert volatile Daten, die nach einem Neustart verloren wären.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Während eines Vorfalls muss das Team flüchtige Prozesse, Netzwerkverbindungen und im RAM vorhandene Artefakte für eine spätere Untersuchung zu sichern. Welche Option ist richtig?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": true
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Speicherabbild konserviert volatile Daten, die nach einem Neustart verloren wären.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Welcher Begriff beschreibt am besten einen Prozess, mit dem man flüchtige Prozesse, Netzwerkverbindungen und im RAM vorhandene Artefakte für eine spätere Untersuchung zu sichern?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Order of Volatility",
+        "is_correct": false
+      },
+      {
+        "text": "Forensisches Image",
+        "is_correct": false
+      },
+      {
+        "text": "Speicherabbild",
+        "is_correct": true
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Speicherabbild konserviert volatile Daten, die nach einem Neustart verloren wären.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  },
+  {
+    "text": "Ein Incident Handler plant flüchtige Prozesse, Netzwerkverbindungen und im RAM vorhandene Artefakte für eine spätere Untersuchung zu sichern. Welche Antwort passt am ehesten?",
+    "type": "single_choice",
+    "answers": [
+      {
+        "text": "Speicherabbild",
+        "is_correct": true
+      },
+      {
+        "text": "Chain of Custody",
+        "is_correct": false
+      },
+      {
+        "text": "Hash-Verifikation",
+        "is_correct": false
+      },
+      {
+        "text": "Write Blocker",
+        "is_correct": false
+      }
+    ],
+    "explanation": "Ein Speicherabbild konserviert volatile Daten, die nach einem Neustart verloren wären.",
+    "difficulty": "medium",
+    "exam_objective": "4.4 Explain digital forensics procedures and evidence handling"
+  }
+]
