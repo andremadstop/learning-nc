@@ -33,6 +33,19 @@ describe('computeVisibleItems', () => {
 		expect(result.visible).toEqual(['a', 'b', 'c', 'd', 'e', 'f']);
 		expect(result.overflow).toBe(0);
 	});
+
+	it('clamps negative maxVisible to zero visible items', () => {
+		const result = computeVisibleItems(['a', 'b'], -2);
+		expect(result.visible).toEqual([]);
+		expect(result.overflow).toBe(2);
+	});
+
+	it('returns an empty model for non-array input', () => {
+		const result = computeVisibleItems(null, 3);
+		expect(result.visible).toEqual([]);
+		expect(result.overflow).toBe(0);
+		expect(result.all).toEqual([]);
+	});
 });
 
 describe('computeReputationBars', () => {
@@ -63,6 +76,12 @@ describe('computeReputationBars', () => {
 			expect(bar.value).toBe(0);
 		});
 	});
+
+	it('preserves negative reputation values', () => {
+		const bars = computeReputationBars({ security: -2, team: -1 });
+		expect(bars.find(bar => bar.domain === 'security').value).toBe(-2);
+		expect(bars.find(bar => bar.domain === 'team').value).toBe(-1);
+	});
 });
 
 describe('computeHudState', () => {
@@ -83,6 +102,14 @@ describe('computeHudState', () => {
 		expect(result.score).toBe(42);
 		expect(result.act).toBe(2);
 		expect(result.role).toBe('security');
+	});
+
+	it('falls back to empty defaults for missing state input', () => {
+		const result = computeHudState(null, null);
+		expect(result.items).toEqual({ visible: [], overflow: 0, all: [] });
+		expect(result.score).toBe(0);
+		expect(result.act).toBe(1);
+		expect(result.role).toBe('');
 	});
 });
 
@@ -109,6 +136,16 @@ describe('computeActProgress', () => {
 		expect(result.current).toBe(1);
 		expect(result.total).toBe(1);
 	});
+
+	it('ignores invalid act metadata and falls back to current act', () => {
+		const fullGraph = {
+			nodes: [{ id: 'a', act: 'x' }, { id: 'b', act: null }, { id: 'c', act: 0 }],
+		};
+		const result = computeActProgress(fullGraph, 4);
+		expect(result.current).toBe(4);
+		expect(result.total).toBe(1);
+		expect(result.actNames).toEqual(['Akt 4']);
+	});
 });
 
 describe('computeScoreDelta', () => {
@@ -126,6 +163,12 @@ describe('computeScoreDelta', () => {
 
 	it('returns zero delta with direction none', () => {
 		const result = computeScoreDelta(42, 42);
+		expect(result.delta).toBe(0);
+		expect(result.direction).toBe('none');
+	});
+
+	it('coerces invalid inputs to a zero delta', () => {
+		const result = computeScoreDelta(undefined, '');
 		expect(result.delta).toBe(0);
 		expect(result.direction).toBe('none');
 	});
@@ -148,5 +191,14 @@ describe('computeReputationDeltas', () => {
 		expect(deltas.security).toBe(5);
 		expect(deltas.management).toBe(2);
 		expect(deltas.team).toBe(3);
+	});
+
+	it('keeps unknown domains and negative deltas', () => {
+		const deltas = computeReputationDeltas(
+			{ security: 5, stealth: 3 },
+			{ security: 2, stealth: 1 },
+		);
+		expect(deltas.security).toBe(-3);
+		expect(deltas.stealth).toBe(-2);
 	});
 });

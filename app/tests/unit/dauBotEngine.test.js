@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
+	advanceBotPhase,
 	applyResult,
+	computeBotScoring,
 	computeBotSummary,
 	createBotSession,
 	getKlausAvatarState,
@@ -108,5 +110,68 @@ describe('dauBotEngine', () => {
 		expect(getKlausAvatarState('awaiting_result')).toBe('thinking')
 		expect(getKlausAvatarState('summary', true)).toBe('relieved')
 		expect(getKlausAvatarState('summary', false)).toBe('frustrated')
+	})
+
+	it('creates a safe empty session for invalid scenarios', () => {
+		const session = createBotSession(null)
+		expect(session.scenario).toEqual({})
+		expect(session.phase).toBe('diagnose')
+	})
+
+	it('falls back to the selected ids when option lists are empty', () => {
+		const session = applyResult({
+			...createBotSession({ error_options: [], fix_options: [] }),
+			selectedErrorId: 'ghost_error',
+			selectedFixId: 'ghost_fix',
+		}, { passed: false })
+
+		expect(computeBotSummary(session)).toContain('ghost_error')
+		expect(computeBotSummary(session)).toContain('ghost_fix')
+	})
+
+	it('keeps a summary session unchanged on invalid phase advance', () => {
+		const summary = applyResult(createBotSession(scenario), { passed: true })
+		expect(advanceBotPhase(summary, 'anything')).toEqual(summary)
+	})
+
+	it('uses the default reaction for unknown phases', () => {
+		expect(getKlausReaction('invalid-phase', false)).toContain('nichts mehr')
+	})
+
+	it('returns idle avatar state for unknown phases', () => {
+		expect(getKlausAvatarState('invalid-phase')).toBe('idle')
+	})
+
+	it('supports a double diagnosis submit by overwriting the selected error', () => {
+		const first = submitDiagnosis(createBotSession(scenario), 'allow_any_any')
+		const second = submitDiagnosis(first, 'dns_typo')
+		expect(second.phase).toBe('fix')
+		expect(second.selectedErrorId).toBe('dns_typo')
+	})
+
+	it('supports a double fix submit by overwriting the selected fix', () => {
+		const base = submitDiagnosis(createBotSession(scenario), 'allow_any_any')
+		const first = submitFix(base, 'restrict_firewall_rule')
+		const second = submitFix(first, 'restart_again')
+		expect(second.phase).toBe('awaiting_result')
+		expect(second.selectedFixId).toBe('restart_again')
+	})
+
+	it('reads scoring deltas from server responses', () => {
+		expect(computeBotScoring({
+			score_change: 25,
+			reputation_changes: { team: 1 },
+		})).toEqual({
+			scoreChange: 25,
+			reputationChanges: { team: 1 },
+		})
+	})
+
+	it('reads nested bot correction pass states', () => {
+		const session = applyResult(createBotSession(scenario), {
+			bot_correction: { passed: true },
+		})
+		expect(session.phase).toBe('summary')
+		expect(session.passed).toBe(true)
 	})
 })

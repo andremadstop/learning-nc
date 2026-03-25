@@ -105,6 +105,36 @@ describe('coopEngine API wrappers', () => {
 			}),
 		)
 	})
+
+	it('submits progress payloads without forcing an empty edge id', async () => {
+		axios.post.mockResolvedValue({ data: { votes: { votes_cast: 1 } } })
+
+		await submitVote(77, '', {
+			bot_completed: true,
+			bot_passed: false,
+		})
+
+		expect(axios.post).toHaveBeenCalledWith(
+			'/apps/learning/api/v1/coop/sessions/77/vote',
+			{
+				bot_completed: true,
+				bot_passed: false,
+			},
+		)
+	})
+
+	it('joins without displayName when none is provided', async () => {
+		axios.post.mockResolvedValue({ data: { session: { id: 88 } } })
+
+		await joinCoopSession('ROOM1234', {
+			characterId: 'helpdesk',
+		})
+
+		expect(axios.post).toHaveBeenCalledWith(
+			'/apps/learning/api/v1/coop/sessions/ROOM1234/join',
+			{ characterId: 'helpdesk' },
+		)
+	})
 })
 
 describe('coopEngine vote display helpers', () => {
@@ -197,5 +227,51 @@ describe('coopEngine vote display helpers', () => {
 
 		expect(dnsChoice.votes).toBe(2)
 		expect(dnsChoice.isLeading).toBe(true)
+	})
+
+	it('returns false when nobody can vote', () => {
+		expect(isAllVoted({}, [])).toBe(false)
+	})
+
+	it('falls back to total_players when the local player list is empty', () => {
+		const result = computeVoteDisplay({
+			total_players: 3,
+			votes_cast: 1,
+			counts: [{ edge_id: 'edge-a', count: 1 }],
+		}, [], choices)
+
+		expect(result.totalPlayers).toBe(3)
+		expect(result.votesCast).toBe(1)
+	})
+
+	it('ignores malformed player vote entries', () => {
+		const result = computeVoteDisplay({
+			player_votes: {
+				'': 'edge-a',
+				alice: '',
+				bob: 'edge-b',
+			},
+		}, players.slice(0, 2), choices)
+
+		expect(result.votesCast).toBe(1)
+		expect(result.waitingPlayerIds).toEqual(['alice'])
+	})
+
+	it('returns no leading choice when no votes were cast', () => {
+		const result = computeVoteDisplay({}, players, choices)
+		expect(result.leadingChoiceId).toBeNull()
+		expect(result.leadingChoiceIds).toEqual([])
+	})
+
+	it('detects derived ties even when count rows are missing', () => {
+		const result = computeVoteDisplay({
+			player_votes: {
+				alice: 'edge-a',
+				bob: 'edge-b',
+			},
+		}, players.slice(0, 2), choices)
+
+		expect(result.leadingChoiceId).toBeNull()
+		expect(result.leadingChoiceIds).toEqual(['edge-a', 'edge-b'])
 	})
 })

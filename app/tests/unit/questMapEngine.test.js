@@ -228,4 +228,52 @@ describe('questMapEngine', () => {
 			expect(states.size).toBe(0);
 		});
 	});
+
+	describe('edge cases', () => {
+		it('keeps isolated visited nodes visible when a current node has no outgoing edges', () => {
+			const isolatedGraph = {
+				nodes: [
+					{ id: 'solo' },
+					{ id: 'archive' },
+					{ id: 'vault' },
+				],
+				edges: [],
+			};
+
+			const states = computeNodeStates(isolatedGraph, 'solo', {
+				_visited_nodes: ['solo', 'archive', 'vault'],
+			}, []);
+
+			expect(states.get('solo')).toBe('current');
+			expect(states.get('archive')).toBe('visited');
+			expect(states.get('vault')).toBe('visited');
+		});
+
+		it('keeps fully visited nodes visited when nothing is reachable anymore', () => {
+			const states = computeNodeStates(graph, 'investigate_logs', {
+				_visited_nodes: graph.nodes.map(node => node.id),
+			}, []);
+
+			expect(states.get('start')).toBe('visited');
+			expect(states.get('alert_team')).toBe('visited');
+			expect(states.get('investigate_logs')).toBe('current');
+		});
+
+		it('ignores invalid _visited_nodes payloads', () => {
+			const result = deriveVisitedNodes({ _visited_nodes: 'start' });
+			expect(result).toBeInstanceOf(Set);
+			expect(result.size).toBe(0);
+		});
+
+		it('renders zero reputation requirements without dropping them', () => {
+			const text = conditionToText({ min_reputation: { security: 0 } });
+			expect(text).toBe('security Reputation >= 0');
+		});
+
+		it('does not mark unknown available edge ids as reachable', () => {
+			const states = computeEdgeStates(graph.edges, [{ id: 'missing-edge' }], 'start');
+			expect(states.get('e1').reachable).toBe(false);
+			expect(states.get('e2').reachable).toBe(false);
+		});
+	});
 });

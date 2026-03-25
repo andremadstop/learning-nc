@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { computeTimerState, formatTime } from '../../src/utils/timerEngine.js';
+import {
+	computeTimerPhase,
+	computeTimerState,
+	formatTime,
+	getTimerConsequence,
+	isTimerExpired,
+} from '../../src/utils/timerEngine.js';
 
 describe('computeTimerState', () => {
 	const totalSeconds = 300;
@@ -68,6 +74,32 @@ describe('computeTimerState', () => {
 		const result = computeTimerState(deadline, totalSeconds, now);
 		expect(result.fraction).toBe(0.5);
 	});
+
+	it('uses warning phase exactly at the 50% threshold', () => {
+		const result = computeTimerState(1000, totalSeconds, 850);
+		expect(result.phase).toBe('warning');
+	});
+
+	it('uses danger phase exactly at the 25% threshold', () => {
+		const result = computeTimerState(1000, totalSeconds, 925);
+		expect(result.phase).toBe('danger');
+	});
+
+	it('clamps negative remaining time to zero', () => {
+		const result = computeTimerState(1000, totalSeconds, 1105);
+		expect(result.remaining).toBe(0);
+		expect(result.expired).toBe(true);
+	});
+
+	it('returns zero fraction when total time is zero', () => {
+		const result = computeTimerState(1000, 0, 900);
+		expect(result.fraction).toBe(0);
+		expect(result.phase).toBe('danger');
+	});
+
+	it('accepts ISO timestamps and reports expiry', () => {
+		expect(isTimerExpired('2026-03-25T21:00:00Z', Date.parse('2026-03-25T21:00:01Z') / 1000)).toBe(true);
+	});
 });
 
 describe('formatTime', () => {
@@ -89,5 +121,26 @@ describe('formatTime', () => {
 
 	it('handles negative (clamps to 0)', () => {
 		expect(formatTime(-5)).toBe('0:00');
+	});
+});
+
+describe('timerEngine helpers', () => {
+	it('returns critical phase when total milliseconds are zero', () => {
+		const result = computeTimerPhase(500, 0);
+		expect(result.phase).toBe('critical');
+		expect(result.percent).toBe(0);
+	});
+
+	it('reads timer consequence from camelCase payloads', () => {
+		const result = getTimerConsequence({
+			timerConsequence: {
+				type: 'auto_edge',
+				targetEdgeId: 'edge-timeout',
+			},
+		});
+		expect(result).toEqual({
+			type: 'auto_edge',
+			targetEdgeId: 'edge-timeout',
+		});
 	});
 });
