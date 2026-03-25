@@ -10,6 +10,17 @@ use OCP\IDBConnection;
 use OCP\IRequest;
 
 class SettingsController extends Controller {
+    private const AVAILABLE_TOOL_IDS = [
+        'subnet',
+        'dns',
+        'firewall',
+        'portscan',
+        'routing',
+        'nat',
+        'wireshark',
+        'authflow',
+    ];
+
     private IConfig $config;
     private IDBConnection $db;
     private ?string $userId;
@@ -143,5 +154,55 @@ class SettingsController extends Controller {
         $this->config->setUserValue($this->userId, 'learning', 'notifications_enabled', $notifications_enabled === 'yes' ? 'yes' : 'no');
 
         return new DataResponse(['status' => 'ok']);
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    public function getTools(): DataResponse {
+        return new DataResponse([
+            'enabled_tools' => $this->getConfiguredTools(),
+        ]);
+    }
+
+    /**
+     * @AdminRequired
+     */
+    public function saveTools(array $enabledTools = []): DataResponse {
+        $normalized = $this->normalizeTools($enabledTools);
+        $this->config->setAppValue('learning', 'enabled_tools', json_encode($normalized));
+
+        return new DataResponse([
+            'status' => 'ok',
+            'enabled_tools' => $normalized,
+        ]);
+    }
+
+    private function getConfiguredTools(): array {
+        $raw = $this->config->getAppValue('learning', 'enabled_tools', '');
+        if ($raw === '') {
+            return self::AVAILABLE_TOOL_IDS;
+        }
+
+        $decoded = json_decode($raw, true);
+        if (!is_array($decoded)) {
+            return self::AVAILABLE_TOOL_IDS;
+        }
+
+        return $this->normalizeTools($decoded);
+    }
+
+    private function normalizeTools(array $enabledTools): array {
+        $allowedLookup = array_flip(self::AVAILABLE_TOOL_IDS);
+        $normalized = [];
+
+        foreach ($enabledTools as $toolId) {
+            $toolId = (string)$toolId;
+            if ($toolId !== '' && isset($allowedLookup[$toolId])) {
+                $normalized[$toolId] = $toolId;
+            }
+        }
+
+        return array_values($normalized);
     }
 }

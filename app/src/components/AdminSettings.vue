@@ -48,6 +48,22 @@
       </div>
 
       <div class="field-row">
+        <label>{{ t('learning', 'Enabled simulator tools') }}</label>
+        <p class="field-help">
+          {{ t('learning', 'Disabled tools disappear for all users in the Werkzeuge tab.') }}
+        </p>
+        <div class="tool-toggle-grid">
+          <label v-for="tool in toolOptions" :key="tool.id" class="tool-toggle-row">
+            <input
+              type="checkbox"
+              :checked="form.enabledTools.includes(tool.id)"
+              @change="toggleTool(tool.id, $event.target.checked)">
+            <span>{{ tool.label }}</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field-row">
         <label>{{ t('learning', 'Allow course-based instructor fallback') }}</label>
         <NcCheckboxRadioSwitch
           :checked="form.allowCourseInstructorFallback"
@@ -231,6 +247,7 @@ import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 
 export default {
   name: 'AdminSettings',
@@ -254,6 +271,7 @@ export default {
         defaultLanguage: 'de',
         maxImportSizeMb: 2,
         gamificationEnabled: true,
+        enabledTools: [...ALL_TOOL_IDS],
         allowCourseInstructorFallback: false,
         examAttemptLimitPerDay: 5,
         examAttemptCooldownMinutes: 10,
@@ -268,17 +286,33 @@ export default {
     this.loadAudit()
     this.loadSupportTickets()
   },
+  computed: {
+    toolOptions() {
+      return TOOL_CATALOG.map((tool) => ({
+        id: tool.id,
+        label: t('learning', tool.labelKey),
+      }))
+    },
+  },
   methods: {
+    normalizeEnabledTools(enabledTools) {
+      const source = Array.isArray(enabledTools) ? enabledTools : ALL_TOOL_IDS
+      return ALL_TOOL_IDS.filter((toolId) => source.includes(toolId))
+    },
     async load() {
       this.loading = true
       this.error = ''
       try {
-        const response = await axios.get(generateUrl('/apps/learning/api/settings/admin'))
-        const data = response.data || {}
+        const [adminResponse, toolsResponse] = await Promise.all([
+          axios.get(generateUrl('/apps/learning/api/settings/admin')),
+          axios.get(generateUrl('/apps/learning/api/settings/tools')),
+        ])
+        const data = adminResponse.data || {}
         this.form.dailyChallengeEnabled = (data.daily_challenge_enabled || 'yes') === 'yes'
         this.form.defaultLanguage = data.default_language === 'en' ? 'en' : 'de'
         this.form.maxImportSizeMb = Math.max(1, Math.min(10, Number(data.max_import_size_mb || 2)))
         this.form.gamificationEnabled = (data.gamification_enabled || 'yes') === 'yes'
+        this.form.enabledTools = this.normalizeEnabledTools(toolsResponse.data?.enabled_tools)
         this.form.allowCourseInstructorFallback = (data.allow_course_instructor_fallback || 'no') === 'yes'
         this.form.examAttemptLimitPerDay = Math.max(1, Math.min(50, Number(data.exam_attempt_limit_per_day || 5)))
         this.form.examAttemptCooldownMinutes = Math.max(0, Math.min(1440, Number(data.exam_attempt_cooldown_minutes || 10)))
@@ -297,18 +331,23 @@ export default {
       this.error = ''
       this.saved = false
       try {
-        await axios.put(generateUrl('/apps/learning/api/settings/admin'), {
-          daily_challenge_enabled: this.form.dailyChallengeEnabled ? 'yes' : 'no',
-          default_language: this.form.defaultLanguage === 'en' ? 'en' : 'de',
-          max_import_size_mb: Math.max(1, Math.min(10, Number(this.form.maxImportSizeMb || 2))),
-          gamification_enabled: this.form.gamificationEnabled ? 'yes' : 'no',
-          allow_course_instructor_fallback: this.form.allowCourseInstructorFallback ? 'yes' : 'no',
-          exam_attempt_limit_per_day: Math.max(1, Math.min(50, Number(this.form.examAttemptLimitPerDay || 5))),
-          exam_attempt_cooldown_minutes: Math.max(0, Math.min(1440, Number(this.form.examAttemptCooldownMinutes || 10))),
-          // PRIV-02 / PRIV-05: AI settings
-          ai_enabled: this.form.aiEnabled ? 'yes' : 'no',
-          ...(this.form.geminiApiKey.trim() !== '' ? { gemini_api_key: this.form.geminiApiKey.trim() } : {}),
-        })
+        await Promise.all([
+          axios.put(generateUrl('/apps/learning/api/settings/admin'), {
+            daily_challenge_enabled: this.form.dailyChallengeEnabled ? 'yes' : 'no',
+            default_language: this.form.defaultLanguage === 'en' ? 'en' : 'de',
+            max_import_size_mb: Math.max(1, Math.min(10, Number(this.form.maxImportSizeMb || 2))),
+            gamification_enabled: this.form.gamificationEnabled ? 'yes' : 'no',
+            allow_course_instructor_fallback: this.form.allowCourseInstructorFallback ? 'yes' : 'no',
+            exam_attempt_limit_per_day: Math.max(1, Math.min(50, Number(this.form.examAttemptLimitPerDay || 5))),
+            exam_attempt_cooldown_minutes: Math.max(0, Math.min(1440, Number(this.form.examAttemptCooldownMinutes || 10))),
+            // PRIV-02 / PRIV-05: AI settings
+            ai_enabled: this.form.aiEnabled ? 'yes' : 'no',
+            ...(this.form.geminiApiKey.trim() !== '' ? { gemini_api_key: this.form.geminiApiKey.trim() } : {}),
+          }),
+          axios.put(generateUrl('/apps/learning/api/settings/tools'), {
+            enabledTools: this.normalizeEnabledTools(this.form.enabledTools),
+          }),
+        ])
         this.saved = true
       } catch (e) {
         this.error = t('learning', 'Failed to save settings')
@@ -348,6 +387,15 @@ export default {
     },
     setTicketAnswer(ticketId, value) {
       this.$set(this.ticketAnswers, ticketId, value)
+    },
+    toggleTool(toolId, enabled) {
+      const next = new Set(this.normalizeEnabledTools(this.form.enabledTools))
+      if (enabled) {
+        next.add(toolId)
+      } else {
+        next.delete(toolId)
+      }
+      this.form.enabledTools = ALL_TOOL_IDS.filter((id) => next.has(id))
     },
     async submitTicketAnswer(ticketId) {
       this.answeringId = ticketId
@@ -445,6 +493,22 @@ export default {
 
 .actions {
   padding-top: 4px;
+}
+
+.tool-toggle-grid {
+  display: grid;
+  gap: 8px 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.tool-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-main-background);
 }
 
 .ai-section {

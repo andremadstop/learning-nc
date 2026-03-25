@@ -19,6 +19,7 @@
 - 📋 **v8.0 VirtuProf v2** — Phases 61-63 (planned)
 - 📋 **v9.0 Simulator-Werkzeuge** — Phases 64-70 (planned)
 - 📋 **v10.0 Campaign Engine v2** — Phases 71-74 (planned)
+- 📋 **v11.0 Telos-Onboarding + VirtuProf Guide** — Phases 75-78 (planned)
 
 ## Phases
 
@@ -574,7 +575,7 @@ Phases execute in numeric order: 52 -> 53 -> 54 -> 55 -> 56 -> 57 -> 58 -> 59 ->
 | 60. VLAN-Tab | v7.2 Subnetzrechner Pro | 0/TBD | Not started | - |
 | 61. Kontext-Mapping | 2/2 | Complete    | 2026-03-24 | - |
 | 62. Hint-System | v8.0 VirtuProf v2 | 0/TBD | Not started | - |
-| 63. Exam-Sperre + Fehler-Report | v8.0 VirtuProf v2 | 1/1 | Complete | 2026-03-24 |
+| 63. Exam-Sperre + Fehler-Report | v8.0 VirtuProf v2 | Complete    | 2026-03-24 | 2026-03-24 |
 | 64. DNS-Resolver | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
 | 65. Firewall/ACL-Builder | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
 | 66. Port-Scanner | v9.0 Simulator-Werkzeuge | 0/TBD | Not started | - |
@@ -640,3 +641,63 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Der DAU-Bot generiert realistische Anfaengerfehler in Szenen-Kontext (z.B. Default-Passwoerter setzen, Firewall-Ports offen lassen, Backups vergessen) — die Fehler sind fachlich korrekt modelliert und nicht zufaellig
   2. Der User bekommt die Bot-Konfiguration/Entscheidung praesentiert und muss die Fehler identifizieren und korrigieren — das Korrektur-Ergebnis (richtig erkannt / uebersehen / falsch korrigiert) fliesst als Score in den State-Bag und beeinflusst den weiteren Kampagnenverlauf
+
+### 📋 v11.0 Telos-Onboarding + VirtuProf Guide (Planned)
+
+**Milestone Goal:** Jeder User bekommt ein persoenliches Lernprofil (Mini-Telos) durch ein VirtuProf-Interview beim ersten Login. VirtuProf wird zum kontextbewussten App-Guide.
+
+- [ ] **Phase 75: DB-Migration + Telos-API + Interview-Backend** - user_telos Tabelle, REST-Endpoints, GeminiService Interview-Logik
+- [ ] **Phase 76: Onboarding-Frontend + Formular-Fallback** - VirtuProf-Interview UI und Formular-Alternative ohne KI
+- [ ] **Phase 77: Profil-Seite + Dozenten-Sicht** - Persoenliches Lernprofil mit Sichtbarkeits-Toggle und aggregiertes Klassen-Profil
+- [ ] **Phase 78: VirtuProf Guide-Modus + Antwortlaengen** - Proaktive Tool-Erklaerungen und kontextbewusste Antwortsteuerung
+
+### Phase 75: DB-Migration + Telos-API + Interview-Backend
+**Goal**: Das Backend kann Telos-Daten speichern, lesen und aktualisieren, und VirtuProf fuehrt ein strukturiertes 10-Fragen-Interview dessen Antworten als Mini-Telos JSON persistiert werden
+**Depends on**: Phase 74 (v10.0 abgeschlossen)
+**Requirements**: TELOS-01, TELOS-02, API-01, DB-01
+**Success Criteria** (what must be TRUE):
+  1. Die user_telos Tabelle existiert mit allen Feldern (user_id, telos_json, bio, help_offer, help_wanted, visibility, onboarding_completed, created_at, updated_at) und die Migration laeuft sauber auf einer bestehenden DB ohne Datenverlust
+  2. Die REST-Endpoints POST/GET/PUT /api/profile/telos sind per curl testbar — POST speichert ein Telos-JSON, GET liefert es zurueck, PUT aktualisiert einzelne Felder — mit korrekter Authentifizierung und Validierung
+  3. VirtuProf fuehrt ueber die GeminiService-API ein 10-Fragen-Interview (Rolle, Erfahrung, Staerken, Schwaechen, Ziel, Zeitrahmen, Lernstil, Lernzeit, Motivation, Besonderes) und extrahiert aus den Antworten ein strukturiertes JSON das in user_telos gespeichert wird
+  4. Das Interview startet automatisch beim ersten Login eines Users der noch kein Telos hat — bei bestehenden Usern mit Telos wird das Interview uebersprungen
+**Plans**: TBD
+
+### Phase 76: Onboarding-Frontend + Formular-Fallback
+**Goal**: Neue User durchlaufen ein interaktives Onboarding das entweder als VirtuProf-Chat oder als Formular funktioniert — in beiden Faellen entsteht ein vollstaendiges Mini-Telos
+**Depends on**: Phase 75 (API-Endpoints und Interview-Backend muessen stehen)
+**Requirements**: TELOS-03
+**Success Criteria** (what must be TRUE):
+  1. Beim ersten App-Besuch oeffnet sich automatisch das VirtuProf-Interview als Chat-Dialog — der User beantwortet 10 Fragen in natuerlicher Sprache und sieht am Ende eine Zusammenfassung seines Lernprofils
+  2. Wenn KI deaktiviert ist (kein Gemini API Key oder User-Praeferenz), erscheint stattdessen ein Formular mit Dropdowns und Textfeldern fuer dieselben 10 Felder — das Ergebnis ist dasselbe Telos-JSON wie beim Interview
+  3. Der User kann das Onboarding ueberspringen ("Spaeter") und wird beim naechsten Login erneut darauf hingewiesen — nach drei Ablehnungen wird nicht mehr gefragt
+**Plans**: TBD
+
+### Phase 77: Profil-Seite + Dozenten-Sicht
+**Goal**: User sehen ihr persoenliches Lernprofil mit Telos-Daten, Staerken/Schwaechen und Lernstatistiken, und Dozenten sehen ein aggregiertes Klassen-Profil ihrer Kurse
+**Depends on**: Phase 76 (Telos-Daten muessen durch Onboarding befuellt sein)
+**Requirements**: PROF-01, PROF-02, PROF-03, DOZ-01, DOZ-02
+**Success Criteria** (what must be TRUE):
+  1. Der User sieht auf seiner Profil-Seite: Telos-Daten (Rolle, Ziel, Zeitrahmen), automatisch berechnete Staerken/Schwaechen aus der Lernhistorie, aktuelles Level, Streak und Badges — alles auf einer Seite
+  2. Der Sichtbarkeits-Toggle funktioniert: Profil auf "privat" ist nur fuer den User selbst sichtbar, "kurs" zeigt es Kursmitgliedern, "dozent" zeigt es nur dem Dozenten — die Einstellung wird sofort wirksam
+  3. Der User kann sein Profil editieren: Telos-Daten aktualisieren, Bio hinzufuegen, "Ich kann helfen bei..." und "Ich suche Hilfe bei..." Felder pflegen — Aenderungen werden per PUT /api/profile/telos gespeichert
+  4. Der Dozent sieht im Dozenten-Cockpit ein aggregiertes Klassen-Profil: Erfahrungslevel-Verteilung (Pie/Bar Chart), Ziel-Zertifizierungen, Durchschnitt Lernzeit/Woche und einen Pruefungs-Countdown pro User basierend auf target_date aus den Telos-Daten
+**Plans**: TBD
+
+### Phase 78: VirtuProf Guide-Modus + Antwortlaengen
+**Goal**: VirtuProf wird zum kontextbewussten App-Guide der beim ersten Besuch eines Tools proaktiv erklaert und seine Antwortlaenge dynamisch anpasst — unter Nutzung der Telos-Daten fuer personalisierte Erklaerungen
+**Depends on**: Phase 75 (Telos-Daten muessen lesbar sein; kann parallel zu Phase 77 laufen)
+**Requirements**: GUIDE-01, GUIDE-02, GUIDE-03
+**Success Criteria** (what must be TRUE):
+  1. Wenn ein User zum ersten Mal ein Tool oder einen Modus oeffnet (Training, Leitner, Exam, PBQ, Subnetzrechner etc.), erscheint VirtuProf automatisch mit einer ausfuehrlichen Erklaerung — beim zweiten Besuch ist die Erklaerung kuerzer oder entfaellt, gesteuert ueber ein "first_visit" Tracking pro Tool
+  2. VirtuProf antwortet standardmaessig kurz (~150 Tokens) — nur wenn der User eskaliert ("Erklaer genauer", "Mehr Details", "Warum?") wechselt VirtuProf auf ausfuehrliche Antworten (~2048 Tokens) fuer diese eine Antwort und kehrt dann zum kurzen Default zurueck
+  3. VirtuProf nutzt die Telos-Daten des Users als Kontext in seinen Erklaerungen — ein Quereinsteiger bekommt grundlegendere Erklaerungen als ein erfahrener Admin, ein User mit Ziel "Security+" bekommt Security-relevante Beispiele bevorzugt
+**Plans**: TBD
+
+## Progress
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 75. DB-Migration + Telos-API | v11.0 | 0/? | Not started | - |
+| 76. Onboarding-Frontend | v11.0 | 0/? | Not started | - |
+| 77. Profil + Dozenten-Sicht | v11.0 | 0/? | Not started | - |
+| 78. Guide-Modus + Antwortlaengen | v11.0 | 0/? | Not started | - |

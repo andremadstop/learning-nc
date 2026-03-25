@@ -1,80 +1,74 @@
-# Requirements: Learning-NC v10.0 Campaign Engine v2
+# Requirements: Learning-NC v11.0 Telos-Onboarding + VirtuProf Guide
 
 **Defined:** 2026-03-24
-**Core Value:** Kampagnen werden zu echten 60-120 min RPG-Erlebnissen mit Pfadbaum, State-Machine und eingebetteten Simulatoren.
+**Core Value:** Jeder User bekommt ein persoenliches Lernprofil das die gesamte App-Erfahrung personalisiert.
 
-## v10.0 Requirements
+## v11.0 Requirements
 
-### State-Machine & Graph
+### Onboarding-Interview
 
-- [x] **ENG-01**: Kampagnen nutzen einen gerichteten Szenen-Graph statt linearer Kette (30-50 Knoten pro Kampagne)
-- [x] **ENG-02**: State-Bag speichert Flags, Items und Reputation die sich ueber die Kampagne akkumulieren und spaetere Szenen beeinflussen
-- [x] **ENG-03**: Szenen koennen Bedingungen haben (z.B. "nur wenn Flag X gesetzt" oder "nur wenn Reputation > 5")
+- [ ] **TELOS-01**: VirtuProf fuehrt beim ersten Login ein 10-Fragen-Interview (Rolle, Erfahrung, Staerken, Schwaechen, Ziel, Zeitrahmen, Lernstil, Lernzeit, Motivation, Besonderes)
+- [ ] **TELOS-02**: Antworten werden als strukturiertes Mini-Telos JSON in der DB gespeichert (user_telos Tabelle)
+- [ ] **TELOS-03**: Formular-Fallback wenn KI deaktiviert ist (gleiche Felder als Dropdown/Textfeld)
 
-### Akte & Dauer
+### Profil-Seite
 
-- [ ] **ENG-04**: Kampagnen sind in 3-4 Akte strukturiert (Setup → Investigation → Eskalation → Showdown) mit je 5-15 Szenen
-- [ ] **ENG-05**: Save/Resume: Spielstand persistiert, Session kann ueber Tage unterbrochen und fortgesetzt werden
+- [ ] **PROF-01**: User sieht seine Profil-Seite mit Telos-Daten + automatischen Staerken/Schwaechen + Level/Streak/Badges
+- [ ] **PROF-02**: Sichtbarkeits-Toggle: Profil privat / fuer Kurs sichtbar / nur fuer Dozent
+- [ ] **PROF-03**: Profil editierbar (Telos-Daten aktualisieren, Bio, "Ich kann helfen bei...", "Ich suche Hilfe bei...")
 
-### Rollen-System
+### Dozenten-Sicht
 
-- [ ] **ROLE-01**: Charakterklasse beeinflusst verfuegbare Szenen und Pfade (nicht nur Difficulty-Modifier)
-- [ ] **ROLE-02**: Exklusive Szenen pro Rolle (Architect sieht Netzwerk-Szenen, Security sieht Forensik-Szenen)
+- [ ] **DOZ-01**: Dozent sieht aggregiertes Klassen-Profil aus Telos-Daten (Erfahrungslevel-Verteilung, Ziel-Zertifizierungen, Durchschnitt Lernzeit/Woche)
+- [ ] **DOZ-02**: Pruefungs-Countdown pro User (aus Telos target_date) im Dozenten-Cockpit
 
-### Aufgaben-Integration
+### VirtuProf Guide-Modus
 
-- [ ] **TASK-01**: Szenen koennen eingebettete Simulatoren als Aufgaben referenzieren (DNS, Firewall, Port-Scanner etc.)
-- [ ] **TASK-02**: Simulator-Ergebnis (bestanden/nicht bestanden) beeinflusst Szenen-Fortschritt und State-Bag
-- [ ] **TASK-03**: Timer-basierte Aufgaben moeglich (z.B. "Finde den kompromittierten Host in 5 Minuten")
-
-### KI-Gegner (DAU-Bot)
-
-- [ ] **BOT-01**: KI-Gegner der typische Anfaengerfehler macht (Default-Passwoerter, offene Ports, keine Backups)
-- [ ] **BOT-02**: User muss die Fehler des Bots korrigieren als Teil des Szenarios
+- [ ] **GUIDE-01**: VirtuProf erklaert proaktiv wenn User zum ersten Mal ein Tool/Modus oeffnet (ausfuehrlich beim ersten Mal, kurz bei Wiederholung)
+- [ ] **GUIDE-02**: Antwortlaengen-Steuerung: Kurze Antworten als Default (~150 Tokens), ausfuehrlich nur nach User-Eskalation ("Erklaer genauer", ~2048 Tokens)
+- [ ] **GUIDE-03**: VirtuProf nutzt Telos-Daten als Kontext ("Als Quereinsteiger kennst du vielleicht...")
 
 ### API & DB
 
-- [ ] **API-01**: REST-Endpoints fuer Graph-Traversal, State-Management, Save/Resume
-- [x] **DB-01**: Migration: campaign_state Tabelle mit state_bag (JSON), act_number, graph_position, timestamps
+- [ ] **API-01**: REST-Endpoints: POST /api/profile/telos (speichern), GET /api/profile/telos (lesen), PUT /api/profile/telos (aktualisieren)
+- [ ] **DB-01**: Migration: user_telos Tabelle (user_id, telos_json, bio, help_offer, help_wanted, visibility, onboarding_completed, created_at, updated_at)
 
 ## Future Requirements
 
-- **MP-01**: Multiplayer Live-Sessions mit Rollenverteilung (2-4 Spieler)
-- **MP-02**: Competitive-Modus (Wer loest das Szenario schneller/besser?)
-- **FE-01**: Frontend-Redesign des Abenteuer-Modus fuer Graph-Navigation
-- **CONT-01**: 3+ grosse Kampagnen (je 30-50 Knoten, 60-120 min)
+- **FEED-01**: Kurs-Feed mit Meilensteinen und Ankuendigungen (v13.0)
+- **SKILL-01**: Skill-Map als Force-directed Graph
+- **SWIPE-01**: VirtuProf Swipe-Animation auf Mobile
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Frontend-Redesign | Eigener Milestone nach Engine-Stabilisierung |
-| Multiplayer Live | Nach Engine steht, eigener Milestone |
-| Neuer Kampagnen-Content | Gemini liefert separat |
-| Zeitreise-Ueberarbeitung | Baut auf Engine v2 auf, eigener Milestone |
+| Kurs-Feed/Timeline | Eigener Milestone (v13.0) |
+| Skill-Map Graph | Nach Profil steht |
+| Swipe-Animation | Eigener UX-Milestone |
+| Export-Prompt (Bring Your Own AI) | Nice-to-have, spaeter |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ENG-01 | Phase 71 | Complete |
-| ENG-02 | Phase 71 | Complete |
-| ENG-03 | Phase 71 | Complete |
-| ENG-04 | Phase 72 | Pending |
-| ENG-05 | Phase 72 | Pending |
-| ROLE-01 | Phase 73 | Pending |
-| ROLE-02 | Phase 73 | Pending |
-| TASK-01 | Phase 73 | Pending |
-| TASK-02 | Phase 73 | Pending |
-| TASK-03 | Phase 73 | Pending |
-| BOT-01 | Phase 74 | Pending |
-| BOT-02 | Phase 74 | Pending |
-| API-01 | Phase 72 | Pending |
-| DB-01 | Phase 71 | Complete |
+| TELOS-01 | Phase 75 | Pending |
+| TELOS-02 | Phase 75 | Pending |
+| TELOS-03 | Phase 76 | Pending |
+| PROF-01 | Phase 77 | Pending |
+| PROF-02 | Phase 77 | Pending |
+| PROF-03 | Phase 77 | Pending |
+| DOZ-01 | Phase 77 | Pending |
+| DOZ-02 | Phase 77 | Pending |
+| GUIDE-01 | Phase 78 | Pending |
+| GUIDE-02 | Phase 78 | Pending |
+| GUIDE-03 | Phase 78 | Pending |
+| API-01 | Phase 75 | Pending |
+| DB-01 | Phase 75 | Pending |
 
 **Coverage:**
-- v10.0 requirements: 14 total
-- Mapped to phases: 14
+- v11.0 requirements: 13 total
+- Mapped to phases: 13
 - Unmapped: 0
 
 ---

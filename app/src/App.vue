@@ -14,14 +14,15 @@
       >
         {{ t('learning', 'Kurse') }}
       </button>
-      <button
+      <!-- Zeitreise-Tab ausgeblendet — Modus braucht Überarbeitung, siehe Backlog -->
+      <!-- <button
         :class="['main-nav-btn', { active: mainView === 'zeitreise' }]"
         role="tab"
         :aria-selected="mainView === 'zeitreise' ? 'true' : 'false'"
         @click="switchMainView('zeitreise')"
       >
         {{ t('learning', 'Zeitreise') }}
-      </button>
+      </button> -->
       <button
         :class="['main-nav-btn', { active: mainView === 'werkzeuge' }]"
         role="tab"
@@ -236,12 +237,39 @@
 
     <!-- ==================== WERKZEUGE VIEW ==================== -->
     <template v-if="mainView === 'werkzeuge'">
-      <SubnetCalculator />
+      <div v-if="toolsTabs.length" class="sim-nav" role="tablist" @keydown="handleTablistKeydown">
+        <button
+          v-for="tab in toolsTabs"
+          :key="tab.id"
+          :class="['sim-nav__item', { 'sim-nav__item--active': toolsView === tab.id }]"
+          role="tab"
+          :aria-selected="toolsView === tab.id ? 'true' : 'false'"
+          :aria-label="tab.label"
+          @click="toolsView = tab.id"
+        >
+          <span class="sim-nav__icon" aria-hidden="true">{{ tab.icon }}</span>
+          <span class="sim-nav__label">{{ tab.shortLabel }}</span>
+        </button>
+      </div>
+
+      <NcNoteCard v-else type="info">
+        {{ t('learning', 'Aktuell sind keine Werkzeuge freigeschaltet.') }}
+      </NcNoteCard>
+
+      <SubnetCalculator v-if="toolsView === 'subnet'" />
+      <DnsResolver v-else-if="toolsView === 'dns'" />
+      <FirewallBuilder v-else-if="toolsView === 'firewall'" />
+      <PortScanner v-else-if="toolsView === 'portscan'" />
+      <RoutingTable v-else-if="toolsView === 'routing'" />
+      <NatTable v-else-if="toolsView === 'nat'" />
+      <WiresharkLite v-else-if="toolsView === 'wireshark'" />
+      <AuthFlowSimulator v-else-if="toolsView === 'authflow'" />
     </template>
 
     <VirtuProf
       v-if="appInitialized"
       :enabled="virtuProfEnabled"
+      :user-role="userRole"
       @open-duel="openVirtuProfDuel"
       @ready="triggerInitialVirtuProfHints"
       @enabled-change="handleVirtuProfEnabledChange" />
@@ -272,6 +300,14 @@ import VirtuProf from './components/VirtuProf.vue';
 import AbenteuerMode from './components/AbenteuerMode.vue';
 import HackThroughTime from './components/HackThroughTime.vue';
 import SubnetCalculator from './components/SubnetCalculator.vue';
+import DnsResolver from './components/DnsResolver.vue';
+import FirewallBuilder from './components/FirewallBuilder.vue';
+import PortScanner from './components/PortScanner.vue';
+import RoutingTable from './components/RoutingTable.vue';
+import NatTable from './components/NatTable.vue';
+import WiresharkLite from './components/WiresharkLite.vue';
+import AuthFlowSimulator from './components/AuthFlowSimulator.vue';
+import { ALL_TOOL_IDS, TOOL_CATALOG } from './utils/toolCatalog.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 
@@ -301,6 +337,13 @@ export default {
     AbenteuerMode,
     HackThroughTime,
     SubnetCalculator,
+    DnsResolver,
+    FirewallBuilder,
+    PortScanner,
+    RoutingTable,
+    NatTable,
+    WiresharkLite,
+    AuthFlowSimulator,
   },
   data() {
     return {
@@ -324,6 +367,8 @@ export default {
       selectedCourse: null,
       selectedStudent: null,
       courseView: 'list',
+      toolsView: 'subnet',
+      enabledTools: [...ALL_TOOL_IDS],
       contentLanguage: '',
       virtuProfEnabled: true,
       appInitialized: false,
@@ -351,6 +396,17 @@ export default {
       }
       return this.modes;
     },
+    toolsTabs() {
+      const enabled = this.normalizeEnabledTools(this.enabledTools);
+      return TOOL_CATALOG
+        .filter((tool) => enabled.includes(tool.id))
+        .map((tool) => ({
+          id: tool.id,
+          label: t('learning', tool.labelKey),
+          shortLabel: t('learning', tool.shortLabelKey),
+          icon: tool.icon,
+        }));
+    },
     modeDescriptions() {
       return {
         train: t('learning', 'Quick quiz — test your knowledge with random questions.'),
@@ -363,7 +419,7 @@ export default {
     },
   },
   async created() {
-    await Promise.all([this.fetchRole(), this.fetchPersonalSettings()]);
+    await Promise.all([this.fetchRole(), this.fetchPersonalSettings(), this.fetchEnabledTools()]);
     this.appInitialized = true;
     this.$nextTick(() => {
       this.emitVirtuProfContext();
@@ -372,12 +428,17 @@ export default {
   watch: {
     mainView() {
       this.emitVirtuProfContext();
+      this.emitToolGuide();
     },
     currentView() {
       this.emitVirtuProfContext();
     },
     mode() {
       this.emitVirtuProfContext();
+    },
+    toolsView() {
+      this.emitVirtuProfContext();
+      this.emitToolGuide();
     },
     selectedPool() {
       this.emitVirtuProfContext();
@@ -388,8 +449,34 @@ export default {
     selectedStudent() {
       this.emitVirtuProfContext();
     },
+    toolsTabs() {
+      this.ensureActiveToolVisible();
+    },
   },
   methods: {
+    normalizeEnabledTools(enabledTools) {
+      const source = Array.isArray(enabledTools) ? enabledTools : ALL_TOOL_IDS;
+      return ALL_TOOL_IDS.filter((toolId) => source.includes(toolId));
+    },
+    async fetchEnabledTools() {
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/settings/tools'));
+        this.enabledTools = this.normalizeEnabledTools(response.data?.enabled_tools);
+      } catch (err) {
+        this.enabledTools = [...ALL_TOOL_IDS];
+      }
+      this.ensureActiveToolVisible();
+    },
+    ensureActiveToolVisible() {
+      const enabled = this.normalizeEnabledTools(this.enabledTools);
+      if (enabled.length === 0) {
+        this.toolsView = '';
+        return;
+      }
+      if (!enabled.includes(this.toolsView)) {
+        this.toolsView = enabled[0];
+      }
+    },
     async fetchPersonalSettings() {
       try {
         const response = await axios.get(generateUrl('/apps/learning/api/settings/personal'));
@@ -422,6 +509,71 @@ export default {
         return;
       }
       this.$root.$emit('virtuprof:context', context || this.virtuprofContextPayload());
+    },
+    emitToolGuide() {
+      if (!this.appInitialized || this.userRole !== 'student' || this.mainView !== 'werkzeuge') {
+        return;
+      }
+      const payload = this.toolGuidePayload(this.toolsView);
+      if (payload) {
+        this.$root.$emit('virtuprof:guide', payload);
+      }
+    },
+    toolGuidePayload(toolId) {
+      const guides = {
+        subnet: {
+          title: t('learning', 'Subnet Calculator'),
+          text: t('learning', 'This tool breaks down CIDR networks into network address, broadcast, host range and binary form. Use it when subnet masks still feel abstract.'),
+          shortText: t('learning', 'The subnet calculator shows network, broadcast and host range for one CIDR block.'),
+        },
+        dns: {
+          title: t('learning', 'DNS Resolver'),
+          text: t('learning', 'This simulator walks through recursive DNS lookups step by step. It helps you see which server answers what and where common DNS failures appear.'),
+          shortText: t('learning', 'The DNS resolver shows the lookup chain from resolver to authoritative answer.'),
+        },
+        firewall: {
+          title: t('learning', 'Firewall / ACL Builder'),
+          text: t('learning', 'Here you build ordered firewall rules and test packets against them. It is useful for understanding first-match logic, allow/deny decisions and implicit deny.'),
+          shortText: t('learning', 'The firewall builder lets you test packet flow against ordered ACL rules.'),
+        },
+        portscan: {
+          title: t('learning', 'Port Scanner'),
+          text: t('learning', 'This tool simulates typical scan results for different host profiles. Use it to practice reading service exposure and spotting suspicious open ports quickly.'),
+          shortText: t('learning', 'The port scanner shows which services a host exposes and what that implies.'),
+        },
+        routing: {
+          title: t('learning', 'Routing Table'),
+          text: t('learning', 'This simulator compares routes by prefix length and metric. It is designed to make longest-prefix-match and default-route behavior visible instead of purely theoretical.'),
+          shortText: t('learning', 'The routing table simulator explains longest-prefix-match and route selection.'),
+        },
+        nat: {
+          title: t('learning', 'NAT Table'),
+          text: t('learning', 'This tool demonstrates static NAT, dynamic NAT and PAT with live translations. Use it to see how inside and outside addresses are rewritten in each mode.'),
+          shortText: t('learning', 'The NAT simulator shows how private and public addresses are translated.'),
+        },
+        wireshark: {
+          title: t('learning', 'Wireshark Lite'),
+          text: t('learning', 'This packet viewer strips captures down to the essential layers and anomalies. It is meant for practicing protocol reading without getting lost in every field.'),
+          shortText: t('learning', 'Wireshark Lite highlights the important packet layers and anomalies.'),
+        },
+        authflow: {
+          title: t('learning', '802.1X Auth Flow'),
+          text: t('learning', 'This simulator compares EAP-based authentication flows step by step. Use it to understand who talks to whom during 802.1X and where credentials or certificates are checked.'),
+          shortText: t('learning', 'The auth-flow simulator compares the main 802.1X handshakes.'),
+        },
+      };
+
+      const guide = guides[toolId];
+      if (!guide) {
+        return null;
+      }
+
+      return {
+        key: `tool:${toolId}`,
+        title: guide.title,
+        text: guide.text,
+        shortText: guide.shortText,
+      };
     },
     virtuprofContextPayload() {
       if (this.mainView === 'settings') {
@@ -721,12 +873,12 @@ export default {
 /* Course sub-navigation */
 .course-sub-nav {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 20px;
   padding: 5px;
   background: var(--color-background-hover);
   border-radius: 10px;
-  max-width: 300px;
 }
 
 /* Pool view styles */

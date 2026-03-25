@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests',
-  testMatch: ['browser-test.mjs', 'campaign-skillcheck.mjs'],
+  testMatch: ['browser-test.mjs', 'campaign-skillcheck.mjs', 'screenshots.mjs', 'screenshot-fix.mjs'],
   timeout: 90000,
   globalSetup: './tests/global-setup.mjs',
   use: {

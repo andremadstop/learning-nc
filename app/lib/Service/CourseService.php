@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\Course;
@@ -20,6 +22,17 @@ use OCA\Learning\Service\NotFoundException;
 use OCA\Learning\Service\ForbiddenException;
 
 class CourseService {
+    private const AVAILABLE_TOOL_IDS = [
+        'subnet',
+        'dns',
+        'firewall',
+        'portscan',
+        'routing',
+        'nat',
+        'wireshark',
+        'authflow',
+    ];
+
     private CourseMapper $courseMapper;
     private CoursePoolMapper $coursePoolMapper;
     private CourseMemberMapper $courseMemberMapper;
@@ -201,6 +214,36 @@ class CourseService {
             return [];
         }
         return array_values(array_filter(array_map('intval', $decoded), static fn(int $id): bool => $id > 0));
+    }
+
+    private function decodeEnabledTools(?string $json): ?array {
+        if ($json === null || trim($json) === '') {
+            return null;
+        }
+
+        $decoded = json_decode($json, true);
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        return $this->sanitizeEnabledTools($decoded);
+    }
+
+    private function sanitizeEnabledTools(?array $enabledTools): ?array {
+        if ($enabledTools === null) {
+            return null;
+        }
+
+        $allowedLookup = array_flip(self::AVAILABLE_TOOL_IDS);
+        $normalized = [];
+        foreach ($enabledTools as $toolId) {
+            $toolId = (string)$toolId;
+            if ($toolId !== '' && isset($allowedLookup[$toolId])) {
+                $normalized[$toolId] = $toolId;
+            }
+        }
+
+        return array_values($normalized);
     }
 
     private function getFilteredQuestionIdsForCoursePoolEntity(CoursePool $coursePool): array {
@@ -1838,6 +1881,29 @@ class CourseService {
         }
 
         $course->setModeConfig(json_encode($clean));
+        $course->setUpdatedAt(time());
+        $this->courseMapper->update($course);
+
+        return $clean;
+    }
+
+    public function getCourseTools(int $courseId, string $userId): ?array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->hasAccess($course, $userId)) {
+            throw new DoesNotExistException('Course not found');
+        }
+
+        return $this->decodeEnabledTools($course->getEnabledTools());
+    }
+
+    public function updateCourseTools(int $courseId, string $userId, ?array $enabledTools): ?array {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('Only instructors can update course tools');
+        }
+
+        $clean = $this->sanitizeEnabledTools($enabledTools);
+        $course->setEnabledTools($clean === null ? null : json_encode($clean));
         $course->setUpdatedAt(time());
         $this->courseMapper->update($course);
 

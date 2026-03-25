@@ -81,6 +81,10 @@ translations/
 app/test-results/
 app/playwright-report/
 app/tests/
+!app/tests/
+app/tests/*
+!app/tests/unit/
+!app/tests/unit/*.test.js
 *.bak
 .gitnexus
 

@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: Housekeeping + Content-Rollout
-status: completed
-stopped_at: Completed 63-01-PLAN.md (Exam-Sperre + Fehler-Report). Phase 63 complete.
-last_updated: "2026-03-24T15:31:18Z"
-last_activity: 2026-03-24 — Completed 63-01 Exam-Sperre + Fehler-Report
+milestone: v11.0
+milestone_name: Telos-Onboarding + VirtuProf Guide
+status: roadmap_complete
+stopped_at: null
+last_updated: "2026-03-24"
+last_activity: 2026-03-24 — Roadmap created (4 phases, 75-78)
 progress:
-  total_phases: 43
-  completed_phases: 30
-  total_plans: 50
-  completed_plans: 49
-  percent: 100
+  total_phases: 4
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,58 +21,36 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** Phase 63: Exam-Sperre + Fehler-Report
+**Current focus:** v11.0 Telos-Onboarding + VirtuProf Guide
 
 ## Current Position
 
-Phase: 63 (Exam-Sperre + Fehler-Report)
-Plan: 1 of 1 complete
-Status: Phase Complete
-Last activity: 2026-03-24 — Completed 63-01 Exam-Sperre + Fehler-Report
+Phase: 75 of 78 (DB-Migration + Telos-API + Interview-Backend) — ready to plan
+Plan: —
+Status: Ready to plan Phase 75
+Last activity: 2026-03-24 — Roadmap created (4 phases, 13 requirements mapped)
 
-Progress: [██████████] 100%
-
-## Performance Metrics
-
-**Velocity:**
-- Total plans completed: 3
-- Average duration: 10min
-- Total execution time: 0.5 hours
-
-| Phase | Plan | Duration | Tasks | Files |
-|-------|------|----------|-------|-------|
-| 71    | 01   | 7min     | 2     | 4     |
-| 71    | 02   | 9min     | 2     | 4     |
-| 63    | 01   | 13min    | 2     | 5     |
+Progress: [░░░░░░░░░░] 0%
 
 ## Accumulated Context
 
 ### Decisions
 
-- Chat history visible during exam lock, only input/suggestions hidden
-- Report button reuses ticket-intent pipeline via structured message
-- Question error tickets use course_content category for instructor routing
-- Gerichteter Graph statt linear (30-50 Knoten)
-- State-Bag als JSON (Flags, Items, Reputation)
-- Abwaertskompatibel mit 20 bestehenden Kampagnen
-- Backend-first, Frontend spaeter
-- Simulatoren (v9.0 Codex) als einbettbare Aufgaben
-- Sequential phases: 71 → 72 → 73 → 74
-- BIGINT for timestamps (consistent with epoch pattern)
-- Immutable state-bag via json deep-copy
-- Unknown effects logged as warnings (graceful degradation)
-- Graph delegation via early-return guards (zero changes to linear paths)
-- Effects-as-list iteration (array of individual effect objects)
-- Version bump 3.1.0 to trigger campaign_state migration
+- VirtuProf-Interview als Primary (10 Fragen, Structured Output)
+- Formular als Fallback wenn KI deaktiviert
+- user_telos als eigene DB-Tabelle (nicht NC config)
+- Sichtbarkeits-Toggle: privat/kurs/dozent
+- Guide-Modus: VirtuProf erklaert Tools beim ersten Besuch
+- Antwortlaenge: kurz default, lang nur nach Eskalation
+- Vornamen-Ansprache bereits implementiert (IUserManager)
 
 ### Existing Architecture
 
-- StoryEngineService.php (1520 Zeilen) — aktuell linear
-- StoryController.php (330 Zeilen) — 9 REST-Endpoints
-- StoryProgress Entity + Mapper — story_progress Tabelle
-- 20 Kampagnen-JSONs in app/data/campaigns/
-- AbenteuerMode.vue mit simulation-Feld
-- GeminiService fuer narrator_mode, dynamic_choices, freetext
+- VirtuProfController mit IUserManager + getUserFirstName()
+- GeminiService mit userName-Parameter im System-Prompt
+- LernprofilService aggregiert Staerken/Schwaechen automatisch
+- VirtuProfBubble mit X-Button, Chat-History, Hint-System
+- 11 User auf learning-dev, Dozent broecker
 
 ### Pending Todos
 
@@ -85,5 +63,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-24
-Stopped at: Completed 63-01-PLAN.md (Exam-Sperre + Fehler-Report). Phase 63 complete.
+Stopped at: Roadmap created, ready to plan Phase 75
 Resume file: None

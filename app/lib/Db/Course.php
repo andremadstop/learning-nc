@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace OCA\Learning\Db;
 
 use OCP\AppFramework\Db\Entity;
@@ -28,6 +30,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setExamRequiresTraining(bool $examRequiresTraining)
  * @method string|null getMaterialFolder()
  * @method void setMaterialFolder(?string $materialFolder)
+ * @method string|null getEnabledTools()
+ * @method void setEnabledTools(?string $enabledTools)
  */
 class Course extends Entity {
     protected $title;
@@ -42,6 +46,7 @@ class Course extends Entity {
     protected $examAttemptsPerDay;
     protected $examRequiresTraining;
     protected $materialFolder;
+    protected $enabledTools;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -67,6 +72,7 @@ class Course extends Entity {
             'exam_attempts_per_day' => $this->examAttemptsPerDay,
             'exam_requires_training' => $this->examRequiresTraining ?? false,
             'material_folder' => $this->materialFolder,
+            'enabled_tools' => $this->enabledTools !== null ? (json_decode($this->enabledTools, true) ?: []) : null,
         ];
     }
 }

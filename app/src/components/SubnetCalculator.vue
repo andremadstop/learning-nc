@@ -1,10 +1,10 @@
 <template>
-	<section class="subnet-tool">
-		<header class="subnet-tool__header">
+	<section class="sim-tool subnet-tool">
+		<header class="sim-tool__header subnet-tool__header">
 			<div>
-				<p class="subnet-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
-				<h2 class="subnet-tool__title">{{ t('learning', 'Subnetzrechner') }}</h2>
-				<p class="subnet-tool__subtitle">{{ t('learning', 'Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen.') }}</p>
+				<p class="sim-tool__eyebrow subnet-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
+				<h2 class="sim-tool__title subnet-tool__title">{{ t('learning', 'Subnetzrechner') }}</h2>
+				<p class="sim-tool__subtitle subnet-tool__subtitle">{{ t('learning', 'Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen.') }}</p>
 			</div>
 			<div class="explain-toggle">
 				<label class="explain-toggle__label" for="explain-mode-toggle">
@@ -22,12 +22,12 @@
 			</div>
 		</header>
 
-		<nav class="subnet-tool__tabs" role="tablist" :aria-label="t('learning', 'Subnetzrechner Tabs')">
+		<nav class="sim-tool__tabs subnet-tool__tabs" role="tablist" :aria-label="t('learning', 'Subnetzrechner Tabs')">
 			<button
 				v-for="tab in tabs"
 				:key="tab.id"
-				class="subnet-tool__tab"
-				:class="{ 'subnet-tool__tab--active': activeTab === tab.id }"
+				class="sim-tool__tab subnet-tool__tab"
+				:class="{ 'sim-tool__tab--active': activeTab === tab.id }"
 				role="tab"
 				:aria-selected="activeTab === tab.id ? 'true' : 'false'"
 				@click="switchTab(tab.id)">
@@ -40,7 +40,7 @@
 			<input
 				id="subnet-calculator-input"
 				v-model.trim="calculatorInput"
-				class="subnet-input"
+				class="sim-tool__input subnet-input"
 				:class="calculatorInputClass"
 				type="text"
 				:placeholder="t('learning', 'Beispiel: 192.168.1.0/24 oder 192.168.1.0 255.255.255.0')">
@@ -48,7 +48,7 @@
 			<p v-else-if="calculatorResult" class="subnet-state subnet-state--valid">{{ t('learning', 'Gültige Eingabe erkannt.') }}</p>
 		</div>
 
-		<section v-if="isCalculatorTab" class="subnet-panel" role="tabpanel">
+		<section v-if="isCalculatorTab" class="sim-tool__panel subnet-panel" role="tabpanel">
 			<div v-if="calculatorResult" class="toggle-controls">
 				<div class="toggle-controls__preset">
 					<label class="subnet-label" for="toggle-preset">{{ t('learning', 'Anzeige-Preset') }}</label>
@@ -72,7 +72,8 @@
 				</div>
 			</div>
 
-			<table v-if="calculatorResult" class="subnet-table">
+			<div class="sim-tool__table-scroll">
+			<table v-if="calculatorResult" class="sim-tool__table subnet-table">
 				<tbody>
 					<template v-for="row in calculatorRowsWithKeys">
 						<tr :key="'row-' + row.key">
@@ -88,9 +89,10 @@
 					</template>
 				</tbody>
 			</table>
+			</div>
 		</section>
 
-		<section v-if="isBinaryTab" class="subnet-panel" role="tabpanel">
+		<section v-if="isBinaryTab" class="sim-tool__panel subnet-panel" role="tabpanel">
 			<p class="subnet-help">{{ t('learning', 'Netz-Bits sind cyan, Host-Bits amber markiert.') }}</p>
 			<p v-if="!calculatorResult" class="subnet-empty">{{ t('learning', 'Gib oben eine gültige IPv4-Adresse mit Prefix oder Maske ein.') }}</p>
 
@@ -142,7 +144,7 @@
 			</div>
 		</section>
 
-		<section v-if="isVlsmTab" class="subnet-panel" role="tabpanel">
+		<section v-if="isVlsmTab" class="sim-tool__panel subnet-panel" role="tabpanel">
 			<div class="vlsm-form">
 				<div class="vlsm-form__field">
 					<label class="subnet-label" for="vlsm-network-input">{{ t('learning', 'Ausgangsnetz') }}</label>
@@ -192,7 +194,7 @@
 			<p class="subnet-help">{{ t('learning', 'VLSM allociert immer größte Netze zuerst und nutzt die Netzadresse des eingegebenen Blocks.') }}</p>
 			<p v-if="vlsmError" class="subnet-state subnet-state--error">{{ vlsmError }}</p>
 
-			<table v-if="vlsmResults.length" class="subnet-table subnet-table--vlsm">
+			<table v-if="vlsmResults.length" class="sim-tool__table subnet-table subnet-table--vlsm">
 				<thead>
 					<tr>
 						<th scope="col">{{ t('learning', 'Subnetz') }}</th>
@@ -214,7 +216,7 @@
 			</table>
 		</section>
 
-		<section v-if="isVlanTab" class="subnet-panel subnet-panel--vlan" role="tabpanel">
+		<section v-if="isVlanTab" class="sim-tool__panel subnet-panel subnet-panel--vlan" role="tabpanel">
 			<div class="vlan-grid">
 				<article class="vlan-card">
 					<div class="vlan-card__header">
@@ -229,7 +231,7 @@
 
 					<p v-if="vlanValidationMessage" class="subnet-state subnet-state--error">{{ vlanValidationMessage }}</p>
 
-					<table class="subnet-table vlan-table">
+					<table class="sim-tool__table subnet-table vlan-table">
 						<thead>
 							<tr>
 								<th scope="col">{{ t('learning', 'VLAN-ID') }}</th>
@@ -352,7 +354,7 @@
 						</div>
 					</div>
 
-					<table class="subnet-table vlan-routing-table">
+					<table class="sim-tool__table subnet-table vlan-routing-table">
 						<thead>
 							<tr>
 								<th scope="col">{{ t('learning', 'Interface') }}</th>
@@ -383,7 +385,7 @@
 			</div>
 		</section>
 
-		<section v-if="isIpv6Tab" class="subnet-panel" role="tabpanel">
+		<section v-if="isIpv6Tab" class="sim-tool__panel subnet-panel" role="tabpanel">
 			<label class="subnet-label" for="ipv6-input">{{ t('learning', 'IPv6-Adresse / Prefix') }}</label>
 			<input
 				id="ipv6-input"
@@ -396,7 +398,7 @@
 			<p v-if="ipv6Error" class="subnet-state subnet-state--error">{{ ipv6Error }}</p>
 			<p v-else-if="ipv6Result" class="subnet-state subnet-state--valid">{{ t('learning', 'Gültige Eingabe erkannt.') }}</p>
 
-			<table v-if="ipv6Result" class="subnet-table">
+			<table v-if="ipv6Result" class="sim-tool__table subnet-table">
 				<tbody>
 					<tr v-for="row in ipv6Rows" :key="row.label">
 						<th scope="row">{{ row.label }}</th>
@@ -451,7 +453,7 @@
 				</div>
 			</div>
 		</section>
-		<section v-if="isPracticeTab" class="subnet-panel" role="tabpanel">
+		<section v-if="isPracticeTab" class="sim-tool__panel subnet-panel" role="tabpanel">
 			<!-- Not started state -->
 			<div v-if="!practiceStarted" class="practice-start">
 				<p class="subnet-help">{{ t('learning', 'Teste dein Wissen mit zufälligen Subnetting-Aufgaben. Du bekommst sofort Feedback zu jeder Antwort.') }}</p>
@@ -599,6 +601,25 @@ function clonePort(port) {
 	}
 }
 
+function cloneCalculatorResult(result) {
+	if (!result) {
+		return null
+	}
+
+	return {
+		...result,
+		ip: Array.isArray(result.ip) ? [...result.ip] : result.ip,
+		network: Array.isArray(result.network) ? [...result.network] : result.network,
+		broadcast: Array.isArray(result.broadcast) ? [...result.broadcast] : result.broadcast,
+		firstHost: Array.isArray(result.firstHost) ? [...result.firstHost] : result.firstHost,
+		lastHost: Array.isArray(result.lastHost) ? [...result.lastHost] : result.lastHost,
+		mask: Array.isArray(result.mask) ? [...result.mask] : result.mask,
+		wildcard: Array.isArray(result.wildcard) ? [...result.wildcard] : result.wildcard,
+		networkBits: Array.isArray(result.networkBits) ? [...result.networkBits] : result.networkBits,
+		ipBits: Array.isArray(result.ipBits) ? [...result.ipBits] : result.ipBits,
+	}
+}
+
 export default {
 	name: 'SubnetCalculator',
 
@@ -606,6 +627,7 @@ export default {
 		return {
 			activeTab: 'calculator',
 			calculatorInput: '192.168.1.0/24',
+			calculatorResult: null,
 			visibleRows: getVisibleRows('all'),
 			activePreset: 'all',
 			vlsmInput: '10.0.0.0/24',
@@ -629,6 +651,21 @@ export default {
 		}
 	},
 
+	watch: {
+		calculatorParsed: {
+			immediate: true,
+			handler(parsed) {
+				if (!parsed) {
+					this.calculatorResult = null
+					return
+				}
+
+				const nextResult = calculateSubnet(parsed.ip, parsed.prefix)
+				this.calculatorResult = cloneCalculatorResult(nextResult)
+			},
+		},
+	},
+
 	computed: {
 		isCalculatorTab() { return this.activeTab === 'calculator' },
 		isBinaryTab() { return this.activeTab === 'binary' },
@@ -649,11 +686,6 @@ export default {
 
 		calculatorParsed() {
 			return parseInput(this.calculatorInput)
-		},
-
-		calculatorResult() {
-			if (!this.calculatorParsed) return null
-			return calculateSubnet(this.calculatorParsed.ip, this.calculatorParsed.prefix)
 		},
 
 		calculatorError() {
@@ -951,6 +983,9 @@ export default {
 	methods: {
 		switchTab(id) {
 			this.$set(this.$data, 'activeTab', id)
+			if (id === 'binary' && this.calculatorResult) {
+				this.calculatorResult = cloneCalculatorResult(this.calculatorResult)
+			}
 		},
 		applyPreset(presetName) {
 			this.activePreset = presetName
@@ -1100,11 +1135,23 @@ export default {
 
 <style scoped>
 .subnet-tool {
-	background: var(--lnc-panel);
-	border: 1px solid var(--lnc-border);
+	--lnc-primary: var(--sim-accent);
+	--lnc-bg: var(--sim-bg);
+	--lnc-text: var(--sim-text);
+	--lnc-text-secondary: var(--sim-text-muted);
+	--lnc-border: var(--sim-border);
+	--lnc-panel: var(--sim-panel-elevated);
+	--lnc-cyan: var(--sim-accent);
+	--lnc-amber: var(--sim-warn);
+	--lnc-danger: var(--sim-danger);
+	--lnc-green: var(--sim-success);
+	background:
+		radial-gradient(circle at top right, rgba(88, 166, 255, 0.1), transparent 36%),
+		linear-gradient(180deg, rgba(13, 17, 23, 0.98), rgba(22, 27, 34, 0.98));
+	border: 1px solid var(--sim-border);
 	border-radius: var(--lnc-radius-lg);
-	box-shadow: var(--lnc-shadow-card);
-	color: var(--lnc-text);
+	box-shadow: 0 18px 42px rgba(0, 0, 0, 0.26);
+	color: var(--sim-text);
 	padding: var(--lnc-space-xl);
 }
 
@@ -1117,23 +1164,24 @@ export default {
 }
 
 .subnet-tool__eyebrow {
-	color: var(--lnc-cyan);
-	font-size: 0.85rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	margin: 0 0 6px;
+	color: var(--sim-accent);
+	font-family: var(--sim-text-mono);
+	font-size: 0.7rem;
+	font-weight: 500;
+	letter-spacing: 0.12em;
+	margin: 0 0 4px;
 	text-transform: uppercase;
 }
 
 .subnet-tool__title {
-	font-family: var(--lnc-font-system);
-	font-size: 1.75rem;
+	font-family: var(--sim-text-mono);
+	font-size: 1.5rem;
 	line-height: 1.15;
 	margin: 0 0 8px;
 }
 
 .subnet-tool__subtitle {
-	color: var(--lnc-text-secondary);
+	color: var(--sim-text-muted);
 	margin: 0;
 	max-width: 60ch;
 }
@@ -1141,28 +1189,30 @@ export default {
 .subnet-tool__tabs {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 10px;
+	gap: 2px;
+	background: var(--sim-border);
+	border-radius: var(--lnc-radius-sm);
+	padding: 2px;
 	margin-bottom: var(--lnc-space-xl);
+	width: fit-content;
 }
 
 .subnet-tool__tab {
-	background: var(--lnc-panel);
-	background: color-mix(in srgb, var(--lnc-panel) 88%, var(--lnc-primary) 12%);
-	border: 1px solid var(--lnc-border);
-	border-radius: 999px;
-	color: var(--lnc-text);
+	background: transparent;
+	border: none;
+	border-radius: 6px;
+	color: var(--sim-text-muted);
 	cursor: pointer;
-	font-family: var(--lnc-font-system);
-	font-size: 0.95rem;
-	font-weight: 600;
-	padding: 10px 16px;
+	font-family: var(--sim-text-mono);
+	font-size: 0.8125rem;
+	font-weight: 500;
+	padding: 8px 20px;
 }
 
 .subnet-tool__tab--active {
-	background: var(--lnc-primary);
-	border-color: var(--lnc-primary);
-	color: #fff;
-	box-shadow: var(--lnc-shadow-glow);
+	background: var(--sim-accent-dim);
+	color: var(--sim-accent);
+	box-shadow: var(--sim-glow-accent);
 }
 
 .subnet-input-global {
@@ -1186,14 +1236,14 @@ export default {
 }
 
 .subnet-input {
-	background: var(--lnc-bg);
-	border: 1px solid var(--lnc-border);
-	border-radius: var(--lnc-radius-md);
-	color: var(--lnc-text);
-	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
-	font-size: 0.98rem;
-	min-height: 46px;
-	padding: 0 14px;
+	background: var(--sim-bg);
+	border: 1px solid var(--sim-border);
+	border-radius: var(--lnc-radius-sm);
+	color: var(--sim-text);
+	font-family: var(--sim-text-mono);
+	font-size: 0.8125rem;
+	min-height: 40px;
+	padding: 8px 12px;
 	width: 100%;
 }
 
@@ -1237,7 +1287,7 @@ export default {
 
 .subnet-table {
 	border-collapse: collapse;
-	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+	font-family: var(--sim-text-mono);
 	overflow: hidden;
 	width: 100%;
 }
@@ -1251,10 +1301,12 @@ export default {
 }
 
 .subnet-table th {
-	color: var(--lnc-text-secondary);
-	font-family: var(--lnc-font-system);
-	font-size: 0.92rem;
-	font-weight: 700;
+	color: var(--sim-text-muted);
+	font-family: var(--sim-text-mono);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 	width: 32%;
 }
 
@@ -1293,7 +1345,9 @@ export default {
 
 .binary-scroll {
 	overflow-x: auto;
-	padding-bottom: 4px;
+	-webkit-overflow-scrolling: touch;
+	padding-bottom: 8px;
+	scrollbar-width: thin;
 }
 
 .binary-grid {
@@ -1401,33 +1455,31 @@ export default {
 }
 
 .subnet-button {
-	border: 1px solid transparent;
-	border-radius: 999px;
+	border: 1px solid var(--sim-accent);
+	border-radius: var(--lnc-radius-sm);
 	cursor: pointer;
-	font-family: var(--lnc-font-system);
-	font-size: 0.95rem;
-	font-weight: 700;
-	min-height: 42px;
-	padding: 0 16px;
+	font-family: var(--sim-text-mono);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	min-height: 40px;
+	padding: 8px 16px;
 }
 
 .subnet-button--primary {
-	background: var(--lnc-primary);
-	color: #fff;
+	background: var(--sim-accent-dim);
+	color: var(--sim-accent);
 }
 
 .subnet-button--secondary {
-	background: var(--lnc-panel);
-	background: color-mix(in srgb, var(--lnc-cyan) 16%, var(--lnc-panel));
-	border-color: var(--lnc-border);
-	border-color: color-mix(in srgb, var(--lnc-cyan) 28%, var(--lnc-border));
-	color: var(--lnc-text);
+	background: transparent;
+	border-color: var(--sim-border);
+	color: var(--sim-text-muted);
 }
 
 .subnet-button--ghost {
 	background: transparent;
-	border-color: var(--lnc-border);
-	color: var(--lnc-text);
+	border-color: var(--sim-border);
+	color: var(--sim-text-muted);
 }
 
 .subnet-button:disabled {
@@ -1459,18 +1511,21 @@ export default {
 .toggle-controls__rows {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px 16px;
+	gap: 6px 12px;
 	flex: 1;
-	min-width: 280px;
+	min-width: 0;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 .toggle-controls__checkbox {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	font-size: 0.9rem;
+	font-size: 0.85rem;
 	cursor: pointer;
 	white-space: nowrap;
+	min-width: 0;
 }
 
 .toggle-controls__checkbox input[type="checkbox"] {
@@ -1801,8 +1856,10 @@ export default {
 
 .rechenweg-panel__step {
 	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
-	font-size: 0.9rem;
+	font-size: 0.8rem;
 	line-height: 1.6;
+	overflow-wrap: break-word;
+	word-break: break-all;
 }
 
 .rechenweg-panel__label {

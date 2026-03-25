@@ -76,6 +76,15 @@ return [
         ['name' => 'export#regenerateCalendarToken', 'url' => '/api/v1/user/calendar-token/regenerate', 'verb' => 'POST'],
         ['name' => 'export#exportIcsPublic', 'url' => '/api/v1/calendar/{token}.ics', 'verb' => 'GET'],
 
+        // Telos (personal learning profile)
+        ['name' => 'telos#getTelos',                'url' => '/api/profile/telos',              'verb' => 'GET'],
+        ['name' => 'telos#saveTelos',               'url' => '/api/profile/telos',              'verb' => 'POST'],
+        ['name' => 'telos#updateTelos',             'url' => '/api/profile/telos',              'verb' => 'PUT'],
+        ['name' => 'telos#getStatus',               'url' => '/api/profile/telos/status',       'verb' => 'GET'],
+        ['name' => 'telos#getQuestions',             'url' => '/api/profile/telos/questions',    'verb' => 'GET'],
+        ['name' => 'telos#processInterview',         'url' => '/api/profile/telos/interview',    'verb' => 'POST'],
+        ['name' => 'telos#getCourseTelosAggregate', 'url' => '/api/courses/{courseId}/telos',   'verb' => 'GET'],
+
         // User State (consolidated endpoint)
         ['name' => 'user_state#state', 'url' => '/api/v1/user/state', 'verb' => 'GET'],
         ['name' => 'user_state#missions', 'url' => '/api/v1/missions', 'verb' => 'GET'],
@@ -88,6 +97,8 @@ return [
         ['name' => 'settings#getAdmin', 'url' => '/api/settings/admin', 'verb' => 'GET'],
         ['name' => 'settings#getAdminAudit', 'url' => '/api/settings/admin/audit', 'verb' => 'GET'],
         ['name' => 'settings#saveAdmin', 'url' => '/api/settings/admin', 'verb' => 'PUT'],
+        ['name' => 'settings#getTools', 'url' => '/api/settings/tools', 'verb' => 'GET'],
+        ['name' => 'settings#saveTools', 'url' => '/api/settings/tools', 'verb' => 'PUT'],
         ['name' => 'settings#getPersonal', 'url' => '/api/settings/personal', 'verb' => 'GET'],
         ['name' => 'settings#savePersonal', 'url' => '/api/settings/personal', 'verb' => 'PUT'],
 
@@ -96,6 +107,9 @@ return [
         ['name' => 'virtuProf#dismiss', 'url' => '/api/virtuprof/dismiss', 'verb' => 'POST'],
         ['name' => 'virtuProf#setEnabled', 'url' => '/api/virtuprof/enabled', 'verb' => 'PUT'],
         ['name' => 'virtuProf#setLanguage', 'url' => '/api/virtuprof/language', 'verb' => 'PUT'],
+        ['name' => 'virtuProf#savePreferences', 'url' => '/api/virtuprof/preferences', 'verb' => 'PUT'],
+        ['name' => 'virtuProf#markVisited', 'url' => '/api/virtuprof/guide-visit', 'verb' => 'POST'],
+        ['name' => 'virtuProf#interviewTurn', 'url' => '/api/virtuprof/interview-turn', 'verb' => 'POST'],
         ['name' => 'virtuProf#chat', 'url' => '/api/virtu-prof/chat', 'verb' => 'POST'],
         ['name' => 'virtuProf#getChatHistory', 'url' => '/api/virtu-prof/chat-history', 'verb' => 'GET'],
         ['name' => 'virtuProf#clearChatHistory', 'url' => '/api/virtu-prof/chat-history', 'verb' => 'DELETE'],
@@ -192,6 +206,8 @@ return [
 
         // Mode Config
         ['name' => 'course#updateModeConfig', 'url' => '/api/courses/{courseId}/mode-config', 'verb' => 'PUT'],
+        ['name' => 'course#getTools', 'url' => '/api/courses/{courseId}/tools', 'verb' => 'GET'],
+        ['name' => 'course#updateTools', 'url' => '/api/courses/{courseId}/tools', 'verb' => 'PUT'],
 
         // Gameshow
         ['name' => 'gameshow#create', 'url' => '/api/gameshow', 'verb' => 'POST'],
@@ -210,6 +226,10 @@ return [
         ['name' => 'story#listProgress',           'url' => '/api/story/progress',                                               'verb' => 'GET'],
         ['name' => 'story#startCampaign',          'url' => '/api/story/campaigns/{campaignId}/start',                           'verb' => 'POST'],
         ['name' => 'story#getScene',               'url' => '/api/story/campaigns/{campaignId}/scene',                           'verb' => 'GET'],
+        ['name' => 'story#graphStart',             'url' => '/api/story/campaigns/{campaignId}/graph-start',                     'verb' => 'POST'],
+        ['name' => 'story#graphScene',             'url' => '/api/story/campaigns/{campaignId}/graph-scene',                     'verb' => 'GET'],
+        ['name' => 'story#graphTraverse',          'url' => '/api/story/campaigns/{campaignId}/graph-traverse',                  'verb' => 'POST'],
+        ['name' => 'story#graphState',             'url' => '/api/story/campaigns/{campaignId}/graph-state',                     'verb' => 'GET'],
         ['name' => 'story#getSkillCheckQuestions', 'url' => '/api/story/skill-questions', 'verb' => 'GET'],
         ['name' => 'story#makeChoice',             'url' => '/api/story/campaigns/{campaignId}/choice',                          'verb' => 'POST'],
         ['name' => 'story#submitSkillAnswer',      'url' => '/api/story/campaigns/{campaignId}/answer',                          'verb' => 'POST'],
