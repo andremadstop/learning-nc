@@ -602,6 +602,23 @@ class CampaignGraphService {
             'simulator' => $this->buildSimulatorPayload($node, $stateBag),
             'dau_bot' => $this->dauBotService->buildSceneSuggestion($node, $stateBag),
             'bot_correction' => $this->buildBotCorrectionPayload($node, $stateBag),
+            'full_graph' => [
+                'nodes' => array_map(static fn(array $n): array => [
+                    'id' => (string)($n['id'] ?? ''),
+                    'title' => $n['title'] ?? '',
+                    'type' => $n['type'] ?? 'dialog',
+                    'act' => $n['act'] ?? 1,
+                    'is_ending' => $n['is_ending'] ?? false,
+                    'start' => $n['start'] ?? false,
+                ], $graph['nodes'] ?? []),
+                'edges' => array_map(static fn(array $e): array => [
+                    'id' => (string)($e['id'] ?? ''),
+                    'from' => (string)($e['from'] ?? ''),
+                    'to' => (string)($e['to'] ?? ''),
+                    'label' => $e['label'] ?? '',
+                    'conditions' => $e['conditions'] ?? [],
+                ], $graph['edges'] ?? []),
+            ],
         ];
     }
 
@@ -689,6 +706,16 @@ class CampaignGraphService {
         }
         $newBag = $this->initializeNodeRuntimeState($targetNode, $newBag);
 
+        // Track visited nodes for Quest-Map
+        $visitedNodes = $newBag['_visited_nodes'] ?? [];
+        if (!is_array($visitedNodes)) {
+            $visitedNodes = [];
+        }
+        if (!in_array($targetNodeId, $visitedNodes, true)) {
+            $visitedNodes[] = $targetNodeId;
+        }
+        $newBag['_visited_nodes'] = $visitedNodes;
+
         // Update state
         $state->setGraphPosition($targetNodeId);
         $state->setStateBagFromArray($newBag);
@@ -728,6 +755,7 @@ class CampaignGraphService {
             }
         }
         $bag = $this->initializeNodeRuntimeState($startNode, $bag);
+        $bag['_visited_nodes'] = [$startNodeId];
 
         $now = time();
         $state = new CampaignState();
