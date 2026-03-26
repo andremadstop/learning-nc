@@ -281,6 +281,11 @@
           @ready="triggerInitialVirtuProfHints"
           @enabled-change="handleVirtuProfEnabledChange" />
       </aside>
+
+      <OnboardingIntro
+        v-if="showInstructorOnboarding"
+        role="instructor"
+        @done="onInstructorOnboardingDone" />
     </div>
   </NcAppContent>
 </template>
@@ -316,6 +321,7 @@ import RoutingTable from './components/RoutingTable.vue';
 import NatTable from './components/NatTable.vue';
 import WiresharkLite from './components/WiresharkLite.vue';
 import AuthFlowSimulator from './components/AuthFlowSimulator.vue';
+import OnboardingIntro from './components/OnboardingIntro.vue';
 import { ALL_TOOL_IDS, TOOL_CATALOG } from './utils/toolCatalog.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
@@ -353,6 +359,7 @@ export default {
     NatTable,
     WiresharkLite,
     AuthFlowSimulator,
+    OnboardingIntro,
   },
   data() {
     return {
@@ -391,6 +398,7 @@ export default {
         coop: false,
         code: '',
       },
+      showInstructorOnboarding: false,
     };
   },
   computed: {
@@ -439,6 +447,7 @@ export default {
     await Promise.all([this.fetchRole(), this.fetchPersonalSettings(), this.fetchEnabledTools()]);
     this.applyInitialAdventureRoute();
     this.appInitialized = true;
+    this.checkInstructorOnboarding();
     this.$root.$on('course:tab-change', (tabId) => {
       this.courseTab = tabId;
       this.emitViewGuide();
@@ -524,6 +533,26 @@ export default {
     },
     handleVirtuProfEnabledChange(enabled) {
       this.virtuProfEnabled = enabled !== false;
+    },
+    checkInstructorOnboarding() {
+      if (this.userRole !== 'instructor') return;
+      try {
+        const uid = (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function' && OC.getCurrentUser()?.uid) || 'user';
+        if (!window.localStorage.getItem(`learning:onboarding-seen:${uid}`)) {
+          this.showInstructorOnboarding = true;
+        }
+      } catch (e) {
+        // Ignore
+      }
+    },
+    onInstructorOnboardingDone() {
+      this.showInstructorOnboarding = false;
+      try {
+        const uid = (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function' && OC.getCurrentUser()?.uid) || 'user';
+        window.localStorage.setItem(`learning:onboarding-seen:${uid}`, 'yes');
+      } catch (e) {
+        // Ignore
+      }
     },
     emitVirtuProf(triggerId, context = {}) {
       if (!this.appInitialized || this.userRole !== 'student') {

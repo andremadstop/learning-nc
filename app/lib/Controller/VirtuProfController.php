@@ -110,7 +110,7 @@ class VirtuProfController extends Controller {
     }
 
     /**
-     * @return array{dismissed: array<int, string>, enabled: bool, language: string, visited_tools: array<int, string>, ai_enabled: bool, tts_enabled: bool, stt_enabled: bool, voice_lang: string, onboarding_reminder_count: int}
+     * @return array{dismissed: array<int, string>, enabled: bool, language: string, visited_tools: array<int, string>, ai_enabled: bool, tts_enabled: bool, stt_enabled: bool, voice_lang: string, onboarding_reminder_count: int, onboarding_declined: bool}
      */
     private function buildStatePayload(): array {
         $dismissed = json_decode(
@@ -134,6 +134,7 @@ class VirtuProfController extends Controller {
             'stt_enabled' => $this->getSttEnabled(),
             'voice_lang' => $this->getVoiceLanguage(),
             'onboarding_reminder_count' => $this->getOnboardingReminderCount(),
+            'onboarding_declined' => $this->config->getUserValue($this->userId, 'learning', 'onboarding_declined', 'no') === 'yes',
         ];
     }
 
@@ -319,12 +320,16 @@ class VirtuProfController extends Controller {
         ?bool $ttsEnabled = null,
         ?bool $sttEnabled = null,
         ?string $voiceLang = null,
-        ?int $onboardingReminderCount = null
+        ?int $onboardingReminderCount = null,
+        ?bool $onboardingDeclined = null
     ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
 
+        if ($onboardingDeclined !== null) {
+            $this->config->setUserValue($this->userId, 'learning', 'onboarding_declined', $onboardingDeclined ? 'yes' : 'no');
+        }
         if ($ttsEnabled !== null) {
             $this->config->setUserValue($this->userId, 'learning', 'virtuprof_tts_enabled', $ttsEnabled ? 'yes' : 'no');
         }

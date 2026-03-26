@@ -2,7 +2,243 @@
   <div class="virtuprof-bubble" :dir="textDirection">
     <div class="bubble-content">
 
-      <template v-if="step.kind === 'telos-form'">
+      <!-- ── Welcome step (opt-in / opt-out) ──────────────── -->
+      <template v-if="step.kind === 'welcome'">
+        <p v-if="step.title" class="bubble-title">{{ step.title }}</p>
+        <p v-if="step.text" class="bubble-text bubble-text--welcome">{{ step.text }}</p>
+        <div class="bubble-actions stacked">
+          <NcButton
+            v-for="action in step.actions"
+            :key="action.label"
+            :type="action.type === 'start-journey' ? 'primary' : 'secondary'"
+            size="small"
+            @click="$emit('action', action)">
+            {{ action.label }}
+          </NcButton>
+        </div>
+      </template>
+
+      <!-- ── Preset selection ────────────────────────── -->
+      <template v-else-if="step.kind === 'preset-select'">
+        <p v-if="step.title" class="bubble-title">{{ step.title }}</p>
+        <p v-if="step.text" class="bubble-text">{{ step.text }}</p>
+        <div class="preset-cards">
+          <button
+            v-for="preset in step.presets"
+            :key="preset.id"
+            type="button"
+            class="preset-card"
+            @click="$emit('action', { type: 'apply-preset', presetId: preset.id })">
+            <span class="preset-card__icon">{{ preset.icon }}</span>
+            <span class="preset-card__label">{{ preset.label }}</span>
+          </button>
+          <button
+            type="button"
+            class="preset-card preset-card--custom"
+            @click="$emit('action', { type: 'start-custom-journey' })">
+            <span class="preset-card__icon">✏️</span>
+            <span class="preset-card__label">{{ vt('Custom profile') }}</span>
+          </button>
+        </div>
+      </template>
+
+      <!-- ── Guided Journey (step-by-step onboarding) ──── -->
+      <template v-else-if="step.kind === 'telos-journey'">
+        <div class="telos-progress">
+          <span
+            v-for="i in step.journeyTotalSteps"
+            :key="i"
+            :class="['telos-dot', { active: i <= step.journeyStepIndex + 1, current: i === step.journeyStepIndex + 1 }]" />
+        </div>
+        <p class="bubble-title">{{ step.title }}</p>
+        <p class="bubble-text bubble-text--journey">{{ step.text }}</p>
+        <p v-if="step.privacyHint" class="journey-privacy-hint">
+          <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3a1 1 0 110 2 1 1 0 010-2zm1.5 8h-3v-1h1V8H6.5V7h2v4h1v1z" fill="currentColor" /></svg>
+          {{ step.privacyHint }}
+        </p>
+
+        <div class="telos-journey-fields">
+          <!-- Step: background -->
+          <template v-if="step.journeyStepId === 'background'">
+            <div class="telos-field">
+              <label class="ticket-label" for="journey-role">{{ vt('Current role / background') }}</label>
+              <input
+                id="journey-role"
+                class="ticket-input"
+                type="text"
+                :value="telosForm.telos?.role || ''"
+                :placeholder="vt('e.g. career changer, trainee, admin')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.role', value: $event.target.value })">
+            </div>
+            <div class="telos-field">
+              <label class="ticket-label">{{ vt('Experience level') }}</label>
+              <div class="journey-button-group">
+                <button
+                  v-for="lvl in ['beginner', 'intermediate', 'advanced']"
+                  :key="lvl"
+                  type="button"
+                  :class="['journey-choice-btn', { active: telosForm.telos?.experience_level === lvl }]"
+                  @click="$emit('action', { type: 'update-telos-field', field: 'telos.experience_level', value: lvl })">
+                  {{ vt(lvl.charAt(0).toUpperCase() + lvl.slice(1)) }}
+                </button>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step: goal -->
+          <template v-else-if="step.journeyStepId === 'goal'">
+            <div class="telos-field">
+              <label class="ticket-label" for="journey-cert">{{ vt('Target certification') }}</label>
+              <input
+                id="journey-cert"
+                class="ticket-input"
+                type="text"
+                :value="telosForm.telos?.target_cert || ''"
+                :placeholder="vt('e.g. Network+, CCNA')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.target_cert', value: $event.target.value })">
+            </div>
+            <div class="telos-field">
+              <label class="ticket-label" for="journey-date">{{ vt('Target date') }} <small>({{ vt('optional') }})</small></label>
+              <input
+                id="journey-date"
+                class="ticket-input"
+                type="date"
+                :value="telosForm.telos?.target_date || ''"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.target_date', value: $event.target.value })">
+            </div>
+          </template>
+
+          <!-- Step: strengths -->
+          <template v-else-if="step.journeyStepId === 'strengths'">
+            <div class="telos-field">
+              <label class="ticket-label" for="journey-strengths">{{ vt('Strengths') }}</label>
+              <textarea
+                id="journey-strengths"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.telos?.strengths || ''"
+                :placeholder="vt('Comma-separated topics you already know well')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.strengths', value: $event.target.value })" />
+            </div>
+            <div class="telos-field">
+              <label class="ticket-label" for="journey-weaknesses">{{ vt('Weaknesses') }}</label>
+              <textarea
+                id="journey-weaknesses"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.telos?.weaknesses || ''"
+                :placeholder="vt('Comma-separated topics you still struggle with')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.weaknesses', value: $event.target.value })" />
+            </div>
+          </template>
+
+          <!-- Step: style -->
+          <template v-else-if="step.journeyStepId === 'style'">
+            <div class="telos-field">
+              <label class="ticket-label">{{ vt('Learning style') }}</label>
+              <div class="journey-button-group">
+                <button
+                  v-for="style in ['solo', 'group', 'mixed']"
+                  :key="style"
+                  type="button"
+                  :class="['journey-choice-btn', { active: telosForm.telos?.learning_style === style }]"
+                  @click="$emit('action', { type: 'update-telos-field', field: 'telos.learning_style', value: style })">
+                  {{ vt(style.charAt(0).toUpperCase() + style.slice(1)) }}
+                </button>
+              </div>
+            </div>
+            <div class="telos-field">
+              <label class="ticket-label" for="journey-hours">{{ vt('Hours per week') }}</label>
+              <input
+                id="journey-hours"
+                class="ticket-input"
+                type="number"
+                min="0"
+                step="0.5"
+                :value="telosForm.telos?.hours_per_week || ''"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.hours_per_week', value: $event.target.value })">
+            </div>
+          </template>
+
+          <!-- Step: peers -->
+          <template v-else-if="step.journeyStepId === 'peers'">
+            <div class="telos-field">
+              <label class="ticket-label" for="journey-help-offer">{{ vt('I can help with...') }}</label>
+              <textarea
+                id="journey-help-offer"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.help_offer || ''"
+                :placeholder="vt('Comma-separated topics you can explain to others')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'help_offer', value: $event.target.value })" />
+            </div>
+            <div class="telos-field">
+              <label class="ticket-label" for="journey-help-wanted">{{ vt('I need help with...') }}</label>
+              <textarea
+                id="journey-help-wanted"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.help_wanted || ''"
+                :placeholder="vt('Comma-separated topics you want support with')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'help_wanted', value: $event.target.value })" />
+            </div>
+            <div class="telos-field">
+              <label class="ticket-label">{{ vt('Visibility') }}</label>
+              <div class="journey-button-group">
+                <button
+                  v-for="vis in ['private', 'course', 'public']"
+                  :key="vis"
+                  type="button"
+                  :class="['journey-choice-btn', { active: telosForm.visibility === vis }]"
+                  @click="$emit('action', { type: 'update-telos-field', field: 'visibility', value: vis })">
+                  {{ vt(vis.charAt(0).toUpperCase() + vis.slice(1)) }}
+                </button>
+              </div>
+            </div>
+          </template>
+
+          <!-- Step: extra (optional) -->
+          <template v-else-if="step.journeyStepId === 'extra'">
+            <div class="telos-field">
+              <label class="ticket-label" for="journey-motivation">{{ vt('Motivation') }}</label>
+              <textarea
+                id="journey-motivation"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.telos?.motivation || ''"
+                :placeholder="vt('Why are you learning this right now?')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.motivation', value: $event.target.value })" />
+            </div>
+            <div class="telos-field">
+              <label class="ticket-label" for="journey-notes">{{ vt('Notes') }}</label>
+              <textarea
+                id="journey-notes"
+                class="ticket-textarea"
+                rows="2"
+                :value="telosForm.telos?.notes || ''"
+                :placeholder="vt('Anything else that matters for your learning plan')"
+                @input="$emit('action', { type: 'update-telos-field', field: 'telos.notes', value: $event.target.value })" />
+            </div>
+          </template>
+        </div>
+
+        <p v-if="telosError" class="ticket-error">{{ telosError }}</p>
+
+        <div class="bubble-actions stacked">
+          <NcButton
+            v-for="action in step.actions"
+            :key="action.label"
+            :type="action.type === 'journey-back' ? 'tertiary' : 'primary'"
+            size="small"
+            :disabled="telosSaving"
+            @click="$emit('action', action)">
+            {{ telosSaving && action.type === 'submit-telos-form' ? vt('Saving...') : action.label }}
+          </NcButton>
+        </div>
+      </template>
+
+      <!-- ── Legacy telos-form (full form fallback) ────── -->
+      <template v-else-if="step.kind === 'telos-form'">
         <p v-if="step.title" class="bubble-title">{{ step.title }}</p>
         <p v-if="step.text" class="bubble-text">{{ step.text }}</p>
 
@@ -1081,6 +1317,141 @@ export default {
   .telos-field--full {
     grid-column: auto;
   }
+}
+
+/* Preset cards */
+.preset-cards {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.preset-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-main-background);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: var(--color-main-text);
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+
+.preset-card:hover {
+  border-color: var(--color-primary-element);
+  background: color-mix(in srgb, var(--color-primary-element) 6%, var(--color-main-background));
+  transform: translateY(-1px);
+}
+
+.preset-card--custom {
+  border-style: dashed;
+}
+
+.preset-card__icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+}
+
+.preset-card__label {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Journey (step-by-step onboarding) */
+.telos-progress {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.telos-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.telos-dot.active {
+  background: var(--color-primary-element);
+}
+
+.telos-dot.current {
+  transform: scale(1.3);
+  background: var(--color-primary-element);
+}
+
+.telos-journey-fields {
+  display: grid;
+  gap: 12px;
+  margin: 8px 0 12px;
+}
+
+.journey-button-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.journey-choice-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 12px;
+  border: 2px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-main-background);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--color-main-text);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.journey-choice-btn:hover {
+  border-color: var(--color-primary-element);
+  background: color-mix(in srgb, var(--color-primary-element) 8%, var(--color-main-background));
+}
+
+.journey-choice-btn.active {
+  border-color: var(--color-primary-element);
+  background: color-mix(in srgb, var(--color-primary-element) 14%, var(--color-main-background));
+  color: var(--color-primary-element);
+  font-weight: 600;
+}
+
+.bubble-text--welcome,
+.bubble-text--journey {
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+.journey-privacy-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 4px 0 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-primary-element) 6%, var(--color-main-background));
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--color-text-maxcontrast);
+}
+
+.journey-privacy-hint svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-primary-element);
+  opacity: 0.7;
 }
 
 .invite-group {
