@@ -99,6 +99,10 @@
       <h3>{{ t('learning', 'Learning Profile') }}</h3>
       <p class="section-desc">{{ t('learning', 'This profile helps VirtuProf adapt explanations and lets instructors see only aggregated class-level patterns.') }}</p>
 
+      <NcNoteCard type="info" class="privacy-info-card">
+        {{ t('learning', 'Your profile is stored only on this DevCloud. Instructors see aggregated class statistics, not individual profiles. When you chat with VirtuProf, profile context is sent to Google Gemini during the chat only. You can delete your profile at any time.') }}
+      </NcNoteCard>
+
       <div v-if="telosLoading" class="loading">
         <NcLoadingIcon :size="20" />
         <span>{{ t('learning', 'Loading...') }}</span>
@@ -213,6 +217,7 @@
               <option value="course">{{ t('learning', 'Course') }}</option>
               <option value="public">{{ t('learning', 'Public') }}</option>
             </select>
+            <small class="field-hint">{{ visibilityHint }}</small>
           </div>
         </div>
 
@@ -231,6 +236,9 @@
         <div class="actions">
           <NcButton type="primary" :disabled="telosSaving" @click="saveTelosProfile">
             {{ telosSaving ? t('learning', 'Saving...') : t('learning', 'Save learning profile') }}
+          </NcButton>
+          <NcButton type="tertiary-on-primary" :disabled="telosSaving" @click="confirmResetProfile">
+            {{ t('learning', 'Reset profile') }}
           </NcButton>
         </div>
       </template>
@@ -348,6 +356,14 @@ export default {
     voiceLanguageOptions() {
       return VOICE_LANGUAGE_OPTIONS
     },
+    visibilityHint() {
+      const hints = {
+        private: t('learning', 'Only VirtuProf uses your profile. Nobody else can see it.'),
+        course: t('learning', 'Course participants can see your help topics and bio.'),
+        public: t('learning', 'All DevCloud users can see your help topics and bio.'),
+      }
+      return hints[this.telosForm.visibility] || hints.private
+    },
   },
   mounted() {
     this.load()
@@ -433,6 +449,27 @@ export default {
         this.telosError = t('learning', 'Failed to load learning profile')
       } finally {
         this.telosLoading = false
+      }
+    },
+    confirmResetProfile() {
+      if (!window.confirm(t('learning', 'This will clear your learning profile. VirtuProf will no longer give personalized tips. Continue?'))) {
+        return
+      }
+      this.resetProfile()
+    },
+    async resetProfile() {
+      this.telosSaving = true
+      this.telosError = ''
+      this.telosSaved = false
+      try {
+        await axios.post(generateUrl('/apps/learning/api/profile/telos'), buildTelosPayload(createTelosForm()))
+        this.telosForm = createTelosForm()
+        this.telosSaved = true
+        await this.loadLearningProfile()
+      } catch (e) {
+        this.telosError = e?.response?.data?.error || t('learning', 'Failed to reset profile')
+      } finally {
+        this.telosSaving = false
       }
     },
     async saveTelosProfile() {
@@ -625,5 +662,17 @@ export default {
   .field-row--full {
     grid-column: auto;
   }
+}
+
+.field-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-text-maxcontrast);
+  line-height: 1.4;
+}
+
+.privacy-info-card {
+  margin-bottom: 16px;
 }
 </style>
