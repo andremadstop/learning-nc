@@ -41,6 +41,12 @@ export default {
 					desc: t('learning', 'Falsche Antwort kostet ein Leben — wer zuletzt steht, gewinnt.'),
 				},
 				{
+					mode: 'oldschool',
+					icon: '🎲',
+					title: t('learning', 'Oldschool'),
+					desc: t('learning', 'Lernwürfel und Wissensturm — klassische Brettspiel-Mechanik.'),
+				},
+				{
 					mode: 'abenteuer',
 					icon: '🗺️',
 					title: t('learning', 'Abenteuer'),

@@ -679,33 +679,28 @@
 					:contentLanguage="contentLanguage"
 					:mode="'elimination'"
 					@back="arenaSubMode = null" />
+				<OldschoolSelector
+					v-else-if="arenaSubMode === 'oldschool' && oldschoolSubMode === null"
+					@select-mode="onOldschoolSelectMode" />
+				<LernwuerfelMode
+					v-else-if="arenaSubMode === 'oldschool' && oldschoolSubMode === 'lernwuerfel'"
+					:courseId="courseId"
+					:coursePools="coursePools"
+					:contentLanguage="contentLanguage"
+					@back="oldschoolSubMode = null" />
+				<WissensturmMode
+					v-else-if="arenaSubMode === 'oldschool' && oldschoolSubMode === 'wissensturm'"
+					:courseId="courseId"
+					:coursePools="coursePools"
+					:contentLanguage="contentLanguage"
+					@back="oldschoolSubMode = null" />
+				<AbenteuerMode
+					v-else-if="arenaSubMode === 'abenteuer'"
+					:courseId="courseId"
+					:coursePools="coursePools"
+					:contentLanguage="contentLanguage"
+					@back="arenaSubMode = null" />
 			</div>
-		<!-- Oldschool Tab -->
-		<div v-if="currentTab === 'oldschool'" class="oldschool-section">
-			<OldschoolSelector
-				v-if="oldschoolSubMode === null"
-				@select-mode="onOldschoolSelectMode" />
-			<LernwuerfelMode
-				v-else-if="oldschoolSubMode === 'lernwuerfel'"
-				:courseId="courseId"
-				:coursePools="coursePools"
-				:contentLanguage="contentLanguage"
-				@back="oldschoolSubMode = null" />
-			<WissensturmMode
-				v-else-if="oldschoolSubMode === 'wissensturm'"
-				:courseId="courseId"
-				:coursePools="coursePools"
-				:contentLanguage="contentLanguage"
-				@back="oldschoolSubMode = null" />
-		</div>
-		<!-- Abenteuer Tab -->
-		<div v-if="currentTab === 'abenteuer'" class="abenteuer-section">
-			<AbenteuerMode
-				:courseId="courseId"
-				:coursePools="coursePools"
-				:contentLanguage="contentLanguage"
-				@back="currentTab = 'pools'" />
-		</div>
 		<!-- Curriculum Scope Tab (instructor only) -->
 		<div v-if="currentTab === 'curriculum' && isInstructor" class="curriculum-section">
 			<div class="curriculum-header">
@@ -1370,8 +1365,6 @@ export default {
 					{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
 					{ id: 'league', label: t('learning', 'Liga') },
 					{ id: 'arena', label: t('learning', 'Arena') },
-					{ id: 'oldschool', label: t('learning', 'Oldschool') },
-					{ id: 'abenteuer', label: t('learning', 'Abenteuer') },
 					{ id: 'curriculum', label: t('learning', 'Themen') },
 					{ id: 'heatmap', label: t('learning', 'Heatmap') },
 					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
@@ -1393,8 +1386,6 @@ export default {
 			tabs.push({ id: 'leaderboard', label: t('learning', 'Leaderboard') })
 			if (enabled('league')) tabs.push({ id: 'league', label: t('learning', 'Liga') })
 			tabs.push({ id: 'arena', label: t('learning', 'Arena') })
-			tabs.push({ id: 'oldschool', label: t('learning', 'Oldschool') })
-			tabs.push({ id: 'abenteuer', label: t('learning', 'Abenteuer') })
 			return tabs
 		},
 		activeLearningModeLabel() {
@@ -1641,8 +1632,6 @@ export default {
 				this.$root.$emit('course:tab-change', tabId)
 				if (tabId !== 'arena') {
 					this.arenaSubMode = null
-				}
-				if (tabId !== 'oldschool') {
 					this.oldschoolSubMode = null
 				}
 				if (tabId === 'arena' && !this.isInstructor) {
