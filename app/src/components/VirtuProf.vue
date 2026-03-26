@@ -2024,8 +2024,8 @@ Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, o
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px 18px;
+  gap: 10px;
+  padding: 12px 12px 12px 16px;
   border: 1px solid var(--color-border);
   border-radius: 22px;
   background:
@@ -2050,6 +2050,7 @@ Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, o
 .virtuprof-rail-copy,
 .virtuprof-panel-copy {
   min-width: 0;
+  flex: 1;
   display: grid;
   gap: 4px;
 }
