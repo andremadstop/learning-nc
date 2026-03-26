@@ -22,7 +22,9 @@
           :invite-count="duelInvites.incoming.length" />
       </button>
 
-      <div v-else class="virtuprof-panel">
+      <div v-else class="virtuprof-panel"
+        @touchstart.passive="panelTouchStart"
+        @touchend.passive="panelTouchEnd">
         <div class="virtuprof-panel-header">
           <div class="virtuprof-panel-copy">
             <span class="virtuprof-panel-kicker">{{ vt('VirtuProf') }}</span>
@@ -141,6 +143,7 @@ export default {
     return {
       visible: false,
       isMinimized: false,
+      panelTouchY: 0,
       currentScriptId: null,
       currentScript: null,
       currentScriptMeta: null,
@@ -788,6 +791,18 @@ export default {
         return
       }
       this.dismiss()
+    },
+    panelTouchStart(e) {
+      if (e.touches && e.touches.length === 1) {
+        this.panelTouchY = e.touches[0].clientY
+      }
+    },
+    panelTouchEnd(e) {
+      if (!e.changedTouches || !e.changedTouches.length) return
+      const dy = e.changedTouches[0].clientY - this.panelTouchY
+      if (dy > 80) {
+        this.isMinimized = true
+      }
     },
     async dismiss() {
       if (this.isHelpOpen) {
@@ -2147,17 +2162,22 @@ Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, o
 
 @media (max-width: 768px) {
   .virtuprof-rail {
-    padding: 14px 16px;
-    border-radius: 18px;
+    padding: 10px 14px;
+    border-radius: 16px;
+  }
+
+  .virtuprof-rail :deep(.virtuprof-avatar) {
+    width: 40px;
+    height: 52px;
   }
 
   .virtuprof-panel {
-    min-height: 460px;
-    max-height: none;
+    min-height: 300px;
+    max-height: calc(100vh - 120px);
   }
 
   .virtuprof-panel-header {
-    padding: 12px 14px;
+    padding: 10px 12px;
   }
 }
 </style>
