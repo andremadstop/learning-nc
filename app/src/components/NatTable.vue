@@ -1,5 +1,5 @@
 <template>
-  <section class="sim-tool nat-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
+  <section class="sim-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
     <header v-if="!isEmbedded" class="sim-tool__header">
       <div>
         <p class="sim-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
@@ -43,16 +43,16 @@
 
       <button class="sim-tool__btn" type="button" @click="simulateCurrent">{{ t('learning', 'Übersetzen') }}</button>
 
-      <div v-if="translation" class="nat-tool__flow">
-        <article class="nat-tool__stage">
+      <div v-if="translation" class="sim-tool__flow">
+        <article class="sim-tool__stage">
           <span>{{ t('learning', 'Inside') }}</span>
           <strong>{{ visualization.inside }}</strong>
         </article>
-        <article class="nat-tool__stage nat-tool__stage--device">
+        <article class="sim-tool__stage sim-tool__stage--device">
           <span>NAT Device</span>
           <strong>{{ visualization.device }}</strong>
         </article>
-        <article class="nat-tool__stage">
+        <article class="sim-tool__stage">
           <span>{{ t('learning', 'Outside') }}</span>
           <strong>{{ visualization.outside }}</strong>
         </article>
@@ -102,10 +102,10 @@
         :description="t('learning', 'Wähle ein NAT-Szenario aus.')"
       />
 
-      <div v-else class="nat-tool__exercise">
+      <div v-else class="sim-tool__exercise">
         <h3>{{ activeScenario.title }}</h3>
         <p>{{ activeScenario.question }}</p>
-        <div v-if="hairpinDestination" class="nat-tool__hint sim-tool__status sim-tool__status--info">
+        <div v-if="hairpinDestination" class="sim-tool__hint sim-tool__status sim-tool__status--info">
           Hairpin -> {{ hairpinDestination }}
         </div>
         <div class="sim-tool__options">
@@ -227,12 +227,12 @@ export default {
 </script>
 
 <style scoped>
-.nat-tool__flow {
+.sim-tool__flow {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
 }
-.nat-tool__stage {
+.sim-tool__stage {
   display: grid;
   gap: 0.35rem;
   padding: 1rem;
@@ -241,16 +241,16 @@ export default {
   background: var(--sim-panel-elevated);
   color: var(--sim-text);
 }
-.nat-tool__stage--device {
+.sim-tool__stage--device {
   background: linear-gradient(135deg, rgba(88, 166, 255, 0.12), rgba(0, 230, 118, 0.08));
   box-shadow: var(--sim-glow-accent);
 }
-.nat-tool__hint {
+.sim-tool__hint {
   padding: 0.75rem 1rem;
 }
 
 @media (max-width: 768px) {
-  .nat-tool__flow {
+  .sim-tool__flow {
     grid-template-columns: 1fr;
   }
 }

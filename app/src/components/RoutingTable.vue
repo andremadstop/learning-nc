@@ -1,5 +1,5 @@
 <template>
-  <section class="sim-tool route-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
+  <section class="sim-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
     <header v-if="!isEmbedded" class="sim-tool__header">
       <div>
         <p class="sim-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
@@ -59,7 +59,7 @@
         </table>
       </div>
 
-      <div class="route-tool__lookup">
+      <div class="sim-tool__lookup">
         <label class="sim-tool__field">
           <span>{{ t('learning', 'Ziel-IP') }}</span>
           <input v-model.trim="destinationIp" class="sim-tool__input" type="text">
@@ -67,9 +67,9 @@
         <button class="sim-tool__btn" type="button" @click="runLookup">{{ t('learning', 'Route suchen') }}</button>
       </div>
 
-      <div v-if="decision" class="route-tool__decision">
-        <div class="route-tool__matches">
-          <article v-for="route in decision.evaluatedRoutes" :key="`${route.destination}-${route.mask}-${route.gateway}`" class="route-tool__match" :class="{ 'route-tool__match--active': route.matched, 'route-tool__match--winner': decision.bestRoute && decision.bestRoute.destination === route.destination && decision.bestRoute.mask === route.mask }">
+      <div v-if="decision" class="sim-tool__decision">
+        <div class="sim-tool__matches">
+          <article v-for="route in decision.evaluatedRoutes" :key="`${route.destination}-${route.mask}-${route.gateway}`" class="sim-tool__match" :class="{ 'sim-tool__match--active': route.matched, 'sim-tool__match--winner': decision.bestRoute && decision.bestRoute.destination === route.destination && decision.bestRoute.mask === route.mask }">
             <strong>{{ route.destination }}/{{ route.prefix }}</strong>
             <span>{{ route.gateway }} via {{ route.interface }}</span>
             <small>metric {{ route.metric }}</small>
@@ -100,11 +100,11 @@
         :description="t('learning', 'Wähle ein Szenario oder übergib eins eingebettet.')"
       />
 
-      <div v-else class="route-tool__exercise">
+      <div v-else class="sim-tool__exercise">
         <h3>{{ activeScenario.title }}</h3>
         <p>{{ activeScenario.question }}</p>
-        <div class="route-tool__matches">
-          <article v-for="route in scenarioDecision.evaluatedRoutes" :key="`${route.destination}-${route.mask}-${route.gateway}`" class="route-tool__match" :class="{ 'route-tool__match--active': route.matched, 'route-tool__match--winner': scenarioDecision.bestRoute && scenarioDecision.bestRoute.destination === route.destination && scenarioDecision.bestRoute.mask === route.mask }">
+        <div class="sim-tool__matches">
+          <article v-for="route in scenarioDecision.evaluatedRoutes" :key="`${route.destination}-${route.mask}-${route.gateway}`" class="sim-tool__match" :class="{ 'sim-tool__match--active': route.matched, 'sim-tool__match--winner': scenarioDecision.bestRoute && scenarioDecision.bestRoute.destination === route.destination && scenarioDecision.bestRoute.mask === route.mask }">
             <strong>{{ route.destination }}/{{ route.prefix }}</strong>
             <span>{{ route.gateway }} via {{ route.interface }}</span>
             <small>metric {{ route.metric }}</small>
@@ -232,18 +232,18 @@ export default {
 </script>
 
 <style scoped>
-.route-tool__lookup {
+.sim-tool__lookup {
   display: flex;
   gap: 0.75rem;
   align-items: end;
   flex-wrap: wrap;
 }
-.route-tool__matches {
+.sim-tool__matches {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0.75rem;
 }
-.route-tool__match {
+.sim-tool__match {
   display: grid;
   gap: 0.3rem;
   padding: 0.95rem;
@@ -253,16 +253,16 @@ export default {
   text-align: left;
   color: var(--sim-text);
 }
-.route-tool__match--active {
+.sim-tool__match--active {
   border-color: var(--sim-success);
 }
-.route-tool__match--winner {
+.sim-tool__match--winner {
   background: rgba(0, 230, 118, 0.1);
   box-shadow: var(--sim-glow-pass);
 }
 
 @media (max-width: 768px) {
-  .route-tool__lookup {
+  .sim-tool__lookup {
     flex-direction: column;
     align-items: stretch;
   }

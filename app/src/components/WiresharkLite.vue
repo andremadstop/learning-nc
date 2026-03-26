@@ -1,5 +1,5 @@
 <template>
-  <section class="sim-tool wire-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
+  <section class="sim-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
     <header v-if="!isEmbedded" class="sim-tool__header">
       <div>
         <p class="sim-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
@@ -21,16 +21,16 @@
         </select>
       </label>
 
-      <div class="wire-tool__timeline">
-        <button v-for="packet in timeline" :key="packet.id" class="sim-tool__scenario wire-tool__packet" :class="{ 'sim-tool__scenario--active': selectedPacket && selectedPacket.id === packet.id }" @click="selectedPacketId = packet.id">
+      <div class="sim-tool__timeline">
+        <button v-for="packet in timeline" :key="packet.id" class="sim-tool__scenario sim-tool__packet" :class="{ 'sim-tool__scenario--active': selectedPacket && selectedPacket.id === packet.id }" @click="selectedPacketId = packet.id">
           <strong>{{ packet.protocol }}</strong>
           <span>{{ packet.summary }}</span>
           <small>{{ packet.timestamp }}</small>
         </button>
       </div>
 
-      <div v-if="selectedPacket" class="wire-tool__layers">
-        <article v-for="layer in selectedPacket.layers" :key="layer.id" class="wire-tool__layer" :class="`wire-tool__layer--${layer.id}`">
+      <div v-if="selectedPacket" class="sim-tool__layers">
+        <article v-for="layer in selectedPacket.layers" :key="layer.id" class="sim-tool__layer" :class="`sim-tool__layer--${layer.id}`">
           <h3>{{ layer.label }}</h3>
           <ul>
             <li v-for="field in layer.fields" :key="field.label"><strong>{{ field.label }}:</strong> {{ field.value }}</li>
@@ -38,7 +38,7 @@
         </article>
       </div>
 
-      <div class="wire-tool__issues">
+      <div class="sim-tool__issues">
         <NcNoteCard type="info">
           {{ t('learning', 'Retransmissions: {count}', { count: issues.retransmissions.length }) }}
         </NcNoteCard>
@@ -65,7 +65,7 @@
         :description="t('learning', 'Wähle ein Wireshark-Szenario aus.')"
       />
 
-      <div v-else class="wire-tool__exercise">
+      <div v-else class="sim-tool__exercise">
         <h3>{{ activeScenario.question }}</h3>
         <div class="sim-tool__options">
           <button v-for="option in activeScenario.options" :key="option.id" class="sim-tool__option" @click="answerScenario(option.id)">
@@ -174,38 +174,38 @@ export default {
 </script>
 
 <style scoped>
-.wire-tool__timeline {
+.sim-tool__timeline {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0.75rem;
 }
-.wire-tool__layers {
+.sim-tool__layers {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 0.75rem;
 }
-.wire-tool__layer {
+.sim-tool__layer {
   padding: 1rem;
   border: 1px solid var(--sim-border);
   border-radius: 16px;
   color: var(--sim-text);
 }
-.wire-tool__layer h3,
-.wire-tool__layer ul {
+.sim-tool__layer h3,
+.sim-tool__layer ul {
   margin: 0;
 }
-.wire-tool__layer ul {
+.sim-tool__layer ul {
   padding-left: 1rem;
 }
-.wire-tool__layer--ethernet { background: rgba(88, 166, 255, 0.12); }
-.wire-tool__layer--ip { background: rgba(0, 230, 118, 0.1); }
-.wire-tool__layer--tcp,
-.wire-tool__layer--udp,
-.wire-tool__layer--icmp { background: rgba(210, 153, 34, 0.14); }
-.wire-tool__layer--dns,
-.wire-tool__layer--http,
-.wire-tool__layer--arp { background: rgba(248, 81, 73, 0.12); }
-.wire-tool__issues {
+.sim-tool__layer--ethernet { background: rgba(88, 166, 255, 0.12); }
+.sim-tool__layer--ip { background: rgba(0, 230, 118, 0.1); }
+.sim-tool__layer--tcp,
+.sim-tool__layer--udp,
+.sim-tool__layer--icmp { background: rgba(210, 153, 34, 0.14); }
+.sim-tool__layer--dns,
+.sim-tool__layer--http,
+.sim-tool__layer--arp { background: rgba(248, 81, 73, 0.12); }
+.sim-tool__issues {
   display: grid;
   gap: 0.75rem;
 }

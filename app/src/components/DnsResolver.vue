@@ -1,10 +1,10 @@
 <template>
-  <section class="sim-tool dns-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
-    <header v-if="!isEmbedded" class="sim-tool__header dns-tool__header">
+  <section class="sim-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
+    <header v-if="!isEmbedded" class="sim-tool__header">
       <div>
-        <p class="sim-tool__eyebrow dns-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
-        <h2 class="sim-tool__title dns-tool__title">{{ t('learning', 'DNS-Resolver') }}</h2>
-        <p class="sim-tool__subtitle dns-tool__subtitle">
+        <p class="sim-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
+        <h2 class="sim-tool__title">{{ t('learning', 'DNS-Resolver') }}</h2>
+        <p class="sim-tool__subtitle">
           {{ t('learning', 'Verfolge Root, TLD und autoritative Nameserver Schritt für Schritt und übe typische DNS-Fehlerbilder.') }}
         </p>
       </div>
@@ -12,12 +12,12 @@
 
     <nav
       v-if="!isEmbedded"
-      class="sim-tool__tabs dns-tool__tabs"
+      class="sim-tool__tabs"
       role="tablist"
       :aria-label="t('learning', 'DNS-Resolver Tabs')"
     >
       <button
-        class="sim-tool__tab dns-tool__tab"
+        class="sim-tool__tab"
         :class="{ 'sim-tool__tab--active': currentView === 'simulator' }"
         role="tab"
         :aria-selected="currentView === 'simulator' ? 'true' : 'false'"
@@ -26,7 +26,7 @@
         {{ t('learning', 'Simulator') }}
       </button>
       <button
-        class="sim-tool__tab dns-tool__tab"
+        class="sim-tool__tab"
         :class="{ 'sim-tool__tab--active': currentView === 'exercise' }"
         role="tab"
         :aria-selected="currentView === 'exercise' ? 'true' : 'false'"
@@ -36,28 +36,28 @@
       </button>
     </nav>
 
-    <section v-if="currentView === 'simulator'" class="sim-tool__panel dns-tool__panel">
-      <div class="dns-controls">
-        <label class="sim-tool__field dns-field">
-          <span class="dns-field__label">{{ t('learning', 'Domain') }}</span>
+    <section v-if="currentView === 'simulator'" class="sim-tool__panel">
+      <div class="sim-tool__controls">
+        <label class="sim-tool__field">
+          <span class="sim-tool__field-label">{{ t('learning', 'Domain') }}</span>
           <input
             v-model.trim="form.domain"
-            class="sim-tool__input dns-input"
+            class="sim-tool__input"
             type="text"
             :placeholder="t('learning', 'Beispiel: example.com oder 25.113.0.203.in-addr.arpa')"
           >
         </label>
 
-        <label class="sim-tool__field dns-field">
-          <span class="dns-field__label">{{ t('learning', 'Record-Typ') }}</span>
-          <select v-model="form.recordType" class="sim-tool__input dns-input">
+        <label class="sim-tool__field">
+          <span class="sim-tool__field-label">{{ t('learning', 'Record-Typ') }}</span>
+          <select v-model="form.recordType" class="sim-tool__input">
             <option v-for="type in recordTypes" :key="type.id" :value="type.id">
               {{ type.id }}
             </option>
           </select>
         </label>
 
-        <div class="dns-controls__actions">
+        <div class="sim-tool__controls-actions">
           <button class="sim-tool__btn" type="button" @click="runLookup('manual')">
             {{ t('learning', 'Lookup starten') }}
           </button>
@@ -70,15 +70,15 @@
         </div>
       </div>
 
-      <p class="dns-tool__hint">
+      <p class="sim-tool__hint">
         {{ t('learning', 'Klickbare Beispiele: example.com, mail.example.com, www.example.org, branch.example.de') }}
       </p>
 
-      <div class="dns-records">
+      <div class="sim-tool__records">
         <button
           v-for="type in recordTypes"
           :key="type.id"
-          class="sim-tool__scenario dns-record-card"
+          class="sim-tool__scenario sim-tool__record-card"
           type="button"
           :aria-label="t('learning', 'Beispiel-Lookup für {type}', { type: type.id })"
           @click="runRecordTypeExample(type.id)"
@@ -90,12 +90,12 @@
       </div>
     </section>
 
-    <section v-else class="sim-tool__panel dns-tool__panel dns-tool__panel--exercise">
-      <div v-if="!isEmbedded" class="dns-scenarios">
+    <section v-else class="sim-tool__panel sim-tool__panel--exercise">
+      <div v-if="!isEmbedded" class="sim-tool__scenarios">
         <button
           v-for="scenarioEntry in scenarios"
           :key="scenarioEntry.id"
-          class="sim-tool__scenario dns-scenario-card"
+          class="sim-tool__scenario"
           :class="{ 'sim-tool__scenario--active': activeScenario && activeScenario.id === scenarioEntry.id }"
           type="button"
           @click="loadScenario(scenarioEntry)"
@@ -111,10 +111,10 @@
         :description="t('learning', 'Wähle ein DNS-Szenario aus, um die Lookup-Kette zu analysieren.')"
       />
 
-      <div v-else class="dns-exercise">
-        <header class="dns-exercise__header">
+      <div v-else class="sim-tool__exercise">
+        <header class="sim-tool__exercise-header">
           <div>
-            <p class="dns-exercise__eyebrow">{{ t('learning', 'Szenario') }}</p>
+            <p class="sim-tool__exercise-eyebrow">{{ t('learning', 'Szenario') }}</p>
             <h3>{{ activeScenario.title }}</h3>
           </div>
           <button class="sim-tool__btn sim-tool__btn--secondary" type="button" @click="runLookup('scenario')">
@@ -122,14 +122,14 @@
           </button>
         </header>
 
-        <p class="dns-exercise__context">{{ activeScenario.context }}</p>
-        <p class="dns-exercise__question">{{ activeScenario.question }}</p>
+        <p class="sim-tool__exercise-context">{{ activeScenario.context }}</p>
+        <p class="sim-tool__exercise-question">{{ activeScenario.question }}</p>
 
-        <div class="dns-options">
+        <div class="sim-tool__options">
           <button
             v-for="option in activeScenario.options || []"
             :key="option.id"
-            class="sim-tool__option dns-option"
+            class="sim-tool__option"
             :class="optionClass(option.id)"
             type="button"
             @click="submitScenarioAnswer(option.id)"
@@ -146,49 +146,49 @@
 
     <section
       v-if="lookupResult"
-      class="dns-visuals"
-      :class="{ 'dns-visuals--summary-only': !lookupResult.steps.length }"
+      class="sim-tool__visuals"
+      :class="{ 'sim-tool__visuals--summary-only': !lookupResult.steps.length }"
     >
-      <div v-if="lookupResult.steps.length" class="dns-stage">
-        <div class="dns-stage__actors" role="img" :aria-label="t('learning', 'DNS-Auflösung mit Client, Resolver, Root, TLD und autoritativem Server')">
+      <div v-if="lookupResult.steps.length" class="sim-tool__stage">
+        <div class="sim-tool__stage-actors" role="img" :aria-label="t('learning', 'DNS-Auflösung mit Client, Resolver, Root, TLD und autoritativem Server')">
           <div
             v-for="actor in actors"
             :key="actor.id"
-            class="dns-stage__node"
+            class="sim-tool__stage-node"
             :class="actorClass(actor.id)"
           >
-            <span class="dns-stage__node-label">{{ actor.label }}</span>
+            <span class="sim-tool__stage-node-label">{{ actor.label }}</span>
             <small>{{ actor.caption }}</small>
           </div>
         </div>
 
-        <div class="dns-stage__progress">
-          <div class="dns-stage__bar">
-            <span class="dns-stage__bar-fill" :style="{ width: progressWidth }"></span>
+        <div class="sim-tool__stage-progress">
+          <div class="sim-tool__stage-bar">
+            <span class="sim-tool__stage-bar-fill" :style="{ width: progressWidth }"></span>
           </div>
           <span>{{ currentStepIndex + 1 }} / {{ lookupResult.steps.length }}</span>
         </div>
 
-        <ol class="dns-steps">
+        <ol class="sim-tool__steps">
           <li
             v-for="(step, index) in lookupResult.steps"
             :key="step.id"
-            class="dns-step"
+            class="sim-tool__step"
             :class="{
-              'dns-step--active': index === currentStepIndex,
-              'dns-step--done': index < currentStepIndex,
+              'sim-tool__step--active': index === currentStepIndex,
+              'sim-tool__step--done': index < currentStepIndex,
             }"
           >
-            <div class="dns-step__route">{{ actorLabel(step.source) }} -> {{ actorLabel(step.target) }}</div>
+            <div class="sim-tool__step-route">{{ actorLabel(step.source) }} -> {{ actorLabel(step.target) }}</div>
             <strong>{{ step.title }}</strong>
             <p>{{ step.detail }}</p>
           </li>
         </ol>
       </div>
 
-      <aside class="dns-summary">
-        <div class="dns-summary__header">
-          <span class="dns-summary__badge sim-tool__status" :class="statusClass">
+      <aside class="sim-tool__summary">
+        <div class="sim-tool__summary-header">
+          <span class="sim-tool__summary-badge sim-tool__status" :class="statusClass">
             {{ statusLabel }}
           </span>
           <strong>{{ lookupResult.recordType }} {{ lookupResult.domain }}</strong>
@@ -196,21 +196,21 @@
 
         <p>{{ lookupResult.message }}</p>
 
-        <div v-if="lookupResult.answers.length" class="dns-summary__block">
+        <div v-if="lookupResult.answers.length" class="sim-tool__summary-block">
           <h4>{{ t('learning', 'Antwort') }}</h4>
           <ul>
             <li v-for="answer in lookupResult.answers" :key="answer">{{ answer }}</li>
           </ul>
         </div>
 
-        <div v-if="lookupResult.aliasChain.length" class="dns-summary__block">
+        <div v-if="lookupResult.aliasChain.length" class="sim-tool__summary-block">
           <h4>{{ t('learning', 'Alias-Kette') }}</h4>
           <ul>
             <li v-for="alias in lookupResult.aliasChain" :key="alias">{{ alias }}</li>
           </ul>
         </div>
 
-        <div class="dns-summary__meta">
+        <div class="sim-tool__summary-meta">
           <div>
             <span>{{ t('learning', 'TLD-Server') }}</span>
             <strong>{{ lookupResult.tldServer }}</strong>
@@ -362,9 +362,9 @@ export default {
       const step = this.lookupResult?.steps?.[this.currentStepIndex];
       if (!step) return '';
       if (step.source === actorId || step.target === actorId) {
-        return 'dns-stage__node--active';
+        return 'sim-tool__stage-node--active';
       }
-      return this.currentStepIndex > 0 ? 'dns-stage__node--visited' : '';
+      return this.currentStepIndex > 0 ? 'sim-tool__stage-node--visited' : '';
     },
     actorLabel(actorId) {
       return this.actors.find(actor => actor.id === actorId)?.label || actorId;
@@ -374,11 +374,11 @@ export default {
       if (!this.activeScenario) return '';
 
       if (optionId === this.activeScenario.correctOptionId) {
-        return 'dns-option--correct';
+        return 'sim-tool__option--correct';
       }
 
       if (optionId === this.selectedOptionId) {
-        return 'dns-option--wrong';
+        return 'sim-tool__option--wrong';
       }
 
       return '';
@@ -480,256 +480,163 @@ export default {
 </script>
 
 <style scoped>
-.dns-tool {
-  display: grid;
-  gap: 20px;
-  padding: 24px;
-  border-radius: 20px;
-  background:
-    radial-gradient(circle at top left, rgba(88, 166, 255, 0.18), transparent 42%),
-    linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(18, 31, 52, 0.95));
-  color: #eef4ff;
-  box-shadow: var(--lnc-shadow-card);
-  overflow: hidden;
-}
-
-.dns-tool--embedded {
-  padding: 20px;
-}
-
-.dns-tool__header,
-.dns-exercise__header,
-.dns-controls {
+.sim-tool__controls,
+.sim-tool__exercise-header {
   display: flex;
   justify-content: space-between;
   gap: 16px;
   align-items: flex-start;
 }
 
-.dns-tool__eyebrow,
-.dns-exercise__eyebrow {
-  margin: 0 0 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.78rem;
-  color: rgba(198, 223, 255, 0.76);
-}
-
-.dns-tool__title {
-  margin: 0;
-  font-size: 2rem;
-}
-
-.dns-tool__subtitle,
-.dns-tool__hint,
-.dns-exercise__context {
-  margin: 8px 0 0;
-  color: rgba(222, 233, 250, 0.82);
-  line-height: 1.55;
-}
-
-.dns-tool__badge {
-  border-radius: 999px;
-  padding: 10px 14px;
-  background: rgba(95, 170, 255, 0.16);
-  border: 1px solid rgba(95, 170, 255, 0.35);
-  white-space: nowrap;
-}
-
-.dns-tool__tabs {
-  display: inline-flex;
-  gap: 8px;
-  padding: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  width: fit-content;
-}
-
-.dns-tool__tab {
-  border: 0;
-  border-radius: 999px;
-  padding: 10px 16px;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-}
-
-.dns-tool__tab--active {
-  background: rgba(88, 166, 255, 0.24);
-}
-
-.dns-tool__panel {
-  display: grid;
-  gap: 16px;
-}
-
-.dns-controls {
+.sim-tool__controls {
   align-items: end;
   flex-wrap: wrap;
 }
 
-.dns-field {
-  display: grid;
-  gap: 8px;
-  min-width: 220px;
-  flex: 1 1 220px;
+.sim-tool__exercise-eyebrow {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  color: var(--sim-accent);
+  font-family: var(--sim-text-mono);
 }
 
-.dns-field__label,
-.dns-summary__meta span,
-.dns-summary__block h4 {
+.sim-tool__hint {
+  margin: 8px 0 0;
+  color: var(--sim-text-muted);
+  line-height: 1.55;
+}
+
+.sim-tool__exercise-context {
+  margin: 8px 0 0;
+  color: var(--sim-text-muted);
+  line-height: 1.55;
+}
+
+.sim-tool__field-label,
+.sim-tool__summary-meta span,
+.sim-tool__summary-block h4,
+.sim-tool__step-route {
   font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(198, 223, 255, 0.72);
+  color: var(--sim-text-muted);
+  font-family: var(--sim-text-mono);
 }
 
-.dns-input {
-  width: 100%;
-  min-height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(143, 188, 255, 0.26);
-  background: rgba(6, 14, 26, 0.55);
-  color: inherit;
-  padding: 12px 14px;
-}
-
-.dns-controls__actions {
+.sim-tool__controls-actions {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.dns-records,
-.dns-scenarios,
-.dns-options {
+.sim-tool__records,
+.sim-tool__scenarios {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
-.dns-record-card,
-.dns-scenario-card,
-.dns-option {
-  border: 1px solid rgba(143, 188, 255, 0.2);
-  background: rgba(10, 20, 38, 0.7);
-  color: inherit;
-  border-radius: 16px;
-  padding: 16px;
-  text-align: left;
-  cursor: pointer;
-  display: grid;
-  gap: 8px;
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+.sim-tool__record-card small {
+  color: var(--sim-text-muted);
 }
 
-.dns-record-card:hover,
-.dns-scenario-card:hover,
-.dns-option:hover {
-  transform: translateY(-2px);
-  border-color: rgba(88, 166, 255, 0.55);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+.sim-tool__option--correct {
+  border-color: var(--sim-success);
+  background: rgba(0, 230, 118, 0.1);
 }
 
-.dns-record-card small {
-  color: rgba(198, 223, 255, 0.68);
+.sim-tool__option--wrong {
+  border-color: var(--sim-danger);
+  background: rgba(248, 81, 73, 0.1);
 }
 
-.dns-scenario-card--active,
-.dns-option--correct {
-  border-color: rgba(36, 201, 124, 0.75);
-  background: rgba(8, 45, 34, 0.72);
-}
-
-.dns-option--wrong {
-  border-color: rgba(248, 81, 73, 0.85);
-  background: rgba(65, 21, 20, 0.72);
-}
-
-.dns-exercise {
+.sim-tool__exercise {
   display: grid;
   gap: 16px;
 }
 
-.dns-exercise__question {
+.sim-tool__exercise-question {
   margin: 0;
   font-size: 1.1rem;
 }
 
-.dns-visuals {
+.sim-tool__visuals {
   display: grid;
   grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr);
   gap: 20px;
   align-items: start;
 }
 
-.dns-visuals--summary-only {
+.sim-tool__visuals--summary-only {
   grid-template-columns: 1fr;
 }
 
-.dns-stage,
-.dns-summary {
+.sim-tool__stage,
+.sim-tool__summary {
   border-radius: 18px;
   padding: 18px;
-  background: rgba(9, 17, 29, 0.72);
-  border: 1px solid rgba(143, 188, 255, 0.16);
+  background: var(--sim-panel-elevated);
+  border: 1px solid var(--sim-border);
+  color: var(--sim-text);
 }
 
-.dns-stage__actors {
+.sim-tool__stage-actors {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
-.dns-stage__node {
+.sim-tool__stage-node {
   min-height: 88px;
   padding: 14px 10px;
   border-radius: 16px;
   text-align: center;
-  background: rgba(17, 27, 45, 0.74);
-  border: 1px solid rgba(143, 188, 255, 0.14);
+  background: rgba(28, 35, 51, 0.82);
+  border: 1px solid var(--sim-border);
   display: grid;
   align-content: center;
   gap: 6px;
 }
 
-.dns-stage__node--active {
-  border-color: rgba(88, 166, 255, 0.82);
-  box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.35), 0 0 24px rgba(88, 166, 255, 0.18);
+.sim-tool__stage-node--active {
+  border-color: var(--sim-accent);
+  box-shadow: var(--sim-glow-accent);
 }
 
-.dns-stage__node--visited {
-  background: rgba(15, 34, 60, 0.74);
+.sim-tool__stage-node--visited {
+  background: rgba(24, 42, 68, 0.74);
 }
 
-.dns-stage__node-label {
+.sim-tool__stage-node-label {
   font-weight: 700;
 }
 
-.dns-stage__progress {
+.sim-tool__stage-progress {
   display: flex;
   gap: 12px;
   align-items: center;
   margin: 18px 0;
 }
 
-.dns-stage__bar {
+.sim-tool__stage-bar {
   flex: 1 1 auto;
   height: 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--sim-border);
   overflow: hidden;
 }
 
-.dns-stage__bar-fill {
+.sim-tool__stage-bar-fill {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #58a6ff, #75e6da);
+  background: linear-gradient(90deg, var(--sim-accent), var(--sim-success));
   transition: width 240ms ease;
 }
 
-.dns-steps {
+.sim-tool__steps {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -737,213 +644,92 @@ export default {
   gap: 12px;
 }
 
-.dns-step {
+.sim-tool__step {
   padding: 14px;
   border-radius: 16px;
-  border: 1px solid rgba(143, 188, 255, 0.14);
-  background: rgba(10, 18, 31, 0.68);
+  border: 1px solid var(--sim-border);
+  background: var(--sim-panel-elevated);
 }
 
-.dns-step--done {
+.sim-tool__step--done {
   opacity: 0.72;
 }
 
-.dns-step--active {
-  border-color: rgba(88, 166, 255, 0.72);
-  background: rgba(11, 29, 52, 0.88);
-}
-
-.dns-step__route {
-  margin-bottom: 6px;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(198, 223, 255, 0.72);
-}
-
-.dns-step p {
-  margin: 8px 0 0;
-  color: rgba(222, 233, 250, 0.84);
-  line-height: 1.5;
-}
-
-.dns-summary {
-  display: grid;
-  gap: 16px;
-}
-
-.dns-summary__header {
-  display: grid;
-  gap: 8px;
-}
-
-.dns-summary__badge {
-  width: fit-content;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.dns-summary__badge--ok {
-  background: rgba(36, 201, 124, 0.18);
-  color: #9ff1c5;
-}
-
-.dns-summary__badge--missing_record,
-.dns-summary__badge--missing_domain {
-  background: rgba(255, 200, 87, 0.18);
-  color: #ffd977;
-}
-
-.dns-summary__badge--dnssec_failure,
-.dns-summary__badge--cname_loop,
-.dns-summary__badge--invalid_request {
-  background: rgba(248, 81, 73, 0.18);
-  color: #ff9d96;
-}
-
-.dns-summary__block ul,
-.dns-summary__meta {
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 12px;
-}
-
-.dns-summary__block ul {
-  list-style: none;
-}
-
-.dns-summary__meta > div {
-  display: grid;
-  gap: 4px;
-}
-
-.sim-tool.dns-tool {
-  background:
-    radial-gradient(circle at top left, rgba(88, 166, 255, 0.12), transparent 42%),
-    linear-gradient(180deg, rgba(13, 17, 23, 0.98), rgba(22, 27, 34, 0.98));
-  color: var(--sim-text);
-}
-
-.sim-tool__header.dns-tool__header,
-.dns-exercise__header,
-.dns-controls {
-  align-items: flex-start;
-}
-
-.sim-tool__eyebrow.dns-tool__eyebrow,
-.dns-exercise__eyebrow {
-  color: var(--sim-accent);
-  font-family: var(--sim-text-mono);
-}
-
-.sim-tool__title.dns-tool__title {
-  font-size: 1.5rem;
-}
-
-.sim-tool__subtitle.dns-tool__subtitle,
-.dns-tool__hint,
-.dns-exercise__context {
-  color: var(--sim-text-muted);
-}
-
-.dns-field__label,
-.dns-summary__meta span,
-.dns-summary__block h4,
-.dns-step__route {
-  color: var(--sim-text-muted);
-  font-family: var(--sim-text-mono);
-}
-
-.sim-tool__input.dns-input {
-  border-color: var(--sim-border);
-  background: var(--sim-bg);
-}
-
-.dns-record-card,
-.dns-scenario-card,
-.dns-option,
-.dns-stage,
-.dns-summary,
-.dns-stage__node,
-.dns-step {
-  border-color: var(--sim-border);
-}
-
-.dns-record-card,
-.dns-scenario-card,
-.dns-option,
-.dns-stage,
-.dns-summary {
-  background: var(--sim-panel-elevated);
-  color: var(--sim-text);
-}
-
-.dns-stage__node {
-  background: rgba(28, 35, 51, 0.82);
-}
-
-.dns-stage__node--active,
-.dns-step--active {
+.sim-tool__step--active {
   border-color: var(--sim-accent);
   box-shadow: var(--sim-glow-accent);
 }
 
-.dns-stage__node--visited {
-  background: rgba(24, 42, 68, 0.74);
+.sim-tool__step-route {
+  margin-bottom: 6px;
 }
 
-.dns-stage__bar {
-  background: var(--sim-border);
-}
-
-.dns-stage__bar-fill {
-  background: linear-gradient(90deg, var(--sim-accent), var(--sim-success));
-}
-
-.dns-step p,
-.dns-record-card small {
+.sim-tool__step p {
+  margin: 8px 0 0;
   color: var(--sim-text-muted);
+  line-height: 1.5;
 }
 
-.dns-summary__badge {
+.sim-tool__summary {
+  display: grid;
+  gap: 16px;
+}
+
+.sim-tool__summary-header {
+  display: grid;
+  gap: 8px;
+}
+
+.sim-tool__summary-badge {
+  width: fit-content;
   padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sim-tool__summary-block ul,
+.sim-tool__summary-meta {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.sim-tool__summary-block ul {
+  list-style: none;
+}
+
+.sim-tool__summary-meta > div {
+  display: grid;
+  gap: 4px;
 }
 
 @media (max-width: 960px) {
-  .dns-visuals {
+  .sim-tool__visuals {
     grid-template-columns: 1fr;
   }
 
-  .dns-stage__actors {
+  .sim-tool__stage-actors {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 640px) {
-  .dns-tool {
-    padding: 18px;
-  }
-
-  .dns-stage__actors {
+  .sim-tool__stage-actors {
     grid-template-columns: 1fr;
   }
 
-  .dns-tool__header,
-  .dns-controls,
-  .dns-exercise__header {
+  .sim-tool__controls,
+  .sim-tool__exercise-header {
     flex-direction: column;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .dns-record-card,
-  .dns-scenario-card,
-  .dns-option,
-  .dns-stage__bar-fill {
+  .sim-tool__record-card,
+  .sim-tool__stage-bar-fill {
     transition: none;
   }
 }

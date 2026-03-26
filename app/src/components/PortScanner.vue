@@ -1,5 +1,5 @@
 <template>
-  <section class="sim-tool scan-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
+  <section class="sim-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
     <header v-if="!isEmbedded" class="sim-tool__header">
       <div>
         <p class="sim-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
@@ -36,12 +36,12 @@
         </label>
       </div>
 
-      <div class="scan-tool__actions">
+      <div class="sim-tool__actions">
         <button class="sim-tool__btn" type="button" @click="startScan">{{ t('learning', 'Scan starten') }}</button>
         <span>{{ scanExplanation }}</span>
       </div>
 
-      <div v-if="isScanning || scanResult" class="scan-tool__progress-wrap">
+      <div v-if="isScanning || scanResult" class="sim-tool__progress-wrap">
         <div class="sim-tool__progress">
           <span class="sim-tool__progress-bar" :style="{ width: `${progress}%` }"></span>
         </div>
@@ -59,7 +59,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="entry in visiblePorts" :key="entry.port" :class="`scan-tool__state--${entry.state}`">
+            <tr v-for="entry in visiblePorts" :key="entry.port" :class="`sim-tool__state--${entry.state}`">
               <td>{{ entry.port }}</td>
               <td>
                 <span
@@ -80,7 +80,7 @@
         </table>
       </div>
 
-      <div v-if="scanResult" class="scan-tool__facts">
+      <div v-if="scanResult" class="sim-tool__facts">
         <NcNoteCard type="info">{{ t('learning', 'Erkannter Host-Typ: {type}', { type: detectedTypeLabel }) }}</NcNoteCard>
         <NcNoteCard v-if="compromiseIndicators.length" type="error">
           {{ t('learning', 'Warnung: Verdaechtige Ports entdeckt ({ports})', { ports: compromiseIndicators.map((entry) => entry.port).join(', ') }) }}
@@ -102,10 +102,10 @@
         :description="t('learning', 'Wähle eine Port-Scanner-Übung aus.')"
       />
 
-      <div v-else class="scan-tool__exercise">
+      <div v-else class="sim-tool__exercise">
         <h3>{{ activeScenario.title }}</h3>
         <p>{{ activeScenario.question }}</p>
-        <ul class="scan-tool__mini-list">
+        <ul class="sim-tool__mini-list">
           <li v-for="entry in scenarioPorts" :key="entry.port">{{ entry.port }}/{{ entry.state }} - {{ entry.service }}</li>
         </ul>
         <div class="sim-tool__options">
@@ -249,7 +249,7 @@ export default {
 </script>
 
 <style scoped>
-.scan-tool__actions {
+.sim-tool__actions {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -257,33 +257,33 @@ export default {
   color: var(--sim-text-muted);
   font-size: 0.875rem;
 }
-.scan-tool__progress-wrap {
+.sim-tool__progress-wrap {
   display: flex;
   align-items: center;
   gap: 1rem;
   color: var(--sim-text);
 }
-.scan-tool__state--open {
+.sim-tool__state--open {
   background: rgba(0, 230, 118, 0.06);
 }
-.scan-tool__state--filtered {
+.sim-tool__state--filtered {
   background: rgba(210, 153, 34, 0.08);
 }
-.scan-tool__state--closed {
+.sim-tool__state--closed {
   background: rgba(248, 81, 73, 0.06);
 }
-.scan-tool__facts {
+.sim-tool__facts {
   display: grid;
   gap: 0.75rem;
 }
-.scan-tool__mini-list {
+.sim-tool__mini-list {
   margin: 0;
   padding-left: 1.25rem;
   color: var(--sim-text-muted);
 }
 
 @media (max-width: 768px) {
-  .scan-tool__progress-wrap {
+  .sim-tool__progress-wrap {
     flex-direction: column;
     align-items: stretch;
   }

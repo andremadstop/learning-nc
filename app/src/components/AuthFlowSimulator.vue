@@ -1,5 +1,5 @@
 <template>
-  <section class="sim-tool auth-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
+  <section class="sim-tool" :class="{ 'sim-tool--embedded': isEmbedded }">
     <header v-if="!isEmbedded" class="sim-tool__header">
       <div>
         <p class="sim-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
@@ -14,11 +14,11 @@
     </nav>
 
     <section v-if="currentView === 'simulator'" class="sim-tool__panel">
-      <div class="auth-tool__methods">
+      <div class="sim-tool__methods">
         <button
           v-for="entry in methodComparison"
           :key="entry.method"
-          class="sim-tool__tab auth-tool__method"
+          class="sim-tool__tab sim-tool__method"
           :class="{ 'sim-tool__tab--active': activeMethodLabel === entry.method }"
           @click="activeMethod = methodIdFromLabel(entry.method)"
         >
@@ -26,13 +26,13 @@
         </button>
       </div>
 
-      <div class="auth-tool__actors">
+      <div class="sim-tool__actors">
         <span>Client</span>
         <span>Switch</span>
         <span>RADIUS</span>
       </div>
-      <ol class="auth-tool__sequence">
-        <li v-for="step in sequence" :key="step.id" class="auth-tool__step">
+      <ol class="sim-tool__sequence">
+        <li v-for="step in sequence" :key="step.id" class="sim-tool__step">
           <strong>{{ step.actorFrom }} -> {{ step.actorTo }}</strong>
           <span>{{ step.label }}</span>
           <small>{{ step.detail }}</small>
@@ -79,16 +79,16 @@
         :description="t('learning', 'Wähle ein Auth-Flow-Szenario aus.')"
       />
 
-      <div v-else class="auth-tool__exercise">
+      <div v-else class="sim-tool__exercise">
         <h3>{{ activeScenario.title }}</h3>
         <p>{{ activeScenario.question }}</p>
-        <ol class="auth-tool__reorder">
-          <li v-for="(step, index) in exerciseSteps" :key="step.id" class="auth-tool__reorder-item">
+        <ol class="sim-tool__reorder">
+          <li v-for="(step, index) in exerciseSteps" :key="step.id" class="sim-tool__reorder-item">
             <div>
               <strong>{{ step.label }}</strong>
               <small>{{ step.actorFrom }} -> {{ step.actorTo }}</small>
             </div>
-            <div class="auth-tool__reorder-actions">
+            <div class="sim-tool__reorder-actions">
               <button class="sim-tool__btn sim-tool__btn--secondary sim-tool__btn--icon" type="button" :disabled="index === 0" @click="moveStep(index, index - 1)">↑</button>
               <button class="sim-tool__btn sim-tool__btn--secondary sim-tool__btn--icon" type="button" :disabled="index === exerciseSteps.length - 1" @click="moveStep(index, index + 1)">↓</button>
             </div>
@@ -190,13 +190,13 @@ export default {
 </script>
 
 <style scoped>
-.auth-tool__methods,
-.auth-tool__actors {
+.sim-tool__methods,
+.sim-tool__actors {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
-.auth-tool__actors {
+.sim-tool__actors {
   justify-content: space-between;
   color: var(--sim-text-muted);
   font-family: var(--sim-text-mono);
@@ -205,16 +205,16 @@ export default {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-.auth-tool__sequence,
-.auth-tool__reorder {
+.sim-tool__sequence,
+.sim-tool__reorder {
   display: grid;
   gap: 0.75rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.auth-tool__step,
-.auth-tool__reorder-item {
+.sim-tool__step,
+.sim-tool__reorder-item {
   display: grid;
   gap: 0.3rem;
   padding: 0.95rem;
@@ -223,17 +223,17 @@ export default {
   background: var(--sim-panel-elevated);
   color: var(--sim-text);
 }
-.auth-tool__reorder-item {
+.sim-tool__reorder-item {
   grid-template-columns: 1fr auto;
   align-items: center;
 }
-.auth-tool__reorder-actions {
+.sim-tool__reorder-actions {
   display: flex;
   gap: 0.4rem;
 }
 
 @media (max-width: 768px) {
-  .auth-tool__reorder-item {
+  .sim-tool__reorder-item {
     grid-template-columns: 1fr;
   }
 }
