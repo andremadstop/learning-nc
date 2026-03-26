@@ -990,32 +990,14 @@ export default {
 
 <style scoped>
 .virtuprof-bubble {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: min(380px, calc(100vw - 48px));
-  max-height: calc(100vh - 120px);
+  position: relative;
+  width: 100%;
+  max-height: 100%;
   overflow-y: auto;
   background: var(--color-main-background);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
   padding: 14px;
-  animation: bubble-appear 0.25s ease-out;
   display: flex;
   flex-direction: column;
-}
-
-@media (max-width: 480px) {
-  .virtuprof-bubble {
-    position: fixed;
-    inset: 60px 0 0 0;
-    width: 100%;
-    max-height: none;
-    border-radius: 16px 16px 0 0;
-    bottom: 0;
-    z-index: 10000;
-  }
 }
 
 .bubble-content {
@@ -1302,7 +1284,7 @@ export default {
 
 /* ── Chat section ─────────────────────────────────── */
 .chat-history {
-  max-height: min(360px, 50vh);
+  max-height: none;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1310,13 +1292,7 @@ export default {
   margin-bottom: 8px;
   scroll-behavior: smooth;
   flex: 1;
-}
-
-@media (max-width: 480px) {
-  .chat-history {
-    max-height: none;
-    flex: 1;
-  }
+  min-height: 0;
 }
 
 .chat-msg {
@@ -1658,28 +1634,7 @@ export default {
   }
 }
 
-.bubble-arrow {
-  position: absolute;
-  inset-inline-end: 22px;
-  bottom: -8px;
-  width: 16px;
-  height: 16px;
-  background: var(--color-main-background);
-  border-inline-end: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  transform: rotate(45deg);
-}
-
-@keyframes bubble-appear {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
+/* bubble-arrow removed — footer panel layout */
 
 /* EXAM-01: Exam blocked notice */
 .exam-blocked-notice {

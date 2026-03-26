@@ -2,49 +2,90 @@
   <transition name="virtuprof-enter">
     <div
       v-if="enabled"
-      class="virtuprof-container"
-      :class="{ minimized: isMinimized }">
-      <VirtuProfBubble
-        v-if="visible && currentBubbleStep && !isMinimized"
-        :step="currentBubbleStep"
-        :step-index="currentBubbleStepIndex"
-        :total-steps="currentBubbleTotalSteps"
-        :ticket-subject="ticketSubject"
-        :ticket-draft="ticketDraft"
-        :ticket-sending="ticketSending"
-        :ticket-error="ticketError"
-        :ticket-success="ticketSuccess"
-        :tickets="myTickets"
-        :language="language"
-        :chat-messages="chatMessages"
-        :chat-loading="chatLoading"
-        :ai-enabled="aiEnabled"
-        :show-consent-dialog="showAiConsentDialog"
-        :exam-blocked="isExamMode"
-        :has-question-context="hasActiveQuestionContext"
-        :telos-form="telosForm"
-        :telos-saving="telosSaving"
-        :telos-error="telosError"
-        :telos-saved="telosSaved"
-        :tts-enabled="ttsEnabled"
-        :stt-enabled="sttEnabled"
-        :voice-lang="voiceLang"
-        @next="nextStep"
-        @dismiss="dismiss"
-        @action="handleAction"
-        @language-change="setLanguage"
-        @update:ticketSubject="ticketSubject = $event"
-        @update:ticketDraft="ticketDraft = $event"
-        @chat-send="handleChatSend"
-        @report-error="handleReportError"
-        @consent-accept="handleConsentAccept"
-        @consent-decline="handleConsentDecline" />
-      <VirtuProfAvatar
-        v-show="!visible || isMinimized"
-        :animation="currentAnimation"
-        :has-message="visible && !isMinimized"
-        :invite-count="duelInvites.incoming.length"
-        @click="handleAvatarClick" />
+      class="virtuprof-footer"
+      :class="{ 'virtuprof-footer--open': footerOpen, 'virtuprof-footer--mobile': isMobile }"
+      @touchstart="onTouchStart"
+      @touchmove="onTouchMove"
+      @touchend="onTouchEnd">
+      <!-- Tab bar -->
+      <div
+        class="virtuprof-footer__tabs"
+        role="tablist"
+        @click="handleTabBarClick">
+        <button
+          v-for="tab in footerTabs"
+          :key="tab.id"
+          class="virtuprof-footer__tab"
+          :class="{ 'virtuprof-footer__tab--active': footerOpen && activeFooterTab === tab.id }"
+          role="tab"
+          :aria-selected="(footerOpen && activeFooterTab === tab.id) ? 'true' : 'false'"
+          :aria-label="tab.label"
+          @click.stop="selectFooterTab(tab.id)">
+          <span class="virtuprof-footer__tab-icon" aria-hidden="true">{{ tab.icon }}</span>
+          <span class="virtuprof-footer__tab-label">{{ tab.label }}</span>
+          <span
+            v-if="tab.badge > 0"
+            class="virtuprof-footer__tab-badge"
+            aria-hidden="true">{{ tab.badge }}</span>
+        </button>
+      </div>
+
+      <!-- Panel content -->
+      <div class="virtuprof-footer__panel" :style="panelStyle">
+        <!-- Chat tab -->
+        <div v-if="activeFooterTab === 'chat'" class="virtuprof-footer__content">
+          <VirtuProfBubble
+            v-if="currentBubbleStep"
+            :step="currentBubbleStep"
+            :step-index="currentBubbleStepIndex"
+            :total-steps="currentBubbleTotalSteps"
+            :ticket-subject="ticketSubject"
+            :ticket-draft="ticketDraft"
+            :ticket-sending="ticketSending"
+            :ticket-error="ticketError"
+            :ticket-success="ticketSuccess"
+            :tickets="myTickets"
+            :language="language"
+            :chat-messages="chatMessages"
+            :chat-loading="chatLoading"
+            :ai-enabled="aiEnabled"
+            :show-consent-dialog="showAiConsentDialog"
+            :exam-blocked="isExamMode"
+            :has-question-context="hasActiveQuestionContext"
+            :telos-form="telosForm"
+            :telos-saving="telosSaving"
+            :telos-error="telosError"
+            :telos-saved="telosSaved"
+            :tts-enabled="ttsEnabled"
+            :stt-enabled="sttEnabled"
+            :voice-lang="voiceLang"
+            @next="nextStep"
+            @dismiss="dismiss"
+            @action="handleAction"
+            @language-change="setLanguage"
+            @update:ticketSubject="ticketSubject = $event"
+            @update:ticketDraft="ticketDraft = $event"
+            @chat-send="handleChatSend"
+            @report-error="handleReportError"
+            @consent-accept="handleConsentAccept"
+            @consent-decline="handleConsentDecline" />
+        </div>
+
+        <!-- Profil tab (placeholder) -->
+        <div v-else-if="activeFooterTab === 'profil'" class="virtuprof-footer__content virtuprof-footer__placeholder">
+          <p>{{ t('learning', 'Coming soon') }}</p>
+        </div>
+
+        <!-- Quick tab (placeholder) -->
+        <div v-else-if="activeFooterTab === 'quick'" class="virtuprof-footer__content virtuprof-footer__placeholder">
+          <p>{{ t('learning', 'Coming soon') }}</p>
+        </div>
+
+        <!-- Hub tab (placeholder) -->
+        <div v-else-if="activeFooterTab === 'hub'" class="virtuprof-footer__content virtuprof-footer__placeholder">
+          <p>{{ t('learning', 'Coming soon') }}</p>
+        </div>
+      </div>
     </div>
   </transition>
 </template>
@@ -52,7 +93,6 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import VirtuProfAvatar from './VirtuProfAvatar.vue'
 import VirtuProfBubble from './VirtuProfBubble.vue'
 import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
 import {
@@ -97,7 +137,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 
 export default {
   name: 'VirtuProf',
-  components: { VirtuProfAvatar, VirtuProfBubble },
+  components: { VirtuProfBubble },
   props: {
     enabled: {
       type: Boolean,
@@ -106,6 +146,10 @@ export default {
     userRole: {
       type: String,
       default: 'student',
+    },
+    layout: {
+      type: String,
+      default: 'footer',
     },
   },
   data() {
@@ -180,6 +224,13 @@ export default {
       lastHintQuestionId: null,
       // EXAM-01: VirtuProf chat lock during exam mode
       isExamMode: false,
+      // Footer panel state
+      footerOpen: false,
+      activeFooterTab: 'chat',
+      // Mobile swipe tracking
+      touchStartY: 0,
+      touchDeltaY: 0,
+      isMobile: false,
     }
   },
   computed: {
@@ -233,6 +284,21 @@ export default {
       }
       return this.vt('Your question will be sent to the admin.')
     },
+    footerTabs() {
+      const inviteCount = this.duelInvites.incoming.length
+      return [
+        { id: 'chat', icon: '\uD83D\uDCAC', label: t('learning', 'Chat'), badge: 0 },
+        { id: 'profil', icon: '\uD83D\uDC64', label: t('learning', 'Profil'), badge: inviteCount },
+        { id: 'quick', icon: '\u26A1', label: t('learning', 'Quick'), badge: 0 },
+        { id: 'hub', icon: '\uD83D\uDCC1', label: t('learning', 'Hub'), badge: 0 },
+      ]
+    },
+    panelStyle() {
+      if (!this.footerOpen) {
+        return { maxHeight: '0px' }
+      }
+      return { maxHeight: this.isMobile ? '85vh' : '350px' }
+    },
   },
   watch: {
     enabled(value) {
@@ -242,6 +308,10 @@ export default {
     },
   },
   async mounted() {
+    // Footer panel: detect mobile
+    this.checkMobile()
+    this.resizeHandler = () => this.checkMobile()
+    window.addEventListener('resize', this.resizeHandler)
     // PRIV-01: Read persisted AI chat consent from localStorage
     try {
       this.aiChatConsent = window.localStorage.getItem('learning:ai_chat_consent') === 'accepted'
@@ -266,6 +336,9 @@ export default {
     this.$emit('ready')
   },
   beforeDestroy() {
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler)
+    }
     this.$root.$off('virtuprof:trigger', this.enqueue)
     this.$root.$off('virtuprof:context', this.updateContext)
     this.$root.$off('virtuprof:exam-mode', this.setExamMode)
@@ -301,6 +374,77 @@ export default {
     },
     vt(key, params = {}) {
       return translateVirtuProf(this.language, key, params)
+    },
+    // ── Footer panel methods ───────────────────────────
+    checkMobile() {
+      this.isMobile = window.innerWidth <= 768
+    },
+    selectFooterTab(tabId) {
+      if (this.footerOpen && this.activeFooterTab === tabId) {
+        this.footerOpen = false
+      } else {
+        this.activeFooterTab = tabId
+        this.footerOpen = true
+        // Ensure VirtuProfBubble is visible when opening chat tab
+        if (tabId === 'chat' && !this.visible) {
+          this.visible = true
+          if (!this.currentBubbleStep) {
+            this.openHelpHome()
+          }
+        }
+      }
+    },
+    handleTabBarClick() {
+      // Clicking the tab bar area when collapsed opens the last active tab
+      if (!this.footerOpen) {
+        this.footerOpen = true
+        if (this.activeFooterTab === 'chat' && !this.visible) {
+          this.visible = true
+          if (!this.currentBubbleStep) {
+            this.openHelpHome()
+          }
+        }
+      }
+    },
+    onTouchStart(e) {
+      if (!this.isMobile) {
+        return
+      }
+      const touch = e.touches[0]
+      if (touch) {
+        this.touchStartY = touch.clientY
+        this.touchDeltaY = 0
+      }
+    },
+    onTouchMove(e) {
+      if (!this.isMobile) {
+        return
+      }
+      const touch = e.touches[0]
+      if (touch) {
+        this.touchDeltaY = touch.clientY - this.touchStartY
+      }
+    },
+    onTouchEnd() {
+      if (!this.isMobile) {
+        return
+      }
+      const threshold = 60
+      if (this.touchDeltaY < -threshold && !this.footerOpen) {
+        // Swipe up opens
+        this.footerOpen = true
+        if (this.activeFooterTab === 'chat' && !this.visible) {
+          this.visible = true
+          if (!this.currentBubbleStep) {
+            this.openHelpHome()
+          }
+        }
+      } else if (this.touchDeltaY > threshold && this.footerOpen) {
+        // Swipe down closes
+        this.footerOpen = false
+      }
+      this.touchStartY = 0
+      this.touchDeltaY = 0
     },
     translateScriptStep(step) {
       if (!step) {
@@ -1940,23 +2084,100 @@ Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, o
 </script>
 
 <style scoped>
-.virtuprof-container {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  z-index: 5000;
+/* ── Footer panel ─────────────────────────────────── */
+.virtuprof-footer {
+  position: relative;
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-main-background);
+}
+
+.virtuprof-footer__tabs {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  max-height: calc(100% - 32px);
-  max-width: calc(100% - 32px);
+  gap: 0;
+  height: 44px;
+  background: var(--color-background-dark);
+  cursor: pointer;
 }
 
-.virtuprof-container.minimized {
-  right: 12px;
-  bottom: 12px;
+.virtuprof-footer__tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-maxcontrast);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0 8px;
+  position: relative;
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
+.virtuprof-footer__tab:hover {
+  color: var(--color-main-text);
+  background: color-mix(in srgb, var(--color-background-hover) 50%, transparent);
+}
+
+.virtuprof-footer__tab--active {
+  color: var(--color-primary-element);
+  background: var(--color-main-background);
+}
+
+.virtuprof-footer__tab-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.virtuprof-footer__tab-label {
+  font-size: 12px;
+}
+
+.virtuprof-footer__tab-badge {
+  position: absolute;
+  top: 6px;
+  right: calc(50% - 24px);
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--color-error);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.virtuprof-footer__panel {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.virtuprof-footer--open .virtuprof-footer__panel {
+  overflow-y: auto;
+}
+
+.virtuprof-footer__content {
+  padding: 0;
+}
+
+.virtuprof-footer__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  color: var(--color-text-maxcontrast);
+  font-size: 14px;
+}
+
+/* ── Transitions ──────────────────────────────────── */
 .virtuprof-enter-enter-active,
 .virtuprof-enter-leave-active {
   transition: opacity 0.2s ease;
@@ -1967,10 +2188,15 @@ Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, o
   opacity: 0;
 }
 
+/* ── Mobile: fixed bottom sheet ───────────────────── */
 @media (max-width: 768px) {
-  .virtuprof-container {
-    right: 8px;
-    bottom: 8px;
+  .virtuprof-footer--mobile {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12);
   }
 }
 </style>

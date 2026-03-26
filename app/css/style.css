@@ -170,10 +170,20 @@
 
 /* ========== LAYOUT ========== */
 #app-learning {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 50px);
   max-width: 1400px;
   margin: 0 auto;
-  padding: 24px 40px;
+  padding: 0;
   position: relative;
+}
+
+.app-main-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 24px 40px;
 }
 
 #content-vue #app-learning,
@@ -193,19 +203,19 @@
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1024px) {
-  #app-learning {
+  .app-main-content {
     padding: 20px 24px;
   }
 }
 
 @media (max-width: 768px) {
-  #app-learning {
+  .app-main-content {
     padding: 16px;
   }
 }
 
 @media (max-width: 480px) {
-  #app-learning {
+  .app-main-content {
     padding: 10px;
   }
 }

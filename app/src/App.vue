@@ -1,5 +1,6 @@
 <template>
   <NcAppContent id="app-learning">
+    <div class="app-main-content">
     <div class="app-content-header">
       <h2>{{ userRole === 'student' ? t('learning', 'Learning') : t('learning', 'Learning - Spaced Repetition') }}</h2>
     </div>
@@ -270,10 +271,13 @@
       <AuthFlowSimulator v-else-if="toolsView === 'authflow'" />
     </template>
 
+    </div><!-- /.app-main-content -->
+
     <VirtuProf
       v-if="appInitialized"
       :enabled="virtuProfEnabled"
       :user-role="userRole"
+      layout="footer"
       @open-duel="openVirtuProfDuel"
       @ready="triggerInitialVirtuProfHints"
       @enabled-change="handleVirtuProfEnabledChange" />
@@ -1102,9 +1106,19 @@ export default {
 
 <style scoped>
 #app-learning {
-  padding: 24px 40px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 50px);
   max-width: 1400px;
   margin: 0 auto;
+  padding: 0;
+}
+
+.app-main-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 24px 40px;
 }
 
 .app-content-header {
@@ -1221,7 +1235,7 @@ export default {
 }
 
 @media (max-width: 768px) {
-  #app-learning { padding: 16px; }
+  .app-main-content { padding: 16px; }
   .pool-view-header { flex-direction: column; align-items: flex-start; }
   .mode-selector { flex-direction: column; max-width: 100%; }
   .main-nav { max-width: 100%; }
