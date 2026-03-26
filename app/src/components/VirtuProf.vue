@@ -2025,7 +2025,7 @@ Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, o
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 12px 12px 16px;
+  padding: 12px 8px 12px 16px;
   border: 1px solid var(--color-border);
   border-radius: 22px;
   background:
@@ -2035,6 +2035,11 @@ Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, o
   text-align: left;
   font: inherit;
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.virtuprof-rail :deep(.virtuprof-avatar) {
+  width: 48px;
+  height: 63px;
 }
 
 .virtuprof-rail:hover {
