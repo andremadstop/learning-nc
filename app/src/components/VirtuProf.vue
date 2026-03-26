@@ -11,15 +11,15 @@
         :class="{ 'has-invite': duelInvites.incoming.length > 0 }"
         :aria-expanded="showBubble ? 'true' : 'false'"
         @click="handleAvatarClick">
-        <VirtuProfAvatar
-          :animation="currentAnimation"
-          :has-message="visible && !isMinimized"
-          :invite-count="duelInvites.incoming.length" />
         <span class="virtuprof-rail-copy">
           <span class="virtuprof-rail-kicker">{{ vt('VirtuProf') }}</span>
           <span class="virtuprof-rail-title">{{ vt('Learning assistant') }}</span>
           <span class="virtuprof-rail-status">{{ dockStatusText }}</span>
         </span>
+        <VirtuProfAvatar
+          :animation="currentAnimation"
+          :has-message="visible && !isMinimized"
+          :invite-count="duelInvites.incoming.length" />
       </button>
 
       <div v-else class="virtuprof-panel">
