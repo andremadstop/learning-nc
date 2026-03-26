@@ -591,6 +591,12 @@ export default {
       };
     },
     activePlayers() {
+      if (this.botMode && this.isEliminationMode) {
+        return [
+          { user_id: 'me', display_name: t('learning', 'Du'), slot: 0, lives: this.botLocalState.myLives, score: this.botLocalState.myScore },
+          { user_id: 'bot', display_name: 'Klaus', slot: 1, lives: this.botLocalState.botLives, score: this.botLocalState.botScore },
+        ];
+      }
       if (!this.state || !this.state.players) return [];
       return this.state.players.filter(p => !p.is_removed);
     },
@@ -619,6 +625,7 @@ export default {
       return Math.max(...this.sortedPlayers.map(p => p.score)) || 1;
     },
     mySlot() {
+      if (this.botMode) return 0;
       return this.state ? this.state.my_slot : null;
     },
     myScore() {
@@ -628,9 +635,13 @@ export default {
       return me ? me.score : 0;
     },
     myPlayer() {
+      if (this.botMode && this.isEliminationMode) {
+        return this.activePlayers.find(p => p.user_id === 'me') || null;
+      }
       return this.findMyPlayer(this.state);
     },
     myLives() {
+      if (this.botMode) return this.botLocalState.myLives ?? 0;
       return this.myPlayer ? this.myPlayer.lives || 0 : 0;
     },
     remainingPlayers() {
@@ -811,6 +822,8 @@ export default {
           totalQuestions: total,
           myScore: 0,
           botScore: 0,
+          myLives: 3,
+          botLives: 3,
           botAnswerTimeout: null,
           difficulty: 'medium',
         };
@@ -854,9 +867,14 @@ export default {
       const isCorrect = chosen && chosen.is_correct;
 
       if (isCorrect) {
-        this.botLocalState.botScore += 10;
+        if (!this.isEliminationMode) {
+          this.botLocalState.botScore += 10;
+        }
         this.botPhrase = getBotPhrase('correct');
       } else {
+        if (this.isEliminationMode) {
+          this.botLocalState.botLives = Math.max(0, this.botLocalState.botLives - 1);
+        }
         this.botPhrase = getBotPhrase('wrong');
       }
 
@@ -867,13 +885,22 @@ export default {
 
     botAdvanceQuestion() {
       const next = this.botLocalState.currentIndex + 1;
-      if (next >= this.botLocalState.totalQuestions) {
+      const isElim = this.isEliminationMode;
+      const myEliminated = isElim && this.botLocalState.myLives <= 0;
+      const botEliminated = isElim && this.botLocalState.botLives <= 0;
+      if (next >= this.botLocalState.totalQuestions || myEliminated || botEliminated) {
         setTimeout(() => {
-          const my = this.botLocalState.myScore;
-          const bot = this.botLocalState.botScore;
-          this.botKlausEndPhrase = my > bot
-            ? getBotPhrase('lose')
-            : (bot > my ? getBotPhrase('win') : getBotPhrase('taunt'));
+          if (isElim) {
+            this.botKlausEndPhrase = botEliminated && !myEliminated
+              ? getBotPhrase('lose')
+              : (myEliminated && !botEliminated ? getBotPhrase('win') : getBotPhrase('taunt'));
+          } else {
+            const my = this.botLocalState.myScore;
+            const bot = this.botLocalState.botScore;
+            this.botKlausEndPhrase = my > bot
+              ? getBotPhrase('lose')
+              : (bot > my ? getBotPhrase('win') : getBotPhrase('taunt'));
+          }
           this.phase = 'finished';
         }, 1000);
         return;
@@ -1327,10 +1354,17 @@ export default {
         this.correctAnswerId = correct ? correct.id : null;
         this.answeredCorrect = correct ? answerId === correct.id : false;
         this.lastQuestion = question;
-        if (this.answeredCorrect) {
-          this.botLocalState.myScore += 10;
+        if (this.isEliminationMode) {
+          if (!this.answeredCorrect) {
+            this.botLocalState.myLives = Math.max(0, this.botLocalState.myLives - 1);
+          }
+          this.lastPoints = this.answeredCorrect ? 0 : -1;
+        } else {
+          if (this.answeredCorrect) {
+            this.botLocalState.myScore += 10;
+          }
+          this.lastPoints = this.answeredCorrect ? 10 : 0;
         }
-        this.lastPoints = this.answeredCorrect ? 10 : 0;
         if (!this.botHasAnswered) {
           this.botPhrase = getBotPhrase('taunt');
         }

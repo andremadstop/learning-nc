@@ -46,7 +46,9 @@ export default {
       }
 
       const translations = this.question?.translations;
-      if (!translations || (Array.isArray(translations) && translations.length === 0)) {
+      if (!translations
+        || (Array.isArray(translations) && translations.length === 0)
+        || (typeof translations === 'object' && !Array.isArray(translations) && Object.keys(translations).length === 0)) {
         return [];
       }
 
@@ -111,11 +113,11 @@ export default {
 }
 
 .lang-btn {
-  min-width: 24px;
+  min-width: 20px;
   border: 0;
   border-radius: 999px;
-  padding: 2px 6px;
-  font-size: 8px;
+  padding: 1px 4px;
+  font-size: 7px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: #d7e7ff;
