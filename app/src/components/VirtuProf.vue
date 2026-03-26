@@ -104,16 +104,6 @@ import {
   createTelosForm,
 } from '../utils/telosProfile.js'
 
-const TELOS_ONBOARDING_INTRO = `Hey! Schön dass du da bist. 👋
-
-Ich bin VirtuProf — dein persönlicher Lernassistent hier in der DevCloud.
-
-Ich kann dir Themen erklären, Tipps geben wenn du nicht weiterkommst, und dir helfen die richtigen Übungen zu finden.
-
-Je besser ich dich kenne, desto besser kann ich dir helfen. Dafür würde ich dir gern ein paar Fragen stellen — ganz entspannt, kein Test. Dauert 2-3 Minuten.
-
-Du kannst auch jederzeit "Später" sagen.`
-
 const ONBOARDING_PRESETS = [
   {
     id: 'career_changer_comptia',
@@ -287,20 +277,15 @@ export default {
       // AI global enabled flag (PRIV-02)
       aiEnabled: false,
       telosOnboardingActive: false,
-      telosQuestions: [],
-      telosAnswers: [],
-      telosQuestionIndex: 0,
       telosForm: createTelosForm(),
       telosSaving: false,
       telosError: '',
       telosSaved: false,
-      telosFormFallbackMode: false,
       telosCompletionProfile: null,
       ttsEnabled: false,
       sttEnabled: false,
       voiceLang: '',
       onboardingReminderCount: 0,
-      pendingOnboardingAction: null,
       // Journey state (opt-in step-by-step onboarding)
       journeyStepIndex: 0,
       onboardingDeclined: false,
@@ -546,42 +531,9 @@ export default {
       this.applyVirtuProfState(response.data || {})
       return response.data || {}
     },
-    incrementTelosReminderCount() {
-      const nextValue = Math.min(this.onboardingReminderCount + 1, 3)
-      this.onboardingReminderCount = nextValue
-      this.saveVirtuProfPreferences({ onboardingReminderCount: nextValue }).catch(() => {})
-      return nextValue
-    },
     resetTelosReminderCount() {
       this.onboardingReminderCount = 0
       this.saveVirtuProfPreferences({ onboardingReminderCount: 0 }).catch(() => {})
-    },
-    buildTelosIntroMessages() {
-      const firstQuestion = this.telosQuestions[0]?.text || this.vt('What do you do professionally or in your training right now?')
-      return [
-        {
-          role: 'assistant',
-          text: TELOS_ONBOARDING_INTRO,
-          speakable: true,
-        },
-        {
-          role: 'assistant',
-          text: firstQuestion,
-          speakable: true,
-        },
-      ]
-    },
-    async loadTelosQuestions() {
-      if (this.telosQuestions.length > 0) {
-        return this.telosQuestions
-      }
-      const response = await axios.get(generateUrl('/apps/learning/api/profile/telos/questions'))
-      const questions = response.data?.questions || {}
-      this.telosQuestions = Object.entries(questions).map(([key, text]) => ({
-        key,
-        text: String(text || '').trim(),
-      })).filter((item) => item.text)
-      return this.telosQuestions
     },
     async checkTelosOnboarding() {
       if (this.userRole !== 'student' || !this.enabled) {
@@ -671,61 +623,13 @@ export default {
         this.currentAnimation = 'talk'
       }
     },
-    async startTelosOnboarding(forceForm = false) {
-      if (this.userRole !== 'student') {
-        return
-      }
-
+    openTelosForm() {
       this.telosOnboardingActive = true
-      this.telosError = ''
-      this.telosSaved = false
-      this.visible = true
-      this.isMinimized = false
-      this.currentAnimation = 'wave'
-      this.guideStep = null
-      this.telosFormFallbackMode = !!forceForm
-      this.telosCompletionProfile = null
-      this.pendingOnboardingAction = null
-
-      if (!forceForm && this.aiEnabled) {
-        const questions = await this.loadTelosQuestions()
-        if (questions.length > 0) {
-          this.helpView = 'telos-onboarding'
-          this.telosAnswers = []
-          this.telosQuestionIndex = 0
-          this.chatMessages = this.buildTelosIntroMessages()
-          return
-        }
-      }
-
-      this.openTelosForm(true)
-    },
-    openTelosForm(forceFallback = false) {
-      this.telosOnboardingActive = true
-      this.telosFormFallbackMode = forceFallback || this.onboardingReminderCount >= 3
       this.helpView = 'telos-form'
       this.chatMessages = []
       this.visible = true
       this.isMinimized = false
       this.currentAnimation = 'talk'
-      this.pendingOnboardingAction = null
-    },
-    postponeTelosOnboarding() {
-      this.incrementTelosReminderCount()
-      this.telosOnboardingActive = false
-      this.helpView = null
-      this.guideStep = null
-      this.telosError = ''
-      this.telosAnswers = []
-      this.telosQuestionIndex = 0
-      this.telosFormFallbackMode = false
-      this.telosCompletionProfile = null
-      this.pendingOnboardingAction = null
-      this.chatMessages = []
-      if (!this.currentScriptId) {
-        this.visible = false
-        this.currentAnimation = 'idle'
-      }
     },
     updateTelosField(field, value) {
       if (!field) {
@@ -764,76 +668,6 @@ export default {
         this.telosError = e?.response?.data?.error || this.vt('Could not save your learning profile.')
       } finally {
         this.telosSaving = false
-      }
-    },
-    buildTelosConversation() {
-      return this.telosAnswers
-        .map((entry) => `Q: ${entry.question}\nA: ${entry.answer}`)
-        .join('\n\n')
-    },
-    async requestTelosInterviewTurn(nextQuestionNumber) {
-      if (!this.aiChatConsent) {
-        this.pendingOnboardingAction = {
-          type: 'interview-turn',
-          nextQuestionNumber,
-        }
-        this.showAiConsentDialog = true
-        return false
-      }
-
-      this.chatLoading = true
-      this.currentAnimation = 'talk'
-      try {
-        const response = await axios.post(generateUrl('/apps/learning/api/virtuprof/interview-turn'), {
-          history: this.telosAnswers,
-          nextQuestionNumber,
-        })
-        this.telosQuestionIndex = Math.max(0, nextQuestionNumber - 1)
-        this.chatMessages.push({
-          role: 'assistant',
-          text: response.data?.answer || this.telosQuestions[this.telosQuestionIndex]?.text || '',
-          speakable: true,
-        })
-        return true
-      } catch (e) {
-        this.telosError = e?.response?.data?.error || this.vt('I could not continue the interview right now. You can still fill the short form below.')
-        this.openTelosForm(true)
-        return false
-      } finally {
-        this.chatLoading = false
-      }
-    },
-    async submitTelosInterview() {
-      if (!this.aiChatConsent) {
-        this.pendingOnboardingAction = { type: 'submit-telos' }
-        this.showAiConsentDialog = true
-        return
-      }
-
-      this.chatLoading = true
-      this.currentAnimation = 'talk'
-      try {
-        const response = await axios.post(generateUrl('/apps/learning/api/profile/telos/interview'), {
-          conversation: this.buildTelosConversation(),
-        })
-        if (response.data?.saved) {
-          this.telosForm = applyTelosToForm(response.data?.telos || {})
-          this.telosSaved = true
-          this.telosOnboardingActive = false
-          this.telosCompletionProfile = response.data?.telos || null
-          this.helpView = 'telos-complete'
-          this.currentAnimation = 'celebrate'
-          this.resetTelosReminderCount()
-          return
-        }
-
-        this.telosError = response.data?.error || this.vt('I could not extract a stable profile from the interview.')
-        this.openTelosForm(true)
-      } catch (e) {
-        this.telosError = e?.response?.data?.error || this.vt('I could not process the interview right now.')
-        this.openTelosForm(true)
-      } finally {
-        this.chatLoading = false
       }
     },
     async handleGuide(payload = {}) {
@@ -1000,7 +834,7 @@ export default {
     async dismiss() {
       if (this.isHelpOpen) {
         if (this.telosOnboardingActive) {
-          this.postponeTelosOnboarding()
+          this.declineOnboarding()
           return
         }
         this.closeHelp()
@@ -1089,7 +923,7 @@ export default {
         return
       }
       if (action?.type === 'postpone-telos-onboarding') {
-        this.postponeTelosOnboarding()
+        this.declineOnboarding()
         return
       }
       if (action?.type === 'start-journey') {
@@ -1241,14 +1075,10 @@ export default {
       this.showAiConsentDialog = false
       this.pendingChatMessage = null
       this.telosOnboardingActive = false
-      this.telosAnswers = []
-      this.telosQuestionIndex = 0
       this.telosSaving = false
       this.telosError = ''
       this.telosSaved = false
-      this.telosFormFallbackMode = false
       this.telosCompletionProfile = null
-      this.pendingOnboardingAction = null
     },
     handleAvatarClick() {
       if (!this.enabled) {
@@ -1350,7 +1180,7 @@ export default {
     },
     closeHelp() {
       if (this.telosOnboardingActive) {
-        this.postponeTelosOnboarding()
+        this.declineOnboarding()
         return
       }
       this.helpView = null
@@ -1378,9 +1208,6 @@ export default {
       }
       if (this.helpView === 'telos-journey') {
         return this.buildTelosJourneyStep()
-      }
-      if (this.helpView === 'telos-onboarding') {
-        return this.buildTelosOnboardingStep()
       }
       if (this.helpView === 'telos-form') {
         return this.buildTelosFormStep()
@@ -1485,32 +1312,10 @@ export default {
         actions,
       }
     },
-    buildTelosOnboardingStep() {
-      const currentQuestion = this.telosQuestions[this.telosQuestionIndex]
-      const total = this.telosQuestions.length || 10
-      const current = Math.min(this.telosQuestionIndex + 1, total)
-      return {
-        title: this.vt('Learning profile onboarding'),
-        text: currentQuestion
-          ? this.vt('Question {current} of {total}. Answer in your own words and I will adapt the next step to you.', { current, total })
-          : this.vt('Answer the next question in your own words.'),
-        chatPlaceholder: this.vt('Type your answer...'),
-        hideMoreOptions: true,
-        showIntroInline: true,
-        renderActionsInline: true,
-        disableSuggestions: true,
-        actions: [
-          { label: this.vt('Fill manually'), type: 'open-telos-form' },
-          { label: this.vt('Later'), type: 'postpone-telos-onboarding' },
-        ],
-      }
-    },
     buildTelosFormStep() {
       return {
         title: this.vt('Learning profile'),
-        text: this.telosFormFallbackMode
-          ? this.vt('You do not have to chat. Fill in the short form instead and I will still adapt explanations to you.')
-          : this.vt('Fill in the most important learning goals and self-assessment fields. This helps VirtuProf and gives instructors only aggregated class-level insight.'),
+        text: this.vt('Fill in the most important learning goals and self-assessment fields. This helps VirtuProf and gives instructors only aggregated class-level insight.'),
         kind: 'telos-form',
       }
     },
@@ -1903,36 +1708,6 @@ export default {
         return
       }
 
-      if (this.telosOnboardingActive && this.helpView === 'telos-onboarding') {
-        const currentQuestion = this.telosQuestions[this.telosQuestionIndex]
-        if (!currentQuestion) {
-          this.openTelosForm(true)
-          return
-        }
-
-        this.chatMessages.push({ role: 'user', text: message })
-
-        // Detect meta-questions / follow-ups — don't save as answer, re-ask same question
-        if (this.isMetaQuestion(message)) {
-          await this.requestTelosInterviewTurn(this.telosQuestionIndex + 1)
-          return
-        }
-
-        this.telosAnswers.push({
-          key: currentQuestion.key,
-          question: currentQuestion.text,
-          answer: message,
-        })
-
-        if (this.telosQuestionIndex < this.telosQuestions.length - 1) {
-          await this.requestTelosInterviewTurn(this.telosQuestionIndex + 2)
-          return
-        }
-
-        await this.submitTelosInterview()
-        return
-      }
-
       // PRIV-01: show consent dialog before first AI chat
       if (!this.aiChatConsent) {
         this.pendingChatMessage = message
@@ -2044,15 +1819,9 @@ export default {
       }
       this.aiChatConsent = true
       this.showAiConsentDialog = false
-      const pendingOnboardingAction = this.pendingOnboardingAction
-      this.pendingOnboardingAction = null
       const pending = this.pendingChatMessage
       this.pendingChatMessage = null
-      if (pendingOnboardingAction?.type === 'interview-turn') {
-        this.requestTelosInterviewTurn(pendingOnboardingAction.nextQuestionNumber)
-      } else if (pendingOnboardingAction?.type === 'submit-telos') {
-        this.submitTelosInterview()
-      } else if (pending) {
+      if (pending) {
         this.handleChatSend(pending)
       }
     },
@@ -2061,11 +1830,6 @@ export default {
     handleConsentDecline() {
       this.showAiConsentDialog = false
       this.pendingChatMessage = null
-      if (this.pendingOnboardingAction) {
-        this.pendingOnboardingAction = null
-        this.telosError = this.vt('You can still save your learning profile manually below.')
-        this.openTelosForm(true)
-      }
     },
 
     handleExplainQuestion(payload = {}) {
