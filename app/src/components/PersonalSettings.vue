@@ -99,9 +99,58 @@
       <h3>{{ t('learning', 'Learning Profile') }}</h3>
       <p class="section-desc">{{ t('learning', 'This profile helps VirtuProf adapt explanations and lets instructors see only aggregated class-level patterns.') }}</p>
 
-      <NcNoteCard type="info" class="privacy-info-card">
-        {{ t('learning', 'Your profile is stored only on this DevCloud. Instructors see aggregated class statistics, not individual profiles. When you chat with VirtuProf, profile context is sent to Google Gemini during the chat only. You can delete your profile at any time.') }}
-      </NcNoteCard>
+      <details class="data-transparency">
+        <summary class="data-transparency__toggle">
+          {{ t('learning', 'What happens with my data?') }}
+        </summary>
+        <div class="data-transparency__body">
+          <table class="data-transparency__table">
+            <thead>
+              <tr>
+                <th>{{ t('learning', 'Data') }}</th>
+                <th>{{ t('learning', 'Stored') }}</th>
+                <th>{{ t('learning', 'Who sees it') }}</th>
+                <th>{{ t('learning', 'External') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ t('learning', 'Learning profile (role, goals, strengths)') }}</td>
+                <td>{{ t('learning', 'This DevCloud only') }}</td>
+                <td>{{ t('learning', 'You + VirtuProf') }}</td>
+                <td>{{ t('learning', 'Gemini (during chat only)') }}</td>
+              </tr>
+              <tr>
+                <td>{{ t('learning', 'Help offer / help wanted') }}</td>
+                <td>{{ t('learning', 'This DevCloud only') }}</td>
+                <td>{{ t('learning', 'Depends on visibility setting') }}</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>{{ t('learning', 'Learning progress (XP, streaks, boxes)') }}</td>
+                <td>{{ t('learning', 'This DevCloud only') }}</td>
+                <td>{{ t('learning', 'You + instructor (aggregated)') }}</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>{{ t('learning', 'Chat messages with VirtuProf') }}</td>
+                <td>{{ t('learning', 'Browser (localStorage)') }}</td>
+                <td>{{ t('learning', 'Only you') }}</td>
+                <td>{{ t('learning', 'Gemini (per message, not stored)') }}</td>
+              </tr>
+              <tr>
+                <td>{{ t('learning', 'Answers in training / exam') }}</td>
+                <td>{{ t('learning', 'This DevCloud only') }}</td>
+                <td>{{ t('learning', 'You + instructor (aggregated)') }}</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="data-transparency__note">
+            {{ t('learning', 'You can reset your learning profile above. Chat history can be cleared in the VirtuProf panel. All data stays on this server — no tracking, no ads, no data sales.') }}
+          </p>
+        </div>
+      </details>
 
       <div v-if="telosLoading" class="loading">
         <NcLoadingIcon :size="20" />
@@ -672,7 +721,71 @@ export default {
   line-height: 1.4;
 }
 
-.privacy-info-card {
+.data-transparency {
   margin-bottom: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.data-transparency__toggle {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-primary-element);
+  background: var(--color-background-hover);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.data-transparency__toggle::before {
+  content: '▸';
+  transition: transform 0.2s;
+}
+
+.data-transparency[open] > .data-transparency__toggle::before {
+  transform: rotate(90deg);
+}
+
+.data-transparency__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.data-transparency__body {
+  padding: 12px 16px 16px;
+}
+
+.data-transparency__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.data-transparency__table th {
+  text-align: left;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--color-border);
+  color: var(--color-text-maxcontrast);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.data-transparency__table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.data-transparency__note {
+  font-size: 12px;
+  color: var(--color-text-maxcontrast);
+  line-height: 1.5;
+  margin: 0;
 }
 </style>
