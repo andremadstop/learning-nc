@@ -1,0 +1,648 @@
+{
+  "campaign_id": "zero_day_rechenzentrum",
+  "version": "1.0.0",
+  "title": "Zero Day im Rechenzentrum",
+  "description": "Eine 0-Day-Schwachstelle im Webserver ist oeffentlich. Der Exploit kursiert bereits. Du hast Stunden, nicht Tage — patch oder stirb (digital gesprochen).",
+  "duration_minutes": 30,
+  "difficulty": "advanced",
+  "focus_areas": [
+    "vulnerability-management",
+    "network-segmentation",
+    "waf",
+    "access-control",
+    "patch-management",
+    "secure-architecture"
+  ],
+  "character_recommendations": [
+    "security",
+    "sysadmin",
+    "architect"
+  ],
+  "icon": "💀",
+  "workplace_npcs": [
+    {
+      "character_id": "weber_patch",
+      "role_in_story": "Frau Weber",
+      "default_emotion": "frustrated"
+    },
+    {
+      "character_id": "marco_dev",
+      "role_in_story": "Marco",
+      "default_emotion": "idle"
+    },
+    {
+      "character_id": "klaus_dau",
+      "role_in_story": "Klaus",
+      "default_emotion": "confused"
+    },
+    {
+      "character_id": "dr_hartmann",
+      "role_in_story": "Dr. Hartmann",
+      "default_emotion": "alert"
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "story",
+        "title": "Montagmorgen, 07:12 Uhr",
+        "narrative": "Dein Wecker hat noch nicht geklingelt, aber dein Telefon vibriert bereits wie ein epileptischer Hamster. 14 verpasste Anrufe, 23 Slack-Nachrichten, und eine E-Mail von der CISA mit dem Betreff 'CRITICAL: CVE-2026-31337 — Active Exploitation in the Wild'. Du oeffnest den CVE-Report und dein Magen macht einen Salto: Es ist euer Webserver. Genau die Version, die ihr seit 18 Monaten im Produktiveinsatz habt.",
+        "start": true,
+        "act": 1,
+        "effects": [
+          {
+            "set_flag": "zero_day_known"
+          },
+          {
+            "add_item": "cve_report"
+          }
+        ]
+      },
+      {
+        "id": "hartmann_briefing",
+        "type": "story",
+        "title": "Dr. Hartmann am Telefon",
+        "narrative": "CISO Dr. Hartmann ruft an, bevor du ueberhaupt Kaffee hattest. Sein Ton ist die Art von professioneller Ruhe, die schlimmer ist als Schreien.",
+        "act": 1,
+        "npc_dialog": {
+          "speaker": "Dr. Hartmann",
+          "emotion": "alert",
+          "text": "Guten Morgen. Ich nehme an, Sie haben den CVE gesehen. Remote Code Execution, CVSS 9.8, kein Patch vom Vendor, Exploit seit vier Stunden auf GitHub. Unsere drei Produktiv-Webserver laufen alle auf der betroffenen Version. Ich habe in 90 Minuten einen Call mit dem Vorstand. Bis dahin brauche ich von Ihnen: Sofortmassnahmen, einen Zeitplan fuer den Hotfix, und eine ehrliche Einschaetzung, ob wir schon kompromittiert sind. Fragen?"
+        },
+        "effects": [
+          {
+            "add_reputation": {
+              "management": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "weber_buero",
+        "type": "story",
+        "title": "Frau Weber hat schon angefangen",
+        "narrative": "Du stuermst ins Buero. Frau Weber sitzt vor ihrem Bildschirm, umgeben von leeren Red-Bull-Dosen und Post-its, die aussehen wie ein Schlachtplan. Sie ist seit 05:30 Uhr hier und hat bereits die Haelfte aller Systeme inventarisiert.",
+        "act": 1,
+        "npc_dialog": {
+          "speaker": "Frau Weber",
+          "emotion": "frustrated",
+          "text": "Drei Produktiv-Webserver, zwei Staging-Instanzen, und — das ist der Witz des Tages — Klaus hat letzte Woche eine weitere Instanz auf dem Dev-Server hochgezogen, 'zum Testen'. Ohne Firewall-Regeln. Ohne Monitoring. Ohne dass irgendjemand davon wusste. Der Vendor hat noch keinen Patch, aber es gibt einen inoffiziellen Hotfix auf GitHub. Das Problem: Niemand hat den auditiert. Marco sagt, er haette schon eine Loesung, aber bei dem traue ich der Sache nicht."
+        },
+        "effects": []
+      },
+      {
+        "id": "marco_loesung",
+        "type": "story",
+        "title": "Marcos 'Feature'",
+        "narrative": "Marco lehnt sich in seinem Ergonomie-Stuhl zurueck, die Fuesse auf dem Schreibtisch, und erklaert mit der Gelassenheit eines Mannes, der noch nie einen Produktiv-Server gecrashed hat — weil er seine Fehler nie zugibt.",
+        "act": 1,
+        "npc_dialog": {
+          "speaker": "Marco",
+          "emotion": "idle",
+          "text": "Leute, entspannt euch. Ich habe den betroffenen Endpoint schon vor drei Monaten umgebaut. Da ist eine Custom-Middleware drin, die filtert alles raus. Nein, die ist nicht dokumentiert, aber sie funktioniert. In meinem Branch. Auf meinem Laptop. Hoert mal, das ist kein Bug, das ist ein Feature — wenn ihr den Request richtig formatiert, kriegt ihr sogar eine huebsche Fehlermeldung statt einer Shell. Ausserdem ist RCE ja nur gefaehrlich, wenn jemand wirklich boese Absichten hat, und wer greift schon einen mittelstaendischen Webserver an?"
+        },
+        "effects": []
+      },
+      {
+        "id": "marco_challenge",
+        "type": "bot_correction",
+        "title": "DauBot: Marcos 'Middleware'",
+        "narrative": "Marcos Sicherheitsverstaendnis muss dringend korrigiert werden, bevor seine 'Loesung' in Produktion landet.",
+        "act": 1,
+        "pass_flag": "bot_corrected_marco",
+        "bot_correction": {
+          "scenario_id": "marco-custom-middleware",
+          "mistake_id": "marco_unaudited_fix",
+          "prompt": "Bewerte Marcos Ansatz und waehle die richtige Strategie.",
+          "bot_action": "Marco will eine undokumentierte, ungetestete Custom-Middleware als Fix fuer eine kritische RCE-Schwachstelle deployen.",
+          "symptom": "Der 'Fix' existiert nur lokal, ist nicht auditiert, und Marco glaubt, dass ein mittelstaendisches Unternehmen kein Angriffsziel ist.",
+          "error_options": [
+            {
+              "id": "unaudited_custom_code",
+              "label": "Undokumentierter Custom-Code ist kein valider Security-Fix — er koennte selbst Schwachstellen enthalten"
+            },
+            {
+              "id": "middleware_is_fine",
+              "label": "Marcos Middleware reicht aus, wenn sie auf dem Laptop funktioniert"
+            },
+            {
+              "id": "rce_not_critical",
+              "label": "RCE auf einem Mittelstands-Server ist kein kritisches Risiko"
+            },
+            {
+              "id": "just_needs_docs",
+              "label": "Der Code muss nur dokumentiert werden, dann ist er produktionsreif"
+            }
+          ],
+          "fix_options": [
+            {
+              "id": "waf_plus_audit",
+              "label": "WAF-Regeln als Sofortmassnahme, Hotfix auditieren, dann kontrolliert deployen"
+            },
+            {
+              "id": "deploy_marcos_fix",
+              "label": "Marcos Middleware sofort deployen, da besser als nichts"
+            },
+            {
+              "id": "wait_for_vendor",
+              "label": "Auf den offiziellen Vendor-Patch warten und bis dahin nichts aendern"
+            },
+            {
+              "id": "server_abschalten",
+              "label": "Alle Webserver sofort abschalten bis der Patch da ist"
+            }
+          ],
+          "expected_error_id": "unaudited_custom_code",
+          "expected_fix_id": "waf_plus_audit",
+          "pass_flag": "bot_corrected_marco"
+        },
+        "effects": []
+      },
+      {
+        "id": "klaus_dev_server",
+        "type": "story",
+        "title": "Klaus' Ueberraschung",
+        "narrative": "Frau Weber zieht dich zur Seite. Ihr Gesicht sagt alles: Klaus hat nicht nur eine Webserver-Instanz 'zum Testen' hochgezogen — er hat sie direkt ins Internet gestellt. Ohne Firewall. Ohne Updates. Ohne Passwort.",
+        "act": 2,
+        "npc_dialog": {
+          "speaker": "Klaus",
+          "emotion": "confused",
+          "text": "Ja, ich wollte nur mal kurz testen, ob die Homepage auch von zu Hause aus geht! Und weil die Firewall immer so genervt hat mit ihren Regeln, hab ich die einfach... ausgemacht? Das ist doch wie beim Auto — wenn die Handbremse nervt, loest man die halt. Und ein Passwort brauchte ich nicht, weil ich mir das eh nicht merken kann. Ich hab die URL aber niemandem gesagt! Na gut, ausser auf LinkedIn, da hab ich einen Post gemacht: 'Mein erstes Webserver-Projekt'. Hatte sogar 12 Likes!"
+        },
+        "effects": []
+      },
+      {
+        "id": "klaus_server_aufraemen",
+        "type": "story",
+        "title": "Klaus' Server sichern",
+        "narrative": "Du rennst zum Netzwerkplan. Klaus' Server haengt im selben VLAN wie die Produktivsysteme. Wenn der Angreifer dort schon drin ist, hat er freie Fahrt zum Domain Controller. Die gute Nachricht: Du kannst das Segment noch isolieren. Die schlechte: Du musst es JETZT tun.",
+        "act": 2,
+        "effects": [
+          {
+            "add_item": "netzwerkplan"
+          }
+        ]
+      },
+      {
+        "id": "waf_konfiguration",
+        "type": "story",
+        "title": "WAF-Regeln setzen",
+        "narrative": "Frau Weber hat die Web Application Firewall vorbereitet. Die Signaturen fuer den Exploit sind bekannt — du musst sie jetzt in die WAF einpflegen, ohne den legitimen Traffic zu blockieren. Ein falscher Regex und die Kunden-API ist tot.",
+        "act": 2,
+        "npc_dialog": {
+          "speaker": "Frau Weber",
+          "emotion": "alert",
+          "text": "Ich habe die YARA-Regel vom CERT angepasst. Die WAF-Signatur sollte die Exploit-Payloads matchen, aber du musst die Regeln live testen. Wenn wir zu aggressiv filtern, blocken wir die halbe API. Zu wenig, und der Angreifer kommt trotzdem durch. Kein Druck."
+        },
+        "effects": []
+      },
+      {
+        "id": "waf_challenge",
+        "type": "simulator",
+        "title": "WAF-Regeln konfigurieren",
+        "narrative": "Die WAF wartet auf praezise Regeln. Zu eng blockiert den Betrieb, zu weit laesst den Exploit durch.",
+        "act": 2,
+        "timer_seconds": 120,
+        "simulator": {
+          "type": "firewall",
+          "scenario": "waf-rules-zero-day",
+          "pass_flag": "waf_configured"
+        },
+        "effects": []
+      },
+      {
+        "id": "segmentierung",
+        "type": "story",
+        "title": "Netzwerk-Segmentierung",
+        "narrative": "Der Netzwerkplan liegt vor dir wie eine Landkarte in einem Kriegsfilm. Klaus' ungesicherter Server, die Produktivsysteme und der Domain Controller — alle im selben flachen Netzwerk. Keine VLANs, keine Micro-Segmentierung, nur ein grosser, gluecklicher Layer-2-Spielplatz fuer Angreifer.",
+        "act": 2,
+        "npc_dialog": {
+          "speaker": "Dr. Hartmann",
+          "emotion": "alert",
+          "text": "Ich sehe gerade den Netzwerkplan. Sagen Sie mir bitte, dass das ein Entwurf ist und nicht die aktuelle Topologie. Alles in einem Segment? Das ist keine Architektur, das ist ein All-you-can-eat-Buffet fuer Angreifer. Segmentieren Sie sofort. Die Produktivsysteme muessen in ein eigenes VLAN, Klaus' Experiment in Quarantaene, und der DC bekommt eine dedizierte Zone."
+        },
+        "effects": []
+      },
+      {
+        "id": "segmentierung_challenge",
+        "type": "simulator",
+        "title": "Netzwerk-Segmentierung",
+        "narrative": "Trenne die Netze sauber auf: Produktion, Dev, Management. Jedes Segment braucht seine eigenen Regeln.",
+        "act": 2,
+        "simulator": {
+          "type": "routing",
+          "scenario": "vlan-segmentation",
+          "pass_flag": "network_segmented"
+        },
+        "effects": []
+      },
+      {
+        "id": "zugangskontrollen",
+        "type": "story",
+        "title": "Zugangskontrollen verschaerfen",
+        "narrative": "Frau Weber zeigt dir die Access-Liste der Webserver. Admin-Zugang per SSH mit Passwort-Auth, Root-Login erlaubt, und — natuerlich — Klaus hat seinen SSH-Key ohne Passphrase erstellt und den Public Key auf LinkedIn gepostet. 'Fuer mein Portfolio', sagt er.",
+        "act": 2,
+        "npc_dialog": {
+          "speaker": "Frau Weber",
+          "emotion": "frustrated",
+          "text": "Schau dir das an. Password-Auth aktiv, Root-Login erlaubt, kein MFA, keine IP-Whitelist. Marco hat zwar SSH-Keys, aber sein Private Key liegt auf einem geteilten Netzlaufwerk. Und Klaus... Klaus hat seinen Public Key als LinkedIn-Post veroeffentlicht. Ich trinke jetzt meinen fuenften Kaffee und dann raumen wir das auf."
+        },
+        "effects": []
+      },
+      {
+        "id": "auth_challenge",
+        "type": "simulator",
+        "title": "Zugangskontrollen haerten",
+        "narrative": "SSH-Haertung, MFA-Enforcement, Privilege Escalation unterbinden. Jetzt.",
+        "act": 2,
+        "simulator": {
+          "type": "authflow",
+          "scenario": "harden-ssh-access",
+          "pass_flag": "access_hardened"
+        },
+        "effects": []
+      },
+      {
+        "id": "hotfix_entscheidung",
+        "type": "story",
+        "title": "Der Hotfix",
+        "narrative": "Frau Weber hat den inoffiziellen Hotfix von GitHub heruntergeladen und in einer Sandbox getestet. Er scheint zu funktionieren. Marco behauptet, sein Fix sei besser. Dr. Hartmann will eine Entscheidung — jetzt.",
+        "act": 3,
+        "effects": [
+          {
+            "add_item": "hotfix_paket"
+          }
+        ]
+      },
+      {
+        "id": "hotfix_github",
+        "type": "story",
+        "title": "GitHub-Hotfix deployen",
+        "narrative": "Du entscheidest dich fuer den Community-Hotfix. Frau Weber hat ihn dreimal in der Sandbox laufen lassen, die Hashes stimmen, und das CERT hat ihn abgenickt. Der Rollout auf die drei Produktivserver beginnt. Server 1 und 2 laufen durch. Bei Server 3 haengt der Health-Check.",
+        "act": 3,
+        "timer_seconds": 150,
+        "npc_dialog": {
+          "speaker": "Frau Weber",
+          "emotion": "alert",
+          "text": "Server 3 antwortet nicht auf den Health-Check. Das kann ein Timing-Problem sein, oder der Hotfix hat die Custom-Config zerschossen. Wir haben 90 Sekunden bevor der Load Balancer ihn aus der Rotation nimmt und die Kunden das merken."
+        },
+        "effects": [
+          {
+            "set_flag": "hotfix_deploying"
+          },
+          {
+            "add_reputation": {
+              "security": 2
+            }
+          }
+        ]
+      },
+      {
+        "id": "hotfix_konservativ",
+        "type": "story",
+        "title": "Konservativer Ansatz",
+        "narrative": "Du entscheidest: WAF-Regeln halten, Server bleiben auf der alten Version, und du wartest auf den offiziellen Vendor-Patch. Dr. Hartmann ist nicht begeistert, aber er versteht die Logik. Marco sieht zufrieden aus, weil sein Ego keinen Widerspruch erfahren hat.",
+        "act": 3,
+        "effects": [
+          {
+            "set_flag": "conservative_approach"
+          },
+          {
+            "add_reputation": {
+              "management": 1,
+              "security": -1
+            }
+          }
+        ]
+      },
+      {
+        "id": "hotfix_marcos_weg",
+        "type": "story",
+        "title": "Marcos Fix in Produktion",
+        "narrative": "Gegen besseres Wissen laesst du Marco seinen Fix deployen. Er tippt mit der Selbstsicherheit eines Mannes, der noch nie Konsequenzen erlebt hat. Der Deploy laeuft... und bricht bei Server 2 mit einem Segfault ab. Marco starrt auf den Bildschirm, als haette ihn jemand persoenlich beleidigt.",
+        "act": 3,
+        "npc_dialog": {
+          "speaker": "Marco",
+          "emotion": "frustrated",
+          "text": "Das... das lag an der Umgebungsvariable. Die ist in Staging anders als in Prod. Wer macht denn sowas? Okay, VIELLEICHT haette ich das vorher testen sollen, aber ich hatte keine Zeit, weil ich ein Pull-Request-Review fuer mein Side-Project machen musste. Koennen wir einfach rollbacken und so tun, als waere nichts passiert?"
+        },
+        "effects": [
+          {
+            "set_flag": "marco_fix_failed"
+          },
+          {
+            "add_reputation": {
+              "security": -2,
+              "team": -1
+            }
+          }
+        ]
+      },
+      {
+        "id": "abschluss_bewertung",
+        "type": "story",
+        "title": "Dr. Hartmanns Bewertung",
+        "narrative": "Dr. Hartmann kommt aus dem Vorstandscall zurueck. Sein Gesichtsausdruck ist unlesbar — das CISO-Pokerface, perfektioniert ueber Jahre in Krisenmeeetings.",
+        "act": 3,
+        "effects": []
+      },
+      {
+        "id": "ende_gold",
+        "type": "story",
+        "title": "Goldenes Ende: Secure by Design",
+        "narrative": "Der Hotfix laeuft, das Netzwerk ist segmentiert, die Zugangskontrollen gehaertet. Dr. Hartmann hat dem Vorstand eine Strategie praesentiert, die auf deiner Arbeit basiert. Frau Weber hat endlich ihren sechsten Kaffee. Klaus hat versprochen, nie wieder einen Server ohne Genehmigung aufzusetzen — das glaubt zwar niemand, aber der Gedanke zaehlt. Marco... Marco hat seine Middleware geloescht und behauptet jetzt, er habe 'den Team-Ansatz von Anfang an unterstuetzt'.",
+        "act": 3,
+        "npc_dialog": {
+          "speaker": "Dr. Hartmann",
+          "emotion": "relieved",
+          "text": "Der Vorstand ist beruhigt. Die Segmentierung war ueberfaellig, und Ihre Sofortmassnahmen haben einen aktiven Exploit verhindert. Ich habe Ihren Bericht als Best-Practice-Referenz an das CERT weitergeleitet. Und falls Sie sich fragen: Ja, ich habe auch Klaus' LinkedIn-Post loeschen lassen."
+        },
+        "effects": []
+      },
+      {
+        "id": "ende_gut",
+        "type": "story",
+        "title": "Gutes Ende: Gehalten",
+        "narrative": "Die WAF-Regeln halten, der Exploit wird geblockt, aber die eigentliche Schwachstelle ist noch da. Der Vendor hat fuer Donnerstag einen Patch angekuendigt. Bis dahin ist es ein Wettrennen zwischen eurer WAF und den Angreifern. Frau Weber hat einen Alerting-Bot eingerichtet, der sie weckt, falls die Signaturen umgangen werden. Klaus' Server wurde leise entsorgt.",
+        "act": 3,
+        "npc_dialog": {
+          "speaker": "Frau Weber",
+          "emotion": "alert",
+          "text": "Wir halten. Aber 'halten' ist kein Plan, das ist ein Zustand. Ich schlafe diese Woche mit dem Laptop neben dem Kopfkissen. Wenn die WAF-Regeln umgangen werden, bin ich in 90 Sekunden am Terminal. Hoffentlich."
+        },
+        "effects": []
+      },
+      {
+        "id": "ende_chaos",
+        "type": "story",
+        "title": "Chaotisches Ende: Breach Notification",
+        "narrative": "Der Exploit hat gegriffen. Waehrend Marco seinen Fix debuggt hat, ist ein Angreifer durch Klaus' offenen Dev-Server ins Produktionsnetz gelangt. Kundendaten sind betroffen. Dr. Hartmann muss eine Breach Notification an die Datenschutzbehoerde schicken. Frau Weber ueberlegt, ob sie ihren Lebenslauf auf einem besser gesicherten Server hosten sollte.",
+        "act": 3,
+        "npc_dialog": {
+          "speaker": "Dr. Hartmann",
+          "emotion": "frustrated",
+          "text": "Ich habe gerade 72 Stunden, um die Datenschutzbehoerde zu informieren. Der Vorstand will Koepfe rollen sehen. Und Marco hat mir gerade eine Mail geschickt, in der er erklaert, warum sein Fix 'theoretisch funktioniert haette'. Theoretisch. Ich brauche einen Whisky."
+        },
+        "effects": []
+      },
+      {
+        "id": "ende_gold_epilog",
+        "type": "ending",
+        "title": "Abschluss: Gold",
+        "narrative": "CVE gepatcht. Netzwerk segmentiert. Klaus' LinkedIn bereinigt. Sicherer als vorher.",
+        "act": 3,
+        "is_ending": true,
+        "effects": []
+      },
+      {
+        "id": "ende_gut_epilog",
+        "type": "ending",
+        "title": "Abschluss: Gut",
+        "narrative": "Die WAF haelt. Der echte Patch kommt Donnerstag. Schlaf ist optional.",
+        "act": 3,
+        "is_ending": true,
+        "effects": []
+      },
+      {
+        "id": "ende_chaos_epilog",
+        "type": "ending",
+        "title": "Abschluss: Chaos",
+        "narrative": "Breach Notification raus. Marco aktualisiert LinkedIn. Klaus hat einen neuen Server aufgesetzt.",
+        "act": 3,
+        "is_ending": true,
+        "effects": []
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_start_to_hartmann",
+        "from": "start",
+        "to": "hartmann_briefing",
+        "label": "Dr. Hartmanns Anruf annehmen"
+      },
+      {
+        "id": "e_hartmann_to_weber",
+        "from": "hartmann_briefing",
+        "to": "weber_buero",
+        "label": "Ins Buero rasen"
+      },
+      {
+        "id": "e_weber_to_marco",
+        "from": "weber_buero",
+        "to": "marco_loesung",
+        "label": "Marcos 'Loesung' anhoeren"
+      },
+      {
+        "id": "e_marco_to_challenge",
+        "from": "marco_loesung",
+        "to": "marco_challenge",
+        "label": "Marcos Ansatz technisch bewerten"
+      },
+      {
+        "id": "e_challenge_to_klaus",
+        "from": "marco_challenge",
+        "to": "klaus_dev_server",
+        "label": "Klaus' Ueberraschung entdecken"
+      },
+      {
+        "id": "e_klaus_to_aufraumen",
+        "from": "klaus_dev_server",
+        "to": "klaus_server_aufraemen",
+        "label": "Klaus' Server sofort isolieren"
+      },
+      {
+        "id": "e_aufraumen_to_waf",
+        "from": "klaus_server_aufraemen",
+        "to": "waf_konfiguration",
+        "label": "Die WAF als erste Verteidigungslinie aufsetzen"
+      },
+      {
+        "id": "e_aufraumen_to_segmentierung",
+        "from": "klaus_server_aufraemen",
+        "to": "segmentierung",
+        "label": "Erst das Netzwerk sauber segmentieren"
+      },
+      {
+        "id": "e_waf_story_to_sim",
+        "from": "waf_konfiguration",
+        "to": "waf_challenge",
+        "label": "WAF-Regeln konfigurieren"
+      },
+      {
+        "id": "e_waf_to_segmentierung",
+        "from": "waf_challenge",
+        "to": "segmentierung",
+        "label": "Jetzt das Netzwerk segmentieren"
+      },
+      {
+        "id": "e_segmentierung_story_to_sim",
+        "from": "segmentierung",
+        "to": "segmentierung_challenge",
+        "label": "Die VLANs konfigurieren"
+      },
+      {
+        "id": "e_segmentierung_to_waf",
+        "from": "segmentierung_challenge",
+        "to": "waf_konfiguration",
+        "label": "Jetzt die WAF aufsetzen",
+        "conditions": {
+          "requires_not_flag": "waf_configured"
+        }
+      },
+      {
+        "id": "e_segmentierung_to_auth",
+        "from": "segmentierung_challenge",
+        "to": "zugangskontrollen",
+        "label": "Zugangskontrollen verschaerfen",
+        "conditions": {
+          "requires_flag": "waf_configured"
+        }
+      },
+      {
+        "id": "e_waf_to_auth",
+        "from": "waf_challenge",
+        "to": "zugangskontrollen",
+        "label": "Zugangskontrollen verschaerfen",
+        "conditions": {
+          "requires_flag": "network_segmented"
+        }
+      },
+      {
+        "id": "e_auth_story_to_sim",
+        "from": "zugangskontrollen",
+        "to": "auth_challenge",
+        "label": "SSH und MFA haerten"
+      },
+      {
+        "id": "e_auth_to_hotfix",
+        "from": "auth_challenge",
+        "to": "hotfix_entscheidung",
+        "label": "Den Hotfix angehen"
+      },
+      {
+        "id": "e_hotfix_github",
+        "from": "hotfix_entscheidung",
+        "to": "hotfix_github",
+        "label": "Den auditierten Community-Hotfix deployen"
+      },
+      {
+        "id": "e_hotfix_konservativ",
+        "from": "hotfix_entscheidung",
+        "to": "hotfix_konservativ",
+        "label": "WAF-Regeln halten und auf Vendor-Patch warten"
+      },
+      {
+        "id": "e_hotfix_marco",
+        "from": "hotfix_entscheidung",
+        "to": "hotfix_marcos_weg",
+        "label": "Marco seinen Fix deployen lassen"
+      },
+      {
+        "id": "e_github_to_bewertung",
+        "from": "hotfix_github",
+        "to": "abschluss_bewertung",
+        "label": "Dr. Hartmann Ergebnisse praesentieren"
+      },
+      {
+        "id": "e_konservativ_to_bewertung",
+        "from": "hotfix_konservativ",
+        "to": "abschluss_bewertung",
+        "label": "Dr. Hartmann ueber den konservativen Ansatz informieren"
+      },
+      {
+        "id": "e_marco_to_bewertung",
+        "from": "hotfix_marcos_weg",
+        "to": "abschluss_bewertung",
+        "label": "Den Schaden begrenzen und berichten"
+      },
+      {
+        "id": "e_bewertung_to_gold",
+        "from": "abschluss_bewertung",
+        "to": "ende_gold",
+        "label": "Hotfix deployed, Netz segmentiert, Zugang gehaertet",
+        "conditions": {
+          "requires_flag": "waf_configured",
+          "requires_item": "hotfix_paket",
+          "min_reputation": {
+            "security": 3
+          }
+        }
+      },
+      {
+        "id": "e_bewertung_to_gut",
+        "from": "abschluss_bewertung",
+        "to": "ende_gut",
+        "label": "WAF haelt, aber Patch steht noch aus",
+        "conditions": {
+          "requires_flag": "waf_configured"
+        }
+      },
+      {
+        "id": "e_bewertung_to_chaos",
+        "from": "abschluss_bewertung",
+        "to": "ende_chaos",
+        "label": "Breach — Kundendaten betroffen"
+      },
+      {
+        "id": "e_gold_to_epilog",
+        "from": "ende_gold",
+        "to": "ende_gold_epilog",
+        "label": "CVE geschlossen"
+      },
+      {
+        "id": "e_gut_to_epilog",
+        "from": "ende_gut",
+        "to": "ende_gut_epilog",
+        "label": "Warten auf Donnerstag"
+      },
+      {
+        "id": "e_chaos_to_epilog",
+        "from": "ende_chaos",
+        "to": "ende_chaos_epilog",
+        "label": "Breach Notification versenden"
+      }
+    ],
+    "acts": [
+      {
+        "name": "Alarmphase",
+        "node_ids": [
+          "start",
+          "hartmann_briefing",
+          "weber_buero",
+          "marco_loesung",
+          "marco_challenge"
+        ]
+      },
+      {
+        "name": "Haertung",
+        "node_ids": [
+          "klaus_dev_server",
+          "klaus_server_aufraemen",
+          "waf_konfiguration",
+          "waf_challenge",
+          "segmentierung",
+          "segmentierung_challenge",
+          "zugangskontrollen",
+          "auth_challenge"
+        ]
+      },
+      {
+        "name": "Patch oder Pray",
+        "node_ids": [
+          "hotfix_entscheidung",
+          "hotfix_github",
+          "hotfix_konservativ",
+          "hotfix_marcos_weg",
+          "abschluss_bewertung",
+          "ende_gold",
+          "ende_gut",
+          "ende_chaos",
+          "ende_gold_epilog",
+          "ende_gut_epilog",
+          "ende_chaos_epilog"
+        ]
+      }
+    ]
+  }
+}

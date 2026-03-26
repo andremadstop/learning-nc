@@ -1,0 +1,705 @@
+{
+  "campaign_id": "phishing_friday",
+  "version": "1.0.0",
+  "title": "Phishing Friday",
+  "description": "Freitagnachmittag. Klaus hat auf einen Link geklickt. Jetzt brennt die Huette — Credential-Leak, laterale Bewegung, und eine Ransomware-Drohung laesst gruessen.",
+  "duration_minutes": 30,
+  "difficulty": "intermediate",
+  "focus_areas": [
+    "phishing",
+    "incident-response",
+    "firewall",
+    "wireshark",
+    "port-scanning",
+    "credential-management"
+  ],
+  "character_recommendations": [
+    "security",
+    "sysadmin",
+    "soc-analyst"
+  ],
+  "icon": "🎣",
+  "workplace_npcs": [
+    {
+      "character_id": "ceo_panik",
+      "role_in_story": "CEO Herr Kessler",
+      "default_emotion": "frustrated"
+    },
+    {
+      "character_id": "vera_soc",
+      "role_in_story": "Vera",
+      "default_emotion": "alert"
+    },
+    {
+      "character_id": "klaus_dau",
+      "role_in_story": "Klaus",
+      "default_emotion": "confused"
+    },
+    {
+      "character_id": "steinbach_it",
+      "role_in_story": "Herr Steinbach",
+      "default_emotion": "frustrated"
+    }
+  ],
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "story",
+        "title": "Freitag, 15:47 Uhr",
+        "narrative": "Es ist Freitag, kurz vor vier. Du hast gerade dein letztes Ticket geschlossen und denkst an das Wochenende, als Veras Slack-Nachricht aufploppt: 'SOC-Alert. Severity: CRITICAL. Kein Drill.' Im selben Moment faengt dein SIEM-Dashboard an, rot zu blinken wie ein Weihnachtsbaum auf Speed. Irgendwo im Netzwerk hat jemand etwas sehr, sehr Dummes getan.",
+        "start": true,
+        "act": 1,
+        "effects": [
+          {
+            "set_flag": "incident_started"
+          }
+        ]
+      },
+      {
+        "id": "vera_briefing",
+        "type": "story",
+        "title": "Vera am SOC-Desk",
+        "narrative": "Du rennst zum SOC-Desk. Vera sitzt vor fuenf Bildschirmen, ihre Haare in einem hastig zusammengeworfenen Dutt, und tippt mit einer Geschwindigkeit, die normale Sterbliche fuer unmoeglich halten wuerden. Sie hat bereits die ersten Logs isoliert und sieht dabei aus, als waere das hier ein voellig normaler Freitagnachmittag.",
+        "act": 1,
+        "npc_dialog": {
+          "speaker": "Vera",
+          "emotion": "alert",
+          "text": "Okay, hier ist der Deal: Vor 23 Minuten hat jemand aus der Buchhaltung eine Mail geoeffnet mit dem Betreff 'Dringende Gehaltsanpassung Q2'. Der Anhang war ein praepariertes PDF, das einen Credential Harvester nachgeladen hat. Die Zugangsdaten sind bereits exfiltriert. Ich sehe laterale Bewegung auf mindestens drei Hosts. Und bevor du fragst: Ja, es war Klaus."
+        },
+        "effects": [
+          {
+            "add_reputation": {
+              "security": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "ceo_panik",
+        "type": "story",
+        "title": "Der CEO dreht durch",
+        "narrative": "Die Tuer fliegt auf. CEO Herr Kessler stuermt herein, sein Gesicht hat die Farbe einer reifen Tomate, und er wedelt mit seinem Laptop wie ein Dirigent, dessen Orchester gerade kollektiv falsch spielt.",
+        "act": 1,
+        "npc_dialog": {
+          "speaker": "CEO Herr Kessler",
+          "emotion": "frustrated",
+          "text": "MEINE MAILS! Ich kann meine Mails nicht mehr oeffnen! Da steht ueberall 'Session expired'! Ich habe in 20 Minuten eine Vorstandssitzung und meine gesamte Praesentations-Synergie-Matrix liegt im Postfach! Koennen wir nicht einfach das Passwort auf '1234' setzen, damit ich schnell reinkomme? Frueher bei der Deutschen Bank hatten wir sowas nicht, da hat die IT einfach... funktioniert!"
+        },
+        "effects": []
+      },
+      {
+        "id": "ceo_beruhigen",
+        "type": "story",
+        "title": "CEO-Management",
+        "narrative": "Du erklaerst Herrn Kessler in Managementdeutsch, dass sein Account aus Sicherheitsgruenden gesperrt wurde und dass du ihn in 15 Minuten wieder freischalten kannst — vorausgesetzt, er laesst dich jetzt arbeiten. Er nickt hektisch und murmelt etwas von 'agiler Krisenbewaeltigung'.",
+        "act": 1,
+        "effects": [
+          {
+            "set_flag": "ceo_briefed"
+          },
+          {
+            "add_reputation": {
+              "management": 2
+            }
+          }
+        ]
+      },
+      {
+        "id": "ceo_ignorieren",
+        "type": "story",
+        "title": "Prioritaeten setzen",
+        "narrative": "Du sagst Herrn Kessler, dass seine Mails gerade das kleinste Problem sind, und drehst dich zurueck zum Monitor. Er starrt dich an wie ein Goldfisch, dem man das Wasser abgedreht hat. Vera grinst kurz.",
+        "act": 1,
+        "effects": [
+          {
+            "add_reputation": {
+              "security": 1,
+              "management": -1
+            }
+          }
+        ]
+      },
+      {
+        "id": "ceo_humor",
+        "type": "story",
+        "title": "Galgenhumor",
+        "narrative": "Du sagst dem CEO, seine Mails seien jetzt in besseren Haenden — in denen eines osteuropaeischen Hackersyndicats, die vermutlich auch schon seine LinkedIn-Kontakte sortieren. Er wird blass. Vera verschluckt sich fast an ihrem Kaffee.",
+        "act": 1,
+        "effects": [
+          {
+            "add_reputation": {
+              "team": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "klaus_gestaendnis",
+        "type": "story",
+        "title": "Klaus beichtet",
+        "narrative": "Klaus schleicht um die Ecke, sein Gesicht eine Mischung aus Schuldbewusstsein und der Hoffnung, dass vielleicht doch jemand anderes schuld ist. Er haelt sein Smartphone so fest, als wuerde er es am liebsten im Klo runterspuelen.",
+        "act": 1,
+        "npc_dialog": {
+          "speaker": "Klaus",
+          "emotion": "confused",
+          "text": "Also... die Mail sah TOTAL echt aus! Da stand 'Dringende Gehaltsanpassung' und ich dachte, vielleicht kriege ich ja endlich die Erhoehung, die Herr Steinbach mir seit drei Quartalen verspricht! Das PDF hat sich dann irgendwie von alleine geoeffnet und mein Virenscanner hat auch nichts gesagt. Na gut, der ist seit Februar abgelaufen, aber ich dachte, der laeuft einfach... weiter? Wie ein Joghurt nach dem Ablaufdatum? Soll ich die Mail nochmal oeffnen und gucken, ob da was steht?"
+        },
+        "effects": []
+      },
+      {
+        "id": "klaus_phishing_challenge",
+        "type": "bot_correction",
+        "title": "DauBot: Phishing-Analyse",
+        "narrative": "Klaus' Erklaerung muss technisch eingeordnet werden, bevor du die Angriffskette rekonstruieren kannst.",
+        "act": 1,
+        "pass_flag": "bot_corrected_phishing",
+        "bot_correction": {
+          "scenario_id": "klaus-phishing-click",
+          "mistake_id": "klaus_opened_phishing_pdf",
+          "prompt": "Identifiziere den Angriffsvektor und waehle die richtige Sofortmassnahme.",
+          "bot_action": "Klaus hat ein praepariertes PDF aus einer Phishing-Mail geoeffnet, das einen Credential Harvester nachgeladen hat.",
+          "symptom": "Exfiltrierte Zugangsdaten, laterale Bewegung im Netzwerk, mehrere Hosts kompromittiert.",
+          "error_options": [
+            {
+              "id": "spear_phishing_credential_harvest",
+              "label": "Spear-Phishing mit Credential Harvesting ueber praepariertes PDF (Drive-by-Download)"
+            },
+            {
+              "id": "brute_force_attack",
+              "label": "Brute-Force-Angriff auf Klaus' Passwort"
+            },
+            {
+              "id": "dns_poisoning",
+              "label": "DNS-Poisoning hat Klaus auf eine Fake-Seite umgeleitet"
+            },
+            {
+              "id": "insider_threat",
+              "label": "Ein Insider hat Klaus' Rechner manuell kompromittiert"
+            }
+          ],
+          "fix_options": [
+            {
+              "id": "isolate_and_reset",
+              "label": "Betroffene Hosts isolieren, kompromittierte Credentials zuruecksetzen, Forensik-Image sichern"
+            },
+            {
+              "id": "just_change_password",
+              "label": "Nur Klaus' Passwort aendern und hoffen, dass es reicht"
+            },
+            {
+              "id": "full_network_shutdown",
+              "label": "Das gesamte Netzwerk sofort abschalten"
+            },
+            {
+              "id": "email_delete",
+              "label": "Die Phishing-Mail aus allen Postfaechern loeschen und den Vorfall ignorieren"
+            }
+          ],
+          "expected_error_id": "spear_phishing_credential_harvest",
+          "expected_fix_id": "isolate_and_reset",
+          "pass_flag": "bot_corrected_phishing"
+        },
+        "effects": []
+      },
+      {
+        "id": "steinbach_auftritt",
+        "type": "story",
+        "title": "Steinbach uebernimmt (glaubt er)",
+        "narrative": "IT-Leiter Herr Steinbach marschiert herein, sein Hemd strategisch in die Hose gestopft, ein Klemmbrett unter dem Arm. Er strahlt die Autoritaet eines Mannes aus, der einmal einen Cisco-Kurs angefangen und nach Kapitel 2 wieder aufgehoert hat.",
+        "act": 1,
+        "npc_dialog": {
+          "speaker": "Herr Steinbach",
+          "emotion": "frustrated",
+          "text": "So, ich habe das Krisenprotokoll aktiviert! Schritt 1: Alle Passwoerter auf 'Firma2024!' aendern. Schritt 2: Eine Rundmail an alle, dass sie keine Mails oeffnen sollen. Ja, ich sehe die Ironie, aber das steht so im Handbuch von 2019. Schritt 3: Den Praktikanten losschicken, damit er alle USB-Sticks einsammelt. Fragen?"
+        },
+        "effects": [
+          {
+            "add_item": "incident_report"
+          }
+        ]
+      },
+      {
+        "id": "wireshark_hunt",
+        "type": "story",
+        "title": "Dem Angreifer auf der Spur",
+        "narrative": "Vera hat den Traffic der letzten Stunde in Wireshark geladen. Zwischen Tausenden normalen Paketen versteckt sich der Fingerabdruck des Angreifers: ungewoehnliche DNS-Queries, die verdaechtig nach Base64-kodierten Daten aussehen. Der Angreifer exfiltriert Daten ueber DNS-Tunneling. Elegant, aber nicht unsichtbar — wenn man weiss, wonach man sucht.",
+        "act": 2,
+        "npc_dialog": {
+          "speaker": "Vera",
+          "emotion": "alert",
+          "text": "Siehst du die TXT-Records? Das sind keine normalen Lookups. Der Angreifer nutzt DNS als verdeckten Kanal. Klassiker, aber effektiv. Ich brauche dich jetzt am Wireshark. Zeig mir, dass du den C2-Traffic von normalem Rauschen unterscheiden kannst."
+        },
+        "effects": []
+      },
+      {
+        "id": "wireshark_challenge",
+        "type": "simulator",
+        "title": "Verdaechtigen Traffic identifizieren",
+        "narrative": "Die Packet-Capture wartet. Finde den C2-Kanal zwischen dem ganzen normalen Grundrauschen.",
+        "act": 2,
+        "simulator": {
+          "type": "wireshark",
+          "scenario": "find-dns-tunnel",
+          "pass_flag": "c2_identified"
+        },
+        "effects": []
+      },
+      {
+        "id": "lateral_movement",
+        "type": "story",
+        "title": "Der Angreifer breitet sich aus",
+        "narrative": "Vera zieht scharf Luft ein. Die Netzwerkuebersicht zeigt neue Verbindungen von Klaus' Rechner zu drei weiteren Hosts: dem Fileserver, dem Domain Controller und — das ist der Albtraum — dem Backup-Server. Der Angreifer bewegt sich lateral durch das Netz wie ein Einbrecher, der schon den Grundriss kennt.",
+        "act": 2,
+        "npc_dialog": {
+          "speaker": "Vera",
+          "emotion": "alert",
+          "text": "Er ist auf dem DC. Pass-the-Hash, wuerde ich sagen. Und er tastet den Backup-Server ab. Wenn er den verschluesselt, haben wir ein echtes Problem. Wir muessen jetzt Ports dichtmachen — sofort."
+        },
+        "effects": [
+          {
+            "add_reputation": {
+              "security": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "firewall_lockdown",
+        "type": "simulator",
+        "title": "Port-Blockade",
+        "narrative": "Die Firewall muss jetzt chirurgisch praezise konfiguriert werden: den Angreifer aussperren, ohne den restlichen Betrieb lahmzulegen.",
+        "act": 2,
+        "timer_seconds": 120,
+        "simulator": {
+          "type": "firewall",
+          "scenario": "block-lateral-movement",
+          "pass_flag": "lateral_blocked"
+        },
+        "effects": []
+      },
+      {
+        "id": "portscan_hunt",
+        "type": "story",
+        "title": "Kompromittierte Hosts finden",
+        "narrative": "Die Firewall-Regeln stehen, aber du musst wissen, wie weit der Angreifer schon gekommen ist. Vera hat einen Netzwerkscan vorbereitet, aber du musst die Ergebnisse interpretieren: Welche Hosts zeigen Anzeichen einer Kompromittierung?",
+        "act": 2,
+        "effects": []
+      },
+      {
+        "id": "portscan_challenge",
+        "type": "simulator",
+        "title": "Netzwerk-Scan",
+        "narrative": "Scanne das Segment und identifiziere die kompromittierten Hosts anhand ungewoehnlich offener Ports.",
+        "act": 2,
+        "simulator": {
+          "type": "portscanner",
+          "scenario": "find-compromised-hosts",
+          "pass_flag": "hosts_identified"
+        },
+        "effects": [
+          {
+            "add_item": "forensik_image"
+          }
+        ]
+      },
+      {
+        "id": "ransomware_drohung",
+        "type": "story",
+        "title": "Die Ransomware-Nachricht",
+        "narrative": "Auf dem Bildschirm des Fileservers erscheint eine Nachricht mit einem hoeflichen Totenkopf-Emoji und einer Bitcoin-Adresse. Der Angreifer hat begonnen, Dateien auf dem Fileserver zu verschluesseln. Die gute Nachricht: Der Backup-Server scheint noch sauber. Die schlechte Nachricht: Der Countdown laeuft.",
+        "act": 3,
+        "timer_seconds": 180,
+        "npc_dialog": {
+          "speaker": "CEO Herr Kessler",
+          "emotion": "frustrated",
+          "text": "BITCOIN? Sollen wir BITCOIN BEZAHLEN? Kann man das nicht auf Rechnung machen? Ich rufe sofort meinen Anwalt an! Und meinen Steuerberater! Und meine Frau, die kennt sich mit Krypto aus, die hat mal Dogecoin gekauft!"
+        },
+        "effects": []
+      },
+      {
+        "id": "entscheidung_ransomware",
+        "type": "story",
+        "title": "Zahlen oder kaempfen?",
+        "narrative": "Die Uhr tickt. Der Verschluesselungsprozess frisst sich durch den Fileserver. Du hast drei Optionen, und jede hat ihren Preis.",
+        "act": 3,
+        "effects": []
+      },
+      {
+        "id": "backup_restore",
+        "type": "story",
+        "title": "Backup-Rettung",
+        "narrative": "Du greifst zum Backup-Tape aus dem Tresor. Es ist von letzter Nacht — aktuell genug, um den Schaden zu begrenzen. Vera isoliert den Fileserver vom Netz, waehrend du den Restore vorbereitest. Herr Steinbach steht daneben und macht Notizen auf sein Klemmbrett, was in dieser Situation ungefaehr so hilfreich ist wie ein Regenschirm in einem U-Boot.",
+        "act": 3,
+        "effects": [
+          {
+            "set_flag": "backup_used"
+          },
+          {
+            "add_reputation": {
+              "security": 2
+            }
+          }
+        ]
+      },
+      {
+        "id": "netzwerk_isolieren",
+        "type": "story",
+        "title": "Totale Isolation",
+        "narrative": "Du ziehst den Stecker. Nicht elegant, nicht sanft, aber effektiv. Der Fileserver ist vom Netz, der Verschluesselungsprozess stoppt. Allerdings sind auch alle anderen Dienste auf diesem Segment jetzt tot. Herr Kessler sieht aus, als wuerde er gleich ohnmaechtig.",
+        "act": 3,
+        "effects": [
+          {
+            "set_flag": "network_isolated"
+          },
+          {
+            "add_reputation": {
+              "security": 1,
+              "management": -1
+            }
+          }
+        ]
+      },
+      {
+        "id": "verhandlung",
+        "type": "story",
+        "title": "Zeitspiel",
+        "narrative": "Du oeffnest den Chat-Kanal zum Angreifer und spielst auf Zeit. Vera nutzt die Ablenkung, um im Hintergrund den Kill-Switch des Verschluesselungsprozesses zu finden. Es ist riskant, aber wenn es klappt, hast du beides: die Daten und die Wuerde.",
+        "act": 3,
+        "npc_dialog": {
+          "speaker": "Vera",
+          "emotion": "alert",
+          "text": "Halt ihn hin. Frag nach einem 'Proof of Decryption'. Das kauft mir drei Minuten. Ich glaube, ich sehe den Prozess — der Idiot hat seinen Encryptor nicht als Service registriert, sondern als Scheduled Task. Wenn ich den Task-Scheduler erreiche..."
+        },
+        "effects": [
+          {
+            "set_flag": "negotiation_started"
+          },
+          {
+            "add_reputation": {
+              "security": 1,
+              "team": 1
+            }
+          }
+        ]
+      },
+      {
+        "id": "incident_report_schreiben",
+        "type": "story",
+        "title": "Der Bericht",
+        "narrative": "Waehrend die Lage sich stabilisiert, zieht Herr Steinbach sein Klemmbrett und fragt nach dem offiziellen Incident Report. Vera rollt mit den Augen, aber du weisst: Ohne Dokumentation war der ganze Freitag umsonst.",
+        "act": 3,
+        "effects": [
+          {
+            "add_item": "incident_report_final"
+          }
+        ]
+      },
+      {
+        "id": "ende_gold",
+        "type": "story",
+        "title": "Goldenes Ende: Incident Commander",
+        "narrative": "Der Angreifer ist ausgesperrt, die Daten sind gerettet, und du hast einen lueckenlosen Incident Report, der sogar Herrn Steinbachs Klemmbrett-Standards uebersteigt. Vera lehnt sich zum ersten Mal an diesem Tag zurueck. Klaus hat sich freiwillig fuer den naechsten Security-Awareness-Kurs angemeldet — zweimal. Der CEO erzaehlt am Montag im Vorstand, wie 'sein Team' den Angriff 'mit agiler Methodik' abgewehrt hat.",
+        "act": 3,
+        "npc_dialog": {
+          "speaker": "Vera",
+          "emotion": "relieved",
+          "text": "Nicht schlecht fuer einen Freitagnachmittag. Ich geb dir ein Bier aus — naechste Woche. Heute bin ich zu muede, um den Kuehlschrank zu oeffnen."
+        },
+        "effects": []
+      },
+      {
+        "id": "ende_gut",
+        "type": "story",
+        "title": "Gutes Ende: Schadensbegrenzung",
+        "narrative": "Der Angreifer ist raus, aber ein paar Dateien sind verschluesselt. Das Backup deckt das meiste ab, aber die Buchhaltung wird am Montag ein paar Stunden nacharbeiten muessen. Der Incident Report ist duenn, und Herr Steinbach wird vermutlich behaupten, sein 'Krisenprotokoll' haette den Tag gerettet.",
+        "act": 3,
+        "npc_dialog": {
+          "speaker": "Herr Steinbach",
+          "emotion": "relieved",
+          "text": "Sehen Sie? Genau dafuer haben wir das Krisenhandbuch! Ich werde dem Vorstand empfehlen, alle Passwoerter auf 'Firma2025!' zu aendern. Man muss mit der Zeit gehen!"
+        },
+        "effects": []
+      },
+      {
+        "id": "ende_chaos",
+        "type": "story",
+        "title": "Chaotisches Ende: Loesegeld-Debatte",
+        "narrative": "Die Verschluesselung hat den Fileserver erwischt, das Backup war aelter als gedacht, und der CEO hat tatsaechlich versucht, Bitcoin auf seinem Firmenhandy zu kaufen. Herr Steinbach hat eine 'Task Force' gegruendet, die sich am Montag treffen soll, um zu besprechen, ob man sich am Dienstag treffen soll. Vera hat angefangen, ihren Lebenslauf zu aktualisieren.",
+        "act": 3,
+        "npc_dialog": {
+          "speaker": "Vera",
+          "emotion": "frustrated",
+          "text": "Ich habe 47 offene Alerts, einen CEO der Bitcoin kaufen will, und einen IT-Leiter der glaubt, 'Firma2025!' sei ein sicheres Passwort. Ich update mal LinkedIn."
+        },
+        "effects": []
+      },
+      {
+        "id": "ende_gold_epilog",
+        "type": "ending",
+        "title": "Abschluss: Gold",
+        "narrative": "Incident geschlossen. IOCs geteilt. Klaus lernt. Du hast dir das Wochenende verdient.",
+        "act": 3,
+        "is_ending": true,
+        "effects": []
+      },
+      {
+        "id": "ende_gut_epilog",
+        "type": "ending",
+        "title": "Abschluss: Gut",
+        "narrative": "Der Angreifer ist weg, aber die Nacharbeit wartet am Montag.",
+        "act": 3,
+        "is_ending": true,
+        "effects": []
+      },
+      {
+        "id": "ende_chaos_epilog",
+        "type": "ending",
+        "title": "Abschluss: Chaos",
+        "narrative": "Die Ransomware-Gang hat 'Danke fuer die Zusammenarbeit' geschrieben. Das Wochenende ist gestrichen.",
+        "act": 3,
+        "is_ending": true,
+        "effects": []
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_start_to_vera",
+        "from": "start",
+        "to": "vera_briefing",
+        "label": "Zum SOC-Desk rennen"
+      },
+      {
+        "id": "e_vera_to_ceo",
+        "from": "vera_briefing",
+        "to": "ceo_panik",
+        "label": "Der CEO stuermt herein"
+      },
+      {
+        "id": "e_ceo_beruhigen",
+        "from": "ceo_panik",
+        "to": "ceo_beruhigen",
+        "label": "Den CEO in Managementdeutsch beruhigen"
+      },
+      {
+        "id": "e_ceo_ignorieren",
+        "from": "ceo_panik",
+        "to": "ceo_ignorieren",
+        "label": "Dem CEO klarmachen, dass Mails gerade egal sind"
+      },
+      {
+        "id": "e_ceo_humor",
+        "from": "ceo_panik",
+        "to": "ceo_humor",
+        "label": "Mit schwarzem Humor die Lage zusammenfassen"
+      },
+      {
+        "id": "e_beruhigen_to_klaus",
+        "from": "ceo_beruhigen",
+        "to": "klaus_gestaendnis",
+        "label": "Den Verursacher suchen"
+      },
+      {
+        "id": "e_ignorieren_to_klaus",
+        "from": "ceo_ignorieren",
+        "to": "klaus_gestaendnis",
+        "label": "Zurueck zum eigentlichen Problem"
+      },
+      {
+        "id": "e_humor_to_klaus",
+        "from": "ceo_humor",
+        "to": "klaus_gestaendnis",
+        "label": "Klaus ausfindig machen"
+      },
+      {
+        "id": "e_klaus_to_challenge",
+        "from": "klaus_gestaendnis",
+        "to": "klaus_phishing_challenge",
+        "label": "Klaus' Fehler technisch einordnen"
+      },
+      {
+        "id": "e_challenge_to_steinbach",
+        "from": "klaus_phishing_challenge",
+        "to": "steinbach_auftritt",
+        "label": "Steinbach informieren"
+      },
+      {
+        "id": "e_steinbach_to_wireshark",
+        "from": "steinbach_auftritt",
+        "to": "wireshark_hunt",
+        "label": "Steinbachs 'Krisenprotokoll' ignorieren und an die Arbeit"
+      },
+      {
+        "id": "e_wireshark_story_to_sim",
+        "from": "wireshark_hunt",
+        "to": "wireshark_challenge",
+        "label": "Den C2-Kanal in der Capture finden"
+      },
+      {
+        "id": "e_wireshark_to_lateral",
+        "from": "wireshark_challenge",
+        "to": "lateral_movement",
+        "label": "Die Ausbreitung verfolgen"
+      },
+      {
+        "id": "e_lateral_to_firewall",
+        "from": "lateral_movement",
+        "to": "firewall_lockdown",
+        "label": "Ports sofort dichtmachen"
+      },
+      {
+        "id": "e_firewall_to_portscan_story",
+        "from": "firewall_lockdown",
+        "to": "portscan_hunt",
+        "label": "Das Segment nach Kompromittierungen scannen"
+      },
+      {
+        "id": "e_portscan_story_to_sim",
+        "from": "portscan_hunt",
+        "to": "portscan_challenge",
+        "label": "Den Netzwerk-Scan starten"
+      },
+      {
+        "id": "e_portscan_to_ransomware",
+        "from": "portscan_challenge",
+        "to": "ransomware_drohung",
+        "label": "Die Ransomware-Nachricht entdecken"
+      },
+      {
+        "id": "e_ransomware_to_entscheidung",
+        "from": "ransomware_drohung",
+        "to": "entscheidung_ransomware",
+        "label": "Die Optionen abwaegen"
+      },
+      {
+        "id": "e_entscheidung_backup",
+        "from": "entscheidung_ransomware",
+        "to": "backup_restore",
+        "label": "Backup-Tape aus dem Tresor holen und restoren",
+        "conditions": {
+          "requires_flag": "hosts_identified"
+        }
+      },
+      {
+        "id": "e_entscheidung_isolieren",
+        "from": "entscheidung_ransomware",
+        "to": "netzwerk_isolieren",
+        "label": "Den Stecker ziehen — alles offline"
+      },
+      {
+        "id": "e_entscheidung_verhandlung",
+        "from": "entscheidung_ransomware",
+        "to": "verhandlung",
+        "label": "Den Angreifer hinhalten und Kill-Switch suchen"
+      },
+      {
+        "id": "e_backup_to_report",
+        "from": "backup_restore",
+        "to": "incident_report_schreiben",
+        "label": "Den Incident Report verfassen"
+      },
+      {
+        "id": "e_isolieren_to_report",
+        "from": "netzwerk_isolieren",
+        "to": "incident_report_schreiben",
+        "label": "Schadensbilanz ziehen"
+      },
+      {
+        "id": "e_verhandlung_to_report",
+        "from": "verhandlung",
+        "to": "incident_report_schreiben",
+        "label": "Den Kill-Switch dokumentieren"
+      },
+      {
+        "id": "e_report_to_gold",
+        "from": "incident_report_schreiben",
+        "to": "ende_gold",
+        "label": "Lueckenloser Report mit Forensik-Beweiskette",
+        "conditions": {
+          "requires_flag": "c2_identified",
+          "requires_item": "forensik_image",
+          "min_reputation": {
+            "security": 4
+          }
+        }
+      },
+      {
+        "id": "e_report_to_gut",
+        "from": "incident_report_schreiben",
+        "to": "ende_gut",
+        "label": "Solider Report, aber ein paar Luecken",
+        "conditions": {
+          "requires_flag": "lateral_blocked"
+        }
+      },
+      {
+        "id": "e_report_to_chaos",
+        "from": "incident_report_schreiben",
+        "to": "ende_chaos",
+        "label": "Minimale Doku, maximaler Schaden"
+      },
+      {
+        "id": "e_gold_to_epilog",
+        "from": "ende_gold",
+        "to": "ende_gold_epilog",
+        "label": "Incident schliessen"
+      },
+      {
+        "id": "e_gut_to_epilog",
+        "from": "ende_gut",
+        "to": "ende_gut_epilog",
+        "label": "Incident schliessen"
+      },
+      {
+        "id": "e_chaos_to_epilog",
+        "from": "ende_chaos",
+        "to": "ende_chaos_epilog",
+        "label": "Incident schliessen"
+      }
+    ],
+    "acts": [
+      {
+        "name": "Alarm",
+        "node_ids": [
+          "start",
+          "vera_briefing",
+          "ceo_panik",
+          "ceo_beruhigen",
+          "ceo_ignorieren",
+          "ceo_humor",
+          "klaus_gestaendnis",
+          "klaus_phishing_challenge",
+          "steinbach_auftritt"
+        ]
+      },
+      {
+        "name": "Jagd",
+        "node_ids": [
+          "wireshark_hunt",
+          "wireshark_challenge",
+          "lateral_movement",
+          "firewall_lockdown",
+          "portscan_hunt",
+          "portscan_challenge"
+        ]
+      },
+      {
+        "name": "Endgame",
+        "node_ids": [
+          "ransomware_drohung",
+          "entscheidung_ransomware",
+          "backup_restore",
+          "netzwerk_isolieren",
+          "verhandlung",
+          "incident_report_schreiben",
+          "ende_gold",
+          "ende_gut",
+          "ende_chaos",
+          "ende_gold_epilog",
+          "ende_gut_epilog",
+          "ende_chaos_epilog"
+        ]
+      }
+    ]
+  }
+}
