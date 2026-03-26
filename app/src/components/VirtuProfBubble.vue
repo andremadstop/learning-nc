@@ -991,19 +991,39 @@ export default {
 <style scoped>
 .virtuprof-bubble {
   position: relative;
+  inset: auto;
   width: 100%;
-  max-height: 100%;
-  overflow-y: auto;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
   background: var(--color-main-background);
-  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  box-shadow: 0 20px 42px rgba(15, 23, 42, 0.08);
+  padding: 16px;
+  animation: bubble-appear 0.25s ease-out;
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 480px) {
+  .virtuprof-bubble {
+    min-height: 420px;
+    border-radius: 18px;
+    padding: 14px;
+  }
 }
 
 .bubble-content {
   position: relative;
   z-index: 1;
   padding-top: 2px;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 /* bubble-toolbar + close-btn removed — dismiss via Close button in FAQ menu */
@@ -1285,6 +1305,7 @@ export default {
 /* ── Chat section ─────────────────────────────────── */
 .chat-history {
   max-height: none;
+  min-height: 180px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1292,7 +1313,13 @@ export default {
   margin-bottom: 8px;
   scroll-behavior: smooth;
   flex: 1;
-  min-height: 0;
+}
+
+@media (max-width: 480px) {
+  .chat-history {
+    max-height: none;
+    flex: 1;
+  }
 }
 
 .chat-msg {
@@ -1617,6 +1644,8 @@ export default {
 
 .mehr-optionen-body {
   margin-top: 8px;
+  display: grid;
+  gap: 10px;
 }
 
 /* ── Accessibility: reduced motion ─────────────────── */
@@ -1634,7 +1663,20 @@ export default {
   }
 }
 
-/* bubble-arrow removed — footer panel layout */
+.bubble-arrow {
+  display: none;
+}
+
+@keyframes bubble-appear {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 
 /* EXAM-01: Exam blocked notice */
 .exam-blocked-notice {
@@ -1652,9 +1694,10 @@ export default {
 /* REP-01: Report error button */
 .chat-actions-row {
   display: flex;
-  justify-content: center;
-  gap: 16px;
-  padding: 4px 0;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 6px 0 0;
 }
 
 .report-error-btn {

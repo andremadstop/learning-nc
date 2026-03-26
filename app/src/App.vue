@@ -1,286 +1,287 @@
 <template>
   <NcAppContent id="app-learning">
-    <div class="app-main-content">
-    <div class="app-content-header">
-      <h2>{{ userRole === 'student' ? t('learning', 'Learning') : t('learning', 'Learning - Spaced Repetition') }}</h2>
-    </div>
-
-    <!-- Top-level navigation: Kurse | Settings -->
-    <div class="main-nav" role="tablist" @keydown="handleTablistKeydown">
-      <button
-        :class="['main-nav-btn', { active: mainView === 'courses' || mainView === 'pools' }]"
-        role="tab"
-        :aria-selected="(mainView === 'courses' || mainView === 'pools') ? 'true' : 'false'"
-        @click="switchMainView('courses')"
-      >
-        {{ t('learning', 'Kurse') }}
-      </button>
-      <!-- Zeitreise-Tab ausgeblendet — Modus braucht Überarbeitung, siehe Backlog -->
-      <!-- <button
-        :class="['main-nav-btn', { active: mainView === 'zeitreise' }]"
-        role="tab"
-        :aria-selected="mainView === 'zeitreise' ? 'true' : 'false'"
-        @click="switchMainView('zeitreise')"
-      >
-        {{ t('learning', 'Zeitreise') }}
-      </button> -->
-      <button
-        :class="['main-nav-btn', { active: mainView === 'werkzeuge' }]"
-        role="tab"
-        :aria-selected="mainView === 'werkzeuge' ? 'true' : 'false'"
-        @click="switchMainView('werkzeuge')"
-      >
-        {{ t('learning', 'Werkzeuge') }}
-      </button>
-      <button
-        :class="['main-nav-btn', { active: mainView === 'settings' }]"
-        role="tab"
-        :aria-selected="mainView === 'settings' ? 'true' : 'false'"
-        @click="switchMainView('settings')"
-      >
-        {{ t('learning', 'Einstellungen') }}
-      </button>
-    </div>
-
-    <!-- ==================== POOLS VIEW ==================== -->
-    <template v-if="mainView === 'pools'">
-      <SmartQueue
-        v-if="currentView === 'smartQueue'"
-        :mode="smartQueueMode"
-        :contentLanguage="contentLanguage"
-        @back="backToPools"
-      />
-
-      <AbenteuerMode
-        v-else-if="currentView === 'abenteuer'"
-        :contentLanguage="contentLanguage"
-        :initial-coop-mode="adventureRoute.coop"
-        :initial-coop-code="adventureRoute.code"
-        @back="backToPools"
-      />
-
-      <PoolList
-        v-else-if="currentView === 'pools'"
-        :userRole="userRole"
-        @selectPool="selectPool"
-        @openSmartQueue="openSmartQueue"
-        @openRemediation="openRemediation"
-      />
-
-      <div v-else-if="currentView === 'questions'" class="pool-view">
-        <div class="pool-view-header">
-          <NcButton type="tertiary" @click="poolFromCourse ? backToCourse() : backToPools()" :aria-label="poolFromCourse ? t('learning', '← Back to Course') : t('learning', 'Back to Pools')">
-            {{ poolFromCourse ? t('learning', '← Back to Course') : t('learning', '← Back to Pools') }}
-          </NcButton>
-          <h3 class="pool-title">{{ selectedPool.name }}</h3>
+    <div class="app-shell" :class="{ 'app-shell--with-virtuprof': showVirtuProfDock }">
+      <div class="app-main">
+        <div class="app-content-header">
+          <h2>{{ userRole === 'student' ? t('learning', 'Learning') : t('learning', 'Learning - Spaced Repetition') }}</h2>
         </div>
 
-        <!-- Read-only banner for shared pools -->
-        <NcNoteCard v-if="poolPermission === 'read'" type="info">
-          {{ t('learning', 'This pool is shared with you (view only)') }}
-        </NcNoteCard>
-
-        <div class="mode-selector" role="tablist" @keydown="handleTablistKeydown">
+        <!-- Top-level navigation: Kurse | Settings -->
+        <div class="main-nav" role="tablist" @keydown="handleTablistKeydown">
           <button
-            v-for="m in filteredModes"
-            :key="m.id"
-            @click="setMode(m.id)"
-            :class="['mode-btn', { active: mode === m.id }]"
+            :class="['main-nav-btn', { active: mainView === 'courses' || mainView === 'pools' }]"
             role="tab"
-            :aria-selected="mode === m.id ? 'true' : 'false'"
+            :aria-selected="(mainView === 'courses' || mainView === 'pools') ? 'true' : 'false'"
+            @click="switchMainView('courses')"
           >
-            {{ m.label }}
+            {{ t('learning', 'Kurse') }}
+          </button>
+          <!-- Zeitreise-Tab ausgeblendet — Modus braucht Überarbeitung, siehe Backlog -->
+          <!-- <button
+            :class="['main-nav-btn', { active: mainView === 'zeitreise' }]"
+            role="tab"
+            :aria-selected="mainView === 'zeitreise' ? 'true' : 'false'"
+            @click="switchMainView('zeitreise')"
+          >
+            {{ t('learning', 'Zeitreise') }}
+          </button> -->
+          <button
+            :class="['main-nav-btn', { active: mainView === 'werkzeuge' }]"
+            role="tab"
+            :aria-selected="mainView === 'werkzeuge' ? 'true' : 'false'"
+            @click="switchMainView('werkzeuge')"
+          >
+            {{ t('learning', 'Werkzeuge') }}
+          </button>
+          <button
+            :class="['main-nav-btn', { active: mainView === 'settings' }]"
+            role="tab"
+            :aria-selected="mainView === 'settings' ? 'true' : 'false'"
+            @click="switchMainView('settings')"
+          >
+            {{ t('learning', 'Einstellungen') }}
           </button>
         </div>
-        <p v-if="modeDescriptions[mode]" class="mode-description">{{ modeDescriptions[mode] }}</p>
 
-        <!-- Error banner -->
-        <NcNoteCard v-if="error" type="error">
-          {{ error }}
-          <template #icon>
-            <span></span>
-          </template>
-        </NcNoteCard>
-
-        <TrainingMode
-          v-if="mode === 'train'"
-          :poolId="selectedPool.id"
-          :totalQuestions="questionCount"
-          :contentLanguage="contentLanguage"
-          @back="backToPools"
-        />
-
-        <LeitnerMode
-          v-else-if="mode === 'leitner'"
-          :poolId="selectedPool.id"
-          :contentLanguage="contentLanguage"
-          @back="setMode('train')"
-        />
-
-        <ExamMode
-          v-else-if="mode === 'exam'"
-          :poolId="selectedPool.id"
-          :totalQuestions="questionCount"
-          :contentLanguage="contentLanguage"
-          @back="setMode('train')"
-        />
-
-        <template v-else-if="mode === 'gameshow'">
-          <ArenaSelector
-            v-if="arenaSubMode === null"
-            @select-mode="onArenaSelectMode"
-          />
-          <DuelMode
-            v-else-if="arenaSubMode === 'duel'"
-            :initialPoolId="selectedPool.id"
+        <!-- ==================== POOLS VIEW ==================== -->
+        <template v-if="mainView === 'pools'">
+          <SmartQueue
+            v-if="currentView === 'smartQueue'"
+            :mode="smartQueueMode"
             :contentLanguage="contentLanguage"
-            @back="arenaSubMode = null"
+            @back="backToPools"
           />
-          <GameshowMode
-            v-else-if="arenaSubMode === 'sprint'"
-            :initialPoolId="selectedPool.id"
-            :contentLanguage="contentLanguage"
-            :mode="'sprint'"
-            @back="arenaSubMode = null"
-          />
-          <GameshowMode
-            v-else-if="arenaSubMode === 'elimination'"
-            :initialPoolId="selectedPool.id"
-            :contentLanguage="contentLanguage"
-            :mode="'elimination'"
-            @back="arenaSubMode = null"
-          />
+
           <AbenteuerMode
-            v-else-if="arenaSubMode === 'abenteuer'"
+            v-else-if="currentView === 'abenteuer'"
             :contentLanguage="contentLanguage"
-            @back="arenaSubMode = null"
+            :initial-coop-mode="adventureRoute.coop"
+            :initial-coop-code="adventureRoute.code"
+            @back="backToPools"
+          />
+
+          <PoolList
+            v-else-if="currentView === 'pools'"
+            :userRole="userRole"
+            @selectPool="selectPool"
+            @openSmartQueue="openSmartQueue"
+            @openRemediation="openRemediation"
+          />
+
+          <div v-else-if="currentView === 'questions'" class="pool-view">
+            <div class="pool-view-header">
+              <NcButton type="tertiary" @click="poolFromCourse ? backToCourse() : backToPools()" :aria-label="poolFromCourse ? t('learning', '← Back to Course') : t('learning', 'Back to Pools')">
+                {{ poolFromCourse ? t('learning', '← Back to Course') : t('learning', '← Back to Pools') }}
+              </NcButton>
+              <h3 class="pool-title">{{ selectedPool.name }}</h3>
+            </div>
+
+            <!-- Read-only banner for shared pools -->
+            <NcNoteCard v-if="poolPermission === 'read'" type="info">
+              {{ t('learning', 'This pool is shared with you (view only)') }}
+            </NcNoteCard>
+
+            <div class="mode-selector" role="tablist" @keydown="handleTablistKeydown">
+              <button
+                v-for="m in filteredModes"
+                :key="m.id"
+                @click="setMode(m.id)"
+                :class="['mode-btn', { active: mode === m.id }]"
+                role="tab"
+                :aria-selected="mode === m.id ? 'true' : 'false'"
+              >
+                {{ m.label }}
+              </button>
+            </div>
+            <p v-if="modeDescriptions[mode]" class="mode-description">{{ modeDescriptions[mode] }}</p>
+
+            <!-- Error banner -->
+            <NcNoteCard v-if="error" type="error">
+              {{ error }}
+              <template #icon>
+                <span></span>
+              </template>
+            </NcNoteCard>
+
+            <TrainingMode
+              v-if="mode === 'train'"
+              :poolId="selectedPool.id"
+              :totalQuestions="questionCount"
+              :contentLanguage="contentLanguage"
+              @back="backToPools"
+            />
+
+            <LeitnerMode
+              v-else-if="mode === 'leitner'"
+              :poolId="selectedPool.id"
+              :contentLanguage="contentLanguage"
+              @back="setMode('train')"
+            />
+
+            <ExamMode
+              v-else-if="mode === 'exam'"
+              :poolId="selectedPool.id"
+              :totalQuestions="questionCount"
+              :contentLanguage="contentLanguage"
+              @back="setMode('train')"
+            />
+
+            <template v-else-if="mode === 'gameshow'">
+              <ArenaSelector
+                v-if="arenaSubMode === null"
+                @select-mode="onArenaSelectMode"
+              />
+              <DuelMode
+                v-else-if="arenaSubMode === 'duel'"
+                :initialPoolId="selectedPool.id"
+                :contentLanguage="contentLanguage"
+                @back="arenaSubMode = null"
+              />
+              <GameshowMode
+                v-else-if="arenaSubMode === 'sprint'"
+                :initialPoolId="selectedPool.id"
+                :contentLanguage="contentLanguage"
+                :mode="'sprint'"
+                @back="arenaSubMode = null"
+              />
+              <GameshowMode
+                v-else-if="arenaSubMode === 'elimination'"
+                :initialPoolId="selectedPool.id"
+                :contentLanguage="contentLanguage"
+                :mode="'elimination'"
+                @back="arenaSubMode = null"
+              />
+              <AbenteuerMode
+                v-else-if="arenaSubMode === 'abenteuer'"
+                :contentLanguage="contentLanguage"
+                @back="arenaSubMode = null"
+              />
+            </template>
+
+            <AnalyticsDashboard
+              v-else-if="mode === 'stats'"
+              :poolId="selectedPool.id"
+              @back="setMode('train')"
+            />
+
+            <QuestionList
+              v-else-if="mode === 'manage'"
+              :poolId="selectedPool.id"
+              :poolName="selectedPool.name"
+              :readonly="poolPermission === 'read'"
+              @back="backToPools"
+            />
+          </div>
+        </template>
+
+        <!-- ==================== SETTINGS VIEW ==================== -->
+        <template v-if="mainView === 'settings'">
+          <AdminSettings v-if="userRole !== 'student'" />
+          <PersonalSettings
+            v-else
+            @content-language-changed="updateContentLanguage"
+            @virtuprof-enabled-changed="updateVirtuProfEnabled" />
+        </template>
+
+        <!-- ==================== COURSES VIEW ==================== -->
+        <template v-if="mainView === 'courses'">
+          <!-- Instructor sub-navigation: List | Dashboard -->
+          <div v-if="userRole === 'instructor' && !selectedCourse" class="course-sub-nav" role="tablist" @keydown="handleTablistKeydown">
+            <button
+              :class="['mode-btn', { active: courseView === 'list' }]"
+              role="tab"
+              :aria-selected="courseView === 'list' ? 'true' : 'false'"
+              @click="courseView = 'list'"
+            >
+              {{ t('learning', 'Course List') }}
+            </button>
+            <button
+              :class="['mode-btn', { active: courseView === 'dashboard' }]"
+              role="tab"
+              :aria-selected="courseView === 'dashboard' ? 'true' : 'false'"
+              @click="courseView = 'dashboard'"
+            >
+              {{ t('learning', 'Dashboard') }}
+            </button>
+          </div>
+
+          <InstructorDashboard
+            v-if="userRole === 'instructor' && !selectedCourse && courseView === 'dashboard'"
+            @selectCourse="selectCourse"
+          />
+
+          <CourseList
+            v-else-if="!selectedCourse"
+            :userRole="userRole"
+            @selectCourse="selectCourse"
+          />
+
+          <StudentDetail
+            v-else-if="selectedStudent"
+            :courseId="selectedStudent.courseId"
+            :studentId="selectedStudent.userId"
+            @back="selectedStudent = null"
+          />
+
+          <CourseDetail
+            v-else
+            :courseId="selectedCourse.id"
+            :userRole="userRole"
+            :contentLanguage="contentLanguage"
+            :presetDuelCode="pendingVirtuProfDuel.courseId === selectedCourse.id ? pendingVirtuProfDuel.duelCode : ''"
+            @back="selectedCourse = null"
+            @openPool="openPoolFromCourse"
+            @clearPresetDuel="clearVirtuProfDuel"
+            @selectStudent="selectStudent"
           />
         </template>
 
-        <AnalyticsDashboard
-          v-else-if="mode === 'stats'"
-          :poolId="selectedPool.id"
-          @back="setMode('train')"
-        />
+        <!-- ==================== ZEITREISE VIEW ==================== -->
+        <template v-if="mainView === 'zeitreise'">
+          <HackThroughTime
+            :contentLanguage="contentLanguage"
+            @back="switchMainView('courses')"
+          />
+        </template>
 
-        <QuestionList
-          v-else-if="mode === 'manage'"
-          :poolId="selectedPool.id"
-          :poolName="selectedPool.name"
-          :readonly="poolPermission === 'read'"
-          @back="backToPools"
-        />
-      </div>
-    </template>
+        <!-- ==================== WERKZEUGE VIEW ==================== -->
+        <template v-if="mainView === 'werkzeuge'">
+          <div v-if="toolsTabs.length" class="sim-nav" role="tablist" @keydown="handleTablistKeydown">
+            <button
+              v-for="tab in toolsTabs"
+              :key="tab.id"
+              :class="['sim-nav__item', { 'sim-nav__item--active': toolsView === tab.id, 'sim-nav__item--disabled': tab.disabled }]"
+              role="tab"
+              :aria-selected="toolsView === tab.id ? 'true' : 'false'"
+              :aria-label="tab.label"
+              :disabled="tab.disabled"
+              @click="!tab.disabled && (toolsView = tab.id)"
+            >
+              <span class="sim-nav__icon" aria-hidden="true">{{ tab.icon }}</span>
+              <span class="sim-nav__label">{{ tab.shortLabel }}</span>
+            </button>
+          </div>
 
-    <!-- ==================== SETTINGS VIEW ==================== -->
-    <template v-if="mainView === 'settings'">
-      <AdminSettings v-if="userRole !== 'student'" />
-      <PersonalSettings
-        v-else
-        @content-language-changed="updateContentLanguage"
-        @virtuprof-enabled-changed="updateVirtuProfEnabled" />
-    </template>
-
-    <!-- ==================== COURSES VIEW ==================== -->
-    <template v-if="mainView === 'courses'">
-      <!-- Instructor sub-navigation: List | Dashboard -->
-      <div v-if="userRole === 'instructor' && !selectedCourse" class="course-sub-nav" role="tablist" @keydown="handleTablistKeydown">
-        <button
-          :class="['mode-btn', { active: courseView === 'list' }]"
-          role="tab"
-          :aria-selected="courseView === 'list' ? 'true' : 'false'"
-          @click="courseView = 'list'"
-        >
-          {{ t('learning', 'Course List') }}
-        </button>
-        <button
-          :class="['mode-btn', { active: courseView === 'dashboard' }]"
-          role="tab"
-          :aria-selected="courseView === 'dashboard' ? 'true' : 'false'"
-          @click="courseView = 'dashboard'"
-        >
-          {{ t('learning', 'Dashboard') }}
-        </button>
+          <SubnetCalculator v-if="toolsView === 'subnet'" />
+          <DnsResolver v-else-if="toolsView === 'dns'" />
+          <FirewallBuilder v-else-if="toolsView === 'firewall'" />
+          <PortScanner v-else-if="toolsView === 'portscan'" />
+          <RoutingTable v-else-if="toolsView === 'routing'" />
+          <NatTable v-else-if="toolsView === 'nat'" />
+          <WiresharkLite v-else-if="toolsView === 'wireshark'" />
+          <AuthFlowSimulator v-else-if="toolsView === 'authflow'" />
+        </template>
       </div>
 
-      <InstructorDashboard
-        v-if="userRole === 'instructor' && !selectedCourse && courseView === 'dashboard'"
-        @selectCourse="selectCourse"
-      />
-
-      <CourseList
-        v-else-if="!selectedCourse"
-        :userRole="userRole"
-        @selectCourse="selectCourse"
-      />
-
-      <StudentDetail
-        v-else-if="selectedStudent"
-        :courseId="selectedStudent.courseId"
-        :studentId="selectedStudent.userId"
-        @back="selectedStudent = null"
-      />
-
-      <CourseDetail
-        v-else
-        :courseId="selectedCourse.id"
-        :userRole="userRole"
-        :contentLanguage="contentLanguage"
-        :presetDuelCode="pendingVirtuProfDuel.courseId === selectedCourse.id ? pendingVirtuProfDuel.duelCode : ''"
-        @back="selectedCourse = null"
-        @openPool="openPoolFromCourse"
-        @clearPresetDuel="clearVirtuProfDuel"
-        @selectStudent="selectStudent"
-      />
-    </template>
-
-    <!-- ==================== ZEITREISE VIEW ==================== -->
-    <template v-if="mainView === 'zeitreise'">
-      <HackThroughTime
-        :contentLanguage="contentLanguage"
-        @back="switchMainView('courses')"
-      />
-    </template>
-
-    <!-- ==================== WERKZEUGE VIEW ==================== -->
-    <template v-if="mainView === 'werkzeuge'">
-      <div v-if="toolsTabs.length" class="sim-nav" role="tablist" @keydown="handleTablistKeydown">
-        <button
-          v-for="tab in toolsTabs"
-          :key="tab.id"
-          :class="['sim-nav__item', { 'sim-nav__item--active': toolsView === tab.id, 'sim-nav__item--disabled': tab.disabled }]"
-          role="tab"
-          :aria-selected="toolsView === tab.id ? 'true' : 'false'"
-          :aria-label="tab.label"
-          :disabled="tab.disabled"
-          @click="!tab.disabled && (toolsView = tab.id)"
-        >
-          <span class="sim-nav__icon" aria-hidden="true">{{ tab.icon }}</span>
-          <span class="sim-nav__label">{{ tab.shortLabel }}</span>
-        </button>
-      </div>
-
-      <SubnetCalculator v-if="toolsView === 'subnet'" />
-      <DnsResolver v-else-if="toolsView === 'dns'" />
-      <FirewallBuilder v-else-if="toolsView === 'firewall'" />
-      <PortScanner v-else-if="toolsView === 'portscan'" />
-      <RoutingTable v-else-if="toolsView === 'routing'" />
-      <NatTable v-else-if="toolsView === 'nat'" />
-      <WiresharkLite v-else-if="toolsView === 'wireshark'" />
-      <AuthFlowSimulator v-else-if="toolsView === 'authflow'" />
-    </template>
-
-    </div><!-- /.app-main-content -->
-
-    <VirtuProf
-      v-if="appInitialized"
-      :enabled="virtuProfEnabled"
-      :user-role="userRole"
-      layout="footer"
-      @open-duel="openVirtuProfDuel"
-      @ready="triggerInitialVirtuProfHints"
-      @enabled-change="handleVirtuProfEnabledChange" />
+      <aside v-if="showVirtuProfDock" class="app-virtuprof-dock" aria-label="VirtuProf">
+        <VirtuProf
+          :enabled="virtuProfEnabled"
+          :user-role="userRole"
+          @open-duel="openVirtuProfDuel"
+          @ready="triggerInitialVirtuProfHints"
+          @enabled-change="handleVirtuProfEnabledChange" />
+      </aside>
+    </div>
   </NcAppContent>
 </template>
 
@@ -408,6 +409,9 @@ export default {
         return this.modes.filter(m => ['train', 'leitner', 'exam', 'gameshow'].includes(m.id));
       }
       return this.modes;
+    },
+    showVirtuProfDock() {
+      return this.appInitialized && this.userRole === 'student' && this.virtuProfEnabled;
     },
     toolsTabs() {
       const enabled = this.normalizeEnabledTools(this.enabledTools);
@@ -1106,19 +1110,24 @@ export default {
 
 <style scoped>
 #app-learning {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 50px);
-  max-width: 1400px;
+  padding: 24px 40px;
+  max-width: 1720px;
   margin: 0 auto;
-  padding: 0;
 }
 
-.app-main-content {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 24px 40px;
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.app-main {
+  min-width: 0;
+}
+
+.app-virtuprof-dock {
+  min-width: 0;
 }
 
 .app-content-header {
@@ -1234,8 +1243,20 @@ export default {
   max-width: 900px;
 }
 
+@media (min-width: 1180px) {
+  .app-shell--with-virtuprof {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 372px);
+  }
+
+  .app-virtuprof-dock {
+    position: sticky;
+    top: 0;
+  }
+}
+
 @media (max-width: 768px) {
-  .app-main-content { padding: 16px; }
+  #app-learning { padding: 16px; }
+  .app-shell { gap: 16px; }
   .pool-view-header { flex-direction: column; align-items: flex-start; }
   .mode-selector { flex-direction: column; max-width: 100%; }
   .main-nav { max-width: 100%; }
