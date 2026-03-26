@@ -14,13 +14,13 @@
 - ✅ **v6.1 KI-Erzaehler + Security-Kampagnen** — Phases 40-43 (shipped 2026-03-22)
 - ✅ **v6.2 Visual Identity + Charakter-Cast** — Phases 44-47 (shipped 2026-03-23)
 - ✅ **v7.0 Hacker-Zeitreise "Hack Through Time"** — Phases 48-51 (shipped 2026-03-23)
-- 🚧 **v4.0 Housekeeping + Content-Rollout** — Phases 52-55 (in progress)
-- 📋 **v7.2 Subnetzrechner Pro** — Phases 56-60 (planned)
-- 📋 **v8.0 VirtuProf v2** — Phases 61-63 (planned)
-- 📋 **v9.0 Simulator-Werkzeuge** — Phases 64-70 (planned)
-- 📋 **v10.0 Campaign Engine v2** — Phases 71-74 (planned)
-- 📋 **v11.0 Telos-Onboarding + VirtuProf Guide** — Phases 75-78 (planned)
-- 📋 **v12.0 Campaign Engine — Interaktives Kampagnen-RPG** — Phases 80-85 (planned)
+- ✅ **v4.0 Housekeeping + Content-Rollout** — Phases 52-55 (shipped 2026-03-24)
+- ✅ **v7.2 Subnetzrechner Pro** — Phases 56-60 (shipped 2026-03-24)
+- ✅ **v8.0 VirtuProf v2** — Phases 61-63 (shipped 2026-03-24)
+- ✅ **v9.0 Simulator-Werkzeuge** — Phases 64-70 (shipped 2026-03-24)
+- ✅ **v10.0 Campaign Engine v2** — Phases 71-74 (shipped 2026-03-24)
+- ✅ **v11.0 Telos-Onboarding + VirtuProf Guide** — Phases 75-79 (shipped 2026-03-25)
+- ✅ **v12.0 Campaign Engine — Interaktives Kampagnen-RPG** — Phases 80-85 (shipped 2026-03-26)
 
 ## Phases
 
@@ -606,10 +606,10 @@ Plans:
 
 - [x] **Phase 80: SimulatorShell + Wiring** - SIM-01 bis SIM-05 — Simulator-Wrapper, Lifecycle-Hooks, pass_flag-Wiring (completed 2026-03-25)
 - [x] **Phase 81: Quest-Map** - MAP-01 bis MAP-06 — D3.js SVG-Karte, Knoten-Zustaende, Zoom/Pan (completed 2026-03-25)
-- [ ] **Phase 82: HUD + Timer + DauBot-UI** - HUD-01 bis HUD-06, BOT-01 bis BOT-05 — StateBagHUD, Timer-Countdown, DauBot-Dialog
+- [x] **Phase 82: HUD + Timer + DauBot-UI** - HUD-01 bis HUD-06, BOT-01 bis BOT-05 — StateBagHUD, Timer-Countdown, DauBot-Dialog (completed 2026-03-25)
 - [x] **Phase 83: Kampagnen-Content "Der grosse Ausfall"** - CAMP-01 bis CAMP-07 — 15+ Knoten, 3 Akte, 3 Enden, NPCs, Items, Reputation (completed 2026-03-25)
-- [ ] **Phase 84: Coop-Backend** - COOP-07 — 3 DB-Tabellen, CoopService, CoopController, 6 Endpoints
-- [ ] **Phase 85: Coop-Frontend** - COOP-01 bis COOP-06 — Lobby, Abstimmung, Scene-Sync via Polling
+- [x] **Phase 84: Coop-Backend** - COOP-07 — 3 DB-Tabellen, CoopService, CoopController, 6 Endpoints (completed 2026-03-25)
+- [x] **Phase 85: Coop-Frontend** - COOP-01 bis COOP-06 — Lobby, Abstimmung, Scene-Sync via Polling (completed 2026-03-25)
 
 ### Phase 80: SimulatorShell + Wiring
 **Goal**: Alle 7 Netzwerk-Simulatoren sind in Kampagnen-Szenen einbettbar — SimulatorShell laedt die richtige Komponente dynamisch, setzt pass_flag im State-Bag nach Bestehen und ruft graph-traverse mit dem Ergebnis auf
@@ -888,13 +888,13 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 75. DB-Migration + Telos-API | v11.0 | 0/? | Not started | - |
-| 76. Onboarding-Frontend | v11.0 | 0/? | Not started | - |
-| 77. Profil + Dozenten-Sicht | v11.0 | 0/? | Not started | - |
-| 78. Guide-Modus + Antwortlaengen | v11.0 | 0/? | Not started | - |
+| 75. DB-Migration + Telos-API | v11.0 | Complete | 2026-03-25 | - |
+| 76. Onboarding-Frontend | v11.0 | Complete | 2026-03-25 | - |
+| 77. Profil + Dozenten-Sicht | v11.0 | Complete | 2026-03-25 | - |
+| 78. Guide-Modus + Antwortlaengen | v11.0 | Complete | 2026-03-25 | - |
 | 80. SimulatorShell + Wiring | 3/3 | Complete   | 2026-03-25 | - |
 | 81. Quest-Map | 3/3 | Complete    | 2026-03-25 | - |
-| 82. HUD + Timer + DauBot-UI | v12.0 | 0/? | Not started | - |
-| 83. Kampagnen-Content | v12.0 | Complete    | 2026-03-25 | - |
-| 84. Coop-Backend | v12.0 | 0/? | Not started | - |
-| 85. Coop-Frontend | v12.0 | 0/? | Not started | - |
+| 82. HUD + Timer + DauBot-UI | v12.0 | Complete | 2026-03-25 | - |
+| 83. Kampagnen-Content | v12.0 | Complete | 2026-03-25 | - |
+| 84. Coop-Backend | v12.0 | Complete | 2026-03-25 | - |
+| 85. Coop-Frontend | v12.0 | Complete | 2026-03-25 | - |

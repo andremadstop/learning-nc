@@ -1,33 +1,33 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.0
-milestone_name: Housekeeping + Content-Rollout
+milestone: v12.0
+milestone_name: Campaign Engine — Interaktives Kampagnen-RPG
 status: completed
-stopped_at: Phase 83 context gathered
-last_updated: "2026-03-25T18:02:09.408Z"
-last_activity: 2026-03-25 — Completed 81-02 D3 renderer + QuestMap.vue + CSS
+stopped_at: All milestones through v12.0 shipped
+last_updated: "2026-03-26T14:00:00.000Z"
+last_activity: 2026-03-26 — Konsolidierung, Bugfixes (Elimination, Sprach-Toggle), ROADMAP cleanup
 progress:
-  total_phases: 54
-  completed_phases: 34
+  total_phases: 85
+  completed_phases: 85
   total_plans: 59
   completed_plans: 59
-  percent: 50
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-25)
+See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** v12.0 Campaign Engine — Interaktives Kampagnen-RPG
+**Current focus:** Konsolidierung — alle Milestones v2.3 bis v12.0 shipped, naechster Milestone offen
 
 ## Current Position
 
-Phase: 85 (complete)
+Phase: 85 (complete — all milestones shipped)
 Plan: All complete
-Status: Phasen 80-85 complete, INBOX bereinigt
+Status: Konsolidiert, Bugfixes deployed, bereit fuer naechsten Milestone
 Last activity: 2026-03-26 — INBOX cleanup, VirtuProf fixes, Menuumbau, Tools ausgrauen
 
 Progress: [██████████] 100%
