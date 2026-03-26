@@ -169,11 +169,19 @@
 }
 
 /* ========== LAYOUT ========== */
+/* Override NC app-content max-width */
+#content-vue .app-content,
+#content .app-content,
+.app-content {
+  max-width: none !important;
+}
+
 #app-learning {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 50px);
-  max-width: 100%;
+  max-width: 100% !important;
+  width: 100%;
   margin: 0;
   padding: 0;
   position: relative;
@@ -188,7 +196,7 @@
 
 #content-vue #app-learning,
 #content #app-learning {
-  max-width: 100%;
+  max-width: 100% !important;
   margin: 0;
 }
 
