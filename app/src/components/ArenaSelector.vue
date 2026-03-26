@@ -40,6 +40,12 @@ export default {
 					title: t('learning', 'Elimination (2–5)'),
 					desc: t('learning', 'Falsche Antwort kostet ein Leben — wer zuletzt steht, gewinnt.'),
 				},
+				{
+					mode: 'abenteuer',
+					icon: '🗺️',
+					title: t('learning', 'Abenteuer'),
+					desc: t('learning', 'Interaktive Kampagnen mit Story, Simulatoren und Entscheidungen.'),
+				},
 			]
 		},
 	},
@@ -49,7 +55,7 @@ export default {
 <style scoped>
 .arena-selector {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 	gap: 16px;
 	padding: 8px 0;
 }

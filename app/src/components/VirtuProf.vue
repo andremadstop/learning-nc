@@ -1512,6 +1512,21 @@ Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, o
       const hintKeywords = ['tipp', 'hint', 'hilfe', 'help me', 'einen tipp', 'give me a hint', 'gib mir einen tipp']
       return hintKeywords.some(kw => lower === kw || lower.startsWith(kw + ' ') || lower.endsWith(' ' + kw))
     },
+    isMetaQuestion(message) {
+      const lower = message.toLowerCase().trim()
+      // Short confused messages (< 5 words, ends with ?)
+      if (lower.endsWith('?') && lower.split(/\s+/).length <= 5) {
+        return true
+      }
+      const metaPatterns = [
+        'was meinst du', 'wie meinst du', 'verstehe ich nicht', 'versteh ich nicht',
+        'was bedeutet', 'erklaer', 'erklär', 'was heisst', 'was heißt',
+        'kannst du das', 'was soll das', 'hä', 'huh', 'what do you mean',
+        'i don\'t understand', 'what?', 'explain', 'come again',
+        'nochmal bitte', 'bitte nochmal', 'wiederhole', 'repeat',
+      ]
+      return metaPatterns.some(p => lower.includes(p))
+    },
     async handleChatSend(message) {
       if (!message || this.chatLoading) {
         return
@@ -1525,6 +1540,13 @@ Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, o
         }
 
         this.chatMessages.push({ role: 'user', text: message })
+
+        // Detect meta-questions / follow-ups — don't save as answer, re-ask same question
+        if (this.isMetaQuestion(message)) {
+          await this.requestTelosInterviewTurn(this.telosQuestionIndex + 1)
+          return
+        }
+
         this.telosAnswers.push({
           key: currentQuestion.key,
           question: currentQuestion.text,

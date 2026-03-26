@@ -149,6 +149,11 @@
             :mode="'elimination'"
             @back="arenaSubMode = null"
           />
+          <AbenteuerMode
+            v-else-if="arenaSubMode === 'abenteuer'"
+            :contentLanguage="contentLanguage"
+            @back="arenaSubMode = null"
+          />
         </template>
 
         <AnalyticsDashboard
@@ -243,20 +248,17 @@
         <button
           v-for="tab in toolsTabs"
           :key="tab.id"
-          :class="['sim-nav__item', { 'sim-nav__item--active': toolsView === tab.id }]"
+          :class="['sim-nav__item', { 'sim-nav__item--active': toolsView === tab.id, 'sim-nav__item--disabled': tab.disabled }]"
           role="tab"
           :aria-selected="toolsView === tab.id ? 'true' : 'false'"
           :aria-label="tab.label"
-          @click="toolsView = tab.id"
+          :disabled="tab.disabled"
+          @click="!tab.disabled && (toolsView = tab.id)"
         >
           <span class="sim-nav__icon" aria-hidden="true">{{ tab.icon }}</span>
           <span class="sim-nav__label">{{ tab.shortLabel }}</span>
         </button>
       </div>
-
-      <NcNoteCard v-else type="info">
-        {{ t('learning', 'Aktuell sind keine Werkzeuge freigeschaltet.') }}
-      </NcNoteCard>
 
       <SubnetCalculator v-if="toolsView === 'subnet'" />
       <DnsResolver v-else-if="toolsView === 'dns'" />
@@ -406,12 +408,12 @@ export default {
     toolsTabs() {
       const enabled = this.normalizeEnabledTools(this.enabledTools);
       return TOOL_CATALOG
-        .filter((tool) => enabled.includes(tool.id))
         .map((tool) => ({
           id: tool.id,
           label: t('learning', tool.labelKey),
           shortLabel: t('learning', tool.shortLabelKey),
           icon: tool.icon,
+          disabled: !enabled.includes(tool.id),
         }));
     },
     modeDescriptions() {

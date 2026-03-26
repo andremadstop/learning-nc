@@ -1035,10 +1035,9 @@ export default {
 }
 
 .bubble-toolbar {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 2px;
 }
 
 .bubble-close-btn {

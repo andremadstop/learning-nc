@@ -911,14 +911,16 @@ export default {
 				})
 				const raw = resp.data.campaigns || resp.data || []
 				// Normalize: backend uses campaign_id, frontend expects id
-				this.campaigns = (Array.isArray(raw) ? raw : []).map(c => ({
-					...c,
-					id: c.id || c.campaign_id,
-				}))
-				if (this.campaigns.length === 0) this.campaigns = STATIC_CAMPAIGNS
+				this.campaigns = (Array.isArray(raw) ? raw : [])
+					.filter(c => c.is_graph || c.graph)
+					.map(c => ({
+						...c,
+						id: c.id || c.campaign_id,
+					}))
+				if (this.campaigns.length === 0) this.campaigns = STATIC_CAMPAIGNS.filter(c => c.is_graph)
 			} catch (e) {
-				// Backend not yet available — fall back to static data
-				this.campaigns = STATIC_CAMPAIGNS
+				// Backend not yet available — fall back to static graph campaigns only
+				this.campaigns = STATIC_CAMPAIGNS.filter(c => c.is_graph)
 			} finally {
 				this.loadingCampaigns = false
 			}

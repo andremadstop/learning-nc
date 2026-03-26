@@ -153,26 +153,34 @@ class GeminiService {
         string $language = 'de'
     ): array {
         $safeQuestionNumber = max(2, min(10, $nextQuestionNumber));
-        $languageNames = [
-            'de' => 'German',
-            'en' => 'English',
-            'ru' => 'Russian',
-            'ar' => 'Arabic',
-        ];
-        $languageName = $languageNames[$language] ?? 'German';
 
-        $questionOrder = [
-            1 => 'What do you do professionally or in your training right now?',
-            2 => 'How long have you already been working with IT or networking?',
-            3 => 'Which topics do you already handle well?',
-            4 => 'Where does it still feel difficult or messy?',
-            5 => 'Do you have a concrete goal like a certification or exam?',
-            6 => 'When do you want to reach that goal?',
-            7 => 'How much study time do you realistically have per week?',
-            8 => 'Do you learn better alone or together with others?',
-            9 => 'What motivated you to start this journey?',
-            10 => 'Is there anything else I should know to support you well?',
+        $questionOrders = [
+            'de' => [
+                1 => 'Was machst du beruflich oder in deiner Ausbildung gerade?',
+                2 => 'Wie lange arbeitest du schon mit IT oder Netzwerken?',
+                3 => 'Welche Themen beherrschst du schon gut?',
+                4 => 'Wo fuehlt es sich noch schwierig oder unuebersichtlich an?',
+                5 => 'Hast du ein konkretes Ziel wie eine Zertifizierung oder Pruefung?',
+                6 => 'Wann moechtest du dieses Ziel erreichen?',
+                7 => 'Wie viel Lernzeit hast du realistisch pro Woche?',
+                8 => 'Lernst du lieber alleine oder zusammen mit anderen?',
+                9 => 'Was hat dich motiviert, diese Reise zu beginnen?',
+                10 => 'Gibt es noch etwas, das ich wissen sollte, um dich gut zu unterstuetzen?',
+            ],
+            'en' => [
+                1 => 'What do you do professionally or in your training right now?',
+                2 => 'How long have you already been working with IT or networking?',
+                3 => 'Which topics do you already handle well?',
+                4 => 'Where does it still feel difficult or messy?',
+                5 => 'Do you have a concrete goal like a certification or exam?',
+                6 => 'When do you want to reach that goal?',
+                7 => 'How much study time do you realistically have per week?',
+                8 => 'Do you learn better alone or together with others?',
+                9 => 'What motivated you to start this journey?',
+                10 => 'Is there anything else I should know to support you well?',
+            ],
         ];
+        $questionOrder = $questionOrders[$language] ?? $questionOrders['de'];
 
         $historyLines = [];
         foreach (array_slice($history, 0, 10) as $index => $entry) {
@@ -182,47 +190,81 @@ class GeminiService {
                 continue;
             }
 
-            $historyLines[] = 'Question ' . ($index + 1) . ': ' . $question;
-            $historyLines[] = 'User answer ' . ($index + 1) . ': ' . $answer;
+            $historyLines[] = ($language === 'de' ? 'Frage ' : 'Question ') . ($index + 1) . ': ' . $question;
+            $historyLines[] = ($language === 'de' ? 'Antwort ' : 'User answer ') . ($index + 1) . ': ' . $answer;
         }
 
         $historyBlock = implode("\n", $historyLines);
-        $nameLine = $userName !== ''
-            ? 'The user first name is "' . str_replace('"', '', $userName) . '". Use it naturally from time to time.'
-            : 'The user first name is unknown, so do not guess it.';
+        $safeName = str_replace('"', '', $userName);
+
+        if ($language === 'de') {
+            $nameLine = $userName !== ''
+                ? 'Der Vorname des Users ist "' . $safeName . '". Verwende ihn ab und zu natuerlich.'
+                : 'Der Vorname ist unbekannt — nicht raten.';
+        } else {
+            $nameLine = $userName !== ''
+                ? 'The user first name is "' . $safeName . '". Use it naturally from time to time.'
+                : 'The user first name is unknown, so do not guess it.';
+        }
+
         $questionList = [];
         foreach ($questionOrder as $number => $questionText) {
             $questionList[] = $number . '. ' . $questionText;
         }
 
-        $systemPrompt = "You are VirtuProf and you are currently guiding a new user through a short onboarding conversation.\n"
-            . "Respond in {$languageName}. Sound warm, competent, and relaxed, like an experienced colleague.\n"
-            . $nameLine . "\n"
-            . "There are exactly 10 questions in this order:\n"
-            . implode("\n", $questionList) . "\n\n"
-            . "Your job for each turn:\n"
-            . "1. React briefly and warmly to the user's previous answer.\n"
-            . "2. Explain in one short sentence what that means for how VirtuProf can help.\n"
-            . "3. Ask exactly question {$safeQuestionNumber}, naturally phrased.\n\n"
-            . "Important rules:\n"
-            . "- Ask only one new question.\n"
-            . "- Do not summarize the full profile yet.\n"
-            . "- Keep the whole reply concise, usually 3 short paragraphs or less than 110 words.\n"
-            . "- Refer concretely to details the user mentioned.\n"
-            . "- If the user mentions photography, connect it naturally to file formats or structured thinking.\n"
-            . "- If the user mentions subnetting as a weakness, acknowledge that many learners struggle with it.\n"
-            . "- If the user mentions a homelab, point out that hands-on practice is a strong advantage.\n"
-            . "- For question 5, briefly mention that the app offers question pools, simulators, and practice exams.\n"
-            . "- Use an occasional emoji only if it feels natural, never more than one.";
+        if ($language === 'de') {
+            $systemPrompt = "Du bist VirtuProf und fuehrst gerade ein neues Onboarding-Gespraech mit einem User.\n"
+                . "Antworte auf Deutsch. Klingt warm, kompetent und entspannt — wie ein erfahrener Kollege.\n"
+                . $nameLine . "\n"
+                . "Es gibt genau 10 Fragen in dieser Reihenfolge:\n"
+                . implode("\n", $questionList) . "\n\n"
+                . "Deine Aufgabe pro Antwort:\n"
+                . "1. Reagiere kurz und freundlich auf die vorherige Antwort des Users.\n"
+                . "2. Erklaere in einem kurzen Satz, was das fuer VirtuProf bedeutet.\n"
+                . "3. Stelle genau Frage {$safeQuestionNumber}, natuerlich formuliert.\n\n"
+                . "Wenn der User eine Rueckfrage stellt (z.B. 'was meinst du?', 'erklaer das', 'verstehe ich nicht'), "
+                . "beantworte die Rueckfrage hilfreich und stelle dann die aktuelle Frage erneut.\n\n"
+                . "Wichtige Regeln:\n"
+                . "- Stelle nur eine neue Frage.\n"
+                . "- Fasse das Profil noch nicht zusammen.\n"
+                . "- Halte die Antwort kurz, maximal 3 Absaetze oder 110 Woerter.\n"
+                . "- Beziehe dich konkret auf Details die der User erwaehnt hat.\n"
+                . "- Bei Frage 5: Erwaehne kurz, dass die App Fragenpools, Simulatoren und Uebungspruefungen bietet.\n"
+                . "- Nutze hoechstens ein Emoji, nur wenn es natuerlich wirkt.";
+        } else {
+            $systemPrompt = "You are VirtuProf and you are currently guiding a new user through a short onboarding conversation.\n"
+                . "Respond in English. Sound warm, competent, and relaxed, like an experienced colleague.\n"
+                . $nameLine . "\n"
+                . "There are exactly 10 questions in this order:\n"
+                . implode("\n", $questionList) . "\n\n"
+                . "Your job for each turn:\n"
+                . "1. React briefly and warmly to the user's previous answer.\n"
+                . "2. Explain in one short sentence what that means for how VirtuProf can help.\n"
+                . "3. Ask exactly question {$safeQuestionNumber}, naturally phrased.\n\n"
+                . "If the user asks a follow-up question (e.g. 'what do you mean?', 'explain that', 'I don't understand'), "
+                . "answer their question helpfully and then re-ask the current question.\n\n"
+                . "Important rules:\n"
+                . "- Ask only one new question.\n"
+                . "- Do not summarize the full profile yet.\n"
+                . "- Keep the whole reply concise, usually 3 short paragraphs or less than 110 words.\n"
+                . "- Refer concretely to details the user mentioned.\n"
+                . "- For question 5, briefly mention that the app offers question pools, simulators, and practice exams.\n"
+                . "- Use an occasional emoji only if it feels natural, never more than one.";
+        }
 
-        $userPrompt = "Conversation so far:\n" . ($historyBlock !== '' ? $historyBlock : 'No prior answers.') . "\n\n"
-            . "Write the next assistant reply now. The next question number is {$safeQuestionNumber}.";
+        if ($language === 'de') {
+            $userPrompt = "Bisheriges Gespraech:\n" . ($historyBlock !== '' ? $historyBlock : 'Noch keine Antworten.') . "\n\n"
+                . "Schreibe jetzt die naechste Assistenten-Antwort. Die naechste Frage ist Nummer {$safeQuestionNumber}.";
+        } else {
+            $userPrompt = "Conversation so far:\n" . ($historyBlock !== '' ? $historyBlock : 'No prior answers.') . "\n\n"
+                . "Write the next assistant reply now. The next question number is {$safeQuestionNumber}.";
+        }
 
         return $this->generateStructured(
             $systemPrompt,
             $userPrompt,
             $userId,
-            400,
+            1024,
             'telos_interview_turn'
         );
     }
