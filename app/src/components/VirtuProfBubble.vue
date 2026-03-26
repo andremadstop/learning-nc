@@ -1,16 +1,6 @@
 <template>
   <div class="virtuprof-bubble" :dir="textDirection">
     <div class="bubble-content">
-      <div class="bubble-toolbar">
-        <button
-          type="button"
-          class="bubble-close-btn"
-          :aria-label="vt('Schliessen')"
-          :title="vt('Schliessen')"
-          @click="$emit('dismiss')">
-          ✕
-        </button>
-      </div>
 
       <template v-if="step.kind === 'telos-form'">
         <p v-if="step.title" class="bubble-title">{{ step.title }}</p>
@@ -1002,15 +992,15 @@ export default {
 .virtuprof-bubble {
   position: absolute;
   right: 0;
-  bottom: 96px;
-  width: min(400px, calc(100vw - 32px));
-  max-height: calc(100vh - 160px);
+  bottom: 0;
+  width: min(380px, calc(100vw - 48px));
+  max-height: calc(100vh - 120px);
   overflow-y: auto;
   background: var(--color-main-background);
   border: 1px solid var(--color-border);
   border-radius: 14px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
-  padding: 16px;
+  padding: 14px;
   animation: bubble-appear 0.25s ease-out;
   display: flex;
   flex-direction: column;
@@ -1034,32 +1024,7 @@ export default {
   padding-top: 2px;
 }
 
-.bubble-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 2px;
-}
-
-.bubble-close-btn {
-  background: none;
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  font-size: 13px;
-  line-height: 1;
-  color: var(--color-text-maxcontrast, #999);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-}
-
-.bubble-close-btn:hover {
-  color: var(--color-error, #e64d4d);
-}
+/* bubble-toolbar + close-btn removed — dismiss via Close button in FAQ menu */
 
 .bubble-title {
   margin: 0 0 6px;
@@ -1300,9 +1265,11 @@ export default {
   justify-content: flex-start;
   white-space: normal;
   text-align: start;
-  line-height: 1.35;
+  line-height: 1.25;
   height: auto;
-  min-height: 36px;
+  min-height: 28px;
+  padding: 6px 10px;
+  font-size: 13px;
   overflow-wrap: anywhere;
 }
 

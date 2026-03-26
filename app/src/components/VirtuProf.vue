@@ -40,6 +40,7 @@
         @consent-accept="handleConsentAccept"
         @consent-decline="handleConsentDecline" />
       <VirtuProfAvatar
+        v-show="!visible || isMinimized"
         :animation="currentAnimation"
         :has-message="visible && !isMinimized"
         :invite-count="duelInvites.incoming.length"
@@ -1940,18 +1941,20 @@ Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, o
 
 <style scoped>
 .virtuprof-container {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
   z-index: 5000;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  max-height: calc(100% - 32px);
+  max-width: calc(100% - 32px);
 }
 
 .virtuprof-container.minimized {
-  right: 18px;
-  bottom: 18px;
+  right: 12px;
+  bottom: 12px;
 }
 
 .virtuprof-enter-enter-active,
@@ -1966,8 +1969,8 @@ Ich passe meine Erklärungen ab jetzt an dich an. Soll ich dir die App zeigen, o
 
 @media (max-width: 768px) {
   .virtuprof-container {
-    right: 14px;
-    bottom: 14px;
+    right: 8px;
+    bottom: 8px;
   }
 }
 </style>

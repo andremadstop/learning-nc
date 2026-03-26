@@ -173,6 +173,7 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px 40px;
+  position: relative;
 }
 
 #content-vue #app-learning,
