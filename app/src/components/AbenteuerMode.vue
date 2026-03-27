@@ -912,10 +912,11 @@ export default {
 				const raw = resp.data.campaigns || resp.data || []
 				// Normalize: backend uses campaign_id, frontend expects id
 				this.campaigns = (Array.isArray(raw) ? raw : [])
-					.filter(c => c.is_graph || c.graph)
+					.filter(c => c.is_graph || c.graph || c.graph_mode)
 					.map(c => ({
 						...c,
 						id: c.id || c.campaign_id,
+						is_graph: c.is_graph || c.graph_mode || false,
 					}))
 				if (this.campaigns.length === 0) this.campaigns = STATIC_CAMPAIGNS.filter(c => c.is_graph)
 			} catch (e) {
@@ -1122,7 +1123,9 @@ export default {
 		applyGraphResponse(respData, options = {}) {
 			const computeDeltas = options.computeDeltas !== false
 			this.applyGraphStateSnapshot(respData.state || {}, computeDeltas)
-			this.currentGraphNode = respData.node || this.currentGraphNode
+			// Backend sends "scene", frontend uses "node" — normalize
+			const node = respData.node || respData.scene || null
+			this.currentGraphNode = node || this.currentGraphNode
 			this.graphAvailableEdges = respData.available_edges || []
 			this.fullGraph = respData.full_graph || this.fullGraph
 			this.applyGraphAuxiliaryPayloads(respData, Boolean(options.preserveBotResult))
@@ -1133,13 +1136,13 @@ export default {
 				return
 			}
 
-			if (respData.node?.type === 'ending') {
+			if (node?.type === 'ending') {
 				this.currentGraphSimulator = null
 				this.phase = 'epilog'
 				return
 			}
 
-			this.showGraphSceneNode(respData.node)
+			this.showGraphSceneNode(node)
 		},
 
 		async startCampaign() {

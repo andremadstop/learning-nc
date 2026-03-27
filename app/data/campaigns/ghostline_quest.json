@@ -151,7 +151,7 @@
         "act": 1,
         "simulator": {
           "type": "portscan",
-          "scenario": "smb-backdoor",
+          "scenario": "compromised-host",
           "pass_flag": "portscan_done"
         },
         "effects": []
@@ -366,7 +366,7 @@
         "timer_seconds": 120,
         "simulator": {
           "type": "firewall",
-          "scenario": "block-c2-range",
+          "scenario": "dmz-lan",
           "pass_flag": "firewall_locked"
         },
         "effects": []
@@ -457,7 +457,7 @@
         "act": 3,
         "simulator": {
           "type": "dns",
-          "scenario": "dns-poisoning-fix",
+          "scenario": "dns-dnssec-failure",
           "pass_flag": "dns_fixed"
         },
         "effects": []
@@ -495,7 +495,7 @@
         "act": 4,
         "simulator": {
           "type": "routing",
-          "scenario": "bgp-hijack-fix",
+          "scenario": "missing-route",
           "pass_flag": "routing_fixed"
         },
         "effects": []
@@ -595,7 +595,7 @@
         "act": 4,
         "simulator": {
           "type": "wireshark",
-          "scenario": "find-exfiltration",
+          "scenario": "dns-spoofing",
           "pass_flag": "evidence_secured"
         },
         "effects": [
@@ -702,7 +702,7 @@
         "timer_seconds": 90,
         "simulator": {
           "type": "authflow",
-          "scenario": "revoke-ex-admin",
+          "scenario": "method-security",
           "pass_flag": "access_revoked"
         },
         "effects": []
@@ -1053,7 +1053,7 @@
         "label": "Vollstaendigen Report mit allen Enthuelungen einreichen",
         "conditions": {
           "requires_flag": "evidence_secured",
-          "requires_flag_2": "whistleblower_path",
+          "requires_item": "ghostline_manifesto",
           "min_reputation": {
             "security": 3
           }
