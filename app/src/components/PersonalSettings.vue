@@ -66,6 +66,15 @@
       </div>
 
       <div class="field-row">
+        <label>{{ t('learning', 'Bot sounds') }}</label>
+        <p class="field-desc">{{ t('learning', 'Short sound cues for bot interactions') }}</p>
+        <NcCheckboxRadioSwitch
+          :checked="form.botSoundsEnabled"
+          type="switch"
+          @update:checked="onBotSoundsToggle(!!$event)" />
+      </div>
+
+      <div class="field-row">
         <label for="virtuprof-voice-lang">{{ t('learning', 'Voice language') }}</label>
         <select id="virtuprof-voice-lang" v-model="form.virtuProfVoiceLang" class="nc-input">
           <option
@@ -334,6 +343,7 @@ import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import { novaAudio } from '../utils/nova-audio-manager.js'
 import {
   applyTelosToForm,
   buildTelosPayload,
@@ -374,6 +384,7 @@ export default {
         virtuProfEnabled: true,
         virtuProfTtsEnabled: false,
         virtuProfSttEnabled: false,
+        botSoundsEnabled: false,
         virtuProfVoiceLang: 'de-DE',
         notificationsEnabled: true,
       },
@@ -471,6 +482,8 @@ export default {
         this.form.virtuProfEnabled = (data.virtuprof_enabled || 'yes') !== 'no'
         this.form.virtuProfTtsEnabled = virtuProfData.tts_enabled === true
         this.form.virtuProfSttEnabled = virtuProfData.stt_enabled === true
+        this.form.botSoundsEnabled = virtuProfData.bot_sounds_enabled === true
+        novaAudio.setEnabled(this.form.botSoundsEnabled)
         this.form.virtuProfVoiceLang = VOICE_LANGUAGE_OPTIONS.some(option => option.value === virtuProfData.voice_lang)
           ? virtuProfData.voice_lang
           : 'de-DE'
@@ -535,6 +548,10 @@ export default {
         this.telosSaving = false
       }
     },
+    onBotSoundsToggle(val) {
+      this.form.botSoundsEnabled = val
+      novaAudio.setEnabled(val)
+    },
     async save() {
       this.saving = true
       this.error = ''
@@ -551,6 +568,7 @@ export default {
           axios.put(generateUrl('/apps/learning/api/virtuprof/preferences'), {
             ttsEnabled: this.form.virtuProfTtsEnabled,
             sttEnabled: this.form.virtuProfSttEnabled,
+            botSoundsEnabled: this.form.botSoundsEnabled,
             voiceLang: VOICE_LANGUAGE_OPTIONS.some(option => option.value === this.form.virtuProfVoiceLang)
               ? this.form.virtuProfVoiceLang
               : 'de-DE',
