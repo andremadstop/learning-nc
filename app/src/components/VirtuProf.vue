@@ -9,6 +9,7 @@
       <NovaDock
         v-if="!showBubble"
         :animation="currentAnimation"
+        :emotion="currentEmotion"
         :has-message="visible && !isMinimized"
         :invite-count="duelInvites.incoming.length"
         :status-text="dockStatusText"
@@ -69,6 +70,7 @@ import { generateUrl } from '@nextcloud/router'
 import NovaDock from './nova/NovaDock.vue'
 import NovaPanel from './nova/NovaPanel.vue'
 import VirtuProfBubble from './VirtuProfBubble.vue'
+import { novaReactions } from '../utils/nova-reaction-engine.js'
 import OnboardingIntro from './OnboardingIntro.vue'
 import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
 import {
@@ -213,6 +215,7 @@ export default {
       currentScriptContext: {},
       stepIndex: 0,
       currentAnimation: 'idle',
+      currentEmotion: null,
       language: detectVirtuProfLanguage(),
       dismissedTriggers: [],
       queue: [],
@@ -641,7 +644,7 @@ export default {
         this.telosOnboardingActive = false
         this.telosCompletionProfile = payload
         this.helpView = 'telos-complete'
-        this.currentAnimation = 'celebrate'
+        this.applyReaction('milestone')
         this.resetTelosReminderCount()
       } catch (e) {
         this.telosError = e?.response?.data?.error || this.vt('Could not save your learning profile.')
@@ -1058,6 +1061,20 @@ export default {
       this.telosError = ''
       this.telosSaved = false
       this.telosCompletionProfile = null
+    },
+    applyReaction(eventType, context = {}) {
+      const reaction = novaReactions.react(eventType, context)
+      if (!reaction) return
+      this.currentAnimation = reaction.animation
+      this.currentEmotion = reaction.emotion
+      if (reaction.duration) {
+        if (this._reactionTimer) clearTimeout(this._reactionTimer)
+        this._reactionTimer = setTimeout(() => {
+          this.currentAnimation = 'idle'
+          this.currentEmotion = null
+          this._reactionTimer = null
+        }, reaction.duration)
+      }
     },
     handleAvatarClick() {
       if (!this.enabled) {
@@ -1719,9 +1736,9 @@ export default {
         this.chatMessages = this.chatMessages.slice(this.chatMessages.length - 20)
       }
 
-      // Start loading + talk animation
+      // Start loading + thinking reaction
       this.chatLoading = true
-      this.currentAnimation = 'talk'
+      this.applyReaction('thinking')
 
       // Build context payload from currentContext
       const payload = { message }
@@ -1777,16 +1794,7 @@ export default {
           this.chatMessages = this.chatMessages.slice(this.chatMessages.length - 20)
         }
         this.chatLoading = false
-        // Return avatar to idle after a short talk period
-        if (this.chatAnimationTimer) {
-          clearTimeout(this.chatAnimationTimer)
-        }
-        this.chatAnimationTimer = setTimeout(() => {
-          if (this.currentAnimation === 'talk') {
-            this.currentAnimation = 'idle'
-          }
-          this.chatAnimationTimer = null
-        }, 1500)
+        this.applyReaction('chat-message')
       }
     },
     // PRIV-01: User accepted the AI consent dialog

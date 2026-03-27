@@ -12,6 +12,7 @@
     </span>
     <NovaAvatar
       :animation="animation"
+      :emotion="emotion"
       :has-message="hasMessage"
       :invite-count="inviteCount" />
   </button>
@@ -26,6 +27,7 @@ export default {
 	components: { NovaAvatar },
 	props: {
 		animation: { type: String, default: 'idle' },
+		emotion: { type: String, default: null },
 		hasMessage: { type: Boolean, default: false },
 		inviteCount: { type: Number, default: 0 },
 		statusText: { type: String, default: '' },
