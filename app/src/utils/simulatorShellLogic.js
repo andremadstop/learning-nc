@@ -20,6 +20,7 @@ export const SIMULATOR_MAP = {
 	portscan: () => import('../components/PortScanner.vue'),
 	wireshark: () => import('../components/WiresharkLite.vue'),
 	authflow: () => import('../components/AuthFlowSimulator.vue'),
+	terminal: () => import('../components/TerminalPuzzle.vue'),
 }
 
 export const SCENARIOS = {

@@ -6,12 +6,12 @@ import {
 } from '../../src/utils/simulatorShellLogic.js'
 
 describe('SIMULATOR_MAP', () => {
-	it('has exactly 7 keys', () => {
-		expect(Object.keys(SIMULATOR_MAP)).toHaveLength(7)
+	it('has exactly 8 keys', () => {
+		expect(Object.keys(SIMULATOR_MAP)).toHaveLength(8)
 	})
 
 	it('contains all simulator types', () => {
-		const expected = ['firewall', 'dns', 'routing', 'nat', 'portscan', 'wireshark', 'authflow']
+		const expected = ['firewall', 'dns', 'routing', 'nat', 'portscan', 'wireshark', 'authflow', 'terminal']
 		expect(Object.keys(SIMULATOR_MAP).sort()).toEqual(expected.sort())
 	})
 
