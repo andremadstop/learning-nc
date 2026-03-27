@@ -224,6 +224,48 @@ class DauBotService {
                 ],
             ],
         ],
+        'ghostline' => [
+            [
+                'mistake_id' => 'clicked_phishing_link',
+                'title' => 'Phishing-Link geoeffnet',
+                'bot_action' => 'Klaus hat auf einen Link in einer Mail von \'IT-Abteilung@firma-sicher.de\' geklickt und seine Credentials eingegeben.',
+                'symptom' => 'Unbekannte Sessions im Auth-Log, Lateral Movement von Klaus\' Workstation.',
+                'severity' => 'critical',
+                'recommended_fix' => 'Credentials sofort rotieren, Session terminieren, Workstation isolieren und forensisch sichern.',
+                'error_id' => 'credentials_compromised',
+                'fix_id' => 'rotate_and_isolate',
+                'error_options' => [
+                    ['id' => 'credentials_compromised', 'label' => 'Credentials wurden kompromittiert'],
+                    ['id' => 'dns_resolution_issue', 'label' => 'Ein DNS-Aufloesung-Problem liegt vor'],
+                    ['id' => 'certificate_expired', 'label' => 'Das TLS-Zertifikat ist abgelaufen'],
+                ],
+                'fix_options' => [
+                    ['id' => 'rotate_and_isolate', 'label' => 'Credentials rotieren, Session beenden, Workstation isolieren'],
+                    ['id' => 'reboot_switch', 'label' => 'Den Switch neu starten'],
+                    ['id' => 'open_firewall', 'label' => 'Firewall-Regeln oeffnen fuer Debugging'],
+                ],
+            ],
+            [
+                'mistake_id' => 'ransomware_encryption',
+                'title' => 'Ransomware-Verschluesselung aktiv',
+                'bot_action' => 'Ghostline hat einen Verschluesselungstrojaner ueber die Supply-Chain eingeschleust. Dateien werden live verschluesselt.',
+                'symptom' => 'Dateien enden auf .ghost, CPU-Last bei 100%, anomaler Netzwerktraffic zu C2-Server.',
+                'severity' => 'critical',
+                'recommended_fix' => 'Betroffene Segmente isolieren, Backup-Integritaet pruefen, C2-Kommunikation blockieren, Incident Response einleiten.',
+                'error_id' => 'ransomware_active',
+                'fix_id' => 'isolate_and_backup',
+                'error_options' => [
+                    ['id' => 'ransomware_active', 'label' => 'Ransomware verschluesselt aktiv Dateien'],
+                    ['id' => 'disk_failure', 'label' => 'Ein Festplattenausfall liegt vor'],
+                    ['id' => 'windows_update', 'label' => 'Ein Windows-Update laeuft'],
+                ],
+                'fix_options' => [
+                    ['id' => 'isolate_and_backup', 'label' => 'Segmente isolieren, Backups pruefen, C2 blockieren'],
+                    ['id' => 'pay_ransom', 'label' => 'Loesegeld bezahlen'],
+                    ['id' => 'format_all_drives', 'label' => 'Alle Laufwerke sofort formatieren'],
+                ],
+            ],
+        ],
     ];
 
     /**

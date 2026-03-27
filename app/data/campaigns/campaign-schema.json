@@ -49,6 +49,7 @@
       "story",
       "simulator",
       "bot_correction",
+      "terminal",
       "ending"
     ],
     "simulator_type_enum": [
@@ -58,14 +59,16 @@
       "nat",
       "portscan",
       "wireshark",
-      "authflow"
+      "authflow",
+      "terminal"
     ],
     "bot_category_enum": [
       "default",
       "firewall",
       "dns",
       "routing",
-      "nat"
+      "nat",
+      "ghostline"
     ],
     "condition_keys": [
       "requires_flag",
