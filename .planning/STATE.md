@@ -2,16 +2,17 @@
 gsd_state_version: 1.0
 milestone: v13.0
 milestone_name: Feature Expansion
-status: completed
-stopped_at: Completed 90-01-PLAN.md
-last_updated: "2026-03-27T19:09:12.520Z"
-last_activity: 2026-03-27 — Phase 90 Plan 01 (Character Bible) complete
+current_plan: 2 of 2
+status: unknown
+stopped_at: Completed 92-01-PLAN.md
+last_updated: "2026-03-27T22:48:04.033Z"
+last_activity: 2026-03-27 — Phase 92 Plan 01 complete (TerminalPuzzle, ghostline CSS, DauBot)
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 17
+  total_plans: 8
+  completed_plans: 2
+  percent: 33
 ---
 
 # Project State
@@ -21,16 +22,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** v13.0 Feature Expansion — Phase 90 (NOVA Character Bible) complete
+**Current focus:** v13.0 Feature Expansion — Phase 92 (Ghostline Quest) executing
 
 ## Current Position
 
-Phase: 90 of 95 (NOVA Character Bible)
-Plan: 01 of 01 (complete)
-Status: Phase 90 complete
-Last activity: 2026-03-27 — Phase 90 Plan 01 (Character Bible) complete
+Phase: 92 of 95 (Ghostline Quest) — Plan 01 complete
+Current Plan: 2 of 2
+Last activity: 2026-03-27 — Phase 92 Plan 01 complete (TerminalPuzzle, ghostline CSS, DauBot)
 
-Progress: [██░░░░░░░░] 17%
+Progress: [███░░░░░░░] 33%
 
 ## Accumulated Context
 
@@ -44,6 +44,9 @@ Progress: [██░░░░░░░░] 17%
 - GeminiService.php buildPersonalityAddendum is authoritative for voice/personality (live code > drafts)
 - Character names from VIRTPROF_CHARACTER_ECOSYSTEM.md are canonical (not Track A names)
 - 6 behavioral contexts defined: Quiz, Chat, Kampagne, Onboarding, Pruefung, Arena
+- Terminal puzzle logic extracted to pure-function util (terminalPuzzleLogic.js) for TDD testability
+- TerminalPuzzle uses scenarioOverride from campaign JSON — no SCENARIOS registry needed
+- ghostline.css imported in main.js following epoch-tokens.css pattern (plain CSS)
 
 ### Pending Todos
 
@@ -57,7 +60,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-27T19:09:12.508Z
-Stopped at: Completed 90-01-PLAN.md
+Last session: 2026-03-27T22:48:04.020Z
+Stopped at: Completed 92-01-PLAN.md
 Resume file: None
-Next action: Plan Phase 91 (NOVA Visual Implementation)
+Next action: Execute 92-02-PLAN.md (Ghostline Quest campaign content)
