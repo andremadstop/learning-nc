@@ -1100,24 +1100,46 @@ export default {
 
 <style scoped>
 .subnet-tool {
-	background: var(--lnc-panel);
-	border: 1px solid var(--lnc-border);
-	border-radius: var(--lnc-radius-lg);
-	box-shadow: var(--lnc-shadow-card);
-	color: var(--lnc-text);
-	padding: var(--lnc-space-xl);
+	--subnet-space-sm: 8px;
+	--subnet-space-md: 12px;
+	--subnet-space-lg: 16px;
+	--subnet-space-xl: 24px;
+	--subnet-radius-sm: 8px;
+	--subnet-radius-md: 14px;
+	--subnet-radius-lg: 20px;
+	--subnet-bg: var(--sim-bg, #0d1117);
+	--subnet-panel: var(--sim-panel, #161b27);
+	--subnet-panel-elevated: var(--sim-panel-elevated, #1c2333);
+	--subnet-border: var(--sim-border, #30363d);
+	--subnet-text: var(--sim-text, #c9d1d9);
+	--subnet-text-muted: var(--sim-text-muted, #8b949e);
+	--subnet-accent: var(--sim-accent, #58a6ff);
+	--subnet-accent-dim: var(--sim-accent-dim, rgba(88, 166, 255, 0.15));
+	--subnet-accent-glow: var(--sim-glow-accent, 0 0 12px rgba(88, 166, 255, 0.2));
+	--subnet-success: var(--sim-success, #00e676);
+	--subnet-success-glow: var(--sim-glow-pass, 0 0 12px rgba(0, 230, 118, 0.3));
+	--subnet-danger: var(--sim-danger, #f85149);
+	--subnet-danger-glow: var(--sim-glow-fail, 0 0 12px rgba(248, 81, 73, 0.3));
+	--subnet-amber: var(--sim-amber, var(--sim-warn, #d29922));
+	background: var(--subnet-panel);
+	border: 1px solid var(--subnet-border);
+	border-radius: var(--subnet-radius-lg);
+	box-shadow: 0 18px 42px rgba(0, 0, 0, 0.32);
+	color: var(--subnet-text);
+	padding: var(--subnet-space-xl);
 }
 
 .subnet-tool__header {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: var(--lnc-space-lg);
-	margin-bottom: var(--lnc-space-xl);
+	gap: var(--subnet-space-lg);
+	margin-bottom: var(--subnet-space-xl);
 }
 
 .subnet-tool__eyebrow {
-	color: var(--lnc-cyan);
+	color: var(--subnet-accent);
+	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
 	font-size: 0.85rem;
 	font-weight: 700;
 	letter-spacing: 0.08em;
@@ -1126,14 +1148,14 @@ export default {
 }
 
 .subnet-tool__title {
-	font-family: var(--lnc-font-system);
+	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
 	font-size: 1.75rem;
 	line-height: 1.15;
 	margin: 0 0 8px;
 }
 
 .subnet-tool__subtitle {
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 	margin: 0;
 	max-width: 60ch;
 }
@@ -1141,41 +1163,48 @@ export default {
 .subnet-tool__tabs {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 10px;
-	margin-bottom: var(--lnc-space-xl);
+	gap: 2px;
+	margin-bottom: var(--subnet-space-xl);
+	padding: 2px;
+	width: fit-content;
+	border-radius: var(--subnet-radius-sm);
+	background: var(--subnet-border);
 }
 
 .subnet-tool__tab {
-	background: var(--lnc-panel);
-	background: color-mix(in srgb, var(--lnc-panel) 88%, var(--lnc-primary) 12%);
-	border: 1px solid var(--lnc-border);
-	border-radius: 999px;
-	color: var(--lnc-text);
+	background: transparent;
+	border: none;
+	border-radius: 6px;
+	color: var(--subnet-text-muted);
 	cursor: pointer;
-	font-family: var(--lnc-font-system);
-	font-size: 0.95rem;
-	font-weight: 600;
+	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
+	font-size: 0.8125rem;
+	font-weight: 500;
 	padding: 10px 16px;
+	transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.subnet-tool__tab:hover {
+	color: var(--subnet-text);
 }
 
 .subnet-tool__tab--active {
-	background: var(--lnc-primary);
-	border-color: var(--lnc-primary);
-	color: #fff;
-	box-shadow: var(--lnc-shadow-glow);
+	background: var(--subnet-accent-dim);
+	color: var(--subnet-accent);
+	box-shadow: var(--subnet-accent-glow);
 }
 
 .subnet-input-global {
 	display: flex;
 	flex-direction: column;
-	gap: var(--lnc-space-sm);
-	margin-bottom: var(--lnc-space-lg);
+	gap: var(--subnet-space-sm);
+	margin-bottom: var(--subnet-space-lg);
 }
 
 .subnet-panel {
 	display: flex;
 	flex-direction: column;
-	gap: var(--lnc-space-md);
+	gap: var(--subnet-space-md);
 }
 
 .subnet-label {
@@ -1186,11 +1215,11 @@ export default {
 }
 
 .subnet-input {
-	background: var(--lnc-bg);
-	border: 1px solid var(--lnc-border);
-	border-radius: var(--lnc-radius-md);
-	color: var(--lnc-text);
-	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+	background: var(--subnet-bg);
+	border: 1px solid var(--subnet-border);
+	border-radius: var(--subnet-radius-md);
+	color: var(--subnet-text);
+	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
 	font-size: 0.98rem;
 	min-height: 46px;
 	padding: 0 14px;
@@ -1198,25 +1227,23 @@ export default {
 }
 
 .subnet-input--valid {
-	border-color: var(--lnc-green);
+	border-color: var(--subnet-success);
 	box-shadow: 0 0 0 1px rgba(0, 230, 118, 0.28);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--lnc-green) 55%, transparent);
 }
 
 .subnet-input--error {
-	border-color: var(--lnc-danger);
+	border-color: var(--subnet-danger);
 	box-shadow: 0 0 0 1px rgba(248, 81, 73, 0.24);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--lnc-danger) 40%, transparent);
 }
 
 .subnet-help,
 .subnet-empty {
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 	margin: 0;
 }
 
 .subnet-state {
-	border-radius: var(--lnc-radius-sm);
+	border-radius: var(--subnet-radius-sm);
 	font-size: 0.95rem;
 	font-weight: 600;
 	margin: 0;
@@ -1225,33 +1252,31 @@ export default {
 
 .subnet-state--valid {
 	background: rgba(0, 230, 118, 0.12);
-	background: color-mix(in srgb, var(--lnc-green) 12%, transparent);
-	color: var(--lnc-green);
+	color: var(--subnet-success);
 }
 
 .subnet-state--error {
 	background: rgba(248, 81, 73, 0.12);
-	background: color-mix(in srgb, var(--lnc-danger) 12%, transparent);
-	color: var(--lnc-danger);
+	color: var(--subnet-danger);
 }
 
 .subnet-table {
 	border-collapse: collapse;
-	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
 	width: 100%;
 }
 
 .subnet-table th,
 .subnet-table td {
-	border-bottom: 1px solid var(--lnc-border);
+	border-bottom: 1px solid var(--subnet-border);
 	padding: 12px 14px;
 	text-align: left;
 	vertical-align: top;
 }
 
 .subnet-table th {
-	color: var(--lnc-text-secondary);
-	font-family: var(--lnc-font-system);
+	color: var(--subnet-text-muted);
+	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
 	font-size: 0.92rem;
 	font-weight: 700;
 	width: 32%;
@@ -1260,7 +1285,7 @@ export default {
 .binary-panel {
 	display: flex;
 	flex-direction: column;
-	gap: var(--lnc-space-lg);
+	gap: var(--subnet-space-lg);
 }
 
 .binary-legend {
@@ -1283,11 +1308,11 @@ export default {
 }
 
 .binary-legend__swatch--network {
-	background: var(--lnc-cyan);
+	background: var(--subnet-accent);
 }
 
 .binary-legend__swatch--host {
-	background: var(--lnc-amber);
+	background: var(--subnet-amber);
 }
 
 .binary-scroll {
@@ -1304,12 +1329,11 @@ export default {
 
 .binary-grid__bit {
 	align-items: center;
-	background: var(--lnc-panel);
-	background: color-mix(in srgb, var(--lnc-panel) 78%, var(--lnc-bg) 22%);
-	border: 1px solid var(--lnc-border);
+	background: var(--subnet-panel-elevated);
+	border: 1px solid var(--subnet-border);
 	display: flex;
 	flex-direction: column;
-	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
 	gap: 4px;
 	justify-content: center;
 	min-height: 74px;
@@ -1318,16 +1342,14 @@ export default {
 
 .binary-grid__bit--network {
 	background: rgba(88, 166, 255, 0.16);
-	background: color-mix(in srgb, var(--lnc-cyan) 16%, var(--lnc-panel));
 }
 
 .binary-grid__bit--host {
 	background: rgba(210, 153, 34, 0.16);
-	background: color-mix(in srgb, var(--lnc-amber) 16%, var(--lnc-panel));
 }
 
 .binary-grid__bit--octet-end {
-	border-right: 3px solid var(--lnc-primary);
+	border-right: 3px solid var(--subnet-accent);
 }
 
 .binary-grid__value {
@@ -1336,7 +1358,7 @@ export default {
 }
 
 .binary-grid__index {
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 	font-size: 0.72rem;
 }
 
@@ -1347,10 +1369,9 @@ export default {
 }
 
 .binary-octets__row {
-	background: var(--lnc-panel);
-	background: color-mix(in srgb, var(--lnc-panel) 88%, var(--lnc-bg) 12%);
-	border: 1px solid var(--lnc-border);
-	border-radius: var(--lnc-radius-md);
+	background: var(--subnet-panel-elevated);
+	border: 1px solid var(--subnet-border);
+	border-radius: var(--subnet-radius-md);
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
@@ -1358,7 +1379,7 @@ export default {
 }
 
 .binary-octets__label {
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 	font-size: 0.8rem;
 	font-weight: 700;
 	text-transform: uppercase;
@@ -1371,14 +1392,14 @@ export default {
 }
 
 .binary-octets__meta {
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 	font-size: 0.85rem;
 }
 
 .vlsm-form {
 	display: flex;
 	flex-direction: column;
-	gap: var(--lnc-space-lg);
+	gap: var(--subnet-space-lg);
 }
 
 .vlsm-form__rows {
@@ -1403,30 +1424,36 @@ export default {
 	border: 1px solid transparent;
 	border-radius: 999px;
 	cursor: pointer;
-	font-family: var(--lnc-font-system);
+	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
 	font-size: 0.95rem;
 	font-weight: 700;
 	min-height: 42px;
 	padding: 0 16px;
+	transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .subnet-button--primary {
-	background: var(--lnc-primary);
-	color: #fff;
+	background: var(--subnet-accent);
+	border-color: var(--subnet-accent);
+	color: var(--subnet-bg);
+	box-shadow: var(--subnet-accent-glow);
 }
 
 .subnet-button--secondary {
-	background: var(--lnc-panel);
-	background: color-mix(in srgb, var(--lnc-cyan) 16%, var(--lnc-panel));
-	border-color: var(--lnc-border);
-	border-color: color-mix(in srgb, var(--lnc-cyan) 28%, var(--lnc-border));
-	color: var(--lnc-text);
+	background: rgba(88, 166, 255, 0.08);
+	border-color: rgba(88, 166, 255, 0.3);
+	color: var(--subnet-text);
 }
 
 .subnet-button--ghost {
 	background: transparent;
-	border-color: var(--lnc-border);
-	color: var(--lnc-text);
+	border-color: var(--subnet-border);
+	color: var(--subnet-text);
+}
+
+.subnet-button:hover:not(:disabled) {
+	border-color: var(--subnet-accent);
+	box-shadow: var(--subnet-accent-glow);
 }
 
 .subnet-button:disabled {
@@ -1437,12 +1464,12 @@ export default {
 .toggle-controls {
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--lnc-space-md);
+	gap: var(--subnet-space-md);
 	align-items: flex-start;
-	padding: var(--lnc-space-md);
-	background: color-mix(in srgb, var(--lnc-panel) 92%, var(--lnc-primary) 8%);
-	border: 1px solid var(--lnc-border);
-	border-radius: var(--lnc-radius-md);
+	padding: var(--subnet-space-md);
+	background: rgba(88, 166, 255, 0.08);
+	border: 1px solid var(--subnet-border);
+	border-radius: var(--subnet-radius-md);
 }
 
 .toggle-controls__preset {
@@ -1473,7 +1500,7 @@ export default {
 }
 
 .toggle-controls__checkbox input[type="checkbox"] {
-	accent-color: var(--lnc-primary);
+	accent-color: var(--subnet-accent);
 	cursor: pointer;
 }
 
@@ -1498,7 +1525,7 @@ export default {
 }
 
 .binary-grid__bit--group-end {
-	border-right: 3px solid var(--lnc-primary);
+	border-right: 3px solid var(--subnet-accent);
 }
 
 .ipv6-groups {
@@ -1508,30 +1535,30 @@ export default {
 }
 
 .subnet-panel--vlan {
-	gap: var(--lnc-space-lg);
+	gap: var(--subnet-space-lg);
 }
 
 .vlan-grid {
 	display: grid;
-	gap: var(--lnc-space-lg);
+	gap: var(--subnet-space-lg);
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .vlan-card {
-	background: color-mix(in srgb, var(--lnc-panel) 92%, var(--lnc-primary) 8%);
-	border: 1px solid var(--lnc-border);
-	border-radius: var(--lnc-radius-md);
-	padding: var(--lnc-space-lg);
+	background: var(--subnet-panel-elevated);
+	border: 1px solid var(--subnet-border);
+	border-radius: var(--subnet-radius-md);
+	padding: var(--subnet-space-lg);
 	display: flex;
 	flex-direction: column;
-	gap: var(--lnc-space-md);
+	gap: var(--subnet-space-md);
 }
 
 .vlan-card__header {
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-start;
-	gap: var(--lnc-space-md);
+	gap: var(--subnet-space-md);
 }
 
 .vlan-card__title {
@@ -1545,7 +1572,7 @@ export default {
 
 .vlan-ports {
 	display: grid;
-	gap: var(--lnc-space-md);
+	gap: var(--subnet-space-md);
 }
 
 .vlan-port {
@@ -1553,9 +1580,9 @@ export default {
 	grid-template-columns: 18px 1fr;
 	gap: 14px;
 	padding: 14px;
-	border: 1px solid var(--lnc-border);
-	border-radius: var(--lnc-radius-md);
-	background: var(--lnc-bg);
+	border: 1px solid var(--subnet-border);
+	border-radius: var(--subnet-radius-md);
+	background: var(--subnet-bg);
 }
 
 .vlan-port__badge {
@@ -1573,14 +1600,14 @@ export default {
 .vlan-port__mode {
 	font-size: 0.8rem;
 	font-weight: 700;
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 }
 
 .vlan-port__copy {
 	margin: 6px 0 10px;
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 }
 
 .vlan-port__diagram {
@@ -1588,19 +1615,19 @@ export default {
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 8px;
-	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
 	font-size: 0.85rem;
 }
 
 .vlan-port__node {
 	padding: 6px 10px;
 	border-radius: 999px;
-	background: color-mix(in srgb, var(--lnc-bg) 84%, var(--lnc-primary) 16%);
-	border: 1px solid var(--lnc-border);
+	background: rgba(88, 166, 255, 0.12);
+	border: 1px solid rgba(88, 166, 255, 0.24);
 }
 
 .vlan-port__link {
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 }
 
 .vlan-frame-controls {
@@ -1634,20 +1661,20 @@ export default {
 	flex-direction: column;
 	gap: 6px;
 	padding: 12px;
-	border-radius: var(--lnc-radius-md);
-	border: 1px solid var(--lnc-border);
-	background: var(--lnc-bg);
+	border-radius: var(--subnet-radius-md);
+	border: 1px solid var(--subnet-border);
+	background: var(--subnet-bg);
 	min-height: 92px;
 }
 
 .vlan-frame__segment--tag {
-	border-color: var(--lnc-cyan);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--lnc-cyan) 35%, transparent);
+	border-color: var(--subnet-accent);
+	box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.24);
 }
 
 .vlan-frame__segment small,
 .vlan-frame__hint {
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 }
 
 .vlan-route-checks {
@@ -1664,17 +1691,17 @@ export default {
 	gap: 12px;
 	align-items: center;
 	padding: 10px 12px;
-	border-radius: var(--lnc-radius-md);
-	background: var(--lnc-bg);
-	border: 1px solid var(--lnc-border);
+	border-radius: var(--subnet-radius-md);
+	background: var(--subnet-bg);
+	border: 1px solid var(--subnet-border);
 }
 
 .vlan-route-checks__status--ok {
-	color: var(--lnc-green);
+	color: var(--subnet-success);
 }
 
 .vlan-route-checks__status--fail {
-	color: var(--lnc-danger);
+	color: var(--subnet-danger);
 }
 
 @media (max-width: 900px) {
@@ -1697,7 +1724,7 @@ export default {
 
 @media (max-width: 640px) {
 	.subnet-tool {
-		padding: var(--lnc-space-lg);
+		padding: var(--subnet-space-lg);
 	}
 
 	.subnet-table th,
@@ -1738,7 +1765,7 @@ export default {
 
 @media (max-width: 480px) {
 	.subnet-tool {
-		padding: var(--lnc-space-md);
+		padding: var(--subnet-space-md);
 	}
 
 	.subnet-table th,
@@ -1763,13 +1790,13 @@ export default {
 .explain-toggle__label {
 	font-size: 0.85rem;
 	font-weight: 600;
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 }
 
 .explain-toggle__switch {
 	width: 44px;
 	height: 24px;
-	background: var(--lnc-border);
+	background: var(--subnet-border);
 	border-radius: 12px;
 	position: relative;
 	cursor: pointer;
@@ -1779,7 +1806,7 @@ export default {
 }
 
 .explain-toggle__switch--active {
-	background: var(--lnc-cyan);
+	background: var(--subnet-accent);
 }
 
 .explain-toggle__knob {
@@ -1798,18 +1825,18 @@ export default {
 }
 
 .rechenweg-panel {
-	background: color-mix(in srgb, var(--lnc-bg) 92%, var(--lnc-cyan) 8%);
-	border: 1px solid var(--lnc-border);
-	border-radius: var(--lnc-radius-md);
-	padding: var(--lnc-space-lg);
-	margin-top: var(--lnc-space-lg);
+	background: rgba(88, 166, 255, 0.08);
+	border: 1px solid var(--subnet-border);
+	border-radius: var(--subnet-radius-md);
+	padding: var(--subnet-space-lg);
+	margin-top: var(--subnet-space-lg);
 }
 
 .rechenweg-panel__title {
 	font-size: 1rem;
 	font-weight: 700;
-	margin: 0 0 var(--lnc-space-md);
-	color: var(--lnc-cyan);
+	margin: 0 0 var(--subnet-space-md);
+	color: var(--subnet-accent);
 }
 
 .rechenweg-panel__steps {
@@ -1818,7 +1845,7 @@ export default {
 	margin: 0;
 	display: flex;
 	flex-direction: column;
-	gap: var(--lnc-space-sm);
+	gap: var(--subnet-space-sm);
 }
 
 .rechenweg-panel__step {
@@ -1833,25 +1860,25 @@ export default {
 }
 
 .rechenweg-panel__formula {
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 }
 
 .rechenweg-panel__result {
-	color: var(--lnc-cyan);
+	color: var(--subnet-accent);
 	font-weight: 600;
 }
 
 .subnet-table__why td {
-	background: color-mix(in srgb, var(--lnc-bg) 90%, var(--lnc-amber) 10%);
+	background: rgba(210, 153, 34, 0.12);
 	font-size: 0.88rem;
 	padding: 8px 14px;
-	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
-	color: var(--lnc-text-secondary);
+	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
+	color: var(--subnet-text-muted);
 	border-top: none;
 }
 
 .why-badge {
-	background: var(--lnc-amber);
+	background: var(--subnet-amber);
 	color: #000;
 	font-size: 0.75rem;
 	font-weight: 700;
@@ -1866,13 +1893,13 @@ export default {
 	gap: 1rem;
 	font-size: 0.9rem;
 	padding: 0.75rem;
-	background: var(--lnc-surface-raised, #f5f5f5);
+	background: var(--subnet-panel-elevated);
 	border-radius: 8px;
 	margin-bottom: 1rem;
 }
 
 .practice-progress__streak {
-	color: var(--lnc-accent, #f59e0b);
+	color: var(--subnet-amber);
 	font-weight: 600;
 }
 
@@ -1907,7 +1934,7 @@ export default {
 
 .practice-question__context {
 	font-size: 0.9rem;
-	color: var(--lnc-text-secondary);
+	color: var(--subnet-text-muted);
 	font-style: italic;
 	margin-bottom: 1rem;
 }
@@ -1923,13 +1950,13 @@ export default {
 }
 
 .practice-field--correct {
-	border-color: #16a34a;
-	background: #f0fdf4;
+	border-color: var(--subnet-success);
+	background: rgba(0, 230, 118, 0.1);
 }
 
 .practice-field--wrong {
-	border-color: #dc2626;
-	background: #fef2f2;
+	border-color: var(--subnet-danger);
+	background: rgba(248, 81, 73, 0.1);
 }
 
 .practice-field__icon {
@@ -1938,15 +1965,15 @@ export default {
 }
 
 .practice-field__icon--correct {
-	color: #16a34a;
+	color: var(--subnet-success);
 }
 
 .practice-field__icon--wrong {
-	color: #dc2626;
+	color: var(--subnet-danger);
 }
 
 .practice-field__correction {
-	color: #dc2626;
+	color: var(--subnet-danger);
 	font-size: 0.85rem;
 	margin-top: 0.25rem;
 }
