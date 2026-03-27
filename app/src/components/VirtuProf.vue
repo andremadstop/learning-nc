@@ -6,45 +6,23 @@
       v-if="enabled"
       class="virtuprof-container"
       :class="{ minimized: isMinimized, 'is-open': showBubble }">
-      <button
+      <NovaDock
         v-if="!showBubble"
-        type="button"
-        class="virtuprof-rail"
-        :class="{ 'has-invite': duelInvites.incoming.length > 0 }"
-        :aria-expanded="showBubble ? 'true' : 'false'"
-        @click="handleAvatarClick">
-        <span class="virtuprof-rail-copy">
-          <span class="virtuprof-rail-kicker">{{ vt('VirtuProf') }}</span>
-          <span class="virtuprof-rail-title">{{ vt('Learning assistant') }}</span>
-          <span class="virtuprof-rail-status">{{ dockStatusText }}</span>
-        </span>
-        <NovaAvatar
-          :animation="currentAnimation"
-          :has-message="visible && !isMinimized"
-          :invite-count="duelInvites.incoming.length" />
-      </button>
+        :animation="currentAnimation"
+        :has-message="visible && !isMinimized"
+        :invite-count="duelInvites.incoming.length"
+        :status-text="dockStatusText"
+        :expanded="showBubble"
+        @click="handleAvatarClick" />
 
-      <div v-else ref="virtuprofPanel" class="virtuprof-panel" tabindex="-1"
-        @touchstart.passive="panelTouchStart"
-        @touchend.passive="panelTouchEnd">
-        <div class="virtuprof-panel-header">
-          <div class="virtuprof-panel-copy">
-            <span class="virtuprof-panel-kicker">{{ vt('VirtuProf') }}</span>
-            <strong class="virtuprof-panel-title">{{ panelTitle }}</strong>
-            <span class="virtuprof-panel-status">{{ panelMetaText }}</span>
-          </div>
-          <button
-            type="button"
-            class="virtuprof-panel-toggle"
-            :aria-label="vt('Minimize panel')"
-            :title="vt('Minimize panel')"
-            @click="isMinimized = true">
-            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-              <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
-          </button>
-        </div>
-
+      <NovaPanel
+        v-else
+        ref="virtuprofPanel"
+        :title="panelTitle"
+        :meta-text="panelMetaText"
+        @minimize="isMinimized = true"
+        @touchstart="panelTouchStart"
+        @touchend="panelTouchEnd">
         <VirtuProfBubble
           :step="currentBubbleStep"
           :step-index="currentBubbleStepIndex"
@@ -79,7 +57,7 @@
           @report-error="handleReportError"
           @consent-accept="handleConsentAccept"
           @consent-decline="handleConsentDecline" />
-      </div>
+      </NovaPanel>
     </section>
   </transition>
   </div>
@@ -88,7 +66,8 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import NovaAvatar from './nova/NovaAvatar.vue'
+import NovaDock from './nova/NovaDock.vue'
+import NovaPanel from './nova/NovaPanel.vue'
 import VirtuProfBubble from './VirtuProfBubble.vue'
 import OnboardingIntro from './OnboardingIntro.vue'
 import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
@@ -212,7 +191,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 
 export default {
   name: 'VirtuProf',
-  components: { NovaAvatar, VirtuProfBubble, OnboardingIntro },
+  components: { NovaDock, NovaPanel, VirtuProfBubble, OnboardingIntro },
   props: {
     enabled: {
       type: Boolean,
