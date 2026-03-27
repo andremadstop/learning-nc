@@ -2,6 +2,9 @@
 const { defineConfig } = require('@playwright/test')
 const path = require('path')
 
+const defaultBaseURL = process.env.E2E_BASE_URL || 'http://192.168.178.65:8080/apps/learning'
+process.env.E2E_BASE_URL = defaultBaseURL
+
 module.exports = defineConfig({
   testDir: './tests/e2e',
   timeout: 60_000,
@@ -9,7 +12,7 @@ module.exports = defineConfig({
   fullyParallel: false,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: process.env.E2E_BASE_URL || 'http://localhost:8080/apps/learning',
+    baseURL: defaultBaseURL,
     headless: true,
   },
   projects: [
