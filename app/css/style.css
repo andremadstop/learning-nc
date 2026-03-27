@@ -725,6 +725,47 @@ select:focus-visible,
   .sim-tool__layers {
     grid-template-columns: 1fr;
   }
+
+  .sim-tool__table {
+    font-size: 0.75rem;
+  }
+
+  .sim-tool__table thead th,
+  .sim-tool__table tbody td {
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sim-tool {
+    padding: var(--lnc-space-md);
+  }
+
+  .sim-tool__table-wrap {
+    margin-inline: calc(-1 * var(--lnc-space-md));
+    padding-inline: var(--lnc-space-md);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sim-tool__table {
+    font-size: 0.6875rem;
+    min-width: 480px;
+  }
+
+  .sim-tool__table thead th,
+  .sim-tool__table tbody td {
+    padding: 5px 6px;
+    white-space: nowrap;
+  }
+
+  .sim-tool__section-header {
+    font-size: 0.875rem;
+  }
+
+  .sim-tool__btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
 }
 
 @media (max-width: 600px) {

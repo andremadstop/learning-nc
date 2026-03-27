@@ -348,11 +348,20 @@ export default {
 @media (max-width: 768px) {
   .sim-tool__table thead th,
   .sim-tool__table tbody td {
-    min-width: 110px;
+    min-width: 80px;
   }
 
   .sim-tool__drag-cell {
-    min-width: 42px;
+    min-width: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sim-tool__table thead th,
+  .sim-tool__table tbody td {
+    min-width: 60px;
+    font-size: 0.6875rem;
+    padding: 4px 6px;
   }
 }
 </style>

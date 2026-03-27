@@ -47,34 +47,15 @@
 						</div>
 					</transition>
 
-					<!-- Nav -->
-					<div class="onb-nav">
-						<button
-							v-if="slideIndex > 0"
-							type="button"
-							class="onb-btn onb-btn--ghost"
-							@click="prevSlide">
-							{{ vt('Back') }}
-						</button>
-						<span v-else />
-
-						<span class="onb-counter">{{ slideIndex + 1 }} / {{ slides.length }}</span>
-
+					<!-- Nav (minimal) -->
+					<div class="onb-nav onb-nav--centered">
 						<button
 							type="button"
 							class="onb-btn onb-btn--primary"
 							@click="isLastSlide ? finish() : nextSlide()">
-							{{ isLastSlide ? vt('Start learning') : vt('Next') }}
+							{{ isLastSlide ? vt('Start learning') : vt('Skip tour') }}
 						</button>
 					</div>
-
-					<button
-						v-if="!isLastSlide"
-						type="button"
-						class="onb-skip"
-						@click="finish">
-						{{ vt('Skip tour') }}
-					</button>
 				</div>
 			</transition>
 		</div>
@@ -104,6 +85,9 @@ export default {
 			slideIndex: 0,
 			slideDir: 'slide-next',
 			splashTimer: null,
+			autoplayTimer: null,
+			touchStartX: 0,
+			touchStartY: 0,
 		}
 	},
 
@@ -126,6 +110,7 @@ export default {
 		this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 		this.splashTimer = setTimeout(() => {
 			this.phase = 'slides'
+			this.startAutoplay()
 		}, this.reducedMotion ? 1200 : 4000)
 
 		this.handleKeydown = (e) => {
@@ -141,11 +126,33 @@ export default {
 			}
 		}
 		document.addEventListener('keydown', this.handleKeydown)
+
+		this.handleTouchStart = (e) => {
+			this.touchStartX = e.touches[0].clientX
+			this.touchStartY = e.touches[0].clientY
+		}
+		this.handleTouchEnd = (e) => {
+			if (this.phase !== 'slides') return
+			const dx = e.changedTouches[0].clientX - this.touchStartX
+			const dy = e.changedTouches[0].clientY - this.touchStartY
+			if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return
+			this.resetAutoplay()
+			if (dx < 0) {
+				this.isLastSlide ? this.finish() : this.nextSlide()
+			} else {
+				this.prevSlide()
+			}
+		}
+		document.addEventListener('touchstart', this.handleTouchStart, { passive: true })
+		document.addEventListener('touchend', this.handleTouchEnd)
 	},
 
 	beforeDestroy() {
 		if (this.splashTimer) clearTimeout(this.splashTimer)
+		if (this.autoplayTimer) clearInterval(this.autoplayTimer)
 		document.removeEventListener('keydown', this.handleKeydown)
+		document.removeEventListener('touchstart', this.handleTouchStart)
+		document.removeEventListener('touchend', this.handleTouchEnd)
 	},
 
 	methods: {
@@ -167,8 +174,24 @@ export default {
 		goToSlide(idx) {
 			this.slideDir = idx > this.slideIndex ? 'slide-next' : 'slide-prev'
 			this.slideIndex = idx
+			this.resetAutoplay()
+		},
+		startAutoplay() {
+			if (this.autoplayTimer) clearInterval(this.autoplayTimer)
+			this.autoplayTimer = setInterval(() => {
+				if (this.isLastSlide) {
+					clearInterval(this.autoplayTimer)
+					return
+				}
+				this.nextSlide()
+			}, 5000)
+		},
+		resetAutoplay() {
+			if (this.autoplayTimer) clearInterval(this.autoplayTimer)
+			this.startAutoplay()
 		},
 		finish() {
+			if (this.autoplayTimer) clearInterval(this.autoplayTimer)
 			this.visible = false
 			setTimeout(() => {
 				this.$emit('done')
@@ -344,10 +367,8 @@ export default {
 	gap: 12px;
 }
 
-.onb-counter {
-	font-size: 12px;
-	color: rgba(255, 255, 255, 0.35);
-	font-variant-numeric: tabular-nums;
+.onb-nav--centered {
+	justify-content: center;
 }
 
 .onb-btn {

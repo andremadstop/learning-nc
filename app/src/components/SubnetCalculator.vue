@@ -1238,7 +1238,6 @@ export default {
 .subnet-table {
 	border-collapse: collapse;
 	font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
-	overflow: hidden;
 	width: 100%;
 }
 
@@ -1703,7 +1702,12 @@ export default {
 
 	.subnet-table th,
 	.subnet-table td {
-		padding: 10px 12px;
+		padding: 8px 10px;
+		font-size: 0.8rem;
+	}
+
+	.subnet-table th {
+		width: auto;
 	}
 
 	.binary-octets {
@@ -1729,6 +1733,24 @@ export default {
 	.vlan-port__headline {
 		flex-direction: column;
 		align-items: flex-start;
+	}
+}
+
+@media (max-width: 480px) {
+	.subnet-tool {
+		padding: var(--lnc-space-md);
+	}
+
+	.subnet-table th,
+	.subnet-table td {
+		padding: 6px 8px;
+		font-size: 0.75rem;
+		word-break: break-all;
+	}
+
+	.binary-grid {
+		grid-template-columns: repeat(16, minmax(20px, 1fr));
+		min-width: 320px;
 	}
 }
 

@@ -725,6 +725,12 @@ export default {
   .sim-tool__exercise-header {
     flex-direction: column;
   }
+
+  .sim-tool__stage-node {
+    min-height: auto;
+    padding: 10px 8px;
+    font-size: 0.8rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
