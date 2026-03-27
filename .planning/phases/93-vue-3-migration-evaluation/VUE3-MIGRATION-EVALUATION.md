@@ -2,11 +2,15 @@
 
 **Erstellt:** 2026-03-27
 **Codebase:** 75 Vue-Komponenten, Vue 2.7.16, Options API, webpack + vue-loader 15
-**Entscheidung:** [wird in Sektion Go/No-Go beantwortet]
+**Entscheidung:** Bedingtes Go — blockiert durch @nextcloud/vue 9.x Release
 
 ## Executive Summary
 
-[Platzhalter — wird in Task 2 ausgefuellt]
+- **@nextcloud/vue 8.x ist inkompatibel mit Vue 3** — dies ist ein harter Blocker. Migration ist erst moeglich wenn @nextcloud/vue 9.x (Vue 3) stabil released ist und NC 31+ als Mindestversion akzeptabel ist.
+- **Die Codebase ist migrationsfreundlich:** 70% der Komponenten (54/77) sind ohne Aenderungen kompatibel, 30% brauchen mechanische Anpassungen (Event Bus, $set, Mixins). Keine Komponente muss neu geschrieben werden.
+- **Drei Hauptarbeiten:** Event Bus durch provide/inject ersetzen (11 Dateien, 43 Stellen), `this.$set()` entfernen (10 Dateien, 34 Stellen), 1 Mixin zu Composable umbauen.
+- **Geschaetzter Gesamtaufwand:** L (2-3 Wochen Vollzeit) — davon 80% @nextcloud/vue Import-Migration und Testing, 20% eigener Code.
+- **Empfehlung: Bedingtes Go** — Migration als eigenen Milestone planen, Startbedingung ist stabiles @nextcloud/vue 9.x Release. Bis dahin: Vue 2.7 LTS weiterverwenden, keine neuen Vue-2-only Patterns einfuehren.
 
 ---
 
@@ -237,12 +241,205 @@ Legende:
 
 ## 2. Migrationspfad
 
-[Platzhalter — wird in Task 2 ausgefuellt]
+### 2.1 Empfohlene Strategie: vue-compat (Migration Build)
+
+**Empfehlung: Inkrementelle Migration mit `@vue/compat`** statt Big-Bang.
+
+Vue 3 bietet einen offiziellen Kompatibilitaets-Modus (`@vue/compat`), der Vue-2-Code in einer Vue-3-Runtime ausfuehrt und Deprecation-Warnings fuer Breaking Changes ausgibt. Dies erlaubt schrittweise Migration statt eines riskanten Komplettumbaus.
+
+**Warum nicht Big-Bang?** 77 Komponenten + 37 @nextcloud/vue Imports gleichzeitig umzubauen ist zu riskant. Ein einziger Fehler blockiert die gesamte App.
+
+**Warum nicht rein inkrementell (Micro-Frontends)?** Nextcloud Apps laufen als monolithische Vue-Instanz. Zwei Vue-Versionen parallel sind nicht moeglich.
+
+### 2.2 Migrationspfad — Schritte
+
+```
+Schritt 0: Voraussetzung pruefen                    [BLOCKER]
+           @nextcloud/vue 9.x muss stabil released sein.
+           Ohne diesen Schritt: STOP.
+
+Schritt 1: Vorbereitungen (noch auf Vue 2)          [Voraussetzung: keiner]
+           1a. Event Bus ersetzen: $root.$emit/$on → provide/inject Pattern
+               (11 Dateien, 43 Stellen)
+           1b. hintMixin.js → useHint() Composable
+               (1 Mixin, 4 Konsumenten)
+           1c. this.$set() durch direkte Zuweisung ersetzen
+               (10 Dateien, 34 Stellen — Vue 2.7 unterstuetzt Proxy fuer
+               neue Properties in data(), aber $set ist fuer dynamische Keys
+               noch noetig. Testen ob direkte Zuweisung funktioniert.)
+           → Diese Aenderungen sind rueckwaertskompatibel mit Vue 2.7!
+
+Schritt 2: Build-Toolchain umstellen                 [Voraussetzung: Schritt 1]
+           2a. vue-template-compiler → @vue/compiler-sfc
+           2b. vue-loader 15 → vue-loader 17
+           2c. webpack.config.js anpassen (vue$ Alias entfernen, Plugin-Config)
+           2d. Optional: Vite-Migration (empfohlen, aber kann separater Schritt sein)
+
+Schritt 3: @nextcloud/vue upgraden                   [Voraussetzung: Schritt 0 + 2]
+           3a. @nextcloud/vue 8.x → 9.x
+           3b. Import-Pfade anpassen (37 Komponenten):
+               `@nextcloud/vue/dist/Components/NcButton.js`
+               → voraussichtlich `@nextcloud/vue` (named exports)
+           3c. @nextcloud/dialogs upgraden falls noetig
+
+Schritt 4: Vue 3 mit @vue/compat aktivieren          [Voraussetzung: Schritt 1+2+3]
+           4a. vue 2.7 → vue 3.x + @vue/compat
+           4b. Entry Points umschreiben: new Vue() → createApp()
+           4c. Vue.prototype.t/n → app.config.globalProperties.t/n
+           4d. Vue.config.productionTip entfernen
+           4e. App im compat-Modus starten, Warnings beheben
+
+Schritt 5: Compat-Modus entfernen                    [Voraussetzung: Schritt 4]
+           5a. Alle Deprecation-Warnings behoben
+           5b. @vue/compat entfernen, auf reines Vue 3 umstellen
+           5c. Vollstaendiger Regressionstest (471+ Vitest, 67 Playwright)
+
+Schritt 6 (Optional): Composition API Migration      [Voraussetzung: Schritt 5]
+           Options API funktioniert in Vue 3 weiter.
+           Umstellung auf Composition API ist empfohlen aber nicht erzwungen.
+           Empfehlung: Nur bei groesseren Refactorings einzelner Komponenten
+           auf <script setup> umstellen — kein separater Migrationsdurchlauf.
+```
+
+### 2.3 Event Bus Ersatz — Empfehlung
+
+**Empfehlung: provide/inject + eventEmitter-Utility**
+
+| Option | Pro | Contra | Empfehlung |
+|--------|-----|--------|------------|
+| provide/inject | Vue-nativ, kein Extra-Package | Nur Top-Down, nicht fuer Siblings | Ja, fuer VirtuProf-Kommunikation |
+| mitt | Tiny (200B), bekannt, battle-tested | Externe Dependency | Fallback fuer komplexe Cross-Component Events |
+| tiny-emitter | Noch kleiner | Weniger verbreitet | Nein |
+| Pinia/Vuex Store | Zentraler State | Overkill fuer Event-Kommunikation | Nein (kein State Management noetig) |
+
+**Konkreter Plan:** Die 43 Event-Bus-Stellen betreffen fast ausschliesslich die VirtuProf-Kommunikation (App.vue ↔ VirtuProf.vue ↔ Quiz-Modi). Ein `provide`/`inject`-Pattern mit einer zentralen VirtuProf-Bridge-Funktion ersetzt alle $root.$emit/$on Aufrufe sauber.
+
+### 2.4 Build-Toolchain — Empfehlung
+
+**webpack 5 + vue-loader 17 beibehalten**, nicht zu Vite migrieren.
+
+Begruendung:
+- Vite-Migration ist ein eigenstaendiges Projekt (Konfiguration, HMR, Proxy-Setup, NC-Integration)
+- webpack 5 funktioniert einwandfrei mit Vue 3 + vue-loader 17
+- Nextcloud-Oekosystem bewegt sich Richtung Vite, aber webpack ist noch vollstaendig unterstuetzt
+- Vite kann spaeter als separater Optimierungs-Schritt erfolgen
+
+### 2.5 Composition API — Empfehlung
+
+**Nicht als eigenen Migrationsschritt planen.**
+
+Options API wird in Vue 3 vollstaendig unterstuetzt und ist kein Deprecation-Kandidat. Die 75 Options-API-Komponenten funktionieren nach der Migration ohne Aenderung. Composition API/`<script setup>` bei natuerlichen Refactoring-Gelegenheiten einfuehren, nicht als Bulk-Migration.
+
+---
 
 ## 3. Risikobewertung
 
-[Platzhalter — wird in Task 2 ausgefuellt]
+### 3.1 Aufwand pro Komponenten-Gruppe
+
+| Gruppe | Komponenten | Status-Mix | Gesamt-Aufwand | Begruendung |
+|--------|------------|------------|----------------|-------------|
+| App Shell & Navigation | 5 | 3 anpassbar, 2 kompatibel | M | CourseDetail ist gross (2500 LOC) mit 8x $root.$emit + 3x $set |
+| Quiz-Modi | 11 | 7 anpassbar, 4 kompatibel | L | ExamMode (L) und DuelMode (M) sind komplex; viele Event-Bus-Stellen |
+| VirtuProf & NOVA | 12 | 1 anpassbar, 11 kompatibel | M | VirtuProf.vue ist der Event-Bus-Hub (7x $on, 7x $off, 3x $set) |
+| Campaign & Quest | 8 | 1 anpassbar, 7 kompatibel | S | Nur HackThroughTime hat 1x $set |
+| PBQ | 12 | 4 anpassbar, 8 kompatibel | S | Nur $set-Ersetzungen, mechanisch |
+| Simulatoren/Tools | 9 | 1 anpassbar, 8 kompatibel | S | Nur SubnetCalculator hat 2x $set |
+| Coop/Multiplayer | 3 | 0 anpassbar, 3 kompatibel | S | Keine Aenderungen noetig |
+| Admin/Settings/Dialoge | 10 | 5 anpassbar, 5 kompatibel | S | Kleine $set- und $emit-Aenderungen |
+| Gamification & UI | 7 | 1 anpassbar, 6 kompatibel | S | Nur CourseMaterials hat $set |
+| Entry Points + Build | 5 Dateien | 5 anpassbar | M | webpack.config.js Umbau + 3 Entry Points + Mixin |
+
+**Gesamtaufwand eigener Code: M-L** (schaetzungsweise 5-8 Personentage)
+
+### 3.2 Risiko-Matrix
+
+| Migrationsschritt | Wahrscheinlichkeit Probleme | Auswirkung | Risiko | Mitigierung |
+|-------------------|---------------------------|------------|--------|-------------|
+| Schritt 0: @nextcloud/vue 9.x warten | Hoch (unklarer Zeitplan) | Blockiert alles | **Kritisch** | Beobachten, NC-Roadmap verfolgen |
+| Schritt 1: Event Bus ersetzen | Niedrig | Mittel | **Niedrig** | Rueckwaertskompatibel, testbar auf Vue 2.7 |
+| Schritt 1: $set entfernen | Mittel (dynamische Keys) | Niedrig | **Niedrig** | Vue 2.7 Proxy-Reaktivitaet testen |
+| Schritt 1: Mixin → Composable | Niedrig | Niedrig | **Minimal** | Trivial, 1 Mixin mit 2 Methoden |
+| Schritt 2: Build-Toolchain | Mittel | Hoch (App baut nicht) | **Mittel** | vue-loader 17 Doku folgen, CI-Pipeline |
+| Schritt 3: @nextcloud/vue 9.x | Hoch (API-Aenderungen) | Hoch (37 Komponenten) | **Hoch** | Groesster Einzelposten, Import-Pfade + API |
+| Schritt 4: vue-compat | Niedrig-Mittel | Mittel | **Mittel** | Offizielles Migration-Tool, Warnings |
+| Schritt 5: compat entfernen | Niedrig | Niedrig | **Niedrig** | Schrittweise, mit Tests |
+
+### 3.3 Blocker
+
+| Blocker | Typ | Status | Umgehung |
+|---------|-----|--------|----------|
+| @nextcloud/vue 9.x nicht released | Extern, harter Blocker | Blockiert | Keine — Migration ohne NC-Vue-Library unmoeglich |
+| NC 29 Kompatibilitaet aufgeben | Geschaeftsentscheidung | Offen | @nextcloud/vue 9.x wird NC 29 vermutlich nicht unterstuetzen |
+| 37 Komponenten mit NC-Vue Imports | Interner Aufwand | Planbar | Import-Pfad-Migration ist mechanisch (Search & Replace) |
+
+### 3.4 Regressionsrisiko
+
+**Am anfaelligsten:**
+1. **VirtuProf-Kommunikation** — Event Bus ist das Nervensystem zwischen Quiz-Modi und VirtuProf. Fehlerhafte Migration bricht alle VirtuProf-Trigger.
+2. **ExamMode** — Komplexeste Komponente (1000+ LOC), 7x $root.$emit, 6x $set, Zeitdruck-Logik.
+3. **CourseDetail** — Groesste Komponente (2500+ LOC), 8x $root.$emit, 3x $set, viele Tab-Interaktionen.
+4. **PbqAuthorTool** — 7x $set in verschachtelten Formulardaten, Reaktivitaets-Fallen moeglich.
+
+### 3.5 Test-Strategie fuer Migration
+
+| Phase | Tests | Wann |
+|-------|-------|------|
+| **Vor Migration (Schritt 1)** | Vitest-Tests fuer VirtuProf-Bridge schreiben, $set-Ersetzungen Unit-testen | Pflicht |
+| **Waehrend Build-Umbau (Schritt 2-3)** | Build-Smoke-Test: `npm run build` muss erfolgreich sein | Pflicht |
+| **Nach vue-compat (Schritt 4)** | Alle 471+ Vitest, alle 67 Playwright Checks, manueller Smoke-Test aller Quiz-Modi | Pflicht |
+| **Nach compat-Entfernung (Schritt 5)** | Vollstaendiger Regressionstest inkl. TESTPROTOKOLL.md (62 manuelle Checks) | Pflicht |
+
+### 3.6 Zeitschaetzung Gesamtmigration
+
+| Posten | Aufwand |
+|--------|---------|
+| Schritt 1: Vue-2-Vorbereitungen (Event Bus, $set, Mixin) | S-M (2-3 Tage) |
+| Schritt 2: Build-Toolchain | S (1 Tag) |
+| Schritt 3: @nextcloud/vue 9.x Migration | L (5-7 Tage) — groesster Posten |
+| Schritt 4+5: vue-compat + Cleanup | M (3-4 Tage) |
+| Testing + Bugfixing | M (3-5 Tage) |
+| **Gesamt** | **L-XL (14-20 Personentage, ~3 Wochen)** |
+
+---
 
 ## 4. Go/No-Go Empfehlung
 
-[Platzhalter — wird in Task 2 ausgefuellt]
+### Empfehlung: Bedingtes Go
+
+**Die Vue 3 Migration ist technisch machbar und strategisch sinnvoll, aber aktuell durch eine externe Abhaengigkeit blockiert.**
+
+### Bedingungen fuer Go
+
+1. **Muss:** @nextcloud/vue 9.x (Vue-3-kompatibel) ist als stabiles Release verfuegbar
+2. **Muss:** NC-Mindestversion fuer learning-nc kann auf 31+ angehoben werden (aktuell: 29-31)
+3. **Soll:** Kein anderer grosser Feature-Milestone laeuft parallel (Migration braucht ~3 Wochen Fokus)
+4. **Soll:** Vitest-Coverage fuer VirtuProf-Kommunikation und ExamMode existiert
+
+### Empfohlener Zeitpunkt
+
+- **Nicht jetzt** — @nextcloud/vue 9.x ist nicht released
+- **Fruehestens:** Wenn NC 31 stable + @nextcloud/vue 9.x stable verfuegbar sind
+- **Realistisch:** Q3-Q4 2026 (basierend auf NC Release-Zyklen)
+- **Als eigener Milestone** — nicht als Teil eines Feature-Milestones
+
+### Sofort-Massnahmen (noch auf Vue 2.7)
+
+Diese Vorbereitungen koennen schon jetzt erfolgen und reduzieren den spaeterern Migrationsaufwand:
+
+1. **Event Bus durch provide/inject ersetzen** (Schritt 1a) — rueckwaertskompatibel
+2. **hintMixin zu useHint() Composable umbauen** (Schritt 1b) — rueckwaertskompatibel mit Vue 2.7
+3. **Keine neuen `$set()`, `$root.$emit`, oder Mixin-Patterns einfuehren** — Coding Guidelines anpassen
+4. **NC-Vue-3-Roadmap beobachten** — GitHub nextcloud/vue Repository + NC Server Releases verfolgen
+
+### Alternative bei No-Go (Vue 2.7 LTS Strategie)
+
+Falls @nextcloud/vue 9.x sich weiter verzoegert oder NC die Vue 2 Unterstuetzung laenger beibehaelt:
+
+- Vue 2.7 ist die letzte Vue-2-Version mit Backported Vue-3-Features (Composition API, `<script setup>`, defineComponent)
+- Vue 2 EOL war 31.12.2023, aber Sicherheitsrisiko ist gering da die App in einer kontrollierten NC-Umgebung laeuft (kein oeffentliches Internet)
+- Options API Code bleibt wartbar und funktional
+- Hauptrisiko: Veraltende Ecosystem-Packages (vue-loader 15, eslint-plugin-vue Support fuer Vue 2)
+
+### Fazit
+
+Die Codebase ist in gutem Zustand fuer eine Vue 3 Migration: keine Showstopper-Patterns, 70% kompatibel ohne Aenderungen, mechanisch migrierbare Breaking Changes. Der einzige echte Blocker ist @nextcloud/vue 9.x. Sobald dieser verfuegbar ist, kann die Migration in ~3 Wochen durchgefuehrt werden — vorausgesetzt die Sofort-Massnahmen (Event Bus, Mixin) werden vorher umgesetzt.
