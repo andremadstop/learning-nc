@@ -33,6 +33,7 @@ import {
 	renderNodes,
 	renderEdges,
 	updateNodeStates,
+	applyZoomPresentation,
 } from '../utils/questMapRenderer.js';
 
 export default {
@@ -206,11 +207,12 @@ export default {
 			);
 
 			var self = this;
-			renderEdges(this._g, this._edgeData, edgeStates);
+			renderEdges(this._g, this._edgeData, edgeStates, nodeStates);
 			renderNodes(this._g, this._nodeData, nodeStates, function(nodeId, state) {
 				self._handleNodeClick(nodeId, state);
 			});
 			updateNodeStates(this._g, nodeStates);
+			this._applyCurrentZoomState();
 		},
 
 		_handleNodeClick: function(nodeId, state) {
@@ -236,6 +238,133 @@ export default {
 				}
 			}
 		},
+
+		_applyCurrentZoomState: function() {
+			if (!this._svg || !this._g) {
+				return;
+			}
+			var zoomState = this._svg.property('__zoom');
+			var scale = zoomState && typeof zoomState.k === 'number' ? zoomState.k : 1;
+			applyZoomPresentation(this._g, scale);
+		},
 	},
 };
 </script>
+<style>
+.quest-map-overlay {
+	width: min(72vw, 960px);
+	background: rgba(13, 17, 23, 0.96);
+	border-left: 1px solid var(--sim-border, #30363d);
+	box-shadow: -24px 0 48px rgba(0, 0, 0, 0.38);
+	backdrop-filter: blur(8px);
+}
+
+.quest-map-overlay svg {
+	touch-action: none;
+	background:
+		radial-gradient(circle at top right, rgba(88, 166, 255, 0.08), transparent 32%),
+		linear-gradient(180deg, rgba(28, 35, 51, 0.22), rgba(13, 17, 23, 0));
+}
+
+.quest-map-close-btn {
+	color: var(--sim-accent, #58a6ff);
+	border-radius: 999px;
+}
+
+.quest-map-close-btn:hover {
+	background: rgba(88, 166, 255, 0.12);
+}
+
+.quest-node__halo {
+	fill: rgba(88, 166, 255, 0.08);
+	stroke: rgba(88, 166, 255, 0.72);
+	stroke-width: 2px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.quest-node__icon,
+.quest-node__lock,
+.quest-node__label,
+.quest-edge-label {
+	pointer-events: none;
+}
+
+.quest-node__label,
+.quest-edge-label {
+	font-family: var(--sim-text-mono, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace);
+	fill: var(--sim-text-muted, #8b949e);
+	paint-order: stroke;
+	stroke: rgba(13, 17, 23, 0.92);
+	stroke-width: 3px;
+	stroke-linejoin: round;
+	letter-spacing: 0.01em;
+}
+
+.quest-node__icon,
+.quest-node__lock {
+	filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+}
+
+.quest-edge {
+	vector-effect: non-scaling-stroke;
+	transition: stroke-opacity 150ms ease, stroke-width 150ms ease, stroke-dasharray 150ms ease;
+}
+
+.quest-edge--reachable {
+	filter: drop-shadow(0 0 6px rgba(88, 166, 255, 0.28));
+}
+
+.quest-edge--visited {
+	filter: drop-shadow(0 0 4px rgba(139, 148, 158, 0.18));
+}
+
+.quest-node--visited polygon,
+.quest-node--reachable polygon,
+.quest-node--current polygon,
+.quest-node--locked polygon {
+	stroke: rgba(13, 17, 23, 0.92);
+	stroke-width: 2px;
+}
+
+.quest-node--current .quest-node__halo {
+	opacity: 1;
+	animation: quest-node-halo 1.8s ease-in-out infinite;
+}
+
+.quest-node--current polygon {
+	stroke: rgba(191, 219, 254, 0.95);
+	stroke-width: 2.5px;
+	filter: drop-shadow(0 0 12px rgba(88, 166, 255, 0.65));
+}
+
+.quest-node--current .quest-node__label,
+.quest-node--current .quest-node__icon {
+	fill: #dbeafe;
+}
+
+@keyframes quest-node-halo {
+	0%,
+	100% {
+		opacity: 0.55;
+		stroke-width: 2px;
+	}
+
+	50% {
+		opacity: 1;
+		stroke-width: 3.5px;
+	}
+}
+
+@media (max-width: 900px) {
+	.quest-map-overlay {
+		width: 100vw;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.quest-node--current .quest-node__halo {
+		animation: none !important;
+	}
+}
+</style>

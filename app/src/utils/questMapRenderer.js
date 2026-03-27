@@ -12,6 +12,11 @@ import 'd3-transition'; // side-effect import for .transition() support
 
 /** @type {number} Hexagon radius in pixels */
 const HEX_RADIUS = 28;
+const CURRENT_RADIUS = 32;
+const NODE_LABEL_MIN_ZOOM = 0.65;
+const EDGE_LABEL_MIN_ZOOM = 0.95;
+const NODE_LABEL_BASE_SIZE = 12;
+const EDGE_LABEL_BASE_SIZE = 10;
 
 /** @type {Object<string, string>} Node type to emoji icon mapping */
 const TYPE_ICONS = {
@@ -22,6 +27,35 @@ const TYPE_ICONS = {
 	ending: '\uD83C\uDFC1',
 	default: '\uD83D\uDD35',
 };
+
+function clamp(value, min, max) {
+	return Math.max(min, Math.min(max, value));
+}
+
+function getNodeState(nodeStates, nodeId) {
+	return nodeStates.get(String(nodeId)) || 'locked';
+}
+
+function getNodeRadius(state) {
+	return state === 'current' ? CURRENT_RADIUS : HEX_RADIUS;
+}
+
+function getEdgeKey(edge) {
+	return edge.id || (edge.source.id || edge.source) + '-' + (edge.target.id || edge.target);
+}
+
+function getEdgeVisualState(edge, edgeStates, nodeStates) {
+	const edgeState = edgeStates.get(String(edge.id));
+	if (edgeState && edgeState.reachable) {
+		return 'reachable';
+	}
+
+	const sourceState = getNodeState(nodeStates, edge.source.id || edge.source);
+	const targetState = getNodeState(nodeStates, edge.target.id || edge.target);
+	const sourceSeen = sourceState === 'current' || sourceState === 'visited';
+	const targetSeen = targetState === 'current' || targetState === 'visited';
+	return (sourceSeen || targetSeen) ? 'visited' : 'locked';
+}
 
 /**
  * Compute SVG polygon points string for a flat-top hexagon.
@@ -136,12 +170,16 @@ export function createSimulation(nodes, edges, width, height) {
  */
 export function setupZoom(svg, g, _width, _height) {
 	const zoomBehavior = zoom()
+		.touchable(function() { return true; })
 		.scaleExtent([0.3, 3])
 		.on('zoom', function(event) {
 			g.attr('transform', event.transform);
+			applyZoomPresentation(g, event.transform.k);
 		});
 
+	svg.style('touch-action', 'none');
 	svg.call(zoomBehavior);
+	applyZoomPresentation(g, 1);
 
 	// Double-click on empty area resets view
 	svg.on('dblclick.zoom', function() {
@@ -189,7 +227,7 @@ export function renderNodes(g, nodes, nodeStates, onNodeClick) {
 		.enter()
 		.append('g')
 		.attr('class', function(d) {
-			const state = nodeStates.get(String(d.id)) || 'locked';
+			const state = getNodeState(nodeStates, d.id);
 			return 'quest-node quest-node--' + state;
 		})
 		.on('click', function(event, d) {
@@ -199,13 +237,19 @@ export function renderNodes(g, nodes, nodeStates, onNodeClick) {
 			}
 		});
 
+	nodeGroups.append('circle')
+		.attr('class', 'quest-node__halo')
+		.attr('r', function(d) {
+			return getNodeRadius(getNodeState(nodeStates, d.id)) + 10;
+		});
+
 	// Hexagon polygon
 	nodeGroups.append('polygon')
-		.attr('points', function(_d) {
-			return hexagonPoints(0, 0, HEX_RADIUS);
+		.attr('points', function(d) {
+			return hexagonPoints(0, 0, getNodeRadius(getNodeState(nodeStates, d.id)));
 		})
 		.attr('filter', function(d) {
-			const state = nodeStates.get(String(d.id)) || 'locked';
+			const state = getNodeState(nodeStates, d.id);
 			return state === 'locked' ? null : 'url(#quest-glow)';
 		});
 
@@ -225,13 +269,20 @@ export function renderNodes(g, nodes, nodeStates, onNodeClick) {
 	nodeGroups.append('text')
 		.attr('class', 'quest-node__label')
 		.attr('x', 0)
-		.attr('y', HEX_RADIUS + 14)
+		.attr('y', function(d) {
+			return getNodeRadius(getNodeState(nodeStates, d.id)) + 14;
+		})
 		.attr('text-anchor', 'middle')
 		.attr('fill', '#aaaaaa')
 		.attr('font-size', '10px')
 		.text(function(d) {
 			const title = d.title || d.id;
 			return title.length > 12 ? title.substring(0, 11) + '\u2026' : title;
+		});
+
+	nodeGroups.append('title')
+		.text(function(d) {
+			return d.title || d.id;
 		});
 
 	// Lock icon overlay for locked nodes
@@ -252,34 +303,50 @@ export function renderNodes(g, nodes, nodeStates, onNodeClick) {
  * @param {object} g - D3 selection of zoom group
  * @param {Array} edges - graph edges with source/target, label
  * @param {Map<string, {reachable: boolean, conditionText: string}>} edgeStates
+ * @param {Map<string, string>} nodeStates
  */
-export function renderEdges(g, edges, edgeStates) {
+export function renderEdges(g, edges, edgeStates, nodeStates) {
 	// Remove old edges
 	g.selectAll('.quest-edge').remove();
 	g.selectAll('.quest-edge-label').remove();
 
 	// Edge lines
 	g.selectAll('.quest-edge')
-		.data(edges, function(d) { return d.id || (d.source.id || d.source) + '-' + (d.target.id || d.target); })
+		.data(edges, getEdgeKey)
 		.enter()
 		.append('line')
-		.attr('class', 'quest-edge')
-		.attr('stroke', function(d) {
-			const st = edgeStates.get(String(d.id));
-			return (st && st.reachable) ? '#4488ff' : '#444444';
+		.attr('class', function(d) {
+			return 'quest-edge quest-edge--' + getEdgeVisualState(d, edgeStates, nodeStates);
 		})
-		.attr('stroke-width', 2)
+		.attr('stroke', function(d) {
+			const visualState = getEdgeVisualState(d, edgeStates, nodeStates);
+			if (visualState === 'reachable') {
+				return '#58a6ff';
+			}
+			if (visualState === 'visited') {
+				return '#8b949e';
+			}
+			return '#4b5563';
+		})
+		.attr('stroke-width', function(d) {
+			return getEdgeVisualState(d, edgeStates, nodeStates) === 'reachable' ? 2.4 : 2;
+		})
 		.attr('stroke-opacity', function(d) {
-			const st = edgeStates.get(String(d.id));
-			return (st && st.reachable) ? 0.6 : 0.3;
+			const visualState = getEdgeVisualState(d, edgeStates, nodeStates);
+			if (visualState === 'reachable') {
+				return 0.95;
+			}
+			if (visualState === 'visited') {
+				return 0.62;
+			}
+			return 0.35;
 		})
 		.attr('stroke-dasharray', function(d) {
-			const st = edgeStates.get(String(d.id));
-			return (st && st.reachable) ? null : '5,5';
+			return getEdgeVisualState(d, edgeStates, nodeStates) === 'locked' ? '6,4' : null;
 		})
 		.attr('marker-end', function(d) {
 			const st = edgeStates.get(String(d.id));
-			return (st && st.reachable) ? 'url(#quest-arrow)' : 'url(#quest-arrow-locked)';
+			return (st && st.reachable) ? 'url(#quest-arrow)' : null;
 		})
 		.each(function(d) {
 			const st = edgeStates.get(String(d.id));
@@ -290,7 +357,7 @@ export function renderEdges(g, edges, edgeStates) {
 
 	// Edge labels
 	g.selectAll('.quest-edge-label')
-		.data(edges.filter(function(d) { return d.label; }), function(d) { return d.id || (d.source.id || d.source) + '-' + (d.target.id || d.target); })
+		.data(edges.filter(function(d) { return d.label; }), getEdgeKey)
 		.enter()
 		.append('text')
 		.attr('class', 'quest-edge-label')
@@ -309,19 +376,32 @@ export function renderEdges(g, edges, edgeStates) {
 export function updateNodeStates(g, nodeStates) {
 	g.selectAll('.quest-node')
 		.attr('class', function(d) {
-			const state = nodeStates.get(String(d.id)) || 'locked';
+			const state = getNodeState(nodeStates, d.id);
 			return 'quest-node quest-node--' + state;
 		})
 		.select('polygon')
+		.attr('points', function(d) {
+			return hexagonPoints(0, 0, getNodeRadius(getNodeState(nodeStates, d.id)));
+		})
 		.attr('filter', function(d) {
-			const state = nodeStates.get(String(d.id)) || 'locked';
+			const state = getNodeState(nodeStates, d.id);
 			return state === 'locked' ? null : 'url(#quest-glow)';
+		});
+
+	g.selectAll('.quest-node__halo')
+		.attr('r', function(d) {
+			return getNodeRadius(getNodeState(nodeStates, d.id)) + 10;
+		});
+
+	g.selectAll('.quest-node__label')
+		.attr('y', function(d) {
+			return getNodeRadius(getNodeState(nodeStates, d.id)) + 14;
 		});
 
 	// Update lock icon visibility
 	g.selectAll('.quest-node').each(function(d) {
 		const group = select(this);
-		const state = nodeStates.get(String(d.id)) || 'locked';
+		const state = getNodeState(nodeStates, d.id);
 		const existingLock = group.select('.quest-node__lock');
 
 		if (state === 'locked' && existingLock.empty()) {
@@ -337,4 +417,28 @@ export function updateNodeStates(g, nodeStates) {
 			existingLock.remove();
 		}
 	});
+}
+
+export function applyZoomPresentation(g, scale) {
+	const safeScale = Math.max(scale || 1, 0.3);
+	const nodeLabelVisible = safeScale >= NODE_LABEL_MIN_ZOOM;
+	const edgeLabelVisible = safeScale >= EDGE_LABEL_MIN_ZOOM;
+	const nodeLabelSize = clamp(NODE_LABEL_BASE_SIZE / safeScale, 7, 18);
+	const edgeLabelSize = clamp(EDGE_LABEL_BASE_SIZE / safeScale, 6, 14);
+	const iconSize = clamp(14 / safeScale, 10, 18);
+	const lockSize = clamp(16 / safeScale, 11, 20);
+
+	g.selectAll('.quest-node__label')
+		.attr('font-size', nodeLabelSize + 'px')
+		.attr('opacity', nodeLabelVisible ? 1 : 0);
+
+	g.selectAll('.quest-edge-label')
+		.attr('font-size', edgeLabelSize + 'px')
+		.attr('opacity', edgeLabelVisible ? 0.92 : 0);
+
+	g.selectAll('.quest-node__icon')
+		.attr('font-size', iconSize + 'px');
+
+	g.selectAll('.quest-node__lock')
+		.attr('font-size', lockSize + 'px');
 }
