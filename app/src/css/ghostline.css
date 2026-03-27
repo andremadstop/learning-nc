@@ -1,0 +1,182 @@
+/**
+ * Ghostline Quest — Visual Takeover Effects
+ *
+ * Applied via .ghostline-mode on the campaign container (NOT the whole NC app).
+ * Includes chromatic aberration, scanlines, color shift, glitch animations,
+ * and terminal-style elements.
+ */
+
+/* --- Custom Properties (Color Shift) --- */
+.ghostline-mode {
+	--ghostline-primary: #d946ef;
+	--ghostline-accent: #f43f5e;
+	--ghostline-cyan: #00bcd4;
+	--ghostline-bg: #0a0a0a;
+	--ghostline-text: #e0e0e0;
+	--ghostline-green: #00ff41;
+	--ghostline-neon-red: #ff1744;
+}
+
+/* --- Scanlines Overlay --- */
+.ghostline-mode {
+	position: relative;
+}
+
+.ghostline-mode::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: repeating-linear-gradient(
+		transparent 0%,
+		transparent 50%,
+		rgba(0, 0, 0, 0.03) 50%,
+		rgba(0, 0, 0, 0.03) 100%
+	);
+	background-size: 100% 3px;
+	pointer-events: none;
+	z-index: 10;
+}
+
+/* --- Chromatic Aberration on Glitch Elements --- */
+.ghostline-mode .ghostline-glitch {
+	text-shadow:
+		2px 0 rgba(217, 70, 239, 0.7),
+		-2px 0 rgba(59, 130, 246, 0.7);
+	animation: glitch-jitter 0.15s infinite;
+}
+
+/* --- Background Red Scan-Grid Overlay --- */
+.ghostline-mode .ghostline-backdrop {
+	background-color: var(--ghostline-bg);
+	background-image:
+		linear-gradient(rgba(217, 70, 239, 0.03) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(217, 70, 239, 0.03) 1px, transparent 1px);
+	background-size: 20px 20px;
+}
+
+/* --- Terminal-Style Elements --- */
+.ghostline-mode .ghostline-terminal {
+	font-family: 'Courier New', 'Fira Mono', monospace;
+	color: var(--ghostline-green);
+	background: var(--ghostline-bg);
+	border: 1px solid rgba(0, 255, 65, 0.3);
+	border-radius: 4px;
+	padding: 12px;
+}
+
+/* --- System Warning Messages --- */
+.ghostline-mode .ghostline-message {
+	border: 1px solid var(--ghostline-neon-red);
+	background: rgba(255, 23, 68, 0.08);
+	color: var(--ghostline-neon-red);
+	padding: 12px 16px;
+	border-radius: 4px;
+	font-family: 'Courier New', 'Fira Mono', monospace;
+	font-size: 13px;
+	animation: ghostline-pulse 2s ease-in-out infinite;
+}
+
+/* --- Keyframes --- */
+
+/* Subtle x/y jitter for glitch text */
+@keyframes glitch-jitter {
+	0% { transform: translate(0, 0); }
+	20% { transform: translate(-1px, 1px); }
+	40% { transform: translate(1px, -1px); }
+	60% { transform: translate(-1px, -1px); }
+	80% { transform: translate(1px, 1px); }
+	100% { transform: translate(0, 0); }
+}
+
+/* Opacity flicker for infection moments */
+@keyframes ghostline-flicker {
+	0%, 100% { opacity: 1; }
+	10% { opacity: 0.8; }
+	20% { opacity: 1; }
+	30% { opacity: 0.6; }
+	40% { opacity: 1; }
+	70% { opacity: 0.9; }
+	80% { opacity: 1; }
+}
+
+/* Transition IN to ghostline mode */
+@keyframes ghostline-reveal {
+	0% {
+		filter: brightness(0.3) saturate(0);
+		opacity: 0.5;
+	}
+	50% {
+		filter: brightness(1.5) saturate(2);
+		opacity: 0.9;
+	}
+	100% {
+		filter: brightness(1) saturate(1);
+		opacity: 1;
+	}
+}
+
+/* Transition OUT — white flash then normal */
+@keyframes ghostline-reboot {
+	0% {
+		filter: brightness(1) saturate(1);
+	}
+	30% {
+		filter: brightness(3) saturate(0);
+	}
+	100% {
+		filter: brightness(1) saturate(1);
+	}
+}
+
+/* Pulsing neon-red border for warning messages */
+@keyframes ghostline-pulse {
+	0%, 100% {
+		border-color: var(--ghostline-neon-red);
+		box-shadow: 0 0 4px rgba(255, 23, 68, 0.3);
+	}
+	50% {
+		border-color: rgba(255, 23, 68, 0.5);
+		box-shadow: 0 0 12px rgba(255, 23, 68, 0.5);
+	}
+}
+
+/* --- Utility Classes --- */
+.ghostline-mode .ghostline-reveal-in {
+	animation: ghostline-reveal 0.5s ease-out forwards;
+}
+
+.ghostline-mode .ghostline-reboot-out {
+	animation: ghostline-reboot 0.3s ease-in forwards;
+}
+
+.ghostline-mode .ghostline-flicker {
+	animation: ghostline-flicker 0.8s ease-in-out;
+}
+
+/* --- Performance: will-change only on actively animated elements --- */
+.ghostline-mode .ghostline-glitch {
+	will-change: transform;
+}
+
+/* --- Accessibility: Disable all animations for reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+	.ghostline-mode .ghostline-glitch,
+	.ghostline-mode .ghostline-message,
+	.ghostline-mode .ghostline-reveal-in,
+	.ghostline-mode .ghostline-reboot-out,
+	.ghostline-mode .ghostline-flicker {
+		animation: none !important;
+	}
+
+	.ghostline-mode .ghostline-glitch {
+		text-shadow: none;
+		will-change: auto;
+	}
+
+	.ghostline-mode::after {
+		display: none;
+	}
+}
