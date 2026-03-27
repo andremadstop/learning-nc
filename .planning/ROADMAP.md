@@ -39,7 +39,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 
 - [x] **Phase 90: NOVA Character Bible** - Persoenlichkeitsdefinition und Designgrundlage fuer alle NOVA-Visuals (completed 2026-03-27)
 - [x] **Phase 91: NOVA Visual Implementation** - Animierte Bot-States, Reaktionslogik, Sound-Feedback, Vue-Komponenten (completed 2026-03-27)
-- [ ] **Phase 92: Ghostline Quest** - Network+ Kampagne mit Story-Arc, Terminal-Puzzles und Simulator-Integration
+- [x] **Phase 92: Ghostline Quest** - Network+ Kampagne mit Story-Arc, Terminal-Puzzles und Simulator-Integration (completed 2026-03-27)
 - [ ] **Phase 93: Vue 3 Migration Evaluation** - Kompatibilitaetsanalyse, Migrationspfad und Aufwandsschaetzung
 - [ ] **Phase 94: Kurs-Feed** - Ankuendigungen, Meilensteine und Activity Stream fuer Kursgruppen
 - [ ] **Phase 95: Skill-Map** - D3.js Force-Graph zur Kompetenz-Visualisierung mit Lernfortschritt
@@ -133,7 +133,7 @@ Phase 90 first (NOVA foundation). Phase 91 after 90. Phases 92-95 independent, c
 |-------|-----------|----------------|--------|-----------|
 | 90. NOVA Character Bible | 1/1 | Complete    | 2026-03-27 | - |
 | 91. NOVA Visual Implementation | v13.0 | Complete    | 2026-03-27 | - |
-| 92. Ghostline Quest | 1/2 | In Progress|  | - |
+| 92. Ghostline Quest | 2/2 | Complete   | 2026-03-27 | - |
 | 93. Vue 3 Migration Evaluation | v13.0 | 0/1 | Planned | - |
 | 94. Kurs-Feed | v13.0 | 0/? | Not started | - |
 | 95. Skill-Map | v13.0 | 0/? | Not started | - |

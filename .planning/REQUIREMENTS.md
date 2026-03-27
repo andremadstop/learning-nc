@@ -16,8 +16,8 @@
 ### Ghostline Quest
 
 - [x] **GHOST-01**: Network+ Kampagne mit mindestens 5 Szenen und Terminal-Puzzles
-- [ ] **GHOST-02**: Story-Arc mit Protagonist, Antagonist und Wendepunkt
-- [ ] **GHOST-03**: NPC-Dialoge mit verzweigten Optionen
+- [x] **GHOST-02**: Story-Arc mit Protagonist, Antagonist und Wendepunkt
+- [x] **GHOST-03**: NPC-Dialoge mit verzweigten Optionen
 - [x] **GHOST-04**: Simulator-Integration (DNS, Firewall, Routing) in Quest-Szenen
 
 ### Vue 3 Migration
@@ -70,8 +70,8 @@
 | NOVA-04 | Phase 91 | Pending |
 | NOVA-05 | Phase 91 | Pending |
 | GHOST-01 | Phase 92 | Complete |
-| GHOST-02 | Phase 92 | Pending |
-| GHOST-03 | Phase 92 | Pending |
+| GHOST-02 | Phase 92 | Complete |
+| GHOST-03 | Phase 92 | Complete |
 | GHOST-04 | Phase 92 | Complete |
 | VUE3-01 | Phase 93 | Pending |
 | VUE3-02 | Phase 93 | Pending |
