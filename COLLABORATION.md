@@ -54,6 +54,16 @@ Jeder Handoff muss mindestens enthalten:
 4. Codex verifiziert lokal.
 5. Claude reviewt nur `verified`-Aenderungen.
 
+## Gemini-Integration
+
+Gemini wird als Reviewer und Pre-Codex Gate eingesetzt. Prompts: `.planning/GEMINI_REVIEW_PROMPT.md`
+
+- **Code-Review (Variante A):** Nach jedem Codex-Commit Diff + REVIEW-CONTEXT.md an Gemini → SHIP/FIX/BLOCKER
+- **Pre-Codex Gate (Variante B):** Vor jedem Handoff pruefen lassen → APPROVE/IMPROVE/REJECT
+- **Recherche (Variante C):** Bei Architektur-Fragen 2-3 Loesungswege analysieren lassen
+
+Kontext-Datei: `.planning/REVIEW-CONTEXT.md` — enthält die Top-Steering-Rules und Known Patterns. Wird bei jedem Review mitgegeben.
+
 ## Merge-Regel
 
 - Kein Commit mit unbekanntem Scope.

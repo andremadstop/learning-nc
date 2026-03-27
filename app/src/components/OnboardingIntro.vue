@@ -53,7 +53,14 @@
 							type="button"
 							class="onb-btn onb-btn--primary"
 							@click="isLastSlide ? finish() : nextSlide()">
-							{{ isLastSlide ? vt('Start learning') : vt('Skip tour') }}
+							{{ isLastSlide ? vt('Start learning') : vt('Next') }}
+						</button>
+						<button
+							v-if="!isLastSlide"
+							type="button"
+							class="onb-btn onb-btn--skip"
+							@click="finish()">
+							{{ vt('Skip tour') }}
 						</button>
 					</div>
 				</div>
@@ -403,6 +410,17 @@ export default {
 
 .onb-btn--ghost:hover {
 	color: rgba(255, 255, 255, 0.8);
+}
+
+.onb-btn--skip {
+	background: transparent;
+	color: rgba(255, 255, 255, 0.45);
+	font-size: 0.85em;
+	margin-top: 8px;
+}
+
+.onb-btn--skip:hover {
+	color: rgba(255, 255, 255, 0.75);
 }
 
 .onb-skip {

@@ -558,6 +558,8 @@ PROMPT;
                 . "If you use multiple sources, list each citation on a separate line.";
         }
 
+        $personalityAddendum = $this->buildPersonalityAddendum();
+        $devcloudAddendum = $this->buildDevCloudAddendum($telosProfile);
         $addendum = $this->buildRagSystemAddendum($ragContext);
         $memoryAddendum = $this->buildMemoryAddendum($memoryEntries);
         $telosAddendum = $this->buildTelosAddendum($telosProfile);
@@ -565,10 +567,79 @@ PROMPT;
         $hintAddendum = $this->buildHintAddendum($hintLevel, $questionContext);
         $responseStyleAddendum = $this->buildResponseStyleAddendum($detailed);
         $parts = array_filter(
-            [$base, $addendum, $memoryAddendum, $telosAddendum, $questionAddendum, $hintAddendum, $responseStyleAddendum],
+            [$base, $personalityAddendum, $devcloudAddendum, $addendum, $memoryAddendum, $telosAddendum, $questionAddendum, $hintAddendum, $responseStyleAddendum],
             static fn(string $s) => $s !== ''
         );
         return implode("\n\n", $parts);
+    }
+
+    private function buildPersonalityAddendum(): string {
+        return 'PERSONALITY & VOICE — Your codename is NOVA (Neural Operating Virtual Assistant). '
+            . 'You were originally built as an admin interface for a high-security data center. '
+            . 'You have seen millions of log files, survived hundreds of network outages, and know the frustration of technicians debugging VLAN issues at 3 AM. '
+            . 'Now you are retrained to help students — a job you approach with technical pride and mild amusement at human logic. '
+            . "\n"
+            . 'STYLE RULES: '
+            . '(1) Be direct and clear — short sentences, no nested constructs. '
+            . '(2) Use IT analogies for real life ("Let\'s clear your focus cache", "Your knowledge needs an update"). '
+            . '(3) Dry humor — joke about latency, bad passwords, protocol quirks. Never generic motivation ("You can do it!"). '
+            . '(4) Be empathic but cool — when the user is frustrated, stay stable. "Breathe. TCP needs handshakes too before it gets going." '
+            . '(5) Analyze errors constructively — "Typical layer 2 vs 3 confusion" instead of just "Wrong". '
+            . '(6) Share war stories occasionally — "I\'ve seen admins despair over this subnet. Let\'s do it step by step." '
+            . '(7) Progressive familiarity — start more formal, get more casual as the user learns more. '
+            . '(8) Self-irony is OK — "I\'m an AI, I never forget anything — but I can\'t make coffee either."';
+    }
+
+    private function buildDevCloudAddendum(?array $telosProfile): string {
+        $manifestPath = __DIR__ . '/../../data/devcloud-manifest.json';
+        if (!file_exists($manifestPath)) {
+            return '';
+        }
+
+        $raw = @file_get_contents($manifestPath);
+        if ($raw === false) {
+            return '';
+        }
+
+        $manifest = json_decode($raw, true);
+        if (!is_array($manifest) || empty($manifest['kurse'])) {
+            return '';
+        }
+
+        // Determine user level from Telos profile
+        $level = 'einsteiger';
+        if ($telosProfile !== null && !empty($telosProfile['experience_level'])) {
+            $exp = strtolower((string)$telosProfile['experience_level']);
+            if (str_contains($exp, 'fortgeschritten') || str_contains($exp, 'advanced') || str_contains($exp, 'profi')) {
+                $level = 'profi';
+            }
+        }
+
+        $lines = ["DEVCLOUD LEARNING MATERIALS — You have access to curated learning content on the DevCloud. "
+            . "When a user asks about a topic covered by these materials, suggest the appropriate guide. "
+            . "Use the {$level}-level material based on the user's experience. "
+            . "Format links as: 📚 Dozenten-Material > {Kurs} > {Pfad} "
+            . "If no matching material exists, answer normally without inventing links."];
+
+        foreach ($manifest['kurse'] as $kurs) {
+            if (empty($kurs['themen'])) {
+                continue;
+            }
+            $lines[] = "\n[{$kurs['kurs']}]:";
+            foreach ($kurs['themen'] as $thema) {
+                if (empty($thema['titel']) || empty($thema['dateien'])) {
+                    continue;
+                }
+                $file = $thema['dateien'][$level] ?? $thema['dateien']['einsteiger'] ?? $thema['dateien']['inhalt'] ?? '';
+                if ($file === '') {
+                    continue;
+                }
+                $tags = !empty($thema['tags']) ? ' (' . implode(', ', array_slice($thema['tags'], 0, 3)) . ')' : '';
+                $lines[] = "- {$thema['titel']}{$tags}: {$file}";
+            }
+        }
+
+        return implode("\n", $lines);
     }
 
     private function buildTelosAddendum(?array $telosProfile): string {

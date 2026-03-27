@@ -419,7 +419,7 @@ export default {
       return this.modes;
     },
     showVirtuProfDock() {
-      return this.appInitialized && this.userRole === 'student' && this.virtuProfEnabled;
+      return this.appInitialized && this.virtuProfEnabled;
     },
     toolsTabs() {
       const enabled = this.normalizeEnabledTools(this.enabledTools);

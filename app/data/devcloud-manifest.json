@@ -1,0 +1,3663 @@
+{
+  "kurse": [
+    {
+      "kurs": "CompTIA A+ 220-1101/1102",
+      "exam_code": "220-1101/1102",
+      "themen_count": 195,
+      "themen": [
+        {
+          "id": "de-00-dashboard",
+          "titel": "00 Dashboard",
+          "bereich": "de/Allgemein",
+          "dateien": {
+            "inhalt": "de/00-Dashboard.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "de/Allgemein",
+          "dateien": {
+            "inhalt": "de/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "de/Teil-IV",
+          "dateien": {
+            "inhalt": "de/Teil-IV/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-19-betriebssystem-grundlagen",
+          "titel": "19 Betriebssystem Grundlagen",
+          "bereich": "de/Teil-IV",
+          "dateien": {
+            "inhalt": "de/Teil-IV/19-Betriebssystem-Grundlagen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-20-macos",
+          "titel": "20 macOS",
+          "bereich": "de/Teil-IV",
+          "dateien": {
+            "inhalt": "de/Teil-IV/20-macOS.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-21-die-installation-von-windows",
+          "titel": "21 Die Installation von Windows",
+          "bereich": "de/Teil-IV",
+          "dateien": {
+            "inhalt": "de/Teil-IV/21-Die-Installation-von-Windows.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-22-windows-konfigurieren",
+          "titel": "22 Windows konfigurieren",
+          "bereich": "de/Teil-IV",
+          "dateien": {
+            "inhalt": "de/Teil-IV/22-Windows-konfigurieren.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-23-windows-verwaltung",
+          "titel": "23 Windows Verwaltung",
+          "bereich": "de/Teil-IV",
+          "dateien": {
+            "inhalt": "de/Teil-IV/23-Windows-Verwaltung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-24-windows-troubleshooting",
+          "titel": "24 Windows Troubleshooting",
+          "bereich": "de/Teil-IV",
+          "dateien": {
+            "inhalt": "de/Teil-IV/24-Windows-Troubleshooting.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-25-netzwerk-troubleshooting",
+          "titel": "25 Netzwerk Troubleshooting",
+          "bereich": "de/Teil-IV",
+          "dateien": {
+            "inhalt": "de/Teil-IV/25-Netzwerk-Troubleshooting.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-26-linux-ubuntu",
+          "titel": "26 Linux Ubuntu",
+          "bereich": "de/Teil-IV",
+          "dateien": {
+            "inhalt": "de/Teil-IV/26-Linux-Ubuntu.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "de/Teil-I",
+          "dateien": {
+            "inhalt": "de/Teil-I/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-03-vom-bit-bis-zum-personal-computer",
+          "titel": "03 Vom Bit bis zum Personal Computer",
+          "bereich": "de/Teil-I",
+          "dateien": {
+            "inhalt": "de/Teil-I/03-Vom-Bit-bis-zum-Personal-Computer.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-04-einblick-in-die-systemarchitektur",
+          "titel": "04 Einblick in die Systemarchitektur",
+          "bereich": "de/Teil-I",
+          "dateien": {
+            "inhalt": "de/Teil-I/04-Einblick-in-die-Systemarchitektur.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-05-externe-schnittstellen",
+          "titel": "05 Externe Schnittstellen",
+          "bereich": "de/Teil-I",
+          "dateien": {
+            "inhalt": "de/Teil-I/05-Externe-Schnittstellen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-06-interne-und-externe-geraete",
+          "titel": "06 Interne und externe Geraete",
+          "bereich": "de/Teil-I",
+          "dateien": {
+            "inhalt": "de/Teil-I/06-Interne-und-externe-Geraete.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-07-ein-und-ausgabegeraete",
+          "titel": "07 Ein und Ausgabegeraete",
+          "bereich": "de/Teil-I",
+          "dateien": {
+            "inhalt": "de/Teil-I/07-Ein-und-Ausgabegeraete.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-08-drucker",
+          "titel": "08 Drucker",
+          "bereich": "de/Teil-I",
+          "dateien": {
+            "inhalt": "de/Teil-I/08-Drucker.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-03-vom-bit-bis-zum-personal-computer-fragen",
+          "titel": "03 Vom Bit bis zum Personal Computer Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/03-Vom-Bit-bis-zum-Personal-Computer-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-04-einblick-in-die-systemarchitektur-fragen",
+          "titel": "04 Einblick in die Systemarchitektur Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/04-Einblick-in-die-Systemarchitektur-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-05-externe-schnittstellen-fragen",
+          "titel": "05 Externe Schnittstellen Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/05-Externe-Schnittstellen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-06-interne-und-externe-geraete-fragen",
+          "titel": "06 Interne und externe Geraete Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/06-Interne-und-externe-Geraete-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-07-ein-und-ausgabegeraete-fragen",
+          "titel": "07 Ein und Ausgabegeraete Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/07-Ein-und-Ausgabegeraete-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-08-drucker-fragen",
+          "titel": "08 Drucker Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/08-Drucker-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-09-grundlegende-betriebskonzepte-fragen",
+          "titel": "09 Grundlegende Betriebskonzepte Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/09-Grundlegende-Betriebskonzepte-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-10-ein-computersystem-aufruesten-fragen",
+          "titel": "10 Ein Computersystem aufruesten Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/10-Ein-Computersystem-aufruesten-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-11-mobile-systeme-erweitern-fragen",
+          "titel": "11 Mobile Systeme erweitern Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/11-Mobile-Systeme-erweitern-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-12-notebook-problemloesung-fragen",
+          "titel": "12 Notebook Problemloesung Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/12-Notebook-Problemloesung-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-13-mobile-systeme-unterhalten-und-reparieren-fragen",
+          "titel": "13 Mobile Systeme unterhalten und reparieren Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/13-Mobile-Systeme-unterhalten-und-reparieren-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-14-aus-die-maus-was-nun-fragen",
+          "titel": "14 Aus die Maus was nun Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/14-Aus-die-Maus-was-nun-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-15-netzwerk-grundlagen-fragen",
+          "titel": "15 Netzwerk Grundlagen Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/15-Netzwerk-Grundlagen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-16-tcp-ip-und-protokolle-fragen",
+          "titel": "16 TCP IP und Protokolle Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/16-TCP-IP-und-Protokolle-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-17-drahtlose-netzwerke-fragen",
+          "titel": "17 Drahtlose Netzwerke Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/17-Drahtlose-Netzwerke-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-18-cloud-und-virtualisierung-fragen",
+          "titel": "18 Cloud und Virtualisierung Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/18-Cloud-und-Virtualisierung-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-19-betriebssystem-grundlagen-fragen",
+          "titel": "19 Betriebssystem Grundlagen Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/19-Betriebssystem-Grundlagen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-20-macos-fragen",
+          "titel": "20 macOS Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/20-macOS-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-21-die-installation-von-windows-fragen",
+          "titel": "21 Die Installation von Windows Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/21-Die-Installation-von-Windows-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-22-windows-konfigurieren-fragen",
+          "titel": "22 Windows konfigurieren Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/22-Windows-konfigurieren-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-23-windows-verwaltung-fragen",
+          "titel": "23 Windows Verwaltung Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/23-Windows-Verwaltung-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-24-windows-troubleshooting-fragen",
+          "titel": "24 Windows Troubleshooting Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/24-Windows-Troubleshooting-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-25-netzwerk-troubleshooting-fragen",
+          "titel": "25 Netzwerk Troubleshooting Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/25-Netzwerk-Troubleshooting-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-26-linux-ubuntu-fragen",
+          "titel": "26 Linux Ubuntu Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/26-Linux-Ubuntu-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-27-gefahren-und-bedrohungen-die-welt-ist-boese-fragen",
+          "titel": "27 Gefahren und Bedrohungen Die Welt ist boese Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/27-Gefahren-und-Bedrohungen-Die-Welt-ist-boese-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-28-sicherheitsmassnahmen-ergreifen-physische-und-logische-sicherheit-fragen",
+          "titel": "28 Sicherheitsmassnahmen ergreifen Physische und logische Sicherheit Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/28-Sicherheitsmassnahmen-ergreifen-Physische-und-logische-Sicherheit-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-29-logische-sicherheit-so-schuetzen-sie-ihre-systeme-fragen",
+          "titel": "29 Logische Sicherheit So schuetzen Sie Ihre Systeme Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/29-Logische-Sicherheit-So-schuetzen-Sie-Ihre-Systeme-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-30-netzwerksicherheit-die-mauer-muss-stehen-fragen",
+          "titel": "30 Netzwerksicherheit Die Mauer muss stehen Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/30-Netzwerksicherheit-Die-Mauer-muss-stehen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-31-mobile-security-das-smartphone-ist-die-neue-schwachstelle-fragen",
+          "titel": "31 Mobile Security Das Smartphone ist die neue Schwachstelle Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/31-Mobile-Security-Das-Smartphone-ist-die-neue-Schwachstelle-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-32-betriebliche-sicherheit-daten-schuetzen-daten-sichern-daten-loeschen-fragen",
+          "titel": "32 Betriebliche Sicherheit Daten schuetzen Daten sichern Daten loeschen Fragen",
+          "bereich": "de/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "de/Pruefungsfragen/32-Betriebliche-Sicherheit-Daten-schuetzen-Daten-sichern-Daten-loeschen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-03-vom-bit-bis-zum-personal-computer-bilder",
+          "titel": "03 Vom Bit bis zum Personal Computer Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/03-Vom-Bit-bis-zum-Personal-Computer-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-04-einblick-in-die-systemarchitektur-bilder",
+          "titel": "04 Einblick in die Systemarchitektur Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/04-Einblick-in-die-Systemarchitektur-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-05-externe-schnittstellen-bilder",
+          "titel": "05 Externe Schnittstellen Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/05-Externe-Schnittstellen-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-06-interne-und-externe-geraete-bilder",
+          "titel": "06 Interne und externe Geraete Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/06-Interne-und-externe-Geraete-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-07-ein-und-ausgabegeraete-bilder",
+          "titel": "07 Ein und Ausgabegeraete Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/07-Ein-und-Ausgabegeraete-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-08-drucker-bilder",
+          "titel": "08 Drucker Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/08-Drucker-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-09-grundlegende-betriebskonzepte-bilder",
+          "titel": "09 Grundlegende Betriebskonzepte Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/09-Grundlegende-Betriebskonzepte-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-10-ein-computersystem-aufruesten-bilder",
+          "titel": "10 Ein Computersystem aufruesten Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/10-Ein-Computersystem-aufruesten-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-11-mobile-systeme-erweitern-bilder",
+          "titel": "11 Mobile Systeme erweitern Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/11-Mobile-Systeme-erweitern-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-12-notebook-problemloesung-bilder",
+          "titel": "12 Notebook Problemloesung Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/12-Notebook-Problemloesung-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-13-mobile-systeme-unterhalten-und-reparieren-bilder",
+          "titel": "13 Mobile Systeme unterhalten und reparieren Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/13-Mobile-Systeme-unterhalten-und-reparieren-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-14-aus-die-maus-was-nun-bilder",
+          "titel": "14 Aus die Maus was nun Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/14-Aus-die-Maus-was-nun-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-15-netzwerk-grundlagen-bilder",
+          "titel": "15 Netzwerk Grundlagen Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/15-Netzwerk-Grundlagen-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-16-tcp-ip-und-protokolle-bilder",
+          "titel": "16 TCP IP und Protokolle Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/16-TCP-IP-und-Protokolle-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-17-drahtlose-netzwerke-bilder",
+          "titel": "17 Drahtlose Netzwerke Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/17-Drahtlose-Netzwerke-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-18-cloud-und-virtualisierung-bilder",
+          "titel": "18 Cloud und Virtualisierung Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/18-Cloud-und-Virtualisierung-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-19-betriebssystem-grundlagen-bilder",
+          "titel": "19 Betriebssystem Grundlagen Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/19-Betriebssystem-Grundlagen-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-20-macos-bilder",
+          "titel": "20 macOS Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/20-macOS-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-21-die-installation-von-windows-bilder",
+          "titel": "21 Die Installation von Windows Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/21-Die-Installation-von-Windows-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-22-windows-konfigurieren-bilder",
+          "titel": "22 Windows konfigurieren Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/22-Windows-konfigurieren-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-23-windows-verwaltung-bilder",
+          "titel": "23 Windows Verwaltung Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/23-Windows-Verwaltung-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-24-windows-troubleshooting-bilder",
+          "titel": "24 Windows Troubleshooting Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/24-Windows-Troubleshooting-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-25-netzwerk-troubleshooting-bilder",
+          "titel": "25 Netzwerk Troubleshooting Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/25-Netzwerk-Troubleshooting-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-26-linux-ubuntu-bilder",
+          "titel": "26 Linux Ubuntu Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/26-Linux-Ubuntu-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-27-gefahren-und-bedrohungen-die-welt-ist-boese-bilder",
+          "titel": "27 Gefahren und Bedrohungen Die Welt ist boese Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/27-Gefahren-und-Bedrohungen-Die-Welt-ist-boese-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-28-sicherheitsmassnahmen-ergreifen-physische-und-logische-sicherheit-bilder",
+          "titel": "28 Sicherheitsmassnahmen ergreifen Physische und logische Sicherheit Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/28-Sicherheitsmassnahmen-ergreifen-Physische-und-logische-Sicherheit-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-29-logische-sicherheit-so-schuetzen-sie-ihre-systeme-bilder",
+          "titel": "29 Logische Sicherheit So schuetzen Sie Ihre Systeme Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/29-Logische-Sicherheit-So-schuetzen-Sie-Ihre-Systeme-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-30-netzwerksicherheit-die-mauer-muss-stehen-bilder",
+          "titel": "30 Netzwerksicherheit Die Mauer muss stehen Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/30-Netzwerksicherheit-Die-Mauer-muss-stehen-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-31-mobile-security-das-smartphone-ist-die-neue-schwachstelle-bilder",
+          "titel": "31 Mobile Security Das Smartphone ist die neue Schwachstelle Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/31-Mobile-Security-Das-Smartphone-ist-die-neue-Schwachstelle-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-32-betriebliche-sicherheit-daten-schuetzen-daten-sichern-daten-loeschen-bilder",
+          "titel": "32 Betriebliche Sicherheit Daten schuetzen Daten sichern Daten loeschen Bilder",
+          "bereich": "de/Bilder",
+          "dateien": {
+            "inhalt": "de/Bilder/32-Betriebliche-Sicherheit-Daten-schuetzen-Daten-sichern-Daten-loeschen-Bilder.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "de/Teil-II",
+          "dateien": {
+            "inhalt": "de/Teil-II/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-09-grundlegende-betriebskonzepte",
+          "titel": "09 Grundlegende Betriebskonzepte",
+          "bereich": "de/Teil-II",
+          "dateien": {
+            "inhalt": "de/Teil-II/09-Grundlegende-Betriebskonzepte.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-10-ein-computersystem-aufruesten",
+          "titel": "10 Ein Computersystem aufruesten",
+          "bereich": "de/Teil-II",
+          "dateien": {
+            "inhalt": "de/Teil-II/10-Ein-Computersystem-aufruesten.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-11-mobile-systeme-erweitern",
+          "titel": "11 Mobile Systeme erweitern",
+          "bereich": "de/Teil-II",
+          "dateien": {
+            "inhalt": "de/Teil-II/11-Mobile-Systeme-erweitern.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-12-notebook-problemloesung",
+          "titel": "12 Notebook Problemloesung",
+          "bereich": "de/Teil-II",
+          "dateien": {
+            "inhalt": "de/Teil-II/12-Notebook-Problemloesung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-13-mobile-systeme-unterhalten-und-reparieren",
+          "titel": "13 Mobile Systeme unterhalten und reparieren",
+          "bereich": "de/Teil-II",
+          "dateien": {
+            "inhalt": "de/Teil-II/13-Mobile-Systeme-unterhalten-und-reparieren.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-14-aus-die-maus-was-nun",
+          "titel": "14 Aus die Maus was nun",
+          "bereich": "de/Teil-II",
+          "dateien": {
+            "inhalt": "de/Teil-II/14-Aus-die-Maus-was-nun.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "de/Teil-V",
+          "dateien": {
+            "inhalt": "de/Teil-V/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-27-gefahren-und-bedrohungen-die-welt-ist-boese",
+          "titel": "27 Gefahren und Bedrohungen Die Welt ist boese",
+          "bereich": "de/Teil-V",
+          "dateien": {
+            "inhalt": "de/Teil-V/27-Gefahren-und-Bedrohungen-Die-Welt-ist-boese.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-28-sicherheitsmassnahmen-ergreifen-physische-und-logische-sicherheit",
+          "titel": "28 Sicherheitsmassnahmen ergreifen Physische und logische Sicherheit",
+          "bereich": "de/Teil-V",
+          "dateien": {
+            "inhalt": "de/Teil-V/28-Sicherheitsmassnahmen-ergreifen-Physische-und-logische-Sicherheit.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-29-logische-sicherheit-so-schuetzen-sie-ihre-systeme",
+          "titel": "29 Logische Sicherheit So schuetzen Sie Ihre Systeme",
+          "bereich": "de/Teil-V",
+          "dateien": {
+            "inhalt": "de/Teil-V/29-Logische-Sicherheit-So-schuetzen-Sie-Ihre-Systeme.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-30-netzwerksicherheit-die-mauer-muss-stehen",
+          "titel": "30 Netzwerksicherheit Die Mauer muss stehen",
+          "bereich": "de/Teil-V",
+          "dateien": {
+            "inhalt": "de/Teil-V/30-Netzwerksicherheit-Die-Mauer-muss-stehen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-31-mobile-security-das-smartphone-ist-die-neue-schwachstelle",
+          "titel": "31 Mobile Security Das Smartphone ist die neue Schwachstelle",
+          "bereich": "de/Teil-V",
+          "dateien": {
+            "inhalt": "de/Teil-V/31-Mobile-Security-Das-Smartphone-ist-die-neue-Schwachstelle.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-32-betriebliche-sicherheit-daten-schuetzen-daten-sichern-daten-loeschen",
+          "titel": "32 Betriebliche Sicherheit Daten schuetzen Daten sichern Daten loeschen",
+          "bereich": "de/Teil-V",
+          "dateien": {
+            "inhalt": "de/Teil-V/32-Betriebliche-Sicherheit-Daten-schuetzen-Daten-sichern-Daten-loeschen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "de/Teil-III",
+          "dateien": {
+            "inhalt": "de/Teil-III/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-15-netzwerk-grundlagen",
+          "titel": "15 Netzwerk Grundlagen",
+          "bereich": "de/Teil-III",
+          "dateien": {
+            "inhalt": "de/Teil-III/15-Netzwerk-Grundlagen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-16-tcp-ip-und-protokolle",
+          "titel": "16 TCP IP und Protokolle",
+          "bereich": "de/Teil-III",
+          "dateien": {
+            "inhalt": "de/Teil-III/16-TCP-IP-und-Protokolle.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-17-drahtlose-netzwerke",
+          "titel": "17 Drahtlose Netzwerke",
+          "bereich": "de/Teil-III",
+          "dateien": {
+            "inhalt": "de/Teil-III/17-Drahtlose-Netzwerke.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-18-cloud-und-virtualisierung",
+          "titel": "18 Cloud und Virtualisierung",
+          "bereich": "de/Teil-III",
+          "dateien": {
+            "inhalt": "de/Teil-III/18-Cloud-und-Virtualisierung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-kurs-tagebuch",
+          "titel": "Kurs Tagebuch",
+          "bereich": "de/Eigene-Notizen",
+          "dateien": {
+            "inhalt": "de/Eigene-Notizen/Kurs-Tagebuch.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "de-praxis-tipps",
+          "titel": "Praxis Tipps",
+          "bereich": "de/Eigene-Notizen",
+          "dateien": {
+            "inhalt": "de/Eigene-Notizen/Praxis-Tipps.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-00-dashboard",
+          "titel": "00 Dashboard",
+          "bereich": "en/Allgemein",
+          "dateien": {
+            "inhalt": "en/00-Dashboard.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "en/Allgemein",
+          "dateien": {
+            "inhalt": "en/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "en/Teil-IV",
+          "dateien": {
+            "inhalt": "en/Teil-IV/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-19-betriebssystem-grundlagen",
+          "titel": "19 Betriebssystem Grundlagen",
+          "bereich": "en/Teil-IV",
+          "dateien": {
+            "inhalt": "en/Teil-IV/19-Betriebssystem-Grundlagen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-20-macos",
+          "titel": "20 macOS",
+          "bereich": "en/Teil-IV",
+          "dateien": {
+            "inhalt": "en/Teil-IV/20-macOS.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-21-die-installation-von-windows",
+          "titel": "21 Die Installation von Windows",
+          "bereich": "en/Teil-IV",
+          "dateien": {
+            "inhalt": "en/Teil-IV/21-Die-Installation-von-Windows.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-22-windows-konfigurieren",
+          "titel": "22 Windows konfigurieren",
+          "bereich": "en/Teil-IV",
+          "dateien": {
+            "inhalt": "en/Teil-IV/22-Windows-konfigurieren.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-23-windows-verwaltung",
+          "titel": "23 Windows Verwaltung",
+          "bereich": "en/Teil-IV",
+          "dateien": {
+            "inhalt": "en/Teil-IV/23-Windows-Verwaltung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-24-windows-troubleshooting",
+          "titel": "24 Windows Troubleshooting",
+          "bereich": "en/Teil-IV",
+          "dateien": {
+            "inhalt": "en/Teil-IV/24-Windows-Troubleshooting.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-25-netzwerk-troubleshooting",
+          "titel": "25 Netzwerk Troubleshooting",
+          "bereich": "en/Teil-IV",
+          "dateien": {
+            "inhalt": "en/Teil-IV/25-Netzwerk-Troubleshooting.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-26-linux-ubuntu",
+          "titel": "26 Linux Ubuntu",
+          "bereich": "en/Teil-IV",
+          "dateien": {
+            "inhalt": "en/Teil-IV/26-Linux-Ubuntu.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "en/Teil-I",
+          "dateien": {
+            "inhalt": "en/Teil-I/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-03-vom-bit-bis-zum-personal-computer",
+          "titel": "03 Vom Bit bis zum Personal Computer",
+          "bereich": "en/Teil-I",
+          "dateien": {
+            "inhalt": "en/Teil-I/03-Vom-Bit-bis-zum-Personal-Computer.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-04-einblick-in-die-systemarchitektur",
+          "titel": "04 Einblick in die Systemarchitektur",
+          "bereich": "en/Teil-I",
+          "dateien": {
+            "inhalt": "en/Teil-I/04-Einblick-in-die-Systemarchitektur.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-05-externe-schnittstellen",
+          "titel": "05 Externe Schnittstellen",
+          "bereich": "en/Teil-I",
+          "dateien": {
+            "inhalt": "en/Teil-I/05-Externe-Schnittstellen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-06-interne-und-externe-geraete",
+          "titel": "06 Interne und externe Geraete",
+          "bereich": "en/Teil-I",
+          "dateien": {
+            "inhalt": "en/Teil-I/06-Interne-und-externe-Geraete.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-07-ein-und-ausgabegeraete",
+          "titel": "07 Ein und Ausgabegeraete",
+          "bereich": "en/Teil-I",
+          "dateien": {
+            "inhalt": "en/Teil-I/07-Ein-und-Ausgabegeraete.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-08-drucker",
+          "titel": "08 Drucker",
+          "bereich": "en/Teil-I",
+          "dateien": {
+            "inhalt": "en/Teil-I/08-Drucker.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-03-vom-bit-bis-zum-personal-computer-fragen",
+          "titel": "03 Vom Bit bis zum Personal Computer Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/03-Vom-Bit-bis-zum-Personal-Computer-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-04-einblick-in-die-systemarchitektur-fragen",
+          "titel": "04 Einblick in die Systemarchitektur Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/04-Einblick-in-die-Systemarchitektur-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-05-externe-schnittstellen-fragen",
+          "titel": "05 Externe Schnittstellen Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/05-Externe-Schnittstellen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-06-interne-und-externe-geraete-fragen",
+          "titel": "06 Interne und externe Geraete Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/06-Interne-und-externe-Geraete-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-07-ein-und-ausgabegeraete-fragen",
+          "titel": "07 Ein und Ausgabegeraete Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/07-Ein-und-Ausgabegeraete-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-08-drucker-fragen",
+          "titel": "08 Drucker Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/08-Drucker-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-09-grundlegende-betriebskonzepte-fragen",
+          "titel": "09 Grundlegende Betriebskonzepte Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/09-Grundlegende-Betriebskonzepte-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-10-ein-computersystem-aufruesten-fragen",
+          "titel": "10 Ein Computersystem aufruesten Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/10-Ein-Computersystem-aufruesten-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-11-mobile-systeme-erweitern-fragen",
+          "titel": "11 Mobile Systeme erweitern Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/11-Mobile-Systeme-erweitern-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-12-notebook-problemloesung-fragen",
+          "titel": "12 Notebook Problemloesung Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/12-Notebook-Problemloesung-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-13-mobile-systeme-unterhalten-und-reparieren-fragen",
+          "titel": "13 Mobile Systeme unterhalten und reparieren Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/13-Mobile-Systeme-unterhalten-und-reparieren-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-14-aus-die-maus-was-nun-fragen",
+          "titel": "14 Aus die Maus was nun Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/14-Aus-die-Maus-was-nun-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-15-netzwerk-grundlagen-fragen",
+          "titel": "15 Netzwerk Grundlagen Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/15-Netzwerk-Grundlagen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-16-tcp-ip-und-protokolle-fragen",
+          "titel": "16 TCP IP und Protokolle Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/16-TCP-IP-und-Protokolle-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-17-drahtlose-netzwerke-fragen",
+          "titel": "17 Drahtlose Netzwerke Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/17-Drahtlose-Netzwerke-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-18-cloud-und-virtualisierung-fragen",
+          "titel": "18 Cloud und Virtualisierung Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/18-Cloud-und-Virtualisierung-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-19-betriebssystem-grundlagen-fragen",
+          "titel": "19 Betriebssystem Grundlagen Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/19-Betriebssystem-Grundlagen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-20-macos-fragen",
+          "titel": "20 macOS Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/20-macOS-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-21-die-installation-von-windows-fragen",
+          "titel": "21 Die Installation von Windows Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/21-Die-Installation-von-Windows-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-22-windows-konfigurieren-fragen",
+          "titel": "22 Windows konfigurieren Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/22-Windows-konfigurieren-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-23-windows-verwaltung-fragen",
+          "titel": "23 Windows Verwaltung Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/23-Windows-Verwaltung-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-24-windows-troubleshooting-fragen",
+          "titel": "24 Windows Troubleshooting Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/24-Windows-Troubleshooting-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-25-netzwerk-troubleshooting-fragen",
+          "titel": "25 Netzwerk Troubleshooting Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/25-Netzwerk-Troubleshooting-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-26-linux-ubuntu-fragen",
+          "titel": "26 Linux Ubuntu Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/26-Linux-Ubuntu-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-27-gefahren-und-bedrohungen-die-welt-ist-boese-fragen",
+          "titel": "27 Gefahren und Bedrohungen Die Welt ist boese Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/27-Gefahren-und-Bedrohungen-Die-Welt-ist-boese-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-28-sicherheitsmassnahmen-ergreifen-physische-und-logische-sicherheit-fragen",
+          "titel": "28 Sicherheitsmassnahmen ergreifen Physische und logische Sicherheit Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/28-Sicherheitsmassnahmen-ergreifen-Physische-und-logische-Sicherheit-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-29-logische-sicherheit-so-schuetzen-sie-ihre-systeme-fragen",
+          "titel": "29 Logische Sicherheit So schuetzen Sie Ihre Systeme Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/29-Logische-Sicherheit-So-schuetzen-Sie-Ihre-Systeme-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-30-netzwerksicherheit-die-mauer-muss-stehen-fragen",
+          "titel": "30 Netzwerksicherheit Die Mauer muss stehen Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/30-Netzwerksicherheit-Die-Mauer-muss-stehen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-31-mobile-security-das-smartphone-ist-die-neue-schwachstelle-fragen",
+          "titel": "31 Mobile Security Das Smartphone ist die neue Schwachstelle Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/31-Mobile-Security-Das-Smartphone-ist-die-neue-Schwachstelle-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "en-32-betriebliche-sicherheit-daten-schuetzen-daten-sichern-daten-loeschen-fragen",
+          "titel": "32 Betriebliche Sicherheit Daten schuetzen Daten sichern Daten loeschen Fragen",
+          "bereich": "en/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "en/Pruefungsfragen/32-Betriebliche-Sicherheit-Daten-schuetzen-Daten-sichern-Daten-loeschen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-00-dashboard",
+          "titel": "00 Dashboard",
+          "bereich": "ru/Allgemein",
+          "dateien": {
+            "inhalt": "ru/00-Dashboard.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "ru/Allgemein",
+          "dateien": {
+            "inhalt": "ru/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "ru/Teil-IV",
+          "dateien": {
+            "inhalt": "ru/Teil-IV/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-19-betriebssystem-grundlagen",
+          "titel": "19 Betriebssystem Grundlagen",
+          "bereich": "ru/Teil-IV",
+          "dateien": {
+            "inhalt": "ru/Teil-IV/19-Betriebssystem-Grundlagen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-20-macos",
+          "titel": "20 macOS",
+          "bereich": "ru/Teil-IV",
+          "dateien": {
+            "inhalt": "ru/Teil-IV/20-macOS.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-21-die-installation-von-windows",
+          "titel": "21 Die Installation von Windows",
+          "bereich": "ru/Teil-IV",
+          "dateien": {
+            "inhalt": "ru/Teil-IV/21-Die-Installation-von-Windows.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-22-windows-konfigurieren",
+          "titel": "22 Windows konfigurieren",
+          "bereich": "ru/Teil-IV",
+          "dateien": {
+            "inhalt": "ru/Teil-IV/22-Windows-konfigurieren.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-23-windows-verwaltung",
+          "titel": "23 Windows Verwaltung",
+          "bereich": "ru/Teil-IV",
+          "dateien": {
+            "inhalt": "ru/Teil-IV/23-Windows-Verwaltung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-24-windows-troubleshooting",
+          "titel": "24 Windows Troubleshooting",
+          "bereich": "ru/Teil-IV",
+          "dateien": {
+            "inhalt": "ru/Teil-IV/24-Windows-Troubleshooting.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-25-netzwerk-troubleshooting",
+          "titel": "25 Netzwerk Troubleshooting",
+          "bereich": "ru/Teil-IV",
+          "dateien": {
+            "inhalt": "ru/Teil-IV/25-Netzwerk-Troubleshooting.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-26-linux-ubuntu",
+          "titel": "26 Linux Ubuntu",
+          "bereich": "ru/Teil-IV",
+          "dateien": {
+            "inhalt": "ru/Teil-IV/26-Linux-Ubuntu.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-01-inhaltsuebersicht",
+          "titel": "01 Inhaltsuebersicht",
+          "bereich": "ru/Teil-I",
+          "dateien": {
+            "inhalt": "ru/Teil-I/01-Inhaltsuebersicht.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-03-vom-bit-bis-zum-personal-computer",
+          "titel": "03 Vom Bit bis zum Personal Computer",
+          "bereich": "ru/Teil-I",
+          "dateien": {
+            "inhalt": "ru/Teil-I/03-Vom-Bit-bis-zum-Personal-Computer.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-04-einblick-in-die-systemarchitektur",
+          "titel": "04 Einblick in die Systemarchitektur",
+          "bereich": "ru/Teil-I",
+          "dateien": {
+            "inhalt": "ru/Teil-I/04-Einblick-in-die-Systemarchitektur.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-05-externe-schnittstellen",
+          "titel": "05 Externe Schnittstellen",
+          "bereich": "ru/Teil-I",
+          "dateien": {
+            "inhalt": "ru/Teil-I/05-Externe-Schnittstellen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-06-interne-und-externe-geraete",
+          "titel": "06 Interne und externe Geraete",
+          "bereich": "ru/Teil-I",
+          "dateien": {
+            "inhalt": "ru/Teil-I/06-Interne-und-externe-Geraete.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-07-ein-und-ausgabegeraete",
+          "titel": "07 Ein und Ausgabegeraete",
+          "bereich": "ru/Teil-I",
+          "dateien": {
+            "inhalt": "ru/Teil-I/07-Ein-und-Ausgabegeraete.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-08-drucker",
+          "titel": "08 Drucker",
+          "bereich": "ru/Teil-I",
+          "dateien": {
+            "inhalt": "ru/Teil-I/08-Drucker.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-03-vom-bit-bis-zum-personal-computer-fragen",
+          "titel": "03 Vom Bit bis zum Personal Computer Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/03-Vom-Bit-bis-zum-Personal-Computer-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-04-einblick-in-die-systemarchitektur-fragen",
+          "titel": "04 Einblick in die Systemarchitektur Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/04-Einblick-in-die-Systemarchitektur-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-05-externe-schnittstellen-fragen",
+          "titel": "05 Externe Schnittstellen Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/05-Externe-Schnittstellen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-06-interne-und-externe-geraete-fragen",
+          "titel": "06 Interne und externe Geraete Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/06-Interne-und-externe-Geraete-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-07-ein-und-ausgabegeraete-fragen",
+          "titel": "07 Ein und Ausgabegeraete Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/07-Ein-und-Ausgabegeraete-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-08-drucker-fragen",
+          "titel": "08 Drucker Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/08-Drucker-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-09-grundlegende-betriebskonzepte-fragen",
+          "titel": "09 Grundlegende Betriebskonzepte Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/09-Grundlegende-Betriebskonzepte-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-10-ein-computersystem-aufruesten-fragen",
+          "titel": "10 Ein Computersystem aufruesten Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/10-Ein-Computersystem-aufruesten-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-11-mobile-systeme-erweitern-fragen",
+          "titel": "11 Mobile Systeme erweitern Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/11-Mobile-Systeme-erweitern-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-12-notebook-problemloesung-fragen",
+          "titel": "12 Notebook Problemloesung Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/12-Notebook-Problemloesung-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-13-mobile-systeme-unterhalten-und-reparieren-fragen",
+          "titel": "13 Mobile Systeme unterhalten und reparieren Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/13-Mobile-Systeme-unterhalten-und-reparieren-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-14-aus-die-maus-was-nun-fragen",
+          "titel": "14 Aus die Maus was nun Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/14-Aus-die-Maus-was-nun-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-15-netzwerk-grundlagen-fragen",
+          "titel": "15 Netzwerk Grundlagen Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/15-Netzwerk-Grundlagen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-16-tcp-ip-und-protokolle-fragen",
+          "titel": "16 TCP IP und Protokolle Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/16-TCP-IP-und-Protokolle-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-17-drahtlose-netzwerke-fragen",
+          "titel": "17 Drahtlose Netzwerke Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/17-Drahtlose-Netzwerke-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-18-cloud-und-virtualisierung-fragen",
+          "titel": "18 Cloud und Virtualisierung Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/18-Cloud-und-Virtualisierung-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-19-betriebssystem-grundlagen-fragen",
+          "titel": "19 Betriebssystem Grundlagen Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/19-Betriebssystem-Grundlagen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-20-macos-fragen",
+          "titel": "20 macOS Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/20-macOS-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-21-die-installation-von-windows-fragen",
+          "titel": "21 Die Installation von Windows Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/21-Die-Installation-von-Windows-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-22-windows-konfigurieren-fragen",
+          "titel": "22 Windows konfigurieren Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/22-Windows-konfigurieren-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-23-windows-verwaltung-fragen",
+          "titel": "23 Windows Verwaltung Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/23-Windows-Verwaltung-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-24-windows-troubleshooting-fragen",
+          "titel": "24 Windows Troubleshooting Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/24-Windows-Troubleshooting-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-25-netzwerk-troubleshooting-fragen",
+          "titel": "25 Netzwerk Troubleshooting Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/25-Netzwerk-Troubleshooting-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-26-linux-ubuntu-fragen",
+          "titel": "26 Linux Ubuntu Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/26-Linux-Ubuntu-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-27-gefahren-und-bedrohungen-die-welt-ist-boese-fragen",
+          "titel": "27 Gefahren und Bedrohungen Die Welt ist boese Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/27-Gefahren-und-Bedrohungen-Die-Welt-ist-boese-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-28-sicherheitsmassnahmen-ergreifen-physische-und-logische-sicherheit-fragen",
+          "titel": "28 Sicherheitsmassnahmen ergreifen Physische und logische Sicherheit Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/28-Sicherheitsmassnahmen-ergreifen-Physische-und-logische-Sicherheit-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-29-logische-sicherheit-so-schuetzen-sie-ihre-systeme-fragen",
+          "titel": "29 Logische Sicherheit So schuetzen Sie Ihre Systeme Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/29-Logische-Sicherheit-So-schuetzen-Sie-Ihre-Systeme-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-30-netzwerksicherheit-die-mauer-muss-stehen-fragen",
+          "titel": "30 Netzwerksicherheit Die Mauer muss stehen Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/30-Netzwerksicherheit-Die-Mauer-muss-stehen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-31-mobile-security-das-smartphone-ist-die-neue-schwachstelle-fragen",
+          "titel": "31 Mobile Security Das Smartphone ist die neue Schwachstelle Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/31-Mobile-Security-Das-Smartphone-ist-die-neue-Schwachstelle-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ru-32-betriebliche-sicherheit-daten-schuetzen-daten-sichern-daten-loeschen-fragen",
+          "titel": "32 Betriebliche Sicherheit Daten schuetzen Daten sichern Daten loeschen Fragen",
+          "bereich": "ru/Pruefungsfragen",
+          "dateien": {
+            "inhalt": "ru/Pruefungsfragen/32-Betriebliche-Sicherheit-Daten-schuetzen-Daten-sichern-Daten-loeschen-Fragen.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        }
+      ]
+    },
+    {
+      "kurs": "CompTIA CySA+ CS0-003",
+      "exam_code": "CS0-003",
+      "themen_count": 10,
+      "themen": [
+        {
+          "id": "cysa",
+          "titel": "CySA",
+          "bereich": "Allgemein",
+          "dateien": {
+            "profi": "Lerninhalte/CySA-Plus-Wissensbasis.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "soc-simulation-im-homelab",
+          "titel": "SOC Simulation im Homelab",
+          "bereich": "Allgemein",
+          "dateien": {
+            "einsteiger": "Lerninhalte/SOC-Simulation-im-Homelab.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "lehrplan",
+          "titel": "Lehrplan",
+          "bereich": "Grundlagen",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Grundlagen/00-Lehrplan.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ir-playbook",
+          "titel": "IR Playbook",
+          "bereich": "Incident-Response",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Incident-Response/IR-Playbook-Einsteiger.md",
+            "profi": "Lerninhalte/Incident-Response/IR-Playbook-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "threat-hunting",
+          "titel": "Threat Hunting",
+          "bereich": "Threat-Intelligence",
+          "dateien": {
+            "anleitung": "Lerninhalte/Threat-Intelligence/Threat-Hunting-Anleitung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "threat-intelligence",
+          "titel": "Threat Intelligence",
+          "bereich": "Threat-Intelligence",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Threat-Intelligence/Threat-Intelligence-Einsteiger.md",
+            "profi": "Lerninhalte/Threat-Intelligence/Threat-Intelligence-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "attack-surface",
+          "titel": "Attack Surface",
+          "bereich": "Vulnerability-Management",
+          "dateien": {
+            "anleitung": "Lerninhalte/Vulnerability-Management/Attack-Surface-Anleitung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "vulnerability-scanning",
+          "titel": "Vulnerability Scanning",
+          "bereich": "Vulnerability-Management",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Vulnerability-Management/Vulnerability-Scanning-Einsteiger.md",
+            "profi": "Lerninhalte/Vulnerability-Management/Vulnerability-Scanning-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "log-analyse",
+          "titel": "Log Analyse",
+          "bereich": "SIEM-und-Log-Analyse",
+          "dateien": {
+            "anleitung": "Lerninhalte/SIEM-und-Log-Analyse/Log-Analyse-Anleitung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "siem",
+          "titel": "SIEM",
+          "bereich": "SIEM-und-Log-Analyse",
+          "dateien": {
+            "einsteiger": "Lerninhalte/SIEM-und-Log-Analyse/SIEM-Einsteiger.md",
+            "profi": "Lerninhalte/SIEM-und-Log-Analyse/SIEM-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        }
+      ]
+    },
+    {
+      "kurs": "CompTIA Linux+ XK0-005",
+      "exam_code": "XK0-005",
+      "themen_count": 14,
+      "themen": [
+        {
+          "id": "linux-haertung",
+          "titel": "Linux Haertung",
+          "bereich": "Allgemein",
+          "dateien": {
+            "anleitung": "Lerninhalte/Linux-Haertung-Checkliste.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "linux",
+          "titel": "Linux",
+          "bereich": "Allgemein",
+          "dateien": {
+            "profi": "Lerninhalte/Linux-Plus-Wissensbasis.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ss-socket-statistics",
+          "titel": "ss Socket Statistics",
+          "bereich": "Allgemein",
+          "dateien": {
+            "einsteiger": "Lerninhalte/ss-Socket-Statistics-Einsteiger.md",
+            "profi": "Lerninhalte/ss-Socket-Statistics-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "lehrplan",
+          "titel": "Lehrplan",
+          "bereich": "Grundlagen",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Grundlagen/00-Lehrplan.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ansible",
+          "titel": "Ansible",
+          "bereich": "Scripting-und-Automation",
+          "dateien": {
+            "anleitung": "Lerninhalte/Scripting-und-Automation/Ansible-Anleitung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "bash-scripting",
+          "titel": "Bash Scripting",
+          "bereich": "Scripting-und-Automation",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Scripting-und-Automation/Bash-Scripting-Einsteiger.md",
+            "profi": "Lerninhalte/Scripting-und-Automation/Bash-Scripting-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "docker",
+          "titel": "Docker",
+          "bereich": "Scripting-und-Automation",
+          "dateien": {
+            "anleitung": "Lerninhalte/Scripting-und-Automation/Docker-Anleitung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "dateisysteme",
+          "titel": "Dateisysteme",
+          "bereich": "System-Management",
+          "dateien": {
+            "anleitung": "Lerninhalte/System-Management/Dateisysteme-Anleitung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "lvm",
+          "titel": "LVM",
+          "bereich": "System-Management",
+          "dateien": {
+            "einsteiger": "Lerninhalte/System-Management/LVM-Einsteiger.md",
+            "profi": "Lerninhalte/System-Management/LVM-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "systemd",
+          "titel": "Systemd",
+          "bereich": "System-Management",
+          "dateien": {
+            "einsteiger": "Lerninhalte/System-Management/Systemd-Einsteiger.md",
+            "profi": "Lerninhalte/System-Management/Systemd-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "boot-troubleshooting",
+          "titel": "Boot Troubleshooting",
+          "bereich": "Troubleshooting",
+          "dateien": {
+            "anleitung": "Lerninhalte/Troubleshooting/Boot-Troubleshooting-Anleitung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "performance-troubleshooting",
+          "titel": "Performance Troubleshooting",
+          "bereich": "Troubleshooting",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Troubleshooting/Performance-Troubleshooting-Einsteiger.md",
+            "profi": "Lerninhalte/Troubleshooting/Performance-Troubleshooting-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "berechtigungen",
+          "titel": "Berechtigungen",
+          "bereich": "Linux-Security",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Linux-Security/Berechtigungen-Einsteiger.md",
+            "profi": "Lerninhalte/Linux-Security/Berechtigungen-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "firewall",
+          "titel": "Firewall",
+          "bereich": "Linux-Security",
+          "dateien": {
+            "anleitung": "Lerninhalte/Linux-Security/Firewall-Anleitung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        }
+      ]
+    },
+    {
+      "kurs": "CompTIA Network+ N10-009",
+      "exam_code": "N10-009",
+      "themen_count": 10,
+      "themen": [
+        {
+          "id": "nat-und-routing",
+          "titel": "NAT und Routing",
+          "bereich": "Allgemein",
+          "dateien": {
+            "einsteiger": "Lerninhalte/NAT-und-Routing-Einsteiger.md",
+            "profi": "Lerninhalte/NAT-und-Routing-Referenz.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "netzerkaufbau-bei-grossevents",
+          "titel": "Netzerkaufbau bei Großevents",
+          "bereich": "Allgemein",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Netzerkaufbau bei Großevents.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "lehrplan",
+          "titel": "Lehrplan",
+          "bereich": "Grundlagen",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Grundlagen/00-Lehrplan.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "network",
+          "titel": "Network",
+          "bereich": "Grundlagen",
+          "dateien": {
+            "profi": "Lerninhalte/Grundlagen/Network-Plus-Wissensbasis.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": "Slides/Slides_Event-Network-Architecture.pdf"
+          },
+          "tags": []
+        },
+        {
+          "id": "nmap",
+          "titel": "Nmap",
+          "bereich": "Netzwerk-Tools",
+          "dateien": {
+            "anleitung": "Lerninhalte/Netzwerk-Tools/Nmap-Anleitung.md",
+            "einsteiger": "Lerninhalte/Netzwerk-Tools/Nmap-Einsteiger.md",
+            "profi": "Lerninhalte/Netzwerk-Tools/Nmap-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "traceroute",
+          "titel": "Traceroute",
+          "bereich": "Netzwerk-Tools",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Netzwerk-Tools/Traceroute-Einsteiger.md",
+            "profi": "Lerninhalte/Netzwerk-Tools/Traceroute-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "wireshark",
+          "titel": "Wireshark",
+          "bereich": "Netzwerk-Tools",
+          "dateien": {
+            "anleitung": "Lerninhalte/Netzwerk-Tools/Wireshark-Anleitung.md",
+            "einsteiger": "Lerninhalte/Netzwerk-Tools/Wireshark-Einsteiger.md",
+            "profi": "Lerninhalte/Netzwerk-Tools/Wireshark-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ss-socket-statistics",
+          "titel": "ss Socket Statistics",
+          "bereich": "Netzwerk-Tools",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Netzwerk-Tools/ss-Socket-Statistics-Einsteiger.md",
+            "profi": "Lerninhalte/Netzwerk-Tools/ss-Socket-Statistics-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ipv4-header",
+          "titel": "IPv4 Header",
+          "bereich": "IP-Adressen",
+          "dateien": {
+            "profi": "Lerninhalte/IP-Adressen/IPv4-Header-Profi.md",
+            "einsteiger": "Lerninhalte/IP-Adressen/IPv4-Header-Einsteiger.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "ipv6",
+          "titel": "IPv6",
+          "bereich": "IP-Adressen",
+          "dateien": {
+            "einsteiger": "Lerninhalte/IP-Adressen/IPv6-Einsteiger.md",
+            "profi": "Lerninhalte/IP-Adressen/IPv6-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        }
+      ]
+    },
+    {
+      "kurs": "CompTIA Security+ SY0-701",
+      "exam_code": "SY0-701",
+      "themen_count": 11,
+      "themen": [
+        {
+          "id": "security-audit-eines-heimnetzwerks",
+          "titel": "Security Audit eines Heimnetzwerks",
+          "bereich": "Allgemein",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Security-Audit-eines-Heimnetzwerks.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "security",
+          "titel": "Security",
+          "bereich": "Allgemein",
+          "dateien": {
+            "profi": "Lerninhalte/Security-Plus-Wissensbasis.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "lehrplan",
+          "titel": "Lehrplan",
+          "bereich": "Grundlagen",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Grundlagen/00-Lehrplan.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "kryptografie",
+          "titel": "Kryptografie",
+          "bereich": "Kryptografie",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Kryptografie/Kryptografie-Einsteiger.md",
+            "profi": "Lerninhalte/Kryptografie/Kryptografie-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "tls-handshake",
+          "titel": "TLS Handshake",
+          "bereich": "Kryptografie",
+          "dateien": {
+            "anleitung": "Lerninhalte/Kryptografie/TLS-Handshake-Anleitung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "malware-analyse",
+          "titel": "Malware Analyse",
+          "bereich": "Angriffe-und-Abwehr",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Angriffe-und-Abwehr/Malware-Analyse-Einsteiger.md",
+            "profi": "Lerninhalte/Angriffe-und-Abwehr/Malware-Analyse-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "netzwerkangriffe",
+          "titel": "Netzwerkangriffe",
+          "bereich": "Angriffe-und-Abwehr",
+          "dateien": {
+            "profi": "Lerninhalte/Angriffe-und-Abwehr/Netzwerkangriffe-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "social-engineering",
+          "titel": "Social Engineering",
+          "bereich": "Angriffe-und-Abwehr",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Angriffe-und-Abwehr/Social-Engineering-Einsteiger.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "forensik",
+          "titel": "Forensik",
+          "bereich": "Incident-Response",
+          "dateien": {
+            "anleitung": "Lerninhalte/Incident-Response/Forensik-Anleitung.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "incident-response",
+          "titel": "Incident Response",
+          "bereich": "Incident-Response",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Incident-Response/Incident-Response-Einsteiger.md",
+            "profi": "Lerninhalte/Incident-Response/Incident-Response-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        },
+        {
+          "id": "iam",
+          "titel": "IAM",
+          "bereich": "Identity-und-Access",
+          "dateien": {
+            "einsteiger": "Lerninhalte/Identity-und-Access/IAM-Einsteiger.md",
+            "profi": "Lerninhalte/Identity-und-Access/IAM-Profi.md"
+          },
+          "multimedia": {
+            "audio": null,
+            "video": null,
+            "infografik": null,
+            "slides": null
+          },
+          "tags": []
+        }
+      ]
+    }
+  ],
+  "generated": "2026-03-27"
+}
