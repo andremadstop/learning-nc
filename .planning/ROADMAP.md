@@ -67,9 +67,11 @@ Plans:
   2. Bot reagiert visuell auf User-Aktionen mit passenden Emotionen (Lob bei richtiger Antwort, Hinweis bei Fehler, Ermutigung bei Streak-Verlust) — die Reaktionen folgen der Reaction Logic aus den Gemini-Deliverables
   3. Sound-Feedback ist optional (User-Toggle in Einstellungen), dezent und unterstuetzt die visuellen Reaktionen — Sound aus ist der Default, Sound an fuegt kurze Audio-Cues hinzu
   4. Bubble, Dock und Overlay sind als eigenstaendige Vue-Komponenten implementiert die den Component Specs folgen — jede Komponente ist unabhaengig testbar und wiederverwendbar
-**Plans**: 1 plan
+**Plans**: 3 plans
 Plans:
-- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
+- [ ] 91-01-PLAN.md — NOVA Cyber-Sketch Avatar mit modularer Komponentenarchitektur und animierten States
+- [ ] 91-02-PLAN.md — Web Audio API Sound-System mit User-Toggle
+- [ ] 91-03-PLAN.md — Kontextabhaengige Reaktions-Logik (visuelle Emotionen + Sound-Cues)
 
 ### Phase 92: Ghostline Quest
 **Goal**: Studenten koennen eine vollstaendige Network+ Kampagne mit Story, Terminal-Puzzles und Simulator-Challenges durchspielen
@@ -127,7 +129,7 @@ Phase 90 first (NOVA foundation). Phase 91 after 90. Phases 92-95 independent, c
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 90. NOVA Character Bible | 1/1 | Complete   | 2026-03-27 | - |
+| 90. NOVA Character Bible | 1/1 | Complete    | 2026-03-27 | - |
 | 91. NOVA Visual Implementation | v13.0 | 0/? | Not started | - |
 | 92. Ghostline Quest | v13.0 | 0/? | Not started | - |
 | 93. Vue 3 Migration Evaluation | v13.0 | 0/? | Not started | - |

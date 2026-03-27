@@ -18,7 +18,7 @@
           <span class="virtuprof-rail-title">{{ vt('Learning assistant') }}</span>
           <span class="virtuprof-rail-status">{{ dockStatusText }}</span>
         </span>
-        <VirtuProfAvatar
+        <NovaAvatar
           :animation="currentAnimation"
           :has-message="visible && !isMinimized"
           :invite-count="duelInvites.incoming.length" />
@@ -88,7 +88,7 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import VirtuProfAvatar from './VirtuProfAvatar.vue'
+import NovaAvatar from './nova/NovaAvatar.vue'
 import VirtuProfBubble from './VirtuProfBubble.vue'
 import OnboardingIntro from './OnboardingIntro.vue'
 import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
@@ -212,7 +212,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 
 export default {
   name: 'VirtuProf',
-  components: { VirtuProfAvatar, VirtuProfBubble, OnboardingIntro },
+  components: { NovaAvatar, VirtuProfBubble, OnboardingIntro },
   props: {
     enabled: {
       type: Boolean,

@@ -1,0 +1,27 @@
+/* NOVA Design Tokens — from CHARACTER_BIBLE.md Section 6 */
+:root {
+  /* Core palette */
+  --nova-bg: #0a0e17;
+  --nova-accent-cyan: #06b6d4;
+  --nova-accent-glow: rgba(6, 182, 212, 0.35);
+  --nova-warning-rose: #f43f5e;
+
+  /* Guild colors */
+  --nova-guild-expert-primary: #2c6c9f;
+  --nova-guild-office-amber: #f2c230;
+  --nova-guild-threat-magenta: #d946ef;
+  --nova-guild-threat-danger: #e53935;
+
+  /* Emotion accents */
+  --nova-emotion-happy: #4ade80;
+  --nova-emotion-sad: #60a5fa;
+  --nova-emotion-surprised: #ffffff;
+  --nova-emotion-celebrate: #facc15;
+
+  /* Animation timings */
+  --nova-idle-duration: 3s;
+  --nova-thinking-duration: 2s;
+  --nova-blink-interval: 4s;
+  --nova-orbit-duration: 10s;
+  --nova-glitch-duration: 0.2s;
+}
