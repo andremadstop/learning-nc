@@ -21,7 +21,13 @@
     "no-debugger": "error",
     "no-eval": "error",
     "no-implied-eval": "error",
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-restricted-imports": ["error", {
+      "patterns": [{
+        "group": ["**/l10n/*.json"],
+        "message": "Keine direkten l10n JSON-Imports - Webpack crasht an pluralForm. Nutze @nextcloud/l10n t() oder app/src/l10n/virtuprof-strings.js"
+      }]
+    }]
   },
   "globals": {
     "t": "readonly",
