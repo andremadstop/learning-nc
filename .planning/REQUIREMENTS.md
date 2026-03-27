@@ -22,9 +22,9 @@
 
 ### Vue 3 Migration
 
-- [ ] **VUE3-01**: Kompatibilitaetsanalyse aller Vue 2 Komponenten und Plugins
-- [ ] **VUE3-02**: Migrationspfad-Dokument mit konkreten Schritten
-- [ ] **VUE3-03**: Risikobewertung und Aufwandsschaetzung (T-Shirt Sizes)
+- [x] **VUE3-01**: Kompatibilitaetsanalyse aller Vue 2 Komponenten und Plugins
+- [x] **VUE3-02**: Migrationspfad-Dokument mit konkreten Schritten
+- [x] **VUE3-03**: Risikobewertung und Aufwandsschaetzung (T-Shirt Sizes)
 
 ### Kurs-Feed
 
@@ -73,9 +73,9 @@
 | GHOST-02 | Phase 92 | Complete |
 | GHOST-03 | Phase 92 | Complete |
 | GHOST-04 | Phase 92 | Complete |
-| VUE3-01 | Phase 93 | Pending |
-| VUE3-02 | Phase 93 | Pending |
-| VUE3-03 | Phase 93 | Pending |
+| VUE3-01 | Phase 93 | Complete |
+| VUE3-02 | Phase 93 | Complete |
+| VUE3-03 | Phase 93 | Complete |
 | FEED-01 | Phase 94 | Pending |
 | FEED-02 | Phase 94 | Pending |
 | FEED-03 | Phase 94 | Pending |
