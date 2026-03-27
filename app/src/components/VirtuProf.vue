@@ -693,6 +693,12 @@ export default {
       }
     },
     enqueue(triggerId, context = {}) {
+      // Reaction hooks for quiz events
+      if (triggerId === 'gameshow-answer-correct') {
+        this.applyReaction('answer-correct', context)
+      } else if (triggerId === 'gameshow-answer-wrong') {
+        this.applyReaction('answer-wrong', context)
+      }
       const script = SCRIPTS[triggerId]
       if (!script || !this.enabled) {
         return
