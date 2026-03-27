@@ -21,92 +21,115 @@
 - ✅ **v10.0 Campaign Engine v2** — Phases 71-74 (shipped 2026-03-24)
 - ✅ **v11.0 Telos-Onboarding + VirtuProf Guide** — Phases 75-79 (shipped 2026-03-25)
 - ✅ **v12.0 Campaign Engine — Interaktives Kampagnen-RPG** — Phases 80-85 (shipped 2026-03-26)
-- 🚧 **v12.1 DevCloud Optimierung** — Phases 86-89 (in progress)
+- ✅ **v12.1 DevCloud Optimierung** — Phases 86-89 (shipped 2026-03-27)
+- 🚧 **v13.0 Feature Expansion** — Phases 90-95 (in progress)
 
 ## Phases
 
 <details>
-<summary>✅ v2.3 — v12.0 (Phases 1-85) — SHIPPED</summary>
+<summary>✅ v2.3 — v12.1 (Phases 1-89) — SHIPPED</summary>
 
-Phases 1-85 shipped across milestones v2.3 through v12.0. See git history for details.
+Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for details.
 
 </details>
 
-### 🚧 v12.1 DevCloud Optimierung (Phases 86-89)
+### 🚧 v13.0 Feature Expansion (Phases 90-95)
 
-**Milestone Goal:** DevCloud-Infrastruktur automatisieren, strategisch verknuepfen und fuer Studenten + AI-Agents optimieren.
+**Milestone Goal:** Die Learning-App um visuelle Identitaet, Story-Kampagne, Kompetenz-Visualisierung, Aktivitaets-Feed und Vue 3 Migrationsbewertung erweitern.
 
-- [x] **Phase 86: Pipeline Tooling** - Sanitize-Script, /lerninhalt Skill-Pipeline und Staleness-Check (completed 2026-03-27)
-- [ ] **Phase 87: NC Platform Setup** - Talk-Willkommen, Dashboard-Einstieg
-- [ ] **Phase 88: VirtuProf Manifest** - Manifest-Lesen, Niveau-Differenzierung
-- [ ] **Phase 89: Cross-App Linking** - Content-Changelog in Talk, Deck Deep-Links
+- [x] **Phase 90: NOVA Character Bible** - Persoenlichkeitsdefinition und Designgrundlage fuer alle NOVA-Visuals (completed 2026-03-27)
+- [ ] **Phase 91: NOVA Visual Implementation** - Animierte Bot-States, Reaktionslogik, Sound-Feedback, Vue-Komponenten
+- [ ] **Phase 92: Ghostline Quest** - Network+ Kampagne mit Story-Arc, Terminal-Puzzles und Simulator-Integration
+- [ ] **Phase 93: Vue 3 Migration Evaluation** - Kompatibilitaetsanalyse, Migrationspfad und Aufwandsschaetzung
+- [ ] **Phase 94: Kurs-Feed** - Ankuendigungen, Meilensteine und Activity Stream fuer Kursgruppen
+- [ ] **Phase 95: Skill-Map** - D3.js Force-Graph zur Kompetenz-Visualisierung mit Lernfortschritt
 
 ## Phase Details
 
-### Phase 86: Pipeline Tooling
-**Goal**: Lerninhalte koennen in einem automatisierten Schritt erstellt, bereinigt und in die DevCloud kopiert werden — mit Warnungen wenn Inhalte veraltet sind
-**Depends on**: Nothing (first phase of v12.1)
-**Requirements**: PIPE-01, PIPE-02, PIPE-03
+### Phase 90: NOVA Character Bible
+**Goal**: NOVAs Persoenlichkeit, visuelle Sprache und Verhaltensregeln sind konsistent dokumentiert und dienen als verbindliche Referenz fuer alle visuellen Implementierungen
+**Depends on**: Nothing (first phase of v13.0)
+**Requirements**: NOVA-03
 **Success Criteria** (what must be TRUE):
-  1. `scripts/devcloud-sanitize.py` existiert, ist ausfuehrbar und bereinigt Markdown-Dateien von persoenlichen Referenzen — `--dry-run` zeigt was geaendert wuerde ohne zu schreiben, `--track` aktualisiert ein Manifest
-  2. Der `/lerninhalt` Skill fuehrt nach Inhaltserstellung automatisch Sanitize + Copy nach `_devcloud/` aus — ein neuer Lerninhalt landet mit einem Befehl bereinigt in der DevCloud
-  3. Der Staleness-Check erkennt wenn Personal-Vault-Dateien neuer als ihre `_devcloud/`-Kopien sind und gibt eine sichtbare Warnung aus — veraltete DevCloud-Inhalte fallen sofort auf
-**Plans**: 2 plans
-
+  1. Eine Character Bible existiert die NOVAs Persoenlichkeit (Tonfall, Humor-Stil, Grenzen) so definiert dass zwei verschiedene Entwickler denselben Bot-Charakter implementieren wuerden
+  2. Die Bible definiert visuelle Design-Tokens (Farben, Formen, Proportionen) die in den Gemini-Deliverables (VISUAL_CONCEPT.md, UI_ANIMATION_GUIDE.md) referenziert werden
+  3. Kontextabhaengige Verhaltensregeln sind dokumentiert — NOVA reagiert in Quiz anders als in Chat anders als in Kampagne, und diese Unterschiede sind explizit beschrieben
+**Plans**: 1 plan
 Plans:
-- [ ] 86-01-PLAN.md — devcloud-sanitize.py CLI mit --dry-run und --track
-- [ ] 86-02-PLAN.md — /lerninhalt Skill-Pipeline (Sanitize + Copy) und Staleness-Check
+- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
 
-### Phase 87: NC Platform Setup
-**Goal**: Studenten finden nach dem Login sofort den Einstieg zur DevCloud und werden in Talk-Raeumen mit klaren Regeln und Zweck empfangen
-**Depends on**: Nothing (parallel zu Phase 86 moeglich)
-**Requirements**: TALK-01, DASH-01, DASH-02
+### Phase 91: NOVA Visual Implementation
+**Goal**: VirtuProf ist ein visuell lebendiger Bot mit Animationen, kontextabhaengigen Reaktionen, optionalem Sound-Feedback und sauberer Vue-Komponentenarchitektur
+**Depends on**: Phase 90 (Character Bible als Design-Referenz)
+**Requirements**: NOVA-01, NOVA-02, NOVA-04, NOVA-05
 **Success Criteria** (what must be TRUE):
-  1. Alle 5 Talk-Raeume haben eine gepinnte Willkommensnachricht die Zweck und Regeln des Raums erklaert — ein neuer Student versteht sofort wofuer jeder Raum da ist
-  2. Das NC-Dashboard zeigt nach Login einen Einstiegslink zum Dozenten-Material und zur Learning App — der Student muss nicht manuell nach der App suchen
-  3. `00-Uebersicht.md` ist als Startpunkt erreichbar (Dashboard-Widget oder Default-Files-Redirect) — der Student landet beim ersten Klick auf einer orientierten Uebersichtsseite
-**Plans**: TBD
-
+  1. VirtuProf zeigt sichtbar unterschiedliche Idle/Thinking/Speaking-Animationen — der User erkennt sofort ob der Bot wartet, nachdenkt oder antwortet
+  2. Bot reagiert visuell auf User-Aktionen mit passenden Emotionen (Lob bei richtiger Antwort, Hinweis bei Fehler, Ermutigung bei Streak-Verlust) — die Reaktionen folgen der Reaction Logic aus den Gemini-Deliverables
+  3. Sound-Feedback ist optional (User-Toggle in Einstellungen), dezent und unterstuetzt die visuellen Reaktionen — Sound aus ist der Default, Sound an fuegt kurze Audio-Cues hinzu
+  4. Bubble, Dock und Overlay sind als eigenstaendige Vue-Komponenten implementiert die den Component Specs folgen — jede Komponente ist unabhaengig testbar und wiederverwendbar
+**Plans**: 1 plan
 Plans:
-- [ ] 87-01: Talk-Willkommensnachrichten (5 Raeume, gepinnt)
-- [ ] 87-02: Dashboard-Konfiguration (Einstiegslinks + Uebersicht-Redirect)
+- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
 
-### Phase 88: VirtuProf Manifest
-**Goal**: VirtuProf kennt die DevCloud-Inhalte via Manifest und empfiehlt passende Lerninhalte abgestimmt auf das Niveau des Users
-**Depends on**: Phase 86 (Manifest muss durch Pipeline befuellt sein)
-**Requirements**: MNFT-01, MNFT-02
+### Phase 92: Ghostline Quest
+**Goal**: Studenten koennen eine vollstaendige Network+ Kampagne mit Story, Terminal-Puzzles und Simulator-Challenges durchspielen
+**Depends on**: Nothing (nutzt bestehende Simulator-Infrastruktur aus v9.0 und Campaign Engine aus v12.0)
+**Requirements**: GHOST-01, GHOST-02, GHOST-03, GHOST-04
 **Success Criteria** (what must be TRUE):
-  1. VirtuProf liest `_manifest.json` und kann bei Themen-Fragen passende DevCloud-Lerninhalte verlinken — der Student fragt z.B. "Was ist Subnetting?" und bekommt einen Link zum Subnetting-Guide in der DevCloud
-  2. Die Empfehlungen unterscheiden zwischen Einsteiger- und Profi-Niveau basierend auf User-Kontext (Telos-Daten, Lernhistorie) — ein Anfaenger bekommt den Grundlagen-Guide, ein Fortgeschrittener das Profi-Material
-  3. Bei Themen ohne passendes DevCloud-Material antwortet VirtuProf normal ohne kaputte Links — kein Verweis auf nicht-existierende Inhalte
-**Plans**: TBD
-
+  1. Die Kampagne hat mindestens 5 spielbare Szenen mit Terminal-Puzzles die Network+-Wissen abfragen — ein Student kann die Kampagne von Anfang bis Ende durchspielen
+  2. Die Story hat einen erkennbaren Arc mit Protagonist, Antagonist und mindestens einem Wendepunkt — der Student will weiterspielen weil die Geschichte spannend ist
+  3. NPC-Dialoge bieten verzweigte Optionen die den Spielverlauf beeinflussen — verschiedene Entscheidungen fuehren zu unterschiedlichen Szenen oder Ergebnissen
+  4. Mindestens 3 Simulatoren (DNS, Firewall, Routing) sind als interaktive Challenges in Quest-Szenen eingebettet — der Student loest Netzwerk-Probleme innerhalb der Story statt in isolierten Uebungen
+**Plans**: 1 plan
 Plans:
-- [ ] 88-01: Manifest-Loader fuer VirtuProf (GeminiService liest _manifest.json)
-- [ ] 88-02: Niveau-Differenzierung (Einsteiger/Profi basierend auf User-Kontext)
+- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
 
-### Phase 89: Cross-App Linking
-**Goal**: Neue Lerninhalte werden automatisch im Talk angekuendigt und Deck-Karten verlinken direkt auf Lerneinheiten in der Learning App
-**Depends on**: Phase 86 (Pipeline muss Content-Updates erkennen), Phase 87 (Talk-Raeume muessen eingerichtet sein)
-**Requirements**: TALK-02, DECK-01, DECK-02
+### Phase 93: Vue 3 Migration Evaluation
+**Goal**: Eine fundierte Entscheidungsgrundlage existiert ob und wie die Migration von Vue 2 auf Vue 3 durchgefuehrt werden soll
+**Depends on**: Nothing (reine Analyse, kann parallel laufen)
+**Requirements**: VUE3-01, VUE3-02, VUE3-03
 **Success Criteria** (what must be TRUE):
-  1. Bei neuen oder aktualisierten Lerninhalten wird automatisch ein Post im "Allgemein"-Raum erstellt — Studenten sehen im Talk was sich geaendert hat, ohne manuell zu pruefen
-  2. Deck-Karten koennen via Beschreibungsfeld Deep-Links auf Lerneinheiten in der Learning App enthalten — ein Klick auf den Link oeffnet die entsprechende Lerneinheit
-  3. Beispiel-Karten im Kurs-Kanban enthalten funktionierende Links zu Learning-App-Pools — neue Studenten sehen sofort wie Deck und Learning App zusammenspielen
-**Plans**: TBD
-
+  1. Jede Vue 2 Komponente und jedes Plugin ist auf Vue 3 Kompatibilitaet geprueft — eine Tabelle zeigt fuer jede Komponente ob sie kompatibel, anpassbar oder neu geschrieben werden muss
+  2. Ein konkreter Migrationspfad mit geordneten Schritten existiert — nicht "irgendwann migrieren" sondern "erst X, dann Y, dann Z" mit klaren Abhaengigkeiten
+  3. Aufwand ist in T-Shirt Sizes (S/M/L/XL) pro Komponente geschaetzt und Risiken sind benannt — der User kann entscheiden ob Vue 3 Migration ein eigener Milestone wird oder aufgeschoben wird
+**Plans**: 1 plan
 Plans:
-- [ ] 89-01: Content-Changelog Talk-Bot (automatische Posts bei Updates)
-- [ ] 89-02: Deck Deep-Links (Link-Schema + Beispiel-Karten)
+- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
+
+### Phase 94: Kurs-Feed
+**Goal**: Dozenten und Studenten haben einen zentralen Activity Stream der Ankuendigungen, Meilensteine und neue Lerninhalte eines Kurses buendelt
+**Depends on**: Nothing (eigenstaendiges Feature)
+**Requirements**: FEED-01, FEED-02, FEED-03
+**Success Criteria** (what must be TRUE):
+  1. Ein Dozent kann eine Ankuendigung fuer einen Kurs posten die alle eingeschriebenen Studenten im Feed sehen — der Dozent muss nicht jeden einzeln benachrichtigen
+  2. Studenten sehen im Dashboard einen Feed mit Ankuendigungen und erreichten Meilensteinen (z.B. "Pool X freigeschaltet", "Neuer Lerninhalt verfuegbar") — alles Wichtige an einem Ort
+  3. Neue Lerninhalte und Kurs-Fortschritt erscheinen automatisch im Feed ohne manuelles Zutun — der Feed ist lebendig auch wenn der Dozent nichts postet
+**Plans**: 1 plan
+Plans:
+- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
+
+### Phase 95: Skill-Map
+**Goal**: Studenten sehen ihre Kompetenzen als interaktiven Force-Graph der Staerken und Luecken auf einen Blick sichtbar macht
+**Depends on**: Nothing (eigenstaendiges Feature, nutzt bestehende Lernfortschritt-Daten)
+**Requirements**: SKILL-01, SKILL-02, SKILL-03
+**Success Criteria** (what must be TRUE):
+  1. Ein D3.js Force-directed Graph zeigt Kompetenz-Cluster als verbundene Nodes — der Student sieht welche Themengebiete zusammenhaengen und wie gross jedes Cluster ist
+  2. Nodes faerben sich nach Lernfortschritt (rot = schwach, gelb = in Arbeit, gruen = gemeistert) — der Student erkennt auf einen Blick wo Luecken sind
+  3. Ein Klick auf einen Node zeigt die zugehoerigen Karteikarten — der Student kann direkt aus der Map heraus schwache Bereiche gezielt ueben
+**Plans**: 1 plan
+Plans:
+- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
 
 ## Progress
 
 **Execution Order:**
-Phases 86-87 can run in parallel. Phase 88 after 86. Phase 89 after 86+87.
+Phase 90 first (NOVA foundation). Phase 91 after 90. Phases 92-95 independent, can run in any order or parallel.
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 86. Pipeline Tooling | 2/2 | Complete   | 2026-03-27 | - |
-| 87. NC Platform Setup | v12.1 | 0/2 | Not started | - |
-| 88. VirtuProf Manifest | v12.1 | 0/2 | Not started | - |
-| 89. Cross-App Linking | v12.1 | 0/2 | Not started | - |
+| 90. NOVA Character Bible | 1/1 | Complete   | 2026-03-27 | - |
+| 91. NOVA Visual Implementation | v13.0 | 0/? | Not started | - |
+| 92. Ghostline Quest | v13.0 | 0/? | Not started | - |
+| 93. Vue 3 Migration Evaluation | v13.0 | 0/? | Not started | - |
+| 94. Kurs-Feed | v13.0 | 0/? | Not started | - |
+| 95. Skill-Map | v13.0 | 0/? | Not started | - |

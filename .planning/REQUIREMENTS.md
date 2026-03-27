@@ -1,78 +1,91 @@
-# Requirements: Learning-NC v12.1 DevCloud Optimierung
+# Requirements: Learning-NC v13.0 Feature Expansion
 
 **Defined:** 2026-03-27
-**Core Value:** DevCloud-Infrastruktur automatisieren, strategisch verknuepfen und fuer Studenten + AI-Agents optimieren.
+**Core Value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
 
-## v12.1 Requirements
+## v13.0 Requirements
 
-### Pipeline
+### NOVA Visual Redesign
 
-- [x] **PIPE-01**: Sanitize-Script liegt permanent unter `scripts/devcloud-sanitize.py` mit CLI-Argumenten (--track, --dry-run)
-- [x] **PIPE-02**: `/lerninhalt` Skill fuehrt nach Inhaltserstellung automatisch Sanitize + Copy nach `_devcloud/` aus
-- [x] **PIPE-03**: Staleness-Check erkennt wenn Personal-Vault-Dateien neuer als ihre `_devcloud/`-Kopien sind und warnt
+- [ ] **NOVA-01**: VirtuProf zeigt animierte Idle/Thinking/Speaking-States (CSS/SVG)
+- [ ] **NOVA-02**: Bot reagiert visuell auf User-Aktionen (Reaktions-Logik: Lob, Hinweis, Fehler)
+- [x] **NOVA-03**: Character Bible definiert NOVAs Persoenlichkeit konsistent ueber alle Kontexte
+- [ ] **NOVA-04**: Sound-Feedback bei Bot-Interaktionen (optional, User-Toggle)
+- [ ] **NOVA-05**: Vue-Komponenten fuer Bubble, Dock, Overlay nach Component Specs
 
-### Talk
+### Ghostline Quest
 
-- [ ] **TALK-01**: Alle 5 Talk-Raeume haben eine gepinnte Willkommensnachricht mit Zweck und Regeln
-- [ ] **TALK-02**: Bei neuen/aktualisierten Lerninhalten wird automatisch ein Post im "Allgemein"-Raum erstellt
+- [ ] **GHOST-01**: Network+ Kampagne mit mindestens 5 Szenen und Terminal-Puzzles
+- [ ] **GHOST-02**: Story-Arc mit Protagonist, Antagonist und Wendepunkt
+- [ ] **GHOST-03**: NPC-Dialoge mit verzweigten Optionen
+- [ ] **GHOST-04**: Simulator-Integration (DNS, Firewall, Routing) in Quest-Szenen
 
-### Manifest
+### Vue 3 Migration
 
-- [ ] **MNFT-01**: VirtuProf kann `_manifest.json` lesen und bei Themen-Fragen passende DevCloud-Lerninhalte verlinken
-- [ ] **MNFT-02**: Manifest-Empfehlungen unterscheiden zwischen Einsteiger- und Profi-Niveau basierend auf User-Kontext
+- [ ] **VUE3-01**: Kompatibilitaetsanalyse aller Vue 2 Komponenten und Plugins
+- [ ] **VUE3-02**: Migrationspfad-Dokument mit konkreten Schritten
+- [ ] **VUE3-03**: Risikobewertung und Aufwandsschaetzung (T-Shirt Sizes)
 
-### Dashboard
+### Kurs-Feed
 
-- [ ] **DASH-01**: NC-Dashboard zeigt nach Login einen Einstiegslink zum Dozenten-Material und zur Learning App
-- [ ] **DASH-02**: Dashboard-Widget oder Default-Files-Redirect zeigt `00-Uebersicht.md` als Startpunkt
+- [ ] **FEED-01**: Dozent kann Ankuendigungen fuer einen Kurs posten
+- [ ] **FEED-02**: Studenten sehen Activity Stream mit Ankuendigungen und Meilensteinen
+- [ ] **FEED-03**: Feed zeigt automatisch neue Lerninhalte und Kurs-Fortschritt
 
-### Deck
+### Skill-Map
 
-- [ ] **DECK-01**: Deck-Karten koennen via Beschreibung auf Lerneinheiten in der Learning App verlinken (Deep-Links)
-- [ ] **DECK-02**: Beispiel-Karten im Kurs-Kanban enthalten funktionierende Links zu Learning-App-Pools
+- [ ] **SKILL-01**: D3.js Force-directed Graph zeigt Kompetenz-Cluster
+- [ ] **SKILL-02**: Nodes faerben sich nach Lernfortschritt (rot→gelb→gruen)
+- [ ] **SKILL-03**: User kann in Node klicken um zugehoerige Karten zu sehen
 
 ## Future Requirements
 
-### Erweiterte Integration
+### NOVA v2+
 
-- **INTG-01**: VirtuProf erstellt automatisch Deck-Karten basierend auf Lernfortschritt
-- **INTG-02**: Bi-direktionale Sync zwischen Deck-Karten und Learning-App Pools
-- **INTG-03**: Talk-Bot der automatisch Frage-des-Tages postet
+- **NOVA-F01**: Animierte Uebergaenge zwischen NOVA-Emotionen (Morphing)
+- **NOVA-F02**: User-anpassbare NOVA-Skins/Themes
 
-### Multimedia
+### Skill-Map v2+
 
-- **MDIA-01**: Inline-Embeds von Audio/Video in Einsteiger-Markdown-Dateien
-- **MDIA-02**: Callout-Embeds fuer Profi-Dateien (aufklappbar)
+- **SKILL-F01**: Skill-Map vergleich zwischen Usern (Dozenten-View)
+- **SKILL-F02**: Empfehlungs-Engine basierend auf Skill-Gaps
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Talk Video/Audio Calls | Laeuft ueber alfaview, nicht DevCloud |
-| Collectives/Wiki | NC-App zu komplex fuer aktuellen Bedarf, Markdown in Files reicht |
-| Automatische Uebersetzung N+/S+/L+/C+ | Nur A+ hat Multilang, Rest bleibt de-only fuers Erste |
-| Kampagnen-Editor GUI | Eigener Milestone (v13.0+) |
-| Telegram-Bot Integration | Eigener Milestone, braucht Architektur-Entscheidung |
+| Vue 3 Umsetzung | Nur Evaluierung in v13.0, Migration ist eigener Milestone |
+| Kampagnen-Editor GUI | Dozenten nutzen JSON, Editor erst nach Engine bewaehrt |
+| Voice-Chat im Coop | Zu komplex, Text-Chat reicht |
+| NOVA 3D-Avatar | Performance auf Tablets, CSS/SVG reicht |
+| Skill-Map Dozenten-Vergleich | Erst nach Basis-Graph steht |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPE-01 | Phase 86 | Complete |
-| PIPE-02 | Phase 86 | Complete |
-| PIPE-03 | Phase 86 | Complete |
-| TALK-01 | Phase 87 | Pending |
-| TALK-02 | Phase 89 | Pending |
-| MNFT-01 | Phase 88 | Pending |
-| MNFT-02 | Phase 88 | Pending |
-| DASH-01 | Phase 87 | Pending |
-| DASH-02 | Phase 87 | Pending |
-| DECK-01 | Phase 89 | Pending |
-| DECK-02 | Phase 89 | Pending |
+| NOVA-01 | Phase 91 | Pending |
+| NOVA-02 | Phase 91 | Pending |
+| NOVA-03 | Phase 90 | Complete |
+| NOVA-04 | Phase 91 | Pending |
+| NOVA-05 | Phase 91 | Pending |
+| GHOST-01 | Phase 92 | Pending |
+| GHOST-02 | Phase 92 | Pending |
+| GHOST-03 | Phase 92 | Pending |
+| GHOST-04 | Phase 92 | Pending |
+| VUE3-01 | Phase 93 | Pending |
+| VUE3-02 | Phase 93 | Pending |
+| VUE3-03 | Phase 93 | Pending |
+| FEED-01 | Phase 94 | Pending |
+| FEED-02 | Phase 94 | Pending |
+| FEED-03 | Phase 94 | Pending |
+| SKILL-01 | Phase 95 | Pending |
+| SKILL-02 | Phase 95 | Pending |
+| SKILL-03 | Phase 95 | Pending |
 
 **Coverage:**
-- v12.1 requirements: 11 total
-- Mapped to phases: 11
+- v13.0 requirements: 18 total
+- Mapped to phases: 18
 - Unmapped: 0
 
 ---
