@@ -1,16 +1,13 @@
-import deJson from '../../l10n/de.json'
-import enJson from '../../l10n/en.json'
-import ruJson from '../../l10n/ru.json'
-import arJson from '../../l10n/ar.json'
+import { ar, de, en, ru } from '../l10n/virtuprof-strings.js'
 
 const ALLOWED = ['de', 'en', 'ru', 'ar']
 const STORAGE_PREFIX = 'learning:virtuprof:language'
 
 const DICTS = {
-  de: deJson.translations || {},
-  en: enJson.translations || {},
-  ru: ruJson.translations || {},
-  ar: arJson.translations || {},
+  de,
+  en,
+  ru,
+  ar,
 }
 
 export function normalizeVirtuProfLanguage(lang) {
