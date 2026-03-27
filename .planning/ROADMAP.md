@@ -38,7 +38,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 **Milestone Goal:** Die Learning-App um visuelle Identitaet, Story-Kampagne, Kompetenz-Visualisierung, Aktivitaets-Feed und Vue 3 Migrationsbewertung erweitern.
 
 - [x] **Phase 90: NOVA Character Bible** - Persoenlichkeitsdefinition und Designgrundlage fuer alle NOVA-Visuals (completed 2026-03-27)
-- [ ] **Phase 91: NOVA Visual Implementation** - Animierte Bot-States, Reaktionslogik, Sound-Feedback, Vue-Komponenten
+- [x] **Phase 91: NOVA Visual Implementation** - Animierte Bot-States, Reaktionslogik, Sound-Feedback, Vue-Komponenten (completed 2026-03-27)
 - [ ] **Phase 92: Ghostline Quest** - Network+ Kampagne mit Story-Arc, Terminal-Puzzles und Simulator-Integration
 - [ ] **Phase 93: Vue 3 Migration Evaluation** - Kompatibilitaetsanalyse, Migrationspfad und Aufwandsschaetzung
 - [ ] **Phase 94: Kurs-Feed** - Ankuendigungen, Meilensteine und Activity Stream fuer Kursgruppen
@@ -67,11 +67,12 @@ Plans:
   2. Bot reagiert visuell auf User-Aktionen mit passenden Emotionen (Lob bei richtiger Antwort, Hinweis bei Fehler, Ermutigung bei Streak-Verlust) — die Reaktionen folgen der Reaction Logic aus den Gemini-Deliverables
   3. Sound-Feedback ist optional (User-Toggle in Einstellungen), dezent und unterstuetzt die visuellen Reaktionen — Sound aus ist der Default, Sound an fuegt kurze Audio-Cues hinzu
   4. Bubble, Dock und Overlay sind als eigenstaendige Vue-Komponenten implementiert die den Component Specs folgen — jede Komponente ist unabhaengig testbar und wiederverwendbar
-**Plans**: 3 plans
+**Plans**: 4 plans
 Plans:
 - [ ] 91-01-PLAN.md — NOVA Cyber-Sketch Avatar mit modularer Komponentenarchitektur und animierten States
 - [ ] 91-02-PLAN.md — Web Audio API Sound-System mit User-Toggle
 - [ ] 91-03-PLAN.md — Kontextabhaengige Reaktions-Logik (visuelle Emotionen + Sound-Cues)
+- [ ] 91-04-PLAN.md — Dock und Panel Extraktion aus VirtuProf.vue Monolith
 
 ### Phase 92: Ghostline Quest
 **Goal**: Studenten koennen eine vollstaendige Network+ Kampagne mit Story, Terminal-Puzzles und Simulator-Challenges durchspielen
@@ -82,9 +83,10 @@ Plans:
   2. Die Story hat einen erkennbaren Arc mit Protagonist, Antagonist und mindestens einem Wendepunkt — der Student will weiterspielen weil die Geschichte spannend ist
   3. NPC-Dialoge bieten verzweigte Optionen die den Spielverlauf beeinflussen — verschiedene Entscheidungen fuehren zu unterschiedlichen Szenen oder Ergebnissen
   4. Mindestens 3 Simulatoren (DNS, Firewall, Routing) sind als interaktive Challenges in Quest-Szenen eingebettet — der Student loest Netzwerk-Probleme innerhalb der Story statt in isolierten Uebungen
-**Plans**: 1 plan
+**Plans**: 2 plans
 Plans:
-- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
+- [ ] 92-01-PLAN.md — Foundation: TerminalPuzzle.vue, Ghostline CSS, DauBot ghostline category, schema updates
+- [ ] 92-02-PLAN.md — Campaign content: ghostline_quest.json with 5-act story, branching paths, simulator integration
 
 ### Phase 93: Vue 3 Migration Evaluation
 **Goal**: Eine fundierte Entscheidungsgrundlage existiert ob und wie die Migration von Vue 2 auf Vue 3 durchgefuehrt werden soll
@@ -96,7 +98,7 @@ Plans:
   3. Aufwand ist in T-Shirt Sizes (S/M/L/XL) pro Komponente geschaetzt und Risiken sind benannt — der User kann entscheiden ob Vue 3 Migration ein eigener Milestone wird oder aufgeschoben wird
 **Plans**: 1 plan
 Plans:
-- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
+- [ ] 93-01-PLAN.md — Kompatibilitaetstabelle aller Komponenten + Migrationspfad + Risikobewertung + Go/No-Go
 
 ### Phase 94: Kurs-Feed
 **Goal**: Dozenten und Studenten haben einen zentralen Activity Stream der Ankuendigungen, Meilensteine und neue Lerninhalte eines Kurses buendelt
@@ -108,7 +110,7 @@ Plans:
   3. Neue Lerninhalte und Kurs-Fortschritt erscheinen automatisch im Feed ohne manuelles Zutun — der Feed ist lebendig auch wenn der Dozent nichts postet
 **Plans**: 1 plan
 Plans:
-- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
+- [ ] 94-01-PLAN.md — [To be planned]
 
 ### Phase 95: Skill-Map
 **Goal**: Studenten sehen ihre Kompetenzen als interaktiven Force-Graph der Staerken und Luecken auf einen Blick sichtbar macht
@@ -120,7 +122,7 @@ Plans:
   3. Ein Klick auf einen Node zeigt die zugehoerigen Karteikarten — der Student kann direkt aus der Map heraus schwache Bereiche gezielt ueben
 **Plans**: 1 plan
 Plans:
-- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
+- [ ] 95-01-PLAN.md — [To be planned]
 
 ## Progress
 
@@ -130,8 +132,8 @@ Phase 90 first (NOVA foundation). Phase 91 after 90. Phases 92-95 independent, c
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 90. NOVA Character Bible | 1/1 | Complete    | 2026-03-27 | - |
-| 91. NOVA Visual Implementation | v13.0 | 0/? | Not started | - |
-| 92. Ghostline Quest | v13.0 | 0/? | Not started | - |
-| 93. Vue 3 Migration Evaluation | v13.0 | 0/? | Not started | - |
+| 91. NOVA Visual Implementation | v13.0 | Complete    | 2026-03-27 | - |
+| 92. Ghostline Quest | v13.0 | 0/2 | Planned | - |
+| 93. Vue 3 Migration Evaluation | v13.0 | 0/1 | Planned | - |
 | 94. Kurs-Feed | v13.0 | 0/? | Not started | - |
 | 95. Skill-Map | v13.0 | 0/? | Not started | - |
