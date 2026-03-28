@@ -49,7 +49,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 ### v3.4.0 UX-Konsolidierung & Simulator-Upgrade (Phases 96-100)
 
 - [x] **Phase 96: UX-Navigation Struktur** — Dozent-Tabs gruppieren, Abenteuer aus Arena loesen, Kursregeln-Gating verdrahten, Oldschool-Karte fixen (completed 2026-03-28)
-- [ ] **Phase 97: Code-Hygiene & Settings** — Settings aufsplitten, Zeitreise-Dead-Code entfernen, DE/EN Label-Mix bereinigen
+- [x] **Phase 97: Code-Hygiene & Settings** — Settings aufsplitten, Zeitreise-Dead-Code entfernen, DE/EN Label-Mix bereinigen (completed 2026-03-28)
 - [ ] **Phase 98: Simulator-Praxis-Sessions** — Gefuehrte Schritt-fuer-Schritt-Sessions mit realen Szenarien und sichtbarem Fortschritt
 - [ ] **Phase 99: Student-Dashboard** — Heute-Startscreen mit SmartQueue, globaler Feed aus allen Kursen, direkte Pool-Navigation
 - [ ] **Phase 100: DevCloud-Integration & Leitner** — Talk-Shortcut, Kursmaterialien-Tab, Buddy-Matching, Tool-Einschraenkungen, Sprint-Intervalle
@@ -78,7 +78,7 @@ Plans:
   1. Dozenten sehen PersonalSettings (eigene Lerneinstellungen) UND AdminSettings (Kurs-Verwaltung) — beide erreichbar, nicht vermischt
   2. Der Zeitreise-Modus ist entweder vollstaendig spielbar oder alle Zeitreise-Einstiegspunkte sind aus der UI entfernt
   3. Alle sichtbaren UI-Labels sind auf Deutsch via t() — kein englischer Rohtext mehr im Interface
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 97-01-PLAN.md — Settings Sub-Tabs fuer Dozenten + Zeitreise-Frontend komplett entfernen
 - [ ] 97-02-PLAN.md — DE/EN Label-Mix bereinigen, alle sichtbaren Labels via t()
@@ -120,7 +120,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 96. UX-Navigation Struktur | 2/2 | Complete    | 2026-03-28 |
-| 97. Code-Hygiene & Settings | 1/2 | In Progress|  |
+| 97. Code-Hygiene & Settings | 2/2 | Complete   | 2026-03-28 |
 | 98. Simulator-Praxis-Sessions | 0/? | Not started | - |
 | 99. Student-Dashboard | 0/? | Not started | - |
 | 100. DevCloud-Integration & Leitner | 0/? | Not started | - |

@@ -14,7 +14,7 @@
 - [x] **NAV-04**: Oldschool-Karte in ArenaSelector führt zu einem funktionalen Screen oder ist entfernt
 - [x] **NAV-05**: Dozenten sehen PersonalSettings UND AdminSettings, nicht nur AdminSettings
 - [x] **NAV-06**: Zeitreise-Code ist entweder reaktiviert oder komplett entfernt (kein Dead Code)
-- [ ] **NAV-07**: DE/EN Label-Mix bereinigt — alle UI-Labels einheitlich deutsch via t(), neue Strings immer mit echten Umlauten (ä/ü/ö)
+- [x] **NAV-07**: DE/EN Label-Mix bereinigt — alle UI-Labels einheitlich deutsch via t(), neue Strings immer mit echten Umlauten (ä/ü/ö)
 
 ### Simulator-Upgrade
 
@@ -71,7 +71,7 @@
 | NAV-04 | Phase 96 | Complete |
 | NAV-05 | Phase 97 | Complete |
 | NAV-06 | Phase 97 | Complete |
-| NAV-07 | Phase 97 | Pending |
+| NAV-07 | Phase 97 | Complete |
 | SIM-01 | Phase 98 | Pending |
 | SIM-02 | Phase 98 | Pending |
 | SIM-03 | Phase 98 | Pending |

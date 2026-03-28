@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
 status: executing
-stopped_at: Completed 97-01-PLAN.md
-last_updated: "2026-03-28T11:56:32.934Z"
+stopped_at: Completed 97-02-PLAN.md
+last_updated: "2026-03-28T12:02:22.643Z"
 last_activity: 2026-03-28 — Plan 01 complete (Tab-Gruppierung + Abenteuer-Eigenstaendigkeit)
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0% (0/5 phases)
 - [Phase 96]: Sprint+Elimination share gameshow config key; visibleTabs watcher added as tab-fallback safety
 - [Phase 97]: Settings sub-tabs use course-sub-nav pattern for visual consistency
 - [Phase 97]: epoch-tokens.css import kept, backend Zeitreise cleanup deferred
+- [Phase 97]: MODE_MAP labels stay as const keys, this.t() applied in modeConfig computed
 
 ### Pending Todos
 
@@ -77,7 +78,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T11:56:32.931Z
-Stopped at: Completed 97-01-PLAN.md
+Last session: 2026-03-28T12:02:22.641Z
+Stopped at: Completed 97-02-PLAN.md
 Resume file: None
 Next action: Execute next plan in phase 96
