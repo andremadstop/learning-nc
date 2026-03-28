@@ -977,6 +977,11 @@
 		<CourseMaterials :course-id="courseId" :is-instructor="isInstructor" />
 	</div>
 
+	<!-- Knowledge Import Tab (instructor only) -->
+	<div v-if="currentTab === 'knowledge' && isInstructor" class="tab-content knowledge-section">
+		<CourseKnowledgeImport :course-id="courseId" :is-instructor="isInstructor" />
+	</div>
+
 	<!-- Feed Tab (both roles) -->
 	<div v-if="currentTab === 'feed'" class="tab-content">
 		<CourseFeed :course-id="courseId" />
@@ -1182,6 +1187,7 @@ import WissensturmMode from './WissensturmMode.vue'
 import LernwuerfelMode from './LernwuerfelMode.vue'
 import AbenteuerMode from './AbenteuerMode.vue'
 import CourseMaterials from './CourseMaterials.vue'
+import CourseKnowledgeImport from './CourseKnowledgeImport.vue'
 import CourseFeed from './CourseFeed.vue'
 import BuddyMatching from './BuddyMatching.vue'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
@@ -1210,6 +1216,7 @@ export default {
 		LernwuerfelMode,
 		AbenteuerMode,
 		CourseMaterials,
+		CourseKnowledgeImport,
 		CourseFeed,
 		BuddyMatching,
 	},
@@ -1423,6 +1430,7 @@ export default {
 					{ id: 'pools', label: t('learning', 'Pools'), group: 'Lernraum' },
 					{ id: 'curriculum', label: t('learning', 'Themen'), group: 'Lernraum' },
 					{ id: 'materials', label: t('learning', 'Materialien'), group: 'Lernraum' },
+					{ id: 'knowledge', label: t('learning', 'Wissen'), group: 'Lernraum' },
 					// Teilnehmer
 					{ id: 'members', label: t('learning', 'Members'), group: 'Teilnehmer' },
 					{ id: 'progress', label: t('learning', 'Progress'), group: 'Teilnehmer' },
