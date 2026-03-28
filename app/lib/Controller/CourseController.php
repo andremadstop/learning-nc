@@ -564,9 +564,19 @@ class CourseController extends Controller {
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 20, period: 60)]
-    public function updateModeConfig(int $courseId, array $modeConfig = []): DataResponse {
+    public function updateModeConfig(int $courseId, array $modeConfig = [], ?string $talkRoomToken = null, ?bool $leitnerSprint = null): DataResponse {
         try {
-            $config = $this->courseService->updateModeConfig($courseId, $this->userId, $modeConfig);
+            // Sanitize talkRoomToken: trim, max 255 chars, alphanumeric only (NC Talk tokens)
+            if ($talkRoomToken !== null) {
+                $talkRoomToken = substr(trim($talkRoomToken), 0, 255);
+                if ($talkRoomToken !== '' && !preg_match('/^[a-zA-Z0-9]+$/', $talkRoomToken)) {
+                    return new DataResponse(['error' => 'Invalid talk room token format'], Http::STATUS_BAD_REQUEST);
+                }
+                if ($talkRoomToken === '') {
+                    $talkRoomToken = null;
+                }
+            }
+            $config = $this->courseService->updateModeConfig($courseId, $this->userId, $modeConfig, $talkRoomToken, $leitnerSprint);
             return new DataResponse(['mode_config' => $config]);
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
             return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);

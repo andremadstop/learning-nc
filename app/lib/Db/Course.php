@@ -32,6 +32,10 @@ use OCP\AppFramework\Db\Entity;
  * @method void setMaterialFolder(?string $materialFolder)
  * @method string|null getEnabledTools()
  * @method void setEnabledTools(?string $enabledTools)
+ * @method string|null getTalkRoomToken()
+ * @method void setTalkRoomToken(?string $talkRoomToken)
+ * @method bool getLeitnerSprint()
+ * @method void setLeitnerSprint(bool $leitnerSprint)
  */
 class Course extends Entity {
     protected $title;
@@ -47,6 +51,8 @@ class Course extends Entity {
     protected $examRequiresTraining;
     protected $materialFolder;
     protected $enabledTools;
+    protected $talkRoomToken;
+    protected $leitnerSprint;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -55,6 +61,7 @@ class Course extends Entity {
         $this->addType('examAvailableFrom', 'integer');
         $this->addType('examAttemptsPerDay', 'integer');
         $this->addType('examRequiresTraining', 'boolean');
+        $this->addType('leitnerSprint', 'boolean');
     }
 
     public function jsonSerialize(): array {
@@ -73,6 +80,8 @@ class Course extends Entity {
             'exam_requires_training' => $this->examRequiresTraining ?? false,
             'material_folder' => $this->materialFolder,
             'enabled_tools' => $this->enabledTools !== null ? (json_decode($this->enabledTools, true) ?: []) : null,
+            'talk_room_token' => $this->talkRoomToken,
+            'leitner_sprint' => $this->leitnerSprint ?? false,
         ];
     }
 }

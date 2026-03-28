@@ -1885,7 +1885,7 @@ class CourseService {
      * Update the mode configuration for a course (instructor only).
      * $modeConfig keys: training, leitner, swipe, exam, duel, league (bool each)
      */
-    public function updateModeConfig(int $courseId, string $userId, array $modeConfig): array {
+    public function updateModeConfig(int $courseId, string $userId, array $modeConfig, ?string $talkRoomToken = null, ?bool $leitnerSprint = null): array {
         $course = $this->courseMapper->findById($courseId);
         if (!$this->isInstructorOfCourse($course, $userId)) {
             throw new ForbiddenException('Only instructors can update course mode config');
@@ -1898,6 +1898,15 @@ class CourseService {
         }
 
         $course->setModeConfig(json_encode($clean));
+
+        // Persist optional DevCloud integration fields
+        if ($talkRoomToken !== null) {
+            $course->setTalkRoomToken($talkRoomToken ?: null);
+        }
+        if ($leitnerSprint !== null) {
+            $course->setLeitnerSprint($leitnerSprint);
+        }
+
         $course->setUpdatedAt(time());
         $this->courseMapper->update($course);
 
