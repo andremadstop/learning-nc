@@ -8,6 +8,8 @@ import '@nextcloud/dialogs/style.css';
 import '../css/epoch-tokens.css';
 // Ghostline Quest visual takeover effects
 import './css/ghostline.css';
+// Skill-Map force-directed graph styles
+import './css/skill-map.css';
 
 Vue.config.productionTip = false;
 
