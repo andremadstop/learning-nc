@@ -1,5 +1,5 @@
 <template>
-  <div class="abenteuer-mode" data-lnc-theme="dark" data-lnc-skin="paper-circuits">
+  <div class="abenteuer-mode" :class="{ 'ghostline-mode': stateBag && stateBag.flags && stateBag.flags.ghostline_active }" data-lnc-theme="dark" data-lnc-skin="paper-circuits">
 
     <!-- ===== CAMPAIGN SELECT PHASE ===== -->
     <div v-if="phase === 'campaign-select'" class="ab-campaign-select">
@@ -1409,8 +1409,10 @@ export default {
 				this.sessionStats.skillChecksPassed++
 				this.skillChecksPassedThisRound++
 				this.skillCheckNpcState = 'celebrate'
+				this.$root.$emit('virtuprof:trigger', 'gameshow-answer-correct', { poolId: this.currentPoolId })
 			} else {
 				this.skillCheckNpcState = 'alert'
+				this.$root.$emit('virtuprof:trigger', 'gameshow-answer-wrong', { poolId: this.currentPoolId })
 			}
 			setTimeout(() => { this.skillCheckNpcState = 'idle' }, 2000)
 
