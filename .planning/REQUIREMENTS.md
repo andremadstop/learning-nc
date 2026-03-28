@@ -28,9 +28,9 @@
 
 ### Kurs-Feed
 
-- [ ] **FEED-01**: Dozent kann Ankuendigungen fuer einen Kurs posten
-- [ ] **FEED-02**: Studenten sehen Activity Stream mit Ankuendigungen und Meilensteinen
-- [ ] **FEED-03**: Feed zeigt automatisch neue Lerninhalte und Kurs-Fortschritt
+- [x] **FEED-01**: Dozent kann Ankuendigungen fuer einen Kurs posten
+- [x] **FEED-02**: Studenten sehen Activity Stream mit Ankuendigungen und Meilensteinen
+- [x] **FEED-03**: Feed zeigt automatisch neue Lerninhalte und Kurs-Fortschritt
 
 ### Skill-Map
 
@@ -76,9 +76,9 @@
 | VUE3-01 | Phase 93 | Complete |
 | VUE3-02 | Phase 93 | Complete |
 | VUE3-03 | Phase 93 | Complete |
-| FEED-01 | Phase 94 | Pending |
-| FEED-02 | Phase 94 | Pending |
-| FEED-03 | Phase 94 | Pending |
+| FEED-01 | Phase 94 | Complete |
+| FEED-02 | Phase 94 | Complete |
+| FEED-03 | Phase 94 | Complete |
 | SKILL-01 | Phase 95 | Pending |
 | SKILL-02 | Phase 95 | Pending |
 | SKILL-03 | Phase 95 | Pending |

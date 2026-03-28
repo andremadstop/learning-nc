@@ -108,9 +108,10 @@ Plans:
   1. Ein Dozent kann eine Ankuendigung fuer einen Kurs posten die alle eingeschriebenen Studenten im Feed sehen — der Dozent muss nicht jeden einzeln benachrichtigen
   2. Studenten sehen im Dashboard einen Feed mit Ankuendigungen und erreichten Meilensteinen (z.B. "Pool X freigeschaltet", "Neuer Lerninhalt verfuegbar") — alles Wichtige an einem Ort
   3. Neue Lerninhalte und Kurs-Fortschritt erscheinen automatisch im Feed ohne manuelles Zutun — der Feed ist lebendig auch wenn der Dozent nichts postet
-**Plans**: 1 plan
+**Plans**: 2 plans
 Plans:
-- [ ] 94-01-PLAN.md — [To be planned]
+- [ ] 94-01-PLAN.md — Backend: DB migration, FeedItem entity/mapper, FeedService, FeedController, route registration, CourseService hooks
+- [ ] 94-02-PLAN.md — Frontend: CourseFeed.vue component with feed tab in CourseDetail for students and instructors
 
 ### Phase 95: Skill-Map
 **Goal**: Studenten sehen ihre Kompetenzen als interaktiven Force-Graph der Staerken und Luecken auf einen Blick sichtbar macht
@@ -135,5 +136,5 @@ Phase 90 first (NOVA foundation). Phase 91 after 90. Phases 92-95 independent, c
 | 91. NOVA Visual Implementation | v13.0 | Complete    | 2026-03-27 | - |
 | 92. Ghostline Quest | 2/2 | Complete    | 2026-03-27 | - |
 | 93. Vue 3 Migration Evaluation | 1/1 | Complete    | 2026-03-28 | - |
-| 94. Kurs-Feed | v13.0 | 0/? | Not started | - |
+| 94. Kurs-Feed | 1/2 | In Progress|  | - |
 | 95. Skill-Map | v13.0 | 0/? | Not started | - |
