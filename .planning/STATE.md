@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v13.0
 milestone_name: Feature Expansion
-current_plan: 2 of 2
+current_plan: 1 of 2
 status: unknown
-stopped_at: Completed 94-02-PLAN.md
-last_updated: "2026-03-28T00:57:26.233Z"
-last_activity: 2026-03-28 — Phase 94 complete (Kurs-Feed Frontend + Backend)
+stopped_at: Completed 95-01-PLAN.md
+last_updated: "2026-03-28T08:03:55.118Z"
+last_activity: 2026-03-28 — Phase 95-01 complete (Skill-Map Backend + Engine + Renderer)
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 10
-  completed_plans: 6
+  total_plans: 12
+  completed_plans: 7
   percent: 75
 ---
 
@@ -22,13 +22,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** v13.0 Feature Expansion — Phase 94 (Kurs-Feed) complete
+**Current focus:** v13.0 Feature Expansion — Phase 95 (Skill-Map) in progress
 
 ## Current Position
 
-Phase: 94 of 95 (Kurs-Feed) — Phase complete
-Current Plan: 2 of 2
-Last activity: 2026-03-28 — Phase 94 complete (Kurs-Feed Frontend + Backend)
+Phase: 95 of 95 (Skill-Map) — Plan 01 complete
+Current Plan: 1 of 2
+Last activity: 2026-03-28 — Phase 95-01 complete (Skill-Map Backend + Engine + Renderer)
 
 Progress: [███████▌░░] 75%
 
@@ -51,6 +51,8 @@ Progress: [███████▌░░] 75%
 - [Phase 93]: Bedingtes Go fuer Vue 3 Migration — blockiert durch @nextcloud/vue 9.x; 70% Komponenten kompatibel, 30% anpassbar, 0% rewrite; vue-compat Strategie empfohlen
 - [Phase 94-01]: Feed API backend complete — FeedService injected into CourseService via DI, auto-feed hooks on createAnnouncement + addPool
 - [Phase 94-02]: Feed frontend complete — CourseFeed.vue with type icons/badges/relative times, Feed tab in CourseDetail for both roles, 22 Vitest tests
+- [Phase 95-01]: Skill-Map backend + engine + renderer — chain topology for intra-course links, course-based x-band clustering, enrichPoolsWithCourseData on LernprofilService
+- [Phase 95]: Chain topology for intra-course links, course-based x-band clustering via forceX, enrichPoolsWithCourseData as reusable service method
 
 ### Pending Todos
 
@@ -64,7 +66,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T00:55:20Z
-Stopped at: Completed 94-02-PLAN.md
+Last session: 2026-03-28T08:03:55.116Z
+Stopped at: Completed 95-01-PLAN.md
 Resume file: None
-Next action: Execute Phase 95 (next phase in milestone)
+Next action: Execute 95-02 (Skill-Map Vue Integration)
