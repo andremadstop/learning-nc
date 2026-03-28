@@ -443,6 +443,8 @@
 						<p v-else class="class-profile-empty">{{ t('learning', 'No upcoming exam dates in the next 180 days.') }}</p>
 					</div>
 				</div>
+
+				<BuddyMatching :course-id="courseId" />
 			</div>
 
 			<div v-if="isStudentLearningTab" class="student-learning-section">
@@ -980,6 +982,11 @@
 		<CourseFeed :course-id="courseId" />
 	</div>
 
+	<!-- Buddies Tab (students) -->
+	<div v-if="currentTab === 'buddies' && !isInstructor" class="tab-content">
+		<BuddyMatching :course-id="courseId" />
+	</div>
+
 		</template>
 
 		<!-- Add Pool Modal -->
@@ -1176,6 +1183,7 @@ import LernwuerfelMode from './LernwuerfelMode.vue'
 import AbenteuerMode from './AbenteuerMode.vue'
 import CourseMaterials from './CourseMaterials.vue'
 import CourseFeed from './CourseFeed.vue'
+import BuddyMatching from './BuddyMatching.vue'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 
 export default {
@@ -1203,6 +1211,7 @@ export default {
 		AbenteuerMode,
 		CourseMaterials,
 		CourseFeed,
+		BuddyMatching,
 	},
 
 	props: {
@@ -1443,6 +1452,7 @@ export default {
 			if (enabled('exam')) tabs.push({ id: 'exam', label: t('learning', 'Exam') })
 			tabs.push({ id: 'my-progress', label: t('learning', 'Mein Fortschritt') })
 			tabs.push({ id: 'feed', label: t('learning', 'Feed') })
+			tabs.push({ id: 'buddies', label: t('learning', 'Lernpartner') })
 			tabs.push({ id: 'leaderboard', label: t('learning', 'Leaderboard') })
 			if (enabled('league')) tabs.push({ id: 'league', label: t('learning', 'Liga') })
 			if (this.hasEnabledArenaModes) tabs.push({ id: 'arena', label: t('learning', 'Arena') })
