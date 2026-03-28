@@ -176,6 +176,22 @@ Students can self-enroll in courses and see their progress across all assigned p
 3. Choose permission level (Read or Edit)
 4. Shared pools appear in the "Shared with me" tab
 
+### OCC Commands
+
+#### `learning:import-vault` — Import Obsidian Vault as RAG Knowledge Base
+
+Import Markdown files from an Obsidian vault into the RAG chunk database for AI-powered explanations.
+
+```bash
+php occ learning:import-vault --path=/data/my-vault --course-id=20
+```
+
+- Recursively processes all `*.md` files
+- Cleans Obsidian syntax (frontmatter, wikilinks, callouts, image embeds)
+- Splits into ~500-token chunks with sentence-boundary awareness
+- Idempotent: re-running deletes previous vault chunks for the same course
+- Existing CourseDocument-based chunks are preserved
+
 ## Requirements
 
 - Nextcloud 29, 30, or 31
