@@ -55,8 +55,9 @@ scripts/translation_json_to_sql.py
 scripts/e2e/
 scripts/test-api.sh
 
-# Docker (dev only)
+# Docker (dev only — except CI e2e)
 docker-compose*.yml
+!docker-compose.e2e.yml
 
 # App internals (keep in repo but not these)
 app/docs/API_CONTRACTS.md
