@@ -87,6 +87,11 @@
           </div>
         </div>
       </div>
+
+      <!-- Global Feed Section -->
+      <div class="dashboard-feed-section">
+        <GlobalFeed />
+      </div>
     </template>
   </div>
 </template>
@@ -96,6 +101,7 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import DailyChallengeCard from './DailyChallengeCard.vue'
+import GlobalFeed from './GlobalFeed.vue'
 
 export default {
   name: 'StudentDashboard',
@@ -103,6 +109,7 @@ export default {
   components: {
     NcLoadingIcon,
     DailyChallengeCard,
+    GlobalFeed,
   },
 
   data() {
@@ -483,6 +490,13 @@ export default {
 .link-btn:hover {
   border-color: var(--color-primary-element);
   background: color-mix(in srgb, var(--color-primary-element) 6%, var(--color-main-background));
+}
+
+/* Feed Section */
+.dashboard-feed-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
 }
 
 /* Responsive */
