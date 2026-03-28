@@ -889,7 +889,7 @@
 
 <script>
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import { translateVirtuProf, VIRTUPROF_LANGUAGE_OPTIONS } from '../utils/virtuprof-i18n.js'
+import { translateVirtuProf } from '../utils/virtuprof-i18n.js'
 
 export default {
   name: 'VirtuProfBubble',
@@ -1008,9 +1008,6 @@ export default {
   computed: {
     effectiveLanguage() {
       return this.language || 'de'
-    },
-    languageOptions() {
-      return VIRTUPROF_LANGUAGE_OPTIONS
     },
     textDirection() {
       return this.effectiveLanguage === 'ar' ? 'rtl' : 'ltr'

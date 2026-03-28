@@ -51,7 +51,6 @@
           @next="nextStep"
           @dismiss="dismiss"
           @action="handleAction"
-          @language-change="setLanguage"
           @update:ticketSubject="ticketSubject = $event"
           @update:ticketDraft="ticketDraft = $event"
           @chat-send="handleChatSend"
@@ -75,8 +74,6 @@ import OnboardingIntro from './OnboardingIntro.vue'
 import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
 import {
   detectVirtuProfLanguage,
-  normalizeVirtuProfLanguage,
-  persistVirtuProfLanguagePreference,
   translateVirtuProf,
 } from '../utils/virtuprof-i18n.js'
 import {
@@ -477,8 +474,7 @@ export default {
     },
     applyVirtuProfState(data = {}) {
       this.dismissedTriggers = Array.isArray(data.dismissed) ? data.dismissed : []
-      this.language = normalizeVirtuProfLanguage(data.language) || detectVirtuProfLanguage()
-      persistVirtuProfLanguagePreference(this.language)
+      this.language = detectVirtuProfLanguage()
       if (typeof data.enabled === 'boolean') {
         this.$emit('enabled-change', data.enabled)
       }
@@ -971,16 +967,6 @@ export default {
         })
       } catch (e) {
         // Best-effort — user can use manual button if this fails
-      }
-    },
-    async setLanguage(language) {
-      const normalized = normalizeVirtuProfLanguage(language) || detectVirtuProfLanguage()
-      this.language = normalized
-      persistVirtuProfLanguagePreference(normalized)
-      try {
-        await axios.put(generateUrl('/apps/learning/api/virtuprof/language'), { language: normalized })
-      } catch (e) {
-        // Local fallback already persisted.
       }
     },
     handleVoiceSettingsChanged(payload = {}) {
