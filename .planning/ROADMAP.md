@@ -121,9 +121,10 @@ Plans:
   1. Ein D3.js Force-directed Graph zeigt Kompetenz-Cluster als verbundene Nodes — der Student sieht welche Themengebiete zusammenhaengen und wie gross jedes Cluster ist
   2. Nodes faerben sich nach Lernfortschritt (rot = schwach, gelb = in Arbeit, gruen = gemeistert) — der Student erkennt auf einen Blick wo Luecken sind
   3. Ein Klick auf einen Node zeigt die zugehoerigen Karteikarten — der Student kann direkt aus der Map heraus schwache Bereiche gezielt ueben
-**Plans**: 1 plan
+**Plans**: 2 plans
 Plans:
-- [ ] 95-01-PLAN.md — [To be planned]
+- [ ] 95-01-PLAN.md — Backend endpoint + skillMapEngine.js (TDD) + skillMapRenderer.js + CSS
+- [ ] 95-02-PLAN.md — SkillMap.vue component + App.vue navigation integration + visual verification
 
 ## Progress
 
@@ -137,4 +138,4 @@ Phase 90 first (NOVA foundation). Phase 91 after 90. Phases 92-95 independent, c
 | 92. Ghostline Quest | 2/2 | Complete    | 2026-03-27 | - |
 | 93. Vue 3 Migration Evaluation | 1/1 | Complete    | 2026-03-28 | - |
 | 94. Kurs-Feed | 2/2 | Complete    | 2026-03-28 | - |
-| 95. Skill-Map | v13.0 | 0/? | Not started | - |
+| 95. Skill-Map | v13.0 | 0/2 | Not started | - |
