@@ -549,6 +549,28 @@ class VirtuProfController extends Controller {
             $this->chatMemoryService->saveExchange($this->userId, $message, $result['answer']);
         }
 
+        // RAG-TRANS: Extract deduplicated sources from RAG chunks
+        $ragSources = [];
+        if (!empty($ragContext['chunks'])) {
+            $seen = [];
+            foreach ($ragContext['chunks'] as $chunk) {
+                $file = $chunk['source_file'] ?? '';
+                $chapter = $chunk['chapter'] ?? null;
+                $key = $file . '|' . ($chapter ?? '');
+                if ($file !== '' && !isset($seen[$key])) {
+                    $seen[$key] = true;
+                    $source = ['source_file' => $file];
+                    if ($chapter !== null && $chapter !== '') {
+                        $source['chapter'] = $chapter;
+                    }
+                    $ragSources[] = $source;
+                }
+            }
+        }
+        if (!empty($ragSources)) {
+            $result['rag_sources'] = $ragSources;
+        }
+
         // All other outcomes (success, fallback, rate_limit, api_error, output_blocked) → HTTP 200
         // Frontend reads 'fallback' flag to trigger FAQ matcher when answer is null
         return new DataResponse($result);
