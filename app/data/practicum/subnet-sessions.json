@@ -1,0 +1,110 @@
+[
+  {
+    "id": "subnet-session-basics",
+    "simulatorType": "subnet",
+    "title": "Subnetting Grundlagen",
+    "description": "Netzadressen, Broadcasts und Host-Bereiche berechnen — die fundamentalen Faehigkeiten fuer jede Netzwerkarbeit.",
+    "steps": [
+      {
+        "stepId": "sub-bas-01",
+        "context": "Ein kleines Buero nutzt das Netz 192.168.10.0/26. Du musst Netzadresse, Broadcast und die Anzahl nutzbarer Hosts bestimmen.",
+        "explanation": "Ein /26-Netz hat 64 Adressen (2^6), davon 62 nutzbare Hosts. Netzadresse und Broadcast sind immer die erste und letzte Adresse im Block.",
+        "scenarioId": "subnet-easy-01"
+      },
+      {
+        "stepId": "sub-bas-02",
+        "context": "Das Server-Netz laeuft auf 10.1.4.0/27. Der Admin braucht Broadcast-Adresse, Host-Anzahl und Subnetzmaske fuer die Router-Konfiguration.",
+        "explanation": "Ein /27 ergibt 32 Adressen mit der Maske 255.255.255.224. Die Subnetzmaske wird oft in Dotted Decimal benoetigt, wenn CIDR-Notation nicht unterstuetzt wird.",
+        "scenarioId": "subnet-easy-02"
+      },
+      {
+        "stepId": "sub-bas-03",
+        "context": "Fuer das WLAN-Netz 172.16.8.0/25 soll ein DHCP-Pool eingerichtet werden. Dafuer brauchst du den ersten und letzten nutzbaren Host.",
+        "explanation": "Bei einem /25 (128 Adressen) ist der erste Host .1 und der letzte .126. Die .0 ist die Netzadresse, die .127 der Broadcast — beide gehoeren nicht in den DHCP-Pool.",
+        "scenarioId": "subnet-easy-03"
+      },
+      {
+        "stepId": "sub-bas-04",
+        "context": "Ein IoT-Segment nutzt 192.168.77.128/28. Wie viele Sensoren passen maximal in dieses Subnetz?",
+        "explanation": "Ein /28 bietet 16 Adressen, davon 14 nutzbare Hosts. Fuer IoT-Segmente sind kleine Subnetze ideal — sie begrenzen den Broadcast-Traffic und die Angriffsflaeche.",
+        "scenarioId": "subnet-easy-04"
+      },
+      {
+        "stepId": "sub-bas-05",
+        "context": "Ein WAN-Link zwischen zwei Routern nutzt 10.20.30.64/30. Wie viele Hosts sind moeglich und welche Maske wird verwendet?",
+        "explanation": "Ein /30 ist das klassische Punkt-zu-Punkt-Netz mit genau 2 nutzbaren Hosts — perfekt fuer Router-zu-Router-Verbindungen. Die Maske ist 255.255.255.252.",
+        "scenarioId": "subnet-easy-05"
+      }
+    ]
+  },
+  {
+    "id": "subnet-session-sizing",
+    "simulatorType": "subnet",
+    "title": "Netzwerk-Dimensionierung",
+    "description": "Das richtige Subnetz fuer eine gegebene Host-Anzahl waehlen — von kleinen Bueros bis zu grossen Campusnetzwerken.",
+    "steps": [
+      {
+        "stepId": "sub-size-01",
+        "context": "Ein kleines Buero hat 12 Clients und 1 Router-Interface. Du planst das Netz ab 192.168.50.0. Welche minimale Subnetzgroesse brauchst du?",
+        "explanation": "13 Hosts brauchen ein /28 (14 nutzbare Adressen). Ein /29 waere mit 6 Hosts zu klein. Immer aufrunden auf die naechste Zweierpotenz minus 2.",
+        "scenarioId": "praxis-easy-01"
+      },
+      {
+        "stepId": "sub-size-02",
+        "context": "Eine Berufsschule hat 15 Klassen mit je 29 PCs und 1 Router-Interface. Jede Klasse braucht ein eigenes Subnetz aus 192.168.0.0.",
+        "explanation": "30 Hosts pro Klasse brauchen ein /27 (30 nutzbare Adressen — passt genau). Ein /28 waere mit nur 14 Hosts zu klein.",
+        "scenarioId": "praxis-medium-01"
+      },
+      {
+        "stepId": "sub-size-03",
+        "context": "Ein Netzwerk fuer 253 PCs und 1 Router startet bei 192.168.30.0. Welches CIDR und welche Broadcast-Adresse?",
+        "explanation": "254 Hosts brauchen exakt ein /24. Das ist einer der wenigen Faelle, wo die Host-Anzahl genau der maximalen Kapazitaet entspricht.",
+        "scenarioId": "subnet-medium-01"
+      },
+      {
+        "stepId": "sub-size-04",
+        "context": "Ein Firmencampus braucht ein Netz fuer 509 PCs ab 172.16.0.0. Welches CIDR ist das kleinste passende?",
+        "explanation": "509 Hosts brauchen ein /22 (1022 nutzbare Adressen). Ein /23 bietet nur 510 — das passt knapp, aber ein /22 gibt Reserven fuer Wachstum.",
+        "scenarioId": "subnet-medium-03"
+      },
+      {
+        "stepId": "sub-size-05",
+        "context": "Ein Host hat die IP 10.1.2.67/20. Diese IP liegt nicht auf einer Netzgrenze. Bestimme die korrekte Netzadresse und den Broadcast.",
+        "explanation": "Bei einem /20 liegt die Netzgrenze alle 4096 Adressen. 10.1.2.67 liegt im Block 10.1.0.0/20. Die Berechnung erfordert Bitmaskierung — eine typische Pruefungsaufgabe.",
+        "scenarioId": "subnet-medium-04"
+      }
+    ]
+  },
+  {
+    "id": "subnet-session-vlsm",
+    "simulatorType": "subnet",
+    "title": "VLSM-Netzplanung",
+    "description": "Variable Length Subnet Masks einsetzen, um IP-Adressraum effizient auf unterschiedlich grosse Abteilungen aufzuteilen.",
+    "steps": [
+      {
+        "stepId": "sub-vlsm-01",
+        "context": "Ein /24-Netz (10.0.0.0) soll in zwei Teile geteilt werden: 100 Hosts und 50 Hosts. Welchen Prefix bekommt das groessere Subnetz?",
+        "explanation": "VLSM teilt von gross nach klein: 100 Hosts brauchen ein /25 (126 Hosts). Der Rest reicht fuer ein /26 (62 Hosts). Ohne VLSM muesste man beide gleich gross machen.",
+        "scenarioId": "vlsm-easy-01"
+      },
+      {
+        "stepId": "sub-vlsm-02",
+        "context": "Ein /24 (192.168.10.0) wird in vier gleich grosse Netze fuer je 20 Hosts aufgeteilt. Passt das?",
+        "explanation": "4 mal 20 Hosts brauchen je ein /27 (30 nutzbare Hosts). 4 x 32 = 128 Adressen — passt locker in ein /24 mit 256 Adressen.",
+        "scenarioId": "vlsm-easy-02"
+      },
+      {
+        "stepId": "sub-vlsm-03",
+        "context": "Ein /23-Netz (172.20.0.0) wird per VLSM aufgeteilt: App-Server 120 Hosts, Datenbank 60 Hosts, Management 30 Hosts.",
+        "explanation": "Groesstmoeglich zuerst: App braucht /25 (126), DB braucht /26 (62), Mgmt braucht /27 (30). Total: 128+64+32 = 224 von 512 verfuegbar.",
+        "scenarioId": "vlsm-medium-01"
+      },
+      {
+        "stepId": "sub-vlsm-04",
+        "context": "Ein Firmennetz 10.10.0.0/22 wird aufgeteilt: HR 60, Dev 60, Finance 60, Management 5, Drucker 10 Hosts. Passt alles rein?",
+        "explanation": "Drei /26 (je 64) + ein /28 (16) + ein /28 (16) = 192+16+16 = 224 Adressen. Das /22 hat 1024 — passt mit grossen Reserven.",
+        "scenarioId": "vlsm-hard-01"
+      }
+    ]
+  }
+]

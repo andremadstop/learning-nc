@@ -62,5 +62,31 @@
         "scenarioId": "icmp-external"
       }
     ]
+  },
+  {
+    "id": "fw-session-audit",
+    "simulatorType": "firewall",
+    "title": "Regelwerk-Audit",
+    "description": "Ein bestehendes Firewall-Regelwerk systematisch auf Schwachstellen und Fehlkonfigurationen pruefen.",
+    "steps": [
+      {
+        "stepId": "fw-aud-01",
+        "context": "Im jaehrlichen Security-Audit pruefst du die VPN-Regel. Der OpenVPN-Port 1194/UDP ist von ueberall erreichbar. Ist das korrekt konfiguriert?",
+        "explanation": "VPN-Ports muessen von aussen erreichbar sein — das ist korrekt. Die Einschraenkung auf den exakten Port (1194/UDP) und die Ziel-IP minimiert die Angriffsflaeche.",
+        "scenarioId": "vpn-udp"
+      },
+      {
+        "stepId": "fw-aud-02",
+        "context": "Die SSH-Regel erlaubt Zugriff nur aus dem Admin-Netz 10.0.1.0/24. Ein neuer Admin sitzt im Netz 10.0.2.0/24 und kommt nicht rein. Richtig so?",
+        "explanation": "Die Regel funktioniert wie gewuenscht — sie blockiert SSH von ausserhalb des Admin-Netzes. Der neue Admin braucht entweder VPN ins Admin-Netz oder eine Regel-Erweiterung.",
+        "scenarioId": "ssh-admin-net"
+      },
+      {
+        "stepId": "fw-aud-03",
+        "context": "Zum Abschluss pruefst du die DMZ-Isolation. Der DMZ-Webserver versucht auf den internen Fileserver zuzugreifen. Wird das blockiert?",
+        "explanation": "Die DMZ-zu-LAN-Deny-Regel ist eine der wichtigsten Sicherheitsmassnahmen. Wenn ein DMZ-Server kompromittiert wird, darf er nie als Sprungbrett ins interne Netz dienen.",
+        "scenarioId": "dmz-lan"
+      }
+    ]
   }
 ]

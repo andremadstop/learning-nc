@@ -36,5 +36,57 @@
         "scenarioId": "dns-spoofing"
       }
     ]
+  },
+  {
+    "id": "ws-session-attacks",
+    "simulatorType": "wireshark",
+    "title": "Angriffsindikatoren erkennen",
+    "description": "Verdaechtige Muster im Netzwerk-Traffic identifizieren — von DNS-Spoofing ueber Connection Resets bis zu Routing-Anomalien.",
+    "steps": [
+      {
+        "stepId": "ws-atk-01",
+        "context": "Im DNS-Traffic faellt auf, dass auf eine einzelne Query zwei verschiedene Antworten mit unterschiedlichen IPs eintreffen. Ein Angriff?",
+        "explanation": "Zwei DNS-Antworten auf eine Query mit unterschiedlichen IPs sind ein klassisches Zeichen fuer DNS-Spoofing. Der Angreifer versucht, schneller als der echte DNS-Server zu antworten.",
+        "scenarioId": "dns-spoofing"
+      },
+      {
+        "stepId": "ws-atk-02",
+        "context": "Waehrend einer Webanwendungs-Analyse bricht eine HTTP-Session ploetzlich ab. Im Capture erscheint ein RST-Flag. Ist das normal?",
+        "explanation": "Ein RST mitten in einer aktiven Session deutet auf eine Firewall-Intervention, einen Server-Absturz oder einen aktiven TCP-Reset-Angriff hin. Normales Beenden nutzt FIN.",
+        "scenarioId": "connection-reset"
+      },
+      {
+        "stepId": "ws-atk-03",
+        "context": "Ping-Tests zu einem externen Ziel liefern statt Echo-Replies nur 'TTL exceeded'-Meldungen. Was laeuft im Netzwerk schief?",
+        "explanation": "TTL exceeded in Kombination mit nie ankommenden Antworten deutet auf einen Routing-Loop hin. Die Pakete werden zwischen Routern hin- und hergeschickt bis TTL auf 0 faellt.",
+        "scenarioId": "ttl-exceeded"
+      }
+    ]
+  },
+  {
+    "id": "ws-session-diagnostics",
+    "simulatorType": "wireshark",
+    "title": "Verbindungsprobleme diagnostizieren",
+    "description": "TCP-Retransmissions, unbekannte Protokolle und Routing-Fehler anhand von Paketmitschnitten aufspueren.",
+    "steps": [
+      {
+        "stepId": "ws-diag-01",
+        "context": "Eine TCP-Verbindung wird aufgebaut, aber das SYN-Paket erscheint mehrfach im Capture mit identischer Sequenznummer. Was passiert?",
+        "explanation": "Wiederholte SYN-Pakete mit gleicher Sequenznummer sind Retransmissions. Der Client hat keine SYN-ACK erhalten — typisch fuer Paketverlust oder Firewall-Blocking.",
+        "scenarioId": "find-retransmission"
+      },
+      {
+        "stepId": "ws-diag-02",
+        "context": "Im Capture laeuft Traffic auf Port 8080. Dein Kollege ist sich unsicher, welcher Dienst dort laeuft. Welches Protokoll ist am wahrscheinlichsten?",
+        "explanation": "Port 8080 ist der klassische Alternative-HTTP-Port. Web-Proxies, Entwicklungsserver und Applikationsserver wie Tomcat nutzen ihn als Standardport.",
+        "scenarioId": "protocol-8080"
+      },
+      {
+        "stepId": "ws-diag-03",
+        "context": "Ein Monitoring-System zeigt erhoehte ICMP-Fehler. Im Capture findest du 'TTL exceeded'-Nachrichten von einem Router, der nicht das Ziel ist.",
+        "explanation": "TTL exceeded von einem Zwischenrouter zeigt, dass Pakete nicht ihr Ziel erreichen. Haeufigste Ursache: Routing-Loop oder ein Hop-Count-Limit, das fuer den Pfad zu niedrig ist.",
+        "scenarioId": "ttl-exceeded"
+      }
+    ]
   }
 ]
