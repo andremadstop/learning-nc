@@ -151,9 +151,11 @@
         </NcButton>
       </div>
 
-      <div class="audit-section">
+      <details class="audit-section">
+        <summary class="audit-summary">
+          <h3 class="audit-summary-title">{{ t('learning', 'Recent Audit Events') }} ({{ auditEvents.length }})</h3>
+        </summary>
         <div class="audit-header">
-          <h3>{{ t('learning', 'Recent Audit Events') }}</h3>
           <NcButton type="tertiary" @click="loadAudit">{{ t('learning', 'Refresh') }}</NcButton>
         </div>
         <div v-if="auditLoading" class="loading">
@@ -183,7 +185,7 @@
             </tr>
           </tbody>
         </table>
-      </div>
+      </details>
 
       <div class="ticket-section">
         <div class="audit-header">
@@ -534,6 +536,34 @@ export default {
 
 .audit-section {
   margin-top: 20px;
+}
+
+.audit-summary {
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audit-summary::-webkit-details-marker {
+  display: none;
+}
+
+.audit-summary::before {
+  content: '\25B6';
+  font-size: 0.7em;
+  transition: transform 0.2s;
+}
+
+details[open] > .audit-summary::before {
+  transform: rotate(90deg);
+}
+
+.audit-summary-title {
+  margin: 0;
+  display: inline;
 }
 
 .ticket-section {
