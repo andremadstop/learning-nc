@@ -258,6 +258,12 @@ return [
         ['name' => 'document#extract',     'url' => '/api/courses/{courseId}/documents/{documentId}/extract', 'verb' => 'POST'],
         ['name' => 'document#extractAll',  'url' => '/api/courses/{courseId}/documents/extract-all',         'verb' => 'POST'],
 
+        // RAG Knowledge Import (Instructor)
+        ['name' => 'rag_import#importText',     'url' => '/api/courses/{courseId}/knowledge/import-text',  'verb' => 'POST'],
+        ['name' => 'rag_import#importFile',     'url' => '/api/courses/{courseId}/knowledge/import-file',  'verb' => 'POST'],
+        ['name' => 'rag_import#listImported',   'url' => '/api/courses/{courseId}/knowledge',              'verb' => 'GET'],
+        ['name' => 'rag_import#deleteImported', 'url' => '/api/courses/{courseId}/knowledge/{title}',      'verb' => 'DELETE'],
+
         // Hack Through Time — Zeitreise (Phase 48)
         ['name' => 'hackThroughTime#listEpochs',      'url' => '/api/zeitreise/epochs',                              'verb' => 'GET'],
         ['name' => 'hackThroughTime#getUserProgress',  'url' => '/api/zeitreise/progress',                            'verb' => 'GET'],

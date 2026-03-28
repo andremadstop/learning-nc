@@ -142,4 +142,53 @@ class RagChunkMapper extends QBMapper {
             ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
         return $qb->executeStatement();
     }
+
+    /**
+     * Delete chunks by source file name, document ID, and course ID.
+     *
+     * Used for idempotent web imports: replace previous chunks for same title.
+     *
+     * @return int Number of affected rows
+     */
+    public function deleteBySourceFileAndDocumentIdAndCourseId(string $sourceFile, int $documentId, int $courseId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete($this->getTableName())
+            ->where($qb->expr()->eq('source_file', $qb->createNamedParameter($sourceFile)))
+            ->andWhere($qb->expr()->eq('document_id', $qb->createNamedParameter($documentId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        return $qb->executeStatement();
+    }
+
+    /**
+     * Find web-imported knowledge sources grouped by source file.
+     *
+     * Returns aggregated data (not entity mapping) for the instructor's overview.
+     *
+     * @return array<int, array{source_file: string, chunk_count: int, token_count: int, created_at: int}>
+     */
+    public function findWebImportsByCourseId(int $courseId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('source_file'))
+            ->addSelect($qb->createFunction('COUNT(*) AS chunk_count'))
+            ->addSelect($qb->createFunction('SUM(token_count) AS token_count'))
+            ->addSelect($qb->createFunction('MIN(created_at) AS created_at'))
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('document_id', $qb->createNamedParameter(-1, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->groupBy('source_file')
+            ->orderBy('created_at', 'DESC');
+
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+
+        return array_map(function (array $row): array {
+            return [
+                'source_file' => $row['source_file'],
+                'chunk_count' => (int) $row['chunk_count'],
+                'token_count' => (int) $row['token_count'],
+                'created_at' => (int) $row['created_at'],
+            ];
+        }, $rows);
+    }
 }
