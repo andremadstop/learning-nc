@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 100 — DevCloud-Integration & Leitner
-Plan: 01 complete (1/? plans)
+Plan: 02 complete (2/2 plans)
 Status: In progress
-Last activity: 2026-03-28 — Phase 100-01 complete (talk_room_token, leitner_sprint, buddy matching API)
+Last activity: 2026-03-28 — Phase 100-02 complete (Talk link, Materials tab, Sprint toggle, Werkzeuge filtering)
 
 Progress: [██████████] 100% (120/113 plans)
 
@@ -40,7 +40,7 @@ Progress: [██████████] 100% (120/113 plans)
 | 97 | Code-Hygiene & Settings | NAV-05, NAV-06, NAV-07 | Not started |
 | 98 | Simulator-Praxis-Sessions | SIM-01, SIM-02, SIM-03 | Complete (2/2 plans) |
 | 99 | Student-Dashboard | DASH-01, DASH-02, DASH-03 | Complete (2/2 plans) |
-| 100 | DevCloud-Integration & Leitner | DVCL-01, DVCL-02, DVCL-03, DVCL-04, LEIT-01 | In progress (1/? plans) |
+| 100 | DevCloud-Integration & Leitner | DVCL-01, DVCL-02, DVCL-03, DVCL-04, LEIT-01 | Complete (2/2 plans) |
 
 ## Accumulated Context
 
@@ -72,6 +72,9 @@ Progress: [██████████] 100% (120/113 plans)
 - [Phase 100]: isSprintPool() uses course_pools join rather than CourseMapper injection
 - [Phase 100]: Buddy matching filters private-visibility telos, sorted by topic overlap count
 - [Phase 100]: Sprint intervals 0/4h/12h/1d/2d for bootcamp courses
+- [Phase 100]: visibleToolsTabs hides disabled tools entirely per CONTEXT.md (not greyed out)
+- [Phase 100]: Materials tab gated on material_folder presence, not mode_config toggle
+- [Phase 100]: Talk link opens in new tab via /apps/spreed/#/call/{token}
 
 ### Pending Todos
 
@@ -90,7 +93,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T13:50:28Z
-Stopped at: Completed 100-01-PLAN.md
-Resume file: .planning/phases/100-devcloud-integration-leitner/100-01-SUMMARY.md
-Next action: Continue with phase 100 plan 02 (frontend integration).
+Last session: 2026-03-28T13:56:12Z
+Stopped at: Completed 100-02-PLAN.md
+Resume file: .planning/phases/100-devcloud-integration-leitner/100-02-SUMMARY.md
+Next action: Phase 100 complete. Deploy and verify on learning-dev.

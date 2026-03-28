@@ -119,7 +119,7 @@ Plans:
   3. Ein Buddy-Matching-Bereich zeigt wer im Kurs Hilfe anbietet und wer Hilfe sucht (basierend auf Telos help_offer/help_wanted)
   4. Im Werkzeuge-Tab werden nur die Simulatoren angezeigt die der aktive Kurs erlaubt — gesperrte Tools sind ausgeblendet oder als gesperrt markiert
   5. Dozent kann pro Kurs Sprint-Intervalle aktivieren (4h/12h/1d/2d) — bei aktivierten Sprint-Intervallen sehen Studenten das angepasste Wiederholungs-Timing
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 Plans:
 - [ ] 100-01-PLAN.md — Backend: DB-Migration, Course Entity, LeitnerService Sprint-Intervalle, Buddy-Matching API
 - [ ] 100-02-PLAN.md — Frontend: Talk-Link, Materialien-Tab Student, Werkzeuge-Filterung, Sprint-Toggle
@@ -133,4 +133,4 @@ Plans:
 | 97. Code-Hygiene & Settings | 2/2 | Complete    | 2026-03-28 |
 | 98. Simulator-Praxis-Sessions | 2/2 | Complete    | 2026-03-28 |
 | 99. Student-Dashboard | 2/2 | Complete    | 2026-03-28 |
-| 100. DevCloud-Integration & Leitner | 1/3 | In Progress|  |
+| 100. DevCloud-Integration & Leitner | 2/3 | In Progress|  |

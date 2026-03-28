@@ -31,9 +31,9 @@
 ### DevCloud-Integration
 
 - [x] **DVCL-01**: Kurs-Header enthält einen Link zum zugehörigen Talk-Raum
-- [ ] **DVCL-02**: Studenten sehen Kursmaterialien (read-only) als eigenen Tab
+- [x] **DVCL-02**: Studenten sehen Kursmaterialien (read-only) als eigenen Tab
 - [x] **DVCL-03**: Buddy-Matching zeigt wer Hilfe anbietet/sucht basierend auf Telos help_offer/help_wanted
-- [ ] **DVCL-04**: Werkzeuge-Tab respektiert kursbezogene Tool-Einschränkungen wenn ein Kurs aktiv ist
+- [x] **DVCL-04**: Werkzeuge-Tab respektiert kursbezogene Tool-Einschränkungen wenn ein Kurs aktiv ist
 
 ### Leitner-Optimierung
 
@@ -79,9 +79,9 @@
 | DASH-02 | Phase 99 | Complete |
 | DASH-03 | Phase 99 | Complete |
 | DVCL-01 | Phase 100 | Complete |
-| DVCL-02 | Phase 100 | Pending |
+| DVCL-02 | Phase 100 | Complete |
 | DVCL-03 | Phase 100 | Complete |
-| DVCL-04 | Phase 100 | Pending |
+| DVCL-04 | Phase 100 | Complete |
 | LEIT-01 | Phase 100 | Complete |
 
 **Coverage:**
