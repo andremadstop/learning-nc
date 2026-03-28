@@ -52,7 +52,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 - [x] **Phase 97: Code-Hygiene & Settings** — Settings aufsplitten, Zeitreise-Dead-Code entfernen, DE/EN Label-Mix bereinigen (completed 2026-03-28)
 - [x] **Phase 98: Simulator-Praxis-Sessions** — Gefuehrte Schritt-fuer-Schritt-Sessions mit realen Szenarien und sichtbarem Fortschritt (completed 2026-03-28)
 - [x] **Phase 99: Student-Dashboard** — Heute-Startscreen mit SmartQueue, globaler Feed aus allen Kursen, direkte Pool-Navigation (completed 2026-03-28)
-- [ ] **Phase 100: DevCloud-Integration & Leitner** — Talk-Shortcut, Kursmaterialien-Tab, Buddy-Matching, Tool-Einschraenkungen, Sprint-Intervalle
+- [x] **Phase 100: DevCloud-Integration & Leitner** — Talk-Shortcut, Kursmaterialien-Tab, Buddy-Matching, Tool-Einschraenkungen, Sprint-Intervalle (completed 2026-03-28)
 
 ## Phase Details
 
@@ -119,7 +119,7 @@ Plans:
   3. Ein Buddy-Matching-Bereich zeigt wer im Kurs Hilfe anbietet und wer Hilfe sucht (basierend auf Telos help_offer/help_wanted)
   4. Im Werkzeuge-Tab werden nur die Simulatoren angezeigt die der aktive Kurs erlaubt — gesperrte Tools sind ausgeblendet oder als gesperrt markiert
   5. Dozent kann pro Kurs Sprint-Intervalle aktivieren (4h/12h/1d/2d) — bei aktivierten Sprint-Intervallen sehen Studenten das angepasste Wiederholungs-Timing
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 Plans:
 - [ ] 100-01-PLAN.md — Backend: DB-Migration, Course Entity, LeitnerService Sprint-Intervalle, Buddy-Matching API
 - [ ] 100-02-PLAN.md — Frontend: Talk-Link, Materialien-Tab Student, Werkzeuge-Filterung, Sprint-Toggle
@@ -133,4 +133,4 @@ Plans:
 | 97. Code-Hygiene & Settings | 2/2 | Complete    | 2026-03-28 |
 | 98. Simulator-Praxis-Sessions | 2/2 | Complete    | 2026-03-28 |
 | 99. Student-Dashboard | 2/2 | Complete    | 2026-03-28 |
-| 100. DevCloud-Integration & Leitner | 2/3 | In Progress|  |
+| 100. DevCloud-Integration & Leitner | 3/3 | Complete   | 2026-03-28 |

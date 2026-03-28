@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
-status: completed
-stopped_at: Phase 100 context gathered
-last_updated: "2026-03-28T13:37:08.011Z"
-last_activity: 2026-03-28 — Phase 99-02 complete (GlobalFeed + course badges + pagination)
+status: executing
+stopped_at: Completed 100-03-PLAN.md
+last_updated: "2026-03-28T14:03:54.055Z"
+last_activity: 2026-03-28 — Phase 100-02 complete (Talk link, Materials tab, Sprint toggle, Werkzeuge filtering)
 progress:
   total_phases: 5
-  completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 5
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 ## Current Position
 
 Phase: 100 — DevCloud-Integration & Leitner
-Plan: 02 complete (2/2 plans)
-Status: In progress
-Last activity: 2026-03-28 — Phase 100-02 complete (Talk link, Materials tab, Sprint toggle, Werkzeuge filtering)
+Plan: 03 complete (3/3 plans)
+Status: Complete
+Last activity: 2026-03-28 — Phase 100-03 complete (BuddyMatching component + CourseDetail integration)
 
-Progress: [██████████] 100% (120/113 plans)
+Progress: [██████████] 100% (122/115 plans)
 
 ## Phase Overview
 
@@ -40,7 +40,7 @@ Progress: [██████████] 100% (120/113 plans)
 | 97 | Code-Hygiene & Settings | NAV-05, NAV-06, NAV-07 | Not started |
 | 98 | Simulator-Praxis-Sessions | SIM-01, SIM-02, SIM-03 | Complete (2/2 plans) |
 | 99 | Student-Dashboard | DASH-01, DASH-02, DASH-03 | Complete (2/2 plans) |
-| 100 | DevCloud-Integration & Leitner | DVCL-01, DVCL-02, DVCL-03, DVCL-04, LEIT-01 | Complete (2/2 plans) |
+| 100 | DevCloud-Integration & Leitner | DVCL-01, DVCL-02, DVCL-03, DVCL-04, LEIT-01 | Complete (3/3 plans) |
 
 ## Accumulated Context
 
@@ -75,6 +75,8 @@ Progress: [██████████] 100% (120/113 plans)
 - [Phase 100]: visibleToolsTabs hides disabled tools entirely per CONTEXT.md (not greyed out)
 - [Phase 100]: Materials tab gated on material_folder presence, not mode_config toggle
 - [Phase 100]: Talk link opens in new tab via /apps/spreed/#/call/{token}
+- [Phase 100]: Lernpartner tab after Feed before Leaderboard in student tabs
+- [Phase 100]: Instructors see buddy matches in Klassen-Profil (no separate tab)
 
 ### Pending Todos
 
@@ -93,7 +95,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T13:56:12Z
-Stopped at: Completed 100-02-PLAN.md
-Resume file: .planning/phases/100-devcloud-integration-leitner/100-02-SUMMARY.md
+Last session: 2026-03-28T14:03:54.051Z
+Stopped at: Completed 100-03-PLAN.md
+Resume file: None
 Next action: Phase 100 complete. Deploy and verify on learning-dev.
