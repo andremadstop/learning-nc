@@ -660,6 +660,7 @@
 			<div v-if="currentTab === 'arena'" class="arena-section">
 				<ArenaSelector
 					v-if="arenaSubMode === null"
+					:modeConfig="course?.mode_config || {}"
 					@select-mode="onArenaSelectMode" />
 				<DuelMode
 					v-else-if="arenaSubMode === 'duel'"
@@ -1407,9 +1408,14 @@ export default {
 			tabs.push({ id: 'feed', label: t('learning', 'Feed') })
 			tabs.push({ id: 'leaderboard', label: t('learning', 'Leaderboard') })
 			if (enabled('league')) tabs.push({ id: 'league', label: t('learning', 'Liga') })
-			tabs.push({ id: 'arena', label: t('learning', 'Arena') })
+			if (this.hasEnabledArenaModes) tabs.push({ id: 'arena', label: t('learning', 'Arena') })
 			if (enabled('abenteuer')) tabs.push({ id: 'abenteuer', label: t('learning', 'Abenteuer') })
 			return tabs
+		},
+		hasEnabledArenaModes() {
+			const mc = this.course?.mode_config || {}
+			const enabled = (key) => mc[key] !== false
+			return enabled('duel') || enabled('gameshow') || enabled('oldschool')
 		},
 		activeLearningModeLabel() {
 			const labels = {
@@ -1485,6 +1491,11 @@ export default {
 	},
 
 	watch: {
+		visibleTabs(tabs) {
+			if (!tabs.find(t => t.id === this.currentTab)) {
+				this.currentTab = this.isInstructor ? 'pools' : 'training'
+			}
+		},
 		courseId: {
 			immediate: true,
 			handler(newId) {

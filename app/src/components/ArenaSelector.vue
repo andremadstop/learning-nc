@@ -17,36 +17,48 @@
 export default {
 	name: 'ArenaSelector',
 
+	props: {
+		modeConfig: {
+			type: Object,
+			default: () => ({}),
+		},
+	},
+
 	emits: ['select-mode'],
 
 	computed: {
 		cards() {
-			return [
+			const allCards = [
 				{
 					mode: 'duel',
+					configKey: 'duel',
 					icon: '⚔️',
 					title: t('learning', 'Duell (1v1)'),
 					desc: t('learning', 'Fordere einen Mitspieler zum direkten Duell heraus.'),
 				},
 				{
 					mode: 'sprint',
+					configKey: 'gameshow',
 					icon: '⚡',
 					title: t('learning', 'Sprint (2–5)'),
 					desc: t('learning', 'Schnellster korrekter Antwortgeber gewinnt.'),
 				},
 				{
 					mode: 'elimination',
+					configKey: 'gameshow',
 					icon: '💀',
 					title: t('learning', 'Elimination (2–5)'),
 					desc: t('learning', 'Falsche Antwort kostet ein Leben — wer zuletzt steht, gewinnt.'),
 				},
 				{
 					mode: 'oldschool',
+					configKey: 'oldschool',
 					icon: '🎲',
 					title: t('learning', 'Oldschool'),
 					desc: t('learning', 'Lernwürfel und Wissensturm — klassische Brettspiel-Mechanik.'),
 				},
 			]
+			return allCards.filter(c => this.modeConfig[c.configKey] !== false)
 		},
 	},
 }
