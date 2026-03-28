@@ -9,6 +9,7 @@ parameters:
         - lib/Migration/
     scanDirectories:
         - vendor/nextcloud/ocp/
+        - /var/www/html/3rdparty/symfony/console/
     ignoreErrors:
         # NC DI injects null for userId in unauthenticated contexts
         - '#Parameter .* \$userId .* expects string, string\|null given#'
