@@ -66,7 +66,7 @@ Travel through 7 epochs of hacking history — from 1960s Phone Phreaking to Qua
 - Optional: Google Gemini API key for AI features
     ]]></description>
 
-    <version>3.3.0</version>
+    <version>3.4.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>

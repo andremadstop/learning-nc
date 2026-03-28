@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.4.0] - 2026-03-28
+
+### Changed — UX-Navigation Struktur
+- **Instructor Tab Groups**: 17 instructor tabs organized into 5 logical groups (Lernraum, Teilnehmer, Kommunikation, Wettbewerb, Verwaltung) with visual separators.
+- **Abenteuer Standalone**: Adventure mode promoted from Arena sub-mode to its own CourseDetail tab, independently gatable via mode_config.
+- **Arena Submode Gating**: Each Arena mode (Duel, Gameshow, Oldschool) individually hideable per course rules. Arena tab disappears when all sub-modes disabled.
+
+### Changed — Code-Hygiene & Settings
+- **Settings Split**: Instructors now see two sub-tabs in Settings: "Kurs-Verwaltung" (admin) and "Meine Einstellungen" (personal). Students see only personal settings.
+- **Zeitreise Removed**: Removed 1270+ lines of dead Zeitreise/HackThroughTime frontend code (component, characters, navigation, mode_config key).
+- **German Labels**: All UI-visible labels now go through t() translation. ModeIdentityBanner labels localized.
+
+### Added — Simulator-Praxis-Sessions
+- **Practicum Engine**: Pure-JS state machine for guided session management with localStorage persistence and browser-reload recovery.
+- **11 Practicum Sessions**: Real-world IT scenarios across all 7 simulators (42 steps total). Firewall, DNS, and Routing get 2 sessions each.
+- **PracticumRunner UI**: New "Praxis" tab in every simulator with step-by-step instructions, context explanations, progress bar ("Schritt X von Y"), and score summary.
+
+### Added — Student Dashboard
+- **Heute Screen**: New default landing page for students with SmartQueue widget (due cards count + "Jetzt lernen"), Daily Challenge card, streak display, and daily progress.
+- **Global Feed**: Aggregates announcements from all enrolled courses chronologically with course-name badges and pagination.
+- **Pools Navigation**: Direct "Pools" tab in student main navigation — one click to PoolList.
+
+### Added — DevCloud Integration & Leitner
+- **Talk Room Link**: Instructors can set a Talk room token per course. Clickable link appears in course header, opens NC Talk in new tab.
+- **Materials for Students**: Students now see the Materialien tab (read-only) when a course has a material folder set.
+- **Buddy Matching**: New "Lernpartner" tab shows who can help with your topics and whom you can help, based on Telos help_offer/help_wanted data.
+- **Course-Aware Tools**: Werkzeuge tab filters simulators based on active course's enabled_tools. No course active = all tools visible.
+- **Sprint Intervals**: Instructors can activate sprint mode per course (4h/12h/1d/2d instead of 1d/3d/7d/14d Leitner intervals) for intensive courses.
+
+### Fixed
+- **Badge Duplicate Crash**: Session completion no longer fails with 400 when badge already exists. Fixed catch to use OCP\DB\Exception (NC 30 wraps Doctrine exceptions).
+
 ## [3.0.0] - 2026-03-24
 
 ### Added — Story RPG "Abenteuer" Mode

@@ -52,7 +52,6 @@ scripts/*.sql
 scripts/pbq/
 scripts/__pycache__/
 scripts/translation_json_to_sql.py
-scripts/e2e/
 scripts/test-api.sh
 
 # Docker (dev only — except CI e2e)
