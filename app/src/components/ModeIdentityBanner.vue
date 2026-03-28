@@ -32,6 +32,7 @@ const MODE_MAP = {
 	gameshow: { icon: '\uD83C\uDFAA', label: 'Gameshow' },
 	abenteuer: { icon: '\uD83D\uDDFA', label: 'Abenteuer' },
 }
+// Labels above are used as t() keys in modeConfig computed
 
 const FALLBACK_MODE = { icon: '\uD83D\uDCD6', label: '' }
 
@@ -61,7 +62,7 @@ export default {
 		modeConfig() {
 			const config = MODE_MAP[this.mode]
 			if (config) {
-				return config
+				return { ...config, label: this.t('learning', config.label) }
 			}
 			return { icon: FALLBACK_MODE.icon, label: this.mode }
 		},
