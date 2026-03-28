@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v13.0
 milestone_name: Feature Expansion
-current_plan: 1 of 2
-status: unknown
-stopped_at: Completed 95-01-PLAN.md
-last_updated: "2026-03-28T08:03:55.118Z"
-last_activity: 2026-03-28 — Phase 95-01 complete (Skill-Map Backend + Engine + Renderer)
+current_plan: 2 of 2
+status: complete
+stopped_at: Completed 95-02-PLAN.md
+last_updated: "2026-03-28T08:09:18.190Z"
+last_activity: 2026-03-28 — Phase 95 complete (Skill-Map Vue Integration)
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 12
-  completed_plans: 7
+  completed_plans: 8
   percent: 75
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-27)
 
 ## Current Position
 
-Phase: 95 of 95 (Skill-Map) — Plan 01 complete
-Current Plan: 1 of 2
-Last activity: 2026-03-28 — Phase 95-01 complete (Skill-Map Backend + Engine + Renderer)
+Phase: 95 of 95 (Skill-Map) — Phase complete
+Current Plan: 2 of 2
+Last activity: 2026-03-28 — Phase 95 complete (Skill-Map Vue Integration)
 
 Progress: [███████▌░░] 75%
 
@@ -53,6 +53,7 @@ Progress: [███████▌░░] 75%
 - [Phase 94-02]: Feed frontend complete — CourseFeed.vue with type icons/badges/relative times, Feed tab in CourseDetail for both roles, 22 Vitest tests
 - [Phase 95-01]: Skill-Map backend + engine + renderer — chain topology for intra-course links, course-based x-band clustering, enrichPoolsWithCourseData on LernprofilService
 - [Phase 95]: Chain topology for intra-course links, course-based x-band clustering via forceX, enrichPoolsWithCourseData as reusable service method
+- [Phase 95]: SkillMap.vue self-contained with D3 on instance properties, student-only nav tab, ResizeObserver for responsive graph
 
 ### Pending Todos
 
@@ -66,7 +67,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T08:03:55.116Z
-Stopped at: Completed 95-01-PLAN.md
+Last session: 2026-03-28T08:09:18.183Z
+Stopped at: Completed 95-02-PLAN.md
 Resume file: None
-Next action: Execute 95-02 (Skill-Map Vue Integration)
+Next action: Phase 95 complete — deploy and verify visually

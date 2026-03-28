@@ -36,7 +36,7 @@
 
 - [x] **SKILL-01**: D3.js Force-directed Graph zeigt Kompetenz-Cluster
 - [x] **SKILL-02**: Nodes faerben sich nach Lernfortschritt (rot→gelb→gruen)
-- [ ] **SKILL-03**: User kann in Node klicken um zugehoerige Karten zu sehen
+- [x] **SKILL-03**: User kann in Node klicken um zugehoerige Karten zu sehen
 
 ## Future Requirements
 
@@ -81,7 +81,7 @@
 | FEED-03 | Phase 94 | Complete |
 | SKILL-01 | Phase 95 | Complete |
 | SKILL-02 | Phase 95 | Complete |
-| SKILL-03 | Phase 95 | Pending |
+| SKILL-03 | Phase 95 | Complete |
 
 **Coverage:**
 - v13.0 requirements: 18 total
