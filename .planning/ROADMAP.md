@@ -136,5 +136,5 @@ Phase 90 first (NOVA foundation). Phase 91 after 90. Phases 92-95 independent, c
 | 91. NOVA Visual Implementation | v13.0 | Complete    | 2026-03-27 | - |
 | 92. Ghostline Quest | 2/2 | Complete    | 2026-03-27 | - |
 | 93. Vue 3 Migration Evaluation | 1/1 | Complete    | 2026-03-28 | - |
-| 94. Kurs-Feed | 2/2 | Complete   | 2026-03-28 | - |
+| 94. Kurs-Feed | 2/2 | Complete    | 2026-03-28 | - |
 | 95. Skill-Map | v13.0 | 0/? | Not started | - |

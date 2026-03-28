@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v13.0
 milestone_name: Feature Expansion
 current_plan: 2 of 2
-status: phase-complete
+status: unknown
 stopped_at: Completed 94-02-PLAN.md
-last_updated: "2026-03-28T00:55:20Z"
+last_updated: "2026-03-28T00:57:26.233Z"
 last_activity: 2026-03-28 — Phase 94 complete (Kurs-Feed Frontend + Backend)
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 8
+  total_plans: 10
   completed_plans: 6
   percent: 75
 ---
