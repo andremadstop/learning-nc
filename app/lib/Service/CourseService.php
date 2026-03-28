@@ -18,6 +18,7 @@ use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IUserManager;
+use OCA\Learning\Service\FeedService;
 use OCA\Learning\Service\NotFoundException;
 use OCA\Learning\Service\ForbiddenException;
 
@@ -44,6 +45,7 @@ class CourseService {
     private BadgeService $badgeService;
     private StreakService $streakService;
     private CurriculumScopeMapper $curriculumScopeMapper;
+    private FeedService $feedService;
 
     public function __construct(
         CourseMapper $courseMapper,
@@ -56,7 +58,8 @@ class CourseService {
         XpService $xpService,
         BadgeService $badgeService,
         StreakService $streakService,
-        CurriculumScopeMapper $curriculumScopeMapper
+        CurriculumScopeMapper $curriculumScopeMapper,
+        FeedService $feedService
     ) {
         $this->courseMapper = $courseMapper;
         $this->coursePoolMapper = $coursePoolMapper;
@@ -69,6 +72,7 @@ class CourseService {
         $this->badgeService = $badgeService;
         $this->streakService = $streakService;
         $this->curriculumScopeMapper = $curriculumScopeMapper;
+        $this->feedService = $feedService;
     }
 
     /**
@@ -828,7 +832,20 @@ class CourseService {
         $cp->setFilterChapterKey(null);
         $cp->setFilterQuestionIds(null);
 
-        return $this->coursePoolMapper->insert($cp);
+        $inserted = $this->coursePoolMapper->insert($cp);
+
+        // Auto-create feed item for pool addition
+        $poolName = $this->getPoolName($poolId);
+        $this->feedService->createAutoItem(
+            $courseId,
+            'pool_added',
+            'Neuer Fragenpool: ' . $poolName,
+            null,
+            $userId,
+            ['pool_id' => $poolId]
+        );
+
+        return $inserted;
     }
 
     /**
@@ -2426,6 +2443,9 @@ class CourseService {
             ]);
         $qb->executeStatement();
         $newId = $this->db->lastInsertId('oc_learning_course_announcements');
+
+        // Auto-create feed item for the announcement
+        $this->feedService->createAutoItem($courseId, 'announcement', $title, $body, $userId);
 
         return [
             'id' => (int)$newId,

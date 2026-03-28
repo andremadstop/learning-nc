@@ -152,6 +152,10 @@ return [
         ['name' => 'league#table', 'url' => '/api/courses/{courseId}/leagues/{id}/table', 'verb' => 'GET'],
         ['name' => 'league#cl', 'url' => '/api/courses/{courseId}/leagues/{id}/cl', 'verb' => 'GET'],
 
+        // Feed
+        ['name' => 'feed#index', 'url' => '/api/feed', 'verb' => 'GET'],
+        ['name' => 'feed#courseFeed', 'url' => '/api/courses/{courseId}/feed', 'verb' => 'GET'],
+
         // Course Management
         ['name' => 'course#role', 'url' => '/api/role', 'verb' => 'GET'],
         ['name' => 'course#index', 'url' => '/api/courses', 'verb' => 'GET'],
