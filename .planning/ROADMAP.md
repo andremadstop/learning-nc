@@ -48,7 +48,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 
 ### v3.4.0 UX-Konsolidierung & Simulator-Upgrade (Phases 96-100)
 
-- [ ] **Phase 96: UX-Navigation Struktur** — Dozent-Tabs gruppieren, Abenteuer aus Arena loesen, Kursregeln-Gating verdrahten, Oldschool-Karte fixen
+- [x] **Phase 96: UX-Navigation Struktur** — Dozent-Tabs gruppieren, Abenteuer aus Arena loesen, Kursregeln-Gating verdrahten, Oldschool-Karte fixen (completed 2026-03-28)
 - [ ] **Phase 97: Code-Hygiene & Settings** — Settings aufsplitten, Zeitreise-Dead-Code entfernen, DE/EN Label-Mix bereinigen
 - [ ] **Phase 98: Simulator-Praxis-Sessions** — Gefuehrte Schritt-fuer-Schritt-Sessions mit realen Szenarien und sichtbarem Fortschritt
 - [ ] **Phase 99: Student-Dashboard** — Heute-Startscreen mit SmartQueue, globaler Feed aus allen Kursen, direkte Pool-Navigation
@@ -65,7 +65,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
   2. Abenteuer erscheint als eigenstaendiger Lernmodus in der Navigation, nicht als Unterpunkt von Arena
   3. Ein Kurs mit deaktivierten Arena-Submodes zeigt Studenten diese Tabs nicht an (Kursregeln steuern Sichtbarkeit)
   4. Die Oldschool-Karte fuehrt zu einem funktionalen Screen oder der Einstiegspunkt ist entfernt
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 96-01-PLAN.md — Tab-Gruppierung Dozent + Abenteuer als eigenstaendiger Tab
 - [ ] 96-02-PLAN.md — Arena-Submode-Gating per Kursregeln + Oldschool-Pfad-Verifikation
@@ -116,7 +116,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 96. UX-Navigation Struktur | 1/2 | In Progress|  |
+| 96. UX-Navigation Struktur | 2/2 | Complete   | 2026-03-28 |
 | 97. Code-Hygiene & Settings | 0/? | Not started | - |
 | 98. Simulator-Praxis-Sessions | 0/? | Not started | - |
 | 99. Student-Dashboard | 0/? | Not started | - |

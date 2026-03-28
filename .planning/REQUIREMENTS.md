@@ -10,8 +10,8 @@
 
 - [x] **NAV-01**: Dozent-Tabs in CourseDetail sind in logische Gruppen organisiert (Lernraum, Teilnehmer, Kommunikation, Wettbewerb)
 - [x] **NAV-02**: Abenteuer ist als eigenständiger Lernmodus platziert, nicht unter Arena
-- [ ] **NAV-03**: Kursregeln (mode_config) steuern die sichtbaren Student-Tabs und Arena-Submodes korrekt
-- [ ] **NAV-04**: Oldschool-Karte in ArenaSelector führt zu einem funktionalen Screen oder ist entfernt
+- [x] **NAV-03**: Kursregeln (mode_config) steuern die sichtbaren Student-Tabs und Arena-Submodes korrekt
+- [x] **NAV-04**: Oldschool-Karte in ArenaSelector führt zu einem funktionalen Screen oder ist entfernt
 - [ ] **NAV-05**: Dozenten sehen PersonalSettings UND AdminSettings, nicht nur AdminSettings
 - [ ] **NAV-06**: Zeitreise-Code ist entweder reaktiviert oder komplett entfernt (kein Dead Code)
 - [ ] **NAV-07**: DE/EN Label-Mix bereinigt — alle UI-Labels einheitlich deutsch via t(), neue Strings immer mit echten Umlauten (ä/ü/ö)
@@ -67,8 +67,8 @@
 |-------------|-------|--------|
 | NAV-01 | Phase 96 | Complete |
 | NAV-02 | Phase 96 | Complete |
-| NAV-03 | Phase 96 | Pending |
-| NAV-04 | Phase 96 | Pending |
+| NAV-03 | Phase 96 | Complete |
+| NAV-04 | Phase 96 | Complete |
 | NAV-05 | Phase 97 | Pending |
 | NAV-06 | Phase 97 | Pending |
 | NAV-07 | Phase 97 | Pending |

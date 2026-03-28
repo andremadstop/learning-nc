@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
 status: executing
-stopped_at: Completed 96-01-PLAN.md
-last_updated: "2026-03-28T11:20:53.333Z"
+stopped_at: Completed 96-02-PLAN.md
+last_updated: "2026-03-28T11:24:57.679Z"
 last_activity: 2026-03-28 — Plan 01 complete (Tab-Gruppierung + Abenteuer-Eigenstaendigkeit)
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0% (0/5 phases)
 - Phase 96+97 gruppieren nach Komplexitaet: Struktur-Aenderungen (96) getrennt von Hygiene-Aenderungen (97)
 - Phase 100 haengt auch von Phase 96 ab (CourseDetail-Tab-Struktur muss vor Materialien-Tab stehen)
 - [Phase 96]: Tab groups: Lernraum > Teilnehmer > Kommunikation > Wettbewerb > Verwaltung; student tabs stay flat
+- [Phase 96]: Sprint+Elimination share gameshow config key; visibleTabs watcher added as tab-fallback safety
 
 ### Pending Todos
 
@@ -74,7 +75,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T11:20:53.331Z
-Stopped at: Completed 96-01-PLAN.md
+Last session: 2026-03-28T11:24:57.666Z
+Stopped at: Completed 96-02-PLAN.md
 Resume file: None
 Next action: Execute next plan in phase 96
