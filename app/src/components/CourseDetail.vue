@@ -699,12 +699,14 @@
 					:coursePools="coursePools"
 					:contentLanguage="contentLanguage"
 					@back="oldschoolSubMode = null" />
+			</div>
+			<!-- Abenteuer Tab (standalone, not inside Arena) -->
+			<div v-if="currentTab === 'abenteuer'" class="abenteuer-section">
 				<AbenteuerMode
-					v-else-if="arenaSubMode === 'abenteuer'"
 					:courseId="courseId"
 					:coursePools="coursePools"
 					:contentLanguage="contentLanguage"
-					@back="arenaSubMode = null" />
+					@back="currentTab = 'training'" />
 			</div>
 		<!-- Curriculum Scope Tab (instructor only) -->
 		<div v-if="currentTab === 'curriculum' && isInstructor" class="curriculum-section">
@@ -1389,6 +1391,7 @@ export default {
 					{ id: 'leaderboard', label: t('learning', 'Leaderboard'), group: 'Wettbewerb' },
 					{ id: 'league', label: t('learning', 'Liga'), group: 'Wettbewerb' },
 					{ id: 'arena', label: t('learning', 'Arena'), group: 'Wettbewerb' },
+					{ id: 'abenteuer', label: t('learning', 'Abenteuer'), group: 'Wettbewerb' },
 					// Verwaltung
 					{ id: 'mode-config', label: t('learning', 'Kursregeln'), group: 'Verwaltung' },
 				]
@@ -1405,6 +1408,7 @@ export default {
 			tabs.push({ id: 'leaderboard', label: t('learning', 'Leaderboard') })
 			if (enabled('league')) tabs.push({ id: 'league', label: t('learning', 'Liga') })
 			tabs.push({ id: 'arena', label: t('learning', 'Arena') })
+			if (enabled('abenteuer')) tabs.push({ id: 'abenteuer', label: t('learning', 'Abenteuer') })
 			return tabs
 		},
 		activeLearningModeLabel() {

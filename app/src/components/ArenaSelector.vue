@@ -46,12 +46,6 @@ export default {
 					title: t('learning', 'Oldschool'),
 					desc: t('learning', 'Lernwürfel und Wissensturm — klassische Brettspiel-Mechanik.'),
 				},
-				{
-					mode: 'abenteuer',
-					icon: '🗺️',
-					title: t('learning', 'Abenteuer'),
-					desc: t('learning', 'Interaktive Kampagnen mit Story, Simulatoren und Entscheidungen.'),
-				},
 			]
 		},
 	},
