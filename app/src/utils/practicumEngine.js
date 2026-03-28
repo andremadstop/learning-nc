@@ -12,6 +12,7 @@ import natSessions from '../../data/practicum/nat-sessions.json'
 import portscanSessions from '../../data/practicum/portscan-sessions.json'
 import wiresharkSessions from '../../data/practicum/wireshark-sessions.json'
 import authflowSessions from '../../data/practicum/authflow-sessions.json'
+import subnetSessions from '../../data/practicum/subnet-sessions.json'
 
 /**
  * Registry mapping simulator type keys to their session arrays.
@@ -25,6 +26,7 @@ export const PRACTICUM_SESSIONS = {
 	portscan: portscanSessions,
 	wireshark: wiresharkSessions,
 	authflow: authflowSessions,
+	subnet: subnetSessions,
 }
 
 /**

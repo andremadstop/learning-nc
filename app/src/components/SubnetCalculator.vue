@@ -1,6 +1,6 @@
 <template>
 	<section class="subnet-tool">
-		<header class="subnet-tool__header">
+		<header v-if="!isEmbedded" class="subnet-tool__header">
 			<div>
 				<p class="subnet-tool__eyebrow">{{ t('learning', 'CompTIA Network+ N10-009') }}</p>
 				<h2 class="subnet-tool__title">{{ t('learning', 'Subnetzrechner') }}</h2>
@@ -22,7 +22,7 @@
 			</div>
 		</header>
 
-		<nav class="subnet-tool__tabs" role="tablist" :aria-label="t('learning', 'Subnetzrechner Tabs')">
+		<nav v-if="!isEmbedded" class="subnet-tool__tabs" role="tablist" :aria-label="t('learning', 'Subnetzrechner Tabs')">
 			<button
 				v-for="tab in tabs"
 				:key="tab.id"
@@ -35,7 +35,7 @@
 			</button>
 		</nav>
 
-		<div v-if="!isPracticeTab" class="subnet-input-global">
+		<div v-if="!isEmbedded && !isPracticeTab" class="subnet-input-global">
 			<label class="subnet-label" for="subnet-calculator-input">{{ t('learning', 'IP/CIDR oder IP + Maske') }}</label>
 			<input
 				id="subnet-calculator-input"
@@ -549,10 +549,15 @@
 				</button>
 			</div>
 		</section>
+
+		<section v-if="isPracticumTab" class="subnet-panel" role="tabpanel">
+			<PracticumRunner simulator-type="subnet" />
+		</section>
 	</section>
 </template>
 
 <script>
+import PracticumRunner from './PracticumRunner.vue'
 import {
 	calculateSubnet,
 	ipToString,
@@ -602,6 +607,21 @@ function clonePort(port) {
 export default {
 	name: 'SubnetCalculator',
 
+	components: {
+		PracticumRunner,
+	},
+
+	props: {
+		mode: {
+			type: String,
+			default: 'standalone',
+		},
+		scenario: {
+			type: Object,
+			default: null,
+		},
+	},
+
 	data() {
 		return {
 			activeTab: 'calculator',
@@ -630,12 +650,16 @@ export default {
 	},
 
 	computed: {
+		isEmbedded() {
+			return this.mode === 'embedded'
+		},
 		isCalculatorTab() { return this.activeTab === 'calculator' },
 		isBinaryTab() { return this.activeTab === 'binary' },
 		isVlsmTab() { return this.activeTab === 'vlsm' },
 		isVlanTab() { return this.activeTab === 'vlan' },
 		isIpv6Tab() { return this.activeTab === 'ipv6' },
 		isPracticeTab() { return this.activeTab === 'practice' },
+		isPracticumTab() { return this.activeTab === 'practicum' },
 		tabs() {
 			return [
 				{ id: 'calculator', label: t('learning', 'Rechner') },
@@ -644,6 +668,7 @@ export default {
 				{ id: 'vlan', label: t('learning', 'VLAN') },
 				{ id: 'ipv6', label: t('learning', 'IPv6') },
 				{ id: 'practice', label: t('learning', 'Übung') },
+				{ id: 'practicum', label: t('learning', 'Praxis') },
 			]
 		},
 
@@ -948,6 +973,20 @@ export default {
 		},
 	},
 
+	watch: {
+		scenario(newScenario) {
+			if (newScenario && this.isEmbedded) {
+				this.loadEmbeddedScenario(newScenario)
+			}
+		},
+	},
+
+	created() {
+		if (this.scenario && this.isEmbedded) {
+			this.loadEmbeddedScenario(this.scenario)
+		}
+	},
+
 	methods: {
 		switchTab(id) {
 			this.$set(this.$data, 'activeTab', id)
@@ -1025,11 +1064,23 @@ export default {
 			}
 		},
 
+		loadEmbeddedScenario(scenario) {
+			this.activeTab = 'practice'
+			this.practiceStarted = true
+			// Wrap single scenario into a minimal session-like structure compatible with practiceEngine
+			this.practiceSession = createPracticeSession([scenario])
+			this.loadNextScenario()
+		},
+
 		submitPracticeAnswer() {
 			if (!this.practiceSession || !this.practiceSession.current) return
 			const results = checkAnswers(this.practiceSession.current.expectedAnswers, this.practiceUserAnswers)
 			this.practiceResults = results
 			submitAnswer(this.practiceSession, results)
+			if (this.isEmbedded && this.scenario) {
+				const allCorrect = results.every(r => r.correct)
+				this.$emit('result', { scenarioId: this.scenario.id, correct: allCorrect })
+			}
 		},
 
 		resetPractice() {

@@ -11,6 +11,7 @@ import natScenarios from '../../data/nat_scenarios.json'
 import portscanScenarios from '../../data/portscan_scenarios.json'
 import packetCaptures from '../../data/packet_captures.json'
 import authflowScenarios from '../../data/authflow_scenarios.json'
+import { SCENARIOS as subnetScenarios } from './scenarios.js'
 
 export const SIMULATOR_MAP = {
 	firewall: () => import('../components/FirewallBuilder.vue'),
@@ -21,6 +22,7 @@ export const SIMULATOR_MAP = {
 	wireshark: () => import('../components/WiresharkLite.vue'),
 	authflow: () => import('../components/AuthFlowSimulator.vue'),
 	terminal: () => import('../components/TerminalPuzzle.vue'),
+	subnet: () => import('../components/SubnetCalculator.vue'),
 }
 
 export const SCENARIOS = {
@@ -31,6 +33,7 @@ export const SCENARIOS = {
 	portscan: portscanScenarios,
 	wireshark: packetCaptures.scenarios,
 	authflow: authflowScenarios,
+	subnet: subnetScenarios,
 }
 
 /**
