@@ -1,0 +1,121 @@
+/* skill-map.css — Styles for the Skill-Map force-directed graph */
+
+.skill-map-container {
+	width: 100%;
+	min-height: 500px;
+	border-radius: 8px;
+	background: var(--color-main-background, #1a1a2e);
+	position: relative;
+	overflow: hidden;
+}
+
+.skill-map-container svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* Node circles */
+.skill-map-node {
+	cursor: pointer;
+	transition: filter 0.2s ease;
+}
+
+.skill-map-node:hover {
+	filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
+}
+
+.skill-map-node:hover .skill-map-node__circle {
+	stroke-width: 3;
+}
+
+/* Labels */
+.skill-map-label {
+	font-family: var(--font-face, sans-serif);
+	fill: var(--color-text-maxcontrast, #cccccc);
+	text-anchor: middle;
+	pointer-events: none;
+	user-select: none;
+}
+
+/* Links */
+.skill-map-link {
+	stroke: #cccccc;
+	stroke-opacity: 0.4;
+	pointer-events: none;
+}
+
+/* Trend indicators */
+.trend-up {
+	fill: #27ae60;
+}
+
+.trend-down {
+	fill: #e74c3c;
+}
+
+.trend-stable {
+	fill: #888888;
+}
+
+.skill-map-trend {
+	pointer-events: none;
+	user-select: none;
+	font-weight: bold;
+}
+
+/* Empty state */
+.skill-map-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 300px;
+	color: var(--color-text-maxcontrast, #888888);
+	font-size: 1.1em;
+	text-align: center;
+	padding: 2em;
+}
+
+/* Sidebar panel for pool detail on click */
+.skill-map-sidebar {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 300px;
+	max-width: 80%;
+	height: 100%;
+	background: var(--color-main-background, #1a1a2e);
+	border-left: 1px solid var(--color-border, #333);
+	padding: 1.5em;
+	overflow-y: auto;
+	transform: translateX(100%);
+	transition: transform 0.3s ease;
+	z-index: 10;
+}
+
+.skill-map-sidebar--open {
+	transform: translateX(0);
+}
+
+.skill-map-sidebar__close {
+	position: absolute;
+	top: 0.5em;
+	right: 0.5em;
+	background: none;
+	border: none;
+	color: var(--color-text-maxcontrast, #888);
+	font-size: 1.2em;
+	cursor: pointer;
+}
+
+/* Responsive: smaller viewports */
+@media (max-width: 768px) {
+	.skill-map-container {
+		min-height: 300px;
+	}
+
+	.skill-map-sidebar {
+		width: 100%;
+		max-width: 100%;
+	}
+}
