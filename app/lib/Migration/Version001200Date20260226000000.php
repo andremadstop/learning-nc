@@ -38,8 +38,8 @@ class Version001200Date20260226000000 extends SimpleMigrationStep {
         // 2. Composite index on learning_sessions(user_id, completed_at)
         if ($schema->hasTable('learning_sessions')) {
             $sessionsTable = $schema->getTable('learning_sessions');
-            if (!$sessionsTable->hasIndex('learn_sess_user_completed_idx')) {
-                $sessionsTable->addIndex(['user_id', 'completed_at'], 'learn_sess_user_completed_idx');
+            if (!$sessionsTable->hasIndex('learn_sess_usr_compl_idx')) {
+                $sessionsTable->addIndex(['user_id', 'completed_at'], 'learn_sess_usr_compl_idx');
             }
 
             // 3. Add time_limit_seconds column for Speed Demon badge

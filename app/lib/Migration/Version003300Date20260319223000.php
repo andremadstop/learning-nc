@@ -26,10 +26,10 @@ class Version003300Date20260319223000 extends SimpleMigrationStep {
             $table->addColumn('accepted_at', Types::BIGINT, ['notnull' => false, 'length' => 8]);
             $table->addColumn('responded_at', Types::BIGINT, ['notnull' => false, 'length' => 8]);
             $table->setPrimaryKey(['id']);
-            $table->addUniqueIndex(['duel_session_id'], 'learn_duel_invites_session_uidx');
-            $table->addIndex(['invitee_uid', 'status'], 'learn_duel_invites_invitee_idx');
-            $table->addIndex(['inviter_uid', 'status'], 'learn_duel_invites_inviter_idx');
-            $table->addIndex(['course_id', 'status'], 'learn_duel_invites_course_idx');
+            $table->addUniqueIndex(['duel_session_id'], 'learn_dinv_session_uidx');
+            $table->addIndex(['invitee_uid', 'status'], 'learn_dinv_invitee_idx');
+            $table->addIndex(['inviter_uid', 'status'], 'learn_dinv_inviter_idx');
+            $table->addIndex(['course_id', 'status'], 'learn_dinv_course_idx');
         }
 
         return $schema;

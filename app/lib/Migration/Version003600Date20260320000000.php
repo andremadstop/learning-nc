@@ -42,9 +42,9 @@ class Version003600Date20260320000000 extends SimpleMigrationStep {
         // Fix 1: Index on duel_invites.pool_id
         if ($schema->hasTable('learning_duel_invites')) {
             $table = $schema->getTable('learning_duel_invites');
-            if (!$table->hasIndex('learn_duel_invites_pool_idx')) {
-                $table->addIndex(['pool_id'], 'learn_duel_invites_pool_idx');
-                $output->info('Added index learn_duel_invites_pool_idx');
+            if (!$table->hasIndex('learn_dinv_pool_idx')) {
+                $table->addIndex(['pool_id'], 'learn_dinv_pool_idx');
+                $output->info('Added index learn_dinv_pool_idx');
                 $changed = true;
             }
         }

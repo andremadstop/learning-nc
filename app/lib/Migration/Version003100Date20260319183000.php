@@ -33,7 +33,7 @@ class Version003100Date20260319183000 extends SimpleMigrationStep {
             $table->setPrimaryKey(['id']);
             $table->addIndex(['user_id', 'updated_at'], 'learn_ticket_user_idx');
             $table->addIndex(['status', 'updated_at'], 'learn_ticket_status_idx');
-            $table->addIndex(['course_id', 'status'], 'learn_ticket_course_status_idx');
+            $table->addIndex(['course_id', 'status'], 'learn_tkt_crs_status_idx');
         }
 
         return $schema;

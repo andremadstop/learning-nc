@@ -45,7 +45,7 @@ class Version004900Date20260325000000 extends SimpleMigrationStep {
             $table->addColumn('joined_at', Types::BIGINT, ['notnull' => true]);
             $table->addColumn('last_heartbeat', Types::BIGINT, ['notnull' => true]);
             $table->setPrimaryKey(['id']);
-            $table->addUniqueIndex(['session_id', 'user_id'], 'lcoop_player_session_user_uidx');
+            $table->addUniqueIndex(['session_id', 'user_id'], 'lcoop_plyr_sess_usr_uidx');
             $table->addIndex(['session_id'], 'lcoop_player_session_idx');
             $table->addIndex(['user_id'], 'lcoop_player_user_idx');
             $changed = true;

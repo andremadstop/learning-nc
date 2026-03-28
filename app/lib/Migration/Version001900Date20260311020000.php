@@ -38,8 +38,8 @@ class Version001900Date20260311020000 extends SimpleMigrationStep {
 
         if ($schema->hasTable('learning_user_answers')) {
             $table = $schema->getTable('learning_user_answers');
-            if (!$table->hasIndex('learn_ua_session_question_idx')) {
-                $table->addIndex(['session_id', 'question_id'], 'learn_ua_session_question_idx');
+            if (!$table->hasIndex('learn_ua_sess_quest_idx')) {
+                $table->addIndex(['session_id', 'question_id'], 'learn_ua_sess_quest_idx');
             }
         }
 
@@ -73,8 +73,8 @@ class Version001900Date20260311020000 extends SimpleMigrationStep {
             if (!$table->hasColumn('reviewed_at')) {
                 $table->addColumn('reviewed_at', Types::BIGINT, ['notnull' => false, 'unsigned' => true]);
             }
-            if (!$table->hasIndex('learn_pool_review_status_idx')) {
-                $table->addIndex(['review_status'], 'learn_pool_review_status_idx');
+            if (!$table->hasIndex('learn_pool_rev_stat_idx')) {
+                $table->addIndex(['review_status'], 'learn_pool_rev_stat_idx');
             }
         }
 
