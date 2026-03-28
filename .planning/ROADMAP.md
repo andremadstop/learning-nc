@@ -67,8 +67,8 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
   4. Die Oldschool-Karte fuehrt zu einem funktionalen Screen oder der Einstiegspunkt ist entfernt
 **Plans:** 2/2 plans complete
 Plans:
-- [ ] 96-01-PLAN.md — Tab-Gruppierung Dozent + Abenteuer als eigenstaendiger Tab
-- [ ] 96-02-PLAN.md — Arena-Submode-Gating per Kursregeln + Oldschool-Pfad-Verifikation
+- [x] 96-01-PLAN.md — Tab-Gruppierung Dozent + Abenteuer als eigenstaendiger Tab
+- [x] 96-02-PLAN.md — Arena-Submode-Gating per Kursregeln + Oldschool-Pfad-Verifikation
 
 ### Phase 97: Code-Hygiene & Settings
 **Goal**: Die App hat keine totem Code-Pfade und alle UI-Texte sind konsistent deutsch
@@ -78,7 +78,10 @@ Plans:
   1. Dozenten sehen PersonalSettings (eigene Lerneinstellungen) UND AdminSettings (Kurs-Verwaltung) — beide erreichbar, nicht vermischt
   2. Der Zeitreise-Modus ist entweder vollstaendig spielbar oder alle Zeitreise-Einstiegspunkte sind aus der UI entfernt
   3. Alle sichtbaren UI-Labels sind auf Deutsch via t() — kein englischer Rohtext mehr im Interface
-**Plans**: TBD
+**Plans:** 1/2 plans executed
+Plans:
+- [ ] 97-01-PLAN.md — Settings Sub-Tabs fuer Dozenten + Zeitreise-Frontend komplett entfernen
+- [ ] 97-02-PLAN.md — DE/EN Label-Mix bereinigen, alle sichtbaren Labels via t()
 
 ### Phase 98: Simulator-Praxis-Sessions
 **Goal**: Simulatoren fuehren Lernende durch reale Szenarien statt ungeleitetes Klick-Training anzubieten
@@ -116,8 +119,8 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 96. UX-Navigation Struktur | 2/2 | Complete   | 2026-03-28 |
-| 97. Code-Hygiene & Settings | 0/? | Not started | - |
+| 96. UX-Navigation Struktur | 2/2 | Complete    | 2026-03-28 |
+| 97. Code-Hygiene & Settings | 1/2 | In Progress|  |
 | 98. Simulator-Praxis-Sessions | 0/? | Not started | - |
 | 99. Student-Dashboard | 0/? | Not started | - |
 | 100. DevCloud-Integration & Leitner | 0/? | Not started | - |

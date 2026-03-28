@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
 status: executing
-stopped_at: Completed 96-02-PLAN.md
-last_updated: "2026-03-28T11:24:57.679Z"
+stopped_at: Completed 97-01-PLAN.md
+last_updated: "2026-03-28T11:56:32.934Z"
 last_activity: 2026-03-28 — Plan 01 complete (Tab-Gruppierung + Abenteuer-Eigenstaendigkeit)
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 0
 ---
 
@@ -57,6 +57,8 @@ Progress: [░░░░░░░░░░] 0% (0/5 phases)
 - Phase 100 haengt auch von Phase 96 ab (CourseDetail-Tab-Struktur muss vor Materialien-Tab stehen)
 - [Phase 96]: Tab groups: Lernraum > Teilnehmer > Kommunikation > Wettbewerb > Verwaltung; student tabs stay flat
 - [Phase 96]: Sprint+Elimination share gameshow config key; visibleTabs watcher added as tab-fallback safety
+- [Phase 97]: Settings sub-tabs use course-sub-nav pattern for visual consistency
+- [Phase 97]: epoch-tokens.css import kept, backend Zeitreise cleanup deferred
 
 ### Pending Todos
 
@@ -75,7 +77,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T11:24:57.666Z
-Stopped at: Completed 96-02-PLAN.md
+Last session: 2026-03-28T11:56:32.931Z
+Stopped at: Completed 97-01-PLAN.md
 Resume file: None
 Next action: Execute next plan in phase 96
