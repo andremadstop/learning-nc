@@ -6,15 +6,33 @@
           <h2>{{ userRole === 'student' ? t('learning', 'Learning') : t('learning', 'Learning - Spaced Repetition') }}</h2>
         </div>
 
-        <!-- Top-level navigation: Kurse | Settings -->
+        <!-- Top-level navigation -->
         <div class="main-nav" role="tablist" @keydown="handleTablistKeydown">
           <button
-            :class="['main-nav-btn', { active: mainView === 'courses' || mainView === 'pools' }]"
+            v-if="userRole === 'student'"
+            :class="['main-nav-btn', { active: mainView === 'dashboard' }]"
             role="tab"
-            :aria-selected="(mainView === 'courses' || mainView === 'pools') ? 'true' : 'false'"
+            :aria-selected="mainView === 'dashboard' ? 'true' : 'false'"
+            @click="switchMainView('dashboard')"
+          >
+            {{ t('learning', 'Heute') }}
+          </button>
+          <button
+            :class="['main-nav-btn', { active: mainView === 'courses' }]"
+            role="tab"
+            :aria-selected="mainView === 'courses' ? 'true' : 'false'"
             @click="switchMainView('courses')"
           >
             {{ t('learning', 'Kurse') }}
+          </button>
+          <button
+            v-if="userRole === 'student'"
+            :class="['main-nav-btn', { active: mainView === 'pools' }]"
+            role="tab"
+            :aria-selected="mainView === 'pools' ? 'true' : 'false'"
+            @click="switchMainView('pools')"
+          >
+            {{ t('learning', 'Pools') }}
           </button>
           <button
             :class="['main-nav-btn', { active: mainView === 'werkzeuge' }]"
@@ -42,6 +60,15 @@
             {{ t('learning', 'Einstellungen') }}
           </button>
         </div>
+
+        <!-- ==================== DASHBOARD VIEW (Student) ==================== -->
+        <template v-if="mainView === 'dashboard'">
+          <StudentDashboard
+            @openSmartQueue="openSmartQueue"
+            @openRemediation="openRemediation"
+            @switchView="switchMainView"
+          />
+        </template>
 
         <!-- ==================== POOLS VIEW ==================== -->
         <template v-if="mainView === 'pools'">
@@ -345,6 +372,7 @@ import WiresharkLite from './components/WiresharkLite.vue';
 import AuthFlowSimulator from './components/AuthFlowSimulator.vue';
 import OnboardingIntro from './components/OnboardingIntro.vue';
 import SkillMap from './components/SkillMap.vue';
+import StudentDashboard from './components/StudentDashboard.vue';
 import { ALL_TOOL_IDS, TOOL_CATALOG } from './utils/toolCatalog.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
@@ -383,6 +411,7 @@ export default {
     AuthFlowSimulator,
     OnboardingIntro,
     SkillMap,
+    StudentDashboard,
   },
   data() {
     return {
@@ -600,6 +629,9 @@ export default {
       }
     },
     currentViewKey() {
+      if (this.mainView === 'dashboard') {
+        return 'view:dashboard';
+      }
       if (this.mainView === 'settings') {
         return 'view:settings';
       }
@@ -668,6 +700,11 @@ export default {
     },
     viewGuidePayload(viewKey) {
       const guides = {
+        'view:dashboard': {
+          title: t('learning', 'Dashboard'),
+          text: t('learning', 'Your daily learning overview: due cards, Daily Challenge, streak and quick links. Start your learning session from here.'),
+          shortText: t('learning', 'Daily overview with due cards, challenge and streak.'),
+        },
         'view:courses': {
           title: t('learning', 'Courses'),
           text: t('learning', 'Here you see all your courses. Select a course to open its learning modes. Courses can contain Training, Leitner, Exam and Arena.'),
@@ -892,6 +929,9 @@ export default {
       };
     },
     virtuprofContextPayload() {
+      if (this.mainView === 'dashboard') {
+        return { area: 'dashboard' };
+      }
       if (this.mainView === 'settings') {
         return { area: 'settings' };
       }
@@ -1020,7 +1060,10 @@ export default {
       } catch (err) {
         this.userRole = 'student';
       }
-      // Both students and instructors start on Kurse view
+      // Students start on Dashboard, instructors on Kurse
+      if (this.userRole === 'student') {
+        this.mainView = 'dashboard';
+      }
     },
 
     applyInitialAdventureRoute() {
