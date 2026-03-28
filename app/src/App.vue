@@ -291,16 +291,15 @@
 
         <!-- ==================== WERKZEUGE VIEW ==================== -->
         <template v-if="mainView === 'werkzeuge'">
-          <div v-if="toolsTabs.length" class="sim-nav" role="tablist" @keydown="handleTablistKeydown">
+          <div v-if="visibleToolsTabs.length" class="sim-nav" role="tablist" @keydown="handleTablistKeydown">
             <button
-              v-for="tab in toolsTabs"
+              v-for="tab in visibleToolsTabs"
               :key="tab.id"
-              :class="['sim-nav__item', { 'sim-nav__item--active': toolsView === tab.id, 'sim-nav__item--disabled': tab.disabled }]"
+              :class="['sim-nav__item', { 'sim-nav__item--active': toolsView === tab.id }]"
               role="tab"
               :aria-selected="toolsView === tab.id ? 'true' : 'false'"
               :aria-label="tab.label"
-              :disabled="tab.disabled"
-              @click="!tab.disabled && (toolsView = tab.id)"
+              @click="toolsView = tab.id"
             >
               <span class="sim-nav__icon" aria-hidden="true">{{ tab.icon }}</span>
               <span class="sim-nav__label">{{ tab.shortLabel }}</span>
@@ -475,7 +474,14 @@ export default {
       return this.appInitialized && this.virtuProfEnabled;
     },
     toolsTabs() {
-      const enabled = this.normalizeEnabledTools(this.enabledTools);
+      let enabled = this.normalizeEnabledTools(this.enabledTools);
+      // Course-level tool restriction for students
+      if (this.userRole === 'student' && this.selectedCourse?.enabled_tools) {
+        const courseTools = this.selectedCourse.enabled_tools;
+        if (Array.isArray(courseTools)) {
+          enabled = enabled.filter(toolId => courseTools.includes(toolId));
+        }
+      }
       return TOOL_CATALOG
         .map((tool) => ({
           id: tool.id,
@@ -484,6 +490,9 @@ export default {
           icon: tool.icon,
           disabled: !enabled.includes(tool.id),
         }));
+    },
+    visibleToolsTabs() {
+      return this.toolsTabs.filter(t => !t.disabled);
     },
     modeDescriptions() {
       return {
@@ -557,13 +566,13 @@ export default {
       this.ensureActiveToolVisible();
     },
     ensureActiveToolVisible() {
-      const enabled = this.normalizeEnabledTools(this.enabledTools);
-      if (enabled.length === 0) {
+      const visible = this.visibleToolsTabs;
+      if (visible.length === 0) {
         this.toolsView = '';
         return;
       }
-      if (!enabled.includes(this.toolsView)) {
-        this.toolsView = enabled[0];
+      if (!visible.find(t => t.id === this.toolsView)) {
+        this.toolsView = visible[0].id;
       }
     },
     async fetchPersonalSettings() {
