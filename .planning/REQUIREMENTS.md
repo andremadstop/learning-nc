@@ -25,7 +25,7 @@
 ### Student-Dashboard
 
 - [x] **DASH-01**: Student sieht einen "Heute"-Startscreen mit SmartQueue, Daily Challenge und Streak
-- [ ] **DASH-02**: Globaler Feed aggregiert Ankündigungen aus allen eingeschriebenen Kursen
+- [x] **DASH-02**: Globaler Feed aggregiert Ankündigungen aus allen eingeschriebenen Kursen
 - [x] **DASH-03**: Pool-Ebene (PoolList) ist direkt über Navigation erreichbar, nicht nur indirekt
 
 ### DevCloud-Integration
@@ -76,7 +76,7 @@
 | SIM-02 | Phase 98 | Complete |
 | SIM-03 | Phase 98 | Complete |
 | DASH-01 | Phase 99 | Complete |
-| DASH-02 | Phase 99 | Pending |
+| DASH-02 | Phase 99 | Complete |
 | DASH-03 | Phase 99 | Complete |
 | DVCL-01 | Phase 100 | Pending |
 | DVCL-02 | Phase 100 | Pending |
