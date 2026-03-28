@@ -36,5 +36,31 @@
         "scenarioId": "hairpin"
       }
     ]
+  },
+  {
+    "id": "nat-session-troubleshooting",
+    "simulatorType": "nat",
+    "title": "NAT-Probleme diagnostizieren",
+    "description": "Typische NAT-Fehler im Firmennetz systematisch eingrenzen — vom erschoepften Pool bis zum vergessenen Hairpin.",
+    "steps": [
+      {
+        "stepId": "nat-ts-01",
+        "context": "Der 11. Mitarbeiter meldet: 'Ich komme nicht ins Internet.' Die ersten 10 surfen problemlos. Der Dynamic-NAT-Pool hat nur eine oeffentliche IP.",
+        "explanation": "Ein Dynamic-NAT-Pool mit nur einer IP kann auch nur einen Client gleichzeitig bedienen. PAT (Port Address Translation) waere die Loesung fuer viele Clients mit einer IP.",
+        "scenarioId": "dynamic-pool-full"
+      },
+      {
+        "stepId": "nat-ts-02",
+        "context": "Das Security-Team untersucht einen Vorfall und muss herausfinden, welcher interne Client hinter einem bestimmten externen Port-Mapping steckt.",
+        "explanation": "Die PAT-Tabelle ist das zentrale Werkzeug fuer Forensik und Troubleshooting bei NAT. Jeder interne Client bekommt einen eindeutigen Port auf der oeffentlichen IP.",
+        "scenarioId": "pat-port-owner"
+      },
+      {
+        "stepId": "nat-ts-03",
+        "context": "Ein Mitarbeiter versucht den Firmen-Webserver ueber seine oeffentliche IP 203.0.113.30 zu erreichen — von seinem internen PC aus. Die Verbindung schlaegt fehl.",
+        "explanation": "Ohne Hairpin-NAT (NAT Reflection) koennen interne Clients eigene Server nicht ueber die externe IP erreichen. Der Router muss die Ziel-IP zurueck auf die interne umschreiben.",
+        "scenarioId": "hairpin"
+      }
+    ]
   }
 ]
