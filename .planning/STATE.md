@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
-status: executing
-stopped_at: Completed 98-02-PLAN.md
-last_updated: "2026-03-28T12:38:14.380Z"
+status: completed
+stopped_at: Phase 99 context gathered
+last_updated: "2026-03-28T13:03:59.739Z"
 last_activity: 2026-03-28 — Phase 98 complete (PracticumRunner UI + Praxis Tab in all 7 simulators)
 progress:
   total_phases: 5
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 ## Current Position
 
-Phase: 98 — Simulator-Praxis-Sessions (complete)
-Plan: 02 complete (2/2)
-Status: Phase 98 complete
-Last activity: 2026-03-28 — Phase 98 complete (PracticumRunner UI + Praxis Tab in all 7 simulators)
+Phase: 99 — Student-Dashboard
+Plan: 01 complete (1/1)
+Status: Phase 99 plan 01 complete
+Last activity: 2026-03-28 — Phase 99-01 complete (StudentDashboard + DailyChallengeCard + Nav wiring)
 
-Progress: [██████████] 100% (116/110 plans)
+Progress: [██████████] 100% (117/111 plans)
 
 ## Phase Overview
 
@@ -39,7 +39,7 @@ Progress: [██████████] 100% (116/110 plans)
 | 96 | UX-Navigation Struktur | NAV-01, NAV-02, NAV-03, NAV-04 | In progress (1/? plans) |
 | 97 | Code-Hygiene & Settings | NAV-05, NAV-06, NAV-07 | Not started |
 | 98 | Simulator-Praxis-Sessions | SIM-01, SIM-02, SIM-03 | Complete (2/2 plans) |
-| 99 | Student-Dashboard | DASH-01, DASH-02, DASH-03 | Not started |
+| 99 | Student-Dashboard | DASH-01, DASH-02, DASH-03 | In progress (1/? plans) |
 | 100 | DevCloud-Integration & Leitner | DVCL-01, DVCL-02, DVCL-03, DVCL-04, LEIT-01 | Not started |
 
 ## Accumulated Context
@@ -64,6 +64,9 @@ Progress: [██████████] 100% (116/110 plans)
 - [Phase 98]: Session steps reference existing scenarioIds from *_scenarios.json (zero duplication)
 - [Phase 98]: PracticumRunner uses SimulatorShell for embedded rendering per step
 - [Phase 98]: Context panel collapsible, v-else changed to v-else-if in all 7 simulators
+- [Phase 99]: DailyChallengeCard self-contained (no props) — loads own data like PoolList did
+- [Phase 99]: Student default view = dashboard (set after fetchRole), Pools = separate nav tab
+- [Phase 99]: Dashboard two-column layout 65/35 with widget-card pattern from InstructorDashboard
 
 ### Pending Todos
 
@@ -78,11 +81,11 @@ None yet.
 ## Performance Metrics
 
 - v13.0: 6 phases, 12 plans, 19 feature commits
-- Test coverage: 549+ Vitest, PHPStan Level 5, 67 Playwright Checks
+- Test coverage: 604 Vitest (39 suites), PHPStan Level 5, 67 Playwright Checks
 
 ## Session Continuity
 
-Last session: 2026-03-28T12:38:14.365Z
-Stopped at: Completed 98-02-PLAN.md
-Resume file: None
-Next action: Execute next plan in phase 96
+Last session: 2026-03-28T13:19:43Z
+Stopped at: Completed 99-01-PLAN.md
+Resume file: .planning/phases/99-student-dashboard/99-01-SUMMARY.md
+Next action: Plan or execute next plan in phase 99 or proceed to phase 100

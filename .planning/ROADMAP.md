@@ -104,7 +104,10 @@ Plans:
   1. Ein Student der sich einloggt sieht sofort einen "Heute"-Screen mit faelligen Karten (SmartQueue), der Daily Challenge und dem aktuellen Streak
   2. Der globale Feed zeigt Ankuendigungen aus allen Kursen in denen der Student eingeschrieben ist — chronologisch, ohne Kurs wechseln zu muessen
   3. Pool-Liste ist direkt ueber die Hauptnavigation erreichbar (ein Klick vom Dashboard) — kein indirekter Umweg noetig
-**Plans**: TBD
+**Plans:** 1/2 plans executed
+Plans:
+- [ ] 99-01-PLAN.md — StudentDashboard + DailyChallengeCard + Navigation mit Dashboard/Pools
+- [ ] 99-02-PLAN.md — GlobalFeed Integration + Human Verification
 
 ### Phase 100: DevCloud-Integration & Leitner
 **Goal**: Die App ist eng mit den DevCloud-Werkzeugen verzahnt und Dozenten koennen Lernrhythmen an Kursdauer anpassen
@@ -124,6 +127,6 @@ Plans:
 |-------|----------------|--------|-----------|
 | 96. UX-Navigation Struktur | 2/2 | Complete    | 2026-03-28 |
 | 97. Code-Hygiene & Settings | 2/2 | Complete    | 2026-03-28 |
-| 98. Simulator-Praxis-Sessions | 2/2 | Complete   | 2026-03-28 |
-| 99. Student-Dashboard | 0/? | Not started | - |
+| 98. Simulator-Praxis-Sessions | 2/2 | Complete    | 2026-03-28 |
+| 99. Student-Dashboard | 1/2 | In Progress|  |
 | 100. DevCloud-Integration & Leitner | 0/? | Not started | - |
