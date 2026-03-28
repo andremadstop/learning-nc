@@ -1,1 +1,66 @@
-[]
+[
+  {
+    "id": "fw-session-webserver",
+    "simulatorType": "firewall",
+    "title": "Webserver absichern",
+    "description": "Schritt fuer Schritt ein Firewall-Regelwerk fuer einen Webserver aufbauen — vom ersten erlaubten Port bis zur vollstaendigen Absicherung.",
+    "steps": [
+      {
+        "stepId": "fw-ws-01",
+        "context": "Ein neuer Webserver soll nur HTTP und HTTPS Traffic empfangen. Alle anderen Ports muessen gesperrt sein.",
+        "explanation": "In der Praxis ist das Prinzip 'Deny All, Allow Specific' die Basis jeder Firewall-Konfiguration. Man beginnt immer mit den wichtigsten Diensten.",
+        "scenarioId": "web-only"
+      },
+      {
+        "stepId": "fw-ws-02",
+        "context": "Der Admin braucht SSH-Zugriff auf den Server, aber nur aus dem internen Admin-Netzwerk 10.0.1.0/24. Externe SSH-Versuche muessen blockiert werden.",
+        "explanation": "SSH-Zugriff sollte nie von ueberall erlaubt sein. In Unternehmen wird SSH auf bestimmte Management-Netze beschraenkt, oft zusaetzlich mit VPN kombiniert.",
+        "scenarioId": "ssh-admin-net"
+      },
+      {
+        "stepId": "fw-ws-03",
+        "context": "Externe Ping-Anfragen (ICMP Echo) sollen geblockt werden, damit der Server fuer Angreifer weniger sichtbar ist. Interne Pings bleiben erlaubt.",
+        "explanation": "ICMP-Filterung ist ein gaengiger Haertungsschritt. Angreifer nutzen Ping-Scans um aktive Hosts zu finden. Interne ICMP bleibt fuer Monitoring wichtig.",
+        "scenarioId": "icmp-external"
+      },
+      {
+        "stepId": "fw-ws-04",
+        "context": "Der Webserver steht in der DMZ. Er darf auf keinen Fall direkt auf das interne LAN zugreifen — auch nicht ueber SMB oder andere Dienste.",
+        "explanation": "Die DMZ-Isolation ist ein Kernprinzip der Netzwerksicherheit. Selbst wenn ein DMZ-Server kompromittiert wird, bleibt das interne Netz geschuetzt.",
+        "scenarioId": "dmz-lan"
+      },
+      {
+        "stepId": "fw-ws-05",
+        "context": "Fuer Remote-Mitarbeiter wird ein OpenVPN-Server auf Port 1194/UDP eingerichtet. Nur dieser eine Port soll fuer VPN-Verbindungen offen sein.",
+        "explanation": "VPN-Dienste brauchen praezise Firewall-Regeln. OpenVPN nutzt standardmaessig UDP/1194. Eine zu breite Freigabe wuerde die Angriffsflaeche unnoetig vergroessern.",
+        "scenarioId": "vpn-udp"
+      }
+    ]
+  },
+  {
+    "id": "fw-session-dmz",
+    "simulatorType": "firewall",
+    "title": "DMZ-Netzwerk aufbauen",
+    "description": "Eine Demilitarisierte Zone (DMZ) planen und die Zugriffskontrolle zwischen DMZ, LAN und Internet konfigurieren.",
+    "steps": [
+      {
+        "stepId": "fw-dmz-01",
+        "context": "Der DMZ-Webserver muss von aussen erreichbar sein. HTTP und HTTPS Traffic aus dem Internet soll zum Server durchgelassen werden.",
+        "explanation": "Die DMZ ist das 'Schaufenster' des Netzwerks. Oeffentliche Dienste wie Webserver gehoeren hierhin, damit das interne LAN nie direkt exponiert ist.",
+        "scenarioId": "web-only"
+      },
+      {
+        "stepId": "fw-dmz-02",
+        "context": "Der DMZ-Server versucht auf den internen Fileserver im LAN zuzugreifen. Dieser Zugriff muss strikt unterbunden werden.",
+        "explanation": "Wenn ein DMZ-Server gehackt wird, darf er nicht als Sprungbrett ins LAN dienen. Diese Regel ist eine der wichtigsten in jeder DMZ-Architektur.",
+        "scenarioId": "dmz-lan"
+      },
+      {
+        "stepId": "fw-dmz-03",
+        "context": "Externe Hosts versuchen per ICMP die DMZ zu scannen. Diese Aufklaerungsversuche sollen geblockt werden.",
+        "explanation": "Reconnaissance ist oft der erste Schritt eines Angriffs. ICMP-Blocking erschwert das Mapping der DMZ-Infrastruktur von aussen.",
+        "scenarioId": "icmp-external"
+      }
+    ]
+  }
+]

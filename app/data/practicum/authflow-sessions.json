@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "id": "af-session-8021x",
+    "simulatorType": "authflow",
+    "title": "802.1X Authentifizierung einrichten",
+    "description": "Die verschiedenen EAP-Methoden fuer 802.1X Port-basierte Zugriffskontrolle verstehen und vergleichen.",
+    "steps": [
+      {
+        "stepId": "af-8021x-01",
+        "context": "Ein Unternehmen fuehrt 802.1X mit EAP-TLS ein. Die IT-Abteilung muss die korrekte Reihenfolge der Authentifizierungsschritte kennen.",
+        "explanation": "EAP-TLS ist die sicherste 802.1X-Methode, weil beide Seiten (Client und Server) Zertifikate vorweisen muessen. Der Aufwand fuer die PKI ist hoch, aber die Sicherheit maximal.",
+        "scenarioId": "eap-tls-order"
+      },
+      {
+        "stepId": "af-8021x-02",
+        "context": "Fuer Gaeste und BYOD-Geraete ohne Client-Zertifikat wird PEAP eingesetzt. Nach dem Access-Request muss der naechste Schritt korrekt sein.",
+        "explanation": "PEAP nutzt nur ein Server-Zertifikat und wickelt die eigentliche Authentifizierung (meist MSCHAPv2) in einem TLS-Tunnel ab. Das ist einfacher als EAP-TLS, aber etwas weniger sicher.",
+        "scenarioId": "peap-order"
+      },
+      {
+        "stepId": "af-8021x-03",
+        "context": "Eine Cisco-Umgebung nutzt EAP-FAST. Am Ende der Authentifizierung muss der Switch den Port oeffnen. Welcher Schritt ist das?",
+        "explanation": "EAP-FAST ist Ciscos Alternative zu PEAP. Statt Zertifikaten werden PACs (Protected Access Credentials) verwendet. Der Ablauf endet wie bei allen EAP-Methoden mit dem Port-Freischalten.",
+        "scenarioId": "eap-fast-order"
+      },
+      {
+        "stepId": "af-8021x-04",
+        "context": "Die Geschaeftsfuehrung fragt, welche EAP-Methode die hoechste Sicherheit bietet. Du musst die Methoden vergleichen und eine Empfehlung geben.",
+        "explanation": "EAP-TLS gilt als Goldstandard, weil gegenseitige Zertifikats-Authentifizierung Man-in-the-Middle-Angriffe praktisch ausschliesst. Der Preis dafuer ist eine vollstaendige PKI-Infrastruktur.",
+        "scenarioId": "method-security"
+      }
+    ]
+  }
+]

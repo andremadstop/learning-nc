@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "id": "nat-session-office",
+    "simulatorType": "nat",
+    "title": "NAT-Regeln fuer ein Buero-Netzwerk",
+    "description": "Von Static NAT ueber Dynamic NAT bis PAT — die verschiedenen NAT-Typen fuer ein typisches Buero konfigurieren und verstehen.",
+    "steps": [
+      {
+        "stepId": "nat-off-01",
+        "context": "Der Firmen-Webserver soll unter einer festen oeffentlichen IP erreichbar sein. Intern laeuft er auf 10.0.0.10, extern soll er als 203.0.113.10 erscheinen.",
+        "explanation": "Static NAT bildet eine interne IP 1:1 auf eine externe ab. Das ist Standard fuer Server, die von aussen erreichbar sein muessen.",
+        "scenarioId": "static-public-ip"
+      },
+      {
+        "stepId": "nat-off-02",
+        "context": "Das Buero hat nur eine oeffentliche IP im Dynamic-NAT-Pool. Der 10. Client hat sie bereits belegt. Client 11 kann nicht ins Internet.",
+        "explanation": "Dynamic NAT ohne PAT hat einen festen Pool oeffentlicher IPs. Wenn alle belegt sind, muessen weitere Clients warten — ein haeufiges Problem in kleinen Netzen.",
+        "scenarioId": "dynamic-pool-full"
+      },
+      {
+        "stepId": "nat-off-03",
+        "context": "Um das Pool-Problem zu loesen, wird PAT (Port Address Translation) eingerichtet. Alle 50 Clients teilen sich eine einzige oeffentliche IP.",
+        "explanation": "PAT ist die haeufigste NAT-Variante. Durch unterschiedliche Quell-Ports koennen tausende Clients eine einzige oeffentliche IP nutzen.",
+        "scenarioId": "identify-pat"
+      },
+      {
+        "stepId": "nat-off-04",
+        "context": "Im PAT-Betrieb muss der Admin herausfinden, welcher interne Client hinter einem bestimmten Port-Mapping steckt — zum Beispiel fuer die Fehlersuche.",
+        "explanation": "Die NAT-Tabelle ordnet jeden internen Client eindeutig einem Port zu. Diese Zuordnung ist essentiell fuer Troubleshooting und Logging.",
+        "scenarioId": "pat-port-owner"
+      },
+      {
+        "stepId": "nat-off-05",
+        "context": "Ein interner Client versucht den Firmen-Webserver ueber seine oeffentliche IP zu erreichen. Ohne Hairpin-NAT wuerde das nicht funktionieren.",
+        "explanation": "Hairpin NAT (NAT Reflection) erlaubt internen Clients, eigene Server ueber die externe IP zu erreichen. Ohne diese Konfiguration schlaegt der Zugriff fehl.",
+        "scenarioId": "hairpin"
+      }
+    ]
+  }
+]

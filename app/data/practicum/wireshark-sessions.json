@@ -1,1 +1,40 @@
-[]
+[
+  {
+    "id": "ws-session-traffic",
+    "simulatorType": "wireshark",
+    "title": "Netzwerk-Traffic analysieren",
+    "description": "Paketmitschnitte lesen und interpretieren — von TCP-Handshakes ueber DNS-Queries bis zu ICMP-Fehlern.",
+    "steps": [
+      {
+        "stepId": "ws-trf-01",
+        "context": "Eine TCP-Verbindung wird aufgebaut, aber der Handshake scheint haengen zu bleiben. Du siehst das gleiche SYN-Paket mehrfach. Was passiert hier?",
+        "explanation": "TCP Retransmission bedeutet, dass der Client keine Antwort erhalten hat und das SYN-Paket wiederholt. Ursachen koennen Paketverlust oder Firewall-Blockierung sein.",
+        "scenarioId": "find-retransmission"
+      },
+      {
+        "stepId": "ws-trf-02",
+        "context": "Waehrend einer HTTP-Sitzung bricht die Verbindung ploetzlich ab. Im Capture siehst du ein bestimmtes TCP-Flag, das den Abbruch markiert.",
+        "explanation": "Ein RST-Flag signalisiert einen abrupten Verbindungsabbruch. Anders als FIN (sauberes Beenden) zeigt RST ein Problem an — oft eine Firewall oder ein Absturz.",
+        "scenarioId": "connection-reset"
+      },
+      {
+        "stepId": "ws-trf-03",
+        "context": "Ein Ping-Test zeigt merkwuerdiges Verhalten: Statt einer Echo-Reply kommt eine 'TTL exceeded'-Meldung zurueck.",
+        "explanation": "TTL exceeded deutet auf einen Routing-Loop oder eine zu lange Pfadkette hin. Jeder Router dekrementiert TTL um 1 — bei 0 wird das Paket verworfen.",
+        "scenarioId": "ttl-exceeded"
+      },
+      {
+        "stepId": "ws-trf-04",
+        "context": "Du siehst Traffic auf Port 8080. Ein Kollege fragt, welches Protokoll dort typischerweise laeuft.",
+        "explanation": "Port 8080 ist der klassische Alternative-Port fuer HTTP und Web-Proxies. Viele Entwicklungsserver und Proxy-Dienste nutzen diesen Port standardmaessig.",
+        "scenarioId": "protocol-8080"
+      },
+      {
+        "stepId": "ws-trf-05",
+        "context": "Im DNS-Traffic faellt dir auf, dass auf eine einzelne Query zwei Antworten mit unterschiedlichen IPs kommen. Das ist verdaechtig.",
+        "explanation": "Doppelte DNS-Antworten mit verschiedenen IPs sind ein starkes Indiz fuer DNS-Spoofing. Der Angreifer versucht, Traffic auf seinen eigenen Server umzuleiten.",
+        "scenarioId": "dns-spoofing"
+      }
+    ]
+  }
+]
