@@ -478,6 +478,17 @@
               class="chat-file-link">
               {{ msg.filePath }}
             </a>
+            <details v-if="msg.sources && msg.sources.length" class="chat-rag-sources">
+              <summary class="rag-sources-toggle">
+                {{ vt('Sources') }} ({{ msg.sources.length }})
+              </summary>
+              <ul class="rag-sources-list">
+                <li v-for="(src, sIdx) in msg.sources" :key="sIdx" class="rag-source-item">
+                  <span class="rag-source-file">{{ src.source_file }}</span>
+                  <span v-if="src.chapter" class="rag-source-chapter"> &mdash; {{ vt('Ch.') }} {{ src.chapter }}</span>
+                </li>
+              </ul>
+            </details>
           </div>
           <div v-if="chatLoading" class="chat-typing" aria-label="VirtuProf is typing">
             <span class="typing-dot" />
@@ -1754,6 +1765,35 @@ export default {
 
 .chat-file-link:hover {
   opacity: 0.8;
+}
+
+.chat-rag-sources {
+  margin-top: 4px;
+  font-size: 0.8em;
+  color: var(--color-text-maxcontrast);
+}
+.rag-sources-toggle {
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.7;
+}
+.rag-sources-toggle:hover {
+  opacity: 1;
+}
+.rag-sources-list {
+  margin: 4px 0 0 0;
+  padding-left: 16px;
+  list-style: disc;
+}
+.rag-source-item {
+  margin: 2px 0;
+  word-break: break-word;
+}
+.rag-source-file {
+  font-weight: 500;
+}
+.rag-source-chapter {
+  font-style: italic;
 }
 
 .chat-audio-btn,

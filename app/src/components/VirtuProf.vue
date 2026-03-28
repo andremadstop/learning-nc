@@ -1772,6 +1772,7 @@ export default {
         const answer = response.data?.answer
         const action = response.data?.action
         const filePath = response.data?.path || null
+        const ragSources = response.data?.rag_sources || null
         const msg = {
           role: 'assistant',
           text: answer || this.vt('Sorry, no answer available.'),
@@ -1779,6 +1780,9 @@ export default {
         }
         if (action === 'file_created' && filePath) {
           msg.filePath = filePath
+        }
+        if (ragSources && ragSources.length > 0) {
+          msg.sources = ragSources
         }
         this.chatMessages.push(msg)
       } catch (e) {
