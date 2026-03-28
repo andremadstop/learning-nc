@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 Phase: 100 — DevCloud-Integration & Leitner
 Plan: 03 complete (3/3 plans)
 Status: Complete
-Last activity: 2026-03-28 - Completed quick task 4: VirtuProf Guide-Texte L10N
+Last activity: 2026-03-28 - Completed quick task 5: Dozenten-UI Wissens-Import
 
 Progress: [██████████] 100% (122/115 plans)
 
@@ -96,6 +96,7 @@ None yet.
 | 2 | RAG-Transparenz: Quellen unter VirtuProf-Antworten anzeigen | 2026-03-28 | 148494b | [01-rag-transparenz](./quick/01-rag-transparenz/) |
 | 3 | VirtuProf Sprach-Toggles: Dead Code entfernen | 2026-03-28 | a564c4a | [02-virtuprof-sprach-toggles](./quick/02-virtuprof-sprach-toggles/) |
 | 4 | VirtuProf Guide-Texte: Deutsche Uebersetzungen | 2026-03-28 | 3aa4e13 | [03-virtuprof-guide-texte-l10n](./quick/03-virtuprof-guide-texte-l10n/) |
+| 5 | Dozenten-UI Wissens-Import | 2026-03-28 | 206646d | [05-dozenten-ui-wissens-import](./quick/05-dozenten-ui-wissens-import/) |
 
 ## Performance Metrics
 
