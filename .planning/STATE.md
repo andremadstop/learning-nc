@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
 status: executing
-stopped_at: Completed 98-01-PLAN.md
-last_updated: "2026-03-28T12:29:08.426Z"
-last_activity: 2026-03-28 — Plan 01 complete (PracticumEngine + 11 Session JSONs)
+stopped_at: Completed 98-02-PLAN.md
+last_updated: "2026-03-28T12:38:14.380Z"
+last_activity: 2026-03-28 — Phase 98 complete (PracticumRunner UI + Praxis Tab in all 7 simulators)
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 100
 ---
 
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 ## Current Position
 
-Phase: 98 — Simulator-Praxis-Sessions (in progress)
-Plan: 01 complete, next 02
-Status: Executing phase 98
-Last activity: 2026-03-28 — Plan 01 complete (PracticumEngine + 11 Session JSONs)
+Phase: 98 — Simulator-Praxis-Sessions (complete)
+Plan: 02 complete (2/2)
+Status: Phase 98 complete
+Last activity: 2026-03-28 — Phase 98 complete (PracticumRunner UI + Praxis Tab in all 7 simulators)
 
 Progress: [██████████] 100% (116/110 plans)
 
@@ -38,7 +38,7 @@ Progress: [██████████] 100% (116/110 plans)
 |-------|------|--------------|--------|
 | 96 | UX-Navigation Struktur | NAV-01, NAV-02, NAV-03, NAV-04 | In progress (1/? plans) |
 | 97 | Code-Hygiene & Settings | NAV-05, NAV-06, NAV-07 | Not started |
-| 98 | Simulator-Praxis-Sessions | SIM-01, SIM-02, SIM-03 | In progress (1/2 plans) |
+| 98 | Simulator-Praxis-Sessions | SIM-01, SIM-02, SIM-03 | Complete (2/2 plans) |
 | 99 | Student-Dashboard | DASH-01, DASH-02, DASH-03 | Not started |
 | 100 | DevCloud-Integration & Leitner | DVCL-01, DVCL-02, DVCL-03, DVCL-04, LEIT-01 | Not started |
 
@@ -62,6 +62,8 @@ Progress: [██████████] 100% (116/110 plans)
 - [Phase 97]: MODE_MAP labels stay as const keys, this.t() applied in modeConfig computed
 - [Phase 98]: Engine uses lnc-practicum- localStorage prefix for session persistence
 - [Phase 98]: Session steps reference existing scenarioIds from *_scenarios.json (zero duplication)
+- [Phase 98]: PracticumRunner uses SimulatorShell for embedded rendering per step
+- [Phase 98]: Context panel collapsible, v-else changed to v-else-if in all 7 simulators
 
 ### Pending Todos
 
@@ -80,7 +82,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T12:29:08.422Z
-Stopped at: Completed 98-01-PLAN.md
+Last session: 2026-03-28T12:38:14.365Z
+Stopped at: Completed 98-02-PLAN.md
 Resume file: None
 Next action: Execute next plan in phase 96

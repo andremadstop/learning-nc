@@ -19,7 +19,7 @@
 ### Simulator-Upgrade
 
 - [x] **SIM-01**: Jeder Simulator hat mindestens 1 geführte Praxis-Session mit realem Szenario
-- [ ] **SIM-02**: Praxis-Sessions führen Schritt für Schritt durch das Szenario mit Erklärungen
+- [x] **SIM-02**: Praxis-Sessions führen Schritt für Schritt durch das Szenario mit Erklärungen
 - [x] **SIM-03**: Fortschritt innerhalb einer Session ist sichtbar und nachverfolgbar
 
 ### Student-Dashboard
@@ -73,7 +73,7 @@
 | NAV-06 | Phase 97 | Complete |
 | NAV-07 | Phase 97 | Complete |
 | SIM-01 | Phase 98 | Complete |
-| SIM-02 | Phase 98 | Pending |
+| SIM-02 | Phase 98 | Complete |
 | SIM-03 | Phase 98 | Complete |
 | DASH-01 | Phase 99 | Pending |
 | DASH-02 | Phase 99 | Pending |
