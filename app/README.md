@@ -10,12 +10,14 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 
 ### Learning Modes
 - **Smart Queue** — Cross-pool "Jetzt Lernen" button reviews all due cards from every pool in one session, sorted by priority
-- **Leitner System** — 5-box spaced repetition with automatic scheduling (1d, 3d, 7d, 14d intervals)
+- **Leitner System** — 5-box spaced repetition with automatic scheduling (1d, 3d, 7d, 14d intervals); optional Sprint mode (4h, 12h, 1d, 2d) for intensive courses
 - **Training Mode** — Quick quiz sessions with immediate feedback
 - **Exam Mode** — Timed exams with configurable question count and snake timer
 - **Wahr/Falsch** — Touch-friendly swipe-based true/false flashcard review
 - **Trouble Spots** — Focused practice on your hardest questions (3+ wrong, <30% accuracy)
 - **Daily Challenge** — One random question per day with bonus XP reward
+- **Simulator Practicum** — Guided step-by-step sessions for all 7 network simulators with real-world scenarios, progress tracking, and score summaries
+- **Student Dashboard** — "Heute" landing page with due cards, daily challenge, streak, global course feed, and direct pool navigation
 
 ### Question Types
 - **Multiple Choice** — Questions with 2-8 answers, explanations, difficulty levels, multi-select support
@@ -33,6 +35,10 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 
 ### Course Management
 - **Courses** — Instructors create courses, assign pools (single or batch), enroll students
+- **Buddy Matching** — Students see who can help with their topics and whom they can help, based on Telos profile data
+- **Talk Room Link** — Instructors link a Nextcloud Talk room per course; clickable shortcut in course header
+- **Course Materials** — Students see course documents (read-only) from linked Nextcloud folders
+- **Course-Aware Tools** — Werkzeuge tab filters available simulators based on active course settings
 - **Leaderboard** — Ranked by XP with medal indicators and student detail drill-down; refreshes on tab switch and member changes
 - **Student Progress** — Per-student XP, badges, streak, Leitner boxes per pool, session history
 - **My Progress Tab** — Students can view their own detailed progress inside any enrolled course

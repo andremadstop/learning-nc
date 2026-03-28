@@ -12,8 +12,8 @@ class Version003400Date20260319233000 extends SimpleMigrationStep {
         /** @var ISchemaWrapper $schema */
         $schema = $schemaClosure();
 
-        if (!$schema->hasTable('learning_course_curriculum_scopes')) {
-            $table = $schema->createTable('learning_course_curriculum_scopes');
+        if (!$schema->hasTable('learning_curriculum_scopes')) {
+            $table = $schema->createTable('learning_curriculum_scopes');
             $table->addColumn('id', 'integer', ['autoincrement' => true, 'notnull' => true]);
             $table->addColumn('course_id', 'integer', ['notnull' => true]);
             $table->addColumn('enabled', 'boolean', ['notnull' => false, 'default' => false]);

@@ -12,9 +12,9 @@ class Version003500Date20260319240000 extends SimpleMigrationStep {
         /** @var ISchemaWrapper $schema */
         $schema = $schemaClosure();
 
-        // Table: learning_course_question_overrides
-        if (!$schema->hasTable('learning_course_question_overrides')) {
-            $table = $schema->createTable('learning_course_question_overrides');
+        // Table: learning_q_overrides
+        if (!$schema->hasTable('learning_q_overrides')) {
+            $table = $schema->createTable('learning_q_overrides');
             $table->addColumn('id', 'integer', ['autoincrement' => true, 'notnull' => true]);
             $table->addColumn('course_id', 'integer', ['notnull' => true]);
             $table->addColumn('question_id', 'integer', ['notnull' => true]);
@@ -26,9 +26,9 @@ class Version003500Date20260319240000 extends SimpleMigrationStep {
             $table->addUniqueIndex(['course_id', 'question_id'], 'cqo_course_question_unique');
         }
 
-        // Table: learning_course_announcements
-        if (!$schema->hasTable('learning_course_announcements')) {
-            $table = $schema->createTable('learning_course_announcements');
+        // Table: learning_announcements
+        if (!$schema->hasTable('learning_announcements')) {
+            $table = $schema->createTable('learning_announcements');
             $table->addColumn('id', 'integer', ['autoincrement' => true, 'notnull' => true]);
             $table->addColumn('course_id', 'integer', ['notnull' => true]);
             $table->addColumn('instructor_id', 'string', ['notnull' => false, 'length' => 64]);

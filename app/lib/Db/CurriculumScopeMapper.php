@@ -9,7 +9,7 @@ use OCP\IDBConnection;
 
 class CurriculumScopeMapper extends QBMapper {
     public function __construct(IDBConnection $db) {
-        parent::__construct($db, 'learning_course_curriculum_scopes', CurriculumScope::class);
+        parent::__construct($db, 'learning_curriculum_scopes', CurriculumScope::class);
     }
 
     public function findByCourse(int $courseId): ?CurriculumScope {

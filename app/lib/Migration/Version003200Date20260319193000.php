@@ -22,22 +22,22 @@ class Version003200Date20260319193000 extends SimpleMigrationStep {
         $prefix = method_exists($this->db, 'getPrefix') ? $this->db->getPrefix() : 'oc_';
         $allowed = "ARRAY['de'::character varying, 'en'::character varying, 'ru'::character varying, 'ar'::character varying]";
 
-        if ($schema->hasTable('learning_qst_translations')) {
-            $this->db->executeStatement("ALTER TABLE {$prefix}learning_qst_translations DROP CONSTRAINT IF EXISTS {$prefix}learning_question_translations_lang_check");
-            $this->db->executeStatement("ALTER TABLE {$prefix}learning_qst_translations DROP CONSTRAINT IF EXISTS {$prefix}learning_qst_translations_lang_check");
+        if ($schema->hasTable('learning_q_translations')) {
+            $this->db->executeStatement("ALTER TABLE {$prefix}learning_q_translations DROP CONSTRAINT IF EXISTS {$prefix}learning_question_translations_lang_check");
+            $this->db->executeStatement("ALTER TABLE {$prefix}learning_q_translations DROP CONSTRAINT IF EXISTS {$prefix}learning_q_translations_lang_check");
             $this->db->executeStatement(
-                "ALTER TABLE {$prefix}learning_qst_translations ADD CONSTRAINT {$prefix}learning_qst_translations_lang_check CHECK ((lang)::text = ANY (({$allowed})::text[]))"
+                "ALTER TABLE {$prefix}learning_q_translations ADD CONSTRAINT {$prefix}learning_q_translations_lang_check CHECK ((lang)::text = ANY (({$allowed})::text[]))"
             );
-            $output->info('Updated language check constraint on learning_qst_translations');
+            $output->info('Updated language check constraint on learning_q_translations');
         }
 
-        if ($schema->hasTable('learning_ans_translations')) {
-            $this->db->executeStatement("ALTER TABLE {$prefix}learning_ans_translations DROP CONSTRAINT IF EXISTS {$prefix}learning_answer_translations_lang_check");
-            $this->db->executeStatement("ALTER TABLE {$prefix}learning_ans_translations DROP CONSTRAINT IF EXISTS {$prefix}learning_ans_translations_lang_check");
+        if ($schema->hasTable('learning_a_translations')) {
+            $this->db->executeStatement("ALTER TABLE {$prefix}learning_a_translations DROP CONSTRAINT IF EXISTS {$prefix}learning_answer_translations_lang_check");
+            $this->db->executeStatement("ALTER TABLE {$prefix}learning_a_translations DROP CONSTRAINT IF EXISTS {$prefix}learning_a_translations_lang_check");
             $this->db->executeStatement(
-                "ALTER TABLE {$prefix}learning_ans_translations ADD CONSTRAINT {$prefix}learning_ans_translations_lang_check CHECK ((lang)::text = ANY (({$allowed})::text[]))"
+                "ALTER TABLE {$prefix}learning_a_translations ADD CONSTRAINT {$prefix}learning_a_translations_lang_check CHECK ((lang)::text = ANY (({$allowed})::text[]))"
             );
-            $output->info('Updated language check constraint on learning_ans_translations');
+            $output->info('Updated language check constraint on learning_a_translations');
         }
     }
 }
