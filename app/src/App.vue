@@ -34,6 +34,15 @@
             {{ t('learning', 'Werkzeuge') }}
           </button>
           <button
+            v-if="userRole === 'student'"
+            :class="['main-nav-btn', { active: mainView === 'skillmap' }]"
+            role="tab"
+            :aria-selected="mainView === 'skillmap' ? 'true' : 'false'"
+            @click="switchMainView('skillmap')"
+          >
+            {{ t('learning', 'Skill-Map') }}
+          </button>
+          <button
             :class="['main-nav-btn', { active: mainView === 'settings' }]"
             role="tab"
             :aria-selected="mainView === 'settings' ? 'true' : 'false'"
@@ -271,6 +280,11 @@
           <WiresharkLite v-else-if="toolsView === 'wireshark'" />
           <AuthFlowSimulator v-else-if="toolsView === 'authflow'" />
         </template>
+
+        <!-- ==================== SKILL-MAP VIEW ==================== -->
+        <template v-if="mainView === 'skillmap'">
+          <SkillMap @openPool="openPoolFromSkillMap" />
+        </template>
       </div>
 
       <aside v-if="showVirtuProfDock" class="app-virtuprof-dock" aria-label="VirtuProf">
@@ -322,6 +336,7 @@ import NatTable from './components/NatTable.vue';
 import WiresharkLite from './components/WiresharkLite.vue';
 import AuthFlowSimulator from './components/AuthFlowSimulator.vue';
 import OnboardingIntro from './components/OnboardingIntro.vue';
+import SkillMap from './components/SkillMap.vue';
 import { ALL_TOOL_IDS, TOOL_CATALOG } from './utils/toolCatalog.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
@@ -360,6 +375,7 @@ export default {
     WiresharkLite,
     AuthFlowSimulator,
     OnboardingIntro,
+    SkillMap,
   },
   data() {
     return {
@@ -1132,7 +1148,21 @@ export default {
       } catch {
         this.selectPool({ id: poolId, name: '', is_shared: true, permission: 'read' });
       }
-    }
+    },
+
+    // --- Skill-Map methods ---
+    async openPoolFromSkillMap(poolId) {
+      this.mainView = 'pools';
+      try {
+        const response = await axios.get(
+          generateUrl('/apps/learning/api/pools/' + poolId)
+        );
+        const pool = response.data;
+        this.selectPool({ id: pool.id, name: pool.name, is_shared: !!pool.is_shared, permission: pool.permission });
+      } catch {
+        this.selectPool({ id: poolId, name: '', is_shared: false, permission: 'owner' });
+      }
+    },
   }
 };
 </script>
