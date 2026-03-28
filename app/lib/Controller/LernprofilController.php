@@ -102,4 +102,44 @@ class LernprofilController extends Controller {
             return new DataResponse(['error' => 'Could not retrieve learning history'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * Returns skill-map data: all pools enriched with course grouping.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function skillMap(): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        try {
+            $profile = $this->lernprofilService->aggregateProfile($this->userId);
+            $pools = $profile['pools'];
+
+            // Enrich pools with course_id and course_name
+            $enrichedPools = $this->lernprofilService->enrichPoolsWithCourseData($this->userId, $pools);
+
+            // Extract unique courses
+            $coursesMap = [];
+            foreach ($enrichedPools as $pool) {
+                if (isset($pool['course_id'])) {
+                    $coursesMap[$pool['course_id']] = $pool['course_name'] ?? ('Course ' . $pool['course_id']);
+                }
+            }
+            $courses = [];
+            foreach ($coursesMap as $id => $name) {
+                $courses[] = ['id' => $id, 'name' => $name];
+            }
+
+            return new DataResponse([
+                'courses' => $courses,
+                'pools' => $enrichedPools,
+                'summary' => $profile['summary'],
+            ]);
+        } catch (\Throwable $e) {
+            return new DataResponse(['error' => 'Skill map data could not be retrieved'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
 }

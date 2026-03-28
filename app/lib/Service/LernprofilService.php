@@ -252,6 +252,67 @@ class LernprofilService {
     }
 
     /**
+     * Enrich pool data with course_id and course_name.
+     *
+     * Looks up learning_course_pools + learning_courses to find which course
+     * each pool belongs to. Pools not assigned to any course get course_id = null.
+     *
+     * @param string $userId
+     * @param array $pools - pools from aggregateProfile
+     * @return array - pools with added course_id and course_name fields
+     */
+    public function enrichPoolsWithCourseData(string $userId, array $pools): array {
+        if (empty($pools)) {
+            return [];
+        }
+
+        $poolIds = array_column($pools, 'pool_id');
+
+        // Query course assignments for these pools
+        $qb = $this->db->getQueryBuilder();
+        $expr = $qb->expr();
+        $qb->select('cp.pool_id', 'c.id AS course_id', 'c.name AS course_name')
+           ->from('learning_course_pools', 'cp')
+           ->innerJoin('cp', 'learning_courses', 'c', $expr->eq('cp.course_id', 'c.id'))
+           ->where($expr->in('cp.pool_id', $qb->createNamedParameter(
+               $poolIds,
+               \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY
+           )));
+
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+
+        // Build pool_id -> course mapping (use first course if pool is in multiple)
+        $courseMap = [];
+        foreach ($rows as $row) {
+            $pid = (int)$row['pool_id'];
+            if (!isset($courseMap[$pid])) {
+                $courseMap[$pid] = [
+                    'course_id' => (int)$row['course_id'],
+                    'course_name' => $row['course_name'],
+                ];
+            }
+        }
+
+        // Enrich each pool
+        $enriched = [];
+        foreach ($pools as $pool) {
+            $pid = $pool['pool_id'];
+            if (isset($courseMap[$pid])) {
+                $pool['course_id'] = $courseMap[$pid]['course_id'];
+                $pool['course_name'] = $courseMap[$pid]['course_name'];
+            } else {
+                $pool['course_id'] = null;
+                $pool['course_name'] = null;
+            }
+            $enriched[] = $pool;
+        }
+
+        return $enriched;
+    }
+
+    /**
      * Invalidate all cached profile data for a user.
      * Called passively after each session completion or Leitner answer.
      *

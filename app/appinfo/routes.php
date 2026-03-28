@@ -196,6 +196,7 @@ return [
         ['name' => 'lernprofil#profile', 'url' => '/api/profile', 'verb' => 'GET'],
         ['name' => 'lernprofil#weakestTopics', 'url' => '/api/profile/weakest', 'verb' => 'GET'],
         ['name' => 'lernprofil#lernhistorie', 'url' => '/api/profile/history', 'verb' => 'GET'],
+        ['name' => 'lernprofil#skillMap', 'url' => '/api/profile/skill-map', 'verb' => 'GET'],
 
         // Lernbot Files (Phase 23)
         ['name' => 'lernbotFiles#listFiles', 'url' => '/api/lernbot/files', 'verb' => 'GET'],
