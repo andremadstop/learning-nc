@@ -127,4 +127,19 @@ class RagChunkMapper extends QBMapper {
             ->where($qb->expr()->eq('document_id', $qb->createNamedParameter($documentId)));
         return $qb->executeStatement();
     }
+
+    /**
+     * Delete all chunks for a given document ID and course ID.
+     *
+     * Used for idempotent vault re-imports (document_id=0 + specific course).
+     *
+     * @return int Number of affected rows
+     */
+    public function deleteByDocumentIdAndCourseId(int $documentId, int $courseId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete($this->getTableName())
+            ->where($qb->expr()->eq('document_id', $qb->createNamedParameter($documentId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        return $qb->executeStatement();
+    }
 }

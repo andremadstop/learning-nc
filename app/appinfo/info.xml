@@ -106,6 +106,10 @@ Travel through 7 epochs of hacking history — from 1960s Phone Phreaking to Qua
         <php min-version="8.1"/>
     </dependencies>
 
+    <commands>
+        <command>OCA\Learning\Command\ImportVaultCommand</command>
+    </commands>
+
     <settings>
         <admin>OCA\Learning\Settings\AdminSettings</admin>
         <admin-section>OCA\Learning\Settings\AdminSection</admin-section>
