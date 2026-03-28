@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use OCP\Activity\IManager as IActivityManager;
 use OCP\IConfig;
 use OCP\IDBConnection;
@@ -265,8 +264,11 @@ class BadgeService {
                    'earned_at' => $qb->createNamedParameter(time()),
                ]);
             $qb->executeStatement();
-        } catch (UniqueConstraintViolationException $e) {
-            return []; // Already earned — race condition safe
+        } catch (\OCP\DB\Exception $e) {
+            if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+                return []; // Already earned — race condition safe
+            }
+            throw $e;
         }
 
         $def = self::BADGES[$badgeId];
