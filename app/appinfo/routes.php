@@ -84,6 +84,7 @@ return [
         ['name' => 'telos#getQuestions',             'url' => '/api/profile/telos/questions',    'verb' => 'GET'],
         ['name' => 'telos#processInterview',         'url' => '/api/profile/telos/interview',    'verb' => 'POST'],
         ['name' => 'telos#getCourseTelosAggregate', 'url' => '/api/courses/{courseId}/telos',   'verb' => 'GET'],
+        ['name' => 'telos#getCourseBuddies',        'url' => '/api/courses/{courseId}/buddies', 'verb' => 'GET'],
 
         // User State (consolidated endpoint)
         ['name' => 'user_state#state', 'url' => '/api/v1/user/state', 'verb' => 'GET'],

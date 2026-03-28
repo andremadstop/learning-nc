@@ -5,6 +5,8 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\UserTelos;
 use OCA\Learning\Db\UserTelosMapper;
+use OCP\IDBConnection;
+use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -16,6 +18,8 @@ class TelosService {
     private UserTelosMapper $mapper;
     private GeminiService $geminiService;
     private LoggerInterface $logger;
+    private IDBConnection $db;
+    private IUserManager $userManager;
 
     /** Valid visibility values */
     private const VALID_VISIBILITY = ['private', 'course', 'public'];
@@ -37,11 +41,15 @@ class TelosService {
     public function __construct(
         UserTelosMapper $mapper,
         GeminiService $geminiService,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        IDBConnection $db,
+        IUserManager $userManager
     ) {
         $this->mapper = $mapper;
         $this->geminiService = $geminiService;
         $this->logger = $logger;
+        $this->db = $db;
+        $this->userManager = $userManager;
     }
 
     // =========================================================================
@@ -195,6 +203,95 @@ class TelosService {
             $this->logger->warning('Telos interview processing failed: ' . $e->getMessage());
             return ['telos' => [], 'saved' => false, 'error' => $e->getMessage()];
         }
+    }
+
+    // =========================================================================
+    // Buddy Matching (Phase 100)
+    // =========================================================================
+
+    /**
+     * Find study buddies for a user within a course based on help_offer/help_wanted overlap.
+     *
+     * @return array{can_help_me: list<array{user_id: string, display_name: string, topics: string[]}>, i_can_help: list<array{user_id: string, display_name: string, topics: string[]}>}
+     */
+    public function getCourseBuddies(string $userId, int $courseId): array {
+        // 1. Get all enrolled user IDs for this course (excluding current user)
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('cm.user_id')
+           ->from('learning_course_members', 'cm')
+           ->where($qb->expr()->eq('cm.course_id', $qb->createNamedParameter($courseId)))
+           ->andWhere($qb->expr()->neq('cm.user_id', $qb->createNamedParameter($userId)));
+        $result = $qb->executeQuery();
+        $memberIds = [];
+        while ($row = $result->fetch()) {
+            $memberIds[] = $row['user_id'];
+        }
+        $result->closeCursor();
+
+        if (empty($memberIds)) {
+            return ['can_help_me' => [], 'i_can_help' => []];
+        }
+
+        // 2. Get current user's telos
+        $myTelos = $this->mapper->findByUserIdOrNull($userId);
+        if ($myTelos === null) {
+            return ['can_help_me' => [], 'i_can_help' => []];
+        }
+        $myHelpWanted = $myTelos->getHelpWantedList();
+        $myHelpOffer = $myTelos->getHelpOfferList();
+
+        // 3. Get telos for all other enrolled members (non-private visibility only)
+        $otherTelos = $this->mapper->findByUserIds($memberIds);
+
+        $canHelpMe = [];
+        $iCanHelp = [];
+
+        foreach ($otherTelos as $entity) {
+            if ($entity->getVisibility() === 'private') {
+                continue;
+            }
+
+            $otherId = $entity->getUserId();
+            $otherOffer = $entity->getHelpOfferList();
+            $otherWanted = $entity->getHelpWantedList();
+
+            // Others who can help me: their offer intersects my wanted
+            $matchedForMe = array_values(array_intersect($otherOffer, $myHelpWanted));
+            if (!empty($matchedForMe)) {
+                $canHelpMe[] = [
+                    'user_id' => $otherId,
+                    'display_name' => $this->getDisplayName($otherId),
+                    'topics' => $matchedForMe,
+                ];
+            }
+
+            // Others I can help: my offer intersects their wanted
+            $matchedForThem = array_values(array_intersect($myHelpOffer, $otherWanted));
+            if (!empty($matchedForThem)) {
+                $iCanHelp[] = [
+                    'user_id' => $otherId,
+                    'display_name' => $this->getDisplayName($otherId),
+                    'topics' => $matchedForThem,
+                ];
+            }
+        }
+
+        // Sort by number of matched topics (most matches first), limit to 20
+        usort($canHelpMe, fn($a, $b) => count($b['topics']) <=> count($a['topics']));
+        usort($iCanHelp, fn($a, $b) => count($b['topics']) <=> count($a['topics']));
+
+        return [
+            'can_help_me' => array_slice($canHelpMe, 0, 20),
+            'i_can_help' => array_slice($iCanHelp, 0, 20),
+        ];
+    }
+
+    /**
+     * Get display name for a user, falling back to user ID.
+     */
+    private function getDisplayName(string $userId): string {
+        $user = $this->userManager->get($userId);
+        return $user !== null ? $user->getDisplayName() : $userId;
     }
 
     // =========================================================================

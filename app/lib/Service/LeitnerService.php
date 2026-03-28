@@ -15,6 +15,11 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 
 class LeitnerService {
+    /** Standard Leitner intervals: 0, 1d, 3d, 7d, 14d */
+    private const NORMAL_INTERVALS = [1 => 0, 2 => 86400, 3 => 259200, 4 => 604800, 5 => 1209600];
+    /** Sprint intervals for intensive courses: 0, 4h, 12h, 1d, 2d */
+    private const SPRINT_INTERVALS = [1 => 0, 2 => 14400, 3 => 43200, 4 => 86400, 5 => 172800];
+
     private IDBConnection $db;
     private PoolMapper $poolMapper;
     private PoolShareMapper $shareMapper;
@@ -76,6 +81,27 @@ class LeitnerService {
                $expr->eq('c.instructor_id', $qb->createNamedParameter($userId)),
                $expr->isNotNull('cm.id')
            ))
+           ->setMaxResults(1);
+
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+
+        return $row !== false;
+    }
+
+    /**
+     * Check if any course using this pool has leitner_sprint enabled.
+     * Returns true if at least one linked course has the sprint flag set.
+     * Falls back to false for standalone (non-course) pools.
+     */
+    private function isSprintPool(int $poolId): bool {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('c.leitner_sprint')
+           ->from('learning_course_pools', 'cp')
+           ->innerJoin('cp', 'learning_courses', 'c', $qb->expr()->eq('cp.course_id', 'c.id'))
+           ->where($qb->expr()->eq('cp.pool_id', $qb->createNamedParameter($poolId)))
+           ->andWhere($qb->expr()->eq('c.leitner_sprint', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
            ->setMaxResults(1);
 
         $result = $qb->executeQuery();
@@ -348,13 +374,9 @@ class LeitnerService {
         $currentBox = (int)$item['box'];
         $newBox = $correct ? min(5, $currentBox + 1) : 1;
 
-        $intervals = [
-            1 => 0,
-            2 => 86400,
-            3 => 259200,
-            4 => 604800,
-            5 => 1209600
-        ];
+        $intervals = $this->isSprintPool((int)$item['pool_id'])
+            ? self::SPRINT_INTERVALS
+            : self::NORMAL_INTERVALS;
         $nextReview = time() + $intervals[$newBox];
 
         $correctCount = (int)$item['correct_count'] + ($correct ? 1 : 0);

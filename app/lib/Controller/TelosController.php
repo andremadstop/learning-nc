@@ -244,6 +244,30 @@ class TelosController extends Controller {
     }
 
     /**
+     * Get study buddy matches for a course based on help_offer/help_wanted overlap.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 15, period: 60)]
+    public function getCourseBuddies(int $courseId): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        try {
+            // Verify enrollment: findById throws DoesNotExistException if no access
+            $this->courseService->findById($courseId, $this->userId);
+
+            $buddies = $this->telosService->getCourseBuddies($this->userId, $courseId);
+            return new DataResponse($buddies);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Throwable $e) {
+            return new DataResponse(['error' => 'Could not load buddies'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * @param array<int, mixed>|null $values
      * @return string[]
      */
