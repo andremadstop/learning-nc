@@ -1,93 +1,94 @@
-# Requirements: Learning-NC v13.0 Feature Expansion
+# Requirements: Learning-NC v3.4.0 UX-Konsolidierung & Simulator-Upgrade
 
-**Defined:** 2026-03-27
+**Defined:** 2026-03-28
 **Core Value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
+**Source:** Dual-Audit (Codex + Gemini, 2026-03-28) + User Input
 
-## v13.0 Requirements
+## v3.4.0 Requirements
 
-### NOVA Visual Redesign
+### UX-Navigation
 
-- [ ] **NOVA-01**: VirtuProf zeigt animierte Idle/Thinking/Speaking-States (CSS/SVG)
-- [ ] **NOVA-02**: Bot reagiert visuell auf User-Aktionen (Reaktions-Logik: Lob, Hinweis, Fehler)
-- [x] **NOVA-03**: Character Bible definiert NOVAs Persoenlichkeit konsistent ueber alle Kontexte
-- [ ] **NOVA-04**: Sound-Feedback bei Bot-Interaktionen (optional, User-Toggle)
-- [ ] **NOVA-05**: Vue-Komponenten fuer Bubble, Dock, Overlay nach Component Specs
+- [x] **NAV-01**: Dozent-Tabs in CourseDetail sind in logische Gruppen organisiert (Lernraum, Teilnehmer, Kommunikation, Wettbewerb)
+- [x] **NAV-02**: Abenteuer ist als eigenständiger Lernmodus platziert, nicht unter Arena
+- [ ] **NAV-03**: Kursregeln (mode_config) steuern die sichtbaren Student-Tabs und Arena-Submodes korrekt
+- [ ] **NAV-04**: Oldschool-Karte in ArenaSelector führt zu einem funktionalen Screen oder ist entfernt
+- [ ] **NAV-05**: Dozenten sehen PersonalSettings UND AdminSettings, nicht nur AdminSettings
+- [ ] **NAV-06**: Zeitreise-Code ist entweder reaktiviert oder komplett entfernt (kein Dead Code)
+- [ ] **NAV-07**: DE/EN Label-Mix bereinigt — alle UI-Labels einheitlich deutsch via t(), neue Strings immer mit echten Umlauten (ä/ü/ö)
 
-### Ghostline Quest
+### Simulator-Upgrade
 
-- [x] **GHOST-01**: Network+ Kampagne mit mindestens 5 Szenen und Terminal-Puzzles
-- [x] **GHOST-02**: Story-Arc mit Protagonist, Antagonist und Wendepunkt
-- [x] **GHOST-03**: NPC-Dialoge mit verzweigten Optionen
-- [x] **GHOST-04**: Simulator-Integration (DNS, Firewall, Routing) in Quest-Szenen
+- [ ] **SIM-01**: Jeder Simulator hat mindestens 1 geführte Praxis-Session mit realem Szenario
+- [ ] **SIM-02**: Praxis-Sessions führen Schritt für Schritt durch das Szenario mit Erklärungen
+- [ ] **SIM-03**: Fortschritt innerhalb einer Session ist sichtbar und nachverfolgbar
 
-### Vue 3 Migration
+### Student-Dashboard
 
-- [x] **VUE3-01**: Kompatibilitaetsanalyse aller Vue 2 Komponenten und Plugins
-- [x] **VUE3-02**: Migrationspfad-Dokument mit konkreten Schritten
-- [x] **VUE3-03**: Risikobewertung und Aufwandsschaetzung (T-Shirt Sizes)
+- [ ] **DASH-01**: Student sieht einen "Heute"-Startscreen mit SmartQueue, Daily Challenge und Streak
+- [ ] **DASH-02**: Globaler Feed aggregiert Ankündigungen aus allen eingeschriebenen Kursen
+- [ ] **DASH-03**: Pool-Ebene (PoolList) ist direkt über Navigation erreichbar, nicht nur indirekt
 
-### Kurs-Feed
+### DevCloud-Integration
 
-- [x] **FEED-01**: Dozent kann Ankuendigungen fuer einen Kurs posten
-- [x] **FEED-02**: Studenten sehen Activity Stream mit Ankuendigungen und Meilensteinen
-- [x] **FEED-03**: Feed zeigt automatisch neue Lerninhalte und Kurs-Fortschritt
+- [ ] **DVCL-01**: Kurs-Header enthält einen Link zum zugehörigen Talk-Raum
+- [ ] **DVCL-02**: Studenten sehen Kursmaterialien (read-only) als eigenen Tab
+- [ ] **DVCL-03**: Buddy-Matching zeigt wer Hilfe anbietet/sucht basierend auf Telos help_offer/help_wanted
+- [ ] **DVCL-04**: Werkzeuge-Tab respektiert kursbezogene Tool-Einschränkungen wenn ein Kurs aktiv ist
 
-### Skill-Map
+### Leitner-Optimierung
 
-- [x] **SKILL-01**: D3.js Force-directed Graph zeigt Kompetenz-Cluster
-- [x] **SKILL-02**: Nodes faerben sich nach Lernfortschritt (rot→gelb→gruen)
-- [x] **SKILL-03**: User kann in Node klicken um zugehoerige Karten zu sehen
+- [ ] **LEIT-01**: Dozent kann pro Kurs Sprint-Intervalle aktivieren (4h/12h/1d/2d statt 1d/3d/7d/14d)
 
 ## Future Requirements
 
-### NOVA v2+
+### Simulator v2+
 
-- **NOVA-F01**: Animierte Uebergaenge zwischen NOVA-Emotionen (Morphing)
-- **NOVA-F02**: User-anpassbare NOVA-Skins/Themes
+- **SIM-F01**: Simulator-Sessions sind kursgebunden und tracken Fortschritt im Lernprofil
+- **SIM-F02**: Dozent kann eigene Simulator-Szenarien erstellen
 
-### Skill-Map v2+
+### DevCloud v2+
 
-- **SKILL-F01**: Skill-Map vergleich zwischen Usern (Dozenten-View)
-- **SKILL-F02**: Empfehlungs-Engine basierend auf Skill-Gaps
+- **DVCL-F01**: Deck-Board-Integration für Kurs-Aufgaben
+- **DVCL-F02**: Collectives-Integration für Kurs-Wikis
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Vue 3 Umsetzung | Nur Evaluierung in v13.0, Migration ist eigener Milestone |
-| Kampagnen-Editor GUI | Dozenten nutzen JSON, Editor erst nach Engine bewaehrt |
-| Voice-Chat im Coop | Zu komplex, Text-Chat reicht |
-| NOVA 3D-Avatar | Performance auf Tablets, CSS/SVG reicht |
-| Skill-Map Dozenten-Vergleich | Erst nach Basis-Graph steht |
+| Vue 3 Migration | Blockiert durch @nextcloud/vue 9.x — eigener Milestone |
+| Kampagnen-Editor GUI | Dozenten nutzen JSON, Editor erst nach Engine bewährt |
+| Skill-Map Dozenten-Vergleich | Erst nach Basis-Graph bewährt (SKILL-F01) |
+| Neue Kampagnen-Inhalte | Engine-Bugs erst fixen, dann Content |
+| WebSocket-basierter Chat | NC hat keinen WS-Server, Talk reicht |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NOVA-01 | Phase 91 | Pending |
-| NOVA-02 | Phase 91 | Pending |
-| NOVA-03 | Phase 90 | Complete |
-| NOVA-04 | Phase 91 | Pending |
-| NOVA-05 | Phase 91 | Pending |
-| GHOST-01 | Phase 92 | Complete |
-| GHOST-02 | Phase 92 | Complete |
-| GHOST-03 | Phase 92 | Complete |
-| GHOST-04 | Phase 92 | Complete |
-| VUE3-01 | Phase 93 | Complete |
-| VUE3-02 | Phase 93 | Complete |
-| VUE3-03 | Phase 93 | Complete |
-| FEED-01 | Phase 94 | Complete |
-| FEED-02 | Phase 94 | Complete |
-| FEED-03 | Phase 94 | Complete |
-| SKILL-01 | Phase 95 | Complete |
-| SKILL-02 | Phase 95 | Complete |
-| SKILL-03 | Phase 95 | Complete |
+| NAV-01 | Phase 96 | Complete |
+| NAV-02 | Phase 96 | Complete |
+| NAV-03 | Phase 96 | Pending |
+| NAV-04 | Phase 96 | Pending |
+| NAV-05 | Phase 97 | Pending |
+| NAV-06 | Phase 97 | Pending |
+| NAV-07 | Phase 97 | Pending |
+| SIM-01 | Phase 98 | Pending |
+| SIM-02 | Phase 98 | Pending |
+| SIM-03 | Phase 98 | Pending |
+| DASH-01 | Phase 99 | Pending |
+| DASH-02 | Phase 99 | Pending |
+| DASH-03 | Phase 99 | Pending |
+| DVCL-01 | Phase 100 | Pending |
+| DVCL-02 | Phase 100 | Pending |
+| DVCL-03 | Phase 100 | Pending |
+| DVCL-04 | Phase 100 | Pending |
+| LEIT-01 | Phase 100 | Pending |
 
 **Coverage:**
-- v13.0 requirements: 18 total
+- v3.4.0 requirements: 18 total
 - Mapped to phases: 18
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-03-27*
-*Last updated: 2026-03-27 after roadmap creation*
+*Requirements defined: 2026-03-28*
+*Last updated: 2026-03-28 — traceability filled after roadmap creation*

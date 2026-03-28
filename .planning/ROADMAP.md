@@ -23,6 +23,7 @@
 - ✅ **v12.0 Campaign Engine — Interaktives Kampagnen-RPG** — Phases 80-85 (shipped 2026-03-26)
 - ✅ **v12.1 DevCloud Optimierung** — Phases 86-89 (shipped 2026-03-27)
 - ✅ **v13.0 Feature Expansion** — Phases 90-95 (shipped 2026-03-28)
+- 🔄 **v3.4.0 UX-Konsolidierung & Simulator-Upgrade** — Phases 96-100 (active)
 
 ## Phases
 
@@ -44,3 +45,79 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 - [x] Phase 95: Skill-Map (2/2 plans) — completed 2026-03-28
 
 </details>
+
+### v3.4.0 UX-Konsolidierung & Simulator-Upgrade (Phases 96-100)
+
+- [ ] **Phase 96: UX-Navigation Struktur** — Dozent-Tabs gruppieren, Abenteuer aus Arena loesen, Kursregeln-Gating verdrahten, Oldschool-Karte fixen
+- [ ] **Phase 97: Code-Hygiene & Settings** — Settings aufsplitten, Zeitreise-Dead-Code entfernen, DE/EN Label-Mix bereinigen
+- [ ] **Phase 98: Simulator-Praxis-Sessions** — Gefuehrte Schritt-fuer-Schritt-Sessions mit realen Szenarien und sichtbarem Fortschritt
+- [ ] **Phase 99: Student-Dashboard** — Heute-Startscreen mit SmartQueue, globaler Feed aus allen Kursen, direkte Pool-Navigation
+- [ ] **Phase 100: DevCloud-Integration & Leitner** — Talk-Shortcut, Kursmaterialien-Tab, Buddy-Matching, Tool-Einschraenkungen, Sprint-Intervalle
+
+## Phase Details
+
+### Phase 96: UX-Navigation Struktur
+**Goal**: Dozenten und Studenten erleben eine klare, logisch gegliederte Navigation ohne Tab-Chaos oder tote Enden
+**Depends on**: Nothing (first phase of milestone)
+**Requirements**: NAV-01, NAV-02, NAV-03, NAV-04
+**Success Criteria** (what must be TRUE):
+  1. Dozent sieht in CourseDetail Tabs in sinnvollen Gruppen (Lernraum / Teilnehmer / Kommunikation / Wettbewerb) statt 16 ungrouped Tabs
+  2. Abenteuer erscheint als eigenstaendiger Lernmodus in der Navigation, nicht als Unterpunkt von Arena
+  3. Ein Kurs mit deaktivierten Arena-Submodes zeigt Studenten diese Tabs nicht an (Kursregeln steuern Sichtbarkeit)
+  4. Die Oldschool-Karte fuehrt zu einem funktionalen Screen oder der Einstiegspunkt ist entfernt
+**Plans:** 1/2 plans executed
+Plans:
+- [ ] 96-01-PLAN.md — Tab-Gruppierung Dozent + Abenteuer als eigenstaendiger Tab
+- [ ] 96-02-PLAN.md — Arena-Submode-Gating per Kursregeln + Oldschool-Pfad-Verifikation
+
+### Phase 97: Code-Hygiene & Settings
+**Goal**: Die App hat keine totem Code-Pfade und alle UI-Texte sind konsistent deutsch
+**Depends on**: Phase 96
+**Requirements**: NAV-05, NAV-06, NAV-07
+**Success Criteria** (what must be TRUE):
+  1. Dozenten sehen PersonalSettings (eigene Lerneinstellungen) UND AdminSettings (Kurs-Verwaltung) — beide erreichbar, nicht vermischt
+  2. Der Zeitreise-Modus ist entweder vollstaendig spielbar oder alle Zeitreise-Einstiegspunkte sind aus der UI entfernt
+  3. Alle sichtbaren UI-Labels sind auf Deutsch via t() — kein englischer Rohtext mehr im Interface
+**Plans**: TBD
+
+### Phase 98: Simulator-Praxis-Sessions
+**Goal**: Simulatoren fuehren Lernende durch reale Szenarien statt ungeleitetes Klick-Training anzubieten
+**Depends on**: Phase 97
+**Requirements**: SIM-01, SIM-02, SIM-03
+**Success Criteria** (what must be TRUE):
+  1. Jeder der 7 Simulatoren bietet mindestens eine auswaehlbare Praxis-Session mit einem konkreten Szenario-Titel
+  2. Eine laufende Session zeigt Schritt-fuer-Schritt-Anweisungen mit Erklaerungen — Lernende wissen was sie tun sollen und warum
+  3. Eine Session zeigt einen Fortschrittsindikator (z.B. "Schritt 3 von 7") der sich beim Abarbeiten aktualisiert
+**Plans**: TBD
+
+### Phase 99: Student-Dashboard
+**Goal**: Studenten koennen ihren Lerntag mit einem einzigen Einstiegspunkt starten und alle relevanten Infos auf einen Blick sehen
+**Depends on**: Phase 97
+**Requirements**: DASH-01, DASH-02, DASH-03
+**Success Criteria** (what must be TRUE):
+  1. Ein Student der sich einloggt sieht sofort einen "Heute"-Screen mit faelligen Karten (SmartQueue), der Daily Challenge und dem aktuellen Streak
+  2. Der globale Feed zeigt Ankuendigungen aus allen Kursen in denen der Student eingeschrieben ist — chronologisch, ohne Kurs wechseln zu muessen
+  3. Pool-Liste ist direkt ueber die Hauptnavigation erreichbar (ein Klick vom Dashboard) — kein indirekter Umweg noetig
+**Plans**: TBD
+
+### Phase 100: DevCloud-Integration & Leitner
+**Goal**: Die App ist eng mit den DevCloud-Werkzeugen verzahnt und Dozenten koennen Lernrhythmen an Kursdauer anpassen
+**Depends on**: Phase 96, Phase 99
+**Requirements**: DVCL-01, DVCL-02, DVCL-03, DVCL-04, LEIT-01
+**Success Criteria** (what must be TRUE):
+  1. Im Kurs-Header ist ein klickbarer Talk-Raum-Link sichtbar der den zugehoerigen NC Talk-Raum oeffnet
+  2. Studenten sehen in CourseDetail einen eigenen "Materialien"-Tab mit read-only Kurs-Dokumenten
+  3. Ein Buddy-Matching-Bereich zeigt wer im Kurs Hilfe anbietet und wer Hilfe sucht (basierend auf Telos help_offer/help_wanted)
+  4. Im Werkzeuge-Tab werden nur die Simulatoren angezeigt die der aktive Kurs erlaubt — gesperrte Tools sind ausgeblendet oder als gesperrt markiert
+  5. Dozent kann pro Kurs Sprint-Intervalle aktivieren (4h/12h/1d/2d) — bei aktivierten Sprint-Intervallen sehen Studenten das angepasste Wiederholungs-Timing
+**Plans**: TBD
+
+## Progress Table
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 96. UX-Navigation Struktur | 1/2 | In Progress|  |
+| 97. Code-Hygiene & Settings | 0/? | Not started | - |
+| 98. Simulator-Praxis-Sessions | 0/? | Not started | - |
+| 99. Student-Dashboard | 0/? | Not started | - |
+| 100. DevCloud-Integration & Leitner | 0/? | Not started | - |
