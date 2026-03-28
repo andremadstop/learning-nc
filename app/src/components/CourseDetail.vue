@@ -14,6 +14,13 @@
 			<p v-if="course && course.description" class="course-description">
 				{{ course.description }}
 			</p>
+			<a v-if="course && course.talk_room_token"
+				:href="talkRoomUrl"
+				target="_blank"
+				rel="noopener"
+				class="talk-room-link">
+				{{ t('learning', 'Talk-Raum') }}
+			</a>
 		</div>
 
 		<!-- Loading state -->
@@ -941,9 +948,30 @@
 			</NcButton>
 			<NcNoteCard v-if="toolConfigSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
 		</div>
+
+		<div class="sprint-config tool-config-section">
+			<h3>{{ t('learning', 'Leitner Sprint-Modus') }}</h3>
+			<p class="mode-config-hint">{{ t('learning', 'Sprint-Intervalle verkuerzen die Wiederholungszeiten (4h/12h/1d/2d statt 1d/3d/7d/14d). Ideal fuer Intensivkurse.') }}</p>
+			<label class="mode-toggle-label">
+				<input type="checkbox" v-model="leitnerSprint" @change="saveLeitnerSprint" />
+				{{ t('learning', 'Sprint-Modus aktivieren') }}
+			</label>
+		</div>
+
+		<div class="talk-config tool-config-section">
+			<h3>{{ t('learning', 'Talk-Raum') }}</h3>
+			<p class="mode-config-hint">{{ t('learning', 'Token des NC Talk-Raums eintragen (z.B. abc123xyz aus der Talk-URL).') }}</p>
+			<div class="talk-token-row">
+				<input type="text" v-model="talkRoomToken" :placeholder="t('learning', 'Talk-Token')" maxlength="255" class="talk-token-input" />
+				<NcButton type="primary" @click="saveTalkRoomToken" :disabled="savingTalkToken">
+					{{ savingTalkToken ? t('learning', 'Saving...') : t('learning', 'Speichern') }}
+				</NcButton>
+			</div>
+			<NcNoteCard v-if="talkTokenSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
+		</div>
 	</div>
 
-	<div v-if="currentTab === 'materials' && isInstructor" class="tab-content materials-section">
+	<div v-if="currentTab === 'materials'" class="tab-content materials-section">
 		<CourseMaterials :course-id="courseId" :is-instructor="isInstructor" />
 	</div>
 
@@ -1325,6 +1353,12 @@ export default {
 			modeConfigLocal: {},
 			savingModeConfig: false,
 			modeConfigSaved: false,
+			// Leitner Sprint
+			leitnerSprint: false,
+			// Talk-Raum
+			talkRoomToken: '',
+			savingTalkToken: false,
+			talkTokenSaved: false,
 			adminEnabledTools: [...ALL_TOOL_IDS],
 			toolConfigLocal: {},
 			loadingToolConfig: false,
@@ -1342,6 +1376,10 @@ export default {
 	computed: {
 		isInstructor() {
 			return this.course && this.course.is_instructor
+		},
+		talkRoomUrl() {
+			if (!this.course?.talk_room_token) return ''
+			return '/apps/spreed/#/call/' + this.course.talk_room_token
 		},
 		myUserId() {
 			const user = getCurrentUser()
@@ -1409,6 +1447,7 @@ export default {
 			if (enabled('league')) tabs.push({ id: 'league', label: t('learning', 'Liga') })
 			if (this.hasEnabledArenaModes) tabs.push({ id: 'arena', label: t('learning', 'Arena') })
 			if (enabled('abenteuer')) tabs.push({ id: 'abenteuer', label: t('learning', 'Abenteuer') })
+			if (this.course?.material_folder) tabs.push({ id: 'materials', label: t('learning', 'Materialien') })
 			return tabs
 		},
 		hasEnabledArenaModes() {
@@ -1829,6 +1868,8 @@ export default {
 				this.course = response.data
 				this.coursePools = response.data.pools || []
 				this.courseMembers = response.data.members || []
+				this.leitnerSprint = !!response.data.leitner_sprint
+				this.talkRoomToken = response.data.talk_room_token || ''
 
 				// Default tab for students
 				if (!this.course.is_instructor) {
@@ -2547,6 +2588,45 @@ export default {
 				console.error('Failed to save mode config', e)
 			} finally {
 				this.savingModeConfig = false
+			}
+		},
+
+		async saveLeitnerSprint() {
+			try {
+				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
+					modeConfig: this.modeConfigLocal,
+					leitnerSprint: this.leitnerSprint,
+				})
+				if (this.course) {
+					this.course.leitner_sprint = this.leitnerSprint
+					if (res.data?.mode_config) {
+						this.course.mode_config = res.data.mode_config
+					}
+				}
+			} catch (e) {
+				console.error('Failed to save leitner sprint', e)
+			}
+		},
+
+		async saveTalkRoomToken() {
+			this.savingTalkToken = true
+			try {
+				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
+					modeConfig: this.modeConfigLocal,
+					talkRoomToken: this.talkRoomToken,
+				})
+				if (this.course) {
+					this.course.talk_room_token = this.talkRoomToken
+					if (res.data?.mode_config) {
+						this.course.mode_config = res.data.mode_config
+					}
+				}
+				this.talkTokenSaved = true
+				setTimeout(() => { this.talkTokenSaved = false }, 3000)
+			} catch (e) {
+				console.error('Failed to save talk room token', e)
+			} finally {
+				this.savingTalkToken = false
 			}
 		},
 
@@ -3692,4 +3772,27 @@ td.mastery-low {
 .mode-config-note { color: var(--color-text-maxcontrast); font-size: 0.85em; }
 .tool-config-section { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--color-border); }
 .tool-config-section h3 { margin: 0 0 8px; }
+
+/* Talk link in header */
+.talk-room-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--color-primary);
+	text-decoration: none;
+	font-size: 0.9em;
+	margin-top: 4px;
+}
+.talk-room-link:hover { text-decoration: underline; }
+
+/* Talk token input */
+.talk-token-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.talk-token-input {
+	padding: 6px 10px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	font-size: 0.95em;
+	width: 280px;
+	max-width: 100%;
+}
 </style>
