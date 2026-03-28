@@ -27,7 +27,7 @@ class ImportVaultCommand extends Command {
 	private const MIN_FILE_LENGTH = 50;
 
 	/** Directory names to exclude from import */
-	private const EXCLUDED_DIRS = ['/Eigene-Notizen/', '/.obsidian/', '/Bilder/'];
+	private const EXCLUDED_DIRS = ['/Eigene-Notizen/', '/.obsidian/', '/Bilder/', '/.venv/', '/tools/'];
 
 	public function __construct(
 		RagChunkMapper $chunkMapper,
@@ -205,8 +205,8 @@ class ImportVaultCommand extends Command {
 
 		$chunks = [];
 		$currentBuffer = '';
-		$currentChapter = $fallbackChapter;
-		$chunkChapter = null;
+		// Chapter = parent directory name, always (per HANDOFF spec)
+		$chapter = $fallbackChapter;
 
 		foreach ($paragraphs as $paragraph) {
 			$paragraph = trim($paragraph);
@@ -214,46 +214,28 @@ class ImportVaultCommand extends Command {
 				continue;
 			}
 
-			// Check if this paragraph is a heading
-			$heading = $this->detectHeading($paragraph);
-			if ($heading !== null) {
-				$currentChapter = $heading;
-				if (trim($currentBuffer) !== '') {
-					$chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chunkChapter];
-					$currentBuffer = '';
-				}
-				$chunkChapter = $currentChapter;
-				continue;
-			}
-
-			if ($chunkChapter === null) {
-				$chunkChapter = $currentChapter;
-			}
-
+			// Headings are kept as content (good for search context), not used as chapter
 			$paragraphTokens = $this->estimateTokens($paragraph);
 			$bufferTokens = $this->estimateTokens($currentBuffer);
 
 			// If single paragraph exceeds target, split by sentences
 			if ($paragraphTokens > self::TARGET_TOKENS) {
 				if (trim($currentBuffer) !== '') {
-					$chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chunkChapter];
+					$chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
 					$currentBuffer = '';
-					$chunkChapter = $currentChapter;
 				}
 
-				$sentenceChunks = $this->splitBySentences($paragraph, $currentChapter);
+				$sentenceChunks = $this->splitBySentences($paragraph, $chapter);
 				foreach ($sentenceChunks as $sc) {
 					$chunks[] = $sc;
 				}
-				$chunkChapter = $currentChapter;
 				continue;
 			}
 
 			// If adding this paragraph would exceed target, flush buffer
 			if ($bufferTokens + $paragraphTokens > self::TARGET_TOKENS && trim($currentBuffer) !== '') {
-				$chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chunkChapter];
+				$chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
 				$currentBuffer = '';
-				$chunkChapter = $currentChapter;
 			}
 
 			$currentBuffer .= ($currentBuffer !== '' ? "\n\n" : '') . $paragraph;
@@ -261,7 +243,7 @@ class ImportVaultCommand extends Command {
 
 		// Flush remaining buffer
 		if (trim($currentBuffer) !== '') {
-			$chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chunkChapter];
+			$chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
 		}
 
 		return $chunks;
@@ -303,18 +285,6 @@ class ImportVaultCommand extends Command {
 		}
 
 		return $chunks;
-	}
-
-	/**
-	 * Detect if a paragraph is a Markdown heading.
-	 *
-	 * @return string|null The heading text, or null if not a heading
-	 */
-	private function detectHeading(string $paragraph): ?string {
-		if (preg_match('/^#{1,6}\s+(.+)$/m', $paragraph, $matches)) {
-			return trim($matches[1]);
-		}
-		return null;
 	}
 
 	/**
