@@ -939,6 +939,11 @@
 		<CourseMaterials :course-id="courseId" :is-instructor="isInstructor" />
 	</div>
 
+	<!-- Feed Tab (both roles) -->
+	<div v-if="currentTab === 'feed'" class="tab-content">
+		<CourseFeed :course-id="courseId" />
+	</div>
+
 		</template>
 
 		<!-- Add Pool Modal -->
@@ -1134,6 +1139,7 @@ import WissensturmMode from './WissensturmMode.vue'
 import LernwuerfelMode from './LernwuerfelMode.vue'
 import AbenteuerMode from './AbenteuerMode.vue'
 import CourseMaterials from './CourseMaterials.vue'
+import CourseFeed from './CourseFeed.vue'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 
 export default {
@@ -1160,6 +1166,7 @@ export default {
 		LernwuerfelMode,
 		AbenteuerMode,
 		CourseMaterials,
+		CourseFeed,
 	},
 
 	props: {
@@ -1369,6 +1376,7 @@ export default {
 					{ id: 'heatmap', label: t('learning', 'Heatmap') },
 					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
 					{ id: 'announcements', label: t('learning', 'Ankündigungen') },
+					{ id: 'feed', label: t('learning', 'Feed') },
 					{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot') },
 					{ id: 'requests', label: t('learning', 'Anfragen') },
 					{ id: 'mode-config', label: t('learning', 'Kursregeln') },
@@ -1383,6 +1391,7 @@ export default {
 			if (enabled('leitner')) tabs.push({ id: 'leitner', label: t('learning', 'Leitner') })
 			if (enabled('exam')) tabs.push({ id: 'exam', label: t('learning', 'Exam') })
 			tabs.push({ id: 'my-progress', label: t('learning', 'Mein Fortschritt') })
+			tabs.push({ id: 'feed', label: t('learning', 'Feed') })
 			tabs.push({ id: 'leaderboard', label: t('learning', 'Leaderboard') })
 			if (enabled('league')) tabs.push({ id: 'league', label: t('learning', 'Liga') })
 			tabs.push({ id: 'arena', label: t('learning', 'Arena') })
