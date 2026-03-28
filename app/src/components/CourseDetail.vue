@@ -30,13 +30,18 @@
 		<template v-if="!loading && course">
 			<!-- Tab selector -->
 			<div class="tab-selector">
-				<button v-for="tab in visibleTabs"
-					:key="tab.id"
-					class="tab-button"
-					:class="{ active: currentTab === tab.id }"
-					@click="selectTab(tab.id)">
-					{{ tab.label }}
-				</button>
+				<template v-for="(tab, idx) in visibleTabs">
+					<span v-if="idx > 0 && tab.group && visibleTabs[idx - 1].group && tab.group !== visibleTabs[idx - 1].group"
+						:key="'sep-' + idx"
+						class="tab-group-separator" />
+					<button
+						:key="tab.id"
+						class="tab-button"
+						:class="{ active: currentTab === tab.id }"
+						@click="selectTab(tab.id)">
+						{{ tab.label }}
+					</button>
+				</template>
 			</div>
 
 			<!-- Pools Tab -->
@@ -1365,22 +1370,27 @@ export default {
 		visibleTabs() {
 			if (this.isInstructor) {
 				return [
-					{ id: 'pools', label: t('learning', 'Pools') },
-					{ id: 'members', label: t('learning', 'Members') },
-					{ id: 'progress', label: t('learning', 'Progress') },
-					{ id: 'class-profile', label: t('learning', 'Klassen-Profil') },
-					{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
-					{ id: 'league', label: t('learning', 'Liga') },
-					{ id: 'arena', label: t('learning', 'Arena') },
-					{ id: 'curriculum', label: t('learning', 'Themen') },
-					{ id: 'heatmap', label: t('learning', 'Heatmap') },
-					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
-					{ id: 'announcements', label: t('learning', 'Ankündigungen') },
-					{ id: 'feed', label: t('learning', 'Feed') },
-					{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot') },
-					{ id: 'requests', label: t('learning', 'Anfragen') },
-					{ id: 'mode-config', label: t('learning', 'Kursregeln') },
-					{ id: 'materials', label: t('learning', 'Materialien') },
+					// Lernraum
+					{ id: 'pools', label: t('learning', 'Pools'), group: 'Lernraum' },
+					{ id: 'curriculum', label: t('learning', 'Themen'), group: 'Lernraum' },
+					{ id: 'materials', label: t('learning', 'Materialien'), group: 'Lernraum' },
+					// Teilnehmer
+					{ id: 'members', label: t('learning', 'Members'), group: 'Teilnehmer' },
+					{ id: 'progress', label: t('learning', 'Progress'), group: 'Teilnehmer' },
+					{ id: 'class-profile', label: t('learning', 'Klassen-Profil'), group: 'Teilnehmer' },
+					{ id: 'heatmap', label: t('learning', 'Heatmap'), group: 'Teilnehmer' },
+					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen'), group: 'Teilnehmer' },
+					// Kommunikation
+					{ id: 'announcements', label: t('learning', 'Ankündigungen'), group: 'Kommunikation' },
+					{ id: 'feed', label: t('learning', 'Feed'), group: 'Kommunikation' },
+					{ id: 'requests', label: t('learning', 'Anfragen'), group: 'Kommunikation' },
+					{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot'), group: 'Kommunikation' },
+					// Wettbewerb
+					{ id: 'leaderboard', label: t('learning', 'Leaderboard'), group: 'Wettbewerb' },
+					{ id: 'league', label: t('learning', 'Liga'), group: 'Wettbewerb' },
+					{ id: 'arena', label: t('learning', 'Arena'), group: 'Wettbewerb' },
+					// Verwaltung
+					{ id: 'mode-config', label: t('learning', 'Kursregeln'), group: 'Verwaltung' },
 				]
 			}
 			const mc = this.course?.mode_config || {}
@@ -2682,6 +2692,15 @@ export default {
 	color: var(--color-primary-element);
 	border-bottom-color: var(--color-primary-element);
 	font-weight: 600;
+}
+
+.tab-group-separator {
+	width: 1px;
+	height: 24px;
+	background: var(--color-border);
+	margin: 0 8px;
+	align-self: center;
+	flex-shrink: 0;
 }
 
 /* Section header */

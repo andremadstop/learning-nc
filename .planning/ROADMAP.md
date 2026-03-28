@@ -22,7 +22,7 @@
 - ✅ **v11.0 Telos-Onboarding + VirtuProf Guide** — Phases 75-79 (shipped 2026-03-25)
 - ✅ **v12.0 Campaign Engine — Interaktives Kampagnen-RPG** — Phases 80-85 (shipped 2026-03-26)
 - ✅ **v12.1 DevCloud Optimierung** — Phases 86-89 (shipped 2026-03-27)
-- 🚧 **v13.0 Feature Expansion** — Phases 90-95 (in progress)
+- ✅ **v13.0 Feature Expansion** — Phases 90-95 (shipped 2026-03-28)
 
 ## Phases
 
@@ -33,109 +33,14 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 
 </details>
 
-### 🚧 v13.0 Feature Expansion (Phases 90-95)
+<details>
+<summary>✅ v13.0 Feature Expansion (Phases 90-95) — SHIPPED 2026-03-28</summary>
 
-**Milestone Goal:** Die Learning-App um visuelle Identitaet, Story-Kampagne, Kompetenz-Visualisierung, Aktivitaets-Feed und Vue 3 Migrationsbewertung erweitern.
+- [x] Phase 90: NOVA Character Bible (1/1 plans) — completed 2026-03-27
+- [x] Phase 91: NOVA Visual Implementation (4/4 plans) — completed 2026-03-27
+- [x] Phase 92: Ghostline Quest (2/2 plans) — completed 2026-03-27
+- [x] Phase 93: Vue 3 Migration Evaluation (1/1 plan) — completed 2026-03-28
+- [x] Phase 94: Kurs-Feed (2/2 plans) — completed 2026-03-28
+- [x] Phase 95: Skill-Map (2/2 plans) — completed 2026-03-28
 
-- [x] **Phase 90: NOVA Character Bible** - Persoenlichkeitsdefinition und Designgrundlage fuer alle NOVA-Visuals (completed 2026-03-27)
-- [x] **Phase 91: NOVA Visual Implementation** - Animierte Bot-States, Reaktionslogik, Sound-Feedback, Vue-Komponenten (completed 2026-03-27)
-- [x] **Phase 92: Ghostline Quest** - Network+ Kampagne mit Story-Arc, Terminal-Puzzles und Simulator-Integration (completed 2026-03-27)
-- [x] **Phase 93: Vue 3 Migration Evaluation** - Kompatibilitaetsanalyse, Migrationspfad und Aufwandsschaetzung (completed 2026-03-27)
-- [x] **Phase 94: Kurs-Feed** - Ankuendigungen, Meilensteine und Activity Stream fuer Kursgruppen (completed 2026-03-28)
-- [x] **Phase 95: Skill-Map** - D3.js Force-Graph zur Kompetenz-Visualisierung mit Lernfortschritt (completed 2026-03-28)
-
-## Phase Details
-
-### Phase 90: NOVA Character Bible
-**Goal**: NOVAs Persoenlichkeit, visuelle Sprache und Verhaltensregeln sind konsistent dokumentiert und dienen als verbindliche Referenz fuer alle visuellen Implementierungen
-**Depends on**: Nothing (first phase of v13.0)
-**Requirements**: NOVA-03
-**Success Criteria** (what must be TRUE):
-  1. Eine Character Bible existiert die NOVAs Persoenlichkeit (Tonfall, Humor-Stil, Grenzen) so definiert dass zwei verschiedene Entwickler denselben Bot-Charakter implementieren wuerden
-  2. Die Bible definiert visuelle Design-Tokens (Farben, Formen, Proportionen) die in den Gemini-Deliverables (VISUAL_CONCEPT.md, UI_ANIMATION_GUIDE.md) referenziert werden
-  3. Kontextabhaengige Verhaltensregeln sind dokumentiert — NOVA reagiert in Quiz anders als in Chat anders als in Kampagne, und diese Unterschiede sind explizit beschrieben
-**Plans**: 1 plan
-Plans:
-- [ ] 90-01-PLAN.md — Consolidate Gemini deliverables + GeminiService.php into canonical Character Bible
-
-### Phase 91: NOVA Visual Implementation
-**Goal**: VirtuProf ist ein visuell lebendiger Bot mit Animationen, kontextabhaengigen Reaktionen, optionalem Sound-Feedback und sauberer Vue-Komponentenarchitektur
-**Depends on**: Phase 90 (Character Bible als Design-Referenz)
-**Requirements**: NOVA-01, NOVA-02, NOVA-04, NOVA-05
-**Success Criteria** (what must be TRUE):
-  1. VirtuProf zeigt sichtbar unterschiedliche Idle/Thinking/Speaking-Animationen — der User erkennt sofort ob der Bot wartet, nachdenkt oder antwortet
-  2. Bot reagiert visuell auf User-Aktionen mit passenden Emotionen (Lob bei richtiger Antwort, Hinweis bei Fehler, Ermutigung bei Streak-Verlust) — die Reaktionen folgen der Reaction Logic aus den Gemini-Deliverables
-  3. Sound-Feedback ist optional (User-Toggle in Einstellungen), dezent und unterstuetzt die visuellen Reaktionen — Sound aus ist der Default, Sound an fuegt kurze Audio-Cues hinzu
-  4. Bubble, Dock und Overlay sind als eigenstaendige Vue-Komponenten implementiert die den Component Specs folgen — jede Komponente ist unabhaengig testbar und wiederverwendbar
-**Plans**: 4 plans
-Plans:
-- [ ] 91-01-PLAN.md — NOVA Cyber-Sketch Avatar mit modularer Komponentenarchitektur und animierten States
-- [ ] 91-02-PLAN.md — Web Audio API Sound-System mit User-Toggle
-- [ ] 91-03-PLAN.md — Kontextabhaengige Reaktions-Logik (visuelle Emotionen + Sound-Cues)
-- [ ] 91-04-PLAN.md — Dock und Panel Extraktion aus VirtuProf.vue Monolith
-
-### Phase 92: Ghostline Quest
-**Goal**: Studenten koennen eine vollstaendige Network+ Kampagne mit Story, Terminal-Puzzles und Simulator-Challenges durchspielen
-**Depends on**: Nothing (nutzt bestehende Simulator-Infrastruktur aus v9.0 und Campaign Engine aus v12.0)
-**Requirements**: GHOST-01, GHOST-02, GHOST-03, GHOST-04
-**Success Criteria** (what must be TRUE):
-  1. Die Kampagne hat mindestens 5 spielbare Szenen mit Terminal-Puzzles die Network+-Wissen abfragen — ein Student kann die Kampagne von Anfang bis Ende durchspielen
-  2. Die Story hat einen erkennbaren Arc mit Protagonist, Antagonist und mindestens einem Wendepunkt — der Student will weiterspielen weil die Geschichte spannend ist
-  3. NPC-Dialoge bieten verzweigte Optionen die den Spielverlauf beeinflussen — verschiedene Entscheidungen fuehren zu unterschiedlichen Szenen oder Ergebnissen
-  4. Mindestens 3 Simulatoren (DNS, Firewall, Routing) sind als interaktive Challenges in Quest-Szenen eingebettet — der Student loest Netzwerk-Probleme innerhalb der Story statt in isolierten Uebungen
-**Plans**: 2 plans
-Plans:
-- [ ] 92-01-PLAN.md — Foundation: TerminalPuzzle.vue, Ghostline CSS, DauBot ghostline category, schema updates
-- [ ] 92-02-PLAN.md — Campaign content: ghostline_quest.json with 5-act story, branching paths, simulator integration
-
-### Phase 93: Vue 3 Migration Evaluation
-**Goal**: Eine fundierte Entscheidungsgrundlage existiert ob und wie die Migration von Vue 2 auf Vue 3 durchgefuehrt werden soll
-**Depends on**: Nothing (reine Analyse, kann parallel laufen)
-**Requirements**: VUE3-01, VUE3-02, VUE3-03
-**Success Criteria** (what must be TRUE):
-  1. Jede Vue 2 Komponente und jedes Plugin ist auf Vue 3 Kompatibilitaet geprueft — eine Tabelle zeigt fuer jede Komponente ob sie kompatibel, anpassbar oder neu geschrieben werden muss
-  2. Ein konkreter Migrationspfad mit geordneten Schritten existiert — nicht "irgendwann migrieren" sondern "erst X, dann Y, dann Z" mit klaren Abhaengigkeiten
-  3. Aufwand ist in T-Shirt Sizes (S/M/L/XL) pro Komponente geschaetzt und Risiken sind benannt — der User kann entscheiden ob Vue 3 Migration ein eigener Milestone wird oder aufgeschoben wird
-**Plans**: 1 plan
-Plans:
-- [ ] 93-01-PLAN.md — Kompatibilitaetstabelle aller Komponenten + Migrationspfad + Risikobewertung + Go/No-Go
-
-### Phase 94: Kurs-Feed
-**Goal**: Dozenten und Studenten haben einen zentralen Activity Stream der Ankuendigungen, Meilensteine und neue Lerninhalte eines Kurses buendelt
-**Depends on**: Nothing (eigenstaendiges Feature)
-**Requirements**: FEED-01, FEED-02, FEED-03
-**Success Criteria** (what must be TRUE):
-  1. Ein Dozent kann eine Ankuendigung fuer einen Kurs posten die alle eingeschriebenen Studenten im Feed sehen — der Dozent muss nicht jeden einzeln benachrichtigen
-  2. Studenten sehen im Dashboard einen Feed mit Ankuendigungen und erreichten Meilensteinen (z.B. "Pool X freigeschaltet", "Neuer Lerninhalt verfuegbar") — alles Wichtige an einem Ort
-  3. Neue Lerninhalte und Kurs-Fortschritt erscheinen automatisch im Feed ohne manuelles Zutun — der Feed ist lebendig auch wenn der Dozent nichts postet
-**Plans**: 2 plans
-Plans:
-- [ ] 94-01-PLAN.md — Backend: DB migration, FeedItem entity/mapper, FeedService, FeedController, route registration, CourseService hooks
-- [ ] 94-02-PLAN.md — Frontend: CourseFeed.vue component with feed tab in CourseDetail for students and instructors
-
-### Phase 95: Skill-Map
-**Goal**: Studenten sehen ihre Kompetenzen als interaktiven Force-Graph der Staerken und Luecken auf einen Blick sichtbar macht
-**Depends on**: Nothing (eigenstaendiges Feature, nutzt bestehende Lernfortschritt-Daten)
-**Requirements**: SKILL-01, SKILL-02, SKILL-03
-**Success Criteria** (what must be TRUE):
-  1. Ein D3.js Force-directed Graph zeigt Kompetenz-Cluster als verbundene Nodes — der Student sieht welche Themengebiete zusammenhaengen und wie gross jedes Cluster ist
-  2. Nodes faerben sich nach Lernfortschritt (rot = schwach, gelb = in Arbeit, gruen = gemeistert) — der Student erkennt auf einen Blick wo Luecken sind
-  3. Ein Klick auf einen Node zeigt die zugehoerigen Karteikarten — der Student kann direkt aus der Map heraus schwache Bereiche gezielt ueben
-**Plans**: 2 plans
-Plans:
-- [ ] 95-01-PLAN.md — Backend endpoint + skillMapEngine.js (TDD) + skillMapRenderer.js + CSS
-- [ ] 95-02-PLAN.md — SkillMap.vue component + App.vue navigation integration + visual verification
-
-## Progress
-
-**Execution Order:**
-Phase 90 first (NOVA foundation). Phase 91 after 90. Phases 92-95 independent, can run in any order or parallel.
-
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 90. NOVA Character Bible | 1/1 | Complete    | 2026-03-27 | - |
-| 91. NOVA Visual Implementation | v13.0 | Complete    | 2026-03-27 | - |
-| 92. Ghostline Quest | 2/2 | Complete    | 2026-03-27 | - |
-| 93. Vue 3 Migration Evaluation | 1/1 | Complete    | 2026-03-28 | - |
-| 94. Kurs-Feed | 2/2 | Complete    | 2026-03-28 | - |
-| 95. Skill-Map | 2/2 | Complete   | 2026-03-28 | - |
+</details>
