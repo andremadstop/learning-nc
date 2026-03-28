@@ -34,6 +34,15 @@
       >
         {{ t('learning', 'Übung') }}
       </button>
+      <button
+        class="sim-tool__tab"
+        :class="{ 'sim-tool__tab--active': currentView === 'practicum' }"
+        role="tab"
+        :aria-selected="currentView === 'practicum' ? 'true' : 'false'"
+        @click="view = 'practicum'"
+      >
+        {{ t('learning', 'Praxis') }}
+      </button>
     </nav>
 
     <section v-if="currentView === 'simulator'" class="sim-tool__panel">
@@ -90,7 +99,7 @@
       </div>
     </section>
 
-    <section v-else class="sim-tool__panel sim-tool__panel--exercise">
+    <section v-else-if="currentView === 'exercise'" class="sim-tool__panel sim-tool__panel--exercise">
       <div v-if="!isEmbedded" class="sim-tool__scenarios">
         <button
           v-for="scenarioEntry in scenarios"
@@ -142,6 +151,10 @@
           {{ scenarioFeedback.message }}
         </NcNoteCard>
       </div>
+    </section>
+
+    <section v-else-if="currentView === 'practicum'" class="sim-tool__panel">
+      <PracticumRunner simulator-type="dns" />
     </section>
 
     <section
@@ -238,6 +251,7 @@
 <script>
 import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js';
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
+import PracticumRunner from './PracticumRunner.vue';
 import dnsScenarios from '../../data/dns_scenarios.json';
 import {
   getRecordTypeCatalog,
@@ -267,6 +281,7 @@ export default {
   components: {
     NcEmptyContent,
     NcNoteCard,
+    PracticumRunner,
   },
   props: {
     mode: {

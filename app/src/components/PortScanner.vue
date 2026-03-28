@@ -11,6 +11,7 @@
     <nav v-if="!isEmbedded" class="sim-tool__tabs" role="tablist">
       <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'simulator' }" @click="view = 'simulator'">{{ t('learning', 'Simulator') }}</button>
       <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">{{ t('learning', 'Übung') }}</button>
+      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'practicum' }" @click="view = 'practicum'">{{ t('learning', 'Praxis') }}</button>
     </nav>
 
     <section v-if="currentView === 'simulator'" class="sim-tool__panel">
@@ -88,7 +89,7 @@
       </div>
     </section>
 
-    <section v-else class="sim-tool__panel">
+    <section v-else-if="currentView === 'exercise'" class="sim-tool__panel">
       <div v-if="!isEmbedded" class="sim-tool__scenario-grid">
         <button v-for="entry in scenarios" :key="entry.id" class="sim-tool__scenario" :class="{ 'sim-tool__scenario--active': activeScenario && activeScenario.id === entry.id }" @click="loadScenario(entry)">
           <strong>{{ entry.title }}</strong>
@@ -118,12 +119,17 @@
         </NcNoteCard>
       </div>
     </section>
+
+    <section v-else-if="currentView === 'practicum'" class="sim-tool__panel">
+      <PracticumRunner simulator-type="portscan" />
+    </section>
   </section>
 </template>
 
 <script>
 import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import PracticumRunner from './PracticumRunner.vue'
 import portscanScenarios from '../../data/portscan_scenarios.json'
 import {
   buildScanResults,
@@ -139,6 +145,7 @@ export default {
   components: {
     NcEmptyContent,
     NcNoteCard,
+    PracticumRunner,
   },
   props: {
     mode: {

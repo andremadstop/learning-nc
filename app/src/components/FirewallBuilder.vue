@@ -15,6 +15,9 @@
       <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'exercise' }" @click="view = 'exercise'">
         {{ t('learning', 'Übung') }}
       </button>
+      <button class="sim-tool__tab" :class="{ 'sim-tool__tab--active': currentView === 'practicum' }" @click="view = 'practicum'">
+        {{ t('learning', 'Praxis') }}
+      </button>
     </nav>
 
     <section v-if="currentView === 'simulator'" class="sim-tool__panel">
@@ -146,7 +149,7 @@
       </div>
     </section>
 
-    <section v-else class="sim-tool__panel">
+    <section v-else-if="currentView === 'exercise'" class="sim-tool__panel">
       <div v-if="!isEmbedded" class="sim-tool__scenario-grid">
         <button
           v-for="entry in scenarios"
@@ -179,12 +182,17 @@
         </NcNoteCard>
       </div>
     </section>
+
+    <section v-else-if="currentView === 'practicum'" class="sim-tool__panel">
+      <PracticumRunner simulator-type="firewall" />
+    </section>
   </section>
 </template>
 
 <script>
 import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import PracticumRunner from './PracticumRunner.vue'
 import firewallScenarios from '../../data/firewall_scenarios.json'
 import { createRule, evaluatePacket, reorderRules } from '../utils/firewallEngine.js'
 
@@ -193,6 +201,7 @@ export default {
   components: {
     NcEmptyContent,
     NcNoteCard,
+    PracticumRunner,
   },
   props: {
     mode: {
