@@ -1,5 +1,5 @@
 /**
- * Character Registry — All 13 figures for Learning-NC campaign system.
+ * Character Registry — All 12 figures for Learning-NC campaign system.
  *
  * Each character has: id, name, role, personality, palette (primary/accent/glow
  * referencing --lnc-* design tokens), silhouette key, states, campaignAppearances.
@@ -26,7 +26,7 @@ const FALLBACK_CHARACTER = Object.freeze({
 })
 
 /**
- * All 13 characters: 7 heroes + 6 workplace figures.
+ * All 12 characters: 6 heroes + 6 workplace figures.
  */
 const CHARACTERS = Object.freeze({
 
@@ -105,21 +105,6 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'helpdesk',
 		states: ['idle', 'thinking', 'alert', 'celebrate'],
 		campaignAppearances: ['erste_woche', 'grosser_ausfall'],
-	}),
-
-	chronos: Object.freeze({
-		id: 'chronos',
-		name: 'CHRONOS',
-		role: 'Zeitreise-Guide',
-		personality: 'raetselhaft, philosophisch, spricht in Metaphern',
-		palette: {
-			primary: 'var(--lnc-ink)',
-			accent: 'var(--lnc-amber)',
-			glow: 'var(--lnc-cyan)',
-		},
-		silhouette: 'chronos',
-		states: ['idle', 'thinking', 'alert', 'celebrate'],
-		campaignAppearances: ['zeitreise_netzwerk'],
 	}),
 
 	ghostline: Object.freeze({

@@ -1361,7 +1361,6 @@ export default {
 				{ key: 'league', label: t('learning', 'Liga') },
 				{ key: 'oldschool', label: t('learning', 'Oldschool') },
 				{ key: 'abenteuer', label: t('learning', 'Abenteuer') },
-				{ key: 'zeitreise', label: t('learning', 'Zeitreise') },
 			]
 		},
 		toolConfigKeys() {

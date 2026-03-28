@@ -16,15 +16,6 @@
           >
             {{ t('learning', 'Kurse') }}
           </button>
-          <!-- Zeitreise-Tab ausgeblendet — Modus braucht Überarbeitung, siehe Backlog -->
-          <!-- <button
-            :class="['main-nav-btn', { active: mainView === 'zeitreise' }]"
-            role="tab"
-            :aria-selected="mainView === 'zeitreise' ? 'true' : 'false'"
-            @click="switchMainView('zeitreise')"
-          >
-            {{ t('learning', 'Zeitreise') }}
-          </button> -->
           <button
             :class="['main-nav-btn', { active: mainView === 'werkzeuge' }]"
             role="tab"
@@ -185,7 +176,33 @@
 
         <!-- ==================== SETTINGS VIEW ==================== -->
         <template v-if="mainView === 'settings'">
-          <AdminSettings v-if="userRole !== 'student'" />
+          <!-- Instructor: sub-tabs for Kurs-Verwaltung + Meine Einstellungen -->
+          <template v-if="userRole !== 'student'">
+            <div class="course-sub-nav" role="tablist" @keydown="handleTablistKeydown">
+              <button
+                :class="['mode-btn', { active: settingsSubTab === 'admin' }]"
+                role="tab"
+                :aria-selected="settingsSubTab === 'admin' ? 'true' : 'false'"
+                @click="settingsSubTab = 'admin'"
+              >
+                {{ t('learning', 'Kurs-Verwaltung') }}
+              </button>
+              <button
+                :class="['mode-btn', { active: settingsSubTab === 'personal' }]"
+                role="tab"
+                :aria-selected="settingsSubTab === 'personal' ? 'true' : 'false'"
+                @click="settingsSubTab = 'personal'"
+              >
+                {{ t('learning', 'Meine Einstellungen') }}
+              </button>
+            </div>
+            <AdminSettings v-if="settingsSubTab === 'admin'" />
+            <PersonalSettings
+              v-else
+              @content-language-changed="updateContentLanguage"
+              @virtuprof-enabled-changed="updateVirtuProfEnabled" />
+          </template>
+          <!-- Student: only PersonalSettings, no sub-tabs -->
           <PersonalSettings
             v-else
             @content-language-changed="updateContentLanguage"
@@ -242,14 +259,6 @@
             @openPool="openPoolFromCourse"
             @clearPresetDuel="clearVirtuProfDuel"
             @selectStudent="selectStudent"
-          />
-        </template>
-
-        <!-- ==================== ZEITREISE VIEW ==================== -->
-        <template v-if="mainView === 'zeitreise'">
-          <HackThroughTime
-            :contentLanguage="contentLanguage"
-            @back="switchMainView('courses')"
           />
         </template>
 
@@ -326,7 +335,6 @@ import DuelMode from './components/DuelMode.vue';
 import ArenaSelector from './components/ArenaSelector.vue';
 import VirtuProf from './components/VirtuProf.vue';
 import AbenteuerMode from './components/AbenteuerMode.vue';
-import HackThroughTime from './components/HackThroughTime.vue';
 import SubnetCalculator from './components/SubnetCalculator.vue';
 import DnsResolver from './components/DnsResolver.vue';
 import FirewallBuilder from './components/FirewallBuilder.vue';
@@ -365,7 +373,6 @@ export default {
     PersonalSettings,
     VirtuProf,
     AbenteuerMode,
-    HackThroughTime,
     SubnetCalculator,
     DnsResolver,
     FirewallBuilder,
@@ -400,6 +407,7 @@ export default {
       selectedStudent: null,
       courseView: 'list',
       courseTab: 'training',
+      settingsSubTab: 'admin',
       toolsView: 'subnet',
       enabledTools: [...ALL_TOOL_IDS],
       contentLanguage: '',
