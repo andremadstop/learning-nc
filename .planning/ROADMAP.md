@@ -41,7 +41,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 - [x] **Phase 91: NOVA Visual Implementation** - Animierte Bot-States, Reaktionslogik, Sound-Feedback, Vue-Komponenten (completed 2026-03-27)
 - [x] **Phase 92: Ghostline Quest** - Network+ Kampagne mit Story-Arc, Terminal-Puzzles und Simulator-Integration (completed 2026-03-27)
 - [x] **Phase 93: Vue 3 Migration Evaluation** - Kompatibilitaetsanalyse, Migrationspfad und Aufwandsschaetzung (completed 2026-03-27)
-- [ ] **Phase 94: Kurs-Feed** - Ankuendigungen, Meilensteine und Activity Stream fuer Kursgruppen
+- [x] **Phase 94: Kurs-Feed** - Ankuendigungen, Meilensteine und Activity Stream fuer Kursgruppen (completed 2026-03-28)
 - [ ] **Phase 95: Skill-Map** - D3.js Force-Graph zur Kompetenz-Visualisierung mit Lernfortschritt
 
 ## Phase Details
@@ -136,5 +136,5 @@ Phase 90 first (NOVA foundation). Phase 91 after 90. Phases 92-95 independent, c
 | 91. NOVA Visual Implementation | v13.0 | Complete    | 2026-03-27 | - |
 | 92. Ghostline Quest | 2/2 | Complete    | 2026-03-27 | - |
 | 93. Vue 3 Migration Evaluation | 1/1 | Complete    | 2026-03-28 | - |
-| 94. Kurs-Feed | 1/2 | In Progress|  | - |
+| 94. Kurs-Feed | 2/2 | Complete   | 2026-03-28 | - |
 | 95. Skill-Map | v13.0 | 0/? | Not started | - |

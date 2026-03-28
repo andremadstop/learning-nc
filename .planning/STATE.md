@@ -2,17 +2,17 @@
 gsd_state_version: 1.0
 milestone: v13.0
 milestone_name: Feature Expansion
-current_plan: 1 of 2
-status: executing
-stopped_at: Completed 94-01-PLAN.md
-last_updated: "2026-03-28T00:47:00Z"
-last_activity: 2026-03-28 — Phase 94 Plan 01 complete (Kurs-Feed Backend API)
+current_plan: 2 of 2
+status: phase-complete
+stopped_at: Completed 94-02-PLAN.md
+last_updated: "2026-03-28T00:55:20Z"
+last_activity: 2026-03-28 — Phase 94 complete (Kurs-Feed Frontend + Backend)
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 8
-  completed_plans: 5
-  percent: 68
+  completed_plans: 6
+  percent: 75
 ---
 
 # Project State
@@ -22,15 +22,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-27)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** v13.0 Feature Expansion — Phase 94 (Kurs-Feed) Plan 01 complete
+**Current focus:** v13.0 Feature Expansion — Phase 94 (Kurs-Feed) complete
 
 ## Current Position
 
-Phase: 94 of 95 (Kurs-Feed) — Plan 01 complete
-Current Plan: 1 of 2
-Last activity: 2026-03-28 — Phase 94 Plan 01 complete (Kurs-Feed Backend API)
+Phase: 94 of 95 (Kurs-Feed) — Phase complete
+Current Plan: 2 of 2
+Last activity: 2026-03-28 — Phase 94 complete (Kurs-Feed Frontend + Backend)
 
-Progress: [██████▊░░░] 68%
+Progress: [███████▌░░] 75%
 
 ## Accumulated Context
 
@@ -50,6 +50,7 @@ Progress: [██████▊░░░] 68%
 - [Phase 92]: 46-node campaign JSON with 5 acts, all 7 tool types, 3 reputation-gated endings
 - [Phase 93]: Bedingtes Go fuer Vue 3 Migration — blockiert durch @nextcloud/vue 9.x; 70% Komponenten kompatibel, 30% anpassbar, 0% rewrite; vue-compat Strategie empfohlen
 - [Phase 94-01]: Feed API backend complete — FeedService injected into CourseService via DI, auto-feed hooks on createAnnouncement + addPool
+- [Phase 94-02]: Feed frontend complete — CourseFeed.vue with type icons/badges/relative times, Feed tab in CourseDetail for both roles, 22 Vitest tests
 
 ### Pending Todos
 
@@ -63,7 +64,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T00:47:00Z
-Stopped at: Completed 94-01-PLAN.md
+Last session: 2026-03-28T00:55:20Z
+Stopped at: Completed 94-02-PLAN.md
 Resume file: None
-Next action: Execute 94-02-PLAN.md (Kurs-Feed Frontend)
+Next action: Execute Phase 95 (next phase in milestone)
