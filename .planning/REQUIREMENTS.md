@@ -30,14 +30,14 @@
 
 ### DevCloud-Integration
 
-- [ ] **DVCL-01**: Kurs-Header enthält einen Link zum zugehörigen Talk-Raum
+- [x] **DVCL-01**: Kurs-Header enthält einen Link zum zugehörigen Talk-Raum
 - [ ] **DVCL-02**: Studenten sehen Kursmaterialien (read-only) als eigenen Tab
-- [ ] **DVCL-03**: Buddy-Matching zeigt wer Hilfe anbietet/sucht basierend auf Telos help_offer/help_wanted
+- [x] **DVCL-03**: Buddy-Matching zeigt wer Hilfe anbietet/sucht basierend auf Telos help_offer/help_wanted
 - [ ] **DVCL-04**: Werkzeuge-Tab respektiert kursbezogene Tool-Einschränkungen wenn ein Kurs aktiv ist
 
 ### Leitner-Optimierung
 
-- [ ] **LEIT-01**: Dozent kann pro Kurs Sprint-Intervalle aktivieren (4h/12h/1d/2d statt 1d/3d/7d/14d)
+- [x] **LEIT-01**: Dozent kann pro Kurs Sprint-Intervalle aktivieren (4h/12h/1d/2d statt 1d/3d/7d/14d)
 
 ## Future Requirements
 
@@ -78,11 +78,11 @@
 | DASH-01 | Phase 99 | Complete |
 | DASH-02 | Phase 99 | Complete |
 | DASH-03 | Phase 99 | Complete |
-| DVCL-01 | Phase 100 | Pending |
+| DVCL-01 | Phase 100 | Complete |
 | DVCL-02 | Phase 100 | Pending |
-| DVCL-03 | Phase 100 | Pending |
+| DVCL-03 | Phase 100 | Complete |
 | DVCL-04 | Phase 100 | Pending |
-| LEIT-01 | Phase 100 | Pending |
+| LEIT-01 | Phase 100 | Complete |
 
 **Coverage:**
 - v3.4.0 requirements: 18 total
