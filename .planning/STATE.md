@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
 status: executing
-stopped_at: Completed 97-02-PLAN.md
-last_updated: "2026-03-28T12:02:22.643Z"
-last_activity: 2026-03-28 — Plan 01 complete (Tab-Gruppierung + Abenteuer-Eigenstaendigkeit)
+stopped_at: Completed 98-01-PLAN.md
+last_updated: "2026-03-28T12:29:08.426Z"
+last_activity: 2026-03-28 — Plan 01 complete (PracticumEngine + 11 Session JSONs)
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
-  percent: 0
+  total_plans: 6
+  completed_plans: 5
+  percent: 100
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 ## Current Position
 
-Phase: 96 — UX-Navigation Struktur (in progress)
+Phase: 98 — Simulator-Praxis-Sessions (in progress)
 Plan: 01 complete, next 02
-Status: Executing phase 96
-Last activity: 2026-03-28 — Plan 01 complete (Tab-Gruppierung + Abenteuer-Eigenstaendigkeit)
+Status: Executing phase 98
+Last activity: 2026-03-28 — Plan 01 complete (PracticumEngine + 11 Session JSONs)
 
-Progress: [░░░░░░░░░░] 0% (0/5 phases)
+Progress: [██████████] 100% (116/110 plans)
 
 ## Phase Overview
 
@@ -38,7 +38,7 @@ Progress: [░░░░░░░░░░] 0% (0/5 phases)
 |-------|------|--------------|--------|
 | 96 | UX-Navigation Struktur | NAV-01, NAV-02, NAV-03, NAV-04 | In progress (1/? plans) |
 | 97 | Code-Hygiene & Settings | NAV-05, NAV-06, NAV-07 | Not started |
-| 98 | Simulator-Praxis-Sessions | SIM-01, SIM-02, SIM-03 | Not started |
+| 98 | Simulator-Praxis-Sessions | SIM-01, SIM-02, SIM-03 | In progress (1/2 plans) |
 | 99 | Student-Dashboard | DASH-01, DASH-02, DASH-03 | Not started |
 | 100 | DevCloud-Integration & Leitner | DVCL-01, DVCL-02, DVCL-03, DVCL-04, LEIT-01 | Not started |
 
@@ -60,6 +60,8 @@ Progress: [░░░░░░░░░░] 0% (0/5 phases)
 - [Phase 97]: Settings sub-tabs use course-sub-nav pattern for visual consistency
 - [Phase 97]: epoch-tokens.css import kept, backend Zeitreise cleanup deferred
 - [Phase 97]: MODE_MAP labels stay as const keys, this.t() applied in modeConfig computed
+- [Phase 98]: Engine uses lnc-practicum- localStorage prefix for session persistence
+- [Phase 98]: Session steps reference existing scenarioIds from *_scenarios.json (zero duplication)
 
 ### Pending Todos
 
@@ -78,7 +80,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T12:02:22.641Z
-Stopped at: Completed 97-02-PLAN.md
+Last session: 2026-03-28T12:29:08.422Z
+Stopped at: Completed 98-01-PLAN.md
 Resume file: None
 Next action: Execute next plan in phase 96

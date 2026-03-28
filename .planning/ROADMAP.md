@@ -91,7 +91,10 @@ Plans:
   1. Jeder der 7 Simulatoren bietet mindestens eine auswaehlbare Praxis-Session mit einem konkreten Szenario-Titel
   2. Eine laufende Session zeigt Schritt-fuer-Schritt-Anweisungen mit Erklaerungen — Lernende wissen was sie tun sollen und warum
   3. Eine Session zeigt einen Fortschrittsindikator (z.B. "Schritt 3 von 7") der sich beim Abarbeiten aktualisiert
-**Plans**: TBD
+**Plans:** 1/2 plans executed
+Plans:
+- [ ] 98-01-PLAN.md — Practicum Engine (State Machine + localStorage) + Session-Daten fuer alle 7 Simulatoren
+- [ ] 98-02-PLAN.md — PracticumRunner UI-Komponente + "Praxis"-Tab in alle 7 Simulatoren integrieren
 
 ### Phase 99: Student-Dashboard
 **Goal**: Studenten koennen ihren Lerntag mit einem einzigen Einstiegspunkt starten und alle relevanten Infos auf einen Blick sehen
@@ -120,7 +123,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 96. UX-Navigation Struktur | 2/2 | Complete    | 2026-03-28 |
-| 97. Code-Hygiene & Settings | 2/2 | Complete   | 2026-03-28 |
-| 98. Simulator-Praxis-Sessions | 0/? | Not started | - |
+| 97. Code-Hygiene & Settings | 2/2 | Complete    | 2026-03-28 |
+| 98. Simulator-Praxis-Sessions | 1/2 | In Progress|  |
 | 99. Student-Dashboard | 0/? | Not started | - |
 | 100. DevCloud-Integration & Leitner | 0/? | Not started | - |
