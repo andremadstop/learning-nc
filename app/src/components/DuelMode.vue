@@ -170,7 +170,7 @@
         <NcNoteCard type="warning">
           {{ t('learning', 'Verbindung zum Gegner unterbrochen. Das Spiel wird beendet...') }}
         </NcNoteCard>
-        <NcButton type="primary" @click="$emit('back')">{{ t('learning', 'Zurueck') }}</NcButton>
+        <NcButton type="primary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
       </div>
 
       <div class="question-abort-area">

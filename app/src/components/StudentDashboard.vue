@@ -15,7 +15,7 @@
         <div class="dashboard-col-left">
           <!-- SmartQueue Widget -->
           <div class="widget-card widget-smartqueue">
-            <p class="section-label">{{ t('learning', 'Faellige Karten') }}</p>
+            <p class="section-label">{{ t('learning', 'Fällige Karten') }}</p>
             <div class="sq-widget-body">
               <span class="sq-widget-icon">&#x1F4DA;</span>
               <span class="sq-widget-count">{{ queueCount }}</span>

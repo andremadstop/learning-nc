@@ -14,7 +14,7 @@
 					class="primary material-btn"
 					:disabled="!folderInput.trim() || settingFolder"
 					@click="setFolder">
-					{{ settingFolder ? t('learning', 'Verknuepfe...') : t('learning', 'Ordner verknuepfen') }}
+					{{ settingFolder ? t('learning', 'Verknüpfe...') : t('learning', 'Ordner verknüpfen') }}
 				</button>
 			</div>
 			<p v-if="materialFolder" class="current-folder">
@@ -29,7 +29,7 @@
 
 		<!-- Empty States -->
 		<div v-if="!materialFolder && !loading" class="empty-state">
-			<p>{{ t('learning', 'Kein Materialordner verknuepft. Bitte einen Nextcloud-Ordner auswaehlen.') }}</p>
+			<p>{{ t('learning', 'Kein Materialordner verknüpft. Bitte einen Nextcloud-Ordner auswählen.') }}</p>
 		</div>
 
 		<div v-else-if="materialFolder && documents.length === 0 && !loading" class="empty-state">
@@ -196,7 +196,7 @@ export default {
 				this.materialFolder = this.folderInput.trim()
 				await this.scanFolder()
 			} catch (e) {
-				this.errorMessage = e.response?.data?.error || t('learning', 'Ordner konnte nicht verknuepft werden. Pruefen Sie ob der Pfad existiert.')
+				this.errorMessage = e.response?.data?.error || t('learning', 'Ordner konnte nicht verknüpft werden. Prüfen Sie ob der Pfad existiert.')
 			} finally {
 				this.settingFolder = false
 			}

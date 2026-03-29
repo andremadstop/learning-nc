@@ -66,12 +66,12 @@
 					<div class="snapshot-state">
 						<strong>{{ snapshot ? t('learning', 'Snapshot vorhanden') : t('learning', 'Noch nicht gesichert') }}</strong>
 						<span v-if="snapshot">{{ t('learning', 'Zuletzt gesichert: {date}', { date: formatTimestamp(snapshot.created_at) }) }}</span>
-						<span v-else>{{ t('learning', 'Sichere deinen aktuellen Stand dauerhaft fuer spaeter.') }}</span>
+						<span v-else>{{ t('learning', 'Sichere deinen aktuellen Stand dauerhaft für später.') }}</span>
 					</div>
 					<div class="snapshot-inline-stats">
 						<div class="snapshot-inline-stat">
 							<span class="snapshot-inline-value">{{ formatNumber(swarm.total_contributions) }}</span>
-							<span class="snapshot-inline-label">{{ t('learning', 'Schwarm-Beitraege') }}</span>
+							<span class="snapshot-inline-label">{{ t('learning', 'Schwarm-Beiträge') }}</span>
 						</div>
 						<div class="snapshot-inline-stat">
 							<span class="snapshot-inline-value">{{ formatNumber(swarm.approved_contributions) }}</span>
@@ -95,7 +95,7 @@
 				<div class="widget-card stat-card">
 					<p class="card-kicker">{{ t('learning', 'Streak') }}</p>
 					<div class="stat-value">{{ formatNumber(streak.current_streak) }}</div>
-					<div class="stat-meta">{{ t('learning', 'Laengster: {n}', { n: streak.longest_streak || 0 }) }}</div>
+					<div class="stat-meta">{{ t('learning', 'Längster: {n}', { n: streak.longest_streak || 0 }) }}</div>
 				</div>
 				<div class="widget-card stat-card">
 					<p class="card-kicker">{{ t('learning', 'Duell-Win-Rate') }}</p>

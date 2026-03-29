@@ -16,12 +16,12 @@
         <div class="practicum-select__meta">
           <span class="practicum-select__badge">{{ session.steps.length }} {{ t('learning', 'Schritte') }}</span>
           <span v-if="hasResumable(session.id)" class="practicum-select__resume">
-            {{ t('learning', 'Fortsetzen moeglich') }}
+            {{ t('learning', 'Fortsetzen möglich') }}
           </span>
         </div>
       </div>
       <p v-if="sessions.length === 0" class="practicum-select__empty">
-        {{ t('learning', 'Noch keine Praxis-Sessions fuer diesen Simulator verfuegbar.') }}
+        {{ t('learning', 'Noch keine Praxis-Sessions für diesen Simulator verfügbar.') }}
       </p>
     </div>
 
@@ -106,7 +106,7 @@
           {{ t('learning', 'Nochmal') }}
         </button>
         <button class="practicum-summary__btn" @click="backToSelect">
-          {{ t('learning', 'Zurueck') }}
+          {{ t('learning', 'Zurück') }}
         </button>
       </div>
     </div>

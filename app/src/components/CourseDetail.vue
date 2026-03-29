@@ -541,7 +541,7 @@
 
 			<div v-if="currentTab === 'summary' && isInstructor" class="summary-section">
 				<NcNoteCard type="info">
-					{{ t('learning', 'Der Klassen-Abschlussbericht folgt in Phase 107. Hier erscheint spaeter die Dozentenansicht fuer den Kursabschluss.') }}
+					{{ t('learning', 'Der Klassen-Abschlussbericht folgt in Phase 107. Hier erscheint später die Dozentenansicht für den Kursabschluss.') }}
 				</NcNoteCard>
 			</div>
 
@@ -965,7 +965,7 @@
 
 		<div class="sprint-config tool-config-section">
 			<h3>{{ t('learning', 'Leitner Sprint-Modus') }}</h3>
-			<p class="mode-config-hint">{{ t('learning', 'Sprint-Intervalle verkuerzen die Wiederholungszeiten (4h/12h/1d/2d statt 1d/3d/7d/14d). Ideal fuer Intensivkurse.') }}</p>
+			<p class="mode-config-hint">{{ t('learning', 'Sprint-Intervalle verkürzen die Wiederholungszeiten (4h/12h/1d/2d statt 1d/3d/7d/14d). Ideal für Intensivkurse.') }}</p>
 			<label class="mode-toggle-label">
 				<input type="checkbox" v-model="leitnerSprint" @change="saveLeitnerSprint" />
 				{{ t('learning', 'Sprint-Modus aktivieren') }}
@@ -1752,7 +1752,7 @@ export default {
 						key: 'mode:course-summary',
 						title: t('learning', 'Kursabschluss'),
 						text: t('learning', 'This area condenses your course progress into a final overview with mastery, streaks, badges and the questions that still need work.'),
-						shortText: t('learning', 'Kursabschluss zeigt deinen zusammengefassten Stand fuer den Kurs.'),
+						shortText: t('learning', 'Kursabschluss zeigt deinen zusammengefassten Stand für den Kurs.'),
 					},
 				}
 				return guides[tabId] || null

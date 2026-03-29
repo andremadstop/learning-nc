@@ -3,13 +3,13 @@
 		<!-- Schwarm-Consent Info-Dialog (einmalig) -->
 		<div v-if="showConsentInfo" class="swarm-consent-overlay">
 			<div class="swarm-consent-dialog">
-				<h3>{{ t('learning', 'Schwarmgedaechtnis — Gut zu wissen') }}</h3>
+				<h3>{{ t('learning', 'Schwarmgedächtnis — Gut zu wissen') }}</h3>
 				<div class="swarm-consent-body">
-					<p>{{ t('learning', 'Dein Beitrag wird Teil des gemeinsamen Wissens-Pools fuer diesen Kurs. So funktioniert es:') }}</p>
+					<p>{{ t('learning', 'Dein Beitrag wird Teil des gemeinsamen Wissens-Pools für diesen Kurs. So funktioniert es:') }}</p>
 					<ol class="swarm-consent-list">
-						<li><strong>{{ t('learning', 'Pruefung durch den Dozenten') }}</strong>: {{ t('learning', 'Dein Dozent prueft jeden Beitrag, bevor er fuer die anderen Kursteilnehmer sichtbar wird.') }}</li>
-						<li><strong>{{ t('learning', 'Dein Name bleibt geschuetzt') }}</strong>: {{ t('learning', 'Nur dein Dozent sieht, von wem ein Beitrag stammt. Fuer andere Studierende bleiben Beitraege anonym.') }}</li>
-						<li><strong>{{ t('learning', 'Wissen bleibt erhalten') }}</strong>: {{ t('learning', 'Wenn du deinen Account loeschst, wird dein Name entfernt — dein Beitrag bleibt aber anonymisiert bestehen, damit andere weiter davon lernen koennen.') }}</li>
+						<li><strong>{{ t('learning', 'Prüfung durch den Dozenten') }}</strong>: {{ t('learning', 'Dein Dozent prüft jeden Beitrag, bevor er für die anderen Kursteilnehmer sichtbar wird.') }}</li>
+						<li><strong>{{ t('learning', 'Dein Name bleibt geschützt') }}</strong>: {{ t('learning', 'Nur dein Dozent sieht, von wem ein Beitrag stammt. Für andere Studierende bleiben Beiträge anonym.') }}</li>
+						<li><strong>{{ t('learning', 'Wissen bleibt erhalten') }}</strong>: {{ t('learning', 'Wenn du deinen Account löschst, wird dein Name entfernt — dein Beitrag bleibt aber anonymisiert bestehen, damit andere weiter davon lernen können.') }}</li>
 					</ol>
 				</div>
 				<button class="material-btn primary swarm-consent-btn" @click="dismissConsentInfo">
@@ -22,7 +22,7 @@
 		<div class="contribute-form">
 			<h4>{{ t('learning', 'Wissen beitragen') }}</h4>
 			<p class="contribute-hint">
-				{{ t('learning', 'Teile deine Notizen und Erklaerungen mit dem Kurs. Beitraege werden vom Dozenten geprueft.') }}
+				{{ t('learning', 'Teile deine Notizen und Erklärungen mit dem Kurs. Beiträge werden vom Dozenten geprüft.') }}
 			</p>
 
 			<input
@@ -35,7 +35,7 @@
 				v-model="text"
 				class="contribute-textarea"
 				rows="6"
-				:placeholder="t('learning', 'Deine Notizen oder Erklaerung hier eingeben...')"
+				:placeholder="t('learning', 'Deine Notizen oder Erklärung hier eingeben...')"
 				:disabled="submitting" />
 
 			<div class="contribute-actions">
@@ -46,7 +46,7 @@
 					{{ submitting ? t('learning', 'Sende...') : t('learning', 'Beitrag einreichen') }}
 				</button>
 				<span class="contribute-counter">
-					{{ t('learning', '{n} / {max} Beitraege', { n: contributions.length, max: maxContributions }) }}
+					{{ t('learning', '{n} / {max} Beiträge', { n: contributions.length, max: maxContributions }) }}
 				</span>
 			</div>
 
@@ -60,7 +60,7 @@
 
 		<!-- My Contributions List -->
 		<div class="contributions-list-section">
-			<h4>{{ t('learning', 'Meine Beitraege') }}</h4>
+			<h4>{{ t('learning', 'Meine Beiträge') }}</h4>
 
 			<div v-if="loading" class="loading-container">
 				<span class="icon-loading" />
@@ -68,7 +68,7 @@
 			</div>
 
 			<div v-else-if="contributions.length === 0" class="empty-state">
-				<p>{{ t('learning', 'Du hast noch keine Beitraege eingereicht.') }}</p>
+				<p>{{ t('learning', 'Du hast noch keine Beiträge eingereicht.') }}</p>
 			</div>
 
 			<div v-else class="contributions-list">

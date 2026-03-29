@@ -9,7 +9,7 @@
 					class="material-btn"
 					:class="{ primary: importMode === 'text' }"
 					@click="importMode = 'text'">
-					{{ t('learning', 'Text einfuegen') }}
+					{{ t('learning', 'Text einfügen') }}
 				</button>
 				<button
 					class="material-btn"
@@ -30,7 +30,7 @@
 					v-model="textContent"
 					class="import-textarea"
 					rows="12"
-					:placeholder="t('learning', 'Markdown oder Text hier einfuegen...')" />
+					:placeholder="t('learning', 'Markdown oder Text hier einfügen...')" />
 				<button
 					class="material-btn primary"
 					:disabled="!textTitle.trim() || !textContent.trim() || importing"
@@ -101,7 +101,7 @@
 									class="material-btn small danger"
 									:disabled="deleting[item.source_file]"
 									@click="deleteImport(item.source_file)">
-									{{ deleting[item.source_file] ? t('learning', 'Loesche...') : t('learning', 'Loeschen') }}
+									{{ deleting[item.source_file] ? t('learning', 'Lösche...') : t('learning', 'Löschen') }}
 								</button>
 							</td>
 						</tr>
@@ -224,7 +224,7 @@ export default {
 		},
 
 		async deleteImport(title) {
-			if (!confirm(t('learning', 'Wirklich loeschen?'))) return
+			if (!confirm(t('learning', 'Wirklich löschen?'))) return
 			this.$set(this.deleting, title, true)
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/knowledge/{title}', {
@@ -235,7 +235,7 @@ export default {
 				this.imports = this.imports.filter(i => i.source_file !== title)
 			} catch (e) {
 				console.error('Failed to delete knowledge import', e)
-				this.error = t('learning', 'Loeschen fehlgeschlagen')
+				this.error = t('learning', 'Löschen fehlgeschlagen')
 			} finally {
 				this.$set(this.deleting, title, false)
 			}

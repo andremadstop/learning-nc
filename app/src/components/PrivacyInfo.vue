@@ -1,12 +1,12 @@
 <template>
   <div class="privacy-info">
     <h3>{{ t('learning', 'Datenschutz') }}</h3>
-    <p class="section-desc">{{ t('learning', 'Informationen zur Datenverarbeitung in dieser App gemaess Art. 13 DSGVO.') }}</p>
+    <p class="section-desc">{{ t('learning', 'Informationen zur Datenverarbeitung in dieser App gemäß Art. 13 DSGVO.') }}</p>
 
     <!-- AI Notice -->
     <NcNoteCard type="warning">
       <p><strong>{{ t('learning', 'KI-Hinweis') }}</strong></p>
-      <p>{{ t('learning', 'Diese App nutzt {provider} fuer KI-gestuetzte Erklaerungen.', { provider: aiNotice.provider }) }}</p>
+      <p>{{ t('learning', 'Diese App nutzt {provider} für KI-gestützte Erklärungen.', { provider: aiNotice.provider }) }}</p>
       <p>{{ privacyData.ai_notice.what_is_sent }}</p>
       <p>{{ privacyData.ai_notice.data_location }}</p>
       <p>{{ privacyData.ai_notice.what_is_not_sent }}</p>

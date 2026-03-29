@@ -64,8 +64,8 @@ export function summaryToMarkdown(summary, courseName, userName) {
 	// Swarm
 	const sw = summary.swarm || {}
 	if (sw.total_contributions > 0) {
-		lines.push(`## ${t('learning', 'Schwarmgedaechtnis')}`)
-		lines.push(`- ${sw.approved_contributions || 0} / ${sw.total_contributions} ${t('learning', 'Beitraege freigegeben')}`)
+		lines.push(`## ${t('learning', 'Schwarmgedächtnis')}`)
+		lines.push(`- ${sw.approved_contributions || 0} / ${sw.total_contributions} ${t('learning', 'Beiträge freigegeben')}`)
 		lines.push('')
 	}
 
@@ -83,7 +83,7 @@ export function summaryToMarkdown(summary, courseName, userName) {
 	const st = summary.streak || {}
 	if (st.longest_streak > 0) {
 		lines.push(`## ${t('learning', 'Streak-Details')}`)
-		lines.push(`- ${t('learning', 'Laengster Streak')}: ${st.longest_streak} ${t('learning', 'Tage')}`)
+		lines.push(`- ${t('learning', 'Längster Streak')}: ${st.longest_streak} ${t('learning', 'Tage')}`)
 		if (st.freeze_tokens > 0) {
 			lines.push(`- ${t('learning', 'Freeze-Tokens')}: ${st.freeze_tokens}`)
 		}

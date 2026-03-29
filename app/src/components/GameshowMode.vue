@@ -10,7 +10,7 @@
       <div class="pool-picker">
         <label class="pool-picker-label">{{ t('learning', 'Pool') }}</label>
         <select v-model="selectedPoolId" class="pool-select">
-          <option :value="0" disabled>{{ t('learning', '-- Pool auswaehlen --') }}</option>
+          <option :value="0" disabled>{{ t('learning', '-- Pool auswählen --') }}</option>
           <option v-for="p in pools" :key="p.id" :value="p.id">{{ p.name }}</option>
         </select>
       </div>
@@ -49,7 +49,7 @@
           🤓 {{ t('learning', 'Gegen Klaus spielen') }}
         </NcButton>
         <NcButton type="tertiary" :disabled="loading" @click="$emit('back')">
-          {{ t('learning', 'Zurueck') }}
+          {{ t('learning', 'Zurück') }}
         </NcButton>
       </div>
 
@@ -217,7 +217,7 @@
         <NcNoteCard type="warning">
           {{ t('learning', 'Verbindung unterbrochen. Das Spiel wird beendet...') }}
         </NcNoteCard>
-        <NcButton type="primary" @click="cancelGame">{{ t('learning', 'Zurueck') }}</NcButton>
+        <NcButton type="primary" @click="cancelGame">{{ t('learning', 'Zurück') }}</NcButton>
       </div>
 
       <div class="question-abort-area">
@@ -296,7 +296,7 @@
         <span class="my-score">{{ myScore }}</span>
       </div>
 
-      <p class="feedback-wait">{{ t('learning', 'Naechste Frage...') }}</p>
+      <p class="feedback-wait">{{ t('learning', 'Nächste Frage...') }}</p>
     </div>
 
     <!-- ===== LEADERBOARD PHASE ===== -->
@@ -336,7 +336,7 @@
             <span v-else class="elimination-skull elimination-skull-inline">☠️</span>
           </div>
         </div>
-        <p class="lb-next">{{ t('learning', 'Naechste Frage...') }}</p>
+        <p class="lb-next">{{ t('learning', 'Nächste Frage...') }}</p>
       </template>
       <template v-else>
         <h3>{{ t('learning', 'Rangliste') }}</h3>
@@ -358,7 +358,7 @@
             <span class="lb-score">{{ player.score }}</span>
           </div>
         </div>
-        <p class="lb-next">{{ t('learning', 'Naechste Frage...') }}</p>
+        <p class="lb-next">{{ t('learning', 'Nächste Frage...') }}</p>
       </template>
     </div>
 
@@ -469,7 +469,7 @@
       <div class="start-actions">
         <NcButton v-if="botMode" type="primary" @click="startBotGame">{{ t('learning', 'Rematch gegen Klaus') }}</NcButton>
         <NcButton v-else type="primary" @click="newRound">{{ t('learning', 'Neue Runde') }}</NcButton>
-        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Zurueck') }}</NcButton>
+        <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
       </div>
     </div>
 
@@ -478,7 +478,7 @@
       <h3>{{ t('learning', 'Gameshow abgebrochen') }}</h3>
       <p>{{ t('learning', 'Ein Spieler hat die Verbindung verloren.') }}</p>
       <div class="start-actions">
-        <NcButton type="primary" @click="$emit('back')">{{ t('learning', 'Zurueck') }}</NcButton>
+        <NcButton type="primary" @click="$emit('back')">{{ t('learning', 'Zurück') }}</NcButton>
       </div>
     </div>
 

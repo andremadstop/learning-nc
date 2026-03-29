@@ -1,6 +1,6 @@
 <template>
 	<div class="knowledge-moderation">
-		<h4>{{ t('learning', 'Schwarmgedaechtnis — Beitraege moderieren') }}</h4>
+		<h4>{{ t('learning', 'Schwarmgedächtnis — Beiträge moderieren') }}</h4>
 
 		<div v-if="loading" class="loading-container">
 			<span class="icon-loading" />
@@ -8,7 +8,7 @@
 		</div>
 
 		<div v-else-if="pending.length === 0" class="empty-state">
-			<p>{{ t('learning', 'Keine ausstehenden Beitraege.') }}</p>
+			<p>{{ t('learning', 'Keine ausstehenden Beiträge.') }}</p>
 		</div>
 
 		<div v-else class="pending-list">
