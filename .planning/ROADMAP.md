@@ -80,7 +80,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 
 - [x] **Phase 110: Foundation & Security** - Telos encryption, audit-log moderation, Gemini-outputs merge (privacy-info, PWA, badge l10n) (completed 2026-03-29)
 - [x] **Phase 111: Badge-Umbau & Vault-Import** - Legacy badge migration, new triggers, CompTIA vault import pipeline (completed 2026-03-29)
-- [ ] **Phase 112: Tab-Reduktion** - CourseDetail.vue decomposition from 16 tabs to 5 mega-tabs
+- [x] **Phase 112: Tab-Reduktion** - CourseDetail.vue decomposition from 16 tabs to 5 mega-tabs (completed 2026-03-29)
 - [ ] **Phase 113: AI & Erklaerbot** - Fullscreen Erklaerbot, dismissal UX, narrative portfolio, Forget-Me-Not ICS feed
 
 ## Phase Details
@@ -156,5 +156,5 @@ Plans:
 | 101-109 | v3.5.0 | - | Complete | 2026-03-29 |
 | 110. Foundation & Security | 2/2 | Complete    | 2026-03-29 | - |
 | 111. Badge-Umbau & Vault-Import | 2/2 | Complete    | 2026-03-29 | - |
-| 112. Tab-Reduktion | 2/3 | In Progress|  | - |
+| 112. Tab-Reduktion | 3/3 | Complete   | 2026-03-29 | - |
 | 113. AI & Erklaerbot | v3.6.0 | 0/2 | Not started | - |
