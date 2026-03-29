@@ -1,11 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import {
 	validateCommand,
 	checkPuzzleComplete,
 	checkMaxAttemptsExceeded,
 } from '../../src/utils/terminalPuzzleLogic.js'
+import TerminalPuzzle from '../../src/components/TerminalPuzzle.vue'
 
 const mockScenario = {
+	id: 'process-hunt',
 	prompt: 'Find the suspicious process and kill it.',
 	objective: 'Identify and terminate the malicious process ghostline.bin',
 	hint: 'Try listing processes first, then use kill.',
@@ -17,6 +19,43 @@ const mockScenario = {
 		{ command: 'whoami', output: 'root', required: false },
 	],
 	success_message: 'Threat neutralized.',
+}
+
+function createTerminalInstance(scenario = mockScenario) {
+	const data = typeof TerminalPuzzle.data === 'function' ? TerminalPuzzle.data() : {}
+	const instance = {
+		...data,
+		scenario,
+		scenarioId: scenario.id,
+		$emit: vi.fn(),
+		$nextTick: vi.fn(cb => {
+			if (typeof cb === 'function') cb()
+		}),
+		$refs: {
+			outputArea: { scrollTop: 0, scrollHeight: 321 },
+			cmdInput: { focus: vi.fn() },
+		},
+	}
+
+	Object.defineProperties(instance, {
+		effectiveScenario: {
+			get: () => TerminalPuzzle.computed.effectiveScenario.call(instance),
+		},
+		validCommands: {
+			get: () => TerminalPuzzle.computed.validCommands.call(instance),
+		},
+		maxAttempts: {
+			get: () => TerminalPuzzle.computed.maxAttempts.call(instance),
+		},
+	})
+
+	if (TerminalPuzzle.methods) {
+		for (const [name, fn] of Object.entries(TerminalPuzzle.methods)) {
+			instance[name] = fn.bind(instance)
+		}
+	}
+
+	return instance
 }
 
 describe('validateCommand', () => {
@@ -91,5 +130,44 @@ describe('checkMaxAttemptsExceeded', () => {
 
 	it('returns false when max_attempts is 0 (unlimited)', () => {
 		expect(checkMaxAttemptsExceeded(100, 0)).toBe(false)
+	})
+})
+
+describe('TerminalPuzzle component behavior', () => {
+	it('records command history and tracked commands on submit', () => {
+		const instance = createTerminalInstance()
+		instance.currentInput = 'ps aux'
+
+		instance.submitCommand()
+
+		expect(instance.commandHistory).toHaveLength(1)
+		expect(instance.commandHistory[0].command).toBe('ps aux')
+		expect(instance.commandHistory[0].output).toContain('ghostline.bin')
+		expect(instance.enteredCommands).toEqual(['ps aux'])
+		expect(instance.$refs.outputArea.scrollTop).toBe(321)
+	})
+
+	it('clears visible history when the clear command is entered', () => {
+		const instance = createTerminalInstance()
+		instance.commandHistory = [{ command: 'ls', output: 'bin  etc  home  var' }]
+		instance.currentInput = 'clear'
+
+		instance.submitCommand()
+
+		expect(instance.commandHistory).toEqual([])
+		expect(instance.wrongAttempts).toBe(0)
+	})
+
+	it('marks the puzzle solved after all required commands and emits a result', () => {
+		const instance = createTerminalInstance()
+
+		instance.currentInput = 'ps aux'
+		instance.submitCommand()
+		instance.currentInput = 'kill 1337'
+		instance.submitCommand()
+
+		expect(instance.solved).toBe(true)
+		expect(instance.finished).toBe(true)
+		expect(instance.$emit).toHaveBeenCalledWith('result', { correct: true, score: 1.0 })
 	})
 })

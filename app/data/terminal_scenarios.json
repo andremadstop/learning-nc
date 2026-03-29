@@ -1,0 +1,164 @@
+{
+  "scenarios": {
+    "linux_basics": {
+      "id": "linux_basics",
+      "title": "Linux-Grundlagen: SSH-Haertung",
+      "difficulty": "easy",
+      "objective": "Finde die Datei mit der unsicheren SSH-Einstellung und lies sie aus.",
+      "hint": "Starte mit ls -la und schau dir danach die Konfiguration unter .config an.",
+      "max_attempts": 0,
+      "success_message": "Gut erkannt. Die SSH-Konfiguration muss vor dem Produktiveinsatz gehaertet werden.",
+      "valid_commands": [
+        {
+          "command": "pwd",
+          "output": "/home/student",
+          "required": false
+        },
+        {
+          "command": "ls -la",
+          "output": "total 28\ndrwxr-xr-x  6 student student 4096 Mar 29 10:00 .\ndrwxr-xr-x  3 root    root    4096 Mar 01 08:00 ..\ndrwxr-xr-x  2 student student 4096 Mar 28 18:20 .config\ndrwx------  2 student student 4096 Mar 28 18:22 .ssh\n-rw-r--r--  1 student student  220 Mar 01 08:00 .bashrc",
+          "required": true
+        },
+        {
+          "command": "ls .config",
+          "output": "app.conf  network.conf  ssh.conf",
+          "required": false
+        },
+        {
+          "command": "cat .config/ssh.conf",
+          "output": "# Training VM\nPermitRootLogin yes\nPasswordAuthentication yes\n# TODO: harden before production",
+          "required": true
+        }
+      ]
+    },
+    "network_troubleshoot": {
+      "id": "network_troubleshoot",
+      "title": "Netzwerk-Diagnose: DNS-Fehlkonfiguration",
+      "difficulty": "medium",
+      "objective": "Ermittle, warum Hostnamen nicht aufgeloest werden.",
+      "hint": "Pruefe zuerst die Erreichbarkeit per IP und dann die Resolver-Konfiguration.",
+      "max_attempts": 0,
+      "success_message": "Korrekt. Das Routing war in Ordnung, aber der eingetragene DNS-Server war falsch.",
+      "valid_commands": [
+        {
+          "command": "ip addr show",
+          "output": "2: eth0: <BROADCAST,UP> mtu 1500\n    inet 192.168.10.25/24 brd 192.168.10.255 scope global eth0",
+          "required": false
+        },
+        {
+          "command": "ping 192.168.10.1",
+          "output": "PING 192.168.10.1 (192.168.10.1): 56 data bytes\n64 bytes from 192.168.10.1: icmp_seq=1 ttl=64 time=0.6 ms\n64 bytes from 192.168.10.1: icmp_seq=2 ttl=64 time=0.5 ms",
+          "required": false
+        },
+        {
+          "command": "ping intranet.lab",
+          "output": "ping: intranet.lab: Temporary failure in name resolution",
+          "required": true
+        },
+        {
+          "command": "cat /etc/resolv.conf",
+          "output": "search lab\nnameserver 192.168.10.99\n# expected: 192.168.10.53",
+          "required": true
+        },
+        {
+          "command": "nslookup intranet.lab 192.168.10.53",
+          "output": "Server: 192.168.10.53\nAddress: 192.168.10.53#53\n\nName: intranet.lab\nAddress: 192.168.10.20",
+          "required": true
+        }
+      ]
+    },
+    "firewall_check": {
+      "id": "firewall_check",
+      "title": "Firewall-Analyse: HTTPS freischalten",
+      "difficulty": "medium",
+      "objective": "Pruefe, warum der Webserver lokal lauscht, aber Port 443 von aussen blockiert bleibt.",
+      "hint": "Vergleiche offene Ports mit den INPUT-Regeln.",
+      "max_attempts": 0,
+      "success_message": "Genau. Der Dienst lief bereits, aber eine INPUT-Regel fuer TCP/443 fehlte.",
+      "valid_commands": [
+        {
+          "command": "ss -tln",
+          "output": "State  Recv-Q Send-Q Local Address:Port\nLISTEN 0      128    0.0.0.0:22\nLISTEN 0      128    0.0.0.0:80\nLISTEN 0      128    0.0.0.0:443",
+          "required": true
+        },
+        {
+          "command": "iptables -L INPUT -n --line-numbers",
+          "output": "Chain INPUT (policy DROP)\nnum  target  prot  source      destination\n1    ACCEPT  tcp   0.0.0.0/0   0.0.0.0/0   tcp dpt:22\n2    ACCEPT  tcp   0.0.0.0/0   0.0.0.0/0   tcp dpt:80",
+          "required": true
+        },
+        {
+          "command": "iptables -L OUTPUT -n --line-numbers",
+          "output": "Chain OUTPUT (policy ACCEPT)\nnum  target  prot  source      destination",
+          "required": false
+        },
+        {
+          "command": "iptables -A INPUT -p tcp --dport 443 -j ACCEPT",
+          "output": "Rule appended: ACCEPT tcp -- anywhere anywhere tcp dpt:443",
+          "required": true
+        }
+      ]
+    },
+    "log_analysis": {
+      "id": "log_analysis",
+      "title": "Log-Analyse: Brute-Force-Angriff",
+      "difficulty": "hard",
+      "objective": "Analysiere die Auth-Logs und finde die auffaellige Quell-IP.",
+      "hint": "Filtere fehlgeschlagene SSH-Logins und zaehle die Quelladressen.",
+      "max_attempts": 0,
+      "success_message": "Richtig. 203.0.113.42 faellt durch die mit Abstand meisten Fehlversuche auf.",
+      "valid_commands": [
+        {
+          "command": "tail -n 6 /var/log/auth.log",
+          "output": "Mar 29 03:14:01 srv sshd[4521]: Failed password for root from 203.0.113.42 port 54421 ssh2\nMar 29 03:14:02 srv sshd[4522]: Failed password for admin from 203.0.113.42 port 54422 ssh2\nMar 29 03:14:03 srv sshd[4523]: Failed password for root from 203.0.113.42 port 54423 ssh2\nMar 29 03:14:04 srv sshd[4524]: Failed password for student from 192.168.10.55 port 51220 ssh2\nMar 29 03:14:05 srv sshd[4525]: Failed password for root from 203.0.113.42 port 54424 ssh2\nMar 29 03:14:06 srv sshd[4526]: Accepted publickey for andre from 192.168.10.12 port 49811 ssh2",
+          "required": false
+        },
+        {
+          "command": "grep 'Failed password' /var/log/auth.log | awk '{print $11}' | sort | uniq -c | sort -rn",
+          "output": "     45 203.0.113.42\n      3 192.168.10.55",
+          "required": true
+        },
+        {
+          "command": "lastb | head -3",
+          "output": "root     ssh:notty    203.0.113.42    Sat Mar 29 03:14 - 03:14  (00:00)\nadmin    ssh:notty    203.0.113.42    Sat Mar 29 03:14 - 03:14  (00:00)\nroot     ssh:notty    203.0.113.42    Sat Mar 29 03:14 - 03:14  (00:00)",
+          "required": false
+        },
+        {
+          "command": "whois 203.0.113.42",
+          "output": "NetName: TEST-NET-3\nNetRange: 203.0.113.0 - 203.0.113.255\nOrganization: IANA Special Purpose Address Registry",
+          "required": false
+        }
+      ]
+    },
+    "permission_fix": {
+      "id": "permission_fix",
+      "title": "Berechtigungen reparieren: Nginx-Konfiguration",
+      "difficulty": "easy",
+      "objective": "Finde heraus, warum Nginx seine Hauptkonfiguration nicht lesen kann, und behebe das Problem.",
+      "hint": "Pruefe die Datei-Rechte und danach den Dienststatus.",
+      "max_attempts": 0,
+      "success_message": "Sauber. Mit den korrekten Rechten kann der Dienst wieder starten.",
+      "valid_commands": [
+        {
+          "command": "ls -l /etc/nginx/nginx.conf",
+          "output": "-rw------- 1 root root 2140 Mar 29 08:55 /etc/nginx/nginx.conf",
+          "required": true
+        },
+        {
+          "command": "systemctl status nginx",
+          "output": "nginx.service - A high performance web server\n   Active: failed (Result: exit-code)\n   Error: open() '/etc/nginx/nginx.conf' failed (13: Permission denied)",
+          "required": false
+        },
+        {
+          "command": "chmod 644 /etc/nginx/nginx.conf",
+          "output": "mode of '/etc/nginx/nginx.conf' changed from 0600 to 0644",
+          "required": true
+        },
+        {
+          "command": "systemctl restart nginx",
+          "output": "Job for nginx.service completed successfully.",
+          "required": true
+        }
+      ]
+    }
+  }
+}

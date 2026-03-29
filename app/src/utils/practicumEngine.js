@@ -1,7 +1,7 @@
 /**
  * Practicum Engine — Session state machine with localStorage persistence.
  *
- * Manages step-by-step guided practice sessions for the 7 simulators.
+ * Manages step-by-step guided practice sessions for all practicum-enabled simulators.
  * Each session references existing scenario IDs from the simulator data files.
  */
 
@@ -13,6 +13,7 @@ import portscanSessions from '../../data/practicum/portscan-sessions.json'
 import wiresharkSessions from '../../data/practicum/wireshark-sessions.json'
 import authflowSessions from '../../data/practicum/authflow-sessions.json'
 import subnetSessions from '../../data/practicum/subnet-sessions.json'
+import terminalSessions from '../../data/practicum/terminal-sessions.json'
 
 /**
  * Registry mapping simulator type keys to their session arrays.
@@ -27,6 +28,7 @@ export const PRACTICUM_SESSIONS = {
 	wireshark: wiresharkSessions,
 	authflow: authflowSessions,
 	subnet: subnetSessions,
+	terminal: terminalSessions,
 }
 
 /**

@@ -145,6 +145,13 @@ describe('loadSessionsForSimulator', () => {
 		expect(Array.isArray(sessions)).toBe(true)
 	})
 
+	it('returns terminal practicum sessions for the terminal simulator', () => {
+		const sessions = loadSessionsForSimulator('terminal')
+		expect(Array.isArray(sessions)).toBe(true)
+		expect(sessions.length).toBeGreaterThanOrEqual(2)
+		expect(sessions.every(session => session.simulatorType === 'terminal')).toBe(true)
+	})
+
 	it('returns empty array for unknown type', () => {
 		const sessions = loadSessionsForSimulator('nonexistent')
 		expect(sessions).toEqual([])
@@ -152,8 +159,8 @@ describe('loadSessionsForSimulator', () => {
 })
 
 describe('PRACTICUM_SESSIONS registry', () => {
-	it('has entries for all 7 simulator types', () => {
-		const expectedTypes = ['firewall', 'dns', 'routing', 'nat', 'portscan', 'wireshark', 'authflow']
+	it('has entries for all practicum-enabled simulator types', () => {
+		const expectedTypes = ['firewall', 'dns', 'routing', 'nat', 'portscan', 'wireshark', 'authflow', 'subnet', 'terminal']
 		for (const type of expectedTypes) {
 			expect(PRACTICUM_SESSIONS).toHaveProperty(type)
 			expect(Array.isArray(PRACTICUM_SESSIONS[type])).toBe(true)

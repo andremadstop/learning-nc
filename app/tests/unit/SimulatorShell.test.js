@@ -1,17 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
+	SCENARIOS,
 	SIMULATOR_MAP,
 	normalizeResult,
 	resolveScenario,
 } from '../../src/utils/simulatorShellLogic.js'
 
 describe('SIMULATOR_MAP', () => {
-	it('has exactly 8 keys', () => {
-		expect(Object.keys(SIMULATOR_MAP)).toHaveLength(8)
+	it('has exactly 9 keys', () => {
+		expect(Object.keys(SIMULATOR_MAP)).toHaveLength(9)
 	})
 
 	it('contains all simulator types', () => {
-		const expected = ['firewall', 'dns', 'routing', 'nat', 'portscan', 'wireshark', 'authflow', 'terminal']
+		const expected = ['firewall', 'dns', 'routing', 'nat', 'portscan', 'wireshark', 'authflow', 'terminal', 'subnet']
 		expect(Object.keys(SIMULATOR_MAP).sort()).toEqual(expected.sort())
 	})
 
@@ -66,6 +67,15 @@ describe('normalizeResult', () => {
 	})
 })
 
+describe('SCENARIOS registry', () => {
+	it('registers terminal scenarios as a keyed map', () => {
+		expect(SCENARIOS).toHaveProperty('terminal')
+		expect(Array.isArray(SCENARIOS.terminal)).toBe(false)
+		expect(Object.keys(SCENARIOS.terminal)).toHaveLength(5)
+		expect(SCENARIOS.terminal.linux_basics.title).toContain('Linux')
+	})
+})
+
 describe('resolveScenario', () => {
 	it('returns scenarioOverride when set (takes precedence over scenarioId)', () => {
 		const override = { id: 'custom', name: 'Custom Scenario' }
@@ -77,6 +87,13 @@ describe('resolveScenario', () => {
 		const result = resolveScenario('firewall', 'web-only', null)
 		expect(result).not.toBeNull()
 		expect(result.id).toBe('web-only')
+	})
+
+	it('looks up keyed terminal scenarios by scenarioId', () => {
+		const result = resolveScenario('terminal', 'linux_basics', null)
+		expect(result).not.toBeNull()
+		expect(result.id).toBe('linux_basics')
+		expect(result.valid_commands).toHaveLength(4)
 	})
 
 	it('returns null when scenarioId not found and no override', () => {

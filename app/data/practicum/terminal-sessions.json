@@ -1,0 +1,54 @@
+[
+  {
+    "id": "terminal-session-linux-ops",
+    "simulatorType": "terminal",
+    "title": "Linux- und Service-Basics",
+    "description": "Dateisystem, Rechte und Firewall-Regeln in einer typischen Admin-Schicht systematisch durcharbeiten.",
+    "steps": [
+      {
+        "stepId": "term-ops-01",
+        "context": "Ein frisch bereitgestellter Linux-Host soll fuer einen Security-Kurs gehaertet werden. Zuerst musst du eine verdaechtige SSH-Konfiguration finden.",
+        "explanation": "Viele Basis-Haertungen beginnen mit einer Datei-Inspektion. Unsichere Defaults wie Root-Login oder Passwort-Login fallen dabei sofort auf.",
+        "scenarioId": "linux_basics"
+      },
+      {
+        "stepId": "term-ops-02",
+        "context": "Danach meldet das Monitoring, dass der Nginx-Dienst nach einem Rollout nicht mehr hochkommt.",
+        "explanation": "Falsche Dateirechte sind ein klassischer Betriebsfehler. Bevor man Dienste neu startet, sollte man immer Eigentum und Modi pruefen.",
+        "scenarioId": "permission_fix"
+      },
+      {
+        "stepId": "term-ops-03",
+        "context": "Zum Schluss ist der Webserver lokal erreichbar, aber HTTPS bleibt fuer Clients gesperrt.",
+        "explanation": "Ein offener Socket reicht nicht. Dienste und Firewall muessen zusammen betrachtet werden, damit Netzwerkfehler sauber eingegrenzt werden koennen.",
+        "scenarioId": "firewall_check"
+      }
+    ]
+  },
+  {
+    "id": "terminal-session-incident-response",
+    "simulatorType": "terminal",
+    "title": "Incident Response im Terminal",
+    "description": "DNS-Probleme, Auth-Logs und Firewall-Regeln wie in einem echten First-Responder-Runbook abarbeiten.",
+    "steps": [
+      {
+        "stepId": "term-ir-01",
+        "context": "Mehrere Lernende melden, dass interne Hostnamen ausfallen, obwohl der Gateway erreichbar bleibt.",
+        "explanation": "Wenn IP-Konnektivitaet funktioniert, aber Namen scheitern, fuehrt der schnellste Weg fast immer ueber Resolver- und DNS-Checks.",
+        "scenarioId": "network_troubleshoot"
+      },
+      {
+        "stepId": "term-ir-02",
+        "context": "Parallel dazu laufen im Security-Channel Meldungen ueber fehlgeschlagene SSH-Logins ein.",
+        "explanation": "Incident Response beginnt mit Belegen. Auth-Logs und einfache Aggregationen machen Angriffsquellen schnell sichtbar, bevor weitere Schritte folgen.",
+        "scenarioId": "log_analysis"
+      },
+      {
+        "stepId": "term-ir-03",
+        "context": "Nach der Analyse muss der betroffene Webservice wieder sicher ans Netz gebracht werden.",
+        "explanation": "Wiederherstellung und Haertung gehoeren zusammen. Eine einzelne fehlende Regel kann einen Service ausfallen lassen oder irrefuehrende Symptome erzeugen.",
+        "scenarioId": "firewall_check"
+      }
+    ]
+  }
+]

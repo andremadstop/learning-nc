@@ -11,6 +11,7 @@ import natScenarios from '../../data/nat_scenarios.json'
 import portscanScenarios from '../../data/portscan_scenarios.json'
 import packetCaptures from '../../data/packet_captures.json'
 import authflowScenarios from '../../data/authflow_scenarios.json'
+import terminalScenarios from '../../data/terminal_scenarios.json'
 import { SCENARIOS as subnetScenarios } from './scenarios.js'
 
 export const SIMULATOR_MAP = {
@@ -33,11 +34,12 @@ export const SCENARIOS = {
 	portscan: portscanScenarios,
 	wireshark: packetCaptures.scenarios,
 	authflow: authflowScenarios,
+	terminal: terminalScenarios.scenarios,
 	subnet: subnetScenarios,
 }
 
 /**
- * Resolve scenario: override takes precedence, then lookup by id.
+ * Resolve scenario: override takes precedence, then lookup by id in an array or keyed map.
  * @param {string} type - Simulator type key
  * @param {string} scenarioId - Scenario ID to look up
  * @param {object|null} scenarioOverride - Direct scenario object (takes precedence)
@@ -45,8 +47,20 @@ export const SCENARIOS = {
  */
 export function resolveScenario(type, scenarioId, scenarioOverride) {
 	if (scenarioOverride) return scenarioOverride
-	const list = SCENARIOS[type] || []
-	return list.find(s => s.id === scenarioId) || null
+	const collection = SCENARIOS[type]
+	if (!collection || !scenarioId) return null
+
+	if (Array.isArray(collection)) {
+		return collection.find(s => s.id === scenarioId) || null
+	}
+
+	if (typeof collection === 'object') {
+		const scenario = collection[scenarioId]
+		if (!scenario) return null
+		return scenario.id ? scenario : { id: scenarioId, ...scenario }
+	}
+
+	return null
 }
 
 /**
