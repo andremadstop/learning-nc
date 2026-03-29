@@ -23,7 +23,8 @@
 - ✅ **v12.0 Campaign Engine — Interaktives Kampagnen-RPG** — Phases 80-85 (shipped 2026-03-26)
 - ✅ **v12.1 DevCloud Optimierung** — Phases 86-89 (shipped 2026-03-27)
 - ✅ **v13.0 Feature Expansion** — Phases 90-95 (shipped 2026-03-28)
-- 🔄 **v3.4.0 UX-Konsolidierung & Simulator-Upgrade** — Phases 96-100 (active)
+- ✅ **v3.4.0 UX-Konsolidierung & Simulator-Upgrade** — Phases 96-100 (shipped 2026-03-28)
+- 🔄 **v3.5.0 Transparenz & Kursabschluss** — Phases 101-109 (next)
 
 ## Phases
 
@@ -53,6 +54,23 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 - [x] **Phase 98: Simulator-Praxis-Sessions** — Gefuehrte Schritt-fuer-Schritt-Sessions mit realen Szenarien und sichtbarem Fortschritt (completed 2026-03-28)
 - [x] **Phase 99: Student-Dashboard** — Heute-Startscreen mit SmartQueue, globaler Feed aus allen Kursen, direkte Pool-Navigation (completed 2026-03-28)
 - [x] **Phase 100: DevCloud-Integration & Leitner** — Talk-Shortcut, Kursmaterialien-Tab, Buddy-Matching, Tool-Einschraenkungen, Sprint-Intervalle (completed 2026-03-28)
+
+### v3.5.0 Transparenz & Kursabschluss (Phases 101-109)
+
+**Phase 1: Datenschutz & Transparenz**
+- [x] **Phase 101: In-App Datenschutz-Seite** — PrivacyInfo.vue in PersonalSettings, Datenkategorien-Tabelle, KI-Hinweis, Rechte-Info, Kontakt (completed 2026-03-29)
+- [x] **Phase 102: AI Consent erweitern** — Expliziter Gemini/Drittland-Hinweis, ai_consent_version in user_telos, Re-Consent bei Aenderungen (completed 2026-03-29)
+- [ ] **Phase 103: Schwarm-Consent + Loeschkonzept** — Info-Hinweis bei erster Contribution, UserDeletedListener mit Cascading Delete + Chunk-Anonymisierung
+
+**Phase 2: Kursende-Experience**
+- [ ] **Phase 104: Summary-Backend** — CourseSummaryService mit aggregierten Daten (Mastery, Sessions, XP, Badges, Schwarm, Duell, Trouble Spots)
+- [ ] **Phase 105: Kursende-Frontend** — CourseSummary.vue (Zeugnis-Daten + Fun Stats), neuer CourseDetail-Tab
+- [ ] **Phase 106: Export** — Markdown (Obsidian), PDF (html2canvas), JSON. Nur eigene Daten
+- [ ] **Phase 107: Dozenten-Abschlussreport** — ClassSummary.vue, Fortschritts-Matrix, CSV-Export
+
+**Phase 3: Klassenbuch (opt-in)**
+- [ ] **Phase 108: Klassenbuch Opt-in** — classbook_visible in user_telos, Toggle in Settings, Avatare-Grid
+- [ ] **Phase 109: Kontakt-Features** — Talk-Raum persistent, Buddy-Netzwerk-Ansicht, eigene vCard exportierbar
 
 ## Phase Details
 
@@ -125,6 +143,42 @@ Plans:
 - [ ] 100-02-PLAN.md — Frontend: Talk-Link, Materialien-Tab Student, Werkzeuge-Filterung, Sprint-Toggle
 - [ ] 100-03-PLAN.md — BuddyMatching.vue Komponente + CourseDetail-Integration
 
+### Phase 101: In-App Datenschutz-Seite
+**Goal**: Studenten und Dozenten sehen transparent welche Daten die App verarbeitet, wozu, und welche Rechte sie haben
+**Depends on**: Nothing (first phase of v3.5.0)
+**Requirements**: DSE-01
+**Plans:** 1 plan
+Plans:
+- [ ] 0101-01-PLAN.md — PrivacyInfo.vue mit JSON-Content + PersonalSettings-Integration
+**Success Criteria** (what must be TRUE):
+  1. In PersonalSettings existiert ein Tab "Datenschutz" mit einer vollstaendigen Datenkategorien-Tabelle (was/wozu/wer sieht es/Speicherdauer)
+  2. Ein KI-Hinweis erklaert dass Gemini genutzt wird, was gesendet wird, und dass Daten an Google (US) uebertragen werden
+  3. Rechte-Info (Auskunft, Loesung, Widerspruch) und Kontakt des Verantwortlichen sind sichtbar
+  4. Der Inhalt kommt aus einer JSON-Datei und kann ohne Code-Aenderung aktualisiert werden
+
+### Phase 102: AI Consent erweitern
+**Goal**: Nutzer geben informierte Einwilligung zur KI-Nutzung mit explizitem Hinweis auf Drittland-Transfer
+**Depends on**: Phase 101
+**Requirements**: DSE-02
+**Plans:** 1 plan
+Plans:
+- [x] 0102-01-PLAN.md — Backend Consent-API + Frontend Dialog mit JSON-Content und Versionierung
+**Success Criteria** (what must be TRUE):
+  1. Der VirtuProf Consent-Dialog nennt explizit "Google Gemini" und "Datenverarbeitung in den USA"
+  2. Ein neues Feld ai_consent_version in user_telos speichert die Version der Einwilligung
+  3. Bei Erhoehung der Consent-Version wird automatisch erneut Einwilligung eingeholt (Re-Consent)
+  4. Der Dialog verlinkt auf die Datenschutz-Seite aus Phase 101
+
+### Phase 103: Schwarm-Consent + Loeschkonzept
+**Goal**: Schwarmgedaechtnis-Beitraege sind mit informiertem Consent abgedeckt und User-Daten werden bei Accountloesung korrekt behandelt
+**Depends on**: Phase 101
+**Requirements**: DSE-03, DSE-04
+**Success Criteria** (what must be TRUE):
+  1. Beim ersten Schwarm-Beitrag erscheint ein Info-Hinweis der erklaert was mit dem Beitrag passiert (Freigabe durch Dozent, Name nur fuer Dozent sichtbar)
+  2. Der Hinweis erscheint nur einmal (localStorage-Flag) und blockiert nicht den Workflow
+  3. Ein UserDeletedListener loescht bei Account-Entfernung alle userbezogenen Daten (Stats, Leitner, Sessions, Answers, Badges, Telos, Missions, Duels, Story)
+  4. Schwarm-Chunks werden anonymisiert (user_id auf null) statt geloescht — der Inhalt bleibt erhalten
+
 ## Progress Table
 
 | Phase | Plans Complete | Status | Completed |
@@ -133,4 +187,6 @@ Plans:
 | 97. Code-Hygiene & Settings | 2/2 | Complete    | 2026-03-28 |
 | 98. Simulator-Praxis-Sessions | 2/2 | Complete    | 2026-03-28 |
 | 99. Student-Dashboard | 2/2 | Complete    | 2026-03-28 |
-| 100. DevCloud-Integration & Leitner | 3/3 | Complete   | 2026-03-28 |
+| 100. DevCloud-Integration & Leitner | 3/3 | Complete    | 2026-03-28 |
+| 101. In-App Datenschutz-Seite | 1/1 | Complete    | 2026-03-29 |
+| 102. AI Consent erweitern | 1/1 | Complete    | 2026-03-29 |

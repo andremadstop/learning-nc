@@ -7,12 +7,14 @@ use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
 use OCA\Learning\BackgroundJob\NotificationJob;
 use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
 use OCA\Learning\Dashboard\LearningWidget;
+use OCA\Learning\Listener\UserDeletedListener;
 use OCA\Learning\Notification\Notifier;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\BackgroundJob\IJobList;
+use OCP\User\Events\UserDeletedEvent;
 use Psr\Log\LoggerInterface;
 
 class Application extends App implements IBootstrap {
@@ -25,6 +27,7 @@ class Application extends App implements IBootstrap {
     public function register(IRegistrationContext $context): void {
         $context->registerDashboardWidget(LearningWidget::class);
         $context->registerNotifierService(Notifier::class);
+        $context->registerEventListener(UserDeletedEvent::class, UserDeletedListener::class);
     }
 
     public function boot(IBootContext $context): void {

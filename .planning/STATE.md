@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
-status: completed
-stopped_at: Completed 100-03-PLAN.md
-last_updated: "2026-03-28T14:08:22.187Z"
-last_activity: 2026-03-28 — Phase 100-03 complete (BuddyMatching component + CourseDetail integration)
+status: active
+stopped_at: Completed 0102-01-PLAN.md
+last_updated: "2026-03-29T08:30:00Z"
+last_activity: 2026-03-29 — Phase 0102-01 complete (AI Consent erweitern)
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 11
-  completed_plans: 11
+  total_phases: 7
+  completed_phases: 7
+  total_plans: 13
+  completed_plans: 13
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** v3.4.0 UX-Konsolidierung & Simulator-Upgrade — Phase 96 next
+**Current focus:** v3.4.0 UX-Konsolidierung & Simulator-Upgrade
 
 ## Current Position
 
-Phase: 100 — DevCloud-Integration & Leitner
-Plan: 03 complete (3/3 plans)
+Phase: 102 — AI Consent erweitern
+Plan: 01 complete (1/1 plans)
 Status: Complete
-Last activity: 2026-03-28 - Completed quick task 5: Dozenten-UI Wissens-Import
+Last activity: 2026-03-29 - Completed 0102-01: AI Consent erweitern
 
-Progress: [██████████] 100% (122/115 plans)
+Progress: [██████████] 100% (13/13 plans)
 
 ## Phase Overview
 
@@ -41,6 +41,8 @@ Progress: [██████████] 100% (122/115 plans)
 | 98 | Simulator-Praxis-Sessions | SIM-01, SIM-02, SIM-03 | Complete (2/2 plans) |
 | 99 | Student-Dashboard | DASH-01, DASH-02, DASH-03 | Complete (2/2 plans) |
 | 100 | DevCloud-Integration & Leitner | DVCL-01, DVCL-02, DVCL-03, DVCL-04, LEIT-01 | Complete (3/3 plans) |
+| 101 | In-App Datenschutz-Seite | DSE-01 | Complete (1/1 plans) |
+| 102 | AI Consent erweitern | DSE-02 | Complete (1/1 plans) |
 
 ## Accumulated Context
 
@@ -77,6 +79,9 @@ Progress: [██████████] 100% (122/115 plans)
 - [Phase 100]: Talk link opens in new tab via /apps/spreed/#/call/{token}
 - [Phase 100]: Lernpartner tab after Feed before Leaderboard in student tabs
 - [Phase 100]: Instructors see buddy matches in Klassen-Profil (no separate tab)
+- [Phase 101]: Privacy JSON content not t()-wrapped — instance-specific, maintained in JSON by operator
+- [Phase 101]: Existing data-transparency details section kept alongside full PrivacyInfo disclosure
+- [Phase 102]: Consent version in user_telos VARCHAR(20), re-consent via string inequality, v-html for static bundled JSON
 
 ### Pending Todos
 
@@ -105,7 +110,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T18:18:35Z
-Stopped at: Completed quick-03 VirtuProf Guide-Texte L10N
+Last session: 2026-03-29T08:30:00Z
+Stopped at: Completed 0102-01-PLAN.md
 Resume file: None
-Next action: Phase 100 complete. Deploy and verify on learning-dev.
+Next action: Deploy and verify consent dialog on learning-dev (deploy + migrate + browser test).
