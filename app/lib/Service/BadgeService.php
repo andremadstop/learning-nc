@@ -147,6 +147,18 @@ class BadgeService {
             'legacy' => false,
             'threshold' => 20,
         ],
+        'quick_thinker' => [
+            'name' => 'Quick Thinker',
+            'name_key' => 'badge_quick_thinker_name',
+            'emoji' => "\u{26A1}",
+            'description' => 'Complete an exam in under 50% of allotted time with 80%+ score',
+            'description_key' => 'badge_quick_thinker_desc',
+            'trigger' => 'Ace an exam in record time',
+            'trigger_key' => 'badge_quick_thinker_trigger',
+            'category' => 'performance',
+            'legacy' => false,
+            'threshold' => 1,
+        ],
     ];
 
     public function __construct(IDBConnection $db, INotificationManager $notificationManager, IConfig $config, IActivityManager $activityManager) {

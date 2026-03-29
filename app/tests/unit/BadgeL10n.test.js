@@ -22,6 +22,7 @@ const BADGE_IDS = [
 	'weekend',
 	'swarm',
 	'trouble_fixer',
+	'quick_thinker',
 ]
 
 describe('Badge l10n completeness', () => {
@@ -45,7 +46,7 @@ describe('Badge l10n completeness', () => {
 		expect(enJson[descKey], `${descKey} is empty in en.json`).not.toBe('')
 	})
 
-	it('covers all 9 non-legacy badges', () => {
-		expect(BADGE_IDS).toHaveLength(9)
+	it('covers all 10 non-legacy badges', () => {
+		expect(BADGE_IDS).toHaveLength(10)
 	})
 })
