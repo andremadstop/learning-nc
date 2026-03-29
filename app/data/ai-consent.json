@@ -1,0 +1,24 @@
+{
+  "title": "VirtuProf KI-Assistent aktivieren",
+  "body_html": "<p>Um dir personalisierte Erklaerungen und Hilfestellungen zu geben, nutzt diese App den <strong>VirtuProf KI-Assistenten</strong> auf Basis der <strong>Google Gemini API</strong>.</p><p><strong>Welche Daten werden gesendet?</strong><br>Wenn du eine Frage stellst, uebermitteln wir den Inhalt deiner Anfrage sowie den aktuell benoetigten Lernkontext aus der App, damit die KI deine Frage fachlich einordnen kann. Dazu koennen insbesondere Ausschnitte aus dem aktuellen Kurs- oder Aufgabeninhalt gehoeren.</p><p><strong>Welche Daten werden nicht gesendet?</strong><br>Wir uebermitteln keine direkten persoenlichen Identifikatoren wie deinen Namen, deine E-Mail-Adresse oder dein Passwort. Auch vollstaendige Account-Daten oder nicht benoetigte Inhalte werden nicht uebertragen.</p><p><strong>Drittlanduebermittlung und Datenschutz:</strong><br>Die Verarbeitung erfolgt ueber die Google Gemini API in den <strong>USA</strong>. Dabei handelt es sich um eine Drittlanduebermittlung im Sinne der DSGVO. Es koennen Datenschutzrisiken bestehen, insbesondere weil in den USA moeglicherweise kein mit der EU gleichwertiges Datenschutzniveau besteht.</p><ul><li>Die Einwilligung ist freiwillig.</li><li>Du kannst sie spaeter in den App-Einstellungen jederzeit widerrufen.</li><li>Ohne Einwilligung bleibt die normale Nutzung der App moeglich, der KI-Assistent ist dann jedoch deaktiviert.</li></ul><p>Mit der Aktivierung willigst du in diese Verarbeitung und die Uebermittlung an Google Gemini in den USA ein.</p>",
+  "version": "2.0",
+  "accept_label": "KI-Assistent aktivieren",
+  "decline_label": "Nein, danke",
+  "link_privacy_page": "privacy",
+  "data_flow": {
+    "sent": [
+      "Deine aktuelle Frage an VirtuProf",
+      "Erforderlicher Lernkontext aus dem aktuellen Kurs, der Aufgabe oder dem bearbeiteten Inhalt",
+      "Relevante Textausschnitte zur fachlichen Einordnung deiner Anfrage"
+    ],
+    "not_sent": [
+      "Dein Name",
+      "Deine E-Mail-Adresse",
+      "Dein Passwort",
+      "Direkte persoenliche Identifikatoren",
+      "Vollstaendige Account-Daten",
+      "Nicht benoetigte Inhalte ausserhalb des aktuellen Anfragekontexts"
+    ],
+    "destination": "Google Gemini API, USA"
+  }
+}

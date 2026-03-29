@@ -21,6 +21,12 @@ use OCP\AppFramework\Db\Entity;
  * @method void setTokenCount(int $tokenCount)
  * @method int getCreatedAt()
  * @method void setCreatedAt(int $createdAt)
+ * @method string|null getUserId()
+ * @method void setUserId(?string $userId)
+ * @method string getStatus()
+ * @method void setStatus(string $status)
+ * @method string getSourceType()
+ * @method void setSourceType(string $sourceType)
  */
 class RagChunk extends Entity {
     protected $documentId;
@@ -31,6 +37,9 @@ class RagChunk extends Entity {
     protected $chunkIndex;
     protected $tokenCount;
     protected $createdAt;
+    protected $userId;
+    protected $status;
+    protected $sourceType;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -52,6 +61,9 @@ class RagChunk extends Entity {
             'chunk_index' => $this->chunkIndex,
             'token_count' => $this->tokenCount,
             'created_at' => $this->createdAt,
+            'user_id' => $this->userId,
+            'status' => $this->status,
+            'source_type' => $this->sourceType,
         ];
     }
 }

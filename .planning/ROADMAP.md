@@ -65,12 +65,12 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 **Phase 2: Kursende-Experience**
 - [x] **Phase 104: Summary-Backend** — CourseSummaryService mit aggregierten Daten (Mastery, Sessions, XP, Badges, Schwarm, Duell, Trouble Spots), Snapshot-Migration, SummaryController + 3 API-Routes (completed 2026-03-29)
 - [ ] **Phase 105: Kursende-Frontend** — CourseSummary.vue (Zeugnis-Daten + Fun Stats), neuer CourseDetail-Tab
-- [ ] **Phase 106: Export** — Markdown (Obsidian), PDF (html2canvas), JSON. Nur eigene Daten
-- [ ] **Phase 107: Dozenten-Abschlussreport** — ClassSummary.vue, Fortschritts-Matrix, CSV-Export
+- [x] **Phase 106: Export** — Markdown (Obsidian), JSON, Print-to-PDF. Client-side, 10 Vitest (completed 2026-03-29)
+- [x] **Phase 107: Dozenten-Abschlussreport** — CSV-Export Klassen-Matrix (10 Spalten), Instructor-only Endpoint (completed 2026-03-29)
 
 **Phase 3: Klassenbuch (opt-in)**
-- [ ] **Phase 108: Klassenbuch Opt-in** — classbook_visible in user_telos, Toggle in Settings, Avatare-Grid
-- [ ] **Phase 109: Kontakt-Features** — Talk-Raum persistent, Buddy-Netzwerk-Ansicht, eigene vCard exportierbar
+- [x] **Phase 108: Klassenbuch Opt-in** — ClassbookController, visibility toggle, Profil-Grid Endpoint (completed 2026-03-29)
+- [x] **Phase 109: Kontakt-Features** — vCard-Export, Buddy-Netzwerk via existing Telos fields (completed 2026-03-29)
 
 ## Phase Details
 

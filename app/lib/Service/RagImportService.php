@@ -42,7 +42,7 @@ class RagImportService {
      * @return array{chunks: int, tokens: int, title: string}
      * @throws \InvalidArgumentException If text is too short
      */
-    public function importText(int $courseId, string $title, string $text): array {
+    public function importText(int $courseId, string $title, string $text, ?string $userId = null, string $sourceType = 'web'): array {
         if (mb_strlen(trim($text)) < self::MIN_TEXT_LENGTH) {
             throw new \InvalidArgumentException(
                 'Text must be at least ' . self::MIN_TEXT_LENGTH . ' characters long'
@@ -75,6 +75,9 @@ class RagImportService {
             $chunk->setChunkIndex($index);
             $chunk->setTokenCount($tokenCount);
             $chunk->setCreatedAt($now);
+            $chunk->setUserId($userId);
+            $chunk->setSourceType($sourceType);
+            $chunk->setStatus($sourceType === 'student' ? 'pending' : 'approved');
 
             $this->chunkMapper->insert($chunk);
             $totalTokens += $tokenCount;

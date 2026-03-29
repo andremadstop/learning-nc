@@ -5,7 +5,7 @@ export const SCRIPTS = {
     delay: 1400,
     steps: [
       {
-        text: "Welcome! I'm Prof. Lern, your virtual study assistant.",
+        text: "Hi {firstName}! I'm Prof. Lern, your virtual study assistant.",
         animation: 'wave',
       },
       {
@@ -185,7 +185,7 @@ export const SCRIPTS = {
     delay: 1800,
     steps: [
       {
-        text: 'Welcome back! There are still questions waiting for you in the Leitner system.',
+        text: 'Welcome back, {firstName}! There are still questions waiting for you in the Leitner system.',
         animation: 'wave',
       },
     ],
