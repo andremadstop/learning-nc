@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Db\RagChunkMapper;
+use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\RagImportService;
 use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Controller;
@@ -169,6 +170,26 @@ class RagImportController extends Controller {
             if (mb_strlen($title) > 255) {
                 return new DataResponse(['error' => 'Title must be 255 characters or less'], Http::STATUS_BAD_REQUEST);
             }
+            if (mb_strlen($text) > 5000) {
+                return new DataResponse(['error' => 'Text must be 5000 characters or less'], Http::STATUS_BAD_REQUEST);
+            }
+
+            // SEC: Check for prompt injection patterns in student contributions
+            $combined = $title . ' ' . $text;
+            if (GeminiService::containsInjectionPattern($combined)) {
+                $this->logger->warning('RagImportController: injection pattern in contribution', [
+                    'app' => 'learning',
+                    'user_id' => $this->userId,
+                    'title' => mb_substr($title, 0, 50),
+                ]);
+                return new DataResponse(['error' => 'Content contains disallowed patterns'], Http::STATUS_BAD_REQUEST);
+            }
+
+            // SEC: Check for PII (emails, phone numbers) in content
+            $piiWarning = self::detectPii($combined);
+            if ($piiWarning !== null) {
+                return new DataResponse(['error' => $piiWarning], Http::STATUS_BAD_REQUEST);
+            }
 
             $existing = $this->chunkMapper->countByUserIdAndCourseId($this->userId, $courseId);
             if ($existing >= self::MAX_STUDENT_CHUNKS_PER_COURSE) {
@@ -252,5 +273,24 @@ class RagImportController extends Controller {
             $this->logger->error('RagImportController::myContributions failed: ' . $e->getMessage(), ['app' => 'learning']);
             return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * Detect personally identifiable information in text.
+     *
+     * Returns a user-facing error message if PII is found, null otherwise.
+     */
+    private static function detectPii(string $text): ?string {
+        // Email addresses
+        if (preg_match('/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $text)) {
+            return 'Content must not contain email addresses — please remove before submitting';
+        }
+
+        // Phone numbers (international formats)
+        if (preg_match('/(\+?\d{1,4}[\s\-.]?)?\(?\d{2,5}\)?[\s\-.]?\d{3,}[\s\-.]?\d{2,}/', $text)) {
+            return 'Content must not contain phone numbers — please remove before submitting';
+        }
+
+        return null;
     }
 }
