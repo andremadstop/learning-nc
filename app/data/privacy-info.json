@@ -1,8 +1,8 @@
 {
   "version": "1.0",
   "responsible": {
-    "name": "[Name des Verantwortlichen]",
-    "email": "[kontakt@example.de]",
+    "name": "Andre Stiebitz",
+    "email": "andrestiebitz@email.de",
     "note": "Betreiber der DevCloud Lernplattform"
   },
   "categories": [

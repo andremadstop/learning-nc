@@ -636,6 +636,8 @@ export default {
 
 .nc-textarea--profile {
   min-height: 72px;
+  width: 100%;
+  max-width: 500px;
 }
 
 .actions {

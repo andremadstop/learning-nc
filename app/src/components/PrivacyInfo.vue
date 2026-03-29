@@ -1,12 +1,12 @@
 <template>
   <div class="privacy-info">
-    <h3>{{ t('learning', 'Privacy') }}</h3>
-    <p class="section-desc">{{ t('learning', 'Information about data processing in this app according to Art. 13 GDPR.') }}</p>
+    <h3>{{ t('learning', 'Datenschutz') }}</h3>
+    <p class="section-desc">{{ t('learning', 'Informationen zur Datenverarbeitung in dieser App gemaess Art. 13 DSGVO.') }}</p>
 
     <!-- AI Notice -->
     <NcNoteCard type="warning">
-      <p><strong>{{ t('learning', 'AI Notice') }}</strong></p>
-      <p>{{ t('learning', 'This app uses {provider} for AI-powered explanations.', { provider: aiNotice.provider }) }}</p>
+      <p><strong>{{ t('learning', 'KI-Hinweis') }}</strong></p>
+      <p>{{ t('learning', 'Diese App nutzt {provider} fuer KI-gestuetzte Erklaerungen.', { provider: aiNotice.provider }) }}</p>
       <p>{{ privacyData.ai_notice.what_is_sent }}</p>
       <p>{{ privacyData.ai_notice.data_location }}</p>
       <p>{{ privacyData.ai_notice.what_is_not_sent }}</p>
@@ -14,17 +14,17 @@
     </NcNoteCard>
 
     <!-- Data categories table -->
-    <h4>{{ t('learning', 'Data categories') }}</h4>
+    <h4>{{ t('learning', 'Datenkategorien') }}</h4>
     <div class="privacy-info__table-wrap">
       <table class="privacy-info__table">
         <thead>
           <tr>
-            <th>{{ t('learning', 'Category') }}</th>
-            <th>{{ t('learning', 'Data') }}</th>
-            <th>{{ t('learning', 'Purpose') }}</th>
-            <th>{{ t('learning', 'Who sees it') }}</th>
-            <th>{{ t('learning', 'Retention') }}</th>
-            <th>{{ t('learning', 'Legal basis') }}</th>
+            <th>{{ t('learning', 'Kategorie') }}</th>
+            <th>{{ t('learning', 'Daten') }}</th>
+            <th>{{ t('learning', 'Zweck') }}</th>
+            <th>{{ t('learning', 'Wer sieht es') }}</th>
+            <th>{{ t('learning', 'Speicherdauer') }}</th>
+            <th>{{ t('learning', 'Rechtsgrundlage') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -43,7 +43,7 @@
     <hr class="section-divider" />
 
     <!-- Rights -->
-    <h4>{{ t('learning', 'Your Rights') }}</h4>
+    <h4>{{ t('learning', 'Deine Rechte') }}</h4>
     <ul class="privacy-info__rights">
       <li v-for="right in privacyData.rights" :key="right.name">
         <strong>{{ right.name }}</strong> ({{ right.article }})
@@ -54,7 +54,7 @@
     <hr class="section-divider" />
 
     <!-- Responsible -->
-    <h4>{{ t('learning', 'Responsible') }}</h4>
+    <h4>{{ t('learning', 'Verantwortlich') }}</h4>
     <p>{{ privacyData.responsible.name }}</p>
     <p>{{ privacyData.responsible.email }}</p>
     <p class="section-desc">{{ privacyData.responsible.note }}</p>

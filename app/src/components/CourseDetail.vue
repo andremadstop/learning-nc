@@ -2943,7 +2943,7 @@ export default {
 
 .tab-button--group.active {
 	background: var(--color-primary-element);
-	color: var(--color-primary-element-text);
+	color: #fff;
 	border-bottom-color: transparent;
 }
 
