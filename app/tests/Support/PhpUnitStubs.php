@@ -10,6 +10,15 @@ namespace OCP\DB\QueryBuilder {
     }
 }
 
+namespace OCP\Security {
+    if (!interface_exists(ICrypto::class)) {
+        interface ICrypto {
+            public function encrypt(string $plaintext, string $secret = ''): string;
+            public function decrypt(string $encryptedContent, string $secret = ''): string;
+        }
+    }
+}
+
 namespace OCP {
     if (!interface_exists(IDBConnection::class)) {
         interface IDBConnection {
