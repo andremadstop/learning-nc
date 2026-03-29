@@ -221,6 +221,7 @@ return [
         ['name' => 'summary#getSummary', 'url' => '/api/courses/{courseId}/summary', 'verb' => 'GET'],
         ['name' => 'summary#createSnapshot', 'url' => '/api/courses/{courseId}/summary/snapshot', 'verb' => 'POST'],
         ['name' => 'summary#getSnapshot', 'url' => '/api/courses/{courseId}/summary/snapshot', 'verb' => 'GET'],
+        ['name' => 'summary#exportCsv', 'url' => '/api/courses/{courseId}/summary/export/csv', 'verb' => 'GET'],
 
         // Gameshow
         ['name' => 'gameshow#create', 'url' => '/api/gameshow', 'verb' => 'POST'],
