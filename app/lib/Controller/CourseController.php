@@ -62,8 +62,11 @@ class CourseController extends Controller {
             return new DataResponse($this->courseService->findById($courseId, $this->userId));
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'Access denied'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
-            return new DataResponse(['error' => 'Failed to load course'], Http::STATUS_FORBIDDEN);
+            \OCP\Server::get(\Psr\Log\LoggerInterface::class)->error('Failed to load course: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Failed to load course'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 

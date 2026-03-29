@@ -6,9 +6,10 @@ use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
+/** @extends QBMapper<AnswerTranslation> */
 class AnswerTranslationMapper extends QBMapper {
     public function __construct(IDBConnection $db) {
-        parent::__construct($db, 'learning_a_translations', AnswerTranslation::class);
+        parent::__construct($db, 'learning_ans_translations', AnswerTranslation::class);
     }
 
     public function findByAnswer(int $answerId): array {
@@ -26,7 +27,9 @@ class AnswerTranslationMapper extends QBMapper {
            ->where($qb->expr()->eq('answer_id', $qb->createNamedParameter($answerId, IQueryBuilder::PARAM_INT)))
            ->andWhere($qb->expr()->eq('lang', $qb->createNamedParameter($lang)));
         try {
-            return $this->findEntity($qb);
+            /** @var AnswerTranslation $entity */
+            $entity = $this->findEntity($qb);
+            return $entity;
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return null;
         }

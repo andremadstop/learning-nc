@@ -7,9 +7,10 @@ use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
+/** @extends QBMapper<CurriculumScope> */
 class CurriculumScopeMapper extends QBMapper {
     public function __construct(IDBConnection $db) {
-        parent::__construct($db, 'learning_curriculum_scopes', CurriculumScope::class);
+        parent::__construct($db, 'learning_course_curriculum_scopes', CurriculumScope::class);
     }
 
     public function findByCourse(int $courseId): ?CurriculumScope {
@@ -18,7 +19,9 @@ class CurriculumScopeMapper extends QBMapper {
            ->from($this->getTableName())
            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)));
         try {
-            return $this->findEntity($qb);
+            /** @var CurriculumScope $entity */
+            $entity = $this->findEntity($qb);
+            return $entity;
         } catch (DoesNotExistException $e) {
             return null;
         }

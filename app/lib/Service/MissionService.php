@@ -91,6 +91,11 @@ class MissionService {
             throw new \InvalidArgumentException('Mission not completed yet');
         }
 
+        $claimed = $this->getClaimedMap($userId, $today);
+        if (isset($claimed[$missionKey])) {
+            throw new \InvalidArgumentException('Mission already claimed');
+        }
+
         $xp = (int)self::DAILY_MISSIONS[$missionKey]['xp'];
         $this->db->beginTransaction();
         try {
