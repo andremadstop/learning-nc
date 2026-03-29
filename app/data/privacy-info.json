@@ -1,0 +1,57 @@
+{
+  "version": "1.0",
+  "responsible": {
+    "name": "[Name des Verantwortlichen]",
+    "email": "[kontakt@example.de]",
+    "note": "Betreiber der DevCloud Lernplattform"
+  },
+  "categories": [
+    {
+      "name": "Lerndaten",
+      "items": "Leitner-Box, Sessions, Scores, XP, Badges, Streak, Missionen, Duell/Gameshow, Pruefungsergebnisse",
+      "purpose": "Spaced Repetition, Fortschrittsverfolgung, Gamification",
+      "who_sees": "Du selbst + Dozent (aggregiert). XP/Badges im Leaderboard fuer alle.",
+      "retention": "Solange dein Account existiert",
+      "legal_basis": "Berechtigtes Interesse (Art. 6(1)f) — Lernzweck"
+    },
+    {
+      "name": "Persoenlichkeitsprofil (Telos)",
+      "items": "Lernziele, Staerken, Schwaechen, Erfahrungslevel, Hilfe-Angebote/-Gesuche",
+      "purpose": "Personalisierte KI-Erklaerungen, Buddy Matching",
+      "who_sees": "Du + VirtuProf. Bei Sichtbarkeit 'Kurs': Kursteilnehmer sehen Hilfe-Themen + Bio.",
+      "retention": "Solange dein Account existiert, Opt-in via Onboarding",
+      "legal_basis": "Einwilligung (Art. 6(1)a) — Telos ist opt-in"
+    },
+    {
+      "name": "Schwarmgedaechtnis-Beitraege",
+      "items": "Eigene Erklaerungen, Merkhilfen, Notizen zu Fragen",
+      "purpose": "Gemeinsamer Wissenspool fuer alle Kursteilnehmer",
+      "who_sees": "Dozent sieht Autor. Studenten sehen nur den freigegebenen Text.",
+      "retention": "Bei Account-Loesung anonymisiert (Inhalt bleibt, Name wird entfernt)",
+      "legal_basis": "Einwilligung (Art. 6(1)a)"
+    },
+    {
+      "name": "KI-Interaktion (Drittland-Transfer)",
+      "items": "Chat-Nachrichten an VirtuProf, RAG-Kontext (max. 4000 Token)",
+      "purpose": "KI-gestuetzte Erklaerungen und Lernhilfen",
+      "who_sees": "Google Gemini API verarbeitet die Anfrage. Kein Nutzername wird uebermittelt.",
+      "retention": "Wird von Google gemaess deren Richtlinien verarbeitet. Chat-Verlauf lokal im Browser.",
+      "legal_basis": "Einwilligung (Art. 6(1)a) — AI Consent Dialog"
+    }
+  ],
+  "ai_notice": {
+    "provider": "Google Gemini",
+    "what_is_sent": "Deine Frage an VirtuProf sowie relevante Kursinhalte (RAG-Kontext, max. 4000 Token) werden an die Google Gemini API uebermittelt.",
+    "data_location": "Google verarbeitet diese Daten in den USA.",
+    "what_is_not_sent": "Dein Nutzername, deine E-Mail und dein Lernprofil werden NICHT an Google gesendet.",
+    "opt_out": "Du kannst die KI-Nutzung jederzeit in den Einstellungen deaktivieren (Schalter 'Virtueller Assistent')."
+  },
+  "rights": [
+    { "name": "Auskunft", "article": "Art. 15 DSGVO", "description": "Du kannst jederzeit erfahren, welche Daten ueber dich gespeichert sind." },
+    { "name": "Berichtigung", "article": "Art. 16 DSGVO", "description": "Unrichtige Daten koennen korrigiert werden." },
+    { "name": "Loeschung", "article": "Art. 17 DSGVO", "description": "Du kannst die Loesung deiner Daten verlangen." },
+    { "name": "Einschraenkung", "article": "Art. 18 DSGVO", "description": "Du kannst die Verarbeitung einschraenken lassen." },
+    { "name": "Widerspruch", "article": "Art. 21 DSGVO", "description": "Du kannst der Verarbeitung widersprechen." },
+    { "name": "Datenportabilitaet", "article": "Art. 20 DSGVO", "description": "Du kannst deine Daten in einem gaengigen Format erhalten." }
+  ]
+}
