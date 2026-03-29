@@ -37,6 +37,38 @@
       "who_sees": "Google Gemini API verarbeitet die Anfrage. Kein Nutzername wird uebermittelt.",
       "retention": "Wird von Google gemaess deren Richtlinien verarbeitet. Chat-Verlauf lokal im Browser.",
       "legal_basis": "Einwilligung (Art. 6(1)a) — AI Consent Dialog"
+    },
+    {
+      "name": "Audit-Protokolle",
+      "items": "Login-Zeitpunkte, Moderations-Entscheidungen, Loeschvorgaenge, Consent-Versionen",
+      "purpose": "Nachvollziehbarkeit, DSGVO-Rechenschaftspflicht",
+      "who_sees": "Nur Admins",
+      "retention": "Solange dein Account existiert",
+      "legal_basis": "Rechtliche Verpflichtung (Art. 6(1)c)"
+    },
+    {
+      "name": "Gamification",
+      "items": "Badges, XP, Streak-Zaehler, Leaderboard-Rang, Arena-Ergebnisse, Abenteuer-Fortschritt",
+      "purpose": "Motivation, Lernfortschritt sichtbar machen",
+      "who_sees": "Du selbst + Kursteilnehmer (Leaderboard). Dozent sieht aggregierte Statistik.",
+      "retention": "Solange dein Account existiert",
+      "legal_basis": "Berechtigtes Interesse (Art. 6(1)f) — Lernmotivation"
+    },
+    {
+      "name": "Pruefungsdaten",
+      "items": "Simulator-Sessions, PBQ-Ergebnisse, Exam-Readiness-Score, Kursabschluss-Status",
+      "purpose": "Pruefungsvorbereitung, Kompetenz-Nachweis",
+      "who_sees": "Du selbst + Dozent",
+      "retention": "Solange dein Account existiert",
+      "legal_basis": "Berechtigtes Interesse (Art. 6(1)f) — Ausbildungszweck"
+    },
+    {
+      "name": "Externe Dienste",
+      "items": "DevCloud-Nextcloud-Account, Talk-Chat-Nachrichten, Deck-Aufgaben, geteilte Dateien",
+      "purpose": "Kollaborative Lernumgebung, Kommunikation, Aufgabenverwaltung",
+      "who_sees": "Kursteilnehmer + Dozent (je nach Freigabe). Admin sieht alles.",
+      "retention": "Solange dein Account existiert",
+      "legal_basis": "Berechtigtes Interesse (Art. 6(1)f) — Lerninfrastruktur"
     }
   ],
   "ai_notice": {
