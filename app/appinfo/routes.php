@@ -217,6 +217,11 @@ return [
         ['name' => 'course#getTools', 'url' => '/api/courses/{courseId}/tools', 'verb' => 'GET'],
         ['name' => 'course#updateTools', 'url' => '/api/courses/{courseId}/tools', 'verb' => 'PUT'],
 
+        // Course Summary (Phase 104)
+        ['name' => 'summary#getSummary', 'url' => '/api/courses/{courseId}/summary', 'verb' => 'GET'],
+        ['name' => 'summary#createSnapshot', 'url' => '/api/courses/{courseId}/summary/snapshot', 'verb' => 'POST'],
+        ['name' => 'summary#getSnapshot', 'url' => '/api/courses/{courseId}/summary/snapshot', 'verb' => 'GET'],
+
         // Gameshow
         ['name' => 'gameshow#create', 'url' => '/api/gameshow', 'verb' => 'POST'],
         ['name' => 'gameshow#history', 'url' => '/api/gameshow/history', 'verb' => 'GET'],

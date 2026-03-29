@@ -60,10 +60,10 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 **Phase 1: Datenschutz & Transparenz**
 - [x] **Phase 101: In-App Datenschutz-Seite** — PrivacyInfo.vue in PersonalSettings, Datenkategorien-Tabelle, KI-Hinweis, Rechte-Info, Kontakt (completed 2026-03-29)
 - [x] **Phase 102: AI Consent erweitern** — Expliziter Gemini/Drittland-Hinweis, ai_consent_version in user_telos, Re-Consent bei Aenderungen (completed 2026-03-29)
-- [ ] **Phase 103: Schwarm-Consent + Loeschkonzept** — Info-Hinweis bei erster Contribution, UserDeletedListener mit Cascading Delete + Chunk-Anonymisierung
+- [x] **Phase 103: Schwarm-Consent + Loeschkonzept** — Info-Hinweis bei erster Contribution, UserDeletedListener mit Cascading Delete + Chunk-Anonymisierung (completed 2026-03-29)
 
 **Phase 2: Kursende-Experience**
-- [ ] **Phase 104: Summary-Backend** — CourseSummaryService mit aggregierten Daten (Mastery, Sessions, XP, Badges, Schwarm, Duell, Trouble Spots)
+- [x] **Phase 104: Summary-Backend** — CourseSummaryService mit aggregierten Daten (Mastery, Sessions, XP, Badges, Schwarm, Duell, Trouble Spots), Snapshot-Migration, SummaryController + 3 API-Routes (completed 2026-03-29)
 - [ ] **Phase 105: Kursende-Frontend** — CourseSummary.vue (Zeugnis-Daten + Fun Stats), neuer CourseDetail-Tab
 - [ ] **Phase 106: Export** — Markdown (Obsidian), PDF (html2canvas), JSON. Nur eigene Daten
 - [ ] **Phase 107: Dozenten-Abschlussreport** — ClassSummary.vue, Fortschritts-Matrix, CSV-Export

@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
 status: active
-stopped_at: Completed 0102-01-PLAN.md
-last_updated: "2026-03-29T08:30:00Z"
-last_activity: 2026-03-29 — Phase 0102-01 complete (AI Consent erweitern)
+stopped_at: Completed Phase 103
+last_updated: "2026-03-29T10:30:00Z"
+last_activity: 2026-03-29 — Phase 103 complete (Schwarm-Consent + Loeschkonzept)
 progress:
   total_phases: 7
   completed_phases: 7
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 ## Current Position
 
-Phase: 102 — AI Consent erweitern
+Phase: 104 — Summary-Backend
 Plan: 01 complete (1/1 plans)
 Status: Complete
-Last activity: 2026-03-29 - Completed 0102-01: AI Consent erweitern
+Last activity: 2026-03-29 - Completed Phase 104: Summary-Backend
 
 Progress: [██████████] 100% (13/13 plans)
 
@@ -43,6 +43,8 @@ Progress: [██████████] 100% (13/13 plans)
 | 100 | DevCloud-Integration & Leitner | DVCL-01, DVCL-02, DVCL-03, DVCL-04, LEIT-01 | Complete (3/3 plans) |
 | 101 | In-App Datenschutz-Seite | DSE-01 | Complete (1/1 plans) |
 | 102 | AI Consent erweitern | DSE-02 | Complete (1/1 plans) |
+| 103 | Schwarm-Consent + Loeschkonzept | DSE-03, DSE-04 | Complete (1/1 plans) |
+| 104 | Summary-Backend | KE-01 | Complete (1/1 plans) |
 
 ## Accumulated Context
 
@@ -82,6 +84,11 @@ Progress: [██████████] 100% (13/13 plans)
 - [Phase 101]: Privacy JSON content not t()-wrapped — instance-specific, maintained in JSON by operator
 - [Phase 101]: Existing data-transparency details section kept alongside full PrivacyInfo disclosure
 - [Phase 102]: Consent version in user_telos VARCHAR(20), re-consent via string inequality, v-html for static bundled JSON
+- [Phase 103]: UserDeletedListener (Codex) registered in Application.php, covers 20+ tables with cascading delete + RAG anonymization
+- [Phase 103]: Schwarm-Consent uses localStorage key learning_swarm_consent_v1, info dialog in StudentKnowledgeContribute.vue
+- [Phase 104]: CourseSummaryService aggregiert 8 Datenkategorien (mastery, sessions, xp, badges, streak, swarm, duels, trouble_spots)
+- [Phase 104]: Snapshot-Tabelle oc_learning_course_snapshots (JSON-Blob) fuer dauerhafte Zeugnisse
+- [Phase 104]: SummaryController mit 3 Routes: GET summary, POST/GET snapshot. Student=eigene Daten, Instructor=Klasse
 
 ### Pending Todos
 
@@ -113,4 +120,4 @@ None yet.
 Last session: 2026-03-29T08:30:00Z
 Stopped at: Completed 0102-01-PLAN.md
 Resume file: None
-Next action: Deploy and verify consent dialog on learning-dev (deploy + migrate + browser test).
+Next action: Phase 105 (Kursende-Frontend) — CourseSummary.vue bauen.
