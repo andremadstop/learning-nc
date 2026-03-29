@@ -223,6 +223,11 @@ return [
         ['name' => 'summary#getSnapshot', 'url' => '/api/courses/{courseId}/summary/snapshot', 'verb' => 'GET'],
         ['name' => 'summary#exportCsv', 'url' => '/api/courses/{courseId}/summary/export/csv', 'verb' => 'GET'],
 
+        // Classbook (Phase 108-109)
+        ['name' => 'classbook#index', 'url' => '/api/courses/{courseId}/classbook', 'verb' => 'GET'],
+        ['name' => 'classbook#toggleVisibility', 'url' => '/api/courses/{courseId}/classbook/visibility', 'verb' => 'POST'],
+        ['name' => 'classbook#exportVcard', 'url' => '/api/courses/{courseId}/classbook/vcard', 'verb' => 'GET'],
+
         // Gameshow
         ['name' => 'gameshow#create', 'url' => '/api/gameshow', 'verb' => 'POST'],
         ['name' => 'gameshow#history', 'url' => '/api/gameshow/history', 'verb' => 'GET'],
