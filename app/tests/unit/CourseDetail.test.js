@@ -97,9 +97,6 @@ function createInstance(overrides = {}) {
 	Object.defineProperties(instance, {
 		isInstructor: { get: () => CourseDetail.computed.isInstructor.call(instance) },
 		isCourseSummaryReleased: { get: () => CourseDetail.computed.isCourseSummaryReleased.call(instance) },
-		instructorTabGroups: { get: () => CourseDetail.computed.instructorTabGroups.call(instance) },
-		activeInstructorGroupId: { get: () => CourseDetail.computed.activeInstructorGroupId.call(instance) },
-		activeInstructorTabs: { get: () => CourseDetail.computed.activeInstructorTabs.call(instance) },
 		visibleTabs: { get: () => CourseDetail.computed.visibleTabs.call(instance) },
 		hasEnabledArenaModes: { get: () => CourseDetail.computed.hasEnabledArenaModes.call(instance) },
 	})
@@ -161,7 +158,7 @@ describe('CourseDetail navigation logic', () => {
 		)
 	})
 
-	it('switches instructor tab groups by selecting the first tab in the target group', () => {
+	it('keeps the instructor placeholder tab in the participant section', () => {
 		const instance = createInstance({
 			course: {
 				is_instructor: true,
@@ -178,13 +175,10 @@ describe('CourseDetail navigation logic', () => {
 					course_summary: false,
 				},
 			},
-			currentTab: 'pools',
 		})
 
-		instance.selectInstructorGroup('teilnehmer')
-
-		expect(instance.currentTab).toBe('members')
-		expect(instance.activeInstructorGroupId).toBe('teilnehmer')
-		expect(instance.activeInstructorTabs.map((tab) => tab.id)).toContain('summary')
+		const summaryTab = instance.visibleTabs.find((tab) => tab.id === 'summary')
+		expect(summaryTab).toBeTruthy()
+		expect(summaryTab.group).toBe('Teilnehmer')
 	})
 })

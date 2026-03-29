@@ -36,37 +36,19 @@
 
 		<template v-if="!loading && course">
 			<!-- Tab selector -->
-			<div v-if="isInstructor" class="tab-group-shell">
-				<div class="tab-selector tab-selector--groups" role="tablist">
+			<div class="tab-selector">
+				<template v-for="(tab, idx) in visibleTabs">
+					<span v-if="idx > 0 && tab.group && visibleTabs[idx - 1].group && tab.group !== visibleTabs[idx - 1].group"
+						:key="'sep-' + idx"
+						class="tab-group-separator" />
 					<button
-						v-for="group in instructorTabGroups"
-						:key="group.id"
-						class="tab-button tab-button--group"
-						:class="{ active: activeInstructorGroupId === group.id }"
-						@click="selectInstructorGroup(group.id)">
-						{{ group.label }}
-					</button>
-				</div>
-				<div v-if="activeInstructorTabs.length > 0" class="course-sub-nav detail-sub-nav" role="tablist">
-					<button
-						v-for="tab in activeInstructorTabs"
 						:key="tab.id"
-						class="detail-sub-nav-btn"
+						class="tab-button"
 						:class="{ active: currentTab === tab.id }"
 						@click="selectTab(tab.id)">
 						{{ tab.label }}
 					</button>
-				</div>
-			</div>
-			<div v-else class="tab-selector">
-				<button
-					v-for="tab in visibleTabs"
-					:key="tab.id"
-					class="tab-button"
-					:class="{ active: currentTab === tab.id }"
-					@click="selectTab(tab.id)">
-					{{ tab.label }}
-				</button>
+				</template>
 			</div>
 
 			<!-- Pools Tab -->
@@ -1470,79 +1452,34 @@ export default {
 				label: t('learning', tool.labelKey),
 			}))
 		},
-		instructorTabGroups() {
-			if (!this.isInstructor) {
-				return []
-			}
-			return [
-				{
-					id: 'lernraum',
-					label: t('learning', 'Lernraum'),
-					tabs: [
-						{ id: 'pools', label: t('learning', 'Pools') },
-						{ id: 'curriculum', label: t('learning', 'Themen') },
-						{ id: 'materials', label: t('learning', 'Materialien') },
-						{ id: 'knowledge', label: t('learning', 'Wissen') + (this.knowledgePendingCount > 0 ? ' (' + this.knowledgePendingCount + ')' : '') },
-					],
-				},
-				{
-					id: 'teilnehmer',
-					label: t('learning', 'Teilnehmer'),
-					tabs: [
-						{ id: 'members', label: t('learning', 'Members') },
-						{ id: 'progress', label: t('learning', 'Progress') },
-						{ id: 'heatmap', label: t('learning', 'Heatmap') },
-						{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
-						{ id: 'class-profile', label: t('learning', 'Klassen-Profil') },
-						{ id: 'summary', label: t('learning', 'Abschluss') },
-					],
-				},
-				{
-					id: 'wettbewerb',
-					label: t('learning', 'Wettbewerb'),
-					tabs: [
-						{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
-						{ id: 'league', label: t('learning', 'Liga') },
-						{ id: 'arena', label: t('learning', 'Arena') },
-						{ id: 'abenteuer', label: t('learning', 'Abenteuer') },
-					],
-				},
-				{
-					id: 'kommunikation',
-					label: t('learning', 'Kommunikation'),
-					tabs: [
-						{ id: 'announcements', label: t('learning', 'Ankündigungen') },
-						{ id: 'feed', label: t('learning', 'Feed') },
-						{ id: 'requests', label: t('learning', 'Anfragen') },
-					],
-				},
-				{
-					id: 'administration',
-					label: t('learning', 'Administration'),
-					tabs: [
-						{ id: 'mode-config', label: t('learning', 'Kursregeln') },
-						{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot') },
-					],
-				},
-			]
-		},
-		activeInstructorGroupId() {
-			if (!this.isInstructor) {
-				return ''
-			}
-			const activeGroup = this.instructorTabGroups.find((group) => group.tabs.some((tab) => tab.id === this.currentTab))
-			return activeGroup?.id || this.instructorTabGroups[0]?.id || ''
-		},
-		activeInstructorTabs() {
-			if (!this.isInstructor) {
-				return []
-			}
-			const activeGroup = this.instructorTabGroups.find((group) => group.id === this.activeInstructorGroupId)
-			return activeGroup?.tabs || []
-		},
 		visibleTabs() {
 			if (this.isInstructor) {
-				return this.instructorTabGroups.reduce((tabs, group) => tabs.concat(group.tabs), [])
+				return [
+					// Lernraum
+					{ id: 'pools', label: t('learning', 'Pools'), group: 'Lernraum' },
+					{ id: 'curriculum', label: t('learning', 'Themen'), group: 'Lernraum' },
+					{ id: 'materials', label: t('learning', 'Materialien'), group: 'Lernraum' },
+					{ id: 'knowledge', label: t('learning', 'Wissen') + (this.knowledgePendingCount > 0 ? ' (' + this.knowledgePendingCount + ')' : ''), group: 'Lernraum' },
+					// Teilnehmer
+					{ id: 'members', label: t('learning', 'Members'), group: 'Teilnehmer' },
+					{ id: 'progress', label: t('learning', 'Progress'), group: 'Teilnehmer' },
+					{ id: 'heatmap', label: t('learning', 'Heatmap'), group: 'Teilnehmer' },
+					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen'), group: 'Teilnehmer' },
+					{ id: 'class-profile', label: t('learning', 'Klassen-Profil'), group: 'Teilnehmer' },
+					{ id: 'summary', label: t('learning', 'Abschluss'), group: 'Teilnehmer' },
+					// Wettbewerb
+					{ id: 'leaderboard', label: t('learning', 'Leaderboard'), group: 'Wettbewerb' },
+					{ id: 'league', label: t('learning', 'Liga'), group: 'Wettbewerb' },
+					{ id: 'arena', label: t('learning', 'Arena'), group: 'Wettbewerb' },
+					{ id: 'abenteuer', label: t('learning', 'Abenteuer'), group: 'Wettbewerb' },
+					// Kommunikation
+					{ id: 'announcements', label: t('learning', 'Ankündigungen'), group: 'Kommunikation' },
+					{ id: 'feed', label: t('learning', 'Feed'), group: 'Kommunikation' },
+					{ id: 'requests', label: t('learning', 'Anfragen'), group: 'Kommunikation' },
+					// Verwaltung
+					{ id: 'mode-config', label: t('learning', 'Kursregeln'), group: 'Verwaltung' },
+					{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot'), group: 'Verwaltung' },
+				]
 			}
 			const mc = this.course?.mode_config || {}
 			const enabled = (key) => mc[key] !== false
@@ -1819,15 +1756,6 @@ export default {
 					},
 				}
 				return guides[tabId] || null
-			},
-			selectInstructorGroup(groupId) {
-				const group = this.instructorTabGroups.find((item) => item.id === groupId)
-				if (!group || group.tabs.some((tab) => tab.id === this.currentTab)) {
-					return
-				}
-				if (group.tabs[0]) {
-					this.selectTab(group.tabs[0].id)
-				}
 			},
 			selectTab(tabId) {
 				this.currentTab = tabId
@@ -2911,16 +2839,6 @@ export default {
 	padding-bottom: 0;
 }
 
-.tab-group-shell {
-	margin-bottom: 24px;
-}
-
-.tab-selector--groups {
-	margin-bottom: 12px;
-	border-bottom: 0;
-	padding-bottom: 0;
-}
-
 .tab-button {
 	padding: 10px 20px;
 	border: none;
@@ -2933,18 +2851,6 @@ export default {
 	margin-bottom: -2px;
 	transition: color 0.15s, border-color 0.15s;
 	white-space: nowrap;
-}
-
-.tab-button--group {
-	border-radius: 999px;
-	border-bottom-width: 0;
-	margin-bottom: 0;
-}
-
-.tab-button--group.active {
-	background: var(--color-primary-element);
-	color: #fff;
-	border-bottom-color: transparent;
 }
 
 .tab-button:hover {
@@ -2965,36 +2871,6 @@ export default {
 	margin: 0 8px;
 	align-self: center;
 	flex-shrink: 0;
-}
-
-.detail-sub-nav {
-	margin-bottom: 0;
-	overflow-x: auto;
-	flex-wrap: nowrap;
-	scrollbar-width: thin;
-}
-
-.detail-sub-nav-btn {
-	padding: 10px 14px;
-	border: none;
-	background: transparent;
-	border-radius: 8px;
-	cursor: pointer;
-	font-size: 0.92em;
-	font-weight: 500;
-	color: var(--color-main-text);
-	white-space: nowrap;
-	transition: background 0.15s, color 0.15s;
-}
-
-.detail-sub-nav-btn:hover {
-	background: var(--color-background-dark);
-}
-
-.detail-sub-nav-btn.active {
-	background: var(--color-primary-element);
-	color: var(--color-primary-element-text);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 /* Section header */
