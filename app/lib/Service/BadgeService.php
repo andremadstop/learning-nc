@@ -236,7 +236,7 @@ class BadgeService {
 
         if ($mode === 'exam' && $scorePct > 85) {
             $examReadyRuns = $this->getSuccessfulExamRunCount($userId);
-            if ($examReadyRuns >= (self::BADGES['exam_ready']['threshold'] ?? 3)) {
+            if ($examReadyRuns >= self::BADGES['exam_ready']['threshold']) {
                 $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'exam_ready', $notify));
             }
         }
@@ -248,7 +248,7 @@ class BadgeService {
         $newBadges = [];
         $box5Count = $this->getBox5Count($userId);
 
-        if ($box5Count >= (self::BADGES['mastermind']['threshold'] ?? 50)) {
+        if ($box5Count >= self::BADGES['mastermind']['threshold']) {
             $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastermind', $notify));
         }
 
@@ -263,10 +263,10 @@ class BadgeService {
         $newBadges = [];
         $streak = (int)($data['current_streak'] ?? 0);
 
-        if ($streak >= (self::BADGES['streak_7']['threshold'] ?? 7)) {
+        if ($streak >= self::BADGES['streak_7']['threshold']) {
             $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_7', $notify));
         }
-        if ($streak >= (self::BADGES['streak_14']['threshold'] ?? 14)) {
+        if ($streak >= self::BADGES['streak_14']['threshold']) {
             $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_14', $notify));
         }
 
@@ -275,7 +275,7 @@ class BadgeService {
 
     private function awardIfNew(string $userId, string $badgeId, bool $notify = true): array {
         $def = self::BADGES[$badgeId] ?? null;
-        if ($def === null || ($def['legacy'] ?? false) === true) {
+        if ($def === null || $def['legacy'] === true) {
             return [];
         }
 
@@ -405,7 +405,7 @@ class BadgeService {
             'trigger' => $def['trigger'] ?? null,
             'trigger_key' => $def['trigger_key'] ?? null,
             'category' => $def['category'],
-            'legacy' => $def['legacy'] ?? false,
+            'legacy' => $def['legacy'],
             'threshold' => $def['threshold'] ?? null,
             'earned' => $earnedRow !== null,
             'earned_at' => $earnedRow['earned_at'] ?? null,
@@ -483,16 +483,16 @@ class BadgeService {
             $progress[] = [
                 'badge_id' => $badgeId,
                 'name' => $def['name'],
-                'name_key' => $def['name_key'] ?? null,
+                'name_key' => $def['name_key'],
                 'emoji' => $def['emoji'],
                 'description' => $def['description'],
-                'description_key' => $def['description_key'] ?? null,
-                'trigger' => $def['trigger'] ?? null,
-                'trigger_key' => $def['trigger_key'] ?? null,
-                'legacy' => $def['legacy'] ?? false,
+                'description_key' => $def['description_key'],
+                'trigger' => $def['trigger'],
+                'trigger_key' => $def['trigger_key'],
+                'legacy' => $def['legacy'],
                 'current' => $data['current'],
                 'target' => $data['target'],
-                'percentage' => $data['target'] > 0 ? min(100, (int)round($data['current'] / $data['target'] * 100)) : 0,
+                'percentage' => min(100, (int) round($data['current'] / $data['target'] * 100)),
             ];
         }
 

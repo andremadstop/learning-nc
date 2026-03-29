@@ -6,7 +6,9 @@ use OCA\Learning\BackgroundJob\ChunkingJob;
 use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
 use OCA\Learning\BackgroundJob\NotificationJob;
 use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
+use OCA\Learning\Command\ImportVaultCommand;
 use OCA\Learning\Dashboard\LearningWidget;
+use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Listener\UserDeletedListener;
 use OCA\Learning\Notification\Notifier;
 use OCP\AppFramework\App;
@@ -15,6 +17,7 @@ use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\BackgroundJob\IJobList;
 use OCP\User\Events\UserDeletedEvent;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
 class Application extends App implements IBootstrap {
@@ -28,6 +31,12 @@ class Application extends App implements IBootstrap {
         $context->registerDashboardWidget(LearningWidget::class);
         $context->registerNotifierService(Notifier::class);
         $context->registerEventListener(UserDeletedEvent::class, UserDeletedListener::class);
+        $context->registerService(ImportVaultCommand::class, function (ContainerInterface $container): ImportVaultCommand {
+            return new ImportVaultCommand(
+                $container->get(RagChunkMapper::class),
+                $container->get(LoggerInterface::class)
+            );
+        });
     }
 
     public function boot(IBootContext $context): void {

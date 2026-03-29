@@ -1,11 +1,13 @@
 <?php
 declare(strict_types=1);
+
 namespace OCA\Learning\Command;
 
 use OCA\Learning\Db\RagChunk;
 use OCA\Learning\Db\RagChunkMapper;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,284 +15,401 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * OCC command to import Obsidian Markdown vaults as RAG chunks.
  *
- * Usage: php occ learning:import-vault --path=/data/comptia-vault --course-id=20
+ * Usage: php occ learning:import-vault /data/comptia-vault --course-id=20 --dry-run
  */
 class ImportVaultCommand extends Command {
-	private RagChunkMapper $chunkMapper;
-	private LoggerInterface $logger;
+    private RagChunkMapper $chunkMapper;
+    private LoggerInterface $logger;
 
-	/** Target tokens per chunk (~4 chars per token heuristic) */
-	private const TARGET_TOKENS = 500;
-	private const CHARS_PER_TOKEN = 4;
+    /** Target tokens per chunk (~4 chars per token heuristic) */
+    private const TARGET_TOKENS = 500;
+    private const CHARS_PER_TOKEN = 4;
 
-	/** Minimum cleaned file length to be imported */
-	private const MIN_FILE_LENGTH = 50;
+    /** Minimum cleaned file length to be imported */
+    private const MIN_FILE_LENGTH = 50;
 
-	/** Directory names to exclude from import */
-	private const EXCLUDED_DIRS = ['/Eigene-Notizen/', '/.obsidian/', '/Bilder/', '/.venv/', '/tools/'];
+    /** Directory names to exclude from import */
+    private const EXCLUDED_DIRS = ['/Eigene-Notizen/', '/.obsidian/', '/Bilder/', '/.venv/', '/tools/'];
 
-	public function __construct(
-		RagChunkMapper $chunkMapper,
-		LoggerInterface $logger
-	) {
-		parent::__construct();
-		$this->chunkMapper = $chunkMapper;
-		$this->logger = $logger;
-	}
+    public function __construct(
+        RagChunkMapper $chunkMapper,
+        LoggerInterface $logger
+    ) {
+        parent::__construct();
+        $this->chunkMapper = $chunkMapper;
+        $this->logger = $logger;
+    }
 
-	protected function configure(): void {
-		$this
-			->setName('learning:import-vault')
-			->setDescription('Import Obsidian Markdown vault as RAG chunks')
-			->addOption('path', null, InputOption::VALUE_REQUIRED, 'Absolute path to vault directory')
-			->addOption('course-id', null, InputOption::VALUE_REQUIRED, 'Course ID to associate chunks with');
-	}
+    protected function configure(): void {
+        $this
+            ->setName('learning:import-vault')
+            ->setDescription('Import Obsidian Markdown vault as RAG chunks')
+            ->addArgument('vault-path', InputArgument::REQUIRED, 'Absolute path to vault directory')
+            ->addOption('course-id', null, InputOption::VALUE_REQUIRED, 'Course ID to associate chunks with')
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Preview matching files and chunks without DB writes')
+            ->addOption('pattern', null, InputOption::VALUE_REQUIRED, 'Glob pattern for markdown files', '**/*.md')
+            ->addOption('exclude', null, InputOption::VALUE_REQUIRED, 'Comma-separated exclude patterns', '');
+    }
 
-	protected function execute(InputInterface $input, OutputInterface $output): int {
-		$path = $input->getOption('path');
-		$courseIdRaw = $input->getOption('course-id');
+    protected function execute(InputInterface $input, OutputInterface $output): int {
+        $path = $input->getArgument('vault-path');
+        $courseIdRaw = $input->getOption('course-id');
+        $pattern = $input->getOption('pattern');
+        $excludeRaw = $input->getOption('exclude');
+        $dryRun = (bool) $input->getOption('dry-run');
 
-		// Validate path
-		if (!is_string($path) || !is_dir($path)) {
-			$output->writeln('<error>--path must be an existing directory</error>');
-			return 1;
-		}
+        if (!is_string($path) || !is_dir($path)) {
+            $output->writeln('<error>vault-path must be an existing directory</error>');
+            return Command::INVALID;
+        }
 
-		// Validate course-id
-		if (!is_string($courseIdRaw) || !ctype_digit($courseIdRaw) || (int)$courseIdRaw <= 0) {
-			$output->writeln('<error>--course-id must be a positive integer</error>');
-			return 1;
-		}
-		$courseId = (int)$courseIdRaw;
+        if (!is_string($courseIdRaw) || !ctype_digit($courseIdRaw) || (int) $courseIdRaw <= 0) {
+            $output->writeln('<error>--course-id must be a positive integer</error>');
+            return Command::INVALID;
+        }
 
-		// Normalize path (remove trailing slash)
-		$vaultRoot = rtrim($path, '/');
+        if (!is_string($pattern) || trim($pattern) === '') {
+            $output->writeln('<error>--pattern must be a non-empty glob</error>');
+            return Command::INVALID;
+        }
 
-		// Idempotent cleanup: delete existing vault chunks (document_id=0) for this course
-		$deleted = $this->chunkMapper->deleteByDocumentIdAndCourseId(0, $courseId);
-		$output->writeln("Deleted {$deleted} existing vault chunks for course {$courseId}");
+        if (!is_string($excludeRaw)) {
+            $output->writeln('<error>--exclude must be a comma-separated string</error>');
+            return Command::INVALID;
+        }
 
-		// Find all .md files
-		$iterator = new \RecursiveIteratorIterator(
-			new \RecursiveDirectoryIterator($vaultRoot, \FilesystemIterator::SKIP_DOTS),
-			\RecursiveIteratorIterator::LEAVES_ONLY
-		);
+        $courseId = (int) $courseIdRaw;
+        $vaultRoot = rtrim($path, '/');
+        $excludePatterns = array_values(array_filter(array_map('trim', explode(',', $excludeRaw))));
+        $existingSources = $this->getExistingVaultSources($courseId);
 
-		$totalFiles = 0;
-		$skippedFiles = 0;
-		$totalChunks = 0;
-		$totalTokens = 0;
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($vaultRoot, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::LEAVES_ONLY
+        );
 
-		/** @var \SplFileInfo $file */
-		foreach ($iterator as $file) {
-			if ($file->getExtension() !== 'md') {
-				continue;
-			}
+        $filesMatched = 0;
+        $filesImported = 0;
+        $totalChunks = 0;
+        $totalTokens = 0;
+        $skippedExisting = 0;
+        $skippedExcluded = 0;
+        $skippedShort = 0;
+        $skippedUnreadable = 0;
 
-			$fullPath = $file->getPathname();
-			$relativePath = substr($fullPath, strlen($vaultRoot) + 1);
+        /** @var \SplFileInfo $file */
+        foreach ($iterator as $file) {
+            if (strtolower($file->getExtension()) !== 'md') {
+                continue;
+            }
 
-			// Exclude certain directories
-			if ($this->isExcludedPath($relativePath)) {
-				continue;
-			}
+            $fullPath = $file->getPathname();
+            $relativePath = substr($fullPath, strlen($vaultRoot) + 1);
+            if (!is_string($relativePath) || $relativePath === '') {
+                continue;
+            }
 
-			$totalFiles++;
+            $relativePath = str_replace('\\', '/', $relativePath);
+            if (!$this->matchesGlob($relativePath, $pattern)) {
+                continue;
+            }
 
-			$rawContent = file_get_contents($fullPath);
-			if ($rawContent === false) {
-				$output->writeln("<comment>Warning: Cannot read {$relativePath}</comment>");
-				$skippedFiles++;
-				continue;
-			}
+            if ($this->isExcludedPath($relativePath, $excludePatterns)) {
+                $skippedExcluded++;
+                continue;
+            }
 
-			$cleaned = $this->cleanMarkdown($rawContent);
+            if (isset($existingSources[$relativePath])) {
+                $skippedExisting++;
+                $output->writeln("  <comment>[SKIP]</comment> {$relativePath} (already imported)");
+                continue;
+            }
 
-			if (strlen($cleaned) < self::MIN_FILE_LENGTH) {
-				$skippedFiles++;
-				continue;
-			}
+            $rawContent = file_get_contents($fullPath);
+            if ($rawContent === false) {
+                $skippedUnreadable++;
+                $output->writeln("  <comment>[WARN]</comment> {$relativePath} (cannot read)");
+                continue;
+            }
 
-			// Determine parent directory as fallback chapter
-			$parentDir = basename(dirname($fullPath));
-			if ($parentDir === '.' || $parentDir === basename($vaultRoot)) {
-				$parentDir = null;
-			}
+            $cleaned = $this->cleanMarkdown($rawContent);
+            if (mb_strlen($cleaned) < self::MIN_FILE_LENGTH) {
+                $skippedShort++;
+                continue;
+            }
 
-			$chunks = $this->splitIntoChunks($cleaned, $parentDir);
-			$now = time();
+            $filesMatched++;
+            $chunks = $this->splitIntoChunks($cleaned, $this->detectFallbackChapter($relativePath, $vaultRoot));
+            $fileChunkCount = count($chunks);
+            $fileTokenCount = 0;
 
-			foreach ($chunks as $index => $chunkData) {
-				$chunk = new RagChunk();
-				$chunk->setDocumentId(0);
-				$chunk->setCourseId($courseId);
-				$chunk->setChapter($chunkData['chapter']);
-				$chunk->setText($chunkData['text']);
-				$chunk->setSourceFile($relativePath);
-				$chunk->setChunkIndex($index);
-				$chunk->setTokenCount((int)ceil(strlen($chunkData['text']) / self::CHARS_PER_TOKEN));
-				$chunk->setCreatedAt($now);
+            foreach ($chunks as $chunkData) {
+                $fileTokenCount += $this->estimateTokens($chunkData['text']);
+            }
 
-				$this->chunkMapper->insert($chunk);
-				$totalChunks++;
-				$totalTokens += $chunk->getTokenCount();
-			}
-		}
+            if ($dryRun) {
+                $filesImported++;
+                $totalChunks += $fileChunkCount;
+                $totalTokens += $fileTokenCount;
+                $output->writeln("  <info>[OK]</info> {$relativePath} -> {$fileChunkCount} chunks");
+                continue;
+            }
 
-		$output->writeln('');
-		$output->writeln("Import complete:");
-		$output->writeln("  Files processed: {$totalFiles}");
-		$output->writeln("  Files skipped (short): {$skippedFiles}");
-		$output->writeln("  Chunks created: {$totalChunks}");
-		$output->writeln("  Total tokens: {$totalTokens}");
+            $now = time();
+            foreach ($chunks as $index => $chunkData) {
+                $tokenCount = $this->estimateTokens($chunkData['text']);
 
-		$this->logger->info('ImportVaultCommand: imported {chunks} chunks ({tokens} tokens) from {files} files for course {courseId}', [
-			'chunks' => $totalChunks,
-			'tokens' => $totalTokens,
-			'files' => $totalFiles,
-			'courseId' => $courseId,
-			'app' => 'learning',
-		]);
+                $chunk = new RagChunk();
+                $chunk->setDocumentId(0);
+                $chunk->setCourseId($courseId);
+                $chunk->setChapter($chunkData['chapter']);
+                $chunk->setText($chunkData['text']);
+                $chunk->setSourceFile($relativePath);
+                $chunk->setChunkIndex($index);
+                $chunk->setTokenCount($tokenCount);
+                $chunk->setCreatedAt($now);
+                $chunk->setSourceType('vault');
+                $chunk->setStatus('approved');
 
-		return 0;
-	}
+                $this->chunkMapper->insert($chunk);
+                $totalChunks += 1;
+                $totalTokens += $tokenCount;
+            }
 
-	/**
-	 * Check if a relative path should be excluded from import.
-	 */
-	private function isExcludedPath(string $relativePath): bool {
-		$checkPath = '/' . $relativePath;
-		foreach (self::EXCLUDED_DIRS as $excluded) {
-			if (strpos($checkPath, $excluded) !== false) {
-				return true;
-			}
-		}
-		return false;
-	}
+            $filesImported++;
+            $existingSources[$relativePath] = true;
+            $output->writeln("  <info>[OK]</info> {$relativePath} -> {$fileChunkCount} chunks");
+        }
 
-	/**
-	 * Clean Obsidian Markdown: strip frontmatter, image embeds, wikilinks, callouts.
-	 */
-	private function cleanMarkdown(string $content): string {
-		// Strip YAML frontmatter
-		$content = preg_replace('/\A---\s*\n.*?\n---\s*\n/s', '', $content) ?? $content;
+        $output->writeln('');
+        if ($dryRun) {
+            $output->writeln("Would import {$filesImported} files ({$totalChunks} chunks) from {$vaultRoot}");
+        } else {
+            $output->writeln("Imported {$filesImported} files ({$totalChunks} chunks) into course {$courseId}");
+        }
+        $output->writeln("  Files matched: {$filesMatched}");
+        $output->writeln("  Chunks: {$totalChunks}");
+        $output->writeln("  Tokens: {$totalTokens}");
+        $output->writeln("  Skipped existing: {$skippedExisting}");
+        $output->writeln("  Skipped excluded: {$skippedExcluded}");
+        $output->writeln("  Skipped short: {$skippedShort}");
+        $output->writeln("  Skipped unreadable: {$skippedUnreadable}");
 
-		// Remove image embeds: ![[...]]
-		$content = preg_replace('/!\[\[.*?\]\]/', '', $content) ?? $content;
+        $this->logger->info(
+            'ImportVaultCommand: {mode} {files} files ({chunks} chunks, {tokens} tokens) for course {courseId} from {path}',
+            [
+                'mode' => $dryRun ? 'previewed' : 'imported',
+                'files' => $filesImported,
+                'chunks' => $totalChunks,
+                'tokens' => $totalTokens,
+                'courseId' => $courseId,
+                'path' => $vaultRoot,
+                'pattern' => $pattern,
+                'exclude' => $excludePatterns,
+                'app' => 'learning',
+            ]
+        );
 
-		// Resolve wikilinks with optional alias: [[target|alias]] -> alias, [[target]] -> target
-		$content = preg_replace('/\[\[(?:[^|\]]*\|)?([^\]]+)\]\]/', '$1', $content) ?? $content;
+        return Command::SUCCESS;
+    }
 
-		// Convert callouts: > [!type] text -> type: text
-		$content = preg_replace('/^>\s*\[!(\w+)\]\s*(.*)$/m', '$1: $2', $content) ?? $content;
+    /**
+     * @return array<string, true>
+     */
+    private function getExistingVaultSources(int $courseId): array {
+        $existingSources = [];
 
-		// Collapse 3+ newlines to 2
-		$content = preg_replace('/\n{3,}/', "\n\n", $content) ?? $content;
+        foreach ($this->chunkMapper->findByCourseId($courseId) as $chunk) {
+            if ($chunk->getDocumentId() !== 0) {
+                continue;
+            }
 
-		return trim($content);
-	}
+            $sourceFile = $chunk->getSourceFile();
+            if ($sourceFile !== '') {
+                $existingSources[$sourceFile] = true;
+            }
+        }
 
-	/**
-	 * Split text into ~500-token chunks with chapter/heading detection.
-	 *
-	 * @param string $text Cleaned markdown text
-	 * @param string|null $fallbackChapter Parent directory name as fallback
-	 * @return array<int, array{text: string, chapter: string|null}>
-	 */
-	private function splitIntoChunks(string $text, ?string $fallbackChapter): array {
-		$paragraphs = preg_split('/\n{2,}/', $text);
-		if ($paragraphs === false) {
-			return [['text' => $text, 'chapter' => $fallbackChapter]];
-		}
+        return $existingSources;
+    }
 
-		$chunks = [];
-		$currentBuffer = '';
-		// Chapter = parent directory name, always (per HANDOFF spec)
-		$chapter = $fallbackChapter;
+    /**
+     * @param string[] $excludePatterns
+     */
+    private function isExcludedPath(string $relativePath, array $excludePatterns): bool {
+        $checkPath = '/' . $relativePath;
+        foreach (self::EXCLUDED_DIRS as $excluded) {
+            if (strpos($checkPath, $excluded) !== false) {
+                return true;
+            }
+        }
 
-		foreach ($paragraphs as $paragraph) {
-			$paragraph = trim($paragraph);
-			if ($paragraph === '') {
-				continue;
-			}
+        foreach ($excludePatterns as $pattern) {
+            if (
+                $this->matchesGlob($relativePath, $pattern)
+                || $this->matchesGlob(basename($relativePath), $pattern)
+            ) {
+                return true;
+            }
+        }
 
-			// Headings are kept as content (good for search context), not used as chapter
-			$paragraphTokens = $this->estimateTokens($paragraph);
-			$bufferTokens = $this->estimateTokens($currentBuffer);
+        return false;
+    }
 
-			// If single paragraph exceeds target, split by sentences
-			if ($paragraphTokens > self::TARGET_TOKENS) {
-				if (trim($currentBuffer) !== '') {
-					$chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
-					$currentBuffer = '';
-				}
+    private function detectFallbackChapter(string $relativePath, string $vaultRoot): ?string {
+        $parentDir = basename(dirname($vaultRoot . '/' . $relativePath));
+        if ($parentDir === '.' || $parentDir === basename($vaultRoot)) {
+            return null;
+        }
 
-				$sentenceChunks = $this->splitBySentences($paragraph, $chapter);
-				foreach ($sentenceChunks as $sc) {
-					$chunks[] = $sc;
-				}
-				continue;
-			}
+        return $parentDir;
+    }
 
-			// If adding this paragraph would exceed target, flush buffer
-			if ($bufferTokens + $paragraphTokens > self::TARGET_TOKENS && trim($currentBuffer) !== '') {
-				$chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
-				$currentBuffer = '';
-			}
+    private function matchesGlob(string $relativePath, string $pattern): bool {
+        $pattern = trim(str_replace('\\', '/', $pattern));
+        if ($pattern === '') {
+            return false;
+        }
 
-			$currentBuffer .= ($currentBuffer !== '' ? "\n\n" : '') . $paragraph;
-		}
+        $quoted = preg_quote($pattern, '~');
+        $quoted = str_replace('\*\*/', '(?:.*/)?', $quoted);
+        $quoted = str_replace('\*\*', '.*', $quoted);
+        $quoted = str_replace('\*', '[^/]*', $quoted);
+        $quoted = str_replace('\?', '.', $quoted);
 
-		// Flush remaining buffer
-		if (trim($currentBuffer) !== '') {
-			$chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
-		}
+        return preg_match('~^' . $quoted . '$~u', $relativePath) === 1;
+    }
 
-		return $chunks;
-	}
+    /**
+     * Clean Obsidian Markdown: strip frontmatter, image embeds, wikilinks, callouts.
+     */
+    private function cleanMarkdown(string $content): string {
+        // Strip YAML frontmatter
+        $content = preg_replace('/\A---\s*\n.*?\n---\s*\n/s', '', $content) ?? $content;
 
-	/**
-	 * Split a long paragraph into chunks by sentence boundaries.
-	 *
-	 * @return array<int, array{text: string, chapter: string|null}>
-	 */
-	private function splitBySentences(string $paragraph, ?string $chapter): array {
-		$sentences = preg_split('/(?<=[.!?])\s+/', $paragraph);
-		if ($sentences === false || count($sentences) <= 1) {
-			return [['text' => $paragraph, 'chapter' => $chapter]];
-		}
+        // Remove image embeds: ![[...]]
+        $content = preg_replace('/!\[\[.*?\]\]/', '', $content) ?? $content;
 
-		$chunks = [];
-		$buffer = '';
+        // Resolve wikilinks with optional alias: [[target|alias]] -> alias, [[target]] -> target
+        $content = preg_replace('/\[\[(?:[^|\]]*\|)?([^\]]+)\]\]/', '$1', $content) ?? $content;
 
-		foreach ($sentences as $sentence) {
-			$sentence = trim($sentence);
-			if ($sentence === '') {
-				continue;
-			}
+        // Convert callouts: > [!type] text -> type: text
+        $content = preg_replace('/^>\s*\[!(\w+)\]\s*(.*)$/m', '$1: $2', $content) ?? $content;
 
-			$bufferTokens = $this->estimateTokens($buffer);
-			$sentenceTokens = $this->estimateTokens($sentence);
+        // Collapse 3+ newlines to 2
+        $content = preg_replace('/\n{3,}/', "\n\n", $content) ?? $content;
 
-			if ($bufferTokens + $sentenceTokens > self::TARGET_TOKENS && trim($buffer) !== '') {
-				$chunks[] = ['text' => trim($buffer), 'chapter' => $chapter];
-				$buffer = '';
-			}
+        return trim($content);
+    }
 
-			$buffer .= ($buffer !== '' ? ' ' : '') . $sentence;
-		}
+    /**
+     * @param string|null $fallbackChapter Parent directory name as fallback
+     * @return array<int, array{text: string, chapter: string|null}>
+     */
+    private function splitIntoChunks(string $text, ?string $fallbackChapter): array {
+        $paragraphs = preg_split('/\n{2,}/', $text);
+        if ($paragraphs === false) {
+            return [['text' => $text, 'chapter' => $fallbackChapter]];
+        }
 
-		if (trim($buffer) !== '') {
-			$chunks[] = ['text' => trim($buffer), 'chapter' => $chapter];
-		}
+        $chunks = [];
+        $currentBuffer = '';
+        $chapter = $fallbackChapter;
 
-		return $chunks;
-	}
+        foreach ($paragraphs as $paragraph) {
+            $paragraph = trim($paragraph);
+            if ($paragraph === '') {
+                continue;
+            }
 
-	/**
-	 * Estimate token count using ~4 chars per token heuristic.
-	 */
-	private function estimateTokens(string $text): int {
-		return (int)ceil(strlen($text) / self::CHARS_PER_TOKEN);
-	}
+            $heading = $this->detectHeading($paragraph);
+            if ($heading !== null) {
+                if (trim($currentBuffer) !== '') {
+                    $chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
+                    $currentBuffer = '';
+                }
+                $chapter = $heading;
+                continue;
+            }
+
+            $paragraphTokens = $this->estimateTokens($paragraph);
+            $bufferTokens = $this->estimateTokens($currentBuffer);
+
+            if ($paragraphTokens > self::TARGET_TOKENS) {
+                if (trim($currentBuffer) !== '') {
+                    $chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
+                    $currentBuffer = '';
+                }
+
+                foreach ($this->splitBySentences($paragraph, $chapter) as $sentenceChunk) {
+                    $chunks[] = $sentenceChunk;
+                }
+                continue;
+            }
+
+            if ($bufferTokens + $paragraphTokens > self::TARGET_TOKENS && trim($currentBuffer) !== '') {
+                $chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
+                $currentBuffer = '';
+            }
+
+            $currentBuffer .= ($currentBuffer !== '' ? "\n\n" : '') . $paragraph;
+        }
+
+        if (trim($currentBuffer) !== '') {
+            $chunks[] = ['text' => trim($currentBuffer), 'chapter' => $chapter];
+        }
+
+        return $chunks;
+    }
+
+    /**
+     * @return array<int, array{text: string, chapter: string|null}>
+     */
+    private function splitBySentences(string $paragraph, ?string $chapter): array {
+        $sentences = preg_split('/(?<=[.!?])\s+/', $paragraph);
+        if ($sentences === false || count($sentences) <= 1) {
+            return [['text' => $paragraph, 'chapter' => $chapter]];
+        }
+
+        $chunks = [];
+        $buffer = '';
+
+        foreach ($sentences as $sentence) {
+            $sentence = trim($sentence);
+            if ($sentence === '') {
+                continue;
+            }
+
+            $bufferTokens = $this->estimateTokens($buffer);
+            $sentenceTokens = $this->estimateTokens($sentence);
+
+            if ($bufferTokens + $sentenceTokens > self::TARGET_TOKENS && trim($buffer) !== '') {
+                $chunks[] = ['text' => trim($buffer), 'chapter' => $chapter];
+                $buffer = '';
+            }
+
+            $buffer .= ($buffer !== '' ? ' ' : '') . $sentence;
+        }
+
+        if (trim($buffer) !== '') {
+            $chunks[] = ['text' => trim($buffer), 'chapter' => $chapter];
+        }
+
+        return $chunks;
+    }
+
+    private function detectHeading(string $paragraph): ?string {
+        if (preg_match('/^#{1,6}\s+(.+)$/m', $paragraph, $matches)) {
+            return trim($matches[1]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Estimate token count using ~4 chars per token heuristic.
+     */
+    private function estimateTokens(string $text): int {
+        return (int) ceil(mb_strlen($text) / self::CHARS_PER_TOKEN);
+    }
 }
