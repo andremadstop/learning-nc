@@ -24,7 +24,7 @@
 - ✅ **v12.1 DevCloud Optimierung** — Phases 86-89 (shipped 2026-03-27)
 - ✅ **v13.0 Feature Expansion** — Phases 90-95 (shipped 2026-03-28)
 - ✅ **v3.4.0 UX-Konsolidierung & Simulator-Upgrade** — Phases 96-100 (shipped 2026-03-28)
-- 🔄 **v3.5.0 Transparenz & Kursabschluss** — Phases 101-109 (next)
+- ✅ **v3.5.0 Transparenz & Kursabschluss** — Phases 101-109 (shipped 2026-03-29)
 
 ## Phases
 
@@ -47,146 +47,37 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 
 </details>
 
-### v3.4.0 UX-Konsolidierung & Simulator-Upgrade (Phases 96-100)
+<details>
+<summary>✅ v3.4.0 UX-Konsolidierung & Simulator-Upgrade (Phases 96-100) — SHIPPED 2026-03-28</summary>
 
-- [x] **Phase 96: UX-Navigation Struktur** — Dozent-Tabs gruppieren, Abenteuer aus Arena loesen, Kursregeln-Gating verdrahten, Oldschool-Karte fixen (completed 2026-03-28)
-- [x] **Phase 97: Code-Hygiene & Settings** — Settings aufsplitten, Zeitreise-Dead-Code entfernen, DE/EN Label-Mix bereinigen (completed 2026-03-28)
-- [x] **Phase 98: Simulator-Praxis-Sessions** — Gefuehrte Schritt-fuer-Schritt-Sessions mit realen Szenarien und sichtbarem Fortschritt (completed 2026-03-28)
-- [x] **Phase 99: Student-Dashboard** — Heute-Startscreen mit SmartQueue, globaler Feed aus allen Kursen, direkte Pool-Navigation (completed 2026-03-28)
-- [x] **Phase 100: DevCloud-Integration & Leitner** — Talk-Shortcut, Kursmaterialien-Tab, Buddy-Matching, Tool-Einschraenkungen, Sprint-Intervalle (completed 2026-03-28)
+- [x] Phase 96: UX-Navigation Struktur — completed 2026-03-28
+- [x] Phase 97: Code-Hygiene & Settings — completed 2026-03-28
+- [x] Phase 98: Simulator-Praxis-Sessions — completed 2026-03-28
+- [x] Phase 99: Student-Dashboard — completed 2026-03-28
+- [x] Phase 100: DevCloud-Integration & Leitner — completed 2026-03-28
 
-### v3.5.0 Transparenz & Kursabschluss (Phases 101-109)
+</details>
 
-**Phase 1: Datenschutz & Transparenz**
-- [x] **Phase 101: In-App Datenschutz-Seite** — PrivacyInfo.vue in PersonalSettings, Datenkategorien-Tabelle, KI-Hinweis, Rechte-Info, Kontakt (completed 2026-03-29)
-- [x] **Phase 102: AI Consent erweitern** — Expliziter Gemini/Drittland-Hinweis, ai_consent_version in user_telos, Re-Consent bei Aenderungen (completed 2026-03-29)
-- [x] **Phase 103: Schwarm-Consent + Loeschkonzept** — Info-Hinweis bei erster Contribution, UserDeletedListener mit Cascading Delete + Chunk-Anonymisierung (completed 2026-03-29)
+<details>
+<summary>✅ v3.5.0 Transparenz & Kursabschluss (Phases 101-109) — SHIPPED 2026-03-29</summary>
 
-**Phase 2: Kursende-Experience**
-- [x] **Phase 104: Summary-Backend** — CourseSummaryService mit aggregierten Daten (Mastery, Sessions, XP, Badges, Schwarm, Duell, Trouble Spots), Snapshot-Migration, SummaryController + 3 API-Routes (completed 2026-03-29)
-- [ ] **Phase 105: Kursende-Frontend** — CourseSummary.vue (Zeugnis-Daten + Fun Stats), neuer CourseDetail-Tab
-- [x] **Phase 106: Export** — Markdown (Obsidian), JSON, Print-to-PDF. Client-side, 10 Vitest (completed 2026-03-29)
-- [x] **Phase 107: Dozenten-Abschlussreport** — CSV-Export Klassen-Matrix (10 Spalten), Instructor-only Endpoint (completed 2026-03-29)
+- [x] Phase 101: In-App Datenschutz-Seite — completed 2026-03-29
+- [x] Phase 102: AI Consent erweitern — completed 2026-03-29
+- [x] Phase 103: Schwarm-Consent + Loeschkonzept — completed 2026-03-29
+- [x] Phase 104: Summary-Backend — completed 2026-03-29
+- [x] Phase 105: Kursende-Frontend — completed 2026-03-29
+- [x] Phase 106: Export — completed 2026-03-29
+- [x] Phase 107: Dozenten-Abschlussreport — completed 2026-03-29
+- [x] Phase 108: Klassenbuch Opt-in — completed 2026-03-29
+- [x] Phase 109: Kontakt-Features — completed 2026-03-29
 
-**Phase 3: Klassenbuch (opt-in)**
-- [x] **Phase 108: Klassenbuch Opt-in** — ClassbookController, visibility toggle, Profil-Grid Endpoint (completed 2026-03-29)
-- [x] **Phase 109: Kontakt-Features** — vCard-Export, Buddy-Netzwerk via existing Telos fields (completed 2026-03-29)
-
-## Phase Details
-
-### Phase 96: UX-Navigation Struktur
-**Goal**: Dozenten und Studenten erleben eine klare, logisch gegliederte Navigation ohne Tab-Chaos oder tote Enden
-**Depends on**: Nothing (first phase of milestone)
-**Requirements**: NAV-01, NAV-02, NAV-03, NAV-04
-**Success Criteria** (what must be TRUE):
-  1. Dozent sieht in CourseDetail Tabs in sinnvollen Gruppen (Lernraum / Teilnehmer / Kommunikation / Wettbewerb) statt 16 ungrouped Tabs
-  2. Abenteuer erscheint als eigenstaendiger Lernmodus in der Navigation, nicht als Unterpunkt von Arena
-  3. Ein Kurs mit deaktivierten Arena-Submodes zeigt Studenten diese Tabs nicht an (Kursregeln steuern Sichtbarkeit)
-  4. Die Oldschool-Karte fuehrt zu einem funktionalen Screen oder der Einstiegspunkt ist entfernt
-**Plans:** 2/2 plans complete
-Plans:
-- [x] 96-01-PLAN.md — Tab-Gruppierung Dozent + Abenteuer als eigenstaendiger Tab
-- [x] 96-02-PLAN.md — Arena-Submode-Gating per Kursregeln + Oldschool-Pfad-Verifikation
-
-### Phase 97: Code-Hygiene & Settings
-**Goal**: Die App hat keine totem Code-Pfade und alle UI-Texte sind konsistent deutsch
-**Depends on**: Phase 96
-**Requirements**: NAV-05, NAV-06, NAV-07
-**Success Criteria** (what must be TRUE):
-  1. Dozenten sehen PersonalSettings (eigene Lerneinstellungen) UND AdminSettings (Kurs-Verwaltung) — beide erreichbar, nicht vermischt
-  2. Der Zeitreise-Modus ist entweder vollstaendig spielbar oder alle Zeitreise-Einstiegspunkte sind aus der UI entfernt
-  3. Alle sichtbaren UI-Labels sind auf Deutsch via t() — kein englischer Rohtext mehr im Interface
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 97-01-PLAN.md — Settings Sub-Tabs fuer Dozenten + Zeitreise-Frontend komplett entfernen
-- [ ] 97-02-PLAN.md — DE/EN Label-Mix bereinigen, alle sichtbaren Labels via t()
-
-### Phase 98: Simulator-Praxis-Sessions
-**Goal**: Simulatoren fuehren Lernende durch reale Szenarien statt ungeleitetes Klick-Training anzubieten
-**Depends on**: Phase 97
-**Requirements**: SIM-01, SIM-02, SIM-03
-**Success Criteria** (what must be TRUE):
-  1. Jeder der 7 Simulatoren bietet mindestens eine auswaehlbare Praxis-Session mit einem konkreten Szenario-Titel
-  2. Eine laufende Session zeigt Schritt-fuer-Schritt-Anweisungen mit Erklaerungen — Lernende wissen was sie tun sollen und warum
-  3. Eine Session zeigt einen Fortschrittsindikator (z.B. "Schritt 3 von 7") der sich beim Abarbeiten aktualisiert
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 98-01-PLAN.md — Practicum Engine (State Machine + localStorage) + Session-Daten fuer alle 7 Simulatoren
-- [ ] 98-02-PLAN.md — PracticumRunner UI-Komponente + "Praxis"-Tab in alle 7 Simulatoren integrieren
-
-### Phase 99: Student-Dashboard
-**Goal**: Studenten koennen ihren Lerntag mit einem einzigen Einstiegspunkt starten und alle relevanten Infos auf einen Blick sehen
-**Depends on**: Phase 97
-**Requirements**: DASH-01, DASH-02, DASH-03
-**Success Criteria** (what must be TRUE):
-  1. Ein Student der sich einloggt sieht sofort einen "Heute"-Screen mit faelligen Karten (SmartQueue), der Daily Challenge und dem aktuellen Streak
-  2. Der globale Feed zeigt Ankuendigungen aus allen Kursen in denen der Student eingeschrieben ist — chronologisch, ohne Kurs wechseln zu muessen
-  3. Pool-Liste ist direkt ueber die Hauptnavigation erreichbar (ein Klick vom Dashboard) — kein indirekter Umweg noetig
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 99-01-PLAN.md — StudentDashboard + DailyChallengeCard + Navigation mit Dashboard/Pools
-- [ ] 99-02-PLAN.md — GlobalFeed Integration + Human Verification
-
-### Phase 100: DevCloud-Integration & Leitner
-**Goal**: Die App ist eng mit den DevCloud-Werkzeugen verzahnt und Dozenten koennen Lernrhythmen an Kursdauer anpassen
-**Depends on**: Phase 96, Phase 99
-**Requirements**: DVCL-01, DVCL-02, DVCL-03, DVCL-04, LEIT-01
-**Success Criteria** (what must be TRUE):
-  1. Im Kurs-Header ist ein klickbarer Talk-Raum-Link sichtbar der den zugehoerigen NC Talk-Raum oeffnet
-  2. Studenten sehen in CourseDetail einen eigenen "Materialien"-Tab mit read-only Kurs-Dokumenten
-  3. Ein Buddy-Matching-Bereich zeigt wer im Kurs Hilfe anbietet und wer Hilfe sucht (basierend auf Telos help_offer/help_wanted)
-  4. Im Werkzeuge-Tab werden nur die Simulatoren angezeigt die der aktive Kurs erlaubt — gesperrte Tools sind ausgeblendet oder als gesperrt markiert
-  5. Dozent kann pro Kurs Sprint-Intervalle aktivieren (4h/12h/1d/2d) — bei aktivierten Sprint-Intervallen sehen Studenten das angepasste Wiederholungs-Timing
-**Plans:** 3/3 plans complete
-Plans:
-- [ ] 100-01-PLAN.md — Backend: DB-Migration, Course Entity, LeitnerService Sprint-Intervalle, Buddy-Matching API
-- [ ] 100-02-PLAN.md — Frontend: Talk-Link, Materialien-Tab Student, Werkzeuge-Filterung, Sprint-Toggle
-- [ ] 100-03-PLAN.md — BuddyMatching.vue Komponente + CourseDetail-Integration
-
-### Phase 101: In-App Datenschutz-Seite
-**Goal**: Studenten und Dozenten sehen transparent welche Daten die App verarbeitet, wozu, und welche Rechte sie haben
-**Depends on**: Nothing (first phase of v3.5.0)
-**Requirements**: DSE-01
-**Plans:** 1 plan
-Plans:
-- [ ] 0101-01-PLAN.md — PrivacyInfo.vue mit JSON-Content + PersonalSettings-Integration
-**Success Criteria** (what must be TRUE):
-  1. In PersonalSettings existiert ein Tab "Datenschutz" mit einer vollstaendigen Datenkategorien-Tabelle (was/wozu/wer sieht es/Speicherdauer)
-  2. Ein KI-Hinweis erklaert dass Gemini genutzt wird, was gesendet wird, und dass Daten an Google (US) uebertragen werden
-  3. Rechte-Info (Auskunft, Loesung, Widerspruch) und Kontakt des Verantwortlichen sind sichtbar
-  4. Der Inhalt kommt aus einer JSON-Datei und kann ohne Code-Aenderung aktualisiert werden
-
-### Phase 102: AI Consent erweitern
-**Goal**: Nutzer geben informierte Einwilligung zur KI-Nutzung mit explizitem Hinweis auf Drittland-Transfer
-**Depends on**: Phase 101
-**Requirements**: DSE-02
-**Plans:** 1 plan
-Plans:
-- [x] 0102-01-PLAN.md — Backend Consent-API + Frontend Dialog mit JSON-Content und Versionierung
-**Success Criteria** (what must be TRUE):
-  1. Der VirtuProf Consent-Dialog nennt explizit "Google Gemini" und "Datenverarbeitung in den USA"
-  2. Ein neues Feld ai_consent_version in user_telos speichert die Version der Einwilligung
-  3. Bei Erhoehung der Consent-Version wird automatisch erneut Einwilligung eingeholt (Re-Consent)
-  4. Der Dialog verlinkt auf die Datenschutz-Seite aus Phase 101
-
-### Phase 103: Schwarm-Consent + Loeschkonzept
-**Goal**: Schwarmgedaechtnis-Beitraege sind mit informiertem Consent abgedeckt und User-Daten werden bei Accountloesung korrekt behandelt
-**Depends on**: Phase 101
-**Requirements**: DSE-03, DSE-04
-**Success Criteria** (what must be TRUE):
-  1. Beim ersten Schwarm-Beitrag erscheint ein Info-Hinweis der erklaert was mit dem Beitrag passiert (Freigabe durch Dozent, Name nur fuer Dozent sichtbar)
-  2. Der Hinweis erscheint nur einmal (localStorage-Flag) und blockiert nicht den Workflow
-  3. Ein UserDeletedListener loescht bei Account-Entfernung alle userbezogenen Daten (Stats, Leitner, Sessions, Answers, Badges, Telos, Missions, Duels, Story)
-  4. Schwarm-Chunks werden anonymisiert (user_id auf null) statt geloescht — der Inhalt bleibt erhalten
+</details>
 
 ## Progress Table
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 96. UX-Navigation Struktur | 2/2 | Complete    | 2026-03-28 |
-| 97. Code-Hygiene & Settings | 2/2 | Complete    | 2026-03-28 |
-| 98. Simulator-Praxis-Sessions | 2/2 | Complete    | 2026-03-28 |
-| 99. Student-Dashboard | 2/2 | Complete    | 2026-03-28 |
-| 100. DevCloud-Integration & Leitner | 3/3 | Complete    | 2026-03-28 |
-| 101. In-App Datenschutz-Seite | 1/1 | Complete    | 2026-03-29 |
-| 102. AI Consent erweitern | 1/1 | Complete    | 2026-03-29 |
+| Phase | Milestone | Status | Completed |
+|-------|-----------|--------|-----------|
+| 1-89 | v2.3-v12.1 | Complete | 2026-03-17 — 2026-03-27 |
+| 90-95 | v13.0 | Complete | 2026-03-28 |
+| 96-100 | v3.4.0 | Complete | 2026-03-28 |
+| 101-109 | v3.5.0 | Complete | 2026-03-29 |
