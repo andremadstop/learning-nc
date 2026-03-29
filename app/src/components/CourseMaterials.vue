@@ -22,6 +22,11 @@
 			</p>
 		</div>
 
+		<!-- Error Message -->
+		<div v-if="errorMessage" class="error-message">
+			{{ errorMessage }}
+		</div>
+
 		<!-- Empty States -->
 		<div v-if="!materialFolder && !loading" class="empty-state">
 			<p>{{ t('learning', 'Kein Materialordner verknuepft. Bitte einen Nextcloud-Ordner auswaehlen.') }}</p>
@@ -129,6 +134,7 @@ export default {
 			extractingAll: false,
 			settingFolder: false,
 			extracting: {},
+			errorMessage: null,
 		}
 	},
 
@@ -183,13 +189,14 @@ export default {
 		async setFolder() {
 			if (!this.folderInput.trim()) return
 			this.settingFolder = true
+			this.errorMessage = null
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/material-folder', { courseId: this.courseId })
 				await axios.post(url, { folder: this.folderInput.trim() })
 				this.materialFolder = this.folderInput.trim()
 				await this.scanFolder()
 			} catch (e) {
-				console.error('Failed to set material folder', e)
+				this.errorMessage = e.response?.data?.error || t('learning', 'Ordner konnte nicht verknuepft werden. Pruefen Sie ob der Pfad existiert.')
 			} finally {
 				this.settingFolder = false
 			}
@@ -197,12 +204,13 @@ export default {
 
 		async scanFolder() {
 			this.scanning = true
+			this.errorMessage = null
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/documents/scan', { courseId: this.courseId })
 				const response = await axios.post(url)
 				this.documents = response.data || []
 			} catch (e) {
-				console.error('Failed to scan folder', e)
+				this.errorMessage = e.response?.data?.error || t('learning', 'Ordner konnte nicht gescannt werden.')
 			} finally {
 				this.scanning = false
 			}
@@ -300,6 +308,15 @@ export default {
 	margin-top: 8px;
 	font-size: 13px;
 	color: var(--color-text-maxcontrast, #767676);
+}
+
+.error-message {
+	padding: 10px 14px;
+	margin-bottom: 12px;
+	background: #ffebee;
+	color: #c62828;
+	border-radius: var(--border-radius, 4px);
+	font-size: 14px;
 }
 
 .empty-state {
