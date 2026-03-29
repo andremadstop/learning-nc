@@ -5,6 +5,7 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\UserTelos;
 use OCA\Learning\Db\UserTelosMapper;
+use OCA\Learning\Service\EncryptionService;
 use OCP\IDBConnection;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
@@ -20,6 +21,7 @@ class TelosService {
     private LoggerInterface $logger;
     private IDBConnection $db;
     private IUserManager $userManager;
+    private EncryptionService $encryptionService;
 
     /** Valid visibility values */
     private const VALID_VISIBILITY = ['private', 'course', 'public'];
@@ -43,13 +45,15 @@ class TelosService {
         GeminiService $geminiService,
         LoggerInterface $logger,
         IDBConnection $db,
-        IUserManager $userManager
+        IUserManager $userManager,
+        EncryptionService $encryptionService
     ) {
         $this->mapper = $mapper;
         $this->geminiService = $geminiService;
         $this->logger = $logger;
         $this->db = $db;
         $this->userManager = $userManager;
+        $this->encryptionService = $encryptionService;
     }
 
     // =========================================================================
@@ -91,13 +95,16 @@ class TelosService {
             $entity->setCreatedAt($now);
         }
 
-        $entity->setTelosData($telosData);
+        // Encrypt telos_json before persistence
+        $telosJson = json_encode($telosData, JSON_UNESCAPED_UNICODE);
+        $entity->setTelosJson($this->encryptionService->encrypt($telosJson));
         $entity->setOnboardingCompleted(true);
         $entity->setUpdatedAt($now);
 
-        // Optional extra fields
+        // Optional extra fields — bio is encrypted, help_offer/help_wanted stay plaintext
         if (isset($extra['bio'])) {
-            $entity->setBio(mb_substr(strip_tags((string)$extra['bio']), 0, 1000));
+            $bio = mb_substr(strip_tags((string)$extra['bio']), 0, 1000);
+            $entity->setBio($this->encryptionService->encrypt($bio));
         }
         if (isset($extra['help_offer']) && is_array($extra['help_offer'])) {
             $entity->setHelpOffer(json_encode(array_slice($extra['help_offer'], 0, 10), JSON_UNESCAPED_UNICODE));
@@ -130,11 +137,15 @@ class TelosService {
         $now = time();
 
         if (isset($fields['telos']) && is_array($fields['telos'])) {
-            $current = $entity->getTelosData();
-            $entity->setTelosData(array_merge($current, $fields['telos']));
+            // Decrypt current telos, merge, re-encrypt
+            $currentJson = $this->encryptionService->decrypt($entity->getTelosJson());
+            $current = ($currentJson !== null && $currentJson !== '') ? (json_decode($currentJson, true) ?? []) : [];
+            $merged = array_merge($current, $fields['telos']);
+            $entity->setTelosJson($this->encryptionService->encrypt(json_encode($merged, JSON_UNESCAPED_UNICODE)));
         }
         if (isset($fields['bio'])) {
-            $entity->setBio(mb_substr(strip_tags((string)$fields['bio']), 0, 1000));
+            $bio = mb_substr(strip_tags((string)$fields['bio']), 0, 1000);
+            $entity->setBio($this->encryptionService->encrypt($bio));
         }
         if (isset($fields['help_offer']) && is_array($fields['help_offer'])) {
             $entity->setHelpOffer(json_encode(array_slice($fields['help_offer'], 0, 10), JSON_UNESCAPED_UNICODE));
@@ -364,7 +375,10 @@ class TelosService {
                 $onboarded++;
             }
 
-            $data = $entity->getTelosData();
+            $decryptedJson = $this->encryptionService->decrypt($entity->getTelosJson());
+            $data = ($decryptedJson !== null && $decryptedJson !== '')
+                ? (json_decode($decryptedJson, true) ?? [])
+                : [];
             if (empty($data)) {
                 continue;
             }
@@ -419,10 +433,17 @@ class TelosService {
     // =========================================================================
 
     private function entityToArray(UserTelos $entity): array {
+        // Decrypt bio and telos_json on read
+        $decryptedBio = $this->encryptionService->decrypt($entity->getBio()) ?? '';
+        $decryptedTelosJson = $this->encryptionService->decrypt($entity->getTelosJson());
+        $telosData = ($decryptedTelosJson !== null && $decryptedTelosJson !== '')
+            ? (json_decode($decryptedTelosJson, true) ?? [])
+            : [];
+
         return [
             'user_id' => $entity->getUserId(),
-            'telos' => $entity->getTelosData(),
-            'bio' => $entity->getBio() ?? '',
+            'telos' => $telosData,
+            'bio' => $decryptedBio,
             'help_offer' => $entity->getHelpOfferList(),
             'help_wanted' => $entity->getHelpWantedList(),
             'visibility' => $entity->getVisibility(),

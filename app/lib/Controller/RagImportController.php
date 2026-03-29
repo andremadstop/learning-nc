@@ -5,6 +5,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\RagImportService;
+use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -16,6 +17,7 @@ class RagImportController extends Controller {
     private RagImportService $importService;
     private RagChunkMapper $chunkMapper;
     private RoleService $roleService;
+    private AuditService $auditService;
     private LoggerInterface $logger;
     private ?string $userId;
 
@@ -27,6 +29,7 @@ class RagImportController extends Controller {
         RagImportService $importService,
         RagChunkMapper $chunkMapper,
         RoleService $roleService,
+        AuditService $auditService,
         LoggerInterface $logger,
         ?string $userId
     ) {
@@ -34,6 +37,7 @@ class RagImportController extends Controller {
         $this->importService = $importService;
         $this->chunkMapper = $chunkMapper;
         $this->roleService = $roleService;
+        $this->auditService = $auditService;
         $this->logger = $logger;
         $this->userId = $userId;
     }
@@ -250,6 +254,13 @@ class RagImportController extends Controller {
 
             $chunk->setStatus($action === 'approve' ? 'approved' : 'rejected');
             $this->chunkMapper->update($chunk);
+
+            $this->auditService->logEvent('moderation_action', $this->userId, [
+                'action' => $action,
+                'chunk_id' => $chunkId,
+                'course_id' => $courseId,
+                'chunk_title' => $chunk->getTitle() ?? '',
+            ]);
 
             return new DataResponse(['status' => $chunk->getStatus()]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
