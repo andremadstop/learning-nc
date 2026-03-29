@@ -1615,6 +1615,7 @@ class TrainingService {
             'correct_answers' => (int)$session['correct_answers'],
             'completed_at' => (int)$session['completed_at'],
             'started_at' => (int)$session['started_at'],
+            'time_limit_seconds' => isset($session['time_limit_seconds']) ? (int)$session['time_limit_seconds'] : 0,
         ];
         $newBadges = $this->badgeService->checkAndAward($userId, 'session_complete', $sessionData);
         $response['newly_earned_badges'] = $newBadges;

@@ -28,6 +28,7 @@ class CoopService {
     private CoopPlayerMapper $playerMapper;
     private CoopVoteMapper $voteMapper;
     private StoryEngineService $storyEngineService;
+    private BadgeService $badgeService;
     private IUserManager $userManager;
     private IDBConnection $db;
     private LoggerInterface $logger;
@@ -37,6 +38,7 @@ class CoopService {
         CoopPlayerMapper $playerMapper,
         CoopVoteMapper $voteMapper,
         StoryEngineService $storyEngineService,
+        BadgeService $badgeService,
         IUserManager $userManager,
         IDBConnection $db,
         LoggerInterface $logger
@@ -45,6 +47,7 @@ class CoopService {
         $this->playerMapper = $playerMapper;
         $this->voteMapper = $voteMapper;
         $this->storyEngineService = $storyEngineService;
+        $this->badgeService = $badgeService;
         $this->userManager = $userManager;
         $this->db = $db;
         $this->logger = $logger;
@@ -590,6 +593,10 @@ class CoopService {
                 : [];
             if (array_key_exists('simulator_completed', $interactionPayload)) {
                 $existing['completed'] = (bool)$interactionPayload['simulator_completed'];
+                // Trigger simulator badge check on completion
+                if ((bool)$interactionPayload['simulator_completed']) {
+                    $this->badgeService->checkAndAward($userId, 'simulator_complete', []);
+                }
             }
             if (array_key_exists('simulator_passed', $interactionPayload)) {
                 $existing['passed'] = (bool)$interactionPayload['simulator_passed'];

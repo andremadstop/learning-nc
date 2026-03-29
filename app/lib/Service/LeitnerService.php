@@ -468,6 +468,12 @@ class LeitnerService {
         if ($correct) {
             $this->xpService->syncLevel($userId);
             $response['level_after'] = $this->xpService->calculateXp($userId)['level'];
+
+            // trouble_fixer badge: correct answer promoting from box 1
+            if ($currentBox === 1 && $newBox >= 2) {
+                $troubleBadges = $this->badgeService->checkAndAward($userId, 'trouble_fix', []);
+                $response['newly_earned_badges'] = array_merge($response['newly_earned_badges'], $troubleBadges);
+            }
         }
 
         // Daily goal XP bonus: +10 XP when daily goal reached for the first time today

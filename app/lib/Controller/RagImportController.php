@@ -6,6 +6,7 @@ use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\RagImportService;
 use OCA\Learning\Service\AuditService;
+use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -18,6 +19,7 @@ class RagImportController extends Controller {
     private RagChunkMapper $chunkMapper;
     private RoleService $roleService;
     private AuditService $auditService;
+    private BadgeService $badgeService;
     private LoggerInterface $logger;
     private ?string $userId;
 
@@ -30,6 +32,7 @@ class RagImportController extends Controller {
         RagChunkMapper $chunkMapper,
         RoleService $roleService,
         AuditService $auditService,
+        BadgeService $badgeService,
         LoggerInterface $logger,
         ?string $userId
     ) {
@@ -38,6 +41,7 @@ class RagImportController extends Controller {
         $this->chunkMapper = $chunkMapper;
         $this->roleService = $roleService;
         $this->auditService = $auditService;
+        $this->badgeService = $badgeService;
         $this->logger = $logger;
         $this->userId = $userId;
     }
@@ -201,6 +205,10 @@ class RagImportController extends Controller {
             }
 
             $result = $this->importService->importText($courseId, trim($title), $text, $this->userId, 'student');
+
+            // Check swarm badge after successful student contribution
+            $this->badgeService->checkAndAward($this->userId, 'swarm_contribution', []);
+
             return new DataResponse($result, Http::STATUS_CREATED);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);

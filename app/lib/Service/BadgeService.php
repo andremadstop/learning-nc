@@ -191,6 +191,15 @@ class BadgeService {
             case 'streak_update':
                 $newBadges = array_merge($newBadges, $this->checkStreakBadges($userId, $data, $notify));
                 break;
+            case 'simulator_complete':
+                $newBadges = array_merge($newBadges, $this->checkSimulatorBadges($userId, $notify));
+                break;
+            case 'trouble_fix':
+                $newBadges = array_merge($newBadges, $this->checkTroubleFixerBadges($userId, $notify));
+                break;
+            case 'swarm_contribution':
+                $newBadges = array_merge($newBadges, $this->checkSwarmBadges($userId, $notify));
+                break;
         }
 
         return $newBadges;
@@ -246,10 +255,36 @@ class BadgeService {
         $correctA = (int)($data['correct_answers'] ?? 0);
         $scorePct = $totalQ > 0 ? round($correctA / $totalQ * 100) : 0;
 
+        // exam_ready: 3 exam sessions above 85%
         if ($mode === 'exam' && $scorePct > 85) {
             $examReadyRuns = $this->getSuccessfulExamRunCount($userId);
             if ($examReadyRuns >= self::BADGES['exam_ready']['threshold']) {
                 $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'exam_ready', $notify));
+            }
+        }
+
+        // pioneer: 50 total answered questions
+        $answeredCount = $this->getAnsweredQuestionCount($userId);
+        if ($answeredCount >= self::BADGES['pioneer']['threshold']) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'pioneer', $notify));
+        }
+
+        // weekend: session on both Saturday AND Sunday of the current week
+        $dayOfWeek = (int)date('N'); // 6=Sat, 7=Sun
+        if ($dayOfWeek === 6 || $dayOfWeek === 7) {
+            $newBadges = array_merge($newBadges, $this->checkWeekendBadge($userId, $notify));
+        }
+
+        // quick_thinker: exam completed in <50% of allotted time with 80%+ score
+        if ($mode === 'exam' && $scorePct >= 80) {
+            $timeLimit = (int)($data['time_limit_seconds'] ?? 0);
+            $startedAt = (int)($data['started_at'] ?? 0);
+            $completedAt = (int)($data['completed_at'] ?? 0);
+            if ($timeLimit > 0 && $startedAt > 0 && $completedAt > $startedAt) {
+                $elapsed = $completedAt - $startedAt;
+                if ($elapsed < ($timeLimit * 0.5)) {
+                    $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'quick_thinker', $notify));
+                }
             }
         }
 
@@ -283,6 +318,96 @@ class BadgeService {
         }
 
         return $newBadges;
+    }
+
+    private function checkWeekendBadge(string $userId, bool $notify = true): array {
+        // Check if user has sessions on both Saturday and Sunday of the current week
+        $monday = new \DateTime('monday this week');
+        $monday->setTime(0, 0, 0);
+        $saturday = (clone $monday)->modify('+5 days');
+        $sunday = (clone $monday)->modify('+6 days');
+        $nextMonday = (clone $monday)->modify('+7 days');
+
+        // Check Saturday
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->isNotNull('completed_at'))
+           ->andWhere($qb->expr()->gte('completed_at', $qb->createNamedParameter($saturday->getTimestamp())))
+           ->andWhere($qb->expr()->lt('completed_at', $qb->createNamedParameter($sunday->getTimestamp())));
+        $result = $qb->executeQuery();
+        $satCount = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+
+        // Check Sunday
+        $qb2 = $this->db->getQueryBuilder();
+        $qb2->select($qb2->createFunction('COUNT(*) as cnt'))
+            ->from('learning_sessions')
+            ->where($qb2->expr()->eq('user_id', $qb2->createNamedParameter($userId)))
+            ->andWhere($qb2->expr()->isNotNull('completed_at'))
+            ->andWhere($qb2->expr()->gte('completed_at', $qb2->createNamedParameter($sunday->getTimestamp())))
+            ->andWhere($qb2->expr()->lt('completed_at', $qb2->createNamedParameter($nextMonday->getTimestamp())));
+        $result2 = $qb2->executeQuery();
+        $sunCount = (int)$result2->fetch()['cnt'];
+        $result2->closeCursor();
+
+        if ($satCount > 0 && $sunCount > 0) {
+            return $this->awardIfNew($userId, 'weekend', $notify);
+        }
+        return [];
+    }
+
+    private function checkSimulatorBadges(string $userId, bool $notify = true): array {
+        // Count finished coop sessions where the user participated
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_coop_players', 'p')
+           ->innerJoin('p', 'learning_coop_sessions', 's', $qb->expr()->eq('p.session_id', 's.id'))
+           ->where($qb->expr()->eq('p.user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('s.status', $qb->createNamedParameter('finished')));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+
+        if ($count >= self::BADGES['simulator']['threshold']) {
+            return $this->awardIfNew($userId, 'simulator', $notify);
+        }
+        return [];
+    }
+
+    private function checkTroubleFixerBadges(string $userId, bool $notify = true): array {
+        // Count items that have been promoted out of box 1 (now in box >= 2)
+        // These represent "fixed trouble spots"
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_leitner_items')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->gte('box', $qb->createNamedParameter(2)));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+
+        if ($count >= self::BADGES['trouble_fixer']['threshold']) {
+            return $this->awardIfNew($userId, 'trouble_fixer', $notify);
+        }
+        return [];
+    }
+
+    private function checkSwarmBadges(string $userId, bool $notify = true): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_rag_chunks')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('source_type', $qb->createNamedParameter('student')));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+
+        if ($count >= self::BADGES['swarm']['threshold']) {
+            return $this->awardIfNew($userId, 'swarm', $notify);
+        }
+        return [];
     }
 
     private function awardIfNew(string $userId, string $badgeId, bool $notify = true): array {
@@ -404,6 +529,43 @@ class BadgeService {
         return (int)($streakRow['current_streak'] ?? 0);
     }
 
+    private function getSimulatorSessionCount(string $userId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_coop_players', 'p')
+           ->innerJoin('p', 'learning_coop_sessions', 's', $qb->expr()->eq('p.session_id', 's.id'))
+           ->where($qb->expr()->eq('p.user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('s.status', $qb->createNamedParameter('finished')));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+        return $count;
+    }
+
+    private function getTroubleFixCount(string $userId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_leitner_items')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->gte('box', $qb->createNamedParameter(2)));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+        return $count;
+    }
+
+    private function getSwarmContributionCount(string $userId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_rag_chunks')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('source_type', $qb->createNamedParameter('student')));
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+        return $count;
+    }
+
     private function buildBadgeData(string $badgeId, ?array $earnedRow = null): array {
         $def = self::BADGES[$badgeId];
 
@@ -464,6 +626,9 @@ class BadgeService {
         $box5Count = $this->getBox5Count($userId);
         $currentStreak = $this->getCurrentStreak($userId);
         $successfulExamRunCount = $this->getSuccessfulExamRunCount($userId);
+        $simulatorCount = $this->getSimulatorSessionCount($userId);
+        $troubleFixCount = $this->getTroubleFixCount($userId);
+        $swarmCount = $this->getSwarmContributionCount($userId);
 
         $progress = [];
 
@@ -473,6 +638,11 @@ class BadgeService {
             'streak_14' => ['current' => min($currentStreak, self::BADGES['streak_14']['threshold']), 'target' => self::BADGES['streak_14']['threshold']],
             'mastermind' => ['current' => min($box5Count, self::BADGES['mastermind']['threshold']), 'target' => self::BADGES['mastermind']['threshold']],
             'exam_ready' => ['current' => min($successfulExamRunCount, self::BADGES['exam_ready']['threshold']), 'target' => self::BADGES['exam_ready']['threshold']],
+            'simulator' => ['current' => min($simulatorCount, self::BADGES['simulator']['threshold']), 'target' => self::BADGES['simulator']['threshold']],
+            'weekend' => ['current' => 0, 'target' => self::BADGES['weekend']['threshold']],
+            'swarm' => ['current' => min($swarmCount, self::BADGES['swarm']['threshold']), 'target' => self::BADGES['swarm']['threshold']],
+            'trouble_fixer' => ['current' => min($troubleFixCount, self::BADGES['trouble_fixer']['threshold']), 'target' => self::BADGES['trouble_fixer']['threshold']],
+            'quick_thinker' => ['current' => 0, 'target' => self::BADGES['quick_thinker']['threshold']],
         ];
 
         // Check which are already earned
