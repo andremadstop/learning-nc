@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
 status: executing
-stopped_at: Completed 112-01-PLAN.md — Kommunikation + Verwaltung mega-tabs extracted
-last_updated: "2026-03-29T20:23:28.086Z"
+stopped_at: Completed 112-02-PLAN.md — Wettbewerb + Teilnehmer mega-tabs extracted, all 5 mega-tabs done
+last_updated: "2026-03-29T20:35:42Z"
 last_activity: 2026-03-29 — Completed 111-02 CompTIA Vault Import
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 7
-  completed_plans: 5
-  percent: 57
+  completed_plans: 6
+  percent: 86
 ---
 
 # Project State
@@ -25,12 +25,12 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 
 ## Current Position
 
-Phase: 111 (2 of 4 in v3.6.0) (Badge Umbau + Vault Import) — PHASE COMPLETE
-Plan: 2 of 2 in current phase (PHASE COMPLETE)
+Phase: 112 (3 of 4 in v3.6.0) (Tab Reduktion)
+Plan: 2 of 3 in current phase
 Status: Executing
-Last activity: 2026-03-29 — Completed 111-02 CompTIA Vault Import
+Last activity: 2026-03-29 — Completed 112-02 Wettbewerb + Teilnehmer extraction
 
-Progress: [█████░░░░░] 57% (4/7 plans)
+Progress: [████████░░] 86% (6/7 plans)
 
 ## Performance Metrics
 
@@ -45,10 +45,11 @@ Progress: [█████░░░░░] 57% (4/7 plans)
 |-------|-------|-------|----------|
 | 110 | 2/2 | ~2min | ~1min |
 | 111 | 2/2 | ~8min | ~4min |
-| 112 | 0/1 | - | - |
+| 112 | 2/3 | ~18min | ~9min |
 | 113 | 0/2 | - | - |
 | Phase 111 P01 | 10min | 2 tasks | 9 files |
 | Phase 112 P01 | 8min | 2 tasks | 5 files |
+| Phase 112 P02 | 10min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Progress: [█████░░░░░] 57% (4/7 plans)
 - [Phase 111]: Simulator badge counts finished coop sessions (JOIN), not learning_sessions — simulator mode does not exist in sessions table
 - [Phase 111]: Migration boolean notnull=false, default=0 for NC Doctrine compatibility
 - [Phase 112]: Mega-tabs kommunikation/verwaltung replace individual leaf tabs in visibleTabs; leaf IDs preserved internally
+- [Phase 112]: visibleTabs now returns 5 mega-tabs (instructor) or 4 (student); all leaf IDs moved to *LeafTabs computed properties
+- [Phase 112]: Wettbewerb always visible for students (leaderboard always enabled); arenaSubMode propagated via event for VirtuProf
 
 ### Pending Todos
 
@@ -75,6 +78,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T20:23:28.071Z
-Stopped at: Completed 112-01-PLAN.md — Kommunikation + Verwaltung mega-tabs extracted
+Last session: 2026-03-29T20:35:42Z
+Stopped at: Completed 112-02-PLAN.md — Wettbewerb + Teilnehmer mega-tabs extracted, all 5 mega-tabs done
 Resume file: None
