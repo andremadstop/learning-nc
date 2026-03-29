@@ -7,8 +7,8 @@
 
 ### Content & Import
 
-- [ ] **IMPORT-01**: User kann 4 CompTIA-Kurse (Network+, Security+, Linux+, CySA+) via `occ learning:import-vault` als RAG-Quellen importieren
-- [ ] **IMPORT-02**: Admin kann Vault-Import im Dry-Run-Modus ausfuehren (Vorschau ohne DB-Schreibzugriff)
+- [x] **IMPORT-01**: User kann 4 CompTIA-Kurse (Network+, Security+, Linux+, CySA+) via `occ learning:import-vault` als RAG-Quellen importieren
+- [x] **IMPORT-02**: Admin kann Vault-Import im Dry-Run-Modus ausfuehren (Vorschau ohne DB-Schreibzugriff)
 - [x] **IMPORT-03**: Privacy-info.json enthaelt 7 Datenkategorien (learning, ai, social, audit, gamification, assessment, external)
 - [x] **IMPORT-04**: PWA-Anleitung (iOS + Android) ist als Materialien-Dokument in der DevCloud verfuegbar
 
@@ -74,8 +74,8 @@
 | UX-04 | Phase 110 | Complete |
 | BADGE-01 | Phase 111 | Pending |
 | BADGE-02 | Phase 111 | Pending |
-| IMPORT-01 | Phase 111 | Pending |
-| IMPORT-02 | Phase 111 | Pending |
+| IMPORT-01 | Phase 111 | Complete |
+| IMPORT-02 | Phase 111 | Complete |
 | UX-01 | Phase 112 | Pending |
 | UX-02 | Phase 113 | Pending |
 | UX-03 | Phase 113 | Pending |

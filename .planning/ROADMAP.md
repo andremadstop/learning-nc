@@ -153,6 +153,6 @@ Plans:
 | 96-100 | v3.4.0 | - | Complete | 2026-03-28 |
 | 101-109 | v3.5.0 | - | Complete | 2026-03-29 |
 | 110. Foundation & Security | 2/2 | Complete    | 2026-03-29 | - |
-| 111. Badge-Umbau & Vault-Import | v3.6.0 | 0/2 | Not started | - |
+| 111. Badge-Umbau & Vault-Import | 1/2 | In Progress|  | - |
 | 112. Tab-Reduktion | v3.6.0 | 0/1 | Not started | - |
 | 113. AI & Erklaerbot | v3.6.0 | 0/2 | Not started | - |
