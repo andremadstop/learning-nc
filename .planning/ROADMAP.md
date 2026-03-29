@@ -123,11 +123,13 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Instructor sees exactly 5 top-level tabs in CourseDetail: Lernraum, Teilnehmer, Wettbewerb, Kommunikation, Verwaltung
   2. All 16 original sub-views are accessible within their respective mega-tab (no functionality lost)
-  3. CourseDetail.vue is decomposed into separate tab components (no longer a 1500+ line monolith)
-**Plans**: TBD
+  3. CourseDetail.vue is decomposed into separate tab components (no longer a 3874-line monolith)
+**Plans**: 3 plans
 
 Plans:
-- [ ] 112-01: CourseDetail.vue Decomposition + Mega-Tab Structure (UX-01)
+- [ ] 112-01-PLAN.md — Extract Kommunikation + Verwaltung mega-tabs (lowest coupling, ~600-800 LOC reduction)
+- [ ] 112-02-PLAN.md — Extract Wettbewerb + Teilnehmer mega-tabs (~1200-1500 LOC reduction, shell complete)
+- [ ] 112-03-PLAN.md — Convert flat tab-selector to 5 mega-tab navigation + fix App.vue view-key gaps
 
 ### Phase 113: AI & Erklaerbot
 **Goal**: Students have a fullscreen AI learning companion, intuitive dismissal gestures, a personalized course-end reflection, and a calendar feed for post-course spaced repetition
@@ -153,6 +155,6 @@ Plans:
 | 96-100 | v3.4.0 | - | Complete | 2026-03-28 |
 | 101-109 | v3.5.0 | - | Complete | 2026-03-29 |
 | 110. Foundation & Security | 2/2 | Complete    | 2026-03-29 | - |
-| 111. Badge-Umbau & Vault-Import | 2/2 | Complete   | 2026-03-29 | - |
-| 112. Tab-Reduktion | v3.6.0 | 0/1 | Not started | - |
+| 111. Badge-Umbau & Vault-Import | 2/2 | Complete    | 2026-03-29 | - |
+| 112. Tab-Reduktion | 1/3 | In Progress|  | - |
 | 113. AI & Erklaerbot | v3.6.0 | 0/2 | Not started | - |

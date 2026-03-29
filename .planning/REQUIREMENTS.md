@@ -14,7 +14,7 @@
 
 ### UX & Navigation
 
-- [ ] **UX-01**: Dozent sieht in CourseDetail 5 Mega-Tabs statt 16 Einzel-Tabs (Lernraum, Teilnehmer, Wettbewerb, Kommunikation, Verwaltung)
+- [x] **UX-01**: Dozent sieht in CourseDetail 5 Mega-Tabs statt 16 Einzel-Tabs (Lernraum, Teilnehmer, Wettbewerb, Kommunikation, Verwaltung)
 - [ ] **UX-02**: Student kann VirtuProf als Fullscreen-Lernhelfer nutzen (eigener Top-Level-Tab, nicht nur Sidebar)
 - [ ] **UX-03**: User kann Erklaerbot per X-Button oder Swipe-Geste schliessen (statt verschachteltes Menue)
 - [x] **UX-04**: 9 neue Badges haben deutsche und englische Texte (Name + Beschreibung) in l10n
@@ -76,7 +76,7 @@
 | BADGE-02 | Phase 111 | Complete |
 | IMPORT-01 | Phase 111 | Complete |
 | IMPORT-02 | Phase 111 | Complete |
-| UX-01 | Phase 112 | Pending |
+| UX-01 | Phase 112 | Complete |
 | UX-02 | Phase 113 | Pending |
 | UX-03 | Phase 113 | Pending |
 | AI-01 | Phase 113 | Pending |
