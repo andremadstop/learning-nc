@@ -670,6 +670,10 @@ export default {
             'mode-config': 'view:course-mode-config',
             'materials': 'view:course-materials',
             'curriculum': 'view:course-curriculum',
+            'feed': 'view:course-feed',
+            'buddies': 'view:course-buddies',
+            'schwarm': 'view:course-schwarm',
+            'knowledge': 'view:course-knowledge',
           };
           return tabMap[this.courseTab] || 'view:course-detail';
         }

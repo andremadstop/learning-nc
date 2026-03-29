@@ -35,24 +35,20 @@
 		</NcNoteCard>
 
 		<template v-if="!loading && course">
-			<!-- Tab selector -->
-			<div class="tab-selector">
-				<template v-for="(tab, idx) in visibleTabs">
-					<span v-if="idx > 0 && tab.group && visibleTabs[idx - 1].group && tab.group !== visibleTabs[idx - 1].group"
-						:key="'sep-' + idx"
-						class="tab-group-separator" />
-					<button
-						:key="tab.id"
-						class="tab-button"
-						:class="{ active: isTabActive(tab.id) }"
-						@click="selectTab(tab.id)">
-						{{ tab.label }}
-					</button>
-				</template>
+			<!-- Mega-tab selector -->
+			<div class="mega-tab-selector">
+				<button v-for="tab in visibleMegaTabs"
+					:key="tab.id"
+					class="mega-tab-button"
+					:class="{ active: activeMegaTab === tab.id }"
+					@click="selectMegaTab(tab.id)">
+					{{ tab.label }}
+				</button>
 			</div>
 
+			<!-- Mega-tab content -->
 			<CourseTabLernraum
-				v-if="isLernraumTab(currentTab)"
+				v-if="activeMegaTab === 'lernraum'"
 				:course-id="courseId"
 				:course="course"
 				:user-role="userRole"
@@ -67,23 +63,23 @@
 				@openPool="$emit('openPool', $event)"
 				@pool-selected="selectedLearningPool = $event"
 				@refresh-course-detail="fetchCourseDetail"
-				@tab-change="selectTab" />
+				@tab-change="onLeafTabChange" />
 
 			<CourseTabTeilnehmer
-				v-if="isTeilnehmerTab(currentTab)"
+				v-if="activeMegaTab === 'teilnehmer'"
 				:course-id="courseId"
 				:course="course"
 				:user-role="userRole"
 				:course-members="courseMembers"
 				:course-pools="coursePools"
 				:active-tab="currentTab"
-				@tab-change="selectTab"
+				@tab-change="onLeafTabChange"
 				@error="error = $event"
 				@members-changed="fetchCourseDetail"
 				@selectStudent="$emit('selectStudent', $event)" />
 
 			<CourseTabWettbewerb
-				v-if="isWettbewerbTab(currentTab)"
+				v-if="activeMegaTab === 'wettbewerb'"
 				:course-id="courseId"
 				:course="course"
 				:user-role="userRole"
@@ -91,29 +87,29 @@
 				:active-tab="currentTab"
 				:content-language="contentLanguage"
 				:preset-duel-code="presetDuelCode"
-				@tab-change="selectTab"
+				@tab-change="onLeafTabChange"
 				@error="error = $event"
 				@arena-sub-mode="arenaSubMode = $event"
 				@preset-consumed="$emit('clearPresetDuel')"
 				@selectStudent="$emit('selectStudent', $event)" />
 
 			<CourseTabKommunikation
-				v-if="isKommunikationTab(currentTab)"
+				v-if="activeMegaTab === 'kommunikation'"
 				:course-id="courseId"
 				:course="course"
 				:user-role="userRole"
 				:active-tab="currentTab"
-				@tab-change="selectTab"
+				@tab-change="onLeafTabChange"
 				@error="error = $event"
 				@refresh-course-detail="fetchCourseDetail" />
 
 			<CourseTabVerwaltung
-				v-if="isVerwaltungTab(currentTab) && isInstructor"
+				v-if="activeMegaTab === 'verwaltung' && isInstructor"
 				:course-id="courseId"
 				:course="course"
 				:user-role="userRole"
 				:active-tab="currentTab"
-				@tab-change="selectTab"
+				@tab-change="onLeafTabChange"
 				@error="error = $event"
 				@refresh-course-detail="fetchCourseDetail" />
 
@@ -177,6 +173,7 @@ export default {
 			course: null,
 			coursePools: [],
 			courseMembers: [],
+			activeMegaTab: 'lernraum',
 			currentTab: 'pools',
 			knowledgePendingCount: 0,
 			selectedLearningPool: null,
@@ -256,14 +253,14 @@ export default {
 			const enabled = (key) => mc[key] !== false
 			return enabled('duel') || enabled('gameshow') || enabled('oldschool')
 		},
-		visibleTabs() {
+		visibleMegaTabs() {
 			if (this.isInstructor) {
 				return [
-					{ id: 'lernraum', label: t('learning', 'Lernraum'), group: 'Lernraum' },
-					{ id: 'teilnehmer', label: t('learning', 'Teilnehmer'), group: 'Teilnehmer' },
-					{ id: 'wettbewerb', label: t('learning', 'Wettbewerb'), group: 'Wettbewerb' },
-					{ id: 'kommunikation', label: t('learning', 'Kommunikation'), group: 'Kommunikation' },
-					{ id: 'verwaltung', label: t('learning', 'Verwaltung'), group: 'Verwaltung' },
+					{ id: 'lernraum', label: t('learning', 'Lernraum') },
+					{ id: 'teilnehmer', label: t('learning', 'Teilnehmer') },
+					{ id: 'wettbewerb', label: t('learning', 'Wettbewerb') },
+					{ id: 'kommunikation', label: t('learning', 'Kommunikation') },
+					{ id: 'verwaltung', label: t('learning', 'Verwaltung') },
 				]
 			}
 			return [
@@ -273,6 +270,13 @@ export default {
 				{ id: 'wettbewerb', label: t('learning', 'Wettbewerb') },
 				{ id: 'kommunikation', label: t('learning', 'Kommunikation') },
 			]
+		},
+		/**
+		 * Internal reference for the visibleTabs watcher (fallback tab logic).
+		 * Returns the same data as visibleMegaTabs.
+		 */
+		visibleTabs() {
+			return this.visibleMegaTabs
 		},
 	},
 
@@ -291,6 +295,7 @@ export default {
 				|| ids.includes('verwaltung') && this.isVerwaltungTab(this.currentTab)
 			if (!isVisibleMega && !isCoveredByMega) {
 				this.currentTab = this.defaultLernraumTab()
+				this.activeMegaTab = 'lernraum'
 			}
 		},
 		courseId: {
@@ -305,6 +310,11 @@ export default {
 			if (tab === 'swipe') {
 				this.currentTab = 'training'
 				return
+			}
+			// Sync activeMegaTab from leaf tab
+			const mega = this.megaTabForLeaf(tab)
+			if (mega) {
+				this.activeMegaTab = mega
 			}
 			if (this.isStudentLearningTab) {
 				this.activeLearningMode = tab
@@ -325,6 +335,7 @@ export default {
 		presetDuelCode(newCode) {
 			if (newCode) {
 				this.currentTab = 'arena'
+				this.activeMegaTab = 'wettbewerb'
 				this.arenaSubMode = 'duel'
 			}
 		},
@@ -477,6 +488,46 @@ export default {
 			}
 			return guides[tabId] || null
 		},
+		megaTabForLeaf(leafId) {
+			if (this.lernraumLeafTabs.includes(leafId)) return 'lernraum'
+			if (this.teilnehmerLeafTabs.includes(leafId)) return 'teilnehmer'
+			if (this.wettbewerbLeafTabs.includes(leafId)) return 'wettbewerb'
+			if (this.kommunikationLeafTabs.includes(leafId)) return 'kommunikation'
+			if (this.verwaltungLeafTabs.includes(leafId)) return 'verwaltung'
+			return null
+		},
+		selectMegaTab(megaTabId) {
+			this.activeMegaTab = megaTabId
+			const resolvedTabId = this.resolveSelectableTab(megaTabId)
+			this.currentTab = resolvedTabId
+			this.$root.$emit('course:tab-change', resolvedTabId)
+			if (resolvedTabId !== 'arena') {
+				this.arenaSubMode = null
+			}
+			if (resolvedTabId === 'arena' && !this.isInstructor) {
+				this.$root.$emit('virtuprof:trigger', 'arena-first-visit')
+			}
+			if (resolvedTabId === 'league' && !this.isInstructor) {
+				this.$root.$emit('virtuprof:trigger', 'liga-first-visit')
+			}
+		},
+		/**
+		 * Called by child mega-tab components when they change sub-tab.
+		 * Receives a leaf tab ID, updates currentTab, syncs activeMegaTab, emits to App.vue.
+		 */
+		onLeafTabChange(leafTabId) {
+			this.currentTab = leafTabId
+			this.$root.$emit('course:tab-change', leafTabId)
+			if (leafTabId !== 'arena') {
+				this.arenaSubMode = null
+			}
+			if (leafTabId === 'arena' && !this.isInstructor) {
+				this.$root.$emit('virtuprof:trigger', 'arena-first-visit')
+			}
+			if (leafTabId === 'league' && !this.isInstructor) {
+				this.$root.$emit('virtuprof:trigger', 'liga-first-visit')
+			}
+		},
 		selectTab(tabId) {
 			const resolvedTabId = this.resolveSelectableTab(tabId)
 			this.currentTab = resolvedTabId
@@ -523,12 +574,14 @@ export default {
 				// Default tab for students
 				if (!this.course.is_instructor) {
 					this.currentTab = this.presetDuelCode ? 'arena' : 'training'
+					this.activeMegaTab = this.presetDuelCode ? 'wettbewerb' : 'lernraum'
 					this.arenaSubMode = this.presetDuelCode ? 'duel' : null
 					this.activeLearningMode = 'training'
 					this.selectedLearningPool = null
 					this.fetchStudentProgress()
 				} else if (this.presetDuelCode) {
 					this.currentTab = 'arena'
+					this.activeMegaTab = 'wettbewerb'
 					this.arenaSubMode = 'duel'
 				}
 				this.$nextTick(() => {
@@ -641,8 +694,8 @@ export default {
 	margin-bottom: 16px;
 }
 
-/* Tab selector */
-.tab-selector {
+/* Mega-tab selector */
+.mega-tab-selector {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px;
@@ -651,38 +704,29 @@ export default {
 	padding-bottom: 0;
 }
 
-.tab-button {
-	padding: 10px 20px;
+.mega-tab-button {
+	padding: 12px 24px;
 	border: none;
 	background: none;
 	cursor: pointer;
-	font-size: 0.95em;
+	font-size: 1em;
 	font-weight: 500;
 	color: var(--color-text-maxcontrast);
-	border-bottom: 2px solid transparent;
+	border-bottom: 3px solid transparent;
 	margin-bottom: -2px;
 	transition: color 0.15s, border-color 0.15s;
 	white-space: nowrap;
 }
 
-.tab-button:hover {
+.mega-tab-button:hover {
 	color: var(--color-main-text);
 	background: var(--color-background-hover);
 }
 
-.tab-button.active {
+.mega-tab-button.active {
 	color: var(--color-primary-element);
 	border-bottom-color: var(--color-primary-element);
 	font-weight: 600;
-}
-
-.tab-group-separator {
-	width: 1px;
-	height: 24px;
-	background: var(--color-border);
-	margin: 0 8px;
-	align-self: center;
-	flex-shrink: 0;
 }
 
 /* Talk link in header */
@@ -703,11 +747,11 @@ export default {
 		padding: 12px;
 	}
 
-	.tab-selector {
+	.mega-tab-selector {
 		gap: 2px;
 	}
 
-	.tab-button {
+	.mega-tab-button {
 		padding: 8px 14px;
 		font-size: 0.9em;
 	}

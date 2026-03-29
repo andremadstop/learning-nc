@@ -102,6 +102,9 @@ function createInstance(overrides = {}) {
 		lernraumLeafTabs: { get: () => CourseDetail.computed.lernraumLeafTabs.call(instance) },
 		teilnehmerLeafTabs: { get: () => CourseDetail.computed.teilnehmerLeafTabs.call(instance) },
 		wettbewerbLeafTabs: { get: () => CourseDetail.computed.wettbewerbLeafTabs.call(instance) },
+		kommunikationLeafTabs: { get: () => CourseDetail.computed.kommunikationLeafTabs.call(instance) },
+		verwaltungLeafTabs: { get: () => CourseDetail.computed.verwaltungLeafTabs.call(instance) },
+		visibleMegaTabs: { get: () => CourseDetail.computed.visibleMegaTabs.call(instance) },
 		visibleTabs: { get: () => CourseDetail.computed.visibleTabs.call(instance) },
 		hasEnabledArenaModes: { get: () => CourseDetail.computed.hasEnabledArenaModes.call(instance) },
 	})
@@ -137,9 +140,9 @@ describe('CourseDetail navigation logic', () => {
 
 	it('shows mega-tabs and delegates summary to teilnehmerLeafTabs', () => {
 		const hiddenInstance = createInstance()
-		expect(hiddenInstance.visibleTabs.map((tab) => tab.id)).toContain('lernraum')
-		expect(hiddenInstance.visibleTabs.map((tab) => tab.id)).not.toContain('training')
-		// summary is now a leaf inside teilnehmer mega-tab, not in visibleTabs directly
+		expect(hiddenInstance.visibleMegaTabs.map((tab) => tab.id)).toContain('lernraum')
+		expect(hiddenInstance.visibleMegaTabs.map((tab) => tab.id)).not.toContain('training')
+		// summary is now a leaf inside teilnehmer mega-tab, not in visibleMegaTabs directly
 		expect(hiddenInstance.teilnehmerLeafTabs).toEqual(['my-progress'])
 
 		const releasedInstance = createInstance({
@@ -183,11 +186,80 @@ describe('CourseDetail navigation logic', () => {
 			},
 		})
 
-		expect(instance.visibleTabs[0].id).toBe('lernraum')
-		expect(instance.visibleTabs.map((tab) => tab.id)).not.toContain('pools')
+		expect(instance.visibleMegaTabs[0].id).toBe('lernraum')
+		expect(instance.visibleMegaTabs.map((tab) => tab.id)).not.toContain('pools')
 		// Instructor has teilnehmer mega-tab, summary is a leaf within it
-		expect(instance.visibleTabs.map((tab) => tab.id)).toContain('teilnehmer')
+		expect(instance.visibleMegaTabs.map((tab) => tab.id)).toContain('teilnehmer')
 		expect(instance.teilnehmerLeafTabs).toContain('summary')
+	})
+
+	it('instructor sees exactly 5 mega-tabs', () => {
+		const instance = createInstance({
+			course: {
+				is_instructor: true,
+				material_folder: null,
+				mode_config: {},
+			},
+		})
+
+		const ids = instance.visibleMegaTabs.map((tab) => tab.id)
+		expect(ids).toEqual(['lernraum', 'teilnehmer', 'wettbewerb', 'kommunikation', 'verwaltung'])
+		expect(instance.visibleMegaTabs).toHaveLength(5)
+	})
+
+	it('student sees 4 mega-tabs (no Verwaltung)', () => {
+		const instance = createInstance()
+
+		const ids = instance.visibleMegaTabs.map((tab) => tab.id)
+		expect(ids).toEqual(['lernraum', 'teilnehmer', 'wettbewerb', 'kommunikation'])
+		expect(instance.visibleMegaTabs).toHaveLength(4)
+		expect(ids).not.toContain('verwaltung')
+	})
+
+	it('selectMegaTab changes activeMegaTab and resolves to leaf tab', () => {
+		const instance = createInstance({
+			activeMegaTab: 'lernraum',
+			currentTab: 'training',
+		})
+
+		instance.selectMegaTab('wettbewerb')
+
+		expect(instance.activeMegaTab).toBe('wettbewerb')
+		expect(instance.currentTab).toBe('leaderboard')
+		expect(instance.$root.$emit).toHaveBeenCalledWith('course:tab-change', 'leaderboard')
+	})
+
+	it('megaTabForLeaf maps leaf IDs to correct mega-tab', () => {
+		const instance = createInstance({
+			course: {
+				is_instructor: true,
+				material_folder: null,
+				mode_config: {},
+			},
+		})
+
+		expect(instance.megaTabForLeaf('pools')).toBe('lernraum')
+		expect(instance.megaTabForLeaf('curriculum')).toBe('lernraum')
+		expect(instance.megaTabForLeaf('members')).toBe('teilnehmer')
+		expect(instance.megaTabForLeaf('progress')).toBe('teilnehmer')
+		expect(instance.megaTabForLeaf('leaderboard')).toBe('wettbewerb')
+		expect(instance.megaTabForLeaf('arena')).toBe('wettbewerb')
+		expect(instance.megaTabForLeaf('announcements')).toBe('kommunikation')
+		expect(instance.megaTabForLeaf('feed')).toBe('kommunikation')
+		expect(instance.megaTabForLeaf('mode-config')).toBe('verwaltung')
+		expect(instance.megaTabForLeaf('unknown-tab')).toBe(null)
+	})
+
+	it('onLeafTabChange emits course:tab-change with leaf ID', () => {
+		const instance = createInstance({
+			activeMegaTab: 'lernraum',
+			currentTab: 'training',
+		})
+
+		instance.onLeafTabChange('arena')
+
+		expect(instance.currentTab).toBe('arena')
+		expect(instance.$root.$emit).toHaveBeenCalledWith('course:tab-change', 'arena')
 	})
 
 	it('treats Lernraum leaf tabs as active via the collapsed mega-tab', () => {
