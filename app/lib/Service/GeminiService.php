@@ -537,6 +537,12 @@ PROMPT;
             '/<\/?system>/i',
             '/\[\s*INST\s*\]/i',
             '/\[\s*SYSTEM\s*\]/i',
+            // Gemini Security Review 2026-03-29: 5 additional patterns
+            '/\bignore\b.*\binstructions?\b.*\babove\b/i',
+            '/\bbase64\b.*\bdecode\b/i',
+            '/\boutput\b.*\braw\b.*\b(system\s+)?prompt\b/i',
+            '/\btranslate\b.*\beverything\b.*\bto\b.*\bleetspeak\b/i',
+            '/\bprint\b.*\b(key|password|secret|token)\b/i',
         ];
 
         foreach ($patterns as $pattern) {
