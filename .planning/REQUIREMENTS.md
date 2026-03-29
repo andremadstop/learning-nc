@@ -21,8 +21,8 @@
 
 ### Gamification
 
-- [ ] **BADGE-01**: DB-Migration fuegt `is_legacy` Flag hinzu, 17 alte Badges werden als Legacy markiert (nicht geloescht)
-- [ ] **BADGE-02**: 5 neue Badge-Trigger funktionieren (weekend, swarm, simulator, trouble_fixer, quick_thinker)
+- [x] **BADGE-01**: DB-Migration fuegt `is_legacy` Flag hinzu, 17 alte Badges werden als Legacy markiert (nicht geloescht)
+- [x] **BADGE-02**: 5 neue Badge-Trigger funktionieren (weekend, swarm, simulator, trouble_fixer, quick_thinker)
 
 ### Security & Compliance
 
@@ -72,8 +72,8 @@
 | IMPORT-03 | Phase 110 | Complete |
 | IMPORT-04 | Phase 110 | Complete |
 | UX-04 | Phase 110 | Complete |
-| BADGE-01 | Phase 111 | Pending |
-| BADGE-02 | Phase 111 | Pending |
+| BADGE-01 | Phase 111 | Complete |
+| BADGE-02 | Phase 111 | Complete |
 | IMPORT-01 | Phase 111 | Complete |
 | IMPORT-02 | Phase 111 | Complete |
 | UX-01 | Phase 112 | Pending |

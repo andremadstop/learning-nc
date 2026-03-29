@@ -79,7 +79,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 **Milestone Goal:** Security hardening (encryption at rest, audit trail), badge system overhaul, content pipeline (vault import), UX simplification (tab reduction), and AI-powered post-course experience (narrative portfolio, spaced repetition calendar).
 
 - [x] **Phase 110: Foundation & Security** - Telos encryption, audit-log moderation, Gemini-outputs merge (privacy-info, PWA, badge l10n) (completed 2026-03-29)
-- [ ] **Phase 111: Badge-Umbau & Vault-Import** - Legacy badge migration, new triggers, CompTIA vault import pipeline
+- [x] **Phase 111: Badge-Umbau & Vault-Import** - Legacy badge migration, new triggers, CompTIA vault import pipeline (completed 2026-03-29)
 - [ ] **Phase 112: Tab-Reduktion** - CourseDetail.vue decomposition from 16 tabs to 5 mega-tabs
 - [ ] **Phase 113: AI & Erklaerbot** - Fullscreen Erklaerbot, dismissal UX, narrative portfolio, Forget-Me-Not ICS feed
 
@@ -153,6 +153,6 @@ Plans:
 | 96-100 | v3.4.0 | - | Complete | 2026-03-28 |
 | 101-109 | v3.5.0 | - | Complete | 2026-03-29 |
 | 110. Foundation & Security | 2/2 | Complete    | 2026-03-29 | - |
-| 111. Badge-Umbau & Vault-Import | 1/2 | In Progress|  | - |
+| 111. Badge-Umbau & Vault-Import | 2/2 | Complete   | 2026-03-29 | - |
 | 112. Tab-Reduktion | v3.6.0 | 0/1 | Not started | - |
 | 113. AI & Erklaerbot | v3.6.0 | 0/2 | Not started | - |
