@@ -153,6 +153,44 @@ class TelosService {
     }
 
     // =========================================================================
+    // AI Consent (Phase 102)
+    // =========================================================================
+
+    /**
+     * Get the stored AI consent version for a user (or null if never consented).
+     */
+    public function getAiConsentVersion(string $userId): ?string {
+        $entity = $this->mapper->findByUserIdOrNull($userId);
+        if ($entity === null) {
+            return null;
+        }
+        return $entity->getAiConsentVersion();
+    }
+
+    /**
+     * Save AI consent version for a user. Creates UserTelos row if needed.
+     */
+    public function saveAiConsent(string $userId, string $version): void {
+        $now = time();
+        $entity = $this->mapper->findByUserIdOrNull($userId);
+
+        if ($entity === null) {
+            $entity = new UserTelos();
+            $entity->setUserId($userId);
+            $entity->setCreatedAt($now);
+        }
+
+        $entity->setAiConsentVersion($version);
+        $entity->setUpdatedAt($now);
+
+        if ($entity->getId() === null) {
+            $this->mapper->insert($entity);
+        } else {
+            $this->mapper->update($entity);
+        }
+    }
+
+    // =========================================================================
     // Interview
     // =========================================================================
 

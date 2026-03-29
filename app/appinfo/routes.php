@@ -81,6 +81,8 @@ return [
         ['name' => 'telos#saveTelos',               'url' => '/api/profile/telos',              'verb' => 'POST'],
         ['name' => 'telos#updateTelos',             'url' => '/api/profile/telos',              'verb' => 'PUT'],
         ['name' => 'telos#getStatus',               'url' => '/api/profile/telos/status',       'verb' => 'GET'],
+        ['name' => 'telos#getConsentStatus',         'url' => '/api/profile/telos/consent',      'verb' => 'GET'],
+        ['name' => 'telos#saveConsent',              'url' => '/api/profile/telos/consent',      'verb' => 'POST'],
         ['name' => 'telos#getQuestions',             'url' => '/api/profile/telos/questions',    'verb' => 'GET'],
         ['name' => 'telos#processInterview',         'url' => '/api/profile/telos/interview',    'verb' => 'POST'],
         ['name' => 'telos#getCourseTelosAggregate', 'url' => '/api/courses/{courseId}/telos',   'verb' => 'GET'],
@@ -263,6 +265,12 @@ return [
         ['name' => 'rag_import#importFile',     'url' => '/api/courses/{courseId}/knowledge/import-file',  'verb' => 'POST'],
         ['name' => 'rag_import#listImported',   'url' => '/api/courses/{courseId}/knowledge',              'verb' => 'GET'],
         ['name' => 'rag_import#deleteImported', 'url' => '/api/courses/{courseId}/knowledge/{title}',      'verb' => 'DELETE'],
+
+        // Schwarmgedaechtnis (Student Contributions + Moderation)
+        ['name' => 'rag_import#contributeNote',   'url' => '/api/courses/{courseId}/knowledge/contribute',          'verb' => 'POST'],
+        ['name' => 'rag_import#myContributions',  'url' => '/api/courses/{courseId}/knowledge/my-contributions',    'verb' => 'GET'],
+        ['name' => 'rag_import#listPending',      'url' => '/api/courses/{courseId}/knowledge/pending',             'verb' => 'GET'],
+        ['name' => 'rag_import#moderate',         'url' => '/api/courses/{courseId}/knowledge/moderate/{chunkId}',  'verb' => 'POST'],
 
         // Hack Through Time — Zeitreise (Phase 48)
         ['name' => 'hackThroughTime#listEpochs',      'url' => '/api/zeitreise/epochs',                              'verb' => 'GET'],

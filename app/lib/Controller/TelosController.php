@@ -166,6 +166,49 @@ class TelosController extends Controller {
     }
 
     /**
+     * Get current AI consent version for the user.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function getConsentStatus(): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        return new DataResponse([
+            'ai_consent_version' => $this->telosService->getAiConsentVersion($this->userId),
+        ]);
+    }
+
+    /**
+     * Save AI consent version (user accepted the consent dialog).
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function saveConsent(?string $version = null): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        if ($version === null || trim($version) === '') {
+            return new DataResponse(['error' => 'Version is required'], Http::STATUS_BAD_REQUEST);
+        }
+
+        $version = trim($version);
+        if (strlen($version) > 20) {
+            return new DataResponse(['error' => 'Version too long'], Http::STATUS_BAD_REQUEST);
+        }
+
+        try {
+            $this->telosService->saveAiConsent($this->userId, $version);
+            return new DataResponse(['status' => 'ok']);
+        } catch (\Throwable $e) {
+            return new DataResponse(['error' => 'Could not save consent'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Get interview questions for the onboarding flow.
      *
      * @NoAdminRequired

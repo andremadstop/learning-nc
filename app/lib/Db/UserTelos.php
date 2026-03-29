@@ -24,6 +24,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setCreatedAt(int $ts)
  * @method int getUpdatedAt()
  * @method void setUpdatedAt(int $ts)
+ * @method string|null getAiConsentVersion()
+ * @method void setAiConsentVersion(?string $version)
  */
 class UserTelos extends Entity {
     protected string $userId = '';
@@ -34,6 +36,7 @@ class UserTelos extends Entity {
     protected string $visibility = 'private';
     protected int $onboardingCompleted = 0;
     protected int $createdAt = 0;
+    protected ?string $aiConsentVersion = null;
     protected int $updatedAt = 0;
 
     public function __construct() {
@@ -47,6 +50,7 @@ class UserTelos extends Entity {
         $this->addType('onboardingCompleted', 'integer');
         $this->addType('createdAt', 'integer');
         $this->addType('updatedAt', 'integer');
+        $this->addType('aiConsentVersion', 'string');
     }
 
     public function getOnboardingCompleted(): bool {
