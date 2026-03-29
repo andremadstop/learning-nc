@@ -332,6 +332,9 @@
           <span class="regenerate-hint">{{ t('learning', 'This will invalidate the current URL.') }}</span>
         </div>
       </template>
+
+      <hr class="section-divider" />
+      <PrivacyInfo />
     </div>
   </div>
 </template>
@@ -343,6 +346,7 @@ import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import PrivacyInfo from './PrivacyInfo.vue'
 import { novaAudio } from '../utils/nova-audio-manager.js'
 import {
   applyTelosToForm,
@@ -370,7 +374,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 
 export default {
   name: 'PersonalSettings',
-  components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard },
+  components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, PrivacyInfo },
   data() {
     return {
       loading: true,
