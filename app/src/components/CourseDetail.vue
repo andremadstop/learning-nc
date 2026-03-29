@@ -44,122 +44,30 @@
 					<button
 						:key="tab.id"
 						class="tab-button"
-						:class="{ active: currentTab === tab.id }"
+						:class="{ active: isTabActive(tab.id) }"
 						@click="selectTab(tab.id)">
 						{{ tab.label }}
 					</button>
 				</template>
 			</div>
 
-			<!-- Pools Tab -->
-			<div v-if="currentTab === 'pools'" class="pools-section">
-				<div class="section-header">
-					<h4>{{ t('learning', 'Course Pools') }}</h4>
-					<NcButton v-if="isInstructor" @click="openAddPoolModal">
-						{{ t('learning', '+ Add Pool') }}
-					</NcButton>
-				</div>
-
-				<NcNoteCard v-if="isInstructor" type="info" class="course-pool-help">
-					{{ t('learning', 'Students practice exactly the pools assigned here. Optional filters can limit a pool to one exam key, one chapter or explicit question IDs without changing the original pool. "Required + enforced" blocks optional pools until every filtered question in the required pool was answered at least once.') }}
-				</NcNoteCard>
-
-				<div v-if="coursePools.length > 0" class="pool-list">
-					<div v-for="pool in sortedPools"
-						:key="pool.id"
-						class="pool-item"
-						tabindex="0" role="button"
-						@click="$emit('openPool', pool.pool_id)"
-						@keydown.enter="$emit('openPool', pool.pool_id)"
-						@keydown.space.prevent="$emit('openPool', pool.pool_id)">
-						<span v-if="isInstructor" class="pool-sort-order">{{ (pool.sort_order || 0) + 1 }}.</span>
-						<div class="pool-info">
-							<span class="pool-name">{{ pool.pool_name }}</span>
-							<div class="pool-meta-row">
-								<span class="pool-questions">
-									{{ t('learning', '{n} questions', { n: pool.question_count || 0 }) }}
-								</span>
-								<span v-if="poolLanguageSummary(pool)" class="pool-language-summary">
-									{{ poolLanguageSummary(pool) }}
-								</span>
-							</div>
-						</div>
-						<div class="pool-badges">
-							<span v-if="pool.required" class="required-badge">
-								{{ t('learning', 'Required') }}
-							</span>
-							<span v-if="pool.required_enforced" class="required-badge required-enforced-badge">
-								{{ t('learning', 'Enforced') }}
-							</span>
-							<span v-for="summary in poolRuleSummary(pool)" :key="pool.id + '-' + summary" class="filter-badge">
-								{{ summary }}
-							</span>
-						</div>
-						<NcButton v-if="isInstructor"
-							type="tertiary"
-							size="small"
-							class="pool-rules-btn"
-							@click.stop="openPoolRulesModal(pool)">
-							{{ t('learning', 'Rules') }}
-						</NcButton>
-						<NcButton v-if="isInstructor"
-							type="tertiary-no-background"
-							class="remove-pool-btn"
-							:aria-label="t('learning', 'Remove pool')"
-							@click.stop="confirmRemovePool(pool)">
-							&times;
-						</NcButton>
-					</div>
-				</div>
-
-				<NcEmptyContent v-if="coursePools.length === 0"
-					:name="t('learning', 'No pools assigned')">
-					<template #description>
-						<span v-if="isInstructor">{{ t('learning', 'Add question pools to this course') }}</span>
-						<span v-else>{{ t('learning', 'No question pools are available in this course yet.') }}</span>
-					</template>
-				</NcEmptyContent>
-
-				<!-- Student progress per pool (student view) -->
-				<div v-if="studentProgress.length > 0" class="student-own-progress">
-					<div class="student-progress-header">
-						<h4>{{ t('learning', 'My Progress') }}</h4>
-						<div class="progress-mode-switch" role="group" :aria-label="t('learning', 'Progress mode')">
-							<button
-								class="progress-mode-btn"
-								:class="{ active: myProgressMode === 'mastery' }"
-								:aria-pressed="myProgressMode === 'mastery' ? 'true' : 'false'"
-								@click="myProgressMode = 'mastery'">
-								{{ t('learning', 'Mastery') }}
-							</button>
-							<button
-								class="progress-mode-btn"
-								:class="{ active: myProgressMode === 'answered' }"
-								:aria-pressed="myProgressMode === 'answered' ? 'true' : 'false'"
-								@click="myProgressMode = 'answered'">
-								{{ t('learning', 'Answered') }}
-							</button>
-						</div>
-					</div>
-					<p class="progress-mode-help">
-						{{ t('learning', 'Mastery = Box 5 cards. Answered = questions answered in completed sessions.') }}
-					</p>
-					<div class="progress-bars">
-						<div v-for="prog in studentProgress"
-							:key="prog.pool_id"
-							class="progress-row">
-							<span class="progress-pool-name">{{ prog.pool_name }}</span>
-							<div class="progress-bar-container">
-								<div class="progress-bar-fill"
-									:class="masteryClass(progressPercent(prog))"
-									:style="{ width: progressPercent(prog) + '%' }" />
-							</div>
-							<span class="progress-percent">{{ progressPercent(prog) }}%</span>
-							<span class="progress-meta">{{ progressMetaText(prog) }}</span>
-						</div>
-					</div>
-				</div>
-			</div>
+			<CourseTabLernraum
+				v-if="isLernraumTab(currentTab)"
+				:course-id="courseId"
+				:course="course"
+				:user-role="userRole"
+				:course-pools="coursePools"
+				:all-pools="allPools"
+				:active-tab="currentTab"
+				:content-language="contentLanguage"
+				@all-pools-loaded="allPools = $event"
+				@error="error = $event"
+				@knowledge-pending-count="knowledgePendingCount = $event"
+				@mode-activated="activeLearningMode = $event"
+				@openPool="$emit('openPool', $event)"
+				@pool-selected="selectedLearningPool = $event"
+				@refresh-course-detail="fetchCourseDetail"
+				@tab-change="selectTab" />
 
 			<!-- Members Tab (instructor only) -->
 			<div v-if="currentTab === 'members' && isInstructor" class="members-section">
@@ -447,84 +355,6 @@
 				<BuddyMatching :course-id="courseId" />
 			</div>
 
-			<div v-if="isStudentLearningTab" class="student-learning-section">
-				<div v-if="!selectedLearningPool" class="pools-section">
-					<div class="section-header">
-						<h4>{{ activeLearningModeLabel }}</h4>
-					</div>
-
-					<div v-if="coursePools.length > 0" class="pool-list">
-						<div v-for="pool in sortedPools"
-							:key="'learning-' + pool.pool_id"
-							class="pool-item"
-							:class="{ 'pool-item-loading': loadingLearningPoolId === pool.pool_id, 'pool-item-locked': pool.locked_for_student }"
-							tabindex="0"
-							role="button"
-							@click="selectLearningPool(pool)"
-							@keydown.enter="selectLearningPool(pool)"
-							@keydown.space.prevent="selectLearningPool(pool)">
-							<div class="pool-info">
-								<span class="pool-name">{{ pool.pool_name }}</span>
-								<div class="pool-meta-row">
-									<span class="pool-questions">
-										{{ t('learning', '{n} questions', { n: getLearningPoolQuestionCount(pool) }) }}
-									</span>
-									<span v-if="poolLanguageSummary(pool)" class="pool-language-summary">
-										{{ poolLanguageSummary(pool) }}
-									</span>
-								</div>
-							</div>
-							<div class="pool-badges">
-								<span v-if="pool.required" class="required-badge">
-									{{ t('learning', 'Required') }}
-								</span>
-								<span v-if="pool.required_enforced" class="required-badge required-enforced-badge">
-									{{ t('learning', 'Enforced') }}
-								</span>
-								<span v-for="summary in poolRuleSummary(pool)" :key="'student-' + pool.pool_id + '-' + summary" class="filter-badge">
-									{{ summary }}
-								</span>
-							</div>
-						</div>
-					</div>
-
-					<NcNoteCard v-if="currentRequiredBlockers.length > 0" type="warning" class="required-lock-note">
-						{{ t('learning', 'Optional pools are locked until these required pools are completed once: {names}', { names: currentRequiredBlockers.join(', ') }) }}
-					</NcNoteCard>
-
-					<NcEmptyContent v-else
-						:name="t('learning', 'No pools assigned')">
-						<template #description>
-							{{ t('learning', 'No question pools are available in this course yet.') }}
-						</template>
-					</NcEmptyContent>
-				</div>
-
-					<TrainingMode
-						v-else-if="activeLearningMode === 'training'"
-						:poolId="selectedLearningPool.pool_id"
-						:courseId="courseId"
-						:totalQuestions="selectedLearningPoolQuestionCount"
-						:allowWfMode="selectedLearningPoolAllowsWfMode"
-						:contentLanguage="contentLanguage"
-						@back="resetLearningPoolSelection" />
-
-					<LeitnerMode
-						v-else-if="activeLearningMode === 'leitner'"
-						:poolId="selectedLearningPool.pool_id"
-						:courseId="courseId"
-						:contentLanguage="contentLanguage"
-						@back="resetLearningPoolSelection" />
-
-					<ExamMode
-						v-else-if="activeLearningMode === 'exam'"
-						:poolId="selectedLearningPool.pool_id"
-						:courseId="courseId"
-						:totalQuestions="selectedLearningPoolQuestionCount"
-						:contentLanguage="contentLanguage"
-						@back="resetLearningPoolSelection" />
-			</div>
-
 			<!-- My Progress Tab (student self-view) -->
 			<div v-if="currentTab === 'my-progress' && !isInstructor" class="my-progress-section">
 				<StudentDetail
@@ -731,56 +561,6 @@
 					@back="currentTab = 'training'" />
 			</div>
 		<!-- Curriculum Scope Tab (instructor only) -->
-		<div v-if="currentTab === 'curriculum' && isInstructor" class="curriculum-section">
-			<div class="curriculum-header">
-				<h3>{{ t('learning', 'Themensteuerung') }}</h3>
-				<p class="curriculum-desc">{{ t('learning', 'Lege fest, welche Kapitel aktuell im Kurs aktiv sind. Bei aktivem Filter werden Kurs-Duelle automatisch auf diese Kapitel eingeschränkt.') }}</p>
-			</div>
-
-			<div v-if="loadingCurriculum" class="curriculum-loading">
-				<NcLoadingIcon :size="32" />
-			</div>
-			<template v-else>
-				<div class="curriculum-toggle">
-					<NcCheckboxRadioSwitch
-						:checked="curriculumEnabled"
-						@update:checked="curriculumEnabled = $event">
-						{{ t('learning', 'Kapitel-Filter aktiv') }}
-					</NcCheckboxRadioSwitch>
-				</div>
-
-				<div v-if="curriculumEnabled" class="curriculum-chapters">
-					<div v-if="curriculumAvailableChapters.length === 0" class="curriculum-empty">
-						{{ t('learning', 'Keine Kapitelmetadaten gefunden. Importiere Fragen mit chapter_key-Werten, um diesen Filter zu nutzen.') }}
-					</div>
-					<template v-else>
-						<div class="curriculum-select-actions">
-							<NcButton size="small" @click="selectAllChapters">{{ t('learning', 'Alle') }}</NcButton>
-							<NcButton size="small" @click="selectedChapterKeys = []">{{ t('learning', 'Keine') }}</NcButton>
-						</div>
-						<div
-							v-for="chapter in curriculumAvailableChapters"
-							:key="chapter.chapter_key"
-							class="curriculum-chapter-row">
-							<NcCheckboxRadioSwitch
-								:checked="selectedChapterKeys.includes(chapter.chapter_key)"
-								@update:checked="toggleChapter(chapter.chapter_key, $event)">
-								<span class="chapter-title">{{ chapter.chapter_title || chapter.chapter_key }}</span>
-								<span v-if="chapter.chapter_order" class="chapter-order">{{ t('learning', 'Kap. {n}', { n: chapter.chapter_order }) }}</span>
-							</NcCheckboxRadioSwitch>
-						</div>
-					</template>
-				</div>
-
-				<div class="curriculum-actions">
-					<NcButton type="primary" :disabled="savingCurriculum" @click="saveCurriculumScope">
-						{{ savingCurriculum ? t('learning', 'Speichere…') : t('learning', 'Speichern') }}
-					</NcButton>
-					<span v-if="curriculumSaved" class="curriculum-saved-hint">✓ {{ t('learning', 'Gespeichert') }}</span>
-				</div>
-			</template>
-		</div>
-
 	<!-- Heatmap Tab (instructor only) -->
 	<div v-if="currentTab === 'heatmap' && isInstructor" class="tab-content heatmap-section">
 		<div v-if="loadingHeatmap" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
@@ -849,248 +629,27 @@
 		</table>
 	</div>
 
-	<!-- Announcements Tab (instructor only) -->
-	<div v-if="currentTab === 'announcements' && isInstructor" class="tab-content announcements-section">
-		<div class="announcement-form">
-			<h3>{{ t('learning', 'New announcement') }}</h3>
-			<input v-model="newAnnouncementTitle" type="text" :placeholder="t('learning', 'Title')" class="nc-input announcement-input" />
-			<textarea v-model="newAnnouncementBody" :placeholder="t('learning', 'Message...')" class="nc-textarea" rows="3" />
-			<NcButton type="primary" :disabled="savingAnnouncement || !newAnnouncementTitle.trim()" @click="createAnnouncement">
-				{{ t('learning', 'Publish') }}
-			</NcButton>
-		</div>
-		<div class="announcements-list">
-			<div v-if="announcements.length === 0" class="empty-hint">{{ t('learning', 'No announcements yet.') }}</div>
-			<div v-for="a in announcements" :key="a.id" class="announcement-item">
-				<div class="announcement-header">
-					<strong>{{ a.title }}</strong>
-					<NcButton type="tertiary" @click="deleteAnnouncement(a.id)">{{ t('learning', 'Delete') }}</NcButton>
-				</div>
-				<p class="announcement-body">{{ a.body }}</p>
-				<small class="announcement-date">{{ formatDate(a.created_at) }}</small>
-			</div>
-		</div>
-	</div>
+	<CourseTabKommunikation
+		v-if="isKommunikationTab(currentTab)"
+		:course-id="courseId"
+		:course="course"
+		:user-role="userRole"
+		:active-tab="currentTab"
+		@tab-change="selectTab"
+		@error="error = $event"
+		@refresh-course-detail="fetchCourseDetail" />
 
-	<!-- Exam Slot Tab (instructor only) -->
-	<div v-if="currentTab === 'exam-slot' && isInstructor" class="tab-content exam-slot-section">
-		<div v-if="activeExamSlot" class="active-slot-banner">
-			<NcNoteCard type="warning">
-				{{ t('learning', 'Exam is running!') }} {{ t('learning', 'Ends at:') }} {{ formatTimestamp(activeExamSlot.ends_at) }}
-			</NcNoteCard>
-			<NcButton type="error" @click="closeExamSlot">{{ t('learning', 'Close exam') }}</NcButton>
-		</div>
-		<div v-else class="start-slot-form">
-			<h3>{{ t('learning', 'Start exam slot') }}</h3>
-			<div class="form-row-cd">
-				<label>{{ t('learning', 'Duration (minutes)') }}</label>
-				<input v-model.number="examSlotDuration" type="number" min="10" max="300" class="nc-input" />
-			</div>
-			<div class="form-row-cd">
-				<label>{{ t('learning', 'Question scope') }}</label>
-				<select v-model="examSlotScope" class="nc-select-cd">
-					<option value="all">{{ t('learning', 'All course questions') }}</option>
-					<option value="curriculum">{{ t('learning', 'Active curriculum only') }}</option>
-				</select>
-			</div>
-			<NcButton type="primary" :disabled="startingExamSlot" @click="startExamSlot">
-				{{ t('learning', 'Start exam') }}
-			</NcButton>
-		</div>
-	</div>
-
-	<!-- Requests Tab (instructor only) -->
-	<div v-if="currentTab === 'requests' && isInstructor" class="tab-content requests-section">
-		<div v-if="loadingRequests" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
-		<div v-else-if="courseTickets.length === 0" class="empty-hint">
-			{{ t('learning', 'No open requests for this course.') }}
-		</div>
-		<div v-else class="tickets-list-cd">
-			<div v-for="ticket in courseTickets" :key="ticket.id" class="ticket-item-cd">
-				<div class="ticket-header-cd">
-					<span class="ticket-subject-cd">{{ ticket.subject }}</span>
-					<span class="ticket-status-cd" :class="'status-' + ticket.status">{{ ticket.status }}</span>
-				</div>
-				<p class="ticket-message-cd">{{ ticket.message }}</p>
-				<div v-if="ticket.status === 'open'" class="ticket-reply-cd">
-					<textarea v-model="ticketReplies[ticket.id]" :placeholder="t('learning', 'Your answer...')" class="nc-textarea" rows="3" />
-					<NcButton type="primary" @click="answerTicket(ticket.id)">{{ t('learning', 'Send answer') }}</NcButton>
-				</div>
-				<div v-if="ticket.answer_text" class="ticket-answer-cd">
-					<strong>{{ t('learning', 'Answer:') }}</strong> {{ ticket.answer_text }}
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Mode Config Tab (instructor only) -->
-	<div v-if="currentTab === 'mode-config' && isInstructor" class="tab-content mode-config-section">
-		<h3>{{ t('learning', 'Kursregeln — Lernmodi') }}</h3>
-		<p class="mode-config-hint">{{ t('learning', 'Deaktivierte Modi werden Studierenden nicht angezeigt. Training ist immer aktiv.') }}</p>
-		<div class="mode-toggles">
-			<div v-for="mode in modeConfigKeys" :key="mode.key" class="mode-toggle-row">
-				<label class="mode-toggle-label">
-					<input type="checkbox" :checked="modeConfigLocal[mode.key] !== false" @change="toggleMode(mode.key, $event.target.checked)" :disabled="mode.key === 'training'" />
-					{{ mode.label }}
-				</label>
-			</div>
-		</div>
-		<NcButton type="primary" :disabled="savingModeConfig" @click="saveModeConfig">
-			{{ savingModeConfig ? t('learning', 'Saving...') : t('learning', 'Save') }}
-		</NcButton>
-		<NcNoteCard v-if="modeConfigSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
-
-		<div class="tool-config-section">
-			<h3>{{ t('learning', 'Kursregeln — Werkzeuge') }}</h3>
-			<p class="mode-config-hint">{{ t('learning', 'Hier kannst du die acht Simulatoren pro Kurs einschränken. Global deaktivierte Werkzeuge bleiben gesperrt.') }}</p>
-			<div v-if="loadingToolConfig" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
-			<div v-else class="mode-toggles">
-				<div v-for="tool in toolConfigKeys" :key="tool.key" class="mode-toggle-row">
-					<label class="mode-toggle-label">
-						<input
-							type="checkbox"
-							:checked="toolConfigLocal[tool.key] !== false"
-							:disabled="!isAdminToolEnabled(tool.key)"
-							@change="toggleCourseTool(tool.key, $event.target.checked)" />
-						{{ tool.label }}
-					</label>
-					<small v-if="!isAdminToolEnabled(tool.key)" class="mode-config-note">{{ t('learning', 'Global deaktiviert') }}</small>
-				</div>
-			</div>
-			<NcButton type="primary" :disabled="savingToolConfig || loadingToolConfig" @click="saveToolConfig">
-				{{ savingToolConfig ? t('learning', 'Saving...') : t('learning', 'Save tools') }}
-			</NcButton>
-			<NcNoteCard v-if="toolConfigSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
-		</div>
-
-		<div class="sprint-config tool-config-section">
-			<h3>{{ t('learning', 'Leitner Sprint-Modus') }}</h3>
-			<p class="mode-config-hint">{{ t('learning', 'Sprint-Intervalle verkürzen die Wiederholungszeiten (4h/12h/1d/2d statt 1d/3d/7d/14d). Ideal für Intensivkurse.') }}</p>
-			<label class="mode-toggle-label">
-				<input type="checkbox" v-model="leitnerSprint" @change="saveLeitnerSprint" />
-				{{ t('learning', 'Sprint-Modus aktivieren') }}
-			</label>
-		</div>
-
-		<div class="talk-config tool-config-section">
-			<h3>{{ t('learning', 'Talk-Raum') }}</h3>
-			<p class="mode-config-hint">{{ t('learning', 'Token des NC Talk-Raums eintragen (z.B. abc123xyz aus der Talk-URL).') }}</p>
-			<div class="talk-token-row">
-				<input type="text" v-model="talkRoomToken" :placeholder="t('learning', 'Talk-Token')" maxlength="255" class="talk-token-input" />
-				<NcButton type="primary" @click="saveTalkRoomToken" :disabled="savingTalkToken">
-					{{ savingTalkToken ? t('learning', 'Saving...') : t('learning', 'Speichern') }}
-				</NcButton>
-			</div>
-			<NcNoteCard v-if="talkTokenSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
-		</div>
-	</div>
-
-	<div v-if="currentTab === 'materials'" class="tab-content materials-section">
-		<CourseMaterials :course-id="courseId" :is-instructor="isInstructor" />
-	</div>
-
-	<!-- Knowledge Import Tab (instructor only) -->
-	<div v-if="currentTab === 'knowledge' && isInstructor" class="tab-content knowledge-section">
-		<CourseKnowledgeImport :course-id="courseId" :is-instructor="isInstructor" />
-		<KnowledgeModeration :course-id="courseId" @pending-count="knowledgePendingCount = $event" />
-	</div>
-
-	<!-- Schwarm Tab (students) -->
-	<div v-if="currentTab === 'schwarm' && !isInstructor" class="tab-content">
-		<StudentKnowledgeContribute :course-id="courseId" />
-	</div>
-
-	<!-- Feed Tab (both roles) -->
-	<div v-if="currentTab === 'feed'" class="tab-content">
-		<CourseFeed :course-id="courseId" />
-	</div>
-
-	<!-- Buddies Tab (students) -->
-	<div v-if="currentTab === 'buddies' && !isInstructor" class="tab-content">
-		<BuddyMatching :course-id="courseId" />
-	</div>
+	<CourseTabVerwaltung
+		v-if="isVerwaltungTab(currentTab) && isInstructor"
+		:course-id="courseId"
+		:course="course"
+		:user-role="userRole"
+		:active-tab="currentTab"
+		@tab-change="selectTab"
+		@error="error = $event"
+		@refresh-course-detail="fetchCourseDetail" />
 
 		</template>
-
-		<!-- Add Pool Modal -->
-		<NcModal
-			v-if="showAddPoolModal"
-			:show="showAddPoolModal"
-			@update:show="onAddPoolModalShowChanged"
-			@close="closeAddPoolModal"
-			@closing="closeAddPoolModal">
-			<div class="modal-content">
-				<h3>{{ t('learning', 'Add Pool to Course') }}</h3>
-
-				<div v-if="poolsLoading" class="loading-container">
-					<NcLoadingIcon :size="44" />
-					<p>{{ t('learning', 'Loading available pools...') }}</p>
-				</div>
-
-				<template v-else>
-					<NcNoteCard v-if="poolModalError" type="error" class="modal-error">
-						{{ poolModalError }}
-					</NcNoteCard>
-
-					<div v-if="availablePools.length > 0" class="pool-select-list">
-						<div v-for="pool in availablePools"
-							:key="pool.id"
-							class="pool-select-item"
-							:class="{ disabled: isPoolAlreadyAdded(pool.id), selected: selectedPoolIds.includes(pool.id) }"
-							tabindex="0" role="checkbox"
-							:aria-checked="selectedPoolIds.includes(pool.id)"
-							@click="togglePoolSelection(pool)"
-							@keydown.enter="togglePoolSelection(pool)"
-							@keydown.space.prevent="togglePoolSelection(pool)">
-							<div class="pool-select-info">
-								<span class="pool-select-name">{{ pool.name }}</span>
-								<span v-if="pool.description" class="pool-select-desc">{{ pool.description }}</span>
-							</div>
-							<span v-if="isPoolAlreadyAdded(pool.id)" class="pool-already-added">
-								{{ t('learning', 'Already added') }}
-							</span>
-							<span v-else-if="selectedPoolIds.includes(pool.id)" class="pool-check">✓</span>
-						</div>
-						<div v-if="selectedPoolIds.length > 0" class="pool-add-confirm">
-							<NcButton type="primary"
-								:disabled="savingPool"
-								@click="addSelectedPools">
-								{{ savingPool
-									? t('learning', 'Adding...')
-									: t('learning', 'Add {n} pool(s)', { n: selectedPoolIds.length }) }}
-							</NcButton>
-						</div>
-					</div>
-
-					<NcEmptyContent v-else
-						:name="t('learning', 'No pools available')">
-						<template #description>
-							{{ t('learning', 'Create question pools first before adding them to a course.') }}
-						</template>
-					</NcEmptyContent>
-				</template>
-			</div>
-		</NcModal>
-
-		<!-- Remove pool confirmation modal -->
-			<NcModal v-if="showRemovePoolModal" @close="showRemovePoolModal = false" @closing="showRemovePoolModal = false" size="small">
-			<div class="modal-content">
-				<h3>{{ t('learning', 'Remove Pool') }}</h3>
-				<p>{{ t('learning', 'Remove "{name}" from this course? Students will lose access to these questions.', { name: removingPool ? removingPool.pool_name : '' }) }}</p>
-				<div class="modal-actions">
-					<NcButton type="tertiary"
-						:disabled="savingPool"
-						@click="showRemovePoolModal = false">
-						{{ t('learning', 'Cancel') }}
-					</NcButton>
-					<NcButton type="error"
-						:disabled="savingPool"
-						@click="removePool">
-						{{ savingPool ? t('learning', 'Removing...') : t('learning', 'Remove') }}
-					</NcButton>
-				</div>
-			</div>
-		</NcModal>
 
 		<!-- Remove member confirmation modal -->
 		<NcModal v-if="showRemoveMemberModal" @close="showRemoveMemberModal = false" @closing="showRemoveMemberModal = false" size="small">
@@ -1111,72 +670,6 @@
 				</div>
 			</div>
 			</NcModal>
-
-			<NcModal v-if="showPoolRulesModal" @close="closePoolRulesModal" @closing="closePoolRulesModal" size="normal">
-				<div class="modal-content">
-					<h3>{{ t('learning', 'Pool Rules') }}</h3>
-					<p v-if="editingPoolRules" class="rules-pool-name">{{ editingPoolRules.pool_name }}</p>
-
-					<NcNoteCard v-if="poolRulesError" type="error" class="modal-error">
-						{{ poolRulesError }}
-					</NcNoteCard>
-
-					<div class="rules-field">
-						<label class="rules-checkbox">
-							<input v-model="poolRulesForm.required" type="checkbox">
-							<span>{{ t('learning', 'Show this pool as required') }}</span>
-						</label>
-					</div>
-
-					<div class="rules-field">
-						<label class="rules-checkbox">
-							<input v-model="poolRulesForm.requiredEnforced" type="checkbox" :disabled="!poolRulesForm.required">
-							<span>{{ t('learning', 'Block optional pools until every filtered question here was answered once') }}</span>
-						</label>
-					</div>
-
-					<div class="rules-field">
-						<label for="pool-rule-exam">{{ t('learning', 'Exam key filter') }}</label>
-						<select id="pool-rule-exam" v-model="poolRulesForm.filterExamKey" class="nc-input">
-							<option value="">{{ t('learning', 'No exam filter') }}</option>
-							<option v-for="examKey in currentPoolExamOptions" :key="examKey" :value="examKey">
-								{{ examKey }}
-							</option>
-						</select>
-					</div>
-
-					<div class="rules-field">
-						<label for="pool-rule-chapter">{{ t('learning', 'Chapter filter') }}</label>
-						<select id="pool-rule-chapter" v-model="poolRulesForm.filterChapterKey" class="nc-input">
-							<option value="">{{ t('learning', 'No chapter filter') }}</option>
-							<option v-for="chapter in currentPoolChapterOptions" :key="chapter.key" :value="chapter.key">
-								{{ chapter.order ? chapter.order + ' - ' + chapter.title : chapter.title }}
-							</option>
-						</select>
-					</div>
-
-					<div class="rules-field">
-						<label for="pool-rule-question-ids">{{ t('learning', 'Specific question IDs') }}</label>
-						<textarea id="pool-rule-question-ids"
-							v-model="poolRulesForm.filterQuestionIdsText"
-							rows="3"
-							class="nc-input"
-							:placeholder="t('learning', 'Optional comma-separated question IDs, e.g. 101, 102, 205')"></textarea>
-						<p class="rules-help">
-							{{ t('learning', 'Leave empty to use the full pool or the selected exam/chapter subset.') }}
-						</p>
-					</div>
-
-					<div class="modal-actions">
-						<NcButton type="tertiary" :disabled="savingPoolRules" @click="closePoolRulesModal">
-							{{ t('learning', 'Cancel') }}
-						</NcButton>
-						<NcButton type="primary" :disabled="savingPoolRules" @click="savePoolRules">
-							{{ savingPoolRules ? t('learning', 'Saving...') : t('learning', 'Save Rules') }}
-						</NcButton>
-					</div>
-				</div>
-			</NcModal>
 		</div>
 </template>
 
@@ -1185,64 +678,49 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { getCurrentUser } from '@nextcloud/auth'
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
 import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
 import NcModal from '@nextcloud/vue/dist/Components/NcModal.js'
 import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
 import { formatXp, formatRelativeDateString } from '../format.js'
-import ExamMode from './ExamMode.vue'
 import LeagueTab from './LeagueTab.vue'
-import LeitnerMode from './LeitnerMode.vue'
 import StudentDetail from './StudentDetail.vue'
 import DuelMode from './DuelMode.vue'
 import GameshowMode from './GameshowMode.vue'
-import TrainingMode from './TrainingMode.vue'
 import ArenaSelector from './ArenaSelector.vue'
 import OldschoolSelector from './OldschoolSelector.vue'
 import WissensturmMode from './WissensturmMode.vue'
 import LernwuerfelMode from './LernwuerfelMode.vue'
 import AbenteuerMode from './AbenteuerMode.vue'
+import CourseTabLernraum from './CourseTabLernraum.vue'
+import CourseTabKommunikation from './CourseTabKommunikation.vue'
+import CourseTabVerwaltung from './CourseTabVerwaltung.vue'
 import CourseSummary from './CourseSummary.vue'
-import CourseMaterials from './CourseMaterials.vue'
-import CourseKnowledgeImport from './CourseKnowledgeImport.vue'
-import StudentKnowledgeContribute from './StudentKnowledgeContribute.vue'
-import KnowledgeModeration from './KnowledgeModeration.vue'
-import CourseFeed from './CourseFeed.vue'
-import BuddyMatching from './BuddyMatching.vue'
-import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 
 export default {
 	name: 'CourseDetail',
 
 	components: {
 		NcButton,
-		NcCheckboxRadioSwitch,
 		NcEmptyContent,
 		NcLoadingIcon,
 		NcModal,
 		NcTextField,
 		NcNoteCard,
-		ExamMode,
 		LeagueTab,
-		LeitnerMode,
 		StudentDetail,
 		DuelMode,
 		GameshowMode,
-		TrainingMode,
 		ArenaSelector,
 		OldschoolSelector,
 		WissensturmMode,
 		LernwuerfelMode,
 		AbenteuerMode,
+		CourseTabLernraum,
+		CourseTabKommunikation,
+		CourseTabVerwaltung,
 		CourseSummary,
-		CourseMaterials,
-		CourseKnowledgeImport,
-		StudentKnowledgeContribute,
-		KnowledgeModeration,
-		CourseFeed,
-		BuddyMatching,
 	},
 
 	props: {
@@ -1278,36 +756,7 @@ export default {
 			knowledgePendingCount: 0,
 			selectedLearningPool: null,
 			activeLearningMode: null,
-			poolQuestionCounts: {},
-			loadingLearningPoolId: null,
-
-			// Pool modal
-			showAddPoolModal: false,
-			poolsLoading: false,
-			poolModalError: '',
 			allPools: [],
-			savingPool: false,
-			showRemovePoolModal: false,
-			removingPool: null,
-			showPoolRulesModal: false,
-			editingPoolRules: null,
-			poolRulesError: '',
-			savingPoolRules: false,
-			poolRulesForm: {
-				required: true,
-				requiredEnforced: false,
-				filterExamKey: '',
-				filterChapterKey: '',
-				filterQuestionIdsText: '',
-			},
-
-			// Curriculum scope
-			loadingCurriculum: false,
-			savingCurriculum: false,
-			curriculumSaved: false,
-			curriculumEnabled: false,
-			selectedChapterKeys: [],
-			curriculumAvailableChapters: [],
 
 			// Members
 			newMemberUsername: '',
@@ -1316,9 +765,6 @@ export default {
 			savingMember: null,
 			showRemoveMemberModal: false,
 			removingMember: null,
-
-			selectedPoolToAdd: null,
-			selectedPoolIds: [],
 
 			// Progress
 			progressLoading: false,
@@ -1374,38 +820,6 @@ export default {
 			loadingWeakQuestions: false,
 			weakQuestions: [],
 
-			// Announcements
-			announcements: [],
-			newAnnouncementTitle: '',
-			newAnnouncementBody: '',
-			savingAnnouncement: false,
-
-			// Exam slot
-			activeExamSlot: null,
-			examSlotDuration: 90,
-			examSlotScope: 'all',
-			startingExamSlot: false,
-
-			// Course tickets
-			loadingRequests: false,
-			courseTickets: [],
-			ticketReplies: {},
-			// Mode Config
-			modeConfigLocal: {},
-			savingModeConfig: false,
-			modeConfigSaved: false,
-			// Leitner Sprint
-			leitnerSprint: false,
-			// Talk-Raum
-			talkRoomToken: '',
-			savingTalkToken: false,
-			talkTokenSaved: false,
-			adminEnabledTools: [...ALL_TOOL_IDS],
-			toolConfigLocal: {},
-			loadingToolConfig: false,
-			savingToolConfig: false,
-			toolConfigSaved: false,
-
 			// Arena sub-mode
 			arenaSubMode: null, // 'duel' | 'sprint' | 'elimination' | null
 
@@ -1432,34 +846,31 @@ export default {
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentTab)
 		},
-		modeConfigKeys() {
-			return [
-				{ key: 'training', label: t('learning', 'Training (immer aktiv)') },
-				{ key: 'leitner', label: t('learning', 'Leitner') },
-				{ key: 'swipe', label: t('learning', 'Wahr/Falsch im Training') },
-				{ key: 'exam', label: t('learning', 'Prüfung') },
-				{ key: 'duel', label: t('learning', 'Duell') },
-				{ key: 'gameshow', label: t('learning', 'Gameshow') },
-				{ key: 'league', label: t('learning', 'Liga') },
-				{ key: 'oldschool', label: t('learning', 'Oldschool') },
-				{ key: 'abenteuer', label: t('learning', 'Abenteuer') },
-				{ key: 'course_summary', label: t('learning', 'Abschluss-Tab') },
-			]
+		kommunikationLeafTabs() {
+			if (this.isInstructor) {
+				return ['announcements', 'feed', 'requests']
+			}
+			return ['feed', 'buddies', 'schwarm']
 		},
-		toolConfigKeys() {
-			return TOOL_CATALOG.map((tool) => ({
-				key: tool.id,
-				label: t('learning', tool.labelKey),
-			}))
+		verwaltungLeafTabs() {
+			return ['mode-config', 'exam-slot']
+		},
+		lernraumLeafTabs() {
+			if (this.isInstructor) {
+				return ['pools', 'curriculum', 'materials', 'knowledge']
+			}
+			const mc = this.course?.mode_config || {}
+			const enabled = (key) => mc[key] !== false
+			const tabs = ['training']
+			if (enabled('leitner')) tabs.push('leitner')
+			if (enabled('exam')) tabs.push('exam')
+			if (this.course?.material_folder) tabs.push('materials')
+			return tabs
 		},
 		visibleTabs() {
 			if (this.isInstructor) {
 				return [
-					// Lernraum
-					{ id: 'pools', label: t('learning', 'Pools'), group: 'Lernraum' },
-					{ id: 'curriculum', label: t('learning', 'Themen'), group: 'Lernraum' },
-					{ id: 'materials', label: t('learning', 'Materialien'), group: 'Lernraum' },
-					{ id: 'knowledge', label: t('learning', 'Wissen') + (this.knowledgePendingCount > 0 ? ' (' + this.knowledgePendingCount + ')' : ''), group: 'Lernraum' },
+					{ id: 'lernraum', label: t('learning', 'Lernraum'), group: 'Lernraum' },
 					// Teilnehmer
 					{ id: 'members', label: t('learning', 'Members'), group: 'Teilnehmer' },
 					{ id: 'progress', label: t('learning', 'Progress'), group: 'Teilnehmer' },
@@ -1473,74 +884,29 @@ export default {
 					{ id: 'arena', label: t('learning', 'Arena'), group: 'Wettbewerb' },
 					{ id: 'abenteuer', label: t('learning', 'Abenteuer'), group: 'Wettbewerb' },
 					// Kommunikation
-					{ id: 'announcements', label: t('learning', 'Ankündigungen'), group: 'Kommunikation' },
-					{ id: 'feed', label: t('learning', 'Feed'), group: 'Kommunikation' },
-					{ id: 'requests', label: t('learning', 'Anfragen'), group: 'Kommunikation' },
+					{ id: 'kommunikation', label: t('learning', 'Kommunikation'), group: 'Kommunikation' },
 					// Verwaltung
-					{ id: 'mode-config', label: t('learning', 'Kursregeln'), group: 'Verwaltung' },
-					{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot'), group: 'Verwaltung' },
+					{ id: 'verwaltung', label: t('learning', 'Verwaltung'), group: 'Verwaltung' },
 				]
 			}
 			const mc = this.course?.mode_config || {}
 			const enabled = (key) => mc[key] !== false
 			const tabs = [
-				{ id: 'training', label: t('learning', 'Training') },
+				{ id: 'lernraum', label: t('learning', 'Lernraum') },
 			]
-			if (enabled('leitner')) tabs.push({ id: 'leitner', label: t('learning', 'Leitner') })
-			if (enabled('exam')) tabs.push({ id: 'exam', label: t('learning', 'Exam') })
 			tabs.push({ id: 'my-progress', label: t('learning', 'Mein Fortschritt') })
 			if (this.isCourseSummaryReleased) tabs.push({ id: 'summary', label: t('learning', 'Abschluss') })
-			tabs.push({ id: 'feed', label: t('learning', 'Feed') })
-			tabs.push({ id: 'buddies', label: t('learning', 'Lernpartner') })
+			tabs.push({ id: 'kommunikation', label: t('learning', 'Kommunikation') })
 			tabs.push({ id: 'leaderboard', label: t('learning', 'Leaderboard') })
 			if (enabled('league')) tabs.push({ id: 'league', label: t('learning', 'Liga') })
 			if (this.hasEnabledArenaModes) tabs.push({ id: 'arena', label: t('learning', 'Arena') })
 			if (enabled('abenteuer')) tabs.push({ id: 'abenteuer', label: t('learning', 'Abenteuer') })
-			if (this.course?.material_folder) tabs.push({ id: 'materials', label: t('learning', 'Materialien') })
-			tabs.push({ id: 'schwarm', label: t('learning', 'Schwarm') })
 			return tabs
 		},
 		hasEnabledArenaModes() {
 			const mc = this.course?.mode_config || {}
 			const enabled = (key) => mc[key] !== false
 			return enabled('duel') || enabled('gameshow') || enabled('oldschool')
-		},
-		activeLearningModeLabel() {
-			const labels = {
-				training: t('learning', 'Training'),
-				leitner: t('learning', 'Leitner'),
-				swipe: t('learning', 'Wahr/Falsch'),
-				exam: t('learning', 'Exam'),
-			}
-			return labels[this.activeLearningMode] || t('learning', 'Choose a learning mode')
-		},
-		selectedLearningPoolQuestionCount() {
-			if (!this.selectedLearningPool) {
-				return 0
-			}
-			return this.poolQuestionCounts[this.selectedLearningPool.pool_id]
-				?? this.selectedLearningPool.question_count
-				?? 0
-		},
-		selectedLearningPoolAllowsWfMode() {
-			return this.course?.mode_config?.swipe !== false
-		},
-		currentRequiredBlockers() {
-			return this.sortedPools
-				.filter(pool => pool.required_enforced && !pool.required_completed)
-				.map(pool => pool.pool_name)
-		},
-		currentPoolExamOptions() {
-			return this.editingPoolRules?.available_filters?.exam_keys || []
-		},
-		currentPoolChapterOptions() {
-			return this.editingPoolRules?.available_filters?.chapters || []
-		},
-		sortedPools() {
-			return [...this.coursePools].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-		},
-		availablePools() {
-			return this.allPools
 		},
 		sortedProgressData() {
 			return this.progressData
@@ -1580,8 +946,12 @@ export default {
 
 	watch: {
 		visibleTabs(tabs) {
-			if (!tabs.find(t => t.id === this.currentTab)) {
-				this.currentTab = this.isInstructor ? 'pools' : 'training'
+			const isVisibleLeaf = tabs.find((tab) => tab.id === this.currentTab)
+			const isVisibleLernraumLeaf = tabs.find((tab) => tab.id === 'lernraum') && this.isLernraumTab(this.currentTab)
+			const isVisibleKommunikationLeaf = tabs.find((tab) => tab.id === 'kommunikation') && this.isKommunikationTab(this.currentTab)
+			const isVisibleVerwaltungLeaf = tabs.find((tab) => tab.id === 'verwaltung') && this.isVerwaltungTab(this.currentTab)
+			if (!isVisibleLeaf && !isVisibleLernraumLeaf && !isVisibleKommunikationLeaf && !isVisibleVerwaltungLeaf) {
+				this.currentTab = this.defaultLernraumTab()
 			}
 		},
 		courseId: {
@@ -1611,28 +981,11 @@ export default {
 			if (tab === 'leaderboard') {
 				this.fetchLeaderboard()
 			}
-			if (tab === 'curriculum' && this.isInstructor) {
-				this.fetchCurriculumScope()
-			}
 			if (tab === 'heatmap' && this.isInstructor) {
 				this.fetchHeatmap()
 			}
 			if (tab === 'weak-questions' && this.isInstructor) {
 				this.fetchWeakQuestions()
-			}
-			if (tab === 'announcements' && this.isInstructor) {
-				this.fetchAnnouncements()
-			}
-			if (tab === 'exam-slot' && this.isInstructor) {
-				this.fetchActiveExamSlot()
-			}
-			if (tab === 'requests' && this.isInstructor) {
-				this.fetchCourseTickets()
-			}
-			if (tab === 'mode-config' && this.isInstructor) {
-				this.modeConfigLocal = this.normalizeModeConfig(this.course?.mode_config || {})
-				this.modeConfigSaved = false
-				this.loadToolSettings()
 			}
 			this.emitVirtuProfContext()
 			this.emitLearningGuide()
@@ -1655,6 +1008,42 @@ export default {
 	},
 
 		methods: {
+			defaultLernraumTab() {
+				return this.lernraumLeafTabs[0] || (this.isInstructor ? 'pools' : 'training')
+			},
+			isLernraumTab(tabId) {
+				return this.lernraumLeafTabs.includes(tabId)
+			},
+			isKommunikationTab(tabId) {
+				return this.kommunikationLeafTabs.includes(tabId)
+			},
+			isVerwaltungTab(tabId) {
+				return this.verwaltungLeafTabs.includes(tabId)
+			},
+			isTabActive(tabId) {
+				if (tabId === 'lernraum') {
+					return this.isLernraumTab(this.currentTab)
+				}
+				if (tabId === 'kommunikation') {
+					return this.isKommunikationTab(this.currentTab)
+				}
+				if (tabId === 'verwaltung') {
+					return this.isVerwaltungTab(this.currentTab)
+				}
+				return this.currentTab === tabId
+			},
+			resolveSelectableTab(tabId) {
+				if (tabId === 'lernraum') {
+					return this.isLernraumTab(this.currentTab) ? this.currentTab : this.defaultLernraumTab()
+				}
+				if (tabId === 'kommunikation') {
+					return this.isKommunikationTab(this.currentTab) ? this.currentTab : this.kommunikationLeafTabs[0]
+				}
+				if (tabId === 'verwaltung') {
+					return this.isVerwaltungTab(this.currentTab) ? this.currentTab : this.verwaltungLeafTabs[0]
+				}
+				return tabId
+			},
 			emitVirtuProfContext() {
 				if (this.isInstructor || !this.course) {
 					return
@@ -1758,16 +1147,17 @@ export default {
 				return guides[tabId] || null
 			},
 			selectTab(tabId) {
-				this.currentTab = tabId
-				this.$root.$emit('course:tab-change', tabId)
-				if (tabId !== 'arena') {
+				const resolvedTabId = this.resolveSelectableTab(tabId)
+				this.currentTab = resolvedTabId
+				this.$root.$emit('course:tab-change', resolvedTabId)
+				if (resolvedTabId !== 'arena') {
 					this.arenaSubMode = null
 					this.oldschoolSubMode = null
 				}
-				if (tabId === 'arena' && !this.isInstructor) {
+				if (resolvedTabId === 'arena' && !this.isInstructor) {
 					this.$root.$emit('virtuprof:trigger', 'arena-first-visit')
 				}
-				if (tabId === 'league' && !this.isInstructor) {
+				if (resolvedTabId === 'league' && !this.isInstructor) {
 					this.$root.$emit('virtuprof:trigger', 'liga-first-visit')
 				}
 			},
@@ -1784,120 +1174,6 @@ export default {
 			},
 			onOldschoolSelectMode(mode) {
 				this.oldschoolSubMode = mode
-			},
-
-			getLearningPoolQuestionCount(pool) {
-				return this.poolQuestionCounts[pool.pool_id] ?? pool.question_count ?? 0
-			},
-			poolLanguageCodes(pool) {
-				const langs = Array.isArray(pool.available_content_languages) ? pool.available_content_languages : ['de']
-				return langs
-					.filter(code => ['de', 'en', 'ru', 'ar'].includes(code))
-					.map(code => code.toUpperCase())
-			},
-			poolLanguageSummary(pool) {
-				const codes = this.poolLanguageCodes(pool)
-				return codes.length > 1 ? codes.join(' | ') : ''
-			},
-			poolRuleSummary(pool) {
-				const summary = []
-				if (pool.filter_exam_key) {
-					summary.push(t('learning', 'Exam: {value}', { value: pool.filter_exam_key }))
-				}
-				if (pool.filter_chapter_key) {
-					const chapter = (pool.available_filters?.chapters || []).find(item => item.key === pool.filter_chapter_key)
-					summary.push(t('learning', 'Chapter: {value}', { value: chapter?.title || pool.filter_chapter_key }))
-				}
-				const questionIdCount = Array.isArray(pool.filter_question_ids) ? pool.filter_question_ids.length : 0
-				if (questionIdCount > 0) {
-					summary.push(t('learning', '{n} fixed questions', { n: questionIdCount }))
-				}
-				return summary
-			},
-			parsePoolRuleQuestionIds() {
-				return this.poolRulesForm.filterQuestionIdsText
-					.split(/[\s,;]+/)
-					.map(value => Number.parseInt(value, 10))
-					.filter(value => Number.isInteger(value) && value > 0)
-			},
-			openPoolRulesModal(pool) {
-				this.editingPoolRules = { ...pool }
-				this.poolRulesError = ''
-				this.poolRulesForm = {
-					required: pool.required !== false,
-					requiredEnforced: pool.required_enforced === true,
-					filterExamKey: pool.filter_exam_key || '',
-					filterChapterKey: pool.filter_chapter_key || '',
-					filterQuestionIdsText: Array.isArray(pool.filter_question_ids) ? pool.filter_question_ids.join(', ') : '',
-				}
-				this.showPoolRulesModal = true
-			},
-			closePoolRulesModal() {
-				this.showPoolRulesModal = false
-				this.editingPoolRules = null
-				this.poolRulesError = ''
-			},
-			async savePoolRules() {
-				if (!this.editingPoolRules) return
-				this.savingPoolRules = true
-				this.poolRulesError = ''
-				const url = generateUrl('/apps/learning/api/courses/{courseId}/pools/{poolId}', {
-					courseId: this.courseId,
-					poolId: this.editingPoolRules.pool_id,
-				})
-				try {
-					await axios.put(url, {
-						required: this.poolRulesForm.required,
-						requiredEnforced: this.poolRulesForm.required && this.poolRulesForm.requiredEnforced,
-						filterExamKey: this.poolRulesForm.filterExamKey || null,
-						filterChapterKey: this.poolRulesForm.filterChapterKey || null,
-						filterQuestionIds: this.parsePoolRuleQuestionIds(),
-					})
-					this.closePoolRulesModal()
-					await this.fetchCourseDetail()
-				} catch (err) {
-					this.poolRulesError = err.response?.data?.error || t('learning', 'Failed to save pool rules.')
-				} finally {
-					this.savingPoolRules = false
-				}
-			},
-
-			async fetchPoolQuestionCount(poolId) {
-				const pool = this.coursePools.find(item => item.pool_id === poolId)
-				if (pool && typeof pool.question_count === 'number') {
-					this.$set(this.poolQuestionCounts, poolId, pool.question_count)
-					return pool.question_count
-				}
-				if (this.poolQuestionCounts[poolId] !== undefined) {
-					return this.poolQuestionCounts[poolId]
-				}
-
-				const url = generateUrl('/apps/learning/api/pools/{poolId}/questions', { poolId })
-				const response = await axios.get(url)
-				const questionCount = Array.isArray(response.data) ? response.data.length : 0
-				this.$set(this.poolQuestionCounts, poolId, questionCount)
-				return questionCount
-			},
-
-			async selectLearningPool(pool) {
-				if (pool.locked_for_student) {
-					this.error = t('learning', 'Complete all enforced required pools first.')
-					return
-				}
-				this.loadingLearningPoolId = pool.pool_id
-				this.error = ''
-				try {
-					await this.fetchPoolQuestionCount(pool.pool_id)
-					this.selectedLearningPool = pool
-				} catch (err) {
-					this.error = t('learning', 'Failed to load pool questions.')
-				} finally {
-					this.loadingLearningPoolId = null
-				}
-			},
-
-			resetLearningPoolSelection() {
-				this.selectedLearningPool = null
 			},
 
 			progressPercent(prog) {
@@ -1944,8 +1220,6 @@ export default {
 				}
 				this.coursePools = response.data.pools || []
 				this.courseMembers = response.data.members || []
-				this.leitnerSprint = !!response.data.leitner_sprint
-				this.talkRoomToken = response.data.talk_room_token || ''
 
 				// Default tab for students
 				if (!this.course.is_instructor) {
@@ -2041,128 +1315,9 @@ export default {
 			}
 		},
 
-		async openAddPoolModal() {
-			this.showAddPoolModal = true
-			this.poolModalError = ''
-			this.selectedPoolToAdd = null
-			this.selectedPoolIds = []
-			if (this.allPools.length === 0) {
-				await this.fetchAllPools()
-			}
-		},
-
-		onAddPoolModalShowChanged(show) {
-			if (!show) {
-				this.closeAddPoolModal()
-			}
-		},
-
-		closeAddPoolModal() {
-			this.showAddPoolModal = false
-		},
-
-		async fetchAllPools() {
-			this.poolsLoading = true
-			this.poolModalError = ''
-			try {
-				const url = generateUrl('/apps/learning/api/pools')
-				const response = await axios.get(url)
-				// FIX-HI-4: API returns {own:[], shared:[]} not a plain array
-				if (Array.isArray(response.data)) {
-					this.allPools = response.data
-				} else if (response.data && typeof response.data === 'object') {
-					this.allPools = [...(response.data.own || []), ...(response.data.shared || [])]
-				} else {
-					this.allPools = []
-				}
-			} catch (err) {
-				console.error('Failed to fetch pools:', err)
-				this.poolModalError = t('learning', 'Failed to load available pools.')
-			} finally {
-				this.poolsLoading = false
-			}
-		},
-
-		isPoolAlreadyAdded(poolId) {
-			return this.coursePools.some(p => p.pool_id === poolId)
-		},
-
-		togglePoolSelection(pool) {
-			if (this.isPoolAlreadyAdded(pool.id)) return
-			const idx = this.selectedPoolIds.indexOf(pool.id)
-			if (idx >= 0) {
-				this.selectedPoolIds.splice(idx, 1)
-			} else {
-				this.selectedPoolIds.push(pool.id)
-			}
-		},
-
-		async addSelectedPools() {
-			if (this.selectedPoolIds.length === 0) return
-			this.savingPool = true
-			this.poolModalError = ''
-			const url = generateUrl('/apps/learning/api/courses/{courseId}/pools', { courseId: this.courseId })
-			const baseSortOrder = this.coursePools.length > 0
-				? Math.max(...this.coursePools.map(p => p.sort_order || 0)) + 1
-				: 0
-			try {
-				for (let i = 0; i < this.selectedPoolIds.length; i++) {
-					await axios.post(url, {
-						poolId: this.selectedPoolIds[i],
-						sortOrder: baseSortOrder + i,
-						required: true,
-					})
-				}
-				this.selectedPoolIds = []
-				this.selectedPoolToAdd = null
-				this.showAddPoolModal = false
-				await this.fetchCourseDetail()
-			} catch (err) {
-				console.error('Failed to add pools:', err)
-				const message = err.response?.data?.error || err.response?.data?.message
-				this.poolModalError = message || t('learning', 'Failed to add pool to course.')
-			} finally {
-				this.savingPool = false
-			}
-		},
-
-		async addPool(pool) {
-			if (this.isPoolAlreadyAdded(pool.id)) return
-			this.selectedPoolIds = [pool.id]
-			await this.addSelectedPools()
-		},
-
 		exportAtRiskCsv() {
 			const url = generateUrl('/apps/learning/api/courses/{courseId}/at-risk/export/csv', { courseId: this.courseId })
 			window.location.href = url
-		},
-
-		confirmRemovePool(pool) {
-			this.removingPool = pool
-			this.showRemovePoolModal = true
-		},
-
-		async removePool() {
-			if (!this.removingPool) {
-				return
-			}
-
-			this.savingPool = true
-			try {
-				const url = generateUrl('/apps/learning/api/courses/{courseId}/pools/{poolId}', {
-					courseId: this.courseId,
-					poolId: this.removingPool.pool_id,
-				})
-				await axios.delete(url)
-				this.showRemovePoolModal = false
-				this.removingPool = null
-				await this.fetchCourseDetail()
-			} catch (err) {
-				console.error('Failed to remove pool:', err)
-				this.error = t('learning', 'Failed to remove pool from course.')
-			} finally {
-				this.savingPool = false
-			}
 		},
 
 		async addMember() {
@@ -2404,53 +1559,6 @@ export default {
 				.sort((left, right) => right.value - left.value || left.key.localeCompare(right.key))
 		},
 
-		async fetchCurriculumScope() {
-			this.loadingCurriculum = true
-			try {
-				const url = generateUrl('/apps/learning/api/courses/{courseId}/curriculum-scope', { courseId: this.courseId })
-				const response = await axios.get(url)
-				this.curriculumEnabled = response.data.enabled || false
-				this.selectedChapterKeys = response.data.selected_chapter_keys || []
-				this.curriculumAvailableChapters = response.data.available_chapters || []
-			} catch (err) {
-				console.error('Failed to fetch curriculum scope:', err)
-			} finally {
-				this.loadingCurriculum = false
-			}
-		},
-
-		async saveCurriculumScope() {
-			this.savingCurriculum = true
-			this.curriculumSaved = false
-			try {
-				const url = generateUrl('/apps/learning/api/courses/{courseId}/curriculum-scope', { courseId: this.courseId })
-				await axios.put(url, {
-					enabled: this.curriculumEnabled,
-					chapterKeys: this.selectedChapterKeys,
-				})
-				this.curriculumSaved = true
-				setTimeout(() => { this.curriculumSaved = false }, 2500)
-			} catch (err) {
-				console.error('Failed to save curriculum scope:', err)
-			} finally {
-				this.savingCurriculum = false
-			}
-		},
-
-		toggleChapter(chapterKey, checked) {
-			if (checked) {
-				if (!this.selectedChapterKeys.includes(chapterKey)) {
-					this.selectedChapterKeys = [...this.selectedChapterKeys, chapterKey]
-				}
-			} else {
-				this.selectedChapterKeys = this.selectedChapterKeys.filter(k => k !== chapterKey)
-			}
-		},
-
-		selectAllChapters() {
-			this.selectedChapterKeys = this.curriculumAvailableChapters.map(c => c.chapter_key)
-		},
-
 		formatDate(timestamp) {
 			if (!timestamp) {
 				return ''
@@ -2523,238 +1631,6 @@ export default {
 			}
 		},
 
-		async fetchAnnouncements() {
-			if (!this.course) return
-			try {
-				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/announcements`))
-				this.announcements = res.data.announcements || res.data || []
-			} catch (e) {
-				console.error('Failed to load announcements', e)
-			}
-		},
-
-		async createAnnouncement() {
-			if (!this.newAnnouncementTitle.trim()) return
-			this.savingAnnouncement = true
-			try {
-				const res = await axios.post(generateUrl(`/apps/learning/api/courses/${this.courseId}/announcements`), {
-					title: this.newAnnouncementTitle,
-					body: this.newAnnouncementBody,
-				})
-				this.announcements.unshift(res.data.announcement || res.data)
-				this.newAnnouncementTitle = ''
-				this.newAnnouncementBody = ''
-			} catch (e) {
-				console.error('Failed to create announcement', e)
-			} finally {
-				this.savingAnnouncement = false
-			}
-		},
-
-		async deleteAnnouncement(id) {
-			try {
-				await axios.delete(generateUrl(`/apps/learning/api/courses/${this.courseId}/announcements/${id}`))
-				this.announcements = this.announcements.filter(a => a.id !== id)
-			} catch (e) {
-				console.error('Failed to delete announcement', e)
-			}
-		},
-
-		async fetchActiveExamSlot() {
-			if (!this.course) return
-			try {
-				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/exam-slot/active`))
-				this.activeExamSlot = res.data.slot || null
-			} catch (e) {
-				this.activeExamSlot = null
-			}
-		},
-
-		async startExamSlot() {
-			this.startingExamSlot = true
-			try {
-				const res = await axios.post(generateUrl(`/apps/learning/api/courses/${this.courseId}/exam-slot`), {
-					durationMinutes: this.examSlotDuration,
-					scopeMode: this.examSlotScope,
-				})
-				this.activeExamSlot = res.data.slot || res.data
-			} catch (e) {
-				console.error('Failed to start exam slot', e)
-			} finally {
-				this.startingExamSlot = false
-			}
-		},
-
-		async closeExamSlot() {
-			try {
-				await axios.post(generateUrl(`/apps/learning/api/courses/${this.courseId}/exam-slot/close`))
-				this.activeExamSlot = null
-			} catch (e) {
-				console.error('Failed to close exam slot', e)
-			}
-		},
-
-		async fetchCourseTickets() {
-			if (!this.course) return
-			this.loadingRequests = true
-			try {
-				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/support-tickets`))
-				this.courseTickets = res.data.tickets || res.data || []
-			} catch (e) {
-				console.error('Failed to load course tickets', e)
-			} finally {
-				this.loadingRequests = false
-			}
-		},
-
-		async answerTicket(ticketId) {
-			const answer = this.ticketReplies[ticketId]
-			if (!answer || !answer.trim()) return
-			try {
-				await axios.post(generateUrl(`/apps/learning/api/settings/admin/support-tickets/${ticketId}/answer`), {
-					answerText: answer,
-				})
-				const ticket = this.courseTickets.find(t => t.id === ticketId)
-				if (ticket) {
-					ticket.status = 'answered'
-					ticket.answer_text = answer
-				}
-				this.$delete(this.ticketReplies, ticketId)
-			} catch (e) {
-				console.error('Failed to answer ticket', e)
-			}
-		},
-
-		toggleMode(key, value) {
-			this.$set(this.modeConfigLocal, key, value)
-		},
-
-		normalizeToolSelection(enabledTools = null, adminEnabledTools = this.adminEnabledTools) {
-			const adminSource = Array.isArray(adminEnabledTools) ? adminEnabledTools : ALL_TOOL_IDS
-			const effectiveTools = Array.isArray(enabledTools) ? enabledTools : adminSource
-			return this.toolConfigKeys.reduce((acc, tool) => {
-				acc[tool.key] = adminSource.includes(tool.key) && effectiveTools.includes(tool.key)
-				return acc
-			}, {})
-		},
-
-		isAdminToolEnabled(toolId) {
-			return this.adminEnabledTools.includes(toolId)
-		},
-
-		toggleCourseTool(key, value) {
-			if (!this.isAdminToolEnabled(key)) {
-				return
-			}
-			this.$set(this.toolConfigLocal, key, value)
-		},
-
-		async saveModeConfig() {
-			this.savingModeConfig = true
-			try {
-				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
-					modeConfig: this.modeConfigLocal,
-				})
-				if (this.course) {
-					this.course.mode_config = this.normalizeModeConfig(res.data?.mode_config || this.modeConfigLocal)
-				}
-				this.modeConfigSaved = true
-				setTimeout(() => { this.modeConfigSaved = false }, 3000)
-			} catch (e) {
-				console.error('Failed to save mode config', e)
-			} finally {
-				this.savingModeConfig = false
-			}
-		},
-
-		async saveLeitnerSprint() {
-			try {
-				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
-					modeConfig: this.modeConfigLocal,
-					leitnerSprint: this.leitnerSprint,
-				})
-				if (this.course) {
-					this.course.leitner_sprint = this.leitnerSprint
-					if (res.data?.mode_config) {
-						this.course.mode_config = this.normalizeModeConfig(res.data.mode_config)
-					}
-				}
-			} catch (e) {
-				console.error('Failed to save leitner sprint', e)
-			}
-		},
-
-		async saveTalkRoomToken() {
-			this.savingTalkToken = true
-			try {
-				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
-					modeConfig: this.modeConfigLocal,
-					talkRoomToken: this.talkRoomToken,
-				})
-				if (this.course) {
-					this.course.talk_room_token = this.talkRoomToken
-					if (res.data?.mode_config) {
-						this.course.mode_config = this.normalizeModeConfig(res.data.mode_config)
-					}
-				}
-				this.talkTokenSaved = true
-				setTimeout(() => { this.talkTokenSaved = false }, 3000)
-			} catch (e) {
-				console.error('Failed to save talk room token', e)
-			} finally {
-				this.savingTalkToken = false
-			}
-		},
-
-		async loadToolSettings() {
-			this.loadingToolConfig = true
-			try {
-				const [adminResponse, courseResponse] = await Promise.all([
-					axios.get(generateUrl('/apps/learning/api/settings/tools')),
-					axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/tools`)),
-				])
-				this.adminEnabledTools = ALL_TOOL_IDS.filter((toolId) =>
-					(adminResponse.data?.enabled_tools || ALL_TOOL_IDS).includes(toolId)
-				)
-				const enabledTools = courseResponse.data?.enabled_tools ?? null
-				this.toolConfigLocal = this.normalizeToolSelection(enabledTools, this.adminEnabledTools)
-				if (this.course) {
-					this.course.enabled_tools = enabledTools
-				}
-				this.toolConfigSaved = false
-			} catch (e) {
-				this.adminEnabledTools = [...ALL_TOOL_IDS]
-				this.toolConfigLocal = this.normalizeToolSelection(this.course?.enabled_tools ?? null, this.adminEnabledTools)
-			} finally {
-				this.loadingToolConfig = false
-			}
-		},
-
-		async saveToolConfig() {
-			this.savingToolConfig = true
-			try {
-				const selectedTools = this.toolConfigKeys
-					.map((tool) => tool.key)
-					.filter((toolId) => this.isAdminToolEnabled(toolId) && this.toolConfigLocal[toolId] !== false)
-				const normalizedAdminTools = ALL_TOOL_IDS.filter((toolId) => this.adminEnabledTools.includes(toolId))
-				const payloadEnabledTools = JSON.stringify(selectedTools) === JSON.stringify(normalizedAdminTools)
-					? null
-					: selectedTools
-				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/tools`), {
-					enabledTools: payloadEnabledTools,
-				})
-				if (this.course) {
-					this.course.enabled_tools = res.data?.enabled_tools ?? payloadEnabledTools
-				}
-				this.toolConfigLocal = this.normalizeToolSelection(this.course?.enabled_tools ?? null, this.adminEnabledTools)
-				this.toolConfigSaved = true
-				setTimeout(() => { this.toolConfigSaved = false }, 3000)
-			} catch (e) {
-				console.error('Failed to save tool config', e)
-			} finally {
-				this.savingToolConfig = false
-			}
-		},
 	},
 }
 </script>
@@ -3788,36 +2664,6 @@ td.mastery-low {
 .rate-red { color: var(--color-error); font-weight: 700; }
 .rate-yellow { color: #e6a817; font-weight: 600; }
 
-/* Announcements */
-.announcements-section {}
-.announcement-form { margin-bottom: 24px; padding: 16px; background: var(--color-background-dark); border-radius: 8px; }
-.announcement-form h3 { margin: 0 0 12px 0; font-size: 1.1em; font-weight: 600; }
-.announcement-input { width: 100%; box-sizing: border-box; margin-bottom: 8px; }
-.announcements-list { display: flex; flex-direction: column; gap: 8px; }
-.announcement-item { padding: 12px; border: 1px solid var(--color-border); border-radius: 8px; }
-.announcement-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.announcement-body { color: var(--color-text-maxcontrast); margin: 4px 0; }
-.announcement-date { color: var(--color-text-maxcontrast); font-size: 0.85em; }
-
-/* Exam Slot */
-.exam-slot-section {}
-.active-slot-banner { margin-bottom: 16px; display: flex; flex-direction: column; gap: 12px; }
-.start-slot-form h3 { margin: 0 0 16px 0; font-size: 1.1em; font-weight: 600; }
-.form-row-cd { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-.form-row-cd label { font-weight: 600; font-size: 0.9em; }
-
-/* Requests (course tickets) */
-.requests-section {}
-.tickets-list-cd { display: flex; flex-direction: column; gap: 12px; }
-.ticket-item-cd { border: 1px solid var(--color-border); border-radius: 8px; padding: 12px; }
-.ticket-header-cd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.ticket-subject-cd { font-weight: 600; }
-.ticket-status-cd { font-size: 0.85em; padding: 2px 8px; border-radius: 4px; }
-.ticket-status-cd.status-open { background: color-mix(in srgb, var(--color-warning) 15%, transparent); color: var(--color-warning); }
-.ticket-status-cd.status-answered { background: color-mix(in srgb, var(--color-success) 15%, transparent); color: var(--color-success); }
-.ticket-message-cd { color: var(--color-text-maxcontrast); margin-bottom: 8px; }
-.ticket-reply-cd { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
-.ticket-answer-cd { margin-top: 8px; padding: 8px; background: var(--color-background-dark); border-radius: 4px; font-size: 0.9em; }
 
 /* Class profile */
 .class-profile-note { margin-bottom: 16px; }
@@ -3836,19 +2682,6 @@ td.mastery-low {
 /* AdminSettings ticket filter note */
 .ticket-filter-note { margin-bottom: 8px; }
 
-/* Mode Config */
-.mode-config-section { padding: 16px 0; }
-.mode-config-hint { color: var(--color-text-maxcontrast); margin-bottom: 16px; font-size: 0.9em; }
-.mode-toggles { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-.mode-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.mode-toggle-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1em; }
-.mode-toggle-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-.mode-toggle-label input[type="checkbox"]:disabled { opacity: 0.5; cursor: not-allowed; }
-.mode-config-saved { margin-top: 12px; }
-.mode-config-note { color: var(--color-text-maxcontrast); font-size: 0.85em; }
-.tool-config-section { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--color-border); }
-.tool-config-section h3 { margin: 0 0 8px; }
-
 /* Talk link in header */
 .talk-room-link {
 	display: inline-flex;
@@ -3861,14 +2694,4 @@ td.mastery-low {
 }
 .talk-room-link:hover { text-decoration: underline; }
 
-/* Talk token input */
-.talk-token-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-.talk-token-input {
-	padding: 6px 10px;
-	border: 1px solid var(--color-border);
-	border-radius: var(--border-radius);
-	font-size: 0.95em;
-	width: 280px;
-	max-width: 100%;
-}
 </style>
