@@ -45,23 +45,57 @@
 
 			<!-- Badges section -->
 			<div class="student-section">
-				<p class="section-label">{{ t('learning', 'Badges ({earned}/{total})', { earned: earnedBadgeCount, total: data.badges.length }) }}</p>
-				<div class="badge-grid">
-					<span v-for="badge in data.badges"
+				<div class="badge-section-head">
+					<p class="section-label">{{ t('learning', 'Badges ({earned}/{total})', { earned: earnedActiveBadgeCount, total: activeBadges.length }) }}</p>
+					<button
+						v-if="earnedLegacyBadges.length > 0"
+						type="button"
+						class="badge-archive-toggle"
+						:aria-expanded="legacyArchiveOpen ? 'true' : 'false'"
+						@click="toggleLegacyArchive">
+						{{ legacyArchiveOpen
+							? t('learning', 'Archiv ausblenden')
+							: t('learning', 'Archiv anzeigen ({n})', { n: earnedLegacyBadges.length }) }}
+					</button>
+				</div>
+				<div class="badge-grid badge-grid--active">
+					<div v-for="badge in activeBadges"
 						:key="badge.badge_id"
 						class="badge-item"
 						:class="{ 'badge-earned': badge.earned, 'badge-locked': !badge.earned }"
-						:title="badge.name + ': ' + badge.description">
-						{{ badge.emoji }}
-					</span>
+						:title="badgeTitle(badge)">
+						<span class="badge-item-emoji">{{ badge.emoji }}</span>
+						<span class="badge-item-name">{{ badgeLabel(badge) }}</span>
+						<span class="badge-item-meta">
+							{{ badge.earned
+								? (badge.earned_at ? formatDate(badge.earned_at) : t('learning', 'Freigeschaltet'))
+								: badgeTrigger(badge) }}
+						</span>
+					</div>
 				</div>
-				<div v-if="data.badge_progress.length > 0" class="badge-progress-section">
-					<div v-for="bp in data.badge_progress" :key="bp.badge_id" class="badge-progress-row">
-						<span class="badge-progress-name">{{ bp.emoji }} {{ bp.name }}</span>
+				<div v-if="activeBadgeProgress.length > 0" class="badge-progress-section">
+					<div v-for="bp in activeBadgeProgress" :key="bp.badge_id" class="badge-progress-row">
+						<div class="badge-progress-copy">
+							<span class="badge-progress-name">{{ bp.emoji }} {{ badgeLabel(bp) }}</span>
+							<span v-if="badgeTrigger(bp)" class="badge-progress-trigger">{{ badgeTrigger(bp) }}</span>
+						</div>
 						<div class="badge-progress-bar-container">
 							<div class="badge-progress-bar-fill" :style="{ width: bp.percentage + '%' }" />
 						</div>
 						<span class="badge-progress-pct">{{ bp.percentage }}%</span>
+					</div>
+				</div>
+				<div v-if="legacyArchiveOpen && earnedLegacyBadges.length > 0" class="badge-archive">
+					<p class="archive-label">{{ t('learning', 'Legacy-Archiv') }}</p>
+					<div class="badge-grid badge-grid--archive">
+						<div v-for="badge in earnedLegacyBadges"
+							:key="badge.badge_id"
+							class="badge-item badge-item--legacy badge-earned"
+							:title="badgeTitle(badge)">
+							<span class="badge-item-emoji">{{ badge.emoji }}</span>
+							<span class="badge-item-name">{{ badgeLabel(badge) }}</span>
+							<span class="badge-item-meta">{{ badge.earned_at ? formatDate(badge.earned_at) : t('learning', 'Freigeschaltet') }}</span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -117,6 +151,8 @@ import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
 import { formatRelativeDateString } from '../format.js'
 
+const ACTIVE_BADGE_ORDER = ['pioneer', 'streak_7', 'streak_14', 'mastermind', 'exam_ready', 'simulator', 'weekend', 'swarm', 'trouble_fixer']
+
 export default {
 	name: 'StudentDetail',
 
@@ -142,13 +178,22 @@ export default {
 			loading: false,
 			error: '',
 			data: null,
+			legacyArchiveOpen: false,
 		}
 	},
 
 	computed: {
-		earnedBadgeCount() {
-			if (!this.data || !this.data.badges) return 0
-			return this.data.badges.filter(b => b.earned).length
+		activeBadges() {
+			return this.sortBadges((this.data?.badges || []).filter((badge) => !badge.legacy))
+		},
+		activeBadgeProgress() {
+			return this.sortBadges((this.data?.badge_progress || []).filter((badge) => !badge.legacy))
+		},
+		earnedActiveBadgeCount() {
+			return this.activeBadges.filter((badge) => badge.earned).length
+		},
+		earnedLegacyBadges() {
+			return this.sortBadges((this.data?.badges || []).filter((badge) => badge.legacy && badge.earned))
 		},
 	},
 
@@ -156,10 +201,12 @@ export default {
 		studentId: {
 			immediate: true,
 			handler() {
+				this.legacyArchiveOpen = false
 				this.fetchStudentDetail()
 			},
 		},
 		courseId() {
+			this.legacyArchiveOpen = false
 			this.fetchStudentDetail()
 		},
 	},
@@ -187,6 +234,54 @@ export default {
 			} finally {
 				this.loading = false
 			}
+		},
+
+		sortBadges(badges) {
+			const rankFor = (badgeId) => {
+				const rank = ACTIVE_BADGE_ORDER.indexOf(badgeId)
+				return rank === -1 ? ACTIVE_BADGE_ORDER.length + 100 : rank
+			}
+
+			return [...badges].sort((left, right) => {
+				const rankDiff = rankFor(left.badge_id) - rankFor(right.badge_id)
+				if (rankDiff !== 0) {
+					return rankDiff
+				}
+
+				return String(this.badgeLabel(left)).localeCompare(String(this.badgeLabel(right)))
+			})
+		},
+
+		badgeLabel(badge) {
+			const key = badge?.name_key || badge?.name || ''
+			return key ? t('learning', key) : ''
+		},
+
+		badgeDescription(badge) {
+			const key = badge?.description_key || badge?.description || ''
+			return key ? t('learning', key) : ''
+		},
+
+		badgeTrigger(badge) {
+			const key = badge?.trigger_key || badge?.trigger || ''
+			return key ? t('learning', key) : ''
+		},
+
+		badgeTitle(badge) {
+			const parts = [
+				this.badgeLabel(badge),
+				this.badgeDescription(badge),
+			].filter(Boolean)
+
+			if (badge?.earned && badge?.earned_at) {
+				parts.push(this.formatDate(badge.earned_at))
+			}
+
+			return parts.join(' · ')
+		},
+
+		toggleLegacyArchive() {
+			this.legacyArchiveOpen = !this.legacyArchiveOpen
 		},
 
 		levelClass(level) {
@@ -378,34 +473,95 @@ export default {
 .student-section { margin-bottom: 28px; }
 
 /* Badge grid */
-.badge-grid {
+.badge-section-head {
 	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
 	flex-wrap: wrap;
-	gap: 8px;
+}
+
+.badge-archive-toggle {
+	border: 1px solid var(--color-border);
+	border-radius: 999px;
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	padding: 6px 12px;
+	font-size: 0.8em;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.badge-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 12px;
 	margin-bottom: 12px;
 }
 
 .badge-item {
-	font-size: 1.5em;
-	width: 44px;
-	height: 44px;
 	display: flex;
+	flex-direction: column;
 	align-items: center;
+	gap: 6px;
 	justify-content: center;
 	border-radius: var(--border-radius-large, 8px);
 	border: 1px solid var(--color-border);
-	transition: transform 0.2s;
+	padding: 14px 12px;
+	min-height: 120px;
+	background: var(--color-main-background);
+	text-align: center;
+	transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.badge-item-emoji {
+	font-size: 1.8em;
+	line-height: 1;
+}
+
+.badge-item-name {
+	font-size: 0.9em;
+	font-weight: 700;
+	color: var(--color-main-text);
+}
+
+.badge-item-meta {
+	font-size: 0.75em;
+	line-height: 1.35;
+	color: var(--color-text-maxcontrast);
 }
 
 .badge-earned {
 	background: color-mix(in srgb, var(--color-warning) 10%, transparent);
 }
 
-.badge-earned:hover { transform: scale(1.12); }
+.badge-earned:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 10px color-mix(in srgb, var(--color-main-text) 8%, transparent);
+}
 
 .badge-locked {
 	opacity: 0.28;
 	filter: grayscale(100%);
+}
+
+.badge-item--legacy {
+	background: color-mix(in srgb, var(--color-background-dark) 70%, transparent);
+}
+
+.badge-archive {
+	margin-top: 12px;
+	padding-top: 12px;
+	border-top: 1px dashed var(--color-border);
+}
+
+.archive-label {
+	font-size: 0.8em;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--color-text-maxcontrast);
+	margin: 0 0 10px;
 }
 
 .badge-progress-section {
@@ -416,17 +572,28 @@ export default {
 
 .badge-progress-row {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: 10px;
 }
 
-.badge-progress-name {
-	width: 140px;
+.badge-progress-copy {
+	width: 180px;
 	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.badge-progress-name {
 	font-size: 0.85em;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	font-weight: 600;
+	color: var(--color-main-text);
+}
+
+.badge-progress-trigger {
+	font-size: 0.75em;
+	line-height: 1.35;
+	color: var(--color-text-maxcontrast);
 }
 
 .badge-progress-bar-container {
@@ -611,6 +778,7 @@ export default {
 @media (prefers-reduced-motion: reduce) {
 	.xp-bar-fill::after { animation: none; }
 	.badge-earned:hover { transform: none; }
+	.badge-archive-toggle { transition: none; }
 	.pool-box-card:hover,
 	.session-item:hover { transform: none; }
 }
@@ -622,7 +790,10 @@ export default {
 	.leitner-boxes { flex-wrap: wrap; }
 	.session-item { flex-wrap: wrap; gap: 8px; }
 	.session-date { width: auto; }
-	.badge-progress-name { width: 100px; }
+	.badge-grid { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
+	.badge-progress-row { flex-direction: column; }
+	.badge-progress-copy { width: 100%; }
+	.badge-progress-pct { width: auto; text-align: left; }
 }
 
 @media (max-width: 480px) {

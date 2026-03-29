@@ -14,32 +14,139 @@ class BadgeService {
     private IActivityManager $activityManager;
 
     private const BADGES = [
-        'first_session' => ['name' => 'First Steps', 'emoji' => "\u{2B50}", 'description' => 'Complete your first session', 'category' => 'sessions'],
-        'ten_sessions' => ['name' => 'Dedicated Learner', 'emoji' => "\u{1F4DA}", 'description' => 'Complete 10 sessions', 'category' => 'sessions'],
-        'fifty_sessions' => ['name' => 'Unstoppable', 'emoji' => "\u{1F3C6}", 'description' => 'Complete 50 sessions', 'category' => 'sessions'],
-        'perfect_training' => ['name' => 'Perfect Score', 'emoji' => "\u{1F4AF}", 'description' => '100% in training (min 5 questions)', 'category' => 'performance'],
-        'perfect_exam' => ['name' => 'Exam Ace', 'emoji' => "\u{1F393}", 'description' => '90%+ in exam (min 10 questions)', 'category' => 'performance'],
-        'mastermind_10' => ['name' => 'Rising Star', 'emoji' => "\u{2B06}\u{FE0F}", 'description' => '10 cards mastered (Box 5)', 'category' => 'mastery'],
-        'mastermind_100' => ['name' => 'The Mastermind', 'emoji' => "\u{1F9E0}", 'description' => '100 cards mastered (Box 5)', 'category' => 'mastery'],
-        'streak_7' => ['name' => 'Week Warrior', 'emoji' => "\u{1F525}", 'description' => '7-day learning streak', 'category' => 'streak'],
-        'streak_30' => ['name' => 'Month Master', 'emoji' => "\u{1F31F}", 'description' => '30-day learning streak', 'category' => 'streak'],
-        'streak_100' => ['name' => 'Legend', 'emoji' => "\u{1F451}", 'description' => '100-day learning streak', 'category' => 'streak'],
-        'speed_demon' => ['name' => 'Speed Demon', 'emoji' => "\u{26A1}", 'description' => 'Exam in <50% time with 80%+ score', 'category' => 'performance'],
-        'sharing_caring' => ['name' => 'Sharing is Caring', 'emoji' => "\u{1F91D}", 'description' => 'Share your first pool', 'category' => 'social'],
-        'night_owl' => ['name' => 'Night Owl', 'emoji' => "\u{1F989}", 'description' => 'Complete a session between 23:00-05:00', 'category' => 'fun'],
-        'early_bird' => ['name' => 'Early Bird', 'emoji' => "\u{1F426}", 'description' => 'Complete a session between 05:00-07:00', 'category' => 'fun'],
-        'sessions_bronze' => ['name' => 'Session Tier Bronze', 'emoji' => "\u{1F949}", 'description' => 'Complete 5 sessions', 'category' => 'sessions'],
-        'sessions_silver' => ['name' => 'Session Tier Silver', 'emoji' => "\u{1F948}", 'description' => 'Complete 25 sessions', 'category' => 'sessions'],
-        'sessions_gold' => ['name' => 'Session Tier Gold', 'emoji' => "\u{1F947}", 'description' => 'Complete 75 sessions', 'category' => 'sessions'],
-        'sessions_platinum' => ['name' => 'Session Tier Platinum', 'emoji' => "\u{1F48E}", 'description' => 'Complete 150 sessions', 'category' => 'sessions'],
-        'mastery_bronze' => ['name' => 'Mastery Tier Bronze', 'emoji' => "\u{1F949}", 'description' => 'Master 25 cards (Box 5)', 'category' => 'mastery'],
-        'mastery_silver' => ['name' => 'Mastery Tier Silver', 'emoji' => "\u{1F948}", 'description' => 'Master 100 cards (Box 5)', 'category' => 'mastery'],
-        'mastery_gold' => ['name' => 'Mastery Tier Gold', 'emoji' => "\u{1F947}", 'description' => 'Master 250 cards (Box 5)', 'category' => 'mastery'],
-        'mastery_platinum' => ['name' => 'Mastery Tier Platinum', 'emoji' => "\u{1F48E}", 'description' => 'Master 500 cards (Box 5)', 'category' => 'mastery'],
-        'streak_bronze' => ['name' => 'Streak Tier Bronze', 'emoji' => "\u{1F949}", 'description' => 'Reach a 3-day streak', 'category' => 'streak'],
-        'streak_silver' => ['name' => 'Streak Tier Silver', 'emoji' => "\u{1F948}", 'description' => 'Reach a 14-day streak', 'category' => 'streak'],
-        'streak_gold' => ['name' => 'Streak Tier Gold', 'emoji' => "\u{1F947}", 'description' => 'Reach a 45-day streak', 'category' => 'streak'],
-        'streak_platinum' => ['name' => 'Streak Tier Platinum', 'emoji' => "\u{1F48E}", 'description' => 'Reach a 120-day streak', 'category' => 'streak'],
+        'first_session' => ['name' => 'First Steps', 'emoji' => "\u{2B50}", 'description' => 'Complete your first session', 'category' => 'sessions', 'legacy' => true],
+        'ten_sessions' => ['name' => 'Dedicated Learner', 'emoji' => "\u{1F4DA}", 'description' => 'Complete 10 sessions', 'category' => 'sessions', 'legacy' => true],
+        'fifty_sessions' => ['name' => 'Unstoppable', 'emoji' => "\u{1F3C6}", 'description' => 'Complete 50 sessions', 'category' => 'sessions', 'legacy' => true],
+        'perfect_training' => ['name' => 'Perfect Score', 'emoji' => "\u{1F4AF}", 'description' => '100% in training (min 5 questions)', 'category' => 'performance', 'legacy' => true],
+        'perfect_exam' => ['name' => 'Exam Ace', 'emoji' => "\u{1F393}", 'description' => '90%+ in exam (min 10 questions)', 'category' => 'performance', 'legacy' => true],
+        'mastermind_10' => ['name' => 'Rising Star', 'emoji' => "\u{2B06}\u{FE0F}", 'description' => '10 cards mastered (Box 5)', 'category' => 'mastery', 'legacy' => true],
+        'mastermind_100' => ['name' => 'The Mastermind', 'emoji' => "\u{1F9E0}", 'description' => '100 cards mastered (Box 5)', 'category' => 'mastery', 'legacy' => true],
+        'streak_7' => [
+            'name' => 'Week Hero',
+            'name_key' => 'badge_streak_7_name',
+            'emoji' => "\u{1F525}",
+            'description' => 'Build a 7-day learning streak',
+            'description_key' => 'badge_streak_7_desc',
+            'trigger' => 'Reach a 7-day streak',
+            'trigger_key' => 'badge_streak_7_trigger',
+            'category' => 'streak',
+            'legacy' => false,
+            'threshold' => 7,
+        ],
+        'streak_30' => ['name' => 'Month Master', 'emoji' => "\u{1F31F}", 'description' => '30-day learning streak', 'category' => 'streak', 'legacy' => true],
+        'streak_100' => ['name' => 'Legend', 'emoji' => "\u{1F451}", 'description' => '100-day learning streak', 'category' => 'streak', 'legacy' => true],
+        'speed_demon' => ['name' => 'Speed Demon', 'emoji' => "\u{26A1}", 'description' => 'Exam in <50% time with 80%+ score', 'category' => 'performance', 'legacy' => true],
+        'sharing_caring' => ['name' => 'Sharing is Caring', 'emoji' => "\u{1F91D}", 'description' => 'Share your first pool', 'category' => 'social', 'legacy' => true],
+        'night_owl' => ['name' => 'Night Owl', 'emoji' => "\u{1F989}", 'description' => 'Complete a session between 23:00-05:00', 'category' => 'fun', 'legacy' => true],
+        'early_bird' => ['name' => 'Early Bird', 'emoji' => "\u{1F426}", 'description' => 'Complete a session between 05:00-07:00', 'category' => 'fun', 'legacy' => true],
+        'sessions_bronze' => ['name' => 'Session Tier Bronze', 'emoji' => "\u{1F949}", 'description' => 'Complete 5 sessions', 'category' => 'sessions', 'legacy' => true],
+        'sessions_silver' => ['name' => 'Session Tier Silver', 'emoji' => "\u{1F948}", 'description' => 'Complete 25 sessions', 'category' => 'sessions', 'legacy' => true],
+        'sessions_gold' => ['name' => 'Session Tier Gold', 'emoji' => "\u{1F947}", 'description' => 'Complete 75 sessions', 'category' => 'sessions', 'legacy' => true],
+        'sessions_platinum' => ['name' => 'Session Tier Platinum', 'emoji' => "\u{1F48E}", 'description' => 'Complete 150 sessions', 'category' => 'sessions', 'legacy' => true],
+        'mastery_bronze' => ['name' => 'Mastery Tier Bronze', 'emoji' => "\u{1F949}", 'description' => 'Master 25 cards (Box 5)', 'category' => 'mastery', 'legacy' => true],
+        'mastery_silver' => ['name' => 'Mastery Tier Silver', 'emoji' => "\u{1F948}", 'description' => 'Master 100 cards (Box 5)', 'category' => 'mastery', 'legacy' => true],
+        'mastery_gold' => ['name' => 'Mastery Tier Gold', 'emoji' => "\u{1F947}", 'description' => 'Master 250 cards (Box 5)', 'category' => 'mastery', 'legacy' => true],
+        'mastery_platinum' => ['name' => 'Mastery Tier Platinum', 'emoji' => "\u{1F48E}", 'description' => 'Master 500 cards (Box 5)', 'category' => 'mastery', 'legacy' => true],
+        'streak_bronze' => ['name' => 'Streak Tier Bronze', 'emoji' => "\u{1F949}", 'description' => 'Reach a 3-day streak', 'category' => 'streak', 'legacy' => true],
+        'streak_silver' => ['name' => 'Streak Tier Silver', 'emoji' => "\u{1F948}", 'description' => 'Reach a 14-day streak', 'category' => 'streak', 'legacy' => true],
+        'streak_gold' => ['name' => 'Streak Tier Gold', 'emoji' => "\u{1F947}", 'description' => 'Reach a 45-day streak', 'category' => 'streak', 'legacy' => true],
+        'streak_platinum' => ['name' => 'Streak Tier Platinum', 'emoji' => "\u{1F48E}", 'description' => 'Reach a 120-day streak', 'category' => 'streak', 'legacy' => true],
+        'pioneer' => [
+            'name' => 'First Step',
+            'name_key' => 'badge_pioneer_name',
+            'emoji' => "\u{1F680}",
+            'description' => 'Answer 50 questions',
+            'description_key' => 'badge_pioneer_desc',
+            'trigger' => 'Reach 50 answered questions',
+            'trigger_key' => 'badge_pioneer_trigger',
+            'category' => 'onboarding',
+            'legacy' => false,
+            'threshold' => 50,
+        ],
+        'streak_14' => [
+            'name' => 'Two-Week Warrior',
+            'name_key' => 'badge_streak_14_name',
+            'emoji' => "\u{26A1}",
+            'description' => 'Stay active for 14 days in a row',
+            'description_key' => 'badge_streak_14_desc',
+            'trigger' => 'Reach a 14-day streak',
+            'trigger_key' => 'badge_streak_14_trigger',
+            'category' => 'streak',
+            'legacy' => false,
+            'threshold' => 14,
+        ],
+        'mastermind' => [
+            'name' => 'Mastermind',
+            'name_key' => 'badge_mastermind_name',
+            'emoji' => "\u{1F9E0}",
+            'description' => 'Master 50 cards in Box 5',
+            'description_key' => 'badge_mastermind_desc',
+            'trigger' => 'Bring 50 cards to Box 5',
+            'trigger_key' => 'badge_mastermind_trigger',
+            'category' => 'mastery',
+            'legacy' => false,
+            'threshold' => 50,
+        ],
+        'exam_ready' => [
+            'name' => 'Exam Ready',
+            'name_key' => 'badge_exam_ready_name',
+            'emoji' => "\u{1F393}",
+            'description' => 'Score above 85% in exam mode three times',
+            'description_key' => 'badge_exam_ready_desc',
+            'trigger' => 'Complete 3 exam sessions above 85%',
+            'trigger_key' => 'badge_exam_ready_trigger',
+            'category' => 'performance',
+            'legacy' => false,
+            'threshold' => 3,
+        ],
+        'simulator' => [
+            'name' => 'Practitioner',
+            'name_key' => 'badge_simulator_name',
+            'emoji' => "\u{1F6E0}",
+            'description' => 'Complete 3 simulator sessions',
+            'description_key' => 'badge_simulator_desc',
+            'trigger' => 'Complete 3 simulator sessions',
+            'trigger_key' => 'badge_simulator_trigger',
+            'category' => 'practice',
+            'legacy' => false,
+            'threshold' => 3,
+        ],
+        'weekend' => [
+            'name' => 'Weekend Warrior',
+            'name_key' => 'badge_weekend_name',
+            'emoji' => "\u{1F6E1}",
+            'description' => 'Study on Saturday and Sunday',
+            'description_key' => 'badge_weekend_desc',
+            'trigger' => 'Learn on both weekend days',
+            'trigger_key' => 'badge_weekend_trigger',
+            'category' => 'commitment',
+            'legacy' => false,
+            'threshold' => 1,
+        ],
+        'swarm' => [
+            'name' => 'Knowledge Source',
+            'name_key' => 'badge_swarm_name',
+            'emoji' => "\u{1F91D}",
+            'description' => 'Contribute 5 swarm entries',
+            'description_key' => 'badge_swarm_desc',
+            'trigger' => 'Create 5 swarm contributions',
+            'trigger_key' => 'badge_swarm_trigger',
+            'category' => 'social',
+            'legacy' => false,
+            'threshold' => 5,
+        ],
+        'trouble_fixer' => [
+            'name' => 'Trouble Fixer',
+            'name_key' => 'badge_trouble_fixer_name',
+            'emoji' => "\u{1FA79}",
+            'description' => 'Fix 20 trouble spots',
+            'description_key' => 'badge_trouble_fixer_desc',
+            'trigger' => 'Correctly repeat 20 trouble spots',
+            'trigger_key' => 'badge_trouble_fixer_trigger',
+            'category' => 'focus',
+            'legacy' => false,
+            'threshold' => 20,
+        ],
     ];
 
     public function __construct(IDBConnection $db, INotificationManager $notificationManager, IConfig $config, IActivityManager $activityManager) {
@@ -122,73 +229,16 @@ class BadgeService {
     private function checkSessionBadges(string $userId, array $data, bool $notify = true): array {
         $newBadges = [];
 
-        // Count completed sessions
-        $sessionCount = $this->getCompletedSessionCount($userId);
-
-        if ($sessionCount >= 1) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'first_session', $notify));
-        }
-        if ($sessionCount >= 10) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'ten_sessions', $notify));
-        }
-        if ($sessionCount >= 50) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'fifty_sessions', $notify));
-        }
-        if ($sessionCount >= 5) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'sessions_bronze', $notify));
-        }
-        if ($sessionCount >= 25) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'sessions_silver', $notify));
-        }
-        if ($sessionCount >= 75) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'sessions_gold', $notify));
-        }
-        if ($sessionCount >= 150) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'sessions_platinum', $notify));
-        }
-
-        // Perfect training (100%, min 5 questions)
         $mode = $data['mode'] ?? 'training';
         $totalQ = (int)($data['total_questions'] ?? 0);
         $correctA = (int)($data['correct_answers'] ?? 0);
         $scorePct = $totalQ > 0 ? round($correctA / $totalQ * 100) : 0;
 
-        if ($mode === 'training' && $scorePct === 100 && $totalQ >= 5) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'perfect_training', $notify));
-        }
-
-        // Exam ace (90%+, min 10 questions)
-        if ($mode === 'exam' && $scorePct >= 90 && $totalQ >= 10) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'perfect_exam', $notify));
-        }
-
-        // Speed demon: exam in <50% of time limit with 80%+ score
-        if ($mode === 'exam' && $scorePct >= 80) {
-            $startedAt = (int)($data['started_at'] ?? 0);
-            $completedAt = (int)($data['completed_at'] ?? 0);
-            $timeLimit = (int)($data['time_limit'] ?? 0);
-            if ($startedAt > 0 && $completedAt > 0 && $timeLimit > 0) {
-                $timeTaken = $completedAt - $startedAt;
-                if ($timeTaken < ($timeLimit * 0.5)) {
-                    $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'speed_demon', $notify));
-                }
+        if ($mode === 'exam' && $scorePct > 85) {
+            $examReadyRuns = $this->getSuccessfulExamRunCount($userId);
+            if ($examReadyRuns >= (self::BADGES['exam_ready']['threshold'] ?? 3)) {
+                $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'exam_ready', $notify));
             }
-        }
-
-        // Time-based badges (timezone-aware)
-        $tz = $this->config->getUserValue($userId, 'core', 'timezone', 'UTC');
-        $dt = new \DateTime('@' . ($data['completed_at'] ?? time()));
-        try {
-            $dt->setTimezone(new \DateTimeZone($tz));
-        } catch (\Exception $e) {
-            $dt->setTimezone(new \DateTimeZone('UTC'));
-        }
-        $hour = (int)$dt->format('G');
-        if ($hour >= 23 || $hour < 5) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'night_owl', $notify));
-        }
-        if ($hour >= 5 && $hour < 7) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'early_bird', $notify));
         }
 
         return $newBadges;
@@ -198,62 +248,39 @@ class BadgeService {
         $newBadges = [];
         $box5Count = $this->getBox5Count($userId);
 
-        if ($box5Count >= 10) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastermind_10', $notify));
-        }
-        if ($box5Count >= 100) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastermind_100', $notify));
-        }
-        if ($box5Count >= 25) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastery_bronze', $notify));
-        }
-        if ($box5Count >= 100) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastery_silver', $notify));
-        }
-        if ($box5Count >= 250) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastery_gold', $notify));
-        }
-        if ($box5Count >= 500) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastery_platinum', $notify));
+        if ($box5Count >= (self::BADGES['mastermind']['threshold'] ?? 50)) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'mastermind', $notify));
         }
 
         return $newBadges;
     }
 
     private function checkShareBadges(string $userId, bool $notify = true): array {
-        return $this->awardIfNew($userId, 'sharing_caring', $notify);
+        return [];
     }
 
     private function checkStreakBadges(string $userId, array $data, bool $notify = true): array {
         $newBadges = [];
         $streak = (int)($data['current_streak'] ?? 0);
 
-        if ($streak >= 7) {
+        if ($streak >= (self::BADGES['streak_7']['threshold'] ?? 7)) {
             $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_7', $notify));
         }
-        if ($streak >= 30) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_30', $notify));
-        }
-        if ($streak >= 100) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_100', $notify));
-        }
-        if ($streak >= 3) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_bronze', $notify));
-        }
-        if ($streak >= 14) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_silver', $notify));
-        }
-        if ($streak >= 45) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_gold', $notify));
-        }
-        if ($streak >= 120) {
-            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_platinum', $notify));
+        if ($streak >= (self::BADGES['streak_14']['threshold'] ?? 14)) {
+            $newBadges = array_merge($newBadges, $this->awardIfNew($userId, 'streak_14', $notify));
         }
 
         return $newBadges;
     }
 
     private function awardIfNew(string $userId, string $badgeId, bool $notify = true): array {
+        $def = self::BADGES[$badgeId] ?? null;
+        if ($def === null || ($def['legacy'] ?? false) === true) {
+            return [];
+        }
+
+        $earnedAt = time();
+
         // Atomic insert — UNIQUE(user_id, badge_id) prevents duplicates
         try {
             $qb = $this->db->getQueryBuilder();
@@ -261,7 +288,7 @@ class BadgeService {
                ->values([
                    'user_id' => $qb->createNamedParameter($userId),
                    'badge_id' => $qb->createNamedParameter($badgeId),
-                   'earned_at' => $qb->createNamedParameter(time()),
+                   'earned_at' => $qb->createNamedParameter($earnedAt),
                ]);
             $qb->executeStatement();
         } catch (\OCP\DB\Exception $e) {
@@ -271,13 +298,9 @@ class BadgeService {
             throw $e;
         }
 
-        $def = self::BADGES[$badgeId];
-        $badgeData = [
-            'badge_id' => $badgeId,
-            'name' => $def['name'],
-            'emoji' => $def['emoji'],
-            'description' => $def['description'],
-        ];
+        $badgeData = $this->buildBadgeData($badgeId, null);
+        $badgeData['earned'] = true;
+        $badgeData['earned_at'] = $earnedAt;
 
         // When called inside a transaction, skip side-effects — caller dispatches after commit
         if ($notify) {
@@ -313,9 +336,9 @@ class BadgeService {
         $this->activityManager->publish($event);
     }
 
-    private function getCompletedSessionCount(string $userId): int {
+    private function getAnsweredQuestionCount(string $userId): int {
         $qb = $this->db->getQueryBuilder();
-        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+        $qb->select($qb->createFunction('COALESCE(SUM(total_questions), 0) as cnt'))
            ->from('learning_sessions')
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->isNotNull('completed_at'));
@@ -337,19 +360,63 @@ class BadgeService {
         return $count;
     }
 
+    private function getSuccessfulExamRunCount(string $userId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select($qb->createFunction('COUNT(*) as cnt'))
+           ->from('learning_sessions')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+           ->andWhere($qb->expr()->isNotNull('completed_at'))
+           ->andWhere($qb->expr()->gt('total_questions', $qb->createNamedParameter(0)))
+           ->andWhere(
+               $qb->expr()->gt(
+                   $qb->createFunction('correct_answers * 100'),
+                   $qb->createFunction('total_questions * 85')
+               )
+           );
+        $result = $qb->executeQuery();
+        $count = (int)$result->fetch()['cnt'];
+        $result->closeCursor();
+        return $count;
+    }
+
+    private function getCurrentStreak(string $userId): int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('current_streak')
+           ->from('learning_user_stats')
+           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->setMaxResults(1);
+        $result = $qb->executeQuery();
+        $streakRow = $result->fetch();
+        $result->closeCursor();
+        return (int)($streakRow['current_streak'] ?? 0);
+    }
+
+    private function buildBadgeData(string $badgeId, ?array $earnedRow = null): array {
+        $def = self::BADGES[$badgeId];
+
+        return [
+            'badge_id' => $badgeId,
+            'name' => $def['name'],
+            'name_key' => $def['name_key'] ?? null,
+            'emoji' => $def['emoji'],
+            'description' => $def['description'],
+            'description_key' => $def['description_key'] ?? null,
+            'trigger' => $def['trigger'] ?? null,
+            'trigger_key' => $def['trigger_key'] ?? null,
+            'category' => $def['category'],
+            'legacy' => $def['legacy'] ?? false,
+            'threshold' => $def['threshold'] ?? null,
+            'earned' => $earnedRow !== null,
+            'earned_at' => $earnedRow['earned_at'] ?? null,
+        ];
+    }
+
     public function getUserBadges(string $userId): array {
         if ($this->config->getAppValue('learning', 'gamification_enabled', 'yes') !== 'yes') {
             $badges = [];
             foreach (self::BADGES as $badgeId => $def) {
-                $badges[] = [
-                    'badge_id' => $badgeId,
-                    'name' => $def['name'],
-                    'emoji' => $def['emoji'],
-                    'description' => $def['description'],
-                    'category' => $def['category'],
-                    'earned' => false,
-                    'earned_at' => null,
-                ];
+                $badges[] = $this->buildBadgeData($badgeId, null);
             }
             return $badges;
         }
@@ -370,16 +437,7 @@ class BadgeService {
 
         $badges = [];
         foreach (self::BADGES as $badgeId => $def) {
-            $badge = [
-                'badge_id' => $badgeId,
-                'name' => $def['name'],
-                'emoji' => $def['emoji'],
-                'description' => $def['description'],
-                'category' => $def['category'],
-                'earned' => isset($earned[$badgeId]),
-                'earned_at' => $earned[$badgeId]['earned_at'] ?? null,
-            ];
-            $badges[] = $badge;
+            $badges[] = $this->buildBadgeData($badgeId, $earned[$badgeId] ?? null);
         }
 
         return $badges;
@@ -390,39 +448,19 @@ class BadgeService {
             return [];
         }
 
-        $sessionCount = $this->getCompletedSessionCount($userId);
+        $answeredQuestionCount = $this->getAnsweredQuestionCount($userId);
         $box5Count = $this->getBox5Count($userId);
-        $currentStreak = 0;
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('current_streak')
-           ->from('learning_user_stats')
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->setMaxResults(1);
-        $result = $qb->executeQuery();
-        $streakRow = $result->fetch();
-        $result->closeCursor();
-        $currentStreak = (int)($streakRow['current_streak'] ?? 0);
+        $currentStreak = $this->getCurrentStreak($userId);
+        $successfulExamRunCount = $this->getSuccessfulExamRunCount($userId);
 
         $progress = [];
 
         $thresholds = [
-            'first_session' => ['current' => $sessionCount, 'target' => 1],
-            'ten_sessions' => ['current' => min($sessionCount, 10), 'target' => 10],
-            'fifty_sessions' => ['current' => min($sessionCount, 50), 'target' => 50],
-            'sessions_bronze' => ['current' => min($sessionCount, 5), 'target' => 5],
-            'sessions_silver' => ['current' => min($sessionCount, 25), 'target' => 25],
-            'sessions_gold' => ['current' => min($sessionCount, 75), 'target' => 75],
-            'sessions_platinum' => ['current' => min($sessionCount, 150), 'target' => 150],
-            'mastermind_10' => ['current' => min($box5Count, 10), 'target' => 10],
-            'mastermind_100' => ['current' => min($box5Count, 100), 'target' => 100],
-            'mastery_bronze' => ['current' => min($box5Count, 25), 'target' => 25],
-            'mastery_silver' => ['current' => min($box5Count, 100), 'target' => 100],
-            'mastery_gold' => ['current' => min($box5Count, 250), 'target' => 250],
-            'mastery_platinum' => ['current' => min($box5Count, 500), 'target' => 500],
-            'streak_bronze' => ['current' => min($currentStreak, 3), 'target' => 3],
-            'streak_silver' => ['current' => min($currentStreak, 14), 'target' => 14],
-            'streak_gold' => ['current' => min($currentStreak, 45), 'target' => 45],
-            'streak_platinum' => ['current' => min($currentStreak, 120), 'target' => 120],
+            'pioneer' => ['current' => min($answeredQuestionCount, self::BADGES['pioneer']['threshold']), 'target' => self::BADGES['pioneer']['threshold']],
+            'streak_7' => ['current' => min($currentStreak, self::BADGES['streak_7']['threshold']), 'target' => self::BADGES['streak_7']['threshold']],
+            'streak_14' => ['current' => min($currentStreak, self::BADGES['streak_14']['threshold']), 'target' => self::BADGES['streak_14']['threshold']],
+            'mastermind' => ['current' => min($box5Count, self::BADGES['mastermind']['threshold']), 'target' => self::BADGES['mastermind']['threshold']],
+            'exam_ready' => ['current' => min($successfulExamRunCount, self::BADGES['exam_ready']['threshold']), 'target' => self::BADGES['exam_ready']['threshold']],
         ];
 
         // Check which are already earned
@@ -445,7 +483,13 @@ class BadgeService {
             $progress[] = [
                 'badge_id' => $badgeId,
                 'name' => $def['name'],
+                'name_key' => $def['name_key'] ?? null,
                 'emoji' => $def['emoji'],
+                'description' => $def['description'],
+                'description_key' => $def['description_key'] ?? null,
+                'trigger' => $def['trigger'] ?? null,
+                'trigger_key' => $def['trigger_key'] ?? null,
+                'legacy' => $def['legacy'] ?? false,
                 'current' => $data['current'],
                 'target' => $data['target'],
                 'percentage' => $data['target'] > 0 ? min(100, (int)round($data['current'] / $data['target'] * 100)) : 0,

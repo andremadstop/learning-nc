@@ -1,16 +1,16 @@
 <template>
   <div>
     <div aria-live="polite" class="sr-only">
-      <span v-if="visible">{{ t('learning', 'Achievement Unlocked!') }}: {{ badge.name }}</span>
+      <span v-if="visible">{{ t('learning', 'Achievement Unlocked!') }}: {{ badgeLabel(badge) }}</span>
     </div>
     <transition name="badge-pop">
-      <div v-if="visible" ref="overlay" class="badge-overlay" role="dialog" aria-modal="true" tabindex="-1" :aria-label="badge.name" @click.self="dismiss" @keydown.escape="dismiss">
+      <div v-if="visible" ref="overlay" class="badge-overlay" role="dialog" aria-modal="true" tabindex="-1" :aria-label="badgeLabel(badge)" @click.self="dismiss" @keydown.escape="dismiss">
         <div class="badge-card">
           <div class="badge-glow"></div>
           <div class="badge-emoji">{{ badge.emoji }}</div>
           <div class="badge-title">{{ t('learning', 'Achievement Unlocked!') }}</div>
-          <div class="badge-name">{{ badge.name }}</div>
-          <div class="badge-description">{{ badge.description }}</div>
+          <div class="badge-name">{{ badgeLabel(badge) }}</div>
+          <div class="badge-description">{{ badgeDescription(badge) }}</div>
         </div>
       </div>
     </transition>
@@ -50,6 +50,14 @@ export default {
     },
   },
   methods: {
+    badgeLabel(badge) {
+      const key = badge?.name_key || badge?.name || ''
+      return key ? t('learning', key) : ''
+    },
+    badgeDescription(badge) {
+      const key = badge?.description_key || badge?.description || ''
+      return key ? t('learning', key) : ''
+    },
     showNext() {
       if (this.queue.length === 0) {
         this.visible = false

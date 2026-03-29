@@ -115,9 +115,9 @@
 							v-for="badge in earnedBadges"
 							:key="badge.badge_id"
 							class="badge-item"
-							:title="badge.name + ': ' + badge.description">
+							:title="badgeTitle(badge)">
 							<span class="badge-emoji">{{ badge.emoji }}</span>
-							<span class="badge-name">{{ badge.name }}</span>
+							<span class="badge-name">{{ badgeLabel(badge) }}</span>
 						</div>
 					</div>
 					<p v-else class="empty-hint">{{ t('learning', 'Noch keine Badges in diesem Ueberblick sichtbar.') }}</p>
@@ -292,6 +292,23 @@ export default {
 				maximumFractionDigits: 1,
 				minimumFractionDigits: Number(value || 0) % 1 === 0 ? 0 : 1,
 			})}%`
+		},
+
+		badgeLabel(badge) {
+			const key = badge?.name_key || badge?.name || ''
+			return key ? t('learning', key) : ''
+		},
+
+		badgeDescription(badge) {
+			const key = badge?.description_key || badge?.description || ''
+			return key ? t('learning', key) : ''
+		},
+
+		badgeTitle(badge) {
+			return [
+				this.badgeLabel(badge),
+				this.badgeDescription(badge),
+			].filter(Boolean).join(': ')
 		},
 
 		formatTimestamp(timestamp) {
