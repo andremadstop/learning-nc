@@ -14,41 +14,93 @@
         <p>{{ t('learning', 'Lade Kampagnen...') }}</p>
       </div>
 
-      <div v-else class="ab-campaign-grid">
-        <div
-          v-for="campaign in campaigns"
-          :key="campaign.id"
-          class="ab-campaign-card"
-          :class="{ 'ab-campaign-completed': campaign.progress === 'completed' }"
-          tabindex="0"
-          role="button"
-          @click="selectCampaign(campaign)"
-          @keydown.enter="selectCampaign(campaign)"
-          @keydown.space.prevent="selectCampaign(campaign)"
-        >
-          <div class="ab-campaign-icon">{{ campaign.icon }}</div>
-          <div class="ab-campaign-info">
-            <h3 class="ab-campaign-title">{{ campaign.title }}</h3>
-            <p class="ab-campaign-desc">{{ campaign.description }}</p>
-            <div class="ab-campaign-meta">
-              <span class="ab-difficulty" :class="'ab-diff-' + campaign.difficulty">
-                {{ difficultyLabel(campaign.difficulty) }}
-              </span>
-              <span v-for="area in campaign.focus_areas" :key="area" class="ab-focus-tag">{{ area }}</span>
+      <div v-else class="ab-campaign-sections">
+        <section class="ab-campaign-section">
+          <div class="ab-section-header">
+            <h3>{{ t('learning', 'Empfohlene Kampagnen') }}</h3>
+            <p>{{ t('learning', 'Kurzer Kernpfad mit den produktiven Story-Kampagnen fuer Bootcamps und Intensivkurse.') }}</p>
+          </div>
+          <div class="ab-campaign-grid">
+            <div
+              v-for="campaign in featuredCampaigns"
+              :key="campaign.id"
+              class="ab-campaign-card"
+              :class="{ 'ab-campaign-completed': campaign.progress === 'completed' }"
+              tabindex="0"
+              role="button"
+              @click="selectCampaign(campaign)"
+              @keydown.enter="selectCampaign(campaign)"
+              @keydown.space.prevent="selectCampaign(campaign)"
+            >
+              <div class="ab-campaign-icon">{{ campaign.icon }}</div>
+              <div class="ab-campaign-info">
+                <h3 class="ab-campaign-title">{{ campaign.title }}</h3>
+                <p class="ab-campaign-desc">{{ campaign.description }}</p>
+                <div class="ab-campaign-meta">
+                  <span class="ab-difficulty" :class="'ab-diff-' + campaign.difficulty">
+                    {{ difficultyLabel(campaign.difficulty) }}
+                  </span>
+                  <span v-for="area in campaign.focus_areas" :key="area" class="ab-focus-tag">{{ area }}</span>
+                </div>
+              </div>
+              <div class="ab-campaign-progress">
+                <div v-if="campaign.progress === 'not_started'" class="ab-prog-badge ab-prog-new">
+                  {{ t('learning', 'Neu') }}
+                </div>
+                <div v-else-if="campaign.progress === 'completed'" class="ab-prog-badge ab-prog-done">
+                  ✓ {{ t('learning', 'Abgeschlossen') }}
+                </div>
+                <div v-else class="ab-prog-badge ab-prog-active">
+                  {{ t('learning', 'Szene {n}', { n: campaign.current_scene || 1 }) }}
+                </div>
+              </div>
             </div>
           </div>
-          <div class="ab-campaign-progress">
-            <div v-if="campaign.progress === 'not_started'" class="ab-prog-badge ab-prog-new">
-              {{ t('learning', 'Neu') }}
-            </div>
-            <div v-else-if="campaign.progress === 'completed'" class="ab-prog-badge ab-prog-done">
-              ✓ {{ t('learning', 'Abgeschlossen') }}
-            </div>
-            <div v-else class="ab-prog-badge ab-prog-active">
-              {{ t('learning', 'Szene {n}', { n: campaign.current_scene || 1 }) }}
+        </section>
+
+        <section v-if="bonusCampaigns.length > 0" class="ab-campaign-section">
+          <div class="ab-section-header">
+            <h3>{{ t('learning', 'Bonus-Kampagnen') }}</h3>
+            <p>{{ t('learning', 'Weitere Storys fuer Zusatzrunden oder Vertiefung ausserhalb des Kernpfads.') }}</p>
+          </div>
+          <div class="ab-campaign-grid ab-campaign-grid--bonus">
+            <div
+              v-for="campaign in bonusCampaigns"
+              :key="campaign.id"
+              class="ab-campaign-card ab-campaign-card--bonus"
+              :class="{ 'ab-campaign-completed': campaign.progress === 'completed' }"
+              tabindex="0"
+              role="button"
+              @click="selectCampaign(campaign)"
+              @keydown.enter="selectCampaign(campaign)"
+              @keydown.space.prevent="selectCampaign(campaign)"
+            >
+              <span class="ab-bonus-pill">{{ t('learning', 'Bonus') }}</span>
+              <div class="ab-campaign-icon">{{ campaign.icon }}</div>
+              <div class="ab-campaign-info">
+                <h3 class="ab-campaign-title">{{ campaign.title }}</h3>
+                <p class="ab-campaign-desc">{{ campaign.description }}</p>
+                <div class="ab-campaign-meta">
+                  <span class="ab-difficulty" :class="'ab-diff-' + campaign.difficulty">
+                    {{ difficultyLabel(campaign.difficulty) }}
+                  </span>
+                  <span v-for="area in campaign.focus_areas" :key="area" class="ab-focus-tag">{{ area }}</span>
+                </div>
+              </div>
+              <div class="ab-campaign-progress">
+                <div v-if="campaign.progress === 'not_started'" class="ab-prog-badge ab-prog-new">
+                  {{ t('learning', 'Neu') }}
+                </div>
+                <div v-else-if="campaign.progress === 'completed'" class="ab-prog-badge ab-prog-done">
+                  ✓ {{ t('learning', 'Abgeschlossen') }}
+                </div>
+                <div v-else class="ab-prog-badge ab-prog-active">
+                  {{ t('learning', 'Szene {n}', { n: campaign.current_scene || 1 }) }}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
 
@@ -625,6 +677,13 @@ const CHARACTERS = [
 	},
 ]
 
+const FEATURED_CAMPAIGN_IDS = [
+	'der_grosse_ausfall',
+	'phishing_friday',
+	'zero_day_rechenzentrum',
+	'ghostline_quest',
+]
+
 const NPC_PORTRAITS = {
 	dr_weber: { portrait: '👩‍💼', name: 'Dr. Weber' },
 	jens_bug: { portrait: '👨‍💻', name: 'Jens "Bug" Hoffmann' },
@@ -784,6 +843,14 @@ export default {
 	},
 
 	computed: {
+		featuredCampaigns() {
+			return this.campaigns.filter((campaign) => campaign.is_featured)
+		},
+
+		bonusCampaigns() {
+			return this.campaigns.filter((campaign) => !campaign.is_featured)
+		},
+
 		epilogIcon() {
 			if (!this.epilogData) return '📋'
 			return this.epilogData.outcome === 'success' ? '🏆' : '📋'
@@ -911,20 +978,35 @@ export default {
 				})
 				const raw = resp.data.campaigns || resp.data || []
 				// Normalize: backend uses campaign_id, frontend expects id
-				this.campaigns = (Array.isArray(raw) ? raw : [])
-					.filter(c => c.is_graph || c.graph || c.graph_mode)
-					.map(c => ({
-						...c,
-						id: c.id || c.campaign_id,
-						is_graph: c.is_graph || c.graph_mode || false,
-					}))
-				if (this.campaigns.length === 0) this.campaigns = STATIC_CAMPAIGNS.filter(c => c.is_graph)
+				this.campaigns = this.normalizeCampaignList(raw)
+				if (this.campaigns.length === 0) this.campaigns = this.normalizeCampaignList(STATIC_CAMPAIGNS)
 			} catch (e) {
 				// Backend not yet available — fall back to static graph campaigns only
-				this.campaigns = STATIC_CAMPAIGNS.filter(c => c.is_graph)
+				this.campaigns = this.normalizeCampaignList(STATIC_CAMPAIGNS)
 			} finally {
 				this.loadingCampaigns = false
 			}
+		},
+
+		normalizeCampaignList(rawCampaigns = []) {
+			return (Array.isArray(rawCampaigns) ? rawCampaigns : [])
+				.filter(campaign => campaign.is_graph || campaign.graph || campaign.graph_mode)
+				.map((campaign) => {
+					const id = campaign.id || campaign.campaign_id
+					return {
+						...campaign,
+						id,
+						is_graph: campaign.is_graph || campaign.graph_mode || false,
+						is_featured: FEATURED_CAMPAIGN_IDS.includes(id),
+					}
+				})
+				.sort((left, right) => {
+					const featuredDelta = Number(right.is_featured) - Number(left.is_featured)
+					if (featuredDelta !== 0) {
+						return featuredDelta
+					}
+					return String(left.title || '').localeCompare(String(right.title || ''))
+				})
 		},
 
 		selectCampaign(campaign) {
@@ -2372,6 +2454,30 @@ export default {
 }
 
 /* ===== CAMPAIGN GRID ===== */
+.ab-campaign-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.ab-campaign-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ab-section-header h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  color: var(--lnc-text);
+}
+
+.ab-section-header p {
+  margin: 0;
+  color: var(--lnc-text-secondary);
+  font-size: 0.9rem;
+}
+
 .ab-campaign-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -2401,6 +2507,23 @@ export default {
 }
 .ab-campaign-completed {
   border-color: var(--lnc-green);
+}
+
+.ab-campaign-card--bonus {
+  border-style: dashed;
+}
+
+.ab-bonus-pill {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 193, 7, 0.16);
+  color: var(--lnc-amber);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .ab-campaign-icon {

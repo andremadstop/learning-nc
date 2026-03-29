@@ -151,7 +151,7 @@ class CourseService {
         $prefix = method_exists($inner, 'getPrefix') ? $inner->getPrefix() : 'oc_';
         $result = $this->db->executeQuery(
             "SELECT COUNT(DISTINCT qt.question_id) AS translated_questions
-             FROM {$prefix}learning_q_translations qt
+             FROM {$prefix}learning_qst_translations qt
              INNER JOIN {$prefix}learning_questions q ON qt.question_id = q.id
              WHERE q.pool_id = ? AND qt.lang = ?",
             [$poolId, $lang]
@@ -1891,10 +1891,11 @@ class CourseService {
             throw new ForbiddenException('Only instructors can update course mode config');
         }
 
-        $allowed = ['training', 'leitner', 'swipe', 'exam', 'duel', 'league'];
+        $allowed = ['training', 'leitner', 'swipe', 'exam', 'duel', 'gameshow', 'league', 'oldschool', 'abenteuer', 'course_summary'];
         $clean = [];
         foreach ($allowed as $key) {
-            $clean[$key] = isset($modeConfig[$key]) ? (bool)$modeConfig[$key] : true;
+            $defaultValue = $key === 'course_summary' ? false : true;
+            $clean[$key] = array_key_exists($key, $modeConfig) ? (bool)$modeConfig[$key] : $defaultValue;
         }
 
         $course->setModeConfig(json_encode($clean));
@@ -1942,7 +1943,7 @@ class CourseService {
     private function getPausedQuestionIds(int $courseId): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('question_id')
-            ->from('learning_q_overrides')
+            ->from('learning_course_question_overrides')
             ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->eq('paused', $qb->createNamedParameter(true, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)));
         $result = $qb->executeQuery();
@@ -2215,7 +2216,7 @@ class CourseService {
         $overrides = [];
         $qbO = $this->db->getQueryBuilder();
         $qbO->select('question_id', 'paused')
-            ->from('learning_q_overrides')
+            ->from('learning_course_question_overrides')
             ->where($qbO->expr()->eq('course_id', $qbO->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
             ->andWhere($qbO->expr()->in('question_id', $qbO->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
         $resultO = $qbO->executeQuery();
@@ -2257,7 +2258,7 @@ class CourseService {
 
         // Try UPDATE first
         $qbU = $this->db->getQueryBuilder();
-        $qbU->update('learning_q_overrides')
+        $qbU->update('learning_course_question_overrides')
             ->set('paused', $qbU->createNamedParameter($paused, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL))
             ->set('highlight', $qbU->createNamedParameter($highlight, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL))
             ->set('updated_at', $qbU->createNamedParameter($now))
@@ -2267,7 +2268,7 @@ class CourseService {
 
         if ($affected === 0) {
             $qbI = $this->db->getQueryBuilder();
-            $qbI->insert('learning_q_overrides')
+            $qbI->insert('learning_course_question_overrides')
                 ->values([
                     'course_id' => $qbI->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT),
                     'question_id' => $qbI->createNamedParameter($questionId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT),
@@ -2408,7 +2409,7 @@ class CourseService {
 
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
-            ->from('learning_announcements')
+            ->from('learning_course_announcements')
             ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->orX(
                 $qb->expr()->isNull('expires_at'),
@@ -2441,7 +2442,7 @@ class CourseService {
 
         $now = time();
         $qb = $this->db->getQueryBuilder();
-        $qb->insert('learning_announcements')
+        $qb->insert('learning_course_announcements')
             ->values([
                 'course_id' => $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT),
                 'instructor_id' => $qb->createNamedParameter($userId),
@@ -2451,7 +2452,7 @@ class CourseService {
                 'expires_at' => $qb->createNamedParameter($expiresAt),
             ]);
         $qb->executeStatement();
-        $newId = $this->db->lastInsertId('oc_learning_announcements');
+        $newId = $this->db->lastInsertId('oc_learning_course_announcements');
 
         // Auto-create feed item for the announcement
         $this->feedService->createAutoItem($courseId, 'announcement', $title, $body, $userId);
@@ -2477,7 +2478,7 @@ class CourseService {
         }
 
         $qb = $this->db->getQueryBuilder();
-        $qb->delete('learning_announcements')
+        $qb->delete('learning_course_announcements')
             ->where($qb->expr()->eq('id', $qb->createNamedParameter($announcementId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
         $qb->executeStatement();

@@ -652,6 +652,7 @@ export default {
             'leitner': 'view:course-leitner',
             'exam': 'view:course-exam',
             'my-progress': 'view:course-my-progress',
+            'summary': 'view:course-summary',
             'leaderboard': 'view:course-leaderboard',
             'league': 'view:course-league',
             'arena': 'view:course-arena',
@@ -744,6 +745,11 @@ export default {
           title: t('learning', 'My Progress'),
           text: t('learning', 'Here you see your personal learning progress in this course: mastered questions, current streak, XP and level. Track how far you have come.'),
           shortText: t('learning', 'Your personal stats: mastered, streak, XP.'),
+        },
+        'view:course-summary': {
+          title: t('learning', 'Kursabschluss'),
+          text: t('learning', 'Your course summary turns mastery, sessions, streaks, badges and trouble spots into one final overview for this course.'),
+          shortText: t('learning', 'Final course overview with mastery, badges and trouble spots.'),
         },
         'view:course-leaderboard': {
           title: t('learning', 'Leaderboard'),

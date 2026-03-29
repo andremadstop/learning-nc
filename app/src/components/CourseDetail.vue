@@ -36,19 +36,37 @@
 
 		<template v-if="!loading && course">
 			<!-- Tab selector -->
-			<div class="tab-selector">
-				<template v-for="(tab, idx) in visibleTabs">
-					<span v-if="idx > 0 && tab.group && visibleTabs[idx - 1].group && tab.group !== visibleTabs[idx - 1].group"
-						:key="'sep-' + idx"
-						class="tab-group-separator" />
+			<div v-if="isInstructor" class="tab-group-shell">
+				<div class="tab-selector tab-selector--groups" role="tablist">
 					<button
+						v-for="group in instructorTabGroups"
+						:key="group.id"
+						class="tab-button tab-button--group"
+						:class="{ active: activeInstructorGroupId === group.id }"
+						@click="selectInstructorGroup(group.id)">
+						{{ group.label }}
+					</button>
+				</div>
+				<div v-if="activeInstructorTabs.length > 0" class="course-sub-nav detail-sub-nav" role="tablist">
+					<button
+						v-for="tab in activeInstructorTabs"
 						:key="tab.id"
-						class="tab-button"
+						class="detail-sub-nav-btn"
 						:class="{ active: currentTab === tab.id }"
 						@click="selectTab(tab.id)">
 						{{ tab.label }}
 					</button>
-				</template>
+				</div>
+			</div>
+			<div v-else class="tab-selector">
+				<button
+					v-for="tab in visibleTabs"
+					:key="tab.id"
+					class="tab-button"
+					:class="{ active: currentTab === tab.id }"
+					@click="selectTab(tab.id)">
+					{{ tab.label }}
+				</button>
 			</div>
 
 			<!-- Pools Tab -->
@@ -533,6 +551,18 @@
 					@back="currentTab = 'training'" />
 			</div>
 
+			<div v-if="currentTab === 'summary' && !isInstructor" class="summary-section">
+				<CourseSummary
+					:courseId="courseId"
+					:courseName="course?.title || ''" />
+			</div>
+
+			<div v-if="currentTab === 'summary' && isInstructor" class="summary-section">
+				<NcNoteCard type="info">
+					{{ t('learning', 'Der Klassen-Abschlussbericht folgt in Phase 107. Hier erscheint spaeter die Dozentenansicht fuer den Kursabschluss.') }}
+				</NcNoteCard>
+			</div>
+
 			<!-- Leaderboard Tab -->
 			<div v-if="currentTab === 'leaderboard'" class="leaderboard-section">
 				<div class="section-header">
@@ -980,6 +1010,12 @@
 	<!-- Knowledge Import Tab (instructor only) -->
 	<div v-if="currentTab === 'knowledge' && isInstructor" class="tab-content knowledge-section">
 		<CourseKnowledgeImport :course-id="courseId" :is-instructor="isInstructor" />
+		<KnowledgeModeration :course-id="courseId" @pending-count="knowledgePendingCount = $event" />
+	</div>
+
+	<!-- Schwarm Tab (students) -->
+	<div v-if="currentTab === 'schwarm' && !isInstructor" class="tab-content">
+		<StudentKnowledgeContribute :course-id="courseId" />
 	</div>
 
 	<!-- Feed Tab (both roles) -->
@@ -1186,8 +1222,11 @@ import OldschoolSelector from './OldschoolSelector.vue'
 import WissensturmMode from './WissensturmMode.vue'
 import LernwuerfelMode from './LernwuerfelMode.vue'
 import AbenteuerMode from './AbenteuerMode.vue'
+import CourseSummary from './CourseSummary.vue'
 import CourseMaterials from './CourseMaterials.vue'
 import CourseKnowledgeImport from './CourseKnowledgeImport.vue'
+import StudentKnowledgeContribute from './StudentKnowledgeContribute.vue'
+import KnowledgeModeration from './KnowledgeModeration.vue'
 import CourseFeed from './CourseFeed.vue'
 import BuddyMatching from './BuddyMatching.vue'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
@@ -1215,8 +1254,11 @@ export default {
 		WissensturmMode,
 		LernwuerfelMode,
 		AbenteuerMode,
+		CourseSummary,
 		CourseMaterials,
 		CourseKnowledgeImport,
+		StudentKnowledgeContribute,
+		KnowledgeModeration,
 		CourseFeed,
 		BuddyMatching,
 	},
@@ -1251,6 +1293,7 @@ export default {
 			coursePools: [],
 			courseMembers: [],
 			currentTab: 'pools',
+			knowledgePendingCount: 0,
 			selectedLearningPool: null,
 			activeLearningMode: null,
 			poolQuestionCounts: {},
@@ -1401,6 +1444,9 @@ export default {
 			const user = getCurrentUser()
 			return user ? user.uid : null
 		},
+		isCourseSummaryReleased() {
+			return this.course?.mode_config?.course_summary === true
+		},
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentTab)
 		},
@@ -1415,6 +1461,7 @@ export default {
 				{ key: 'league', label: t('learning', 'Liga') },
 				{ key: 'oldschool', label: t('learning', 'Oldschool') },
 				{ key: 'abenteuer', label: t('learning', 'Abenteuer') },
+				{ key: 'course_summary', label: t('learning', 'Abschluss-Tab') },
 			]
 		},
 		toolConfigKeys() {
@@ -1423,33 +1470,79 @@ export default {
 				label: t('learning', tool.labelKey),
 			}))
 		},
+		instructorTabGroups() {
+			if (!this.isInstructor) {
+				return []
+			}
+			return [
+				{
+					id: 'lernraum',
+					label: t('learning', 'Lernraum'),
+					tabs: [
+						{ id: 'pools', label: t('learning', 'Pools') },
+						{ id: 'curriculum', label: t('learning', 'Themen') },
+						{ id: 'materials', label: t('learning', 'Materialien') },
+						{ id: 'knowledge', label: t('learning', 'Wissen') + (this.knowledgePendingCount > 0 ? ' (' + this.knowledgePendingCount + ')' : '') },
+					],
+				},
+				{
+					id: 'teilnehmer',
+					label: t('learning', 'Teilnehmer'),
+					tabs: [
+						{ id: 'members', label: t('learning', 'Members') },
+						{ id: 'progress', label: t('learning', 'Progress') },
+						{ id: 'heatmap', label: t('learning', 'Heatmap') },
+						{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
+						{ id: 'class-profile', label: t('learning', 'Klassen-Profil') },
+						{ id: 'summary', label: t('learning', 'Abschluss') },
+					],
+				},
+				{
+					id: 'wettbewerb',
+					label: t('learning', 'Wettbewerb'),
+					tabs: [
+						{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
+						{ id: 'league', label: t('learning', 'Liga') },
+						{ id: 'arena', label: t('learning', 'Arena') },
+						{ id: 'abenteuer', label: t('learning', 'Abenteuer') },
+					],
+				},
+				{
+					id: 'kommunikation',
+					label: t('learning', 'Kommunikation'),
+					tabs: [
+						{ id: 'announcements', label: t('learning', 'Ankündigungen') },
+						{ id: 'feed', label: t('learning', 'Feed') },
+						{ id: 'requests', label: t('learning', 'Anfragen') },
+					],
+				},
+				{
+					id: 'administration',
+					label: t('learning', 'Administration'),
+					tabs: [
+						{ id: 'mode-config', label: t('learning', 'Kursregeln') },
+						{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot') },
+					],
+				},
+			]
+		},
+		activeInstructorGroupId() {
+			if (!this.isInstructor) {
+				return ''
+			}
+			const activeGroup = this.instructorTabGroups.find((group) => group.tabs.some((tab) => tab.id === this.currentTab))
+			return activeGroup?.id || this.instructorTabGroups[0]?.id || ''
+		},
+		activeInstructorTabs() {
+			if (!this.isInstructor) {
+				return []
+			}
+			const activeGroup = this.instructorTabGroups.find((group) => group.id === this.activeInstructorGroupId)
+			return activeGroup?.tabs || []
+		},
 		visibleTabs() {
 			if (this.isInstructor) {
-				return [
-					// Lernraum
-					{ id: 'pools', label: t('learning', 'Pools'), group: 'Lernraum' },
-					{ id: 'curriculum', label: t('learning', 'Themen'), group: 'Lernraum' },
-					{ id: 'materials', label: t('learning', 'Materialien'), group: 'Lernraum' },
-					{ id: 'knowledge', label: t('learning', 'Wissen'), group: 'Lernraum' },
-					// Teilnehmer
-					{ id: 'members', label: t('learning', 'Members'), group: 'Teilnehmer' },
-					{ id: 'progress', label: t('learning', 'Progress'), group: 'Teilnehmer' },
-					{ id: 'class-profile', label: t('learning', 'Klassen-Profil'), group: 'Teilnehmer' },
-					{ id: 'heatmap', label: t('learning', 'Heatmap'), group: 'Teilnehmer' },
-					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen'), group: 'Teilnehmer' },
-					// Kommunikation
-					{ id: 'announcements', label: t('learning', 'Ankündigungen'), group: 'Kommunikation' },
-					{ id: 'feed', label: t('learning', 'Feed'), group: 'Kommunikation' },
-					{ id: 'requests', label: t('learning', 'Anfragen'), group: 'Kommunikation' },
-					{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot'), group: 'Kommunikation' },
-					// Wettbewerb
-					{ id: 'leaderboard', label: t('learning', 'Leaderboard'), group: 'Wettbewerb' },
-					{ id: 'league', label: t('learning', 'Liga'), group: 'Wettbewerb' },
-					{ id: 'arena', label: t('learning', 'Arena'), group: 'Wettbewerb' },
-					{ id: 'abenteuer', label: t('learning', 'Abenteuer'), group: 'Wettbewerb' },
-					// Verwaltung
-					{ id: 'mode-config', label: t('learning', 'Kursregeln'), group: 'Verwaltung' },
-				]
+				return this.instructorTabGroups.reduce((tabs, group) => tabs.concat(group.tabs), [])
 			}
 			const mc = this.course?.mode_config || {}
 			const enabled = (key) => mc[key] !== false
@@ -1459,6 +1552,7 @@ export default {
 			if (enabled('leitner')) tabs.push({ id: 'leitner', label: t('learning', 'Leitner') })
 			if (enabled('exam')) tabs.push({ id: 'exam', label: t('learning', 'Exam') })
 			tabs.push({ id: 'my-progress', label: t('learning', 'Mein Fortschritt') })
+			if (this.isCourseSummaryReleased) tabs.push({ id: 'summary', label: t('learning', 'Abschluss') })
 			tabs.push({ id: 'feed', label: t('learning', 'Feed') })
 			tabs.push({ id: 'buddies', label: t('learning', 'Lernpartner') })
 			tabs.push({ id: 'leaderboard', label: t('learning', 'Leaderboard') })
@@ -1466,6 +1560,7 @@ export default {
 			if (this.hasEnabledArenaModes) tabs.push({ id: 'arena', label: t('learning', 'Arena') })
 			if (enabled('abenteuer')) tabs.push({ id: 'abenteuer', label: t('learning', 'Abenteuer') })
 			if (this.course?.material_folder) tabs.push({ id: 'materials', label: t('learning', 'Materialien') })
+			tabs.push({ id: 'schwarm', label: t('learning', 'Schwarm') })
 			return tabs
 		},
 		hasEnabledArenaModes() {
@@ -1598,7 +1693,7 @@ export default {
 				this.fetchCourseTickets()
 			}
 			if (tab === 'mode-config' && this.isInstructor) {
-				this.modeConfigLocal = Object.assign({}, this.course?.mode_config || {})
+				this.modeConfigLocal = this.normalizeModeConfig(this.course?.mode_config || {})
 				this.modeConfigSaved = false
 				this.loadToolSettings()
 			}
@@ -1630,6 +1725,8 @@ export default {
 				let area = 'course-detail'
 				if (this.currentTab === 'my-progress') {
 					area = 'course-my-progress'
+				} else if (this.currentTab === 'summary') {
+					area = 'course-summary'
 				} else if (this.currentTab === 'leaderboard') {
 					area = 'course-leaderboard'
 				} else if (this.currentTab === 'league') {
@@ -1714,8 +1811,23 @@ export default {
 						text: t('learning', 'This area summarizes your own learning state in the course. Use it to see where mastery is building and where gaps still remain.'),
 						shortText: t('learning', 'My Progress shows your current state across the course.'),
 					},
+					summary: {
+						key: 'mode:course-summary',
+						title: t('learning', 'Kursabschluss'),
+						text: t('learning', 'This area condenses your course progress into a final overview with mastery, streaks, badges and the questions that still need work.'),
+						shortText: t('learning', 'Kursabschluss zeigt deinen zusammengefassten Stand fuer den Kurs.'),
+					},
 				}
 				return guides[tabId] || null
+			},
+			selectInstructorGroup(groupId) {
+				const group = this.instructorTabGroups.find((item) => item.id === groupId)
+				if (!group || group.tabs.some((tab) => tab.id === this.currentTab)) {
+					return
+				}
+				if (group.tabs[0]) {
+					this.selectTab(group.tabs[0].id)
+				}
 			},
 			selectTab(tabId) {
 				this.currentTab = tabId
@@ -1877,13 +1989,31 @@ export default {
 				return t('learning', '{n} answered', { n: prog.answered || 0 })
 			},
 
+			normalizeModeConfig(modeConfig = {}) {
+				return Object.assign({
+					training: true,
+					leitner: true,
+					swipe: true,
+					exam: true,
+					duel: true,
+					gameshow: true,
+					league: true,
+					oldschool: true,
+					abenteuer: false,
+					course_summary: false,
+				}, modeConfig || {})
+			},
+
 			async fetchCourseDetail() {
 			this.loading = true
 			this.error = ''
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}', { courseId: this.courseId })
 				const response = await axios.get(url)
-				this.course = response.data
+				this.course = {
+					...response.data,
+					mode_config: this.normalizeModeConfig(response.data?.mode_config || {}),
+				}
 				this.coursePools = response.data.pools || []
 				this.courseMembers = response.data.members || []
 				this.leitnerSprint = !!response.data.leitner_sprint
@@ -2598,7 +2728,7 @@ export default {
 					modeConfig: this.modeConfigLocal,
 				})
 				if (this.course) {
-					this.course.mode_config = res.data?.mode_config || this.modeConfigLocal
+					this.course.mode_config = this.normalizeModeConfig(res.data?.mode_config || this.modeConfigLocal)
 				}
 				this.modeConfigSaved = true
 				setTimeout(() => { this.modeConfigSaved = false }, 3000)
@@ -2618,7 +2748,7 @@ export default {
 				if (this.course) {
 					this.course.leitner_sprint = this.leitnerSprint
 					if (res.data?.mode_config) {
-						this.course.mode_config = res.data.mode_config
+						this.course.mode_config = this.normalizeModeConfig(res.data.mode_config)
 					}
 				}
 			} catch (e) {
@@ -2636,7 +2766,7 @@ export default {
 				if (this.course) {
 					this.course.talk_room_token = this.talkRoomToken
 					if (res.data?.mode_config) {
-						this.course.mode_config = res.data.mode_config
+						this.course.mode_config = this.normalizeModeConfig(res.data.mode_config)
 					}
 				}
 				this.talkTokenSaved = true
@@ -2781,6 +2911,16 @@ export default {
 	padding-bottom: 0;
 }
 
+.tab-group-shell {
+	margin-bottom: 24px;
+}
+
+.tab-selector--groups {
+	margin-bottom: 12px;
+	border-bottom: 0;
+	padding-bottom: 0;
+}
+
 .tab-button {
 	padding: 10px 20px;
 	border: none;
@@ -2793,6 +2933,18 @@ export default {
 	margin-bottom: -2px;
 	transition: color 0.15s, border-color 0.15s;
 	white-space: nowrap;
+}
+
+.tab-button--group {
+	border-radius: 999px;
+	border-bottom-width: 0;
+	margin-bottom: 0;
+}
+
+.tab-button--group.active {
+	background: var(--color-primary-element);
+	color: var(--color-primary-element-text);
+	border-bottom-color: transparent;
 }
 
 .tab-button:hover {
@@ -2813,6 +2965,36 @@ export default {
 	margin: 0 8px;
 	align-self: center;
 	flex-shrink: 0;
+}
+
+.detail-sub-nav {
+	margin-bottom: 0;
+	overflow-x: auto;
+	flex-wrap: nowrap;
+	scrollbar-width: thin;
+}
+
+.detail-sub-nav-btn {
+	padding: 10px 14px;
+	border: none;
+	background: transparent;
+	border-radius: 8px;
+	cursor: pointer;
+	font-size: 0.92em;
+	font-weight: 500;
+	color: var(--color-main-text);
+	white-space: nowrap;
+	transition: background 0.15s, color 0.15s;
+}
+
+.detail-sub-nav-btn:hover {
+	background: var(--color-background-dark);
+}
+
+.detail-sub-nav-btn.active {
+	background: var(--color-primary-element);
+	color: var(--color-primary-element-text);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 /* Section header */
