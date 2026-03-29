@@ -1,45 +1,46 @@
-# Requirements: Learning-NC v3.4.0 UX-Konsolidierung & Simulator-Upgrade
+# Requirements: Learning-NC v3.6.0 "Architect's Ascent"
 
-**Defined:** 2026-03-28
-**Core Value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Source:** Dual-Audit (Codex + Gemini, 2026-03-28) + User Input
+**Defined:** 2026-03-29
+**Core Value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — fuer Einzellerner und Kursgruppen.
 
-## v3.4.0 Requirements
+## v3.6.0 Requirements
 
-### UX-Navigation
+### Content & Import
 
-- [x] **NAV-01**: Dozent-Tabs in CourseDetail sind in logische Gruppen organisiert (Lernraum, Teilnehmer, Kommunikation, Wettbewerb)
-- [x] **NAV-02**: Abenteuer ist als eigenständiger Lernmodus platziert, nicht unter Arena
-- [x] **NAV-03**: Kursregeln (mode_config) steuern die sichtbaren Student-Tabs und Arena-Submodes korrekt
-- [x] **NAV-04**: Oldschool-Karte in ArenaSelector führt zu einem funktionalen Screen oder ist entfernt
-- [x] **NAV-05**: Dozenten sehen PersonalSettings UND AdminSettings, nicht nur AdminSettings
-- [x] **NAV-06**: Zeitreise-Code ist entweder reaktiviert oder komplett entfernt (kein Dead Code)
-- [x] **NAV-07**: DE/EN Label-Mix bereinigt — alle UI-Labels einheitlich deutsch via t(), neue Strings immer mit echten Umlauten (ä/ü/ö)
+- [ ] **IMPORT-01**: User kann 4 CompTIA-Kurse (Network+, Security+, Linux+, CySA+) via `occ learning:import-vault` als RAG-Quellen importieren
+- [ ] **IMPORT-02**: Admin kann Vault-Import im Dry-Run-Modus ausfuehren (Vorschau ohne DB-Schreibzugriff)
+- [x] **IMPORT-03**: Privacy-info.json enthaelt 7 Datenkategorien (learning, ai, social, audit, gamification, assessment, external)
+- [x] **IMPORT-04**: PWA-Anleitung (iOS + Android) ist als Materialien-Dokument in der DevCloud verfuegbar
 
-### Simulator-Upgrade
+### UX & Navigation
 
-- [x] **SIM-01**: Jeder Simulator hat mindestens 1 geführte Praxis-Session mit realem Szenario
-- [x] **SIM-02**: Praxis-Sessions führen Schritt für Schritt durch das Szenario mit Erklärungen
-- [x] **SIM-03**: Fortschritt innerhalb einer Session ist sichtbar und nachverfolgbar
+- [ ] **UX-01**: Dozent sieht in CourseDetail 5 Mega-Tabs statt 16 Einzel-Tabs (Lernraum, Teilnehmer, Wettbewerb, Kommunikation, Verwaltung)
+- [ ] **UX-02**: Student kann VirtuProf als Fullscreen-Lernhelfer nutzen (eigener Top-Level-Tab, nicht nur Sidebar)
+- [ ] **UX-03**: User kann Erklaerbot per X-Button oder Swipe-Geste schliessen (statt verschachteltes Menue)
+- [x] **UX-04**: 9 neue Badges haben deutsche und englische Texte (Name + Beschreibung) in l10n
 
-### Student-Dashboard
+### Gamification
 
-- [x] **DASH-01**: Student sieht einen "Heute"-Startscreen mit SmartQueue, Daily Challenge und Streak
-- [x] **DASH-02**: Globaler Feed aggregiert Ankündigungen aus allen eingeschriebenen Kursen
-- [x] **DASH-03**: Pool-Ebene (PoolList) ist direkt über Navigation erreichbar, nicht nur indirekt
+- [ ] **BADGE-01**: DB-Migration fuegt `is_legacy` Flag hinzu, 17 alte Badges werden als Legacy markiert (nicht geloescht)
+- [ ] **BADGE-02**: 5 neue Badge-Trigger funktionieren (weekend, swarm, simulator, trouble_fixer, quick_thinker)
 
-### DevCloud-Integration
+### Security & Compliance
 
-- [x] **DVCL-01**: Kurs-Header enthält einen Link zum zugehörigen Talk-Raum
-- [x] **DVCL-02**: Studenten sehen Kursmaterialien (read-only) als eigenen Tab
-- [x] **DVCL-03**: Buddy-Matching zeigt wer Hilfe anbietet/sucht basierend auf Telos help_offer/help_wanted
-- [x] **DVCL-04**: Werkzeuge-Tab respektiert kursbezogene Tool-Einschränkungen wenn ein Kurs aktiv ist
+- [ ] **SEC-01**: Sensible Telos-Felder (bio, telos_json) sind mit ICrypto verschluesselt gespeichert (nicht help_offer/help_wanted)
+- [ ] **SEC-02**: Jede Schwarm-Moderations-Entscheidung (approve/reject) wird mit User-ID, Timestamp und Aktion in audit_events protokolliert
 
-### Leitner-Optimierung
+### AI & Kursende
 
-- [x] **LEIT-01**: Dozent kann pro Kurs Sprint-Intervalle aktivieren (4h/12h/1d/2d statt 1d/3d/7d/14d)
+- [ ] **AI-01**: Student erhaelt am Kursende eine KI-generierte Reflexion (Gemini) mit persoenlichem Lernverlauf und Next-Step-Empfehlung
+- [ ] **AI-02**: Student kann nach Kursende einen ICS-Kalender-Feed abonnieren mit faelligen Leitner-Wiederholungen (sabre/vobject, Token-basierte URL)
 
 ## Future Requirements
+
+### Deferred from v3.6.0
+
+- **BADGE-03**: Verdiente Legacy-Badges in archivierter Sektion sichtbar halten
+- **UX-05**: Kurs-Filter im Fullscreen-Erklaerbot (damit Antworten kurs-kontextuell bleiben)
+- **AI-03**: Narrative Portfolio Prompt-Iteration (dedizierte Research-Phase fuer optimale Gemini-Prompts)
 
 ### Simulator v2+
 
@@ -48,47 +49,44 @@
 
 ### DevCloud v2+
 
-- **DVCL-F01**: Deck-Board-Integration für Kurs-Aufgaben
-- **DVCL-F02**: Collectives-Integration für Kurs-Wikis
+- **DVCL-F01**: Deck-Board-Integration fuer Kurs-Aufgaben
+- **DVCL-F02**: Collectives-Integration fuer Kurs-Wikis
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Vue 3 Migration | Blockiert durch @nextcloud/vue 9.x — eigener Milestone |
-| Kampagnen-Editor GUI | Dozenten nutzen JSON, Editor erst nach Engine bewährt |
-| Skill-Map Dozenten-Vergleich | Erst nach Basis-Graph bewährt (SKILL-F01) |
-| Neue Kampagnen-Inhalte | Engine-Bugs erst fixen, dann Content |
-| WebSocket-basierter Chat | NC hat keinen WS-Server, Talk reicht |
+| Legacy-Badge-Anzeige | Nicht priorisiert, spaeterer Milestone |
+| Vue 3 Migration | Blockiert durch @nextcloud/vue 9.x |
+| WebSocket Chat | NC hat keinen WS-Server |
+| Multi-Provider KI | Fokus auf Gemini-Optimierung |
+| Kampagnen-Editor GUI | Engine muss sich erst bewaehren |
+| Echtzeit-Duelle | Asynchrone Arena funktioniert |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| NAV-01 | Phase 96 | Complete |
-| NAV-02 | Phase 96 | Complete |
-| NAV-03 | Phase 96 | Complete |
-| NAV-04 | Phase 96 | Complete |
-| NAV-05 | Phase 97 | Complete |
-| NAV-06 | Phase 97 | Complete |
-| NAV-07 | Phase 97 | Complete |
-| SIM-01 | Phase 98 | Complete |
-| SIM-02 | Phase 98 | Complete |
-| SIM-03 | Phase 98 | Complete |
-| DASH-01 | Phase 99 | Complete |
-| DASH-02 | Phase 99 | Complete |
-| DASH-03 | Phase 99 | Complete |
-| DVCL-01 | Phase 100 | Complete |
-| DVCL-02 | Phase 100 | Complete |
-| DVCL-03 | Phase 100 | Complete |
-| DVCL-04 | Phase 100 | Complete |
-| LEIT-01 | Phase 100 | Complete |
+| SEC-01 | Phase 110 | Pending |
+| SEC-02 | Phase 110 | Pending |
+| IMPORT-03 | Phase 110 | Complete |
+| IMPORT-04 | Phase 110 | Complete |
+| UX-04 | Phase 110 | Complete |
+| BADGE-01 | Phase 111 | Pending |
+| BADGE-02 | Phase 111 | Pending |
+| IMPORT-01 | Phase 111 | Pending |
+| IMPORT-02 | Phase 111 | Pending |
+| UX-01 | Phase 112 | Pending |
+| UX-02 | Phase 113 | Pending |
+| UX-03 | Phase 113 | Pending |
+| AI-01 | Phase 113 | Pending |
+| AI-02 | Phase 113 | Pending |
 
 **Coverage:**
-- v3.4.0 requirements: 18 total
-- Mapped to phases: 18
+- v3.6.0 requirements: 14 total
+- Mapped to phases: 14
 - Unmapped: 0
 
 ---
-*Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 — traceability filled after roadmap creation*
+*Requirements defined: 2026-03-29*
+*Last updated: 2026-03-29 after roadmap creation*
