@@ -429,12 +429,17 @@
 
       <!-- ── AI-first layout (aiEnabled=true) ──────────────────── -->
       <template v-else-if="aiEnabled">
-        <!-- AI consent dialog: shown before first chat use -->
-        <div v-if="showConsentDialog" class="ai-consent-overlay" role="dialog" aria-modal="true" :aria-label="vt('AI consent required')">
-          <p class="ai-consent-text">{{ vt('Your question will be sent to Google Gemini (an external AI service). Do you agree?') }}</p>
+        <!-- AI consent dialog: versioned, JSON-driven (Phase 102) -->
+        <div v-if="showConsentDialog" class="ai-consent-overlay" role="dialog" aria-modal="true" :aria-label="consentData.title || t('learning', 'AI consent required')">
+          <h4 v-if="consentData.title" class="ai-consent-title">{{ consentData.title }}</h4>
+          <!-- eslint-disable-next-line vue/no-v-html — static JSON bundled with app, not user input -->
+          <div v-if="consentData.body_html" v-html="consentData.body_html" class="ai-consent-body"></div>
+          <p class="ai-consent-privacy-link">
+            <a href="#/settings/privacy">{{ t('learning', 'Mehr zum Datenschutz') }}</a>
+          </p>
           <div class="ai-consent-actions">
-            <NcButton type="primary" size="small" @click="$emit('consent-accept')">{{ vt('I agree') }}</NcButton>
-            <NcButton type="secondary" size="small" @click="$emit('consent-decline')">{{ vt('Cancel') }}</NcButton>
+            <NcButton type="primary" size="small" @click="$emit('consent-accept')">{{ consentData.accept_label || t('learning', 'Accept') }}</NcButton>
+            <NcButton type="secondary" size="small" @click="$emit('consent-decline')">{{ consentData.decline_label || t('learning', 'Decline') }}</NcButton>
           </div>
         </div>
 
@@ -889,6 +894,7 @@
 
 <script>
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import { translate as t } from '@nextcloud/l10n'
 import { translateVirtuProf } from '../utils/virtuprof-i18n.js'
 
 export default {
@@ -950,6 +956,10 @@ export default {
     showConsentDialog: {
       type: Boolean,
       default: false,
+    },
+    consentData: {
+      type: Object,
+      default: () => ({}),
     },
     examBlocked: {
       type: Boolean,
@@ -1064,6 +1074,7 @@ export default {
     },
   },
   methods: {
+    t,
     vt(key, params = {}) {
       return translateVirtuProf(this.effectiveLanguage, key, params)
     },
@@ -1661,18 +1672,54 @@ export default {
   overflow-wrap: anywhere;
 }
 
-/* ── AI consent overlay ───────────────────────────── */
+/* ── AI consent overlay (Phase 102) ──────────────── */
 .ai-consent-overlay {
   margin-bottom: 10px;
   border-bottom: 1px solid var(--color-border);
   padding-bottom: 10px;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
-.ai-consent-text {
+.ai-consent-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-main-text);
+}
+
+.ai-consent-body {
   margin: 0 0 10px;
   font-size: 13px;
   line-height: 1.5;
   color: var(--color-main-text);
+}
+
+.ai-consent-body :deep(p) {
+  margin: 0 0 8px;
+}
+
+.ai-consent-body :deep(ul) {
+  margin: 4px 0 8px 16px;
+  padding: 0;
+}
+
+.ai-consent-body :deep(li) {
+  margin-bottom: 4px;
+}
+
+.ai-consent-body :deep(strong) {
+  color: var(--color-main-text);
+}
+
+.ai-consent-privacy-link {
+  margin: 0 0 10px;
+  font-size: 13px;
+}
+
+.ai-consent-privacy-link a {
+  color: var(--color-primary-element);
+  text-decoration: underline;
 }
 
 .ai-consent-actions {

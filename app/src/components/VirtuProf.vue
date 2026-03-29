@@ -39,6 +39,7 @@
           :chat-loading="chatLoading"
           :ai-enabled="aiEnabled"
           :show-consent-dialog="showAiConsentDialog"
+          :consent-data="consentData"
           :exam-blocked="isExamMode"
           :has-question-context="hasActiveQuestionContext"
           :telos-form="telosForm"
@@ -65,6 +66,7 @@
 
 <script>
 import axios from '@nextcloud/axios'
+import { getCurrentUser } from '@nextcloud/auth'
 import { generateUrl } from '@nextcloud/router'
 import NovaDock from './nova/NovaDock.vue'
 import NovaPanel from './nova/NovaPanel.vue'
@@ -76,6 +78,7 @@ import {
   detectVirtuProfLanguage,
   translateVirtuProf,
 } from '../utils/virtuprof-i18n.js'
+import consentData from '../../data/ai-consent.json'
 import {
   applyTelosToForm,
   buildTelosPayload,
@@ -249,8 +252,9 @@ export default {
       chatMessages: [],
       chatLoading: false,
       chatAnimationTimer: null,
-      // AI consent (PRIV-01)
-      aiChatConsent: false,
+      // AI consent — versioned (Phase 102)
+      aiConsentVersion: null,
+      consentData,
       showAiConsentDialog: false,
       pendingChatMessage: null,
       // AI global enabled flag (PRIV-02)
@@ -276,6 +280,8 @@ export default {
       lastHintQuestionId: null,
       // EXAM-01: VirtuProf chat lock during exam mode
       isExamMode: false,
+      // GREET-01: User's first name for personalized greetings
+      userFirstName: '',
     }
   },
   computed: {
@@ -402,11 +408,21 @@ export default {
     },
   },
   async mounted() {
-    // PRIV-01: Read persisted AI chat consent from localStorage
+    // Phase 102: Load AI consent version from backend
     try {
-      this.aiChatConsent = window.localStorage.getItem('learning:ai_chat_consent') === 'accepted'
+      const consentRes = await axios.get(generateUrl('/apps/learning/api/profile/telos/consent'))
+      this.aiConsentVersion = consentRes.data.ai_consent_version || null
     } catch (e) {
-      this.aiChatConsent = false
+      this.aiConsentVersion = null
+    }
+    // GREET-01: Extract first name from Nextcloud display name
+    try {
+      const user = getCurrentUser()
+      if (user?.displayName) {
+        this.userFirstName = String(user.displayName).split(/\s+/)[0] || ''
+      }
+    } catch (e) {
+      this.userFirstName = ''
     }
     this.$root.$on('virtuprof:trigger', this.enqueue)
     this.$root.$on('virtuprof:context', this.updateContext)
@@ -466,11 +482,20 @@ export default {
       if (!step) {
         return null
       }
-      return {
-        ...step,
-        title: step.title ? this.vt(step.title, this.currentScriptContext) : '',
-        text: step.text ? this.vt(step.text, this.currentScriptContext) : '',
+      // GREET-01: If firstName was not resolved, strip leftover placeholder and fix punctuation
+      const cleanUnresolved = (text) => text
+        .replace(/,?\s*\{firstName\}/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim()
+      const ctx = this.currentScriptContext
+      const needsCleanup = !ctx.firstName
+      let title = step.title ? this.vt(step.title, ctx) : ''
+      let text = step.text ? this.vt(step.text, ctx) : ''
+      if (needsCleanup) {
+        title = cleanUnresolved(title)
+        text = cleanUnresolved(text)
       }
+      return { ...step, title, text }
     },
     applyVirtuProfState(data = {}) {
       this.dismissedTriggers = Array.isArray(data.dismissed) ? data.dismissed : []
@@ -707,10 +732,14 @@ export default {
         return
       }
 
+      // GREET-01: Auto-inject firstName so any script can use {firstName}
+      const enrichedContext = this.userFirstName
+        ? { firstName: this.userFirstName, ...context }
+        : { ...context }
       this.queue.push({
         id: triggerId,
         script,
-        context,
+        context: enrichedContext,
         priority: script.priority || 0,
       })
       this.queue.sort((left, right) => right.priority - left.priority)
@@ -1696,8 +1725,8 @@ export default {
         return
       }
 
-      // PRIV-01: show consent dialog before first AI chat
-      if (!this.aiChatConsent) {
+      // Phase 102: show consent dialog if version mismatch or never consented
+      if (this.aiConsentVersion !== this.consentData.version) {
         this.pendingChatMessage = message
         this.showAiConsentDialog = true
         // Ensure bubble is open so the dialog is visible
@@ -1793,14 +1822,21 @@ export default {
         this.applyReaction('chat-message')
       }
     },
-    // PRIV-01: User accepted the AI consent dialog
-    handleConsentAccept() {
+    // Phase 102: User accepted the versioned AI consent dialog
+    async handleConsentAccept() {
       try {
-        window.localStorage.setItem('learning:ai_chat_consent', 'accepted')
+        await axios.post(generateUrl('/apps/learning/api/profile/telos/consent'), {
+          version: this.consentData.version,
+        })
+        this.aiConsentVersion = this.consentData.version
+        // Clean up legacy localStorage consent
+        try {
+          window.localStorage.removeItem('learning:ai_chat_consent')
+        } catch (e) { /* ignore */ }
       } catch (e) {
-        // Ignore storage failures.
+        // Consent save failed — still allow this session
+        this.aiConsentVersion = this.consentData.version
       }
-      this.aiChatConsent = true
       this.showAiConsentDialog = false
       const pending = this.pendingChatMessage
       this.pendingChatMessage = null
@@ -1809,7 +1845,7 @@ export default {
       }
     },
 
-    // PRIV-01: User declined the AI consent dialog
+    // Phase 102: User declined the AI consent dialog
     handleConsentDecline() {
       this.showAiConsentDialog = false
       this.pendingChatMessage = null
