@@ -78,7 +78,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 
 **Milestone Goal:** Security hardening (encryption at rest, audit trail), badge system overhaul, content pipeline (vault import), UX simplification (tab reduction), and AI-powered post-course experience (narrative portfolio, spaced repetition calendar).
 
-- [ ] **Phase 110: Foundation & Security** - Telos encryption, audit-log moderation, Gemini-outputs merge (privacy-info, PWA, badge l10n)
+- [x] **Phase 110: Foundation & Security** - Telos encryption, audit-log moderation, Gemini-outputs merge (privacy-info, PWA, badge l10n) (completed 2026-03-29)
 - [ ] **Phase 111: Badge-Umbau & Vault-Import** - Legacy badge migration, new triggers, CompTIA vault import pipeline
 - [ ] **Phase 112: Tab-Reduktion** - CourseDetail.vue decomposition from 16 tabs to 5 mega-tabs
 - [ ] **Phase 113: AI & Erklaerbot** - Fullscreen Erklaerbot, dismissal UX, narrative portfolio, Forget-Me-Not ICS feed
@@ -110,11 +110,11 @@ Plans:
   2. Five new badge triggers fire correctly: weekend learner, swarm contributor, simulator user, trouble fixer, quick thinker
   3. Running `occ learning:import-vault` imports Network+, Security+, Linux+, and CySA+ content as RAG sources
   4. Running the import command with --dry-run flag shows a preview of what would be imported without writing to the database
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 111-01: Badge Migration + Codex Review Merge (BADGE-01, BADGE-02)
-- [ ] 111-02: Vault-Import Pipeline (IMPORT-01, IMPORT-02)
+- [ ] 111-01-PLAN.md — Add quick_thinker badge + apply is_legacy migration + wire 5 new badge triggers (BADGE-01, BADGE-02)
+- [ ] 111-02-PLAN.md — Copy 4 CompTIA vaults to container and import as RAG chunks, verify --dry-run (IMPORT-01, IMPORT-02)
 
 ### Phase 112: Tab-Reduktion
 **Goal**: Instructor course view is simplified from 16 individual tabs to 5 coherent mega-tabs, making CourseDetail.vue maintainable for future features
@@ -152,7 +152,7 @@ Plans:
 | 90-95 | v13.0 | - | Complete | 2026-03-28 |
 | 96-100 | v3.4.0 | - | Complete | 2026-03-28 |
 | 101-109 | v3.5.0 | - | Complete | 2026-03-29 |
-| 110. Foundation & Security | 1/2 | In Progress|  | - |
+| 110. Foundation & Security | 2/2 | Complete    | 2026-03-29 | - |
 | 111. Badge-Umbau & Vault-Import | v3.6.0 | 0/2 | Not started | - |
 | 112. Tab-Reduktion | v3.6.0 | 0/1 | Not started | - |
 | 113. AI & Erklaerbot | v3.6.0 | 0/2 | Not started | - |
