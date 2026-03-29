@@ -41,11 +41,13 @@ vi.mock('../../src/components/OldschoolSelector.vue', () => stub('OldschoolSelec
 vi.mock('../../src/components/WissensturmMode.vue', () => stub('WissensturmMode'))
 vi.mock('../../src/components/LernwuerfelMode.vue', () => stub('LernwuerfelMode'))
 vi.mock('../../src/components/AbenteuerMode.vue', () => stub('AbenteuerMode'))
+vi.mock('../../src/components/CourseTabLernraum.vue', () => stub('CourseTabLernraum'))
+vi.mock('../../src/components/CourseTabTeilnehmer.vue', () => stub('CourseTabTeilnehmer'))
+vi.mock('../../src/components/CourseTabWettbewerb.vue', () => stub('CourseTabWettbewerb'))
+vi.mock('../../src/components/CourseTabKommunikation.vue', () => stub('CourseTabKommunikation'))
+vi.mock('../../src/components/CourseTabVerwaltung.vue', () => stub('CourseTabVerwaltung'))
 vi.mock('../../src/components/CourseSummary.vue', () => stub('CourseSummary'))
-vi.mock('../../src/components/CourseMaterials.vue', () => stub('CourseMaterials'))
-vi.mock('../../src/components/CourseKnowledgeImport.vue', () => stub('CourseKnowledgeImport'))
 vi.mock('../../src/components/StudentKnowledgeContribute.vue', () => stub('StudentKnowledgeContribute'))
-vi.mock('../../src/components/KnowledgeModeration.vue', () => stub('KnowledgeModeration'))
 vi.mock('../../src/components/CourseFeed.vue', () => stub('CourseFeed'))
 vi.mock('../../src/components/BuddyMatching.vue', () => stub('BuddyMatching'))
 
@@ -97,6 +99,9 @@ function createInstance(overrides = {}) {
 	Object.defineProperties(instance, {
 		isInstructor: { get: () => CourseDetail.computed.isInstructor.call(instance) },
 		isCourseSummaryReleased: { get: () => CourseDetail.computed.isCourseSummaryReleased.call(instance) },
+		lernraumLeafTabs: { get: () => CourseDetail.computed.lernraumLeafTabs.call(instance) },
+		teilnehmerLeafTabs: { get: () => CourseDetail.computed.teilnehmerLeafTabs.call(instance) },
+		wettbewerbLeafTabs: { get: () => CourseDetail.computed.wettbewerbLeafTabs.call(instance) },
 		visibleTabs: { get: () => CourseDetail.computed.visibleTabs.call(instance) },
 		hasEnabledArenaModes: { get: () => CourseDetail.computed.hasEnabledArenaModes.call(instance) },
 	})
@@ -130,9 +135,12 @@ describe('CourseDetail navigation logic', () => {
 		})
 	})
 
-	it('shows the summary tab for students only when the release flag is enabled', () => {
+	it('shows mega-tabs and delegates summary to teilnehmerLeafTabs', () => {
 		const hiddenInstance = createInstance()
-		expect(hiddenInstance.visibleTabs.map((tab) => tab.id)).not.toContain('summary')
+		expect(hiddenInstance.visibleTabs.map((tab) => tab.id)).toContain('lernraum')
+		expect(hiddenInstance.visibleTabs.map((tab) => tab.id)).not.toContain('training')
+		// summary is now a leaf inside teilnehmer mega-tab, not in visibleTabs directly
+		expect(hiddenInstance.teilnehmerLeafTabs).toEqual(['my-progress'])
 
 		const releasedInstance = createInstance({
 			course: {
@@ -152,13 +160,11 @@ describe('CourseDetail navigation logic', () => {
 			},
 		})
 
-		expect(releasedInstance.visibleTabs.map((tab) => tab.id)).toContain('summary')
-		expect(releasedInstance.visibleTabs.findIndex((tab) => tab.id === 'summary')).toBe(
-			releasedInstance.visibleTabs.findIndex((tab) => tab.id === 'my-progress') + 1,
-		)
+		expect(releasedInstance.teilnehmerLeafTabs).toContain('summary')
+		expect(releasedInstance.teilnehmerLeafTabs).toEqual(['my-progress', 'summary'])
 	})
 
-	it('keeps the instructor placeholder tab in the participant section', () => {
+	it('keeps the instructor mega-tabs and delegates summary to teilnehmerLeafTabs', () => {
 		const instance = createInstance({
 			course: {
 				is_instructor: true,
@@ -177,8 +183,57 @@ describe('CourseDetail navigation logic', () => {
 			},
 		})
 
-		const summaryTab = instance.visibleTabs.find((tab) => tab.id === 'summary')
-		expect(summaryTab).toBeTruthy()
-		expect(summaryTab.group).toBe('Teilnehmer')
+		expect(instance.visibleTabs[0].id).toBe('lernraum')
+		expect(instance.visibleTabs.map((tab) => tab.id)).not.toContain('pools')
+		// Instructor has teilnehmer mega-tab, summary is a leaf within it
+		expect(instance.visibleTabs.map((tab) => tab.id)).toContain('teilnehmer')
+		expect(instance.teilnehmerLeafTabs).toContain('summary')
+	})
+
+	it('treats Lernraum leaf tabs as active via the collapsed mega-tab', () => {
+		const instance = createInstance({
+			currentTab: 'exam',
+		})
+
+		expect(instance.lernraumLeafTabs).toEqual(['training', 'leitner', 'exam'])
+		expect(instance.isLernraumTab('exam')).toBe(true)
+		expect(instance.isTabActive('lernraum')).toBe(true)
+		expect(instance.isTabActive('leaderboard')).toBe(false)
+	})
+
+	it('falls back to the default Lernraum leaf when the mega-tab is selected directly', () => {
+		const studentInstance = createInstance({
+			currentTab: 'leaderboard',
+		})
+
+		studentInstance.selectTab('lernraum')
+
+		expect(studentInstance.currentTab).toBe('training')
+		expect(studentInstance.$root.$emit).toHaveBeenCalledWith('course:tab-change', 'training')
+
+		const instructorInstance = createInstance({
+			currentTab: 'leaderboard',
+			course: {
+				is_instructor: true,
+				material_folder: null,
+				mode_config: {
+					training: true,
+					leitner: true,
+					exam: true,
+					duel: true,
+					gameshow: true,
+					league: true,
+					oldschool: true,
+					abenteuer: false,
+					course_summary: false,
+				},
+			},
+			userRole: 'instructor',
+		})
+
+		instructorInstance.selectTab('lernraum')
+
+		expect(instructorInstance.currentTab).toBe('pools')
+		expect(instructorInstance.$root.$emit).toHaveBeenCalledWith('course:tab-change', 'pools')
 	})
 })
