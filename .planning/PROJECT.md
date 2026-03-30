@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Native Nextcloud App fuer Karteikarten-Lernen mit Leitner-System, Kursen, Arena, KI-Assistent (VirtuProf/NOVA), PBQ-Simulationen, Story-RPG mit Kampagnen, 8 Netzwerk-Simulatoren mit Praxis-Sessions, Kompetenz-Visualisierung (Skill-Map), Kurs-Feed, Student-Dashboard, Kursende-Experience (Zeugnis + Export), Klassenbuch und DSGVO-Compliance.
+Native Nextcloud App fuer Karteikarten-Lernen mit Leitner-System, Kursen, Arena, KI-Assistent (VirtuProf/NOVA) mit Fullscreen-Modus und Kursende-Reflexion, PBQ-Simulationen, Story-RPG mit Kampagnen, 8 Netzwerk-Simulatoren mit Praxis-Sessions, Kompetenz-Visualisierung (Skill-Map), Kurs-Feed, Student-Dashboard, Kursende-Experience (Zeugnis + Export + KI-Narrative + ICS-Kalender), Klassenbuch und DSGVO-Compliance.
 
 ## Core Value
 
@@ -29,20 +29,19 @@ Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung �
 - ✓ Kursende-Experience (Summary, Snapshot, Export, Dozenten-Report) — v3.5.0
 - ✓ Klassenbuch (Opt-in Grid, vCard, Buddy-Netzwerk) — v3.5.0
 - ✓ Security Hardening (Canary Tokens, 19 Injection Patterns, PII-Filter) — v3.5.0
+- ✓ Telos Encryption at Rest (AES-256-CBC, bio + telos_json) — v3.6.0
+- ✓ Audit-Log Moderation (Schwarm approve/reject protokolliert) — v3.6.0
+- ✓ Badge-Umbau (10 aktiv, 25 Legacy, 5 neue Trigger) — v3.6.0
+- ✓ Vault-Import (4 CompTIA-Kurse, 2355 RAG-Chunks) — v3.6.0
+- ✓ Tab-Reduktion (CourseDetail 3874→759 LOC, 5 Mega-Tabs) — v3.6.0
+- ✓ VirtuProf Fullscreen (Top-Level-Tab, X/ESC/Swipe Dismissal) — v3.6.0
+- ✓ Narrative Portfolio (Gemini Kursende-Reflexion, Snapshot-Cache) — v3.6.0
+- ✓ Forget-Me-Not ICS (Leitner-Wiederholungskalender, Token-basiert) — v3.6.0
+- ✓ Privacy-Info 7 DSGVO-Kategorien + PWA-Anleitung — v3.6.0
 
 ### Active
 
-See: `.planning/REQUIREMENTS.md` for v3.6.0 details.
-
-- [ ] Vault-Import (Network+, Security+, Linux+, CySA+)
-- [ ] Badge-Umbau 26→9 (Legacy-Archivierung + neue Badges)
-- [ ] Tab-Reduktion 16→5 (CourseDetail.vue Refactoring)
-- [ ] Gemini-Outputs mergen (privacy-info.json, Badge-Texte l10n, PWA-Anleitung)
-- [ ] Erklaerbot UX (X-Button, Swipe, Fullscreen-View, Kurs-Filter)
-- [ ] Narrative Portfolio (KI-Kursende-Reflexion + Next-Step-Empfehlung)
-- [ ] Forget-Me-Not (Leitner-Wiederholungsplan nach Kursende, ICS-Feed)
-- [ ] Audit-Log Moderation (Schwarm-Beitraege approved/rejected protokollieren)
-- [ ] Telos Encryption at Rest (profile_bio, goals, help_wanted)
+See: `.planning/REQUIREMENTS.md` for next milestone details (created via `/gsd:new-milestone`).
 
 ### Out of Scope
 
@@ -51,24 +50,22 @@ See: `.planning/REQUIREMENTS.md` for v3.6.0 details.
 - WebSocket-basierter Chat — NC hat keinen WS-Server
 - Echtzeit-Duelle — asynchrone Arena funktioniert
 - Multi-Provider KI — Fokus auf Gemini-Optimierung
+- FSRS statt Leitner — eigener Milestone (v3.8+)
 
 ## Context
 
-- **Current Milestone: v3.6.0 "Architect's Ascent"** — Vault-Import, Badge-Umbau, Tab-Reduktion, Erklaerbot UX, Narrative Portfolio, Forget-Me-Not, Security
-- **Shipped v3.5.0** (2026-03-29): 9 Phasen (101-109), 69 Dateien, +6433/-763 Zeilen
-- DSGVO: PrivacyInfo.vue, versionierter AI Consent, Schwarm-Consent, UserDeletedListener (20+ Tabellen)
-- Kursende: CourseSummaryService (8 Kategorien), Snapshot-Persistenz, MD/JSON/Print Export, Dozenten-CSV
-- Klassenbuch: Opt-in Profil-Grid, vCard-Export, Buddy-Netzwerk
-- Security: 6-Layer + Injection Classifier (19 Patterns) + Canary Tokens + PII-Filter
-- 646 Vitest Unit-Tests, PHPStan Level 5, 67 Playwright Checks
-- 12 User auf learning-dev, Dozent broecker
-- App Store: v3.4.0 live, NC-Kompatibilitaet 29-31
+- **Shipped v3.6.0** (2026-03-30): 4 Phasen (110-113), 9 Plans, 90 Files, +12274/-4564 Zeilen
+- v3.6.0: Encryption at Rest, Audit Trail, Badge-Umbau, Vault-Import, Mega-Tab Navigation, VirtuProf Fullscreen, Narrative Portfolio, ICS Kalender-Feed
+- 724 Vitest Unit-Tests, 11 PHPUnit ICS-Tests, PHPStan Level 5, ESLint 0 Errors
+- 12 User auf learning-dev, 10 kursteilnehmer mit 1 GB Quota
+- App Store: v3.4.0 live, v3.6.0 bereit zum Signing
+- Multi-KI Workflow: Claude orchestriert, Codex baut Vorarbeit, Gemini liefert Specs + Reviews
 
 ## Constraints
 
 - **Vue 2.7**: Kein Vue 3 bis @nextcloud/vue 9.x stabil
 - **Nextcloud-Kontext**: Kein WebSocket-Server moeglich
-- **Gemini-Abhaengigkeit**: Dynamische Narrative brauchen Gemini — Fallback fuer Offline
+- **Gemini-Abhaengigkeit**: Narrative Portfolio + VirtuProf brauchen Gemini — Fallback bei fehlendem Key
 - **Performance**: Graph-Rendering muss auf schwachen Tablets fluessig laufen
 
 ## Key Decisions
@@ -81,8 +78,10 @@ See: `.planning/REQUIREMENTS.md` for v3.6.0 details.
 | Privacy JSON (nicht t()) | Instanz-spezifisch, Operator-gepflegt | ✓ Good |
 | Consent-Version als VARCHAR | Re-Consent via String-Inequality | ✓ Good |
 | Snapshot als JSON-Blob | Einfacher Export, komplette Momentaufnahme | ✓ Good |
-| Instructor-Tabs flattened | Zwei-Ebenen-Nav war zu komplex fuer 19 Tabs | ✓ Good — visuell mit Separatoren geloest |
-| RAG-Chunks anonymisieren statt loeschen | Wissen bleibt fuer Kurs erhalten | ✓ Good |
+| Mega-Tab statt Flat-Tabs | 16→5 reduziert kognitive Last | ✓ Good — 80% LOC-Reduktion |
+| Narrative via generateNote() | Server-controlled Prompt, kein User-Input | ✓ Good — einmal generiert, dann cached |
+| ICS VEVENTs statt RRULE | Einfacher fuer Kalender-Clients | ✓ Good |
+| Telos nur bio/telos_json verschluesseln | help_offer/help_wanted braucht SQL fuer Buddy-Match | ✓ Good |
 
 ---
-*Last updated: 2026-03-29 after v3.6.0 milestone start*
+*Last updated: 2026-03-30 after v3.6.0 milestone complete*
