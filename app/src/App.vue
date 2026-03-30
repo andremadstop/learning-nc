@@ -43,6 +43,15 @@
             {{ t('learning', 'Werkzeuge') }}
           </button>
           <button
+            v-if="userRole === 'student' && showVirtuProfDock"
+            :class="['main-nav-btn', { active: mainView === 'virtuprof-fullscreen' }]"
+            role="tab"
+            :aria-selected="mainView === 'virtuprof-fullscreen' ? 'true' : 'false'"
+            @click="switchMainView('virtuprof-fullscreen')"
+          >
+            {{ t('learning', 'Erklärbot') }}
+          </button>
+          <button
             v-if="userRole === 'student'"
             :class="['main-nav-btn', { active: mainView === 'skillmap' }]"
             role="tab"
@@ -320,13 +329,21 @@
         <template v-if="mainView === 'skillmap'">
           <SkillMap @openPool="openPoolFromSkillMap" />
         </template>
+
+        <template v-if="mainView === 'virtuprof-fullscreen'">
+          <div class="virtuprof-fullscreen-view" />
+        </template>
       </div>
 
       <aside v-if="showVirtuProfDock" class="app-virtuprof-dock" aria-label="VirtuProf">
         <VirtuProf
+          ref="virtuprof"
           :enabled="virtuProfEnabled"
           :user-role="userRole"
+          :fullscreen-active="mainView === 'virtuprof-fullscreen'"
           @open-duel="openVirtuProfDuel"
+          @open-fullscreen="openVirtuProfFullscreen"
+          @close-fullscreen="closeVirtuProfFullscreen"
           @ready="triggerInitialVirtuProfHints"
           @enabled-change="handleVirtuProfEnabledChange" />
       </aside>
@@ -359,7 +376,6 @@ import PersonalSettings from './components/PersonalSettings.vue';
 import GameshowMode from './components/GameshowMode.vue';
 import DuelMode from './components/DuelMode.vue';
 import ArenaSelector from './components/ArenaSelector.vue';
-import VirtuProf from './components/VirtuProf.vue';
 import AbenteuerMode from './components/AbenteuerMode.vue';
 import SubnetCalculator from './components/SubnetCalculator.vue';
 import DnsResolver from './components/DnsResolver.vue';
@@ -375,6 +391,8 @@ import StudentDashboard from './components/StudentDashboard.vue';
 import { ALL_TOOL_IDS, TOOL_CATALOG } from './utils/toolCatalog.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
+
+const VirtuProf = () => import('./components/VirtuProf.vue');
 
 export default {
   name: 'App',
@@ -437,6 +455,7 @@ export default {
       courseTab: 'training',
       settingsSubTab: 'admin',
       toolsView: 'subnet',
+      previousMainView: 'courses',
       enabledTools: [...ALL_TOOL_IDS],
       contentLanguage: '',
       virtuProfEnabled: true,
@@ -595,6 +614,9 @@ export default {
     },
     handleVirtuProfEnabledChange(enabled) {
       this.virtuProfEnabled = enabled !== false;
+      if (!this.virtuProfEnabled && this.mainView === 'virtuprof-fullscreen') {
+        this.closeVirtuProfFullscreen();
+      }
     },
     checkInstructorOnboarding() {
       if (this.userRole !== 'instructor') return;
@@ -638,6 +660,9 @@ export default {
       }
     },
     currentViewKey() {
+      if (this.mainView === 'virtuprof-fullscreen') {
+        return null;
+      }
       if (this.mainView === 'dashboard') {
         return 'view:dashboard';
       }
@@ -948,13 +973,22 @@ export default {
       };
     },
     virtuprofContextPayload() {
-      if (this.mainView === 'dashboard') {
+      const mainView = this.mainView === 'virtuprof-fullscreen' ? this.previousMainView : this.mainView;
+      if (mainView === 'dashboard') {
         return { area: 'dashboard' };
       }
-      if (this.mainView === 'settings') {
+      if (mainView === 'settings') {
         return { area: 'settings' };
       }
-      if (this.mainView === 'pools') {
+      if (mainView === 'werkzeuge') {
+        return {
+          area: `tool-${this.toolsView || 'overview'}`,
+        };
+      }
+      if (mainView === 'skillmap') {
+        return { area: 'skillmap' };
+      }
+      if (mainView === 'pools') {
         if (this.currentView === 'questions') {
           if (this.mode === 'gameshow') {
             const area = this.arenaSubMode ? `arena-${this.arenaSubMode}` : 'arena';
@@ -973,7 +1007,7 @@ export default {
         }
         return { area: 'pools' };
       }
-      if (this.mainView === 'courses') {
+      if (mainView === 'courses') {
         if (this.selectedStudent) {
           return {
             area: 'course-my-progress',
@@ -1109,6 +1143,17 @@ export default {
     },
 
     switchMainView(view) {
+      if (view === 'virtuprof-fullscreen') {
+        this.openVirtuProfFullscreen();
+        return;
+      }
+
+      if (this.mainView === 'virtuprof-fullscreen' && view !== 'virtuprof-fullscreen') {
+        this.previousMainView = view;
+      } else if (view !== 'virtuprof-fullscreen') {
+        this.previousMainView = view;
+      }
+
       this.mainView = view;
       if (view === 'courses') {
         this.selectedCourse = null;
@@ -1118,6 +1163,21 @@ export default {
       }
       // settings: no state reset needed
       // duel: no state reset needed — DuelMode is self-contained
+    },
+    openVirtuProfFullscreen() {
+      if (this.userRole !== 'student' || !this.showVirtuProfDock) {
+        return;
+      }
+      if (this.mainView !== 'virtuprof-fullscreen') {
+        this.previousMainView = this.mainView;
+      }
+      this.mainView = 'virtuprof-fullscreen';
+    },
+    closeVirtuProfFullscreen() {
+      const fallbackView = this.previousMainView && this.previousMainView !== 'virtuprof-fullscreen'
+        ? this.previousMainView
+        : (this.userRole === 'student' ? 'dashboard' : 'courses');
+      this.mainView = fallbackView;
     },
 
     // --- Pools methods ---

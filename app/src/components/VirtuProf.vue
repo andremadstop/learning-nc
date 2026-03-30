@@ -1,9 +1,28 @@
 <template>
   <div>
     <OnboardingIntro v-if="showOnboardingIntro" :role="userRole" @done="onIntroFinished" />
+    <VirtuProfFullscreen
+      v-if="enabled && fullscreenActive"
+      :title="panelTitle"
+      :subtitle="panelMetaText"
+      :language="language"
+      :step="currentBubbleStep"
+      :chat-messages="chatMessages"
+      :chat-loading="chatLoading"
+      :ai-enabled="aiEnabled"
+      :show-consent-dialog="showAiConsentDialog"
+      :consent-data="consentData"
+      :exam-blocked="isExamMode"
+      :has-question-context="hasActiveQuestionContext"
+      :current-context="currentContext"
+      @close="handleFullscreenClose"
+      @send="handleChatSend"
+      @report-error="handleReportError"
+      @consent-accept="handleConsentAccept"
+      @consent-decline="handleConsentDecline" />
     <transition name="virtuprof-enter">
     <section
-      v-if="enabled"
+      v-if="enabled && !fullscreenActive"
       class="virtuprof-container"
       :class="{ minimized: isMinimized, 'is-open': showBubble }">
       <NovaDock
@@ -51,6 +70,7 @@
           :voice-lang="voiceLang"
           @next="nextStep"
           @dismiss="dismiss"
+          @open-fullscreen="requestFullscreen"
           @action="handleAction"
           @update:ticketSubject="ticketSubject = $event"
           @update:ticketDraft="ticketDraft = $event"
@@ -71,6 +91,7 @@ import { generateUrl } from '@nextcloud/router'
 import NovaDock from './nova/NovaDock.vue'
 import NovaPanel from './nova/NovaPanel.vue'
 import VirtuProfBubble from './VirtuProfBubble.vue'
+import VirtuProfFullscreen from './VirtuProfFullscreen.vue'
 import { novaReactions } from '../utils/nova-reaction-engine.js'
 import OnboardingIntro from './OnboardingIntro.vue'
 import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
@@ -193,7 +214,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 
 export default {
   name: 'VirtuProf',
-  components: { NovaDock, NovaPanel, VirtuProfBubble, OnboardingIntro },
+  components: { NovaDock, NovaPanel, VirtuProfBubble, VirtuProfFullscreen, OnboardingIntro },
   props: {
     enabled: {
       type: Boolean,
@@ -202,6 +223,10 @@ export default {
     userRole: {
       type: String,
       default: 'student',
+    },
+    fullscreenActive: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
@@ -1110,6 +1135,12 @@ export default {
         return
       }
       this.openHelpHome()
+    },
+    requestFullscreen() {
+      this.$emit('open-fullscreen')
+    },
+    handleFullscreenClose() {
+      this.$emit('close-fullscreen')
     },
     openHelpHome() {
       this.resetTicketFeedback()

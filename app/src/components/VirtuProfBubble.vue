@@ -585,6 +585,13 @@
         <!-- Actions row: report + clear on same line -->
         <div class="chat-actions-row">
           <button
+            type="button"
+            class="chat-clear-btn"
+            :disabled="chatLoading"
+            @click="$emit('open-fullscreen')">
+            {{ t('learning', 'Vollbild öffnen') }}
+          </button>
+          <button
             v-if="hasQuestionContext && !examBlocked"
             type="button"
             class="chat-clear-btn"
