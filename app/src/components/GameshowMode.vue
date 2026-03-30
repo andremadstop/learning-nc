@@ -1725,11 +1725,12 @@ export default {
   background-position: right 12px center;
   color: var(--color-main-text) !important;
   font-size: 15px;
-  line-height: 1.4;
+  line-height: normal;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
+  vertical-align: middle;
 }
 
 .pool-select option {

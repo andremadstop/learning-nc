@@ -131,7 +131,7 @@ describe('CourseDetail navigation logic', () => {
 			duel: false,
 			gameshow: true,
 			league: true,
-			oldschool: true,
+			oldschool: false,
 			abenteuer: false,
 			course_summary: false,
 		})

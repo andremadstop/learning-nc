@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
 status: Not started
-stopped_at: Completed 115-01-PLAN.md
-last_updated: "2026-03-30T09:13:30.914Z"
+stopped_at: Completed 115-02-PLAN.md
+last_updated: "2026-03-30T09:19:03.316Z"
 last_activity: 2026-03-30 — v3.7.0 roadmap created
 progress:
   total_phases: 8
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
   percent: 0
 ---
 
@@ -50,6 +50,7 @@ Progress: [__________] 0% (0/? plans)
 | Phase 114-ux-modus-steuerung P02 | 6 | 2 tasks | 2 files |
 | Phase 114-ux-modus-steuerung P02 | 10 | 3 tasks | 2 files |
 | Phase 115-wahr-falsch-migration P01 | 8 | 2 tasks | 2 files |
+| Phase 115-wahr-falsch-migration P02 | 6 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,7 @@ Progress: [__________] 0% (0/? plans)
 - [Phase 114-02]: fetchQueueCount non-fatal: count stays 0 on error, cross-course label 'fällig — alle Kurse'
 - [Phase 115]: Migration Version006300 uses QueryBuilder instead of raw SQL for NC API consistency; data-only (changeSchema returns null)
 - [Phase 115]: ImportController normalizeJsonItem guard placed immediately after $type assignment — normalized at import boundary
+- [Phase 115]: TrainingMode.vue and CourseTabLernraum.vue already cleaned before this plan; only CourseDetail, CourseTabVerwaltung, VirtuProf required swipe removal
 
 ### Pending Todos
 
@@ -79,6 +81,6 @@ None at milestone start.
 
 ## Session Continuity
 
-Last session: 2026-03-30T09:13:30.907Z
-Stopped at: Completed 115-01-PLAN.md
+Last session: 2026-03-30T09:19:03.301Z
+Stopped at: Completed 115-02-PLAN.md
 Resume file: None

@@ -153,7 +153,6 @@
 				:poolId="selectedLearningPool.pool_id"
 				:courseId="courseId"
 				:totalQuestions="selectedLearningPoolQuestionCount"
-				:allowWfMode="selectedLearningPoolAllowsWfMode"
 				:contentLanguage="contentLanguage"
 				@back="resetLearningPoolSelection" />
 
@@ -516,9 +515,6 @@ export default {
 			return this.poolQuestionCounts[this.selectedLearningPool.pool_id]
 				?? this.selectedLearningPool.question_count
 				?? 0
-		},
-		selectedLearningPoolAllowsWfMode() {
-			return this.course?.mode_config?.swipe !== false
 		},
 		currentRequiredBlockers() {
 			return this.sortedPools
@@ -1302,7 +1298,7 @@ export default {
 
 	.section-header {
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: stretch;
 		gap: 8px;
 	}
 
