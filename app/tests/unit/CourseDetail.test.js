@@ -127,7 +127,6 @@ describe('CourseDetail navigation logic', () => {
 		expect(instance.normalizeModeConfig({ duel: false })).toEqual({
 			training: true,
 			leitner: true,
-			swipe: true,
 			exam: true,
 			duel: false,
 			gameshow: true,
