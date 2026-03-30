@@ -25,7 +25,7 @@
 - ✅ **v13.0 Feature Expansion** — Phases 90-95 (shipped 2026-03-28)
 - ✅ **v3.4.0 UX-Konsolidierung & Simulator-Upgrade** — Phases 96-100 (shipped 2026-03-28)
 - ✅ **v3.5.0 Transparenz & Kursabschluss** — Phases 101-109 (shipped 2026-03-29)
-- **v3.6.0 Architect's Ascent** — Phases 110-113 (in progress)
+- ✅ **v3.6.0 Architect's Ascent** — Phases 110-113 (shipped 2026-03-30)
 
 ## Phases
 
@@ -81,7 +81,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 - [x] **Phase 110: Foundation & Security** - Telos encryption, audit-log moderation, Gemini-outputs merge (privacy-info, PWA, badge l10n) (completed 2026-03-29)
 - [x] **Phase 111: Badge-Umbau & Vault-Import** - Legacy badge migration, new triggers, CompTIA vault import pipeline (completed 2026-03-29)
 - [x] **Phase 112: Tab-Reduktion** - CourseDetail.vue decomposition from 16 tabs to 5 mega-tabs (completed 2026-03-29)
-- [ ] **Phase 113: AI & Erklaerbot** - Fullscreen Erklaerbot, dismissal UX, narrative portfolio, Forget-Me-Not ICS feed
+- [x] **Phase 113: AI & Erklaerbot** - Fullscreen Erklaerbot, dismissal UX, narrative portfolio, Forget-Me-Not ICS feed (completed 2026-03-30)
 
 ## Phase Details
 
@@ -143,8 +143,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 113-01-PLAN.md — Erklaerbot Fullscreen + Dismissal UX (UX-02, UX-03)
-- [ ] 113-02-PLAN.md — Narrative Portfolio + Forget-Me-Not ICS (AI-01, AI-02)
+- [x] 113-01-PLAN.md — Erklaerbot Fullscreen + Dismissal UX (UX-02, UX-03)
+- [x] 113-02-PLAN.md — Narrative Portfolio + Forget-Me-Not ICS (AI-01, AI-02)
 
 ## Progress Table
 
@@ -157,4 +157,4 @@ Plans:
 | 110. Foundation & Security | 2/2 | Complete    | 2026-03-29 | - |
 | 111. Badge-Umbau & Vault-Import | 2/2 | Complete    | 2026-03-29 | - |
 | 112. Tab-Reduktion | 3/3 | Complete    | 2026-03-30 | - |
-| 113. AI & Erklaerbot | 1/2 | In Progress|  | - |
+| 113. AI & Erklaerbot | 2/2 | Complete    | 2026-03-30 | - |

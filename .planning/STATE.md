@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
-status: executing
-stopped_at: Completed 113-01-PLAN.md — VirtuProfFullscreen wiring + dismissal UX
-last_updated: "2026-03-30T03:33:57.137Z"
-last_activity: 2026-03-30 — Completed 113-01 VirtuProfFullscreen wiring
+status: milestone-complete
+stopped_at: Completed 113-02-PLAN.md — Phase 113 complete, v3.6.0 milestone done
+last_updated: "2026-03-30T03:50:00.000Z"
+last_activity: 2026-03-30 — Completed 113-02 Narrative Portfolio + ICS Calendar
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 100
 ---
 
@@ -26,17 +26,17 @@ See: .planning/PROJECT.md (updated 2026-03-29)
 ## Current Position
 
 Phase: 113 (4 of 4 in v3.6.0) (AI Erklaerbot)
-Plan: 1 of 2 in current phase
-Status: Executing
-Last activity: 2026-03-30 — Completed 113-01 VirtuProfFullscreen wiring
+Plan: 2 of 2 in current phase
+Status: Phase Complete
+Last activity: 2026-03-30 — Completed 113-02 Narrative Portfolio + ICS Calendar
 
-Progress: [████████░░] 88% (8/9 plans)
+Progress: [██████████] 100% (9/9 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4 (v3.6.0)
-- Average duration: ~3min
+- Total plans completed: 5 (v3.6.0)
+- Average duration: ~4min
 - Total execution time: ~0.2 hours
 
 **By Phase:**
@@ -46,12 +46,13 @@ Progress: [████████░░] 88% (8/9 plans)
 | 110 | 2/2 | ~2min | ~1min |
 | 111 | 2/2 | ~8min | ~4min |
 | 112 | 3/3 | ~22min | ~7min |
-| 113 | 1/2 | ~5min | ~5min |
+| 113 | 2/2 | ~11min | ~5.5min |
 | Phase 111 P01 | 10min | 2 tasks | 9 files |
 | Phase 113 P01 | 5min | 2 tasks | 5 files |
 | Phase 112 P01 | 8min | 2 tasks | 5 files |
 | Phase 112 P02 | 10min | 2 tasks | 6 files |
 | Phase 112 P03 | 4min | 2 tasks | 3 files |
+| Phase 113 P02 | 6min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,9 @@ Progress: [████████░░] 88% (8/9 plans)
 - [Phase 113]: VirtuProf lazy-loaded via dynamic import to reduce initial bundle size
 - [Phase 113]: previousMainView tracked as data property for reliable close-to-previous navigation
 - [Phase 113]: Fullscreen placeholder div in App.vue kept empty (no aria-hidden) for accessibility
+- [Phase 113]: Narrative cached in snapshot blob via UPDATE (not new row) to keep one snapshot per course/user
+- [Phase 113]: loadNarrative() and loadIcsToken() fire-and-forget after summary loads (non-blocking UX)
+- [Phase 113]: Pre-existing PHPStan errors (20) from Codex ICS backend left as-is (out of scope)
 
 ### Pending Todos
 
@@ -84,6 +88,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T03:33:08Z
-Stopped at: Completed 113-01-PLAN.md — VirtuProfFullscreen wiring + dismissal UX
+Last session: 2026-03-30T03:50:00Z
+Stopped at: Completed 113-02-PLAN.md — Narrative Portfolio + ICS Calendar (Phase 113 complete, v3.6.0 milestone done)
 Resume file: None

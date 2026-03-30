@@ -31,8 +31,8 @@
 
 ### AI & Kursende
 
-- [ ] **AI-01**: Student erhaelt am Kursende eine KI-generierte Reflexion (Gemini) mit persoenlichem Lernverlauf und Next-Step-Empfehlung
-- [ ] **AI-02**: Student kann nach Kursende einen ICS-Kalender-Feed abonnieren mit faelligen Leitner-Wiederholungen (sabre/vobject, Token-basierte URL)
+- [x] **AI-01**: Student erhaelt am Kursende eine KI-generierte Reflexion (Gemini) mit persoenlichem Lernverlauf und Next-Step-Empfehlung
+- [x] **AI-02**: Student kann nach Kursende einen ICS-Kalender-Feed abonnieren mit faelligen Leitner-Wiederholungen (sabre/vobject, Token-basierte URL)
 
 ## Future Requirements
 
@@ -79,8 +79,8 @@
 | UX-01 | Phase 112 | Complete |
 | UX-02 | Phase 113 | Complete |
 | UX-03 | Phase 113 | Complete |
-| AI-01 | Phase 113 | Pending |
-| AI-02 | Phase 113 | Pending |
+| AI-01 | Phase 113 | Complete |
+| AI-02 | Phase 113 | Complete |
 
 **Coverage:**
 - v3.6.0 requirements: 14 total
