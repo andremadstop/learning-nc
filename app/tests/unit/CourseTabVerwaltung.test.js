@@ -4,6 +4,7 @@ vi.mock('@nextcloud/axios', () => ({
 	default: {
 		get: vi.fn(),
 		post: vi.fn(),
+		patch: vi.fn(),
 		put: vi.fn(),
 		delete: vi.fn(),
 	},
@@ -36,6 +37,7 @@ function createInstance(overrides = {}) {
 			},
 			leitner_sprint: false,
 			talk_room_token: '',
+			exam_date: null,
 		},
 		userRole: 'instructor',
 		activeTab: 'mode-config',
@@ -80,7 +82,8 @@ describe('CourseTabVerwaltung', () => {
 		expect(keys).toContain('exam')
 		expect(keys).toContain('duel')
 		expect(keys).toContain('abenteuer')
-		expect(keys.length).toBe(10)
+		expect(keys).not.toContain('swipe')
+		expect(keys.length).toBe(9)
 	})
 
 	it('emits tab-change when selecting exam-slot pill', () => {
@@ -101,6 +104,22 @@ describe('CourseTabVerwaltung', () => {
 		expect(result.training).toBe(true)
 		expect(result.abenteuer).toBe(false)
 		expect(result.course_summary).toBe(false)
+	})
+
+	it('syncs exam_date from the course prop', () => {
+		const instance = createInstance({
+			course: {
+				is_instructor: true,
+				mode_config: { training: true, leitner: true, exam: true },
+				leitner_sprint: false,
+				talk_room_token: '',
+				exam_date: '2026-04-15',
+			},
+		})
+
+		CourseTabVerwaltung.watch.course.handler.call(instance, instance.course)
+
+		expect(instance.examDateLocal).toBe('2026-04-15')
 	})
 
 	it('component has correct name', () => {
@@ -144,6 +163,37 @@ describe('CourseTabVerwaltung', () => {
 			expect(axios.put).toHaveBeenCalled()
 			const payload = axios.put.mock.calls[0][1]
 			expect(payload.modeConfig.training).toBe(false)
+		})
+
+		it('saves exam_date via PATCH and refreshes the course detail', async () => {
+			const axios = (await import('@nextcloud/axios')).default
+			axios.patch.mockResolvedValue({ data: { exam_date: '2026-04-20' } })
+
+			const instance = createInstance()
+			instance.examDateLocal = '2026-04-20'
+
+			await instance.saveExamDate()
+
+			expect(axios.patch).toHaveBeenCalledWith('/apps/learning/api/courses/5/exam-date', {
+				examDate: '2026-04-20',
+			})
+			expect(instance.examDateLocal).toBe('2026-04-20')
+			expect(instance.$emit).toHaveBeenCalledWith('refresh-course-detail')
+		})
+
+		it('clears exam_date via PATCH with null payload', async () => {
+			const axios = (await import('@nextcloud/axios')).default
+			axios.patch.mockResolvedValue({ data: { exam_date: null } })
+
+			const instance = createInstance()
+			instance.examDateLocal = '2026-04-20'
+
+			await instance.clearExamDate()
+
+			expect(axios.patch).toHaveBeenCalledWith('/apps/learning/api/courses/5/exam-date', {
+				examDate: null,
+			})
+			expect(instance.examDateLocal).toBe('')
 		})
 	})
 })
