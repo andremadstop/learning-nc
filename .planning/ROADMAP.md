@@ -182,7 +182,11 @@ Plans:
   2. A learner answering a migrated Wahr/Falsch question sees exactly two answer options (Wahr, Falsch) rendered as single-choice buttons — no separate UI path
   3. Creating a new question in the editor no longer offers 'Wahr/Falsch' as a distinct type; the instructor uses single-choice with two options instead
   4. Migration is idempotent: running the DB migration a second time produces no errors and no data changes
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 115-01-PLAN.md — Defensive DB migration (Version006300) + ImportController true_false guard (UX-03)
+- [ ] 115-02-PLAN.md — Remove swipe WF UI from TrainingMode + CourseTabVerwaltung + VirtuProf cleanup + test fixes (UX-02)
 
 ### Phase 116: DSGVO Help-Seite
 **Goal**: The Nextcloud instance's Help & Privacy page and legal notice link directly to the app's DSGVO content, satisfying NC platform compliance requirements
@@ -217,7 +221,7 @@ Plans:
 | 111. Badge-Umbau & Vault-Import | v3.6.0 | 2/2 | Complete | 2026-03-29 |
 | 112. Tab-Reduktion | v3.6.0 | 3/3 | Complete | 2026-03-30 |
 | 113. AI & Erklaerbot | v3.6.0 | 2/2 | Complete | 2026-03-30 |
-| 114. UX-Modus-Steuerung | v3.7.0 | 2/2 | Complete | 2026-03-30 |
-| 115. Wahr/Falsch-Migration | v3.7.0 | 0/? | Not started | - |
+| 114. UX-Modus-Steuerung | v3.7.0 | Complete    | 2026-03-30 | 2026-03-30 |
+| 115. Wahr/Falsch-Migration | v3.7.0 | 0/2 | Not started | - |
 | 116. DSGVO Help-Seite | v3.7.0 | 0/? | Not started | - |
 | 117. Dashboard Prüfungstermin | v3.7.0 | 0/? | Not started | - |
