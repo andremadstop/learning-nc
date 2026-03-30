@@ -1954,12 +1954,6 @@ export default {
           text: this.vt('Pick a pool to review cards with spaced repetition. The system will show difficult cards more often and mastered cards less often.'),
         }
       }
-      if (area === 'course-swipe-pool-select') {
-        return {
-          title: this.vt('Wahr/Falsch in {course}', { course: courseTitle || this.vt('this course') }),
-          text: this.vt('Pick a pool for fast true-or-false practice. This mode is good for quick repetition and recognition.'),
-        }
-      }
       if (area === 'course-exam-pool-select') {
         return {
           title: this.vt('Exam in {course}', { course: courseTitle || this.vt('this course') }),
@@ -1976,12 +1970,6 @@ export default {
         return {
           title: this.vt('Leitner: {pool}', { pool: poolName || this.vt('selected pool') }),
           text: this.vt('You are inside an active Leitner pool. Review the due cards first; new or difficult questions will come back sooner than mastered ones.'),
-        }
-      }
-      if (area === 'course-swipe-active') {
-        return {
-          title: this.vt('Wahr/Falsch: {pool}', { pool: poolName || this.vt('selected pool') }),
-          text: this.vt('You are inside a true-or-false session. Use it for fast repetition when you want to classify many statements quickly.'),
         }
       }
       if (area === 'course-exam-active') {
@@ -2036,12 +2024,6 @@ export default {
         return {
           title: this.vt('Leitner'),
           text: this.vt('You are viewing a regular pool in Leitner mode. Use it to keep difficult questions coming back until they stick.'),
-        }
-      }
-      if (area === 'pool-swipe') {
-        return {
-          title: this.vt('Wahr/Falsch'),
-          text: this.vt('You are viewing a regular pool in true-or-false mode. This is useful for fast recall training.'),
         }
       }
       if (area === 'pool-exam') {

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
 status: Not started
-stopped_at: "Completed 114-02-PLAN.md checkpoint:human-verify approved — Phase 114 complete"
-last_updated: "2026-03-30T08:26:44.947Z"
+stopped_at: Completed 115-01-PLAN.md
+last_updated: "2026-03-30T09:13:30.914Z"
 last_activity: 2026-03-30 — v3.7.0 roadmap created
 progress:
   total_phases: 8
   completed_phases: 5
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 13
+  completed_plans: 12
   percent: 0
 ---
 
@@ -49,6 +49,7 @@ Progress: [__________] 0% (0/? plans)
 | Phase 114 P01 | 5 | 3 tasks | 4 files |
 | Phase 114-ux-modus-steuerung P02 | 6 | 2 tasks | 2 files |
 | Phase 114-ux-modus-steuerung P02 | 10 | 3 tasks | 2 files |
+| Phase 115-wahr-falsch-migration P01 | 8 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,8 @@ Progress: [__________] 0% (0/? plans)
 - [Phase 114]: defaultSubTab fallback changed to '' when training disabled — student sees no active sub-tab
 - [Phase 114-02]: Hero card placement: above pool list, v-if=!selectedLearningPool, disappears on pool open
 - [Phase 114-02]: fetchQueueCount non-fatal: count stays 0 on error, cross-course label 'fällig — alle Kurse'
+- [Phase 115]: Migration Version006300 uses QueryBuilder instead of raw SQL for NC API consistency; data-only (changeSchema returns null)
+- [Phase 115]: ImportController normalizeJsonItem guard placed immediately after $type assignment — normalized at import boundary
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None at milestone start.
 
 ## Session Continuity
 
-Last session: 2026-03-30T08:26:44.939Z
-Stopped at: Completed 114-02-PLAN.md checkpoint:human-verify approved — Phase 114 complete
+Last session: 2026-03-30T09:13:30.907Z
+Stopped at: Completed 115-01-PLAN.md
 Resume file: None

@@ -173,7 +173,6 @@ export default {
 			return [
 				{ key: 'training', label: t('learning', 'Training') },
 				{ key: 'leitner', label: t('learning', 'Leitner') },
-				{ key: 'swipe', label: t('learning', 'Wahr/Falsch im Training') },
 				{ key: 'exam', label: t('learning', 'Pruefung') },
 				{ key: 'duel', label: t('learning', 'Duell') },
 				{ key: 'gameshow', label: t('learning', 'Gameshow') },
@@ -247,7 +246,6 @@ export default {
 			return Object.assign({
 				training: true,
 				leitner: true,
-				swipe: true,
 				exam: true,
 				duel: true,
 				gameshow: true,

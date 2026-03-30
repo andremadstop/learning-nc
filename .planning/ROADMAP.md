@@ -222,6 +222,6 @@ Plans:
 | 112. Tab-Reduktion | v3.6.0 | 3/3 | Complete | 2026-03-30 |
 | 113. AI & Erklaerbot | v3.6.0 | 2/2 | Complete | 2026-03-30 |
 | 114. UX-Modus-Steuerung | v3.7.0 | Complete    | 2026-03-30 | 2026-03-30 |
-| 115. Wahr/Falsch-Migration | v3.7.0 | 0/2 | Not started | - |
+| 115. Wahr/Falsch-Migration | 1/2 | In Progress|  | - |
 | 116. DSGVO Help-Seite | v3.7.0 | 0/? | Not started | - |
 | 117. Dashboard Prüfungstermin | v3.7.0 | 0/? | Not started | - |

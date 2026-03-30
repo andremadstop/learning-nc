@@ -307,10 +307,6 @@ export default {
 			},
 		},
 		currentTab(tab) {
-			if (tab === 'swipe') {
-				this.currentTab = 'training'
-				return
-			}
 			// Sync activeMegaTab from leaf tab
 			const mega = this.megaTabForLeaf(tab)
 			if (mega) {
@@ -547,7 +543,6 @@ export default {
 			return Object.assign({
 				training: true,
 				leitner: true,
-				swipe: true,
 				exam: true,
 				duel: true,
 				gameshow: true,
