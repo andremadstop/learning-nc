@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
-status: milestone-complete
-stopped_at: Completed 113-02-PLAN.md — Phase 113 complete, v3.6.0 milestone done
-last_updated: "2026-03-30T03:50:00.000Z"
+status: completed
+stopped_at: Completed 113-02-PLAN.md — Narrative Portfolio + ICS Calendar (Phase 113 complete, v3.6.0 milestone done)
+last_updated: "2026-03-30T04:18:12.261Z"
 last_activity: 2026-03-30 — Completed 113-02 Narrative Portfolio + ICS Calendar
 progress:
   total_phases: 4
