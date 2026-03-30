@@ -32,7 +32,17 @@ Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung â
 
 ### Active
 
-(Wird in v3.6.0 REQUIREMENTS.md definiert)
+See: `.planning/REQUIREMENTS.md` for v3.6.0 details.
+
+- [ ] Vault-Import (Network+, Security+, Linux+, CySA+)
+- [ ] Badge-Umbau 26â†’9 (Legacy-Archivierung + neue Badges)
+- [ ] Tab-Reduktion 16â†’5 (CourseDetail.vue Refactoring)
+- [ ] Gemini-Outputs mergen (privacy-info.json, Badge-Texte l10n, PWA-Anleitung)
+- [ ] Erklaerbot UX (X-Button, Swipe, Fullscreen-View, Kurs-Filter)
+- [ ] Narrative Portfolio (KI-Kursende-Reflexion + Next-Step-Empfehlung)
+- [ ] Forget-Me-Not (Leitner-Wiederholungsplan nach Kursende, ICS-Feed)
+- [ ] Audit-Log Moderation (Schwarm-Beitraege approved/rejected protokollieren)
+- [ ] Telos Encryption at Rest (profile_bio, goals, help_wanted)
 
 ### Out of Scope
 
@@ -44,6 +54,7 @@ Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung â
 
 ## Context
 
+- **Current Milestone: v3.6.0 "Architect's Ascent"** â€” Vault-Import, Badge-Umbau, Tab-Reduktion, Erklaerbot UX, Narrative Portfolio, Forget-Me-Not, Security
 - **Shipped v3.5.0** (2026-03-29): 9 Phasen (101-109), 69 Dateien, +6433/-763 Zeilen
 - DSGVO: PrivacyInfo.vue, versionierter AI Consent, Schwarm-Consent, UserDeletedListener (20+ Tabellen)
 - Kursende: CourseSummaryService (8 Kategorien), Snapshot-Persistenz, MD/JSON/Print Export, Dozenten-CSV
@@ -74,4 +85,4 @@ Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung â
 | RAG-Chunks anonymisieren statt loeschen | Wissen bleibt fuer Kurs erhalten | âœ“ Good |
 
 ---
-*Last updated: 2026-03-29 after v3.5.0 milestone*
+*Last updated: 2026-03-29 after v3.6.0 milestone start*

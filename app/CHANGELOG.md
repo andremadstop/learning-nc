@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.6.0] - 2026-03-30
+
+### Added
+- **VirtuProf Fullscreen**: Dedicated fullscreen learning assistant with top-level navigation entry, dismissal UX (X-button, ESC, swipe-down), and synchronized chat state between bubble, sidebar, and fullscreen view.
+- **Course Narrative Portfolio**: AI-generated personalized course-end reflection using Gemini, with snapshot caching and graceful fallback when AI is not configured.
+- **ICS Calendar Feed**: Token-based public endpoint serving Leitner repetition VEVENTs for Box 3-5 due dates. Subscribe via webcal:// or copy URL.
+- **EncryptionService & AuditService**: Reusable backend services for encrypted profile storage (AES-256-CBC) and moderation audit logging.
+- **Vault Import Command**: `occ learning:import-vault` rewritten for idempotent imports with `--dry-run`, `--pattern`, `--exclude`, and Obsidian syntax cleanup.
+- **New Badge Triggers**: Five new trigger-based badges for simulator practice, weekend learning, swarm contributions, trouble fixing, and quick exam completion.
+
+### Changed
+- **Mega-Tab Navigation**: Course navigation consolidated from 16 individual tabs into 5 mega-tabs (Lernraum, Teilnehmer, Wettbewerb, Kommunikation, Verwaltung). CourseDetail.vue reduced from 3874 to 759 lines.
+- **Badge System Simplified**: 10 active badges with 25 legacy badges preserved via is_legacy flag (not deleted, not awarded going forward).
+- **Privacy Model Expanded**: Privacy metadata now covers 7 GDPR-mandated categories (learning, ai, social, audit, gamification, assessment, external).
+- **Course Summary Expanded**: Completion view combines mastery, badges, trouble spots, snapshot state, narrative reflection, and ICS subscription.
+
+### Fixed
+- **Umlaut Cleanup in UI Strings**: t() strings normalized from ASCII fallbacks to proper German umlauts.
+- **Navigation Wiring**: View-key mismatches during mega-tab conversion corrected.
+
+### Security
+- **Gemini Prompt Hardening**: NFKC normalization, multi-turn system prompt refresh, and 26 injection-pattern filters.
+- **Encrypted Telos Storage**: Sensitive profile fields encrypted at rest via Nextcloud ICrypto.
+- **Moderation Audit Trail**: Every swarm contribution approval/rejection logged with full attribution.
+
 ## [3.4.0] - 2026-03-28
 
 ### Changed — UX-Navigation Struktur

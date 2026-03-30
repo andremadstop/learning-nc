@@ -1,0 +1,1294 @@
+<template>
+	<div class="course-tab-lernraum">
+		<div class="lernraum-subnav" role="tablist" :aria-label="t('learning', 'Lernraum Bereiche')">
+			<button
+				v-for="tab in visibleSubTabs"
+				:key="tab.id"
+				class="lernraum-pill"
+				:class="{ active: currentSubTab === tab.id }"
+				@click="selectSubTab(tab.id)">
+				{{ tab.label }}
+			</button>
+		</div>
+
+		<div v-if="isInstructor && currentSubTab === 'pools'" class="pools-section">
+			<div class="section-header">
+				<h4>{{ t('learning', 'Course Pools') }}</h4>
+				<NcButton @click="openAddPoolModal">
+					{{ t('learning', '+ Add Pool') }}
+				</NcButton>
+			</div>
+
+			<NcNoteCard type="info" class="course-pool-help">
+				{{ t('learning', 'Students practice exactly the pools assigned here. Optional filters can limit a pool to one exam key, one chapter or explicit question IDs without changing the original pool. "Required + enforced" blocks optional pools until every filtered question in the required pool was answered at least once.') }}
+			</NcNoteCard>
+
+			<div v-if="coursePools.length > 0" class="pool-list">
+				<div
+					v-for="pool in sortedPools"
+					:key="pool.pool_id"
+					class="pool-item"
+					tabindex="0"
+					role="button"
+					@click="$emit('openPool', pool.pool_id)"
+					@keydown.enter="$emit('openPool', pool.pool_id)"
+					@keydown.space.prevent="$emit('openPool', pool.pool_id)">
+					<span class="pool-sort-order">{{ (pool.sort_order || 0) + 1 }}.</span>
+					<div class="pool-info">
+						<span class="pool-name">{{ pool.pool_name }}</span>
+						<div class="pool-meta-row">
+							<span class="pool-questions">
+								{{ t('learning', '{n} questions', { n: pool.question_count || 0 }) }}
+							</span>
+							<span v-if="poolLanguageSummary(pool)" class="pool-language-summary">
+								{{ poolLanguageSummary(pool) }}
+							</span>
+						</div>
+					</div>
+					<div class="pool-badges">
+						<span v-if="pool.required" class="required-badge">
+							{{ t('learning', 'Required') }}
+						</span>
+						<span v-if="pool.required_enforced" class="required-badge required-enforced-badge">
+							{{ t('learning', 'Enforced') }}
+						</span>
+						<span v-for="summary in poolRuleSummary(pool)" :key="pool.pool_id + '-' + summary" class="filter-badge">
+							{{ summary }}
+						</span>
+					</div>
+					<NcButton
+						type="tertiary"
+						size="small"
+						class="pool-rules-btn"
+						@click.stop="openPoolRulesModal(pool)">
+						{{ t('learning', 'Rules') }}
+					</NcButton>
+					<NcButton
+						type="tertiary-no-background"
+						class="remove-pool-btn"
+						:aria-label="t('learning', 'Remove pool')"
+						@click.stop="confirmRemovePool(pool)">
+						&times;
+					</NcButton>
+				</div>
+			</div>
+
+			<NcEmptyContent
+				v-else
+				:name="t('learning', 'No pools assigned')">
+				<template #description>
+					{{ t('learning', 'Add question pools to this course') }}
+				</template>
+			</NcEmptyContent>
+		</div>
+
+		<div v-else-if="isStudentLearningTab" class="student-learning-section">
+			<div v-if="!selectedLearningPool" class="pools-section">
+				<div class="section-header">
+					<h4>{{ activeLearningModeLabel }}</h4>
+				</div>
+
+				<div v-if="coursePools.length > 0" class="pool-list">
+					<div
+						v-for="pool in sortedPools"
+						:key="'learning-' + pool.pool_id"
+						class="pool-item"
+						:class="{ 'pool-item-loading': loadingLearningPoolId === pool.pool_id, 'pool-item-locked': pool.locked_for_student }"
+						tabindex="0"
+						role="button"
+						@click="selectLearningPool(pool)"
+						@keydown.enter="selectLearningPool(pool)"
+						@keydown.space.prevent="selectLearningPool(pool)">
+						<div class="pool-info">
+							<span class="pool-name">{{ pool.pool_name }}</span>
+							<div class="pool-meta-row">
+								<span class="pool-questions">
+									{{ t('learning', '{n} questions', { n: getLearningPoolQuestionCount(pool) }) }}
+								</span>
+								<span v-if="poolLanguageSummary(pool)" class="pool-language-summary">
+									{{ poolLanguageSummary(pool) }}
+								</span>
+							</div>
+						</div>
+						<div class="pool-badges">
+							<span v-if="pool.required" class="required-badge">
+								{{ t('learning', 'Required') }}
+							</span>
+							<span v-if="pool.required_enforced" class="required-badge required-enforced-badge">
+								{{ t('learning', 'Enforced') }}
+							</span>
+							<span
+								v-for="summary in poolRuleSummary(pool)"
+								:key="'student-' + pool.pool_id + '-' + summary"
+								class="filter-badge">
+								{{ summary }}
+							</span>
+						</div>
+					</div>
+				</div>
+
+				<NcNoteCard v-if="currentRequiredBlockers.length > 0" type="warning" class="required-lock-note">
+					{{ t('learning', 'Optional pools are locked until these required pools are completed once: {names}', { names: currentRequiredBlockers.join(', ') }) }}
+				</NcNoteCard>
+
+				<NcEmptyContent
+					v-else
+					:name="t('learning', 'No pools assigned')">
+					<template #description>
+						{{ t('learning', 'No question pools are available in this course yet.') }}
+					</template>
+				</NcEmptyContent>
+			</div>
+
+			<TrainingMode
+				v-else-if="currentSubTab === 'training'"
+				:poolId="selectedLearningPool.pool_id"
+				:courseId="courseId"
+				:totalQuestions="selectedLearningPoolQuestionCount"
+				:allowWfMode="selectedLearningPoolAllowsWfMode"
+				:contentLanguage="contentLanguage"
+				@back="resetLearningPoolSelection" />
+
+			<LeitnerMode
+				v-else-if="currentSubTab === 'leitner'"
+				:poolId="selectedLearningPool.pool_id"
+				:courseId="courseId"
+				:contentLanguage="contentLanguage"
+				@back="resetLearningPoolSelection" />
+
+			<ExamMode
+				v-else-if="currentSubTab === 'exam'"
+				:poolId="selectedLearningPool.pool_id"
+				:courseId="courseId"
+				:totalQuestions="selectedLearningPoolQuestionCount"
+				:contentLanguage="contentLanguage"
+				@back="resetLearningPoolSelection" />
+		</div>
+
+		<div v-else-if="currentSubTab === 'curriculum' && isInstructor" class="curriculum-section">
+			<div class="curriculum-header">
+				<h3>{{ t('learning', 'Themensteuerung') }}</h3>
+				<p class="curriculum-desc">{{ t('learning', 'Lege fest, welche Kapitel aktuell im Kurs aktiv sind. Bei aktivem Filter werden Kurs-Duelle automatisch auf diese Kapitel eingeschränkt.') }}</p>
+			</div>
+
+			<div v-if="loadingCurriculum" class="curriculum-loading">
+				<NcLoadingIcon :size="32" />
+			</div>
+			<template v-else>
+				<div class="curriculum-toggle">
+					<NcCheckboxRadioSwitch
+						:checked="curriculumEnabled"
+						@update:checked="curriculumEnabled = $event">
+						{{ t('learning', 'Kapitel-Filter aktiv') }}
+					</NcCheckboxRadioSwitch>
+				</div>
+
+				<div v-if="curriculumEnabled" class="curriculum-chapters">
+					<div v-if="curriculumAvailableChapters.length === 0" class="curriculum-empty">
+						{{ t('learning', 'Keine Kapitelmetadaten gefunden. Importiere Fragen mit chapter_key-Werten, um diesen Filter zu nutzen.') }}
+					</div>
+					<template v-else>
+						<div class="curriculum-select-actions">
+							<NcButton size="small" @click="selectAllChapters">{{ t('learning', 'Alle') }}</NcButton>
+							<NcButton size="small" @click="selectedChapterKeys = []">{{ t('learning', 'Keine') }}</NcButton>
+						</div>
+						<div
+							v-for="chapter in curriculumAvailableChapters"
+							:key="chapter.chapter_key"
+							class="curriculum-chapter-row">
+							<NcCheckboxRadioSwitch
+								:checked="selectedChapterKeys.includes(chapter.chapter_key)"
+								@update:checked="toggleChapter(chapter.chapter_key, $event)">
+								<span class="chapter-title">{{ chapter.chapter_title || chapter.chapter_key }}</span>
+								<span v-if="chapter.chapter_order" class="chapter-order">{{ t('learning', 'Kap. {n}', { n: chapter.chapter_order }) }}</span>
+							</NcCheckboxRadioSwitch>
+						</div>
+					</template>
+				</div>
+
+				<div class="curriculum-actions">
+					<NcButton type="primary" :disabled="savingCurriculum" @click="saveCurriculumScope">
+						{{ savingCurriculum ? t('learning', 'Speichere…') : t('learning', 'Speichern') }}
+					</NcButton>
+					<span v-if="curriculumSaved" class="curriculum-saved-hint">✓ {{ t('learning', 'Gespeichert') }}</span>
+				</div>
+			</template>
+		</div>
+
+		<div v-else-if="currentSubTab === 'materials'" class="tab-content materials-section">
+			<CourseMaterials :course-id="courseId" :is-instructor="isInstructor" />
+		</div>
+
+		<div v-else-if="currentSubTab === 'knowledge' && isInstructor" class="tab-content knowledge-section">
+			<CourseKnowledgeImport :course-id="courseId" :is-instructor="isInstructor" />
+			<KnowledgeModeration :course-id="courseId" @pending-count="handleKnowledgePendingCount" />
+		</div>
+
+		<NcModal
+			v-if="showAddPoolModal"
+			:show="showAddPoolModal"
+			@update:show="onAddPoolModalShowChanged"
+			@close="closeAddPoolModal"
+			@closing="closeAddPoolModal">
+			<div class="modal-content">
+				<h3>{{ t('learning', 'Add Pool to Course') }}</h3>
+
+				<div v-if="poolsLoading" class="loading-container">
+					<NcLoadingIcon :size="44" />
+					<p>{{ t('learning', 'Loading available pools...') }}</p>
+				</div>
+
+				<template v-else>
+					<NcNoteCard v-if="poolModalError" type="error" class="modal-error">
+						{{ poolModalError }}
+					</NcNoteCard>
+
+					<div v-if="availablePools.length > 0" class="pool-select-list">
+						<div
+							v-for="pool in availablePools"
+							:key="pool.id"
+							class="pool-select-item"
+							:class="{ disabled: isPoolAlreadyAdded(pool.id), selected: selectedPoolIds.includes(pool.id) }"
+							tabindex="0"
+							role="checkbox"
+							:aria-checked="selectedPoolIds.includes(pool.id)"
+							@click="togglePoolSelection(pool)"
+							@keydown.enter="togglePoolSelection(pool)"
+							@keydown.space.prevent="togglePoolSelection(pool)">
+							<div class="pool-select-info">
+								<span class="pool-select-name">{{ pool.name }}</span>
+								<span v-if="pool.description" class="pool-select-desc">{{ pool.description }}</span>
+							</div>
+							<span v-if="isPoolAlreadyAdded(pool.id)" class="pool-already-added">
+								{{ t('learning', 'Already added') }}
+							</span>
+							<span v-else-if="selectedPoolIds.includes(pool.id)" class="pool-check">✓</span>
+						</div>
+						<div v-if="selectedPoolIds.length > 0" class="pool-add-confirm">
+							<NcButton type="primary" :disabled="savingPool" @click="addSelectedPools">
+								{{ savingPool
+									? t('learning', 'Adding...')
+									: t('learning', 'Add {n} pool(s)', { n: selectedPoolIds.length }) }}
+							</NcButton>
+						</div>
+					</div>
+
+					<NcEmptyContent
+						v-else
+						:name="t('learning', 'No pools available')">
+						<template #description>
+							{{ t('learning', 'Create question pools first before adding them to a course.') }}
+						</template>
+					</NcEmptyContent>
+				</template>
+			</div>
+		</NcModal>
+
+		<NcModal v-if="showRemovePoolModal" @close="showRemovePoolModal = false" @closing="showRemovePoolModal = false" size="small">
+			<div class="modal-content">
+				<h3>{{ t('learning', 'Remove Pool') }}</h3>
+				<p>{{ t('learning', 'Remove "{name}" from this course? Students will lose access to these questions.', { name: removingPool ? removingPool.pool_name : '' }) }}</p>
+				<div class="modal-actions">
+					<NcButton type="tertiary" :disabled="savingPool" @click="showRemovePoolModal = false">
+						{{ t('learning', 'Cancel') }}
+					</NcButton>
+					<NcButton type="error" :disabled="savingPool" @click="removePool">
+						{{ savingPool ? t('learning', 'Removing...') : t('learning', 'Remove') }}
+					</NcButton>
+				</div>
+			</div>
+		</NcModal>
+
+		<NcModal v-if="showPoolRulesModal" @close="closePoolRulesModal" @closing="closePoolRulesModal" size="normal">
+			<div class="modal-content">
+				<h3>{{ t('learning', 'Pool Rules') }}</h3>
+				<p v-if="editingPoolRules" class="rules-pool-name">{{ editingPoolRules.pool_name }}</p>
+
+				<NcNoteCard v-if="poolRulesError" type="error" class="modal-error">
+					{{ poolRulesError }}
+				</NcNoteCard>
+
+				<div class="rules-field">
+					<label class="rules-checkbox">
+						<input v-model="poolRulesForm.required" type="checkbox">
+						<span>{{ t('learning', 'Show this pool as required') }}</span>
+					</label>
+				</div>
+
+				<div class="rules-field">
+					<label class="rules-checkbox">
+						<input v-model="poolRulesForm.requiredEnforced" type="checkbox" :disabled="!poolRulesForm.required">
+						<span>{{ t('learning', 'Block optional pools until every filtered question here was answered once') }}</span>
+					</label>
+				</div>
+
+				<div class="rules-field">
+					<label for="pool-rule-exam">{{ t('learning', 'Exam key filter') }}</label>
+					<select id="pool-rule-exam" v-model="poolRulesForm.filterExamKey" class="nc-input">
+						<option value="">{{ t('learning', 'No exam filter') }}</option>
+						<option v-for="examKey in currentPoolExamOptions" :key="examKey" :value="examKey">
+							{{ examKey }}
+						</option>
+					</select>
+				</div>
+
+				<div class="rules-field">
+					<label for="pool-rule-chapter">{{ t('learning', 'Chapter filter') }}</label>
+					<select id="pool-rule-chapter" v-model="poolRulesForm.filterChapterKey" class="nc-input">
+						<option value="">{{ t('learning', 'No chapter filter') }}</option>
+						<option v-for="chapter in currentPoolChapterOptions" :key="chapter.key" :value="chapter.key">
+							{{ chapter.order ? chapter.order + ' - ' + chapter.title : chapter.title }}
+						</option>
+					</select>
+				</div>
+
+				<div class="rules-field">
+					<label for="pool-rule-question-ids">{{ t('learning', 'Specific question IDs') }}</label>
+					<textarea
+						id="pool-rule-question-ids"
+						v-model="poolRulesForm.filterQuestionIdsText"
+						rows="3"
+						class="nc-input"
+						:placeholder="t('learning', 'Optional comma-separated question IDs, e.g. 101, 102, 205')"></textarea>
+					<p class="rules-help">
+						{{ t('learning', 'Leave empty to use the full pool or the selected exam/chapter subset.') }}
+					</p>
+				</div>
+
+				<div class="modal-actions">
+					<NcButton type="tertiary" :disabled="savingPoolRules" @click="closePoolRulesModal">
+						{{ t('learning', 'Cancel') }}
+					</NcButton>
+					<NcButton type="primary" :disabled="savingPoolRules" @click="savePoolRules">
+						{{ savingPoolRules ? t('learning', 'Saving...') : t('learning', 'Save Rules') }}
+					</NcButton>
+				</div>
+			</div>
+		</NcModal>
+	</div>
+</template>
+
+<script>
+import axios from '@nextcloud/axios'
+import { generateUrl } from '@nextcloud/router'
+import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
+import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
+import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
+import NcModal from '@nextcloud/vue/dist/Components/NcModal.js'
+import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import CourseKnowledgeImport from './CourseKnowledgeImport.vue'
+import CourseMaterials from './CourseMaterials.vue'
+import ExamMode from './ExamMode.vue'
+import KnowledgeModeration from './KnowledgeModeration.vue'
+import LeitnerMode from './LeitnerMode.vue'
+import TrainingMode from './TrainingMode.vue'
+
+export default {
+	name: 'CourseTabLernraum',
+
+	components: {
+		NcButton,
+		NcCheckboxRadioSwitch,
+		NcEmptyContent,
+		NcLoadingIcon,
+		NcModal,
+		NcNoteCard,
+		CourseKnowledgeImport,
+		CourseMaterials,
+		ExamMode,
+		KnowledgeModeration,
+		LeitnerMode,
+		TrainingMode,
+	},
+
+	props: {
+		courseId: {
+			type: Number,
+			required: true,
+		},
+		course: {
+			type: Object,
+			default: null,
+		},
+		userRole: {
+			type: String,
+			required: true,
+			validator(value) {
+				return ['instructor', 'student'].includes(value)
+			},
+		},
+		coursePools: {
+			type: Array,
+			default: () => [],
+		},
+		allPools: {
+			type: Array,
+			default: () => [],
+		},
+		activeTab: {
+			type: String,
+			default: '',
+		},
+		contentLanguage: {
+			type: String,
+			default: '',
+		},
+	},
+
+	data() {
+		return {
+			currentSubTab: '',
+			knowledgePendingCount: 0,
+			selectedLearningPool: null,
+			poolQuestionCounts: {},
+			loadingLearningPoolId: null,
+			showAddPoolModal: false,
+			poolsLoading: false,
+			poolModalError: '',
+			availablePoolsState: [],
+			savingPool: false,
+			showRemovePoolModal: false,
+			removingPool: null,
+			showPoolRulesModal: false,
+			editingPoolRules: null,
+			poolRulesError: '',
+			savingPoolRules: false,
+			poolRulesForm: {
+				required: true,
+				requiredEnforced: false,
+				filterExamKey: '',
+				filterChapterKey: '',
+				filterQuestionIdsText: '',
+			},
+			selectedPoolIds: [],
+			loadingCurriculum: false,
+			savingCurriculum: false,
+			curriculumSaved: false,
+			curriculumEnabled: false,
+			selectedChapterKeys: [],
+			curriculumAvailableChapters: [],
+		}
+	},
+
+	computed: {
+		isInstructor() {
+			return this.userRole === 'instructor' || this.course?.is_instructor === true
+		},
+		visibleSubTabs() {
+			if (this.isInstructor) {
+				return [
+					{ id: 'pools', label: t('learning', 'Pools') },
+					{ id: 'curriculum', label: t('learning', 'Themen') },
+					{ id: 'materials', label: t('learning', 'Materialien') },
+					{ id: 'knowledge', label: t('learning', 'Wissen') + (this.knowledgePendingCount > 0 ? ' (' + this.knowledgePendingCount + ')' : '') },
+				]
+			}
+			const tabs = [{ id: 'training', label: t('learning', 'Training') }]
+			if (this.modeEnabled('leitner')) {
+				tabs.push({ id: 'leitner', label: t('learning', 'Leitner') })
+			}
+			if (this.modeEnabled('exam')) {
+				tabs.push({ id: 'exam', label: t('learning', 'Exam') })
+			}
+			if (this.course?.material_folder) {
+				tabs.push({ id: 'materials', label: t('learning', 'Materialien') })
+			}
+			return tabs
+		},
+		selectedLearningPoolQuestionCount() {
+			if (!this.selectedLearningPool) {
+				return 0
+			}
+			return this.poolQuestionCounts[this.selectedLearningPool.pool_id]
+				?? this.selectedLearningPool.question_count
+				?? 0
+		},
+		selectedLearningPoolAllowsWfMode() {
+			return this.course?.mode_config?.swipe !== false
+		},
+		currentRequiredBlockers() {
+			return this.sortedPools
+				.filter((pool) => pool.required_enforced && !pool.required_completed)
+				.map((pool) => pool.pool_name)
+		},
+		currentPoolExamOptions() {
+			return this.editingPoolRules?.available_filters?.exam_keys || []
+		},
+		currentPoolChapterOptions() {
+			return this.editingPoolRules?.available_filters?.chapters || []
+		},
+		sortedPools() {
+			return [...this.coursePools].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+		},
+		availablePools() {
+			return this.availablePoolsState
+		},
+		activeLearningModeLabel() {
+			const labels = {
+				training: t('learning', 'Training'),
+				leitner: t('learning', 'Leitner'),
+				exam: t('learning', 'Exam'),
+			}
+			return labels[this.currentSubTab] || t('learning', 'Choose a learning mode')
+		},
+		isStudentLearningTab() {
+			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentSubTab)
+		},
+	},
+
+	watch: {
+		allPools: {
+			immediate: true,
+			handler(pools) {
+				if (Array.isArray(pools) && pools.length > 0) {
+					this.availablePoolsState = [...pools]
+				} else if (this.availablePoolsState.length === 0) {
+					this.availablePoolsState = []
+				}
+			},
+		},
+		activeTab: {
+			immediate: true,
+			handler(tabId) {
+				this.syncFromActiveTab(tabId)
+			},
+		},
+		coursePools(newPools) {
+			if (!this.selectedLearningPool) {
+				return
+			}
+			const nextPool = newPools.find((pool) => pool.pool_id === this.selectedLearningPool.pool_id)
+			if (!nextPool) {
+				this.resetLearningPoolSelection()
+				return
+			}
+			this.selectedLearningPool = nextPool
+		},
+	},
+
+	methods: {
+		modeEnabled(key) {
+			return (this.course?.mode_config || {})[key] !== false
+		},
+		defaultSubTab() {
+			return this.visibleSubTabs[0]?.id || (this.isInstructor ? 'pools' : 'training')
+		},
+		isVisibleSubTab(tabId) {
+			return this.visibleSubTabs.some((tab) => tab.id === tabId)
+		},
+		syncFromActiveTab(tabId) {
+			const resolvedTab = this.isVisibleSubTab(tabId) ? tabId : this.defaultSubTab()
+			const previousTab = this.currentSubTab
+			this.currentSubTab = resolvedTab
+			if (['training', 'leitner', 'exam'].includes(resolvedTab) && previousTab !== resolvedTab) {
+				this.selectedLearningPool = null
+				this.loadingLearningPoolId = null
+			}
+			if (resolvedTab === 'curriculum' && this.isInstructor) {
+				this.fetchCurriculumScope()
+			}
+		},
+		selectSubTab(tabId) {
+			if (!this.isVisibleSubTab(tabId) || tabId === this.currentSubTab) {
+				return
+			}
+			if (['training', 'leitner', 'exam'].includes(tabId)) {
+				this.$emit('mode-activated', tabId)
+			}
+			this.$emit('tab-change', tabId)
+		},
+		handleKnowledgePendingCount(count) {
+			this.knowledgePendingCount = Number(count || 0)
+			this.$emit('knowledge-pending-count', this.knowledgePendingCount)
+		},
+		getLearningPoolQuestionCount(pool) {
+			return this.poolQuestionCounts[pool.pool_id] ?? pool.question_count ?? 0
+		},
+		poolLanguageCodes(pool) {
+			const langs = Array.isArray(pool.available_content_languages) ? pool.available_content_languages : ['de']
+			return langs
+				.filter((code) => ['de', 'en', 'ru', 'ar'].includes(code))
+				.map((code) => code.toUpperCase())
+		},
+		poolLanguageSummary(pool) {
+			const codes = this.poolLanguageCodes(pool)
+			return codes.length > 1 ? codes.join(' | ') : ''
+		},
+		poolRuleSummary(pool) {
+			const summary = []
+			if (pool.filter_exam_key) {
+				summary.push(t('learning', 'Exam: {value}', { value: pool.filter_exam_key }))
+			}
+			if (pool.filter_chapter_key) {
+				const chapter = (pool.available_filters?.chapters || []).find((item) => item.key === pool.filter_chapter_key)
+				summary.push(t('learning', 'Chapter: {value}', { value: chapter?.title || pool.filter_chapter_key }))
+			}
+			const questionIdCount = Array.isArray(pool.filter_question_ids) ? pool.filter_question_ids.length : 0
+			if (questionIdCount > 0) {
+				summary.push(t('learning', '{n} fixed questions', { n: questionIdCount }))
+			}
+			return summary
+		},
+		parsePoolRuleQuestionIds() {
+			return this.poolRulesForm.filterQuestionIdsText
+				.split(/[\s,;]+/)
+				.map((value) => Number.parseInt(value, 10))
+				.filter((value) => Number.isInteger(value) && value > 0)
+		},
+		openPoolRulesModal(pool) {
+			this.editingPoolRules = { ...pool }
+			this.poolRulesError = ''
+			this.poolRulesForm = {
+				required: pool.required !== false,
+				requiredEnforced: pool.required_enforced === true,
+				filterExamKey: pool.filter_exam_key || '',
+				filterChapterKey: pool.filter_chapter_key || '',
+				filterQuestionIdsText: Array.isArray(pool.filter_question_ids) ? pool.filter_question_ids.join(', ') : '',
+			}
+			this.showPoolRulesModal = true
+		},
+		closePoolRulesModal() {
+			this.showPoolRulesModal = false
+			this.editingPoolRules = null
+			this.poolRulesError = ''
+		},
+		async savePoolRules() {
+			if (!this.editingPoolRules) {
+				return
+			}
+			this.savingPoolRules = true
+			this.poolRulesError = ''
+			const url = generateUrl('/apps/learning/api/courses/{courseId}/pools/{poolId}', {
+				courseId: this.courseId,
+				poolId: this.editingPoolRules.pool_id,
+			})
+			try {
+				await axios.put(url, {
+					required: this.poolRulesForm.required,
+					requiredEnforced: this.poolRulesForm.required && this.poolRulesForm.requiredEnforced,
+					filterExamKey: this.poolRulesForm.filterExamKey || null,
+					filterChapterKey: this.poolRulesForm.filterChapterKey || null,
+					filterQuestionIds: this.parsePoolRuleQuestionIds(),
+				})
+				this.closePoolRulesModal()
+				this.$emit('refresh-course-detail')
+			} catch (err) {
+				this.poolRulesError = err.response?.data?.error || t('learning', 'Failed to save pool rules.')
+			} finally {
+				this.savingPoolRules = false
+			}
+		},
+		async fetchPoolQuestionCount(poolId) {
+			const pool = this.coursePools.find((item) => item.pool_id === poolId)
+			if (pool && typeof pool.question_count === 'number') {
+				this.$set(this.poolQuestionCounts, poolId, pool.question_count)
+				return pool.question_count
+			}
+			if (this.poolQuestionCounts[poolId] !== undefined) {
+				return this.poolQuestionCounts[poolId]
+			}
+
+			const url = generateUrl('/apps/learning/api/pools/{poolId}/questions', { poolId })
+			const response = await axios.get(url)
+			const questionCount = Array.isArray(response.data) ? response.data.length : 0
+			this.$set(this.poolQuestionCounts, poolId, questionCount)
+			return questionCount
+		},
+		async selectLearningPool(pool) {
+			if (pool.locked_for_student) {
+				this.$emit('error', t('learning', 'Complete all enforced required pools first.'))
+				return
+			}
+			this.loadingLearningPoolId = pool.pool_id
+			this.$emit('error', '')
+			try {
+				await this.fetchPoolQuestionCount(pool.pool_id)
+				this.selectedLearningPool = pool
+				this.$emit('pool-selected', pool)
+			} catch (err) {
+				this.$emit('error', t('learning', 'Failed to load pool questions.'))
+			} finally {
+				this.loadingLearningPoolId = null
+			}
+		},
+		resetLearningPoolSelection() {
+			this.selectedLearningPool = null
+			this.$emit('pool-selected', null)
+		},
+		async openAddPoolModal() {
+			this.showAddPoolModal = true
+			this.poolModalError = ''
+			this.selectedPoolIds = []
+			if (this.availablePools.length === 0) {
+				await this.fetchAllPools()
+			}
+		},
+		onAddPoolModalShowChanged(show) {
+			if (!show) {
+				this.closeAddPoolModal()
+			}
+		},
+		closeAddPoolModal() {
+			this.showAddPoolModal = false
+		},
+		async fetchAllPools() {
+			this.poolsLoading = true
+			this.poolModalError = ''
+			try {
+				const url = generateUrl('/apps/learning/api/pools')
+				const response = await axios.get(url)
+				if (Array.isArray(response.data)) {
+					this.availablePoolsState = response.data
+				} else if (response.data && typeof response.data === 'object') {
+					this.availablePoolsState = [...(response.data.own || []), ...(response.data.shared || [])]
+				} else {
+					this.availablePoolsState = []
+				}
+				this.$emit('all-pools-loaded', this.availablePoolsState)
+			} catch (err) {
+				this.poolModalError = t('learning', 'Failed to load available pools.')
+			} finally {
+				this.poolsLoading = false
+			}
+		},
+		isPoolAlreadyAdded(poolId) {
+			return this.coursePools.some((pool) => pool.pool_id === poolId)
+		},
+		togglePoolSelection(pool) {
+			if (this.isPoolAlreadyAdded(pool.id)) {
+				return
+			}
+			const index = this.selectedPoolIds.indexOf(pool.id)
+			if (index >= 0) {
+				this.selectedPoolIds.splice(index, 1)
+			} else {
+				this.selectedPoolIds.push(pool.id)
+			}
+		},
+		async addSelectedPools() {
+			if (this.selectedPoolIds.length === 0) {
+				return
+			}
+			this.savingPool = true
+			this.poolModalError = ''
+			const url = generateUrl('/apps/learning/api/courses/{courseId}/pools', { courseId: this.courseId })
+			const baseSortOrder = this.coursePools.length > 0
+				? Math.max(...this.coursePools.map((pool) => pool.sort_order || 0)) + 1
+				: 0
+			try {
+				for (let index = 0; index < this.selectedPoolIds.length; index++) {
+					await axios.post(url, {
+						poolId: this.selectedPoolIds[index],
+						sortOrder: baseSortOrder + index,
+						required: true,
+					})
+				}
+				this.selectedPoolIds = []
+				this.showAddPoolModal = false
+				this.$emit('refresh-course-detail')
+			} catch (err) {
+				const message = err.response?.data?.error || err.response?.data?.message
+				this.poolModalError = message || t('learning', 'Failed to add pool to course.')
+			} finally {
+				this.savingPool = false
+			}
+		},
+		confirmRemovePool(pool) {
+			this.removingPool = pool
+			this.showRemovePoolModal = true
+		},
+		async removePool() {
+			if (!this.removingPool) {
+				return
+			}
+
+			this.savingPool = true
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/pools/{poolId}', {
+					courseId: this.courseId,
+					poolId: this.removingPool.pool_id,
+				})
+				await axios.delete(url)
+				this.showRemovePoolModal = false
+				this.removingPool = null
+				this.$emit('refresh-course-detail')
+			} catch (err) {
+				this.$emit('error', t('learning', 'Failed to remove pool from course.'))
+			} finally {
+				this.savingPool = false
+			}
+		},
+		async fetchCurriculumScope() {
+			this.loadingCurriculum = true
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/curriculum-scope', { courseId: this.courseId })
+				const response = await axios.get(url)
+				this.curriculumEnabled = response.data.enabled || false
+				this.selectedChapterKeys = response.data.selected_chapter_keys || []
+				this.curriculumAvailableChapters = response.data.available_chapters || []
+			} catch (err) {
+				// Keep the tab usable even if the backend call fails.
+			} finally {
+				this.loadingCurriculum = false
+			}
+		},
+		async saveCurriculumScope() {
+			this.savingCurriculum = true
+			this.curriculumSaved = false
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/curriculum-scope', { courseId: this.courseId })
+				await axios.put(url, {
+					enabled: this.curriculumEnabled,
+					chapterKeys: this.selectedChapterKeys,
+				})
+				this.curriculumSaved = true
+				setTimeout(() => {
+					this.curriculumSaved = false
+				}, 2500)
+			} catch (err) {
+				// Keep the current selection intact and let the user retry.
+			} finally {
+				this.savingCurriculum = false
+			}
+		},
+		toggleChapter(chapterKey, checked) {
+			if (checked) {
+				if (!this.selectedChapterKeys.includes(chapterKey)) {
+					this.selectedChapterKeys = [...this.selectedChapterKeys, chapterKey]
+				}
+				return
+			}
+			this.selectedChapterKeys = this.selectedChapterKeys.filter((key) => key !== chapterKey)
+		},
+		selectAllChapters() {
+			this.selectedChapterKeys = this.curriculumAvailableChapters.map((chapter) => chapter.chapter_key)
+		},
+	},
+}
+</script>
+
+<style scoped>
+.course-tab-lernraum {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.lernraum-subnav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 4px;
+}
+
+.lernraum-pill {
+	border: 1px solid var(--color-border);
+	border-radius: 999px;
+	background: var(--color-main-background);
+	color: var(--color-text-maxcontrast);
+	padding: 8px 14px;
+	font-size: 0.88em;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.lernraum-pill:hover {
+	background: var(--color-background-hover);
+	color: var(--color-main-text);
+}
+
+.lernraum-pill.active {
+	border-color: var(--color-primary-element);
+	background: color-mix(in srgb, var(--color-primary-element) 12%, transparent);
+	color: var(--color-primary-element);
+}
+
+.section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+}
+
+.section-header h4 {
+	margin: 0;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	color: var(--color-text-maxcontrast);
+	font-weight: 700;
+}
+
+.pool-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.course-pool-help,
+.required-lock-note {
+	margin-bottom: 12px;
+}
+
+.pool-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 16px;
+	background: var(--color-main-background);
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large, 12px);
+	cursor: pointer;
+	transition: transform 0.2s, background 0.15s, box-shadow 0.2s;
+}
+
+.pool-item:hover {
+	background: var(--color-background-hover);
+	transform: translateY(-1px);
+	box-shadow: 0 3px 10px color-mix(in srgb, var(--color-main-text) 6%, transparent);
+}
+
+.pool-item-loading {
+	opacity: 0.7;
+}
+
+.pool-item-locked {
+	opacity: 0.65;
+	cursor: not-allowed;
+}
+
+.pool-item-locked:hover {
+	transform: none;
+	box-shadow: none;
+}
+
+.pool-sort-order {
+	color: var(--color-text-maxcontrast);
+	font-size: 0.9em;
+	font-weight: 600;
+	min-width: 24px;
+	flex-shrink: 0;
+}
+
+.pool-info {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.pool-name {
+	font-weight: 600;
+	color: var(--color-main-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.pool-questions {
+	font-size: 0.85em;
+	color: var(--color-text-maxcontrast);
+}
+
+.pool-meta-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.pool-language-summary {
+	font-size: 0.76em;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	color: var(--color-primary-element);
+	white-space: nowrap;
+}
+
+.pool-badges {
+	display: flex;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+.required-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 0.75em;
+	font-weight: 600;
+	background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+	color: var(--color-warning);
+	white-space: nowrap;
+}
+
+.required-enforced-badge {
+	background: color-mix(in srgb, var(--color-error) 12%, transparent);
+	color: var(--color-error);
+}
+
+.filter-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 0.75em;
+	font-weight: 600;
+	background: color-mix(in srgb, var(--color-primary-element) 12%, transparent);
+	color: var(--color-primary-element);
+	white-space: nowrap;
+}
+
+.pool-rules-btn,
+.remove-pool-btn {
+	flex-shrink: 0;
+}
+
+.remove-pool-btn {
+	font-size: 1.3em;
+	line-height: 1;
+	color: var(--color-text-maxcontrast);
+}
+
+.remove-pool-btn:hover {
+	color: var(--color-error);
+}
+
+.curriculum-section {
+	padding: 12px 0 0;
+	max-width: 720px;
+}
+
+.curriculum-header h3 {
+	font-size: 20px;
+	font-weight: 600;
+	margin-bottom: 8px;
+}
+
+.curriculum-desc {
+	color: var(--color-text-maxcontrast);
+	margin-bottom: 20px;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.curriculum-loading {
+	display: flex;
+	justify-content: center;
+	padding: 40px;
+}
+
+.curriculum-toggle {
+	margin-bottom: 20px;
+}
+
+.curriculum-chapters {
+	border: 1px solid var(--color-border);
+	border-radius: 12px;
+	padding: 16px;
+	margin-bottom: 20px;
+}
+
+.curriculum-empty {
+	color: var(--color-text-maxcontrast);
+	font-size: 14px;
+	text-align: center;
+	padding: 20px;
+}
+
+.curriculum-select-actions {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.curriculum-chapter-row {
+	padding: 6px 0;
+	border-bottom: 1px solid var(--color-border-dark);
+}
+
+.curriculum-chapter-row:last-child {
+	border-bottom: none;
+}
+
+.chapter-title {
+	font-size: 14px;
+}
+
+.chapter-order {
+	font-size: 12px;
+	color: var(--color-text-maxcontrast);
+	margin-inline-start: 8px;
+}
+
+.curriculum-actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.curriculum-saved-hint {
+	font-size: 13px;
+	color: var(--color-success);
+	font-weight: 600;
+}
+
+.tab-content {
+	padding: 4px 0 0;
+}
+
+.modal-content {
+	padding: 24px;
+	min-width: 320px;
+}
+
+.modal-content h3 {
+	margin: 0 0 20px 0;
+	font-size: 1.2em;
+	font-weight: 700;
+	color: var(--color-main-text);
+}
+
+.modal-error {
+	margin-bottom: 16px;
+}
+
+.pool-select-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-height: 420px;
+	overflow-y: auto;
+}
+
+.pool-select-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 12px 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large, 12px);
+	cursor: pointer;
+	transition: background 0.15s;
+}
+
+.pool-select-item:hover:not(.disabled) {
+	background: var(--color-background-hover);
+}
+
+.pool-select-item.selected {
+	border-color: var(--color-primary-element);
+	background: var(--color-primary-element-light);
+}
+
+.pool-select-item.disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.pool-add-confirm {
+	display: flex;
+	justify-content: flex-end;
+	padding-top: 8px;
+}
+
+.pool-select-info {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.pool-select-name {
+	font-weight: 600;
+	color: var(--color-main-text);
+}
+
+.pool-select-desc {
+	font-size: 0.85em;
+	color: var(--color-text-maxcontrast);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.pool-already-added {
+	font-size: 0.8em;
+	color: var(--color-text-maxcontrast);
+	font-style: italic;
+	flex-shrink: 0;
+}
+
+.pool-check {
+	font-size: 1.1em;
+	color: var(--color-primary-element);
+	font-weight: 700;
+	flex-shrink: 0;
+}
+
+.rules-pool-name {
+	margin: -8px 0 16px;
+	color: var(--color-text-maxcontrast);
+	font-size: 0.9em;
+}
+
+.rules-field {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 16px;
+}
+
+.rules-checkbox {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	cursor: pointer;
+}
+
+.rules-help {
+	margin: 0;
+	font-size: 0.85em;
+	color: var(--color-text-maxcontrast);
+}
+
+.modal-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 24px;
+	padding-top: 16px;
+	border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 768px) {
+	.lernraum-subnav {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		padding-bottom: 4px;
+	}
+
+	.section-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
+	.modal-content {
+		padding: 16px;
+		min-width: unset;
+	}
+
+	.pool-select-list {
+		max-height: 300px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.pool-item:hover {
+		transform: none;
+	}
+}
+</style>

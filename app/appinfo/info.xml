@@ -10,10 +10,6 @@
 
 Play through 20 real-world IT incident campaigns (SolarWinds, WannaCry, Colonial Pipeline, and more). Choose your character class, make decisions, pass skill checks, and learn through narrative. AI-powered narrator generates dynamic NPC dialog and validates freetext actions.
 
-## Hack Through Time — "Zeitreise"
-
-Travel through 7 epochs of hacking history — from 1960s Phone Phreaking to Quantum Dawn. Each epoch has its own CSS theme, character classes, museum facts, and campaign scenarios.
-
 ## Learning Modes
 
 - **Smart Queue** — One-click review of all due cards, prioritized by urgency
@@ -34,7 +30,7 @@ Travel through 7 epochs of hacking history — from 1960s Phone Phreaking to Qua
 
 ## AI Features (optional, requires Gemini API key)
 
-- **VirtuProf** — AI learning assistant with chat, RAG-powered course material answers with source citations
+- **VirtuProf** — AI learning assistant with fullscreen mode, chat, RAG-powered course material answers with source citations, and personalized course-end reflection
 - **AI Question Generator** — Generate questions from pasted text
 - **Note Generator** — AI-powered topic summaries saved to Nextcloud Files
 - **Ticket Triage** — AI classification of student support tickets
@@ -50,7 +46,7 @@ Travel through 7 epochs of hacking history — from 1960s Phone Phreaking to Qua
 
 ## Gamification
 
-- XP &amp; Levels, 14 Badges, Streak Multipliers, Daily Goal, Level-Up Celebration
+- XP &amp; Levels, 10 Active Badges, Streak Multipliers, Daily Goal, Level-Up Celebration
 
 ## Course Management
 
@@ -66,7 +62,7 @@ Travel through 7 epochs of hacking history — from 1960s Phone Phreaking to Qua
 - Optional: Google Gemini API key for AI features
     ]]></description>
 
-    <version>3.4.0</version>
+    <version>3.6.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>
