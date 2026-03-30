@@ -21,7 +21,6 @@ class CourseSummaryService {
     private BadgeService $badgeService;
     private StreakService $streakService;
     private RagChunkMapper $ragChunkMapper;
-    private IcsService $icsService;
     private GeminiService $geminiService;
     private UserTelosMapper $telosMapper;
 
@@ -31,7 +30,6 @@ class CourseSummaryService {
         BadgeService $badgeService,
         StreakService $streakService,
         RagChunkMapper $ragChunkMapper,
-        IcsService $icsService,
         GeminiService $geminiService,
         UserTelosMapper $telosMapper
     ) {
@@ -40,7 +38,6 @@ class CourseSummaryService {
         $this->badgeService = $badgeService;
         $this->streakService = $streakService;
         $this->ragChunkMapper = $ragChunkMapper;
-        $this->icsService = $icsService;
         $this->geminiService = $geminiService;
         $this->telosMapper = $telosMapper;
     }
@@ -106,7 +103,7 @@ class CourseSummaryService {
      */
     public function createSnapshot(int $courseId, string $userId): int {
         $summary = $this->getStudentSummary($courseId, $userId);
-        $this->icsService->ensureTokenExists($userId);
+        // ICS token is NOT auto-generated here (DSGVO: explicit opt-in via POST /api/ics/generate)
         $qb = $this->db->getQueryBuilder();
         $qb->insert('learning_course_snapshots')
             ->values([

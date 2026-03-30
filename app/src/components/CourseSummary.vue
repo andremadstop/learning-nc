@@ -172,6 +172,9 @@
 				<template v-else-if="narrative">
 					<p class="narrative-text">{{ narrative }}</p>
 				</template>
+				<p v-else-if="narrativeConsentRequired" class="narrative-unavailable">
+					{{ t('learning', 'KI-Reflexion erfordert deine Einwilligung. Aktiviere die KI-Funktion in den Einstellungen.') }}
+				</p>
 				<p v-else class="narrative-unavailable">
 					{{ t('learning', 'KI-Reflexion nicht verfuegbar. Stelle sicher, dass VirtuProf aktiviert ist.') }}
 				</p>
@@ -219,6 +222,7 @@ export default {
 			snapshotSaved: false,
 			narrative: null,
 			narrativeLoading: false,
+			narrativeConsentRequired: false,
 			icsToken: null,
 			icsUrl: null,
 			icsSubscribeUrl: null,
@@ -278,6 +282,7 @@ export default {
 					courseId: this.courseId,
 				}))
 				this.narrative = res.data.narrative
+				this.narrativeConsentRequired = res.data.consent_required || false
 			} catch (e) {
 				this.narrative = null
 			} finally {

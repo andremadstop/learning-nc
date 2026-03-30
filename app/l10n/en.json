@@ -507,6 +507,7 @@
     "Deine KI-Reflexion": "Your AI Reflection",
     "KI-Reflexion nicht verfuegbar. Stelle sicher, dass VirtuProf aktiviert ist.": "AI reflection not available. Make sure VirtuProf is enabled.",
     "Kursabschluss konnte nicht geladen werden.": "Failed to load course completion.",
-    "Snapshot konnte nicht gespeichert werden.": "Failed to save snapshot."
+    "Snapshot konnte nicht gespeichert werden.": "Failed to save snapshot.",
+    "KI-Reflexion erfordert deine Einwilligung. Aktiviere die KI-Funktion in den Einstellungen.": "AI reflection requires your consent. Enable AI features in your settings."
   }
 }

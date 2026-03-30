@@ -1459,6 +1459,7 @@
     "Deine KI-Reflexion": "Deine KI-Reflexion",
     "KI-Reflexion nicht verfuegbar. Stelle sicher, dass VirtuProf aktiviert ist.": "KI-Reflexion nicht verfügbar. Stelle sicher, dass VirtuProf aktiviert ist.",
     "Kursabschluss konnte nicht geladen werden.": "Kursabschluss konnte nicht geladen werden.",
-    "Snapshot konnte nicht gespeichert werden.": "Snapshot konnte nicht gespeichert werden."
+    "Snapshot konnte nicht gespeichert werden.": "Snapshot konnte nicht gespeichert werden.",
+    "KI-Reflexion erfordert deine Einwilligung. Aktiviere die KI-Funktion in den Einstellungen.": "KI-Reflexion erfordert deine Einwilligung. Aktiviere die KI-Funktion in den Einstellungen."
   }
 }

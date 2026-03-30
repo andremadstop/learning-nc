@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Db\UserTelosMapper;
 use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\CourseService;
 use OCP\AppFramework\Controller;
@@ -13,6 +14,7 @@ use OCP\IRequest;
 class SummaryController extends Controller {
     private CourseSummaryService $summaryService;
     private CourseService $courseService;
+    private UserTelosMapper $telosMapper;
     private ?string $userId;
 
     public function __construct(
@@ -20,11 +22,13 @@ class SummaryController extends Controller {
         IRequest $request,
         CourseSummaryService $summaryService,
         CourseService $courseService,
+        UserTelosMapper $telosMapper,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
         $this->summaryService = $summaryService;
         $this->courseService = $courseService;
+        $this->telosMapper = $telosMapper;
         $this->userId = $userId;
     }
 
@@ -88,6 +92,11 @@ class SummaryController extends Controller {
             $course = $this->courseService->findById($courseId, $this->userId);
             if (!empty($course['is_instructor'])) {
                 return new DataResponse(['error' => 'Students only'], Http::STATUS_FORBIDDEN);
+            }
+            // DSGVO: Require AI consent before sending data to Gemini
+            $telos = $this->telosMapper->findByUserIdOrNull($this->userId);
+            if (!$telos || empty($telos->getAiConsentVersion())) {
+                return new DataResponse(['narrative' => null, 'cached' => false, 'consent_required' => true]);
             }
             $narrative = $this->summaryService->generateAndCacheNarrative($courseId, $this->userId);
             return new DataResponse(['narrative' => $narrative, 'cached' => $narrative !== null]);
