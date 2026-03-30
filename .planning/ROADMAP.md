@@ -196,7 +196,10 @@ Plans:
   1. Navigating to /settings/help in the NC instance shows a working Privacy Policy link that leads to the learning app's Datenschutzerklärung page
   2. The Datenschutzerklärung page displays all 7 categories from privacy-info.json (learning, ai, social, audit, gamification, assessment, external) with their full content
   3. A legal notice (Impressum) link is reachable from NC settings; clicking it shows the Impressum content
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 116-01-PLAN.md — Fix tips-tricks section ID + deploy legal-link.php template + update build output (DSGVO-01, DSGVO-02, DSGVO-03)
 
 ### Phase 117: Dashboard Prüfungstermin
 **Goal**: Instructors can record exam dates per course and students see a live countdown on the NC Dashboard, creating daily urgency without leaving Nextcloud
@@ -222,6 +225,6 @@ Plans:
 | 112. Tab-Reduktion | v3.6.0 | 3/3 | Complete | 2026-03-30 |
 | 113. AI & Erklaerbot | v3.6.0 | 2/2 | Complete | 2026-03-30 |
 | 114. UX-Modus-Steuerung | v3.7.0 | Complete    | 2026-03-30 | 2026-03-30 |
-| 115. Wahr/Falsch-Migration | 2/2 | Complete   | 2026-03-30 | - |
+| 115. Wahr/Falsch-Migration | 2/2 | Complete    | 2026-03-30 | - |
 | 116. DSGVO Help-Seite | v3.7.0 | 0/? | Not started | - |
 | 117. Dashboard Prüfungstermin | v3.7.0 | 0/? | Not started | - |
