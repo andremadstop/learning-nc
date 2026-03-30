@@ -8,16 +8,16 @@
 ### UX-Vereinfachung
 
 - [x] **UX-01**: Schüler sieht Training-Modus nicht (weder Tab noch Link) — Dozent behält Zugriff für Live-Demos
-- [ ] **UX-02**: Wahr/Falsch-Fragen werden als Single-Choice mit 2 Optionen gehandhabt — kein eigener Pool-Typ `true_false` mehr
-- [ ] **UX-03**: Migration: bestehende Wahr/Falsch-Pools (question_type `true_false` → `single`) per DB-Migration
+- [x] **UX-02**: Wahr/Falsch-Fragen werden als Single-Choice mit 2 Optionen gehandhabt — kein eigener Pool-Typ `true_false` mehr
+- [x] **UX-03**: Migration: bestehende Wahr/Falsch-Pools (question_type `true_false` → `single`) per DB-Migration
 - [x] **UX-04**: Smart Queue ist prominenter Einstieg im Lernraum-Tab mit Anzeige fälliger Karten
 - [x] **UX-05**: mode_config ermöglicht Dozenten, Modi (Training, Exam etc.) pro Kurs ein-/auszuschalten
 
 ### DSGVO Help-Seite
 
-- [ ] **DSGVO-01**: NC Help & Privacy (`/settings/help`) zeigt verlinkten DSGVO-Inhalt via `privacy` URL in config.php
-- [ ] **DSGVO-02**: Datenschutzerklärung-Seite existiert und enthält die 7 Kategorien aus privacy-info.json
-- [ ] **DSGVO-03**: Impressum ist über NC-Settings (legal notice) erreichbar
+- [x] **DSGVO-01**: NC Help & Privacy (`/settings/help`) zeigt verlinkten DSGVO-Inhalt via `privacy` URL in config.php
+- [x] **DSGVO-02**: Datenschutzerklärung-Seite existiert und enthält die 7 Kategorien aus privacy-info.json
+- [x] **DSGVO-03**: Impressum ist über NC-Settings (legal notice) erreichbar
 
 ### Dashboard Prüfungstermin
 
@@ -65,11 +65,11 @@
 | UX-01 | Phase 114 | Complete |
 | UX-04 | Phase 114 | Complete |
 | UX-05 | Phase 114 | Complete |
-| UX-02 | Phase 115 | Pending |
-| UX-03 | Phase 115 | Pending |
-| DSGVO-01 | Phase 116 | Pending |
-| DSGVO-02 | Phase 116 | Pending |
-| DSGVO-03 | Phase 116 | Pending |
+| UX-02 | Phase 115 | Complete |
+| UX-03 | Phase 115 | Complete |
+| DSGVO-01 | Phase 116 | Complete |
+| DSGVO-02 | Phase 116 | Complete |
+| DSGVO-03 | Phase 116 | Complete |
 | DASH-01 | Phase 117 | Pending |
 | DASH-02 | Phase 117 | Pending |
 | DASH-03 | Phase 117 | Pending |

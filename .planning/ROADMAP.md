@@ -91,7 +91,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 
 - [x] **Phase 114: UX-Modus-Steuerung** - Mode visibility per role, Smart Queue as Lernraum entry point, mode_config for instructors (completed 2026-03-30)
 - [x] **Phase 115: Wahr/Falsch-Migration** - Unify true_false into single-choice type, DB migration for existing pools (completed 2026-03-30)
-- [ ] **Phase 116: DSGVO Help-Seite** - NC Help & Privacy link, privacy-info page with 7 categories, Impressum via NC settings
+- [x] **Phase 116: DSGVO Help-Seite** - NC Help & Privacy link, privacy-info page with 7 categories, Impressum via NC settings (completed 2026-03-30)
 - [ ] **Phase 117: Dashboard Prüfungstermin** - exam_date field + API, NC Dashboard Widget with countdown
 - [ ] **Phase 118: PBQ-Feedback & Badge-Korrektur** - CLI-Terminal-Feedback in PBQ-Simulatoren, streak_30→streak_14 Migration
 
@@ -226,5 +226,5 @@ Plans:
 | 113. AI & Erklaerbot | v3.6.0 | 2/2 | Complete | 2026-03-30 |
 | 114. UX-Modus-Steuerung | v3.7.0 | Complete    | 2026-03-30 | 2026-03-30 |
 | 115. Wahr/Falsch-Migration | 2/2 | Complete    | 2026-03-30 | - |
-| 116. DSGVO Help-Seite | v3.7.0 | 0/? | Not started | - |
+| 116. DSGVO Help-Seite | 1/1 | Complete   | 2026-03-30 | - |
 | 117. Dashboard Prüfungstermin | v3.7.0 | 0/? | Not started | - |
