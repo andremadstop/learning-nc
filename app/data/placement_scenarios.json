@@ -1,0 +1,593 @@
+[
+  {
+    "id": "soho-office-layout",
+    "title": "SOHO-Netzwerk einrichten",
+    "difficulty": "easy",
+    "question": "Platziere die Komponenten so, dass ein kleines Buero-Netz sauber mit Internet, LAN und WLAN arbeitet.",
+    "context": "Ein Modem liefert die WAN-Verbindung. Kabelgebundene und drahtlose Clients muessen hinter dem Router logisch korrekt angebunden werden.",
+    "hint": "Denke zuerst an die Reihenfolge WAN -> Router -> Switch und haenge mobile Clients erst hinter den Access Point.",
+    "instructions": [
+      "Setze das Modem an den WAN-Uplink.",
+      "Platziere den Router zwischen Modem und internem LAN.",
+      "Haenge den Switch hinter den Router.",
+      "Verbinde Laptop und Smartphone nur ueber den Access Point."
+    ],
+    "components": [
+      { "id": "modem", "label": "Modem", "type": "cloud" },
+      { "id": "router", "label": "Router", "type": "router" },
+      { "id": "switch", "label": "Switch", "type": "switch" },
+      { "id": "access-point", "label": "Access Point", "type": "ap" },
+      { "id": "office-pc", "label": "PC", "type": "workstation" },
+      { "id": "laptop", "label": "Laptop", "type": "workstation" },
+      { "id": "smartphone", "label": "Smartphone", "type": "workstation" }
+    ],
+    "device_options": [
+      "modem",
+      "router",
+      "switch",
+      "access-point",
+      "office-pc",
+      "laptop",
+      "smartphone"
+    ],
+    "scoring_mode": "strict",
+    "positions": [
+      { "id": "wan-uplink", "label": "WAN / ISP Uplink", "correct": "modem" },
+      { "id": "gateway", "label": "Gateway / NAT", "correct": "router" },
+      { "id": "lan-distribution", "label": "LAN Distribution", "correct": "switch" },
+      { "id": "desk-port", "label": "Wired Workstation", "correct": "office-pc" },
+      { "id": "wireless-bridge", "label": "Wireless Access Layer", "correct": "access-point" },
+      { "id": "wifi-laptop", "label": "Laptop Zone", "correct": "laptop" },
+      { "id": "wifi-phone", "label": "Phone Zone", "correct": "smartphone" }
+    ],
+    "topology": {
+      "nodes": [
+        { "id": "wan-uplink", "type": "cloud", "label": "WAN", "x": 80, "y": 150 },
+        { "id": "gateway", "type": "router", "label": "Gateway", "x": 200, "y": 150 },
+        { "id": "lan-distribution", "type": "switch", "label": "LAN", "x": 330, "y": 150 },
+        { "id": "desk-port", "type": "workstation", "label": "Desk", "x": 470, "y": 90 },
+        { "id": "wireless-bridge", "type": "ap", "label": "AP", "x": 470, "y": 210 },
+        { "id": "wifi-laptop", "type": "workstation", "label": "Laptop", "x": 610, "y": 160 },
+        { "id": "wifi-phone", "type": "workstation", "label": "Phone", "x": 610, "y": 250 }
+      ],
+      "links": [
+        { "from": "wan-uplink", "to": "gateway" },
+        { "from": "gateway", "to": "lan-distribution" },
+        { "from": "lan-distribution", "to": "desk-port" },
+        { "from": "lan-distribution", "to": "wireless-bridge" },
+        { "from": "wireless-bridge", "to": "wifi-laptop" },
+        { "from": "wireless-bridge", "to": "wifi-phone" }
+      ]
+    },
+    "validation": {
+      "scoring_mode": "strict",
+      "unique_assignment": true,
+      "required_assignments": [
+        { "position": "wan-uplink", "components": ["modem"] },
+        { "position": "gateway", "components": ["router"] },
+        { "position": "lan-distribution", "components": ["switch"] },
+        { "position": "desk-port", "components": ["office-pc"] },
+        { "position": "wireless-bridge", "components": ["access-point"] },
+        { "position": "wifi-laptop", "components": ["laptop"] },
+        { "position": "wifi-phone", "components": ["smartphone"] }
+      ],
+      "rules": [
+        {
+          "id": "wan-chain",
+          "type": "ordered_path",
+          "path": ["wan-uplink", "gateway", "lan-distribution"],
+          "description": "Das Modem speist den Router, der das LAN hinter dem Switch bereitstellt."
+        },
+        {
+          "id": "wired-client-behind-switch",
+          "type": "child_of",
+          "parent": "lan-distribution",
+          "children": ["desk-port"],
+          "description": "Der kabelgebundene PC muss am Switch haengen."
+        },
+        {
+          "id": "wireless-clients-behind-ap",
+          "type": "child_of",
+          "parent": "wireless-bridge",
+          "children": ["wifi-laptop", "wifi-phone"],
+          "description": "Laptop und Smartphone muessen hinter dem Access Point liegen."
+        }
+      ],
+      "common_mistakes": [
+        {
+          "id": "switch-directly-on-wan",
+          "description": "Der Switch haengt direkt am Modem statt hinter dem Router.",
+          "invalid_when": [
+            { "position": "wan-uplink", "component": "switch" },
+            { "position": "gateway", "component": "modem" }
+          ]
+        },
+        {
+          "id": "ap-directly-on-wan",
+          "description": "Der Access Point wird direkt an die WAN-Kante gesetzt.",
+          "invalid_when": [
+            { "position": "wan-uplink", "component": "access-point" }
+          ]
+        },
+        {
+          "id": "router-to-pc",
+          "description": "Der Router wird mit einem Endgeraet statt mit dem LAN-Switch verwechselt.",
+          "invalid_when": [
+            { "position": "gateway", "component": "office-pc" }
+          ]
+        }
+      ]
+    },
+    "success_message": "Die SOHO-Topologie ist korrekt aufgebaut: WAN am Modem, Routing am Gateway, Verteilung ueber Switch und AP."
+  },
+  {
+    "id": "dmz-screened-subnet",
+    "title": "Web-Infrastruktur absichern (Screened Subnet)",
+    "difficulty": "medium",
+    "question": "Ordne die Komponenten so an, dass oeffentliche DMZ-Dienste vom internen Datenbank-Server sauber getrennt sind.",
+    "context": "Ein Internet-Uplink fuehrt in eine Edge Firewall. Web- und Mailserver gehoeren in die DMZ, der Datenbank-Server bleibt hinter einem internen Switch.",
+    "hint": "Die Firewall ist die zentrale Trennstelle. Die Datenbank darf nie in einer DMZ-Position landen.",
+    "instructions": [
+      "Setze den Internet-Uplink vor die Firewall.",
+      "Platziere Web- und Mailserver in zwei DMZ-Slots hinter der Firewall.",
+      "Fuehre das interne Netz ueber einen eigenen Switch.",
+      "Halte den Datenbank-Server im geschuetzten internen Segment."
+    ],
+    "components": [
+      { "id": "internet-cloud", "label": "Internet", "type": "cloud" },
+      { "id": "edge-firewall", "label": "Edge Firewall", "type": "firewall" },
+      { "id": "web-server", "label": "Webserver", "type": "server" },
+      { "id": "mail-server", "label": "Mailserver", "type": "server" },
+      { "id": "internal-switch", "label": "Interner Switch", "type": "switch" },
+      { "id": "database-server", "label": "Datenbank-Server", "type": "server" }
+    ],
+    "device_options": [
+      "internet-cloud",
+      "edge-firewall",
+      "web-server",
+      "mail-server",
+      "internal-switch",
+      "database-server"
+    ],
+    "scoring_mode": "strict",
+    "positions": [
+      { "id": "internet-edge", "label": "Internet Edge", "correct": "internet-cloud" },
+      { "id": "perimeter", "label": "Perimeter Security", "correct": "edge-firewall" },
+      { "id": "dmz-a", "label": "DMZ Slot A", "correct": "web-server" },
+      { "id": "dmz-b", "label": "DMZ Slot B", "correct": "mail-server" },
+      { "id": "internal-distribution", "label": "Internal Distribution", "correct": "internal-switch" },
+      { "id": "data-tier", "label": "Protected Data Tier", "correct": "database-server" }
+    ],
+    "topology": {
+      "nodes": [
+        { "id": "internet-edge", "type": "cloud", "label": "Internet", "x": 70, "y": 180 },
+        { "id": "perimeter", "type": "firewall", "label": "FW", "x": 200, "y": 180 },
+        { "id": "dmz-a", "type": "server", "label": "DMZ-A", "x": 360, "y": 90 },
+        { "id": "dmz-b", "type": "server", "label": "DMZ-B", "x": 360, "y": 270 },
+        { "id": "internal-distribution", "type": "switch", "label": "Core", "x": 360, "y": 180 },
+        { "id": "data-tier", "type": "server", "label": "DB", "x": 520, "y": 180 }
+      ],
+      "links": [
+        { "from": "internet-edge", "to": "perimeter" },
+        { "from": "perimeter", "to": "dmz-a" },
+        { "from": "perimeter", "to": "dmz-b" },
+        { "from": "perimeter", "to": "internal-distribution" },
+        { "from": "internal-distribution", "to": "data-tier" }
+      ]
+    },
+    "validation": {
+      "scoring_mode": "strict",
+      "unique_assignment": true,
+      "required_assignments": [
+        { "position": "internet-edge", "components": ["internet-cloud"] },
+        { "position": "perimeter", "components": ["edge-firewall"] },
+        { "position": "dmz-a", "components": ["web-server"] },
+        { "position": "dmz-b", "components": ["mail-server"] },
+        { "position": "internal-distribution", "components": ["internal-switch"] },
+        { "position": "data-tier", "components": ["database-server"] }
+      ],
+      "rules": [
+        {
+          "id": "firewall-as-choke-point",
+          "type": "ordered_path",
+          "path": ["internet-edge", "perimeter", "internal-distribution", "data-tier"],
+          "description": "Der Weg ins interne Netz muss zwingend ueber die Firewall laufen."
+        },
+        {
+          "id": "dmz-services-behind-firewall",
+          "type": "child_of",
+          "parent": "perimeter",
+          "children": ["dmz-a", "dmz-b"],
+          "description": "Web- und Mailserver liegen in getrennten DMZ-Slots hinter der Firewall."
+        },
+        {
+          "id": "database-in-internal-zone",
+          "type": "segment_boundary",
+          "protected_positions": ["data-tier"],
+          "allowed_upstream": ["internal-distribution"],
+          "description": "Der Datenbank-Server bleibt ausschliesslich im internen Segment."
+        }
+      ],
+      "common_mistakes": [
+        {
+          "id": "database-in-dmz",
+          "description": "Der Datenbank-Server wird in die DMZ gestellt.",
+          "invalid_when": [
+            { "position": "dmz-a", "component": "database-server" },
+            { "position": "dmz-b", "component": "database-server" }
+          ]
+        },
+        {
+          "id": "webserver-before-firewall",
+          "description": "Der Webserver wird direkt am Internet exponiert.",
+          "invalid_when": [
+            { "position": "internet-edge", "component": "web-server" }
+          ]
+        },
+        {
+          "id": "flat-switching",
+          "description": "DMZ-Server und internes Netz teilen sich dieselbe Switch-Rolle.",
+          "invalid_when": [
+            { "position": "internal-distribution", "component": "web-server" },
+            { "position": "internal-distribution", "component": "mail-server" }
+          ]
+        }
+      ]
+    },
+    "success_message": "Die Screened-Subnet-Architektur trennt Internet, DMZ und internes Datensegment korrekt."
+  },
+  {
+    "id": "enterprise-vlan-segmentation",
+    "title": "Abteilungstrennung via VLANs",
+    "difficulty": "medium",
+    "question": "Platziere Core-, Access- und Endgeraete so, dass Marketing, Finanzen und Server-Raum logisch getrennt bleiben.",
+    "context": "Ein Layer-3-Core-Switch verbindet zwei Access Switches. Marketing und Finanzen sollen auf getrennten VLANs laufen, der Datei-Server im Server-VLAN.",
+    "hint": "Der Core uebernimmt Inter-VLAN-Routing. Die beiden Access Switches bilden getrennte Abteilungszugriffe.",
+    "instructions": [
+      "Setze den Layer-3-Core in die zentrale Routing-Rolle.",
+      "Platziere je einen Access Switch pro Abteilung.",
+      "Haenge Marketing und Finanzen an getrennte Access-Segmente.",
+      "Lass den Datei-Server direkt am Core im Server-VLAN."
+    ],
+    "components": [
+      { "id": "core-switch", "label": "Core Switch (L3)", "type": "switch" },
+      { "id": "marketing-access-switch", "label": "Access Switch Marketing", "type": "switch" },
+      { "id": "finance-access-switch", "label": "Access Switch Finanzen", "type": "switch" },
+      { "id": "marketing-pc", "label": "Marketing-PC", "type": "workstation" },
+      { "id": "finance-pc", "label": "Finanzen-PC", "type": "workstation" },
+      { "id": "file-server", "label": "Datei-Server", "type": "server" }
+    ],
+    "device_options": [
+      "core-switch",
+      "marketing-access-switch",
+      "finance-access-switch",
+      "marketing-pc",
+      "finance-pc",
+      "file-server"
+    ],
+    "scoring_mode": "strict",
+    "positions": [
+      { "id": "core-routing", "label": "Core Routing", "correct": "core-switch" },
+      { "id": "marketing-access", "label": "Marketing Access Layer", "correct": "marketing-access-switch" },
+      { "id": "finance-access", "label": "Finanzen Access Layer", "correct": "finance-access-switch" },
+      { "id": "marketing-desk", "label": "Marketing VLAN 10", "correct": "marketing-pc" },
+      { "id": "finance-desk", "label": "Finanzen VLAN 20", "correct": "finance-pc" },
+      { "id": "server-room", "label": "Server VLAN 100", "correct": "file-server" }
+    ],
+    "topology": {
+      "nodes": [
+        { "id": "core-routing", "type": "switch", "label": "Core", "x": 280, "y": 150 },
+        { "id": "marketing-access", "type": "switch", "label": "MKT", "x": 120, "y": 80 },
+        { "id": "finance-access", "type": "switch", "label": "FIN", "x": 120, "y": 250 },
+        { "id": "marketing-desk", "type": "workstation", "label": "VLAN10", "x": 30, "y": 80 },
+        { "id": "finance-desk", "type": "workstation", "label": "VLAN20", "x": 30, "y": 250 },
+        { "id": "server-room", "type": "server", "label": "VLAN100", "x": 470, "y": 150 }
+      ],
+      "links": [
+        { "from": "core-routing", "to": "marketing-access" },
+        { "from": "core-routing", "to": "finance-access" },
+        { "from": "marketing-access", "to": "marketing-desk" },
+        { "from": "finance-access", "to": "finance-desk" },
+        { "from": "core-routing", "to": "server-room" }
+      ]
+    },
+    "validation": {
+      "scoring_mode": "strict",
+      "unique_assignment": true,
+      "required_assignments": [
+        { "position": "core-routing", "components": ["core-switch"] },
+        { "position": "marketing-access", "components": ["marketing-access-switch"] },
+        { "position": "finance-access", "components": ["finance-access-switch"] },
+        { "position": "marketing-desk", "components": ["marketing-pc"] },
+        { "position": "finance-desk", "components": ["finance-pc"] },
+        { "position": "server-room", "components": ["file-server"] }
+      ],
+      "rules": [
+        {
+          "id": "core-trunk-uplinks",
+          "type": "fanout",
+          "source": "core-routing",
+          "targets": ["marketing-access", "finance-access"],
+          "description": "Der Core braucht Trunk-Uplinks zu beiden Access Switches."
+        },
+        {
+          "id": "department-vlan-membership",
+          "type": "segment_map",
+          "segments": [
+            { "position": "marketing-desk", "segment": "VLAN10", "upstream": "marketing-access" },
+            { "position": "finance-desk", "segment": "VLAN20", "upstream": "finance-access" },
+            { "position": "server-room", "segment": "VLAN100", "upstream": "core-routing" }
+          ],
+          "description": "Marketing, Finanzen und Server-Raum gehoeren in getrennte VLANs."
+        },
+        {
+          "id": "inter-vlan-routing-at-core",
+          "type": "l3_boundary",
+          "router_position": "core-routing",
+          "description": "Inter-VLAN-Routing darf nur am Layer-3-Core stattfinden."
+        }
+      ],
+      "common_mistakes": [
+        {
+          "id": "file-server-on-access-layer",
+          "description": "Der Datei-Server landet an einem Access-Switch statt am Core.",
+          "invalid_when": [
+            { "position": "marketing-access", "component": "file-server" },
+            { "position": "finance-access", "component": "file-server" }
+          ]
+        },
+        {
+          "id": "department-pc-in-switch-slot",
+          "description": "Ein Endgeraet wird in eine Switch-Rolle gesetzt.",
+          "invalid_when": [
+            { "position": "marketing-access", "component": "marketing-pc" },
+            { "position": "finance-access", "component": "finance-pc" }
+          ]
+        },
+        {
+          "id": "missing-core-routing",
+          "description": "Der Core wird nicht als zentrale Layer-3-Instanz verwendet.",
+          "invalid_when": [
+            { "position": "core-routing", "component": "marketing-access-switch" },
+            { "position": "core-routing", "component": "finance-access-switch" }
+          ]
+        }
+      ]
+    },
+    "success_message": "Die VLAN-Segmentierung trennt beide Abteilungen sauber, waehrend der Datei-Server am Core verbleibt."
+  },
+  {
+    "id": "campus-wireless-architecture",
+    "title": "Campus-WLAN mit zentraler Steuerung",
+    "difficulty": "hard",
+    "question": "Ordne Controller, Authentisierung und Access Points so an, dass ein Enterprise-WLAN mit zentraler Steuerung funktioniert.",
+    "context": "Mehrere Lightweight APs werden ueber einen PoE-Switch versorgt. Ein WLC steuert die APs zentral, der RADIUS-Server uebernimmt 802.1X-Authentisierung.",
+    "hint": "Die APs brauchen den PoE-Switch. WLC und RADIUS gehoeren ins kabelgebundene Kernsegment.",
+    "instructions": [
+      "Setze den PoE-Switch an die zentrale Verteilrolle.",
+      "Platziere WLC und RADIUS-Server direkt hinter dem PoE-Switch.",
+      "Haenge alle Lightweight APs an PoE-Slots.",
+      "Nutze drei getrennte AP-Slots fuer die Funkabdeckung."
+    ],
+    "components": [
+      { "id": "poe-switch", "label": "PoE-Switch", "type": "switch" },
+      { "id": "wlc", "label": "Wireless LAN Controller", "type": "router" },
+      { "id": "radius-server", "label": "RADIUS Server", "type": "server" },
+      { "id": "lwap-a", "label": "Lightweight AP A", "type": "ap" },
+      { "id": "lwap-b", "label": "Lightweight AP B", "type": "ap" },
+      { "id": "lwap-c", "label": "Lightweight AP C", "type": "ap" }
+    ],
+    "device_options": [
+      "poe-switch",
+      "wlc",
+      "radius-server",
+      "lwap-a",
+      "lwap-b",
+      "lwap-c"
+    ],
+    "scoring_mode": "strict",
+    "positions": [
+      { "id": "distribution", "label": "PoE Distribution", "correct": "poe-switch" },
+      { "id": "controller", "label": "WLC", "correct": "wlc" },
+      { "id": "aaa", "label": "AAA / RADIUS", "correct": "radius-server" },
+      { "id": "ap-west", "label": "LWAP West", "correct": ["lwap-a", "lwap-b", "lwap-c"] },
+      { "id": "ap-center", "label": "LWAP Center", "correct": ["lwap-a", "lwap-b", "lwap-c"] },
+      { "id": "ap-east", "label": "LWAP East", "correct": ["lwap-a", "lwap-b", "lwap-c"] }
+    ],
+    "topology": {
+      "nodes": [
+        { "id": "distribution", "type": "switch", "label": "PoE", "x": 240, "y": 170 },
+        { "id": "controller", "type": "router", "label": "WLC", "x": 90, "y": 80 },
+        { "id": "aaa", "type": "server", "label": "RADIUS", "x": 90, "y": 260 },
+        { "id": "ap-west", "type": "ap", "label": "AP-W", "x": 430, "y": 60 },
+        { "id": "ap-center", "type": "ap", "label": "AP-C", "x": 430, "y": 170 },
+        { "id": "ap-east", "type": "ap", "label": "AP-E", "x": 430, "y": 280 }
+      ],
+      "links": [
+        { "from": "distribution", "to": "controller" },
+        { "from": "distribution", "to": "aaa" },
+        { "from": "distribution", "to": "ap-west" },
+        { "from": "distribution", "to": "ap-center" },
+        { "from": "distribution", "to": "ap-east" }
+      ]
+    },
+    "validation": {
+      "scoring_mode": "strict",
+      "unique_assignment": true,
+      "required_assignments": [
+        { "position": "distribution", "components": ["poe-switch"] },
+        { "position": "controller", "components": ["wlc"] },
+        { "position": "aaa", "components": ["radius-server"] },
+        { "position": "ap-west", "components": ["lwap-a", "lwap-b", "lwap-c"] },
+        { "position": "ap-center", "components": ["lwap-a", "lwap-b", "lwap-c"] },
+        { "position": "ap-east", "components": ["lwap-a", "lwap-b", "lwap-c"] }
+      ],
+      "rules": [
+        {
+          "id": "poe-fanout",
+          "type": "fanout",
+          "source": "distribution",
+          "targets": ["controller", "aaa", "ap-west", "ap-center", "ap-east"],
+          "description": "Der PoE-Switch versorgt Controller, RADIUS und alle APs."
+        },
+        {
+          "id": "capwap-control-plane",
+          "type": "overlay_control",
+          "controller": "controller",
+          "managed_positions": ["ap-west", "ap-center", "ap-east"],
+          "description": "Der WLC muss logisch alle Lightweight APs steuern."
+        },
+        {
+          "id": "radius-in-wired-core",
+          "type": "segment_boundary",
+          "protected_positions": ["aaa"],
+          "allowed_upstream": ["distribution"],
+          "description": "Der RADIUS-Server bleibt im kabelgebundenen Kernsegment."
+        }
+      ],
+      "common_mistakes": [
+        {
+          "id": "ap-in-controller-slot",
+          "description": "Ein AP ersetzt den WLC oder den PoE-Switch.",
+          "invalid_when": [
+            { "position": "distribution", "component": "lwap-a" },
+            { "position": "distribution", "component": "lwap-b" },
+            { "position": "distribution", "component": "lwap-c" },
+            { "position": "controller", "component": "lwap-a" },
+            { "position": "controller", "component": "lwap-b" },
+            { "position": "controller", "component": "lwap-c" }
+          ]
+        },
+        {
+          "id": "radius-in-wireless-slot",
+          "description": "Der RADIUS-Server wird in einen Funkzellen-Slot gezogen.",
+          "invalid_when": [
+            { "position": "ap-west", "component": "radius-server" },
+            { "position": "ap-center", "component": "radius-server" },
+            { "position": "ap-east", "component": "radius-server" }
+          ]
+        },
+        {
+          "id": "controller-off-distribution",
+          "description": "Der WLC wird nicht direkt am zentralen Switch angebunden.",
+          "invalid_when": [
+            { "position": "aaa", "component": "wlc" }
+          ]
+        }
+      ]
+    },
+    "success_message": "Die Enterprise-WLAN-Architektur ist konsistent: PoE fuer alle APs, zentrale WLC-Steuerung und separater RADIUS-Dienst."
+  },
+  {
+    "id": "site-to-site-vpn",
+    "title": "Sichere Standortvernetzung",
+    "difficulty": "medium",
+    "question": "Platziere HQ, Internet und Branch-Komponenten so, dass ein Site-to-Site-VPN den gesamten Datenpfad abdeckt.",
+    "context": "Hauptsitz und Filiale muessen ueber das oeffentliche Internet verbunden werden. Die VPN-Gateways terminieren den Tunnel, die LAN-Switches bleiben hinter den Gateways.",
+    "hint": "Der Tunnel endet immer an den beiden Edge-Gateways, nicht an den internen Switches.",
+    "instructions": [
+      "Setze je einen Switch in HQ und Branch auf die LAN-Seite.",
+      "Platziere vor jedem Standort einen VPN-Gateway.",
+      "Fuehre beide Gateways ueber das Internet zusammen.",
+      "Achte darauf, dass keine interne Komponente direkt im Internet-Slot landet."
+    ],
+    "components": [
+      { "id": "hq-switch", "label": "HQ Switch", "type": "switch" },
+      { "id": "hq-vpn-gateway", "label": "HQ VPN Gateway", "type": "firewall" },
+      { "id": "internet-cloud", "label": "Internet", "type": "cloud" },
+      { "id": "branch-vpn-gateway", "label": "Branch VPN Gateway", "type": "firewall" },
+      { "id": "branch-switch", "label": "Branch Switch", "type": "switch" }
+    ],
+    "device_options": [
+      "hq-switch",
+      "hq-vpn-gateway",
+      "internet-cloud",
+      "branch-vpn-gateway",
+      "branch-switch"
+    ],
+    "scoring_mode": "strict",
+    "positions": [
+      { "id": "hq-lan", "label": "HQ LAN", "correct": "hq-switch" },
+      { "id": "hq-edge", "label": "HQ VPN Edge", "correct": "hq-vpn-gateway" },
+      { "id": "public-internet", "label": "Public Internet", "correct": "internet-cloud" },
+      { "id": "branch-edge", "label": "Branch VPN Edge", "correct": "branch-vpn-gateway" },
+      { "id": "branch-lan", "label": "Branch LAN", "correct": "branch-switch" }
+    ],
+    "topology": {
+      "nodes": [
+        { "id": "hq-lan", "type": "switch", "label": "HQ", "x": 60, "y": 150 },
+        { "id": "hq-edge", "type": "firewall", "label": "HQ GW", "x": 200, "y": 150 },
+        { "id": "public-internet", "type": "cloud", "label": "Internet", "x": 340, "y": 150 },
+        { "id": "branch-edge", "type": "firewall", "label": "BR GW", "x": 480, "y": 150 },
+        { "id": "branch-lan", "type": "switch", "label": "Branch", "x": 620, "y": 150 }
+      ],
+      "links": [
+        { "from": "hq-lan", "to": "hq-edge" },
+        { "from": "hq-edge", "to": "public-internet" },
+        { "from": "public-internet", "to": "branch-edge" },
+        { "from": "branch-edge", "to": "branch-lan" }
+      ]
+    },
+    "validation": {
+      "scoring_mode": "strict",
+      "unique_assignment": true,
+      "required_assignments": [
+        { "position": "hq-lan", "components": ["hq-switch"] },
+        { "position": "hq-edge", "components": ["hq-vpn-gateway"] },
+        { "position": "public-internet", "components": ["internet-cloud"] },
+        { "position": "branch-edge", "components": ["branch-vpn-gateway"] },
+        { "position": "branch-lan", "components": ["branch-switch"] }
+      ],
+      "rules": [
+        {
+          "id": "vpn-data-path",
+          "type": "ordered_path",
+          "path": ["hq-lan", "hq-edge", "public-internet", "branch-edge", "branch-lan"],
+          "description": "Der gesamte Standortverkehr muss durch beide VPN-Gateways und das Internet laufen."
+        },
+        {
+          "id": "tunnel-endpoints",
+          "type": "peer_pair",
+          "positions": ["hq-edge", "branch-edge"],
+          "description": "Die Tunnel-Endpunkte sitzen an den beiden Edge-Gateways."
+        },
+        {
+          "id": "switches-behind-gateways",
+          "type": "edge_boundary",
+          "inside_positions": ["hq-lan", "branch-lan"],
+          "edge_positions": ["hq-edge", "branch-edge"],
+          "description": "Die LAN-Switches duerfen nie direkt im Internet-Datenpfad liegen."
+        }
+      ],
+      "common_mistakes": [
+        {
+          "id": "switch-as-tunnel-endpoint",
+          "description": "Ein interner Switch wird als VPN-Endpunkt missbraucht.",
+          "invalid_when": [
+            { "position": "hq-edge", "component": "hq-switch" },
+            { "position": "branch-edge", "component": "branch-switch" }
+          ]
+        },
+        {
+          "id": "gateway-inside-lan",
+          "description": "Ein VPN-Gateway landet auf der LAN-Seite statt an der Edge.",
+          "invalid_when": [
+            { "position": "hq-lan", "component": "hq-vpn-gateway" },
+            { "position": "branch-lan", "component": "branch-vpn-gateway" }
+          ]
+        },
+        {
+          "id": "wrong-device-on-internet",
+          "description": "Eine interne Komponente wird in den Internet-Slot gesetzt.",
+          "invalid_when": [
+            { "position": "public-internet", "component": "hq-switch" },
+            { "position": "public-internet", "component": "branch-switch" },
+            { "position": "public-internet", "component": "hq-vpn-gateway" },
+            { "position": "public-internet", "component": "branch-vpn-gateway" }
+          ]
+        }
+      ]
+    },
+    "success_message": "Die Site-to-Site-Topologie ist korrekt: beide LANs liegen hinter ihren Gateways, der Tunnel verlaeuft sauber ueber das Internet."
+  }
+]
