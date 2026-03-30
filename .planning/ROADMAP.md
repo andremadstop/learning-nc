@@ -170,8 +170,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 114-01-PLAN.md — Training tab visibility per role + mode_config toggle (UX-01, UX-05)
-- [ ] 114-02-PLAN.md — Smart Queue hero card in Lernraum student view (UX-04)
+- [x] 114-01-PLAN.md — Training tab visibility per role + mode_config toggle (UX-01, UX-05)
+- [x] 114-02-PLAN.md — Smart Queue hero card in Lernraum student view (UX-04)
 
 ### Phase 115: Wahr/Falsch-Migration
 **Goal**: The true_false pool type no longer exists; all existing true/false questions behave identically to single-choice questions with exactly two options
@@ -217,7 +217,7 @@ Plans:
 | 111. Badge-Umbau & Vault-Import | v3.6.0 | 2/2 | Complete | 2026-03-29 |
 | 112. Tab-Reduktion | v3.6.0 | 3/3 | Complete | 2026-03-30 |
 | 113. AI & Erklaerbot | v3.6.0 | 2/2 | Complete | 2026-03-30 |
-| 114. UX-Modus-Steuerung | 2/2 | Complete   | 2026-03-30 | - |
+| 114. UX-Modus-Steuerung | v3.7.0 | 2/2 | Complete | 2026-03-30 |
 | 115. Wahr/Falsch-Migration | v3.7.0 | 0/? | Not started | - |
 | 116. DSGVO Help-Seite | v3.7.0 | 0/? | Not started | - |
 | 117. Dashboard Prüfungstermin | v3.7.0 | 0/? | Not started | - |
