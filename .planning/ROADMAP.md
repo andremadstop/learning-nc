@@ -140,11 +140,11 @@ Plans:
   2. User can close the Erklaerbot overlay with a single X-button click or swipe gesture (no nested menu navigation required)
   3. At course end, student receives a Gemini-generated reflection summarizing their personal learning journey with a next-step recommendation
   4. After course completion, student can subscribe to a token-based ICS calendar URL that contains individual VEVENTs for each due Leitner repetition date
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 113-01: Erklaerbot Fullscreen + Dismissal UX (UX-02, UX-03)
-- [ ] 113-02: Narrative Portfolio + Forget-Me-Not ICS (AI-01, AI-02)
+- [ ] 113-01-PLAN.md — Erklaerbot Fullscreen + Dismissal UX (UX-02, UX-03)
+- [ ] 113-02-PLAN.md — Narrative Portfolio + Forget-Me-Not ICS (AI-01, AI-02)
 
 ## Progress Table
 
@@ -156,5 +156,5 @@ Plans:
 | 101-109 | v3.5.0 | - | Complete | 2026-03-29 |
 | 110. Foundation & Security | 2/2 | Complete    | 2026-03-29 | - |
 | 111. Badge-Umbau & Vault-Import | 2/2 | Complete    | 2026-03-29 | - |
-| 112. Tab-Reduktion | 3/3 | Complete   | 2026-03-29 | - |
+| 112. Tab-Reduktion | 3/3 | Complete    | 2026-03-30 | - |
 | 113. AI & Erklaerbot | v3.6.0 | 0/2 | Not started | - |
