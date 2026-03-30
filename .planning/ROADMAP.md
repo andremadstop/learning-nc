@@ -167,7 +167,11 @@ Plans:
   2. Smart Queue appears as the primary Lernraum entry point and shows the count of cards due today before the user clicks anything
   3. Instructor can open a course mode_config panel and toggle individual modes (Training, Exam, etc.) on or off; changes persist across page reloads
   4. When an instructor disables a mode, students immediately lose access to that mode's tab/link
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 114-01-PLAN.md — Training tab visibility per role + mode_config toggle (UX-01, UX-05)
+- [ ] 114-02-PLAN.md — Smart Queue hero card in Lernraum student view (UX-04)
 
 ### Phase 115: Wahr/Falsch-Migration
 **Goal**: The true_false pool type no longer exists; all existing true/false questions behave identically to single-choice questions with exactly two options
