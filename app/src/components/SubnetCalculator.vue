@@ -7,9 +7,7 @@
 				<p class="subnet-tool__subtitle">{{ t('learning', 'Netzadresse, Broadcast, Binärdarstellung und VLSM direkt im Browser berechnen.') }}</p>
 			</div>
 			<div class="explain-toggle">
-				<label class="explain-toggle__label" for="explain-mode-toggle">
-					{{ explainMode ? t('learning', 'Erklär-Modus') : t('learning', 'Kompakt') }}
-				</label>
+				<label class="explain-toggle__label" for="explain-mode-toggle">{{ t('learning', 'Erklär-Modus') }}</label>
 				<button
 					id="explain-mode-toggle"
 					class="explain-toggle__switch"
@@ -19,6 +17,11 @@
 					@click="explainMode = !explainMode">
 					<span class="explain-toggle__knob"></span>
 				</button>
+				<span
+					class="explain-toggle__state"
+					:class="{ 'explain-toggle__state--active': explainMode }">
+					{{ explainMode ? t('learning', 'Aktiv') : t('learning', 'Kompakt') }}
+				</span>
 			</div>
 		</header>
 
@@ -1848,16 +1851,18 @@ export default {
 	width: 44px;
 	height: 24px;
 	background: var(--subnet-border);
+	border: 1px solid transparent;
 	border-radius: 12px;
 	position: relative;
 	cursor: pointer;
-	transition: background 0.2s;
-	border: none;
+	transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
 	padding: 0;
 }
 
 .explain-toggle__switch--active {
 	background: var(--subnet-accent);
+	border-color: rgba(88, 166, 255, 0.55);
+	box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.18);
 }
 
 .explain-toggle__knob {
@@ -1873,6 +1878,28 @@ export default {
 
 .explain-toggle__switch--active .explain-toggle__knob {
 	left: 23px;
+}
+
+.explain-toggle__state {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 74px;
+	padding: 4px 10px;
+	border-radius: 999px;
+	border: 1px solid var(--subnet-border);
+	background: rgba(255, 255, 255, 0.04);
+	color: var(--subnet-text-muted);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+}
+
+.explain-toggle__state--active {
+	border-color: rgba(88, 166, 255, 0.35);
+	background: rgba(88, 166, 255, 0.16);
+	color: var(--subnet-accent);
 }
 
 .rechenweg-panel {

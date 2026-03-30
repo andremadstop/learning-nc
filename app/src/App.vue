@@ -1165,8 +1165,16 @@ export default {
       // duel: no state reset needed — DuelMode is self-contained
     },
     openVirtuProfFullscreen() {
-      if (this.userRole !== 'student' || !this.showVirtuProfDock) {
+      if (!this.showVirtuProfDock) {
         return;
+      }
+      const virtuProf = this.$refs.virtuprof;
+      if (virtuProf) {
+        if (!virtuProf.currentBubbleStep && typeof virtuProf.openHelpHome === 'function') {
+          virtuProf.openHelpHome();
+        }
+        virtuProf.visible = true;
+        virtuProf.isMinimized = false;
       }
       if (this.mainView !== 'virtuprof-fullscreen') {
         this.previousMainView = this.mainView;

@@ -14,7 +14,7 @@
 		<div v-if="isInstructor && currentSubTab === 'pools'" class="pools-section">
 			<div class="section-header">
 				<h4>{{ t('learning', 'Course Pools') }}</h4>
-				<NcButton @click="openAddPoolModal">
+				<NcButton class="add-pool-btn" @click="openAddPoolModal">
 					{{ t('learning', '+ Add Pool') }}
 				</NcButton>
 			</div>
@@ -947,6 +947,13 @@ export default {
 	font-weight: 700;
 }
 
+.add-pool-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
 .pool-list {
 	display: flex;
 	flex-direction: column;
@@ -1298,7 +1305,7 @@ export default {
 
 	.section-header {
 		flex-direction: column;
-		align-items: stretch;
+		align-items: flex-start;
 		gap: 8px;
 	}
 

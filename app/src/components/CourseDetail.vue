@@ -14,7 +14,7 @@
 			<p v-if="course && course.description" class="course-description">
 				{{ course.description }}
 			</p>
-			<a v-if="course && course.talk_room_token"
+			<a v-if="hasTalkRoomLink"
 				:href="talkRoomUrl"
 				target="_blank"
 				rel="noopener"
@@ -194,8 +194,12 @@ export default {
 			return this.course && this.course.is_instructor
 		},
 		talkRoomUrl() {
-			if (!this.course?.talk_room_token) return ''
-			return '/apps/spreed/#/call/' + this.course.talk_room_token
+			const token = String(this.course?.talk_room_token || '').trim()
+			if (!token) return ''
+			return '/apps/spreed/#/call/' + token
+		},
+		hasTalkRoomLink() {
+			return this.talkRoomUrl.length > 0
 		},
 		myUserId() {
 			const user = getCurrentUser()

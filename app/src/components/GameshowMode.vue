@@ -1716,6 +1716,7 @@ export default {
 
 .pool-select {
   width: 100%;
+  box-sizing: border-box;
   padding: 10px 36px 10px 12px;
   border: 2px solid var(--color-border);
   border-radius: var(--border-radius-large);
@@ -1725,17 +1726,18 @@ export default {
   background-position: right 12px center;
   color: var(--color-main-text) !important;
   font-size: 15px;
-  line-height: normal;
+  line-height: 1.4;
+  text-align: left;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  vertical-align: middle;
 }
 
 .pool-select option {
   background-color: var(--color-main-background);
   color: var(--color-main-text);
+  text-align: left;
 }
 
 .pool-select:focus {

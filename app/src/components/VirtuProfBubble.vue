@@ -588,7 +588,7 @@
             type="button"
             class="chat-clear-btn"
             :disabled="chatLoading"
-            @click="$emit('open-fullscreen')">
+            @click.stop.prevent="$emit('open-fullscreen')">
             {{ t('learning', 'Vollbild öffnen') }}
           </button>
           <button
