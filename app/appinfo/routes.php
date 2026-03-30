@@ -3,6 +3,8 @@ return [
     'routes' => [
         // Pages
         ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
+        ['name' => 'page#privacy', 'url' => '/privacy', 'verb' => 'GET'],
+        ['name' => 'page#impressum', 'url' => '/impressum', 'verb' => 'GET'],
 
         // Pools
         ['name' => 'pool#index', 'url' => '/api/pools', 'verb' => 'GET'],
@@ -195,6 +197,7 @@ return [
         ['name' => 'course#getActiveExamSlot', 'url' => '/api/courses/{courseId}/exam-slot/active', 'verb' => 'GET'],
         ['name' => 'course#createExamSlot', 'url' => '/api/courses/{courseId}/exam-slot', 'verb' => 'POST'],
         ['name' => 'course#closeExamSlot', 'url' => '/api/courses/{courseId}/exam-slot/close', 'verb' => 'POST'],
+        ['name' => 'course#updateExamDate', 'url' => '/api/courses/{courseId}/exam-date', 'verb' => 'PATCH'],
         ['name' => 'supportTicket#instructorList', 'url' => '/api/courses/{courseId}/support-tickets', 'verb' => 'GET'],
 
         // Lernprofil

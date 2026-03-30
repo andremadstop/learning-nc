@@ -7,6 +7,8 @@ module.exports = {
     learning: './src/main.js',
     'learning-admin-settings': './src/admin-settings.js',
     'learning-personal-settings': './src/personal-settings.js',
+    'learning-privacy-page': './src/privacy-page.js',
+    'learning-imprint-page': './src/impressum-page.js',
   },
   output: {
     path: path.resolve(__dirname, 'js'),
