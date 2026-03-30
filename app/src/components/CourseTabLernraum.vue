@@ -83,6 +83,14 @@
 		</div>
 
 		<div v-else-if="isStudentLearningTab" class="student-learning-section">
+			<div v-if="!selectedLearningPool" class="smart-queue-hero" @click="$emit('openSmartQueue')">
+				<div class="smart-queue-hero__count">{{ queueCount }}</div>
+				<div class="smart-queue-hero__label">{{ t('learning', 'fällig — alle Kurse') }}</div>
+				<NcButton type="primary" @click.stop="$emit('openSmartQueue')">
+					{{ t('learning', 'Smart Queue starten') }}
+				</NcButton>
+			</div>
+
 			<div v-if="!selectedLearningPool" class="pools-section">
 				<div class="section-header">
 					<h4>{{ activeLearningModeLabel }}</h4>
@@ -441,6 +449,8 @@ export default {
 			currentSubTab: '',
 			knowledgePendingCount: 0,
 			selectedLearningPool: null,
+			queueCount: 0,
+			loadingQueueCount: false,
 			poolQuestionCounts: {},
 			loadingLearningPoolId: null,
 			showAddPoolModal: false,
@@ -540,6 +550,12 @@ export default {
 		},
 	},
 
+	mounted() {
+		if (!this.isInstructor) {
+			this.fetchQueueCount()
+		}
+	},
+
 	watch: {
 		allPools: {
 			immediate: true,
@@ -571,6 +587,17 @@ export default {
 	},
 
 	methods: {
+		async fetchQueueCount() {
+			this.loadingQueueCount = true
+			try {
+				const r = await axios.get(generateUrl('/apps/learning/api/leitner/queue/count'))
+				this.queueCount = r.data.count || 0
+			} catch (e) {
+				// non-fatal
+			} finally {
+				this.loadingQueueCount = false
+			}
+		},
 		modeEnabled(key) {
 			return (this.course?.mode_config || {})[key] !== false
 		},

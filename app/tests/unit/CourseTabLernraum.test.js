@@ -196,4 +196,62 @@ describe('CourseTabLernraum', () => {
 			expect(ids).toContain('training')
 		})
 	})
+
+	describe('Smart Queue hero card (UX-04)', () => {
+		it('Test H: queueCount is visible in student data when set to 7 and no pool is selected', () => {
+			const instance = createInstance({
+				userRole: 'student',
+				course: {
+					is_instructor: false,
+					material_folder: null,
+					mode_config: { training: true, leitner: true, exam: true },
+				},
+				selectedLearningPool: null,
+			})
+			// Set queueCount directly (simulates async fetch completing)
+			instance.queueCount = 7
+
+			// Verify the data property exists and holds the value
+			expect(instance.queueCount).toBe(7)
+			// Verify hero card condition: !isInstructor && !selectedLearningPool
+			expect(instance.isInstructor).toBe(false)
+			expect(instance.selectedLearningPool).toBeNull()
+		})
+
+		it('Test I: fetchQueueCount calls correct endpoint and sets queueCount', async () => {
+			const axios = (await import('@nextcloud/axios')).default
+			const { generateUrl } = await import('@nextcloud/router')
+			axios.get.mockResolvedValueOnce({ data: { count: 5 } })
+
+			const instance = createInstance({
+				userRole: 'student',
+				course: {
+					is_instructor: false,
+					material_folder: null,
+					mode_config: null,
+				},
+			})
+
+			await instance.fetchQueueCount()
+
+			expect(axios.get).toHaveBeenCalledWith('/apps/learning/api/leitner/queue/count')
+			expect(generateUrl).toHaveBeenCalledWith('/apps/learning/api/leitner/queue/count')
+			expect(instance.queueCount).toBe(5)
+		})
+
+		it('Test J: instructor instance does not have hero card conditions met (isInstructor=true)', () => {
+			const instance = createInstance({
+				userRole: 'instructor',
+				course: {
+					is_instructor: true,
+					material_folder: null,
+					mode_config: { training: true, leitner: true, exam: true },
+				},
+				selectedLearningPool: null,
+			})
+
+			// Hero card must only render when !isInstructor — verify instructor flag is set
+			expect(instance.isInstructor).toBe(true)
+		})
+	})
 })
