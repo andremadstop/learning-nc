@@ -89,7 +89,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 
 **Milestone Goal:** Simplify the learner UX (mode visibility, smart queue, mode_config), eliminate the redundant true_false pool type, wire DSGVO help links into NC settings, and add an exam countdown dashboard widget.
 
-- [ ] **Phase 114: UX-Modus-Steuerung** - Mode visibility per role, Smart Queue as Lernraum entry point, mode_config for instructors
+- [x] **Phase 114: UX-Modus-Steuerung** - Mode visibility per role, Smart Queue as Lernraum entry point, mode_config for instructors (completed 2026-03-30)
 - [ ] **Phase 115: Wahr/Falsch-Migration** - Unify true_false into single-choice type, DB migration for existing pools
 - [ ] **Phase 116: DSGVO Help-Seite** - NC Help & Privacy link, privacy-info page with 7 categories, Impressum via NC settings
 - [ ] **Phase 117: Dashboard Prüfungstermin** - exam_date field + API, NC Dashboard Widget with countdown
@@ -217,7 +217,7 @@ Plans:
 | 111. Badge-Umbau & Vault-Import | v3.6.0 | 2/2 | Complete | 2026-03-29 |
 | 112. Tab-Reduktion | v3.6.0 | 3/3 | Complete | 2026-03-30 |
 | 113. AI & Erklaerbot | v3.6.0 | 2/2 | Complete | 2026-03-30 |
-| 114. UX-Modus-Steuerung | 1/2 | In Progress|  | - |
+| 114. UX-Modus-Steuerung | 2/2 | Complete   | 2026-03-30 | - |
 | 115. Wahr/Falsch-Migration | v3.7.0 | 0/? | Not started | - |
 | 116. DSGVO Help-Seite | v3.7.0 | 0/? | Not started | - |
 | 117. Dashboard Prüfungstermin | v3.7.0 | 0/? | Not started | - |
