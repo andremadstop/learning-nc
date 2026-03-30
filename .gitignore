@@ -99,3 +99,4 @@ app/tests/*
 # Test artifacts
 tests/auth-state.json
 test-results/
+!scripts/check-vhtml-security.py

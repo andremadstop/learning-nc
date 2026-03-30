@@ -29,22 +29,8 @@ jobs:
             FAIL=1
           fi
 
-          # No v-html (XSS risk) — exception: explicit eslint-disable-next-line vue/no-v-html on preceding line
-          VHTML_VIOLATIONS=$(python3 -c "
-import glob, sys
-violations = []
-for f in glob.glob('app/src/**/*.vue', recursive=True):
-    lines = open(f).readlines()
-    for i, line in enumerate(lines):
-        if ' v-html' in line and 'eslint-disable' not in line:
-            prev = lines[i-1] if i > 0 else ''
-            if 'eslint-disable-next-line' not in prev or 'vue/no-v-html' not in prev:
-                violations.append(f'{f}:{i+1}: {line.rstrip()}')
-for v in violations: print(v)
-")
-          if [ -n "\$VHTML_VIOLATIONS" ]; then
-            echo "\$VHTML_VIOLATIONS"
-            echo "FAIL: v-html found without explicit security approval (XSS risk)"
+          # No v-html (XSS risk) — exception: explicit eslint-disable-next-line vue/no-v-html
+          if ! python3 scripts/check-vhtml-security.py; then
             FAIL=1
           fi
 
