@@ -103,6 +103,36 @@ describe('CourseSummary', () => {
 		expect(instance.troubleSpots).toHaveLength(5)
 	})
 
+	it('renders narrative section when narrative data is a string', () => {
+		const instance = createInstance({
+			narrative: 'Dein Lernweg war beeindruckend. Staerken: Netzwerk-Grundlagen.',
+			narrativeLoading: false,
+		})
+		expect(instance.narrative).toBeTruthy()
+		expect(typeof instance.narrative).toBe('string')
+	})
+
+	it('shows placeholder when narrative is null', () => {
+		const instance = createInstance({
+			narrative: null,
+			narrativeLoading: false,
+		})
+		expect(instance.narrative).toBeNull()
+	})
+
+	it('loadNarrative calls POST narrative endpoint on mount', async () => {
+		const instance = createInstance()
+		axios.post.mockResolvedValueOnce({
+			data: { narrative: 'AI generated text', cached: true },
+		})
+
+		await instance.loadNarrative()
+
+		expect(axios.post).toHaveBeenCalledWith('/apps/learning/api/courses/7/summary/narrative')
+		expect(instance.narrative).toBe('AI generated text')
+		expect(instance.narrativeLoading).toBe(false)
+	})
+
 	it('creates a snapshot and refreshes snapshot state afterwards', async () => {
 		vi.useFakeTimers()
 		const instance = createInstance({

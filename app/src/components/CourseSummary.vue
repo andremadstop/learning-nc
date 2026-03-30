@@ -140,6 +140,18 @@
 					<p v-else class="empty-hint">{{ t('learning', 'Keine Trouble Spots erkannt.') }}</p>
 				</div>
 			</div>
+
+			<!-- Narrative Portfolio -->
+			<div class="widget-card narrative-card">
+				<p class="card-kicker">{{ t('learning', 'Deine KI-Reflexion') }}</p>
+				<NcLoadingIcon v-if="narrativeLoading" :size="24" />
+				<template v-else-if="narrative">
+					<p class="narrative-text">{{ narrative }}</p>
+				</template>
+				<p v-else class="narrative-unavailable">
+					{{ t('learning', 'KI-Reflexion nicht verfuegbar. Stelle sicher, dass VirtuProf aktiviert ist.') }}
+				</p>
+			</div>
 		</template>
 	</div>
 </template>
@@ -181,6 +193,8 @@ export default {
 			snapshot: null,
 			savingSnapshot: false,
 			snapshotSaved: false,
+			narrative: null,
+			narrativeLoading: false,
 		}
 	},
 
@@ -228,6 +242,20 @@ export default {
 	},
 
 	methods: {
+		async loadNarrative() {
+			this.narrativeLoading = true
+			try {
+				const res = await axios.post(generateUrl('/apps/learning/api/courses/{courseId}/summary/narrative', {
+					courseId: this.courseId,
+				}))
+				this.narrative = res.data.narrative
+			} catch (e) {
+				this.narrative = null
+			} finally {
+				this.narrativeLoading = false
+			}
+		},
+
 		async loadSummaryState() {
 			this.loading = true
 			this.error = ''
@@ -236,6 +264,7 @@ export default {
 					this.loadSummary(),
 					this.loadSnapshot(),
 				])
+				this.loadNarrative()
 			} catch (error) {
 				this.error = error?.response?.data?.error || t('learning', 'Kursabschluss konnte nicht geladen werden.')
 			} finally {
@@ -593,6 +622,23 @@ export default {
 .empty-hint {
 	margin: 0;
 	color: var(--color-text-maxcontrast);
+}
+
+.narrative-card {
+	border-left-color: var(--color-success);
+}
+
+.narrative-text {
+	margin: 0;
+	white-space: pre-wrap;
+	line-height: 1.6;
+	color: var(--color-main-text);
+}
+
+.narrative-unavailable {
+	margin: 0;
+	color: var(--color-text-maxcontrast);
+	font-style: italic;
 }
 
 @media (max-width: 900px) {

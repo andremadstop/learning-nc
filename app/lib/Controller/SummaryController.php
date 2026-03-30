@@ -78,6 +78,25 @@ class SummaryController extends Controller {
     }
 
     /**
+     * Generate AI narrative portfolio for the student's course end summary.
+     * Cached in snapshot on first generation. Returns null narrative if Gemini unconfigured.
+     *
+     * @NoAdminRequired
+     */
+    public function generateNarrative(int $courseId): DataResponse {
+        try {
+            $course = $this->courseService->findById($courseId, $this->userId);
+            if (!empty($course['is_instructor'])) {
+                return new DataResponse(['error' => 'Students only'], Http::STATUS_FORBIDDEN);
+            }
+            $narrative = $this->summaryService->generateAndCacheNarrative($courseId, $this->userId);
+            return new DataResponse(['narrative' => $narrative, 'cached' => $narrative !== null]);
+        } catch (\Exception $e) {
+            return new DataResponse(['narrative' => null, 'cached' => false]);
+        }
+    }
+
+    /**
      * Export class summary as CSV (instructor only).
      *
      * @NoAdminRequired

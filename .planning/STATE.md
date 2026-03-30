@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.3
 milestone_name: milestone
 status: executing
-stopped_at: Completed 112-03-PLAN.md — Mega-tab navigation UI + App.vue view-key gaps closed, phase 112 complete
-last_updated: "2026-03-29T20:43:31Z"
-last_activity: 2026-03-29 — Completed 111-02 CompTIA Vault Import
+stopped_at: Completed 113-01-PLAN.md — VirtuProfFullscreen wiring + dismissal UX
+last_updated: "2026-03-30T03:33:57.137Z"
+last_activity: 2026-03-30 — Completed 113-01 VirtuProfFullscreen wiring
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
+  completed_phases: 3
+  total_plans: 9
+  completed_plans: 8
   percent: 100
 ---
 
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-29)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** Phase 112 — Erklaerbot Integration
+**Current focus:** Phase 113 — AI Erklaerbot
 
 ## Current Position
 
-Phase: 112 (3 of 4 in v3.6.0) (Tab Reduktion)
-Plan: 3 of 3 in current phase (COMPLETE)
+Phase: 113 (4 of 4 in v3.6.0) (AI Erklaerbot)
+Plan: 1 of 2 in current phase
 Status: Executing
-Last activity: 2026-03-29 — Completed 112-03 Mega-tab navigation + view-key gaps
+Last activity: 2026-03-30 — Completed 113-01 VirtuProfFullscreen wiring
 
-Progress: [█████████░] 100% (7/7 plans)
+Progress: [████████░░] 88% (8/9 plans)
 
 ## Performance Metrics
 
@@ -46,8 +46,9 @@ Progress: [█████████░] 100% (7/7 plans)
 | 110 | 2/2 | ~2min | ~1min |
 | 111 | 2/2 | ~8min | ~4min |
 | 112 | 3/3 | ~22min | ~7min |
-| 113 | 0/2 | - | - |
+| 113 | 1/2 | ~5min | ~5min |
 | Phase 111 P01 | 10min | 2 tasks | 9 files |
+| Phase 113 P01 | 5min | 2 tasks | 5 files |
 | Phase 112 P01 | 8min | 2 tasks | 5 files |
 | Phase 112 P02 | 10min | 2 tasks | 6 files |
 | Phase 112 P03 | 4min | 2 tasks | 3 files |
@@ -69,6 +70,9 @@ Progress: [█████████░] 100% (7/7 plans)
 - [Phase 112]: visibleTabs now returns 5 mega-tabs (instructor) or 4 (student); all leaf IDs moved to *LeafTabs computed properties
 - [Phase 112]: Wettbewerb always visible for students (leaderboard always enabled); arenaSubMode propagated via event for VirtuProf
 - [Phase 112]: activeMegaTab as explicit data property synced bidirectionally with currentTab via megaTabForLeaf; visibleMegaTabs primary computed, visibleTabs alias for watcher compat
+- [Phase 113]: VirtuProf lazy-loaded via dynamic import to reduce initial bundle size
+- [Phase 113]: previousMainView tracked as data property for reliable close-to-previous navigation
+- [Phase 113]: Fullscreen placeholder div in App.vue kept empty (no aria-hidden) for accessibility
 
 ### Pending Todos
 
@@ -80,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T20:43:31Z
-Stopped at: Completed 112-03-PLAN.md — Mega-tab navigation UI + view-key gaps, phase 112 complete
+Last session: 2026-03-30T03:33:08Z
+Stopped at: Completed 113-01-PLAN.md — VirtuProfFullscreen wiring + dismissal UX
 Resume file: None

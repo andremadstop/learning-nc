@@ -157,4 +157,4 @@ Plans:
 | 110. Foundation & Security | 2/2 | Complete    | 2026-03-29 | - |
 | 111. Badge-Umbau & Vault-Import | 2/2 | Complete    | 2026-03-29 | - |
 | 112. Tab-Reduktion | 3/3 | Complete    | 2026-03-30 | - |
-| 113. AI & Erklaerbot | v3.6.0 | 0/2 | Not started | - |
+| 113. AI & Erklaerbot | 1/2 | In Progress|  | - |

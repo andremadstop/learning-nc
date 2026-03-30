@@ -75,6 +75,8 @@ return [
         ['name' => 'export#getCalendarToken', 'url' => '/api/v1/user/calendar-token', 'verb' => 'GET'],
         ['name' => 'export#regenerateCalendarToken', 'url' => '/api/v1/user/calendar-token/regenerate', 'verb' => 'POST'],
         ['name' => 'export#exportIcsPublic', 'url' => '/api/v1/calendar/{token}.ics', 'verb' => 'GET'],
+        ['name' => 'ics#generate', 'url' => '/api/ics/generate', 'verb' => 'POST'],
+        ['name' => 'ics#feed', 'url' => '/api/ics/{token}', 'verb' => 'GET'],
 
         // Telos (personal learning profile)
         ['name' => 'telos#getTelos',                'url' => '/api/profile/telos',              'verb' => 'GET'],
@@ -222,6 +224,7 @@ return [
         ['name' => 'summary#createSnapshot', 'url' => '/api/courses/{courseId}/summary/snapshot', 'verb' => 'POST'],
         ['name' => 'summary#getSnapshot', 'url' => '/api/courses/{courseId}/summary/snapshot', 'verb' => 'GET'],
         ['name' => 'summary#exportCsv', 'url' => '/api/courses/{courseId}/summary/export/csv', 'verb' => 'GET'],
+        ['name' => 'summary#generateNarrative', 'url' => '/api/courses/{courseId}/summary/narrative', 'verb' => 'POST'],
 
         // Classbook (Phase 108-109)
         ['name' => 'classbook#index', 'url' => '/api/courses/{courseId}/classbook', 'verb' => 'GET'],

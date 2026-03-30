@@ -38,6 +38,23 @@ class UserTelosMapper extends QBMapper {
     }
 
     /**
+     * Find by ICS token or return null.
+     */
+    public function findByIcsTokenOrNull(string $token): ?UserTelos {
+        try {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('*')
+               ->from($this->getTableName())
+               ->where($qb->expr()->eq('ics_token', $qb->createNamedParameter($token)))
+               ->setMaxResults(1);
+
+            return $this->findEntity($qb);
+        } catch (DoesNotExistException) {
+            return null;
+        }
+    }
+
+    /**
      * Find all telos for users in a course (for dozent aggregation).
      *
      * @param string[] $userIds

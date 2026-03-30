@@ -4,6 +4,7 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Db\RagChunkMapper;
+use OCA\Learning\Db\UserTelosMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
@@ -20,19 +21,28 @@ class CourseSummaryService {
     private BadgeService $badgeService;
     private StreakService $streakService;
     private RagChunkMapper $ragChunkMapper;
+    private IcsService $icsService;
+    private GeminiService $geminiService;
+    private UserTelosMapper $telosMapper;
 
     public function __construct(
         IDBConnection $db,
         CourseMemberMapper $courseMemberMapper,
         BadgeService $badgeService,
         StreakService $streakService,
-        RagChunkMapper $ragChunkMapper
+        RagChunkMapper $ragChunkMapper,
+        IcsService $icsService,
+        GeminiService $geminiService,
+        UserTelosMapper $telosMapper
     ) {
         $this->db = $db;
         $this->courseMemberMapper = $courseMemberMapper;
         $this->badgeService = $badgeService;
         $this->streakService = $streakService;
         $this->ragChunkMapper = $ragChunkMapper;
+        $this->icsService = $icsService;
+        $this->geminiService = $geminiService;
+        $this->telosMapper = $telosMapper;
     }
 
     /**
@@ -96,6 +106,7 @@ class CourseSummaryService {
      */
     public function createSnapshot(int $courseId, string $userId): int {
         $summary = $this->getStudentSummary($courseId, $userId);
+        $this->icsService->ensureTokenExists($userId);
         $qb = $this->db->getQueryBuilder();
         $qb->insert('learning_course_snapshots')
             ->values([
@@ -132,6 +143,93 @@ class CourseSummaryService {
             'snapshot_data' => json_decode($row['snapshot_data'], true),
             'created_at' => (int)$row['created_at'],
         ];
+    }
+
+    /**
+     * Generate and cache an AI narrative portfolio for the student's course summary.
+     * Returns null if Gemini is not configured (graceful degradation).
+     */
+    public function generateAndCacheNarrative(int $courseId, string $userId): ?string {
+        // 1. Check snapshot for cached narrative
+        $snapshot = $this->getSnapshot($courseId, $userId);
+        if ($snapshot && isset($snapshot['snapshot_data']['narrative'])) {
+            return $snapshot['snapshot_data']['narrative'];
+        }
+
+        // 2. Assemble summary data
+        $summary = $this->getStudentSummary($courseId, $userId);
+
+        // 3. Check telos_consent
+        $telos = $this->telosMapper->findByUserIdOrNull($userId);
+        $telosConsent = $telos !== null ? (bool)$telos->getTelosConsent() : false;
+        $telosGoals = $telosConsent ? ((string)$telos->getTelosJson()) : '(consent not given)';
+        $telosHelpWanted = $telosConsent ? ((string)$telos->getHelpWanted()) : '(consent not given)';
+
+        // 4. Build prompt
+        $systemPrompt = 'Du bist VirtuProf, ein erfahrener, empathischer und fachlich versierter '
+            . 'Mentor fuer IT-Zertifizierungen (CompTIA Security+, Network+, etc.).'
+            . "\nDeine Aufgabe ist es, fuer einen Studenten am Ende eines intensiven 4-8 Wochen "
+            . "Bootcamps eine persoenliche Reflexion (\"Narrative Portfolio\") zu verfassen."
+            . "\nVERHALTENSREGELN:"
+            . "\n- TONFALL: Ermutigend, konkret, professionell, aber nahbar. NICHT generisch, sondern datenbasiert."
+            . "\n- SPRACHE: Deutsch."
+            . "\n- LAENGE: Max. 300 Tokens."
+            . "\n- STRUKTUR: 1. Persoenliche Zusammenfassung. 2. Staerken. 3. Wachstumsbereiche. 4. Next-Step-Empfehlung."
+            . "\nWICHTIG: Falls telos_consent false ist, ignoriere persoenliche Ziele.";
+
+        $troubleSpots = implode(', ', array_column($summary['trouble_spots'] ?? [], 'topic'));
+        $badges = implode(', ', array_column($summary['badges'] ?? [], 'badge_key'));
+
+        $userPrompt = strtr(
+            "Erstelle ein Narrative Portfolio basierend auf folgenden Daten:\n"
+            . "- KURS: {{course_name}}\n"
+            . "- STATISTIKEN:\n"
+            . "  * Beantwortete Fragen: {{total_questions_answered}}\n"
+            . "  * Gesamtgenauigkeit: {{accuracy_overall}}%\n"
+            . "  * Mastered (Box 5): {{mastery_count}} Karten\n"
+            . "  * Streak (max): {{streak_max}} Tage\n"
+            . "  * Sessions (total): {{total_sessions}}\n"
+            . "  * XP: {{xp_total}}\n"
+            . "- SCHWACHSTELLEN: {{trouble_spots}}\n"
+            . "- VERDIENTE BADGES: {{badges_earned}}\n"
+            . "- TELOS-PROFIL (Consent: {{telos_consent}}):\n"
+            . "  * Ziele: {{telos_goals}}\n"
+            . "  * Hilfe gesucht fuer: {{telos_help_wanted}}",
+            [
+                '{{course_name}}' => 'Kurs ' . $courseId,
+                '{{total_questions_answered}}' => (string)($summary['sessions']['total_questions'] ?? 0),
+                '{{accuracy_overall}}' => (string)($summary['sessions']['overall_accuracy'] ?? 0),
+                '{{mastery_count}}' => (string)($summary['mastery']['total_mastered'] ?? 0),
+                '{{streak_max}}' => (string)($summary['streak']['longest_streak'] ?? 0),
+                '{{total_sessions}}' => (string)($summary['sessions']['total_sessions'] ?? 0),
+                '{{xp_total}}' => (string)($summary['xp']['total_xp'] ?? 0),
+                '{{trouble_spots}}' => $troubleSpots ?: 'Keine',
+                '{{badges_earned}}' => $badges ?: 'Keine',
+                '{{telos_consent}}' => $telosConsent ? 'true' : 'false',
+                '{{telos_goals}}' => $telosGoals,
+                '{{telos_help_wanted}}' => $telosHelpWanted,
+            ]
+        );
+
+        // 5. Call Gemini (may throw RuntimeException)
+        try {
+            $narrative = $this->geminiService->generateNote($systemPrompt, $userPrompt);
+        } catch (\RuntimeException $e) {
+            return null;  // Gemini not configured — return null, not 500
+        }
+
+        // 6. Cache in snapshot blob (UPDATE if snapshot exists, else accept uncached)
+        if ($snapshot) {
+            $data = $snapshot['snapshot_data'];
+            $data['narrative'] = $narrative;
+            $qb = $this->db->getQueryBuilder();
+            $qb->update('learning_course_snapshots')
+                ->set('snapshot_data', $qb->createNamedParameter(json_encode($data)))
+                ->where($qb->expr()->eq('id', $qb->createNamedParameter($snapshot['id'], IQueryBuilder::PARAM_INT)));
+            $qb->executeStatement();
+        }
+
+        return $narrative;
     }
 
     // --- Private aggregation methods ---
