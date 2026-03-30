@@ -5,38 +5,31 @@
     <!-- Setup Screen -->
     <div v-if="screen === 'setup'" class="setup-screen">
       <h3 class="exam-title">{{ t('learning', 'Exam Mode') }}</h3>
-      <p class="exam-description">{{ t('learning', 'Timed exam — answer all questions before time runs out. No feedback until the end.') }}</p>
+      <p class="exam-description">{{ t('learning', 'Simulate the real CompTIA exam. No feedback until the end.') }}</p>
 
-      <div class="setup-section">
-        <div class="setup-label">{{ t('learning', 'Time Limit') }}</div>
-        <div class="button-group">
-          <NcButton
-            v-for="time in timeOptions"
-            :key="time.value"
-            :type="selectedTimeLimit === time.value ? 'primary' : 'tertiary'"
-            @click="selectedTimeLimit = time.value"
-          >
-            {{ time.label }}
-          </NcButton>
-        </div>
-      </div>
-
-      <div class="setup-section">
-        <div class="setup-label">{{ t('learning', 'Number of Questions') }}</div>
-        <div class="button-group">
-          <NcButton
-            v-for="count in questionCountOptions"
-            :key="count.value"
-            :type="selectedQuestionCount === count.value ? 'primary' : 'tertiary'"
-            @click="selectedQuestionCount = count.value"
-          >
-            {{ count.label }}
-          </NcButton>
+      <div class="preset-grid">
+        <div
+          v-for="preset in examPresets"
+          :key="preset.id"
+          class="preset-card"
+        >
+          <div class="preset-icon">{{ preset.icon }}</div>
+          <div class="preset-content">
+            <h4 class="preset-title">{{ preset.title }}</h4>
+            <p class="preset-meta">{{ preset.meta }}</p>
+            <NcButton
+              type="primary"
+              wide
+              :disabled="isLoading"
+              @click="startExam(preset)"
+            >
+              {{ preset.buttonLabel }}
+            </NcButton>
+          </div>
         </div>
       </div>
 
       <div class="start-actions">
-        <NcButton type="primary" wide :disabled="isLoading" @click="startExam">{{ t('learning', 'Start Exam') }}</NcButton>
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
@@ -162,19 +155,24 @@
       </p>
 
       <div v-if="resultsData" class="results-summary">
-        <div class="score-circle" :class="scoreColorClass">
-          <span class="score-number" ref="examScoreNumber">{{ resultsData.score_percentage }}%</span>
-          <span class="score-label">{{ t('learning', 'Score') }}</span>
+        <div class="result-banner" :class="resultBannerClass">
+          <div class="result-banner__status">{{ passedExam ? t('learning', 'Passed') : t('learning', 'Not passed') }}</div>
+          <div class="result-banner__scaled-score">
+            <span ref="examScoreNumber">{{ scaledExamScore }}</span>/<span>{{ examMaxScore }}</span>
+          </div>
+          <div class="result-banner__threshold">
+            {{ t('learning', 'Passing score: {score}/{max}', { score: examPassScore, max: examMaxScore }) }}
+          </div>
         </div>
 
         <div class="stats-grid">
           <div class="stat-item">
-            <div class="stat-value">{{ resultsData.correct_answers }}</div>
-            <div class="stat-label">{{ t('learning', 'Correct') }}</div>
+            <div class="stat-value">{{ resultsData.correct_answers }} / {{ resultsData.total_questions }}</div>
+            <div class="stat-label">{{ t('learning', 'Correct answers') }}</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">{{ resultsData.total_questions - resultsData.correct_answers }}</div>
-            <div class="stat-label">{{ t('learning', 'Wrong') }}</div>
+            <div class="stat-value">{{ resultsData.score_percentage }}%</div>
+            <div class="stat-label">{{ t('learning', 'Score') }}</div>
           </div>
           <div class="stat-item">
             <div class="stat-value">{{ timeTaken }}</div>
@@ -271,22 +269,28 @@ export default {
     return {
       screen: 'setup',
       isLoading: false,
-
-      timeOptions: [
-        { label: t('learning', '5 min'), value: 5 * 60 },
-        { label: t('learning', '10 min'), value: 10 * 60 },
-        { label: t('learning', '15 min'), value: 15 * 60 },
-        { label: t('learning', '20 min'), value: 20 * 60 },
-        { label: t('learning', '30 min'), value: 30 * 60 },
+      examPresets: [
+        {
+          id: 'full',
+          icon: '🎯',
+          title: t('learning', 'Full Exam'),
+          meta: t('learning', '90 questions · 90 minutes · 720/900'),
+          buttonLabel: t('learning', 'Start Exam'),
+          questionCount: 90,
+          timeLimitSeconds: 90 * 60,
+        },
+        {
+          id: 'light',
+          icon: '⚡',
+          title: t('learning', 'Practice Exam'),
+          meta: t('learning', '45 questions · 45 minutes · 720/900'),
+          buttonLabel: t('learning', 'Start Practice'),
+          questionCount: 45,
+          timeLimitSeconds: 45 * 60,
+        },
       ],
-      questionCountOptions: [
-        { label: '10', value: 10 },
-        { label: '20', value: 20 },
-        { label: '50', value: 50 },
-        { label: t('learning', 'All'), value: 0 },
-      ],
-      selectedTimeLimit: 10 * 60,
-      selectedQuestionCount: 20,
+      examPassScore: 720,
+      examMaxScore: 900,
 
       session: null,
       questions: [],
@@ -369,12 +373,17 @@ export default {
       if (mins <= 0) return this.answeredCount;
       return Math.round(this.answeredCount / mins * 10) / 10;
     },
-    scoreColorClass() {
-      if (!this.resultsData) return '';
-      const s = this.resultsData.score_percentage;
-      if (s >= 80) return 'score-green';
-      if (s >= 50) return 'score-yellow';
-      return 'score-red';
+    scaledExamScore() {
+      if (!this.resultsData || !this.resultsData.total_questions) {
+        return 0;
+      }
+      return Math.round((this.resultsData.correct_answers / this.resultsData.total_questions) * this.examMaxScore);
+    },
+    passedExam() {
+      return this.scaledExamScore >= this.examPassScore;
+    },
+    resultBannerClass() {
+      return this.passedExam ? 'result-banner--passed' : 'result-banner--failed';
     },
     isCurrentMulti() {
       return this.currentQuestion && this.currentQuestion.question_type === 'multi';
@@ -533,14 +542,15 @@ export default {
       this.snakeWidth = 0;
       this.snakeHeight = 0;
     },
-    async startExam() {
+    async startExam(preset = null) {
       this.isLoading = true;
       try {
+        const resolvedPreset = preset || this.examPresets[0];
         const params = { poolId: this.poolId, mode: 'exam' };
-        if (this.selectedQuestionCount > 0) {
-          params.limit = this.selectedQuestionCount;
+        if (resolvedPreset.questionCount > 0) {
+          params.limit = resolvedPreset.questionCount;
         }
-        params.timeLimitSeconds = this.selectedTimeLimit;
+        params.timeLimitSeconds = resolvedPreset.timeLimitSeconds;
         const r = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload(params));
         this.session = r.data.session_id;
         const questions = r.data.questions;
@@ -563,7 +573,7 @@ export default {
         this.detailedResults = [];
         this.resultsData = null;
         this.resumedFromServer = !!r.data.resumed;
-        this.examDurationSeconds = Number(r.data.time_limit_seconds || this.selectedTimeLimit);
+        this.examDurationSeconds = Number(r.data.time_limit_seconds || resolvedPreset.timeLimitSeconds);
         this.examDeadlineAt = Number(r.data.exam_deadline_at || 0) || null;
         const serverNow = Number(r.data.server_time || Math.floor(Date.now() / 1000));
         this.timeLeftSeconds = this.examDeadlineAt
@@ -963,7 +973,7 @@ export default {
         // countUp animation
         this.$nextTick(() => {
           if (this.$refs.examScoreNumber && this.resultsData) {
-            countUp(this.$refs.examScoreNumber, this.resultsData.score_percentage, 1200, '%');
+            countUp(this.$refs.examScoreNumber, this.scaledExamScore, 1200);
           }
         });
         // Show badge unlocks
@@ -1048,9 +1058,49 @@ export default {
 
 /* Setup */
 .setup-screen { text-align: center; padding: 40px 20px; }
-.setup-section { margin-bottom: 28px; }
-.setup-label { font-size: 14px; font-weight: 600; color: var(--color-text-maxcontrast); margin-bottom: 12px; }
-.button-group { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin: 32px 0 0;
+}
+.preset-card {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary-element) 6%, var(--color-main-background)), var(--color-main-background));
+  text-align: left;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+.preset-icon {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 44px;
+  font-size: 28px;
+  line-height: 1;
+}
+.preset-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.preset-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-main-text);
+}
+.preset-meta {
+  margin: 0;
+  color: var(--color-text-maxcontrast);
+  font-size: 14px;
+  line-height: 1.5;
+}
 .start-actions { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 24px; max-width: 300px; margin-left: auto; margin-right: auto; }
 
 /* Timer */
@@ -1199,19 +1249,40 @@ export default {
 .results-screen { padding: 32px 20px; }
 .results-summary { display: flex; flex-direction: column; align-items: center; margin-bottom: 32px; }
 
-.score-circle {
-  width: 160px; height: 160px;
-  border-radius: 50%;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+.result-banner {
+  width: 100%;
+  max-width: 500px;
   margin-bottom: 24px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  padding: 22px 24px;
+  border-radius: 18px;
+  text-align: center;
+  border: 1px solid transparent;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
-.score-green { background: var(--color-success); color: var(--color-primary-element-text); }
-.score-yellow { background: var(--color-warning); color: var(--color-main-text); }
-.score-red { background: var(--color-error); color: var(--color-primary-element-text); }
-.score-number { font-size: 42px; font-weight: 700; }
-.score-label { font-size: 14px; font-weight: 400; opacity: 0.8; }
+.result-banner--passed {
+  background: color-mix(in srgb, var(--color-success) 14%, var(--color-main-background));
+  border-color: color-mix(in srgb, var(--color-success) 35%, transparent);
+}
+.result-banner--failed {
+  background: color-mix(in srgb, var(--color-error) 12%, var(--color-main-background));
+  border-color: color-mix(in srgb, var(--color-error) 35%, transparent);
+}
+.result-banner__status {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-main-text);
+}
+.result-banner__scaled-score {
+  margin-top: 8px;
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--color-main-text);
+}
+.result-banner__threshold {
+  margin-top: 8px;
+  color: var(--color-text-maxcontrast);
+  font-size: 14px;
+}
 
 .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; width: 100%; max-width: 500px; margin-top: 12px; }
 .stat-item {
@@ -1261,9 +1332,17 @@ export default {
   .question-text { font-size: 17px; }
   .question-card { padding: 56px 20px 20px; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .score-circle { width: 130px; height: 130px; }
-  .score-number { font-size: 36px; }
   .setup-screen { padding: 24px 12px; }
+  .preset-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  .preset-icon {
+    align-items: center;
+  }
+  .result-banner__scaled-score {
+    font-size: 34px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
