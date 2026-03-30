@@ -484,7 +484,10 @@ export default {
 					{ id: 'knowledge', label: t('learning', 'Wissen') + (this.knowledgePendingCount > 0 ? ' (' + this.knowledgePendingCount + ')' : '') },
 				]
 			}
-			const tabs = [{ id: 'training', label: t('learning', 'Training') }]
+			const tabs = []
+			if (this.modeEnabled('training')) {
+				tabs.push({ id: 'training', label: t('learning', 'Training') })
+			}
 			if (this.modeEnabled('leitner')) {
 				tabs.push({ id: 'leitner', label: t('learning', 'Leitner') })
 			}
@@ -572,7 +575,7 @@ export default {
 			return (this.course?.mode_config || {})[key] !== false
 		},
 		defaultSubTab() {
-			return this.visibleSubTabs[0]?.id || (this.isInstructor ? 'pools' : 'training')
+			return this.visibleSubTabs[0]?.id || (this.isInstructor ? 'pools' : '')
 		},
 		isVisibleSubTab(tabId) {
 			return this.visibleSubTabs.some((tab) => tab.id === tabId)

@@ -137,4 +137,63 @@ describe('CourseTabLernraum', () => {
 		expect(instance.selectedLearningPool).toBeNull()
 		expect(instance.activeLearningModeLabel).toBe('Exam')
 	})
+
+	describe('training tab visibility (UX-01)', () => {
+		it('Test A: hides training tab for student when mode_config.training === false', () => {
+			const instance = createInstance({
+				userRole: 'student',
+				course: {
+					is_instructor: false,
+					material_folder: null,
+					mode_config: { training: false, leitner: true, exam: true },
+				},
+			})
+
+			const ids = instance.visibleSubTabs.map((tab) => tab.id)
+			expect(ids).not.toContain('training')
+		})
+
+		it('Test B: instructor still sees instructor tabs regardless of mode_config.training', () => {
+			const instance = createInstance({
+				userRole: 'instructor',
+				course: {
+					is_instructor: true,
+					material_folder: null,
+					mode_config: { training: false, leitner: true, exam: true },
+				},
+			})
+
+			const ids = instance.visibleSubTabs.map((tab) => tab.id)
+			expect(ids).toContain('pools')
+			expect(ids).toContain('curriculum')
+		})
+
+		it('Test C: shows training tab when mode_config is null (default-true semantics)', () => {
+			const instance = createInstance({
+				userRole: 'student',
+				course: {
+					is_instructor: false,
+					material_folder: null,
+					mode_config: null,
+				},
+			})
+
+			const ids = instance.visibleSubTabs.map((tab) => tab.id)
+			expect(ids).toContain('training')
+		})
+
+		it('Test D: shows training tab when mode_config.training === true', () => {
+			const instance = createInstance({
+				userRole: 'student',
+				course: {
+					is_instructor: false,
+					material_folder: null,
+					mode_config: { training: true, leitner: false, exam: false },
+				},
+			})
+
+			const ids = instance.visibleSubTabs.map((tab) => tab.id)
+			expect(ids).toContain('training')
+		})
+	})
 })
