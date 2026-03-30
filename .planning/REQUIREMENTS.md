@@ -7,11 +7,11 @@
 
 ### UX-Vereinfachung
 
-- [ ] **UX-01**: Schüler sieht Training-Modus nicht (weder Tab noch Link) — Dozent behält Zugriff für Live-Demos
+- [x] **UX-01**: Schüler sieht Training-Modus nicht (weder Tab noch Link) — Dozent behält Zugriff für Live-Demos
 - [ ] **UX-02**: Wahr/Falsch-Fragen werden als Single-Choice mit 2 Optionen gehandhabt — kein eigener Pool-Typ `true_false` mehr
 - [ ] **UX-03**: Migration: bestehende Wahr/Falsch-Pools (question_type `true_false` → `single`) per DB-Migration
 - [ ] **UX-04**: Smart Queue ist prominenter Einstieg im Lernraum-Tab mit Anzeige fälliger Karten
-- [ ] **UX-05**: mode_config ermöglicht Dozenten, Modi (Training, Exam etc.) pro Kurs ein-/auszuschalten
+- [x] **UX-05**: mode_config ermöglicht Dozenten, Modi (Training, Exam etc.) pro Kurs ein-/auszuschalten
 
 ### DSGVO Help-Seite
 
@@ -62,9 +62,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| UX-01 | Phase 114 | Pending |
+| UX-01 | Phase 114 | Complete |
 | UX-04 | Phase 114 | Pending |
-| UX-05 | Phase 114 | Pending |
+| UX-05 | Phase 114 | Complete |
 | UX-02 | Phase 115 | Pending |
 | UX-03 | Phase 115 | Pending |
 | DSGVO-01 | Phase 116 | Pending |

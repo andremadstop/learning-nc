@@ -217,7 +217,7 @@ Plans:
 | 111. Badge-Umbau & Vault-Import | v3.6.0 | 2/2 | Complete | 2026-03-29 |
 | 112. Tab-Reduktion | v3.6.0 | 3/3 | Complete | 2026-03-30 |
 | 113. AI & Erklaerbot | v3.6.0 | 2/2 | Complete | 2026-03-30 |
-| 114. UX-Modus-Steuerung | v3.7.0 | 0/? | Not started | - |
+| 114. UX-Modus-Steuerung | 1/2 | In Progress|  | - |
 | 115. Wahr/Falsch-Migration | v3.7.0 | 0/? | Not started | - |
 | 116. DSGVO Help-Seite | v3.7.0 | 0/? | Not started | - |
 | 117. Dashboard Prüfungstermin | v3.7.0 | 0/? | Not started | - |

@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.7.0
-milestone_name: Efficiency & Compliance
-status: active
-stopped_at: Roadmap created — ready to start Phase 114
-last_updated: "2026-03-30T00:00:00.000Z"
-last_activity: 2026-03-30 — v3.7.0 roadmap created (4 phases, 11 requirements)
+milestone: v2.3
+milestone_name: milestone
+status: Not started
+stopped_at: Completed 114-01-PLAN.md
+last_updated: "2026-03-30T08:15:33.547Z"
+last_activity: 2026-03-30 — v3.7.0 roadmap created
 progress:
-  total_phases: 4
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_phases: 8
+  completed_phases: 4
+  total_plans: 11
+  completed_plans: 10
   percent: 0
 ---
 
@@ -46,6 +46,7 @@ Progress: [__________] 0% (0/? plans)
 | 115. Wahr/Falsch-Migration | 0/? | - | - |
 | 116. DSGVO Help-Seite | 0/? | - | - |
 | 117. Dashboard Prüfungstermin | 0/? | - | - |
+| Phase 114 P01 | 5 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -59,6 +60,7 @@ Progress: [__________] 0% (0/? plans)
 - [v3.7.0] true_false → single migration must be idempotent (safe to run twice)
 - [v3.7.0] DSGVO: privacy URL set in config.php; privacy-info.json is the source of truth for 7 categories
 - [v3.7.0] Dashboard widget hidden entirely when no exam_date set (DASH-03)
+- [Phase 114]: defaultSubTab fallback changed to '' when training disabled — student sees no active sub-tab
 
 ### Pending Todos
 
@@ -70,6 +72,6 @@ None at milestone start.
 
 ## Session Continuity
 
-Last session: 2026-03-30 (v3.6.0 completion + v3.7.0 roadmap)
-Stopped at: Roadmap created — ready to start Phase 114
+Last session: 2026-03-30T08:15:33.533Z
+Stopped at: Completed 114-01-PLAN.md
 Resume file: None
