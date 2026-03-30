@@ -14,11 +14,11 @@
 		<!-- Mode Config -->
 		<div v-if="currentSubTab === 'mode-config'" class="tab-content mode-config-section">
 			<h3>{{ t('learning', 'Kursregeln — Lernmodi') }}</h3>
-			<p class="mode-config-hint">{{ t('learning', 'Deaktivierte Modi werden Studierenden nicht angezeigt. Training ist immer aktiv.') }}</p>
+			<p class="mode-config-hint">{{ t('learning', 'Deaktivierte Modi werden Studierenden nicht angezeigt.') }}</p>
 			<div class="mode-toggles">
 				<div v-for="mode in modeConfigKeys" :key="mode.key" class="mode-toggle-row">
 					<label class="mode-toggle-label">
-						<input type="checkbox" :checked="modeConfigLocal[mode.key] !== false" @change="toggleMode(mode.key, $event.target.checked)" :disabled="mode.key === 'training'" />
+						<input type="checkbox" :checked="modeConfigLocal[mode.key] !== false" @change="toggleMode(mode.key, $event.target.checked)" />
 						{{ mode.label }}
 					</label>
 				</div>
@@ -171,7 +171,7 @@ export default {
 		},
 		modeConfigKeys() {
 			return [
-				{ key: 'training', label: t('learning', 'Training (immer aktiv)') },
+				{ key: 'training', label: t('learning', 'Training') },
 				{ key: 'leitner', label: t('learning', 'Leitner') },
 				{ key: 'swipe', label: t('learning', 'Wahr/Falsch im Training') },
 				{ key: 'exam', label: t('learning', 'Pruefung') },

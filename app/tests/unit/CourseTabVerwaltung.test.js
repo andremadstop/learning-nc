@@ -106,4 +106,44 @@ describe('CourseTabVerwaltung', () => {
 	it('component has correct name', () => {
 		expect(CourseTabVerwaltung.name).toBe('CourseTabVerwaltung')
 	})
+
+	describe('training mode_config toggle (UX-05)', () => {
+		it('Test E: training modeConfigKeys entry label reads "Training" (not "Training (immer aktiv)")', () => {
+			const instance = createInstance()
+
+			const trainingEntry = instance.modeConfigKeys.find((m) => m.key === 'training')
+			expect(trainingEntry).toBeDefined()
+			expect(trainingEntry.label).toBe('Training')
+			expect(trainingEntry.label).not.toContain('immer aktiv')
+		})
+
+		it('Test F: training entry in modeConfigKeys has no disabled property', () => {
+			const instance = createInstance()
+
+			const trainingEntry = instance.modeConfigKeys.find((m) => m.key === 'training')
+			expect(trainingEntry).toBeDefined()
+			expect(trainingEntry.disabled).toBeUndefined()
+		})
+
+		it('Test G: saveModeConfig with training=false sends PUT request with modeConfig.training === false', async () => {
+			const axios = (await import('@nextcloud/axios')).default
+			axios.put.mockResolvedValue({ data: { mode_config: { training: false } } })
+
+			const instance = createInstance({
+				course: {
+					is_instructor: true,
+					mode_config: { training: false, leitner: true, exam: true },
+					leitner_sprint: false,
+					talk_room_token: '',
+				},
+			})
+			instance.modeConfigLocal = { training: false, leitner: true, exam: true }
+
+			await instance.saveModeConfig()
+
+			expect(axios.put).toHaveBeenCalled()
+			const payload = axios.put.mock.calls[0][1]
+			expect(payload.modeConfig.training).toBe(false)
+		})
+	})
 })
