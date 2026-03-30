@@ -2,6 +2,9 @@
 declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Db\Course;
+use OCA\Learning\Db\CourseMapper;
+use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Controller;
@@ -13,6 +16,8 @@ use OCP\IRequest;
 use Psr\Log\LoggerInterface;
 
 class CourseController extends Controller {
+    private CourseMapper $courseMapper;
+    private CourseMemberMapper $courseMemberMapper;
     private CourseService $courseService;
     private RoleService $roleService;
     private LoggerInterface $logger;
@@ -21,12 +26,16 @@ class CourseController extends Controller {
     public function __construct(
         string $appName,
         IRequest $request,
+        CourseMapper $courseMapper,
+        CourseMemberMapper $courseMemberMapper,
         CourseService $courseService,
         RoleService $roleService,
         LoggerInterface $logger,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
+        $this->courseMapper = $courseMapper;
+        $this->courseMemberMapper = $courseMemberMapper;
         $this->courseService = $courseService;
         $this->roleService = $roleService;
         $this->logger = $logger;
@@ -594,6 +603,38 @@ class CourseController extends Controller {
     /**
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function updateExamDate(int $courseId, ?string $examDate = null): DataResponse {
+        try {
+            if ($this->userId === null) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+
+            $course = $this->courseMapper->findById($courseId);
+            if (!$this->canManageCourse($course, $this->userId)) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+
+            $course->setExamDate($this->normalizeExamDate($examDate));
+            $course->setUpdatedAt(time());
+            $this->courseMapper->update($course);
+
+            return new DataResponse([
+                'exam_date' => $course->getExamDate(),
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('updateExamDate error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
     #[UserRateLimit(limit: 30, period: 60)]
     public function getTools(int $courseId): DataResponse {
         try {
@@ -667,5 +708,42 @@ class CourseController extends Controller {
             $this->logger->error('updateCurriculumScope error: ' . $e->getMessage(), ['app' => 'learning']);
             return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private function canManageCourse(Course $course, string $userId): bool {
+        if ($course->getInstructorId() === $userId) {
+            return true;
+        }
+
+        try {
+            $member = $this->courseMemberMapper->findByCourseAndUser($course->getId(), $userId);
+            return $member->getRole() === 'instructor';
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return false;
+        }
+    }
+
+    private function normalizeExamDate(?string $examDate): ?string {
+        if ($examDate === null) {
+            return null;
+        }
+
+        $examDate = trim($examDate);
+        if ($examDate === '') {
+            return null;
+        }
+
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $examDate)) {
+            throw new \InvalidArgumentException('Invalid exam date format');
+        }
+
+        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $examDate);
+        $errors = \DateTimeImmutable::getLastErrors();
+        $hasWarnings = is_array($errors) && (($errors['warning_count'] ?? 0) > 0 || ($errors['error_count'] ?? 0) > 0);
+        if ($parsed === false || $hasWarnings || $parsed->format('Y-m-d') !== $examDate) {
+            throw new \InvalidArgumentException('Invalid exam date');
+        }
+
+        return $examDate;
     }
 }

@@ -71,6 +71,21 @@
 				</div>
 				<NcNoteCard v-if="talkTokenSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
 			</div>
+
+			<div class="exam-date-config tool-config-section">
+				<h3>{{ t('learning', 'Pruefungstermin') }}</h3>
+				<p class="mode-config-hint">{{ t('learning', 'Optionales Pruefungsdatum fuer den Dashboard-Countdown setzen.') }}</p>
+				<div class="exam-date-row">
+					<input v-model="examDateLocal" type="date" class="exam-date-input" />
+					<NcButton type="primary" :disabled="savingExamDate" @click="saveExamDate">
+						{{ savingExamDate ? t('learning', 'Saving...') : t('learning', 'Speichern') }}
+					</NcButton>
+					<NcButton v-if="examDateLocal" :disabled="savingExamDate" @click="clearExamDate">
+						{{ t('learning', 'Entfernen') }}
+					</NcButton>
+				</div>
+				<NcNoteCard v-if="examDateSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
+			</div>
 		</div>
 
 		<!-- Exam Slot -->
@@ -152,6 +167,9 @@ export default {
 			talkRoomToken: '',
 			savingTalkToken: false,
 			talkTokenSaved: false,
+			examDateLocal: '',
+			savingExamDate: false,
+			examDateSaved: false,
 			activeExamSlot: null,
 			examSlotDuration: 90,
 			examSlotScope: 'all',
@@ -203,6 +221,7 @@ export default {
 				if (c) {
 					this.leitnerSprint = !!c.leitner_sprint
 					this.talkRoomToken = c.talk_room_token || ''
+					this.examDateLocal = this.normalizeExamDate(c.exam_date)
 				}
 			},
 		},
@@ -254,6 +273,10 @@ export default {
 				abenteuer: false,
 				course_summary: false,
 			}, modeConfig || {})
+		},
+
+		normalizeExamDate(examDate) {
+			return typeof examDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(examDate) ? examDate : ''
 		},
 
 		toggleMode(key, value) {
@@ -388,6 +411,30 @@ export default {
 			}
 		},
 
+		async saveExamDate() {
+			this.savingExamDate = true
+			try {
+				const payloadExamDate = this.examDateLocal || null
+				const res = await axios.patch(generateUrl(`/apps/learning/api/courses/${this.courseId}/exam-date`), {
+					examDate: payloadExamDate,
+				})
+				this.examDateLocal = this.normalizeExamDate(res.data?.exam_date)
+				this.examDateSaved = true
+				setTimeout(() => { this.examDateSaved = false }, 3000)
+				this.$emit('refresh-course-detail')
+			} catch (e) {
+				console.error('Failed to save exam date', e)
+				this.$emit('error', t('learning', 'Failed to save exam date'))
+			} finally {
+				this.savingExamDate = false
+			}
+		},
+
+		async clearExamDate() {
+			this.examDateLocal = ''
+			await this.saveExamDate()
+		},
+
 		async fetchActiveExamSlot() {
 			if (!this.course) return
 			try {
@@ -473,6 +520,14 @@ export default {
 .mode-config-note { color: var(--color-text-maxcontrast); font-size: 0.85em; }
 .tool-config-section { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--color-border); }
 .tool-config-section h3 { margin: 0 0 8px; }
+.exam-date-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.exam-date-input {
+	padding: 6px 10px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	font-size: 0.95em;
+	max-width: 100%;
+}
 
 /* Exam Slot */
 .exam-slot-section {}

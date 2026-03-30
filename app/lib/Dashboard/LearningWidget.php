@@ -2,26 +2,23 @@
 declare(strict_types=1);
 namespace OCA\Learning\Dashboard;
 
-use OCA\Learning\Service\StreakService;
+use OCA\Learning\Db\CourseMapper;
 use OCP\Dashboard\IAPIWidgetV2;
 use OCP\Dashboard\IIconWidget;
 use OCP\Dashboard\Model\WidgetItem;
 use OCP\Dashboard\Model\WidgetItems;
-use OCP\IDBConnection;
 use OCP\IL10N;
 use OCP\IURLGenerator;
 
 class LearningWidget implements IAPIWidgetV2, IIconWidget {
-    private IDBConnection $db;
+    private CourseMapper $courseMapper;
     private IURLGenerator $urlGenerator;
     private IL10N $l10n;
-    private StreakService $streakService;
 
-    public function __construct(IDBConnection $db, IURLGenerator $urlGenerator, IL10N $l10n, StreakService $streakService) {
-        $this->db = $db;
+    public function __construct(CourseMapper $courseMapper, IURLGenerator $urlGenerator, IL10N $l10n) {
+        $this->courseMapper = $courseMapper;
         $this->urlGenerator = $urlGenerator;
         $this->l10n = $l10n;
-        $this->streakService = $streakService;
     }
 
     public function getId(): string {
@@ -29,7 +26,7 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
     }
 
     public function getTitle(): string {
-        return 'Learning';
+        return $this->l10n->t('Exam countdown');
     }
 
     public function getOrder(): int {
@@ -52,96 +49,86 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
     }
 
     public function getItemsV2(string $userId, ?string $since = null, int $limit = 7): WidgetItems {
-        $now = time();
         $items = [];
-        $totalDue = 0;
-
-        // Show streak as first item if active
-        $streak = $this->streakService->getStreak($userId);
-        if ($streak['current_streak'] > 0) {
-            $appUrl = $this->urlGenerator->linkToRouteAbsolute('learning.page.index');
-            $items[] = new WidgetItem(
-                "\xF0\x9F\x94\xA5 " . $this->l10n->n('%n day streak', '%n day streak', $streak['current_streak']),
-                $this->l10n->t('Longest: %s days', [(string)$streak['longest_streak']]),
-                $appUrl,
-                '',
-                'streak'
-            );
-        }
-
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('p.id', 'p.name', $qb->createFunction('COUNT(l.id) as due_count'))
-           ->from('learning_leitner_items', 'l')
-           ->innerJoin('l', 'learning_pools', 'p', 'l.pool_id = p.id')
-           ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->lte('l.next_review', $qb->createNamedParameter($now)))
-           ->groupBy('p.id', 'p.name')
-           ->having($qb->createFunction('COUNT(l.id) > 0'))
-           ->orderBy('due_count', 'DESC')
-           ->setMaxResults($limit);
-
-        $result = $qb->executeQuery();
-        $pools = $result->fetchAll();
-        $result->closeCursor();
-
         $appUrl = $this->urlGenerator->linkToRouteAbsolute('learning.page.index');
+        $primaryExam = $this->selectPrimaryExamCourse($this->courseMapper->findStudentExamCourses($userId));
 
-        foreach ($pools as $pool) {
-            $dueCount = (int)$pool['due_count'];
-            $totalDue += $dueCount;
+        if ($primaryExam !== null) {
             $items[] = new WidgetItem(
-                $pool['name'],
-                $this->l10n->n('%n question due', '%n questions due', $dueCount),
+                $this->buildCountdownTitle($primaryExam['exam_date']),
+                $primaryExam['title'] . ' - ' . $primaryExam['exam_date'],
                 $appUrl,
                 '',
-                (string)$pool['id']
+                'exam-course-' . (string)$primaryExam['id']
             );
         }
 
-        if (count($items) < $limit) {
-            $remaining = $limit - count($items);
-            $poolIds = array_map(fn($p) => (int)$p['id'], $pools);
+        return new WidgetItems($items, '');
+    }
 
-            $qb2 = $this->db->getQueryBuilder();
-            $qb2->select('p.id', 'p.name',
-                   $qb2->createFunction('COUNT(l.id) as total'),
-                   $qb2->createFunction('SUM(CASE WHEN l.box = 5 THEN 1 ELSE 0 END) as mastered'))
-               ->from('learning_leitner_items', 'l')
-               ->innerJoin('l', 'learning_pools', 'p', 'l.pool_id = p.id')
-               ->where($qb2->expr()->eq('l.user_id', $qb2->createNamedParameter($userId)))
-               ->groupBy('p.id', 'p.name')
-               ->setMaxResults($remaining);
+    private function selectPrimaryExamCourse(array $courses): ?array {
+        $today = new \DateTimeImmutable('today');
+        $upcoming = [];
+        $todayCourses = [];
+        $past = [];
 
-            if (!empty($poolIds)) {
-                $qb2->andWhere($qb2->expr()->notIn('p.id', $qb2->createNamedParameter($poolIds, \Doctrine\DBAL\Connection::PARAM_INT_ARRAY)));
+        foreach ($courses as $course) {
+            $examDate = $course['exam_date'] ?? null;
+            if (!is_string($examDate)) {
+                continue;
             }
 
-            $result2 = $qb2->executeQuery();
-            $extraPools = $result2->fetchAll();
-            $result2->closeCursor();
-
-            foreach ($extraPools as $pool) {
-                $total = (int)$pool['total'];
-                $mastered = (int)$pool['mastered'];
-                $pct = $total > 0 ? round($mastered / $total * 100) : 0;
-                $items[] = new WidgetItem(
-                    $pool['name'],
-                    $this->l10n->t('%s%% mastered (%s/%s)', [(string)$pct, (string)$mastered, (string)$total]),
-                    $appUrl,
-                    '',
-                    (string)$pool['id']
-                );
+            $parsedDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $examDate);
+            $errors = \DateTimeImmutable::getLastErrors();
+            $hasWarnings = is_array($errors) && (($errors['warning_count'] ?? 0) > 0 || ($errors['error_count'] ?? 0) > 0);
+            if ($parsedDate === false || $hasWarnings) {
+                continue;
             }
+
+            if ($parsedDate > $today) {
+                $upcoming[] = $course;
+                continue;
+            }
+
+            if ($parsedDate < $today) {
+                $past[] = $course;
+                continue;
+            }
+
+            $todayCourses[] = $course;
         }
 
-        if ($totalDue > 0) {
-            $emptyMsg = '';
-        } elseif ($streak['current_streak'] > 0) {
-            $emptyMsg = '';
-        } else {
-            $emptyMsg = $this->l10n->t('All caught up! No questions due right now.');
+        if ($todayCourses !== []) {
+            return $todayCourses[0];
         }
 
-        return new WidgetItems($items, $emptyMsg);
+        if ($upcoming !== []) {
+            return $upcoming[0];
+        }
+
+        if ($past !== []) {
+            return $past[count($past) - 1];
+        }
+
+        return null;
+    }
+
+    private function buildCountdownTitle(string $examDate): string {
+        $today = new \DateTimeImmutable('today');
+        $parsedDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $examDate);
+        if ($parsedDate === false) {
+            return $this->l10n->t('Exam date scheduled');
+        }
+
+        if ($parsedDate < $today) {
+            return $this->l10n->t('Exam date passed');
+        }
+
+        if ($parsedDate == $today) {
+            return $this->l10n->t('Exam is today');
+        }
+
+        $days = (int)$today->diff($parsedDate)->days;
+        return $this->l10n->n('%n day until exam', '%n days until exam', $days);
     }
 }

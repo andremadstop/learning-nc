@@ -24,6 +24,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setModeConfig(?string $modeConfig)
  * @method int|null getExamAvailableFrom()
  * @method void setExamAvailableFrom(?int $examAvailableFrom)
+ * @method string|null getExamDate()
+ * @method void setExamDate(?string $examDate)
  * @method int|null getExamAttemptsPerDay()
  * @method void setExamAttemptsPerDay(?int $examAttemptsPerDay)
  * @method bool getExamRequiresTraining()
@@ -47,6 +49,7 @@ class Course extends Entity {
     protected $updatedAt;
     protected $modeConfig;
     protected $examAvailableFrom;
+    protected $examDate;
     protected $examAttemptsPerDay;
     protected $examRequiresTraining;
     protected $materialFolder;
@@ -76,6 +79,7 @@ class Course extends Entity {
             'updated_at' => $this->updatedAt,
             'mode_config' => $this->modeConfig ? json_decode($this->modeConfig, true) : null,
             'exam_available_from' => $this->examAvailableFrom,
+            'exam_date' => $this->examDate,
             'exam_attempts_per_day' => $this->examAttemptsPerDay,
             'exam_requires_training' => $this->examRequiresTraining ?? false,
             'material_folder' => $this->materialFolder,
