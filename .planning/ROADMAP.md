@@ -26,6 +26,7 @@
 - ✅ **v3.4.0 UX-Konsolidierung & Simulator-Upgrade** — Phases 96-100 (shipped 2026-03-28)
 - ✅ **v3.5.0 Transparenz & Kursabschluss** — Phases 101-109 (shipped 2026-03-29)
 - ✅ **v3.6.0 Architect's Ascent** — Phases 110-113 (shipped 2026-03-30)
+- **v3.7.0 Efficiency & Compliance** — Phases 114-118 (in progress)
 
 ## Phases
 
@@ -74,14 +75,25 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 
 </details>
 
-### v3.6.0 Architect's Ascent (In Progress)
-
-**Milestone Goal:** Security hardening (encryption at rest, audit trail), badge system overhaul, content pipeline (vault import), UX simplification (tab reduction), and AI-powered post-course experience (narrative portfolio, spaced repetition calendar).
+<details>
+<summary>v3.6.0 Architect's Ascent (Phases 110-113) — SHIPPED 2026-03-30</summary>
 
 - [x] **Phase 110: Foundation & Security** - Telos encryption, audit-log moderation, Gemini-outputs merge (privacy-info, PWA, badge l10n) (completed 2026-03-29)
 - [x] **Phase 111: Badge-Umbau & Vault-Import** - Legacy badge migration, new triggers, CompTIA vault import pipeline (completed 2026-03-29)
 - [x] **Phase 112: Tab-Reduktion** - CourseDetail.vue decomposition from 16 tabs to 5 mega-tabs (completed 2026-03-29)
 - [x] **Phase 113: AI & Erklaerbot** - Fullscreen Erklaerbot, dismissal UX, narrative portfolio, Forget-Me-Not ICS feed (completed 2026-03-30)
+
+</details>
+
+### v3.7.0 Efficiency & Compliance (Phases 114-117)
+
+**Milestone Goal:** Simplify the learner UX (mode visibility, smart queue, mode_config), eliminate the redundant true_false pool type, wire DSGVO help links into NC settings, and add an exam countdown dashboard widget.
+
+- [ ] **Phase 114: UX-Modus-Steuerung** - Mode visibility per role, Smart Queue as Lernraum entry point, mode_config for instructors
+- [ ] **Phase 115: Wahr/Falsch-Migration** - Unify true_false into single-choice type, DB migration for existing pools
+- [ ] **Phase 116: DSGVO Help-Seite** - NC Help & Privacy link, privacy-info page with 7 categories, Impressum via NC settings
+- [ ] **Phase 117: Dashboard Prüfungstermin** - exam_date field + API, NC Dashboard Widget with countdown
+- [ ] **Phase 118: PBQ-Feedback & Badge-Korrektur** - CLI-Terminal-Feedback in PBQ-Simulatoren, streak_30→streak_14 Migration
 
 ## Phase Details
 
@@ -98,8 +110,8 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 **Plans**: 2 plans
 
 Plans:
-- [ ] 110-01: Telos Encryption + Audit-Log Moderation (SEC-01, SEC-02)
-- [ ] 110-02: Gemini-Outputs Integration (IMPORT-03, IMPORT-04, UX-04)
+- [x] 110-01: Telos Encryption + Audit-Log Moderation (SEC-01, SEC-02)
+- [x] 110-02: Gemini-Outputs Integration (IMPORT-03, IMPORT-04, UX-04)
 
 ### Phase 111: Badge-Umbau & Vault-Import
 **Goal**: Badge system is modernized (17 legacy badges archived, 5 new triggers active) and 4 CompTIA course vaults are importable as RAG sources
@@ -113,8 +125,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 111-01-PLAN.md — Add quick_thinker badge + apply is_legacy migration + wire 5 new badge triggers (BADGE-01, BADGE-02)
-- [ ] 111-02-PLAN.md — Copy 4 CompTIA vaults to container and import as RAG chunks, verify --dry-run (IMPORT-01, IMPORT-02)
+- [x] 111-01-PLAN.md — Add quick_thinker badge + apply is_legacy migration + wire 5 new badge triggers (BADGE-01, BADGE-02)
+- [x] 111-02-PLAN.md — Copy 4 CompTIA vaults to container and import as RAG chunks, verify --dry-run (IMPORT-01, IMPORT-02)
 
 ### Phase 112: Tab-Reduktion
 **Goal**: Instructor course view is simplified from 16 individual tabs to 5 coherent mega-tabs, making CourseDetail.vue maintainable for future features
@@ -127,9 +139,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 112-01-PLAN.md — Extract Kommunikation + Verwaltung mega-tabs (lowest coupling, ~600-800 LOC reduction)
-- [ ] 112-02-PLAN.md — Extract Wettbewerb + Teilnehmer mega-tabs (~1200-1500 LOC reduction, shell complete)
-- [ ] 112-03-PLAN.md — Convert flat tab-selector to 5 mega-tab navigation + fix App.vue view-key gaps
+- [x] 112-01-PLAN.md — Extract Kommunikation + Verwaltung mega-tabs (lowest coupling, ~600-800 LOC reduction)
+- [x] 112-02-PLAN.md — Extract Wettbewerb + Teilnehmer mega-tabs (~1200-1500 LOC reduction, shell complete)
+- [x] 112-03-PLAN.md — Convert flat tab-selector to 5 mega-tab navigation + fix App.vue view-key gaps
 
 ### Phase 113: AI & Erklaerbot
 **Goal**: Students have a fullscreen AI learning companion, intuitive dismissal gestures, a personalized course-end reflection, and a calendar feed for post-course spaced repetition
@@ -146,6 +158,49 @@ Plans:
 - [x] 113-01-PLAN.md — Erklaerbot Fullscreen + Dismissal UX (UX-02, UX-03)
 - [x] 113-02-PLAN.md — Narrative Portfolio + Forget-Me-Not ICS (AI-01, AI-02)
 
+### Phase 114: UX-Modus-Steuerung
+**Goal**: Learners see only modes relevant to them, Smart Queue is the prominent entry point into the Lernraum, and instructors can configure which modes are active per course
+**Depends on**: Nothing (first phase of v3.7.0)
+**Requirements**: UX-01, UX-04, UX-05
+**Success Criteria** (what must be TRUE):
+  1. Student navigating to Lernraum does not see a Training-Modus tab or any link to it; instructor navigating to the same course sees Training-Modus as before
+  2. Smart Queue appears as the primary Lernraum entry point and shows the count of cards due today before the user clicks anything
+  3. Instructor can open a course mode_config panel and toggle individual modes (Training, Exam, etc.) on or off; changes persist across page reloads
+  4. When an instructor disables a mode, students immediately lose access to that mode's tab/link
+**Plans**: TBD
+
+### Phase 115: Wahr/Falsch-Migration
+**Goal**: The true_false pool type no longer exists; all existing true/false questions behave identically to single-choice questions with exactly two options
+**Depends on**: Phase 114 (stable mode config before touching pool types)
+**Requirements**: UX-02, UX-03
+**Success Criteria** (what must be TRUE):
+  1. No pool in the database has question_type = 'true_false' after migration runs; all former true_false pools have question_type = 'single'
+  2. A learner answering a migrated Wahr/Falsch question sees exactly two answer options (Wahr, Falsch) rendered as single-choice buttons — no separate UI path
+  3. Creating a new question in the editor no longer offers 'Wahr/Falsch' as a distinct type; the instructor uses single-choice with two options instead
+  4. Migration is idempotent: running the DB migration a second time produces no errors and no data changes
+**Plans**: TBD
+
+### Phase 116: DSGVO Help-Seite
+**Goal**: The Nextcloud instance's Help & Privacy page and legal notice link directly to the app's DSGVO content, satisfying NC platform compliance requirements
+**Depends on**: Phase 114 (stable UX baseline before adding settings integrations)
+**Requirements**: DSGVO-01, DSGVO-02, DSGVO-03
+**Success Criteria** (what must be TRUE):
+  1. Navigating to /settings/help in the NC instance shows a working Privacy Policy link that leads to the learning app's Datenschutzerklärung page
+  2. The Datenschutzerklärung page displays all 7 categories from privacy-info.json (learning, ai, social, audit, gamification, assessment, external) with their full content
+  3. A legal notice (Impressum) link is reachable from NC settings; clicking it shows the Impressum content
+**Plans**: TBD
+
+### Phase 117: Dashboard Prüfungstermin
+**Goal**: Instructors can record exam dates per course and students see a live countdown on the NC Dashboard, creating daily urgency without leaving Nextcloud
+**Depends on**: Phase 114 (course config pattern established for exam_date field)
+**Requirements**: DASH-01, DASH-02, DASH-03
+**Success Criteria** (what must be TRUE):
+  1. Instructor can open a course and set or clear an exam_date; the value persists after page reload
+  2. A student enrolled in a course with an exam_date sees a countdown widget on the NC Dashboard showing the number of days remaining
+  3. When no exam_date is set for any enrolled course, the Dashboard widget is hidden entirely (no empty card visible)
+  4. When exam_date is today or in the past, the widget shows a suitable terminal state message rather than a negative countdown
+**Plans**: TBD
+
 ## Progress Table
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -154,7 +209,11 @@ Plans:
 | 90-95 | v13.0 | - | Complete | 2026-03-28 |
 | 96-100 | v3.4.0 | - | Complete | 2026-03-28 |
 | 101-109 | v3.5.0 | - | Complete | 2026-03-29 |
-| 110. Foundation & Security | 2/2 | Complete    | 2026-03-29 | - |
-| 111. Badge-Umbau & Vault-Import | 2/2 | Complete    | 2026-03-29 | - |
-| 112. Tab-Reduktion | 3/3 | Complete    | 2026-03-30 | - |
-| 113. AI & Erklaerbot | 2/2 | Complete    | 2026-03-30 | - |
+| 110. Foundation & Security | v3.6.0 | 2/2 | Complete | 2026-03-29 |
+| 111. Badge-Umbau & Vault-Import | v3.6.0 | 2/2 | Complete | 2026-03-29 |
+| 112. Tab-Reduktion | v3.6.0 | 3/3 | Complete | 2026-03-30 |
+| 113. AI & Erklaerbot | v3.6.0 | 2/2 | Complete | 2026-03-30 |
+| 114. UX-Modus-Steuerung | v3.7.0 | 0/? | Not started | - |
+| 115. Wahr/Falsch-Migration | v3.7.0 | 0/? | Not started | - |
+| 116. DSGVO Help-Seite | v3.7.0 | 0/? | Not started | - |
+| 117. Dashboard Prüfungstermin | v3.7.0 | 0/? | Not started | - |

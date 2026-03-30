@@ -41,7 +41,18 @@ Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung �
 
 ### Active
 
-See: `.planning/REQUIREMENTS.md` for next milestone details (created via `/gsd:new-milestone`).
+**Milestone v3.7.0 — Efficiency & Compliance:**
+- [ ] UX-01: Schüler sieht Training-Modus nicht — Dozent behält Zugriff
+- [ ] UX-02: Wahr/Falsch als Single-Choice mit 2 Optionen (kein eigener Pool-Typ)
+- [ ] UX-03: Migration bestehender Wahr/Falsch-Pools (true_false → single)
+- [ ] UX-04: Smart Queue prominent als Lernraum-Einstieg mit fälligen Karten-Count
+- [ ] UX-05: mode_config erlaubt Dozenten Modi pro Kurs zu steuern
+- [ ] DSGVO-01: NC Help & Privacy zeigt verlinkten DSGVO-Inhalt via config.php privacy URL
+- [ ] DSGVO-02: Datenschutzerklärung-Seite mit 7 Kategorien aus privacy-info.json
+- [ ] DSGVO-03: Impressum über NC-Settings erreichbar
+- [ ] DASH-01: Dozent kann Prüfungsdatum pro Kurs setzen
+- [ ] DASH-02: NC Dashboard Widget zeigt Countdown bis Prüfungstermin
+- [ ] DASH-03: Widget hidden wenn kein Prüfungsdatum gesetzt
 
 ### Out of Scope
 
@@ -84,4 +95,4 @@ See: `.planning/REQUIREMENTS.md` for next milestone details (created via `/gsd:n
 | Telos nur bio/telos_json verschluesseln | help_offer/help_wanted braucht SQL fuer Buddy-Match | ✓ Good |
 
 ---
-*Last updated: 2026-03-30 after v3.6.0 milestone complete*
+*Last updated: 2026-03-30 after v3.7.0 milestone started*
