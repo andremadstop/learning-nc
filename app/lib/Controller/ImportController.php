@@ -115,6 +115,9 @@ class ImportController extends Controller {
 
         // Type: type > typ
         $type = $item['type'] ?? $item['typ'] ?? null;
+        if ($type === 'true_false') {
+            $type = 'single'; // true_false removed in v3.7.0 — normalize on import
+        }
 
         $chapterOrder = $item['chapter_order'] ?? $item['chapterOrder'] ?? $item['kapitel_nummer'] ?? null;
         $chapterOrder = is_numeric($chapterOrder) ? (int)$chapterOrder : null;
