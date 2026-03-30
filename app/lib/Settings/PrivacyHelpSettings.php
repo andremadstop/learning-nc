@@ -25,7 +25,7 @@ class PrivacyHelpSettings implements ISettings {
     }
 
     public function getSection(): string {
-        return 'tips-tricks';
+        return 'additional';
     }
 
     public function getPriority(): int {
