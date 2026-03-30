@@ -141,6 +141,30 @@
 				</div>
 			</div>
 
+			<!-- Forget-Me-Not ICS Feed -->
+			<div v-if="icsUrl" class="widget-card ics-card">
+				<p class="card-kicker">{{ t('learning', 'Lernkalender') }}</p>
+				<p class="ics-description">
+					{{ t('learning', 'Abonniere deinen persoenlichen Wiederholungskalender.') }}
+				</p>
+				<div class="ics-actions">
+					<NcButton
+						type="secondary"
+						:title="t('learning', 'URL kopieren')"
+						@click="copyIcsUrl">
+						{{ icsCopied ? t('learning', 'Kopiert!') : t('learning', 'URL kopieren') }}
+					</NcButton>
+					<a
+						:href="icsSubscribeUrl"
+						class="ics-subscribe-link"
+						target="_blank"
+						rel="noopener noreferrer">
+						{{ t('learning', 'Im Kalender abonnieren') }}
+					</a>
+				</div>
+				<p class="ics-url-display">{{ icsUrl }}</p>
+			</div>
+
 			<!-- Narrative Portfolio -->
 			<div class="widget-card narrative-card">
 				<p class="card-kicker">{{ t('learning', 'Deine KI-Reflexion') }}</p>
@@ -195,6 +219,11 @@ export default {
 			snapshotSaved: false,
 			narrative: null,
 			narrativeLoading: false,
+			icsToken: null,
+			icsUrl: null,
+			icsSubscribeUrl: null,
+			icsLoading: false,
+			icsCopied: false,
 		}
 	},
 
@@ -256,6 +285,27 @@ export default {
 			}
 		},
 
+		async loadIcsToken() {
+			this.icsLoading = true
+			try {
+				const res = await axios.post(generateUrl('/apps/learning/api/ics/generate'))
+				this.icsToken = res.data.token
+				this.icsUrl = res.data.url
+				this.icsSubscribeUrl = res.data.url.replace(/^https?:\/\//, 'webcal://')
+			} catch (e) {
+				// ICS generation failed — section stays hidden, no crash
+			} finally {
+				this.icsLoading = false
+			}
+		},
+
+		copyIcsUrl() {
+			if (!this.icsUrl) return
+			navigator.clipboard.writeText(this.icsUrl)
+			this.icsCopied = true
+			setTimeout(() => { this.icsCopied = false }, 2000)
+		},
+
 		async loadSummaryState() {
 			this.loading = true
 			this.error = ''
@@ -265,6 +315,7 @@ export default {
 					this.loadSnapshot(),
 				])
 				this.loadNarrative()
+				this.loadIcsToken()
 			} catch (error) {
 				this.error = error?.response?.data?.error || t('learning', 'Kursabschluss konnte nicht geladen werden.')
 			} finally {
@@ -622,6 +673,41 @@ export default {
 .empty-hint {
 	margin: 0;
 	color: var(--color-text-maxcontrast);
+}
+
+.ics-card {
+	border-left-color: var(--color-primary-element);
+}
+
+.ics-description {
+	margin: 0 0 12px;
+	color: var(--color-text-maxcontrast);
+}
+
+.ics-actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-bottom: 10px;
+}
+
+.ics-subscribe-link {
+	color: var(--color-primary-element);
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.ics-subscribe-link:hover {
+	text-decoration: underline;
+}
+
+.ics-url-display {
+	margin: 0;
+	font-size: 0.85em;
+	color: var(--color-text-maxcontrast);
+	word-break: break-all;
+	font-family: monospace;
 }
 
 .narrative-card {

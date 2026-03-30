@@ -133,6 +133,68 @@ describe('CourseSummary', () => {
 		expect(instance.narrativeLoading).toBe(false)
 	})
 
+	it('loadIcsToken calls POST /api/ics/generate', async () => {
+		const instance = createInstance()
+		axios.post.mockResolvedValueOnce({
+			data: { token: 'abc123', url: 'https://devcloud.example/apps/learning/api/ics/abc123' },
+		})
+
+		await instance.loadIcsToken()
+
+		expect(axios.post).toHaveBeenCalledWith('/apps/learning/api/ics/generate')
+		expect(instance.icsToken).toBe('abc123')
+		expect(instance.icsLoading).toBe(false)
+	})
+
+	it('sets icsUrl and icsSubscribeUrl (webcal://) after loadIcsToken', async () => {
+		const instance = createInstance()
+		axios.post.mockResolvedValueOnce({
+			data: { token: 'xyz', url: 'https://devcloud.example/apps/learning/api/ics/xyz' },
+		})
+
+		await instance.loadIcsToken()
+
+		expect(instance.icsUrl).toBe('https://devcloud.example/apps/learning/api/ics/xyz')
+		expect(instance.icsSubscribeUrl).toBe('webcal://devcloud.example/apps/learning/api/ics/xyz')
+	})
+
+	it('copyIcsUrl sets icsCopied true then resets after 2000ms', () => {
+		vi.useFakeTimers()
+		const instance = createInstance({
+			icsUrl: 'https://devcloud.example/apps/learning/api/ics/abc123',
+		})
+		// Mock clipboard API
+		const writeTextMock = vi.fn().mockResolvedValue(undefined)
+		Object.defineProperty(navigator, 'clipboard', {
+			value: { writeText: writeTextMock },
+			writable: true,
+			configurable: true,
+		})
+
+		instance.copyIcsUrl()
+
+		expect(writeTextMock).toHaveBeenCalledWith('https://devcloud.example/apps/learning/api/ics/abc123')
+		expect(instance.icsCopied).toBe(true)
+
+		vi.advanceTimersByTime(2000)
+		expect(instance.icsCopied).toBe(false)
+		vi.useRealTimers()
+	})
+
+	it('ICS section data is available when icsUrl is set', () => {
+		const instance = createInstance({
+			icsUrl: 'https://devcloud.example/apps/learning/api/ics/abc123',
+			icsSubscribeUrl: 'webcal://devcloud.example/apps/learning/api/ics/abc123',
+		})
+		expect(instance.icsUrl).toBeTruthy()
+		expect(instance.icsSubscribeUrl).toContain('webcal://')
+	})
+
+	it('ICS section data is hidden when icsUrl is null', () => {
+		const instance = createInstance({ icsUrl: null })
+		expect(instance.icsUrl).toBeNull()
+	})
+
 	it('creates a snapshot and refreshes snapshot state afterwards', async () => {
 		vi.useFakeTimers()
 		const instance = createInstance({
