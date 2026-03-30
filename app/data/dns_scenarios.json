@@ -1,15 +1,24 @@
 [
   {
     "id": "dns-missing-a",
-    "title": "Domain loest nicht auf",
+    "title": "Domain löst nicht auf",
     "domain": "shop.example.org",
     "recordType": "A",
     "question": "Warum erreicht ein IPv4-Client die Website nicht?",
-    "context": "Die Zone existiert, aber Browser bekommen keine IPv4-Adresse fuer den Host.",
+    "context": "Die Zone existiert, aber Browser bekommen keine IPv4-Adresse für den Host.",
     "options": [
-      { "id": "missing_a", "label": "Der A-Record fehlt" },
-      { "id": "wrong_ptr", "label": "Der PTR-Record fehlt" },
-      { "id": "expired_tls", "label": "Das TLS-Zertifikat ist abgelaufen" }
+      {
+        "id": "missing_a",
+        "label": "Der A-Record fehlt"
+      },
+      {
+        "id": "wrong_ptr",
+        "label": "Der PTR-Record fehlt"
+      },
+      {
+        "id": "expired_tls",
+        "label": "Das TLS-Zertifikat ist abgelaufen"
+      }
     ],
     "correctOptionId": "missing_a",
     "explanation": "shop.example.org besitzt nur einen AAAA-Record. Ein Lookup auf Typ A liefert deshalb keine nutzbare IPv4-Antwort."
@@ -19,15 +28,24 @@
     "title": "Mail kommt nicht an",
     "domain": "example.net",
     "recordType": "MX",
-    "question": "Warum weiss der sendende Mailserver nicht, wohin er zustellen soll?",
-    "context": "SMTP-Queues wachsen, weil fuer die Domain kein empfangender Mailserver gefunden wird.",
+    "question": "Warum weiß der sendende Mailserver nicht, wohin er zustellen soll?",
+    "context": "SMTP-Queues wachsen, weil für die Domain kein empfangender Mailserver gefunden wird.",
     "options": [
-      { "id": "missing_mx", "label": "Der MX-Record fehlt" },
-      { "id": "wrong_soa", "label": "Die SOA-Serial ist zu klein" },
-      { "id": "bad_vlan", "label": "Das VLAN ist falsch getaggt" }
+      {
+        "id": "missing_mx",
+        "label": "Der MX-Record fehlt"
+      },
+      {
+        "id": "wrong_soa",
+        "label": "Die SOA-Serial ist zu klein"
+      },
+      {
+        "id": "bad_vlan",
+        "label": "Das VLAN ist falsch getaggt"
+      }
     ],
     "correctOptionId": "missing_mx",
-    "explanation": "Ohne MX-Record kennt der Resolver keinen bevorzugten Mailserver fuer die Domain."
+    "explanation": "Ohne MX-Record kennt der Resolver keinen bevorzugten Mailserver für die Domain."
   },
   {
     "id": "dns-www-only",
@@ -37,27 +55,45 @@
     "question": "Warum funktioniert nur www.example.org, aber nicht example.org?",
     "context": "www ist als Alias vorhanden, die Apex-Domain selbst hat jedoch keinen eigenen Host-Eintrag.",
     "options": [
-      { "id": "missing_apex_a", "label": "Der Apex-A-Record fehlt" },
-      { "id": "missing_mx", "label": "Der MX-Record fehlt" },
-      { "id": "wrong_ptr", "label": "Der PTR-Record zeigt auf den falschen Host" }
+      {
+        "id": "missing_apex_a",
+        "label": "Der Apex-A-Record fehlt"
+      },
+      {
+        "id": "missing_mx",
+        "label": "Der MX-Record fehlt"
+      },
+      {
+        "id": "wrong_ptr",
+        "label": "Der PTR-Record zeigt auf den falschen Host"
+      }
     ],
     "correctOptionId": "missing_apex_a",
-    "explanation": "Der Alias fuer www kann funktionieren, waehrend die nackte Domain ohne eigenen A-Record ins Leere zeigt."
+    "explanation": "Der Alias für www kann funktionieren, während die nackte Domain ohne eigenen A-Record ins Leere zeigt."
   },
   {
     "id": "dns-missing-ptr",
-    "title": "Reverse Lookup schlaegt fehl",
+    "title": "Reverse Lookup schlägt fehl",
     "domain": "34.216.184.93.in-addr.arpa",
     "recordType": "PTR",
     "question": "Warum liefert der Reverse Lookup keinen Hostnamen?",
-    "context": "Monitoring und Mailserver erwarten einen PTR-Eintrag, erhalten aber keinen Rueckwaerts-Namen.",
+    "context": "Monitoring und Mailserver erwarten einen PTR-Eintrag, erhalten aber keinen Rückwärts-Namen.",
     "options": [
-      { "id": "missing_ptr", "label": "Der PTR-Record fehlt" },
-      { "id": "bad_cname", "label": "Der CNAME zeigt auf IPv6" },
-      { "id": "tls_only", "label": "Nur HTTPS ist aktiviert" }
+      {
+        "id": "missing_ptr",
+        "label": "Der PTR-Record fehlt"
+      },
+      {
+        "id": "bad_cname",
+        "label": "Der CNAME zeigt auf IPv6"
+      },
+      {
+        "id": "tls_only",
+        "label": "Nur HTTPS ist aktiviert"
+      }
     ],
     "correctOptionId": "missing_ptr",
-    "explanation": "Die Reverse-Zone existiert, aber fuer diese Adresse ist kein PTR-Record definiert."
+    "explanation": "Die Reverse-Zone existiert, aber für diese Adresse ist kein PTR-Record definiert."
   },
   {
     "id": "dns-dnssec-failure",
@@ -67,11 +103,20 @@
     "question": "Warum wird die Antwort trotz vorhandener IP verworfen?",
     "context": "Der autoritative Server antwortet, aber der Resolver meldet weiterhin einen Fehler.",
     "options": [
-      { "id": "dnssec_invalid", "label": "Die DNSSEC-Signatur ist ungueltig" },
-      { "id": "missing_ns", "label": "Der NS-Record fehlt" },
-      { "id": "arp_cache", "label": "Der ARP-Cache ist veraltet" }
+      {
+        "id": "dnssec_invalid",
+        "label": "Die DNSSEC-Signatur ist ungültig"
+      },
+      {
+        "id": "missing_ns",
+        "label": "Der NS-Record fehlt"
+      },
+      {
+        "id": "arp_cache",
+        "label": "Der ARP-Cache ist veraltet"
+      }
     ],
     "correctOptionId": "dnssec_invalid",
-    "explanation": "Bei ungueltiger Signatur verwirft der validierende Resolver die Antwort und gibt typischerweise SERVFAIL zurueck."
+    "explanation": "Bei ungültiger Signatur verwirft der validierende Resolver die Antwort und gibt typischerweise SERVFAIL zurück."
   }
 ]

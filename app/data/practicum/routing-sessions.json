@@ -8,31 +8,31 @@
       {
         "stepId": "rt-paths-01",
         "context": "Ein neues Subnetz 10.0.2.0/24 wurde eingerichtet. Der Router braucht eine statische Route, damit Pakete dorthin gelangen. Gleichzeitig existiert eine Default-Route.",
-        "explanation": "Statische Routen haben immer Vorrang vor der Default-Route, weil sie spezifischer sind. Der Router waehlt immer den laengsten passenden Prefix.",
+        "explanation": "Statische Routen haben immer Vorrang vor der Default-Route, weil sie spezifischer sind. Der Router wählt immer den längsten passenden Prefix.",
         "scenarioId": "add-route"
       },
       {
         "stepId": "rt-paths-02",
         "context": "Ein Client versucht 172.20.1.10 zu erreichen. In der Routing-Tabelle gibt es weder eine passende Route noch eine Default-Route.",
-        "explanation": "Ohne passende Route und ohne Default-Gateway wird das Paket verworfen. Der Router sendet ICMP Destination Unreachable zurueck.",
+        "explanation": "Ohne passende Route und ohne Default-Gateway wird das Paket verworfen. Der Router sendet ICMP Destination Unreachable zurück.",
         "scenarioId": "missing-route"
       },
       {
         "stepId": "rt-paths-03",
-        "context": "Zwei Subnetze haben jeweils eine Route, die auf das andere Subnetz als Gateway zeigt. Pakete fuer 10.0.20.50 werden endlos hin- und hergeschickt.",
+        "context": "Zwei Subnetze haben jeweils eine Route, die auf das andere Subnetz als Gateway zeigt. Pakete für 10.0.20.50 werden endlos hin- und hergeschickt.",
         "explanation": "Routing-Loops sind ein klassisches Problem bei manueller Konfiguration. TTL verhindert Endlosschleifen, aber der Traffic geht trotzdem verloren.",
         "scenarioId": "routing-loop"
       },
       {
         "stepId": "rt-paths-04",
-        "context": "Fuer das Ziel 192.168.1.100 gibt es zwei passende Routen: eine /16 und eine /24. Welche wird der Router bevorzugen?",
-        "explanation": "Longest Prefix Match ist die fundamentale Regel des IP-Routings. Die spezifischere Route (/24) gewinnt immer ueber die allgemeinere (/16).",
+        "context": "Für das Ziel 192.168.1.100 gibt es zwei passende Routen: eine /16 und eine /24. Welche wird der Router bevorzugen?",
+        "explanation": "Longest Prefix Match ist die fundamentale Regel des IP-Routings. Die spezifischere Route (/24) gewinnt immer über die allgemeinere (/16).",
         "scenarioId": "longest-prefix"
       },
       {
         "stepId": "rt-paths-05",
-        "context": "Ein Paket fuer 203.0.113.77 kann ueber eine spezifische Route oder die Default-Route gesendet werden. Welcher Weg wird gewaehlt?",
-        "explanation": "Auch hier gilt Longest Prefix Match. Die spezifische /24-Route fuer 203.0.113.0 hat Vorrang vor der Default-Route 0.0.0.0/0.",
+        "context": "Ein Paket für 203.0.113.77 kann über eine spezifische Route oder die Default-Route gesendet werden. Welcher Weg wird gewählt?",
+        "explanation": "Auch hier gilt Longest Prefix Match. Die spezifische /24-Route für 203.0.113.0 hat Vorrang vor der Default-Route 0.0.0.0/0.",
         "scenarioId": "default-vs-specific"
       }
     ]
@@ -45,20 +45,20 @@
     "steps": [
       {
         "stepId": "rt-mh-01",
-        "context": "Ein Paket muss ueber mehrere Router zum Ziel. Die Routing-Tabelle zeigt zwei konkurrierende Eintraege mit unterschiedlicher Prefix-Laenge.",
-        "explanation": "In Multi-Hop-Netzwerken entscheidet jeder Router einzeln ueber den naechsten Hop. Longest Prefix Match gilt an jedem Hop unabhaengig.",
+        "context": "Ein Paket muss über mehrere Router zum Ziel. Die Routing-Tabelle zeigt zwei konkurrierende Einträge mit unterschiedlicher Prefix-Länge.",
+        "explanation": "In Multi-Hop-Netzwerken entscheidet jeder Router einzeln über den nächsten Hop. Longest Prefix Match gilt an jedem Hop unabhängig.",
         "scenarioId": "longest-prefix"
       },
       {
         "stepId": "rt-mh-02",
-        "context": "Zwei Router zeigen mit statischen Routen aufeinander. Pakete fuer 10.0.20.50 werden zwischen ihnen hin- und hergeworfen.",
+        "context": "Zwei Router zeigen mit statischen Routen aufeinander. Pakete für 10.0.20.50 werden zwischen ihnen hin- und hergeworfen.",
         "explanation": "Routing-Loops treten oft auf, wenn Administratoren Routen auf verschiedenen Routern nicht abgleichen. Monitoring und Traceroute helfen bei der Diagnose.",
         "scenarioId": "routing-loop"
       },
       {
         "stepId": "rt-mh-03",
-        "context": "Ein entferntes Netzwerk ist ploetzlich nicht mehr erreichbar. Die Routing-Tabelle hat keinen Eintrag mehr dafuer und auch keine Default-Route.",
-        "explanation": "Wenn dynamische Routen ablaufen oder statische geloescht werden, entstehen 'Black Holes'. Redundante Pfade und Default-Routen schuetzen davor.",
+        "context": "Ein entferntes Netzwerk ist plötzlich nicht mehr erreichbar. Die Routing-Tabelle hat keinen Eintrag mehr dafür und auch keine Default-Route.",
+        "explanation": "Wenn dynamische Routen ablaufen oder statische gelöscht werden, entstehen 'Black Holes'. Redundante Pfade und Default-Routen schützen davor.",
         "scenarioId": "missing-route"
       }
     ]

@@ -2273,7 +2273,7 @@
           "is_correct": false
         }
       ],
-      "explanation": "Honeyfiles sind Dateien mit interessanten Namen (z.B. passwoerter.txt), die keine echten Daten enthalten. Ein Zugriff auf sie löst einen Alarm aus und weist auf einen Eindringling hin.",
+      "explanation": "Honeyfiles sind Dateien mit interessanten Namen (z.B. passwörter.txt), die keine echten Daten enthalten. Ein Zugriff auf sie löst einen Alarm aus und weist auf einen Eindringling hin.",
       "difficulty": "medium",
       "exam_objective": "1.2 Summarize fundamental security concepts"
     },

@@ -1,7 +1,7 @@
 {
   "campaign_id": "wannacry",
   "title": "WannaCry Weekend",
-  "description": "Freitagnachmittag, kurz vor Feierabend. Eine Kollegin ruft an: 'Mein Bildschirm ist rot!' Dann noch einer. Und noch einer. In 20 Minuten sind 50 Rechner verschluesselt. Willkommen im Mai 2017.",
+  "description": "Freitagnachmittag, kurz vor Feierabend. Eine Kollegin ruft an: 'Mein Bildschirm ist rot!' Dann noch einer. Und noch einer. In 20 Minuten sind 50 Rechner verschlüsselt. Willkommen im Mai 2017.",
   "duration_minutes": 60,
   "difficulty": "advanced",
   "focus_areas": [
@@ -15,7 +15,7 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "Hektischer Countdown-Thriller. Die Uhr tickt, jede Minute zaehlt ein weiterer Rechner. Rote Bildschirme ueberall. Der Druck von allen Seiten — Management, Presse, Patienten die auf ihre Befunde warten.",
+  "narrator_style": "Hektischer Countdown-Thriller. Die Uhr tickt, jede Minute zählt ein weiterer Rechner. Rote Bildschirme überall. Der Druck von allen Seiten — Management, Presse, Patienten die auf ihre Befunde warten.",
   "gemini_role": "attacker",
   "characters": {
     "architect": {
@@ -49,7 +49,7 @@
       "portrait_emoji": "&#128737;"
     },
     "sysadmin": {
-      "name": "Kai \"Root\" Lindstroem",
+      "name": "Kai \"Root\" Lindström",
       "avatar": "&#129492;",
       "skill_bonus_pools": [
         "linux",
@@ -86,7 +86,7 @@
       "avatar": "&#128084;"
     },
     "frank_mueller": {
-      "name": "Frank Mueller",
+      "name": "Frank Müller",
       "role": "IT-Leiter",
       "avatar": "&#128187;"
     },
@@ -100,12 +100,12 @@
     {
       "id": "s1_outbreak",
       "title": "Freitagnachmittag",
-      "narrative": "Freitag, 12. Mai 2017, 15:47 Uhr. Du willst gerade Feierabend machen, als das Telefon klingelt. Station 3: 'Alle Bildschirme sind rot!' Du rennst ins Buero. Auf dem Monitor steht: 'Ooops, your files have been encrypted!' mit einem Bitcoin-Timer der runterlaeuft. Waehrend du noch hinschaust, meldet sich Station 7. Dann die Radiologie. Dann das Labor. In 20 Minuten sind 50 Rechner betroffen — und es werden mehr. Das SIEM zeigt massiven SMB-Traffic auf Port 445 zwischen allen Subnetzen.",
+      "narrative": "Freitag, 12. Mai 2017, 15:47 Uhr. Du willst gerade Feierabend machen, als das Telefon klingelt. Station 3: 'Alle Bildschirme sind rot!' Du rennst ins Büro. Auf dem Monitor steht: 'Ooops, your files have been encrypted!' mit einem Bitcoin-Timer der runterläuft. Während du noch hinschaust, meldet sich Station 7. Dann die Radiologie. Dann das Labor. In 20 Minuten sind 50 Rechner betroffen — und es werden mehr. Das SIEM zeigt massiven SMB-Traffic auf Port 445 zwischen allen Subnetzen.",
       "image": "scene_siem_dashboard.png",
       "animation_in": "mission_start",
       "npc_dialog": {
-        "speaker": "frank_mueller",
-        "text": "Ich hab seit Maerz gesagt, dass wir die Windows-Patches ausrollen muessen! Aber nein, 'das stoert den Klinikbetrieb'. Jetzt haben wir den Salat. SMB-Traffic explodiert — das Ding verbreitet sich ueber EternalBlue.",
+        "speaker": "frank_müller",
+        "text": "Ich hab seit März gesagt, dass wir die Windows-Patches ausrollen müssen! Aber nein, 'das stört den Klinikbetrieb'. Jetzt haben wir den Salat. SMB-Traffic explodiert — das Ding verbreitet sich über EternalBlü.",
         "portrait": "npc_frank"
       },
       "choices": [
@@ -132,13 +132,13 @@
               }
             }
           },
-          "success_scene": "s2_eternalblue",
-          "partial_scene": "s2_eternalblue",
-          "fail_scene": "s2_eternalblue_late"
+          "success_scene": "s2_eternalblü",
+          "partial_scene": "s2_eternalblü",
+          "fail_scene": "s2_eternalblü_late"
         },
         {
           "id": "c1_check_patches",
-          "text": "Pruefen ob MS17-010 Patch deployed ist",
+          "text": "Prüfen ob MS17-010 Patch deployed ist",
           "icon": "&#128270;",
           "skill_check": {
             "pool_filter": "security",
@@ -159,9 +159,9 @@
               }
             }
           },
-          "success_scene": "s2_eternalblue",
-          "partial_scene": "s2_eternalblue",
-          "fail_scene": "s2_eternalblue_late"
+          "success_scene": "s2_eternalblü",
+          "partial_scene": "s2_eternalblü",
+          "fail_scene": "s2_eternalblü_late"
         },
         {
           "id": "c1_disable_smbv1",
@@ -186,27 +186,27 @@
               }
             }
           },
-          "success_scene": "s2_eternalblue",
-          "partial_scene": "s2_eternalblue",
-          "fail_scene": "s2_eternalblue_late"
+          "success_scene": "s2_eternalblü",
+          "partial_scene": "s2_eternalblü",
+          "fail_scene": "s2_eternalblü_late"
         }
       ],
       "simulation": null
     },
     {
       "id": "s2_eternalblue",
-      "title": "EternalBlue",
-      "narrative": "Dein Scan bestaetigt das Schlimmste: 60% der Systeme sind nicht gepatcht. Der Patch MS17-010 war seit Maerz 2017 verfuegbar — zwei Monate! Die Schwachstelle CVE-2017-0144 in SMBv1 wird von einem Exploit namens EternalBlue ausgenutzt, der urspruenglich von der NSA entwickelt und von der Hackergruppe Shadow Brokers im April geleakt wurde. WannaCry nutzt diesen Exploit um sich wurmartig von System zu System zu verbreiten — ohne jede Benutzerinteraktion.",
+      "title": "EternalBlü",
+      "narrative": "Dein Scan bestätigt das Schlimmste: 60% der Systeme sind nicht gepatcht. Der Patch MS17-010 war seit März 2017 verfügbar — zwei Monate! Die Schwachstelle CVE-2017-0144 in SMBv1 wird von einem Exploit namens EternalBlü ausgenutzt, der ursprünglich von der NSA entwickelt und von der Hackergruppe Shadow Brokers im April geleakt wurde. WannaCry nutzt diesen Exploit um sich wurmartig von System zu System zu verbreiten — ohne jede Benutzerinteraktion.",
       "image": "scene_forensics_terminal.png",
       "npc_dialog": {
         "speaker": "agent_kovacs",
-        "text": "BSI hier. Sie sind nicht allein — das ist eine globale Welle. Wir sehen Meldungen aus UK, Spanien, Russland. Die britischen Krankenhaeuser sind komplett lahmgelegt. Der Exploit heisst EternalBlue, ein NSA-Tool das die Shadow Brokers im April veroeffentlicht haben.",
+        "text": "BSI hier. Sie sind nicht allein — das ist eine globale Welle. Wir sehen Meldungen aus UK, Spanien, Russland. Die britischen Krankenhäuser sind komplett lahmgelegt. Der Exploit heißt EternalBlü, ein NSA-Tool das die Shadow Brokers im April veröffentlicht haben.",
         "portrait": "npc_kovacs"
       },
       "choices": [
         {
           "id": "c2_emergency_patch",
-          "text": "Notfall-Patch-Deployment fuer alle ungepatchten Systeme starten",
+          "text": "Notfall-Patch-Deployment für alle ungepatchten Systeme starten",
           "icon": "&#128296;",
           "skill_check": {
             "pool_filter": "security",
@@ -233,7 +233,7 @@
         },
         {
           "id": "c2_network_segmentation",
-          "text": "Netzwerksegmentierung verstaerken um die Ausbreitung einzudaemmen",
+          "text": "Netzwerksegmentierung verstärken um die Ausbreitung einzudämmen",
           "icon": "&#127760;",
           "skill_check": {
             "pool_filter": "network_plus",
@@ -291,11 +291,11 @@
     {
       "id": "s2_eternalblue_late",
       "title": "Verlorene Zeit",
-      "narrative": "Die Reaktion war zu langsam. Waehrend du noch analysiert hast, hat sich WannaCry ueber SMBv1 in drei weitere Subnetze gefressen. Jetzt sind 120 Systeme betroffen statt 50. Frank Mueller schaut dich an: 'Wir muessen jetzt handeln, nicht analysieren.' Er hat recht.",
+      "narrative": "Die Reaktion war zu langsam. Während du noch analysiert hast, hat sich WannaCry über SMBv1 in drei weitere Subnetze gefressen. Jetzt sind 120 Systeme betroffen statt 50. Frank Müller schaut dich an: 'Wir müssen jetzt handeln, nicht analysieren.' Er hat recht.",
       "image": "scene_siem_dashboard.png",
       "npc_dialog": {
-        "speaker": "frank_mueller",
-        "text": "120 Systeme. Die Pathologie ist komplett offline, die Notaufnahme laeuft auf Papier. Wir muessen den SMB-Traffic sofort blocken — egal was dabei kaputt geht.",
+        "speaker": "frank_müller",
+        "text": "120 Systeme. Die Pathologie ist komplett offline, die Notaufnahme läuft auf Papier. Wir müssen den SMB-Traffic sofort blocken — egal was dabei kaputt geht.",
         "portrait": "npc_frank"
       },
       "choices": [
@@ -319,17 +319,17 @@
     {
       "id": "s3_ausbreitung",
       "title": "Die Ausbreitung",
-      "narrative": "Das Telefon hoert nicht auf zu klingeln. Prof. Dr. Hartmann steht im Tuerrahmen: 'Wann laueft der Betrieb wieder? Die Presse ruft an. Patienten warten auf ihre Befunde.' Gleichzeitig meldet Agent Kovacs: In Grossbritannien mussten NHS-Krankenhaeuser OPs absagen. Weltweit sind hunderttausende Systeme betroffen. Und dann der naechste Schock: WannaCry versucht sich auf die Backup-Server auszubreiten. Wenn die Backups fallen, ist alles verloren. Auf jedem verschluesselten Rechner tickt der gleiche Timer: $300 in Bitcoin, steigend auf $600 nach drei Tagen.",
+      "narrative": "Das Telefon hört nicht auf zu klingeln. Prof. Dr. Hartmann steht im Türrahmen: 'Wann laüft der Betrieb wieder? Die Presse ruft an. Patienten warten auf ihre Befunde.' Gleichzeitig meldet Agent Kovacs: In Großbritannien mussten NHS-Krankenhäuser OPs absagen. Weltweit sind hunderttausende Systeme betroffen. Und dann der nächste Schock: WannaCry versucht sich auf die Backup-Server auszubreiten. Wenn die Backups fallen, ist alles verloren. Auf jedem verschlüsselten Rechner tickt der gleiche Timer: $300 in Bitcoin, steigend auf $600 nach drei Tagen.",
       "image": "scene_firewall_config.png",
       "npc_dialog": {
         "speaker": "prof_hartmann",
-        "text": "Die Versicherung fragt ob wir zahlen sollen. $300 pro Rechner, das waeren bei 80 betroffenen Systemen $24.000. Ist das nicht billiger als tagelanger Ausfall? Was empfehlen Sie?",
+        "text": "Die Versicherung fragt ob wir zahlen sollen. $300 pro Rechner, das wären bei 80 betroffenen Systemen $24.000. Ist das nicht billiger als tagelanger Ausfall? Was empfehlen Sie?",
         "portrait": "npc_hartmann"
       },
       "choices": [
         {
           "id": "c3_pay_ransom",
-          "text": "Loesegeldzahlung in Erwaegung ziehen — schnellste Wiederherstellung?",
+          "text": "Lösegeldzahlung in Erwägung ziehen — schnellste Wiederherstellung?",
           "icon": "&#128176;",
           "skill_check": {
             "pool_filter": "security",
@@ -383,7 +383,7 @@
         },
         {
           "id": "c3_call_bsi",
-          "text": "BSI um Unterstuetzung und aktuelle Threat Intelligence bitten",
+          "text": "BSI um Unterstützung und aktuelle Threat Intelligence bitten",
           "icon": "&#128222;",
           "skill_check": {
             "pool_filter": "security",
@@ -414,11 +414,11 @@
     {
       "id": "s4_killswitch",
       "title": "Der Kill Switch",
-      "narrative": "Samstag, 02:30 Uhr. Du analysierst den WannaCry-Code und findest etwas Seltsames: Bevor die Verschluesselung startet, versucht die Malware eine Verbindung zu einer absurd langen Domain aufzubauen — iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com. Die Domain ist nicht registriert. Wenn die Verbindung fehlschlaegt, verschluesselt WannaCry. Wenn sie gelingt... stoppt es. Ein eingebauter Kill Switch! In der echten Geschichte hat der 22-jaehrige Sicherheitsforscher Marcus Hutchins (@MalwareTechBlog) diese Domain fuer $10.69 registriert und damit die globale Ausbreitung gestoppt. Aber: Bereits verschluesselte Rechner bleiben verschluesselt.",
+      "narrative": "Samstag, 02:30 Uhr. Du analysierst den WannaCry-Code und findest etwas Seltsames: Bevor die Verschlüsselung startet, versucht die Malware eine Verbindung zu einer absurd langen Domain aufzubauen — iuqerfsodp9ifjaposdfjhgosurijfäwrwergwea.com. Die Domain ist nicht registriert. Wenn die Verbindung fehlschlägt, verschlüsselt WannaCry. Wenn sie gelingt... stoppt es. Ein eingebauter Kill Switch! In der echten Geschichte hat der 22-jährige Sicherheitsforscher Marcus Hutchins (@MalwareTechBlog) diese Domain für $10.69 registriert und damit die globale Ausbreitung gestoppt. Aber: Bereits verschlüsselte Rechner bleiben verschlüsselt.",
       "image": "scene_forensics_terminal.png",
       "npc_dialog": {
         "speaker": "agent_kovacs",
-        "text": "Gerade reingekommen: Ein britischer Forscher hat die Kill-Switch-Domain registriert. Die Neuinfektionen stoppen weltweit. Aber fuer Ihre bereits verschluesselten Systeme aendert das nichts. Sie muessen jetzt an die Wiederherstellung denken.",
+        "text": "Gerade reingekommen: Ein britischer Forscher hat die Kill-Switch-Domain registriert. Die Neuinfektionen stoppen weltweit. Aber für Ihre bereits verschlüsselten Systeme ändert das nichts. Sie müssen jetzt an die Wiederherstellung denken.",
         "portrait": "npc_kovacs"
       },
       "choices": [
@@ -451,7 +451,7 @@
         },
         {
           "id": "c4_decryption_tools",
-          "text": "Nach Entschluesselungstools suchen (WannaKey/WanaKiwi)",
+          "text": "Nach Entschlüselungstools suchen (WannaKey/WanaKiwi)",
           "icon": "&#128273;",
           "skill_check": {
             "pool_filter": "security",
@@ -509,7 +509,7 @@
     {
       "id": "s5_lessons_learned",
       "title": "Lessons Learned",
-      "narrative": "Montag, 09:00 Uhr. Die meisten Systeme laufen wieder — dank der Backups. Der Schaden: 3 Tage Ausfallzeit, 15 Systeme mit Datenverlust, geschaetzte Kosten von 200.000 Euro. Weltweit hat WannaCry Schaeden von 4-8 Milliarden Dollar verursacht. Prof. Dr. Hartmann sitzt dir gegenueber: 'Wie konnte ein zwei Monate alter Patch uns so treffen? Was aendern wir?' Das ist die entscheidende Frage. Microsoft hat sogar einen Notfall-Patch fuer das laengst abgekuendigte Windows XP veroeffentlicht — so ernst war die Lage.",
+      "narrative": "Montag, 09:00 Uhr. Die meisten Systeme laufen wieder — dank der Backups. Der Schaden: 3 Tage Ausfallzeit, 15 Systeme mit Datenverlust, geschätzte Kosten von 200.000 Euro. Weltweit hat WannaCry Schäden von 4-8 Milliarden Dollar verursacht. Prof. Dr. Hartmann sitzt dir gegenüber: 'Wie konnte ein zwei Monate alter Patch uns so treffen? Was ändern wir?' Das ist die entscheidende Frage. Microsoft hat sogar einen Notfall-Patch für das längst abgekündigte Windows XP veröffentlicht — so ernst war die Lage.",
       "image": "scene_security_hardening.png",
       "npc_dialog": {
         "speaker": "prof_hartmann",
@@ -519,7 +519,7 @@
       "choices": [
         {
           "id": "c5_patch_management",
-          "text": "Automatisiertes Patch-Management mit 72h-SLA fuer kritische Patches einfuehren",
+          "text": "Automatisiertes Patch-Management mit 72h-SLA für kritische Patches einführen",
           "icon": "&#128296;",
           "skill_check": {
             "pool_filter": "security",
@@ -602,17 +602,17 @@
       "simulation": {
         "type": "network_device_placement",
         "pbq_question_id": null,
-        "description": "Netzwerk-Segmentierung: Platziere Firewalls und VLANs um laterale Bewegung kuenftig zu verhindern"
+        "description": "Netzwerk-Segmentierung: Platziere Firewalls und VLANs um laterale Bewegung künftig zu verhindern"
       }
     },
     {
       "id": "epilog_success",
       "title": "Krise gemeistert",
-      "narrative": "Drei Monate spaeter. Automatisches Patch-Management laeuft, Netzwerksegmentierung ist implementiert, SMBv1 ist global deaktiviert. Als WannaCry-Variante 'Petya/NotPetya' im Juni 2017 zuschlaegt, ist die Klinik vorbereitet. Null Infektionen. Frank Mueller grinst: 'Haette ich doch schon im Maerz patchen duerfen.' Prof. Hartmann hat ein Security-Budget von 500.000 Euro freigegeben. Manchmal braucht es eine Krise um Veraenderung zu bewirken.",
+      "narrative": "Drei Monate später. Automatisches Patch-Management läuft, Netzwerksegmentierung ist implementiert, SMBv1 ist global deaktiviert. Als WannaCry-Variante 'Petya/NotPetya' im Juni 2017 zuschlägt, ist die Klinik vorbereitet. Null Infektionen. Frank Müller grinst: 'Hätte ich doch schon im März patchen dürfen.' Prof. Hartmann hat ein Security-Budget von 500.000 Euro freigegeben. Manchmal braucht es eine Krise um Veränderung zu bewirken.",
       "image": "scene_victory.png",
       "animation_in": "campaign_complete",
       "npc_dialog": {
-        "speaker": "frank_mueller",
+        "speaker": "frank_müller",
         "text": "Petya kam und ging — und wir haben es nicht mal gemerkt. So soll das sein. Patch-Management, Segmentierung, Monitoring. Die Basics retten Leben.",
         "portrait": "npc_frank"
       },
@@ -624,7 +624,7 @@
     {
       "id": "epilog_partial",
       "title": "Kontrollierter Schaden",
-      "narrative": "Die Wiederherstellung hat eine Woche gedauert. Einige Patientendaten aus den letzten 24 Stunden sind verloren — die Backups waren nicht aktuell genug. Prof. Hartmann ist erleichtert, aber der Incident Report zeigt deutlich: Patch-Management war 'optional' statt 'kritisch'. Das aendert sich jetzt. Frank Mueller bekommt endlich die Ressourcen die er seit Monaten fordert.",
+      "narrative": "Die Wiederherstellung hat eine Woche gedauert. Einige Patientendaten aus den letzten 24 Stunden sind verloren — die Backups waren nicht aktuell genug. Prof. Hartmann ist erleichtert, aber der Incident Report zeigt deutlich: Patch-Management war 'optional' statt 'kritisch'. Das ändert sich jetzt. Frank Müller bekommt endlich die Ressourcen die er seit Monaten fordert.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "agent_kovacs",
@@ -639,11 +639,11 @@
     {
       "id": "epilog_fail",
       "title": "Teures Lehrgeld",
-      "narrative": "Zwei Wochen Ausfallzeit. Die Presse berichtet. Patientendaten verloren. Die Gesamtkosten uebersteigen eine Million Euro. Aber: Niemand wird entlassen. Prof. Hartmann hat verstanden, dass der Fehler systemisch war — nicht individuell. 'Wir haben IT-Sicherheit als Kostenstelle behandelt statt als Versicherung.' Die Klinik investiert massiv in Infrastruktur. Manchmal muss es erst richtig weh tun. Weltweit betrachtet: WannaCry traf 200.000+ Systeme in 150 Laendern. Geschaetzter Gesamtschaden: $4-8 Milliarden.",
+      "narrative": "Zwei Wochen Ausfallzeit. Die Presse berichtet. Patientendaten verloren. Die Gesamtkosten übersteigen eine Million Euro. Aber: Niemand wird entlassen. Prof. Hartmann hat verstanden, dass der Fehler systemisch war — nicht individuell. 'Wir haben IT-Sicherheit als Kostenstelle behandelt statt als Versicherung.' Die Klinik investiert massiv in Infrastruktur. Manchmal muss es erst richtig weh tun. Weltweit betrachtet: WannaCry traf 200.000+ Systeme in 150 Ländern. Geschätzter Gesamtschaden: $4-8 Milliarden.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "prof_hartmann",
-        "text": "Eine Million Euro Schaden. Das haette ein Patch fuer null Euro verhindert. Diese Lektion vergesse ich nie. Ab morgen hat IT-Sicherheit Prioritaet eins.",
+        "text": "Eine Million Euro Schaden. Das hätte ein Patch für null Euro verhindert. Diese Lektion vergesse ich nie. Ab morgen hat IT-Sicherheit Priorität eins.",
         "portrait": "npc_hartmann"
       },
       "choices": [],
@@ -654,23 +654,23 @@
   ],
   "epilog": {
     "success": {
-      "narrative": "Drei Monate spaeter: Patch-Management automatisiert, SMBv1 deaktiviert, Netzwerksegmentierung implementiert. Petya/NotPetya kam — null Infektionen. Die Krise wurde zum Wendepunkt.",
+      "narrative": "Drei Monate später: Patch-Management automatisiert, SMBv1 deaktiviert, Netzwerksegmentierung implementiert. Petya/NotPetya kam — null Infektionen. Die Krise wurde zum Wendepunkt.",
       "image": "scene_victory.png",
       "animation": "campaign_complete"
     },
     "partial": {
-      "narrative": "Eine Woche Wiederherstellung. Einige Daten verloren. Aber der Incident Report fuehrt zu echten Veraenderungen: Patch-SLA, Segmentierung, Offline-Backups. Naechstes Mal besser.",
+      "narrative": "Eine Woche Wiederherstellung. Einige Daten verloren. Aber der Incident Report führt zu echten Veränderungen: Patch-SLA, Segmentierung, Offline-Backups. Nächstes Mal besser.",
       "image": "scene_partial_victory.png"
     },
     "fail": {
-      "narrative": "Zwei Wochen Ausfall. Millionenschaden. Aber die schmerzhafteste Lektion ist die wirksamste. Die Klinik investiert massiv — und uebersteht Petya unbeschadet.",
+      "narrative": "Zwei Wochen Ausfall. Millionenschaden. Aber die schmerzhafteste Lektion ist die wirksamste. Die Klinik investiert massiv — und übersteht Petya unbeschadet.",
       "image": "scene_partial_victory.png"
     }
   },
   "workplace_npcs": [
     {
       "character_id": "klaus_dau",
-      "role_in_story": "Hat einen infizierten Laptop ans Netzwerk angeschlossen — WannaCry verbreitete sich als Wurm via SMB (EternalBlue/MS17-010) ohne Nutzerinteraktion ueber Port 445",
+      "role_in_story": "Hat einen infizierten Laptop ans Netzwerk angeschlossen — WannaCry verbreitete sich als Wurm via SMB (EternalBlü/MS17-010) ohne Nutzerinteraktion über Port 445",
       "default_emotion": "confused"
     }
   ]

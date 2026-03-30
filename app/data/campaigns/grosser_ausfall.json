@@ -14,7 +14,7 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "technisch-sachlich mit einer Prise Buerohektik. Beschreibe die Panik wenn das Netzwerk ausfaellt, Telefone klingeln, und Kolleginnen hilflos am Schreibtisch sitzen.",
+  "narrator_style": "technisch-sachlich mit einer Prise Bürohektik. Beschreibe die Panik wenn das Netzwerk ausfällt, Telefone klingeln, und Kolleginnen hilflos am Schreibtisch sitzen.",
   "gemini_role": "dau",
   "characters": {
     "architect": {

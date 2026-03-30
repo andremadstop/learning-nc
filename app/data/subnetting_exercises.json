@@ -5,7 +5,10 @@
       "difficulty": "easy",
       "type": "calculate_subnet",
       "prompt": "Berechne die Netzwerkadresse für 192.168.1.50/24",
-      "given": {"ip": "192.168.1.50", "prefix": 24},
+      "given": {
+        "ip": "192.168.1.50",
+        "prefix": 24
+      },
       "expected": {
         "network": "192.168.1.0",
         "broadcast": "192.168.1.255",
@@ -22,7 +25,10 @@
       "difficulty": "easy",
       "type": "calculate_subnet",
       "prompt": "Berechne das Subnetz für 10.0.0.5/25",
-      "given": {"ip": "10.0.0.5", "prefix": 25},
+      "given": {
+        "ip": "10.0.0.5",
+        "prefix": 25
+      },
       "expected": {
         "network": "10.0.0.0",
         "broadcast": "10.0.0.127",
@@ -39,7 +45,10 @@
       "difficulty": "medium",
       "type": "calculate_subnet",
       "prompt": "Berechne die Werte für 172.16.10.100/27",
-      "given": {"ip": "172.16.10.100", "prefix": 27},
+      "given": {
+        "ip": "172.16.10.100",
+        "prefix": 27
+      },
       "expected": {
         "network": "172.16.10.96",
         "broadcast": "172.16.10.127",
@@ -56,7 +65,10 @@
       "difficulty": "medium",
       "type": "calculate_subnet",
       "prompt": "Berechne die Werte für 192.168.0.70/28",
-      "given": {"ip": "192.168.0.70", "prefix": 28},
+      "given": {
+        "ip": "192.168.0.70",
+        "prefix": 28
+      },
       "expected": {
         "network": "192.168.0.64",
         "broadcast": "192.168.0.79",
@@ -73,7 +85,10 @@
       "difficulty": "hard",
       "type": "calculate_subnet",
       "prompt": "Berechne die Werte für 10.10.10.10/30",
-      "given": {"ip": "10.10.10.10", "prefix": 30},
+      "given": {
+        "ip": "10.10.10.10",
+        "prefix": 30
+      },
       "expected": {
         "network": "10.10.10.8",
         "broadcast": "10.10.10.11",
@@ -90,12 +105,22 @@
       "difficulty": "easy",
       "type": "split_network",
       "prompt": "Teile 192.168.10.0/24 in 2 gleiche Subnetze.",
-      "given": {"ip": "192.168.10.0", "prefix": 24, "count": 2},
+      "given": {
+        "ip": "192.168.10.0",
+        "prefix": 24,
+        "count": 2
+      },
       "expected": {
         "newPrefix": 25,
         "subnets": [
-          {"network": "192.168.10.0/25", "hosts": 126},
-          {"network": "192.168.10.128/25", "hosts": 126}
+          {
+            "network": "192.168.10.0/25",
+            "hosts": 126
+          },
+          {
+            "network": "192.168.10.128/25",
+            "hosts": 126
+          }
         ]
       },
       "hint": "2 Subnetze = 1 zusätzliches Bit (2^1=2). /24 + 1 = /25.",
@@ -106,14 +131,30 @@
       "difficulty": "medium",
       "type": "split_network",
       "prompt": "Teile 172.16.0.0/24 in 4 gleiche Subnetze.",
-      "given": {"ip": "172.16.0.0", "prefix": 24, "count": 4},
+      "given": {
+        "ip": "172.16.0.0",
+        "prefix": 24,
+        "count": 4
+      },
       "expected": {
         "newPrefix": 26,
         "subnets": [
-          {"network": "172.16.0.0/26", "hosts": 62},
-          {"network": "172.16.0.64/26", "hosts": 62},
-          {"network": "172.16.0.128/26", "hosts": 62},
-          {"network": "172.16.0.192/26", "hosts": 62}
+          {
+            "network": "172.16.0.0/26",
+            "hosts": 62
+          },
+          {
+            "network": "172.16.0.64/26",
+            "hosts": 62
+          },
+          {
+            "network": "172.16.0.128/26",
+            "hosts": 62
+          },
+          {
+            "network": "172.16.0.192/26",
+            "hosts": 62
+          }
         ]
       },
       "hint": "4 Subnetze = 2 zusätzliche Bits (2^2=4). /24 + 2 = /26.",
@@ -124,18 +165,46 @@
       "difficulty": "medium",
       "type": "split_network",
       "prompt": "Teile 10.0.0.0/24 in 8 gleiche Subnetze.",
-      "given": {"ip": "10.0.0.0", "prefix": 24, "count": 8},
+      "given": {
+        "ip": "10.0.0.0",
+        "prefix": 24,
+        "count": 8
+      },
       "expected": {
         "newPrefix": 27,
         "subnets": [
-          {"network": "10.0.0.0/27", "hosts": 30},
-          {"network": "10.0.0.32/27", "hosts": 30},
-          {"network": "10.0.0.64/27", "hosts": 30},
-          {"network": "10.0.0.96/27", "hosts": 30},
-          {"network": "10.0.0.128/27", "hosts": 30},
-          {"network": "10.0.0.160/27", "hosts": 30},
-          {"network": "10.0.0.192/27", "hosts": 30},
-          {"network": "10.0.0.224/27", "hosts": 30}
+          {
+            "network": "10.0.0.0/27",
+            "hosts": 30
+          },
+          {
+            "network": "10.0.0.32/27",
+            "hosts": 30
+          },
+          {
+            "network": "10.0.0.64/27",
+            "hosts": 30
+          },
+          {
+            "network": "10.0.0.96/27",
+            "hosts": 30
+          },
+          {
+            "network": "10.0.0.128/27",
+            "hosts": 30
+          },
+          {
+            "network": "10.0.0.160/27",
+            "hosts": 30
+          },
+          {
+            "network": "10.0.0.192/27",
+            "hosts": 30
+          },
+          {
+            "network": "10.0.0.224/27",
+            "hosts": 30
+          }
         ]
       },
       "hint": "8 Subnetze = 3 zusätzliche Bits (2^3=8). /24 + 3 = /27.",
@@ -146,14 +215,30 @@
       "difficulty": "hard",
       "type": "split_network",
       "prompt": "Teile 192.168.1.0/25 in 4 gleiche Subnetze.",
-      "given": {"ip": "192.168.1.0", "prefix": 25, "count": 4},
+      "given": {
+        "ip": "192.168.1.0",
+        "prefix": 25,
+        "count": 4
+      },
       "expected": {
         "newPrefix": 27,
         "subnets": [
-          {"network": "192.168.1.0/27", "hosts": 30},
-          {"network": "192.168.1.32/27", "hosts": 30},
-          {"network": "192.168.1.64/27", "hosts": 30},
-          {"network": "192.168.1.96/27", "hosts": 30}
+          {
+            "network": "192.168.1.0/27",
+            "hosts": 30
+          },
+          {
+            "network": "192.168.1.32/27",
+            "hosts": 30
+          },
+          {
+            "network": "192.168.1.64/27",
+            "hosts": 30
+          },
+          {
+            "network": "192.168.1.96/27",
+            "hosts": 30
+          }
         ]
       },
       "hint": "Basis ist /25. Für 4 Netze brauchst du 2 Bits. /25 + 2 = /27.",
@@ -164,12 +249,25 @@
       "difficulty": "hard",
       "type": "split_network",
       "prompt": "Teile 172.16.5.0/24 in zwei ungleiche Netze: Netz A (128 Adressen) und Netz B (zwei 64er Netze).",
-      "given": {"ip": "172.16.5.0", "prefix": 24, "mode": "variable"},
+      "given": {
+        "ip": "172.16.5.0",
+        "prefix": 24,
+        "mode": "variable"
+      },
       "expected": {
         "subnets": [
-          {"network": "172.16.5.0/25", "hosts": 126},
-          {"network": "172.16.5.128/26", "hosts": 62},
-          {"network": "172.16.5.192/26", "hosts": 62}
+          {
+            "network": "172.16.5.0/25",
+            "hosts": 126
+          },
+          {
+            "network": "172.16.5.128/26",
+            "hosts": 62
+          },
+          {
+            "network": "172.16.5.192/26",
+            "hosts": 62
+          }
         ]
       },
       "hint": "Teile zuerst in zwei /25. Behalte das erste, teile das zweite /25 in zwei /26.",
@@ -184,14 +282,28 @@
         "ip": "192.168.1.0",
         "prefix": 24,
         "requirements": [
-          {"name": "Büro A", "hosts": 60},
-          {"name": "Büro B", "hosts": 60}
+          {
+            "name": "Büro A",
+            "hosts": 60
+          },
+          {
+            "name": "Büro B",
+            "hosts": 60
+          }
         ]
       },
       "expected": {
         "subnets": [
-          {"name": "Büro A", "network": "192.168.1.0/26", "hosts": 62},
-          {"name": "Büro B", "network": "192.168.1.64/26", "hosts": 62}
+          {
+            "name": "Büro A",
+            "network": "192.168.1.0/26",
+            "hosts": 62
+          },
+          {
+            "name": "Büro B",
+            "network": "192.168.1.64/26",
+            "hosts": 62
+          }
         ]
       },
       "hint": "60 Hosts brauchen ein /26 (64 Adressen).",
@@ -206,14 +318,28 @@
         "ip": "10.0.0.0",
         "prefix": 24,
         "requirements": [
-          {"name": "VLAN 10", "hosts": 100},
-          {"name": "VLAN 20", "hosts": 20}
+          {
+            "name": "VLAN 10",
+            "hosts": 100
+          },
+          {
+            "name": "VLAN 20",
+            "hosts": 20
+          }
         ]
       },
       "expected": {
         "subnets": [
-          {"name": "VLAN 10", "network": "10.0.0.0/25", "hosts": 126},
-          {"name": "VLAN 20", "network": "10.0.0.128/27", "hosts": 30}
+          {
+            "name": "VLAN 10",
+            "network": "10.0.0.0/25",
+            "hosts": 126
+          },
+          {
+            "name": "VLAN 20",
+            "network": "10.0.0.128/27",
+            "hosts": 30
+          }
         ]
       },
       "hint": "VLAN 10 braucht /25. VLAN 20 braucht /27.",
@@ -228,16 +354,37 @@
         "ip": "172.16.10.0",
         "prefix": 24,
         "requirements": [
-          {"name": "Admin", "hosts": 120},
-          {"name": "WLAN", "hosts": 50},
-          {"name": "VoIP", "hosts": 25}
+          {
+            "name": "Admin",
+            "hosts": 120
+          },
+          {
+            "name": "WLAN",
+            "hosts": 50
+          },
+          {
+            "name": "VoIP",
+            "hosts": 25
+          }
         ]
       },
       "expected": {
         "subnets": [
-          {"name": "Admin", "network": "172.16.10.0/25", "hosts": 126},
-          {"name": "WLAN", "network": "172.16.10.128/26", "hosts": 62},
-          {"name": "VoIP", "network": "172.16.10.192/27", "hosts": 30}
+          {
+            "name": "Admin",
+            "network": "172.16.10.0/25",
+            "hosts": 126
+          },
+          {
+            "name": "WLAN",
+            "network": "172.16.10.128/26",
+            "hosts": 62
+          },
+          {
+            "name": "VoIP",
+            "network": "172.16.10.192/27",
+            "hosts": 30
+          }
         ]
       },
       "hint": "Absteigend sortieren: 120 (/25), 50 (/26), 25 (/27).",
@@ -252,18 +399,46 @@
         "ip": "192.168.5.0",
         "prefix": 24,
         "requirements": [
-          {"name": "Support", "hosts": 100},
-          {"name": "VPN", "hosts": 20},
-          {"name": "Server", "hosts": 10},
-          {"name": "Kasse", "hosts": 5}
+          {
+            "name": "Support",
+            "hosts": 100
+          },
+          {
+            "name": "VPN",
+            "hosts": 20
+          },
+          {
+            "name": "Server",
+            "hosts": 10
+          },
+          {
+            "name": "Kasse",
+            "hosts": 5
+          }
         ]
       },
       "expected": {
         "subnets": [
-          {"name": "Support", "network": "192.168.5.0/25", "hosts": 126},
-          {"name": "VPN", "network": "192.168.5.128/27", "hosts": 30},
-          {"name": "Server", "network": "192.168.5.160/28", "hosts": 14},
-          {"name": "Kasse", "network": "192.168.5.176/29", "hosts": 6}
+          {
+            "name": "Support",
+            "network": "192.168.5.0/25",
+            "hosts": 126
+          },
+          {
+            "name": "VPN",
+            "network": "192.168.5.128/27",
+            "hosts": 30
+          },
+          {
+            "name": "Server",
+            "network": "192.168.5.160/28",
+            "hosts": 14
+          },
+          {
+            "name": "Kasse",
+            "network": "192.168.5.176/29",
+            "hosts": 6
+          }
         ]
       },
       "hint": "Immer vom größten zum kleinsten planen!",
@@ -278,20 +453,55 @@
         "ip": "10.1.1.0",
         "prefix": 24,
         "requirements": [
-          {"name": "Netz 1", "hosts": 120},
-          {"name": "Netz 2", "hosts": 60},
-          {"name": "Netz 3", "hosts": 30},
-          {"name": "Netz 4", "hosts": 14},
-          {"name": "Netz 5", "hosts": 2}
+          {
+            "name": "Netz 1",
+            "hosts": 120
+          },
+          {
+            "name": "Netz 2",
+            "hosts": 60
+          },
+          {
+            "name": "Netz 3",
+            "hosts": 30
+          },
+          {
+            "name": "Netz 4",
+            "hosts": 14
+          },
+          {
+            "name": "Netz 5",
+            "hosts": 2
+          }
         ]
       },
       "expected": {
         "subnets": [
-          {"name": "Netz 1", "network": "10.1.1.0/25", "hosts": 126},
-          {"name": "Netz 2", "network": "10.1.1.128/26", "hosts": 62},
-          {"name": "Netz 3", "network": "10.1.1.192/27", "hosts": 30},
-          {"name": "Netz 4", "network": "10.1.1.224/28", "hosts": 14},
-          {"name": "Netz 5", "network": "10.1.1.240/30", "hosts": 2}
+          {
+            "name": "Netz 1",
+            "network": "10.1.1.0/25",
+            "hosts": 126
+          },
+          {
+            "name": "Netz 2",
+            "network": "10.1.1.128/26",
+            "hosts": 62
+          },
+          {
+            "name": "Netz 3",
+            "network": "10.1.1.192/27",
+            "hosts": 30
+          },
+          {
+            "name": "Netz 4",
+            "network": "10.1.1.224/28",
+            "hosts": 14
+          },
+          {
+            "name": "Netz 5",
+            "network": "10.1.1.240/30",
+            "hosts": 2
+          }
         ]
       },
       "hint": "Hier wird das Netz fast lückenlos von unten nach oben aufgefüllt.",

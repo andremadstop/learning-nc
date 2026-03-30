@@ -14,7 +14,7 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "Dringlichkeit und Zeitdruck. Jede Entscheidung zaehlt, die Uhr tickt, Dateien werden verschluesselt. Dramatischer Countdown-Stil.",
+  "narrator_style": "Dringlichkeit und Zeitdruck. Jede Entscheidung zählt, die Uhr tickt, Dateien werden verschlüsselt. Dramatischer Countdown-Stil.",
   "gemini_role": "attacker",
   "characters": {
     "architect": {
@@ -132,9 +132,9 @@
               }
             }
           },
-          "success_scene": "s2_eindaemmung",
-          "partial_scene": "s2_eindaemmung",
-          "fail_scene": "s2_eindaemmung_slow"
+          "success_scene": "s2_eindämmung",
+          "partial_scene": "s2_eindämmung",
+          "fail_scene": "s2_eindämmung_slow"
         },
         {
           "id": "c1_assess_spread",
@@ -159,9 +159,9 @@
               }
             }
           },
-          "success_scene": "s2_eindaemmung",
-          "partial_scene": "s2_eindaemmung",
-          "fail_scene": "s2_eindaemmung_slow"
+          "success_scene": "s2_eindämmung",
+          "partial_scene": "s2_eindämmung",
+          "fail_scene": "s2_eindämmung_slow"
         },
         {
           "id": "c1_check_backup",
@@ -186,9 +186,9 @@
               }
             }
           },
-          "success_scene": "s2_eindaemmung",
-          "partial_scene": "s2_eindaemmung",
-          "fail_scene": "s2_eindaemmung_slow"
+          "success_scene": "s2_eindämmung",
+          "partial_scene": "s2_eindämmung",
+          "fail_scene": "s2_eindämmung_slow"
         }
       ],
       "simulation": null

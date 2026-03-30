@@ -3,36 +3,36 @@
     "id": "fw-session-webserver",
     "simulatorType": "firewall",
     "title": "Webserver absichern",
-    "description": "Schritt fuer Schritt ein Firewall-Regelwerk fuer einen Webserver aufbauen — vom ersten erlaubten Port bis zur vollstaendigen Absicherung.",
+    "description": "Schritt für Schritt ein Firewall-Regelwerk für einen Webserver aufbauen — vom ersten erlaubten Port bis zur vollständigen Absicherung.",
     "steps": [
       {
         "stepId": "fw-ws-01",
-        "context": "Ein neuer Webserver soll nur HTTP und HTTPS Traffic empfangen. Alle anderen Ports muessen gesperrt sein.",
+        "context": "Ein neuer Webserver soll nur HTTP und HTTPS Traffic empfangen. Alle anderen Ports müssen gesperrt sein.",
         "explanation": "In der Praxis ist das Prinzip 'Deny All, Allow Specific' die Basis jeder Firewall-Konfiguration. Man beginnt immer mit den wichtigsten Diensten.",
         "scenarioId": "web-only"
       },
       {
         "stepId": "fw-ws-02",
-        "context": "Der Admin braucht SSH-Zugriff auf den Server, aber nur aus dem internen Admin-Netzwerk 10.0.1.0/24. Externe SSH-Versuche muessen blockiert werden.",
-        "explanation": "SSH-Zugriff sollte nie von ueberall erlaubt sein. In Unternehmen wird SSH auf bestimmte Management-Netze beschraenkt, oft zusaetzlich mit VPN kombiniert.",
+        "context": "Der Admin braucht SSH-Zugriff auf den Server, aber nur aus dem internen Admin-Netzwerk 10.0.1.0/24. Externe SSH-Versuche müssen blockiert werden.",
+        "explanation": "SSH-Zugriff sollte nie von überall erlaubt sein. In Unternehmen wird SSH auf bestimmte Management-Netze beschränkt, oft zusätzlich mit VPN kombiniert.",
         "scenarioId": "ssh-admin-net"
       },
       {
         "stepId": "fw-ws-03",
-        "context": "Externe Ping-Anfragen (ICMP Echo) sollen geblockt werden, damit der Server fuer Angreifer weniger sichtbar ist. Interne Pings bleiben erlaubt.",
-        "explanation": "ICMP-Filterung ist ein gaengiger Haertungsschritt. Angreifer nutzen Ping-Scans um aktive Hosts zu finden. Interne ICMP bleibt fuer Monitoring wichtig.",
+        "context": "Externe Ping-Anfragen (ICMP Echo) sollen geblockt werden, damit der Server für Angreifer weniger sichtbar ist. Interne Pings bleiben erlaubt.",
+        "explanation": "ICMP-Filterung ist ein gängiger Härtungsschritt. Angreifer nutzen Ping-Scans um aktive Hosts zu finden. Interne ICMP bleibt für Monitoring wichtig.",
         "scenarioId": "icmp-external"
       },
       {
         "stepId": "fw-ws-04",
-        "context": "Der Webserver steht in der DMZ. Er darf auf keinen Fall direkt auf das interne LAN zugreifen — auch nicht ueber SMB oder andere Dienste.",
-        "explanation": "Die DMZ-Isolation ist ein Kernprinzip der Netzwerksicherheit. Selbst wenn ein DMZ-Server kompromittiert wird, bleibt das interne Netz geschuetzt.",
+        "context": "Der Webserver steht in der DMZ. Er darf auf keinen Fall direkt auf das interne LAN zugreifen — auch nicht über SMB oder andere Dienste.",
+        "explanation": "Die DMZ-Isolation ist ein Kernprinzip der Netzwerksicherheit. Selbst wenn ein DMZ-Server kompromittiert wird, bleibt das interne Netz geschützt.",
         "scenarioId": "dmz-lan"
       },
       {
         "stepId": "fw-ws-05",
-        "context": "Fuer Remote-Mitarbeiter wird ein OpenVPN-Server auf Port 1194/UDP eingerichtet. Nur dieser eine Port soll fuer VPN-Verbindungen offen sein.",
-        "explanation": "VPN-Dienste brauchen praezise Firewall-Regeln. OpenVPN nutzt standardmaessig UDP/1194. Eine zu breite Freigabe wuerde die Angriffsflaeche unnoetig vergroessern.",
+        "context": "Für Remote-Mitarbeiter wird ein OpenVPN-Server auf Port 1194/UDP eingerichtet. Nur dieser eine Port soll für VPN-Verbindungen offen sein.",
+        "explanation": "VPN-Dienste brauchen präzise Firewall-Regeln. OpenVPN nutzt standardmässig UDP/1194. Eine zu breite Freigabe würde die Angriffsfläche unnötig vergrössern.",
         "scenarioId": "vpn-udp"
       }
     ]
@@ -45,8 +45,8 @@
     "steps": [
       {
         "stepId": "fw-dmz-01",
-        "context": "Der DMZ-Webserver muss von aussen erreichbar sein. HTTP und HTTPS Traffic aus dem Internet soll zum Server durchgelassen werden.",
-        "explanation": "Die DMZ ist das 'Schaufenster' des Netzwerks. Oeffentliche Dienste wie Webserver gehoeren hierhin, damit das interne LAN nie direkt exponiert ist.",
+        "context": "Der DMZ-Webserver muss von außen erreichbar sein. HTTP und HTTPS Traffic aus dem Internet soll zum Server durchgelassen werden.",
+        "explanation": "Die DMZ ist das 'Schaufenster' des Netzwerks. Öffentliche Dienste wie Webserver gehören hierhin, damit das interne LAN nie direkt exponiert ist.",
         "scenarioId": "web-only"
       },
       {
@@ -57,8 +57,8 @@
       },
       {
         "stepId": "fw-dmz-03",
-        "context": "Externe Hosts versuchen per ICMP die DMZ zu scannen. Diese Aufklaerungsversuche sollen geblockt werden.",
-        "explanation": "Reconnaissance ist oft der erste Schritt eines Angriffs. ICMP-Blocking erschwert das Mapping der DMZ-Infrastruktur von aussen.",
+        "context": "Externe Hosts versuchen per ICMP die DMZ zu scannen. Diese Aufklärungsversuche sollen geblockt werden.",
+        "explanation": "Reconnaissance ist oft der erste Schritt eines Angriffs. ICMP-Blocking erschwert das Mapping der DMZ-Infrastruktur von außen.",
         "scenarioId": "icmp-external"
       }
     ]
@@ -67,23 +67,23 @@
     "id": "fw-session-audit",
     "simulatorType": "firewall",
     "title": "Regelwerk-Audit",
-    "description": "Ein bestehendes Firewall-Regelwerk systematisch auf Schwachstellen und Fehlkonfigurationen pruefen.",
+    "description": "Ein bestehendes Firewall-Regelwerk systematisch auf Schwachstellen und Fehlkonfigurationen prüfen.",
     "steps": [
       {
         "stepId": "fw-aud-01",
-        "context": "Im jaehrlichen Security-Audit pruefst du die VPN-Regel. Der OpenVPN-Port 1194/UDP ist von ueberall erreichbar. Ist das korrekt konfiguriert?",
-        "explanation": "VPN-Ports muessen von aussen erreichbar sein — das ist korrekt. Die Einschraenkung auf den exakten Port (1194/UDP) und die Ziel-IP minimiert die Angriffsflaeche.",
+        "context": "Im jährlichen Security-Audit prüfst du die VPN-Regel. Der OpenVPN-Port 1194/UDP ist von überall erreichbar. Ist das korrekt konfiguriert?",
+        "explanation": "VPN-Ports müssen von außen erreichbar sein — das ist korrekt. Die Einschränkung auf den exakten Port (1194/UDP) und die Ziel-IP minimiert die Angriffsfläche.",
         "scenarioId": "vpn-udp"
       },
       {
         "stepId": "fw-aud-02",
         "context": "Die SSH-Regel erlaubt Zugriff nur aus dem Admin-Netz 10.0.1.0/24. Ein neuer Admin sitzt im Netz 10.0.2.0/24 und kommt nicht rein. Richtig so?",
-        "explanation": "Die Regel funktioniert wie gewuenscht — sie blockiert SSH von ausserhalb des Admin-Netzes. Der neue Admin braucht entweder VPN ins Admin-Netz oder eine Regel-Erweiterung.",
+        "explanation": "Die Regel funktioniert wie gewünscht — sie blockiert SSH von außerhalb des Admin-Netzes. Der neue Admin braucht entweder VPN ins Admin-Netz oder eine Regel-Erweiterung.",
         "scenarioId": "ssh-admin-net"
       },
       {
         "stepId": "fw-aud-03",
-        "context": "Zum Abschluss pruefst du die DMZ-Isolation. Der DMZ-Webserver versucht auf den internen Fileserver zuzugreifen. Wird das blockiert?",
+        "context": "Zum Abschluss prüfst du die DMZ-Isolation. Der DMZ-Webserver versucht auf den internen Fileserver zuzugreifen. Wird das blockiert?",
         "explanation": "Die DMZ-zu-LAN-Deny-Regel ist eine der wichtigsten Sicherheitsmassnahmen. Wenn ein DMZ-Server kompromittiert wird, darf er nie als Sprungbrett ins interne Netz dienen.",
         "scenarioId": "dmz-lan"
       }

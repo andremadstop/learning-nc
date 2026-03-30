@@ -2,37 +2,37 @@
   {
     "id": "dns-session-resolution",
     "simulatorType": "dns",
-    "title": "Namensaufloesung verstehen",
-    "description": "Von der einfachen A-Record-Abfrage bis zu DNSSEC — die Grundlagen der DNS-Aufloesung Schritt fuer Schritt nachvollziehen.",
+    "title": "Namensauflösung verstehen",
+    "description": "Von der einfachen A-Record-Abfrage bis zu DNSSEC — die Grundlagen der DNS-Auflösung Schritt für Schritt nachvollziehen.",
     "steps": [
       {
         "stepId": "dns-res-01",
         "context": "Ein Online-Shop ist nicht erreichbar. Der Browser meldet 'Server nicht gefunden'. Die Domain existiert, aber IPv4-Clients bekommen keine Adresse.",
-        "explanation": "Der haeufigste DNS-Fehler: Ein A-Record fehlt. Ohne ihn kann kein IPv4-Client die Domain aufloesen, selbst wenn ein AAAA-Record fuer IPv6 existiert.",
+        "explanation": "Der häufigste DNS-Fehler: Ein A-Record fehlt. Ohne ihn kann kein IPv4-Client die Domain auflösen, selbst wenn ein AAAA-Record für IPv6 existiert.",
         "scenarioId": "dns-missing-a"
       },
       {
         "stepId": "dns-res-02",
-        "context": "Die Firmen-Website laeuft unter www.example.org einwandfrei. Aber wenn jemand nur 'example.org' eingibt, kommt eine Fehlermeldung.",
+        "context": "Die Firmen-Website läuft unter www.example.org einwandfrei. Aber wenn jemand nur 'example.org' eingibt, kommt eine Fehlermeldung.",
         "explanation": "Die Apex-Domain (ohne www) braucht einen eigenen A-Record. Ein CNAME auf www reicht nicht, weil CNAME an der Zone-Spitze technisch nicht erlaubt ist.",
         "scenarioId": "dns-www-only"
       },
       {
         "stepId": "dns-res-03",
-        "context": "E-Mails an die Domain example.net werden nicht zugestellt. Die SMTP-Queue des sendenden Servers waechst, weil kein Ziel gefunden wird.",
-        "explanation": "Ohne MX-Record weiss kein Mailserver, wohin er Nachrichten zustellen soll. Der MX-Record ist fuer E-Mail das, was der A-Record fuer Websites ist.",
+        "context": "E-Mails an die Domain example.net werden nicht zugestellt. Die SMTP-Queue des sendenden Servers wächst, weil kein Ziel gefunden wird.",
+        "explanation": "Ohne MX-Record weiß kein Mailserver, wohin er Nachrichten zustellen soll. Der MX-Record ist für E-Mail das, was der A-Record für Websites ist.",
         "scenarioId": "dns-missing-mx"
       },
       {
         "stepId": "dns-res-04",
         "context": "Das Monitoring meldet Fehler beim Reverse-Lookup. Mailserver anderer Unternehmen verweigern die Annahme, weil die Absender-IP keinen Hostnamen hat.",
-        "explanation": "PTR-Records sind fuer die Glaubwuerdigkeit eines Servers entscheidend. Viele Mailserver pruefen, ob die sendende IP einen gueltigen Reverse-DNS-Eintrag hat.",
+        "explanation": "PTR-Records sind für die Glaubwürdigkeit eines Servers entscheidend. Viele Mailserver prüfen, ob die sendende IP einen gültigen Reverse-DNS-Eintrag hat.",
         "scenarioId": "dns-missing-ptr"
       },
       {
         "stepId": "dns-res-05",
         "context": "Der autoritative DNS-Server antwortet korrekt, aber der Resolver des Clients verwirft die Antwort trotzdem mit SERVFAIL.",
-        "explanation": "DNSSEC schuetzt vor Manipulation, kann aber auch legitime Antworten blockieren, wenn Signaturen ungueltig oder abgelaufen sind.",
+        "explanation": "DNSSEC schützt vor Manipulation, kann aber auch legitime Antworten blockieren, wenn Signaturen ungültig oder abgelaufen sind.",
         "scenarioId": "dns-dnssec-failure"
       }
     ]
@@ -46,19 +46,19 @@
       {
         "stepId": "dns-ts-01",
         "context": "Ein Benutzer meldet: 'Ich kann die interne Seite shop.example.org nicht aufrufen.' Der Ping auf die IP funktioniert aber.",
-        "explanation": "Wenn die IP erreichbar ist aber der Name nicht aufloest, liegt das Problem in der DNS-Konfiguration. Der erste Schritt: Record-Typ pruefen.",
+        "explanation": "Wenn die IP erreichbar ist aber der Name nicht auflöst, liegt das Problem in der DNS-Konfiguration. Der erste Schritt: Record-Typ prüfen.",
         "scenarioId": "dns-missing-a"
       },
       {
         "stepId": "dns-ts-02",
-        "context": "Der Mailserver lehnt eingehende Mails mit 'no MX record' ab. Die Domain wurde kuerzlich umgezogen.",
-        "explanation": "Nach einem Domain-Umzug werden MX-Records oft vergessen. Sie muessen beim neuen DNS-Provider neu angelegt werden.",
+        "context": "Der Mailserver lehnt eingehende Mails mit 'no MX record' ab. Die Domain wurde kürzlich umgezogen.",
+        "explanation": "Nach einem Domain-Umzug werden MX-Records oft vergessen. Sie müssen beim neuen DNS-Provider neu angelegt werden.",
         "scenarioId": "dns-missing-mx"
       },
       {
         "stepId": "dns-ts-03",
         "context": "Eine Filiale meldet, dass ihre neue Subdomain branch.example.de zwar konfiguriert ist, aber Clients SERVFAIL bekommen.",
-        "explanation": "Bei DNSSEC-signierten Zonen muss nach jeder Aenderung die Signatur erneuert werden. Eine vergessene Neusignierung fuehrt zu Validierungsfehlern.",
+        "explanation": "Bei DNSSEC-signierten Zonen muss nach jeder Änderung die Signatur erneuert werden. Eine vergessene Neusignierung führt zu Validierungsfehlern.",
         "scenarioId": "dns-dnssec-failure"
       }
     ]

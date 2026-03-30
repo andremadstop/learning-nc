@@ -1,7 +1,7 @@
 {
   "campaign_id": "cysa_zero_day",
-  "title": "Zero Day \u2014 Die unsichtbare Bedrohung",
-  "description": "Eine unbekannte APT-Gruppe hat dein Netzwerk infiltriert. Der Angreifer nutzt einen Zero Day in der VPN-Appliance, bewegt sich lateral mit Living-off-the-Land-Techniken und passt seine Taktiken an wenn er bemerkt wird. Du bist der SOC-Analyst der ihn jagen muss \u2014 aber der Angreifer weiss dass du ihn jagst.",
+  "title": "Zero Day — Die unsichtbare Bedrohung",
+  "description": "Eine unbekannte APT-Gruppe hat dein Netzwerk infiltriert. Der Angreifer nutzt einen Zero Day in der VPN-Appliance, bewegt sich lateral mit Living-off-the-Land-Techniken und passt seine Taktiken an wenn er bemerkt wird. Du bist der SOC-Analyst der ihn jagen muss — aber der Angreifer weiß dass du ihn jagst.",
   "duration_minutes": 80,
   "difficulty": "expert",
   "focus_areas": [
@@ -14,12 +14,12 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "Paranoider Cyber-Thriller. Der Angreifer ist schon drin \u2014 und er weiss, dass du ihn jagst. Jeder IOC koennte eine Finte sein, jede Anomalie koennte die echte Spur sein.",
+  "narrator_style": "Paranoider Cyber-Thriller. Der Angreifer ist schon drin — und er weiß, dass du ihn jagst. Jeder IOC könnte eine Finte sein, jede Anomalie könnte die echte Spur sein.",
   "gemini_role": "attacker",
   "characters": {
     "architect": {
       "name": "Alex \"The Architect\" Neumann",
-      "avatar": "\ud83d\udc68\u200d\ud83d\udcbb",
+      "avatar": "👨‍💻",
       "skill_bonus_pools": [
         "routing",
         "vlan",
@@ -31,11 +31,11 @@
         "forensics",
         "incident_response"
       ],
-      "portrait_emoji": "\ud83c\udfd7\ufe0f"
+      "portrait_emoji": "🏗️"
     },
     "security": {
       "name": "Sarah \"Firewall\" Okonkwo",
-      "avatar": "\ud83d\udc69\u200d\ud83d\udcbb",
+      "avatar": "👩‍💻",
       "skill_bonus_pools": [
         "security",
         "incident_response",
@@ -46,11 +46,11 @@
         "routing",
         "vlan"
       ],
-      "portrait_emoji": "\ud83d\udee1\ufe0f"
+      "portrait_emoji": "🛡️"
     },
     "sysadmin": {
-      "name": "Kai \"Root\" Lindstr\u00f6m",
-      "avatar": "\ud83e\uddd4",
+      "name": "Kai \"Root\" Lindström",
+      "avatar": "🧔",
       "skill_bonus_pools": [
         "linux",
         "dns",
@@ -61,11 +61,11 @@
         "wireless",
         "wlan"
       ],
-      "portrait_emoji": "\ud83d\udda5\ufe0f"
+      "portrait_emoji": "🖥️"
     },
     "helpdesk": {
       "name": "Mia \"Helpdesk\" Torres",
-      "avatar": "\ud83d\udc69\u200d\ud83c\udfa7",
+      "avatar": "👩‍🎧",
       "skill_bonus_pools": [
         "troubleshooting",
         "hardware",
@@ -77,48 +77,48 @@
         "incident_response",
         "security"
       ],
-      "portrait_emoji": "\ud83c\udfa7"
+      "portrait_emoji": "🎧"
     }
   },
   "npcs": {
     "soc_lead": {
       "name": "Commander Alex Reyes",
       "role": "SOC Lead",
-      "avatar": "\ud83c\udf96\ufe0f"
+      "avatar": "🎖️"
     },
     "threat_intel": {
       "name": "Dr. Nadia Volkov",
       "role": "Threat Intelligence Analyst",
-      "avatar": "\ud83d\udd2c"
+      "avatar": "🔬"
     },
     "ir_lead": {
       "name": "Jake \"Sandman\" Morrison",
       "role": "Incident Response Lead",
-      "avatar": "\u26a1"
+      "avatar": "⚡"
     },
     "ciso_nakamura": {
       "name": "Kenji Nakamura",
       "role": "CISO",
-      "avatar": "\ud83c\udfe2"
+      "avatar": "🏢"
     }
   },
   "scenes": [
     {
       "id": "s1_anomalie",
       "title": "Die Anomalie",
-      "narrative": "Dienstagmorgen, 06:47. Das SIEM schlaegt Alarm: Ungewoehnliche PowerShell-Ausfuehrung auf dem primaeren Domain Controller. Encoded Commands, Base64-verschleiert. WMI-Lateral-Movement-Spuren auf drei weiteren Hosts. Die Aktivitaet begann um 03:12 \u2014 mitten in der Nacht. Commander Reyes hat das SOC-Team zusammengerufen: 'Koennte ein Pentest sein \u2014 Security hat fuer diese Woche einen geplant. Aber ich habe noch keine Bestaetigung bekommen.' Dr. Volkov hat beunruhigende Neuigkeiten: Threat Intel meldet eine neue APT-Gruppe namens 'Phantom Crane'. Ihre Signatur: Geduldige Infiltration, monatelanges Verweilen, dann gezielte Datenexfiltration.",
+      "narrative": "Dienstagmorgen, 06:47. Das SIEM schlägt Alarm: Ungewöhnliche PowerShell-Ausführung auf dem primären Domain Controller. Encoded Commands, Base64-verschleiert. WMI-Lateral-Movement-Spuren auf drei weiteren Hosts. Die Aktivität begann um 03:12 — mitten in der Nacht. Commander Reyes hat das SOC-Team zusammengerufen: 'Könnte ein Pentest sein — Security hat für diese Woche einen geplant. Aber ich habe noch keine Bestätigung bekommen.' Dr. Volkov hat beunruhigende Neuigkeiten: Threat Intel meldet eine neue APT-Gruppe namens 'Phantom Crane'. Ihre Signatur: Geduldige Infiltration, monatelanges Verweilen, dann gezielte Datenexfiltration.",
       "image": "scene_siem_dashboard.png",
       "animation_in": "mission_start",
       "npc_dialog": {
         "speaker": "soc_lead",
-        "text": "Ich hab den Pentest-Verantwortlichen dreimal angerufen \u2014 keine Antwort. Das ist entweder ein sehr realistischer Pentest oder wir haben ein echtes Problem. Ich will innerhalb der naechsten 30 Minuten eine Einschaetzung. Was seht ihr in den Logs?",
+        "text": "Ich hab den Pentest-Verantwortlichen dreimal angerufen — keine Antwort. Das ist entweder ein sehr realistischer Pentest oder wir haben ein echtes Problem. Ich will innerhalb der nächsten 30 Minuten eine Einschätzung. Was seht ihr in den Logs?",
         "portrait": "npc_reyes"
       },
       "choices": [
         {
           "id": "c1_powershell",
-          "text": "PowerShell-Logs dekodieren und Execution Policy analysieren \u2014 was wurde ausgefuehrt?",
-          "icon": "\ud83d\udcbb",
+          "text": "PowerShell-Logs dekodieren und Execution Policy analysieren — was wurde ausgeführt?",
+          "icon": "💻",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 3,
@@ -145,7 +145,7 @@
         {
           "id": "c1_iocs",
           "text": "IOCs extrahieren: Hashes, IPs, Domains aus allen SIEM-Events der letzten 48 Stunden",
-          "icon": "\ud83d\udd0d",
+          "icon": "🔍",
           "skill_check": {
             "pool_filter": "forensics",
             "question_count": 3,
@@ -172,7 +172,7 @@
         {
           "id": "c1_containment",
           "text": "Sofort Containment: Domain Controller vom Netzwerk isolieren",
-          "icon": "\ud83d\udeab",
+          "icon": "🚫",
           "skill_check": {
             "pool_filter": "incident_response",
             "question_count": 3,
@@ -202,7 +202,7 @@
     {
       "id": "s1_fail_false_alarm",
       "title": "Falscher Alarm?",
-      "narrative": "Du hast die Aktivitaet als wahrscheinlichen Pentest eingestuft und die Prioritaet heruntergesetzt. 24 Stunden spaeter: Das SIEM explodiert. Drei weitere Domain Controller zeigen dieselben Muster. Credential-Dumping-Spuren auf dem HR-Server. Verdaechtige DNS-Queries zu algorithmisch generierten Domains. Reyes ist nicht amuesiert: 'Ich habe den Pentest-Verantwortlichen endlich erreicht. Der Pentest war letzte Woche. Nicht diese Woche. Wir haben ein echtes Problem.'",
+      "narrative": "Du hast die Aktivität als wahrscheinlichen Pentest eingestuft und die Priorität heruntergesetzt. 24 Stunden später: Das SIEM explodiert. Drei weitere Domain Controller zeigen dieselben Muster. Credential-Dumping-Spuren auf dem HR-Server. Verdächtige DNS-Queries zu algorithmisch generierten Domains. Reyes ist nicht amüsiert: 'Ich habe den Pentest-Verantwortlichen endlich erreicht. Der Pentest war letzte Woche. Nicht diese Woche. Wir haben ein echtes Problem.'",
       "image": "scene_siem_dashboard.png",
       "npc_dialog": {
         "speaker": "soc_lead",
@@ -212,8 +212,8 @@
       "choices": [
         {
           "id": "c1_fail_investigate",
-          "text": "Volle IR-Eskalation: Alle verdaechtigen Hosts identifizieren und Forensik starten",
-          "icon": "\u26a1",
+          "text": "Volle IR-Eskalation: Alle verdächtigen Hosts identifizieren und Forensik starten",
+          "icon": "⚡",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 2,
@@ -230,18 +230,18 @@
     {
       "id": "s2_ioc_analyse",
       "title": "IOC-Analyse",
-      "narrative": "Die Analyse wird tiefer. Verdaechtige Prozesse auf dem Domain Controller: svchost.exe mit ungewoehnlichem Parent Process (cmd.exe statt services.exe). DNS-Queries zu Domains die wie DGA (Domain Generation Algorithm) aussehen: xk7r2m.phantom-cdn[.]net, p9v3wx.phantom-cdn[.]net. Credential-Dumping-Spuren: Ein Prozess hat auf lsass.exe Memory zugegriffen \u2014 klassisches Mimikatz-Muster. Dr. Volkov liefert Threat Intel: 'Phantom Crane nutzt bekannte LOLBins \u2014 certutil fuer Downloads, bitsadmin fuer Persistence, mshta fuer Script-Ausfuehrung. Alles Bordmittel, nichts was ein Antivirus sofort erkennt.' Jake Morrison draengt: 'Wir muessen containen. Jetzt. Bevor sie mehr Credentials abgreifen.'",
+      "narrative": "Die Analyse wird tiefer. Verdächtige Prozesse auf dem Domain Controller: svchost.exe mit ungewöhnlichem Parent Process (cmd.exe statt services.exe). DNS-Queries zu Domains die wie DGA (Domain Generation Algorithm) aussehen: xk7r2m.phantom-cdn[.]net, p9v3wx.phantom-cdn[.]net. Credential-Dumping-Spuren: Ein Prozess hat auf lsass.exe Memory zugegriffen — klassisches Mimikatz-Muster. Dr. Volkov liefert Threat Intel: 'Phantom Crane nutzt bekannte LOLBins — certutil für Downloads, bitsadmin für Persistence, mshta für Script-Ausführung. Alles Bordmittel, nichts was ein Antivirus sofort erkennt.' Jake Morrison drängt: 'Wir müssen containen. Jetzt. Bevor sie mehr Credentials abgreifen.'",
       "image": "scene_forensics_terminal.png",
       "npc_dialog": {
         "speaker": "threat_intel",
-        "text": "Phantom Crane ist methodisch. Sie nutzen ausschliesslich LOLBins \u2014 Living off the Land. Certutil, bitsadmin, mshta, wmic. Alles legitime Windows-Tools. Deshalb hat der Antivirus nichts gemeldet. Wir brauchen YARA-Regeln fuer ihre spezifischen Aufrufmuster und C2-Infrastruktur.",
+        "text": "Phantom Crane ist methodisch. Sie nutzen ausschließlich LOLBins — Living off the Land. Certutil, bitsadmin, mshta, wmic. Alles legitime Windows-Tools. Deshalb hat der Antivirus nichts gemeldet. Wir brauchen YARA-Regeln für ihre spezifischen Aufrufmuster und C2-Infrastruktur.",
         "portrait": "npc_volkov"
       },
       "choices": [
         {
           "id": "c2_yara",
-          "text": "YARA-Regeln schreiben fuer die identifizierten IOCs \u2014 LOLBin-Aufrufmuster und DGA-Domains",
-          "icon": "\ud83d\udccb",
+          "text": "YARA-Regeln schreiben für die identifizierten IOCs — LOLBin-Aufrufmuster und DGA-Domains",
+          "icon": "📋",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 4,
@@ -267,8 +267,8 @@
         },
         {
           "id": "c2_memory",
-          "text": "Memory Forensics: Volatility-Framework auf verdaechtigen Hosts ausfuehren",
-          "icon": "\ud83e\uddec",
+          "text": "Memory Forensics: Volatility-Framework auf verdächtigen Hosts ausführen",
+          "icon": "🧬",
           "skill_check": {
             "pool_filter": "forensics",
             "question_count": 4,
@@ -294,8 +294,8 @@
         },
         {
           "id": "c2_network",
-          "text": "Network Traffic Analysis: C2-Kommunikation isolieren und Exfiltrations-Kanaele identifizieren",
-          "icon": "\ud83c\udf10",
+          "text": "Network Traffic Analysis: C2-Kommunikation isolieren und Exfiltrations-Kanäle identifizieren",
+          "icon": "🌐",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 4,
@@ -329,18 +329,18 @@
     {
       "id": "s3_lateral_movement",
       "title": "Katz und Maus",
-      "narrative": "Der Angreifer hat bemerkt dass er gejagt wird. Innerhalb von 20 Minuten aendert er seine Taktik komplett. Vorher: PSExec fuer Lateral Movement, HTTPS fuer C2-Kommunikation. Jetzt: WMI statt PSExec \u2014 leiser, schwerer zu erkennen. DNS-Tunneling statt HTTPS \u2014 die Daten versteckt in DNS-TXT-Records. Und er hat angefangen False Flags zu platzieren: Fake-Logeintraege die auf eine andere APT-Gruppe deuten. Dr. Volkov warnt: 'Phantom Crane ist dafuer bekannt Spuren anderer Gruppen zu imitieren. Vertrau keinem einzelnen IOC \u2014 nur dem Gesamtbild.' Morrison wird ungeduldig: 'Jede Minute die wir analysieren ist eine Minute die er nutzt.'",
+      "narrative": "Der Angreifer hat bemerkt dass er gejagt wird. Innerhalb von 20 Minuten ändert er seine Taktik komplett. Vorher: PSExec für Lateral Movement, HTTPS für C2-Kommunikation. Jetzt: WMI statt PSExec — leiser, schwerer zu erkennen. DNS-Tunneling statt HTTPS — die Daten versteckt in DNS-TXT-Records. Und er hat angefangen False Flags zu platzieren: Fake-Logeinträge die auf eine andere APT-Gruppe deuten. Dr. Volkov warnt: 'Phantom Crane ist dafür bekannt Spuren anderer Gruppen zu imitieren. Vertrau keinem einzelnen IOC — nur dem Gesamtbild.' Morrison wird ungeduldig: 'Jede Minute die wir analysieren ist eine Minute die er nutzt.'",
       "image": "scene_firewall_config.png",
       "npc_dialog": {
         "speaker": "ir_lead",
-        "text": "Er wechselt seine Tools schneller als wir analysieren koennen. WMI statt PSExec, DNS-Tunneling statt HTTPS. Und diese False Flags \u2014 da hat jemand seine Hausaufgaben gemacht. Wir muessen proaktiv werden. Honey Tokens, Canary Files, Deception. Sonst jagen wir immer nur hinterher.",
+        "text": "Er wechselt seine Tools schneller als wir analysieren können. WMI statt PSExec, DNS-Tunneling statt HTTPS. Und diese False Flags — da hat jemand seine Hausaufgaben gemacht. Wir müssen proaktiv werden. Honey Tokens, Canary Files, Deception. Sonst jagen wir immer nur hinterher.",
         "portrait": "npc_morrison"
       },
       "choices": [
         {
           "id": "c3_deception",
           "text": "Deception: Honey Tokens in Active Directory und Canary Files auf Fileservern platzieren",
-          "icon": "\ud83c\udfad",
+          "icon": "🎭",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 4,
@@ -366,8 +366,8 @@
         },
         {
           "id": "c3_edr",
-          "text": "EDR-Telemetrie korrelieren: Process Trees ueber alle Endpoints hinweg analysieren",
-          "icon": "\ud83d\udd0d",
+          "text": "EDR-Telemetrie korrelieren: Process Trees über alle Endpoints hinweg analysieren",
+          "icon": "🔍",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 4,
@@ -393,8 +393,8 @@
         },
         {
           "id": "c3_segmentation",
-          "text": "Netzwerk-Segmentierung verschaerfen und Traffic-Baseline fuer Anomalie-Erkennung erstellen",
-          "icon": "\ud83d\udee1\ufe0f",
+          "text": "Netzwerk-Segmentierung verschärfen und Traffic-Baseline für Anomalie-Erkennung erstellen",
+          "icon": "🛡️",
           "skill_check": {
             "pool_filter": "incident_response",
             "question_count": 4,
@@ -424,18 +424,18 @@
     {
       "id": "s4_zero_day_discovery",
       "title": "Der Zero Day",
-      "narrative": "Die Honey Tokens und EDR-Korrelation haben den initialen Angriffsvektor enthuellt: Die VPN-Appliance. Ein bisher unbekannter Exploit \u2014 Pre-Authentication Remote Code Execution. Der Angreifer braucht keine Credentials: Ein speziell praeparierter HTTP-Request an die Login-Seite genuegt fuer volle Code-Ausfuehrung als Root. Kein Patch verfuegbar. Kein CVE vergeben. Ein echter Zero Day. Dr. Volkov ist alarmiert: 'Wenn Phantom Crane diesen Exploit hat, koennten sie in hunderten von Organisationen sitzen die dieselbe VPN-Appliance nutzen.' Nakamura, der CISO, will wissen: 'Was sind unsere Optionen? Die VPN ist unser einziger Remote-Zugang fuer 500 Mitarbeiter.'",
+      "narrative": "Die Honey Tokens und EDR-Korrelation haben den initialen Angriffsvektor enthüllt: Die VPN-Appliance. Ein bisher unbekannter Exploit — Pre-Authentication Remote Code Execution. Der Angreifer braucht keine Credentials: Ein speziell präparierter HTTP-Request an die Login-Seite genügt für volle Code-Ausführung als Root. Kein Patch verfügbar. Kein CVE vergeben. Ein echter Zero Day. Dr. Volkov ist alarmiert: 'Wenn Phantom Crane diesen Exploit hat, könnten sie in hunderten von Organisationen sitzen die dieselbe VPN-Appliance nutzen.' Nakamura, der CISO, will wissen: 'Was sind unsere Optionen? Die VPN ist unser einziger Remote-Zugang für 500 Mitarbeiter.'",
       "image": "scene_forensics_terminal.png",
       "npc_dialog": {
         "speaker": "ciso_nakamura",
-        "text": "Ein Zero Day in unserer VPN. Das ist der Worst Case. 500 Mitarbeiter arbeiten remote ueber diese Appliance. Wenn wir sie abschalten, steht das halbe Unternehmen still. Aber wenn wir sie anlassen, steht die Tuer offen. Welche Optionen haben wir?",
+        "text": "Ein Zero Day in unserer VPN. Das ist der Worst Case. 500 Mitarbeiter arbeiten remote über diese Appliance. Wenn wir sie abschalten, steht das halbe Unternehmen still. Aber wenn wir sie anlassen, steht die Tür offen. Welche Optionen haben wir?",
         "portrait": "npc_nakamura"
       },
       "choices": [
         {
           "id": "c4_virtual_patch",
-          "text": "Virtuellen Patch via WAF/IPS-Signatur erstellen \u2014 den Exploit-Vektor blockieren ohne die VPN abzuschalten",
-          "icon": "\ud83d\udee0\ufe0f",
+          "text": "Virtuellen Patch via WAF/IPS-Signatur erstellen — den Exploit-Vektor blockieren ohne die VPN abzuschalten",
+          "icon": "🛠️",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 5,
@@ -461,8 +461,8 @@
         },
         {
           "id": "c4_isolate",
-          "text": "VPN-Appliance isolieren + alternative Zugangsloesung per WireGuard/SSH-Tunnel aufbauen",
-          "icon": "\ud83d\udeab",
+          "text": "VPN-Appliance isolieren + alternative Zugangslösung per WireGuard/SSH-Tunnel aufbauen",
+          "icon": "🚫",
           "skill_check": {
             "pool_filter": "incident_response",
             "question_count": 4,
@@ -488,8 +488,8 @@
         },
         {
           "id": "c4_disclosure",
-          "text": "CVE-Report an Hersteller + koordinierte Offenlegung \u2014 die Community schuetzen",
-          "icon": "\ud83d\udce2",
+          "text": "CVE-Report an Hersteller + koordinierte Offenlegung — die Community schützen",
+          "icon": "📢",
           "skill_check": {
             "pool_filter": "security",
             "question_count": 3,
@@ -517,24 +517,24 @@
       "simulation": {
         "type": "cli_analysis",
         "pbq_question_id": null,
-        "description": "Zero-Day-Analyse: HTTP-Request-Payload des Exploits rekonstruieren, IPS-Signatur (Snort/Suricata-Regel) fuer den Angriffsvektor schreiben, CVE-Report-Template ausfuellen"
+        "description": "Zero-Day-Analyse: HTTP-Request-Payload des Exploits rekonstruieren, IPS-Signatur (Snort/Suricata-Regel) für den Angriffsvektor schreiben, CVE-Report-Template ausfüllen"
       }
     },
     {
       "id": "s5_eradication",
       "title": "Eradication",
-      "narrative": "Die Eradication-Phase beginnt. Phantom Crane hat ueber Wochen Persistence-Mechanismen etabliert: Scheduled Tasks mit verschleierten PowerShell-Payloads, WMI Event Subscriptions die bei jedem Boot ausfuehren, eine modifizierte DLL in System32 die sich als legitimer Windows-Service tarnt, und Golden Tickets fuer Kerberos-Persistence. Alles muss gefunden und entfernt werden \u2014 eine einzige uebersehene Backdoor und der Angreifer ist in Stunden zurueck. CISO Nakamura braucht eine Executive Summary fuer den Vorstand: 'Was ist passiert, wie schlimm ist es, was tun wir dagegen, und wie verhindern wir es in Zukunft?'",
+      "narrative": "Die Eradication-Phase beginnt. Phantom Crane hat über Wochen Persistence-Mechanismen etabliert: Scheduled Tasks mit verschleierten PowerShell-Payloads, WMI Event Subscriptions die bei jedem Boot ausführen, eine modifizierte DLL in System32 die sich als legitimer Windows-Service tarnt, und Golden Tickets für Kerberos-Persistence. Alles muss gefunden und entfernt werden — eine einzige übersehene Backdoor und der Angreifer ist in Stunden zurück. CISO Nakamura braucht eine Executive Summary für den Vorstand: 'Was ist passiert, wie schlimm ist es, was tun wir dagegen, und wie verhindern wir es in Zukunft?'",
       "image": "scene_security_hardening.png",
       "npc_dialog": {
         "speaker": "ciso_nakamura",
-        "text": "Der Vorstand will morgen frueh einen Bericht. Keine technischen Details \u2014 Business Impact. Wie viele Systeme kompromittiert, welche Daten potentiell betroffen, was kostet die Remediation, und wie verhindern wir einen Wiederholungsfall. Koennen Sie das bis heute Abend liefern?",
+        "text": "Der Vorstand will morgen früh einen Bericht. Keine technischen Details — Business Impact. Wie viele Systeme kompromittiert, welche Daten potentiell betroffen, was kostet die Remediation, und wie verhindern wir einen Wiederholungsfall. Können Sie das bis heute Abend liefern?",
         "portrait": "npc_nakamura"
       },
       "choices": [
         {
           "id": "c5_threat_hunt",
-          "text": "Vollstaendige Threat Hunting Iteration: IOC Sweep + YARA + Sigma Rules auf allen Endpoints",
-          "icon": "\ud83d\udd0d",
+          "text": "Vollständige Threat Hunting Iteration: IOC Sweep + YARA + Sigma Rules auf allen Endpoints",
+          "icon": "🔍",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 5,
@@ -560,8 +560,8 @@
         },
         {
           "id": "c5_rebuild",
-          "text": "Alle kompromittierten Systeme neu aufsetzen + vollstaendiger Credential Reset",
-          "icon": "\ud83d\udcbb",
+          "text": "Alle kompromittierten Systeme neu aufsetzen + vollständiger Credential Reset",
+          "icon": "💻",
           "skill_check": {
             "pool_filter": "incident_response",
             "question_count": 4,
@@ -588,7 +588,7 @@
         {
           "id": "c5_komplett",
           "text": "Komplettpaket: Threat Hunt + System Rebuild + Detection Rules + Executive Report",
-          "icon": "\ud83d\udee1\ufe0f",
+          "icon": "🛡️",
           "skill_check": {
             "pool_filter": "cysa_plus",
             "question_count": 5,
@@ -618,12 +618,12 @@
     {
       "id": "epilog_success",
       "title": "Phantom Crane neutralisiert",
-      "narrative": "Zwei Wochen spaeter. Der Threat Hunt ist abgeschlossen: Alle Persistence-Mechanismen gefunden und entfernt. Alle kompromittierten Systeme neu aufgesetzt. Credential Reset fuer alle 1200 Accounts durchgefuehrt. Die YARA-Regeln und Sigma-Detection-Rules wurden ueber den MISP-Feed mit der Community geteilt. Der VPN-Hersteller hat dank deines Reports innerhalb von 72 Stunden einen Notfall-Patch veroeffentlicht \u2014 CVE-2026-41337 traegt deinen Namen als Entdecker. Nakamura praesentiert dem Vorstand: 'Der Incident hat uns staerker gemacht. Unsere Detection-Faehigkeiten sind um eine Groessenordnung besser.' Reyes grinst: 'Phantom Crane hat sich den falschen Gegner ausgesucht.'",
+      "narrative": "Zwei Wochen später. Der Threat Hunt ist abgeschlossen: Alle Persistence-Mechanismen gefunden und entfernt. Alle kompromittierten Systeme neu aufgesetzt. Credential Reset für alle 1200 Accounts durchgeführt. Die YARA-Regeln und Sigma-Detection-Rules wurden über den MISP-Feed mit der Community geteilt. Der VPN-Hersteller hat dank deines Reports innerhalb von 72 Stunden einen Notfall-Patch veröffentlicht — CVE-2026-41337 trägt deinen Namen als Entdecker. Nakamura präsentiert dem Vorstand: 'Der Incident hat uns stärker gemacht. Unsere Detection-Fähigkeiten sind um eine Größenordnung besser.' Reyes grinst: 'Phantom Crane hat sich den falschen Gegner ausgesucht.'",
       "image": "scene_victory.png",
       "animation_in": "campaign_complete",
       "npc_dialog": {
         "speaker": "soc_lead",
-        "text": "Saubere Arbeit. Die YARA-Regeln haben drei weiteren Organisationen geholfen Phantom Crane zu erkennen bevor sie Schaden anrichten konnten. Der CVE traegt deinen Namen. Und das Wichtigste: Wir sind jetzt vorbereitet. Naechstes Mal erkennen wir sie in Stunden, nicht Wochen.",
+        "text": "Saubere Arbeit. Die YARA-Regeln haben drei weiteren Organisationen geholfen Phantom Crane zu erkennen bevor sie Schaden anrichten konnten. Der CVE trägt deinen Namen. Und das Wichtigste: Wir sind jetzt vorbereitet. Nächstes Mal erkennen wir sie in Stunden, nicht Wochen.",
         "portrait": "npc_reyes"
       },
       "choices": [],
@@ -633,12 +633,12 @@
     },
     {
       "id": "epilog_partial",
-      "title": "Bedrohung eingedaemmt",
-      "narrative": "Eine Woche spaeter. Der Angreifer wurde rausgeworfen. Die meisten Persistence-Mechanismen sind entfernt, aber hundertprozentig sicher ist niemand. Der Zero Day ist dem Hersteller gemeldet, ein Patch ist angekuendigt aber noch nicht verfuegbar. Die VPN-Appliance laeuft hinter einem restriktiven WAF-Regelwerk. Nakamura ist erleichtert aber vorsichtig: 'Wir muessen davon ausgehen dass wir nicht alles gefunden haben. Continuous Monitoring ist ab jetzt Pflicht.' Morrison nickt: 'Ich schlafe die naechsten Wochen mit einem Auge offen.' Dr. Volkov warnt: 'Phantom Crane kommt wieder. Die Frage ist nur wann.'",
+      "title": "Bedrohung eingedämmt",
+      "narrative": "Eine Woche später. Der Angreifer wurde rausgeworfen. Die meisten Persistence-Mechanismen sind entfernt, aber hundertprozentig sicher ist niemand. Der Zero Day ist dem Hersteller gemeldet, ein Patch ist angekündigt aber noch nicht verfügbar. Die VPN-Appliance läuft hinter einem restriktiven WAF-Regelwerk. Nakamura ist erleichtert aber vorsichtig: 'Wir müssen davon ausgehen dass wir nicht alles gefunden haben. Continuous Monitoring ist ab jetzt Pflicht.' Morrison nickt: 'Ich schlafe die nächsten Wochen mit einem Auge offen.' Dr. Volkov warnt: 'Phantom Crane kommt wieder. Die Frage ist nur wann.'",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "threat_intel",
-        "text": "Der Zero Day ist gemeldet, aber noch kein Patch. Phantom Crane hat diesen Exploit wahrscheinlich nicht exklusiv \u2014 APT-Gruppen teilen manchmal Werkzeuge. Continuous Monitoring und tagesaktuelle YARA-Updates sind jetzt kritisch. Wir sind noch nicht fertig.",
+        "text": "Der Zero Day ist gemeldet, aber noch kein Patch. Phantom Crane hat diesen Exploit wahrscheinlich nicht exklusiv — APT-Gruppen teilen manchmal Werkzeuge. Continuous Monitoring und tagesaktuelle YARA-Updates sind jetzt kritisch. Wir sind noch nicht fertig.",
         "portrait": "npc_volkov"
       },
       "choices": [],
@@ -649,11 +649,11 @@
     {
       "id": "epilog_fail",
       "title": "Die Jagd geht weiter",
-      "narrative": "Zwei Wochen spaeter. Der Angreifer wurde eingedaemmt, aber der Incident hat Narben hinterlassen. Einige Systeme mussten komplett neu aufgesetzt werden. Der Umfang der Datenexfiltration ist noch nicht vollstaendig klar. Der VPN-Zero-Day ist dem Hersteller gemeldet, aber die Analyse hat gezeigt dass Phantom Crane mindestens drei Wochen unbemerkt im Netzwerk war. Nakamura ist frustriert: 'Wir haetten frueher reagieren muessen.' Aber die Lehren sind klar: Detection-Capabilities muessen besser werden, Incident Response schneller, und die gesamte Security-Architektur muss ueberdacht werden. Morrison fasst zusammen: 'Phantom Crane hat gewonnen \u2014 dieses Mal. Aber wir haben gelernt.'",
+      "narrative": "Zwei Wochen später. Der Angreifer wurde eingedämmt, aber der Incident hat Narben hinterlassen. Einige Systeme mussten komplett neu aufgesetzt werden. Der Umfang der Datenexfiltration ist noch nicht vollständig klar. Der VPN-Zero-Day ist dem Hersteller gemeldet, aber die Analyse hat gezeigt dass Phantom Crane mindestens drei Wochen unbemerkt im Netzwerk war. Nakamura ist frustriert: 'Wir hätten früher reagieren müssen.' Aber die Lehren sind klar: Detection-Capabilities müssen besser werden, Incident Response schneller, und die gesamte Security-Architektur muss überdacht werden. Morrison fasst zusammen: 'Phantom Crane hat gewonnen — dieses Mal. Aber wir haben gelernt.'",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "ir_lead",
-        "text": "Nicht unser bester Tag. Aber wir haben den Angreifer identifiziert, den Zero Day gefunden und die kritischsten Systeme gesichert. Die Detection-Rules die wir geschrieben haben werden uns beim naechsten Mal schuetzen. Und es wird ein naechstes Mal geben. Phantom Crane gibt nicht auf.",
+        "text": "Nicht unser bester Tag. Aber wir haben den Angreifer identifiziert, den Zero Day gefunden und die kritischsten Systeme gesichert. Die Detection-Rules die wir geschrieben haben werden uns beim nächsten Mal schützen. Und es wird ein nächstes Mal geben. Phantom Crane gibt nicht auf.",
         "portrait": "npc_morrison"
       },
       "choices": [],
@@ -664,16 +664,16 @@
   ],
   "epilog": {
     "success": {
-      "narrative": "Phantom Crane neutralisiert. Alle Backdoors entfernt, Systeme rebuilt, Credentials resetted. YARA-Regeln mit Community geteilt. CVE-2026-41337 traegt deinen Namen. Detection-Faehigkeiten um eine Groessenordnung verbessert.",
+      "narrative": "Phantom Crane neutralisiert. Alle Backdoors entfernt, Systeme rebuilt, Credentials resetted. YARA-Regeln mit Community geteilt. CVE-2026-41337 trägt deinen Namen. Detection-Fähigkeiten um eine Größenordnung verbessert.",
       "image": "scene_victory.png",
       "animation": "campaign_complete"
     },
     "partial": {
-      "narrative": "Angreifer rausgeworfen. Zero Day gemeldet, Patch ausstehend. VPN hinter WAF gesichert. Continuous Monitoring aktiviert. Phantom Crane koennte wiederkommen.",
+      "narrative": "Angreifer rausgeworfen. Zero Day gemeldet, Patch ausstehend. VPN hinter WAF gesichert. Continuous Monitoring aktiviert. Phantom Crane könnte wiederkommen.",
       "image": "scene_partial_victory.png"
     },
     "fail": {
-      "narrative": "Bedrohung eingedaemmt aber nicht eliminiert. Datenexfiltration noch unklar. Viel gelernt ueber APT-Taktiken und Detection-Luecken. Die Security-Architektur wird grundlegend ueberarbeitet.",
+      "narrative": "Bedrohung eingedämmt aber nicht eliminiert. Datenexfiltration noch unklar. Viel gelernt über APT-Taktiken und Detection-Lücken. Die Security-Architektur wird grundlegend überarbeitet.",
       "image": "scene_partial_victory.png"
     }
   }

@@ -16,7 +16,7 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "Nostalgie trifft Pragmatismus. Alte Systeme haben Charakter, aber die Migration muss klappen. Humor ueber veraltete Technik.",
+  "narrator_style": "Nostalgie trifft Pragmatismus. Alte Systeme haben Charakter, aber die Migration muss klappen. Humor über veraltete Technik.",
   "gemini_role": "dau",
   "characters": {
     "architect": {

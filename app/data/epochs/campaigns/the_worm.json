@@ -2,7 +2,7 @@
   "id": "the_worm",
   "epoch_id": "morris_worm",
   "title": "The Worm -- Der erste Internet-Wurm",
-  "description": "2. November 1988. Ein Experiment eines Cornell-Studenten geraet ausser Kontrolle. Der Morris-Worm infiziert 10% aller Internet-Rechner und legt sie lahm. Die Geburtsstunde der Incident Response.",
+  "description": "2. November 1988. Ein Experiment eines Cornell-Studenten gerät außer Kontrolle. Der Morris-Worm infiziert 10% aller Internet-Rechner und legt sie lahm. Die Geburtsstunde der Incident Response.",
   "duration_minutes": 50,
   "difficulty": "intermediate",
   "focus_areas": [
@@ -12,12 +12,12 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "Akademischer Thriller. Unix-Terminals, schlaflose Naechte in Serverraeumen, das erschreckende Gefuehl wenn man merkt dass das eigene Experiment ausser Kontrolle geraten ist.",
+  "narrator_style": "Akademischer Thriller. Unix-Terminals, schlaflose Nächte in Serverräumen, das erschreckende Gefühl wenn man merkt dass das eigene Experiment außer Kontrolle geraten ist.",
   "scenes": [
     {
       "id": "s1_morris_worm",
       "title": "Der Morris-Worm",
-      "narrative": "2. November 1988, 18:00 Uhr. Am MIT-Labor fuer Kuenstliche Intelligenz sitzt Robert Tappan Morris, 23 Jahre alt, Cornell-Student, Sohn eines NSA-Kryptografen. Er startet ein Programm, das eigentlich nur die Groesse des Internets messen soll. Der Wurm verbreitet sich ueber drei Schwachstellen: einen Debug-Modus in sendmail, einen Buffer Overflow im finger-Daemon (fingerd) und schwache Passwoerter fuer rsh/rexec. Innerhalb von Stunden sind Tausende Unix-Rechner infiziert. Aber etwas geht schief: Ein Bug im Reinfektionsschutz sorgt dafuer, dass der Wurm sich auch auf bereits infizierte Maschinen kopiert -- immer wieder. Die Rechner werden langsamer und langsamer. Binnen 24 Stunden sind 6.000 von 60.000 Internet-Rechnern befallen -- 10% des gesamten Internets. Du bist Systemadministrator an einer Universitaet und bemerkst, dass deine VAX-Rechner ploetzlich kaum noch reagieren.",
+      "narrative": "2. November 1988, 18:00 Uhr. Am MIT-Labor für Künstliche Intelligenz sitzt Robert Tappan Morris, 23 Jahre alt, Cornell-Student, Sohn eines NSA-Kryptografen. Er startet ein Programm, das eigentlich nur die Größe des Internets messen soll. Der Wurm verbreitet sich über drei Schwachstellen: einen Debug-Modus in sendmail, einen Buffer Overflow im finger-Daemon (fingerd) und schwache Passwörter für rsh/rexec. Innerhalb von Stunden sind Tausende Unix-Rechner infiziert. Aber etwas geht schief: Ein Bug im Reinfektionsschutz sorgt dafür, dass der Wurm sich auch auf bereits infizierte Maschinen kopiert -- immer wieder. Die Rechner werden langsamer und langsamer. Binnen 24 Stunden sind 6.000 von 60.000 Internet-Rechnern befallen -- 10% des gesamten Internets. Du bist Systemadministrator an einer Universität und bemerkst, dass deine VAX-Rechner plötzlich kaum noch reagieren.",
       "image": "scene_unix_terminal.png",
       "animation_in": "mission_start",
       "choices": [
@@ -32,7 +32,7 @@
           },
           "success_scene": "s2_buffer_overflow",
           "partial_scene": "s2_buffer_overflow",
-          "fail_scene": "s1_fail_ueberlastet"
+          "fail_scene": "s1_fail_überlastet"
         },
         {
           "id": "c1_disconnect",
@@ -45,7 +45,7 @@
           },
           "success_scene": "s2_buffer_overflow",
           "partial_scene": "s2_buffer_overflow",
-          "fail_scene": "s1_fail_ueberlastet"
+          "fail_scene": "s1_fail_überlastet"
         },
         {
           "id": "c1_contact_darpa",
@@ -58,15 +58,15 @@
           },
           "success_scene": "s2_buffer_overflow",
           "partial_scene": "s2_buffer_overflow",
-          "fail_scene": "s1_fail_ueberlastet"
+          "fail_scene": "s1_fail_überlastet"
         }
       ],
       "simulation": null
     },
     {
       "id": "s1_fail_ueberlastet",
-      "title": "System ueberlastet",
-      "narrative": "Waehrend du noch ueberlegst, haeufen sich die Prozesse auf deinem System. Der Load Average steigt auf ueber 100. Die Maschine ist kaum noch bedienbar. An der Berkeley-Uni hat ein Team bereits angefangen, den Wurm zu sezieren. Per Telefon (das Internet ist unbenutzbar) erreicht dich die Nachricht: 'Der Wurm nutzt fingerd. Schaltet den Dienst ab!' Es ist die erste koordinierte Incident Response in der Geschichte des Internets -- improvisiert, chaotisch, aber effektiv.",
+      "title": "System überlastet",
+      "narrative": "Während du noch überlegst, häufen sich die Prozesse auf deinem System. Der Load Average steigt auf über 100. Die Maschine ist kaum noch bedienbar. An der Berkeley-Uni hat ein Team bereits angefangen, den Wurm zu sezieren. Per Telefon (das Internet ist unbenutzbar) erreicht dich die Nachricht: 'Der Wurm nutzt fingerd. Schaltet den Dienst ab!' Es ist die erste koordinierte Incident Response in der Geschichte des Internets -- improvisiert, chaotisch, aber effektiv.",
       "image": "scene_unix_terminal.png",
       "choices": [
         {
@@ -88,7 +88,7 @@
     {
       "id": "s2_buffer_overflow",
       "title": "Buffer Overflow",
-      "narrative": "Du hast den Wurm-Code isoliert und analysierst jetzt die Schwachstelle im finger-Daemon. Der fingerd-Dienst auf BSD-Unix-Systemen hat einen fatalen Fehler: Die Funktion gets() liest Benutzereingaben in einen festen 512-Byte-Puffer auf dem Stack -- ohne Laengenpruefung. Morris' Wurm sendet 536 Bytes an fingerd. Die ueberschuessigen Bytes ueberschreiben die Ruecksprungadresse auf dem Stack und leiten die Ausfuehrung auf den eingeschleusten Shellcode um. Das ist die erste dokumentierte Ausnutzung eines Buffer Overflows 'in the wild'. Die Technik wird Jahrzehnte spaeter immer noch relevant sein -- von Code Red ueber Heartbleed bis zu modernen ROP-Chains. Der Schluessel: Nie unvalidierte Eingaben in Puffer fester Groesse schreiben. gets() wird 2011 endgueltig aus dem C-Standard entfernt -- 23 Jahre zu spaet.",
+      "narrative": "Du hast den Wurm-Code isoliert und analysierst jetzt die Schwachstelle im finger-Daemon. Der fingerd-Dienst auf BSD-Unix-Systemen hat einen fatalen Fehler: Die Funktion gets() liest Benutzereingaben in einen festen 512-Byte-Puffer auf dem Stack -- ohne Laengenprüfung. Morris' Wurm sendet 536 Bytes an fingerd. Die überschüssigen Bytes überschreiben die Rücksprungadresse auf dem Stack und leiten die Ausführung auf den eingeschleusten Shellcode um. Das ist die erste dokumentierte Ausnutzung eines Buffer Overflows 'in the wild'. Die Technik wird Jahrzehnte später immer noch relevant sein -- von Code Red über Heartbleed bis zu modernen ROP-Chains. Der Schlüssel: Nie unvalidierte Eingaben in Puffer fester Größe schreiben. gets() wird 2011 endgültig aus dem C-Standard entfernt -- 23 Jahre zu spät.",
       "image": "scene_unix_terminal.png",
       "choices": [
         {
@@ -100,21 +100,21 @@
             "question_count": 3,
             "pass_threshold": 2
           },
-          "success_scene": "s3_cert_gruendung",
-          "partial_scene": "s3_cert_gruendung",
+          "success_scene": "s3_cert_gründung",
+          "partial_scene": "s3_cert_gründung",
           "fail_scene": "s2_fail_stack"
         },
         {
           "id": "c2_write_patch",
-          "text": "Einen Patch schreiben -- gets() durch fgets() ersetzen und die Puffergroesse pruefen",
+          "text": "Einen Patch schreiben -- gets() durch fgets() ersetzen und die Puffergrösse prüfen",
           "icon": "~",
           "skill_check": {
             "pool_filter": "epoch:morris_worm",
             "question_count": 3,
             "pass_threshold": 2
           },
-          "success_scene": "s3_cert_gruendung",
-          "partial_scene": "s3_cert_gruendung",
+          "success_scene": "s3_cert_gründung",
+          "partial_scene": "s3_cert_gründung",
           "fail_scene": "s2_fail_stack"
         },
         {
@@ -126,8 +126,8 @@
             "question_count": 3,
             "pass_threshold": 2
           },
-          "success_scene": "s3_cert_gruendung",
-          "partial_scene": "s3_cert_gruendung",
+          "success_scene": "s3_cert_gründung",
+          "partial_scene": "s3_cert_gründung",
           "fail_scene": "s2_fail_stack"
         }
       ],
@@ -136,21 +136,21 @@
     {
       "id": "s2_fail_stack",
       "title": "Stack Confusion",
-      "narrative": "Der Buffer Overflow ist komplex. Du verstehst noch nicht ganz, wie die Ruecksprungadresse ueberschrieben wird. Aber ein Kollege von Berkeley zeichnet dir ein Diagramm: Stack waechst nach unten, lokale Variablen zuerst, dann die gespeicherte Ruecksprungadresse, dann die Parameter der aufrufenden Funktion. Wenn du mehr Daten in den Puffer schreibst als er fasst, ueberschreibst du die Ruecksprungadresse. 'Der Trick ist,' sagt er, 'dass du die Ruecksprungadresse auf deinen eigenen Code zeigen laesst.' Die Lektion sitzt.",
+      "narrative": "Der Buffer Overflow ist komplex. Du verstehst noch nicht ganz, wie die Rücksprungadresse überschrieben wird. Aber ein Kollege von Berkeley zeichnet dir ein Diagramm: Stack wächst nach unten, lokale Variablen zuerst, dann die gespeicherte Rücksprungadresse, dann die Parameter der aufrufenden Funktion. Wenn du mehr Daten in den Puffer schreibst als er fasst, überschreibst du die Rücksprungadresse. 'Der Trick ist,' sagt er, 'dass du die Rücksprungadresse auf deinen eigenen Code zeigen lässt.' Die Lektion sitzt.",
       "image": "scene_unix_terminal.png",
       "choices": [
         {
           "id": "c2_fail_retry",
-          "text": "Mit dem neuen Verstaendnis den Patch fuer fingerd schreiben",
+          "text": "Mit dem neuen Verständnis den Patch für fingerd schreiben",
           "icon": "~",
           "skill_check": {
             "pool_filter": "epoch:morris_worm",
             "question_count": 2,
             "pass_threshold": 1
           },
-          "success_scene": "s3_cert_gruendung",
-          "partial_scene": "s3_cert_gruendung",
-          "fail_scene": "s3_cert_gruendung"
+          "success_scene": "s3_cert_gründung",
+          "partial_scene": "s3_cert_gründung",
+          "fail_scene": "s3_cert_gründung"
         }
       ],
       "simulation": null
@@ -158,7 +158,7 @@
     {
       "id": "s3_cert_gruendung",
       "title": "Internet-Kollaps und CERT",
-      "narrative": "3. November 1988. Das Internet liegt in Truemmern. 6.000 Rechner sind infiziert, E-Mail funktioniert nicht, Forschungslabore sind abgeschnitten. Die Ironie: Morris hatte versucht, eine Nachricht ueber den Fix zu senden -- aber die E-Mail kam nicht durch, weil das Netz ueberlastet war. Die Nachwirkungen sind gewaltig: DARPA gruendet das erste Computer Emergency Response Team (CERT/CC) an der Carnegie Mellon University. Robert Tappan Morris wird 1990 als erster Mensch unter dem Computer Fraud and Abuse Act von 1986 verurteilt: 3 Jahre Bewaehrung, 400 Stunden Sozialarbeit, 10.050 Dollar Strafe. Jahre spaeter wird er MIT-Professor und Mitgruender von Y Combinator. Jetzt musst du bei der ersten koordinierten Incident Response der Internet-Geschichte helfen.",
+      "narrative": "3. November 1988. Das Internet liegt in Trümmern. 6.000 Rechner sind infiziert, E-Mail funktioniert nicht, Forschungslabore sind abgeschnitten. Die Ironie: Morris hatte versucht, eine Nachricht über den Fix zu senden -- aber die E-Mail kam nicht durch, weil das Netz überlastet war. Die Nachwirkungen sind gewaltig: DARPA gründet das erste Computer Emergency Response Team (CERT/CC) an der Carnegie Mellon University. Robert Tappan Morris wird 1990 als erster Mensch unter dem Computer Fraud and Abuse Act von 1986 verurteilt: 3 Jahre Bewährung, 400 Stunden Sozialarbeit, 10.050 Dollar Strafe. Jahre später wird er MIT-Professor und Mitgründer von Y Combinator. Jetzt musst du bei der ersten koordinierten Incident Response der Internet-Geschichte helfen.",
       "image": "scene_unix_terminal.png",
       "choices": [
         {
@@ -176,7 +176,7 @@
         },
         {
           "id": "c3_document_cert",
-          "text": "Alles fuer CERT dokumentieren -- der erste Incident Report der Geschichte",
+          "text": "Alles für CERT dokumentieren -- der erste Incident Report der Geschichte",
           "icon": "~",
           "skill_check": {
             "pool_filter": "epoch:morris_worm",
@@ -189,7 +189,7 @@
         },
         {
           "id": "c3_legislation",
-          "text": "Bei der Ausarbeitung schaerferer Computer-Fraud-Gesetze helfen -- der CFAA braucht ein Update",
+          "text": "Bei der Ausarbeitung schärferer Computer-Fraud-Gesetze helfen -- der CFAA braucht ein Update",
           "icon": "~",
           "skill_check": {
             "pool_filter": "epoch:morris_worm",
@@ -206,7 +206,7 @@
     {
       "id": "epilog_success",
       "title": "Geburt der Incident Response",
-      "narrative": "Du hast die erste Internet-Krise nicht nur ueberlebt -- du hast geholfen, sie zu loesen. Der Morris-Worm hat die Welt gezwungen, Internet-Sicherheit ernst zu nehmen. CERT/CC wird zum Vorbild fuer hunderte CERTs weltweit. Buffer Overflows werden zum meistuntersuchten Angriffsvektor der naechsten zwei Jahrzehnte. Und Morris' Lektion ist ewig: Ein Experiment ohne Sicherheitsventil kann katastrophale Folgen haben. Die gets()-Funktion wird endlich 2011 aus dem C-Standard entfernt. Zu spaet fuer Tausende verwundbare Programme. Aber die Grundlage fuer sichere Software-Entwicklung ist gelegt.",
+      "narrative": "Du hast die erste Internet-Krise nicht nur überlebt -- du hast geholfen, sie zu lösen. Der Morris-Worm hat die Welt gezwungen, Internet-Sicherheit ernst zu nehmen. CERT/CC wird zum Vorbild für hunderte CERTs weltweit. Buffer Overflows werden zum meistuntersuchten Angriffsvektor der nächsten zwei Jahrzehnte. Und Morris' Lektion ist ewig: Ein Experiment ohne Sicherheitsventil kann katastrophale Folgen haben. Die gets()-Funktion wird endlich 2011 aus dem C-Standard entfernt. Zu spät für Tausende verwundbare Programme. Aber die Grundlage für sichere Software-Entwicklung ist gelegt.",
       "image": "scene_victory.png",
       "animation_in": "campaign_complete",
       "choices": [],
@@ -217,7 +217,7 @@
     {
       "id": "epilog_partial",
       "title": "Erste Hilfe",
-      "narrative": "Der Wurm ist gestoppt, aber nicht ohne Schaden. Einige Systeme mussten komplett neu installiert werden. Die Koordination war chaotisch -- Telefonate quer durchs Land, Patches per Floppy Disk verschickt. Aber es hat funktioniert. CERT wird gegruendet, und du hast einen Beitrag geleistet. Die Lehre: Das Internet braucht Strukturen fuer Notfaelle. Und C-Programme brauchen Bounds-Checking.",
+      "narrative": "Der Wurm ist gestoppt, aber nicht ohne Schaden. Einige Systeme mussten komplett neu installiert werden. Die Koordination war chaotisch -- Telefonate quer durchs Land, Patches per Floppy Disk verschickt. Aber es hat funktioniert. CERT wird gegründet, und du hast einen Beitrag geleistet. Die Lehre: Das Internet braucht Strukturen für Notfälle. Und C-Programme brauchen Bounds-Checking.",
       "image": "scene_partial_victory.png",
       "choices": [],
       "simulation": null,
@@ -227,7 +227,7 @@
     {
       "id": "epilog_fail",
       "title": "Schmerzhaftes Erwachen",
-      "narrative": "Der Wurm hat dein System lahmgelegt. Tage ohne E-Mail, Forschungsdaten unzugaenglich, Neuinstallation noetig. Aber du hast etwas Entscheidendes gelernt: Das Internet wurde ohne Sicherheit designt. TCP/IP kennt keine Authentifizierung, finger vertraut jedem, sendmail fuehrt Code aus. Der Morris-Worm war der Weckruf. Von jetzt an wird Sicherheit kein Nachgedanke mehr sein -- zumindest in der Theorie. Morris selbst wird spaeter sagen: 'Ich wollte nicht, dass es so laeuft.' Die naechste Epoche bringt das Web -- und damit voellig neue Angriffsflaechen.",
+      "narrative": "Der Wurm hat dein System lahmgelegt. Tage ohne E-Mail, Forschungsdaten unzugänglich, Neuinstallation nötig. Aber du hast etwas Entscheidendes gelernt: Das Internet wurde ohne Sicherheit designt. TCP/IP kennt keine Authentifizierung, finger vertraut jedem, sendmail führt Code aus. Der Morris-Worm war der Weckruf. Von jetzt an wird Sicherheit kein Nachgedanke mehr sein -- zumindest in der Theorie. Morris selbst wird später sagen: 'Ich wollte nicht, dass es so läuft.' Die nächste Epoche bringt das Web -- und damit völlig neue Angriffsflächen.",
       "image": "scene_partial_victory.png",
       "choices": [],
       "simulation": null,
@@ -237,7 +237,7 @@
   ],
   "epilog": {
     "success": {
-      "narrative": "Die erste Internet-Krise gemeistert. CERT gegruendet, Buffer Overflows verstanden, gets() geaechtet. Morris' Lektion: Experimente brauchen Sicherheitsventile.",
+      "narrative": "Die erste Internet-Krise gemeistert. CERT gegründet, Buffer Overflows verstanden, gets() geächtet. Morris' Lektion: Experimente brauchen Sicherheitsventile.",
       "image": "scene_victory.png",
       "animation": "campaign_complete"
     },
@@ -246,7 +246,7 @@
       "image": "scene_partial_victory.png"
     },
     "fail": {
-      "narrative": "Systeme lahmgelegt, aber die Lektion sitzt: Das Internet wurde ohne Sicherheit designt. Der Morris-Worm war der noetige Weckruf.",
+      "narrative": "Systeme lahmgelegt, aber die Lektion sitzt: Das Internet wurde ohne Sicherheit designt. Der Morris-Worm war der nötige Weckruf.",
       "image": "scene_partial_victory.png"
     }
   },
@@ -258,18 +258,18 @@
     },
     {
       "year": 1988,
-      "title": "CERT/CC wird gegruendet",
-      "description": "Als direkte Reaktion auf den Morris-Worm gruendet DARPA das Computer Emergency Response Team an der Carnegie Mellon University -- die erste Organisation fuer koordinierte Incident Response."
+      "title": "CERT/CC wird gegründet",
+      "description": "Als direkte Reaktion auf den Morris-Worm gründet DARPA das Computer Emergency Response Team an der Carnegie Mellon University -- die erste Organisation für koordinierte Incident Response."
     },
     {
       "year": 1988,
       "title": "Die fingerd Buffer-Overflow-Schwachstelle",
-      "description": "Der Morris-Worm nutzt einen Buffer Overflow im BSD finger-Daemon: gets() liest ohne Laengenpruefung in einen 512-Byte-Puffer. Die erste dokumentierte Ausnutzung eines Buffer Overflows in freier Wildbahn."
+      "description": "Der Morris-Worm nutzt einen Buffer Overflow im BSD finger-Daemon: gets() liest ohne Laengenprüfung in einen 512-Byte-Puffer. Die erste dokumentierte Ausnutzung eines Buffer Overflows in freier Wildbahn."
     },
     {
       "year": 1990,
       "title": "Erste Verurteilung nach dem CFAA",
-      "description": "Robert Tappan Morris wird als erster Mensch unter dem Computer Fraud and Abuse Act von 1986 verurteilt: 3 Jahre Bewaehrung, 400 Stunden Sozialarbeit. Er wird spaeter MIT-Professor und Mitgruender von Y Combinator."
+      "description": "Robert Tappan Morris wird als erster Mensch unter dem Computer Fraud and Abuse Act von 1986 verurteilt: 3 Jahre Bewährung, 400 Stunden Sozialarbeit. Er wird später MIT-Professor und Mitgründer von Y Combinator."
     }
   ]
 }

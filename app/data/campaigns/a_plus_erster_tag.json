@@ -1,7 +1,7 @@
 {
   "campaign_id": "a_plus_erster_tag",
   "title": "Der erste Tag — Willkommen in der IT",
-  "description": "Dein erster Tag als IT-Support in einem mittelstaendischen Unternehmen. Fuenf Tickets gleichzeitig, ein wuetender Vertriebsleiter, eine Praktikantin mit Kaffee-Laptop und ein Serverraum der ueberhitzt. Alles was schiefgehen kann geht schief — aber mit Humor und Lerneffekt.",
+  "description": "Dein erster Tag als IT-Support in einem mittelständischen Unternehmen. Fünf Tickets gleichzeitig, ein wütender Vertriebsleiter, eine Praktikantin mit Kaffee-Laptop und ein Serverraum der überhitzt. Alles was schiefgehen kann geht schief — aber mit Humor und Lerneffekt.",
   "duration_minutes": 50,
   "difficulty": "beginner",
   "focus_areas": [
@@ -14,7 +14,7 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "Leichtfuessige Buerokomoedie mit technischem Tiefgang. Alles was schiefgehen kann geht schief — aber mit Humor und Lerneffekt.",
+  "narrator_style": "Leichtfüssige Büokomoedie mit technischem Tiefgang. Alles was schiefgehen kann geht schief — aber mit Humor und Lerneffekt.",
   "gemini_role": "dau",
   "characters": {
     "architect": {
@@ -80,7 +80,7 @@
   },
   "npcs": {
     "hr_mueller": {
-      "name": "Frau Mueller",
+      "name": "Frau Müller",
       "role": "HR-Leiterin",
       "avatar": "📋"
     },
@@ -104,12 +104,12 @@
     {
       "id": "s1_erste_stunde",
       "title": "Die erste Stunde",
-      "narrative": "Montagmorgen, 8 Uhr. Dein erster Tag in der IT-Abteilung der Firma TechnoTrade GmbH. Du hast kaum deinen Kaffee abgestellt, da steht Frau Mueller von HR in der Tuer: 'Gut dass Sie da sind! Wir haben fuenf offene Tickets und niemanden der sich kuemmert.' Auf deinem Bildschirm blinken die Tickets. Herr Schmidt, der Vertriebsleiter, steht bereits im Flur und gestikuliert wild: 'Mein Laptop geht nicht! Ich habe in einer Stunde eine Praesentation beim Kunden!' Sein Laptop-Akku ist leer — und er hat das falsche Netzteil eingesteckt. Hinter ihm fluestert Lisa, die Praktikantin: 'Ich hab was kaputt gemacht... bitte sag es niemand.'",
+      "narrative": "Montagmorgen, 8 Uhr. Dein erster Tag in der IT-Abteilung der Firma TechnoTrade GmbH. Du hast kaum deinen Kaffee abgestellt, da steht Frau Müller von HR in der Tür: 'Gut dass Sie da sind! Wir haben fünf offene Tickets und niemanden der sich kümmert.' Auf deinem Bildschirm blinken die Tickets. Herr Schmidt, der Vertriebsleiter, steht bereits im Flur und gestikuliert wild: 'Mein Laptop geht nicht! Ich habe in einer Stunde eine Präsentation beim Kunden!' Sein Laptop-Akku ist leer — und er hat das falsche Netzteil eingesteckt. Hinter ihm flüstert Lisa, die Praktikantin: 'Ich hab was kaputt gemacht... bitte sag es niemand.'",
       "image": "scene_office.png",
       "animation_in": "mission_start",
       "npc_dialog": {
-        "speaker": "hr_mueller",
-        "text": "Willkommen! Hier sind die fuenf Tickets. Herr Schmidt hat Prioritaet — der hat gleich Kundentermin. Und Lisa braucht auch Hilfe, die traut sich nur nicht zu fragen. Thomas ist heute auf einer Messe, der kommt erst um 14 Uhr.",
+        "speaker": "hr_müller",
+        "text": "Willkommen! Hier sind die fünf Tickets. Herr Schmidt hat Priorität — der hat gleich Kundentermin. Und Lisa braucht auch Hilfe, die traut sich nur nicht zu fragen. Thomas ist heute auf einer Messe, der kommt erst um 14 Uhr.",
         "portrait": "npc_mueller"
       },
       "choices": [
@@ -199,12 +199,12 @@
     },
     {
       "id": "s1_fail_overwhelmed",
-      "title": "Ueberfordert",
-      "narrative": "Du hast versucht alles gleichzeitig zu machen. Herrn Schmidts Laptop liegt halb zerlegt auf dem Tisch, Lisa wartet immer noch, und drei weitere Tickets sind unberuehrt. Thomas ruft von der Messe an: 'Hey, Neuer! Tief durchatmen. Eins nach dem anderen. Welches Problem hat den groessten Business Impact? Fang damit an.' Ein einfacher Rat, aber genau der richtige.",
+      "title": "Überfordert",
+      "narrative": "Du hast versucht alles gleichzeitig zu machen. Herrn Schmidts Laptop liegt halb zerlegt auf dem Tisch, Lisa wartet immer noch, und drei weitere Tickets sind unberührt. Thomas ruft von der Messe an: 'Hey, Neuer! Tief durchatmen. Eins nach dem anderen. Welches Problem hat den grössten Business Impact? Fang damit an.' Ein einfacher Rat, aber genau der richtige.",
       "image": "scene_office.png",
       "npc_dialog": {
         "speaker": "it_chef",
-        "text": "Erster Tag, ich weiss. Aber hier ist der wichtigste Tipp den ich dir geben kann: Priorisiere nach Business Impact, nicht nach Lautstaerke. Der der am lautesten schreit hat nicht immer das dringendste Problem.",
+        "text": "Erster Tag, ich weiß. Aber hier ist der wichtigste Tipp den ich dir geben kann: Priorisiere nach Business Impact, nicht nach Lautstärke. Der der am lautesten schreit hat nicht immer das dringendste Problem.",
         "portrait": "npc_thomas"
       },
       "choices": [
@@ -228,17 +228,17 @@
     {
       "id": "s2_hardware_chaos",
       "title": "Hardware-Chaos",
-      "narrative": "Neuer Arbeitsplatz fuer die Marketing-Abteilung einrichten. Der Monitor zeigt kein Bild — das DisplayPort-Kabel steckt, aber der Monitor steht auf HDMI-Eingang. Der Netzwerkdrucker im Flur druckt nicht: Treiber fehlt, die IP-Adresse ist falsch konfiguriert, und im Papierfach steckt ein Stau. Zwei USB-Maeuse werden nicht erkannt — USB-Port scheint tot. Mitten in der Arbeit kommt Herr Schmidt zurueck: 'Jetzt geht mein E-Mail auch nicht! Outlook sagt irgendwas von Zertifikat!' Er haelt dir sein Handy hin mit einem Screenshot einer SSL-Warnung.",
+      "narrative": "Neuer Arbeitsplatz für die Marketing-Abteilung einrichten. Der Monitor zeigt kein Bild — das DisplayPort-Kabel steckt, aber der Monitor steht auf HDMI-Eingang. Der Netzwerkdrucker im Flur druckt nicht: Treiber fehlt, die IP-Adresse ist falsch konfiguriert, und im Papierfach steckt ein Stau. Zwei USB-Mäuse werden nicht erkannt — USB-Port scheint tot. Mitten in der Arbeit kommt Herr Schmidt zurück: 'Jetzt geht mein E-Mail auch nicht! Outlook sagt irgendwas von Zertifikat!' Er hält dir sein Handy hin mit einem Screenshot einer SSL-Warnung.",
       "image": "scene_hardware.png",
       "npc_dialog": {
         "speaker": "user_schmidt",
-        "text": "Also ich hab da auf 'Trotzdem fortfahren' geklickt und jetzt kommt gar nichts mehr. Und der Becherhalter an meinem PC ist auch abgebrochen! Was fuer ein Laden ist das hier?",
+        "text": "Also ich hab da auf 'Trotzdem fortfahren' geklickt und jetzt kommt gar nichts mehr. Und der Becherhalter an meinem PC ist auch abgebrochen! Was für ein Laden ist das hier?",
         "portrait": "npc_schmidt"
       },
       "choices": [
         {
           "id": "c2_display",
-          "text": "Display-Anschluesse und Eingangssignal pruefen — DisplayPort, HDMI, Input Source",
+          "text": "Display-Anschlüsse und Eingangssignal prüfen — DisplayPort, HDMI, Input Source",
           "icon": "💺",
           "skill_check": {
             "pool_filter": "hardware",
@@ -292,7 +292,7 @@
         },
         {
           "id": "c2_diagnose",
-          "text": "Systematische Hardware-Diagnose: POST-Codes, Device Manager, USB-Controller pruefen",
+          "text": "Systematische Hardware-Diagnose: POST-Codes, Device Manager, USB-Controller prüfen",
           "icon": "🔧",
           "skill_check": {
             "pool_filter": "a_plus",
@@ -321,23 +321,23 @@
       "simulation": {
         "type": "cli_analysis",
         "pbq_question_id": null,
-        "description": "Device Manager Analyse: USB-Controller Status pruefen, unbekannte Geraete identifizieren, Treiber-Konflikte erkennen"
+        "description": "Device Manager Analyse: USB-Controller Status prüfen, unbekannte Geräte identifizieren, Treiber-Konflikte erkennen"
       }
     },
     {
       "id": "s3_netzwerk_probleme",
       "title": "Netzwerk-Probleme",
-      "narrative": "Halbzeit. Du hast gerade die Hardware-Probleme im Griff, da meldet sich die ganze zweite Etage: 'WLAN geht nicht!' Ein Blick in den Serverraum zeigt das Problem: Am Netzwerk-Switch blinken alle LEDs wie ein Weihnachtsbaum. Ein Kollege aus dem Vertrieb hat 'aufgeraeumt' und dabei ein Patchkabel von Port 1 in Port 2 gesteckt — ein klassischer Switching Loop. Das Spanning Tree Protocol hat kapituliert. Thomas schickt per Chat: 'Switching Loop, oder? Klassiker am ersten Tag. Tipp: Schau dir die MAC-Adresstabelle an.'",
+      "narrative": "Halbzeit. Du hast gerade die Hardware-Probleme im Griff, da meldet sich die ganze zweite Etage: 'WLAN geht nicht!' Ein Blick in den Serverraum zeigt das Problem: Am Netzwerk-Switch blinken alle LEDs wie ein Weihnachtsbaum. Ein Kollege aus dem Vertrieb hat 'aufgeräumt' und dabei ein Patchkabel von Port 1 in Port 2 gesteckt — ein klassischer Switching Loop. Das Spanning Tree Protocol hat kapituliert. Thomas schickt per Chat: 'Switching Loop, oder? Klassiker am ersten Tag. Tipp: Schau dir die MAC-Adresstabelle an.'",
       "image": "scene_serverroom.png",
       "npc_dialog": {
         "speaker": "it_chef",
-        "text": "Switching Loop — das passiert hier alle paar Monate. Jemand raeumt Kabel um und ploetzlich geht nichts mehr. Finde den Loop, zieh das Kabel, dann kommt STP wieder hoch. Und dann reden wir ueber Port Security.",
+        "text": "Switching Loop — das passiert hier alle paar Monate. Jemand räumt Kabel um und plötzlich geht nichts mehr. Finde den Loop, zieh das Kabel, dann kommt STP wieder hoch. Und dann reden wir über Port Security.",
         "portrait": "npc_thomas"
       },
       "choices": [
         {
           "id": "c3_topologie",
-          "text": "Netzwerk-Topologie nachverfolgen — STP-Status pruefen und Loop identifizieren",
+          "text": "Netzwerk-Topologie nachverfolgen — STP-Status prüfen und Loop identifizieren",
           "icon": "🌐",
           "skill_check": {
             "pool_filter": "troubleshooting",
@@ -391,7 +391,7 @@
         },
         {
           "id": "c3_patchpanel",
-          "text": "Kabelverbindungen im Patchpanel pruefen und dokumentieren",
+          "text": "Kabelverbindungen im Patchpanel prüfen und dokumentieren",
           "icon": "📝",
           "skill_check": {
             "pool_filter": "a_plus",
@@ -422,17 +422,17 @@
     {
       "id": "s4_software_krise",
       "title": "Software-Krise",
-      "narrative": "Lisa traut sich endlich zu dir: 'Ich hab Kaffee ueber meinen Laptop geschuettet. Die Tastatur reagiert nur noch teilweise und der Bildschirm flackert.' Der Laptop ist ein Firmenlaptop mit wichtigen Kundendaten. Gleichzeitig melden drei Kollegen: Nach dem letzten Windows-Update startet ihr Rechner nicht mehr — Bluescreen bei jedem Boot. Der Fehlercode: INACCESSIBLE_BOOT_DEVICE. Thomas kommentiert trocken: 'Update-Dienstag. Mein Lieblings-Wochentag.'",
+      "narrative": "Lisa traut sich endlich zu dir: 'Ich hab Kaffee über meinen Laptop geschüttet. Die Tastatur reagiert nur noch teilweise und der Bildschirm flackert.' Der Laptop ist ein Firmenlaptop mit wichtigen Kundendaten. Gleichzeitig melden drei Kollegen: Nach dem letzten Windows-Update startet ihr Rechner nicht mehr — Bluescreen bei jedem Boot. Der Fehlercode: INACCESSIBLE_BOOT_DEVICE. Thomas kommentiert trocken: 'Update-Dienstag. Mein Lieblings-Wochentag.'",
       "image": "scene_laptop_repair.png",
       "npc_dialog": {
         "speaker": "user_lisa",
-        "text": "Es tut mir so leid! Ich hatte den Kaffee direkt neben dem Laptop stehen und dann ist die Tasse umgekippt. Kann man die Daten noch retten? Da sind die ganzen Kundenpraesentation vom letzten Monat drauf...",
+        "text": "Es tut mir so leid! Ich hatte den Kaffee direkt neben dem Laptop stehen und dann ist die Tasse umgekippt. Kann man die Daten noch retten? Da sind die ganzen Kundenpräsentation vom letzten Monat drauf...",
         "portrait": "npc_lisa"
       },
       "choices": [
         {
           "id": "c4_lisa_laptop",
-          "text": "Lisas Laptop: Externe Tastatur anschliessen, Daten auf USB sichern, dann Geraetetausch",
+          "text": "Lisas Laptop: Externe Tastatur anschließen, Daten auf USB sichern, dann Gerätetausch",
           "icon": "💾",
           "skill_check": {
             "pool_filter": "hardware",
@@ -515,23 +515,23 @@
       "simulation": {
         "type": "cli_analysis",
         "pbq_question_id": null,
-        "description": "Windows Recovery Environment: Bootreihenfolge im BIOS aendern, Safe Mode starten, sfc /scannow und DISM ausfuehren"
+        "description": "Windows Recovery Environment: Bootreihenfolge im BIOS ändern, Safe Mode starten, sfc /scannow und DISM ausführen"
       }
     },
     {
       "id": "s5_feierabend",
       "title": "Feierabend?",
-      "narrative": "Es ist 17 Uhr, dein erster Tag neigt sich dem Ende. Aber zwei letzte Probleme warten: Die Klimaanlage im Serverraum ist ausgefallen. Die Temperatur steigt auf 35 Grad. Thomas hat remote Zugriff auf das Monitoring: 'Die CPUs throttlen schon. Wenn das so weitergeht, fahren die Server in 30 Minuten automatisch runter.' Ausserdem: Das naechtliche Backup laeuft seit 3 Tagen nicht — keiner hat es bemerkt. Der Backup-Job haengt mit der Meldung 'Target volume full'.",
+      "narrative": "Es ist 17 Uhr, dein erster Tag neigt sich dem Ende. Aber zwei letzte Probleme warten: Die Klimaanlage im Serverraum ist ausgefallen. Die Temperatur steigt auf 35 Grad. Thomas hat remote Zugriff auf das Monitoring: 'Die CPUs throttlen schon. Wenn das so weitergeht, fahren die Server in 30 Minuten automatisch runter.' Außerdem: Das nächtliche Backup läuft seit 3 Tagen nicht — keiner hat es bemerkt. Der Backup-Job hängt mit der Meldung 'Target volume full'.",
       "image": "scene_serverroom.png",
       "npc_dialog": {
         "speaker": "it_chef",
-        "text": "Okay, das ist jetzt ernst. Serverraum-Temperatur und Backup sind kritisch. Wenn die Server ueberhitzen UND wir kein aktuelles Backup haben, wird Montag sehr ungemuetlich. Du schaffst das — priorisiere richtig.",
+        "text": "Okay, das ist jetzt ernst. Serverraum-Temperatur und Backup sind kritisch. Wenn die Server überhitzen UND wir kein aktuelles Backup haben, wird Montag sehr ungemütlich. Du schaffst das — priorisiere richtig.",
         "portrait": "npc_thomas"
       },
       "choices": [
         {
           "id": "c5_temperatur",
-          "text": "Temperatur-Management: Nicht-kritische Server herunterfahren, Tueren oeffnen, Notfall-Luefter organisieren",
+          "text": "Temperatur-Management: Nicht-kritische Server herunterfahren, Türen öffnen, Notfall-Lüfter organisieren",
           "icon": "🌡️",
           "skill_check": {
             "pool_filter": "hardware",
@@ -616,12 +616,12 @@
     {
       "id": "epilog_success",
       "title": "IT-Held des ersten Tages",
-      "narrative": "18:30 Uhr. Alle Tickets geschlossen. Die Klimaanlage-Firma ist informiert und kommt morgen frueh. Server laufen stabil mit reduzierter Last. Backup laeuft wieder. Thomas kommt von der Messe zurueck und ist beeindruckt: 'Nicht schlecht fuer den ersten Tag. Die meisten Neuen schaffen nicht mal die Haelfte.' Herr Schmidt klopft dir auf die Schulter: 'Danke fuer den Laptop — die Praesentation lief super.' Sogar Lisa strahlt: 'Meine Daten sind gerettet!' Frau Mueller laechelt: 'Ich glaube, Sie passen gut ins Team.'",
+      "narrative": "18:30 Uhr. Alle Tickets geschlossen. Die Klimaanlage-Firma ist informiert und kommt morgen früh. Server laufen stabil mit reduzierter Last. Backup läuft wieder. Thomas kommt von der Messe zurück und ist beeindruckt: 'Nicht schlecht für den ersten Tag. Die meisten Neuen schaffen nicht mal die Hälfte.' Herr Schmidt klopft dir auf die Schulter: 'Danke für den Laptop — die Präsentation lief super.' Sogar Lisa strahlt: 'Meine Daten sind gerettet!' Frau Müller lächelt: 'Ich glaube, Sie passen gut ins Team.'",
       "image": "scene_victory.png",
       "animation_in": "campaign_complete",
       "npc_dialog": {
         "speaker": "it_chef",
-        "text": "Weisst du was? Fuer den ersten Tag war das richtig stark. Du hast priorisiert, systematisch gearbeitet und unter Druck einen kuehlen Kopf behalten. Morgen zeig ich dir den Rest. Willkommen im Team.",
+        "text": "Weißt du was? Für den ersten Tag war das richtig stark. Du hast priorisiert, systematisch gearbeitet und unter Druck einen kühlen Kopf behalten. Morgen zeig ich dir den Rest. Willkommen im Team.",
         "portrait": "npc_thomas"
       },
       "choices": [],
@@ -631,12 +631,12 @@
     },
     {
       "id": "epilog_partial",
-      "title": "Ueberlebt",
-      "narrative": "18 Uhr. Nicht alles ist perfekt: Ein Ticket ist noch offen, das Backup laeuft erst morgen frueh durch, und die Klimaanlage braucht professionelle Hilfe. Aber die wichtigsten Probleme sind geloest. Thomas nickt anerkennend: 'Besser als mein erster Tag. Da hab ich den Fileserver geloescht.' Lisa hat ihre Daten zurueck. Herr Schmidt meckert noch ein bisschen, aber sein Laptop laeuft. Frau Mueller sagt: 'Morgen wird einfacher. Versprochen.' Du bist dir nicht sicher ob du ihr glaubst.",
+      "title": "Überlebt",
+      "narrative": "18 Uhr. Nicht alles ist perfekt: Ein Ticket ist noch offen, das Backup läuft erst morgen früh durch, und die Klimaanlage braucht professionelle Hilfe. Aber die wichtigsten Probleme sind gelöst. Thomas nickt anerkennend: 'Besser als mein erster Tag. Da hab ich den Fileserver gelöscht.' Lisa hat ihre Daten zurück. Herr Schmidt meckert noch ein bisschen, aber sein Laptop läuft. Frau Müller sagt: 'Morgen wird einfacher. Versprochen.' Du bist dir nicht sicher ob du ihr glaubst.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
-        "speaker": "hr_mueller",
-        "text": "Nicht perfekt, aber solide. Die wichtigsten Probleme sind geloest und niemand hat Daten verloren. Das ist mehr als ich erwartet habe. Morgen frueh gibt es erstmal Kaffee — das haben Sie sich verdient.",
+        "speaker": "hr_müller",
+        "text": "Nicht perfekt, aber solide. Die wichtigsten Probleme sind gelöst und niemand hat Daten verloren. Das ist mehr als ich erwartet habe. Morgen früh gibt es erstmal Kaffee — das haben Sie sich verdient.",
         "portrait": "npc_mueller"
       },
       "choices": [],
@@ -647,11 +647,11 @@
     {
       "id": "epilog_fail",
       "title": "Lehrreiches Chaos",
-      "narrative": "18 Uhr. Ehrlich gesagt: Es haette besser laufen koennen. Einige Tickets sind noch offen, das Backup-Problem ist nur halb geloest, und die Serverraum-Temperatur ist immer noch kritisch. Aber du hast verdammt viel gelernt. Thomas setzt sich neben dich: 'Hey, Kopf hoch. Mein erster Tag war schlimmer — ich hab aus Versehen die Telefonanlage abgeschaltet. Das Wichtigste: Du hast nichts unwiederbringlich zerstoert. Morgen machen wir eine Post-Mortem-Analyse und dann wird alles besser.' Lisa bringt dir einen Kaffee. Herr Schmidt meckert noch, aber das macht er immer.",
+      "narrative": "18 Uhr. Ehrlich gesagt: Es hätte besser laufen können. Einige Tickets sind noch offen, das Backup-Problem ist nur halb gelöst, und die Serverraum-Temperatur ist immer noch kritisch. Aber du hast verdammt viel gelernt. Thomas setzt sich neben dich: 'Hey, Kopf hoch. Mein erster Tag war schlimmer — ich hab aus Versehen die Telefonanlage abgeschaltet. Das Wichtigste: Du hast nichts unwiederbringlich zerstört. Morgen machen wir eine Post-Mortem-Analyse und dann wird alles besser.' Lisa bringt dir einen Kaffee. Herr Schmidt meckert noch, aber das macht er immer.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "it_chef",
-        "text": "Jeder erste Tag ist chaotisch. Wichtig ist was du daraus lernst. Morgen setzen wir uns zusammen und gehen jeden Punkt durch. Du wirst sehen — in einer Woche lachst du darueber.",
+        "text": "Jeder erste Tag ist chaotisch. Wichtig ist was du daraus lernst. Morgen setzen wir uns zusammen und gehen jeden Punkt durch. Du wirst sehen — in einer Woche lachst du darüber.",
         "portrait": "npc_thomas"
       },
       "choices": [],
@@ -662,23 +662,23 @@
   ],
   "epilog": {
     "success": {
-      "narrative": "Alle Tickets geschlossen. Server stabil. Backup laeuft. Thomas ist beeindruckt, Herr Schmidt bedankt sich, Lisa strahlt. Willkommen im Team — Festanstellung gesichert.",
+      "narrative": "Alle Tickets geschlossen. Server stabil. Backup läuft. Thomas ist beeindruckt, Herr Schmidt bedankt sich, Lisa strahlt. Willkommen im Team — Festanstellung gesichert.",
       "image": "scene_victory.png",
       "animation": "campaign_complete"
     },
     "partial": {
-      "narrative": "Nicht perfekt, aber die wichtigsten Probleme sind geloest. Thomas nickt anerkennend: 'Besser als mein erster Tag.' Morgen wird einfacher. Vielleicht.",
+      "narrative": "Nicht perfekt, aber die wichtigsten Probleme sind gelöst. Thomas nickt anerkennend: 'Besser als mein erster Tag.' Morgen wird einfacher. Vielleicht.",
       "image": "scene_partial_victory.png"
     },
     "fail": {
-      "narrative": "Chaotisch, aber lehrreich. Nichts unwiederbringlich zerstoert. Thomas wird morgen bei der Post-Mortem-Analyse helfen. In einer Woche lachst du darueber.",
+      "narrative": "Chaotisch, aber lehrreich. Nichts unwiederbringlich zerstört. Thomas wird morgen bei der Post-Mortem-Analyse helfen. In einer Woche lachst du darüber.",
       "image": "scene_partial_victory.png"
     }
   },
   "workplace_npcs": [
     {
       "character_id": "uschi",
-      "role_in_story": "Kann nicht drucken, Monitor ist schwarz, Tastatur geht nicht — haelt aber den Laden zusammen",
+      "role_in_story": "Kann nicht drucken, Monitor ist schwarz, Tastatur geht nicht — hält aber den Laden zusammen",
       "default_emotion": "confused"
     }
   ]

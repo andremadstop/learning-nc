@@ -15,7 +15,7 @@
     "id": "eap-fast-order",
     "title": "EAP-FAST Reihenfolge",
     "method": "eap-fast",
-    "question": "Welcher Schritt oeffnet den Port am Ende?"
+    "question": "Welcher Schritt öffnet den Port am Ende?"
   },
   {
     "id": "method-security",
@@ -27,6 +27,6 @@
     "id": "server-cert",
     "title": "Server-Zertifikat",
     "method": "peap",
-    "question": "Welche Methode benoetigt auf jeden Fall ein Server-Zertifikat?"
+    "question": "Welche Methode benötigt auf jeden Fall ein Server-Zertifikat?"
   }
 ]

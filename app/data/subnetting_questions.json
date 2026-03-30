@@ -6,10 +6,22 @@
       "text": "Welche Subnetzmaske gehört zur CIDR-Notation /27?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "255.255.255.224", "is_correct": true},
-        {"text": "255.255.255.192", "is_correct": false},
-        {"text": "255.255.255.240", "is_correct": false},
-        {"text": "255.255.255.248", "is_correct": false}
+        {
+          "text": "255.255.255.224",
+          "is_correct": true
+        },
+        {
+          "text": "255.255.255.192",
+          "is_correct": false
+        },
+        {
+          "text": "255.255.255.240",
+          "is_correct": false
+        },
+        {
+          "text": "255.255.255.248",
+          "is_correct": false
+        }
       ],
       "explanation": "/27 bedeutet 27 Netz-Bits. Das vierte Oktett hat 3 Netz-Bits (128+64+32=224). Die Maske ist 255.255.255.224.",
       "chapter_ref": "Subnetting Basics",
@@ -19,10 +31,22 @@
       "text": "Wie lautet die Wildcard-Maske für ein /29 Subnetz?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "0.0.0.7", "is_correct": true},
-        {"text": "0.0.0.15", "is_correct": false},
-        {"text": "0.0.0.3", "is_correct": false},
-        {"text": "0.0.0.31", "is_correct": false}
+        {
+          "text": "0.0.0.7",
+          "is_correct": true
+        },
+        {
+          "text": "0.0.0.15",
+          "is_correct": false
+        },
+        {
+          "text": "0.0.0.3",
+          "is_correct": false
+        },
+        {
+          "text": "0.0.0.31",
+          "is_correct": false
+        }
       ],
       "explanation": "/29 entspricht der Maske 255.255.255.248. Die Wildcard-Maske ist das Inverse: 255-255.255-255.255-255.255-248 = 0.0.0.7.",
       "chapter_ref": "Subnetting Basics",
@@ -32,10 +56,22 @@
       "text": "Ein Netzwerk hat die CIDR /30. Wie viele nutzbare Host-Adressen stehen zur Verfügung?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "2", "is_correct": true},
-        {"text": "4", "is_correct": false},
-        {"text": "6", "is_correct": false},
-        {"text": "1", "is_correct": false}
+        {
+          "text": "2",
+          "is_correct": true
+        },
+        {
+          "text": "4",
+          "is_correct": false
+        },
+        {
+          "text": "6",
+          "is_correct": false
+        },
+        {
+          "text": "1",
+          "is_correct": false
+        }
       ],
       "explanation": "Formel: 2^(32-prefix) - 2. Hier: 2^(32-30) - 2 = 2^2 - 2 = 4 - 2 = 2. Genutzt für Point-to-Point Verbindungen.",
       "chapter_ref": "Host Calculation",
@@ -45,10 +81,22 @@
       "text": "Welche der folgenden IP-Adressen gehört zum APIPA-Bereich?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "169.254.10.5", "is_correct": true},
-        {"text": "192.168.1.1", "is_correct": false},
-        {"text": "172.16.0.100", "is_correct": false},
-        {"text": "10.0.0.1", "is_correct": false}
+        {
+          "text": "169.254.10.5",
+          "is_correct": true
+        },
+        {
+          "text": "192.168.1.1",
+          "is_correct": false
+        },
+        {
+          "text": "172.16.0.100",
+          "is_correct": false
+        },
+        {
+          "text": "10.0.0.1",
+          "is_correct": false
+        }
       ],
       "explanation": "APIPA (Automatic Private IP Addressing) nutzt den Bereich 169.254.0.1 bis 169.254.255.254, wenn kein DHCP-Server erreichbar ist.",
       "chapter_ref": "Special IP Ranges",
@@ -58,10 +106,22 @@
       "text": "Wie lautet die Netzwerkadresse für die IP 192.168.50.100 mit der Maske /26?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "192.168.50.64", "is_correct": true},
-        {"text": "192.168.50.0", "is_correct": false},
-        {"text": "192.168.50.128", "is_correct": false},
-        {"text": "192.168.50.96", "is_correct": false}
+        {
+          "text": "192.168.50.64",
+          "is_correct": true
+        },
+        {
+          "text": "192.168.50.0",
+          "is_correct": false
+        },
+        {
+          "text": "192.168.50.128",
+          "is_correct": false
+        },
+        {
+          "text": "192.168.50.96",
+          "is_correct": false
+        }
       ],
       "explanation": "/26 bedeutet eine Blockgröße von 64 (256-192). Die Blöcke sind .0, .64, .128. Die IP .100 liegt im Block ab .64.",
       "chapter_ref": "Network Calculation",
@@ -71,10 +131,22 @@
       "text": "Was ist die Broadcast-Adresse für das Subnetz 10.1.1.0/28?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "10.1.1.15", "is_correct": true},
-        {"text": "10.1.1.31", "is_correct": false},
-        {"text": "10.1.1.255", "is_correct": false},
-        {"text": "10.1.1.14", "is_correct": false}
+        {
+          "text": "10.1.1.15",
+          "is_correct": true
+        },
+        {
+          "text": "10.1.1.31",
+          "is_correct": false
+        },
+        {
+          "text": "10.1.1.255",
+          "is_correct": false
+        },
+        {
+          "text": "10.1.1.14",
+          "is_correct": false
+        }
       ],
       "explanation": "/28 hat eine Blockgröße von 16 (2^4). Das Netz beginnt bei .0 und endet bei .15 (nächstes Netz .16). .15 ist der Broadcast.",
       "chapter_ref": "Network Calculation",
@@ -84,10 +156,22 @@
       "text": "Wie viele Subnetze entstehen, wenn man ein /24 Netzwerk in /27 Subnetze aufteilt?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "8", "is_correct": true},
-        {"text": "4", "is_correct": false},
-        {"text": "16", "is_correct": false},
-        {"text": "6", "is_correct": false}
+        {
+          "text": "8",
+          "is_correct": true
+        },
+        {
+          "text": "4",
+          "is_correct": false
+        },
+        {
+          "text": "16",
+          "is_correct": false
+        },
+        {
+          "text": "6",
+          "is_correct": false
+        }
       ],
       "explanation": "Die Differenz der Präfixe ist 27 - 24 = 3 Bits. 2^3 = 8 Subnetze.",
       "chapter_ref": "Subnetting Scenarios",
@@ -97,10 +181,22 @@
       "text": "Welcher CIDR-Präfix wird benötigt, um mindestens 50 nutzbare Hosts pro Subnetz bereitzustellen?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "/26", "is_correct": true},
-        {"text": "/27", "is_correct": false},
-        {"text": "/25", "is_correct": false},
-        {"text": "/24", "is_correct": false}
+        {
+          "text": "/26",
+          "is_correct": true
+        },
+        {
+          "text": "/27",
+          "is_correct": false
+        },
+        {
+          "text": "/25",
+          "is_correct": false
+        },
+        {
+          "text": "/24",
+          "is_correct": false
+        }
       ],
       "explanation": "/26 bietet 2^6 - 2 = 62 Hosts. /27 bietet nur 2^5 - 2 = 30 Hosts. /26 ist das kleinste passende Subnetz.",
       "chapter_ref": "Subnetting Scenarios",
@@ -110,10 +206,22 @@
       "text": "Welche IP-Adresse wird standardmäßig als Loopback-Adresse verwendet?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "127.0.0.1", "is_correct": true},
-        {"text": "0.0.0.0", "is_correct": false},
-        {"text": "255.255.255.255", "is_correct": false},
-        {"text": "169.254.0.1", "is_correct": false}
+        {
+          "text": "127.0.0.1",
+          "is_correct": true
+        },
+        {
+          "text": "0.0.0.0",
+          "is_correct": false
+        },
+        {
+          "text": "255.255.255.255",
+          "is_correct": false
+        },
+        {
+          "text": "169.254.0.1",
+          "is_correct": false
+        }
       ],
       "explanation": "Der gesamte Bereich 127.0.0.0/8 ist für Loopback reserviert, wobei 127.0.0.1 die am häufigsten genutzte Adresse ist.",
       "chapter_ref": "Special IP Ranges",
@@ -123,10 +231,22 @@
       "text": "Welcher private IP-Bereich gehört zur Klasse B nach RFC 1918?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "172.16.0.0 - 172.31.255.255", "is_correct": true},
-        {"text": "10.0.0.0 - 10.255.255.255", "is_correct": false},
-        {"text": "192.168.0.0 - 192.168.255.255", "is_correct": false},
-        {"text": "169.254.0.0 - 169.254.255.255", "is_correct": false}
+        {
+          "text": "172.16.0.0 - 172.31.255.255",
+          "is_correct": true
+        },
+        {
+          "text": "10.0.0.0 - 10.255.255.255",
+          "is_correct": false
+        },
+        {
+          "text": "192.168.0.0 - 192.168.255.255",
+          "is_correct": false
+        },
+        {
+          "text": "169.254.0.0 - 169.254.255.255",
+          "is_correct": false
+        }
       ],
       "explanation": "RFC 1918 definiert 10.0.0.0/8 (Klasse A), 172.16.0.0/12 (Klasse B) und 192.168.0.0/16 (Klasse C) als privat.",
       "chapter_ref": "Special IP Ranges",
@@ -136,10 +256,22 @@
       "text": "In einem /25 Netzwerk, was ist die letzte nutzbare Host-Adresse im ersten Subnetz?",
       "type": "multiple_choice",
       "answers": [
-        {"text": ".126", "is_correct": true},
-        {"text": ".127", "is_correct": false},
-        {"text": ".128", "is_correct": false},
-        {"text": ".254", "is_correct": false}
+        {
+          "text": ".126",
+          "is_correct": true
+        },
+        {
+          "text": ".127",
+          "is_correct": false
+        },
+        {
+          "text": ".128",
+          "is_correct": false
+        },
+        {
+          "text": ".254",
+          "is_correct": false
+        }
       ],
       "explanation": "/25 teilt ein /24 in zwei Hälften: 0-127 und 128-255. Im ersten Netz ist .0 die Netz-ID, .127 der Broadcast, also .126 der letzte Host.",
       "chapter_ref": "Network Calculation",
@@ -149,10 +281,22 @@
       "text": "Was ist die binäre Entsprechung des Dezimalwerts 192 in einer Subnetzmaske?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "11000000", "is_correct": true},
-        {"text": "11100000", "is_correct": false},
-        {"text": "10000000", "is_correct": false},
-        {"text": "11110000", "is_correct": false}
+        {
+          "text": "11000000",
+          "is_correct": true
+        },
+        {
+          "text": "11100000",
+          "is_correct": false
+        },
+        {
+          "text": "10000000",
+          "is_correct": false
+        },
+        {
+          "text": "11110000",
+          "is_correct": false
+        }
       ],
       "explanation": "128 (2^7) + 64 (2^6) = 192. Das entspricht den ersten zwei Bits eines Oktetts: 11000000.",
       "chapter_ref": "Subnetting Basics",
@@ -162,10 +306,22 @@
       "text": "Ein Administrator möchte 10.0.0.0/24 in Subnetze für jeweils 12 Hosts aufteilen. Welches Präfix ist am effizientesten?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "/28", "is_correct": true},
-        {"text": "/27", "is_correct": false},
-        {"text": "/29", "is_correct": false},
-        {"text": "/30", "is_correct": false}
+        {
+          "text": "/28",
+          "is_correct": true
+        },
+        {
+          "text": "/27",
+          "is_correct": false
+        },
+        {
+          "text": "/29",
+          "is_correct": false
+        },
+        {
+          "text": "/30",
+          "is_correct": false
+        }
       ],
       "explanation": "12 Hosts + 2 (Netz/BC) = 14 Adressen. 2^4 = 16 ist die kleinste Potenz. 32-4 = /28.",
       "chapter_ref": "Subnetting Scenarios",
@@ -175,10 +331,22 @@
       "text": "Was beschreibt die Adresse 0.0.0.0 in einer Routing-Tabelle?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "Standardroute (Default Route)", "is_correct": true},
-        {"text": "Loopback-Interface", "is_correct": false},
-        {"text": "Lokaler Broadcast", "is_correct": false},
-        {"text": "Nicht zugewiesene IP", "is_correct": false}
+        {
+          "text": "Standardroute (Default Route)",
+          "is_correct": true
+        },
+        {
+          "text": "Loopback-Interface",
+          "is_correct": false
+        },
+        {
+          "text": "Lokaler Broadcast",
+          "is_correct": false
+        },
+        {
+          "text": "Nicht zugewiesene IP",
+          "is_correct": false
+        }
       ],
       "explanation": "0.0.0.0/0 steht für alle Ziele, die nicht explizit in der Routing-Tabelle aufgeführt sind (Default Gateway Pfad).",
       "chapter_ref": "Special IP Ranges",
@@ -188,10 +356,22 @@
       "text": "Welcher Adressbereich ist für Multicast reserviert?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "224.0.0.0 - 239.255.255.255", "is_correct": true},
-        {"text": "240.0.0.0 - 255.255.255.254", "is_correct": false},
-        {"text": "192.0.0.0 - 223.255.255.255", "is_correct": false},
-        {"text": "128.0.0.0 - 191.255.255.255", "is_correct": false}
+        {
+          "text": "224.0.0.0 - 239.255.255.255",
+          "is_correct": true
+        },
+        {
+          "text": "240.0.0.0 - 255.255.255.254",
+          "is_correct": false
+        },
+        {
+          "text": "192.0.0.0 - 223.255.255.255",
+          "is_correct": false
+        },
+        {
+          "text": "128.0.0.0 - 191.255.255.255",
+          "is_correct": false
+        }
       ],
       "explanation": "Multicast-Adressen gehören zur Klasse D (224-239 im ersten Oktett).",
       "chapter_ref": "Special IP Ranges",
@@ -201,10 +381,22 @@
       "text": "Bei VLSM (Variable Length Subnet Masking), welche Regel ist für die Zuweisung am wichtigsten?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "Größtes Subnetz zuerst zuweisen", "is_correct": true},
-        {"text": "Kleinstes Subnetz zuerst zuweisen", "is_correct": false},
-        {"text": "Alphabetische Reihenfolge der Abteilungen", "is_correct": false},
-        {"text": "Immer /24 als Basis nutzen", "is_correct": false}
+        {
+          "text": "Größtes Subnetz zuerst zuweisen",
+          "is_correct": true
+        },
+        {
+          "text": "Kleinstes Subnetz zuerst zuweisen",
+          "is_correct": false
+        },
+        {
+          "text": "Alphabetische Reihenfolge der Abteilungen",
+          "is_correct": false
+        },
+        {
+          "text": "Immer /24 als Basis nutzen",
+          "is_correct": false
+        }
       ],
       "explanation": "Um Adressverschwendung und Überlappungen zu vermeiden, beginnt man bei VLSM immer mit dem größten Bedarf.",
       "chapter_ref": "Subnetting Scenarios",
@@ -214,10 +406,22 @@
       "text": "Wie viele Hosts bietet ein /31 Netzwerk laut RFC 3021?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "2", "is_correct": true},
-        {"text": "0", "is_correct": false},
-        {"text": "1", "is_correct": false},
-        {"text": "4", "is_correct": false}
+        {
+          "text": "2",
+          "is_correct": true
+        },
+        {
+          "text": "0",
+          "is_correct": false
+        },
+        {
+          "text": "1",
+          "is_correct": false
+        },
+        {
+          "text": "4",
+          "is_correct": false
+        }
       ],
       "explanation": "In modernen Routern erlaubt RFC 3021 die Nutzung von /31 für Point-to-Point Links, wobei Netzadresse und Broadcast als Hosts genutzt werden.",
       "chapter_ref": "Host Calculation",
@@ -227,10 +431,22 @@
       "text": "Berechne die Netz-ID für 172.16.45.10 /22.",
       "type": "multiple_choice",
       "answers": [
-        {"text": "172.16.44.0", "is_correct": true},
-        {"text": "172.16.45.0", "is_correct": false},
-        {"text": "172.16.40.0", "is_correct": false},
-        {"text": "172.16.32.0", "is_correct": false}
+        {
+          "text": "172.16.44.0",
+          "is_correct": true
+        },
+        {
+          "text": "172.16.45.0",
+          "is_correct": false
+        },
+        {
+          "text": "172.16.40.0",
+          "is_correct": false
+        },
+        {
+          "text": "172.16.32.0",
+          "is_correct": false
+        }
       ],
       "explanation": "/22 im dritten Oktett bedeutet Blockgröße 4 (2^(24-22)). Die Blöcke sind .40, .44, .48. .45 liegt im Block ab .44.",
       "chapter_ref": "Network Calculation",
@@ -240,10 +456,22 @@
       "text": "Was ist der Hauptvorteil von Supernetting (CIDR)?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "Reduzierung der Größe von Routing-Tabellen", "is_correct": true},
-        {"text": "Erhöhung der Anzahl verfügbarer IPv4 Adressen", "is_correct": false},
-        {"text": "Vermeidung von IP-Kollisionen", "is_correct": false},
-        {"text": "Verschlüsselung des Traffics", "is_correct": false}
+        {
+          "text": "Reduzierung der Größe von Routing-Tabellen",
+          "is_correct": true
+        },
+        {
+          "text": "Erhöhung der Anzahl verfügbarer IPv4 Adressen",
+          "is_correct": false
+        },
+        {
+          "text": "Vermeidung von IP-Kollisionen",
+          "is_correct": false
+        },
+        {
+          "text": "Verschlüsselung des Traffics",
+          "is_correct": false
+        }
       ],
       "explanation": "Durch Route Aggregation (Summarization) können viele kleine Netze als ein großer Eintrag in der Routing-Tabelle geführt werden.",
       "chapter_ref": "Subnetting Basics",
@@ -253,10 +481,22 @@
       "text": "Welche Subnetzmaske entspricht CIDR /19?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "255.255.224.0", "is_correct": true},
-        {"text": "255.255.240.0", "is_correct": false},
-        {"text": "255.224.0.0", "is_correct": false},
-        {"text": "255.255.248.0", "is_correct": false}
+        {
+          "text": "255.255.224.0",
+          "is_correct": true
+        },
+        {
+          "text": "255.255.240.0",
+          "is_correct": false
+        },
+        {
+          "text": "255.224.0.0",
+          "is_correct": false
+        },
+        {
+          "text": "255.255.248.0",
+          "is_correct": false
+        }
       ],
       "explanation": "/19 bedeutet 16 Bits (255.255) + 3 Bits im dritten Oktett (128+64+32=224). Also 255.255.224.0.",
       "chapter_ref": "Subnetting Basics",
@@ -266,10 +506,22 @@
       "text": "Ein Subnetz hat die Maske 255.255.255.248. Wie lautet der Broadcast für das Netz, in dem die IP .20 liegt?",
       "type": "multiple_choice",
       "answers": [
-        {"text": ".23", "is_correct": true},
-        {"text": ".24", "is_correct": false},
-        {"text": ".31", "is_correct": false},
-        {"text": ".15", "is_correct": false}
+        {
+          "text": ".23",
+          "is_correct": true
+        },
+        {
+          "text": ".24",
+          "is_correct": false
+        },
+        {
+          "text": ".31",
+          "is_correct": false
+        },
+        {
+          "text": ".15",
+          "is_correct": false
+        }
       ],
       "explanation": "Blockgröße 8 (256-248). Netze: .0, .8, .16, .24. .20 liegt im Netz ab .16. Das Netz geht bis .23 (Broadcast).",
       "chapter_ref": "Network Calculation",
@@ -279,10 +531,22 @@
       "text": "Welche CIDR-Notation wird für eine Host-Route (einzelne IP) verwendet?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "/32", "is_correct": true},
-        {"text": "/0", "is_correct": false},
-        {"text": "/1", "is_correct": false},
-        {"text": "/31", "is_correct": false}
+        {
+          "text": "/32",
+          "is_correct": true
+        },
+        {
+          "text": "/0",
+          "is_correct": false
+        },
+        {
+          "text": "/1",
+          "is_correct": false
+        },
+        {
+          "text": "/31",
+          "is_correct": false
+        }
       ],
       "explanation": "/32 bedeutet, dass alle 32 Bits fixiert sind, was genau eine IP-Adresse definiert.",
       "chapter_ref": "Host Calculation",
@@ -292,10 +556,22 @@
       "text": "Wie viele /24 Netzwerke passen in ein /21 Supernetz?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "8", "is_correct": true},
-        {"text": "4", "is_correct": false},
-        {"text": "16", "is_correct": false},
-        {"text": "32", "is_correct": false}
+        {
+          "text": "8",
+          "is_correct": true
+        },
+        {
+          "text": "4",
+          "is_correct": false
+        },
+        {
+          "text": "16",
+          "is_correct": false
+        },
+        {
+          "text": "32",
+          "is_correct": false
+        }
       ],
       "explanation": "Differenz: 24 - 21 = 3 Bits. 2^3 = 8.",
       "chapter_ref": "Subnetting Scenarios",
@@ -305,10 +581,22 @@
       "text": "Welche IP-Adresse ist ein gültiger privater Host in 10.0.0.0/8?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "10.255.255.254", "is_correct": true},
-        {"text": "10.255.255.255", "is_correct": false},
-        {"text": "11.0.0.1", "is_correct": false},
-        {"text": "10.0.0.0", "is_correct": false}
+        {
+          "text": "10.255.255.254",
+          "is_correct": true
+        },
+        {
+          "text": "10.255.255.255",
+          "is_correct": false
+        },
+        {
+          "text": "11.0.0.1",
+          "is_correct": false
+        },
+        {
+          "text": "10.0.0.0",
+          "is_correct": false
+        }
       ],
       "explanation": "10.0.0.0 ist die Netz-ID, 10.255.255.255 der Broadcast. 10.255.255.254 ist der letzte gültige Host.",
       "chapter_ref": "Special IP Ranges",
@@ -318,10 +606,22 @@
       "text": "Warum wird bei der Host-Berechnung (2^n) immer 2 abgezogen?",
       "type": "multiple_choice",
       "answers": [
-        {"text": "Für Netzwerk-ID und Broadcast-Adresse", "is_correct": true},
-        {"text": "Für Gateway und DNS-Server", "is_correct": false},
-        {"text": "Für Loopback und Multicast", "is_correct": false},
-        {"text": "Aus historischen Gründen ohne technische Relevanz", "is_correct": false}
+        {
+          "text": "Für Netzwerk-ID und Broadcast-Adresse",
+          "is_correct": true
+        },
+        {
+          "text": "Für Gateway und DNS-Server",
+          "is_correct": false
+        },
+        {
+          "text": "Für Loopback und Multicast",
+          "is_correct": false
+        },
+        {
+          "text": "Aus historischen Gründen ohne technische Relevanz",
+          "is_correct": false
+        }
       ],
       "explanation": "Die erste Adresse eines Subnetzes (Netz-ID) und die letzte (Broadcast) dürfen nicht an Hosts vergeben werden.",
       "chapter_ref": "Host Calculation",

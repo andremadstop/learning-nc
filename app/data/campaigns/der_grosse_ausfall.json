@@ -1,7 +1,7 @@
 {
   "campaign_id": "der_grosse_ausfall",
   "version": "1.0.0",
-  "title": "Der grosse Ausfall",
+  "title": "Der große Ausfall",
   "description": "Freitagnachmittag. Das Netzwerk ist tot. Herr Brenner dreht durch. Klaus war's - oder doch Torsten?",
   "duration_minutes": 25,
   "difficulty": "intermediate",
@@ -46,7 +46,7 @@
         "id": "start",
         "type": "story",
         "title": "Freitagabend",
-        "narrative": "Es ist Freitag, 16:30 Uhr. Die Sonne faellt schraeg durch die Jalousien deines neuen Bueros, und du kannst den Duft von Freiheit und dem bevorstehenden Wochenende fast schon riechen. Du hast gerade deine letzte Dokumentation fuer heute abgespeichert, als ploetzlich ein unnatuerliches, tiefes Summen durch den Raum geht. In einer makabren Choreografie wechseln alle Monitorwaende im Network Operations Center gleichzeitig von beruhigendem Blau auf ein aggressiv pulsierendes Alarm-Rot.",
+        "narrative": "Es ist Freitag, 16:30 Uhr. Die Sonne fällt schräg durch die Jalousien deines neuen Büros, und du kannst den Duft von Freiheit und dem bevorstehenden Wochenende fast schon riechen. Du hast gerade deine letzte Dokumentation für heute abgespeichert, als plötzlich ein unnatürliches, tiefes Summen durch den Raum geht. In einer makabren Choreografie wechseln alle Monitorwände im Network Operations Center gleichzeitig von beruhigendem Blau auf ein aggressiv pulsierendes Alarm-Rot.",
         "start": true,
         "act": 1,
         "effects": [
@@ -58,13 +58,13 @@
       {
         "id": "manager_panik",
         "type": "story",
-        "title": "Brenner stuermt rein",
-        "narrative": "Die Tuer fliegt mit so viel Schwung auf, dass die Klinke eine Delle in die Wand schlaegt. Herr Brenner stuermt herein, seine Krawatte haengt schief, und er haelt sein Smartphone hoch, als waere es eine heilige Reliquie, die den Geist aufgegeben hat. Er sieht aus, als haette er gerade einen Geist gesehen - oder schlimmer: als haette er gerade erfahren, dass sein LinkedIn-Profil geloescht wurde.",
+        "title": "Brenner stürmt rein",
+        "narrative": "Die Tür fliegt mit so viel Schwung auf, dass die Klinke eine Delle in die Wand schlägt. Herr Brenner stürmt herein, seine Krawatte hängt schief, und er hält sein Smartphone hoch, als wäre es eine heilige Reliquie, die den Geist aufgegeben hat. Er sieht aus, als hätte er gerade einen Geist gesehen - oder schlimmer: als hätte er gerade erfahren, dass sein LinkedIn-Profil gelöscht wurde.",
         "act": 1,
         "npc_dialog": {
           "speaker": "Herr Brenner",
           "emotion": "frustrated",
-          "text": "Hoeren Sie das? Das ist das Geraeusch des digitalen Untergangs! Meine Cloud ist weg! Einfach weg! Ich wollte gerade die Synergie-Matrix fuer das Board-Meeting hochladen, aber der Browser sagt 'DNS_PROBE_FINISHED_NO_INTERNET'. Was bedeutet das ueberhaupt? Ist das Internet jetzt... leer? Koennen wir nicht einfach die Cloud neustarten oder den Hyperlink wieder einstecken? In meinem letzten Unternehmen hatten wir sowas nicht, da hat das WLAN einfach... geatmet!"
+          "text": "Hören Sie das? Das ist das Geräusch des digitalen Untergangs! Meine Cloud ist weg! Einfach weg! Ich wollte gerade die Synergie-Matrix für das Board-Meeting hochladen, aber der Browser sagt 'DNS_PROBE_FINISHED_NO_INTERNET'. Was bedeutet das überhaupt? Ist das Internet jetzt... leer? Können wir nicht einfach die Cloud neustarten oder den Hyperlink wieder einstecken? In meinem letzten Unternehmen hatten wir sowas nicht, da hat das WLAN einfach... geatmet!"
         },
         "effects": []
       },
@@ -72,7 +72,7 @@
         "id": "brenner_briefing",
         "type": "story",
         "title": "Brenner beruhigt",
-        "narrative": "Du ziehst Herr Brenners Fokus von seiner sterbenden 'Cloud' auf etwas Greifbares zurueck: eine klare Ansage, ein kurzer Status, kein Drama. Das hilft. Zumindest genug, damit er fuer ein paar Minuten keine neuen Management-Buzzwords erfindet.",
+        "narrative": "Du ziehst Herr Brenners Fokus von seiner sterbenden 'Cloud' auf etwas Greifbares zurück: eine klare Ansage, ein kurzer Status, kein Drama. Das hilft. Zumindest genug, damit er für ein paar Minuten keine neuen Management-Buzzwords erfindet.",
         "act": 1,
         "effects": [
           {
@@ -103,7 +103,7 @@
         "id": "brenner_humor",
         "type": "story",
         "title": "Trockener Humor",
-        "narrative": "Dein trockener Spruch nimmt der Situation kurz die Spitze. Brenner starrt dich erst entsetzt an, dann nickt er hektisch, als waere Ironie auch nur eine weitere Troubleshooting-Methode. Sabine verzieht im Hintergrund immerhin fast ein Laecheln.",
+        "narrative": "Dein trockener Spruch nimmt der Situation kurz die Spitze. Brenner starrt dich erst entsetzt an, dann nickt er hektisch, als wäre Ironie auch nur eine weitere Troubleshooting-Methode. Sabine verzieht im Hintergrund immerhin fast ein Lächeln.",
         "act": 1,
         "effects": [
           {
@@ -117,12 +117,12 @@
         "id": "erste_diagnose",
         "type": "story",
         "title": "Erste Diagnose",
-        "narrative": "Du setzt dich an die Konsole und die Textzeilen rasen an deinen Augen vorbei wie im Vorspann eines Hacker-Films aus den 90ern. Deine Finger fliegen ueber die Tastatur, waehrend du versuchst, das Herzstueck des Netzwerks zu erreichen. Die Diagnose ist eindeutig: Die Firewall blockiert alles, was nicht bei drei auf den Baeumen ist, und der DNS-Server scheint zu glauben, dass das gesamte lokale Netzwerk jetzt in der Antarktis liegt.",
+        "narrative": "Du setzt dich an die Konsole und die Textzeilen rasen an deinen Augen vorbei wie im Vorspann eines Hacker-Films aus den 90ern. Deine Finger fliegen über die Tastatur, während du versuchst, das Herzstück des Netzwerks zu erreichen. Die Diagnose ist eindeutig: Die Firewall blockiert alles, was nicht bei drei auf den Bäumen ist, und der DNS-Server scheint zu glauben, dass das gesamte lokale Netzwerk jetzt in der Antarktis liegt.",
         "act": 1,
         "npc_dialog": {
           "speaker": "Sabine",
           "emotion": "alert",
-          "text": "Spar dir den Wireshark-Scan fuer spaeter. Die Port-LEDs am Core-Switch blinken im Takt von 'SOS' - und nein, das ist keine neue Feature-Animation."
+          "text": "Spar dir den Wireshark-Scan für später. Die Port-LEDs am Core-Switch blinken im Takt von 'SOS' - und nein, das ist keine neue Feature-Animation."
         },
         "effects": [
           {
@@ -149,12 +149,12 @@
         "id": "klaus_gestaendnis",
         "type": "story",
         "title": "Klaus gesteht",
-        "narrative": "Klaus schleicht mit haengenden Schultern ins Buero, seine Haende tief in den Taschen seines Hoodies vergraben. Er vermeidet jeden Augenkontakt und starrt so intensiv auf seine Sneaker, als hoffte er, sie wuerden ihn per Teleportation direkt nach Hause bringen.",
+        "narrative": "Klaus schleicht mit hängenden Schultern ins Büro, seine Hände tief in den Taschen seines Hoodies vergraben. Er vermeidet jeden Augenkontakt und starrt so intensiv auf seine Sneaker, als hoffte er, sie würden ihn per Teleportation direkt nach Hause bringen.",
         "act": 1,
         "npc_dialog": {
           "speaker": "Klaus",
           "emotion": "confused",
-          "text": "Also... ich wollte eigentlich nur helfen, echt jetzt! Der Switch im Serverraum hat so komisch orange geblinkt, fast so wie die Warnleuchte an Papas altem Diesel. Ich dachte mir, wenn ich den einmal kurz hart vom Strom trenne und wieder einstecke, dann kalibriert sich das Bit-Fliessen vielleicht neu. Ich hab dabei vielleicht... ganz aus Versehen... auch das dicke schwarze Kabel kurz ausgesteckt, weil es im Weg war. Soll ich vielleicht die Kabel nach Farbe sortieren, damit das nicht nochmal passiert?"
+          "text": "Also... ich wollte eigentlich nur helfen, echt jetzt! Der Switch im Serverraum hat so komisch orange geblinkt, fast so wie die Warnleuchte an Papas altem Diesel. Ich dachte mir, wenn ich den einmal kurz hart vom Strom trenne und wieder einstecke, dann kalibriert sich das Bit-Fließen vielleicht neu. Ich hab dabei vielleicht... ganz aus Versehen... auch das dicke schwarze Kabel kurz ausgesteckt, weil es im Weg war. Soll ich vielleicht die Kabel nach Farbe sortieren, damit das nicht nochmal passiert?"
         },
         "effects": []
       },
@@ -162,23 +162,23 @@
         "id": "klaus_gestaendnis_challenge",
         "type": "bot_correction",
         "title": "DauBot: Switch-Neustart",
-        "narrative": "Klaus' Erklaerung ergibt nur dann Sinn, wenn du den eigentlichen Netzwerkfehler sauber einordnest.",
+        "narrative": "Klaus' Erklärung ergibt nur dann Sinn, wenn du den eigentlichen Netzwerkfehler sauber einordnest.",
         "act": 1,
         "pass_flag": "bot_corrected_klaus_switch",
         "bot_correction": {
           "scenario_id": "klaus-switch-broadcast-storm",
           "mistake_id": "klaus_switch_loopback",
-          "prompt": "Ordne Klaus' Aktion technisch ein und waehle den saubersten Fix.",
-          "bot_action": "Klaus hat den Core-Switch neugestartet und dabei wohl ein Loopback-Szenario geschaffen, weil er dachte, die Redundanzkabel waeren 'Deko'.",
+          "prompt": "Ordne Klaus' Aktion technisch ein und wähle den saubersten Fix.",
+          "bot_action": "Klaus hat den Core-Switch neugestartet und dabei wohl ein Loopback-Szenario geschaffen, weil er dachte, die Redundanzkabel wären 'Deko'.",
           "symptom": "Seit dem Neustart flutet Broadcast-Traffic das Segment und die Uplinks wirken instabil.",
           "error_options": [
             {
               "id": "spanning_tree_broadcast_storm",
-              "label": "Switch-Neustart hat die Spanning-Tree-Konvergenz ausgeloest und einen Broadcast Storm verursacht"
+              "label": "Switch-Neustart hat die Spanning-Tree-Konvergenz ausgelöst und einen Broadcast Storm verursacht"
             },
             {
               "id": "switch_ip_deleted",
-              "label": "Klaus hat die IP-Adresse des Switches geloescht"
+              "label": "Klaus hat die IP-Adresse des Switches gelöscht"
             },
             {
               "id": "vlan_one_mgmt",
@@ -192,11 +192,11 @@
           "fix_options": [
             {
               "id": "stp_wait_and_prune",
-              "label": "Spanning Tree Konvergenz abwarten, Port-States pruefen und unnoetige Bruecken entfernen"
+              "label": "Spanning Tree Konvergenz abwarten, Port-States prüfen und unnötige Brücken entfernen"
             },
             {
               "id": "factory_reset_switch",
-              "label": "Den Switch komplett auf Werkseinstellungen zuruecksetzen"
+              "label": "Den Switch komplett auf Werkseinstellungen zurücksetzen"
             },
             {
               "id": "replace_patch_cables",
@@ -204,7 +204,7 @@
             },
             {
               "id": "flash_firmware_live",
-              "label": "Eine neue Firmware einspielen, waehrend der Switch noch bootet"
+              "label": "Eine neue Firmware einspielen, während der Switch noch bootet"
             }
           ],
           "expected_error_id": "spanning_tree_broadcast_storm",
@@ -217,20 +217,20 @@
         "id": "helpdesk_chaos",
         "type": "story",
         "title": "47 Tickets in 10 Minuten",
-        "narrative": "Sabine balanciert ein Headset auf einem Ohr und ein Telefon am anderen, waehrend sie gleichzeitig zwei verschiedene Leute im Chat abwimmelt. Der Stapel ungelesener Post-its an ihrem Monitor waechst schneller als die CPU-Auslastung bei einem DDoS-Angriff.",
+        "narrative": "Sabine balanciert ein Headset auf einem Ohr und ein Telefon am anderen, während sie gleichzeitig zwei verschiedene Leute im Chat abwimmelt. Der Stapel ungelesener Post-its an ihrem Monitor wächst schneller als die CPU-Auslastung bei einem DDoS-Angriff.",
         "act": 1,
         "npc_dialog": {
           "speaker": "Sabine",
           "emotion": "frustrated",
-          "text": "Ticket #48: 'Mein Bildschirm ist schwarz.' - Ja Frau Mueller, der Monitor ist AUS. Ich hab ihr gesagt, sie soll die 'Strom-App' aktivieren, dann ging es wieder. Und Ticket #52: Jemand hat gefragt, ob man das WLAN auch in Tupperware-Dosen fuer den Heimweg abfuellen kann. Wenn das hier erledigt ist, kuendige ich. Oder auch nicht, das sage ich jeden Freitag. Hier, nimm den Kaffee. Glaub mir, du brauchst das mehr als Brenner, aber er braucht es, um funktionsfaehig zu bleiben. Nimm ihn einfach, bevor ich ihn selbst trinke und einen Herzinfarkt bekomme."
+          "text": "Ticket #48: 'Mein Bildschirm ist schwarz.' - Ja Frau Müller, der Monitor ist AUS. Ich hab ihr gesagt, sie soll die 'Strom-App' aktivieren, dann ging es wieder. Und Ticket #52: Jemand hat gefragt, ob man das WLAN auch in Tupperware-Dosen für den Heimweg abfüllen kann. Wenn das hier erledigt ist, kündige ich. Oder auch nicht, das sage ich jeden Freitag. Hier, nimm den Kaffee. Glaub mir, du brauchst das mehr als Brenner, aber er braucht es, um funktionsfähig zu bleiben. Nimm ihn einfach, bevor ich ihn selbst trinke und einen Herzinfarkt bekomme."
         },
         "effects": []
       },
       {
         "id": "kaffee_brenner",
         "type": "story",
-        "title": "Kaffee fuer den Manager",
-        "narrative": "Du drueckst Brenner den Kaffee in die Hand und legst in einem Atemzug Status, Risiko und naechsten Schritt nach. Er wirkt nicht ruhig, aber wieder in der Lage, seine Panik in PowerPoint-taugliche Worte zu pressen. Sabine schiebt dir im Vorbeigehen die Serverraum-Karte zu.",
+        "title": "Kaffee für den Manager",
+        "narrative": "Du drückst Brenner den Kaffee in die Hand und legst in einem Atemzug Status, Risiko und nächsten Schritt nach. Er wirkt nicht ruhig, aber wieder in der Lage, seine Panik in PowerPoint-taugliche Worte zu pressen. Sabine schiebt dir im Vorbeigehen die Serverraum-Karte zu.",
         "act": 1,
         "effects": [
           {
@@ -249,8 +249,8 @@
       {
         "id": "kaffee_selbst",
         "type": "story",
-        "title": "Kaffee fuer dich",
-        "narrative": "Du trinkst den Kaffee selbst. Es ist keine moralische Spitzenleistung, aber ploetzlich sehen selbst rote Alerts wie loesbare Probleme aus. Sabine rollt mit den Augen, drueckt dir aber trotzdem die Serverraum-Karte in die Hand.",
+        "title": "Kaffee für dich",
+        "narrative": "Du trinkst den Kaffee selbst. Es ist keine moralische Spitzenleistung, aber plötzlich sehen selbst rote Alerts wie lösbare Probleme aus. Sabine rollt mit den Augen, drückt dir aber trotzdem die Serverraum-Karte in die Hand.",
         "act": 1,
         "effects": [
           {
@@ -264,8 +264,8 @@
       {
         "id": "kaffee_sabine",
         "type": "story",
-        "title": "Sabine behaelt den Kaffee",
-        "narrative": "Du laesst Sabine den Kaffee. Das ist vermutlich die effizienteste Investition des ganzen Nachmittags. Sie nickt knapp, steckt das Headset um und wirft dir die Serverraum-Karte zu, als waere sie ein taktischer Support-Drop.",
+        "title": "Sabine behält den Kaffee",
+        "narrative": "Du lässt Sabine den Kaffee. Das ist vermutlich die effizienteste Investition des ganzen Nachmittags. Sie nickt knapp, steckt das Headset um und wirft dir die Serverraum-Karte zu, als wäre sie ein taktischer Support-Drop.",
         "act": 1,
         "effects": [
           {
@@ -282,7 +282,7 @@
         "id": "server_raum",
         "type": "story",
         "title": "Server-Raum",
-        "narrative": "Die schwere Stahltuer zum Serverraum schwingt auf und eine Wand aus trockener, heisser Luft schlaegt dir entgegen. Das normalerweise beruhigende Rauschen der Luefter ist einem hysterischen Kreischen gewichen. Ueberall siehst du rote LEDs, die dich wie boese Augen in der Dunkelheit anstarren. Es riecht dezent nach ueberhitztem Plastik und Verzweiflung. Zwischen zwei halb ausgeraeumten Schienen klemmt noch ein altes Backup-Tape mit handschriftlichem Etikett.",
+        "narrative": "Die schwere Stahltür zum Serverraum schwingt auf und eine Wand aus trockener, heißer Luft schlägt dir entgegen. Das normalerweise beruhigende Rauschen der Lüfter ist einem hysterischen Kreischen gewichen. Überall siehst du rote LEDs, die dich wie böse Augen in der Dunkelheit anstarren. Es riecht dezent nach überhitztem Plastik und Verzweiflung. Zwischen zwei halb ausgeräumten Schienen klemmt noch ein altes Backup-Tape mit handschriftlichem Etikett.",
         "act": 2,
         "effects": [
           {
@@ -294,12 +294,12 @@
         "id": "log_analyse",
         "type": "story",
         "title": "Log-Analyse",
-        "narrative": "Du schliesst dein Notebook an den Wartungs-Port an. Die Logs sind ein Schlachtfeld. Zwischen den ueblichen Fehlermeldungen sticht ein Zeitstempel hervor: 15:47 Uhr. Ein massiver Traffic-Spike, gefolgt von einer kryptischen Signatur, die nach einem automatisierten Firmware-Rollout aussieht. Jemand hat hier tief im System gewuehlt, kurz bevor die Lichter ausgingen.",
+        "narrative": "Du schließt dein Notebook an den Wartungs-Port an. Die Logs sind ein Schlachtfeld. Zwischen den üblichen Fehlermeldungen sticht ein Zeitstempel hervor: 15:47 Uhr. Ein massiver Traffic-Spike, gefolgt von einer kryptischen Signatur, die nach einem automatisierten Firmware-Rollout aussieht. Jemand hat hier tief im System gewühlt, kurz bevor die Lichter ausgingen.",
         "act": 2,
         "npc_dialog": {
           "speaker": "Torsten",
           "emotion": "alert",
-          "text": "Hoer mal, Kleiner, ich seh gerade von hier aus den Ping-Loss. Hast du schon mal versucht, die ARP-Tabelle alphabetisch zu sortieren? Das hilft manchmal beim Routing-Gefuehl."
+          "text": "Hör mal, Kleiner, ich seh gerade von hier aus den Ping-Loss. Hast du schon mal versucht, die ARP-Tabelle alphabetisch zu sortieren? Das hilft manchmal beim Routing-Gefühl."
         },
         "effects": [
           {
@@ -316,33 +316,33 @@
         "id": "torsten_anruf",
         "type": "story",
         "title": "Senior am Telefon",
-        "narrative": "Dein Telefon klingelt. Im Hintergrund hoerst du das Klirren von Glaesern und das froehliche Gemurmel eines Biergartens. Torsten klingt verdaechtig entspannt, was in direktem Kontrast zu der technischen Apokalypse steht, in der du dich gerade befindest.",
+        "narrative": "Dein Telefon klingelt. Im Hintergrund hörst du das Klirren von Gläsern und das fröhliche Gemurmel eines Biergartens. Torsten klingt verdächtig entspannt, was in direktem Kontrast zu der technischen Apokalypse steht, in der du dich gerade befindest.",
         "act": 2,
         "npc_dialog": {
           "speaker": "Torsten",
           "emotion": "idle",
-          "text": "Also NORMALERWEISE haette ich das in 5 Minuten gefixt, aber ich bin gerade auf einer sehr wichtigen... aeh... Fortbildung zum Thema 'Fluessige Logistik'. Hoer mal, hast du den Cache geleert? Alle Caches? Auch den von der Kaffeemaschine? Ich hab gestern Abend zwar noch ein ganz kleines, winziges Firmware-Update eingespielt, aber das hat DAMIT absolut nichts zu tun. Das war quasi nur Kosmetik fuer die Bits. Schau lieber mal nach, ob Klaus nicht wieder seinen Joghurt auf dem Switch gelagert hat."
+          "text": "Also NORMALERWEISE hätte ich das in 5 Minuten gefixt, aber ich bin gerade auf einer sehr wichtigen... äh... Fortbildung zum Thema 'Flüssige Logistik'. Hör mal, hast du den Cache geleert? Alle Caches? Auch den von der Kaffeemaschine? Ich hab gestern Abend zwar noch ein ganz kleines, winziges Firmware-Update eingespielt, aber das hat DAMIT absolut nichts zu tun. Das war quasi nur Kosmetik für die Bits. Schau lieber mal nach, ob Klaus nicht wieder seinen Joghurt auf dem Switch gelagert hat."
         },
         "effects": []
       },
       {
         "id": "kuehlung_krise",
         "type": "story",
-        "title": "Kuehlungskrise",
-        "narrative": "Ein schriller Alarmton schneidet durch das Rauschen. Die Temperaturanzeige am Rack 4 kriecht unaufhaltsam in den roten Bereich. Der Kuehlungs-Controller antwortet nicht auf Pings - vermutlich, weil die Default-Route ins Nirgendwo zeigt. Wenn die Server nicht in zwei Minuten kalte Luft bekommen, schaltet sich das gesamte Rechenzentrum als Selbstschutz ab.",
+        "title": "Kühlungskrise",
+        "narrative": "Ein schriller Alarmton schneidet durch das Rauschen. Die Temperaturanzeige am Rack 4 kriecht unaufhaltsam in den roten Bereich. Der Kühlungs-Controller antwortet nicht auf Pings - vermutlich, weil die Default-Route ins Nirgendwo zeigt. Wenn die Server nicht in zwei Minuten kalte Luft bekommen, schaltet sich das gesamte Rechenzentrum als Selbstschutz ab.",
         "act": 2,
         "npc_dialog": {
           "speaker": "Herr Brenner",
           "emotion": "frustrated",
-          "text": "Hier drueben ist es so warm, ich koennte Spiegeleier auf meinem Tablet braten! Ist das diese 'Hot-Fix'-Technologie, von der alle reden?"
+          "text": "Hier drüben ist es so warm, ich könnte Spiegeleier auf meinem Tablet braten! Ist das diese 'Hot-Fix'-Technologie, von der alle reden?"
         },
         "effects": []
       },
       {
         "id": "kuehlung_krise_challenge",
         "type": "simulator",
-        "title": "Kuehlungs-Controller",
-        "narrative": "Die Routing-Konsole des Kuehlungs-Controllers muss sofort korrigiert werden.",
+        "title": "Kühlungs-Controller",
+        "narrative": "Die Routing-Konsole des Kühlungs-Controllers muss sofort korrigiert werden.",
         "act": 2,
         "timer_seconds": 120,
         "simulator": {
@@ -356,7 +356,7 @@
         "id": "kuehlung_status",
         "type": "story",
         "title": "Die Racks halten den Atem an",
-        "narrative": "Ein Server nach dem anderen schaltet vom hysterischen Alarmton auf ein unheimliches Warten um. Die Anzeigen entscheiden sich gerade zwischen Erholung und ganz grossem Drama. Mehr als diese paar Minuten Puffer wirst du nicht geschenkt bekommen.",
+        "narrative": "Ein Server nach dem anderen schaltet vom hysterischen Alarmton auf ein unheimliches Warten um. Die Anzeigen entscheiden sich gerade zwischen Erholung und ganz großem Drama. Mehr als diese paar Minuten Puffer wirst du nicht geschenkt bekommen.",
         "act": 2,
         "effects": []
       },
@@ -364,12 +364,12 @@
         "id": "klaus_firewall",
         "type": "story",
         "title": "Klaus und die Firewall",
-        "narrative": "Klaus taucht wieder auf, diesmal haelt er ein Tablet in der Hand, auf dem das Firewall-Interface geoeffnet ist. Er sieht stolz aus, was in diesem Kontext extrem beunruhigend ist.",
+        "narrative": "Klaus taucht wieder auf, diesmal hält er ein Tablet in der Hand, auf dem das Firewall-Interface geöffnet ist. Er sieht stolz aus, was in diesem Kontext extrem beunruhigend ist.",
         "act": 2,
         "npc_dialog": {
           "speaker": "Klaus",
           "emotion": "confused",
-          "text": "Ich hab mir gedacht, wenn das Internet so gefaehrlich ist, dann schliesse ich einfach alle Tueren ab! Ich hab in der Firewall alles auf 'Verweigern' gestellt, was nach draussen will. So koennen keine Viren abhauen und wir sparen auch noch Bandbreite! Ich dachte, wenn ich alles blockiere, ist es einfach sicherer... wie eine digitale Ritterburg mit hochgezogener Zugbruecke!"
+          "text": "Ich hab mir gedacht, wenn das Internet so gefährlich ist, dann schließe ich einfach alle Türen ab! Ich hab in der Firewall alles auf 'Verweigern' gestellt, was nach draußen will. So können keine Viren abhauen und wir sparen auch noch Bandbreite! Ich dachte, wenn ich alles blockiere, ist es einfach sicherer... wie eine digitale Ritterburg mit hochgezogener Zugbrücke!"
         },
         "effects": []
       },
@@ -377,14 +377,14 @@
         "id": "klaus_firewall_challenge",
         "type": "bot_correction",
         "title": "DauBot: Firewall-Regeln",
-        "narrative": "Wenn du Klaus hier falsch korrigierst, blockiert er beim naechsten Mal wahrscheinlich auch noch den Druckerverkehr aus Sicherheitsgruenden.",
+        "narrative": "Wenn du Klaus hier falsch korrigierst, blockiert er beim nächsten Mal wahrscheinlich auch noch den Druckerverkehr aus Sicherheitsgründen.",
         "act": 2,
         "pass_flag": "bot_corrected_klaus_firewall",
         "bot_correction": {
           "scenario_id": "klaus-firewall-deny-all",
           "mistake_id": "klaus_deny_all_outbound",
-          "prompt": "Identifiziere Klaus' Firewall-Fehler und waehle die sauberste Korrektur.",
-          "bot_action": "Klaus hat alle Outbound-Regeln geloescht und durch eine 'Deny All'-Regel ersetzt, um das Netzwerk 'virenfrei' zu halten.",
+          "prompt": "Identifiziere Klaus' Firewall-Fehler und wähle die sauberste Korrektur.",
+          "bot_action": "Klaus hat alle Outbound-Regeln gelöscht und durch eine 'Deny All'-Regel ersetzt, um das Netzwerk 'virenfrei' zu halten.",
           "symptom": "Interne Systeme erreichen keine externen Dienste mehr, obwohl die lokale Infrastruktur noch lebt.",
           "error_options": [
             {
@@ -397,7 +397,7 @@
             },
             {
               "id": "password_12345",
-              "label": "Klaus hat das Admin-Passwort in '12345' geaendert"
+              "label": "Klaus hat das Admin-Passwort in '12345' geändert"
             },
             {
               "id": "nat_table_cleared",
@@ -407,15 +407,15 @@
           "fix_options": [
             {
               "id": "restore_outbound_defaults",
-              "label": "Outbound-Regeln auf den letzten bekannten Good State oder Default zuruecksetzen"
+              "label": "Outbound-Regeln auf den letzten bekannten Good State oder Default zurücksetzen"
             },
             {
               "id": "disable_firewall_temporarily",
-              "label": "Die Firewall fuer 10 Minuten ausschalten"
+              "label": "Die Firewall für 10 Minuten ausschalten"
             },
             {
               "id": "renumber_all_hosts",
-              "label": "Alle IP-Adressen im Subnetz haendisch neu vergeben"
+              "label": "Alle IP-Adressen im Subnetz händisch neu vergeben"
             },
             {
               "id": "banish_klaus",
@@ -432,20 +432,20 @@
         "id": "reputation_gabel",
         "type": "story",
         "title": "Wie mit Klaus umgehen?",
-        "narrative": "Klaus sieht dich erwartungsvoll an. Er weiss, dass er wieder Mist gebaut hat, aber sein Enthusiasmus ist fast schon ansteckend. Du stehst vor einer Entscheidung: Wie gehst du mit dem menschlichen Single-Point-of-Failure um?",
+        "narrative": "Klaus sieht dich erwartungsvoll an. Er weiß, dass er wieder Mist gebaut hat, aber sein Enthusiasmus ist fast schon ansteckend. Du stehst vor einer Entscheidung: Wie gehst du mit dem menschlichen Single-Point-of-Failure um?",
         "act": 2,
         "effects": []
       },
       {
         "id": "klaus_verbuendet",
         "type": "story",
-        "title": "Klaus wird Verbuendeter",
-        "narrative": "Du holst Klaus bewusst an Bord. Er greift sofort nach einem zerknitterten Notizblock, in dem zwischen Kritzeleien und Kaffeeflecken erstaunlich nuetzliche Switch-Notizen stehen. Zum ersten Mal an diesem Tag macht sein Uebereifer mehr Hoffnung als Schaden.",
+        "title": "Klaus wird Verbündeter",
+        "narrative": "Du holst Klaus bewusst an Bord. Er greift sofort nach einem zerknitterten Notizblock, in dem zwischen Kritzeleien und Kaffeeflecken erstaunlich nützliche Switch-Notizen stehen. Zum ersten Mal an diesem Tag macht sein Übereifer mehr Hoffnung als Schaden.",
         "act": 2,
         "npc_dialog": {
           "speaker": "Klaus",
           "emotion": "relieved",
-          "text": "Echt? Cool! Ich hol meinen Notizblock! Ich wollte schon immer wissen, was dieses 'Routing' eigentlich fuer ein Sport ist!"
+          "text": "Echt? Cool! Ich hol meinen Notizblock! Ich wollte schon immer wissen, was dieses 'Routing' eigentlich für ein Sport ist!"
         },
         "effects": [
           {
@@ -465,7 +465,7 @@
         "id": "klaus_distanziert",
         "type": "story",
         "title": "Klaus auf Abstand",
-        "narrative": "Du schickst Klaus zum Kaffeeholen und haeltst ihn bewusst aus der Schusslinie. Es ist die sichere Variante. Nicht elegant, nicht herzlich, aber effizient genug, damit wenigstens nichts weiteres kaputtgeht.",
+        "narrative": "Du schickst Klaus zum Kaffeeholen und hältst ihn bewusst aus der Schusslinie. Es ist die sichere Variante. Nicht elegant, nicht herzlich, aber effizient genug, damit wenigstens nichts weiteres kaputtgeht.",
         "act": 2,
         "effects": []
       },
@@ -473,7 +473,7 @@
         "id": "klaus_eskaliert",
         "type": "story",
         "title": "Klaus gemeldet",
-        "narrative": "Du machst klar, dass Brenner von Klaus' Aktion erfahren muss. Das ist fachlich vertretbar, aber es wirkt. Klaus wird still, Sabine verzieht das Gesicht, und ploetzlich fuehlt sich die Krise noch ein Stueck weniger nach Teamarbeit an.",
+        "narrative": "Du machst klar, dass Brenner von Klaus' Aktion erfahren muss. Das ist fachlich vertretbar, aber es wirkt. Klaus wird still, Sabine verzieht das Gesicht, und plötzlich fühlt sich die Krise noch ein Stück weniger nach Teamarbeit an.",
         "act": 2,
         "effects": [
           {
@@ -488,7 +488,7 @@
         "id": "beweis_suche",
         "type": "story",
         "title": "Beweis-Suche",
-        "narrative": "Du oeffnest Wireshark und filterst den Traffic. Da ist es: Zwischen den zahllosen Retransmissions siehst du die Ueberreste eines gescheiterten TFTP-Transfers von gestern Nacht, 23:47 Uhr. Die IP-Adresse des Absenders? Eindeutig Torstens Workstation. Er hat versucht, eine experimentelle Beta-Firmware auf die Core-Router zu pushen, bevor er in den Biergarten verschwunden ist.",
+        "narrative": "Du öffnest Wireshark und filterst den Traffic. Da ist es: Zwischen den zahllosen Retransmissions siehst du die Überreste eines gescheiterten TFTP-Transfers von gestern Nacht, 23:47 Uhr. Die IP-Adresse des Absenders? Eindeutig Torstens Workstation. Er hat versucht, eine experimentelle Beta-Firmware auf die Core-Router zu pushen, bevor er in den Biergarten verschwunden ist.",
         "act": 3,
         "npc_dialog": {
           "speaker": "Sabine",
@@ -514,20 +514,20 @@
         "id": "torsten_konfrontation",
         "type": "story",
         "title": "Torsten konfrontieren",
-        "narrative": "Du rufst Torsten erneut an, diesmal mit den Log-Files als Beweis in der Hand. Die Biergarten-Atmosphaere im Hintergrund wirkt jetzt fast schon provozierend.",
+        "narrative": "Du rufst Torsten erneut an, diesmal mit den Log-Files als Beweis in der Hand. Die Biergarten-Atmosphäre im Hintergrund wirkt jetzt fast schon provozierend.",
         "act": 3,
         "npc_dialog": {
           "speaker": "Torsten",
           "emotion": "frustrated",
-          "text": "Was? Beweise? Das... das waren geplante Wartungsarbeiten! Ein sehr wichtiges Security-Audit! Na gut, okay... Ich wollte das eigentlich am Montag testen, aber dann gab es dieses 'Zwei-fuer-Eins'-Angebot auf Weizenbier und ich dachte, das Script laeuft von alleine durch. Wer konnte denn ahnen, dass die Firmware die Paketgroessen nicht mag? Jetzt hab dich nicht so, buegel das einfach glatt, du bist doch der Neue."
+          "text": "Was? Beweise? Das... das waren geplante Wartungsarbeiten! Ein sehr wichtiges Security-Audit! Na gut, okay... Ich wollte das eigentlich am Montag testen, aber dann gab es dieses 'Zwei-für-Eins'-Angebot auf Weizenbier und ich dachte, das Script läuft von alleine durch. Wer konnte denn ahnen, dass die Firmware die Paketgrössen nicht mag? Jetzt hab dich nicht so, bügel das einfach glatt, du bist doch der Neue."
         },
         "effects": []
       },
       {
         "id": "live_patch",
         "type": "story",
-        "title": "Live-Patch waehrend der Praesentation",
-        "narrative": "Im Konferenzraum direkt nebenan hat die CEO gerade ihre Quartalspraesentation vor den Investoren gestartet. Du musst den Firmware-Rollback jetzt live durchfuehren. Wenn die Verbindung auch nur fuer drei Sekunden abbricht, stuerzt der VPN-Tunnel der Investoren ein und Herr Brenner wird vermutlich versuchen, das Internet persoenlich zu verklagen.",
+        "title": "Live-Patch während der Präsentation",
+        "narrative": "Im Konferenzraum direkt nebenan hat die CEO gerade ihre Quartalspräsentation vor den Investoren gestartet. Du musst den Firmware-Rollback jetzt live durchführen. Wenn die Verbindung auch nur für drei Sekunden abbricht, stürzt der VPN-Tunnel der Investoren ein und Herr Brenner wird vermutlich versuchen, das Internet persönlich zu verklagen.",
         "act": 3,
         "npc_dialog": {
           "speaker": "Herr Brenner",
@@ -540,7 +540,7 @@
         "id": "live_patch_challenge",
         "type": "simulator",
         "title": "Rollback unter Druck",
-        "narrative": "Die kritischen VPN-Firewall-Regeln muessen waehrend des Rollbacks stabil bleiben.",
+        "narrative": "Die kritischen VPN-Firewall-Regeln müssen während des Rollbacks stabil bleiben.",
         "act": 3,
         "timer_seconds": 90,
         "simulator": {
@@ -562,12 +562,12 @@
         "id": "ende_gold",
         "type": "story",
         "title": "Goldenes Ende",
-        "narrative": "Ein gruenes Haekchen erscheint auf deinem Bildschirm. Das Netzwerk atmet wieder. Die Pings kommen mit stabilen 1ms zurueck. Klaus schaut dir ueber die Schulter und versteht zum ersten Mal, was ein VLAN-Tag macht. Torsten muss am Montag zum Rapport beim Chef antreten, und Sabine lehnt sich mit einem seltenen Laecheln zurueck.",
+        "narrative": "Ein grünes Häkchen erscheint auf deinem Bildschirm. Das Netzwerk atmet wieder. Die Pings kommen mit stabilen 1ms zurück. Klaus schaut dir über die Schulter und versteht zum ersten Mal, was ein VLAN-Tag macht. Torsten muss am Montag zum Rapport beim Chef antreten, und Sabine lehnt sich mit einem seltenen Lächeln zurück.",
         "act": 3,
         "npc_dialog": {
           "speaker": "Sabine",
           "emotion": "relieved",
-          "text": "Wisst ihr was? Ich kuendige vielleicht doch nicht. Heute nicht. Morgen sehen wir weiter. Aber nur, wenn du naechste Woche den Montag-Morgen-Dienst uebernimmst."
+          "text": "Wisst ihr was? Ich kündige vielleicht doch nicht. Heute nicht. Morgen sehen wir weiter. Aber nur, wenn du nächste Woche den Montag-Morgen-Dienst übernimmst."
         },
         "effects": []
       },
@@ -575,12 +575,12 @@
         "id": "ende_gut",
         "type": "story",
         "title": "Gutes Ende",
-        "narrative": "Das Netzwerk laeuft wieder, aber die Spurensuche blieb oberflaechlich. Herr Brenner ist gluecklich, solange seine 'Cloud' wieder da ist, und Torsten wird am Montag so tun, als haette er aus der Ferne alles gerettet. Du hast den Tag gerettet, aber der Ruhm wird wohl woanders landen.",
+        "narrative": "Das Netzwerk läuft wieder, aber die Spurensuche blieb oberflächlich. Herr Brenner ist glücklich, solange seine 'Cloud' wieder da ist, und Torsten wird am Montag so tun, als hätte er aus der Ferne alles gerettet. Du hast den Tag gerettet, aber der Ruhm wird wohl woanders landen.",
         "act": 3,
         "npc_dialog": {
           "speaker": "Herr Brenner",
           "emotion": "relieved",
-          "text": "Hervorragend! Ich wusste doch, dass ein kleiner Neustart der Synergie-Zentrale alles loest! Tolle Teamarbeit, Leute!"
+          "text": "Hervorragend! Ich wusste doch, dass ein kleiner Neustart der Synergie-Zentrale alles löst! Tolle Teamarbeit, Leute!"
         },
         "effects": []
       },
@@ -588,12 +588,12 @@
         "id": "ende_chaos",
         "type": "story",
         "title": "Chaotisches Ende",
-        "narrative": "Es hat nicht gereicht. Das Netzwerk ist ein Truemmerhaufen und Herr Brenner hat bereits einen externen Dienstleister fuer 400 Euro die Stunde gerufen, der erst morgen frueh kommen kann. Das Buero sieht aus wie nach einer Schlacht, und der einzige Trost ist die Pizza, die Brenner fuer alle bestellt hat.",
+        "narrative": "Es hat nicht gereicht. Das Netzwerk ist ein Trümmerhaufen und Herr Brenner hat bereits einen externen Dienstleister für 400 Euro die Stunde gerufen, der erst morgen früh kommen kann. Das Büro sieht aus wie nach einer Schlacht, und der einzige Trost ist die Pizza, die Brenner für alle bestellt hat.",
         "act": 3,
         "npc_dialog": {
           "speaker": "Sabine",
           "emotion": "frustrated",
-          "text": "Wenigstens das Internet vom Pizzadienst funktioniert noch. Ich hab meine Kuendigung schon mal als Entwurf gespeichert - lokal, sicher ist sicher."
+          "text": "Wenigstens das Internet vom Pizzadienst funktioniert noch. Ich hab meine Kündigung schon mal als Entwurf gespeichert - lokal, sicher ist sicher."
         },
         "effects": []
       },
@@ -636,7 +636,7 @@
         "id": "e_manager_briefing",
         "from": "manager_panik",
         "to": "brenner_briefing",
-        "label": "Herr Brenner beruhigen und die Core-Switches pruefen"
+        "label": "Herr Brenner beruhigen und die Core-Switches prüfen"
       },
       {
         "id": "e_manager_technik",
@@ -672,7 +672,7 @@
         "id": "e_diag_story_to_sim",
         "from": "erste_diagnose",
         "to": "erste_diagnose_sim",
-        "label": "Die DNS-Konsole aufraeumen"
+        "label": "Die DNS-Konsole aufräumen"
       },
       {
         "id": "e_diag_sim_to_klaus_story",
@@ -690,7 +690,7 @@
         "id": "e_klaus_bot_to_helpdesk",
         "from": "klaus_gestaendnis_challenge",
         "to": "helpdesk_chaos",
-        "label": "Zurueck zum Helpdesk-Chaos"
+        "label": "Zurück zum Helpdesk-Chaos"
       },
       {
         "id": "e_helpdesk_coffee_brenner",
@@ -747,25 +747,25 @@
         "id": "e_logs_to_torsten",
         "from": "log_analyse",
         "to": "torsten_anruf",
-        "label": "Die Biergarten-Nummer zurueckrufen"
+        "label": "Die Biergarten-Nummer zurückrufen"
       },
       {
         "id": "e_torsten_to_cooling",
         "from": "torsten_anruf",
         "to": "kuehlung_krise",
-        "label": "Die Kuehlungswarnung priorisieren"
+        "label": "Die Kühlungswarnung priorisieren"
       },
       {
         "id": "e_cooling_story_to_sim",
         "from": "kuehlung_krise",
         "to": "kuehlung_krise_challenge",
-        "label": "Den Kuehlungs-Controller routen"
+        "label": "Den Kühlungs-Controller routen"
       },
       {
         "id": "e_cooling_sim_to_status",
         "from": "kuehlung_krise_challenge",
         "to": "kuehlung_status",
-        "label": "Den Status der Racks pruefen"
+        "label": "Den Status der Racks prüfen"
       },
       {
         "id": "e_cooling_status_to_firewall_story",
@@ -789,7 +789,7 @@
         "id": "e_rep_ally",
         "from": "reputation_gabel",
         "to": "klaus_verbuendet",
-        "label": "Klaus einbinden und Schritt fuer Schritt erklaeren"
+        "label": "Klaus einbinden und Schritt für Schritt erklären"
       },
       {
         "id": "e_rep_distance",
@@ -807,7 +807,7 @@
         "id": "e_ally_to_evidence",
         "from": "klaus_verbuendet",
         "to": "beweis_suche",
-        "label": "Mit Klaus' Notizblock die Capture-Pruefung vorbereiten"
+        "label": "Mit Klaus' Notizblock die Capture-Prüfung vorbereiten"
       },
       {
         "id": "e_distance_to_evidence",
@@ -825,7 +825,7 @@
         "id": "e_evidence_story_to_sim",
         "from": "beweis_suche",
         "to": "beweis_suche_scan",
-        "label": "Die Capture frame fuer frame lesen"
+        "label": "Die Capture frame für frame lesen"
       },
       {
         "id": "e_evidence_sim_to_torsten",
@@ -891,7 +891,7 @@
         "id": "e_patch_to_good",
         "from": "patch_auswertung",
         "to": "ende_gut",
-        "label": "Netz retten, aber den Fall nur teilweise aufraeumen",
+        "label": "Netz retten, aber den Fall nur teilweise aufräumen",
         "conditions": {
           "requires_flag": "vpn_stabilized"
         }
@@ -906,19 +906,19 @@
         "id": "e_gold_to_epilog",
         "from": "ende_gold",
         "to": "ende_gold_epilog",
-        "label": "Abschlussbericht schliessen"
+        "label": "Abschlussbericht schließen"
       },
       {
         "id": "e_good_to_epilog",
         "from": "ende_gut",
         "to": "ende_gut_epilog",
-        "label": "Abschlussbericht schliessen"
+        "label": "Abschlussbericht schließen"
       },
       {
         "id": "e_chaos_to_epilog",
         "from": "ende_chaos",
         "to": "ende_chaos_epilog",
-        "label": "Abschlussbericht schliessen"
+        "label": "Abschlussbericht schließen"
       }
     ],
     "acts": [

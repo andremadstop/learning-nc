@@ -3,30 +3,30 @@
     "id": "af-session-8021x",
     "simulatorType": "authflow",
     "title": "802.1X Authentifizierung einrichten",
-    "description": "Die verschiedenen EAP-Methoden fuer 802.1X Port-basierte Zugriffskontrolle verstehen und vergleichen.",
+    "description": "Die verschiedenen EAP-Methoden für 802.1X Port-basierte Zugriffskontrolle verstehen und vergleichen.",
     "steps": [
       {
         "stepId": "af-8021x-01",
-        "context": "Ein Unternehmen fuehrt 802.1X mit EAP-TLS ein. Die IT-Abteilung muss die korrekte Reihenfolge der Authentifizierungsschritte kennen.",
-        "explanation": "EAP-TLS ist die sicherste 802.1X-Methode, weil beide Seiten (Client und Server) Zertifikate vorweisen muessen. Der Aufwand fuer die PKI ist hoch, aber die Sicherheit maximal.",
+        "context": "Ein Unternehmen führt 802.1X mit EAP-TLS ein. Die IT-Abteilung muss die korrekte Reihenfolge der Authentifizierungsschritte kennen.",
+        "explanation": "EAP-TLS ist die sicherste 802.1X-Methode, weil beide Seiten (Client und Server) Zertifikate vorweisen müssen. Der Aufwand für die PKI ist hoch, aber die Sicherheit maximal.",
         "scenarioId": "eap-tls-order"
       },
       {
         "stepId": "af-8021x-02",
-        "context": "Fuer Gaeste und BYOD-Geraete ohne Client-Zertifikat wird PEAP eingesetzt. Nach dem Access-Request muss der naechste Schritt korrekt sein.",
+        "context": "Für Gäste und BYOD-Geräte ohne Client-Zertifikat wird PEAP eingesetzt. Nach dem Access-Request muss der nächste Schritt korrekt sein.",
         "explanation": "PEAP nutzt nur ein Server-Zertifikat und wickelt die eigentliche Authentifizierung (meist MSCHAPv2) in einem TLS-Tunnel ab. Das ist einfacher als EAP-TLS, aber etwas weniger sicher.",
         "scenarioId": "peap-order"
       },
       {
         "stepId": "af-8021x-03",
-        "context": "Eine Cisco-Umgebung nutzt EAP-FAST. Am Ende der Authentifizierung muss der Switch den Port oeffnen. Welcher Schritt ist das?",
+        "context": "Eine Cisco-Umgebung nutzt EAP-FAST. Am Ende der Authentifizierung muss der Switch den Port öffnen. Welcher Schritt ist das?",
         "explanation": "EAP-FAST ist Ciscos Alternative zu PEAP. Statt Zertifikaten werden PACs (Protected Access Credentials) verwendet. Der Ablauf endet wie bei allen EAP-Methoden mit dem Port-Freischalten.",
         "scenarioId": "eap-fast-order"
       },
       {
         "stepId": "af-8021x-04",
-        "context": "Die Geschaeftsfuehrung fragt, welche EAP-Methode die hoechste Sicherheit bietet. Du musst die Methoden vergleichen und eine Empfehlung geben.",
-        "explanation": "EAP-TLS gilt als Goldstandard, weil gegenseitige Zertifikats-Authentifizierung Man-in-the-Middle-Angriffe praktisch ausschliesst. Der Preis dafuer ist eine vollstaendige PKI-Infrastruktur.",
+        "context": "Die Geschäftsfuürung fragt, welche EAP-Methode die höchste Sicherheit bietet. Du musst die Methoden vergleichen und eine Empfehlung geben.",
+        "explanation": "EAP-TLS gilt als Goldstandard, weil gegenseitige Zertifikats-Authentifizierung Man-in-the-Middle-Angriffe praktisch ausschließt. Der Preis dafür ist eine vollständige PKI-Infrastruktur.",
         "scenarioId": "method-security"
       }
     ]
@@ -34,30 +34,30 @@
   {
     "id": "af-session-selection",
     "simulatorType": "authflow",
-    "title": "EAP-Methode auswaehlen",
-    "description": "Die richtige 802.1X-Authentifizierungsmethode fuer verschiedene Unternehmensszenarien waehlen — von maximaler Sicherheit bis zum pragmatischen Gaestenetz.",
+    "title": "EAP-Methode auswählen",
+    "description": "Die richtige 802.1X-Authentifizierungsmethode für verschiedene Unternehmensszenarien wählen — von maximaler Sicherheit bis zum pragmatischen Gästenetz.",
     "steps": [
       {
         "stepId": "af-sel-01",
-        "context": "Die IT-Leitung fragt: Welche EAP-Methode bietet die hoechste Sicherheit fuer das interne Firmennetz? Die Kosten fuer eine PKI werden akzeptiert.",
+        "context": "Die IT-Leitung fragt: Welche EAP-Methode bietet die höchste Sicherheit für das interne Firmennetz? Die Kosten für eine PKI werden akzeptiert.",
         "explanation": "EAP-TLS mit gegenseitiger Zertifikatsauthentifizierung ist der Goldstandard. Beide Seiten weisen sich per Zertifikat aus — Man-in-the-Middle ist praktisch ausgeschlossen.",
         "scenarioId": "method-security"
       },
       {
         "stepId": "af-sel-02",
-        "context": "Fuer das Gaeste-WLAN soll eine einfachere Methode eingesetzt werden. Welche Methode braucht zwingend ein Server-Zertifikat, aber kein Client-Zertifikat?",
-        "explanation": "PEAP und EAP-TLS nutzen Server-Zertifikate. Aber nur EAP-TLS braucht zusaetzlich Client-Zertifikate. PEAP ist der pragmatische Mittelweg fuer Gaeste und BYOD.",
+        "context": "Für das Gäste-WLAN soll eine einfachere Methode eingesetzt werden. Welche Methode braucht zwingend ein Server-Zertifikat, aber kein Client-Zertifikat?",
+        "explanation": "PEAP und EAP-TLS nutzen Server-Zertifikate. Aber nur EAP-TLS braucht zusätzlich Client-Zertifikate. PEAP ist der pragmatische Mittelweg für Gäste und BYOD.",
         "scenarioId": "server-cert"
       },
       {
         "stepId": "af-sel-03",
-        "context": "Das Gaestenetz wird mit PEAP eingerichtet. Ein neues Geraet verbindet sich zum ersten Mal. Was passiert nach dem Access-Request?",
-        "explanation": "PEAP baut zuerst einen TLS-Tunnel auf (Server-Zertifikat), dann laeuft die eigentliche Authentifizierung (meist MSCHAPv2) geschuetzt darin ab.",
+        "context": "Das Gästenetz wird mit PEAP eingerichtet. Ein neues Gerät verbindet sich zum ersten Mal. Was passiert nach dem Access-Request?",
+        "explanation": "PEAP baut zuerst einen TLS-Tunnel auf (Server-Zertifikat), dann läuft die eigentliche Authentifizierung (meist MSCHAPv2) geschützt darin ab.",
         "scenarioId": "peap-order"
       },
       {
         "stepId": "af-sel-04",
-        "context": "Ein Standort nutzt Cisco-Infrastruktur und moechte ohne PKI auskommen. Welche Alternative gibt es zu PEAP?",
+        "context": "Ein Standort nutzt Cisco-Infrastruktur und möchte ohne PKI auskommen. Welche Alternative gibt es zu PEAP?",
         "explanation": "EAP-FAST ist Ciscos zertifikatslose Alternative. Statt Zertifikaten werden PACs (Protected Access Credentials) verwendet. Schnell deploybar, aber herstellergebunden.",
         "scenarioId": "eap-fast-order"
       }
@@ -71,20 +71,20 @@
     "steps": [
       {
         "stepId": "af-cert-01",
-        "context": "Mitarbeiter melden, dass die WLAN-Anmeldung fehlschlaegt. Der RADIUS-Server hat ein abgelaufenes Zertifikat. Welche Methoden sind davon betroffen?",
-        "explanation": "PEAP und EAP-TLS benoetigen ein gueltiges Server-Zertifikat. Ohne dieses lehnen korrekt konfigurierte Clients die Verbindung ab — ein Schutzmechanismus gegen Rogue Access Points.",
+        "context": "Mitarbeiter melden, dass die WLAN-Anmeldung fehlschlägt. Der RADIUS-Server hat ein abgelaufenes Zertifikat. Welche Methoden sind davon betroffen?",
+        "explanation": "PEAP und EAP-TLS benötigen ein gültiges Server-Zertifikat. Ohne dieses lehnen korrekt konfigurierte Clients die Verbindung ab — ein Schutzmechanismus gegen Rogue Access Points.",
         "scenarioId": "server-cert"
       },
       {
         "stepId": "af-cert-02",
-        "context": "Nach dem Zertifikatstausch funktioniert PEAP wieder, aber EAP-TLS-Clients koennen sich immer noch nicht verbinden. Was fehlt?",
-        "explanation": "EAP-TLS braucht neben dem Server-Zertifikat auch gueltige Client-Zertifikate. Wenn die PKI nicht synchronisiert wurde, schlaegt die gegenseitige Authentifizierung fehl.",
+        "context": "Nach dem Zertifikatstausch funktioniert PEAP wieder, aber EAP-TLS-Clients können sich immer noch nicht verbinden. Was fehlt?",
+        "explanation": "EAP-TLS braucht neben dem Server-Zertifikat auch gültige Client-Zertifikate. Wenn die PKI nicht synchronisiert wurde, schlägt die gegenseitige Authentifizierung fehl.",
         "scenarioId": "eap-tls-order"
       },
       {
         "stepId": "af-cert-03",
-        "context": "Die Geschaeftsfuehrung fragt, ob EAP-TLS den Aufwand wert ist. Vergleiche die Sicherheit der verfuegbaren Methoden.",
-        "explanation": "EAP-TLS eliminiert Passwoerter komplett und schuetzt gegen Credential-Theft. Der PKI-Aufwand lohnt sich fuer Hochsicherheitsumgebungen — fuer alles andere reicht PEAP.",
+        "context": "Die Geschäftsfuürung fragt, ob EAP-TLS den Aufwand wert ist. Vergleiche die Sicherheit der verfügbaren Methoden.",
+        "explanation": "EAP-TLS eliminiert Passwörter komplett und schützt gegen Credential-Theft. Der PKI-Aufwand lohnt sich für Hochsicherheitsumgebungen — für alles andere reicht PEAP.",
         "scenarioId": "method-security"
       }
     ]

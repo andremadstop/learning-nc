@@ -1,7 +1,7 @@
 {
   "campaign_id": "solarwinds",
   "title": "SolarWinds — Die Supply Chain",
-  "description": "Dezember 2020. Ein vertrauenswuerdiges Software-Update enthaelt eine Hintertuer. 18.000 Organisationen betroffen. Der Angreifer war monatelang unsichtbar — und vielleicht ist er es immer noch.",
+  "description": "Dezember 2020. Ein vertrauenswürdiges Software-Update enthält eine Hintertür. 18.000 Organisationen betroffen. Der Angreifer war monatelang unsichtbar — und vielleicht ist er es immer noch.",
   "duration_minutes": 75,
   "difficulty": "expert",
   "focus_areas": [
@@ -15,7 +15,7 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "Geopolitischer Cyber-Thriller. Langsame Enthuellung, Misstrauen gegenueber allem was vertraut erscheint. Der Angreifer war monatelang unsichtbar — und vielleicht ist er es immer noch.",
+  "narrator_style": "Geopolitischer Cyber-Thriller. Langsame Enthüllung, Misstrauen gegenüber allem was vertraut erscheint. Der Angreifer war monatelang unsichtbar — und vielleicht ist er es immer noch.",
   "gemini_role": "attacker",
   "characters": {
     "architect": {
@@ -107,13 +107,13 @@
   "scenes": [
     {
       "id": "s1_anomale_beacons",
-      "title": "Anomale Beacon-Aktivitaet",
-      "narrative": "Dezember 2020. Dein SOC-Dashboard zeigt eine ungewoehnliche Anomalie: Der Orion-Server sendet periodische DNS-Anfragen an avsvmcloud[.]com. Die Beacons folgen einem praezisen Timing-Muster — alle 12 bis 14 Stunden. Das passt zu keiner bekannten Malware-Signatur. Marcus Chen, dein SOC-Analyst, hat die Anomalie zuerst bemerkt: 'Das laeuft schon seit Wochen. Ich dachte erst an Telemetrie, aber die Domain ist nicht auf SolarWinds registriert.' Gleichzeitig erreichen euch Geruechte: FireEye wurde gehackt. Ihre Red-Team-Tools gestohlen. Die groesste Security-Firma der Welt — kompromittiert. Ein Zufall?",
+      "title": "Anomale Beacon-Aktivität",
+      "narrative": "Dezember 2020. Dein SOC-Dashboard zeigt eine ungewöhnliche Anomalie: Der Orion-Server sendet periodische DNS-Anfragen an avsvmcloud[.]com. Die Beacons folgen einem präzisen Timing-Muster — alle 12 bis 14 Stunden. Das passt zu keiner bekannten Malware-Signatur. Marcus Chen, dein SOC-Analyst, hat die Anomalie zuerst bemerkt: 'Das läuft schon seit Wochen. Ich dachte erst an Telemetrie, aber die Domain ist nicht auf SolarWinds registriert.' Gleichzeitig erreichen euch Gerüchte: FireEye wurde gehackt. Ihre Red-Team-Tools gestohlen. Die grösste Security-Firma der Welt — kompromittiert. Ein Zufall?",
       "image": "scene_siem_dashboard.png",
       "animation_in": "mission_start",
       "npc_dialog": {
         "speaker": "marcus_chen",
-        "text": "Chef, diese DNS-Queries an avsvmcloud.com — das ist kein normales Verhalten. Der Orion-Server sollte nicht mit unbekannten Domains kommunizieren. Und das Timing ist zu regelmaessig fuer Telemetrie.",
+        "text": "Chef, diese DNS-Queries an avsvmcloud.com — das ist kein normales Verhalten. Der Orion-Server sollte nicht mit unbekannten Domains kommunizieren. Und das Timing ist zu regelmässig für Telemetrie.",
         "portrait": "npc_marcus"
       },
       "choices": [
@@ -146,7 +146,7 @@
         },
         {
           "id": "c1_orion_integrity",
-          "text": "Integritaet des Orion-Updates pruefen — Hashes und digitale Signaturen verifizieren",
+          "text": "Integrität des Orion-Updates prüfen — Hashes und digitale Signaturen verifizieren",
           "icon": "🔍",
           "skill_check": {
             "pool_filter": "forensics",
@@ -173,7 +173,7 @@
         },
         {
           "id": "c1_escalate_ciso",
-          "text": "Sofort an CISO Dr. Vasquez eskalieren — das koennte gross sein",
+          "text": "Sofort an CISO Dr. Vasquez eskalieren — das könnte groß sein",
           "icon": "⚠️",
           "skill_check": {
             "pool_filter": "incident_response",
@@ -203,18 +203,18 @@
     },
     {
       "id": "s1_fail_slow_response",
-      "title": "Verzoegerte Reaktion",
-      "narrative": "Waehrend du noch ueberlegst, sendet der Orion-Server weitere Beacons. Marcus wird nervoes: 'Die Queries werden haeufiger. Irgendwas hat sich geaendert.' FireEye hat inzwischen oeffentlich bestaetigt: Ihre Red-Team-Tools wurden gestohlen. Und sie deuten auf einen Supply-Chain-Angriff hin. Die Zeit draengt.",
+      "title": "Verzögerte Reaktion",
+      "narrative": "Während du noch überlegst, sendet der Orion-Server weitere Beacons. Marcus wird nervös: 'Die Queries werden häufiger. Irgendwas hat sich geändert.' FireEye hat inzwischen öffentlich bestätigt: Ihre Red-Team-Tools wurden gestohlen. Und sie deuten auf einen Supply-Chain-Angriff hin. Die Zeit drängt.",
       "image": "scene_siem_dashboard.png",
       "npc_dialog": {
         "speaker": "marcus_chen",
-        "text": "FireEye hat gerade veroeffentlicht dass sie gehackt wurden. Supply-Chain-Angriff ueber ein Software-Update. Wir muessen JETZT unsere Updates pruefen.",
+        "text": "FireEye hat gerade veröffentlicht dass sie gehackt wurden. Supply-Chain-Angriff über ein Software-Update. Wir müssen JETZT unsere Updates prüfen.",
         "portrait": "npc_marcus"
       },
       "choices": [
         {
           "id": "c1_fail_investigate",
-          "text": "Sofort alle kuerzlich installierten Software-Updates pruefen",
+          "text": "Sofort alle kürzlich installierten Software-Updates prüfen",
           "icon": "⚡",
           "skill_check": {
             "pool_filter": "incident_response",
@@ -232,11 +232,11 @@
     {
       "id": "s2_vergifteter_update",
       "title": "Der vergiftete Update",
-      "narrative": "Die Analyse ist erschuetternd. Die DLL SolarWinds.Orion.Core.BusinessLayer.dll in den Orion-Versionen 2019.4 HF 5 bis 2020.2.1 wurde manipuliert. Der Schadcode — Codename SUNBURST — wurde direkt in den Build-Prozess eingeschleust. Die DLL ist digital signiert von SolarWinds. Der Angreifer hat nicht das Update kompromittiert. Er hat die Build-Pipeline kompromittiert. Rund 18.000 Organisationen weltweit haben dieses Update heruntergeladen. Regierungsbehoerden, Fortune-500-Unternehmen, kritische Infrastruktur. Tom von SolarWinds Support ist zunaechst skeptisch: 'Unsere Updates durchlaufen strenge Qualitaetskontrollen.' Aber die Beweise sind eindeutig.",
+      "narrative": "Die Analyse ist erschütternd. Die DLL SolarWinds.Orion.Core.BusinessLayer.dll in den Orion-Versionen 2019.4 HF 5 bis 2020.2.1 wurde manipuliert. Der Schadcode — Codename SUNBURST — wurde direkt in den Build-Prozess eingeschleust. Die DLL ist digital signiert von SolarWinds. Der Angreifer hat nicht das Update kompromittiert. Er hat die Build-Pipeline kompromittiert. Rund 18.000 Organisationen weltweit haben dieses Update heruntergeladen. Regierungsbehörden, Fortune-500-Unternehmen, kritische Infrastruktur. Tom von SolarWinds Support ist zunächst skeptisch: 'Unsere Updates durchlaufen strenge Qualitätskontrollen.' Aber die Beweise sind eindeutig.",
       "image": "scene_forensics_terminal.png",
       "npc_dialog": {
         "speaker": "tom_vendor",
-        "text": "Das kann nicht sein. Unsere Build-Pipeline hat mehrere Sicherheitsebenen. Wir... moment, lassen Sie mich intern nachfragen. Bitte nichts veroeffentlichen bis wir das verifiziert haben.",
+        "text": "Das kann nicht sein. Unsere Build-Pipeline hat mehrere Sicherheitsebenen. Wir... moment, lassen Sie mich intern nachfragen. Bitte nichts veröffentlichen bis wir das verifiziert haben.",
         "portrait": "npc_tom"
       },
       "choices": [
@@ -331,7 +331,7 @@
     {
       "id": "s3_lateral_movement",
       "title": "Lateral Movement",
-      "narrative": "Die Lage eskaliert. SUNBURST war nur die Eintrittskarte. Der Angreifer hat sich ueber Monate hinweg lateral im Netzwerk bewegt. Die Technik ist raffiniert: SAML-Token-Faelschung — sogenannte 'Golden SAML'-Angriffe — ermöglichten Zugriff auf Azure AD und Cloud-Ressourcen ohne Passwoerter zu benoetigen. Der Angreifer hat sich eigene Service Principals angelegt, Zertifikate generiert und E-Mail-Postfaecher von Fuehrungskraeften gelesen. Marcus findet Spuren in den Azure AD Audit-Logs: Unbekannte App-Registrierungen, Token-Erneuerungen zu ungewoehnlichen Zeiten, Zugriffe aus IP-Bereichen die keinem bekannten Standort zugeordnet sind.",
+      "narrative": "Die Lage eskaliert. SUNBURST war nur die Eintrittskarte. Der Angreifer hat sich über Monate hinweg lateral im Netzwerk bewegt. Die Technik ist raffiniert: SAML-Token-Fälschung — sogenannte 'Golden SAML'-Angriffe — ermöglichten Zugriff auf Azure AD und Cloud-Ressourcen ohne Passwörter zu benötigen. Der Angreifer hat sich eigene Service Principals angelegt, Zertifikate generiert und E-Mail-Postfächer von Führungskräften gelesen. Marcus findet Spuren in den Azure AD Audit-Logs: Unbekannte App-Registrierungen, Token-Erneuerungen zu ungewöhnlichen Zeiten, Zugriffe aus IP-Bereichen die keinem bekannten Standort zugeordnet sind.",
       "image": "scene_firewall_config.png",
       "npc_dialog": {
         "speaker": "dr_vasquez",
@@ -368,7 +368,7 @@
         },
         {
           "id": "c3_isolate_orion",
-          "text": "Orion-Server komplett isolieren und Netzwerksegmentierung verschaerfen",
+          "text": "Orion-Server komplett isolieren und Netzwerksegmentierung verschärfen",
           "icon": "🚫",
           "skill_check": {
             "pool_filter": "incident_response",
@@ -426,17 +426,17 @@
     {
       "id": "s4_attribution",
       "title": "Die Attribution",
-      "narrative": "Die Beweise verdichten sich. Die TTPs (Tactics, Techniques, and Procedures) passen zu APT29, auch bekannt als 'Cozy Bear' — eine Einheit des russischen Auslandsgeheimdienstes SVR. Die Kill Chain ist klar: Kompromittierung der SolarWinds Build-Pipeline, SUNBURST als Initial Access ueber signierte Updates, TEARDROP und RAINDROP als Second-Stage-Malware, Golden SAML fuer Persistent Access zu Cloud-Ressourcen. Agent Park von der CISA meldet sich: 'Wir koordinieren die nationale Reaktion. US-Finanzministerium, Commerce Department, Homeland Security — alle betroffen. Das ist der groesste Supply-Chain-Angriff in der Geschichte.' Du musst jetzt den vollstaendigen Kill Chain dokumentieren und die Offenlegung vorbereiten.",
+      "narrative": "Die Beweise verdichten sich. Die TTPs (Tactics, Techniques, and Procedures) passen zu APT29, auch bekannt als 'Cozy Bear' — eine Einheit des russischen Auslandsgeheimdienstes SVR. Die Kill Chain ist klar: Kompromittierung der SolarWinds Build-Pipeline, SUNBURST als Initial Access über signierte Updates, TEARDROP und RAINDROP als Second-Stage-Malware, Golden SAML für Persistent Access zu Cloud-Ressourcen. Agent Park von der CISA meldet sich: 'Wir koordinieren die nationale Reaktion. US-Finanzministerium, Commerce Department, Homeland Security — alle betroffen. Das ist der grösste Supply-Chain-Angriff in der Geschichte.' Du musst jetzt den vollständigen Kill Chain dokumentieren und die Offenlegung vorbereiten.",
       "image": "scene_forensics_terminal.png",
       "npc_dialog": {
         "speaker": "agent_park",
-        "text": "CISA-Directive 21-01 ist raus: Alle Bundesbehoerden muessen SolarWinds Orion sofort abschalten. Wir brauchen Ihren vollstaendigen Kill-Chain-Bericht fuer die nationale Lagebeurteilung. Koennen Sie das bis heute Abend liefern?",
+        "text": "CISA-Directive 21-01 ist raus: Alle Bundesbehörden müssen SolarWinds Orion sofort abschalten. Wir brauchen Ihren vollständigen Kill-Chain-Bericht für die nationale Lagebeurteilung. Können Sie das bis heute Abend liefern?",
         "portrait": "npc_park"
       },
       "choices": [
         {
           "id": "c4_kill_chain",
-          "text": "Vollstaendige Kill-Chain-Dokumentation erstellen — von Initial Access bis Exfiltration",
+          "text": "Vollständige Kill-Chain-Dokumentation erstellen — von Initial Access bis Exfiltration",
           "icon": "📋",
           "skill_check": {
             "pool_filter": "cysa_plus",
@@ -525,11 +525,11 @@
     {
       "id": "s5_supply_chain_hardening",
       "title": "Supply Chain Hardening",
-      "narrative": "Der Angriff ist eingedaemmt. Jetzt beginnt die eigentliche Arbeit: Sicherstellen dass so etwas nie wieder passiert. Der SolarWinds-Incident hat die gesamte Branche wachgeruettelt. Praesident Biden wird Executive Order 14028 unterzeichnen — 'Improving the Nation's Cybersecurity'. Die Kernforderungen: Software Bill of Materials (SBOM) fuer alle Regierungssoftware, Code-Signing-Verifizierung, Build-Pipeline-Security, Zero-Trust-Architektur. Dr. Vasquez will einen umfassenden Plan: 'Wir muessen unsere gesamte Software-Lieferkette ueberdenken. Von der Beschaffung bis zum Deployment.'",
+      "narrative": "Der Angriff ist eingedämmt. Jetzt beginnt die eigentliche Arbeit: Sicherstellen dass so etwas nie wieder passiert. Der SolarWinds-Incident hat die gesamte Branche wachgerüttelt. Präsident Biden wird Executive Order 14028 unterzeichnen — 'Improving the Nation's Cybersecurity'. Die Kernforderungen: Software Bill of Materials (SBOM) für alle Regierungssoftware, Code-Signing-Verifizierung, Build-Pipeline-Security, Zero-Trust-Architektur. Dr. Vasquez will einen umfassenden Plan: 'Wir müssen unsere gesamte Software-Lieferkette überdenken. Von der Beschaffung bis zum Deployment.'",
       "image": "scene_security_hardening.png",
       "npc_dialog": {
         "speaker": "dr_vasquez",
-        "text": "Der Vorstand hat grünes Licht gegeben. Budget ist genehmigt. Aber ich will einen Plan der nicht nur Checkboxen abarbeitet, sondern unsere Denkweise aendert. Zero Trust ist keine Technologie — es ist eine Philosophie.",
+        "text": "Der Vorstand hat grünes Licht gegeben. Budget ist genehmigt. Aber ich will einen Plan der nicht nur Checkboxen abarbeitet, sondern unsere Denkweise ändert. Zero Trust ist keine Technologie — es ist eine Philosophie.",
         "portrait": "npc_vasquez"
       },
       "choices": [
@@ -562,7 +562,7 @@
         },
         {
           "id": "c5_vendor_audit",
-          "text": "Vendor-Security-Audit-Programm aufbauen — alle Lieferanten bewerten und ueberwachen",
+          "text": "Vendor-Security-Audit-Programm aufbauen — alle Lieferanten bewerten und überwachen",
           "icon": "📝",
           "skill_check": {
             "pool_filter": "security",
@@ -624,12 +624,12 @@
     {
       "id": "epilog_success",
       "title": "Vorbildliche Incident Response",
-      "narrative": "Drei Monate spaeter. Dein Kill-Chain-Bericht wird als Referenzdokument von der CISA zitiert. Die Organisation hat Zero Trust implementiert, SBOM-Pflicht fuer alle Lieferanten eingefuehrt und eine eigene Supply-Chain-Security-Taskforce gegruendet. Dr. Vasquez praesentiert auf der RSA Conference: 'Der SolarWinds-Incident hat uns gezeigt dass Vertrauen verifiziert werden muss — immer und ueberall.' Agent Park ruft an: 'Ihre IoCs haben drei weiteren Organisationen geholfen den Angriff fruehzeitig zu erkennen. Gute Arbeit.' Marcus grinst: 'Naechstes Mal will ich aber der sein der den Beacon zuerst findet.'",
+      "narrative": "Drei Monate später. Dein Kill-Chain-Bericht wird als Referenzdokument von der CISA zitiert. Die Organisation hat Zero Trust implementiert, SBOM-Pflicht für alle Lieferanten eingeführt und eine eigene Supply-Chain-Security-Taskforce gegründet. Dr. Vasquez präsentiert auf der RSA Conference: 'Der SolarWinds-Incident hat uns gezeigt dass Vertrauen verifiziert werden muss — immer und überall.' Agent Park ruft an: 'Ihre IoCs haben drei weiteren Organisationen geholfen den Angriff frühzeitig zu erkennen. Gute Arbeit.' Marcus grinst: 'Nächstes Mal will ich aber der sein der den Beacon zuerst findet.'",
       "image": "scene_victory.png",
       "animation_in": "campaign_complete",
       "npc_dialog": {
         "speaker": "dr_vasquez",
-        "text": "Sie haben nicht nur einen der groessten Cyberangriffe der Geschichte abgewehrt — Sie haben unsere gesamte Security-Strategie transformiert. Zero Trust ist jetzt keine Folie mehr, sondern Realitaet.",
+        "text": "Sie haben nicht nur einen der grössten Cyberangriffe der Geschichte abgewehrt — Sie haben unsere gesamte Security-Strategie transformiert. Zero Trust ist jetzt keine Folie mehr, sondern Realität.",
         "portrait": "npc_vasquez"
       },
       "choices": [],
@@ -639,12 +639,12 @@
     },
     {
       "id": "epilog_partial",
-      "title": "Bedrohung eingedaemmt",
-      "narrative": "Der Angriff wurde gestoppt, aber nicht ohne Narben. Einige Systeme mussten komplett neu aufgesetzt werden. Die Azure AD Audit-Logs zeigen dass der Angreifer mindestens drei Monate Zugriff auf E-Mail-Postfaecher hatte. Was er gelesen hat ist unklar. Dr. Vasquez ist erleichtert aber nachdenklich: 'Wir haetten frueher reagieren muessen. Die Beacons liefen wochenlang.' Agent Park empfiehlt ein umfassendes Supply-Chain-Audit. Die Arbeit beginnt gerade erst. Die Lehre ist klar: Software-Updates sind kein automatischer Vertrauensbeweis. Jede Komponente muss verifiziert werden.",
+      "title": "Bedrohung eingedämmt",
+      "narrative": "Der Angriff wurde gestoppt, aber nicht ohne Narben. Einige Systeme mussten komplett neu aufgesetzt werden. Die Azure AD Audit-Logs zeigen dass der Angreifer mindestens drei Monate Zugriff auf E-Mail-Postfächer hatte. Was er gelesen hat ist unklar. Dr. Vasquez ist erleichtert aber nachdenklich: 'Wir hätten früher reagieren müssen. Die Beacons liefen wochenlang.' Agent Park empfiehlt ein umfassendes Supply-Chain-Audit. Die Arbeit beginnt gerade erst. Die Lehre ist klar: Software-Updates sind kein automatischer Vertrauensbeweis. Jede Komponente muss verifiziert werden.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "agent_park",
-        "text": "Der Angriff ist eingedaemmt. Aber APT29 ist geduldig. Stellen Sie sicher dass alle Hintertüren geschlossen sind — auch die die Sie noch nicht gefunden haben. Ich empfehle ein vollstaendiges Supply-Chain-Audit.",
+        "text": "Der Angriff ist eingedämmt. Aber APT29 ist geduldig. Stellen Sie sicher dass alle Hintertüren geschlossen sind — auch die die Sie noch nicht gefunden haben. Ich empfehle ein vollständiges Supply-Chain-Audit.",
         "portrait": "npc_park"
       },
       "choices": [],
@@ -655,11 +655,11 @@
     {
       "id": "epilog_fail",
       "title": "Lehren aus dem Schatten",
-      "narrative": "Die Reaktion kam zu spaet. Der Angreifer hatte mehr Zeit als noetig und konnte zusaetzliche Daten exfiltrieren. Aber die Dokumentation ist lueckenlos: Jeder Schritt des Angriffs, jede versaeumte Gelegenheit fruehzeitig zu handeln, ist festgehalten. Der Post-Mortem-Bericht wird zum Pflichtlektuere fuer jedes Teammitglied. Dr. Vasquez: 'Das darf nie wieder passieren.' Executive Order 14028 gibt den Rahmen vor. Die Organisation verpflichtet sich zu SBOM, Zero Trust und regelmaessigen Supply-Chain-Audits. Aus dem groessten Supply-Chain-Angriff der Geschichte werden konkrete Massnahmen.",
+      "narrative": "Die Reaktion kam zu spät. Der Angreifer hatte mehr Zeit als nötig und konnte zusätzliche Daten exfiltrieren. Aber die Dokumentation ist lückenlos: Jeder Schritt des Angriffs, jede versäumte Gelegenheit frühzeitig zu handeln, ist festgehalten. Der Post-Mortem-Bericht wird zum Pflichtlektüre für jedes Teammitglied. Dr. Vasquez: 'Das darf nie wieder passieren.' Executive Order 14028 gibt den Rahmen vor. Die Organisation verpflichtet sich zu SBOM, Zero Trust und regelmässigen Supply-Chain-Audits. Aus dem grössten Supply-Chain-Angriff der Geschichte werden konkrete Maßnahmen.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "marcus_chen",
-        "text": "Die Beacons liefen seit Maerz 2020. Neun Monate. Wir haetten sie frueher finden koennen — wenn wir gewusst haetten wonach wir suchen. Das aendert sich jetzt.",
+        "text": "Die Beacons liefen seit März 2020. Neun Monate. Wir hätten sie früher finden können — wenn wir gewusst hätten wonach wir suchen. Das ändert sich jetzt.",
         "portrait": "npc_marcus"
       },
       "choices": [],
@@ -670,16 +670,16 @@
   ],
   "epilog": {
     "success": {
-      "narrative": "Drei Monate spaeter. Dein Kill-Chain-Bericht wird als Referenz zitiert. Zero Trust implementiert, SBOM-Pflicht eingefuehrt, Supply-Chain-Security-Taskforce gegruendet. Die CISA bedankt sich: 'Ihre IoCs haben drei weiteren Organisationen geholfen.'",
+      "narrative": "Drei Monate später. Dein Kill-Chain-Bericht wird als Referenz zitiert. Zero Trust implementiert, SBOM-Pflicht eingeführt, Supply-Chain-Security-Taskforce gegründet. Die CISA bedankt sich: 'Ihre IoCs haben drei weiteren Organisationen geholfen.'",
       "image": "scene_victory.png",
       "animation": "campaign_complete"
     },
     "partial": {
-      "narrative": "Der Angriff ist eingedaemmt. Einige Systeme mussten neu aufgesetzt werden. Die Lehre ist klar: Vertrauen muss verifiziert werden. Agent Park empfiehlt ein umfassendes Supply-Chain-Audit. Die Arbeit beginnt gerade erst.",
+      "narrative": "Der Angriff ist eingedämmt. Einige Systeme mussten neu aufgesetzt werden. Die Lehre ist klar: Vertrauen muss verifiziert werden. Agent Park empfiehlt ein umfassendes Supply-Chain-Audit. Die Arbeit beginnt gerade erst.",
       "image": "scene_partial_victory.png"
     },
     "fail": {
-      "narrative": "Die Reaktion kam spaet, aber der Post-Mortem-Bericht ist lueckenlos. Executive Order 14028 gibt den Rahmen vor: SBOM, Zero Trust, Supply-Chain-Audits. Aus dem groessten Supply-Chain-Angriff der Geschichte werden konkrete Massnahmen.",
+      "narrative": "Die Reaktion kam spät, aber der Post-Mortem-Bericht ist lückenlos. Executive Order 14028 gibt den Rahmen vor: SBOM, Zero Trust, Supply-Chain-Audits. Aus dem grössten Supply-Chain-Angriff der Geschichte werden konkrete Maßnahmen.",
       "image": "scene_partial_victory.png"
     }
   },

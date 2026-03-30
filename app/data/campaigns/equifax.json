@@ -1,7 +1,7 @@
 {
   "campaign_id": "equifax",
   "title": "Equifax — Die vergessene Patch-Nacht",
-  "description": "Maerz 2017. Apache Struts CVE-2017-5638, CVSS 10.0, Remote Code Execution. Der Patch ist verfuegbar. Aber niemand spielt ihn ein. 76 Tage lang haben Angreifer freien Zugang zu 147 Millionen Datensaetzen — Namen, Sozialversicherungsnummern, Kreditkartendaten. Die teuerste Patch-Nacht der Geschichte.",
+  "description": "März 2017. Apache Struts CVE-2017-5638, CVSS 10.0, Remote Code Execution. Der Patch ist verfügbar. Aber niemand spielt ihn ein. 76 Tage lang haben Angreifer freien Zugang zu 147 Millionen Datensätzen — Namen, Sozialversicherungsnummern, Kreditkartendaten. Die teuerste Patch-Nacht der Geschichte.",
   "duration_minutes": 70,
   "difficulty": "expert",
   "focus_areas": [
@@ -15,7 +15,7 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "Schleichender Horror. Die Luecke war bekannt, der Patch verfuegbar — aber niemand hat ihn eingespielt. 76 Tage lang hatten die Angreifer freien Zugang zu 147 Millionen Datensaetzen.",
+  "narrator_style": "Schleichender Horror. Die Lücke war bekannt, der Patch verfügbar — aber niemand hat ihn eingespielt. 76 Tage lang hatten die Angreifer freien Zugang zu 147 Millionen Datensätzen.",
   "gemini_role": "attacker",
   "characters": {
     "architect": {
@@ -108,18 +108,18 @@
     {
       "id": "s1_struts_advisory",
       "title": "CVE-2017-5638 — Das Advisory",
-      "narrative": "7. Maerz 2017. Apache veroeffentlicht ein Security Advisory: CVE-2017-5638. Apache Struts 2, Remote Code Execution, CVSS Score 10.0 — das Maximum. Ein Angreifer kann ueber einen manipulierten Content-Type-Header beliebigen Code auf dem Server ausfuehren. Kein Login noetig, kein Exploit-Chain noetig — ein einziger HTTP-Request genuegt. Der Patch ist verfuegbar. Euer Dispute Resolution Portal — das System ueber das Verbraucher Fehler in ihren Kreditberichten melden — laeuft auf Apache Struts. Internet-facing, mit direktem Zugriff auf die Kerndatenbank. Derek 'Patches' Nguyen, der Patch Management Lead, ist ueberfordert: 'Wir haben ueber 200 Systeme mit Struts. Das Patchen dauert Wochen. Wir brauchen Tests, Change Requests, Downtime-Windows...' Die Uhr tickt. Exploit-Code ist bereits auf GitHub.",
+      "narrative": "7. März 2017. Apache veröffentlicht ein Security Advisory: CVE-2017-5638. Apache Struts 2, Remote Code Execution, CVSS Score 10.0 — das Maximum. Ein Angreifer kann über einen manipulierten Content-Type-Header beliebigen Code auf dem Server ausführen. Kein Login nötig, kein Exploit-Chain nötig — ein einziger HTTP-Request genügt. Der Patch ist verfügbar. Euer Dispute Resolution Portal — das System über das Verbraucher Fehler in ihren Kreditberichten melden — läuft auf Apache Struts. Internet-facing, mit direktem Zugriff auf die Kerndatenbank. Derek 'Patches' Nguyen, der Patch Management Lead, ist überfordert: 'Wir haben über 200 Systeme mit Struts. Das Patchen dauert Wochen. Wir brauchen Tests, Change Requests, Downtime-Windows...' Die Uhr tickt. Exploit-Code ist bereits auf GitHub.",
       "image": "scene_siem_dashboard.png",
       "animation_in": "mission_start",
       "npc_dialog": {
         "speaker": "patch_admin",
-        "text": "CVSS 10.0, ich weiss. Aber wir koennen nicht einfach 200 Systeme patchen ohne zu testen. Das Dispute Portal allein hat 47 Abhaengigkeiten. Wenn ich da was kaputtmache, ruft der CEO an. Gebt mir zwei Wochen fuer einen Plan.",
+        "text": "CVSS 10.0, ich weiß. Aber wir können nicht einfach 200 Systeme patchen ohne zu testen. Das Dispute Portal allein hat 47 Abhängigkeiten. Wenn ich da was kaputtmache, ruft der CEO an. Gebt mir zwei Wochen für einen Plan.",
         "portrait": "npc_patches"
       },
       "choices": [
         {
           "id": "c1_patch_now",
-          "text": "Sofort-Patch fuer alle internet-facing Systeme — Dispute Portal hat hoechste Prioritaet",
+          "text": "Sofort-Patch für alle internet-facing Systeme — Dispute Portal hat höchste Priorität",
           "icon": "🛡️",
           "skill_check": {
             "pool_filter": "security",
@@ -173,7 +173,7 @@
         },
         {
           "id": "c1_vuln_scan",
-          "text": "Vulnerability Scan ueber alle Systeme — erstmal das volle Ausmass verstehen",
+          "text": "Vulnerability Scan über alle Systeme — erstmal das volle Ausmass verstehen",
           "icon": "🔍",
           "skill_check": {
             "pool_filter": "forensics",
@@ -202,23 +202,23 @@
       "simulation": {
         "type": "cli_analysis",
         "pbq_question_id": null,
-        "description": "Vulnerability Assessment: Identifiziere alle Apache-Struts-Instanzen im Netzwerk, pruefe Versionsstaende und bewerte Expositionsrisiko (internet-facing vs. intern)"
+        "description": "Vulnerability Assessment: Identifiziere alle Apache-Struts-Instanzen im Netzwerk, prüfe Versionsstände und bewerte Expositionsrisiko (internet-facing vs. intern)"
       }
     },
     {
       "id": "s1_fail_delayed_patch",
       "title": "Der Patch liegt im Test",
-      "narrative": "Wochen vergehen. Der Patch fuer CVE-2017-5638 liegt im Testsystem. Change Advisory Board hat den naechsten Slot in drei Wochen. Das Dispute Portal ist weiterhin ungepatcht und internet-facing. Derek sagt: 'Wir folgen dem Prozess.' Aber der Prozess wurde nicht fuer CVSS 10.0 designed. In den Logs des Dispute Portals tauchen merkwuerdige HTTP-Requests auf — manipulierte Content-Type-Header. Die Exploit-Versuche haben begonnen. Vielleicht sind sie auch schon erfolgreich.",
+      "narrative": "Wochen vergehen. Der Patch für CVE-2017-5638 liegt im Testsystem. Change Advisory Board hat den nächsten Slot in drei Wochen. Das Dispute Portal ist weiterhin ungepatcht und internet-facing. Derek sagt: 'Wir folgen dem Prozess.' Aber der Prozess wurde nicht für CVSS 10.0 designed. In den Logs des Dispute Portals tauchen merkwürdige HTTP-Requests auf — manipulierte Content-Type-Header. Die Exploit-Versuche haben begonnen. Vielleicht sind sie auch schon erfolgreich.",
       "image": "scene_siem_dashboard.png",
       "npc_dialog": {
         "speaker": "cso_sullivan",
-        "text": "Derek, ich habe vor Wochen gesagt: Patchen. Sofort. Warum laeuft das Portal immer noch auf der alten Version? Wenn da jemand drin ist... Das geht auf unsere Kappe. Auf meine Kappe.",
+        "text": "Derek, ich habe vor Wochen gesagt: Patchen. Sofort. Warum läuft das Portal immer noch auf der alten Version? Wenn da jemand drin ist... Das geht auf unsere Kappe. Auf meine Kappe.",
         "portrait": "npc_sullivan"
       },
       "choices": [
         {
           "id": "c1_fail_emergency_patch",
-          "text": "Emergency Patch jetzt — Change-Prozess ueberspringen, Risiko akzeptieren",
+          "text": "Emergency Patch jetzt — Change-Prozess überspringen, Risiko akzeptieren",
           "icon": "⚡",
           "skill_check": {
             "pool_filter": "security",
@@ -236,7 +236,7 @@
     {
       "id": "s2_unbemerkt",
       "title": "76 Tage im Dunkeln",
-      "narrative": "Mai 2017. Ein routinemaessiger Netzwerk-Scan zeigt Anomalien: Das Dispute Resolution Portal generiert ungewoehnlichen Datenbank-Traffic. 30 verschiedene SQL-Queries in kurzer Abfolge, systematisch durch Tabellen iterierend. Nicht das Muster eines normalen Benutzers. Nicht das Muster einer Anwendung. Das Muster eines Angreifers der Daten exfiltriert. Das SSL-Inspection-Zertifikat fuer den Netzwerk-Proxy ist seit 19 Monaten abgelaufen — der ausgehende Traffic wurde die ganze Zeit nicht inspiziert. Die Angreifer konnten Daten ungehindert nach aussen schleusen. Derek wird blass: 'Das Zertifikat... das steht seit letztem Jahr auf meiner Todo-Liste.'",
+      "narrative": "Mai 2017. Ein routinemässiger Netzwerk-Scan zeigt Anomalien: Das Dispute Resolution Portal generiert ungewöhnlichen Datenbank-Traffic. 30 verschiedene SQL-Queries in kurzer Abfolge, systematisch durch Tabellen iterierend. Nicht das Muster eines normalen Benutzers. Nicht das Muster einer Anwendung. Das Muster eines Angreifers der Daten exfiltriert. Das SSL-Inspection-Zertifikat für den Netzwerk-Proxy ist seit 19 Monaten abgelaufen — der ausgehende Traffic wurde die ganze Zeit nicht inspiziert. Die Angreifer konnten Daten ungehindert nach außen schleusen. Derek wird blass: 'Das Zertifikat... das steht seit letztem Jahr auf meiner Todo-Liste.'",
       "image": "scene_forensics_terminal.png",
       "npc_dialog": {
         "speaker": "attacker_voice",
@@ -300,7 +300,7 @@
         },
         {
           "id": "c2_kill_struts",
-          "text": "Alle Struts-Systeme sofort offline nehmen — radikale Eindaemmung",
+          "text": "Alle Struts-Systeme sofort offline nehmen — radikale Eindämmung",
           "icon": "⛔",
           "skill_check": {
             "pool_filter": "security",
@@ -329,13 +329,13 @@
       "simulation": {
         "type": "cli_analysis",
         "pbq_question_id": null,
-        "description": "Log-Forensik: Analysiere Apache-Access-Logs und Datenbank-Query-Logs um Exfiltrations-Muster, Zeitraeume und betroffene Tabellen zu identifizieren"
+        "description": "Log-Forensik: Analysiere Apache-Access-Logs und Datenbank-Query-Logs um Exfiltrations-Muster, Zeiträume und betroffene Tabellen zu identifizieren"
       }
     },
     {
       "id": "s3_datenflut",
       "title": "147 Millionen",
-      "narrative": "Die forensische Analyse enthuellt das volle Ausmass: 147 Millionen Datensaetze. Namen, Sozialversicherungsnummern, Geburtsdaten, Adressen, Fuehrerscheinnummern. 209.000 Kreditkartennummern. 76 Tage unkontrollierter Zugriff — vom 13. Mai bis 30. Juli 2017. Die Angreifer nutzten CVE-2017-5638 als Einstiegspunkt, bewegten sich dann lateral durch das Netzwerk und erreichten 48 verschiedene Datenbanken. Das abgelaufene SSL-Zertifikat auf dem Inspection-Proxy bedeutet: Der gesamte exfiltrierte Traffic war verschluesselt und wurde nicht inspiziert. CSO Sullivan ist am Boden: 'Ich wurde im Maerz gewarnt. Der Patch war verfuegbar. Und jetzt...' Dr. Hartmann, die General Counsel, unterbricht: 'Wir haben eine gesetzliche Meldepflicht. In allen 50 Bundesstaaten.'",
+      "narrative": "Die forensische Analyse enthüllt das volle Ausmass: 147 Millionen Datensätze. Namen, Sozialversicherungsnummern, Geburtsdaten, Adressen, Führerscheinnummern. 209.000 Kreditkartennummern. 76 Tage unkontrollierter Zugriff — vom 13. Mai bis 30. Juli 2017. Die Angreifer nutzten CVE-2017-5638 als Einstiegspunkt, bewegten sich dann lateral durch das Netzwerk und erreichten 48 verschiedene Datenbanken. Das abgelaufene SSL-Zertifikat auf dem Inspection-Proxy bedeutet: Der gesamte exfiltrierte Traffic war verschlüsselt und wurde nicht inspiziert. CSO Sullivan ist am Boden: 'Ich wurde im März gewarnt. Der Patch war verfügbar. Und jetzt...' Dr. Hartmann, die General Counsel, unterbricht: 'Wir haben eine gesetzliche Meldepflicht. In allen 50 Bundesstaaten.'",
       "image": "scene_forensics_terminal.png",
       "npc_dialog": {
         "speaker": "legal_counsel",
@@ -399,7 +399,7 @@
         },
         {
           "id": "c3_legal",
-          "text": "Notification-Pflicht pruefen und Legal einschalten — Compliance zuerst",
+          "text": "Notification-Pflicht prüfen und Legal einschalten — Compliance zuerst",
           "icon": "⚖️",
           "skill_check": {
             "pool_filter": "security",
@@ -430,17 +430,17 @@
     {
       "id": "s4_offenlegung",
       "title": "Die Offenlegung",
-      "narrative": "7. September 2017 — 143 Tage nach Beginn des Angriffs, 40 Tage nach der Entdeckung. Equifax veroeffentlicht den Breach. Die Reaktion ist verheerend. Die Aktie stuerzt 35% ab. CSO Susan Sullivan und CIO David Webb werden gefeuert. CEO Richard Smith muss vor dem Senat aussagen. Die FTC leitet eine Untersuchung ein. 50 Generalstaatsanwaelte klagen. Die Presse zerlegt jedes Detail: Der ungepatche Struts-Server. Das abgelaufene SSL-Zertifikat. Die 76 Tage ohne Erkennung. Und dann der Skandal im Skandal: Drei Fuehrungskraefte haben Aktien verkauft bevor der Breach oeffentlich wurde. Dr. Hartmann: 'Insider Trading-Vorwuerfe. Das wird noch haesslicher.'",
+      "narrative": "7. September 2017 — 143 Tage nach Beginn des Angriffs, 40 Tage nach der Entdeckung. Equifax veröffentlicht den Breach. Die Reaktion ist verheerend. Die Aktie stürzt 35% ab. CSO Susan Sullivan und CIO David Webb werden gefeuert. CEO Richard Smith muss vor dem Senat aussagen. Die FTC leitet eine Untersuchung ein. 50 Generalstaatsanwälte klagen. Die Presse zerlegt jedes Detail: Der ungepatche Struts-Server. Das abgelaufene SSL-Zertifikat. Die 76 Tage ohne Erkennung. Und dann der Skandal im Skandal: Drei Führungskräfte haben Aktien verkauft bevor der Breach öffentlich wurde. Dr. Hartmann: 'Insider Trading-Vorwürfe. Das wird noch hässlicher.'",
       "image": "scene_firewall_config.png",
       "npc_dialog": {
         "speaker": "cso_sullivan",
-        "text": "Ich uebernehme die Verantwortung. Der Patch haette eingespielt werden muessen. Das Zertifikat haette erneuert werden muessen. Aber wir muessen jetzt nach vorne schauen — 147 Millionen Menschen brauchen Schutz. Credit Monitoring, Identity Theft Protection, alles.",
+        "text": "Ich übernehme die Verantwortung. Der Patch hätte eingespielt werden müssen. Das Zertifikat hätte erneuert werden müssen. Aber wir müssen jetzt nach vorne schauen — 147 Millionen Menschen brauchen Schutz. Credit Monitoring, Identity Theft Protection, alles.",
         "portrait": "npc_sullivan"
       },
       "choices": [
         {
           "id": "c4_transparent",
-          "text": "Transparente Kommunikation — alles offenlegen, nichts zurueckhalten",
+          "text": "Transparente Kommunikation — alles offenlegen, nichts zurückhalten",
           "icon": "📢",
           "skill_check": {
             "pool_filter": "security",
@@ -467,7 +467,7 @@
         },
         {
           "id": "c4_credit_monitoring",
-          "text": "Credit Monitoring fuer alle 147 Millionen Betroffenen + umfassenden Incident Report",
+          "text": "Credit Monitoring für alle 147 Millionen Betroffenen + umfassenden Incident Report",
           "icon": "🛡️",
           "skill_check": {
             "pool_filter": "incident_response",
@@ -494,7 +494,7 @@
         },
         {
           "id": "c4_remediation_plan",
-          "text": "Umfassenden Remediation-Plan mit konkreter Timeline dem Kongress praesentieren",
+          "text": "Umfassenden Remediation-Plan mit konkreter Timeline dem Kongress präsentieren",
           "icon": "📋",
           "skill_check": {
             "pool_filter": "cysa_plus",
@@ -524,12 +524,12 @@
     },
     {
       "id": "s5_lessons_learned",
-      "title": "Lessons Learned — $700 Millionen spaeter",
-      "narrative": "Juli 2019. Equifax einigt sich auf einen Vergleich: 700 Millionen Dollar. 425 Millionen fuer Entschaedigung der Betroffenen, 175 Millionen an die Bundesstaaten, 100 Millionen an die CFPB. Es ist der groesste Data-Breach-Vergleich der Geschichte. Der neue CISO hat aufgeraeumt: Neues Patch-Management-Team, automatisierte Vulnerability Scans, Certificate Lifecycle Management. Aber die Frage bleibt: Wie konnte ein einzelner ungepatchter Server mit einer bekannten Schwachstelle 147 Millionen Datensaetze kompromittieren? Die Antwort liegt in systemischen Defiziten: kein Asset Inventory, kein Vulnerability Management Lifecycle, keine automatische Zertifikats-Erneuerung, keine Netzwerksegmentierung. Jetzt liegt es an dir, die richtigen Lehren zu ziehen.",
+      "title": "Lessons Learned — $700 Millionen später",
+      "narrative": "Juli 2019. Equifax einigt sich auf einen Vergleich: 700 Millionen Dollar. 425 Millionen für Entschädigung der Betroffenen, 175 Millionen an die Bundesstaaten, 100 Millionen an die CFPB. Es ist der grösste Data-Breach-Vergleich der Geschichte. Der neue CISO hat aufgeräumt: Neues Patch-Management-Team, automatisierte Vulnerability Scans, Certificate Lifecycle Management. Aber die Frage bleibt: Wie konnte ein einzelner ungepatchter Server mit einer bekannten Schwachstelle 147 Millionen Datensätze kompromittieren? Die Antwort liegt in systemischen Defiziten: kein Asset Inventory, kein Vulnerability Management Lifecycle, keine automatische Zertifikats-Erneuerung, keine Netzwerksegmentierung. Jetzt liegt es an dir, die richtigen Lehren zu ziehen.",
       "image": "scene_security_hardening.png",
       "npc_dialog": {
         "speaker": "patch_admin",
-        "text": "Nie wieder. Wir haben jetzt SLA-basiertes Patching: CVSS 9+ innerhalb von 48 Stunden. Kein Change Advisory Board, kein Warten. Und jedes Zertifikat wird automatisch 90 Tage vor Ablauf erneuert. Haetten wir das vorher gehabt...",
+        "text": "Nie wieder. Wir haben jetzt SLA-basiertes Patching: CVSS 9+ innerhalb von 48 Stunden. Kein Change Advisory Board, kein Warten. Und jedes Zertifikat wird automatisch 90 Tage vor Ablauf erneuert. Hätten wir das vorher gehabt...",
         "portrait": "npc_patches"
       },
       "choices": [
@@ -620,12 +620,12 @@
     {
       "id": "epilog_success",
       "title": "Vulnerability Management Vorbild",
-      "narrative": "Zwei Jahre spaeter. Die Organisation hat das beste Patch-Management der Branche. CVSS 9+ wird innerhalb von 24 Stunden gepatcht. Ein vollstaendiges Asset Inventory erfasst jedes System, jede Abhaengigkeit, jedes Zertifikat. Automatisierte Vulnerability Scans laufen kontinuierlich. Der neue CISO praesentiert auf der Black Hat: 'Wir haben aus dem groessten Data Breach der Geschichte die richtigen Lehren gezogen.' Derek 'Patches' Nguyen leitet jetzt ein 20-koepfiges Vulnerability Management Team: 'Frueher war ich allein mit 200 Systemen. Jetzt haben wir Tooling, Prozesse und Leute. Kein Patch bleibt liegen.' Das Vertrauen der Kunden kehrt langsam zurueck — weil die Massnahmen echt sind, nicht nur PR.",
+      "narrative": "Zwei Jahre später. Die Organisation hat das beste Patch-Management der Branche. CVSS 9+ wird innerhalb von 24 Stunden gepatcht. Ein vollständiges Asset Inventory erfasst jedes System, jede Abhängigkeit, jedes Zertifikat. Automatisierte Vulnerability Scans laufen kontinuierlich. Der neue CISO präsentiert auf der Black Hat: 'Wir haben aus dem grössten Data Breach der Geschichte die richtigen Lehren gezogen.' Derek 'Patches' Nguyen leitet jetzt ein 20-köpfiges Vulnerability Management Team: 'Früher war ich allein mit 200 Systemen. Jetzt haben wir Tooling, Prozesse und Leute. Kein Patch bleibt liegen.' Das Vertrauen der Kunden kehrt langsam zurück — weil die Maßnahmen echt sind, nicht nur PR.",
       "image": "scene_victory.png",
       "animation_in": "campaign_complete",
       "npc_dialog": {
         "speaker": "patch_admin",
-        "text": "20 Leute im Team. Automatisiertes Patching. SBOM fuer jede Anwendung. Und kein einziges Zertifikat ist abgelaufen seit dem Incident. Das haette ich mir vor zwei Jahren nicht vorstellen koennen.",
+        "text": "20 Leute im Team. Automatisiertes Patching. SBOM für jede Anwendung. Und kein einziges Zertifikat ist abgelaufen seit dem Incident. Das hätte ich mir vor zwei Jahren nicht vorstellen können.",
         "portrait": "npc_patches"
       },
       "choices": [],
@@ -636,11 +636,11 @@
     {
       "id": "epilog_partial",
       "title": "Schadensbegrenzung",
-      "narrative": "Die Patch-Prozesse sind verbessert. SLA-basiertes Patching ist eingefuehrt, Zertifikate werden ueberwacht. Aber das vollstaendige Asset Inventory fehlt noch, und die Netzwerksegmentierung hat Luecken. Das Vertrauen der Kunden ist angeschlagen — Equifax' Ruf als Kreditauskunftei ist beschaedigt. 147 Millionen Menschen wissen, dass ihre sensibelsten Daten kompromittiert wurden. Die $700 Millionen sind gezahlt, aber das eigentliche Risiko bleibt: Ohne vollstaendige Sichtbarkeit ueber alle Assets kann die naechste Schwachstelle genau so lang unbemerkt bleiben. Derek arbeitet daran, aber der Weg ist noch weit.",
+      "narrative": "Die Patch-Prozesse sind verbessert. SLA-basiertes Patching ist eingeführt, Zertifikate werden überwacht. Aber das vollständige Asset Inventory fehlt noch, und die Netzwerksegmentierung hat Lücken. Das Vertrauen der Kunden ist angeschlagen — Equifax' Ruf als Kreditauskunftei ist beschädigt. 147 Millionen Menschen wissen, dass ihre sensibelsten Daten kompromittiert wurden. Die $700 Millionen sind gezahlt, aber das eigentliche Risiko bleibt: Ohne vollständige Sichtbarkeit über alle Assets kann die nächste Schwachstelle genau so lang unbemerkt bleiben. Derek arbeitet daran, aber der Weg ist noch weit.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "legal_counsel",
-        "text": "Der Vergleich ist unterschrieben. $700 Millionen. Aber die Sammelklagen laufen weiter, und die regulatorische Aufsicht wird Jahre dauern. Das Vertrauen zurueckzugewinnen kostet mehr als jeder Vergleich.",
+        "text": "Der Vergleich ist unterschrieben. $700 Millionen. Aber die Sammelklagen laufen weiter, und die regulatorische Aufsicht wird Jahre dauern. Das Vertrauen zurückzugewinnen kostet mehr als jeder Vergleich.",
         "portrait": "npc_legal"
       },
       "choices": [],
@@ -651,11 +651,11 @@
     {
       "id": "epilog_fail",
       "title": "Die teuerste Patch-Nacht",
-      "narrative": "700 Millionen Dollar. 147 Millionen kompromittierte Datensaetze. Ein CEO vor dem Senat. Ein CSO gefeuert. Insider-Trading-Anklagen. Und alles wegen eines Patches der nicht eingespielt wurde. Die Geschichte von Equifax wird zum Standardbeispiel in jedem Cybersecurity-Kurs weltweit: Was passiert wenn Patch-Management versagt, wenn Zertifikate ablaufen, wenn Asset Inventories fehlen. Die Branche lernt — langsam. Automatisiertes Patching wird zum Standard. Certificate Lifecycle Management wird Pflicht. Vulnerability Disclosure Policies werden geschaerft. Equifax hat den Preis bezahlt, damit andere es besser machen koennen.",
+      "narrative": "700 Millionen Dollar. 147 Millionen kompromittierte Datensätze. Ein CEO vor dem Senat. Ein CSO gefeuert. Insider-Trading-Anklagen. Und alles wegen eines Patches der nicht eingespielt wurde. Die Geschichte von Equifax wird zum Standardbeispiel in jedem Cybersecurity-Kurs weltweit: Was passiert wenn Patch-Management versagt, wenn Zertifikate ablaufen, wenn Asset Inventories fehlen. Die Branche lernt — langsam. Automatisiertes Patching wird zum Standard. Certificate Lifecycle Management wird Pflicht. Vulnerability Disclosure Policies werden geschärft. Equifax hat den Preis bezahlt, damit andere es besser machen können.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "cso_sullivan",
-        "text": "Ich habe meinen Job verloren. Aber wenn dadurch auch nur eine Organisation ihre Patches ernst nimmt, ihre Zertifikate prueft und ein Asset Inventory fuehrt — dann war es nicht umsonst. Patcht eure Systeme. Sofort.",
+        "text": "Ich habe meinen Job verloren. Aber wenn dadurch auch nur eine Organisation ihre Patches ernst nimmt, ihre Zertifikate prüft und ein Asset Inventory führt — dann war es nicht umsonst. Patcht eure Systeme. Sofort.",
         "portrait": "npc_sullivan"
       },
       "choices": [],
@@ -666,23 +666,23 @@
   ],
   "epilog": {
     "success": {
-      "narrative": "Zwei Jahre spaeter. Bestes Patch-Management der Branche. CVSS 9+ in 24h gepatcht. Vollstaendiges Asset Inventory, automatisierte Scans, 20-koepfiges Vuln-Management-Team. Der neue CISO praesentiert auf der Black Hat als Vorbild.",
+      "narrative": "Zwei Jahre später. Bestes Patch-Management der Branche. CVSS 9+ in 24h gepatcht. Vollständiges Asset Inventory, automatisierte Scans, 20-köpfiges Vuln-Management-Team. Der neue CISO präsentiert auf der Black Hat als Vorbild.",
       "image": "scene_victory.png",
       "animation": "campaign_complete"
     },
     "partial": {
-      "narrative": "Patch-Prozesse verbessert, Zertifikate ueberwacht. Aber Asset Inventory unvollstaendig, Netzwerksegmentierung lueckenhaft. $700M gezahlt, Vertrauen beschaedigt. Der Weg ist noch weit.",
+      "narrative": "Patch-Prozesse verbessert, Zertifikate überwacht. Aber Asset Inventory unvollständig, Netzwerksegmentierung lückenhaft. $700M gezahlt, Vertrauen beschädigt. Der Weg ist noch weit.",
       "image": "scene_partial_victory.png"
     },
     "fail": {
-      "narrative": "$700M, 147M Datensaetze, CEO vor dem Senat. Das Standardbeispiel fuer Patch-Management-Versagen. Die Branche lernt daraus — automatisiertes Patching wird Standard, Certificate Lifecycle Management wird Pflicht.",
+      "narrative": "$700M, 147M Datensätze, CEO vor dem Senat. Das Standardbeispiel für Patch-Management-Versagen. Die Branche lernt daraus — automatisiertes Patching wird Standard, Certificate Lifecycle Management wird Pflicht.",
       "image": "scene_partial_victory.png"
     }
   },
   "workplace_npcs": [
     {
       "character_id": "frau_weber",
-      "role_in_story": "Hatte vor Wochen vor der Schwachstelle gewarnt — niemand hat zugehoert",
+      "role_in_story": "Hatte vor Wochen vor der Schwachstelle gewarnt — niemand hat zugehört",
       "default_emotion": "alert"
     }
   ]

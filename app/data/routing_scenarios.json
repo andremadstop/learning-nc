@@ -1,16 +1,36 @@
 [
   {
     "id": "add-route",
-    "title": "Route fuer 10.0.2.0/24",
-    "question": "Welche Route gewinnt fuer 10.0.2.55?",
+    "title": "Route für 10.0.2.0/24",
+    "question": "Welche Route gewinnt für 10.0.2.55?",
     "destinationIp": "10.0.2.55",
     "routes": [
-      { "destination": "10.0.2.0", "mask": "255.255.255.0", "gateway": "10.0.1.1", "interface": "Gi0/1", "metric": 10, "type": "static" },
-      { "destination": "0.0.0.0", "mask": "0.0.0.0", "gateway": "192.168.1.1", "interface": "Gi0/0", "metric": 100, "type": "default" }
+      {
+        "destination": "10.0.2.0",
+        "mask": "255.255.255.0",
+        "gateway": "10.0.1.1",
+        "interface": "Gi0/1",
+        "metric": 10,
+        "type": "static"
+      },
+      {
+        "destination": "0.0.0.0",
+        "mask": "0.0.0.0",
+        "gateway": "192.168.1.1",
+        "interface": "Gi0/0",
+        "metric": 100,
+        "type": "default"
+      }
     ],
     "options": [
-      { "id": "10.0.1.1", "label": "Gateway 10.0.1.1" },
-      { "id": "192.168.1.1", "label": "Default Route 192.168.1.1" }
+      {
+        "id": "10.0.1.1",
+        "label": "Gateway 10.0.1.1"
+      },
+      {
+        "id": "192.168.1.1",
+        "label": "Default Route 192.168.1.1"
+      }
     ],
     "answer": "10.0.1.1"
   },
@@ -20,11 +40,24 @@
     "question": "Was passiert ohne passende Route und ohne Default?",
     "destinationIp": "172.20.1.10",
     "routes": [
-      { "destination": "10.0.0.0", "mask": "255.255.255.0", "gateway": "direct", "interface": "Gi0/1", "metric": 0, "type": "connected" }
+      {
+        "destination": "10.0.0.0",
+        "mask": "255.255.255.0",
+        "gateway": "direct",
+        "interface": "Gi0/1",
+        "metric": 0,
+        "type": "connected"
+      }
     ],
     "options": [
-      { "id": "unreachable", "label": "Destination Unreachable" },
-      { "id": "default", "label": "Default Route nimmt das Paket" }
+      {
+        "id": "unreachable",
+        "label": "Destination Unreachable"
+      },
+      {
+        "id": "default",
+        "label": "Default Route nimmt das Paket"
+      }
     ],
     "answer": "unreachable"
   },
@@ -34,42 +67,102 @@
     "question": "Steckt in dieser Tabelle ein Routing-Loop?",
     "destinationIp": "10.0.20.50",
     "routes": [
-      { "destination": "10.0.20.0", "mask": "255.255.255.0", "gateway": "10.0.30.1", "interface": "Gi0/1", "metric": 10, "type": "static" },
-      { "destination": "10.0.30.0", "mask": "255.255.255.0", "gateway": "10.0.20.1", "interface": "Gi0/2", "metric": 10, "type": "static" }
+      {
+        "destination": "10.0.20.0",
+        "mask": "255.255.255.0",
+        "gateway": "10.0.30.1",
+        "interface": "Gi0/1",
+        "metric": 10,
+        "type": "static"
+      },
+      {
+        "destination": "10.0.30.0",
+        "mask": "255.255.255.0",
+        "gateway": "10.0.20.1",
+        "interface": "Gi0/2",
+        "metric": 10,
+        "type": "static"
+      }
     ],
     "options": [
-      { "id": "yes", "label": "Ja, zwei Netze zeigen aufeinander" },
-      { "id": "no", "label": "Nein, kein Loop" }
+      {
+        "id": "yes",
+        "label": "Ja, zwei Netze zeigen aufeinander"
+      },
+      {
+        "id": "no",
+        "label": "Nein, kein Loop"
+      }
     ],
     "answer": "yes"
   },
   {
     "id": "longest-prefix",
     "title": "Longest Prefix Match",
-    "question": "Welche Route gewinnt fuer 192.168.1.100?",
+    "question": "Welche Route gewinnt für 192.168.1.100?",
     "destinationIp": "192.168.1.100",
     "routes": [
-      { "destination": "192.168.0.0", "mask": "255.255.0.0", "gateway": "10.0.0.1", "interface": "Gi0/1", "metric": 20, "type": "static" },
-      { "destination": "192.168.1.0", "mask": "255.255.255.0", "gateway": "10.0.1.1", "interface": "Gi0/2", "metric": 30, "type": "static" }
+      {
+        "destination": "192.168.0.0",
+        "mask": "255.255.0.0",
+        "gateway": "10.0.0.1",
+        "interface": "Gi0/1",
+        "metric": 20,
+        "type": "static"
+      },
+      {
+        "destination": "192.168.1.0",
+        "mask": "255.255.255.0",
+        "gateway": "10.0.1.1",
+        "interface": "Gi0/2",
+        "metric": 30,
+        "type": "static"
+      }
     ],
     "options": [
-      { "id": "10.0.1.1", "label": "192.168.1.0/24 ueber 10.0.1.1" },
-      { "id": "10.0.0.1", "label": "192.168.0.0/16 ueber 10.0.0.1" }
+      {
+        "id": "10.0.1.1",
+        "label": "192.168.1.0/24 über 10.0.1.1"
+      },
+      {
+        "id": "10.0.0.1",
+        "label": "192.168.0.0/16 über 10.0.0.1"
+      }
     ],
     "answer": "10.0.1.1"
   },
   {
     "id": "default-vs-specific",
     "title": "Default vs. spezifisch",
-    "question": "Welcher Gateway wird fuer 203.0.113.77 genutzt?",
+    "question": "Welcher Gateway wird für 203.0.113.77 genutzt?",
     "destinationIp": "203.0.113.77",
     "routes": [
-      { "destination": "203.0.113.0", "mask": "255.255.255.0", "gateway": "172.16.0.1", "interface": "Gi0/3", "metric": 5, "type": "static" },
-      { "destination": "0.0.0.0", "mask": "0.0.0.0", "gateway": "192.168.1.1", "interface": "Gi0/0", "metric": 100, "type": "default" }
+      {
+        "destination": "203.0.113.0",
+        "mask": "255.255.255.0",
+        "gateway": "172.16.0.1",
+        "interface": "Gi0/3",
+        "metric": 5,
+        "type": "static"
+      },
+      {
+        "destination": "0.0.0.0",
+        "mask": "0.0.0.0",
+        "gateway": "192.168.1.1",
+        "interface": "Gi0/0",
+        "metric": 100,
+        "type": "default"
+      }
     ],
     "options": [
-      { "id": "172.16.0.1", "label": "Spezifische Route ueber 172.16.0.1" },
-      { "id": "192.168.1.1", "label": "Default Route ueber 192.168.1.1" }
+      {
+        "id": "172.16.0.1",
+        "label": "Spezifische Route über 172.16.0.1"
+      },
+      {
+        "id": "192.168.1.1",
+        "label": "Default Route über 192.168.1.1"
+      }
     ],
     "answer": "172.16.0.1"
   }

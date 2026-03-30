@@ -4,8 +4,12 @@
   "description": "A small test campaign to validate graph traversal, state-bag, and conditions.",
   "duration_minutes": 10,
   "difficulty": "beginner",
-  "focus_areas": ["network-basics"],
-  "character_recommendations": ["security"],
+  "focus_areas": [
+    "network-basics"
+  ],
+  "character_recommendations": [
+    "security"
+  ],
   "graph": {
     "nodes": [
       {
@@ -22,8 +26,14 @@
         "narrative": "You pull the auth logs and find 3 failed attempts before a successful login. The IP traces to an external VPN.",
         "act": 1,
         "effects": [
-          {"set_flag": "has_evidence"},
-          {"add_reputation": {"security": 2}}
+          {
+            "set_flag": "has_evidence"
+          },
+          {
+            "add_reputation": {
+              "security": 2
+            }
+          }
         ]
       },
       {
@@ -32,7 +42,11 @@
         "narrative": "You notify the security team. They start monitoring the session in real-time.",
         "act": 1,
         "effects": [
-          {"add_reputation": {"management": 1}}
+          {
+            "add_reputation": {
+              "management": 1
+            }
+          }
         ]
       },
       {
@@ -40,7 +54,10 @@
         "title": "Host Isolation",
         "narrative": "With evidence in hand, you isolate the compromised host from the network. The attacker's session drops.",
         "act": 2,
-        "role_filter": ["security", "sysadmin"],
+        "role_filter": [
+          "security",
+          "sysadmin"
+        ],
         "timer_seconds": 300,
         "simulator": {
           "type": "firewall",
@@ -48,9 +65,17 @@
           "pass_flag": "firewall_configured"
         },
         "effects": [
-          {"set_flag": "host_isolated"},
-          {"add_item": "incident_report"},
-          {"add_reputation": {"security": 3}}
+          {
+            "set_flag": "host_isolated"
+          },
+          {
+            "add_item": "incident_report"
+          },
+          {
+            "add_reputation": {
+              "security": 3
+            }
+          }
         ]
       },
       {
@@ -61,7 +86,11 @@
         "type": "bot_correction",
         "pass_flag": "bot_corrected_confront_blind",
         "effects": [
-          {"add_reputation": {"security": -2}}
+          {
+            "add_reputation": {
+              "security": -2
+            }
+          }
         ]
       },
       {
@@ -71,7 +100,12 @@
         "act": 3,
         "is_ending": true,
         "effects": [
-          {"add_reputation": {"security": 2, "management": 2}}
+          {
+            "add_reputation": {
+              "security": 2,
+              "management": 2
+            }
+          }
         ]
       },
       {
@@ -101,8 +135,13 @@
         "from": "investigate_logs",
         "to": "isolate_host",
         "label": "Isolate the compromised host",
-        "role_filter": ["security", "sysadmin"],
-        "conditions": {"requires_flag": "has_evidence"}
+        "role_filter": [
+          "security",
+          "sysadmin"
+        ],
+        "conditions": {
+          "requires_flag": "has_evidence"
+        }
       },
       {
         "id": "e4_alert_after_logs",
@@ -127,7 +166,13 @@
         "from": "isolate_host",
         "to": "write_report",
         "label": "Write the incident report",
-        "conditions": {"requires_flag": "firewall_configured", "requires_item": "incident_report", "min_reputation": {"security": 3}}
+        "conditions": {
+          "requires_flag": "firewall_configured",
+          "requires_item": "incident_report",
+          "min_reputation": {
+            "security": 3
+          }
+        }
       },
       {
         "id": "e8_escalate_incomplete",
@@ -145,15 +190,25 @@
     "acts": [
       {
         "name": "Detection",
-        "node_ids": ["start", "investigate_logs", "alert_team"]
+        "node_ids": [
+          "start",
+          "investigate_logs",
+          "alert_team"
+        ]
       },
       {
         "name": "Containment",
-        "node_ids": ["isolate_host", "confront_blind"]
+        "node_ids": [
+          "isolate_host",
+          "confront_blind"
+        ]
       },
       {
         "name": "Closure",
-        "node_ids": ["write_report", "escalate_incomplete"]
+        "node_ids": [
+          "write_report",
+          "escalate_incomplete"
+        ]
       }
     ]
   }

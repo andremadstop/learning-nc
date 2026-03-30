@@ -14,7 +14,7 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "Thriller-Atmosphaere wie ein Cyber-Krimi. Kurze Saetze, Spannung, das Gefuehl beobachtet zu werden. Der Angreifer ist immer einen Schritt voraus.",
+  "narrator_style": "Thriller-Atmosphäre wie ein Cyber-Krimi. Kurze Sätze, Spannung, das Gefühl beobachtet zu werden. Der Angreifer ist immer einen Schritt voraus.",
   "gemini_role": "attacker",
   "characters": {
     "architect": {

@@ -2,7 +2,7 @@
   "id": "wargames",
   "epoch_id": "wargames",
   "title": "WarGames -- Shall We Play a Game?",
-  "description": "1983. Ein Film veraendert die Welt. BBS-Kultur, Social Engineering und die ersten echten Hacker-Gruppen entstehen. Von Kevin Mitnick bis Cliff Stoll -- die 80er sind die Wiege der Hacker-Kultur.",
+  "description": "1983. Ein Film verändert die Welt. BBS-Kultur, Social Engineering und die ersten echten Hacker-Gruppen entstehen. Von Kevin Mitnick bis Cliff Stoll -- die 80er sind die Wiege der Hacker-Kultur.",
   "duration_minutes": 60,
   "difficulty": "beginner",
   "focus_areas": [
@@ -12,18 +12,18 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "8-Bit Nostalgie. Gruene Phosphor-Schrift, das Knistern eines 300-Baud-Modems, die Aufregung eines verbotenen Logins.",
+  "narrator_style": "8-Bit Nostalgie. Grüne Phosphor-Schrift, das Knistern eines 300-Baud-Modems, die Aufregung eines verbotenen Logins.",
   "scenes": [
     {
       "id": "s1_shall_we_play",
       "title": "Shall We Play a Game?",
-      "narrative": "1983. Du sitzt vor deinem Apple II und hast gerade 'WarGames' im Kino gesehen. Matthew Brodericks Figur David Lightman waehlt sich in einen Militaercomputer ein und startet beinahe den Dritten Weltkrieg. Fiktion? Praesident Reagan fragt nach dem Film seinen Sicherheitsberater: 'Kann das wirklich passieren?' Die Antwort wird ihn erschuettern. Du bist neugierig geworden. Dein 300-Baud-Modem blinkt einladend. Auf einem lokalen BBS hast du von einem System gehoert, das seltsame Login-Prompts zeigt. Die Adresse ist eine lokale Einwahlnummer. Du waehlst...",
+      "narrative": "1983. Du sitzt vor deinem Apple II und hast gerade 'WarGames' im Kino gesehen. Matthew Brodericks Figur David Lightman wählt sich in einen Militärcomputer ein und startet beinahe den Dritten Weltkrieg. Fiktion? Präsident Reagan fragt nach dem Film seinen Sicherheitsberater: 'Kann das wirklich passieren?' Die Antwort wird ihn erschüttern. Du bist neugierig geworden. Dein 300-Baud-Modem blinkt einladend. Auf einem lokalen BBS hast du von einem System gehört, das seltsame Login-Prompts zeigt. Die Adresse ist eine lokale Einwahlnummer. Du wählst...",
       "image": "scene_bbs_terminal.png",
       "animation_in": "mission_start",
       "choices": [
         {
           "id": "c1_default_passwords",
-          "text": "Standard-Passwoerter durchprobieren -- admin/admin, guest/guest, root/root",
+          "text": "Standard-Passwörter durchprobieren -- admin/admin, guest/guest, root/root",
           "icon": "~",
           "skill_check": {
             "pool_filter": "epoch:wargames",
@@ -66,7 +66,7 @@
     {
       "id": "s1_fail_gesperrt",
       "title": "Zugang verweigert",
-      "narrative": "Das System sperrt dich nach drei Fehlversuchen. Der Cursor blinkt hoehnisch: 'ACCESS DENIED -- ACCOUNT LOCKED'. Aber auf dem BBS postet jemand mit dem Handle 'Condor' einen Tipp: 'Die meisten Sysops benutzen den Namen ihres Hundes als Passwort. Ruf an und frag nach dem Hund.' Der Tipp klingt absurd -- aber du wirst lernen, dass Social Engineering die maechtigste Waffe im Arsenal eines Hackers ist.",
+      "narrative": "Das System sperrt dich nach drei Fehlversuchen. Der Cursor blinkt höhnisch: 'ACCESS DENIED -- ACCOUNT LOCKED'. Aber auf dem BBS postet jemand mit dem Handle 'Condor' einen Tipp: 'Die meisten Sysops benutzen den Namen ihres Hundes als Passwort. Ruf an und frag nach dem Hund.' Der Tipp klingt absurd -- aber du wirst lernen, dass Social Engineering die mächtigste Waffe im Arsenal eines Hackers ist.",
       "image": "scene_bbs_terminal.png",
       "choices": [
         {
@@ -88,7 +88,7 @@
     {
       "id": "s2_social_engineering",
       "title": "Der Meister des Social Engineering",
-      "narrative": "1988. Du triffst Kevin Mitnick -- den 'Condor'. Er ist der beruechtigtste Hacker Amerikas, und seine Waffe ist nicht Code, sondern Psychologie. 'Warum sollte ich einen Exploit schreiben,' sagt er, 'wenn ich einfach anrufen und fragen kann?' Mitnick demonstriert: Er ruft bei Pacific Bell an, gibt sich als Techniker aus, und bekommt innerhalb von 5 Minuten Zugangsdaten. Kein Einbruch, kein Exploit, nur ein Telefonat. Er zeigt dir drei Techniken: Pretexting (eine falsche Identitaet aufbauen), Shoulder Surfing (ueber die Schulter schauen) und Dumpster Diving (im Muell nach Passwoertern suchen). Das FBI sucht ihn bereits.",
+      "narrative": "1988. Du triffst Kevin Mitnick -- den 'Condor'. Er ist der berüchtigtste Hacker Amerikas, und seine Waffe ist nicht Code, sondern Psychologie. 'Warum sollte ich einen Exploit schreiben,' sagt er, 'wenn ich einfach anrufen und fragen kann?' Mitnick demonstriert: Er ruft bei Pacific Bell an, gibt sich als Techniker aus, und bekommt innerhalb von 5 Minuten Zugangsdaten. Kein Einbruch, kein Exploit, nur ein Telefonat. Er zeigt dir drei Techniken: Pretexting (eine falsche Identität aufbauen), Shoulder Surfing (über die Schulter schauen) und Dumpster Diving (im Müll nach Passwörtern suchen). Das FBI sucht ihn bereits.",
       "image": "scene_bbs_terminal.png",
       "choices": [
         {
@@ -106,7 +106,7 @@
         },
         {
           "id": "c2_dumpster",
-          "text": "Dumpster Diving -- im Papiermuell der Firma nach weggeworfenen Passwoertern und Zugangsdaten suchen",
+          "text": "Dumpster Diving -- im Papiermüll der Firma nach weggeworfenen Passwörtern und Zugangsdaten suchen",
           "icon": "~",
           "skill_check": {
             "pool_filter": "epoch:wargames",
@@ -136,12 +136,12 @@
     {
       "id": "s2_fail_verdacht",
       "title": "Misstrauischer Mitarbeiter",
-      "narrative": "Der Helpdesk-Mitarbeiter wird misstrauisch. 'Moment, lassen Sie mich Ihren Manager anrufen.' Du legst hastig auf. Mitnick lacht: 'Passiert den Besten. Der Trick ist, dass du nie nervoes klingst. Und du brauchst immer einen Backup-Plan.' Er zeigt dir eine Lektion, die er selbst auf die harte Tour gelernt hat: Scheitern gehoert dazu. Wichtig ist, dass du keine Spuren hinterlaesst.",
+      "narrative": "Der Helpdesk-Mitarbeiter wird misstrauisch. 'Moment, lassen Sie mich Ihren Manager anrufen.' Du legst hastig auf. Mitnick lacht: 'Passiert den Besten. Der Trick ist, dass du nie nervös klingst. Und du brauchst immer einen Backup-Plan.' Er zeigt dir eine Lektion, die er selbst auf die harte Tour gelernt hat: Scheitern gehört dazu. Wichtig ist, dass du keine Spuren hinterlässt.",
       "image": "scene_bbs_terminal.png",
       "choices": [
         {
           "id": "c2_fail_retry",
-          "text": "Aus dem Fehler lernen und einen neuen Ansatz waehlen",
+          "text": "Aus dem Fehler lernen und einen neuen Ansatz wählen",
           "icon": "~",
           "skill_check": {
             "pool_filter": "epoch:wargames",
@@ -158,7 +158,7 @@
     {
       "id": "s3_bbs_underground",
       "title": "BBS Underground",
-      "narrative": "Du tauchst in die Welt der Bulletin Board Systems ein. Phrack Magazine, 2600 Treffen, LOD vs. MOD -- die Hacker-Szene hat ihre eigene Kultur, ihre eigenen Regeln, ihren eigenen Ehrenkodex. Auf einem privaten BBS findest du einen Text, der dich tief beruehrt. Er stammt von 'The Mentor', veroeffentlicht am 8. Januar 1986 in Phrack, Ausgabe 7:\n\n'Dies ist unsere Welt jetzt... die Welt des Elektrons und des Schalters, die Schoenheit der Baud-Rate. Wir nutzen einen bereits existierenden Dienst, der Pfennige kosten wuerde, waere er nicht von profitgierigen Gierigen betrieben... Und dann kommt ihr uns nennen: Kriminelle. Wir erforschen... und ihr nennt uns Kriminelle. Wir existieren ohne Hautfarbe, ohne Nationalitaet, ohne religioese Vorurteile... und ihr nennt uns Kriminelle.'\n\n-- The Mentor, 'The Hacker Manifesto', 1986\n\nDie Frage bleibt: Wo verlaeuft die Grenze zwischen Neugier und Kriminalitaet?",
+      "narrative": "Du tauchst in die Welt der Bulletin Board Systems ein. Phrack Magazine, 2600 Treffen, LOD vs. MOD -- die Hacker-Szene hat ihre eigene Kultur, ihre eigenen Regeln, ihren eigenen Ehrenkodex. Auf einem privaten BBS findest du einen Text, der dich tief berührt. Er stammt von 'The Mentor', veröffentlicht am 8. Januar 1986 in Phrack, Ausgabe 7:\n\n'Dies ist unsere Welt jetzt... die Welt des Elektrons und des Schalters, die Schönheit der Baud-Rate. Wir nutzen einen bereits existierenden Dienst, der Pfennige kosten würde, wäre er nicht von profitgierigen Gierigen betrieben... Und dann kommt ihr uns nennen: Kriminelle. Wir erforschen... und ihr nennt uns Kriminelle. Wir existieren ohne Hautfarbe, ohne Nationalität, ohne religiöse Vorurteile... und ihr nennt uns Kriminelle.'\n\n-- The Mentor, 'The Hacker Manifesto', 1986\n\nDie Frage bleibt: Wo verläuft die Grenze zwischen Neugier und Kriminalität?",
       "image": "scene_bbs_terminal.png",
       "choices": [
         {
@@ -189,7 +189,7 @@
         },
         {
           "id": "c3_write_phrack",
-          "text": "Einen Artikel fuer Phrack schreiben -- technisches Wissen fuer die Community dokumentieren",
+          "text": "Einen Artikel für Phrack schreiben -- technisches Wissen für die Community dokumentieren",
           "icon": "~",
           "skill_check": {
             "pool_filter": "epoch:wargames",
@@ -206,7 +206,7 @@
     {
       "id": "s3_fail_entdeckt",
       "title": "Zu viel Aufmerksamkeit",
-      "narrative": "Deine Aktivitaeten auf dem BBS haben die falsche Art von Aufmerksamkeit erregt. Ein anonymer Post warnt: 'Feds lesen mit. Sei vorsichtig.' Es ist eine Erinnerung daran, dass die Hacker-Szene der 80er nicht nur aus Neugierigen besteht -- auch Geheimdienste sind interessiert. Und genau das fuehrt zur naechsten Geschichte...",
+      "narrative": "Deine Aktivitäten auf dem BBS haben die falsche Art von Aufmerksamkeit erregt. Ein anonymer Post warnt: 'Feds lesen mit. Sei vorsichtig.' Es ist eine Erinnerung daran, dass die Hacker-Szene der 80er nicht nur aus Neugierigen besteht -- auch Geheimdienste sind interessiert. Und genau das führt zur nächsten Geschichte...",
       "image": "scene_bbs_terminal.png",
       "choices": [
         {
@@ -228,7 +228,7 @@
     {
       "id": "s4_honigfalle",
       "title": "Die Honigfalle",
-      "narrative": "1986. Am Lawrence Berkeley National Laboratory bemerkt der Astronom Cliff Stoll eine Abrechnungsdiskrepanz von 75 Cent. Er verfolgt die Spur -- und entdeckt einen Hacker, der sich durch Dutzende Militaer- und Forschungsnetzwerke bewegt. Der Hacker ist Markus Hess aus Hannover, und er verkauft gestohlene Daten an den KGB. Stoll hat eine brillante Idee: Er erstellt ein Fake-Dokument namens 'SDI Network' und platziert es als Koeder. Hess beisst an. Die Faengadresse in dem Dokument fuehrt zu einem Briefkasten -- und Hess schickt tatsaechlich einen Brief, der seine Identitaet enthuellt. Der 'Kuckucksei'-Fall ist geboren. Du musst jetzt selbst eine Honigfalle aufstellen.",
+      "narrative": "1986. Am Lawrence Berkeley National Laboratory bemerkt der Astronom Cliff Stoll eine Abrechnungsdiskrepanz von 75 Cent. Er verfolgt die Spur -- und entdeckt einen Hacker, der sich durch Dutzende Militär- und Forschungsnetzwerke bewegt. Der Hacker ist Markus Hess aus Hannover, und er verkauft gestohlene Daten an den KGB. Stoll hat eine brillante Idee: Er erstellt ein Fake-Dokument namens 'SDI Network' und platziert es als Köder. Hess beisst an. Die Fängadresse in dem Dokument führt zu einem Briefkasten -- und Hess schickt tatsächlich einen Brief, der seine Identität enthüllt. Der 'Kuckucksei'-Fall ist geboren. Du musst jetzt selbst eine Honigfalle aufstellen.",
       "image": "scene_bbs_terminal.png",
       "choices": [
         {
@@ -246,7 +246,7 @@
         },
         {
           "id": "c4_monitor",
-          "text": "Die Verbindung ueberwachen -- jeden Tastendruck des Angreifers protokollieren",
+          "text": "Die Verbindung überwachen -- jeden Tastendruck des Angreifers protokollieren",
           "icon": "~",
           "skill_check": {
             "pool_filter": "epoch:wargames",
@@ -259,7 +259,7 @@
         },
         {
           "id": "c4_trace",
-          "text": "Den Angreifer zurueckverfolgen -- internationale Telefonleitungen nachverfolgen",
+          "text": "Den Angreifer zurückverfolgen -- internationale Telefonleitungen nachverfolgen",
           "icon": "~",
           "skill_check": {
             "pool_filter": "epoch:wargames",
@@ -276,7 +276,7 @@
     {
       "id": "epilog_success",
       "title": "Legende der 80er",
-      "narrative": "Du hast die goldene Aera der Hacker-Kultur durchlebt. Von WarGames ueber Mitnicks Social Engineering, das Hacker Manifesto bis zu Stolls Kuckucksei -- die 1980er haben die Grundlagen gelegt fuer alles, was folgte. Die Lehren sind zeitlos: Standard-Passwoerter sind keine Sicherheit. Menschen sind das schwaechste Glied. Und manchmal fuehrt eine 75-Cent-Abrechnung zum KGB. Der Chaos Computer Club gruendete sich 1984 in Hamburg und bewies, dass Hacking auch eine gesellschaftliche Kraft sein kann. Die naechste Epoche bringt das Internet -- und damit eine voellig neue Dimension von Angriffen.",
+      "narrative": "Du hast die goldene Ära der Hacker-Kultur durchlebt. Von WarGames über Mitnicks Social Engineering, das Hacker Manifesto bis zu Stolls Kuckucksei -- die 1980er haben die Grundlagen gelegt für alles, was folgte. Die Lehren sind zeitlos: Standard-Passwörter sind keine Sicherheit. Menschen sind das schwächste Glied. Und manchmal führt eine 75-Cent-Abrechnung zum KGB. Der Chaos Computer Club gründete sich 1984 in Hamburg und bewies, dass Hacking auch eine gesellschaftliche Kraft sein kann. Die nächste Epoche bringt das Internet -- und damit eine völlig neue Dimension von Angriffen.",
       "image": "scene_victory.png",
       "animation_in": "campaign_complete",
       "choices": [],
@@ -287,7 +287,7 @@
     {
       "id": "epilog_partial",
       "title": "Erste Spuren",
-      "narrative": "Die 80er waren wild, schnell und voller Gefahren. Du hast die wichtigsten Lektionen mitgenommen: Social Engineering ist maechtig, die Hacker-Community hat ihre eigene Ethik, und Honeypots sind ein elegantes Werkzeug der Verteidigung. Einige Details sind dir entgangen -- die Feinheiten von War-Dialing, die Nuancen des BBS-Undergrounds. Aber du hast genug gesehen, um fuer die naechste Epoche bereit zu sein. Der Morris-Worm wartet.",
+      "narrative": "Die 80er waren wild, schnell und voller Gefahren. Du hast die wichtigsten Lektionen mitgenommen: Social Engineering ist mächtig, die Hacker-Community hat ihre eigene Ethik, und Honeypots sind ein elegantes Werkzeug der Verteidigung. Einige Details sind dir entgangen -- die Feinheiten von War-Dialing, die Nuancen des BBS-Undergrounds. Aber du hast genug gesehen, um für die nächste Epoche bereit zu sein. Der Morris-Worm wartet.",
       "image": "scene_partial_victory.png",
       "choices": [],
       "simulation": null,
@@ -297,7 +297,7 @@
     {
       "id": "epilog_fail",
       "title": "Verlorene Verbindung",
-      "narrative": "Das 300-Baud-Modem hat aufgelegt. Die Welt der 80er-Hacker war zu schnell, die Konzepte zu neu. Aber du hast das Wichtigste gehoert: The Mentors Worte hallen nach. 'Wir erforschen... und ihr nennt uns Kriminelle.' Die Grenze zwischen Neugier und Kriminalitaet ist duenn -- und genau diese Frage wird die naechsten Jahrzehnte praeaegen. Naechste Epoche: Ein Experiment an der MIT geraet ausser Kontrolle.",
+      "narrative": "Das 300-Baud-Modem hat aufgelegt. Die Welt der 80er-Hacker war zu schnell, die Konzepte zu neu. Aber du hast das Wichtigste gehört: The Mentors Worte hallen nach. 'Wir erforschen... und ihr nennt uns Kriminelle.' Die Grenze zwischen Neugier und Kriminalität ist dünn -- und genau diese Frage wird die nächsten Jahrzehnte präaegen. Nächste Epoche: Ein Experiment an der MIT gerät außer Kontrolle.",
       "image": "scene_partial_victory.png",
       "choices": [],
       "simulation": null,
@@ -307,7 +307,7 @@
   ],
   "epilog": {
     "success": {
-      "narrative": "Die goldene Aera der Hacker-Kultur durchlebt: WarGames, Mitnick, Hacker Manifesto, Kuckucksei. Die Lehren sind zeitlos -- Menschen sind das schwaechste Glied, und 75 Cent koennen zum KGB fuehren.",
+      "narrative": "Die goldene Ära der Hacker-Kultur durchlebt: WarGames, Mitnick, Hacker Manifesto, Kuckucksei. Die Lehren sind zeitlos -- Menschen sind das schwächste Glied, und 75 Cent können zum KGB führen.",
       "image": "scene_victory.png",
       "animation": "campaign_complete"
     },
@@ -316,7 +316,7 @@
       "image": "scene_partial_victory.png"
     },
     "fail": {
-      "narrative": "Die 80er waren zu schnell, aber The Mentors Worte hallen nach. Die Grenze zwischen Neugier und Kriminalitaet bleibt die zentrale Frage.",
+      "narrative": "Die 80er waren zu schnell, aber The Mentors Worte hallen nach. Die Grenze zwischen Neugier und Kriminalität bleibt die zentrale Frage.",
       "image": "scene_partial_victory.png"
     }
   },
@@ -324,17 +324,17 @@
     {
       "year": 1983,
       "title": "WarGames im Kino",
-      "description": "Der Film 'WarGames' sensibilisiert die Oeffentlichkeit fuer Computer-Sicherheit. Praesident Reagan fragt seinen Sicherheitsberater, ob ein Teenager wirklich in Militaercomputer eindringen kann."
+      "description": "Der Film 'WarGames' sensibilisiert die Öffentlichkeit für Computer-Sicherheit. Präsident Reagan fragt seinen Sicherheitsberater, ob ein Teenager wirklich in Militärcomputer eindringen kann."
     },
     {
       "year": 1984,
-      "title": "Chaos Computer Club gegruendet",
-      "description": "In Hamburg gruenden Wau Holland und Steffen Wernery den CCC -- Europas groessten Hacker-Verein. 1984 hacken sie den BTX-Dienst der Bundespost und ueberweisen sich 134.000 DM."
+      "title": "Chaos Computer Club gegründet",
+      "description": "In Hamburg gründen Wau Holland und Steffen Wernery den CCC -- Europas grössten Hacker-Verein. 1984 hacken sie den BTX-Dienst der Bundespost und überweisen sich 134.000 DM."
     },
     {
       "year": 1986,
       "title": "The Hacker Manifesto",
-      "description": "The Mentor veroeffentlicht 'The Conscience of a Hacker' in Phrack Magazine, Ausgabe 7. Das Manifest wird zum ethischen Grundlagentext der Hacker-Bewegung."
+      "description": "The Mentor veröffentlicht 'The Conscience of a Hacker' in Phrack Magazine, Ausgabe 7. Das Manifest wird zum ethischen Grundlagentext der Hacker-Bewegung."
     },
     {
       "year": 1986,
@@ -344,7 +344,7 @@
     {
       "year": 1988,
       "title": "Kevin Mitnick -- meistgesuchter Hacker",
-      "description": "Kevin Mitnick wird zum meistgesuchten Hacker des FBI. Seine Spezialitaet: Social Engineering statt technischer Exploits. Er behauptet, nie finanziell profitiert zu haben."
+      "description": "Kevin Mitnick wird zum meistgesuchten Hacker des FBI. Seine Spezialität: Social Engineering statt technischer Exploits. Er behauptet, nie finanziell profitiert zu haben."
     }
   ]
 }

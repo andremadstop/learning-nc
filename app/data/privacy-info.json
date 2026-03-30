@@ -8,39 +8,39 @@
   "categories": [
     {
       "name": "Lerndaten",
-      "items": "Leitner-Box, Sessions, Scores, XP, Badges, Streak, Missionen, Duell/Gameshow, Pruefungsergebnisse",
+      "items": "Leitner-Box, Sessions, Scores, XP, Badges, Streak, Missionen, Duell/Gameshow, Prüfungsergebnisse",
       "purpose": "Spaced Repetition, Fortschrittsverfolgung, Gamification",
-      "who_sees": "Du selbst + Dozent (aggregiert). XP/Badges im Leaderboard fuer alle.",
+      "who_sees": "Du selbst + Dozent (aggregiert). XP/Badges im Leaderboard für alle.",
       "retention": "Solange dein Account existiert",
       "legal_basis": "Berechtigtes Interesse (Art. 6(1)f) — Lernzweck"
     },
     {
-      "name": "Persoenlichkeitsprofil (Telos)",
-      "items": "Lernziele, Staerken, Schwaechen, Erfahrungslevel, Hilfe-Angebote/-Gesuche",
-      "purpose": "Personalisierte KI-Erklaerungen, Buddy Matching",
+      "name": "Persönlichkeitsprofil (Telos)",
+      "items": "Lernziele, Stärken, Schwächen, Erfahrungslevel, Hilfe-Angebote/-Gesuche",
+      "purpose": "Personalisierte KI-Erklärungen, Buddy Matching",
       "who_sees": "Du + VirtuProf. Bei Sichtbarkeit 'Kurs': Kursteilnehmer sehen Hilfe-Themen + Bio.",
       "retention": "Solange dein Account existiert, Opt-in via Onboarding",
       "legal_basis": "Einwilligung (Art. 6(1)a) — Telos ist opt-in"
     },
     {
-      "name": "Schwarmgedaechtnis-Beitraege",
-      "items": "Eigene Erklaerungen, Merkhilfen, Notizen zu Fragen",
-      "purpose": "Gemeinsamer Wissenspool fuer alle Kursteilnehmer",
+      "name": "Schwarmgedächtnis-Beiträge",
+      "items": "Eigene Erklärungen, Merkhilfen, Notizen zu Fragen",
+      "purpose": "Gemeinsamer Wissenspool für alle Kursteilnehmer",
       "who_sees": "Dozent sieht Autor. Studenten sehen nur den freigegebenen Text.",
-      "retention": "Bei Account-Loesung anonymisiert (Inhalt bleibt, Name wird entfernt)",
+      "retention": "Bei Account-Lösung anonymisiert (Inhalt bleibt, Name wird entfernt)",
       "legal_basis": "Einwilligung (Art. 6(1)a)"
     },
     {
       "name": "KI-Interaktion (Drittland-Transfer)",
       "items": "Chat-Nachrichten an VirtuProf, RAG-Kontext (max. 4000 Token)",
-      "purpose": "KI-gestuetzte Erklaerungen und Lernhilfen",
-      "who_sees": "Google Gemini API verarbeitet die Anfrage. Kein Nutzername wird uebermittelt.",
-      "retention": "Wird von Google gemaess deren Richtlinien verarbeitet. Chat-Verlauf lokal im Browser.",
+      "purpose": "KI-gestützte Erklärungen und Lernhilfen",
+      "who_sees": "Google Gemini API verarbeitet die Anfrage. Kein Nutzername wird übermittelt.",
+      "retention": "Wird von Google gemäss deren Richtlinien verarbeitet. Chat-Verlauf lokal im Browser.",
       "legal_basis": "Einwilligung (Art. 6(1)a) — AI Consent Dialog"
     },
     {
       "name": "Audit-Protokolle",
-      "items": "Login-Zeitpunkte, Moderations-Entscheidungen, Loeschvorgaenge, Consent-Versionen",
+      "items": "Login-Zeitpunkte, Moderations-Entscheidungen, Löschvorgänge, Consent-Versionen",
       "purpose": "Nachvollziehbarkeit, DSGVO-Rechenschaftspflicht",
       "who_sees": "Nur Admins",
       "retention": "Solange dein Account existiert",
@@ -48,16 +48,16 @@
     },
     {
       "name": "Gamification",
-      "items": "Badges, XP, Streak-Zaehler, Leaderboard-Rang, Arena-Ergebnisse, Abenteuer-Fortschritt",
+      "items": "Badges, XP, Streak-Zähler, Leaderboard-Rang, Arena-Ergebnisse, Abenteuer-Fortschritt",
       "purpose": "Motivation, Lernfortschritt sichtbar machen",
       "who_sees": "Du selbst + Kursteilnehmer (Leaderboard). Dozent sieht aggregierte Statistik.",
       "retention": "Solange dein Account existiert",
       "legal_basis": "Berechtigtes Interesse (Art. 6(1)f) — Lernmotivation"
     },
     {
-      "name": "Pruefungsdaten",
+      "name": "Prüfungsdaten",
       "items": "Simulator-Sessions, PBQ-Ergebnisse, Exam-Readiness-Score, Kursabschluss-Status",
-      "purpose": "Pruefungsvorbereitung, Kompetenz-Nachweis",
+      "purpose": "Prüfungsvorbereitung, Kompetenz-Nachweis",
       "who_sees": "Du selbst + Dozent",
       "retention": "Solange dein Account existiert",
       "legal_basis": "Berechtigtes Interesse (Art. 6(1)f) — Ausbildungszweck"
@@ -73,17 +73,41 @@
   ],
   "ai_notice": {
     "provider": "Google Gemini",
-    "what_is_sent": "Deine Frage an VirtuProf sowie relevante Kursinhalte (RAG-Kontext, max. 4000 Token) werden an die Google Gemini API uebermittelt.",
+    "what_is_sent": "Deine Frage an VirtuProf sowie relevante Kursinhalte (RAG-Kontext, max. 4000 Token) werden an die Google Gemini API übermittelt.",
     "data_location": "Google verarbeitet diese Daten in den USA.",
     "what_is_not_sent": "Dein Nutzername, deine E-Mail und dein Lernprofil werden NICHT an Google gesendet.",
     "opt_out": "Du kannst die KI-Nutzung jederzeit in den Einstellungen deaktivieren (Schalter 'Virtueller Assistent')."
   },
   "rights": [
-    { "name": "Auskunft", "article": "Art. 15 DSGVO", "description": "Du kannst jederzeit erfahren, welche Daten ueber dich gespeichert sind." },
-    { "name": "Berichtigung", "article": "Art. 16 DSGVO", "description": "Unrichtige Daten koennen korrigiert werden." },
-    { "name": "Loeschung", "article": "Art. 17 DSGVO", "description": "Du kannst die Loesung deiner Daten verlangen." },
-    { "name": "Einschraenkung", "article": "Art. 18 DSGVO", "description": "Du kannst die Verarbeitung einschraenken lassen." },
-    { "name": "Widerspruch", "article": "Art. 21 DSGVO", "description": "Du kannst der Verarbeitung widersprechen." },
-    { "name": "Datenportabilitaet", "article": "Art. 20 DSGVO", "description": "Du kannst deine Daten in einem gaengigen Format erhalten." }
+    {
+      "name": "Auskunft",
+      "article": "Art. 15 DSGVO",
+      "description": "Du kannst jederzeit erfahren, welche Daten über dich gespeichert sind."
+    },
+    {
+      "name": "Berichtigung",
+      "article": "Art. 16 DSGVO",
+      "description": "Unrichtige Daten können korrigiert werden."
+    },
+    {
+      "name": "Löschung",
+      "article": "Art. 17 DSGVO",
+      "description": "Du kannst die Löschung deiner Daten verlangen."
+    },
+    {
+      "name": "Einschränkung",
+      "article": "Art. 18 DSGVO",
+      "description": "Du kannst die Verarbeitung einschränken lassen."
+    },
+    {
+      "name": "Widerspruch",
+      "article": "Art. 21 DSGVO",
+      "description": "Du kannst der Verarbeitung widersprechen."
+    },
+    {
+      "name": "Datenportabilität",
+      "article": "Art. 20 DSGVO",
+      "description": "Du kannst deine Daten in einem gängigen Format erhalten."
+    }
   ]
 }

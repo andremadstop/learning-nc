@@ -2,17 +2,32 @@
   {
     "id": "static-public-ip",
     "title": "Welche externe IP sieht der Webserver?",
-    "question": "Welche oeffentliche IP wird verwendet?",
+    "question": "Welche öffentliche IP wird verwendet?",
     "config": {
       "type": "static",
       "mappings": [
-        { "insideLocal": "10.0.0.10", "insideGlobal": "203.0.113.10" }
+        {
+          "insideLocal": "10.0.0.10",
+          "insideGlobal": "203.0.113.10"
+        }
       ]
     },
-    "packet": { "sourceIp": "10.0.0.10", "sourcePort": 51515, "destinationIp": "198.51.100.20", "destinationPort": 443, "protocol": "tcp" },
+    "packet": {
+      "sourceIp": "10.0.0.10",
+      "sourcePort": 51515,
+      "destinationIp": "198.51.100.20",
+      "destinationPort": 443,
+      "protocol": "tcp"
+    },
     "options": [
-      { "id": "203.0.113.10", "label": "203.0.113.10" },
-      { "id": "10.0.0.10", "label": "10.0.0.10" }
+      {
+        "id": "203.0.113.10",
+        "label": "203.0.113.10"
+      },
+      {
+        "id": "10.0.0.10",
+        "label": "10.0.0.10"
+      }
     ],
     "answer": "203.0.113.10"
   },
@@ -22,30 +37,59 @@
     "question": "Was ist hier das Problem?",
     "config": {
       "type": "dynamic",
-      "pool": ["203.0.113.10"],
+      "pool": [
+        "203.0.113.10"
+      ],
       "table": [
-        { "insideLocal": "10.0.0.10", "insideGlobal": "203.0.113.10" }
+        {
+          "insideLocal": "10.0.0.10",
+          "insideGlobal": "203.0.113.10"
+        }
       ]
     },
-    "packet": { "sourceIp": "10.0.0.11", "sourcePort": 52000, "destinationIp": "198.51.100.20", "destinationPort": 443, "protocol": "tcp" },
+    "packet": {
+      "sourceIp": "10.0.0.11",
+      "sourcePort": 52000,
+      "destinationIp": "198.51.100.20",
+      "destinationPort": 443,
+      "protocol": "tcp"
+    },
     "options": [
-      { "id": "pool-exhausted", "label": "Der Dynamic-NAT-Pool ist voll" },
-      { "id": "hairpin", "label": "Hairpin NAT ist aktiv" }
+      {
+        "id": "pool-exhausted",
+        "label": "Der Dynamic-NAT-Pool ist voll"
+      },
+      {
+        "id": "hairpin",
+        "label": "Hairpin NAT ist aktiv"
+      }
     ],
     "answer": "pool-exhausted"
   },
   {
     "id": "identify-pat",
     "title": "Ordne den NAT-Typ zu",
-    "question": "Welcher NAT-Typ nutzt eine einzelne oeffentliche IP plus Portmapping?",
+    "question": "Welcher NAT-Typ nutzt eine einzelne öffentliche IP plus Portmapping?",
     "config": {
       "type": "pat",
       "publicIp": "203.0.113.10"
     },
-    "packet": { "sourceIp": "10.0.0.20", "sourcePort": 53000, "destinationIp": "198.51.100.50", "destinationPort": 443, "protocol": "tcp" },
+    "packet": {
+      "sourceIp": "10.0.0.20",
+      "sourcePort": 53000,
+      "destinationIp": "198.51.100.50",
+      "destinationPort": 443,
+      "protocol": "tcp"
+    },
     "options": [
-      { "id": "pat", "label": "PAT / Overload" },
-      { "id": "static", "label": "Static NAT" }
+      {
+        "id": "pat",
+        "label": "PAT / Overload"
+      },
+      {
+        "id": "static",
+        "label": "Static NAT"
+      }
     ],
     "answer": "pat"
   },
@@ -57,13 +101,30 @@
       "type": "pat",
       "publicIp": "203.0.113.10",
       "table": [
-        { "insideLocal": "10.0.0.21", "insidePort": 50001, "insideGlobal": "203.0.113.10", "insideGlobalPort": 40000 }
+        {
+          "insideLocal": "10.0.0.21",
+          "insidePort": 50001,
+          "insideGlobal": "203.0.113.10",
+          "insideGlobalPort": 40000
+        }
       ]
     },
-    "packet": { "sourceIp": "10.0.0.22", "sourcePort": 50002, "destinationIp": "198.51.100.80", "destinationPort": 80, "protocol": "tcp" },
+    "packet": {
+      "sourceIp": "10.0.0.22",
+      "sourcePort": 50002,
+      "destinationIp": "198.51.100.80",
+      "destinationPort": 80,
+      "protocol": "tcp"
+    },
     "options": [
-      { "id": "10.0.0.22", "label": "10.0.0.22 bekommt den naechsten freien Port" },
-      { "id": "10.0.0.21", "label": "10.0.0.21 wird wiederverwendet" }
+      {
+        "id": "10.0.0.22",
+        "label": "10.0.0.22 bekommt den nächsten freien Port"
+      },
+      {
+        "id": "10.0.0.21",
+        "label": "10.0.0.21 wird wiederverwendet"
+      }
     ],
     "answer": "10.0.0.22"
   },
@@ -74,13 +135,28 @@
     "config": {
       "type": "static",
       "mappings": [
-        { "insideLocal": "10.0.0.30", "insideGlobal": "203.0.113.30" }
+        {
+          "insideLocal": "10.0.0.30",
+          "insideGlobal": "203.0.113.30"
+        }
       ]
     },
-    "packet": { "sourceIp": "10.0.0.40", "sourcePort": 51000, "destinationIp": "203.0.113.30", "destinationPort": 443, "protocol": "tcp" },
+    "packet": {
+      "sourceIp": "10.0.0.40",
+      "sourcePort": 51000,
+      "destinationIp": "203.0.113.30",
+      "destinationPort": 443,
+      "protocol": "tcp"
+    },
     "options": [
-      { "id": "10.0.0.30", "label": "10.0.0.30" },
-      { "id": "198.51.100.30", "label": "198.51.100.30" }
+      {
+        "id": "10.0.0.30",
+        "label": "10.0.0.30"
+      },
+      {
+        "id": "198.51.100.30",
+        "label": "198.51.100.30"
+      }
     ],
     "answer": "10.0.0.30"
   }

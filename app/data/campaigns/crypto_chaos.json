@@ -96,7 +96,7 @@
     {
       "id": "s2_root_ca_analyse",
       "title": "Das kompromittierte Fundament",
-      "narrative": "Die Schreckensnachricht bestätigt sich: In den Logs finden sich Spuren einer 'Key Export' Aktivität, die nicht autorisiert war. Der private Schlüssel der Root-CA wurde möglicherweise exfiltriert. Das bedeutet, dass jeder Angreifer nun gültige Zertifikate für dein Unternehmen ausstellen kann, die von jedem Browser als vertrauenswürdig eingestuft werden. Die gesamte Vertrauenskette ist gebrochen.",
+      "narrative": "Die Schreckensnachricht bestätigt sich: In den Logs finden sich Spuren einer 'Key Export' Aktivität, die nicht autorisiert war. Der private Schlüssel der Root-CA wurde möglicherweise exfiltriert. Das bedeutet, dass jeder Angreifer nun gültige Zertifikate für dein Unternehmen ausstellen kann, die von jedem Browser als vertrauenswürdig eingestuft werden. Die gesamte Vertraünskette ist gebrochen.",
       "npc_dialog": {
         "speaker": "it_leiter",
         "text": "Der private Schlüssel der Root-CA ist weg?! Das ist der Super-GAU. Wir müssen jedes einzelne Zertifikat im Haus für ungültig erklären. Weißt du, was das für eine Arbeit ist?",
@@ -227,8 +227,8 @@
     },
     {
       "id": "epilog_success",
-      "title": "Auftrag erfuellt",
-      "narrative": "Hervorragend! Du hast die Situation professionell geloest und dabei wertvolle Erfahrung gesammelt. Dein Team ist beeindruckt von deiner strukturierten Vorgehensweise.",
+      "title": "Auftrag erfüllt",
+      "narrative": "Hervorragend! Du hast die Situation professionell gelöst und dabei wertvolle Erfahrung gesammelt. Dein Team ist beeindruckt von deiner strukturierten Vorgehensweise.",
       "is_epilog": true,
       "epilog_type": "success",
       "choices": []
@@ -236,7 +236,7 @@
     {
       "id": "epilog_partial",
       "title": "Teilweise erfolgreich",
-      "narrative": "Du hast die Situation unter Kontrolle gebracht, aber es gibt noch Verbesserungspotenzial. Einige Schritte haetten gruendlicher sein koennen. Beim naechsten Mal weisst du es besser.",
+      "narrative": "Du hast die Situation unter Kontrolle gebracht, aber es gibt noch Verbesserungspotenzial. Einige Schritte hätten gründlicher sein können. Beim nächsten Mal weißt du es besser.",
       "is_epilog": true,
       "epilog_type": "partial",
       "choices": []
@@ -244,7 +244,7 @@
     {
       "id": "epilog_fail",
       "title": "Gelernt aus dem Scheitern",
-      "narrative": "Diesmal lief es nicht optimal. Aber jeder Fehler ist eine Lektion. Analysiere was schiefging und versuche es erneut — beim naechsten Mal wirst du besser vorbereitet sein.",
+      "narrative": "Diesmal lief es nicht optimal. Aber jeder Fehler ist eine Lektion. Analysiere was schiefging und versuche es erneut — beim nächsten Mal wirst du besser vorbereitet sein.",
       "is_epilog": true,
       "epilog_type": "fail",
       "choices": []
@@ -254,7 +254,7 @@
     {
       "id": "epilog_success",
       "title": "Meister der Kryptografie",
-      "narrative": "Herausragend! Du hast eine der schwersten Krisen der IT-Sicherheit gemeistert — den Bruch der Vertrauenskette. Durch den Aufbau einer robusten PKI mit HSM-Unterstützung und modernen Algorithmen (Perfect Forward Secrecy, ECDSA) hast du das Fundament für die nächsten Jahre gelegt. Praxistipp: Eine Root-CA sollte niemals online sein. Nutze eine Offline-Root-CA und signiere nur die Zertifikate der Intermediate-CAs, um den Schaden bei einer Kompromittierung zu begrenzen.",
+      "narrative": "Herausragend! Du hast eine der schwersten Krisen der IT-Sicherheit gemeistert — den Bruch der Vertraünskette. Durch den Aufbau einer robusten PKI mit HSM-Unterstützung und modernen Algorithmen (Perfect Forward Secrecy, ECDSA) hast du das Fundament für die nächsten Jahre gelegt. Praxistipp: Eine Root-CA sollte niemals online sein. Nutze eine Offline-Root-CA und signiere nur die Zertifikate der Intermediate-CAs, um den Schaden bei einer Kompromittierung zu begrenzen.",
       "outcome": "success",
       "is_epilog": true
     },

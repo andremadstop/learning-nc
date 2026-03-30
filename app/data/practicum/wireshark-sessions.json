@@ -3,36 +3,36 @@
     "id": "ws-session-traffic",
     "simulatorType": "wireshark",
     "title": "Netzwerk-Traffic analysieren",
-    "description": "Paketmitschnitte lesen und interpretieren — von TCP-Handshakes ueber DNS-Queries bis zu ICMP-Fehlern.",
+    "description": "Paketmitschnitte lesen und interpretieren — von TCP-Handshakes über DNS-Queries bis zu ICMP-Fehlern.",
     "steps": [
       {
         "stepId": "ws-trf-01",
-        "context": "Eine TCP-Verbindung wird aufgebaut, aber der Handshake scheint haengen zu bleiben. Du siehst das gleiche SYN-Paket mehrfach. Was passiert hier?",
-        "explanation": "TCP Retransmission bedeutet, dass der Client keine Antwort erhalten hat und das SYN-Paket wiederholt. Ursachen koennen Paketverlust oder Firewall-Blockierung sein.",
+        "context": "Eine TCP-Verbindung wird aufgebaut, aber der Handshake scheint hängen zu bleiben. Du siehst das gleiche SYN-Paket mehrfach. Was passiert hier?",
+        "explanation": "TCP Retransmission bedeutet, dass der Client keine Antwort erhalten hat und das SYN-Paket wiederholt. Ursachen können Paketverlust oder Firewall-Blockierung sein.",
         "scenarioId": "find-retransmission"
       },
       {
         "stepId": "ws-trf-02",
-        "context": "Waehrend einer HTTP-Sitzung bricht die Verbindung ploetzlich ab. Im Capture siehst du ein bestimmtes TCP-Flag, das den Abbruch markiert.",
+        "context": "Während einer HTTP-Sitzung bricht die Verbindung plötzlich ab. Im Capture siehst du ein bestimmtes TCP-Flag, das den Abbruch markiert.",
         "explanation": "Ein RST-Flag signalisiert einen abrupten Verbindungsabbruch. Anders als FIN (sauberes Beenden) zeigt RST ein Problem an — oft eine Firewall oder ein Absturz.",
         "scenarioId": "connection-reset"
       },
       {
         "stepId": "ws-trf-03",
-        "context": "Ein Ping-Test zeigt merkwuerdiges Verhalten: Statt einer Echo-Reply kommt eine 'TTL exceeded'-Meldung zurueck.",
+        "context": "Ein Ping-Test zeigt merkwürdiges Verhalten: Statt einer Echo-Reply kommt eine 'TTL exceeded'-Meldung zurück.",
         "explanation": "TTL exceeded deutet auf einen Routing-Loop oder eine zu lange Pfadkette hin. Jeder Router dekrementiert TTL um 1 — bei 0 wird das Paket verworfen.",
         "scenarioId": "ttl-exceeded"
       },
       {
         "stepId": "ws-trf-04",
-        "context": "Du siehst Traffic auf Port 8080. Ein Kollege fragt, welches Protokoll dort typischerweise laeuft.",
-        "explanation": "Port 8080 ist der klassische Alternative-Port fuer HTTP und Web-Proxies. Viele Entwicklungsserver und Proxy-Dienste nutzen diesen Port standardmaessig.",
+        "context": "Du siehst Traffic auf Port 8080. Ein Kollege fragt, welches Protokoll dort typischerweise läuft.",
+        "explanation": "Port 8080 ist der klassische Alternative-Port für HTTP und Web-Proxies. Viele Entwicklungsserver und Proxy-Dienste nutzen diesen Port standardmässig.",
         "scenarioId": "protocol-8080"
       },
       {
         "stepId": "ws-trf-05",
-        "context": "Im DNS-Traffic faellt dir auf, dass auf eine einzelne Query zwei Antworten mit unterschiedlichen IPs kommen. Das ist verdaechtig.",
-        "explanation": "Doppelte DNS-Antworten mit verschiedenen IPs sind ein starkes Indiz fuer DNS-Spoofing. Der Angreifer versucht, Traffic auf seinen eigenen Server umzuleiten.",
+        "context": "Im DNS-Traffic fällt dir auf, dass auf eine einzelne Query zwei Antworten mit unterschiedlichen IPs kommen. Das ist verdächtig.",
+        "explanation": "Doppelte DNS-Antworten mit verschiedenen IPs sind ein starkes Indiz für DNS-Spoofing. Der Angreifer versucht, Traffic auf seinen eigenen Server umzuleiten.",
         "scenarioId": "dns-spoofing"
       }
     ]
@@ -41,24 +41,24 @@
     "id": "ws-session-attacks",
     "simulatorType": "wireshark",
     "title": "Angriffsindikatoren erkennen",
-    "description": "Verdaechtige Muster im Netzwerk-Traffic identifizieren — von DNS-Spoofing ueber Connection Resets bis zu Routing-Anomalien.",
+    "description": "Verdächtige Muster im Netzwerk-Traffic identifizieren — von DNS-Spoofing über Connection Resets bis zu Routing-Anomalien.",
     "steps": [
       {
         "stepId": "ws-atk-01",
-        "context": "Im DNS-Traffic faellt auf, dass auf eine einzelne Query zwei verschiedene Antworten mit unterschiedlichen IPs eintreffen. Ein Angriff?",
-        "explanation": "Zwei DNS-Antworten auf eine Query mit unterschiedlichen IPs sind ein klassisches Zeichen fuer DNS-Spoofing. Der Angreifer versucht, schneller als der echte DNS-Server zu antworten.",
+        "context": "Im DNS-Traffic fällt auf, dass auf eine einzelne Query zwei verschiedene Antworten mit unterschiedlichen IPs eintreffen. Ein Angriff?",
+        "explanation": "Zwei DNS-Antworten auf eine Query mit unterschiedlichen IPs sind ein klassisches Zeichen für DNS-Spoofing. Der Angreifer versucht, schneller als der echte DNS-Server zu antworten.",
         "scenarioId": "dns-spoofing"
       },
       {
         "stepId": "ws-atk-02",
-        "context": "Waehrend einer Webanwendungs-Analyse bricht eine HTTP-Session ploetzlich ab. Im Capture erscheint ein RST-Flag. Ist das normal?",
+        "context": "Während einer Webanwendungs-Analyse bricht eine HTTP-Session plötzlich ab. Im Capture erscheint ein RST-Flag. Ist das normal?",
         "explanation": "Ein RST mitten in einer aktiven Session deutet auf eine Firewall-Intervention, einen Server-Absturz oder einen aktiven TCP-Reset-Angriff hin. Normales Beenden nutzt FIN.",
         "scenarioId": "connection-reset"
       },
       {
         "stepId": "ws-atk-03",
-        "context": "Ping-Tests zu einem externen Ziel liefern statt Echo-Replies nur 'TTL exceeded'-Meldungen. Was laeuft im Netzwerk schief?",
-        "explanation": "TTL exceeded in Kombination mit nie ankommenden Antworten deutet auf einen Routing-Loop hin. Die Pakete werden zwischen Routern hin- und hergeschickt bis TTL auf 0 faellt.",
+        "context": "Ping-Tests zu einem externen Ziel liefern statt Echo-Replies nur 'TTL exceeded'-Meldungen. Was läuft im Netzwerk schief?",
+        "explanation": "TTL exceeded in Kombination mit nie ankommenden Antworten deutet auf einen Routing-Loop hin. Die Pakete werden zwischen Routern hin- und hergeschickt bis TTL auf 0 fällt.",
         "scenarioId": "ttl-exceeded"
       }
     ]
@@ -67,24 +67,24 @@
     "id": "ws-session-diagnostics",
     "simulatorType": "wireshark",
     "title": "Verbindungsprobleme diagnostizieren",
-    "description": "TCP-Retransmissions, unbekannte Protokolle und Routing-Fehler anhand von Paketmitschnitten aufspueren.",
+    "description": "TCP-Retransmissions, unbekannte Protokolle und Routing-Fehler anhand von Paketmitschnitten aufspüren.",
     "steps": [
       {
         "stepId": "ws-diag-01",
-        "context": "Eine TCP-Verbindung wird aufgebaut, aber das SYN-Paket erscheint mehrfach im Capture mit identischer Sequenznummer. Was passiert?",
-        "explanation": "Wiederholte SYN-Pakete mit gleicher Sequenznummer sind Retransmissions. Der Client hat keine SYN-ACK erhalten — typisch fuer Paketverlust oder Firewall-Blocking.",
+        "context": "Eine TCP-Verbindung wird aufgebaut, aber das SYN-Paket erscheint mehrfach im Capture mit identischer Seqünznummer. Was passiert?",
+        "explanation": "Wiederholte SYN-Pakete mit gleicher Seqünznummer sind Retransmissions. Der Client hat keine SYN-ACK erhalten — typisch für Paketverlust oder Firewall-Blocking.",
         "scenarioId": "find-retransmission"
       },
       {
         "stepId": "ws-diag-02",
-        "context": "Im Capture laeuft Traffic auf Port 8080. Dein Kollege ist sich unsicher, welcher Dienst dort laeuft. Welches Protokoll ist am wahrscheinlichsten?",
+        "context": "Im Capture läuft Traffic auf Port 8080. Dein Kollege ist sich unsicher, welcher Dienst dort läuft. Welches Protokoll ist am wahrscheinlichsten?",
         "explanation": "Port 8080 ist der klassische Alternative-HTTP-Port. Web-Proxies, Entwicklungsserver und Applikationsserver wie Tomcat nutzen ihn als Standardport.",
         "scenarioId": "protocol-8080"
       },
       {
         "stepId": "ws-diag-03",
-        "context": "Ein Monitoring-System zeigt erhoehte ICMP-Fehler. Im Capture findest du 'TTL exceeded'-Nachrichten von einem Router, der nicht das Ziel ist.",
-        "explanation": "TTL exceeded von einem Zwischenrouter zeigt, dass Pakete nicht ihr Ziel erreichen. Haeufigste Ursache: Routing-Loop oder ein Hop-Count-Limit, das fuer den Pfad zu niedrig ist.",
+        "context": "Ein Monitoring-System zeigt erhöhte ICMP-Fehler. Im Capture findest du 'TTL exceeded'-Nachrichten von einem Router, der nicht das Ziel ist.",
+        "explanation": "TTL exceeded von einem Zwischenrouter zeigt, dass Pakete nicht ihr Ziel erreichen. Häufigste Ursache: Routing-Loop oder ein Hop-Count-Limit, das für den Pfad zu niedrig ist.",
         "scenarioId": "ttl-exceeded"
       }
     ]

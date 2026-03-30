@@ -2,12 +2,12 @@
   "scenarios": {
     "linux_basics": {
       "id": "linux_basics",
-      "title": "Linux-Grundlagen: SSH-Haertung",
+      "title": "Linux-Grundlagen: SSH-Härtung",
       "difficulty": "easy",
       "objective": "Finde die Datei mit der unsicheren SSH-Einstellung und lies sie aus.",
       "hint": "Starte mit ls -la und schau dir danach die Konfiguration unter .config an.",
       "max_attempts": 0,
-      "success_message": "Gut erkannt. Die SSH-Konfiguration muss vor dem Produktiveinsatz gehaertet werden.",
+      "success_message": "Gut erkannt. Die SSH-Konfiguration muss vor dem Produktiveinsatz gehärtet werden.",
       "valid_commands": [
         {
           "command": "pwd",
@@ -35,8 +35,8 @@
       "id": "network_troubleshoot",
       "title": "Netzwerk-Diagnose: DNS-Fehlkonfiguration",
       "difficulty": "medium",
-      "objective": "Ermittle, warum Hostnamen nicht aufgeloest werden.",
-      "hint": "Pruefe zuerst die Erreichbarkeit per IP und dann die Resolver-Konfiguration.",
+      "objective": "Ermittle, warum Hostnamen nicht aufgelöst werden.",
+      "hint": "Prüfe zuerst die Erreichbarkeit per IP und dann die Resolver-Konfiguration.",
       "max_attempts": 0,
       "success_message": "Korrekt. Das Routing war in Ordnung, aber der eingetragene DNS-Server war falsch.",
       "valid_commands": [
@@ -71,10 +71,10 @@
       "id": "firewall_check",
       "title": "Firewall-Analyse: HTTPS freischalten",
       "difficulty": "medium",
-      "objective": "Pruefe, warum der Webserver lokal lauscht, aber Port 443 von aussen blockiert bleibt.",
+      "objective": "Prüfe, warum der Webserver lokal lauscht, aber Port 443 von außen blockiert bleibt.",
       "hint": "Vergleiche offene Ports mit den INPUT-Regeln.",
       "max_attempts": 0,
-      "success_message": "Genau. Der Dienst lief bereits, aber eine INPUT-Regel fuer TCP/443 fehlte.",
+      "success_message": "Genau. Der Dienst lief bereits, aber eine INPUT-Regel für TCP/443 fehlte.",
       "valid_commands": [
         {
           "command": "ss -tln",
@@ -102,10 +102,10 @@
       "id": "log_analysis",
       "title": "Log-Analyse: Brute-Force-Angriff",
       "difficulty": "hard",
-      "objective": "Analysiere die Auth-Logs und finde die auffaellige Quell-IP.",
-      "hint": "Filtere fehlgeschlagene SSH-Logins und zaehle die Quelladressen.",
+      "objective": "Analysiere die Auth-Logs und finde die auffällige Quell-IP.",
+      "hint": "Filtere fehlgeschlagene SSH-Logins und zähle die Quelladressen.",
       "max_attempts": 0,
-      "success_message": "Richtig. 203.0.113.42 faellt durch die mit Abstand meisten Fehlversuche auf.",
+      "success_message": "Richtig. 203.0.113.42 fällt durch die mit Abstand meisten Fehlversuche auf.",
       "valid_commands": [
         {
           "command": "tail -n 6 /var/log/auth.log",
@@ -134,7 +134,7 @@
       "title": "Berechtigungen reparieren: Nginx-Konfiguration",
       "difficulty": "easy",
       "objective": "Finde heraus, warum Nginx seine Hauptkonfiguration nicht lesen kann, und behebe das Problem.",
-      "hint": "Pruefe die Datei-Rechte und danach den Dienststatus.",
+      "hint": "Prüfe die Datei-Rechte und danach den Dienststatus.",
       "max_attempts": 0,
       "success_message": "Sauber. Mit den korrekten Rechten kann der Dienst wieder starten.",
       "valid_commands": [

@@ -7832,7 +7832,7 @@
       "type": "single_choice",
       "answers": [
         {
-          "text": "Die Erstellung einer bitgenauen Kopie eines Datenträgers für Beweiszwecke",
+          "text": "Die Erstellung einer bitgenaün Kopie eines Datenträgers für Beweiszwecke",
           "is_correct": true
         },
         {

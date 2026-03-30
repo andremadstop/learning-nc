@@ -227,8 +227,8 @@
     },
     {
       "id": "epilog_success",
-      "title": "Auftrag erfuellt",
-      "narrative": "Hervorragend! Du hast die Situation professionell geloest und dabei wertvolle Erfahrung gesammelt. Dein Team ist beeindruckt von deiner strukturierten Vorgehensweise.",
+      "title": "Auftrag erfüllt",
+      "narrative": "Hervorragend! Du hast die Situation professionell gelöst und dabei wertvolle Erfahrung gesammelt. Dein Team ist beeindruckt von deiner strukturierten Vorgehensweise.",
       "is_epilog": true,
       "epilog_type": "success",
       "choices": []
@@ -236,7 +236,7 @@
     {
       "id": "epilog_partial",
       "title": "Teilweise erfolgreich",
-      "narrative": "Du hast die Situation unter Kontrolle gebracht, aber es gibt noch Verbesserungspotenzial. Einige Schritte haetten gruendlicher sein koennen. Beim naechsten Mal weisst du es besser.",
+      "narrative": "Du hast die Situation unter Kontrolle gebracht, aber es gibt noch Verbesserungspotenzial. Einige Schritte hätten gründlicher sein können. Beim nächsten Mal weißt du es besser.",
       "is_epilog": true,
       "epilog_type": "partial",
       "choices": []
@@ -244,7 +244,7 @@
     {
       "id": "epilog_fail",
       "title": "Gelernt aus dem Scheitern",
-      "narrative": "Diesmal lief es nicht optimal. Aber jeder Fehler ist eine Lektion. Analysiere was schiefging und versuche es erneut — beim naechsten Mal wirst du besser vorbereitet sein.",
+      "narrative": "Diesmal lief es nicht optimal. Aber jeder Fehler ist eine Lektion. Analysiere was schiefging und versuche es erneut — beim nächsten Mal wirst du besser vorbereitet sein.",
       "is_epilog": true,
       "epilog_type": "fail",
       "choices": []

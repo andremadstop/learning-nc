@@ -2,7 +2,7 @@
   {
     "id": "ps-session-security",
     "simulatorType": "portscan",
-    "title": "Server-Sicherheit pruefen",
+    "title": "Server-Sicherheit prüfen",
     "description": "Mit Portscan-Techniken die Sicherheit verschiedener Server systematisch bewerten und Schwachstellen identifizieren.",
     "steps": [
       {
@@ -13,20 +13,20 @@
       },
       {
         "stepId": "ps-sec-02",
-        "context": "Bei einem Routine-Scan faellt ein Host mit ungewoehnlichen offenen Ports auf. Einer der Ports ist typisch fuer Backdoor-Software.",
-        "explanation": "Unerwartete offene Ports sind ein starkes Indiz fuer eine Kompromittierung. Regelmaessige Portscans helfen, solche Anomalien frueh zu erkennen.",
+        "context": "Bei einem Routine-Scan fällt ein Host mit ungewöhnlichen offenen Ports auf. Einer der Ports ist typisch für Backdoor-Software.",
+        "explanation": "Unerwartete offene Ports sind ein starkes Indiz für eine Kompromittierung. Regelmässige Portscans helfen, solche Anomalien früh zu erkennen.",
         "scenarioId": "compromised-host"
       },
       {
         "stepId": "ps-sec-03",
-        "context": "Ein Webserver ist ploetzlich nicht mehr erreichbar. Der Portscan zeigt, dass Port 80 als 'filtered' markiert ist — eine Firewall blockiert den Zugriff.",
+        "context": "Ein Webserver ist plötzlich nicht mehr erreichbar. Der Portscan zeigt, dass Port 80 als 'filtered' markiert ist — eine Firewall blockiert den Zugriff.",
         "explanation": "Der Status 'filtered' bedeutet, dass eine Firewall den Port blockiert. Im Gegensatz zu 'closed' antwortet der Host gar nicht auf SYN-Pakete.",
         "scenarioId": "web-filtered"
       },
       {
         "stepId": "ps-sec-04",
-        "context": "Ein Netzwerk-Switch zeigt neben SSH auch Telnet auf Port 23 als offen. Telnet uebertraegt Passwoerter im Klartext.",
-        "explanation": "Telnet ist ein Sicherheitsrisiko, weil alle Daten unverschluesselt uebertragen werden. In der Praxis sollte Telnet immer durch SSH ersetzt werden.",
+        "context": "Ein Netzwerk-Switch zeigt neben SSH auch Telnet auf Port 23 als offen. Telnet überträgt Passwörter im Klartext.",
+        "explanation": "Telnet ist ein Sicherheitsrisiko, weil alle Daten unverschlüsselt übertragen werden. In der Praxis sollte Telnet immer durch SSH ersetzt werden.",
         "scenarioId": "insecure-service"
       }
     ]
@@ -35,7 +35,7 @@
     "id": "ps-session-recon",
     "simulatorType": "portscan",
     "title": "Netzwerk-Reconnaissance",
-    "description": "Einen methodischen Reconnaissance-Ablauf durchfuehren — Server identifizieren, Dienste bewerten und Anomalien erkennen.",
+    "description": "Einen methodischen Reconnaissance-Ablauf durchführen — Server identifizieren, Dienste bewerten und Anomalien erkennen.",
     "steps": [
       {
         "stepId": "ps-recon-01",
@@ -45,14 +45,14 @@
       },
       {
         "stepId": "ps-recon-02",
-        "context": "Der naechste Host im Scan zeigt ungewoehnliche Ports, die auf keinen Standarddienst passen. Ist dieser Host kompromittiert?",
-        "explanation": "Unerwartete offene Ports sind ein starkes Warnsignal. Backdoor-Software nutzt oft hohe oder unuebliche Ports, um sich zu tarnen.",
+        "context": "Der nächste Host im Scan zeigt ungewöhnliche Ports, die auf keinen Standarddienst passen. Ist dieser Host kompromittiert?",
+        "explanation": "Unerwartete offene Ports sind ein starkes Warnsignal. Backdoor-Software nutzt oft hohe oder unübliche Ports, um sich zu tarnen.",
         "scenarioId": "compromised-host"
       },
       {
         "stepId": "ps-recon-03",
         "context": "Auf einem Switch findest du neben SSH auch Telnet auf Port 23. Welcher Dienst ist hier das Sicherheitsproblem?",
-        "explanation": "Telnet uebertraegt alles unverschluesselt — einschliesslich Passwoerter. In jeder gehaerteten Umgebung muss Telnet deaktiviert und durch SSH ersetzt werden.",
+        "explanation": "Telnet überträgt alles unverschlüsselt — einschließlich Passwörter. In jeder gehärteten Umgebung muss Telnet deaktiviert und durch SSH ersetzt werden.",
         "scenarioId": "insecure-service"
       },
       {
@@ -71,20 +71,20 @@
     "steps": [
       {
         "stepId": "ps-meth-01",
-        "context": "Du sollst einen Server moeglichst unauffaellig scannen. Welcher Scan-Typ arbeitet 'halb-offen' und hinterlaesst keine vollstaendige Verbindung in den Logs?",
-        "explanation": "Der SYN-Scan (Half-Open) sendet nur ein SYN-Paket und wertet die Antwort aus, ohne den Handshake abzuschliessen. Das ist schneller und diskreter als ein Connect-Scan.",
+        "context": "Du sollst einen Server möglichst unauffällig scannen. Welcher Scan-Typ arbeitet 'halb-offen' und hinterlässt keine vollständige Verbindung in den Logs?",
+        "explanation": "Der SYN-Scan (Half-Open) sendet nur ein SYN-Paket und wertet die Antwort aus, ohne den Handshake abzuschließen. Das ist schneller und diskreter als ein Connect-Scan.",
         "scenarioId": "scan-types"
       },
       {
         "stepId": "ps-meth-02",
         "context": "Nach dem Scan zeigt ein Webserver Port 80 als 'filtered'. Du musst herausfinden, ob eine Firewall oder der Server selbst die Ursache ist.",
-        "explanation": "'Filtered' bedeutet: keine Antwort — typisch fuer Firewall-Drop-Regeln. Bei 'closed' antwortet der Host mit RST. Die Unterscheidung ist entscheidend fuer die Fehlersuche.",
+        "explanation": "'Filtered' bedeutet: keine Antwort — typisch für Firewall-Drop-Regeln. Bei 'closed' antwortet der Host mit RST. Die Unterscheidung ist entscheidend für die Fehlersuche.",
         "scenarioId": "web-filtered"
       },
       {
         "stepId": "ps-meth-03",
-        "context": "In den Scan-Ergebnissen faellt ein Host mit einem ungewoehnlichen Port-Profil auf. Koennte es sich um einen kompromittierten Rechner handeln?",
-        "explanation": "Ein regelmaessiger Vergleich von Port-Profilen mit einer Baseline hilft, Kompromittierungen frueh zu erkennen. Unerwartete Ports sind oft der erste Hinweis.",
+        "context": "In den Scan-Ergebnissen fällt ein Host mit einem ungewöhnlichen Port-Profil auf. Könnte es sich um einen kompromittierten Rechner handeln?",
+        "explanation": "Ein regelmässiger Vergleich von Port-Profilen mit einer Baseline hilft, Kompromittierungen früh zu erkennen. Unerwartete Ports sind oft der erste Hinweis.",
         "scenarioId": "compromised-host"
       }
     ]

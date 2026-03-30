@@ -17,7 +17,7 @@
     "sysadmin",
     "security"
   ],
-  "icon": "\ud83d\udc7b",
+  "icon": "👻",
   "workplace_npcs": [
     {
       "character_id": "dr_hartmann",
@@ -46,23 +46,25 @@
         "id": "gl_start",
         "type": "story",
         "title": "Freitagabend im NOC",
-        "narrative": "22:17 Uhr, Freitagabend. Das Network Operations Center ist fast leer — nur du und das beruhigende Summen der Server-Racks. Die Monitorwand zeigt gruene Linien, sanft wie ein EKG im Tiefschlaf. Du ueberlegst gerade, ob du die Pizza vom Lieferdienst oder die aus dem Automaten riskierst, als ploetzlich drei Screens gleichzeitig rot aufleuchten. Ein Alarm, den du so noch nie gehoert hast, schneidet durch die Stille. Anomaler ausgehender Traffic — massiv, verschluesselt, und er geht an eine IP-Adresse, die in keinem eurer Systeme registriert ist.",
+        "narrative": "22:17 Uhr, Freitagabend. Das Network Operations Center ist fast leer — nur du und das beruhigende Summen der Server-Racks. Die Monitorwand zeigt grüne Linien, sanft wie ein EKG im Tiefschlaf. Du überlegst gerade, ob du die Pizza vom Lieferdienst oder die aus dem Automaten riskierst, als plötzlich drei Screens gleichzeitig rot aufleuchten. Ein Alarm, den du so noch nie gehört hast, schneidet durch die Stille. Anomaler ausgehender Traffic — massiv, verschlüsselt, und er geht an eine IP-Adresse, die in keinem eurer Systeme registriert ist.",
         "start": true,
         "act": 1,
         "effects": [
-          { "set_flag": "anomaly_detected" }
+          {
+            "set_flag": "anomaly_detected"
+          }
         ]
       },
       {
         "id": "gl_nova_briefing",
         "type": "story",
         "title": "NOVA meldet sich",
-        "narrative": "Noch bevor du die Logs oeffnen kannst, poppt NOVAs Interface auf. Ihre Stimme klingt angespannter als sonst — weniger Smalltalk, mehr Einsatzleitung.",
+        "narrative": "Noch bevor du die Logs öffnen kannst, poppt NOVAs Interface auf. Ihre Stimme klingt angespannter als sonst — weniger Smalltalk, mehr Einsatzleitung.",
         "act": 1,
         "npc_dialog": {
           "speaker": "NOVA",
           "emotion": "alert",
-          "text": "Anomalie auf Segment 7. Ausgehender Traffic ueber Port 445 und 443 an eine externe IP — 185.234.72.13. Das Muster ist regelmaessig: alle 30 Sekunden ein Burst. Das ist kein normaler User-Traffic. Und jetzt der unangenehme Teil: Der Ursprung ist Klaus' Workstation. Ich hab ihn schon angepiept."
+          "text": "Anomalie auf Segment 7. Ausgehender Traffic über Port 445 und 443 an eine externe IP — 185.234.72.13. Das Muster ist regelmässig: alle 30 Sekunden ein Burst. Das ist kein normaler User-Traffic. Und jetzt der unangenehme Teil: Der Ursprung ist Klaus' Workstation. Ich hab ihn schon angepiept."
         },
         "effects": []
       },
@@ -70,12 +72,12 @@
         "id": "gl_klaus_panik",
         "type": "story",
         "title": "Klaus gesteht",
-        "narrative": "Klaus stolpert ins NOC, sein Gesicht eine Mischung aus Schuldbewusstsein und blanker Panik. Er haelt sein Smartphone hoch, auf dem noch der Browser-Tab geoeffnet ist, der alles ausgeloest hat.",
+        "narrative": "Klaus stolpert ins NOC, sein Gesicht eine Mischung aus Schuldbewusstsein und blanker Panik. Er hält sein Smartphone hoch, auf dem noch der Browser-Tab geöffnet ist, der alles ausgelöst hat.",
         "act": 1,
         "npc_dialog": {
           "speaker": "Klaus",
           "emotion": "confused",
-          "text": "Also... ich hab da so eine Mail bekommen. 'Deine Kantine-App wurde aktualisiert, hier klicken fuer den neuen Speiseplan.' Und der Link sah total echt aus! Fast. Naja, er endete auf .ru statt .de, aber ich dachte, das ist vielleicht die russische Filiale? Jedenfalls hat sich danach mein Bildschirm kurz schwarz gemacht und seitdem blinkt alles so komisch..."
+          "text": "Also... ich hab da so eine Mail bekommen. 'Deine Kantine-App wurde aktualisiert, hier klicken für den neuen Speiseplan.' Und der Link sah total echt aus! Fast. Naja, er endete auf .ru statt .de, aber ich dachte, das ist vielleicht die russische Filiale? Jedenfalls hat sich danach mein Bildschirm kurz schwarz gemacht und seitdem blinkt alles so komisch..."
         },
         "effects": []
       },
@@ -83,7 +85,7 @@
         "id": "gl_erste_entscheidung",
         "type": "story",
         "title": "Sofortmassnahme",
-        "narrative": "Die Anomalie laeuft weiter. Jede Sekunde die vergeht, fliesst Traffic an diese externe IP. Du musst eine Entscheidung treffen: Sofort Klaus' Workstation vom Netz trennen — sicher, aber du verlierst moeglicherweise forensische Spuren im RAM. Oder erst die offenen Ports scannen und den Angriffsvektor identifizieren, bevor du isolierst.",
+        "narrative": "Die Anomalie läuft weiter. Jede Sekunde die vergeht, fließt Traffic an diese externe IP. Du musst eine Entscheidung treffen: Sofort Klaus' Workstation vom Netz trennen — sicher, aber du verlierst möglicherweise forensische Spuren im RAM. Oder erst die offenen Ports scannen und den Angriffsvektor identifizieren, bevor du isolierst.",
         "act": 1,
         "effects": []
       },
@@ -96,50 +98,74 @@
         "npc_dialog": {
           "speaker": "Reza (Security-Mentor)",
           "emotion": "alert",
-          "text": "Richtige Entscheidung. Containment first. 'Wer erst analysiert und dann isoliert, hat danach zwei Probleme statt einem.' Jetzt koennen wir in Ruhe schauen, was da gelaufen ist."
+          "text": "Richtige Entscheidung. Containment first. 'Wer erst analysiert und dann isoliert, hat danach zwei Probleme statt einem.' Jetzt können wir in Ruhe schauen, was da gelaufen ist."
         },
         "effects": [
-          { "set_flag": "klaus_isolated" },
-          { "add_reputation": { "security": 1 } }
+          {
+            "set_flag": "klaus_isolated"
+          },
+          {
+            "add_reputation": {
+              "security": 1
+            }
+          }
         ]
       },
       {
         "id": "gl_investigate_first",
         "type": "story",
         "title": "Erst untersuchen",
-        "narrative": "Du laesst den Traffic noch laufen — riskant, aber du willst die C2-Kommunikation live beobachten, bevor die Verbindung stirbt. Die Logs fuellen sich mit Daten, die spaeter Gold wert sein koennten. Oder die Lage verschlimmern.",
+        "narrative": "Du lässt den Traffic noch laufen — riskant, aber du willst die C2-Kommunikation live beobachten, bevor die Verbindung stirbt. Die Logs füllen sich mit Daten, die später Gold wert sein könnten. Oder die Lage verschlimmern.",
         "act": 1,
         "npc_dialog": {
           "speaker": "NOVA",
           "emotion": "alert",
-          "text": "Mutiger Ansatz. Du sammelst zwar Live-Daten, aber jeder Burst koennte auch Daten exfiltrieren. Die Uhr laeuft."
+          "text": "Mutiger Ansatz. Du sammelst zwar Live-Daten, aber jeder Burst könnte auch Daten exfiltrieren. Die Uhr läuft."
         },
         "effects": [
-          { "add_item": "server_logs" },
-          { "add_reputation": { "security": 1 } }
+          {
+            "add_item": "server_logs"
+          },
+          {
+            "add_reputation": {
+              "security": 1
+            }
+          }
         ]
       },
       {
         "id": "gl_quiz_ports",
         "type": "story",
         "title": "Port-Analyse",
-        "narrative": "NOVA wirft dir eine schnelle Diagnosefrage zu, waehrend du die Traffic-Muster studierst. Der anomale Traffic nutzt spezifische Ports — du musst sie einordnen koennen.",
+        "narrative": "NOVA wirft dir eine schnelle Diagnosefrage zu, während du die Traffic-Muster studierst. Der anomale Traffic nutzt spezifische Ports — du musst sie einordnen können.",
         "act": 1,
         "npc_dialog": {
           "speaker": "NOVA",
           "emotion": "alert",
-          "text": "Schnellcheck: Der Traffic geht ueber Port 445 raus. Welches Protokoll laeuft normalerweise ueber diesen Port? Das ist wichtig, um den Angriffsvektor einzugrenzen."
+          "text": "Schnellcheck: Der Traffic geht über Port 445 raus. Welches Protokoll läuft normalerweise über diesen Port? Das ist wichtig, um den Angriffsvektor einzugrenzen."
         },
         "quiz": {
-          "question": "Welches Protokoll verwendet standardmaessig Port 445?",
+          "question": "Welches Protokoll verwendet standardmässig Port 445?",
           "options": [
-            { "id": "a", "text": "HTTP (Hypertext Transfer Protocol)" },
-            { "id": "b", "text": "SMB (Server Message Block)" },
-            { "id": "c", "text": "SMTP (Simple Mail Transfer Protocol)" },
-            { "id": "d", "text": "SNMP (Simple Network Management Protocol)" }
+            {
+              "id": "a",
+              "text": "HTTP (Hypertext Transfer Protocol)"
+            },
+            {
+              "id": "b",
+              "text": "SMB (Server Message Block)"
+            },
+            {
+              "id": "c",
+              "text": "SMTP (Simple Mail Transfer Protocol)"
+            },
+            {
+              "id": "d",
+              "text": "SNMP (Simple Network Management Protocol)"
+            }
           ],
           "correct": "b",
-          "explanation": "Port 445 ist der Standard-Port fuer SMB (Server Message Block). SMB wird fuer Dateifreigaben verwendet und ist ein haeufiger Vektor fuer laterale Bewegung bei Angriffen — genau wie hier bei Ghostlines Einbruch."
+          "explanation": "Port 445 ist der Standard-Port für SMB (Server Message Block). SMB wird für Dateifreigaben verwendet und ist ein häufiger Vektor für laterale Bewegung bei Angriffen — genau wie hier bei Ghostlines Einbruch."
         },
         "effects": []
       },
@@ -147,7 +173,7 @@
         "id": "gl_portscan",
         "type": "simulator",
         "title": "Port-Scan: Klaus' Workstation",
-        "narrative": "Zeit fuer den Portscan. Klaus' Workstation hat offene Ports, die da definitiv nicht hingehoeren. Finde sie, bevor der Angreifer sie weiter ausnutzt.",
+        "narrative": "Zeit für den Portscan. Klaus' Workstation hat offene Ports, die da definitiv nicht hingehören. Finde sie, bevor der Angreifer sie weiter ausnutzt.",
         "act": 1,
         "simulator": {
           "type": "portscan",
@@ -160,38 +186,44 @@
         "id": "gl_portscan_result",
         "type": "story",
         "title": "Scan-Ergebnis",
-        "narrative": "Der Scan enthuellt das Ausmass: Port 445 (SMB), Port 4444 (Reverse Shell) und Port 8443 (C2-Callback) sind offen. Das ist kein gewoehnlicher Phishing-Trojaner — das ist professionelle Infrastruktur. Jemand hat sich Zeit genommen, diesen Angriff vorzubereiten.",
+        "narrative": "Der Scan enthüllt das Ausmass: Port 445 (SMB), Port 4444 (Reverse Shell) und Port 8443 (C2-Callback) sind offen. Das ist kein gewöhnlicher Phishing-Trojaner — das ist professionelle Infrastruktur. Jemand hat sich Zeit genommen, diesen Angriff vorzubereiten.",
         "act": 1,
         "npc_dialog": {
           "speaker": "Reza (Security-Mentor)",
           "emotion": "alert",
-          "text": "Port 4444 — eine klassische Metasploit Reverse Shell. Und der 8443-Callback... das ist C2-Infrastruktur. Wir haben es hier nicht mit Script-Kiddies zu tun. Das ist jemand, der weiss was er tut."
+          "text": "Port 4444 — eine klassische Metasploit Reverse Shell. Und der 8443-Callback... das ist C2-Infrastruktur. Wir haben es hier nicht mit Script-Kiddies zu tun. Das ist jemand, der weiß was er tut."
         },
         "effects": [
-          { "set_flag": "c2_identified" }
+          {
+            "set_flag": "c2_identified"
+          }
         ]
       },
       {
         "id": "gl_ghostline_erscheinung",
         "type": "story",
         "title": "Ghostline meldet sich",
-        "narrative": "Dein Terminal flackert. Die Schrift wechselt zu Cyan, Scanlines huschen ueber den Bildschirm. Dann erscheint eine Nachricht, Zeichen fuer Zeichen, wie von einem alten Nadeldrucker getippt. Die Absenderkennung: GHOSTLINE.",
+        "narrative": "Dein Terminal flackert. Die Schrift wechselt zu Cyan, Scanlines huschen über den Bildschirm. Dann erscheint eine Nachricht, Zeichen für Zeichen, wie von einem alten Nadeldrucker getippt. Die Absenderkennung: GHOSTLINE.",
         "act": 2,
         "npc_dialog": {
           "speaker": "Ghostline",
           "emotion": "idle",
-          "text": "Ah, da schaut jemand hin. Endlich. Ich war langsam beleidigt — drei Monate im Netz und keiner merkt's. Euer IDS ist ein Witz. Eure Firewall ein offenes Scheunentor. Und eure User klicken auf alles was nicht bei drei auf den Baeumen ist. Aber weisst du was das Beste ist? Ich bin nicht der Einzige, der hier reinschaut. Tick tock."
+          "text": "Ah, da schaut jemand hin. Endlich. Ich war langsam beleidigt — drei Monate im Netz und keiner merkt's. Euer IDS ist ein Witz. Eure Firewall ein offenes Scheunentor. Und eure User klicken auf alles was nicht bei drei auf den Bäumen ist. Aber weißt du was das Beste ist? Ich bin nicht der Einzige, der hier reinschaut. Tick tock."
         },
         "effects": [
-          { "set_flag": "ghostline_active" },
-          { "set_flag": "ghostline_revealed" }
+          {
+            "set_flag": "ghostline_active"
+          },
+          {
+            "set_flag": "ghostline_revealed"
+          }
         ]
       },
       {
         "id": "gl_entscheidung_melden",
         "type": "story",
         "title": "Wie reagieren?",
-        "narrative": "Ghostlines Nachricht haengt in der Luft wie Rauch nach einem Schuss. Die Situation ist ernst — ein aktiver Angreifer, der euch verspottet. Du hast zwei Optionen: Das Security-Team und Management sofort informieren, auch wenn es Freitagabend ist. Oder du versuchst erst selbst herauszufinden, was Ghostline wirklich will, bevor du Alarm schlaegst.",
+        "narrative": "Ghostlines Nachricht hängt in der Luft wie Rauch nach einem Schuss. Die Situation ist ernst — ein aktiver Angreifer, der euch verspottet. Du hast zwei Optionen: Das Security-Team und Management sofort informieren, auch wenn es Freitagabend ist. Oder du versuchst erst selbst herauszufinden, was Ghostline wirklich will, bevor du Alarm schlägst.",
         "act": 2,
         "effects": []
       },
@@ -199,28 +231,40 @@
         "id": "gl_team_informieren",
         "type": "story",
         "title": "Team alarmiert",
-        "narrative": "Du setzt den Security-Alert ab. Innerhalb von Minuten ist die Telefonkonferenz aktiv. Management weiss Bescheid, das Incident-Response-Protokoll laeuft. Nicht glamouroes, aber professionell. Reza lobt deinen Instinkt.",
+        "narrative": "Du setzt den Security-Alert ab. Innerhalb von Minuten ist die Telefonkonferenz aktiv. Management weiß Bescheid, das Incident-Response-Protokoll läuft. Nicht glamourös, aber professionell. Reza lobt deinen Instinkt.",
         "act": 2,
         "effects": [
-          { "add_reputation": { "management": 1 } },
-          { "add_reputation": { "team": 1 } }
+          {
+            "add_reputation": {
+              "management": 1
+            }
+          },
+          {
+            "add_reputation": {
+              "team": 1
+            }
+          }
         ]
       },
       {
         "id": "gl_solo_weitermachen",
         "type": "story",
         "title": "Allein weitermachen",
-        "narrative": "Du entscheidest dich, erstmal allein weiterzumachen. Je weniger Leute davon wissen, desto weniger Chaos. Reza wuerde das anders sehen, aber Reza ist nicht hier. Du oeffnest die Firewall-Logs und faengst an zu graben.",
+        "narrative": "Du entscheidest dich, erstmal allein weiterzumachen. Je weniger Leute davon wissen, desto weniger Chaos. Reza würde das anders sehen, aber Reza ist nicht hier. Du öffnest die Firewall-Logs und fängst an zu graben.",
         "act": 2,
         "effects": [
-          { "add_reputation": { "security": 1 } }
+          {
+            "add_reputation": {
+              "security": 1
+            }
+          }
         ]
       },
       {
         "id": "gl_terminal_logs",
         "type": "terminal",
         "title": "Terminal: Log-Analyse",
-        "narrative": "Die Firewall-Logs der letzten 24 Stunden liegen vor dir. Irgendwo in diesem Datenwust versteckt sich die C2-Kommunikation — regelmaessige Verbindungen zu einer externen IP, die kein normaler Dienst erklaert. Finde sie.",
+        "narrative": "Die Firewall-Logs der letzten 24 Stunden liegen vor dir. Irgendwo in diesem Datenwust versteckt sich die C2-Kommunikation — regelmässige Verbindungen zu einer externen IP, die kein normaler Dienst erklärt. Finde sie.",
         "act": 2,
         "simulator": {
           "type": "terminal",
@@ -228,7 +272,7 @@
           "pass_flag": "c2_found",
           "scenario_override": {
             "prompt": "ghostline@forensics:~/logs$",
-            "objective": "Finde die C2-Kommunikation in den Firewall-Logs. Welche externe IP erhaelt regelmaessig Daten?",
+            "objective": "Finde die C2-Kommunikation in den Firewall-Logs. Welche externe IP erhält regelmässig Daten?",
             "valid_commands": [
               {
                 "command": "ls",
@@ -251,8 +295,8 @@
                 "required": false
               }
             ],
-            "success_message": "C2-Server identifiziert: 185.234.72.13. Die Kommunikation laeuft verschluesselt ueber Port 443 — alle 30 Sekunden ein Daten-Burst. Klassisches Beacon-Pattern einer C2-Infrastruktur.",
-            "hint": "Tipp: Nutze grep um nach auffaelligen externen IPs zu suchen. Wiederholte Verbindungen im gleichen Takt sind verdaechtig.",
+            "success_message": "C2-Server identifiziert: 185.234.72.13. Die Kommunikation läuft verschlüsselt über Port 443 — alle 30 Sekunden ein Daten-Burst. Klassisches Beacon-Pattern einer C2-Infrastruktur.",
+            "hint": "Tipp: Nutze grep um nach auffälligen externen IPs zu suchen. Wiederholte Verbindungen im gleichen Takt sind verdächtig.",
             "max_attempts": 8
           }
         },
@@ -262,31 +306,35 @@
         "id": "gl_c2_gefunden",
         "type": "story",
         "title": "C2 enttarnt",
-        "narrative": "Die Daten sind eindeutig: Alle 30 Sekunden ein verschluesselter Burst an 185.234.72.13 ueber Port 443. Ein klassisches C2-Beacon. Der Angreifer exfiltriert Daten und haelt gleichzeitig die Verbindung zu seinem Command-and-Control-Server offen. NOVA aktualisiert die Bedrohungsstufe.",
+        "narrative": "Die Daten sind eindeutig: Alle 30 Sekunden ein verschlüsselter Burst an 185.234.72.13 über Port 443. Ein klassisches C2-Beacon. Der Angreifer exfiltriert Daten und hält gleichzeitig die Verbindung zu seinem Command-and-Control-Server offen. NOVA aktualisiert die Bedrohungsstufe.",
         "act": 2,
         "npc_dialog": {
           "speaker": "NOVA",
           "emotion": "alert",
-          "text": "C2-Beacon bestaetigt. 185.234.72.13, registriert auf ein Hosting in Moldawien — Bulletproof-Hoster, keine Kooperation zu erwarten. Der Angreifer exfiltriert aktiv. Wir muessen diesen Traffic blockieren, bevor noch mehr rausgeht."
+          "text": "C2-Beacon bestätigt. 185.234.72.13, registriert auf ein Hosting in Moldawien — Bulletproof-Hoster, keine Kooperation zu erwarten. Der Angreifer exfiltriert aktiv. Wir müssen diesen Traffic blockieren, bevor noch mehr rausgeht."
         },
         "effects": [
-          { "set_flag": "c2_blocked" },
-          { "add_item": "server_logs" }
+          {
+            "set_flag": "c2_blocked"
+          },
+          {
+            "add_item": "server_logs"
+          }
         ]
       },
       {
         "id": "gl_daubot_snmp",
         "type": "bot_correction",
         "title": "DauBot: Klaus und SNMP",
-        "narrative": "Waehrend du die C2-Analyse laeuft, meldet NOVA ein weiteres Problem: Klaus hat vor Wochen den SNMP Community-String auf 'public' gelassen — ein offenes Tor fuer Netzwerk-Enumeration. Kein Wunder, dass Ghostline so gut Bescheid weiss.",
+        "narrative": "Während du die C2-Analyse läuft, meldet NOVA ein weiteres Problem: Klaus hat vor Wochen den SNMP Community-String auf 'public' gelassen — ein offenes Tor für Netzwerk-Enumeration. Kein Wunder, dass Ghostline so gut Bescheid weiß.",
         "act": 2,
         "pass_flag": "bot_corrected_snmp",
         "bot_correction": {
           "scenario_id": "klaus-snmp-public",
           "mistake_id": "klaus_snmp_public_string",
-          "prompt": "Klaus hat den SNMP Community-String falsch konfiguriert. Identifiziere den Fehler und waehle den Fix.",
-          "bot_action": "Klaus hat den SNMP Community-String auf 'public' stehen lassen, weil 'das doch oeffentlich heisst und wir sind doch ein oeffentliches Unternehmen'.",
-          "symptom": "Der Angreifer konnte per SNMP-Walk die komplette Netzwerktopologie auslesen — Switch-Ports, VLAN-Zuordnungen, aktive Geraete.",
+          "prompt": "Klaus hat den SNMP Community-String falsch konfiguriert. Identifiziere den Fehler und wähle den Fix.",
+          "bot_action": "Klaus hat den SNMP Community-String auf 'public' stehen lassen, weil 'das doch öffentlich heißt und wir sind doch ein öffentliches Unternehmen'.",
+          "symptom": "Der Angreifer konnte per SNMP-Walk die komplette Netzwerktopologie auslesen — Switch-Ports, VLAN-Zuordnungen, aktive Geräte.",
           "error_options": [
             {
               "id": "snmp_public_string",
@@ -302,13 +350,13 @@
             },
             {
               "id": "snmp_trap_flood",
-              "label": "Zu viele SNMP-Traps ueberlasten den Server"
+              "label": "Zu viele SNMP-Traps überlasten den Server"
             }
           ],
           "fix_options": [
             {
               "id": "change_community_string",
-              "label": "Community-String auf ein starkes, nicht erratbares Passwort aendern und SNMPv3 mit Authentifizierung aktivieren"
+              "label": "Community-String auf ein starkes, nicht erratbares Passwort ändern und SNMPv3 mit Authentifizierung aktivieren"
             },
             {
               "id": "disable_snmp_completely",
@@ -320,7 +368,7 @@
             },
             {
               "id": "rename_community_private",
-              "label": "Community-String von 'public' auf 'private' aendern"
+              "label": "Community-String von 'public' auf 'private' ändern"
             }
           ],
           "expected_error_id": "snmp_public_string",
@@ -333,27 +381,29 @@
         "id": "gl_supply_chain_hinweis",
         "type": "story",
         "title": "Supply-Chain-Verdacht",
-        "narrative": "Reza meldet sich mit einer beunruhigenden Erkenntnis. Die Phishing-Mail an Klaus war nur der Einstiegspunkt — aber der Angreifer hatte schon vorher Zugang. Die Firmware des Monitoring-Tools wurde vor zwei Wochen per Auto-Update aktualisiert, und die Checksumme stimmt nicht mit dem Original ueberein.",
+        "narrative": "Reza meldet sich mit einer beunruhigenden Erkenntnis. Die Phishing-Mail an Klaus war nur der Einstiegspunkt — aber der Angreifer hatte schon vorher Zugang. Die Firmware des Monitoring-Tools wurde vor zwei Wochen per Auto-Update aktualisiert, und die Checksumme stimmt nicht mit dem Original überein.",
         "act": 2,
         "npc_dialog": {
           "speaker": "Reza (Security-Mentor)",
           "emotion": "alert",
-          "text": "Ich hab mir die Timeline angeschaut. Ghostline war schon vor Klaus' Klick im Netz. Der Phishing-Link war nur die Eskalation — nicht der Einstieg. Vor zwei Wochen gab es ein Auto-Update fuer unser Monitoring-Tool. Checksumme stimmt nicht. Das riecht nach Supply-Chain-Angriff. Jemand hat die Update-Pipeline kompromittiert."
+          "text": "Ich hab mir die Timeline angeschaut. Ghostline war schon vor Klaus' Klick im Netz. Der Phishing-Link war nur die Eskalation — nicht der Einstieg. Vor zwei Wochen gab es ein Auto-Update für unser Monitoring-Tool. Checksumme stimmt nicht. Das riecht nach Supply-Chain-Angriff. Jemand hat die Update-Pipeline kompromittiert."
         },
         "effects": [
-          { "set_flag": "supply_chain_suspected" }
+          {
+            "set_flag": "supply_chain_suspected"
+          }
         ]
       },
       {
         "id": "gl_eskalation_intro",
         "type": "story",
-        "title": "Verschluesselung beginnt",
-        "narrative": "Ein neuer Alarm. Auf drei Servern gleichzeitig tauchen Dateien mit der Endung .ghost auf. Ghostline hat die Ransomware aktiviert. Die Verschluesselung frisst sich durch die Dateifreigaben wie ein Lauffeuer. Wenn du jetzt nicht die Firewall dichtmachst, erreicht sie den Backup-Server in weniger als zwei Minuten.",
+        "title": "Verschlüsselung beginnt",
+        "narrative": "Ein neuer Alarm. Auf drei Servern gleichzeitig tauchen Dateien mit der Endung .ghost auf. Ghostline hat die Ransomware aktiviert. Die Verschlüsselung frisst sich durch die Dateifreigaben wie ein Lauffeuer. Wenn du jetzt nicht die Firewall dichtmachst, erreicht sie den Backup-Server in weniger als zwei Minuten.",
         "act": 3,
         "npc_dialog": {
           "speaker": "NOVA",
           "emotion": "frustrated",
-          "text": "ALERT: Ransomware-Aktivitaet auf File-Server 1, 2 und 3. Endung .ghost — Ghostlines Signatur. Der Backup-Server ist noch sauber, aber er ist im selben VLAN. Du hast vielleicht 120 Sekunden, bevor die Verschluesselung durchbricht."
+          "text": "ALERT: Ransomware-Aktivität auf File-Server 1, 2 und 3. Endung .ghost — Ghostlines Signatur. Der Backup-Server ist noch sauber, aber er ist im selben VLAN. Du hast vielleicht 120 Sekunden, bevor die Verschlüsselung durchbricht."
         },
         "effects": []
       },
@@ -361,7 +411,7 @@
         "id": "gl_firewall_challenge",
         "type": "simulator",
         "title": "Firewall: C2-Traffic blockieren",
-        "narrative": "Die Firewall-Konsole ist offen. Du musst eine DENY-Regel fuer Ghostlines C2-IP-Range erstellen, bevor die Ransomware den Backup-Server erreicht. Jede Sekunde zaehlt.",
+        "narrative": "Die Firewall-Konsole ist offen. Du musst eine DENY-Regel für Ghostlines C2-IP-Range erstellen, bevor die Ransomware den Backup-Server erreicht. Jede Sekunde zählt.",
         "act": 3,
         "timer_seconds": 120,
         "simulator": {
@@ -375,7 +425,7 @@
         "id": "gl_nach_firewall",
         "type": "story",
         "title": "Firewall-Status",
-        "narrative": "Die Firewall-Regel greift. Der ausgehende C2-Traffic bricht ab. Aber Ghostline hat einen Plan B: Die DNS-Eintraege wurden manipuliert. Interne Anfragen an den Update-Server werden umgeleitet — auf eine von Ghostlines Maschinen. Solange das DNS vergiftet ist, kann sich die Malware ueber gefaelschte Updates weiter verbreiten.",
+        "narrative": "Die Firewall-Regel greift. Der ausgehende C2-Traffic bricht ab. Aber Ghostline hat einen Plan B: Die DNS-Einträge wurden manipuliert. Interne Anfragen an den Update-Server werden umgeleitet — auf eine von Ghostlines Maschinen. Solange das DNS vergiftet ist, kann sich die Malware über gefälschte Updates weiter verbreiten.",
         "act": 3,
         "effects": []
       },
@@ -383,12 +433,12 @@
         "id": "gl_ethik_entscheidung",
         "type": "story",
         "title": "Ethische Grauzone",
-        "narrative": "Der Sysadmin hat in den Logs eine Backdoor gefunden, die direkt zu Ghostlines Command-Server fuehrt. Theoretisch koenntest du sie benutzen, um Ghostlines Systeme zu infiltrieren und den Kill-Switch fuer die Ransomware zu finden. Aber das waere ein Gegenangriff — illegal, riskant, und genau die Art von Aktion, die Ghostline wahrscheinlich provozieren will.",
+        "narrative": "Der Sysadmin hat in den Logs eine Backdoor gefunden, die direkt zu Ghostlines Command-Server führt. Theoretisch könntest du sie benutzen, um Ghostlines Systeme zu infiltrieren und den Kill-Switch für die Ransomware zu finden. Aber das wäre ein Gegenangriff — illegal, riskant, und genau die Art von Aktion, die Ghostline wahrscheinlich provozieren will.",
         "act": 3,
         "npc_dialog": {
           "speaker": "Sysadmin",
           "emotion": "alert",
-          "text": "Ich hab die Backdoor. Eine offene Reverse-Shell auf Ghostlines C2-Server. Wenn du willst, kann ich da reingehen und den Kill-Switch suchen. Aber das waere... naja, nicht ganz legal. Deine Entscheidung."
+          "text": "Ich hab die Backdoor. Eine offene Reverse-Shell auf Ghostlines C2-Server. Wenn du willst, kann ich da reingehen und den Kill-Switch suchen. Aber das wäre... naja, nicht ganz legal. Deine Entscheidung."
         },
         "effects": []
       },
@@ -396,64 +446,90 @@
         "id": "gl_nur_verteidigen",
         "type": "story",
         "title": "Defensive Strategie",
-        "narrative": "Du entscheidest dich fuer die defensive Linie. Kein Gegenangriff, kein rechtliches Risiko. Stattdessen konzentrierst du dich darauf, die DNS-Vergiftung rueckgaengig zu machen und die internen Systeme zu haerten. Reza nickt — das ist der CCC-Weg: Aufdecken, Schuetzen, Dokumentieren.",
+        "narrative": "Du entscheidest dich für die defensive Linie. Kein Gegenangriff, kein rechtliches Risiko. Stattdessen konzentrierst du dich darauf, die DNS-Vergiftung rückgängig zu machen und die internen Systeme zu härten. Reza nickt — das ist der CCC-Weg: Aufdecken, Schützen, Dokumentieren.",
         "act": 3,
         "npc_dialog": {
           "speaker": "Reza (Security-Mentor)",
           "emotion": "alert",
-          "text": "Richtig. Wir sind keine Hacker, wir sind Verteidiger. Die Backdoor dokumentieren wir fuer die Forensik. Jetzt DNS fixen — bevor Ghostlines Fake-Update-Server noch mehr Schaden anrichtet."
+          "text": "Richtig. Wir sind keine Hacker, wir sind Verteidiger. Die Backdoor dokumentieren wir für die Forensik. Jetzt DNS fixen — bevor Ghostlines Fake-Update-Server noch mehr Schaden anrichtet."
         },
         "effects": [
-          { "add_reputation": { "security": 1 } },
-          { "set_flag": "defensive_path" }
+          {
+            "add_reputation": {
+              "security": 1
+            }
+          },
+          {
+            "set_flag": "defensive_path"
+          }
         ]
       },
       {
         "id": "gl_gegenangriff",
         "type": "story",
         "title": "Gegenangriff",
-        "narrative": "Du nimmst die Backdoor. Es ist riskant und rechtlich heikel, aber die Chance, den Ransomware-Kill-Switch zu finden, ist zu verlockend. Der Sysadmin oeffnet die Reverse-Shell und ihr seid drin — auf Ghostlines Server. Es fuehlt sich an wie ein Trip in die Unterwelt.",
+        "narrative": "Du nimmst die Backdoor. Es ist riskant und rechtlich heikel, aber die Chance, den Ransomware-Kill-Switch zu finden, ist zu verlockend. Der Sysadmin öffnet die Reverse-Shell und ihr seid drin — auf Ghostlines Server. Es fühlt sich an wie ein Trip in die Unterwelt.",
         "act": 3,
         "npc_dialog": {
           "speaker": "Sysadmin",
           "emotion": "idle",
-          "text": "Wir sind drin. Das hier ist... organisiert. Config-Files, Skripte, Target-Listen. Und da — ein kill.sh Script. Wenn das der Kill-Switch ist, koennen wir die Verschluesselung stoppen. Aber Ghostline wird merken, dass wir hier waren."
+          "text": "Wir sind drin. Das hier ist... organisiert. Config-Files, Skripte, Target-Listen. Und da — ein kill.sh Script. Wenn das der Kill-Switch ist, können wir die Verschlüsselung stoppen. Aber Ghostline wird merken, dass wir hier waren."
         },
         "effects": [
-          { "add_reputation": { "security": 1 } },
-          { "set_flag": "attack_path" },
-          { "add_item": "forensic_evidence" }
+          {
+            "add_reputation": {
+              "security": 1
+            }
+          },
+          {
+            "set_flag": "attack_path"
+          },
+          {
+            "add_item": "forensic_evidence"
+          }
         ]
       },
       {
         "id": "gl_quiz_firewall",
         "type": "story",
         "title": "Firewall-Wissen",
-        "narrative": "Waehrend das DNS-Problem eskaliert, stellt NOVA eine Kontrollfrage. Die Antwort bestimmt, wie effektiv deine naechsten Schritte sein werden.",
+        "narrative": "Während das DNS-Problem eskaliert, stellt NOVA eine Kontrollfrage. Die Antwort bestimmt, wie effektiv deine nächsten Schritte sein werden.",
         "act": 3,
         "npc_dialog": {
           "speaker": "NOVA",
           "emotion": "alert",
-          "text": "Bevor wir weitermachen — Verstaendnischeck: Was passiert in einer Firewall mit Traffic, fuer den keine explizite Regel existiert?"
+          "text": "Bevor wir weitermachen — Verständnischeck: Was passiert in einer Firewall mit Traffic, für den keine explizite Regel existiert?"
         },
         "quiz": {
-          "question": "Was ist das Standard-Verhalten einer professionell konfigurierten Firewall fuer Traffic ohne passende Regel?",
+          "question": "Was ist das Standard-Verhalten einer professionell konfigurierten Firewall für Traffic ohne passende Regel?",
           "options": [
-            { "id": "a", "text": "Der Traffic wird durchgelassen (Default Allow)" },
-            { "id": "b", "text": "Der Traffic wird blockiert (Implicit Deny)" },
-            { "id": "c", "text": "Der Traffic wird an den naechsten Router weitergeleitet" },
-            { "id": "d", "text": "Der Traffic wird in eine Quarantaene-Zone umgeleitet" }
+            {
+              "id": "a",
+              "text": "Der Traffic wird durchgelassen (Default Allow)"
+            },
+            {
+              "id": "b",
+              "text": "Der Traffic wird blockiert (Implicit Deny)"
+            },
+            {
+              "id": "c",
+              "text": "Der Traffic wird an den nächsten Router weitergeleitet"
+            },
+            {
+              "id": "d",
+              "text": "Der Traffic wird in eine Quarantäne-Zone umgeleitet"
+            }
           ],
           "correct": "b",
-          "explanation": "Implicit Deny ist das Grundprinzip jeder professionellen Firewall: Alles was nicht explizit erlaubt ist, wird blockiert. Deshalb ist es so wichtig, Regeln praezise zu formulieren — eine fehlende Allow-Regel blockiert den Dienst, aber eine fehlende Deny-Regel laesst nichts durch."
+          "explanation": "Implicit Deny ist das Grundprinzip jeder professionellen Firewall: Alles was nicht explizit erlaubt ist, wird blockiert. Deshalb ist es so wichtig, Regeln präzise zu formulieren — eine fehlende Allow-Regel blockiert den Dienst, aber eine fehlende Deny-Regel lässt nichts durch."
         },
         "effects": []
       },
       {
         "id": "gl_dns_challenge",
         "type": "simulator",
-        "title": "DNS: Poisoning rueckgaengig machen",
-        "narrative": "Die DNS-Records wurden manipuliert. Euer interner Update-Server zeigt auf eine von Ghostlines Maschinen. Du musst die korrekten DNS-Eintraege wiederherstellen, bevor der naechste Auto-Update-Zyklus laeuft.",
+        "title": "DNS: Poisoning rückgängig machen",
+        "narrative": "Die DNS-Records wurden manipuliert. Euer interner Update-Server zeigt auf eine von Ghostlines Maschinen. Du musst die korrekten DNS-Einträge wiederherstellen, bevor der nächste Auto-Update-Zyklus läuft.",
         "act": 3,
         "simulator": {
           "type": "dns",
@@ -466,32 +542,36 @@
         "id": "gl_dns_ergebnis",
         "type": "story",
         "title": "DNS bereinigt",
-        "narrative": "Die DNS-Records zeigen wieder auf die richtigen Server. Der Auto-Update-Kanal ist sauber. Aber Ghostline hat noch ein Ass im Aermel — und jetzt wird es persoenlich.",
+        "narrative": "Die DNS-Records zeigen wieder auf die richtigen Server. Der Auto-Update-Kanal ist sauber. Aber Ghostline hat noch ein Ass im Ärmel — und jetzt wird es persönlich.",
         "act": 3,
         "effects": [
-          { "set_flag": "dns_fixed" }
+          {
+            "set_flag": "dns_fixed"
+          }
         ]
       },
       {
         "id": "gl_wahrheit_intro",
         "type": "story",
-        "title": "Die Enthuellung",
-        "narrative": "Ghostline meldet sich erneut. Diesmal kein Spott, kein Hohn. Die Nachricht klingt anders — fast resigniert. Und sie enthaelt einen Namen, den du kennst.",
+        "title": "Die Enthüllung",
+        "narrative": "Ghostline meldet sich erneut. Diesmal kein Spott, kein Hohn. Die Nachricht klingt anders — fast resigniert. Und sie enthält einen Namen, den du kennst.",
         "act": 4,
         "npc_dialog": {
           "speaker": "Ghostline",
           "emotion": "idle",
-          "text": "Du bist gut. Besser als die, die hier vor dir sassen. Deshalb sollst du die Wahrheit wissen. Mein Name ist Marc Eisler. Ich war Senior-Admin hier — bis vor acht Monaten. Ich hab Sicherheitsluecken gemeldet, immer wieder. VPN ohne MFA, SNMP public, keine Segmentierung, kein IDS. Das Management hat es ignoriert. 'Zu teuer. Kein ROI.' Also zeige ich ihnen den ROI. Das hier ist kein Angriff — das ist ein Penetrationstest. Nur hat mich keiner beauftragt."
+          "text": "Du bist gut. Besser als die, die hier vor dir sassen. Deshalb sollst du die Wahrheit wissen. Mein Name ist Marc Eisler. Ich war Senior-Admin hier — bis vor acht Monaten. Ich hab Sicherheitslücken gemeldet, immer wieder. VPN ohne MFA, SNMP public, keine Segmentierung, kein IDS. Das Management hat es ignoriert. 'Zu teuer. Kein ROI.' Also zeige ich ihnen den ROI. Das hier ist kein Angriff — das ist ein Penetrationstest. Nur hat mich keiner beauftragt."
         },
         "effects": [
-          { "set_flag": "ghostline_identity_known" }
+          {
+            "set_flag": "ghostline_identity_known"
+          }
         ]
       },
       {
         "id": "gl_routing_challenge",
         "type": "simulator",
         "title": "Routing: BGP-Manipulation beheben",
-        "narrative": "Ghostline — Marc — hat die BGP-Routen manipuliert. Traffic der eigentlich im internen Netz bleiben sollte, wird ueber externe Hops geleitet. Dein Kern-Router zeigt falsche Routen an. Zeit, die Routing-Tabelle zu korrigieren.",
+        "narrative": "Ghostline — Marc — hat die BGP-Routen manipuliert. Traffic der eigentlich im internen Netz bleiben sollte, wird über externe Hops geleitet. Dein Kern-Router zeigt falsche Routen an. Zeit, die Routing-Tabelle zu korrigieren.",
         "act": 4,
         "simulator": {
           "type": "routing",
@@ -504,17 +584,19 @@
         "id": "gl_nach_routing",
         "type": "story",
         "title": "Routing wiederhergestellt",
-        "narrative": "Die Routing-Tabelle ist bereinigt. Der Traffic fliesst wieder ueber die korrekten Pfade. Aber du brauchst Beweise — handfeste, forensische Daten, die genau zeigen, was Ghostline exfiltriert hat und welche Systeme betroffen sind.",
+        "narrative": "Die Routing-Tabelle ist bereinigt. Der Traffic fließt wieder über die korrekten Pfade. Aber du brauchst Beweise — handfeste, forensische Daten, die genau zeigen, was Ghostline exfiltriert hat und welche Systeme betroffen sind.",
         "act": 4,
         "effects": [
-          { "set_flag": "routing_fixed" }
+          {
+            "set_flag": "routing_fixed"
+          }
         ]
       },
       {
         "id": "gl_terminal_config",
         "type": "terminal",
         "title": "Terminal: Default-Route wiederherstellen",
-        "narrative": "Ghostline hat nicht nur BGP manipuliert — die Default-Route des Core-Routers wurde geloescht. Ohne sie ist das gesamte Netzwerk von der Aussenwelt abgeschnitten. Stelle die Verbindung zum Gateway wieder her.",
+        "narrative": "Ghostline hat nicht nur BGP manipuliert — die Default-Route des Core-Routers wurde gelöscht. Ohne sie ist das gesamte Netzwerk von der Außenwelt abgeschnitten. Stelle die Verbindung zum Gateway wieder her.",
         "act": 4,
         "simulator": {
           "type": "terminal",
@@ -522,7 +604,7 @@
           "pass_flag": "default_route_fixed",
           "scenario_override": {
             "prompt": "ghostline@core-router:~#",
-            "objective": "Die Default-Route wurde geloescht. Stelle die Verbindung zum Gateway 10.0.0.1 wieder her.",
+            "objective": "Die Default-Route wurde gelöscht. Stelle die Verbindung zum Gateway 10.0.0.1 wieder her.",
             "valid_commands": [
               {
                 "command": "show ip route",
@@ -545,8 +627,8 @@
                 "required": false
               }
             ],
-            "success_message": "Default-Route wiederhergestellt. Der Traffic fliesst wieder korrekt ueber Gateway 10.0.0.1. Das Netzwerk hat wieder Verbindung zur Aussenwelt.",
-            "hint": "Tipp: Pruefe erst die aktuelle Routing-Tabelle mit 'show ip route', dann setze die Default-Route mit 'ip route add'.",
+            "success_message": "Default-Route wiederhergestellt. Der Traffic fließt wieder korrekt über Gateway 10.0.0.1. Das Netzwerk hat wieder Verbindung zur Außenwelt.",
+            "hint": "Tipp: Prüfe erst die aktuelle Routing-Tabelle mit 'show ip route', dann setze die Default-Route mit 'ip route add'.",
             "max_attempts": 6
           }
         },
@@ -556,42 +638,54 @@
         "id": "gl_entscheidung_whistleblower",
         "type": "story",
         "title": "Whistleblower oder Krimineller?",
-        "narrative": "Marcs Geschichte haengt in der Luft. Er hat Recht — die Sicherheitsluecken, die er aufgedeckt hat, sind real. Keine MFA auf dem VPN, SNMP public, fehlende Netzwerk-Segmentierung. Das Management hat es ignoriert. Aber sein Weg — Ransomware, Datenexfiltration, Social Engineering — ist unentschuldbar. Du stehst vor einer Entscheidung, die ueber den reinen Incident hinausgeht.",
+        "narrative": "Marcs Geschichte hängt in der Luft. Er hat Recht — die Sicherheitslücken, die er aufgedeckt hat, sind real. Keine MFA auf dem VPN, SNMP public, fehlende Netzwerk-Segmentierung. Das Management hat es ignoriert. Aber sein Weg — Ransomware, Datenexfiltration, Social Engineering — ist unentschuldbar. Du stehst vor einer Entscheidung, die über den reinen Incident hinausgeht.",
         "act": 4,
         "effects": []
       },
       {
         "id": "gl_whistleblower",
         "type": "story",
-        "title": "Veroeffentlichen",
-        "narrative": "Du entscheidest dich, Marcs Enthuellung in den Incident-Report aufzunehmen. Die Sicherheitsluecken, die das Management vertuscht hat, muessen ans Licht. Es wird unbequem, aber es ist der richtige Weg. Reza stuetzt dir den Ruecken.",
+        "title": "Veröffentlichen",
+        "narrative": "Du entscheidest dich, Marcs Enthüllung in den Incident-Report aufzunehmen. Die Sicherheitslücken, die das Management vertuscht hat, müssen ans Licht. Es wird unbequem, aber es ist der richtige Weg. Reza stützt dir den Rücken.",
         "act": 4,
         "npc_dialog": {
           "speaker": "Reza (Security-Mentor)",
           "emotion": "alert",
-          "text": "Das wird Aerger geben. Aber der CCC hat recht: Sicherheit durch Verschweigen funktioniert nicht. Wir dokumentieren alles — Marcs Methoden UND die Luecken, die er aufgedeckt hat. Transparenz ist der einzige Weg."
+          "text": "Das wird Ärger geben. Aber der CCC hat recht: Sicherheit durch Verschweigen funktioniert nicht. Wir dokumentieren alles — Marcs Methoden UND die Lücken, die er aufgedeckt hat. Transparenz ist der einzige Weg."
         },
         "effects": [
-          { "set_flag": "whistleblower_path" },
-          { "add_reputation": { "security": 1 } },
-          { "add_item": "ghostline_manifesto" }
+          {
+            "set_flag": "whistleblower_path"
+          },
+          {
+            "add_reputation": {
+              "security": 1
+            }
+          },
+          {
+            "add_item": "ghostline_manifesto"
+          }
         ]
       },
       {
         "id": "gl_ignorieren",
         "type": "story",
         "title": "Ignorieren und weitermachen",
-        "narrative": "Du konzentrierst dich auf die technische Seite. Marcs Motive sind sein Problem — dein Job ist es, das Netzwerk zu retten. Die Sicherheitsluecken kommen in den regulaeren Audit, nicht in den Incident-Report. Pragmatisch, aber du weisst, dass sich damit nichts aendern wird.",
+        "narrative": "Du konzentrierst dich auf die technische Seite. Marcs Motive sind sein Problem — dein Job ist es, das Netzwerk zu retten. Die Sicherheitslücken kommen in den regulären Audit, nicht in den Incident-Report. Pragmatisch, aber du weißt, dass sich damit nichts ändern wird.",
         "act": 4,
         "effects": [
-          { "add_reputation": { "management": 1 } }
+          {
+            "add_reputation": {
+              "management": 1
+            }
+          }
         ]
       },
       {
         "id": "gl_wireshark_challenge",
         "type": "simulator",
         "title": "Wireshark: Exfiltrations-Traffic",
-        "narrative": "Fuer den Forensik-Bericht brauchst du Beweise. Oeffne Wireshark und identifiziere Ghostlines Exfiltrations-Traffic. Welche Daten wurden nach draussen geschickt?",
+        "narrative": "Für den Forensik-Bericht brauchst du Beweise. Öffne Wireshark und identifiziere Ghostlines Exfiltrations-Traffic. Welche Daten wurden nach draußen geschickt?",
         "act": 4,
         "simulator": {
           "type": "wireshark",
@@ -599,19 +693,21 @@
           "pass_flag": "evidence_secured"
         },
         "effects": [
-          { "add_item": "forensic_evidence" }
+          {
+            "add_item": "forensic_evidence"
+          }
         ]
       },
       {
         "id": "gl_klaus_ransomware_intro",
         "type": "story",
         "title": "Klaus meldet sich",
-        "narrative": "Du bist gerade dabei, die Wireshark-Captures zu speichern, als Klaus' Gesicht im Tuerrahmen auftaucht. Er sieht aus wie jemand, der gerade sein eigenes Grab gegraben hat und nun um Hilfe beim Zuschaufeln bittet.",
+        "narrative": "Du bist gerade dabei, die Wireshark-Captures zu speichern, als Klaus' Gesicht im Türrahmen auftaucht. Er sieht aus wie jemand, der gerade sein eigenes Grab gegraben hat und nun um Hilfe beim Zuschaufeln bittet.",
         "act": 4,
         "npc_dialog": {
           "speaker": "Klaus",
           "emotion": "confused",
-          "text": "Aehm... du kennst doch meinen Zweit-Laptop? Den, den ich 'zur Sicherheit' benutze? Also... die Dateien darauf sehen jetzt alle so komisch aus. Und ich hab vielleicht versucht, das mit einem YouTube-Tutorial zu fixen. 'Ransomware in 5 Minuten entfernen — GARANTIERT!' stand da. Hat... nicht so gut geklappt."
+          "text": "Ähm... du kennst doch meinen Zweit-Laptop? Den, den ich 'zur Sicherheit' benutze? Also... die Dateien darauf sehen jetzt alle so komisch aus. Und ich hab vielleicht versucht, das mit einem YouTube-Tutorial zu fixen. 'Ransomware in 5 Minuten entfernen — GARANTIERT!' stand da. Hat... nicht so gut geklappt."
         },
         "effects": []
       },
@@ -619,31 +715,31 @@
         "id": "gl_daubot_ransomware",
         "type": "bot_correction",
         "title": "DauBot: Ransomware-Infektion",
-        "narrative": "Klaus hat es tatsaechlich geschafft, die Situation noch schlimmer zu machen. Zeit fuer eine professionelle Diagnose.",
+        "narrative": "Klaus hat es tatsächlich geschafft, die Situation noch schlimmer zu machen. Zeit für eine professionelle Diagnose.",
         "act": 4,
         "pass_flag": "bot_corrected_ransomware",
         "bot_correction": {
           "scenario_id": "klaus-ransomware-fix",
           "mistake_id": "klaus_ransomware_decrypt",
-          "prompt": "Klaus hat versucht, die Ransomware-Verschluesselung selbst rueckgaengig zu machen. Was hat er falsch gemacht?",
-          "bot_action": "Klaus hat die verschluesselten Dateien umbenannt (Endung .ghost entfernt) und gehofft, dass sie dann 'wieder normal' sind. Ausserdem hat er den Rechner zweimal neugestartet.",
-          "symptom": "Die Dateien sind immer noch verschluesselt, aber jetzt erkennt die Ransomware-Recovery-Software die betroffenen Dateien nicht mehr, weil die Endung fehlt.",
+          "prompt": "Klaus hat versucht, die Ransomware-Verschlüsselung selbst rückgängig zu machen. Was hat er falsch gemacht?",
+          "bot_action": "Klaus hat die verschlüsselten Dateien umbenannt (Endung .ghost entfernt) und gehofft, dass sie dann 'wieder normal' sind. Außerdem hat er den Rechner zweimal neugestartet.",
+          "symptom": "Die Dateien sind immer noch verschlüsselt, aber jetzt erkennt die Ransomware-Recovery-Software die betroffenen Dateien nicht mehr, weil die Endung fehlt.",
           "error_options": [
             {
               "id": "renamed_encrypted_files",
-              "label": "Umbenennen der verschluesselten Dateien hat die Recovery-Signaturen zerstoert"
+              "label": "Umbenennen der verschlüsselten Dateien hat die Recovery-Signaturen zerstört"
             },
             {
               "id": "antivirus_quarantine",
-              "label": "Der Antivirus hat die Ransomware in Quarantaene verschoben"
+              "label": "Der Antivirus hat die Ransomware in Quarantäne verschoben"
             },
             {
               "id": "windows_restore",
-              "label": "Die Windows-Systemwiederherstellung hat die Verschluesselung rueckgaengig gemacht"
+              "label": "Die Windows-Systemwiederherstellung hat die Verschlüsselung rückgängig gemacht"
             },
             {
               "id": "usb_backup_overwritten",
-              "label": "Klaus hat sein USB-Backup mit den verschluesselten Dateien ueberschrieben"
+              "label": "Klaus hat sein USB-Backup mit den verschlüsselten Dateien überschrieben"
             }
           ],
           "fix_options": [
@@ -653,7 +749,7 @@
             },
             {
               "id": "pay_ransom",
-              "label": "Das Loesegeld bezahlen und hoffen, dass der Schluessel funktioniert"
+              "label": "Das Lösegeld bezahlen und hoffen, dass der Schlüssel funktioniert"
             },
             {
               "id": "format_drive",
@@ -677,19 +773,21 @@
         "narrative": "Die Wireshark-Captures und Log-Analysen ergeben ein klares Bild. Ghostline hat insgesamt 4.7 GB an Daten exfiltriert — Kundenlisten, interne Dokumente, und ironischerweise auch die ignorierten Security-Audit-Berichte. Die Beweislage ist solide.",
         "act": 4,
         "effects": [
-          { "set_flag": "evidence_secured" }
+          {
+            "set_flag": "evidence_secured"
+          }
         ]
       },
       {
         "id": "gl_endspiel_intro",
         "type": "story",
         "title": "Das Endspiel",
-        "narrative": "Es ist nach Mitternacht. Die letzten Stunden waren ein Marathon. Aber Ghostline hat noch einen finalen Trumpf: Die Ransomware hat einen Dead-Man's-Switch. Wenn in 90 Sekunden kein neues Beacon den C2-Server erreicht, werden alle noch nicht verschluesselten Systeme gleichzeitig verschluesselt. Du musst die letzte Verteidigungslinie aufbauen — und zwar jetzt.",
+        "narrative": "Es ist nach Mitternacht. Die letzten Stunden waren ein Marathon. Aber Ghostline hat noch einen finalen Trumpf: Die Ransomware hat einen Dead-Man's-Switch. Wenn in 90 Sekunden kein neues Beacon den C2-Server erreicht, werden alle noch nicht verschlüsselten Systeme gleichzeitig verschlüsselt. Du musst die letzte Verteidigungslinie aufbauen — und zwar jetzt.",
         "act": 5,
         "npc_dialog": {
           "speaker": "NOVA",
           "emotion": "frustrated",
-          "text": "Dead-Man's-Switch detektiert. Die Ransomware wartet auf ein Beacon — wenn keins kommt, verschluesselt sie alles. Du hast 90 Sekunden. Erst AuthFlow: Alle Zugangsdaten des Ex-Admins revoken und MFA erzwingen. Dann ist Ghostline endgueltig ausgesperrt."
+          "text": "Dead-Man's-Switch detektiert. Die Ransomware wartet auf ein Beacon — wenn keins kommt, verschlüsselt sie alles. Du hast 90 Sekunden. Erst AuthFlow: Alle Zugangsdaten des Ex-Admins revoken und MFA erzwingen. Dann ist Ghostline endgültig ausgesperrt."
         },
         "effects": []
       },
@@ -697,7 +795,7 @@
         "id": "gl_authflow_challenge",
         "type": "simulator",
         "title": "AuthFlow: Zugang revoken",
-        "narrative": "Der Ex-Admin hat noch aktive Zugangsdaten im System. Revoke alle Accounts, erzwinge MFA fuer alle Admin-Konten und sperre die VPN-Tokens. 90 Sekunden.",
+        "narrative": "Der Ex-Admin hat noch aktive Zugangsdaten im System. Revoke alle Accounts, erzwinge MFA für alle Admin-Konten und sperre die VPN-Tokens. 90 Sekunden.",
         "act": 5,
         "timer_seconds": 90,
         "simulator": {
@@ -716,20 +814,20 @@
         "npc_dialog": {
           "speaker": "Ghostline",
           "emotion": "idle",
-          "text": "Respekt. Du hast gewonnen — technisch. Aber die Frage bleibt: Wird sich hier wirklich etwas aendern? Oder macht das Management naechste Woche weiter wie bisher, und in sechs Monaten kommt jemand, der es nicht so gut mit euch meint? Ich hab meinen Punkt gemacht. Was du daraus machst, liegt bei dir."
+          "text": "Respekt. Du hast gewonnen — technisch. Aber die Frage bleibt: Wird sich hier wirklich etwas ändern? Oder macht das Management nächste Woche weiter wie bisher, und in sechs Monaten kommt jemand, der es nicht so gut mit euch meint? Ich hab meinen Punkt gemacht. Was du daraus machst, liegt bei dir."
         },
         "effects": []
       },
       {
         "id": "gl_ende_gold",
         "type": "story",
-        "title": "Goldenes Ende: Aufklaerung",
-        "narrative": "Du hast es geschafft — und zwar richtig. Die Beweislage ist lueckenlos. Der Incident-Report enthaelt sowohl Ghostlines Methoden als auch die Sicherheitsluecken, die das Management ignoriert hat. In der Vorstandssitzung am Montag praesentierst du beides. Es ist unbequem, es gibt hitzige Diskussionen, aber am Ende bewilligt das Board ein Security-Budget, das den Namen verdient. Marc Eisler wird angezeigt, aber seine Enthuellung fuehrt zu einem externen Security-Audit. Klaus bekommt endlich eine Security-Awareness-Schulung. Und du? Du wirst zum Security-Lead befoerdert.",
+        "title": "Goldenes Ende: Aufklärung",
+        "narrative": "Du hast es geschafft — und zwar richtig. Die Beweislage ist lückenlos. Der Incident-Report enthält sowohl Ghostlines Methoden als auch die Sicherheitslücken, die das Management ignoriert hat. In der Vorstandssitzung am Montag präsentierst du beides. Es ist unbequem, es gibt hitzige Diskussionen, aber am Ende bewilligt das Board ein Security-Budget, das den Namen verdient. Marc Eisler wird angezeigt, aber seine Enthüllung führt zu einem externen Security-Audit. Klaus bekommt endlich eine Security-Awareness-Schulung. Und du? Du wirst zum Security-Lead befördert.",
         "act": 5,
         "npc_dialog": {
           "speaker": "Reza (Security-Mentor)",
           "emotion": "relieved",
-          "text": "Genau so sollte es laufen. Nicht nur das Symptom behandeln, sondern die Ursache aufdecken. Der CCC wuerde sagen: 'Sicherheit ist kein Produkt, sondern ein Prozess.' Willkommen im Club."
+          "text": "Genau so sollte es laufen. Nicht nur das Symptom behandeln, sondern die Ursache aufdecken. Der CCC würde sagen: 'Sicherheit ist kein Produkt, sondern ein Prozess.' Willkommen im Club."
         },
         "effects": []
       },
@@ -737,12 +835,12 @@
         "id": "gl_ende_gut",
         "type": "story",
         "title": "Gutes Ende: Gerettet",
-        "narrative": "Das Netzwerk ist gerettet. Die Ransomware wurde gestoppt, die kritischen Systeme laufen wieder. Ghostline ist raus — vorerst. Aber der vollstaendige Incident-Report ist duenn. Die Sicherheitsluecken, die Marc aufgedeckt hat, stehen nur als Fussnote drin. Das Management atmet auf und geht zur Tagesordnung ueber. Du weisst, dass sich damit nichts grundlegend aendern wird, aber heute Nacht hast du das Schlimmste verhindert.",
+        "narrative": "Das Netzwerk ist gerettet. Die Ransomware wurde gestoppt, die kritischen Systeme laufen wieder. Ghostline ist raus — vorerst. Aber der vollständige Incident-Report ist dünn. Die Sicherheitslücken, die Marc aufgedeckt hat, stehen nur als Fussnote drin. Das Management atmet auf und geht zur Tagesordnung über. Du weißt, dass sich damit nichts grundlegend ändern wird, aber heute Nacht hast du das Schlimmste verhindert.",
         "act": 5,
         "npc_dialog": {
           "speaker": "NOVA",
           "emotion": "alert",
-          "text": "Gute Arbeit. Incident contained, Systeme wiederhergestellt. Aber zwischen uns: Das war knapp. Und wenn wir die strukturellen Probleme nicht angehen, wird es ein naechstes Mal geben."
+          "text": "Gute Arbeit. Incident contained, Systeme wiederhergestellt. Aber zwischen uns: Das war knapp. Und wenn wir die strukturellen Probleme nicht angehen, wird es ein nächstes Mal geben."
         },
         "effects": []
       },
@@ -750,12 +848,12 @@
         "id": "gl_ende_chaos",
         "type": "story",
         "title": "Chaotisches Ende: Schadensbegrenzung",
-        "narrative": "Es hat nicht gereicht. Die Ransomware hat den Backup-Server erwischt, bevor du die letzte Verteidigungslinie aufbauen konntest. Acht Stunden Daten sind verschluesselt. Der externe Incident-Response-Dienstleister ist fuer Montag frueh bestellt — 500 Euro die Stunde. Klaus weint leise in der Ecke. Herr Brenner hat bereits drei LinkedIn-Posts ueber 'Cyber-Resilienz' verfasst, ohne zu wissen was das Wort bedeutet. Es haette schlimmer kommen koennen. Aber nicht viel.",
+        "narrative": "Es hat nicht gereicht. Die Ransomware hat den Backup-Server erwischt, bevor du die letzte Verteidigungslinie aufbauen konntest. Acht Stunden Daten sind verschlüsselt. Der externe Incident-Response-Dienstleister ist für Montag früh bestellt — 500 Euro die Stunde. Klaus weint leise in der Ecke. Herr Brenner hat bereits drei LinkedIn-Posts über 'Cyber-Resilienz' verfasst, ohne zu wissen was das Wort bedeutet. Es hätte schlimmer kommen können. Aber nicht viel.",
         "act": 5,
         "npc_dialog": {
           "speaker": "Reza (Security-Mentor)",
           "emotion": "frustrated",
-          "text": "Tja. Das ist der Preis, wenn Security als 'nice to have' behandelt wird. Naechstes Mal — und es wird ein naechstes Mal geben — fangen wir frueher an. Viel frueher."
+          "text": "Tja. Das ist der Preis, wenn Security als 'nice to have' behandelt wird. Nächstes Mal — und es wird ein nächstes Mal geben — fangen wir früher an. Viel früher."
         },
         "effects": []
       },
@@ -763,7 +861,7 @@
         "id": "gl_ende_gold_epilog",
         "type": "ending",
         "title": "Abschluss: Gold",
-        "narrative": "Der Incident-Report ist abgegeben, das Security-Audit laeuft, und Klaus hat seine erste Phishing-Awareness-Schulung bestanden. Fast. Beim zweiten Anlauf.",
+        "narrative": "Der Incident-Report ist abgegeben, das Security-Audit läuft, und Klaus hat seine erste Phishing-Awareness-Schulung bestanden. Fast. Beim zweiten Anlauf.",
         "act": 5,
         "is_ending": true,
         "effects": []
@@ -772,7 +870,7 @@
         "id": "gl_ende_gut_epilog",
         "type": "ending",
         "title": "Abschluss: Gut",
-        "narrative": "Das Netzwerk laeuft, der Incident ist geschlossen. Aber die Fragen, die Ghostline aufgeworfen hat, hallen nach.",
+        "narrative": "Das Netzwerk läuft, der Incident ist geschlossen. Aber die Fragen, die Ghostline aufgeworfen hat, hallen nach.",
         "act": 5,
         "is_ending": true,
         "effects": []
@@ -781,7 +879,7 @@
         "id": "gl_ende_chaos_epilog",
         "type": "ending",
         "title": "Abschluss: Chaos",
-        "narrative": "Montag frueh, 08:00. Der externe Dienstleister sitzt im Konferenzraum. Es wird ein langer Tag.",
+        "narrative": "Montag früh, 08:00. Der externe Dienstleister sitzt im Konferenzraum. Es wird ein langer Tag.",
         "act": 5,
         "is_ending": true,
         "effects": []
@@ -792,7 +890,7 @@
         "id": "e_gl_start_to_nova",
         "from": "gl_start",
         "to": "gl_nova_briefing",
-        "label": "Den Alarm pruefen"
+        "label": "Den Alarm prüfen"
       },
       {
         "id": "e_gl_nova_to_klaus",
@@ -894,13 +992,13 @@
         "id": "e_gl_daubot_to_supply",
         "from": "gl_daubot_snmp",
         "to": "gl_supply_chain_hinweis",
-        "label": "Rezas Analyse anhoeren"
+        "label": "Rezas Analyse anhören"
       },
       {
         "id": "e_gl_supply_to_eskalation",
         "from": "gl_supply_chain_hinweis",
         "to": "gl_eskalation_intro",
-        "label": "Die Verschluesselung beginnt"
+        "label": "Die Verschlüsselung beginnt"
       },
       {
         "id": "e_gl_eskalation_to_firewall",
@@ -912,13 +1010,13 @@
         "id": "e_gl_firewall_to_nach",
         "from": "gl_firewall_challenge",
         "to": "gl_nach_firewall",
-        "label": "Firewall-Status pruefen"
+        "label": "Firewall-Status prüfen"
       },
       {
         "id": "e_gl_nach_to_ethik",
         "from": "gl_nach_firewall",
         "to": "gl_ethik_entscheidung",
-        "label": "Naechste Schritte planen"
+        "label": "Nächste Schritte planen"
       },
       {
         "id": "e_gl_ethik_verteidigen",
@@ -942,7 +1040,7 @@
         "id": "e_gl_angriff_to_quiz",
         "from": "gl_gegenangriff",
         "to": "gl_quiz_firewall",
-        "label": "Zurueck zur Verteidigung"
+        "label": "Zurück zur Verteidigung"
       },
       {
         "id": "e_gl_quiz_to_dns",
@@ -954,13 +1052,13 @@
         "id": "e_gl_dns_to_ergebnis",
         "from": "gl_dns_challenge",
         "to": "gl_dns_ergebnis",
-        "label": "DNS-Status pruefen"
+        "label": "DNS-Status prüfen"
       },
       {
         "id": "e_gl_dns_ergebnis_to_wahrheit",
         "from": "gl_dns_ergebnis",
         "to": "gl_wahrheit_intro",
-        "label": "Ghostlines wahre Identitaet"
+        "label": "Ghostlines wahre Identität"
       },
       {
         "id": "e_gl_wahrheit_to_routing",
@@ -972,7 +1070,7 @@
         "id": "e_gl_routing_to_nach",
         "from": "gl_routing_challenge",
         "to": "gl_nach_routing",
-        "label": "Routing-Status pruefen"
+        "label": "Routing-Status prüfen"
       },
       {
         "id": "e_gl_nach_routing_to_terminal",
@@ -990,7 +1088,7 @@
         "id": "e_gl_whistleblower_ja",
         "from": "gl_entscheidung_whistleblower",
         "to": "gl_whistleblower",
-        "label": "Sicherheitsluecken veroeffentlichen — Transparenz"
+        "label": "Sicherheitslücken veröffentlichen — Transparenz"
       },
       {
         "id": "e_gl_whistleblower_nein",
@@ -1002,7 +1100,7 @@
         "id": "e_gl_wb_to_wireshark",
         "from": "gl_whistleblower",
         "to": "gl_wireshark_challenge",
-        "label": "Beweise fuer den Report sichern"
+        "label": "Beweise für den Report sichern"
       },
       {
         "id": "e_gl_ign_to_wireshark",
@@ -1050,7 +1148,7 @@
         "id": "e_gl_konfrontation_to_gold",
         "from": "gl_finale_konfrontation",
         "to": "gl_ende_gold",
-        "label": "Vollstaendigen Report mit allen Enthuelungen einreichen",
+        "label": "Vollständigen Report mit allen Enthülungen einreichen",
         "conditions": {
           "requires_flag": "evidence_secured",
           "requires_item": "ghostline_manifesto",

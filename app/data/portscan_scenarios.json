@@ -5,9 +5,18 @@
     "question": "Welcher Servertyp ist das?",
     "profileId": "mailserver",
     "options": [
-      { "id": "mailserver", "label": "Mailserver" },
-      { "id": "webserver", "label": "Webserver" },
-      { "id": "database", "label": "Datenbank" }
+      {
+        "id": "mailserver",
+        "label": "Mailserver"
+      },
+      {
+        "id": "webserver",
+        "label": "Webserver"
+      },
+      {
+        "id": "database",
+        "label": "Datenbank"
+      }
     ],
     "answer": "mailserver"
   },
@@ -17,9 +26,18 @@
     "question": "Welcher Host wirkt kompromittiert?",
     "profileId": "compromised-host",
     "options": [
-      { "id": "compromised-host", "label": "Host mit Backdoor-Port" },
-      { "id": "network-device", "label": "Router/Switch" },
-      { "id": "webserver", "label": "Webserver" }
+      {
+        "id": "compromised-host",
+        "label": "Host mit Backdoor-Port"
+      },
+      {
+        "id": "network-device",
+        "label": "Router/Switch"
+      },
+      {
+        "id": "webserver",
+        "label": "Webserver"
+      }
     ],
     "answer": "compromised-host"
   },
@@ -30,13 +48,25 @@
     "profileId": "webserver",
     "overrides": {
       "ports": [
-        { "port": 80, "state": "filtered" }
+        {
+          "port": 80,
+          "state": "filtered"
+        }
       ]
     },
     "options": [
-      { "id": "80", "label": "Port 80" },
-      { "id": "22", "label": "Port 22" },
-      { "id": "443", "label": "Port 443" }
+      {
+        "id": "80",
+        "label": "Port 80"
+      },
+      {
+        "id": "22",
+        "label": "Port 22"
+      },
+      {
+        "id": "443",
+        "label": "Port 443"
+      }
     ],
     "answer": "80"
   },
@@ -46,9 +76,18 @@
     "question": "Welcher Dienst ist hier problematisch?",
     "profileId": "network-device",
     "options": [
-      { "id": "23", "label": "Telnet auf Port 23" },
-      { "id": "22", "label": "SSH auf Port 22" },
-      { "id": "161", "label": "SNMP auf Port 161" }
+      {
+        "id": "23",
+        "label": "Telnet auf Port 23"
+      },
+      {
+        "id": "22",
+        "label": "SSH auf Port 22"
+      },
+      {
+        "id": "161",
+        "label": "SNMP auf Port 161"
+      }
     ],
     "answer": "23"
   },
@@ -58,9 +97,18 @@
     "question": "Welcher Scan-Typ arbeitet halb-offen?",
     "profileId": "webserver",
     "options": [
-      { "id": "syn", "label": "SYN Scan" },
-      { "id": "connect", "label": "Connect Scan" },
-      { "id": "udp", "label": "UDP Scan" }
+      {
+        "id": "syn",
+        "label": "SYN Scan"
+      },
+      {
+        "id": "connect",
+        "label": "Connect Scan"
+      },
+      {
+        "id": "udp",
+        "label": "UDP Scan"
+      }
     ],
     "answer": "syn"
   }
