@@ -1,16 +1,16 @@
 # CompTIA Network+ N10-009 -- Wissensbasis
 
-> Kompakte Zusammenfassung aller pruefungsrelevanten Begriffe und Themen.
+> Kompakte Zusammenfassung aller prüfungsrelevanten Begriffe und Themen.
 > Quelle: Kammermann, "CompTIA Network+", 9. Auflage 2024 (mitp).
-> 5 Wissensgebiete, 23 Kapitel, 90 Pruefungsfragen + ~200 Kapitel-Fragen.
+> 5 Wissensgebiete, 23 Kapitel, 90 Prüfungsfragen + ~200 Kapitel-Fragen.
 
 ---
 
-## Pruefungsueberblick
+## Prüfungsüberblick
 
 | Feld | Wert |
 |------|------|
-| Pruefung | N10-009 |
+| Prüfung | N10-009 |
 | Fragen | max. 90 (Multiple Choice + Performance-Based) |
 | Dauer | 90 Minuten |
 | Bestehensgrenze | 720 von 900 Punkten |
@@ -36,14 +36,14 @@
 ```
 OSI 7 Schichten (oben -> unten):
 7  Application    HTTP, DNS, SMTP, SSH, FTP, SNMP
-6  Presentation   TLS/SSL, Verschluesselung, Encoding, Kompression
+6  Presentation   TLS/SSL, Verschlüsselung, Encoding, Kompression
 5  Session        Verbindungs-Management, NetBIOS
 4  Transport      TCP, UDP, Ports, Segmente
 3  Network        IP, ICMP, Routing, Pakete
 2  Data Link      Ethernet, MAC, ARP, Switch, Frames
 1  Physical       Kabel, WLAN, Bits, Hubs, Repeater
 
-Eselsbruecke: "All People Seem To Need Data Processing"
+Eselsbrücke: "All People Seem To Need Data Processing"
 ```
 
 **DoD/TCP-IP-Modell** (4 Schichten -- die Praxis):
@@ -57,22 +57,22 @@ Eselsbruecke: "All People Seem To Need Data Processing"
 
 **Kernbegriffe:**
 - **Encapsulation**: Jede Schicht fuegt Header hinzu (Daten -> Segment -> Paket -> Frame -> Bits)
-- **De-Encapsulation**: Umgekehrt beim Empfaenger
+- **De-Encapsulation**: Umgekehrt beim Empfänger
 - **PDU** (Protocol Data Unit): Dateneinheit pro Schicht (Frame, Paket, Segment, Daten)
 - **SAP** (Service Access Point): Schnittstelle zwischen Schichten
 
 ### 1.2 Netzwerk-Grundbegriffe (Kap 3)
 
-**Uebertragungstechnik:**
+**Übertragungstechnik:**
 
-| Begriff | Erklaerung |
+| Begriff | Erklärung |
 |---------|-----------|
 | Bandbreite | Maximale Datenmenge pro Zeiteinheit (bps, Mbps, Gbps) |
 | Latenz | Verzoegerung eines Signals (ms) -- kritisch bei VoIP/Gaming |
 | Jitter | Schwankung der Latenz -- schlecht fuer Echtzeitanwendungen |
 | Throughput | Tatsaechlich gemessener Durchsatz (immer < Bandbreite) |
-| Daempfung | Signalverlust ueber Distanz |
-| Crosstalk | Stoerung zwischen benachbarten Leitungen |
+| Dämpfung | Signalverlust über Distanz |
+| Crosstalk | Störung zwischen benachbarten Leitungen |
 | EMI | Elektromagnetische Interferenz von externen Quellen |
 | Duplex | Half-Duplex (abwechselnd) vs Full-Duplex (gleichzeitig) |
 | Baseband | Gesamte Bandbreite fuer ein Signal |
@@ -80,7 +80,7 @@ Eselsbruecke: "All People Seem To Need Data Processing"
 | Multiplexing | TDM (Zeit), FDM (Frequenz), WDM (Wellenlaenge bei Glasfaser) |
 
 **Zahlensysteme:**
-- Binaer (Basis 2): 11000000 = 192
+- Binär (Basis 2): 11000000 = 192
 - Dezimal (Basis 10): Standard
 - Hexadezimal (Basis 16): MAC-Adressen, IPv6
 
@@ -94,7 +94,7 @@ Eselsbruecke: "All People Seem To Need Data Processing"
 | Bus | Alle an einem Kabel | Guenstig | Ein Bruch = alles tot |
 | Ring | Kette, Anfang = Ende | Deterministisch | Ein Ausfall = Ring unterbrochen |
 | Mesh (Full) | Jeder mit jedem | Maximale Redundanz | Teuer, komplex |
-| Mesh (Partial) | Einige mit einigen | Guter Kompromiss | Planung noetig |
+| Mesh (Partial) | Einige mit einigen | Guter Kompromiss | Planung nötig |
 | Hybrid | Kombination | Flexibel | Komplex |
 
 **Logische Konzepte:**
@@ -128,12 +128,12 @@ Eselsbruecke: "All People Seem To Need Data Processing"
 |---------|----------|---------|
 | 127.0.0.0/8 | Loopback | 127.0.0.1 = localhost |
 | 0.0.0.0 | Unspecified / Default Route | **Nicht** der Default Gateway! 0.0.0.0/0 = Route fuer unbekannte Netze |
-| 255.255.255.255 | Limited Broadcast | Geht nicht ueber Router hinaus |
+| 255.255.255.255 | Limited Broadcast | Geht nicht über Router hinaus |
 | 169.254.0.0/16 | APIPA / Link-Local | **Nicht privat (RFC1918)!** Selbstvergabe bei fehlendem DHCP |
 | 224.0.0.0/4 | Multicast (Klasse D) | 224.0.0.0 - 239.255.255.255 |
 | 240.0.0.0/4 | Reserviert (Klasse E) | Experimentell |
 
-> **Pruefungsfalle**: 169.254.x.x ist APIPA, nicht privat. Private Netze sind **ausschliesslich** 10/8, 172.16/12, 192.168/16.
+> **Prüfungsfalle**: 169.254.x.x ist APIPA, nicht privat. Private Netze sind **ausschließlich** 10/8, 172.16/12, 192.168/16.
 
 **Subnetting -- das Wichtigste:**
 
@@ -170,10 +170,10 @@ DNS-Server:  10.0.0.30
 - 128 Bit = 8 Gruppen a 4 Hex-Zeichen
 - Kurzschreibweise: fuehrende Nullen weglassen, `::` fuer laengste Null-Sequenz
 - `fe80::/10` = Link-Local (wie APIPA)
-- `2000::/3` = Global Unicast (oeffentlich)
+- `2000::/3` = Global Unicast (öffentlich)
 - `fc00::/7` = Unique Local (wie RFC 1918)
 - `::1` = Loopback
-- Uebergang: **6in4** Tunneling, **Dual-Stack**, **NAT64**
+- Übergang: **6in4** Tunneling, **Dual-Stack**, **NAT64**
 
 ### 1.5 TCP/IP-Protokolle (Kap 10)
 
@@ -192,7 +192,7 @@ DNS-Server:  10.0.0.30
 Client -> SYN      -> Server
 Client <- SYN-ACK  <- Server
 Client -> ACK      -> Server
--> Verbindung steht, Daten fliessen
+-> Verbindung steht, Daten fließen
 ```
 
 **TCP-Verbindungsabbau:** FIN -> ACK -> FIN -> ACK (4-Way)
@@ -210,19 +210,19 @@ Client -> ACK      -> Server
 | 53 | DNS | TCP+UDP | Namensaufloesung |
 | 67/68 | DHCP | UDP | IP-Vergabe (67=Server, 68=Client) |
 | 69 | TFTP | UDP | Einfacher Dateitransfer |
-| 80 | HTTP | TCP | Webseiten unverschluesselt |
+| 80 | HTTP | TCP | Webseiten unverschlüsselt |
 | 110 | POP3 | TCP | Mail abholen |
 | 123 | NTP | UDP | Zeitsynchronisation |
 | 143 | IMAP | TCP | Mail synchronisieren |
 | 161/162 | SNMP | UDP | Netzwerkmanagement |
 | 389 | LDAP | TCP | Verzeichnisdienst |
-| 443 | HTTPS | TCP | Webseiten verschluesselt |
+| 443 | HTTPS | TCP | Webseiten verschlüsselt |
 | 445 | SMB | TCP | Windows-Dateifreigabe |
-| 514 | Syslog | UDP | Log-Uebertragung |
+| 514 | Syslog | UDP | Log-Übertragung |
 | 587 | SMTP (Submission) | TCP | Mail senden (authentifiziert) |
-| 636 | LDAPS | TCP | LDAP verschluesselt |
-| 993 | IMAPS | TCP | IMAP verschluesselt |
-| 995 | POP3S | TCP | POP3 verschluesselt |
+| 636 | LDAPS | TCP | LDAP verschlüsselt |
+| 993 | IMAPS | TCP | IMAP verschlüsselt |
+| 995 | POP3S | TCP | POP3 verschlüsselt |
 | 3389 | RDP | TCP | Windows Remote Desktop |
 
 **Port-Bereiche:**
@@ -244,8 +244,8 @@ Client -> ACK      -> Server
 - Typen: Echo (8/0), Destination Unreachable (3), TTL Exceeded (11), Redirect (5)
 
 **NAT/PAT:**
-- **NAT**: Eine private IP <-> eine oeffentliche IP
-- **PAT** (Port Address Translation): Viele private IPs <-> eine oeffentliche IP (verschiedene Ports)
+- **NAT**: Eine private IP <-> eine öffentliche IP
+- **PAT** (Port Address Translation): Viele private IPs <-> eine öffentliche IP (verschiedene Ports)
 - Dein lab-router macht PAT fuer dein ganzes 10.0.0.0/24
 
 **QoS (Quality of Service):**
@@ -284,10 +284,10 @@ Client -> ACK      -> Server
 
 **Netzwerkgeraete:**
 
-| Geraet | OSI-Layer | Funktion |
+| Gerät | OSI-Layer | Funktion |
 |--------|-----------|----------|
 | Hub | 1 | Signal-Verstaerker, alle Ports = eine Kollisionsdomaene |
-| Repeater | 1 | Signal-Verstaerker ueber Distanz |
+| Repeater | 1 | Signal-Verstaerker über Distanz |
 | Bridge | 2 | Trennt Kollisionsdomaenen, lernt MACs |
 | Switch (L2) | 2 | MAC-basiert, jeder Port = eigene Kollisionsdomaene |
 | Switch (L3) | 3 | Kann auch routen (IP-basiert) |
@@ -361,17 +361,17 @@ Client -> ACK      -> Server
 - **MU-MIMO**: Multi-User MIMO (mehrere Clients gleichzeitig)
 - **OFDMA**: Orthogonal Frequency Division Multiple Access (Wi-Fi 6)
 - **Beamforming**: Signal gezielt auf Client richten
-- **Channel Bonding**: Kanaele buendeln fuer mehr Bandbreite
+- **Channel Bonding**: Kanäle buendeln fuer mehr Bandbreite
 - **WPS**: Wi-Fi Protected Setup (unsicher! Deaktivieren!)
 
 **Frequenzen:**
-- **2.4 GHz**: 3 ueberlappungsfreie Kanaele (1, 6, 11), groessere Reichweite, mehr Stoerungen
-- **5 GHz**: Viele Kanaele (bis 165), weniger Stoerungen, geringere Reichweite
-- **6 GHz**: Wi-Fi 6E/7, noch mehr Kanaele, am wenigsten Stoerungen
+- **2.4 GHz**: 3 überlappungsfreie Kanäle (1, 6, 11), größere Reichweite, mehr Störungen
+- **5 GHz**: Viele Kanäle (bis 165), weniger Störungen, geringere Reichweite
+- **6 GHz**: Wi-Fi 6E/7, noch mehr Kanäle, am wenigsten Störungen
 
 **WLAN-Sicherheit:**
 - **WEP**: Veraltet, unsicher (RC4, leicht knackbar)
-- **WPA**: TKIP-Verschluesselung (besser, aber auch unsicher)
+- **WPA**: TKIP-Verschlüsselung (besser, aber auch unsicher)
 - **WPA2**: AES/CCMP -- aktueller Standard
 - **WPA3**: SAE-Handshake (kein PSK-Woerterbuch-Angriff), PMF obligatorisch
 - **Enterprise**: 802.1X + RADIUS (Benutzername/Passwort)
@@ -432,7 +432,7 @@ DORA-Prozess:
 - **Scope**: IP-Bereich den der Server vergibt
 - **Lease**: Gueltigkeitsdauer der IP
 - **Reservation**: Feste IP fuer bestimmte MAC
-- **Relay Agent** (ip helper): Leitet DHCP-Broadcasts ueber Router weiter
+- **Relay Agent** (ip helper): Leitet DHCP-Broadcasts über Router weiter
 
 **DNS (Domain Name System):**
 - Loesung: Name -> IP (z.B. google.com -> 142.250.185.14)
@@ -447,7 +447,7 @@ DORA-Prozess:
 - **TXT**: Beliebiger Text (SPF, DKIM, DMARC)
 - Hierarchie: Root -> TLD (.com, .de) -> Domain -> Subdomain
 - **DNSSec**: Signierte DNS-Antworten (gegen Spoofing)
-- **DoH/DoT**: DNS ueber HTTPS/TLS (verschluesselt)
+- **DoH/DoT**: DNS über HTTPS/TLS (verschlüsselt)
 - Dein Setup: DNS-Server (.30) als lokaler DNS
 
 **NTP (Network Time Protocol):**
@@ -500,17 +500,17 @@ DORA-Prozess:
 - **S**ecurity Management: Zugriffe kontrollieren
 
 **SNMP (Simple Network Management Protocol):**
-- Manager (NMS) -> Agent (auf Geraet) -> MIB (Datenbank)
+- Manager (NMS) -> Agent (auf Gerät) -> MIB (Datenbank)
 - **v1/v2c**: Community Strings (Klartext = unsicher)
-- **v3**: Authentifizierung + Verschluesselung
+- **v3**: Authentifizierung + Verschlüsselung
 - **Trap**: Agent meldet proaktiv ein Ereignis
 - **GET/SET**: Manager fragt/setzt Werte
 
-**Dokumentation (pruefungsrelevant!):**
+**Dokumentation (prüfungsrelevant!):**
 - Netzwerkdiagramm (physisch + logisch)
 - Verkabelungsschema
 - IP-Adressplan
-- Aenderungsmanagement (Change Management)
+- Änderungsmanagement (Change Management)
 - Baseline-Dokumentation
 - Inventar (Asset Management)
 - SLA (Service Level Agreement)
@@ -522,11 +522,11 @@ DORA-Prozess:
 - **Wireshark**: Paketanalyse -> siehe Wireshark-Anleitung.md
 - **nmap**: Port-/Netzwerk-Scan -> siehe Nmap-Anleitung.md
 - **Bandwidth Monitor**: MRTG, PRTG, Grafana
-- **SLA**: Verfuegbarkeit (z.B. 99.99% = max 52 Min/Jahr Downtime)
+- **SLA**: Verfügbarkeit (z.B. 99.99% = max 52 Min/Jahr Downtime)
 
-### 3.3 Hochverfuegbarkeit & Disaster Recovery
+### 3.3 Hochverfügbarkeit & Disaster Recovery
 
-| Begriff | Erklaerung |
+| Begriff | Erklärung |
 |---------|-----------|
 | MTBF | Mean Time Between Failures -- durchschnittliche Betriebszeit |
 | MTTR | Mean Time To Repair -- durchschnittliche Reparaturzeit |
@@ -547,7 +547,7 @@ DORA-Prozess:
 
 ## Domain 4: Netzwerksicherheit (~19%)
 
-### 4.1 Authentifizierung & Verschluesselung (Kap 13)
+### 4.1 Authentifizierung & Verschlüsselung (Kap 13)
 
 **AAA-Modell:**
 - **Authentication**: Wer bist du? (Passwort, Zertifikat, Biometrie)
@@ -572,20 +572,20 @@ DORA-Prozess:
 
 **Zero Trust:**
 - "Never trust, always verify"
-- Jeder Zugriff wird geprueft, auch im internen Netz
+- Jeder Zugriff wird geprüft, auch im internen Netz
 - Mikrosegmentierung, Least Privilege
 
 **SASE (Secure Access Service Edge):**
 - Cloud-basiert: SD-WAN + Security (FWaaS, CASB, ZTNA, SWG)
 
-**Verschluesselung:**
+**Verschlüsselung:**
 
-| Verfahren | Typ | Schluessellaenge | Einsatz |
+| Verfahren | Typ | Schlüssellänge | Einsatz |
 |-----------|-----|-----------------|---------|
-| AES | Symmetrisch | 128/192/256 Bit | Standard, ueberall |
+| AES | Symmetrisch | 128/192/256 Bit | Standard, überall |
 | DES/3DES | Symmetrisch | 56/168 Bit | Veraltet |
-| RSA | Asymmetrisch | 2048-4096 Bit | Schluesselaustausch, Signatur |
-| Diffie-Hellman | Schluesselaustausch | variabel | TLS Handshake |
+| RSA | Asymmetrisch | 2048-4096 Bit | Schlüsselaustausch, Signatur |
+| Diffie-Hellman | Schlüsselaustausch | variabel | TLS Handshake |
 | SHA-256/512 | Hash | 256/512 Bit | Integritaet, Passwoerter |
 | MD5 | Hash | 128 Bit | Veraltet, unsicher |
 
@@ -595,7 +595,7 @@ DORA-Prozess:
 
 **Data States:**
 - **Data-in-transit**: TLS/SSL, VPN, IPSec
-- **Data-at-rest**: Festplattenverschluesselung (BitLocker, LUKS)
+- **Data-at-rest**: Festplattenverschlüsselung (BitLocker, LUKS)
 - **Data-in-use**: Im RAM, schwer zu schuetzen
 
 ### 4.2 Angriffe (Kap 14)
@@ -605,9 +605,9 @@ DORA-Prozess:
 | Typ | Verhalten |
 |-----|-----------|
 | Virus | Braucht Wirt-Datei, verbreitet sich bei Ausfuehrung |
-| Wurm | Verbreitet sich selbststaendig ueber Netz |
+| Wurm | Verbreitet sich selbstständig über Netz |
 | Trojaner | Tarnt sich als nuetzliches Programm |
-| Ransomware | Verschluesselt Daten, fordert Loesegeld |
+| Ransomware | Verschlüsselt Daten, fordert Lösegeld |
 | Spyware | Spioniert Benutzer aus |
 | Adware | Zeigt unerwuenschte Werbung |
 | Rootkit | Versteckt sich tief im System |
@@ -619,21 +619,21 @@ DORA-Prozess:
 
 | Angriff | Beschreibung | Gegenmassnahme |
 |---------|-------------|----------------|
-| DoS/DDoS | Ueberlastung (SYN-Flood, DNS Amplification, Smurf) | Firewall, Rate Limiting, CDN |
+| DoS/DDoS | Überlastung (SYN-Flood, DNS Amplification, Smurf) | Firewall, Rate Limiting, CDN |
 | Man-in-the-Middle | Abfangen von Kommunikation | TLS, Certificate Pinning |
 | ARP Spoofing | Falsche MAC-IP-Zuordnung | Dynamic ARP Inspection (DAI) |
 | DNS Spoofing | Falsche DNS-Antworten | DNSSEC |
 | IP Spoofing | Gefaelschte Quell-IP | Ingress Filtering |
-| VLAN Hopping | Zugriff auf fremdes VLAN | Trunk-Ports sichern, Native VLAN aendern |
+| VLAN Hopping | Zugriff auf fremdes VLAN | Trunk-Ports sichern, Native VLAN ändern |
 | Evil Twin | Fake-AP mit echtem SSID-Namen | WPA3, 802.1X |
 | Rogue AP | Unautorisierter Access Point | WIDS, NAC |
 | Deauthentication | Client vom WLAN trennen | PMF (Protected Management Frames) |
-| Buffer Overflow | Speicherueberlauf ausnutzen | Patching, ASLR |
+| Buffer Overflow | Speicherüberlauf ausnutzen | Patching, ASLR |
 | Brute Force | Alle Passwoerter durchprobieren | Account Lockout, MFA |
 | Phishing | Gefaelschte Mails/Webseiten | Awareness-Training, SPF/DKIM/DMARC |
 | Social Engineering | Menschen manipulieren | Schulung, Policies |
 | Tailgating | Hinter Autorisiertem durchschluepfen | Man-Traps, Badges |
-| Shoulder Surfing | Ueber die Schulter schauen | Blickschutzfolie |
+| Shoulder Surfing | Über die Schulter schauen | Blickschutzfolie |
 | Zero-Day | Unbekannte Schwachstelle | IPS, Threat Intelligence |
 | APT | Langfristige, gezielte Attacke | Defense-in-Depth, SOC |
 
@@ -647,7 +647,7 @@ DORA-Prozess:
 
 | Typ | Layer | Beschreibung |
 |-----|-------|-------------|
-| Packet Filter | 3-4 | Prueft Quell/Ziel-IP, Port, Protokoll |
+| Packet Filter | 3-4 | Prüft Quell/Ziel-IP, Port, Protokoll |
 | Stateful Inspection | 3-4 | Merkt sich Verbindungsstatus |
 | Application Gateway (Proxy) | 7 | Versteht Anwendungsprotokolle |
 | WAF | 7 | Web Application Firewall (SQL Injection, XSS) |
@@ -686,10 +686,10 @@ Internet
 | Honeypot | Koeder-System um Angreifer abzulenken |
 | SIEM | Security Event Management -- korreliert Logs |
 
-**Physische Sicherheit (pruefungsrelevant!):**
+**Physische Sicherheit (prüfungsrelevant!):**
 - Badge/Keycard, Biometrie (Fingerprint, Retina), PIN
 - Man-Trap / Sicherheitsschleuse
-- CCTV / Videoueberwachung
+- CCTV / Videoüberwachung
 - Brandschutz: FM-200 (Gas), Sprinkler
 - USV / UPS, Generator
 - HVAC (Klimatisierung im Serverraum)
@@ -699,8 +699,8 @@ Internet
 **VPN-Typen:**
 - **Site-to-Site**: Zwei Standorte permanent verbunden (Router <-> Router)
 - **Client-to-Site**: Einzelner Benutzer verbindet sich (Homeoffice -> Firmennetz)
-- **Split Tunnel**: Nur Firmendaten ueber VPN, Rest direkt ins Internet
-- **Full Tunnel**: Alles ueber VPN
+- **Split Tunnel**: Nur Firmendaten über VPN, Rest direkt ins Internet
+- **Full Tunnel**: Alles über VPN
 
 **VPN-Protokolle:**
 
@@ -715,10 +715,10 @@ Internet
 | GRE | Proto 47 | Keine (Tunnel only) | Encapsulation |
 
 **IPSec-Modi:**
-- **Transport Mode**: Nur Payload verschluesselt (Host-to-Host)
-- **Tunnel Mode**: Gesamtes IP-Paket verschluesselt (Gateway-to-Gateway)
+- **Transport Mode**: Nur Payload verschlüsselt (Host-to-Host)
+- **Tunnel Mode**: Gesamtes IP-Paket verschlüsselt (Gateway-to-Gateway)
 - **AH**: Authentication Header (Integritaet, kein Encryption)
-- **ESP**: Encapsulating Security Payload (Integritaet + Verschluesselung)
+- **ESP**: Encapsulating Security Payload (Integritaet + Verschlüsselung)
 
 ---
 
@@ -732,7 +732,7 @@ Internet
 3. **Theorie testen**
 4. **Aktionsplan erstellen**
 5. **Loesung implementieren** (oder eskalieren)
-6. **Volle Funktionalitaet pruefen** + Praeventivmassnahmen
+6. **Volle Funktionalitaet prüfen** + Praeventivmassnahmen
 7. **Dokumentieren** (Ursache, Loesung, Learnings)
 
 ### 5.2 Diagnose-Werkzeuge
@@ -763,26 +763,26 @@ Internet
 - Cable Certifier (Cat-Zertifizierung nach Standard)
 - Loopback-Adapter (Schnittstelle testen)
 
-### 5.3 Haeufige Fehlerszenarien
+### 5.3 Häufige Fehlerszenarien
 
-| Symptom | Wahrscheinliche Ursache | Pruefung |
+| Symptom | Wahrscheinliche Ursache | Prüfung |
 |---------|------------------------|----------|
 | Kein Netz, APIPA-Adresse (169.254.x.x) | DHCP-Server nicht erreichbar | `ipconfig /release && /renew` |
-| Langsames Netz | Duplex-Mismatch, Loop, Ueberlastung | `ethtool`, STP-Status |
+| Langsames Netz | Duplex-Mismatch, Loop, Überlastung | `ethtool`, STP-Status |
 | Intermittierender Ausfall | Kabel, EMI, defekter Port | Kabeltester, Port wechseln |
-| DNS-Fehler | Falscher DNS-Server | `nslookup`, DNS-Config pruefen |
-| Kein Internet, LAN geht | Default Gateway falsch | `ip route`, Gateway pruefen |
-| Langsames WLAN | Kanalueberlappung, zu viele Clients | Site Survey, Kanal wechseln |
-| Zertifikatsfehler | Abgelaufen, falscher Name | Zertifikat pruefen, Uhrzeit! |
-| Port gefiltert | Firewall, ACL | `nmap`, Firewall-Regeln pruefen |
+| DNS-Fehler | Falscher DNS-Server | `nslookup`, DNS-Config prüfen |
+| Kein Internet, LAN geht | Default Gateway falsch | `ip route`, Gateway prüfen |
+| Langsames WLAN | Kanalüberlappung, zu viele Clients | Site Survey, Kanal wechseln |
+| Zertifikatsfehler | Abgelaufen, falscher Name | Zertifikat prüfen, Uhrzeit! |
+| Port gefiltert | Firewall, ACL | `nmap`, Firewall-Regeln prüfen |
 
 ---
 
-## Pruefungstipps
+## Prüfungstipps
 
 1. **Ports auswendig lernen** -- die Top 20 kommen garantiert dran
 2. **Subnetting ueben** -- mindestens 5-10 Fragen
-3. **OSI-Modell** -- welches Geraet/Protokoll auf welchem Layer
+3. **OSI-Modell** -- welches Gerät/Protokoll auf welchem Layer
 4. **Troubleshooting-Methode** -- die 7 Schritte in der richtigen Reihenfolge
 5. **WLAN-Standards** -- Frequenz, Speed, Sicherheit
 6. **Kabeltypen** -- Max. Laenge, Geschwindigkeit, Stecker

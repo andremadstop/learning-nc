@@ -843,7 +843,7 @@ export default {
 			const duplicateIds = Object.keys(duplicates).filter((vlanId) => duplicates[vlanId] > 1)
 
 			if (invalidIds.length) {
-				return t('learning', 'Ungueltige VLAN-IDs gefunden. Erlaubt sind 1-4094, ausser 1002-1005.')
+				return t('learning', 'Ungültige VLAN-IDs gefunden. Erlaubt sind 1-4094, außer 1002-1005.')
 			}
 
 			if (duplicateIds.length) {

@@ -10,9 +10,9 @@
 1. KONTEXT   -- Warum brauche ich das? Was sehe ich davon im Alltag?
 2. THEORIE   -- Konzept verstehen (Notizen)
 3. BEOBACHTEN -- Wireshark im Lab: echten Traffic ansehen
-4. SIMULIEREN -- Packet Tracer: Szenario nachbauen/veraendern
+4. SIMULIEREN -- Packet Tracer: Szenario nachbauen/verändern
 5. FESTIGEN  -- Learning-NC Karten erstellen
-6. CHECKPOINT -- Kann ich es jemandem erklaeren?
+6. CHECKPOINT -- Kann ich es jemandem erklären?
 ```
 
 ## Lab-Werkzeuge
@@ -30,7 +30,7 @@
 ## Fortschritt
 
 - [ ] Block 1: Das grosse Bild (Woche 1)
-- [ ] Block 2: Adressen -- wie Pakete ihren Empfaenger finden (Woche 2)
+- [ ] Block 2: Adressen -- wie Pakete ihren Empfänger finden (Woche 2)
 - [ ] Block 3: Subnetting -- Netzwerke aufteilen (Woche 3)
 - [ ] Block 4: Layer 2 -- Ethernet, MAC, ARP (Woche 4)
 - [ ] Block 5: Layer 3 -- IP-Routing, ICMP (Woche 5)
@@ -53,15 +53,15 @@ Ohne das OSI-Modell reden alle anderen Themen aneinander vorbei. Es ist die geme
 ### Theorie
 
 #### Was ist ein Netzwerk?
-Mehrere Geraete, die Daten austauschen koennen. Dein Lab ist ein Netzwerk: workstation (.10), mgmt-server (.60), hypervisor-01 (.20), automation-server (.70), alle reden miteinander.
+Mehrere Geräte, die Daten austauschen können. Dein Lab ist ein Netzwerk: workstation (.10), mgmt-server (.60), hypervisor-01 (.20), automation-server (.70), alle reden miteinander.
 
 #### Das OSI-Modell (7 Schichten)
-Das OSI-Modell beschreibt wie Daten von einer Anwendung ueber Kabel/Funk zum Empfaenger kommen -- in 7 abstrakten Schichten.
+Das OSI-Modell beschreibt wie Daten von einer Anwendung über Kabel/Funk zum Empfänger kommen -- in 7 abstrakten Schichten.
 
 ```
 +--------------------------------------------------+
 |  7  Application   HTTP, DNS, SMTP, SSH            |  <- Was du siehst
-|  6  Presentation  TLS, Verschluesselung, Encoding |
+|  6  Presentation  TLS, Verschlüsselung, Encoding |
 |  5  Session       Verbindungs-Management          |
 |  4  Transport     TCP, UDP, Ports                 |  <- Zuverlaessigkeit
 |  3  Network       IP, Routing, ICMP               |  <- Wegrouting
@@ -70,17 +70,17 @@ Das OSI-Modell beschreibt wie Daten von einer Anwendung ueber Kabel/Funk zum Emp
 +--------------------------------------------------+
 ```
 
-**Eselsbruecke (oben -> unten):** "All People Seem To Need Data Processing"
+**Eselsbrücke (oben -> unten):** "All People Seem To Need Data Processing"
 
-**Wichtig:** In der Praxis nutzt jeder das TCP/IP-Modell mit 4 Schichten (Application / Transport / Internet / Network Access). OSI ist das Denkmodell, TCP/IP ist die Realitaet.
+**Wichtig:** In der Praxis nutzt jeder das TCP/IP-Modell mit 4 Schichten (Application / Transport / Internet / Network Access). OSI ist das Denkmodell, TCP/IP ist die Realität.
 
 #### Was passiert wenn du google.com oeffnest?
 1. **App (L7):** Browser baut HTTP-Request
 2. **Transport (L4):** TCP packt Request in Segmente, Ziel-Port 443
 3. **Network (L3):** IP-Paket wird erstellt, Ziel-IP von Google
 4. **Data Link (L2):** Ethernet-Frame mit MAC deines Routers
-5. **Physical (L1):** Bits raus uebers Kabel
--> Beim Empfaenger alles umgekehrt (De-Encapsulation)
+5. **Physical (L1):** Bits raus übers Kabel
+-> Beim Empfänger alles umgekehrt (De-Encapsulation)
 
 #### Encapsulation -- der Paketierungsvorgang
 ```
@@ -88,9 +88,9 @@ Daten
   -> + TCP-Header     = Segment
   -> + IP-Header      = Paket
   -> + Ethernet-Header = Frame
-  -> Bits ueber Kabel
+  -> Bits über Kabel
 ```
-Jede Schicht fuegt ihren Header hinzu (Sender) bzw. zieht ihn ab (Empfaenger).
+Jede Schicht fuegt ihren Header hinzu (Sender) bzw. zieht ihn ab (Empfänger).
 
 ### Beobachten (Wireshark)
 
@@ -124,12 +124,12 @@ ssh root@hypervisor-01 "tcpdump -w - -i vmbr0 -c 200 2>/dev/null" | wireshark -k
 
 ---
 
-## Block 2: IP-Adressen & Binaer
+## Block 2: IP-Adressen & Binär
 
-**Lernziel:** IPv4-Adressen lesen, schreiben, in Binaer umrechnen. Oeffentlich vs. Privat verstehen.
+**Lernziel:** IPv4-Adressen lesen, schreiben, in Binär umrechnen. Öffentlich vs. Privat verstehen.
 
 ### Warum?
-Ohne IP-Adressen kommt kein Paket an. Und ohne Binaer versteht man Subnetting nicht.
+Ohne IP-Adressen kommt kein Paket an. Und ohne Binär versteht man Subnetting nicht.
 
 ### Theorie
 
@@ -137,23 +137,23 @@ Ohne IP-Adressen kommt kein Paket an. Und ohne Binaer versteht man Subnetting ni
 32 Bit, dargestellt als 4 Dezimalzahlen: `10.0.0.10`
 Jede Zahl = 1 Byte = 8 Bit -> Wertebereich 0-255
 
-#### Binaer -- nur was du wirklich brauchst
+#### Binär -- nur was du wirklich brauchst
 ```
 128  64  32  16   8   4   2   1
   1   0   1   0   1   0   0   1  = 128+32+8+1 = 169
 ```
 Trick: Von links nach rechts, passt die Zahl rein? -> 1, Rest weiter. Nein? -> 0.
 
-#### Private vs. Oeffentliche IP-Adressen
+#### Private vs. Öffentliche IP-Adressen
 ```
 10.0.0.0    - 10.255.255.255   (Class A privat)
 172.16.0.0  - 172.31.255.255   (Class B privat)
 192.168.0.0 - 192.168.255.255  (Class C privat) <- dein Lab
 ```
-Dein Router macht NAT: alle privaten IPs -> eine oeffentliche. Deshalb kennt google.com nicht deine 10.0.0.10, sondern die IP deines Routers.
+Dein Router macht NAT: alle privaten IPs -> eine öffentliche. Deshalb kennt google.com nicht deine 10.0.0.10, sondern die IP deines Routers.
 
 #### Loopback & Spezial-Adressen
-- `127.0.0.1` = localhost (Geraet spricht mit sich selbst)
+- `127.0.0.1` = localhost (Gerät spricht mit sich selbst)
 - `169.254.x.x` = APIPA (kein DHCP erreichbar)
 - `255.255.255.255` = Broadcast (alle im Netz)
 
@@ -168,11 +168,11 @@ Dein Router macht NAT: alle privaten IPs -> eine oeffentliche. Deshalb kennt goo
 ### Simulieren (Packet Tracer)
 - 3 PCs, unterschiedliche Netzwerke (192.168.1.x und 192.168.2.x)
 - Versuch: PC1 (192.168.1.1) pingt PC3 (192.168.2.1) -- warum schlaegt es fehl?
-- Antwort: kein Router dazwischen -> Block 5 erklaert die Loesung
+- Antwort: kein Router dazwischen -> Block 5 erklärt die Loesung
 
 ### Learning-NC Karten
 - Wie viele Bit hat eine IPv4-Adresse?
-- Was bedeutet 10.0.0.10 in Binaer? (erste 2 Oktette)
+- Was bedeutet 10.0.0.10 in Binär? (erste 2 Oktette)
 - Was sind die 3 privaten IP-Bereiche?
 - Was ist NAT und warum brauchen wir es?
 - Was ist Loopback?
@@ -181,10 +181,10 @@ Dein Router macht NAT: alle privaten IPs -> eine oeffentliche. Deshalb kennt goo
 
 ## Block 3: Subnetting
 
-**Lernziel:** Subnetzmaske lesen, CIDR-Notation verstehen, Netzwerke aufteilen koennen.
+**Lernziel:** Subnetzmaske lesen, CIDR-Notation verstehen, Netzwerke aufteilen können.
 
 ### Warum?
-Subnetting ist die haeufigste Pruefungsfrage im Network+. Und du brauchst es taeglich wenn du Netzwerke planst.
+Subnetting ist die häufigste Prüfungsfrage im Network+. Und du brauchst es täglich wenn du Netzwerke planst.
 
 ### Theorie
 
@@ -252,7 +252,7 @@ ip route show
 
 ## Block 4: Layer 2 -- Ethernet, MAC-Adressen, ARP, Switches
 
-**Lernziel:** Verstehen wie Pakete im lokalen Netz von Geraet zu Geraet kommen.
+**Lernziel:** Verstehen wie Pakete im lokalen Netz von Gerät zu Gerät kommen.
 
 ### Warum?
 Layer 3 (IP) kuemmert sich um den Weg durchs Internet. Layer 2 kuemmert sich darum, wie das Paket vom Router zu deinem Laptop kommt -- das letzte Stueck.
@@ -261,7 +261,7 @@ Layer 3 (IP) kuemmert sich um den Weg durchs Internet. Layer 2 kuemmert sich dar
 
 #### MAC-Adresse
 48-Bit Hardware-Adresse, eingebrannt in die Netzwerkkarte.
-Format: `AA:BB:CC:DD:EE:FF` (erste 3 Bytes = Hersteller-OUI, letzte 3 = Geraet)
+Format: `AA:BB:CC:DD:EE:FF` (erste 3 Bytes = Hersteller-OUI, letzte 3 = Gerät)
 ```bash
 ip link show  # eigene MACs sehen
 ```
@@ -319,12 +319,12 @@ ssh root@hypervisor-01 "tcpdump -w - -i vmbr0 arp 2>/dev/null" | wireshark -k -i
 
 ## Block 5: Layer 3 -- IP-Routing & ICMP
 
-**Lernziel:** Verstehen wie Pakete ueber mehrere Netzwerke geroutet werden.
+**Lernziel:** Verstehen wie Pakete über mehrere Netzwerke geroutet werden.
 
 ### Theorie
 
 #### Routing-Tabelle
-Jedes Geraet hat eine Routing-Tabelle: "Fuer Ziel X -> nehme Interface Y / gehe ueber Gateway Z"
+Jedes Gerät hat eine Routing-Tabelle: "Fuer Ziel X -> nehme Interface Y / gehe über Gateway Z"
 ```bash
 ip route show
 # Beispiel-Output:
@@ -338,7 +338,7 @@ Router hat dann wieder eine Routing-Tabelle usw. -- Hop by Hop bis zum Ziel.
 
 #### TTL -- Time to Live
 Jedes IP-Paket hat TTL (z.B. 64). Jeder Router zieht 1 ab.
-Bei TTL=0 -> Router wirft Paket weg + sendet ICMP "Time Exceeded" zurueck.
+Bei TTL=0 -> Router wirft Paket weg + sendet ICMP "Time Exceeded" zurück.
 Verhindert ewige Routing-Schleifen.
 
 #### ICMP -- Internet Control Message Protocol
@@ -385,7 +385,7 @@ ssh root@hypervisor-01 "tcpdump -w - -i vmbr0 icmp 2>/dev/null" | wireshark -k -
 ### Theorie
 
 #### Ports
-Ports identifizieren Dienste auf einem Host (nicht nur Geraet).
+Ports identifizieren Dienste auf einem Host (nicht nur Gerät).
 ```
 IP:Port = Socket  ->  10.0.0.100:8080 = App-Server HTTP
 ```
@@ -404,7 +404,7 @@ Bekannte Ports:
 Zuverlaessig, verbindungsorientiert.
 - Bestaetigt jedes Segment (ACK)
 - Wiederholt verlorene Pakete
-- Fluss-Kontrolle (nicht ueberfluten)
+- Fluss-Kontrolle (nicht überfluten)
 - Reihenfolge garantiert
 
 **3-Way Handshake:**
@@ -412,7 +412,7 @@ Zuverlaessig, verbindungsorientiert.
 Client -> Server:  SYN       "Ich will verbinden, seq=100"
 Server -> Client:  SYN-ACK   "OK, seq=200, ack=101"
 Client -> Server:  ACK       "Verstanden, ack=201"
--> Verbindung steht, Daten koennen fliessen
+-> Verbindung steht, Daten können fließen
 ```
 
 **Verbindungsabbau (4-Way):**
@@ -440,7 +440,7 @@ Schnell, verbindungslos, keine Garantien.
 # DNS beobachten (UDP):
 # Filter: dns
 # Dann: nslookup google.com
-# UDP-Paket hin, UDP-Paket zurueck -- kein Handshake
+# UDP-Paket hin, UDP-Paket zurück -- kein Handshake
 ```
 
 ### Simulieren (Packet Tracer)
@@ -467,7 +467,7 @@ Du hast einen DNS-Server auf .30 laufen -- du siehst DNS-Filtering live. Das mac
 
 #### Was ist DNS?
 Domain Name System = Telefonbuch des Internets.
-Uebersetzt `google.com` -> `142.250.x.x`
+Übersetzt `google.com` -> `142.250.x.x`
 
 #### DNS-Hierarchie
 ```
@@ -487,7 +487,7 @@ Du -> Resolver (DNS-Server .30): "Was ist google.com?"
 Resolver -> Root-Server:         "Wer kennt .com?"
 Resolver -> .com-Server:         "Wer kennt google.com?"
 Resolver -> google.com-NS:       "Was ist www.google.com?"
--> IP zurueck, gecacht
+-> IP zurück, gecacht
 ```
 
 #### DNS Record-Typen
@@ -501,7 +501,7 @@ PTR     -> Reverse DNS (IP -> Name)
 NS      -> Nameserver fuer Zone
 ```
 
-#### DNS ueber TCP vs. UDP
+#### DNS über TCP vs. UDP
 - Normal: UDP Port 53 (schnell, kleine Pakete)
 - Bei grossen Antworten: TCP Port 53 (Zone Transfers)
 
@@ -523,7 +523,7 @@ nslookup 8.8.8.8
 
 ### Simulieren (Packet Tracer)
 - DNS-Server konfigurieren
-- PCs ueber Namen statt IP anpingen
+- PCs über Namen statt IP anpingen
 - Simulation Mode: DNS-Query beobachten bevor HTTP funktioniert
 
 ### Learning-NC Karten
@@ -537,7 +537,7 @@ nslookup 8.8.8.8
 
 ## Block 8: DHCP & HTTP/HTTPS
 
-**Lernziel:** Verstehen wie Geraete automatisch IPs bekommen (DHCP) und wie Web-Kommunikation funktioniert.
+**Lernziel:** Verstehen wie Geräte automatisch IPs bekommen (DHCP) und wie Web-Kommunikation funktioniert.
 
 ### DHCP -- Dynamic Host Configuration Protocol
 
@@ -587,13 +587,13 @@ TLS macht vor dem HTTP-Request zuerst einen Handshake:
 1. Client Hello (unterstuetzte TLS-Versionen, Cipher Suites)
 2. Server Hello + Zertifikat
 3. Key Exchange (asymmetrisch -> symmetrischer Session-Key)
-4. Fertig: alles verschluesselt
+4. Fertig: alles verschlüsselt
 
-**Wichtig:** In Wireshark siehst du bei HTTPS nur "TLSv1.3 Application Data" -- der Inhalt ist verschluesselt. Nur Metadaten (IPs, Ports, Zertifikat-Info) sichtbar.
+**Wichtig:** In Wireshark siehst du bei HTTPS nur "TLSv1.3 Application Data" -- der Inhalt ist verschlüsselt. Nur Metadaten (IPs, Ports, Zertifikat-Info) sichtbar.
 
 ### Beobachten (Wireshark)
 ```bash
-# HTTP (unverschluesselt) auf App-Server:
+# HTTP (unverschlüsselt) auf App-Server:
 # Filter: http
 curl http://10.0.0.100:8080/apps/learning/
 # Sieh: vollstaendiger HTTP-Request + Response im Klartext!
@@ -601,7 +601,7 @@ curl http://10.0.0.100:8080/apps/learning/
 # HTTPS zum Vergleich:
 # Filter: tls
 curl https://google.com
-# Nur TLS-Handshake sichtbar, Inhalt verschluesselt
+# Nur TLS-Handshake sichtbar, Inhalt verschlüsselt
 ```
 
 ### Learning-NC Karten
@@ -615,10 +615,10 @@ curl https://google.com
 
 ## Block 9: Sicherheit Basics
 
-**Lernziel:** Firewalls, NAT, VLANs, haeufige Angriffe verstehen.
+**Lernziel:** Firewalls, NAT, VLANs, häufige Angriffe verstehen.
 
 ### NAT -- Network Address Translation
-Dein Router uebersetzt private IPs in deine eine oeffentliche IP.
+Dein Router übersetzt private IPs in deine eine öffentliche IP.
 ```
 Workstation 10.0.0.10:54321 -> Router -> 93.x.x.x:54321 -> Internet
 Antwort: 93.x.x.x:54321 -> Router -> 10.0.0.10:54321
@@ -627,9 +627,9 @@ NAT-Tabelle im Router merkt sich welche interne IP welchen Port nutzt.
 
 ### Firewall-Konzepte
 ```
-Stateless:  Regeln pruefen jedes Paket einzeln (src/dst IP + Port)
+Stateless:  Regeln prüfen jedes Paket einzeln (src/dst IP + Port)
 Stateful:   Verbindungsstatus wird getrackt -- Antworten automatisch erlaubt
-WAF:        Web Application Firewall -- prueft HTTP-Inhalt (SQL Injection etc.)
+WAF:        Web Application Firewall -- prüft HTTP-Inhalt (SQL Injection etc.)
 ```
 
 Der Hypervisor nutzt `nftables`/`iptables`. Du kannst deine Firewall-Regeln ansehen:
@@ -638,7 +638,7 @@ ssh root@hypervisor-01 "nft list ruleset"  # oder
 ssh root@hypervisor-01 "iptables -L -n -v"
 ```
 
-### Haeufige Angriffe (zum Kennen, nicht zum Durchfuehren)
+### Häufige Angriffe (zum Kennen, nicht zum Durchführen)
 ```
 ARP Spoofing:   Falscher ARP-Reply -> Man-in-the-Middle im LAN
 DNS Poisoning:  Falscher DNS-Cache -> Redirect auf Fake-Site
@@ -654,7 +654,7 @@ nmap -sV 10.0.0.0/24
 
 ### Beobachten (Wireshark)
 ```bash
-# ARP-Cache-Poisoning Schutz in deinem Netz pruefen:
+# ARP-Cache-Poisoning Schutz in deinem Netz prüfen:
 # Filter: arp
 # Beobachte: Gibt es unerwartete ARP-Replies?
 
@@ -684,10 +684,10 @@ ssh root@hypervisor-01 "tcpdump -w - -i vmbr0 -c 500 2>/dev/null" | wireshark -k
 802.11ax  (WiFi 6):  2.4/5/6 GHz, bis 9.6 Gbit/s
 ```
 
-#### Frequenzbaender
+#### Frequenzbänder
 ```
-2.4 GHz: Weiter Reichweite, wenige Kanaele (1/6/11 ueberlappungsfrei), voller
-5 GHz:   Kurze Reichweite, viele Kanaele, schneller
+2.4 GHz: Weiter Reichweite, wenige Kanäle (1/6/11 überlappungsfrei), voller
+5 GHz:   Kurze Reichweite, viele Kanäle, schneller
 ```
 
 #### SSID, BSSID, AP
@@ -704,7 +704,7 @@ WPA3: SAE statt PSK (kein Dictionary-Angriff), Forward Secrecy
 
 ### Beobachten
 ```bash
-# Verfuegbare Netzwerke scannen:
+# Verfügbare Netzwerke scannen:
 nmcli device wifi list
 # Signal, Frequenz, Sicherheit, BSSID sehen
 
@@ -740,16 +740,16 @@ Anforderungen:
 - [ ] HR-Clients bekommen IP per DHCP
 - [ ] IT-Client kann Web-Server per Name aufrufen
 - [ ] HR-Client kann Web-Server per IP aufrufen
-- [ ] HR kann NICHT direkt auf IT-Geraete zugreifen (ACL)
+- [ ] HR kann NICHT direkt auf IT-Geräte zugreifen (ACL)
 - [ ] Simulation Mode: HTTP-Request Schritt fuer Schritt durchklicken
 
 ---
 
 ## Block 12: Wiederholung & Network+ Vorbereitung
 
-**Lernziel:** Luecken schliessen, Pruefungsformat kennen.
+**Lernziel:** Lücken schließen, Prüfungsformat kennen.
 
-### Network+ Pruefungsformat (CompTIA N10-009)
+### Network+ Prüfungsformat (CompTIA N10-009)
 - 90 Minuten, max. 90 Fragen
 - Multiple Choice + Performance-Based Questions (simulierte Szenarien)
 - Bestehensgrenze: 720/900
@@ -757,7 +757,7 @@ Anforderungen:
 
 ### Ressourcen
 - **Professor Messer** (professormesser.com) -- kostenlose N+ Kursvideos
-- **Jason Dion** (Udemy) -- guenstige Pruefungsvorbereitung
+- **Jason Dion** (Udemy) -- günstige Prüfungsvorbereitung
 - **CompTIA CertMaster Practice** -- offizielle Uebungsfragen (kostenpflichtig)
 - **Subreddit** r/CompTIA -- Community-Erfahrungen
 

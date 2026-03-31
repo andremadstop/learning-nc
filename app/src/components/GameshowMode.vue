@@ -376,7 +376,7 @@
             {{ eliminationWinner ? (eliminationWinner.display_name || eliminationWinner.user_id) : t('learning', 'Kein Sieger') }}
           </span>
           <span class="elimination-finish-meta">
-            {{ eliminationWinner ? t('learning', 'Ueberlebt mit {lives} Leben', { lives: eliminationWinner.lives }) : t('learning', 'Alle Spieler wurden gleichzeitig eliminiert.') }}
+            {{ eliminationWinner ? t('learning', 'Überlebt mit {lives} Leben', { lives: eliminationWinner.lives }) : t('learning', 'Alle Spieler wurden gleichzeitig eliminiert.') }}
           </span>
         </div>
 
@@ -1537,7 +1537,7 @@ export default {
         const leader = this.sortedPlayers[0];
         const name1 = leader.display_name || leader.user_id;
         if (this.remainingPlayerCount <= 1) {
-          return name1 + ' ist der letzte Ueberlebende!';
+          return name1 + ' ist der letzte Überlebende!';
         }
         if (this.remainingPlayerCount === 2 && this.sortedPlayers.length >= 2) {
           const rival = this.sortedPlayers[1];

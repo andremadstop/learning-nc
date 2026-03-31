@@ -28,8 +28,8 @@ const CATEGORY_GROUPS = [
 	},
 	{
 		id: 'assessment',
-		title: 'Pruefungsdaten',
-		matches: [/^assessment$/i, /Pruef/i, /Snapshot/i],
+		title: 'Prüfungsdaten',
+		matches: [/^assessment$/i, /Pruef/i, /Prüf/i, /Snapshot/i],
 	},
 	{
 		id: 'external',
@@ -77,4 +77,3 @@ export function buildPrivacyCategoryGroups(data = privacyData) {
 export function getPrivacyInfoData() {
 	return privacyData
 }
-

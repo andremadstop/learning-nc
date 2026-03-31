@@ -61,7 +61,7 @@
         <section v-if="bonusCampaigns.length > 0" class="ab-campaign-section">
           <div class="ab-section-header">
             <h3>{{ t('learning', 'Bonus-Kampagnen') }}</h3>
-            <p>{{ t('learning', 'Weitere Storys fuer Zusatzrunden oder Vertiefung ausserhalb des Kernpfads.') }}</p>
+            <p>{{ t('learning', 'Weitere Storys fuer Zusatzrunden oder Vertiefung außerhalb des Kernpfads.') }}</p>
           </div>
           <div class="ab-campaign-grid ab-campaign-grid--bonus">
             <div
@@ -2212,7 +2212,7 @@ export default {
 				const response = await submitVote(this.coopSessionId, edgeId, payload)
 				nextMode = this.applyCoopPayload(response)
 			} catch (error) {
-				this.coopError = this.extractCoopErrorMessage(error, t('learning', 'Stimme konnte nicht uebermittelt werden.'))
+				this.coopError = this.extractCoopErrorMessage(error, t('learning', 'Stimme konnte nicht übermittelt werden.'))
 			} finally {
 				this.coopBusy = false
 				this.makingChoice = false

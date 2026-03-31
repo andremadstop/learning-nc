@@ -18,10 +18,10 @@ sudo pacman -S nmap arp-scan
 
 ```
 nmap findet heraus:
-  1. Welche Geraete im Netz sind          (Host Discovery)
-  2. Welche Ports auf einem Geraet offen   (Port Scan)
+  1. Welche Geräte im Netz sind          (Host Discovery)
+  2. Welche Ports auf einem Gerät offen   (Port Scan)
   3. Welche Dienste/Versionen dort laufen (Service Detection)
-  4. Welches OS ein Geraet hat             (OS Detection)
+  4. Welches OS ein Gerät hat             (OS Detection)
 ```
 
 ---
@@ -46,20 +46,20 @@ ip route
 ### Stufe 1 -- Host Discovery (wer ist da?)
 
 ```bash
-# Ping-Scan: nur pruefen welche Hosts antworten, KEINE Ports
+# Ping-Scan: nur prüfen welche Hosts antworten, KEINE Ports
 nmap -sn 10.0.0.0/24
 
 # Alternative: arp-scan (schneller im lokalen Netz, braucht root)
 sudo arp-scan --localnet
 ```
 
-**Was du siehst:** Liste aller Geraete mit IP, MAC-Adresse und Hersteller.
-**Lerneffekt:** ARP ist Layer 2 -- Geraete im selben Netz antworten direkt.
+**Was du siehst:** Liste aller Geräte mit IP, MAC-Adresse und Hersteller.
+**Lerneffekt:** ARP ist Layer 2 -- Geräte im selben Netz antworten direkt.
 
-### Stufe 2 -- Top-Ports (schneller Ueberblick)
+### Stufe 2 -- Top-Ports (schneller Überblick)
 
 ```bash
-# Die 100 haeufigsten Ports im ganzen Netz
+# Die 100 häufigsten Ports im ganzen Netz
 sudo nmap -sS -sV --top-ports 100 10.0.0.0/24
 ```
 
@@ -102,13 +102,13 @@ sudo nmap -O 10.0.0.100
 |------|-----------|-------------|
 | `-sn` | Ping-Scan, keine Ports | Host Discovery |
 | `-sS` | SYN-Scan (Stealth, braucht root) | Standard-Port-Scan |
-| `-sT` | TCP Connect (ohne root moeglich) | Wenn kein root verfuegbar |
-| `-sU` | UDP-Scan | DNS, DHCP, SNMP pruefen |
+| `-sT` | TCP Connect (ohne root möglich) | Wenn kein root verfügbar |
+| `-sU` | UDP-Scan | DNS, DHCP, SNMP prüfen |
 | `-sV` | Service/Version Detection | Dienste identifizieren |
 | `-O` | OS Detection | Betriebssystem erkennen |
 | `-p-` | Alle 65535 Ports | Gruendlicher Einzelhost-Scan |
 | `-p 22,80,443` | Nur bestimmte Ports | Gezielter Schnellcheck |
-| `--top-ports N` | Die N haeufigsten Ports | Schneller Ueberblick |
+| `--top-ports N` | Die N häufigsten Ports | Schneller Überblick |
 | `-A` | Aggressive: OS + Version + Scripts + Traceroute | Einzel-Host Komplett-Analyse |
 | `-T4` | Schnellere Timing-Vorlage | Standard fuer LAN |
 | `-oN datei.txt` | Ergebnis in Textdatei | Ergebnisse aufheben |
@@ -118,20 +118,20 @@ sudo nmap -O 10.0.0.100
 
 ## Lab-Rezepte
 
-### Alle Geraete im LAN finden
+### Alle Geräte im LAN finden
 
 ```bash
 sudo nmap -sn 10.0.0.0/24
 ```
 
-### Was laeuft auf dem App-Server?
+### Was läuft auf dem App-Server?
 
 ```bash
 sudo nmap -sS -sV -p- 10.0.0.100
 # Erwartung: 22 (SSH), 8080 (Nextcloud/Apache)
 ```
 
-### DNS-Server pruefen
+### DNS-Server prüfen
 
 ```bash
 sudo nmap -sU -sV -p 53 10.0.0.30
@@ -165,7 +165,7 @@ sudo nmap -sS -sV -p 80,443,53,5060 10.0.0.1
 
 | Status | Bedeutung |
 |--------|-----------|
-| `open` | Port antwortet, Dienst laeuft |
+| `open` | Port antwortet, Dienst läuft |
 | `closed` | Port antwortet mit RST -- kein Dienst, aber erreichbar |
 | `filtered` | Keine Antwort -- Firewall blockt vermutlich |
 | `open\|filtered` | Nmap kann nicht unterscheiden (typisch bei UDP) |
@@ -185,7 +185,7 @@ Liest sich so: "SSH und Apache auf 8080 laufen, Port 80 ist erreichbar aber kein
 
 ## Aktuelle Verbindungen sehen (kein nmap)
 
-Nmap zeigt was **moeglich** ist. Fuer das was **gerade passiert**:
+Nmap zeigt was **möglich** ist. Fuer das was **gerade passiert**:
 
 ```bash
 # Alle aktiven TCP/UDP-Verbindungen auf deinem PC
@@ -207,7 +207,7 @@ ss -tlnp
 ```bash
 sudo nmap -sn 10.0.0.0/24 -oN ~/nmap-inventar.txt
 ```
-**Aufgabe:** Zaehle die Geraete. Kannst du jedem eine Funktion zuordnen?
+**Aufgabe:** Zaehle die Geräte. Kannst du jedem eine Funktion zuordnen?
 **Lerneffekt:** Du lernst dein eigenes Netz kennen.
 
 ### Uebung 2 -- Port-Scan vs. Wireshark
@@ -225,7 +225,7 @@ sudo nmap -sS -p 22,8080 10.0.0.100
 ```bash
 sudo nmap -sV -p 22,8080 10.0.0.100
 ```
-**Aufgabe:** Vergleiche die erkannten Versionen mit der Realitaet (`ssh -V`, `apache2 -v` im Container).
+**Aufgabe:** Vergleiche die erkannten Versionen mit der Realität (`ssh -V`, `apache2 -v` im Container).
 **Lerneffekt:** Service Detection schickt Probes und matcht Antworten gegen eine Datenbank.
 
 ### Uebung 4 -- UDP am Beispiel DNS
@@ -235,7 +235,7 @@ sudo nmap -sU -sV -p 53 10.0.0.30
 # Vergleiche mit:
 dig @10.0.0.30 google.com
 ```
-**Lerneffekt:** DNS laeuft auf UDP 53 -- du siehst den Port offen und kannst ihn direkt nutzen.
+**Lerneffekt:** DNS läuft auf UDP 53 -- du siehst den Port offen und kannst ihn direkt nutzen.
 
 ### Uebung 5 -- Vorher/Nachher mit Firewall
 
@@ -249,13 +249,13 @@ sudo nmap -sS -p 1-1024 10.0.0.100 -oN ~/scan-nachher.txt
 # Vergleichen:
 diff ~/scan-vorher.txt ~/scan-nachher.txt
 ```
-**Lerneffekt:** Firewall-Regeln veraendern was nmap sieht -- `open` wird `filtered`.
+**Lerneffekt:** Firewall-Regeln verändern was nmap sieht -- `open` wird `filtered`.
 
 ---
 
 ## Wichtig: Ethik & Recht
 
-- **Nur eigene Netze scannen.** Port-Scans auf fremde Systeme koennen strafbar sein (Paragraph 202a/b/c StGB).
+- **Nur eigene Netze scannen.** Port-Scans auf fremde Systeme können strafbar sein (Paragraph 202a/b/c StGB).
 - Dein Lab (10.0.0.0/24) gehoert dir -- darfst du scannen.
 - Arbeitgeber-Netz: nur mit schriftlicher Genehmigung.
 - Cloud-Provider (AWS, Hetzner): haben eigene Scan-Policies, vorher lesen.

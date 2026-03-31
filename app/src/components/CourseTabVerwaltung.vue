@@ -73,8 +73,8 @@
 			</div>
 
 			<div class="exam-date-config tool-config-section">
-				<h3>{{ t('learning', 'Pruefungstermin') }}</h3>
-				<p class="mode-config-hint">{{ t('learning', 'Optionales Pruefungsdatum fuer den Dashboard-Countdown setzen.') }}</p>
+				<h3>{{ t('learning', 'Prüfungstermin') }}</h3>
+				<p class="mode-config-hint">{{ t('learning', 'Optionales Prüfungsdatum fuer den Dashboard-Countdown setzen.') }}</p>
 				<div class="exam-date-row">
 					<input v-model="examDateLocal" type="date" class="exam-date-input" />
 					<NcButton type="primary" :disabled="savingExamDate" @click="saveExamDate">
@@ -184,14 +184,14 @@ export default {
 		visibleSubTabs() {
 			return [
 				{ id: 'mode-config', label: t('learning', 'Kursregeln') },
-				{ id: 'exam-slot', label: t('learning', 'Pruefungs-Slot') },
+				{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot') },
 			]
 		},
 		modeConfigKeys() {
 			return [
 				{ key: 'training', label: t('learning', 'Training') },
 				{ key: 'leitner', label: t('learning', 'Leitner') },
-				{ key: 'exam', label: t('learning', 'Pruefung') },
+				{ key: 'exam', label: t('learning', 'Prüfung') },
 				{ key: 'duel', label: t('learning', 'Duell') },
 				{ key: 'gameshow', label: t('learning', 'Gameshow') },
 				{ key: 'league', label: t('learning', 'Liga') },

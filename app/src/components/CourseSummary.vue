@@ -120,7 +120,7 @@
 							<span class="badge-name">{{ badgeLabel(badge) }}</span>
 						</div>
 					</div>
-					<p v-else class="empty-hint">{{ t('learning', 'Noch keine Badges in diesem Ueberblick sichtbar.') }}</p>
+					<p v-else class="empty-hint">{{ t('learning', 'Noch keine Badges in diesem Überblick sichtbar.') }}</p>
 				</div>
 
 				<div class="widget-card trouble-card">
@@ -176,7 +176,7 @@
 					{{ t('learning', 'KI-Reflexion erfordert deine Einwilligung. Aktiviere die KI-Funktion in den Einstellungen.') }}
 				</p>
 				<p v-else class="narrative-unavailable">
-					{{ t('learning', 'KI-Reflexion nicht verfuegbar. Stelle sicher, dass VirtuProf aktiviert ist.') }}
+					{{ t('learning', 'KI-Reflexion nicht verfügbar. Stelle sicher, dass VirtuProf aktiviert ist.') }}
 				</p>
 			</div>
 		</template>

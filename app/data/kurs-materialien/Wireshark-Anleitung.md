@@ -20,11 +20,11 @@ ssh app-server "tcpdump -w - -i eth0 2>/dev/null" | wireshark -k -i -
 ### Option B -- Lokaler Traffic
 ```bash
 wireshark
-# Interface auswaehlen (z.B. eth0) -> Doppelklick -> laeuft
+# Interface auswaehlen (z.B. eth0) -> Doppelklick -> läuft
 ```
 
 ### Stoppen
-- Wireshark-Fenster schliessen, oder
+- Wireshark-Fenster schließen, oder
 - Im Terminal: `Ctrl+C`
 
 ---
@@ -33,7 +33,7 @@ wireshark
 
 ```
 +------------------------------------------------------------+
-|  Menueleiste                                                |
+|  Menüleiste                                                |
 +------------------------------------------------------------+
 |  [> Start] [# Stop] [~ Restart]   Toolbar                  |
 +------------------------------------------------------------+
@@ -61,15 +61,15 @@ wireshark
 +------------------------------------------------------------+
 ```
 
-### Die drei Bereiche erklaert
+### Die drei Bereiche erklärt
 
 **Paketliste (oben)**
 Jede Zeile = ein Paket. Spalten:
 - `No.` -- laufende Nummer seit Capture-Start
 - `Time` -- Sekunden seit Start (oder Uhrzeit, einstellbar)
 - `Source` / `Destination` -- IP oder MAC
-- `Protocol` -- hoechstes erkanntes Protokoll (z.B. DNS statt UDP)
-- `Length` -- Paketgroesse in Bytes
+- `Protocol` -- höchstes erkanntes Protokoll (z.B. DNS statt UDP)
+- `Length` -- Paketgröße in Bytes
 - `Info` -- Kurzinfo (z.B. "Standard query A google.com")
 
 **Paketdetails (mitte)**
@@ -106,12 +106,12 @@ Farben anpassen: `View -> Coloring Rules`
 
 ---
 
-## Filter -- das Wichtigste ueberhaupt
+## Filter -- das Wichtigste überhaupt
 
 Ohne Filter siehst du alles auf einmal = Chaos. Filter sind das Herzstueck.
 
 ### Anzeige-Filter (Display Filter)
-Wird in die Leiste oben eingegeben. Filtert was du siehst (Aufzeichnung laeuft weiter).
+Wird in die Leiste oben eingegeben. Filtert was du siehst (Aufzeichnung läuft weiter).
 Leiste wird **gruen** = Filter gueltig | **rot** = Syntaxfehler
 
 ### Die wichtigsten Filter
@@ -174,7 +174,7 @@ not (ip.addr == 10.0.0.1)         # Router ausblenden
 ### Nuetzliche Lab-Filter
 
 ```
-# Was laeuft auf dem App-Server?
+# Was läuft auf dem App-Server?
 ip.addr == 10.0.0.100
 
 # DNS-Anfragen an den DNS-Server
@@ -194,12 +194,12 @@ tcp.analysis.flags and not tcp.analysis.window_update
 ```
 
 ### Filter aus Paket erstellen (Rechtsklick-Trick)
-Auf ein Feld im Paketdetail-Bereich rechtsklicken -> `Apply as Filter` -> sofort uebernommen.
+Auf ein Feld im Paketdetail-Bereich rechtsklicken -> `Apply as Filter` -> sofort übernommen.
 Sehr praktisch statt manuell tippen.
 
 ---
 
-## Wichtige Menuepunkte
+## Wichtige Menüpunkte
 
 ### View
 - `Time Display Format` -- Uhrzeit statt Sekunden anzeigen (empfohlen)
@@ -207,10 +207,10 @@ Sehr praktisch statt manuell tippen.
 - `Coloring Rules` -- Farben anpassen
 
 ### Statistics
-- `Protocol Hierarchy` -- Welche Protokolle wie viel Traffic machen (Ueberblick)
+- `Protocol Hierarchy` -- Welche Protokolle wie viel Traffic machen (Überblick)
 - `Conversations` -- Alle laufenden Verbindungen (IP-Paare + Datenmenge)
 - `Endpoints` -- Alle IPs + wie viel Traffic
-- `IO Graphs` -- Traffic ueber Zeit als Graph
+- `IO Graphs` -- Traffic über Zeit als Graph
 
 ### Analyze
 - `Follow TCP Stream` -- kompletten Datenaustausch einer Verbindung als Text lesen
@@ -234,7 +234,7 @@ Content-Type: application/json
 {"pools": [...]}
 ```
 
-Funktioniert nur bei unverschluesseltem Traffic (HTTP, nicht HTTPS).
+Funktioniert nur bei unverschlüsseltem Traffic (HTTP, nicht HTTPS).
 
 ---
 
@@ -257,7 +257,7 @@ ping -c 1 10.0.0.60
 nslookup google.com 10.0.0.30
 ```
 **Was du siehst:** UDP-Query (A-Record) -> UDP-Response mit IP
-**Lerneffekt:** DNS ist UDP, geht hin und zurueck ohne Handshake
+**Lerneffekt:** DNS ist UDP, geht hin und zurück ohne Handshake
 
 ### Uebung 3 -- TCP 3-Way Handshake
 ```bash
@@ -283,7 +283,7 @@ curl -u "admin:admin" http://10.0.0.100:8080/apps/learning/ -s -o /dev/null
 sudo dhclient -r eth0 && sudo dhclient eth0
 ```
 **Was du siehst:** Discover -> Offer -> Request -> ACK (DORA)
-**Lerneffekt:** Wie ein Geraet automatisch seine IP-Konfiguration bekommt
+**Lerneffekt:** Wie ein Gerät automatisch seine IP-Konfiguration bekommt
 
 ### Uebung 6 -- Was macht der IoT-Hub nachts?
 ```bash
@@ -311,7 +311,7 @@ wireshark ~/capture.pcap
 
 ---
 
-## Haeufige Fehler & Loesungen
+## Häufige Fehler & Lösungen
 
 | Problem | Ursache | Loesung |
 |---------|---------|--------|
