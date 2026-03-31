@@ -301,7 +301,7 @@ class GeminiService {
                 'maxOutputTokens' => 2048,
                 'candidateCount' => 1,
             ],
-        ]);
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         $ch = curl_init(self::API_URL);
         curl_setopt_array($ch, [
@@ -332,7 +332,7 @@ class GeminiService {
         }
 
         $data = json_decode((string)$response, true);
-        $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+        $text = $this->normalizeModelTextOutput((string)($data['candidates'][0]['content']['parts'][0]['text'] ?? ''));
 
         if ($text === '') {
             $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), '[empty response]');
@@ -1022,7 +1022,7 @@ PROMPT;
                 'maxOutputTokens' => $maxOutputTokens,
                 'candidateCount' => 1,
             ],
-        ]);
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         $ch = curl_init(self::API_URL);
         curl_setopt_array($ch, [
@@ -1051,13 +1051,42 @@ PROMPT;
         }
 
         $data = json_decode((string)$response, true);
-        $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+        $text = $this->normalizeModelTextOutput((string)($data['candidates'][0]['content']['parts'][0]['text'] ?? ''));
 
         if ($text === '') {
             throw new \RuntimeException('Empty response from Gemini API');
         }
 
         return $text;
+    }
+
+    /**
+     * Gemini occasionally returns unicode-escaped or mojibake text. Normalize both centrally
+     * so story narration, notes and chat outputs stay readable end-to-end.
+     */
+    private function normalizeModelTextOutput(string $text): string {
+        $normalized = preg_replace('/^\xEF\xBB\xBF/', '', trim($text));
+        if (!is_string($normalized) || $normalized === '') {
+            return '';
+        }
+
+        $normalized = preg_replace_callback('/\\\\u([0-9a-fA-F]{4})/', static function (array $matches): string {
+            $decoded = json_decode('"\\u' . $matches[1] . '"', true);
+            return is_string($decoded) ? $decoded : $matches[0];
+        }, $normalized) ?? $normalized;
+
+        if ($this->looksLikeMojibake($normalized)) {
+            $converted = mb_convert_encoding($normalized, 'Windows-1252', 'UTF-8');
+            if (is_string($converted) && $converted !== '' && mb_check_encoding($converted, 'UTF-8') && !$this->looksLikeMojibake($converted)) {
+                $normalized = $converted;
+            }
+        }
+
+        return $normalized;
+    }
+
+    private function looksLikeMojibake(string $text): bool {
+        return preg_match('/(?:Ã.|Â.|â€|â€“|â€”|â€ž|â€œ|â€˜|â€™)/u', $text) === 1;
     }
 
     /**
@@ -1124,7 +1153,7 @@ PROMPT;
                         'input' => mb_substr($input, 0, 500),
                         'output' => mb_substr($output, 0, 1000),
                         'model' => self::MODEL,
-                    ])),
+                    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
                     'created_at' => $qb->createNamedParameter(time()),
                 ]);
             $qb->executeStatement();
