@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" role="img" aria-labelledby="title desc">
+  <title id="title">Hardening-Diagramm mit Firewall, IDS und VPN</title>
+  <desc id="desc">Schematische Topologie mit Perimeter, Sensor-Zone, Core und Remote-Access fuer die Platzierung von Security-Komponenten.</desc>
+  <rect width="960" height="560" rx="28" fill="#11171f"/>
+  <rect x="42" y="42" width="876" height="476" rx="24" fill="#0e1319" stroke="#2c3f53" stroke-width="2"/>
+  <circle cx="165" cy="280" r="86" fill="#172432" stroke="#5cc0ff" stroke-width="3"/>
+  <circle cx="480" cy="170" r="78" fill="#152636" stroke="#7bd9ff" stroke-width="3"/>
+  <circle cx="480" cy="392" r="86" fill="#15222f" stroke="#7bd9ff" stroke-width="3"/>
+  <circle cx="790" cy="280" r="86" fill="#172432" stroke="#5cc0ff" stroke-width="3"/>
+  <path d="M251 280H394M566 170H700M566 392H700M480 248V306" stroke="#66b8ff" stroke-width="6" stroke-linecap="round"/>
+  <text x="165" y="248" fill="#dcecff" font-family="JetBrains Mono, monospace" font-size="25" text-anchor="middle">Perimeter</text>
+  <text x="165" y="284" fill="#66b8ff" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle">Slot A</text>
+  <text x="480" y="158" fill="#dcecff" font-family="JetBrains Mono, monospace" font-size="22" text-anchor="middle">Sensor-Zone</text>
+  <text x="480" y="188" fill="#66b8ff" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle">Slot B</text>
+  <text x="480" y="380" fill="#dcecff" font-family="JetBrains Mono, monospace" font-size="24" text-anchor="middle">Core</text>
+  <text x="480" y="410" fill="#66b8ff" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle">Slot C</text>
+  <text x="790" y="248" fill="#dcecff" font-family="JetBrains Mono, monospace" font-size="24" text-anchor="middle">Remote Access</text>
+  <text x="790" y="284" fill="#66b8ff" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle">Slot D</text>
+</svg>

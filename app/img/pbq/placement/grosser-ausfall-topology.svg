@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" role="img" aria-labelledby="title desc">
+  <title id="title">Rogue-AP Netzwerkdiagramm</title>
+  <desc id="desc">Dunkles Netzwerkdiagramm mit Perimeter, Core und Besprechungsraum fuer die Platzierung von Firewall, Core-Switch und Rogue AP.</desc>
+  <rect width="960" height="560" rx="28" fill="#121820"/>
+  <rect x="38" y="38" width="884" height="484" rx="24" fill="#0f141b" stroke="#2a3a4a" stroke-width="2"/>
+  <path d="M165 280H305M480 280H640M770 190V140" stroke="#66b8ff" stroke-width="6" stroke-linecap="round"/>
+  <path d="M770 250V360H845" stroke="#d6e9ff" stroke-width="4" stroke-dasharray="10 10" stroke-linecap="round"/>
+  <circle cx="165" cy="280" r="84" fill="#172431" stroke="#4eb2ff" stroke-width="3"/>
+  <circle cx="480" cy="280" r="92" fill="#162738" stroke="#7cd1ff" stroke-width="3"/>
+  <circle cx="770" cy="190" r="70" fill="#18202b" stroke="#4eb2ff" stroke-width="3" stroke-dasharray="8 8"/>
+  <rect x="676" y="322" width="196" height="86" rx="18" fill="#15212e" stroke="#37566f" stroke-width="2"/>
+  <text x="165" y="248" fill="#dcecff" font-family="JetBrains Mono, monospace" font-size="26" text-anchor="middle">Perimeter</text>
+  <text x="165" y="284" fill="#66b8ff" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle">Slot A</text>
+  <text x="165" y="312" fill="#8eb4d2" font-family="JetBrains Mono, monospace" font-size="16" text-anchor="middle">Internet / Uplink</text>
+  <text x="480" y="248" fill="#dcecff" font-family="JetBrains Mono, monospace" font-size="28" text-anchor="middle">Verteiler</text>
+  <text x="480" y="284" fill="#66b8ff" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle">Slot B</text>
+  <text x="480" y="312" fill="#8eb4d2" font-family="JetBrains Mono, monospace" font-size="16" text-anchor="middle">Backbone / Core</text>
+  <text x="770" y="180" fill="#dcecff" font-family="JetBrains Mono, monospace" font-size="23" text-anchor="middle">Besprechungsraum</text>
+  <text x="770" y="210" fill="#66b8ff" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle">Slot C</text>
+  <text x="774" y="355" fill="#dcecff" font-family="JetBrains Mono, monospace" font-size="18">Rogue Device Alert</text>
+  <text x="774" y="382" fill="#8eb4d2" font-family="JetBrains Mono, monospace" font-size="14">MAC xx:xx:xx:xx:xx:xx</text>
+</svg>

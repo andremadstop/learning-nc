@@ -1574,6 +1574,40 @@ export default {
 		 * Uses the simulation.type to pick the right pbq_subtype.
 		 * Falls back to a diagnostic subtype when type is unknown.
 		 */
+		buildPlacementSimulationConfig(simulation) {
+			const fallbackPositions = [
+				{ id: 'firewall', label: t('learning', 'Perimeter'), correct: 'Firewall', x_pct: 20, y_pct: 50 },
+				{ id: 'core_switch', label: t('learning', 'Core'), correct: 'Core Switch', x_pct: 50, y_pct: 50 },
+				{ id: 'access_layer', label: t('learning', 'Access'), correct: 'Access Switch', x_pct: 80, y_pct: 50 },
+			]
+			const rawPositions = Array.isArray(simulation.positions) && simulation.positions.length
+				? simulation.positions
+				: fallbackPositions
+			const positions = rawPositions.map((position, index) => ({
+				id: position.id || `slot_${index + 1}`,
+				label: position.label || position.id || t('learning', 'Position {n}', { n: index + 1 }),
+				correct: position.correct || position.correctInput || '',
+				x_pct: Number.isFinite(Number(position.x_pct)) ? Number(position.x_pct) : undefined,
+				y_pct: Number.isFinite(Number(position.y_pct)) ? Number(position.y_pct) : undefined,
+			}))
+			const fallbackOptions = positions
+				.map((position) => position.correct)
+				.filter((value) => typeof value === 'string' && value.trim().length)
+			const deviceOptions = Array.isArray(simulation.device_options) && simulation.device_options.length
+				? simulation.device_options
+				: fallbackOptions
+
+			return {
+				instructions: [simulation.description || t('learning', 'Platziere die Netzwerkgeräte korrekt.')],
+				positions,
+				device_options: [...new Set(deviceOptions)],
+				scoring_mode: simulation.scoring_mode || 'strict',
+				background_image: simulation.background_image || null,
+				scenario_image: simulation.scenario_image || simulation.background_image || null,
+				topology: simulation.topology || null,
+			}
+		},
+
 		buildSimQuestion(simulation) {
 			const typeMap = {
 				cli: {
@@ -1605,17 +1639,7 @@ export default {
 				},
 				network_device_placement: {
 					pbq_subtype: 'placement',
-					pbq_config: {
-						instructions: [simulation.description || t('learning', 'Platziere die Netzwerkgeräte korrekt.')],
-						positions: [
-							{ id: 'firewall', label: t('learning', 'Firewall'), correct: 'edge' },
-							{ id: 'switch',   label: t('learning', 'Core Switch'), correct: 'core' },
-						],
-						choices: [
-							{ id: 'edge', label: 'Edge' },
-							{ id: 'core', label: 'Core' },
-						],
-					},
+					pbq_config: this.buildPlacementSimulationConfig(simulation),
 				},
 				diagnostic: {
 					pbq_subtype: 'diagnostic',

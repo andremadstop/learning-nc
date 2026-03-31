@@ -406,7 +406,36 @@
       "simulation": {
         "type": "network_device_placement",
         "pbq_question_id": null,
-        "description": "Identifiziere und isoliere das unbekannte Gerät im Netzwerk"
+        "description": "Identifiziere und isoliere das unbekannte Gerät im Netzwerk",
+        "background_image": "/apps/learning/img/pbq/placement/grosser-ausfall-topology.svg",
+        "device_options": [
+          "Firewall",
+          "Core Switch",
+          "Rogue AP"
+        ],
+        "positions": [
+          {
+            "id": "perimeter",
+            "label": "Perimeter",
+            "correct": "Firewall",
+            "x_pct": 17.2,
+            "y_pct": 50
+          },
+          {
+            "id": "core",
+            "label": "Verteiler",
+            "correct": "Core Switch",
+            "x_pct": 50,
+            "y_pct": 50
+          },
+          {
+            "id": "rogue_ap",
+            "label": "Besprechungsraum",
+            "correct": "Rogue AP",
+            "x_pct": 80.2,
+            "y_pct": 34
+          }
+        ]
       }
     },
     {

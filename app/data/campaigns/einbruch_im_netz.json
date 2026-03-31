@@ -407,7 +407,44 @@
       "simulation": {
         "type": "network_device_placement",
         "pbq_question_id": null,
-        "description": "Platziere Firewall, IDS/IPS und VPN-Concentrator korrekt im Netzwerk-Design"
+        "description": "Platziere Firewall, IDS/IPS und VPN-Concentrator korrekt im Netzwerk-Design",
+        "background_image": "/apps/learning/img/pbq/placement/einbruch-hardening.svg",
+        "device_options": [
+          "Firewall",
+          "IDS/IPS",
+          "Core Switch",
+          "VPN Concentrator"
+        ],
+        "positions": [
+          {
+            "id": "perimeter",
+            "label": "Perimeter",
+            "correct": "Firewall",
+            "x_pct": 17.2,
+            "y_pct": 50
+          },
+          {
+            "id": "sensor_zone",
+            "label": "Sensor-Zone",
+            "correct": "IDS/IPS",
+            "x_pct": 50,
+            "y_pct": 30.3
+          },
+          {
+            "id": "core",
+            "label": "Core",
+            "correct": "Core Switch",
+            "x_pct": 50,
+            "y_pct": 70
+          },
+          {
+            "id": "remote_access",
+            "label": "Remote Access",
+            "correct": "VPN Concentrator",
+            "x_pct": 82.3,
+            "y_pct": 50
+          }
+        ]
       }
     },
     {

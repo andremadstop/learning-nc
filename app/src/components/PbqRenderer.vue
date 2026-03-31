@@ -12,7 +12,7 @@
       :images="referenceImages"
     />
 
-    <div v-else-if="scenarioImageUrl" class="pbq-scenario-image-wrapper">
+    <div v-else-if="scenarioImageUrl && subtype !== 'placement'" class="pbq-scenario-image-wrapper">
       <img :src="scenarioImageUrl" class="pbq-scenario-image" alt="Scenario" />
     </div>
 
@@ -134,7 +134,7 @@ export default {
       return ''
     },
     config()   { return this.question.pbq_config || {} },
-    configImage() { return this.resolveAssetUrl(this.config.scenario_image || null) },
+    configImage() { return this.resolveAssetUrl(this.config.background_image || this.config.scenario_image || null) },
     topologyConfig() { return this.config.topology || null },
     instructions() { return this.config.instructions || [] },
     referenceImages() {
@@ -144,7 +144,9 @@ export default {
       }))
     },
     scenarioImageUrl() {
-      if (this.config.scenario_image) return this.resolveAssetUrl(this.config.scenario_image)
+      if (this.config.background_image || this.config.scenario_image) {
+        return this.resolveAssetUrl(this.config.background_image || this.config.scenario_image)
+      }
       if (this.question.image_path) return generateUrl('/apps/learning/api/questions/' + this.question.id + '/image')
       return null
     },

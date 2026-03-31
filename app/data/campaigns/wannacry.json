@@ -602,7 +602,44 @@
       "simulation": {
         "type": "network_device_placement",
         "pbq_question_id": null,
-        "description": "Netzwerk-Segmentierung: Platziere Firewalls und VLANs um laterale Bewegung künftig zu verhindern"
+        "description": "Netzwerk-Segmentierung: Platziere Firewalls und VLANs um laterale Bewegung künftig zu verhindern",
+        "background_image": "/apps/learning/img/pbq/placement/wannacry-segmentation.svg",
+        "device_options": [
+          "Perimeter Firewall",
+          "Client VLAN",
+          "Server VLAN",
+          "Quarantäne VLAN"
+        ],
+        "positions": [
+          {
+            "id": "edge_firewall",
+            "label": "Internet-Edge",
+            "correct": "Perimeter Firewall",
+            "x_pct": 17.9,
+            "y_pct": 50
+          },
+          {
+            "id": "client_vlan",
+            "label": "Client VLAN",
+            "correct": "Client VLAN",
+            "x_pct": 47.1,
+            "y_pct": 30.3
+          },
+          {
+            "id": "server_vlan",
+            "label": "Server VLAN",
+            "correct": "Server VLAN",
+            "x_pct": 47.1,
+            "y_pct": 70.1
+          },
+          {
+            "id": "quarantine",
+            "label": "Quarantäne",
+            "correct": "Quarantäne VLAN",
+            "x_pct": 81,
+            "y_pct": 50
+          }
+        ]
       }
     },
     {

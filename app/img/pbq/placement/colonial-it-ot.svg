@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" role="img" aria-labelledby="title desc">
+  <title id="title">IT/OT Segmentierungsdiagramm</title>
+  <desc id="desc">Schematische IT/OT-Topologie mit Jump Host, Historian Server, SCADA Gateway und Data Diode.</desc>
+  <rect width="960" height="560" rx="28" fill="#10161d"/>
+  <rect x="40" y="40" width="880" height="480" rx="24" fill="#0d1218" stroke="#2d4052" stroke-width="2"/>
+  <rect x="86" y="120" width="238" height="320" rx="24" fill="#152535" stroke="#69c7ff" stroke-width="3"/>
+  <rect x="636" y="120" width="238" height="320" rx="24" fill="#1a1d26" stroke="#ffb86b" stroke-width="3"/>
+  <rect x="404" y="184" width="152" height="192" rx="24" fill="#111923" stroke="#f4d06f" stroke-width="3" stroke-dasharray="10 8"/>
+  <path d="M324 200H404M324 360H404M556 280H636" stroke="#66b8ff" stroke-width="6" stroke-linecap="round"/>
+  <text x="205" y="160" fill="#dcecff" font-family="JetBrains Mono, monospace" font-size="26" text-anchor="middle">IT Zone</text>
+  <text x="205" y="210" fill="#dcecff" font-family="JetBrains Mono, monospace" font-size="22" text-anchor="middle">Jump Host</text>
+  <text x="205" y="240" fill="#66b8ff" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle">Slot A</text>
+  <text x="205" y="332" fill="#dcecff" font-family="JetBrains Mono, monospace" font-size="22" text-anchor="middle">Historian</text>
+  <text x="205" y="362" fill="#66b8ff" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle">Slot B</text>
+  <text x="480" y="252" fill="#fef3c7" font-family="JetBrains Mono, monospace" font-size="20" text-anchor="middle">IT / OT Grenze</text>
+  <text x="480" y="282" fill="#fcd34d" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle">Slot C</text>
+  <text x="755" y="160" fill="#ffd8b3" font-family="JetBrains Mono, monospace" font-size="26" text-anchor="middle">OT Zone</text>
+  <text x="755" y="270" fill="#ffd8b3" font-family="JetBrains Mono, monospace" font-size="22" text-anchor="middle">SCADA Gateway</text>
+  <text x="755" y="300" fill="#ffb86b" font-family="JetBrains Mono, monospace" font-size="18" text-anchor="middle">Slot D</text>
+</svg>

@@ -325,7 +325,44 @@
       "simulation": {
         "type": "network_device_placement",
         "pbq_question_id": null,
-        "description": "IT/OT-Segmentierung: Identifiziere Historian-Server, SCADA-Gateways und Data Diodes an der IT/OT-Grenze und bewerte die Angriffspfade"
+        "description": "IT/OT-Segmentierung: Identifiziere Historian-Server, SCADA-Gateways und Data Diodes an der IT/OT-Grenze und bewerte die Angriffspfade",
+        "background_image": "/apps/learning/img/pbq/placement/colonial-it-ot.svg",
+        "device_options": [
+          "Jump Host",
+          "Historian Server",
+          "Data Diode",
+          "SCADA Gateway"
+        ],
+        "positions": [
+          {
+            "id": "jump_host",
+            "label": "IT Access",
+            "correct": "Jump Host",
+            "x_pct": 21.4,
+            "y_pct": 35.7
+          },
+          {
+            "id": "historian",
+            "label": "Historian",
+            "correct": "Historian Server",
+            "x_pct": 21.4,
+            "y_pct": 57.1
+          },
+          {
+            "id": "diode",
+            "label": "IT/OT Grenze",
+            "correct": "Data Diode",
+            "x_pct": 50,
+            "y_pct": 50
+          },
+          {
+            "id": "scada_gateway",
+            "label": "OT Zone",
+            "correct": "SCADA Gateway",
+            "x_pct": 78.6,
+            "y_pct": 50
+          }
+        ]
       }
     },
     {

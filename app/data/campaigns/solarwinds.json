@@ -618,7 +618,44 @@
       "simulation": {
         "type": "network_device_placement",
         "pbq_question_id": null,
-        "description": "Zero-Trust-Architektur: Platziere SDP Controller, Identity Provider, Micro-Segmentation Gateways und SBOM-Validation-Service im Netzwerk"
+        "description": "Zero-Trust-Architektur: Platziere SDP Controller, Identity Provider, Micro-Segmentation Gateways und SBOM-Validation-Service im Netzwerk",
+        "background_image": "/apps/learning/img/pbq/placement/solarwinds-zero-trust.svg",
+        "device_options": [
+          "Identity Provider",
+          "SDP Controller",
+          "Micro-Segmentation Gateway",
+          "SBOM Validation Service"
+        ],
+        "positions": [
+          {
+            "id": "identity",
+            "label": "Identity Plane",
+            "correct": "Identity Provider",
+            "x_pct": 20.5,
+            "y_pct": 28.6
+          },
+          {
+            "id": "controller",
+            "label": "Controller",
+            "correct": "SDP Controller",
+            "x_pct": 20.5,
+            "y_pct": 71.1
+          },
+          {
+            "id": "microseg",
+            "label": "Micro-Segmentation",
+            "correct": "Micro-Segmentation Gateway",
+            "x_pct": 52.8,
+            "y_pct": 50
+          },
+          {
+            "id": "sbom",
+            "label": "Build Validation",
+            "correct": "SBOM Validation Service",
+            "x_pct": 82.3,
+            "y_pct": 50
+          }
+        ]
       }
     },
     {
