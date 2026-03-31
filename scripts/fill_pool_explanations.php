@@ -137,7 +137,36 @@ function shouldReplaceExplanation(string $explanation): bool {
         return true;
     }
 
-    return (bool)preg_match('/^Die richtige Antwort ist:\s*.+\.?$/u', $trimmed);
+    if ((bool)preg_match('/^Die richtige Antwort ist:\s*.+\.?$/u', $trimmed)) {
+        return true;
+    }
+
+    return isFallbackTemplateExplanation($trimmed);
+}
+
+function isFallbackTemplateExplanation(string $explanation): bool {
+    $genericFragments = [
+        'Die anderen Optionen klingen zwar plausibel',
+        'anderen Mechanismus, ein anderes Protokoll oder den falschen Einsatzbereich',
+        'anderen Funktionen, einen anderen Layer oder lassen einen wesentlichen Teil der Anforderung offen',
+        'die beschriebene Netzwerksituation',
+    ];
+
+    $matchedFragments = 0;
+    foreach ($genericFragments as $fragment) {
+        if (str_contains($explanation, $fragment)) {
+            $matchedFragments++;
+        }
+    }
+
+    if ($matchedFragments >= 2) {
+        return true;
+    }
+
+    return (bool)preg_match(
+        '/^(?:Diese|diese) Option ist korrekt, weil diese Antwort am besten .+ passt und den beschriebenen Zweck direkt erfüllt\./u',
+        $explanation
+    );
 }
 
 function generateExplanation(GeminiService $gemini, array $questionRow, array $answerRows): string {
@@ -227,7 +256,7 @@ function buildFallbackExplanation(array $questionRow, array $answerRows): string
 
     return normalizeExplanation(
         sprintf(
-            '%s ist korrekt, weil diese Antwort am besten zu %s passt und den beschriebenen Zweck direkt erfüllt. Die anderen Optionen klingen zwar plausibel, beschreiben hier aber einen anderen Mechanismus, ein anderes Protokoll oder den falschen Einsatzbereich.',
+            '%s ist korrekt, weil diese Option die Anforderung im beschriebenen Szenario für %s direkt erfüllt. Die anderen Optionen beschreiben hier einen anderen Mechanismus, ein anderes Protokoll oder den falschen Einsatzbereich.',
             $correctText,
             $topic
         )
