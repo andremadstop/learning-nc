@@ -180,7 +180,10 @@ export function detectCaptureIssues(packets) {
 	return {
 		retransmissions: detectRetransmissions(packets).map((packet) => packet.id),
 		resetPackets: (packets || []).filter((packet) => summarizeTcpFlags(packet.tcp?.flags).includes('RST')).map((packet) => packet.id),
-		ttlExceededPackets: (packets || []).filter((packet) => packet.icmp?.detail === 'TTL exceeded').map((packet) => packet.id),
+		ttlExceededPackets: (packets || []).filter((packet) => {
+			const detail = String(packet.icmp?.detail || '').toLowerCase()
+			return Number(packet.icmp?.type) === 11 || detail.includes('ttl exceeded') || detail.includes('ttl überschritten')
+		}).map((packet) => packet.id),
 		dnsSpoofing: detectDnsSpoofing(packets),
 	}
 }

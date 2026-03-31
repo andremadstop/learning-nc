@@ -25,7 +25,7 @@ describe('privacy info grouping', () => {
 		expect(aiGroup.entries).toHaveLength(2)
 		expect(aiGroup.entries.map((entry) => entry.name)).toEqual(
 			expect.arrayContaining([
-				'Persoenlichkeitsprofil (Telos)',
+				'Persönlichkeitsprofil (Telos)',
 				'KI-Interaktion (Drittland-Transfer)',
 			]),
 		)

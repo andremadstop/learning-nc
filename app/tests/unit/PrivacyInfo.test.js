@@ -23,11 +23,11 @@ describe('privacy-info.json', () => {
 
 	const namedCategoryMap = {
 		learning: 'Lerndaten',
-		ai: 'Persoenlichkeitsprofil|KI-Interaktion',
+		ai: 'Persoenlichkeitsprofil|Persönlichkeitsprofil|KI-Interaktion',
 		social: 'Schwarm',
 		audit: 'Audit',
 		gamification: 'Gamification',
-		assessment: 'Pruefung',
+		assessment: 'Pruefung|Prüfung',
 		external: 'Externe',
 	}
 
