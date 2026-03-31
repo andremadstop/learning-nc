@@ -61,6 +61,14 @@ class LearningWidget implements IAPIWidgetV2, IIconWidget {
                 '',
                 'exam-course-' . (string)$primaryExam['id']
             );
+        } else {
+            $items[] = new WidgetItem(
+                $this->l10n->t('No exam scheduled'),
+                $this->l10n->t('Your next exam date appears here as soon as a course has one.'),
+                $appUrl,
+                '',
+                'exam-course-empty'
+            );
         }
 
         return new WidgetItems($items, '');
