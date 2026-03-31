@@ -260,17 +260,25 @@ class RagImportController extends Controller {
                 return new DataResponse(['error' => 'Chunk not in this course'], Http::STATUS_NOT_FOUND);
             }
 
-            $chunk->setStatus($action === 'approve' ? 'approved' : 'rejected');
+            $previousStatus = $chunk->getStatus();
+            $newStatus = $action === 'approve' ? 'approved' : 'rejected';
+
+            $chunk->setStatus($newStatus);
             $this->chunkMapper->update($chunk);
 
-            $this->auditService->logEvent('moderation_action', $this->userId, [
+            $this->auditService->logEvent('swarm_moderation', (string)$this->userId, [
                 'action' => $action,
+                'previous_status' => $previousStatus,
+                'new_status' => $newStatus,
                 'chunk_id' => $chunkId,
                 'course_id' => $courseId,
-                'chunk_title' => $chunk->getTitle() ?? '',
+                'source_file' => $chunk->getSourceFile(),
+                'chapter' => $chunk->getChapter(),
+                'contributor_user_id' => $chunk->getUserId(),
+                'source_type' => $chunk->getSourceType(),
             ]);
 
-            return new DataResponse(['status' => $chunk->getStatus()]);
+            return new DataResponse(['status' => $newStatus]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Chunk not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
