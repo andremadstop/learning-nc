@@ -235,6 +235,11 @@
   border-radius: 2px;
 }
 
+#app-learning ::placeholder {
+  color: color-mix(in srgb, var(--color-main-text, #222) 68%, white 32%);
+  opacity: 1;
+}
+
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
@@ -480,7 +485,7 @@ select:focus-visible,
 
 .sim-tool__btn:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 0.68;
 }
 
 .sim-tool__btn--secondary {
@@ -1885,6 +1890,19 @@ select:focus-visible,
     flex-direction: row;
     flex-wrap: wrap;
   }
+}
+
+/* ========== PUBLIC PAGES (Privacy / Impressum) ========== */
+/* Compact NC guest footer to one line — affects only our PublicTemplateResponse pages */
+footer.guest-box .info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 12px;
+}
+footer.guest-box .info br {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -90,8 +90,8 @@
               <small>{{ step.actorFrom }} -> {{ step.actorTo }}</small>
             </div>
             <div class="sim-tool__reorder-actions">
-              <button class="sim-tool__btn sim-tool__btn--secondary sim-tool__btn--icon" type="button" :disabled="index === 0" @click="moveStep(index, index - 1)">↑</button>
-              <button class="sim-tool__btn sim-tool__btn--secondary sim-tool__btn--icon" type="button" :disabled="index === exerciseSteps.length - 1" @click="moveStep(index, index + 1)">↓</button>
+              <button class="sim-tool__btn sim-tool__btn--secondary sim-tool__btn--icon" type="button" :disabled="index === 0" :aria-label="t('learning', 'Schritt nach oben verschieben')" @click="moveStep(index, index - 1)">↑</button>
+              <button class="sim-tool__btn sim-tool__btn--secondary sim-tool__btn--icon" type="button" :disabled="index === exerciseSteps.length - 1" :aria-label="t('learning', 'Schritt nach unten verschieben')" @click="moveStep(index, index + 1)">↓</button>
             </div>
           </li>
         </ol>

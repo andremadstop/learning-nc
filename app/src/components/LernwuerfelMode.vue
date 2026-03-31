@@ -219,7 +219,7 @@
         <img
           v-if="currentQuestion.image_path"
           :src="questionImageUrl(currentQuestion.id)"
-          alt=""
+          :alt="currentQuestion.text || ''"
           class="lw-question-image"
         />
         <p class="lw-question-text">{{ currentQuestion.text }}</p>

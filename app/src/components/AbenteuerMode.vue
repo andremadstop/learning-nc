@@ -4,7 +4,7 @@
     <!-- ===== CAMPAIGN SELECT PHASE ===== -->
     <div v-if="phase === 'campaign-select'" class="ab-campaign-select">
       <div class="ab-header">
-        <button class="ab-back-btn" @click="$emit('back')">← {{ t('learning', 'Zurück') }}</button>
+        <button class="ab-back-btn" :aria-label="t('learning', 'Zurück')" @click="$emit('back')">← {{ t('learning', 'Zurück') }}</button>
         <h2 class="ab-title">🗺 {{ t('learning', 'Abenteuer') }}</h2>
         <p class="ab-subtitle">{{ t('learning', 'Wähle eine Kampagne und löse IT-Probleme in einer spannenden Geschichte.') }}</p>
       </div>
@@ -183,7 +183,7 @@
           <template v-else-if="currentScene">
             <!-- Scene header -->
             <div class="ab-scene-header">
-              <button class="ab-back-btn" @click="confirmAbort">←</button>
+              <button class="ab-back-btn" :aria-label="t('learning', 'Kampagne abbrechen')" @click="confirmAbort">←</button>
               <span class="ab-scene-title">{{ currentScene.title }}</span>
               <span v-if="currentScene.gemini_role === 'attacker'" class="ab-role-badge ab-role-attacker">
                 {{ t('learning', 'Angreifer aktiv') }}
@@ -196,6 +196,7 @@
                 v-if="isGraphMode && fullGraph"
                 class="ab-map-btn"
                 :title="t('learning', 'Quest-Map')"
+                :aria-label="t('learning', 'Quest-Map öffnen')"
                 @click="$refs.questMap && $refs.questMap.open()"
               >
                 &#x1F5FA;
@@ -489,7 +490,7 @@
     <!-- ===== COOP LOBBY PHASE ===== -->
     <div v-else-if="phase === 'coop-lobby'" class="ab-coop-lobby">
       <div class="ab-header">
-        <button class="ab-back-btn" @click="handleCoopLeave">←</button>
+        <button class="ab-back-btn" :aria-label="t('learning', 'Koop-Lobby verlassen')" @click="handleCoopLeave">←</button>
         <h2 class="ab-title">{{ t('learning', 'Koop-Lobby') }}</h2>
       </div>
       <CoopLobby
@@ -959,14 +960,23 @@ export default {
 		this._timerExpiryTimer = null
 		this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 		this.currentUserId = this.resolveCurrentUserId()
+		window.addEventListener('keydown', this.handleGlobalKeydown)
 		this.fetchCampaigns()
 	},
 
 	beforeDestroy() {
+		window.removeEventListener('keydown', this.handleGlobalKeydown)
 		this.clearTimers()
 	},
 
 	methods: {
+		handleGlobalKeydown(event) {
+			if (event.key === 'Escape' && this.showAbortConfirm) {
+				event.preventDefault()
+				this.showAbortConfirm = false
+			}
+		},
+
 		// ===== CAMPAIGN SELECTION =====
 
 		async fetchCampaigns() {
