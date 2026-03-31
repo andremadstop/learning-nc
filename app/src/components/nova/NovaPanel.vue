@@ -10,17 +10,30 @@
         <strong class="virtuprof-panel-title">{{ title }}</strong>
         <span class="virtuprof-panel-status">{{ metaText }}</span>
       </div>
-      <button
-        type="button"
-        class="virtuprof-panel-toggle"
-        :aria-label="vt('Minimize panel')"
-        :title="vt('Minimize panel')"
-        @click="$emit('minimize')">
-        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-          <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8"
-            fill="none" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </button>
+      <div class="virtuprof-panel-actions">
+        <button
+          type="button"
+          class="virtuprof-panel-action"
+          :aria-label="vt('Minimize panel')"
+          :title="vt('Minimize panel')"
+          @click="$emit('minimize')">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.8"
+              fill="none" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="virtuprof-panel-action"
+          :aria-label="vt('Close panel')"
+          :title="vt('Close panel')"
+          @click="$emit('close')">
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8"
+              fill="none" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+      </div>
     </div>
     <slot />
   </div>
@@ -89,7 +102,13 @@ export default {
   color: var(--color-text-maxcontrast);
 }
 
-.virtuprof-panel-toggle {
+.virtuprof-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.virtuprof-panel-action {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -103,7 +122,7 @@ export default {
   flex-shrink: 0;
 }
 
-.virtuprof-panel-toggle:hover {
+.virtuprof-panel-action:hover {
   background: var(--color-background-hover);
   color: var(--color-main-text);
 }

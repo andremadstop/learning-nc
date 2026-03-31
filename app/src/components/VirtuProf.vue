@@ -41,6 +41,7 @@
         :title="panelTitle"
         :meta-text="panelMetaText"
         @minimize="isMinimized = true"
+        @close="dismiss"
         @touchstart="panelTouchStart"
         @touchend="panelTouchEnd">
         <VirtuProfBubble
