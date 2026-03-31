@@ -20,34 +20,34 @@
 
       <div class="pbq-routing-panel__body">
         <div class="pbq-routing-table">
-          <h4>Routing Table</h4>
+          <h4>{{ t('learning', 'Routing Table') }}</h4>
           <pre>{{ activeRouter.routing_table }}</pre>
         </div>
 
         <div class="pbq-routing-form">
-          <h4>Routing Configuration</h4>
+          <h4>{{ t('learning', 'Routing Configuration') }}</h4>
 
           <label class="pbq-routing-field">
-            <span>Was a problem found?</span>
+            <span>{{ t('learning', 'Was a problem found?') }}</span>
             <select v-model="draft.problem_found" :disabled="disabled">
-              <option v-for="option in ['Yes', 'No']" :key="option" :value="option">{{ option }}</option>
+              <option v-for="option in ['Yes', 'No']" :key="option" :value="option">{{ t('learning', option) }}</option>
             </select>
           </label>
 
           <label class="pbq-routing-field">
-            <span>Destination Prefix</span>
+            <span>{{ t('learning', 'Destination Prefix') }}</span>
             <input v-model="draft.destination_prefix" :disabled="disabled" type="text" />
           </label>
 
           <label class="pbq-routing-field">
-            <span>Destination Prefix Mask</span>
+            <span>{{ t('learning', 'Destination Prefix Mask') }}</span>
             <input v-model="draft.destination_prefix_mask" :disabled="disabled" type="text" />
           </label>
 
           <label class="pbq-routing-field">
-            <span>Interface</span>
+            <span>{{ t('learning', 'Interface') }}</span>
             <select v-model="draft.interface" :disabled="disabled">
-              <option value="">Select interface</option>
+              <option value="">{{ t('learning', 'Select interface') }}</option>
               <option v-for="option in activeRouter.interface_options || []" :key="option" :value="option">{{ option }}</option>
             </select>
           </label>
@@ -55,8 +55,8 @@
       </div>
 
       <div class="pbq-routing-actions">
-        <button class="pbq-routing-action pbq-routing-action--secondary" @click="resetDraft" :disabled="disabled">Reset Router</button>
-        <button class="pbq-routing-action" @click="saveDraft" :disabled="disabled">Save Router</button>
+        <button class="pbq-routing-action pbq-routing-action--secondary" @click="resetDraft" :disabled="disabled">{{ t('learning', 'Reset Router') }}</button>
+        <button class="pbq-routing-action" @click="saveDraft" :disabled="disabled">{{ t('learning', 'Save Router') }}</button>
       </div>
     </div>
   </div>

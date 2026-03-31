@@ -10,7 +10,7 @@
         @node-click="openPicker"
       />
       <!-- Image mode: existing behavior unchanged -->
-      <img v-else-if="scenarioImage" :src="scenarioImage" class="pbq-diagram-img" alt="Network diagram" />
+      <img v-else-if="scenarioImage" :src="scenarioImage" class="pbq-diagram-img" :alt="t('learning', 'Network diagram')" />
       <!-- Fallback topology grid when no diagram image is available -->
       <div v-else class="pbq-topology-grid">
         <div
@@ -56,7 +56,7 @@
           :class="{ 'pbq-device-btn--selected': value[activePosId] === device }"
           @click="assignDevice(activePosId, device)"
         >{{ device }}</button>
-        <button class="pbq-device-btn pbq-device-btn--cancel" @click="closePicker">Cancel</button>
+        <button class="pbq-device-btn pbq-device-btn--cancel" @click="closePicker">{{ t('learning', 'Cancel') }}</button>
       </div>
     </div>
 
@@ -70,7 +70,7 @@
         :class="{ 'pbq-device-btn--selected': value[activePosId] === device }"
         @click="assignDevice(activePosId, device)"
       >{{ device }}</button>
-      <button class="pbq-device-btn pbq-device-btn--cancel" @click="closePicker">Cancel</button>
+      <button class="pbq-device-btn pbq-device-btn--cancel" @click="closePicker">{{ t('learning', 'Cancel') }}</button>
     </div>
 
     <div class="pbq-placement-summary">
