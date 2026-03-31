@@ -293,6 +293,7 @@
             :presetDuelCode="pendingVirtuProfDuel.courseId === selectedCourse.id ? pendingVirtuProfDuel.duelCode : ''"
             @back="selectedCourse = null"
             @openPool="openPoolFromCourse"
+            @open-tool="openCourseTool"
             @clearPresetDuel="clearVirtuProfDuel"
             @selectStudent="selectStudent"
           />
@@ -300,6 +301,9 @@
 
         <!-- ==================== WERKZEUGE VIEW ==================== -->
         <template v-if="mainView === 'werkzeuge'">
+          <NcNoteCard v-if="selectedCourse" type="info" class="tools-course-note">
+            {{ t('learning', 'Diese Werkzeuge sind auch im Kurs "{title}" verfügbar.', { title: selectedCourse.title || t('learning', 'Kurs') }) }}
+          </NcNoteCard>
           <div v-if="visibleToolsTabs.length" class="sim-nav" role="tablist" @keydown="handleTablistKeydown">
             <button
               v-for="tab in visibleToolsTabs"
@@ -1238,6 +1242,12 @@ export default {
     openSmartQueue() {
       this.smartQueueMode = 'queue';
       this.currentView = 'smartQueue';
+    },
+    openCourseTool(toolId) {
+      this.mainView = 'werkzeuge';
+      if (toolId) {
+        this.toolsView = toolId;
+      }
     },
     openRemediation() {
       this.smartQueueMode = 'remediation';

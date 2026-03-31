@@ -61,6 +61,7 @@
 				@knowledge-pending-count="knowledgePendingCount = $event"
 				@mode-activated="activeLearningMode = $event"
 				@openPool="$emit('openPool', $event)"
+				@open-tool="$emit('open-tool', $event)"
 				@pool-selected="selectedLearningPool = $event"
 				@refresh-course-detail="fetchCourseDetail"
 				@tab-change="onLeafTabChange" />

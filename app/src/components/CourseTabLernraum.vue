@@ -23,6 +23,25 @@
 				{{ t('learning', 'Students practice exactly the pools assigned here. Optional filters can limit a pool to one exam key, one chapter or explicit question IDs without changing the original pool. "Required + enforced" blocks optional pools until every filtered question in the required pool was answered at least once.') }}
 			</NcNoteCard>
 
+			<div v-if="courseToolTabs.length" class="course-tools-callout">
+				<div class="course-tools-callout__header">
+					<h5>{{ t('learning', 'Simulatoren im Kurs') }}</h5>
+					<p>{{ t('learning', 'Diese Werkzeuge sind für diesen Kurs freigeschaltet und lassen sich direkt im Werkzeuge-Bereich öffnen.') }}</p>
+				</div>
+				<div class="course-tools-grid">
+					<button
+						v-for="tool in courseToolTabs"
+						:key="'instructor-tool-' + tool.id"
+						type="button"
+						class="course-tool-chip"
+						@click="$emit('open-tool', tool.id)"
+					>
+						<span class="course-tool-chip__icon" aria-hidden="true">{{ tool.icon }}</span>
+						<span>{{ tool.shortLabel }}</span>
+					</button>
+				</div>
+			</div>
+
 			<div v-if="coursePools.length > 0" class="pool-list">
 				<div
 					v-for="pool in sortedPools"
@@ -89,6 +108,25 @@
 				<NcButton type="primary" @click.stop="$emit('openSmartQueue')">
 					{{ t('learning', 'Smart Queue starten') }}
 				</NcButton>
+			</div>
+
+			<div v-if="!selectedLearningPool && courseToolTabs.length" class="course-tools-callout">
+				<div class="course-tools-callout__header">
+					<h5>{{ t('learning', 'Simulatoren im Kurs') }}</h5>
+					<p>{{ t('learning', 'Diese Werkzeuge passen zu deinem Kurs und öffnen direkt den passenden Simulator.') }}</p>
+				</div>
+				<div class="course-tools-grid">
+					<button
+						v-for="tool in courseToolTabs"
+						:key="'student-tool-' + tool.id"
+						type="button"
+						class="course-tool-chip"
+						@click="$emit('open-tool', tool.id)"
+					>
+						<span class="course-tool-chip__icon" aria-hidden="true">{{ tool.icon }}</span>
+						<span>{{ tool.shortLabel }}</span>
+					</button>
+				</div>
 			</div>
 
 			<div v-if="!selectedLearningPool" class="pools-section">
@@ -390,6 +428,7 @@ import ExamMode from './ExamMode.vue'
 import KnowledgeModeration from './KnowledgeModeration.vue'
 import LeitnerMode from './LeitnerMode.vue'
 import TrainingMode from './TrainingMode.vue'
+import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 
 export default {
 	name: 'CourseTabLernraum',
@@ -540,6 +579,18 @@ export default {
 				exam: t('learning', 'Exam'),
 			}
 			return labels[this.currentSubTab] || t('learning', 'Choose a learning mode')
+		},
+		courseToolTabs() {
+			const enabled = Array.isArray(this.course?.enabled_tools) && this.course.enabled_tools.length
+				? this.course.enabled_tools
+				: ALL_TOOL_IDS
+			const enabledSet = new Set(enabled)
+			return TOOL_CATALOG
+				.filter((tool) => enabledSet.has(tool.id))
+				.map((tool) => ({
+					...tool,
+					shortLabel: t('learning', tool.shortLabelKey),
+				}))
 		},
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentSubTab)
@@ -963,6 +1014,62 @@ export default {
 .course-pool-help,
 .required-lock-note {
 	margin-bottom: 12px;
+}
+
+.course-tools-callout {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 16px;
+	margin-bottom: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large, 12px);
+	background: color-mix(in srgb, var(--color-primary-element) 6%, var(--color-main-background));
+}
+
+.course-tools-callout__header h5 {
+	margin: 0 0 4px;
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--color-main-text);
+}
+
+.course-tools-callout__header p {
+	margin: 0;
+	font-size: 13px;
+	line-height: 1.45;
+	color: var(--color-text-maxcontrast);
+}
+
+.course-tools-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.course-tool-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 14px;
+	border: 1px solid var(--color-border);
+	border-radius: 999px;
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: transform 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.course-tool-chip:hover {
+	transform: translateY(-1px);
+	border-color: var(--color-primary-element);
+	background: var(--color-background-hover);
+}
+
+.course-tool-chip__icon {
+	font-size: 15px;
 }
 
 .pool-item {
