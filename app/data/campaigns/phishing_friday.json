@@ -141,8 +141,8 @@
             "question_count": 4,
             "pass_threshold": 3
           },
-          "success_scene": "s3_eindämmung",
-          "fail_scene": "s3_eindämmung"
+          "success_scene": "s3_eindaemmung",
+          "fail_scene": "s3_eindaemmung"
         },
         {
           "id": "c2_osint_check",
@@ -153,8 +153,8 @@
             "question_count": 3,
             "pass_threshold": 2
           },
-          "success_scene": "s3_eindämmung",
-          "fail_scene": "s3_eindämmung"
+          "success_scene": "s3_eindaemmung",
+          "fail_scene": "s3_eindaemmung"
         }
       ]
     },

@@ -256,9 +256,9 @@
               }
             }
           },
-          "success_scene": "s3_eindämmung",
-          "partial_scene": "s3_eindämmung",
-          "fail_scene": "s3_eindämmung"
+          "success_scene": "s3_eindaemmung",
+          "partial_scene": "s3_eindaemmung",
+          "fail_scene": "s3_eindaemmung"
         },
         {
           "id": "c2_pipeline_untersuchen",
@@ -283,9 +283,9 @@
               }
             }
           },
-          "success_scene": "s3_eindämmung",
-          "partial_scene": "s3_eindämmung",
-          "fail_scene": "s3_eindämmung"
+          "success_scene": "s3_eindaemmung",
+          "partial_scene": "s3_eindaemmung",
+          "fail_scene": "s3_eindaemmung"
         },
         {
           "id": "c2_30_tage_audit",
@@ -310,9 +310,9 @@
               }
             }
           },
-          "success_scene": "s3_eindämmung",
-          "partial_scene": "s3_eindämmung",
-          "fail_scene": "s3_eindämmung"
+          "success_scene": "s3_eindaemmung",
+          "partial_scene": "s3_eindaemmung",
+          "fail_scene": "s3_eindaemmung"
         }
       ],
       "simulation": null
@@ -446,9 +446,9 @@
               }
             }
           },
-          "success_scene": "s5_härtung",
-          "partial_scene": "s5_härtung",
-          "fail_scene": "s5_härtung"
+          "success_scene": "s5_haertung",
+          "partial_scene": "s5_haertung",
+          "fail_scene": "s5_haertung"
         },
         {
           "id": "c4_prompt_firewall",
@@ -473,9 +473,9 @@
               }
             }
           },
-          "success_scene": "s5_härtung",
-          "partial_scene": "s5_härtung",
-          "fail_scene": "s5_härtung"
+          "success_scene": "s5_haertung",
+          "partial_scene": "s5_haertung",
+          "fail_scene": "s5_haertung"
         },
         {
           "id": "c4_red_team",
@@ -500,9 +500,9 @@
               }
             }
           },
-          "success_scene": "s5_härtung",
-          "partial_scene": "s5_härtung",
-          "fail_scene": "s5_härtung"
+          "success_scene": "s5_haertung",
+          "partial_scene": "s5_haertung",
+          "fail_scene": "s5_haertung"
         }
       ],
       "simulation": null

@@ -132,9 +132,9 @@
               }
             }
           },
-          "success_scene": "s2_eternalblü",
-          "partial_scene": "s2_eternalblü",
-          "fail_scene": "s2_eternalblü_late"
+          "success_scene": "s2_eternalblue",
+          "partial_scene": "s2_eternalblue",
+          "fail_scene": "s2_eternalblue_late"
         },
         {
           "id": "c1_check_patches",
@@ -159,9 +159,9 @@
               }
             }
           },
-          "success_scene": "s2_eternalblü",
-          "partial_scene": "s2_eternalblü",
-          "fail_scene": "s2_eternalblü_late"
+          "success_scene": "s2_eternalblue",
+          "partial_scene": "s2_eternalblue",
+          "fail_scene": "s2_eternalblue_late"
         },
         {
           "id": "c1_disable_smbv1",
@@ -186,9 +186,9 @@
               }
             }
           },
-          "success_scene": "s2_eternalblü",
-          "partial_scene": "s2_eternalblü",
-          "fail_scene": "s2_eternalblü_late"
+          "success_scene": "s2_eternalblue",
+          "partial_scene": "s2_eternalblue",
+          "fail_scene": "s2_eternalblue_late"
         }
       ],
       "simulation": null

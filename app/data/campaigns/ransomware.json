@@ -132,9 +132,9 @@
               }
             }
           },
-          "success_scene": "s2_eindämmung",
-          "partial_scene": "s2_eindämmung",
-          "fail_scene": "s2_eindämmung_slow"
+          "success_scene": "s2_eindaemmung",
+          "partial_scene": "s2_eindaemmung",
+          "fail_scene": "s2_eindaemmung_slow"
         },
         {
           "id": "c1_assess_spread",
@@ -159,9 +159,9 @@
               }
             }
           },
-          "success_scene": "s2_eindämmung",
-          "partial_scene": "s2_eindämmung",
-          "fail_scene": "s2_eindämmung_slow"
+          "success_scene": "s2_eindaemmung",
+          "partial_scene": "s2_eindaemmung",
+          "fail_scene": "s2_eindaemmung_slow"
         },
         {
           "id": "c1_check_backup",
@@ -186,9 +186,9 @@
               }
             }
           },
-          "success_scene": "s2_eindämmung",
-          "partial_scene": "s2_eindämmung",
-          "fail_scene": "s2_eindämmung_slow"
+          "success_scene": "s2_eindaemmung",
+          "partial_scene": "s2_eindaemmung",
+          "fail_scene": "s2_eindaemmung_slow"
         }
       ],
       "simulation": null
