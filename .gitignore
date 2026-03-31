@@ -79,9 +79,10 @@ Thumbs.db
 
 # Backup
 .git-backup-*
-scripts/
+scripts/*
 !scripts/devcloud-sanitize.py
 !scripts/devcloud-staleness.sh
+!scripts/fill_pool_explanations.php
 .env
 .ralph/
 certs/
