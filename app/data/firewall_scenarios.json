@@ -1,7 +1,7 @@
 [
   {
     "id": "web-only",
-    "title": "HTTP/HTTPS only",
+    "title": "Nur HTTP/HTTPS",
     "question": "Welche Regel muss das Paket erlauben?",
     "packet": {
       "srcIp": "10.0.1.25",
@@ -25,11 +25,11 @@
     "options": [
       {
         "id": "allow",
-        "label": "Allow über allow-web"
+        "label": "Erlaubt über allow-web"
       },
       {
         "id": "deny",
-        "label": "Implicit deny"
+        "label": "Implizit blockiert"
       }
     ],
     "answer": "allow"

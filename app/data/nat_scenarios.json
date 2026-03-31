@@ -61,7 +61,7 @@
       },
       {
         "id": "hairpin",
-        "label": "Hairpin NAT ist aktiv"
+        "label": "Hairpin-NAT ist aktiv"
       }
     ],
     "answer": "pool-exhausted"
@@ -88,7 +88,7 @@
       },
       {
         "id": "static",
-        "label": "Static NAT"
+        "label": "Statisches NAT"
       }
     ],
     "answer": "pat"
@@ -130,8 +130,8 @@
   },
   {
     "id": "hairpin",
-    "title": "Hairpin NAT",
-    "question": "Wohin wird das Ziel bei Hairpin NAT umgeschrieben?",
+    "title": "Hairpin-NAT",
+    "question": "Wohin wird das Ziel bei Hairpin-NAT umgeschrieben?",
     "config": {
       "type": "static",
       "mappings": [

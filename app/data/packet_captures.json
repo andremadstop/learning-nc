@@ -2,12 +2,12 @@
   "captures": [
     {
       "id": "tcp-handshake",
-      "title": "TCP 3-Way Handshake",
+      "title": "TCP-Drei-Wege-Handshake",
       "packets": [
         {
           "id": "pkt-1",
           "timestamp": "00.001",
-          "summary": "Client SYN",
+          "summary": "Client-SYN",
           "ethernet": {
             "srcMac": "aa:aa:aa:aa:aa:aa",
             "dstMac": "bb:bb:bb:bb:bb:bb",
@@ -33,7 +33,7 @@
         {
           "id": "pkt-2",
           "timestamp": "00.015",
-          "summary": "Server SYN-ACK",
+          "summary": "Server-SYN-ACK",
           "ethernet": {
             "srcMac": "bb:bb:bb:bb:bb:bb",
             "dstMac": "aa:aa:aa:aa:aa:aa",
@@ -60,7 +60,7 @@
         {
           "id": "pkt-3",
           "timestamp": "00.029",
-          "summary": "Client ACK",
+          "summary": "Client-ACK",
           "ethernet": {
             "srcMac": "aa:aa:aa:aa:aa:aa",
             "dstMac": "bb:bb:bb:bb:bb:bb",
@@ -87,12 +87,12 @@
     },
     {
       "id": "dns-query-response",
-      "title": "DNS Query + Response",
+      "title": "DNS-Anfrage und -Antwort",
       "packets": [
         {
           "id": "pkt-4",
           "timestamp": "10.001",
-          "summary": "DNS Query",
+          "summary": "DNS-Anfrage",
           "ethernet": {
             "srcMac": "aa:aa:aa:aa:aa:aa",
             "dstMac": "cc:cc:cc:cc:cc:cc",
@@ -119,7 +119,7 @@
         {
           "id": "pkt-5",
           "timestamp": "10.020",
-          "summary": "DNS Response",
+          "summary": "DNS-Antwort",
           "ethernet": {
             "srcMac": "cc:cc:cc:cc:cc:cc",
             "dstMac": "aa:aa:aa:aa:aa:aa",
@@ -147,12 +147,12 @@
     },
     {
       "id": "http-get",
-      "title": "HTTP GET",
+      "title": "HTTP-GET",
       "packets": [
         {
           "id": "pkt-6",
           "timestamp": "20.000",
-          "summary": "HTTP GET /",
+          "summary": "HTTP-GET /",
           "ethernet": {
             "srcMac": "aa:aa:aa:aa:aa:aa",
             "dstMac": "bb:bb:bb:bb:bb:bb",
@@ -217,12 +217,12 @@
     },
     {
       "id": "arp",
-      "title": "ARP Request + Reply",
+      "title": "ARP-Anfrage und -Antwort",
       "packets": [
         {
           "id": "pkt-8",
           "timestamp": "30.001",
-          "summary": "Who has 10.0.0.1?",
+          "summary": "Wer hat 10.0.0.1?",
           "ethernet": {
             "srcMac": "aa:aa:aa:aa:aa:aa",
             "dstMac": "ff:ff:ff:ff:ff:ff",
@@ -237,7 +237,7 @@
         {
           "id": "pkt-9",
           "timestamp": "30.006",
-          "summary": "10.0.0.1 is at bb:bb:bb:bb:bb:bb",
+          "summary": "10.0.0.1 ist bei bb:bb:bb:bb:bb:bb",
           "ethernet": {
             "srcMac": "bb:bb:bb:bb:bb:bb",
             "dstMac": "aa:aa:aa:aa:aa:aa",
@@ -253,12 +253,12 @@
     },
     {
       "id": "icmp-ping-problem",
-      "title": "ICMP Ping with TTL exceeded",
+      "title": "ICMP-Ping mit TTL überschritten",
       "packets": [
         {
           "id": "pkt-10",
           "timestamp": "40.001",
-          "summary": "Echo Request",
+          "summary": "Echo-Anfrage",
           "ethernet": {
             "srcMac": "aa:aa:aa:aa:aa:aa",
             "dstMac": "cc:cc:cc:cc:cc:cc",
@@ -274,13 +274,13 @@
           "icmp": {
             "type": 8,
             "code": 0,
-            "detail": "Echo request"
+            "detail": "Echo-Anfrage"
           }
         },
         {
           "id": "pkt-11",
           "timestamp": "40.020",
-          "summary": "TTL Exceeded",
+          "summary": "TTL überschritten",
           "ethernet": {
             "srcMac": "cc:cc:cc:cc:cc:cc",
             "dstMac": "aa:aa:aa:aa:aa:aa",
@@ -296,7 +296,7 @@
           "icmp": {
             "type": 11,
             "code": 0,
-            "detail": "TTL exceeded"
+            "detail": "TTL überschritten"
           }
         }
       ]
@@ -314,7 +314,7 @@
         },
         {
           "id": "arp",
-          "label": "Ein ARP Reply"
+          "label": "Eine ARP-Antwort"
         }
       ],
       "answer": "same-seq"
@@ -338,7 +338,7 @@
     {
       "id": "ttl-exceeded",
       "captureId": "icmp-ping-problem",
-      "question": "Worauf deutet TTL exceeded typischerweise hin?",
+      "question": "Worauf deutet eine überschrittene TTL typischerweise hin?",
       "options": [
         {
           "id": "loop",
@@ -358,7 +358,7 @@
       "options": [
         {
           "id": "http",
-          "label": "HTTP / Web-Proxy"
+          "label": "HTTP / Webproxy"
         },
         {
           "id": "dns",
@@ -374,11 +374,11 @@
       "options": [
         {
           "id": "two-answers",
-          "label": "Zwei Antworten mit unterschiedlichen IPs auf dieselbe Query"
+          "label": "Zwei Antworten mit unterschiedlichen IPs auf dieselbe Anfrage"
         },
         {
           "id": "one-query",
-          "label": "Nur eine einzige Query"
+          "label": "Nur eine einzige Anfrage"
         }
       ],
       "answer": "two-answers"

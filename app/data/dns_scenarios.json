@@ -97,7 +97,7 @@
   },
   {
     "id": "dns-dnssec-failure",
-    "title": "DNSSEC Validation Failure",
+    "title": "DNSSEC-Validierung schlägt fehl",
     "domain": "branch.example.de",
     "recordType": "A",
     "question": "Warum wird die Antwort trotz vorhandener IP verworfen?",

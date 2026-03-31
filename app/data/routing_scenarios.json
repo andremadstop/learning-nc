@@ -29,7 +29,7 @@
       },
       {
         "id": "192.168.1.1",
-        "label": "Default Route 192.168.1.1"
+        "label": "Standardroute 192.168.1.1"
       }
     ],
     "answer": "10.0.1.1"
@@ -37,7 +37,7 @@
   {
     "id": "missing-route",
     "title": "Fehlende Route",
-    "question": "Was passiert ohne passende Route und ohne Default?",
+    "question": "Was passiert ohne passende Route und ohne Standardroute?",
     "destinationIp": "172.20.1.10",
     "routes": [
       {
@@ -52,11 +52,11 @@
     "options": [
       {
         "id": "unreachable",
-        "label": "Destination Unreachable"
+        "label": "Ziel nicht erreichbar"
       },
       {
         "id": "default",
-        "label": "Default Route nimmt das Paket"
+        "label": "Die Standardroute nimmt das Paket"
       }
     ],
     "answer": "unreachable"
@@ -98,7 +98,7 @@
   },
   {
     "id": "longest-prefix",
-    "title": "Longest Prefix Match",
+    "title": "Längstes Präfix gewinnt",
     "question": "Welche Route gewinnt für 192.168.1.100?",
     "destinationIp": "192.168.1.100",
     "routes": [
@@ -133,7 +133,7 @@
   },
   {
     "id": "default-vs-specific",
-    "title": "Default vs. spezifisch",
+    "title": "Standardroute vs. spezifisch",
     "question": "Welcher Gateway wird für 203.0.113.77 genutzt?",
     "destinationIp": "203.0.113.77",
     "routes": [
@@ -161,7 +161,7 @@
       },
       {
         "id": "192.168.1.1",
-        "label": "Default Route über 192.168.1.1"
+        "label": "Standardroute über 192.168.1.1"
       }
     ],
     "answer": "172.16.0.1"

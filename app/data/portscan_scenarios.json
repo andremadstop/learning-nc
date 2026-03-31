@@ -32,7 +32,7 @@
       },
       {
         "id": "network-device",
-        "label": "Router/Switch"
+        "label": "Router oder Switch"
       },
       {
         "id": "webserver",
