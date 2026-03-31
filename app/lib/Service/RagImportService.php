@@ -13,6 +13,9 @@ use Psr\Log\LoggerInterface;
  * vault-imported (0) and document-extracted (positive IDs).
  */
 class RagImportService {
+    public const SOURCE_TYPE_WEB = 'web';
+    public const SOURCE_TYPE_STUDENT = 'student';
+
     private RagChunkMapper $chunkMapper;
     private LoggerInterface $logger;
 
@@ -42,7 +45,7 @@ class RagImportService {
      * @return array{chunks: int, tokens: int, title: string}
      * @throws \InvalidArgumentException If text is too short
      */
-    public function importText(int $courseId, string $title, string $text, ?string $userId = null, string $sourceType = 'web'): array {
+    public function importText(int $courseId, string $title, string $text, ?string $userId = null, string $sourceType = self::SOURCE_TYPE_WEB): array {
         if (mb_strlen(trim($text)) < self::MIN_TEXT_LENGTH) {
             throw new \InvalidArgumentException(
                 'Text must be at least ' . self::MIN_TEXT_LENGTH . ' characters long'
@@ -55,7 +58,9 @@ class RagImportService {
         $this->chunkMapper->deleteBySourceFileAndDocumentIdAndCourseId(
             $title,
             self::WEB_IMPORT_DOCUMENT_ID,
-            $courseId
+            $courseId,
+            $sourceType,
+            $sourceType === self::SOURCE_TYPE_STUDENT ? $userId : null
         );
 
         $chunks = $this->splitIntoChunks($cleaned, null);
@@ -77,7 +82,7 @@ class RagImportService {
             $chunk->setCreatedAt($now);
             $chunk->setUserId($userId);
             $chunk->setSourceType($sourceType);
-            $chunk->setStatus($sourceType === 'student' ? 'pending' : 'approved');
+            $chunk->setStatus($sourceType === self::SOURCE_TYPE_STUDENT ? 'pending' : 'approved');
 
             $this->chunkMapper->insert($chunk);
             $totalTokens += $tokenCount;
@@ -89,6 +94,8 @@ class RagImportService {
             'tokens' => $totalTokens,
             'courseId' => $courseId,
             'title' => $title,
+            'sourceType' => $sourceType,
+            'userId' => $userId,
             'app' => 'learning',
         ]);
 
@@ -117,7 +124,8 @@ class RagImportService {
         return $this->chunkMapper->deleteBySourceFileAndDocumentIdAndCourseId(
             $title,
             self::WEB_IMPORT_DOCUMENT_ID,
-            $courseId
+            $courseId,
+            self::SOURCE_TYPE_WEB
         );
     }
 

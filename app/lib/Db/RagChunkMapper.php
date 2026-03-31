@@ -159,16 +159,32 @@ class RagChunkMapper extends QBMapper {
     /**
      * Delete chunks by source file name, document ID, and course ID.
      *
-     * Used for idempotent web imports: replace previous chunks for same title.
+     * Optional source-type and user scoping keeps instructor imports separate
+     * from student swarm contributions even when titles match.
      *
      * @return int Number of affected rows
      */
-    public function deleteBySourceFileAndDocumentIdAndCourseId(string $sourceFile, int $documentId, int $courseId): int {
+    public function deleteBySourceFileAndDocumentIdAndCourseId(
+        string $sourceFile,
+        int $documentId,
+        int $courseId,
+        ?string $sourceType = null,
+        ?string $userId = null
+    ): int {
         $qb = $this->db->getQueryBuilder();
         $qb->delete($this->getTableName())
             ->where($qb->expr()->eq('source_file', $qb->createNamedParameter($sourceFile)))
             ->andWhere($qb->expr()->eq('document_id', $qb->createNamedParameter($documentId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+
+        if ($sourceType !== null) {
+            $qb->andWhere($qb->expr()->eq('source_type', $qb->createNamedParameter($sourceType)));
+        }
+
+        if ($userId !== null) {
+            $qb->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+        }
+
         return $qb->executeStatement();
     }
 
@@ -234,6 +250,7 @@ class RagChunkMapper extends QBMapper {
             ->from($this->getTableName())
             ->where($qb->expr()->eq('document_id', $qb->createNamedParameter(-1, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
             ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('source_type', $qb->createNamedParameter('web')))
             ->groupBy('source_file')
             ->orderBy('created_at', 'DESC');
 

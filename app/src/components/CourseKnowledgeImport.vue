@@ -1,8 +1,11 @@
 <template>
-	<div class="course-knowledge-import">
+	<div v-if="isInstructor" class="course-knowledge-import">
 		<!-- Import Form -->
 		<div class="import-form">
 			<h4>{{ t('learning', 'Wissen importieren') }}</h4>
+			<p class="import-hint">
+				{{ t('learning', 'Diese Wissensquellen stehen VirtuProf als Kurskontext zur Verfügung. Schwarm-Beiträge von Studierenden werden getrennt moderiert und erscheinen hier nicht.') }}
+			</p>
 
 			<div class="import-mode-toggle">
 				<button
@@ -47,6 +50,7 @@
 					accept=".md,.txt"
 					class="import-file-input"
 					@change="onFileSelected" />
+				<p v-if="selectedFile" class="selected-file-name">{{ selectedFile.name }}</p>
 				<button
 					class="material-btn primary"
 					:disabled="!selectedFile || importing"
@@ -55,15 +59,13 @@
 				</button>
 			</div>
 
-			<!-- Success message -->
-			<div v-if="success" class="success-message">
+			<NcNoteCard v-if="success" type="success" class="import-message">
 				{{ success }}
-			</div>
+			</NcNoteCard>
 
-			<!-- Error message -->
-			<div v-if="error" class="error-message">
+			<NcNoteCard v-if="error" type="error" class="import-message">
 				{{ error }}
-			</div>
+			</NcNoteCard>
 		</div>
 
 		<!-- Imported Documents List -->
@@ -71,7 +73,7 @@
 			<h4>{{ t('learning', 'Importierte Wissensquellen') }}</h4>
 
 			<div v-if="loading" class="loading-container">
-				<span class="icon-loading" />
+				<NcLoadingIcon :size="28" />
 				<p>{{ t('learning', 'Lade...') }}</p>
 			</div>
 
@@ -116,9 +118,14 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
+import { NcLoadingIcon, NcNoteCard } from '@nextcloud/vue'
 
 export default {
 	name: 'CourseKnowledgeImport',
+	components: {
+		NcLoadingIcon,
+		NcNoteCard,
+	},
 
 	props: {
 		courseId: {
@@ -147,7 +154,9 @@ export default {
 	},
 
 	mounted() {
-		this.loadImports()
+		if (this.isInstructor) {
+			this.loadImports()
+		}
 	},
 
 	methods: {
@@ -160,7 +169,7 @@ export default {
 				const response = await axios.get(url)
 				this.imports = response.data || []
 			} catch (e) {
-				console.error('Failed to load knowledge imports', e)
+				this.error = e.response?.data?.error || t('learning', 'Wissensquellen konnten nicht geladen werden.')
 			} finally {
 				this.loading = false
 			}
@@ -225,6 +234,7 @@ export default {
 
 		async deleteImport(title) {
 			if (!confirm(t('learning', 'Wirklich löschen?'))) return
+			this.error = null
 			this.$set(this.deleting, title, true)
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/knowledge/{title}', {
@@ -234,8 +244,7 @@ export default {
 				await axios.delete(url)
 				this.imports = this.imports.filter(i => i.source_file !== title)
 			} catch (e) {
-				console.error('Failed to delete knowledge import', e)
-				this.error = t('learning', 'Löschen fehlgeschlagen')
+				this.error = e.response?.data?.error || t('learning', 'Löschen fehlgeschlagen')
 			} finally {
 				this.$set(this.deleting, title, false)
 			}
@@ -244,6 +253,8 @@ export default {
 		onFileSelected(event) {
 			const files = event.target.files
 			this.selectedFile = files && files.length > 0 ? files[0] : null
+			this.error = null
+			this.success = null
 		},
 
 		formatDate(timestamp) {
@@ -271,6 +282,11 @@ export default {
 
 .import-form h4 {
 	margin: 0 0 12px 0;
+}
+
+.import-hint {
+	margin: 0 0 16px 0;
+	color: var(--color-text-maxcontrast, #767676);
 }
 
 .import-mode-toggle {
@@ -309,22 +325,14 @@ export default {
 	padding: 8px 0;
 }
 
-.success-message {
-	margin-top: 10px;
-	padding: 8px 12px;
-	background: #e8f5e9;
-	color: #2e7d32;
-	border-radius: var(--border-radius, 4px);
+.selected-file-name {
+	margin: 0;
 	font-size: 14px;
+	color: var(--color-text-maxcontrast, #767676);
 }
 
-.error-message {
+.import-message {
 	margin-top: 10px;
-	padding: 8px 12px;
-	background: #ffebee;
-	color: #c62828;
-	border-radius: var(--border-radius, 4px);
-	font-size: 14px;
 }
 
 .import-list-section {

@@ -204,7 +204,13 @@ class RagImportController extends Controller {
                 return new DataResponse(['error' => 'Chunk limit reached (max ' . self::MAX_STUDENT_CHUNKS_PER_COURSE . ')'], Http::STATUS_FORBIDDEN);
             }
 
-            $result = $this->importService->importText($courseId, trim($title), $text, $this->userId, 'student');
+            $result = $this->importService->importText(
+                $courseId,
+                trim($title),
+                $text,
+                $this->userId,
+                RagImportService::SOURCE_TYPE_STUDENT
+            );
 
             // Check swarm badge after successful student contribution
             $this->badgeService->checkAndAward($this->userId, 'swarm_contribution', []);
