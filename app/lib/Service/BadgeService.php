@@ -33,7 +33,6 @@ class BadgeService {
             'legacy' => false,
             'threshold' => 7,
         ],
-        'streak_30' => ['name' => 'Month Master', 'emoji' => "\u{1F31F}", 'description' => '30-day learning streak', 'category' => 'streak', 'legacy' => true],
         'streak_100' => ['name' => 'Legend', 'emoji' => "\u{1F451}", 'description' => '100-day learning streak', 'category' => 'streak', 'legacy' => true],
         'speed_demon' => ['name' => 'Speed Demon', 'emoji' => "\u{26A1}", 'description' => 'Exam in <50% time with 80%+ score', 'category' => 'performance', 'legacy' => true],
         'sharing_caring' => ['name' => 'Sharing is Caring', 'emoji' => "\u{1F91D}", 'description' => 'Share your first pool', 'category' => 'social', 'legacy' => true],
@@ -64,7 +63,7 @@ class BadgeService {
             'threshold' => 50,
         ],
         'streak_14' => [
-            'name' => 'Two-Week Warrior',
+            'name' => 'Two-Week Streak',
             'name_key' => 'badge_streak_14_name',
             'emoji' => "\u{26A1}",
             'description' => 'Stay active for 14 days in a row',
