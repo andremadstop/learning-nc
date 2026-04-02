@@ -13,34 +13,8 @@
       <img v-else-if="scenarioImage" :src="scenarioImage" class="pbq-diagram-img" :alt="t('learning', 'Network diagram')" />
       <!-- Fallback topology grid when no diagram image is available -->
       <div v-else class="pbq-topology-grid pbq-topology-grid--with-bg">
-        <svg class="pbq-placement__fallback-bg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <!-- Router (Mitte) -->
-          <rect x="175" y="130" width="50" height="35" rx="4" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="2"/>
-          <text x="200" y="152" text-anchor="middle" font-size="10" fill="var(--color-text-maxcontrast, #666)">Router</text>
-          <!-- Switch links -->
-          <rect x="60" y="220" width="50" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1.5"/>
-          <text x="85" y="239" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">SW1</text>
-          <!-- Switch rechts -->
-          <rect x="290" y="220" width="50" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1.5"/>
-          <text x="315" y="239" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">SW2</text>
-          <!-- Verbindungen Router→Switches -->
-          <line x1="200" y1="165" x2="85" y2="220" stroke="var(--color-border-dark, #888)" stroke-width="1.5"/>
-          <line x1="200" y1="165" x2="315" y2="220" stroke="var(--color-border-dark, #888)" stroke-width="1.5"/>
-          <!-- PCs -->
-          <rect x="20" y="60" width="40" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
-          <text x="40" y="79" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">PC1</text>
-          <rect x="100" y="60" width="40" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
-          <text x="120" y="79" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">PC2</text>
-          <rect x="260" y="60" width="40" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
-          <text x="280" y="79" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">PC3</text>
-          <rect x="340" y="60" width="40" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
-          <text x="360" y="79" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">PC4</text>
-          <!-- Verbindungen Switches→PCs -->
-          <line x1="85" y1="220" x2="40" y2="90" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
-          <line x1="85" y1="220" x2="120" y2="90" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
-          <line x1="315" y1="220" x2="280" y2="90" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
-          <line x1="315" y1="220" x2="360" y2="90" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
-        </svg>
+        <!-- eslint-disable-next-line vue/no-v-html -- trusted internal SVG topologies, no user input -->
+        <svg class="pbq-placement__fallback-bg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" v-html="scenarioSvgContent"></svg>
         <div
           v-for="pos in config.positions"
           :key="pos.id"
@@ -152,6 +126,106 @@ export default {
     }
   },
   computed: {
+    scenarioType() {
+      return (this.config && this.config.scenario_type) || 'network-basic'
+    },
+    scenarioSvgContent() {
+      const S = 'var(--color-border-dark, #888)'
+      const T = 'var(--color-text-maxcontrast, #666)'
+      const svgs = {
+        'network-basic':
+          `<rect x="175" y="130" width="50" height="35" rx="4" fill="none" stroke="${S}" stroke-width="2"/>`
+          + `<text x="200" y="152" text-anchor="middle" font-size="10" fill="${T}">Router</text>`
+          + `<rect x="60" y="220" width="50" height="30" rx="3" fill="none" stroke="${S}" stroke-width="1.5"/>`
+          + `<text x="85" y="239" text-anchor="middle" font-size="9" fill="${T}">SW1</text>`
+          + `<rect x="290" y="220" width="50" height="30" rx="3" fill="none" stroke="${S}" stroke-width="1.5"/>`
+          + `<text x="315" y="239" text-anchor="middle" font-size="9" fill="${T}">SW2</text>`
+          + `<line x1="200" y1="165" x2="85" y2="220" stroke="${S}" stroke-width="1.5"/>`
+          + `<line x1="200" y1="165" x2="315" y2="220" stroke="${S}" stroke-width="1.5"/>`
+          + `<rect x="20" y="60" width="40" height="30" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="40" y="79" text-anchor="middle" font-size="9" fill="${T}">PC1</text>`
+          + `<rect x="100" y="60" width="40" height="30" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="120" y="79" text-anchor="middle" font-size="9" fill="${T}">PC2</text>`
+          + `<rect x="260" y="60" width="40" height="30" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="280" y="79" text-anchor="middle" font-size="9" fill="${T}">PC3</text>`
+          + `<rect x="340" y="60" width="40" height="30" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="360" y="79" text-anchor="middle" font-size="9" fill="${T}">PC4</text>`
+          + `<line x1="85" y1="220" x2="40" y2="90" stroke="${S}" stroke-width="1"/>`
+          + `<line x1="85" y1="220" x2="120" y2="90" stroke="${S}" stroke-width="1"/>`
+          + `<line x1="315" y1="220" x2="280" y2="90" stroke="${S}" stroke-width="1"/>`
+          + `<line x1="315" y1="220" x2="360" y2="90" stroke="${S}" stroke-width="1"/>`,
+
+        'network-server':
+          `<rect x="175" y="20" width="50" height="35" rx="4" fill="none" stroke="${S}" stroke-width="2"/>`
+          + `<text x="200" y="42" text-anchor="middle" font-size="10" fill="${T}">Router</text>`
+          + `<rect x="175" y="100" width="50" height="30" rx="3" fill="none" stroke="${S}" stroke-width="1.5"/>`
+          + `<text x="200" y="119" text-anchor="middle" font-size="9" fill="${T}">Switch</text>`
+          + `<line x1="200" y1="55" x2="200" y2="100" stroke="${S}" stroke-width="1.5"/>`
+          + `<rect x="30" y="170" width="50" height="35" rx="3" fill="none" stroke="${S}" stroke-width="1.5"/>`
+          + `<text x="55" y="192" text-anchor="middle" font-size="9" fill="${T}">Server1</text>`
+          + `<rect x="120" y="170" width="50" height="35" rx="3" fill="none" stroke="${S}" stroke-width="1.5"/>`
+          + `<text x="145" y="192" text-anchor="middle" font-size="9" fill="${T}">Server2</text>`
+          + `<rect x="320" y="100" width="50" height="30" rx="3" fill="none" stroke="${S}" stroke-width="2"/>`
+          + `<text x="345" y="119" text-anchor="middle" font-size="9" fill="${T}">Firewall</text>`
+          + `<line x1="225" y1="115" x2="320" y2="115" stroke="${S}" stroke-width="1.5"/>`
+          + `<rect x="250" y="220" width="40" height="30" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="270" y="239" text-anchor="middle" font-size="9" fill="${T}">Client1</text>`
+          + `<rect x="330" y="220" width="40" height="30" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="350" y="239" text-anchor="middle" font-size="9" fill="${T}">Client2</text>`
+          + `<line x1="200" y1="130" x2="55" y2="170" stroke="${S}" stroke-width="1"/>`
+          + `<line x1="200" y1="130" x2="145" y2="170" stroke="${S}" stroke-width="1"/>`
+          + `<line x1="200" y1="130" x2="270" y2="220" stroke="${S}" stroke-width="1"/>`
+          + `<line x1="200" y1="130" x2="350" y2="220" stroke="${S}" stroke-width="1"/>`,
+
+        'network-wan':
+          `<rect x="50" y="130" width="50" height="35" rx="4" fill="none" stroke="${S}" stroke-width="2"/>`
+          + `<text x="75" y="152" text-anchor="middle" font-size="10" fill="${T}">R1</text>`
+          + `<rect x="300" y="130" width="50" height="35" rx="4" fill="none" stroke="${S}" stroke-width="2"/>`
+          + `<text x="325" y="152" text-anchor="middle" font-size="10" fill="${T}">R2</text>`
+          + `<line x1="100" y1="148" x2="300" y2="148" stroke="${S}" stroke-width="2" stroke-dasharray="8,4"/>`
+          + `<text x="200" y="140" text-anchor="middle" font-size="9" fill="${T}">WAN</text>`
+          + `<rect x="30" y="210" width="40" height="25" rx="3" fill="none" stroke="${S}" stroke-width="1.5"/>`
+          + `<text x="50" y="227" text-anchor="middle" font-size="9" fill="${T}">SW1</text>`
+          + `<rect x="330" y="210" width="40" height="25" rx="3" fill="none" stroke="${S}" stroke-width="1.5"/>`
+          + `<text x="350" y="227" text-anchor="middle" font-size="9" fill="${T}">SW2</text>`
+          + `<line x1="75" y1="165" x2="50" y2="210" stroke="${S}" stroke-width="1.5"/>`
+          + `<line x1="325" y1="165" x2="350" y2="210" stroke="${S}" stroke-width="1.5"/>`
+          + `<rect x="10" y="260" width="35" height="25" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="28" y="277" text-anchor="middle" font-size="8" fill="${T}">PC1</text>`
+          + `<rect x="60" y="260" width="35" height="25" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="78" y="277" text-anchor="middle" font-size="8" fill="${T}">PC2</text>`
+          + `<rect x="310" y="260" width="35" height="25" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="328" y="277" text-anchor="middle" font-size="8" fill="${T}">PC3</text>`
+          + `<rect x="360" y="260" width="35" height="25" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="378" y="277" text-anchor="middle" font-size="8" fill="${T}">PC4</text>`
+          + `<line x1="50" y1="235" x2="28" y2="260" stroke="${S}" stroke-width="1"/>`
+          + `<line x1="50" y1="235" x2="78" y2="260" stroke="${S}" stroke-width="1"/>`
+          + `<line x1="350" y1="235" x2="328" y2="260" stroke="${S}" stroke-width="1"/>`
+          + `<line x1="350" y1="235" x2="378" y2="260" stroke="${S}" stroke-width="1"/>`,
+
+        'network-dmz':
+          `<rect x="175" y="20" width="50" height="35" rx="4" fill="none" stroke="${S}" stroke-width="2"/>`
+          + `<text x="200" y="42" text-anchor="middle" font-size="10" fill="${T}">Router</text>`
+          + `<rect x="175" y="90" width="50" height="30" rx="3" fill="none" stroke="${S}" stroke-width="2"/>`
+          + `<text x="200" y="109" text-anchor="middle" font-size="9" fill="${T}">Firewall</text>`
+          + `<line x1="200" y1="55" x2="200" y2="90" stroke="${S}" stroke-width="1.5"/>`
+          + `<rect x="60" y="155" width="80" height="50" rx="6" fill="none" stroke="${S}" stroke-width="1.5" stroke-dasharray="6,3"/>`
+          + `<text x="100" y="172" text-anchor="middle" font-size="9" fill="${T}">DMZ</text>`
+          + `<rect x="75" y="180" width="50" height="20" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="100" y="194" text-anchor="middle" font-size="8" fill="${T}">WebSrv</text>`
+          + `<rect x="260" y="155" width="100" height="100" rx="6" fill="none" stroke="${S}" stroke-width="1.5" stroke-dasharray="6,3"/>`
+          + `<text x="310" y="172" text-anchor="middle" font-size="9" fill="${T}">Internal</text>`
+          + `<rect x="275" y="180" width="40" height="20" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="295" y="194" text-anchor="middle" font-size="8" fill="${T}">DB</text>`
+          + `<rect x="275" y="210" width="40" height="20" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="295" y="224" text-anchor="middle" font-size="8" fill="${T}">Client1</text>`
+          + `<rect x="325" y="210" width="40" height="20" rx="3" fill="none" stroke="${S}" stroke-width="1"/>`
+          + `<text x="345" y="224" text-anchor="middle" font-size="8" fill="${T}">Client2</text>`
+          + `<line x1="175" y1="105" x2="100" y2="155" stroke="${S}" stroke-width="1.5"/>`
+          + `<line x1="225" y1="105" x2="310" y2="155" stroke="${S}" stroke-width="1.5"/>`,
+      }
+      return svgs[this.scenarioType] || svgs['network-basic']
+    },
     scoringSummaryText() {
       const mode = this.config.scoring_mode || 'strict'
       return scoringSummary(this.config.positions || [], this.value, mode)
