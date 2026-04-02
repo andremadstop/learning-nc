@@ -3,16 +3,23 @@ import VueRouter from 'vue-router'
 
 Vue.use(VueRouter)
 
+const RouteShellMarker = {
+	name: 'RouteShellMarker',
+	render(h) {
+		return h('div')
+	},
+}
+
 const routes = [
-  { path: '/', name: 'home' },
-  { path: '/dashboard', name: 'dashboard', meta: { mainView: 'dashboard' } },
-  { path: '/courses', name: 'courses', meta: { mainView: 'courses' } },
-  { path: '/courses/:id/:tab?', name: 'course-tab', meta: { mainView: 'courses' } },
-  { path: '/pools', name: 'pools', meta: { mainView: 'pools' } },
-  { path: '/tools', name: 'tools', meta: { mainView: 'werkzeuge' } },
-  { path: '/skill-map', name: 'skill-map', meta: { mainView: 'skillmap' } },
-  { path: '/settings', name: 'settings', meta: { mainView: 'settings' } },
-  { path: '/virtuprof', name: 'virtuprof', meta: { mainView: 'virtuprof-fullscreen' } },
+  { path: '/', name: 'home', component: RouteShellMarker },
+  { path: '/dashboard', name: 'dashboard', component: RouteShellMarker, meta: { mainView: 'dashboard' } },
+  { path: '/courses', name: 'courses', component: RouteShellMarker, meta: { mainView: 'courses' } },
+  { path: '/courses/:id/:tab?', name: 'course-tab', component: RouteShellMarker, meta: { mainView: 'courses' } },
+  { path: '/pools', name: 'pools', component: RouteShellMarker, meta: { mainView: 'pools' } },
+  { path: '/tools', name: 'tools', component: RouteShellMarker, meta: { mainView: 'werkzeuge' } },
+  { path: '/skill-map', name: 'skill-map', component: RouteShellMarker, meta: { mainView: 'skillmap' } },
+  { path: '/settings', name: 'settings', component: RouteShellMarker, meta: { mainView: 'settings' } },
+  { path: '/virtuprof', name: 'virtuprof', component: RouteShellMarker, meta: { mainView: 'virtuprof-fullscreen' } },
   { path: '*', redirect: '/' },
 ]
 
