@@ -493,6 +493,7 @@ import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { botChooseAnswer, botResponseDelay, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
+import { createSseClient } from '../utils/sse-client.js';
 
 export default {
   name: 'GameshowMode',
@@ -532,6 +533,7 @@ export default {
       maxPlayers: 5,
       loading: false,
       error: null,
+      sseClient: null,
       pollingInterval: null,
       hasAnswered: false,
       answeredCorrect: false,
@@ -1218,7 +1220,11 @@ export default {
 
     async refreshDisplayedQuestionLanguage() {
       if (this.gameshowCode) {
-        await this.pollState();
+        if (this.sseClient) {
+          this.restartRealtimeStream();
+        } else {
+          await this.pollState();
+        }
       }
       if (!this.lastQuestion || !this.lastQuestion.id) {
         return;
@@ -1571,6 +1577,23 @@ export default {
       return arr[Math.floor(Math.random() * arr.length)];
     },
 
+    buildSseUrl() {
+      let url = generateUrl('/apps/learning/api/sse/gameshow/' + this.gameshowCode);
+      const query = new URLSearchParams(this.buildStateParams()).toString();
+      if (query) {
+        url += '?' + query;
+      }
+      return url;
+    },
+
+    restartRealtimeStream() {
+      if (!this.gameshowCode || this.botMode || !this.sseClient) {
+        return;
+      }
+      this.stopPolling();
+      this.startPolling();
+    },
+
     newRound() {
       this.stopPolling();
       this.stopTimer();
@@ -1587,15 +1610,52 @@ export default {
     // ---------- Polling ----------
 
     startPolling() {
-      if (this.pollingInterval) return;
-      this.pollingInterval = setInterval(this.pollState, 500);
+      if (!this.gameshowCode || this.botMode || this.sseClient || this.pollingInterval) return;
+
+      this.sseClient = createSseClient(this.buildSseUrl(), {
+        onState: (state) => {
+          this.consecutivePollErrors = 0;
+          this.applyStateTransitions(state);
+        },
+        onClose: () => {
+          this.sseClient = null;
+        },
+        onFallback: () => {
+          this.sseClient = null;
+          return this.startPollingFallback(() => this.pollState());
+        },
+      });
     },
 
     stopPolling() {
+      if (this.sseClient) {
+        this.sseClient.close();
+        this.sseClient = null;
+      }
       if (this.pollingInterval) {
         clearInterval(this.pollingInterval);
         this.pollingInterval = null;
       }
+    },
+
+    startPollingFallback(pollFn) {
+      if (this.pollingInterval) {
+        return () => {};
+      }
+
+      const runPoll = () => {
+        Promise.resolve(pollFn()).catch(() => {});
+      };
+
+      runPoll();
+      this.pollingInterval = window.setInterval(runPoll, 500);
+
+      return () => {
+        if (this.pollingInterval) {
+          clearInterval(this.pollingInterval);
+          this.pollingInterval = null;
+        }
+      };
     },
 
     async pollState() {

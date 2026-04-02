@@ -148,6 +148,7 @@ return [
         ['name' => 'duel#state', 'url' => '/api/duels/{code}/state', 'verb' => 'GET'],
         ['name' => 'duel#answer', 'url' => '/api/duels/{code}/answer', 'verb' => 'POST'],
         ['name' => 'duel#rematch', 'url' => '/api/duels/{code}/rematch', 'verb' => 'POST'],
+        ['name' => 'sse#duelStream', 'url' => '/api/sse/duel/{code}', 'verb' => 'GET'],
 
         // Leagues
         ['name' => 'league#create', 'url' => '/api/courses/{courseId}/leagues', 'verb' => 'POST'],
@@ -242,6 +243,7 @@ return [
         ['name' => 'gameshow#ready', 'url' => '/api/gameshow/{code}/ready', 'verb' => 'POST'],
         ['name' => 'gameshow#state', 'url' => '/api/gameshow/{code}/state', 'verb' => 'GET'],
         ['name' => 'gameshow#answer', 'url' => '/api/gameshow/{code}/answer', 'verb' => 'POST'],
+        ['name' => 'sse#gameshowStream', 'url' => '/api/sse/gameshow/{code}', 'verb' => 'GET'],
         ['name' => 'gameshow#courseLobby', 'url' => '/api/courses/{courseId}/gameshow/lobby', 'verb' => 'GET'],
         // Board-game extensions (Phase 28)
         ['name' => 'gameshow#roll', 'url' => '/api/gameshow/{code}/roll', 'verb' => 'POST'],

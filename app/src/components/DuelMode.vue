@@ -291,6 +291,7 @@ import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { botChooseAnswer, botResponseDelay, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
+import { createSseClient } from '../utils/sse-client.js';
 
 export default {
   name: 'DuelMode',
@@ -336,6 +337,7 @@ export default {
       error: null,
       opponents: [],
       selectedOpponentUid: '',
+      sseClient: null,
       pollingInterval: null,
       hasAnswered: false,
       lastPoints: 0,
@@ -532,6 +534,14 @@ export default {
     buildStateParams() {
       return this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {};
     },
+    buildSseUrl() {
+      let url = generateUrl('/apps/learning/api/sse/duel/' + this.duelCode);
+      const query = new URLSearchParams(this.buildStateParams()).toString();
+      if (query) {
+        url += '?' + query;
+      }
+      return url;
+    },
     answerPayload(answerId) {
       return {
         answerId,
@@ -541,7 +551,11 @@ export default {
     },
     async refreshDisplayedQuestionLanguage() {
       if (this.duelCode) {
-        await this.pollState();
+        if (this.sseClient) {
+          this.restartRealtimeStream();
+        } else {
+          await this.pollState();
+        }
       }
       if (!this.lastQuestion || !this.lastQuestion.id) {
         return;
@@ -566,6 +580,13 @@ export default {
       this.lastQuestion = null;
       this.consecutivePollErrors = 0;
       this.disconnectDetected = false;
+    },
+    restartRealtimeStream() {
+      if (!this.duelCode || this.botMode || !this.sseClient) {
+        return;
+      }
+      this.stopPolling();
+      this.startPolling();
     },
 
     abortGame() {
@@ -882,15 +903,52 @@ export default {
     // ---------- Polling ----------
 
     startPolling() {
-      if (this.pollingInterval) return;
-      this.pollingInterval = setInterval(this.pollState, 500);
+      if (!this.duelCode || this.botMode || this.sseClient || this.pollingInterval) return;
+
+      this.sseClient = createSseClient(this.buildSseUrl(), {
+        onState: (state) => {
+          this.consecutivePollErrors = 0;
+          this.applyStateTransitions(state);
+        },
+        onClose: () => {
+          this.sseClient = null;
+        },
+        onFallback: () => {
+          this.sseClient = null;
+          return this.startPollingFallback(() => this.pollState());
+        },
+      });
     },
 
     stopPolling() {
+      if (this.sseClient) {
+        this.sseClient.close();
+        this.sseClient = null;
+      }
       if (this.pollingInterval) {
         clearInterval(this.pollingInterval);
         this.pollingInterval = null;
       }
+    },
+
+    startPollingFallback(pollFn) {
+      if (this.pollingInterval) {
+        return () => {};
+      }
+
+      const runPoll = () => {
+        Promise.resolve(pollFn()).catch(() => {});
+      };
+
+      runPoll();
+      this.pollingInterval = window.setInterval(runPoll, 500);
+
+      return () => {
+        if (this.pollingInterval) {
+          clearInterval(this.pollingInterval);
+          this.pollingInterval = null;
+        }
+      };
     },
 
     async pollState() {
