@@ -7,6 +7,7 @@ use OCA\Learning\Db\PoolMapper;
 use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\FsrsService;
 use OCA\Learning\Service\LeitnerService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\TranslationService;
@@ -45,7 +46,7 @@ class LeitnerServiceTest extends TestCase {
         $this->assertSame(80.0, $stats['accuracy']);
     }
 
-    public function testGetDueQuestionsClampsLimitLoadsAnswersAndUsesDueFilter(): void {
+    public function testGetDueQuestionsLoadsAnswersAndUsesDueFilter(): void {
         $itemsBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([
             [
                 'id' => 77,
@@ -74,7 +75,6 @@ class LeitnerServiceTest extends TestCase {
 
         $items = $service->getDueQuestions(42, 'alice', 999);
 
-        $this->assertSame(100, $itemsBuilder->maxResults);
         $this->assertSame(99, $items[0]['answers'][0]['id']);
         $this->assertContains(
             'lte',
@@ -83,6 +83,63 @@ class LeitnerServiceTest extends TestCase {
                 $itemsBuilder->andWhereCalls
             )
         );
+    }
+
+    public function testGetDueQuestionsSortsByRetrievabilityAscending(): void {
+        $now = time();
+        $itemsBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            [
+                'id' => 77,
+                'question_id' => 10,
+                'text' => 'Newer card',
+                'question_type' => 'single',
+                'pbq_subtype' => null,
+                'pbq_config' => null,
+                'next_review' => $now - 60,
+                'stability' => 1.0,
+                'last_reviewed' => $now - 86400,
+                'box' => 2,
+            ],
+            [
+                'id' => 78,
+                'question_id' => 11,
+                'text' => 'Older card',
+                'question_type' => 'single',
+                'pbq_subtype' => null,
+                'pbq_config' => null,
+                'next_review' => $now - 30,
+                'stability' => 10.0,
+                'last_reviewed' => $now - (30 * 86400),
+                'box' => 4,
+            ],
+        ]));
+        $answersBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            [
+                'id' => 99,
+                'question_id' => 10,
+                'text' => 'A',
+                'is_correct' => true,
+                'position' => 1,
+            ],
+            [
+                'id' => 100,
+                'question_id' => 11,
+                'text' => 'B',
+                'is_correct' => true,
+                'position' => 1,
+            ],
+        ]));
+
+        $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $service = $this->createService($db, $poolMapper);
+
+        $items = $service->getDueQuestions(42, 'alice', 10);
+
+        $this->assertSame(11, $items[0]['question_id']);
+        $this->assertGreaterThan($items[0]['retrievability'], $items[1]['retrievability']);
     }
 
     private function createService(FakeDbConnection $db, PoolMapper $poolMapper): LeitnerService {
@@ -113,7 +170,8 @@ class LeitnerServiceTest extends TestCase {
             $translationService,
             $config,
             $courseService,
-            $lernprofilService
+            $lernprofilService,
+            new FsrsService()
         );
     }
 }

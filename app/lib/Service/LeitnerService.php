@@ -15,10 +15,8 @@ use OCP\IConfig;
 use OCP\IDBConnection;
 
 class LeitnerService {
-    /** Standard Leitner intervals: 0, 1d, 3d, 7d, 14d */
-    private const NORMAL_INTERVALS = [1 => 0, 2 => 86400, 3 => 259200, 4 => 604800, 5 => 1209600];
-    /** Sprint intervals for intensive courses: 0, 4h, 12h, 1d, 2d */
-    private const SPRINT_INTERVALS = [1 => 0, 2 => 14400, 3 => 43200, 4 => 86400, 5 => 172800];
+    private const DEFAULT_GOOD_RATING = 3;
+    private const DEFAULT_AGAIN_RATING = 1;
 
     private IDBConnection $db;
     private PoolMapper $poolMapper;
@@ -31,8 +29,9 @@ class LeitnerService {
     private IConfig $config;
     private CourseService $courseService;
     private LernprofilService $lernprofilService;
+    private FsrsService $fsrsService;
 
-    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, StreakService $streakService, XpService $xpService, ICacheFactory $cacheFactory, TranslationService $translationService, IConfig $config, CourseService $courseService, LernprofilService $lernprofilService) {
+    public function __construct(IDBConnection $db, PoolMapper $poolMapper, PoolShareMapper $shareMapper, BadgeService $badgeService, StreakService $streakService, XpService $xpService, ICacheFactory $cacheFactory, TranslationService $translationService, IConfig $config, CourseService $courseService, LernprofilService $lernprofilService, FsrsService $fsrsService) {
         $this->db = $db;
         $this->poolMapper = $poolMapper;
         $this->shareMapper = $shareMapper;
@@ -44,6 +43,7 @@ class LeitnerService {
         $this->config = $config;
         $this->courseService = $courseService;
         $this->lernprofilService = $lernprofilService;
+        $this->fsrsService = $fsrsService;
     }
 
     private function resolveCourseQuestionIds(?int $courseId, int $poolId, string $userId): ?array {
@@ -91,27 +91,6 @@ class LeitnerService {
     }
 
     /**
-     * Check if any course using this pool has leitner_sprint enabled.
-     * Returns true if at least one linked course has the sprint flag set.
-     * Falls back to false for standalone (non-course) pools.
-     */
-    private function isSprintPool(int $poolId): bool {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('c.leitner_sprint')
-           ->from('learning_course_pools', 'cp')
-           ->innerJoin('cp', 'learning_courses', 'c', $qb->expr()->eq('cp.course_id', 'c.id'))
-           ->where($qb->expr()->eq('cp.pool_id', $qb->createNamedParameter($poolId)))
-           ->andWhere($qb->expr()->eq('c.leitner_sprint', $qb->createNamedParameter(true, \PDO::PARAM_BOOL)))
-           ->setMaxResults(1);
-
-        $result = $qb->executeQuery();
-        $row = $result->fetch();
-        $result->closeCursor();
-
-        return $row !== false;
-    }
-
-    /**
      * Check if user has an active (uncompleted) exam session on a given pool.
      * Used to suppress correct answers in Leitner responses to prevent exam oracle attacks.
      */
@@ -145,6 +124,118 @@ class LeitnerService {
         return $this->translationService->translateQuestions($items, $lang);
     }
 
+    private function hydrateQueueItems(array &$items): void {
+        if ($items === []) {
+            return;
+        }
+
+        $questionIds = array_unique(array_column($items, 'question_id'));
+        $aqb = $this->db->getQueryBuilder();
+        $aqb->select('id', 'question_id', 'text', 'is_correct', 'position')
+            ->from('learning_answers')
+            ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+            ->orderBy('position', 'ASC');
+        $aResult = $aqb->executeQuery();
+        $allAnswers = $aResult->fetchAll();
+        $aResult->closeCursor();
+
+        $answersByQuestion = [];
+        foreach ($allAnswers as $answer) {
+            $answersByQuestion[$answer['question_id']][] = $answer;
+        }
+
+        foreach ($items as &$item) {
+            $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
+            if (isset($item['pbq_config']) && is_string($item['pbq_config'])) {
+                $item['pbq_config'] = json_decode($item['pbq_config'], true) ?: null;
+            }
+        }
+
+        $this->stripOpenAnswers($items);
+    }
+
+    private function attachRetrievability(array &$items): void {
+        foreach ($items as &$item) {
+            $item['retrievability'] = round($this->calculateItemRetrievability($item), 4);
+        }
+    }
+
+    private function sortItemsByRetrievability(array &$items): void {
+        usort($items, static function (array $left, array $right): int {
+            $retrievabilityComparison = ($left['retrievability'] ?? 1.0) <=> ($right['retrievability'] ?? 1.0);
+            if ($retrievabilityComparison !== 0) {
+                return $retrievabilityComparison;
+            }
+
+            $nextReviewComparison = ((int) ($left['next_review'] ?? 0)) <=> ((int) ($right['next_review'] ?? 0));
+            if ($nextReviewComparison !== 0) {
+                return $nextReviewComparison;
+            }
+
+            return ((int) ($left['box'] ?? 1)) <=> ((int) ($right['box'] ?? 1));
+        });
+    }
+
+    private function calculateElapsedDays(?int $lastReviewed): float {
+        if ($lastReviewed === null || $lastReviewed <= 0) {
+            return 0.0;
+        }
+
+        return max(0.0, (time() - $lastReviewed) / 86400);
+    }
+
+    private function calculateItemRetrievability(array $item): float {
+        $stability = isset($item['stability']) ? (float) $item['stability'] : null;
+        if ($stability === null || $stability <= 0.0) {
+            return ((int) ($item['next_review'] ?? 0) <= time()) ? 0.0 : 1.0;
+        }
+
+        $lastReviewed = isset($item['last_reviewed']) ? (int) $item['last_reviewed'] : null;
+        if ($lastReviewed === null || $lastReviewed <= 0) {
+            return ((int) ($item['next_review'] ?? 0) <= time()) ? 0.0 : 1.0;
+        }
+
+        return $this->fsrsService->calculateRetrievability($stability, $this->calculateElapsedDays($lastReviewed));
+    }
+
+    private function resolveRating(bool $correct, ?int $rating): int {
+        if (!$correct) {
+            return self::DEFAULT_AGAIN_RATING;
+        }
+
+        return $rating ?? self::DEFAULT_GOOD_RATING;
+    }
+
+    private function resolveFsrsResult(array $item, int $rating): array {
+        $stability = isset($item['stability']) ? (float) $item['stability'] : null;
+        $difficulty = isset($item['difficulty']) ? (float) $item['difficulty'] : null;
+
+        if ($stability === null || $stability <= 0.0 || $difficulty === null || $difficulty <= 0.0) {
+            return $this->fsrsService->initializeFromRating($rating);
+        }
+
+        $lastReviewed = isset($item['last_reviewed']) ? (int) $item['last_reviewed'] : null;
+
+        return $this->fsrsService->review(
+            $stability,
+            $difficulty,
+            $rating,
+            $this->calculateElapsedDays($lastReviewed)
+        );
+    }
+
+    private function mapRatingToBox(int $currentBox, int $rating): int {
+        if ($rating === self::DEFAULT_AGAIN_RATING) {
+            return 1;
+        }
+
+        if ($rating === 2) {
+            return $currentBox;
+        }
+
+        return min(5, $currentBox + 1);
+    }
+
     public function getSmartQueue(string $userId, int $limit = 30, ?string $lang = null): array {
         $limit = max(1, min($limit, 100));
         $now = time();
@@ -158,38 +249,16 @@ class LeitnerService {
            ->innerJoin('l', 'learning_pools', 'p', 'l.pool_id = p.id')
            ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->lte('l.next_review', $qb->createNamedParameter($now)))
-           ->orderBy('l.box', 'ASC')
-           ->addOrderBy('l.next_review', 'ASC')
-           ->setMaxResults($limit);
+           ->orderBy('l.next_review', 'ASC');
 
         $result = $qb->executeQuery();
         $items = $result->fetchAll();
         $result->closeCursor();
 
-        if (!empty($items)) {
-            $questionIds = array_unique(array_column($items, 'question_id'));
-            $aqb = $this->db->getQueryBuilder();
-            $aqb->select('id', 'question_id', 'text', 'is_correct', 'position')
-               ->from('learning_answers')
-               ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-               ->orderBy('position', 'ASC');
-            $aResult = $aqb->executeQuery();
-            $allAnswers = $aResult->fetchAll();
-            $aResult->closeCursor();
-
-            $answersByQuestion = [];
-            foreach ($allAnswers as $answer) {
-                $answersByQuestion[$answer['question_id']][] = $answer;
-            }
-
-            foreach ($items as &$item) {
-                $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
-                if (isset($item['pbq_config']) && is_string($item['pbq_config'])) {
-                    $item['pbq_config'] = json_decode($item['pbq_config'], true) ?: null;
-                }
-            }
-            $this->stripOpenAnswers($items);
-        }
+        $this->attachRetrievability($items);
+        $this->sortItemsByRetrievability($items);
+        $items = array_slice($items, 0, $limit);
+        $this->hydrateQueueItems($items);
 
         return $this->translateQueueItems($items, $contentLanguage);
     }
@@ -229,8 +298,7 @@ class LeitnerService {
            ->where($qb->expr()->eq('l.user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->eq('l.pool_id', $qb->createNamedParameter($poolId)))
            ->andWhere($qb->expr()->lte('l.next_review', $qb->createNamedParameter($now)))
-           ->orderBy('l.next_review', 'ASC')
-           ->setMaxResults($limit);
+           ->orderBy('l.next_review', 'ASC');
         if (is_array($courseQuestionIds)) {
             $qb->andWhere($qb->expr()->in('l.question_id', $qb->createNamedParameter($courseQuestionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)));
         }
@@ -239,37 +307,15 @@ class LeitnerService {
         $items = $result->fetchAll();
         $result->closeCursor();
 
-        // FIX-LO-2: Batch-load answers for all questions at once instead of N+1
-        if (!empty($items)) {
-            $questionIds = array_unique(array_column($items, 'question_id'));
-            $aqb = $this->db->getQueryBuilder();
-            $aqb->select('id', 'question_id', 'text', 'is_correct', 'position')
-               ->from('learning_answers')
-               ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-               ->orderBy('position', 'ASC');
-            $aResult = $aqb->executeQuery();
-            $allAnswers = $aResult->fetchAll();
-            $aResult->closeCursor();
-
-            // Group answers by question_id
-            $answersByQuestion = [];
-            foreach ($allAnswers as $answer) {
-                $answersByQuestion[$answer['question_id']][] = $answer;
-            }
-
-            foreach ($items as &$item) {
-                $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
-                if (isset($item['pbq_config']) && is_string($item['pbq_config'])) {
-                    $item['pbq_config'] = json_decode($item['pbq_config'], true) ?: null;
-                }
-            }
-            $this->stripOpenAnswers($items);
-        }
+        $this->attachRetrievability($items);
+        $this->sortItemsByRetrievability($items);
+        $items = array_slice($items, 0, $limit);
+        $this->hydrateQueueItems($items);
 
         return $this->translateQueueItems($items, $contentLanguage);
     }
 
-    public function answerQuestion(int $itemId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?string $lang = null): array {
+    public function answerQuestion(int $itemId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?int $rating = null, ?string $lang = null): array {
         // === Read phase (outside transaction) ===
         // Read streak before transaction (read-only, safe outside)
         $streak = $this->streakService->getStreak($userId);
@@ -371,13 +417,11 @@ class LeitnerService {
             $correct = filter_var($ansRow['is_correct'], FILTER_VALIDATE_BOOLEAN);
         }
 
+        $rating = $this->resolveRating($correct, $rating);
         $currentBox = (int)$item['box'];
-        $newBox = $correct ? min(5, $currentBox + 1) : 1;
-
-        $intervals = $this->isSprintPool((int)$item['pool_id'])
-            ? self::SPRINT_INTERVALS
-            : self::NORMAL_INTERVALS;
-        $nextReview = time() + $intervals[$newBox];
+        $fsrsResult = $this->resolveFsrsResult($item, $rating);
+        $newBox = $this->mapRatingToBox($currentBox, $rating);
+        $nextReview = time() + ((int)$fsrsResult['interval_days'] * 86400);
 
         $correctCount = (int)$item['correct_count'] + ($correct ? 1 : 0);
         $incorrectCount = (int)$item['incorrect_count'] + ($correct ? 0 : 1);
@@ -390,6 +434,11 @@ class LeitnerService {
             'new_box' => $newBox,
             'next_review' => $nextReview,
             'correct' => $correct,
+            'rating' => $rating,
+            'stability' => $fsrsResult['stability'],
+            'difficulty' => $fsrsResult['difficulty'],
+            'retrievability' => $fsrsResult['retrievability'],
+            'interval_days' => $fsrsResult['interval_days'],
             'newly_earned_badges' => [],
             'level_before' => $levelBefore,
             'level_after' => $levelBefore,
@@ -406,6 +455,9 @@ class LeitnerService {
                ->set('box', $qb->createNamedParameter($newBox))
                ->set('next_review', $qb->createNamedParameter($nextReview))
                ->set('last_reviewed', $qb->createNamedParameter(time()))
+               ->set('stability', $qb->createNamedParameter($fsrsResult['stability']))
+               ->set('difficulty', $qb->createNamedParameter($fsrsResult['difficulty']))
+               ->set('last_rating', $qb->createNamedParameter($rating))
                ->set('correct_count', $qb->createNamedParameter($correctCount))
                ->set('incorrect_count', $qb->createNamedParameter($incorrectCount))
                ->where($qb->expr()->eq('id', $qb->createNamedParameter($itemId)))
