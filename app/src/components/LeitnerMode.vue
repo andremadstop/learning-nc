@@ -71,6 +71,7 @@
         <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentItem" />
         <div class="review-box-indicator">{{ t('learning', 'Box') }} {{ currentItem.box }} &rarr; {{ answered ? (lastAnswer ? t('learning', 'Box') + ' ' + lastMoveTarget : t('learning', 'Box') + ' 1') : '?' }}</div>
         <div class="question-text">{{ currentItem.text }}</div>
+        <div v-if="leitnerMetaHint" class="leitner-meta-hint">{{ leitnerMetaHint }}</div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
 
         <!-- PBQ block -->
@@ -245,6 +246,27 @@ export default {
     isOpenQuestion() { return this.currentItem && this.currentItem.question_type === 'open'; },
     isPbq() { return this.currentItem && this.currentItem.question_type === 'pbq'; },
     reviewProgress() { return ((this.currentIndex + (this.answered ? 1 : 0)) / this.dueQuestions.length) * 100; },
+    leitnerMetaHint() {
+      const item = this.currentItem;
+      if (!item) return '';
+      const box = parseInt(item.box, 10) || 1;
+      const boxLabel = 'Box ' + box;
+      // If last answer was wrong (box 1 and incorrect_count > 0), show "last answer wrong"
+      if (box === 1 && parseInt(item.incorrect_count, 10) > 0) {
+        return boxLabel + ' \u00B7 ' + t('learning', 'Last answer wrong');
+      }
+      // Show how long overdue
+      const nextReview = parseInt(item.next_review, 10);
+      if (nextReview > 0) {
+        const nowSec = Math.floor(Date.now() / 1000);
+        const overdueDays = Math.floor((nowSec - nextReview) / 86400);
+        if (overdueDays > 0) {
+          return boxLabel + ' \u00B7 ' + t('learning', 'Due since {n} days', { n: overdueDays });
+        }
+        return boxLabel + ' \u00B7 ' + t('learning', 'Due today');
+      }
+      return boxLabel;
+    },
     sessionAccuracy() { const total = this.sessionCorrect + this.sessionIncorrect; return total > 0 ? Math.round(this.sessionCorrect / total * 100) : 0; },
     effectiveContentLanguage() { return this.questionLanguage || ''; },
     displayCorrectAnswerTexts() {
@@ -629,4 +651,5 @@ export default {
 .open-textarea:focus { border-color: var(--color-primary-element); outline: none; }
 .open-answer-review { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .open-review-row { padding: 10px 14px; border-radius: 8px; background: var(--color-background-hover); font-size: 14px; line-height: 1.5; }
+.leitner-meta-hint { font-size: 13px; color: var(--color-text-maxcontrast); margin-bottom: 16px; }
 </style>
