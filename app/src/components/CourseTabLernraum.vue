@@ -199,6 +199,7 @@
 				:poolId="selectedLearningPool.pool_id"
 				:courseId="courseId"
 				:contentLanguage="contentLanguage"
+				:fsrsDetailedStats="fsrsDetailedStats"
 				@back="resetLearningPoolSelection" />
 
 			<ExamMode
@@ -479,6 +480,10 @@ export default {
 		contentLanguage: {
 			type: String,
 			default: '',
+		},
+		fsrsDetailedStats: {
+			type: Boolean,
+			default: false,
 		},
 	},
 

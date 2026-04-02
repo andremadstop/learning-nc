@@ -94,6 +94,15 @@
           @update:checked="form.notificationsEnabled = !!$event" />
       </div>
 
+      <div class="field-row">
+        <label>{{ t('learning', 'Extended learning statistics') }}</label>
+        <p class="field-desc">{{ t('learning', 'Show detailed FSRS intervals, stability and recall estimates in Leitner mode.') }}</p>
+        <NcCheckboxRadioSwitch
+          :checked="form.fsrsDetailedStats"
+          type="switch"
+          @update:checked="form.fsrsDetailedStats = !!$event" />
+      </div>
+
       <NcNoteCard v-if="error" type="error">{{ error }}</NcNoteCard>
       <NcNoteCard v-if="saved" type="success">{{ t('learning', 'Settings saved') }}</NcNoteCard>
 
@@ -392,6 +401,7 @@ export default {
         botSoundsEnabled: false,
         virtuProfVoiceLang: 'de-DE',
         notificationsEnabled: true,
+        fsrsDetailedStats: false,
       },
       // Calendar token
       calTokenLoading: true,
@@ -493,6 +503,7 @@ export default {
           ? virtuProfData.voice_lang
           : 'de-DE'
         this.form.notificationsEnabled = (data.notifications_enabled || 'yes') === 'yes'
+        this.form.fsrsDetailedStats = (data.fsrs_detailed_stats || 'no') === 'yes'
       } catch (e) {
         this.error = t('learning', 'Failed to load settings')
       } finally {
@@ -569,6 +580,7 @@ export default {
             content_language: ['de', 'en', 'ru', 'ar'].includes(this.form.contentLanguage) ? this.form.contentLanguage : '',
             virtuprof_enabled: this.form.virtuProfEnabled ? 'yes' : 'no',
             notifications_enabled: this.form.notificationsEnabled ? 'yes' : 'no',
+            fsrs_detailed_stats: this.form.fsrsDetailedStats ? 'yes' : 'no',
           }),
           axios.put(generateUrl('/apps/learning/api/virtuprof/preferences'), {
             ttsEnabled: this.form.virtuProfTtsEnabled,
@@ -582,6 +594,7 @@ export default {
         this.saved = true
         this.$emit('content-language-changed', this.form.contentLanguage)
         this.$emit('virtuprof-enabled-changed', this.form.virtuProfEnabled)
+        this.$emit('fsrs-detailed-stats-changed', this.form.fsrsDetailedStats)
         useOptionalVirtuProfStore()?.voiceSettingsChanged({
           ttsEnabled: this.form.virtuProfTtsEnabled,
           sttEnabled: this.form.virtuProfSttEnabled,

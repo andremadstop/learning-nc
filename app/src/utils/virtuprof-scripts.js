@@ -31,11 +31,22 @@ export const SCRIPTS = {
     delay: 800,
     steps: [
       {
-        text: 'The Leitner system sorts questions into 5 boxes based on your learning progress. Correct answers move up, wrong answers go back to Box 1.',
+        text: 'Smart repetition adapts cards to how difficult they felt for you.',
         animation: 'talk',
       },
       {
-        text: 'The higher the box, the less often you review that card. That keeps practice focused and efficient.',
+        text: 'After each revealed answer, rate the card honestly. Hard cards return sooner, easy cards later.',
+        animation: 'talk',
+      },
+    ],
+  },
+  'fsrs-first-use': {
+    condition: 'once',
+    priority: 8,
+    delay: 600,
+    steps: [
+      {
+        text: 'New! You now just tell me whether a card felt hard or easy. The more honest you are, the less time you waste on cards you already know.',
         animation: 'talk',
       },
     ],

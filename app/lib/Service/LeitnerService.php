@@ -236,6 +236,15 @@ class LeitnerService {
         return min(5, $currentBox + 1);
     }
 
+    private function resolveLeitnerBaseXp(int $rating): int {
+        return match ($rating) {
+            1 => 0,
+            2 => 2,
+            4 => 7,
+            default => 5,
+        };
+    }
+
     public function getSmartQueue(string $userId, int $limit = 30, ?string $lang = null): array {
         $limit = max(1, min($limit, 100));
         $now = time();
@@ -315,7 +324,7 @@ class LeitnerService {
         return $this->translateQueueItems($items, $contentLanguage);
     }
 
-    public function answerQuestion(int $itemId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?int $rating = null, ?string $lang = null): array {
+    public function answerQuestion(int $itemId, ?int $answerId, string $userId, ?array $answerIds = null, ?string $answerText = null, ?array $pbqAnswers = null, ?int $rating = null, bool $preview = false, ?string $lang = null): array {
         // === Read phase (outside transaction) ===
         // Read streak before transaction (read-only, safe outside)
         $streak = $this->streakService->getStreak($userId);
@@ -417,11 +426,18 @@ class LeitnerService {
             $correct = filter_var($ansRow['is_correct'], FILTER_VALIDATE_BOOLEAN);
         }
 
-        $rating = $this->resolveRating($correct, $rating);
         $currentBox = (int)$item['box'];
-        $fsrsResult = $this->resolveFsrsResult($item, $rating);
-        $newBox = $this->mapRatingToBox($currentBox, $rating);
-        $nextReview = time() + ((int)$fsrsResult['interval_days'] * 86400);
+        $firstFsrsReview = !isset($item['last_rating']) || $item['last_rating'] === '';
+        $rating = !$preview ? $this->resolveRating($correct, $rating) : null;
+        $fsrsResult = null;
+        $newBox = $currentBox;
+        $nextReview = (int)$item['next_review'];
+
+        if (!$preview) {
+            $fsrsResult = $this->resolveFsrsResult($item, (int)$rating);
+            $newBox = $this->mapRatingToBox($currentBox, (int)$rating);
+            $nextReview = time() + ((int)$fsrsResult['interval_days'] * 86400);
+        }
 
         $correctCount = (int)$item['correct_count'] + ($correct ? 1 : 0);
         $incorrectCount = (int)$item['incorrect_count'] + ($correct ? 0 : 1);
@@ -434,11 +450,14 @@ class LeitnerService {
             'new_box' => $newBox,
             'next_review' => $nextReview,
             'correct' => $correct,
+            'preview' => $preview,
+            'awaiting_rating' => $preview,
+            'first_fsrs_review' => $firstFsrsReview,
             'rating' => $rating,
-            'stability' => $fsrsResult['stability'],
-            'difficulty' => $fsrsResult['difficulty'],
-            'retrievability' => $fsrsResult['retrievability'],
-            'interval_days' => $fsrsResult['interval_days'],
+            'stability' => $fsrsResult['stability'] ?? null,
+            'difficulty' => $fsrsResult['difficulty'] ?? null,
+            'retrievability' => $fsrsResult['retrievability'] ?? null,
+            'interval_days' => $fsrsResult['interval_days'] ?? null,
             'newly_earned_badges' => [],
             'level_before' => $levelBefore,
             'level_after' => $levelBefore,
@@ -446,125 +465,136 @@ class LeitnerService {
             'pbq_max_points' => $pbqMaxPoints ?? null,
         ];
 
-        // === Write phase (all atomic) ===
-        $this->db->beginTransaction();
-        try {
+        $xpAwarded = false;
+
+        if (!$preview) {
+            // === Write phase (all atomic) ===
+            $this->db->beginTransaction();
+            try {
             // Optimistic update on Leitner item — guards box AND correct_count for Box-5→5 safety (R2 #1+#2)
-            $qb = $this->db->getQueryBuilder();
-            $qb->update('learning_leitner_items')
-               ->set('box', $qb->createNamedParameter($newBox))
-               ->set('next_review', $qb->createNamedParameter($nextReview))
-               ->set('last_reviewed', $qb->createNamedParameter(time()))
-               ->set('stability', $qb->createNamedParameter($fsrsResult['stability']))
-               ->set('difficulty', $qb->createNamedParameter($fsrsResult['difficulty']))
-               ->set('last_rating', $qb->createNamedParameter($rating))
-               ->set('correct_count', $qb->createNamedParameter($correctCount))
-               ->set('incorrect_count', $qb->createNamedParameter($incorrectCount))
-               ->where($qb->expr()->eq('id', $qb->createNamedParameter($itemId)))
-               ->andWhere($qb->expr()->eq('box', $qb->createNamedParameter($currentBox)))
-               ->andWhere($qb->expr()->eq('correct_count', $qb->createNamedParameter((int)$item['correct_count'])))
-               ->andWhere($qb->expr()->eq('incorrect_count', $qb->createNamedParameter((int)$item['incorrect_count'])));
-            $affected = $qb->executeStatement();
+                $qb = $this->db->getQueryBuilder();
+                $qb->update('learning_leitner_items')
+                   ->set('box', $qb->createNamedParameter($newBox))
+                   ->set('next_review', $qb->createNamedParameter($nextReview))
+                   ->set('last_reviewed', $qb->createNamedParameter(time()))
+                   ->set('stability', $qb->createNamedParameter($fsrsResult['stability']))
+                   ->set('difficulty', $qb->createNamedParameter($fsrsResult['difficulty']))
+                   ->set('last_rating', $qb->createNamedParameter($rating))
+                   ->set('correct_count', $qb->createNamedParameter($correctCount))
+                   ->set('incorrect_count', $qb->createNamedParameter($incorrectCount))
+                   ->where($qb->expr()->eq('id', $qb->createNamedParameter($itemId)))
+                   ->andWhere($qb->expr()->eq('box', $qb->createNamedParameter($currentBox)))
+                   ->andWhere($qb->expr()->eq('correct_count', $qb->createNamedParameter((int)$item['correct_count'])))
+                   ->andWhere($qb->expr()->eq('incorrect_count', $qb->createNamedParameter((int)$item['incorrect_count'])));
+                $affected = $qb->executeStatement();
 
-            if ($affected === 0) {
-                // R2 #3: single rollback point — let catch handle it
-                throw new \Exception('Concurrent modification — please retry');
-            }
-
-            // Demotion handling AFTER item update (recalc sees correct box value)
-            if ($currentBox === 5 && $newBox < 5) {
-                $dqb = $this->db->getQueryBuilder();
-                $dqb->update('learning_user_stats')
-                    ->set('total_mastered', $dqb->createFunction('CASE WHEN total_mastered > 0 THEN total_mastered - 1 ELSE 0 END'))
-                    ->set('updated_at', $dqb->createNamedParameter(time()))
-                    ->where($dqb->expr()->eq('user_id', $dqb->createNamedParameter($userId)));
-                $demoted = $dqb->executeStatement();
-
-                if ($demoted === 0) {
-                    $this->xpService->updateUserStats($userId);
+                if ($affected === 0) {
+                    // R2 #3: single rollback point — let catch handle it
+                    throw new \Exception('Concurrent modification — please retry');
                 }
-            }
 
-            // Award Leitner XP: 5 XP per correct answer (with streak multiplier)
+                // Demotion handling AFTER item update (recalc sees correct box value)
+                if ($currentBox === 5 && $newBox < 5) {
+                    $dqb = $this->db->getQueryBuilder();
+                    $dqb->update('learning_user_stats')
+                        ->set('total_mastered', $dqb->createFunction('CASE WHEN total_mastered > 0 THEN total_mastered - 1 ELSE 0 END'))
+                        ->set('updated_at', $dqb->createNamedParameter(time()))
+                        ->where($dqb->expr()->eq('user_id', $dqb->createNamedParameter($userId)));
+                    $demoted = $dqb->executeStatement();
+
+                    if ($demoted === 0) {
+                        $this->xpService->updateUserStats($userId);
+                    }
+                }
+
+                // Award Leitner XP: rating-based XP (Again=0, Hard=2, Good=5, Easy=7)
+                if ($correct) {
+                    $leitnerXp = $this->xpService->applyMultiplier($this->resolveLeitnerBaseXp((int)$rating), $streakDays);
+
+                    // R2 #1: Only award mastery bonus on actual promotion (Box <5 → 5), not Box 5→5
+                    if ($currentBox < 5 && $newBox === 5) {
+                        $leitnerXp += $this->xpService->applyMultiplier(25, $streakDays);
+                        // DB-only badge insert, no notifications (post-commit pattern)
+                        $response['newly_earned_badges'] = $this->badgeService->checkAndAward($userId, 'leitner_mastery', [], false);
+
+                        // Increment denormalized mastered count
+                        $mqb = $this->db->getQueryBuilder();
+                        $mqb->update('learning_user_stats')
+                            ->set('total_mastered', $mqb->createFunction('total_mastered + 1'))
+                            ->set('updated_at', $mqb->createNamedParameter(time()))
+                            ->where($mqb->expr()->eq('user_id', $mqb->createNamedParameter($userId)));
+                        $mqb->executeStatement();
+                    }
+
+                    // Skip syncLevel inside transaction (defer to after commit)
+                    if ($leitnerXp > 0) {
+                        $this->xpService->incrementLeitnerXp($userId, $leitnerXp, true);
+                        $xpAwarded = true;
+                    }
+                }
+
+                $this->db->commit();
+            } catch (\Throwable $e) {
+                $this->db->rollBack();
+                throw $e;
+            }
+        }
+
+        if (!$preview) {
+            // === Post-commit side effects ===
+
+            // Sync level after XP increment (Gemini #2: outside transaction)
             if ($correct) {
-                $leitnerXp = $this->xpService->applyMultiplier(5, $streakDays);
-
-                // R2 #1: Only award mastery bonus on actual promotion (Box <5 → 5), not Box 5→5
-                if ($currentBox < 5 && $newBox === 5) {
-                    $leitnerXp += $this->xpService->applyMultiplier(25, $streakDays);
-                    // DB-only badge insert, no notifications (post-commit pattern)
-                    $response['newly_earned_badges'] = $this->badgeService->checkAndAward($userId, 'leitner_mastery', [], false);
-
-                    // Increment denormalized mastered count
-                    $mqb = $this->db->getQueryBuilder();
-                    $mqb->update('learning_user_stats')
-                        ->set('total_mastered', $mqb->createFunction('total_mastered + 1'))
-                        ->set('updated_at', $mqb->createNamedParameter(time()))
-                        ->where($mqb->expr()->eq('user_id', $mqb->createNamedParameter($userId)));
-                    $mqb->executeStatement();
+                if ($xpAwarded) {
+                    $this->xpService->syncLevel($userId);
+                    $response['level_after'] = $this->xpService->calculateXp($userId)['level'];
                 }
 
-                // Skip syncLevel inside transaction (defer to after commit)
-                $this->xpService->incrementLeitnerXp($userId, $leitnerXp, true);
+                // trouble_fixer badge: correct answer promoting from box 1
+                if ($currentBox === 1 && $newBox >= 2) {
+                    $troubleBadges = $this->badgeService->checkAndAward($userId, 'trouble_fix', []);
+                    $response['newly_earned_badges'] = array_merge($response['newly_earned_badges'], $troubleBadges);
+                }
             }
 
-            $this->db->commit();
-        } catch (\Throwable $e) {
-            $this->db->rollBack();
-            throw $e;
-        }
+            // Daily goal XP bonus: +10 XP when daily goal reached for the first time today
+            $todayStart = strtotime('today midnight');
+            $qb = $this->db->getQueryBuilder();
+            $qb->select($qb->createFunction('COUNT(*) as cnt'))
+               ->from('learning_leitner_items')
+               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+               ->andWhere($qb->expr()->gte('last_reviewed', $qb->createNamedParameter($todayStart)));
+            $result = $qb->executeQuery();
+            $cardsToday = (int)$result->fetch()['cnt'];
+            $result->closeCursor();
 
-        // === Post-commit side effects ===
+            // Check daily goal
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('daily_goal')
+               ->from('learning_user_stats')
+               ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+            $result = $qb->executeQuery();
+            $goalRow = $result->fetch();
+            $result->closeCursor();
+            $dailyGoal = (int)($goalRow['daily_goal'] ?? 20);
 
-        // Sync level after XP increment (Gemini #2: outside transaction)
-        if ($correct) {
-            $this->xpService->syncLevel($userId);
-            $response['level_after'] = $this->xpService->calculateXp($userId)['level'];
-
-            // trouble_fixer badge: correct answer promoting from box 1
-            if ($currentBox === 1 && $newBox >= 2) {
-                $troubleBadges = $this->badgeService->checkAndAward($userId, 'trouble_fix', []);
-                $response['newly_earned_badges'] = array_merge($response['newly_earned_badges'], $troubleBadges);
+            // Award bonus exactly when crossing the threshold (cardsToday == dailyGoal)
+            if ($cardsToday === $dailyGoal) {
+                $goalBonus = $this->xpService->applyMultiplier(10, $streakDays);
+                $this->xpService->incrementLeitnerXp($userId, $goalBonus);
             }
+
+            // Dispatch badge notifications after commit (Codex #2)
+            if (!empty($response['newly_earned_badges'])) {
+                $this->badgeService->dispatchNotifications($userId, $response['newly_earned_badges']);
+            }
+
+            // Invalidate cache AFTER commit
+            $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);
+
+            // PROF-04: Passively invalidate Lernprofil cache so next GET /api/profile is fresh
+            $this->lernprofilService->invalidateCache($userId);
         }
-
-        // Daily goal XP bonus: +10 XP when daily goal reached for the first time today
-        $todayStart = strtotime('today midnight');
-        $qb = $this->db->getQueryBuilder();
-        $qb->select($qb->createFunction('COUNT(*) as cnt'))
-           ->from('learning_leitner_items')
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->andWhere($qb->expr()->gte('last_reviewed', $qb->createNamedParameter($todayStart)));
-        $result = $qb->executeQuery();
-        $cardsToday = (int)$result->fetch()['cnt'];
-        $result->closeCursor();
-
-        // Check daily goal
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('daily_goal')
-           ->from('learning_user_stats')
-           ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
-        $result = $qb->executeQuery();
-        $goalRow = $result->fetch();
-        $result->closeCursor();
-        $dailyGoal = (int)($goalRow['daily_goal'] ?? 20);
-
-        // Award bonus exactly when crossing the threshold (cardsToday == dailyGoal)
-        if ($cardsToday === $dailyGoal) {
-            $goalBonus = $this->xpService->applyMultiplier(10, $streakDays);
-            $this->xpService->incrementLeitnerXp($userId, $goalBonus);
-        }
-
-        // Dispatch badge notifications after commit (Codex #2)
-        if (!empty($response['newly_earned_badges'])) {
-            $this->badgeService->dispatchNotifications($userId, $response['newly_earned_badges']);
-        }
-
-        // Invalidate cache AFTER commit
-        $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $userId);
-
-        // PROF-04: Passively invalidate Lernprofil cache so next GET /api/profile is fresh
-        $this->lernprofilService->invalidateCache($userId);
 
         // SECURITY: Suppress correct answer details during active exam to prevent oracle attack
         $poolId = (int)$item['pool_id'];

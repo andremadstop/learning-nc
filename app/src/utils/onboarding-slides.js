@@ -42,6 +42,12 @@ export const STUDENT_SLIDES = [
     textKey: 'slide:student:leitner:text',
   },
   {
+    id: 'fsrs',
+    icon: '🧠',
+    titleKey: 'slide:student:fsrs:title',
+    textKey: 'slide:student:fsrs:text',
+  },
+  {
     id: 'arena',
     icon: '⚔️',
     titleKey: 'slide:student:arena:title',

@@ -151,6 +151,7 @@
               v-else-if="mode === 'leitner'"
               :poolId="selectedPool.id"
               :contentLanguage="contentLanguage"
+              :fsrsDetailedStats="fsrsDetailedStats"
               @back="setMode('train')"
             />
 
@@ -236,13 +237,15 @@
             <PersonalSettings
               v-else
               @content-language-changed="updateContentLanguage"
-              @virtuprof-enabled-changed="updateVirtuProfEnabled" />
+              @virtuprof-enabled-changed="updateVirtuProfEnabled"
+              @fsrs-detailed-stats-changed="updateFsrsDetailedStats" />
           </template>
           <!-- Student: only PersonalSettings, no sub-tabs -->
           <PersonalSettings
             v-else
             @content-language-changed="updateContentLanguage"
-            @virtuprof-enabled-changed="updateVirtuProfEnabled" />
+            @virtuprof-enabled-changed="updateVirtuProfEnabled"
+            @fsrs-detailed-stats-changed="updateFsrsDetailedStats" />
         </template>
 
         <!-- ==================== COURSES VIEW ==================== -->
@@ -290,6 +293,7 @@
             :courseId="selectedCourse.id"
             :userRole="userRole"
             :contentLanguage="contentLanguage"
+            :fsrsDetailedStats="fsrsDetailedStats"
             :presetDuelCode="pendingVirtuProfDuel.courseId === selectedCourse.id ? pendingVirtuProfDuel.duelCode : ''"
             @back="selectedCourse = null"
             @openPool="openPoolFromCourse"
@@ -464,6 +468,7 @@ export default {
       previousMainView: 'courses',
       enabledTools: [...ALL_TOOL_IDS],
       contentLanguage: '',
+      fsrsDetailedStats: false,
       virtuProfEnabled: true,
       appInitialized: false,
       initialVirtuProfHintsTriggered: false,
@@ -631,9 +636,11 @@ export default {
         const response = await axios.get(generateUrl('/apps/learning/api/settings/personal'));
         const lang = response.data?.content_language || '';
         this.contentLanguage = ['de', 'en', 'ru', 'ar'].includes(lang) ? lang : '';
+        this.fsrsDetailedStats = (response.data?.fsrs_detailed_stats || 'no') === 'yes';
         this.virtuProfEnabled = (response.data?.virtuprof_enabled || 'yes') !== 'no';
       } catch (err) {
         this.contentLanguage = '';
+        this.fsrsDetailedStats = false;
         this.virtuProfEnabled = true;
       }
     },
@@ -643,6 +650,9 @@ export default {
     },
     updateVirtuProfEnabled(enabled) {
       this.virtuProfEnabled = enabled !== false;
+    },
+    updateFsrsDetailedStats(enabled) {
+      this.fsrsDetailedStats = enabled === true;
     },
     handleVirtuProfEnabledChange(enabled) {
       this.virtuProfEnabled = enabled !== false;

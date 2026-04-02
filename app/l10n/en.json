@@ -420,6 +420,8 @@
     "slide:student:welcome:text": "DevCloud is your personal place to learn. Here you find courses, exercises and tools — all in one place.\n\nLet us quickly walk through what awaits you.",
     "slide:student:courses:title": "Courses",
     "slide:student:courses:text": "Your instructor sets up courses with question pools. You only see courses you are enrolled in.\n\nEach course has its own learning modes, a leaderboard and your personal progress.",
+    "slide:student:fsrs:title": "Smart Repetition",
+    "slide:student:fsrs:text": "Your cards adapt to you. Hard cards come back more often, easy cards less often.\n\nThe more honestly you rate them, the less time you waste on cards you already know.",
     "slide:student:training:title": "Training",
     "slide:student:training:text": "Quick quiz with random questions. You get instant feedback on every answer.\n\nPerfect for warming up or when you have little time.",
     "slide:student:leitner:title": "Leitner System",

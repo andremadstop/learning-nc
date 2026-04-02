@@ -1,10 +1,10 @@
 <template>
   <div class="leitner-mode">
     <div v-if="!initialized && !initError" class="leitner-init">
-      <h3>{{ t('learning', 'Leitner System - Spaced Repetition') }}</h3>
-      <p>{{ t('learning', 'Initialize this pool for spaced repetition learning') }}</p>
+      <h3>{{ t('learning', 'Smart Repetition') }}</h3>
+      <p>{{ t('learning', 'Initialize this pool for adaptive spaced repetition learning') }}</p>
       <NcNoteCard v-if="!hintDismissed('leitner-init')" type="info" class="onboarding-hint">
-        {{ t('learning', 'Cards start in Box 1. Correct answer → next box (reviewed less often). Wrong → back to Box 1. This way you practice difficult cards more often.') }}
+        {{ t('learning', 'Cards adapt to your pace. After each reveal, rate whether a card felt hard or easy. Difficult cards return sooner, easy cards later.') }}
         <NcButton type="tertiary" @click="dismissHint('leitner-init')">{{ t('learning', 'Got it') }}</NcButton>
       </NcNoteCard>
       <div class="init-actions">
@@ -40,7 +40,7 @@
         <div v-if="streak.current_streak > 0" class="stat-card streak-card" :title="t('learning', 'Longest: {n} days', { n: streak.longest_streak })"><div class="stat-value streak-value">{{ streak.current_streak }}</div><div class="stat-label"><span class="streak-flames"><span v-for="i in Math.min(streak.current_streak, 5)" :key="i" class="streak-flame" :style="{ animationDelay: (i * 0.12) + 's' }">&#x1F525;</span></span> {{ t('learning', 'Day Streak') }}</div></div>
       </div>
 
-      <h4 class="section-title">{{ t('learning', 'Leitner Boxes') }}</h4>
+      <h4 class="section-title">{{ t('learning', 'Review Buckets') }}</h4>
       <div class="box-grid">
         <div v-for="i in 5" :key="i" class="box-card" :class="['box-' + i]">
           <div class="box-header">
@@ -69,9 +69,21 @@
       </div>
       <div v-if="currentItem" class="review-card">
         <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentItem" />
-        <div class="review-box-indicator">{{ t('learning', 'Box') }} {{ currentItem.box }} &rarr; {{ answered ? (lastAnswer ? t('learning', 'Box') + ' ' + lastMoveTarget : t('learning', 'Box') + ' 1') : '?' }}</div>
+        <div class="review-box-indicator">{{ reviewBoxIndicator }}</div>
         <div class="question-text">{{ currentItem.text }}</div>
         <div v-if="leitnerMetaHint" class="leitner-meta-hint">{{ leitnerMetaHint }}</div>
+        <div v-if="fsrsIntervalNoticeVisible && fsrsIntervalNotice" class="fsrs-interval-notice">
+          {{ fsrsIntervalNotice }}
+        </div>
+        <div v-if="fsrsStabilityVisible" class="fsrs-stability">
+          <div class="fsrs-stability__header">
+            <span class="fsrs-stability__label">{{ t('learning', 'Stability') }}</span>
+            <strong class="fsrs-stability__value">{{ fsrsStabilityLabel }}</strong>
+          </div>
+          <div class="fsrs-stability__track">
+            <div class="fsrs-stability__fill" :style="{ width: fsrsStabilityPercent + '%' }"></div>
+          </div>
+        </div>
         <div v-if="isCurrentMulti" class="multi-hint">{{ t('learning', 'Select all correct answers') }}</div>
 
         <!-- PBQ block -->
@@ -91,7 +103,28 @@
           <NcNoteCard v-if="currentItem.explanation" type="warning">
             <strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentItem.explanation }}
           </NcNoteCard>
-          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">
+          <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
+            <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
+          </NcNoteCard>
+          <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
+            <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
+            <div class="fsrs-rating-buttons">
+              <button
+                v-for="option in fsrsRatingOptions"
+                :key="option.id"
+                class="fsrs-btn"
+                :class="'fsrs-btn--' + option.tone"
+                :disabled="submitting"
+                @click="rateCard(option.rating)">
+                <span class="fsrs-btn-top">
+                  <span class="fsrs-key">{{ option.keyHint }}</span>
+                  <span class="fsrs-label">{{ option.label }}</span>
+                </span>
+                <span v-if="fsrsDetailedStats" class="fsrs-btn-meta">{{ option.intervalLabel }}</span>
+              </button>
+            </div>
+          </div>
+          <NcButton v-else type="primary" wide @click="nextQuestion" class="next-btn">
             {{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}
           </NcButton>
         </div>
@@ -132,13 +165,31 @@
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
-          <div v-if="aiAvailable" class="ai-explain-row">
+          <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
+            <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
+            <div class="fsrs-rating-buttons">
+              <button
+                v-for="option in fsrsRatingOptions"
+                :key="option.id"
+                class="fsrs-btn"
+                :class="'fsrs-btn--' + option.tone"
+                :disabled="submitting"
+                @click="rateCard(option.rating)">
+                <span class="fsrs-btn-top">
+                  <span class="fsrs-key">{{ option.keyHint }}</span>
+                  <span class="fsrs-label">{{ option.label }}</span>
+                </span>
+                <span v-if="fsrsDetailedStats" class="fsrs-btn-meta">{{ option.intervalLabel }}</span>
+              </button>
+            </div>
+          </div>
+          <div v-else-if="aiAvailable" class="ai-explain-row">
             <NcButton v-if="!explainTaskId && !explainText" type="tertiary" :disabled="explainLoading" @click="requestExplain">
               {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
           </div>
-          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
+          <NcButton v-if="!awaitingFsrsRating" type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
         <div v-else class="answer-feedback">
           <NcNoteCard :type="lastAnswer ? 'success' : 'error'">{{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}</NcNoteCard>
@@ -164,13 +215,31 @@
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
-          <div v-if="aiAvailable" class="ai-explain-row">
+          <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
+            <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
+            <div class="fsrs-rating-buttons">
+              <button
+                v-for="option in fsrsRatingOptions"
+                :key="option.id"
+                class="fsrs-btn"
+                :class="'fsrs-btn--' + option.tone"
+                :disabled="submitting"
+                @click="rateCard(option.rating)">
+                <span class="fsrs-btn-top">
+                  <span class="fsrs-key">{{ option.keyHint }}</span>
+                  <span class="fsrs-label">{{ option.label }}</span>
+                </span>
+                <span v-if="fsrsDetailedStats" class="fsrs-btn-meta">{{ option.intervalLabel }}</span>
+              </button>
+            </div>
+          </div>
+          <div v-else-if="aiAvailable" class="ai-explain-row">
             <NcButton v-if="!explainTaskId && !explainText" type="tertiary" :disabled="explainLoading" @click="requestExplain">
               {{ explainLoading ? t('learning', 'Thinking...') : t('learning', '💡 Explain this') }}
             </NcButton>
             <div v-if="explainText" class="ai-explain-box">{{ explainText }}</div>
           </div>
-          <NcButton type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
+          <NcButton v-if="!awaitingFsrsRating" type="primary" wide @click="nextQuestion" class="next-btn">{{ currentIndex < dueQuestions.length - 1 ? t('learning', 'Next Question \u2192') : t('learning', 'See Results') }}</NcButton>
         </div>
       </div>
     </div>
@@ -205,6 +274,7 @@ import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import hintMixin from '../hintMixin.js';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
+import { buildFsrsRatingOptions, previewFsrsReview } from '../utils/fsrsScheduler.js';
 
 export default {
   name: 'LeitnerMode',
@@ -214,6 +284,7 @@ export default {
     poolId: { type: Number, required: true },
     courseId: { type: Number, default: null },
     contentLanguage: { type: String, default: '' },
+    fsrsDetailedStats: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -221,6 +292,13 @@ export default {
       stats: { total: 0, due_count: 0, accuracy: 0, mastery_percentage: 0, total_answered: 0 },
       dueQuestions: [], started: false, currentIndex: 0, answered: false, submitting: false,
       lastAnswer: false, lastMoveTarget: 0, lastCorrectAnswerText: '', lastCorrectAnswerTexts: [], showResults: false, sessionCorrect: 0, sessionIncorrect: 0,
+      awaitingFsrsRating: false,
+      pendingAnswerPayload: null,
+      lastSubmittedRating: null,
+      lastReviewResult: null,
+      fsrsIntervalNotice: '',
+      fsrsIntervalNoticeVisible: false,
+      fsrsIntervalNoticeTimer: null,
       selectedAnswerIds: [],
       lastSelectedAnswerId: null,
       lastSelectedAnswerIds: [],
@@ -231,7 +309,7 @@ export default {
       newBadges: [],
       levelBefore: 0,
       levelAfter: 0,
-      boxLabels: { 1: t('learning', 'New — review daily'), 2: t('learning', 'Learning — after 1 day'), 3: t('learning', 'Familiar — after 3 days'), 4: t('learning', 'Good — after 7 days'), 5: t('learning', 'Mastered — after 14 days') },
+      boxLabels: { 1: t('learning', 'New — needs repetition soon'), 2: t('learning', 'Unstable — comes back often'), 3: t('learning', 'Improving — regular refresh'), 4: t('learning', 'Solid — longer gaps'), 5: t('learning', 'Stable — rarely needed') },
       // AI explain
       aiAvailable: false,
       explainLoading: false,
@@ -246,10 +324,42 @@ export default {
     isCurrentMulti() { return this.currentItem && this.currentItem.question_type === 'multi'; },
     isOpenQuestion() { return this.currentItem && this.currentItem.question_type === 'open'; },
     isPbq() { return this.currentItem && this.currentItem.question_type === 'pbq'; },
-    reviewProgress() { return ((this.currentIndex + (this.answered ? 1 : 0)) / this.dueQuestions.length) * 100; },
+    reviewProgress() { return this.dueQuestions.length === 0 ? 0 : ((this.currentIndex + (this.answered ? 1 : 0)) / this.dueQuestions.length) * 100; },
+    reviewBoxIndicator() {
+      if (!this.currentItem) return '';
+      const currentBox = this.lastReviewResult?.old_box || parseInt(this.currentItem.box, 10) || 1;
+      if (!this.answered) {
+        return t('learning', 'Box') + ' ' + currentBox
+      }
+      if (this.awaitingFsrsRating) {
+        return t('learning', 'Box') + ' ' + currentBox + ' · ' + t('learning', 'Choose how this card felt')
+      }
+      return t('learning', 'Box') + ' ' + currentBox + ' → ' + t('learning', 'Box') + ' ' + this.lastMoveTarget
+    },
     leitnerMetaHint() {
       const item = this.currentItem;
       if (!item) return '';
+      if (this.answered) {
+        if (this.fsrsDetailedStats) {
+          const stats = this.fsrsStats;
+          if (stats.stability > 0 || stats.difficulty > 0 || stats.retrievability > 0) {
+            return t('learning', 'Stability: {stability}d · Difficulty: {difficulty}% · Retrieval: {retrievability}%', {
+              stability: this.formatFsrsNumber(stats.stability),
+              difficulty: Math.round(stats.difficulty * 100),
+              retrievability: Math.round(stats.retrievability * 100),
+            })
+          }
+        }
+        if (this.awaitingFsrsRating) {
+          return this.lastAnswer
+            ? t('learning', 'How easy was this card for you?')
+            : t('learning', 'Incorrect answers are scheduled as repeat automatically.')
+        }
+        if ((this.lastSubmittedRating || 0) <= 2) {
+          return t('learning', 'This card was difficult for you, so it will return sooner.')
+        }
+        return t('learning', 'This card felt easier, so the next review can wait longer.')
+      }
       const box = parseInt(item.box, 10) || 1;
       const boxLabel = 'Box ' + box;
       // If last answer was wrong (box 1 and incorrect_count > 0), show "last answer wrong"
@@ -270,6 +380,49 @@ export default {
     },
     sessionAccuracy() { const total = this.sessionCorrect + this.sessionIncorrect; return total > 0 ? Math.round(this.sessionCorrect / total * 100) : 0; },
     effectiveContentLanguage() { return this.questionLanguage || ''; },
+    fsrsStats() {
+      const source = this.lastReviewResult || this.currentItem || {}
+      return {
+        stability: Number(source.stability || 0),
+        difficulty: Number(source.difficulty || 0),
+        retrievability: Number(source.retrievability || 0),
+      }
+    },
+    fsrsStabilityVisible() {
+      return this.fsrsDetailedStats && this.answered && this.fsrsStats.stability > 0
+    },
+    fsrsStabilityPercent() {
+      if (!this.fsrsStabilityVisible) return 0
+      return Math.min(100, Math.round((this.fsrsStats.stability / 21) * 100))
+    },
+    fsrsStabilityLabel() {
+      return t('learning', '{n} days stability', { n: this.formatFsrsNumber(this.fsrsStats.stability) })
+    },
+    fsrsPromptText() {
+      if (!this.awaitingFsrsRating) return ''
+      return this.lastAnswer
+        ? t('learning', 'How should the next review be scheduled?')
+        : t('learning', 'Wrong answers are repeated soon. Confirm the repeat to continue.')
+    },
+    fsrsRatingOptions() {
+      if (!this.awaitingFsrsRating || !this.currentItem) return []
+      if (!this.lastAnswer) {
+        return [{
+          id: 'again',
+          keyHint: '1',
+          rating: 1,
+          tone: 'again',
+          label: this.labelForFsrsOption('again'),
+          intervalLabel: t('learning', 'Soon again'),
+          preview: previewFsrsReview(this.currentItem, 1),
+        }]
+      }
+      return buildFsrsRatingOptions(this.currentItem, this.fsrsDetailedStats).map(option => ({
+        ...option,
+        label: this.labelForFsrsOption(option.id),
+        intervalLabel: this.formatFsrsInterval(option.preview.intervalDays),
+      }))
+    },
     displayCorrectAnswerTexts() {
       if (this.currentItem && Array.isArray(this.currentItem.answers)) {
         const texts = this.currentItem.answers
@@ -288,6 +441,7 @@ export default {
     this.fetchStreak();
     this.checkAiAvailable();
     this.emitVirtuProf('leitner-first-start');
+    window.addEventListener('keydown', this.handleFsrsKeydown);
   },
   watch: {
     contentLanguage(newLang, oldLang) {
@@ -318,6 +472,8 @@ export default {
   },
   beforeDestroy() {
     useOptionalVirtuProfStore()?.updateContext({ questionContext: null });
+    window.removeEventListener('keydown', this.handleFsrsKeydown);
+    this.clearFsrsIntervalNotice();
   },
   methods: {
     getCorrectAnswerIndex(q) {
@@ -327,6 +483,32 @@ export default {
     },
     emitVirtuProf(triggerId, context = {}) {
       useOptionalVirtuProfStore()?.trigger(triggerId, context);
+    },
+    formatFsrsNumber(value) {
+      const numeric = Number(value || 0)
+      return numeric >= 10 ? Math.round(numeric) : numeric.toFixed(1)
+    },
+    formatFsrsInterval(intervalDays) {
+      const safeDays = Math.max(1, Number(intervalDays) || 1)
+      return safeDays === 1
+        ? t('learning', '1 day')
+        : t('learning', '{n} days', { n: safeDays })
+    },
+    labelForFsrsOption(id) {
+      const labels = this.fsrsDetailedStats
+        ? {
+            again: t('learning', 'Again'),
+            hard: t('learning', 'Hard'),
+            good: t('learning', 'Good'),
+            easy: t('learning', 'Easy'),
+          }
+        : {
+            again: t('learning', 'Again'),
+            hard: t('learning', 'That was hard'),
+            good: t('learning', 'Good'),
+            easy: t('learning', 'That was easy'),
+          }
+      return labels[id] || t('learning', 'Good')
     },
     badgeDisplayName(badge) {
       return badge?.badge_name || badge?.name || badge?.title || t('learning', 'New badge');
@@ -399,8 +581,125 @@ export default {
       try {
         const r = await axios.get(generateUrl('/apps/learning/api/leitner/due'), { params: this.dueParams() });
         this.dueQuestions = r.data;
-        if (this.dueQuestions.length > 0) { this.started = true; this.currentIndex = 0; this.answered = false; this.sessionCorrect = 0; this.sessionIncorrect = 0; }
+        if (this.dueQuestions.length > 0) {
+          this.started = true;
+          this.currentIndex = 0;
+          this.answered = false;
+          this.awaitingFsrsRating = false;
+          this.pendingAnswerPayload = null;
+          this.lastReviewResult = null;
+          this.lastSubmittedRating = null;
+          this.sessionCorrect = 0;
+          this.sessionIncorrect = 0;
+          this.clearFsrsIntervalNotice();
+        }
       } catch (e) { showError(t('learning', 'Failed to load review questions')); }
+    },
+    buildAnswerRequest(payload, preview = false, rating = null) {
+      return {
+        ...payload,
+        ...(rating !== null ? { rating } : {}),
+        ...(preview ? { preview: true } : {}),
+        ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
+      }
+    },
+    applyAnswerPreview(payload, data) {
+      this.pendingAnswerPayload = { ...payload }
+      this.awaitingFsrsRating = true
+      this.lastReviewResult = null
+      this.lastSubmittedRating = null
+      this.lastAnswer = data.correct
+      this.lastMoveTarget = 0
+      this.answered = true
+      this.pbqPoints = data.pbq_points ?? 0
+      this.pbqMaxPoints = data.pbq_max_points ?? 1
+      this.lastCorrectAnswerText = data.correct_answer_text || ''
+      this.lastCorrectAnswerTexts = data.correct_answer_texts || [this.lastCorrectAnswerText]
+      if (data.correct) this.sessionCorrect++
+      else this.sessionIncorrect++
+    },
+    applyFinalReview(data, fallbackRating) {
+      this.awaitingFsrsRating = false
+      this.pendingAnswerPayload = null
+      this.lastReviewResult = data
+      this.lastSubmittedRating = data.rating || fallbackRating
+      this.lastMoveTarget = data.new_box
+      this.pbqPoints = data.pbq_points ?? this.pbqPoints
+      this.pbqMaxPoints = data.pbq_max_points ?? this.pbqMaxPoints
+      this.lastCorrectAnswerText = data.correct_answer_text || this.lastCorrectAnswerText
+      this.lastCorrectAnswerTexts = data.correct_answer_texts || this.lastCorrectAnswerTexts
+      if (this.currentItem) {
+        this.currentItem.box = data.new_box
+        this.currentItem.last_rating = data.rating
+        this.currentItem.stability = data.stability
+        this.currentItem.difficulty = data.difficulty
+        this.currentItem.retrievability = data.retrievability
+        this.currentItem.next_review = data.next_review
+        this.currentItem.last_reviewed = Math.floor(Date.now() / 1000)
+      }
+      if (data.interval_days) {
+        this.showFsrsIntervalNotice(data.interval_days)
+      }
+      if (data.new_box === 5) {
+        celebrateMastery()
+      }
+      this.appendNewBadges(data.newly_earned_badges)
+      if (data.level_before && data.level_after) {
+        this.levelBefore = data.level_before
+        this.levelAfter = data.level_after
+      }
+      if (data.first_fsrs_review) {
+        this.emitVirtuProf('fsrs-first-use', { intervalDays: data.interval_days || 1 })
+      }
+    },
+    async submitLeitnerAnswer(payload, errorText, preview = false, rating = null) {
+      this.submitting = true
+      try {
+        const response = await axios.post(
+          generateUrl('/apps/learning/api/leitner/answer'),
+          this.buildAnswerRequest(payload, preview, rating),
+        )
+        if (preview) {
+          this.applyAnswerPreview(payload, response.data)
+        } else {
+          this.applyFinalReview(response.data, rating)
+        }
+      } catch (e) {
+        showError(errorText)
+      } finally {
+        this.submitting = false
+      }
+    },
+    showFsrsIntervalNotice(intervalDays) {
+      this.clearFsrsIntervalNotice()
+      this.fsrsIntervalNotice = intervalDays === 1
+        ? t('learning', 'Next review in 1 day')
+        : t('learning', 'Next review in {n} days', { n: intervalDays })
+      this.fsrsIntervalNoticeVisible = true
+      this.fsrsIntervalNoticeTimer = window.setTimeout(() => {
+        this.fsrsIntervalNoticeVisible = false
+      }, 1500)
+    },
+    clearFsrsIntervalNotice() {
+      if (this.fsrsIntervalNoticeTimer) {
+        window.clearTimeout(this.fsrsIntervalNoticeTimer)
+      }
+      this.fsrsIntervalNoticeTimer = null
+      this.fsrsIntervalNoticeVisible = false
+      this.fsrsIntervalNotice = ''
+    },
+    handleFsrsKeydown(event) {
+      if (!this.awaitingFsrsRating || this.submitting) return
+      const tagName = event.target?.tagName
+      if (tagName && ['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName)) return
+      const option = this.fsrsRatingOptions.find(entry => entry.keyHint === event.key)
+      if (!option) return
+      event.preventDefault()
+      this.rateCard(option.rating)
+    },
+    async rateCard(rating) {
+      if (!this.pendingAnswerPayload) return
+      await this.submitLeitnerAnswer(this.pendingAnswerPayload, t('learning', 'Failed to save review rating'), false, rating)
     },
     toggleMultiAnswer(answerId) {
       var idx = this.selectedAnswerIds.indexOf(answerId);
@@ -411,79 +710,31 @@ export default {
       }
     },
     async submitOpenAnswer() {
-      this.submitting = true;
       this.lastOpenAnswer = this.openAnswer;
-      try {
-        var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
-          itemId: this.currentItem.id,
-          answerText: this.openAnswer,
-          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
-        });
-        this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
-        this.lastCorrectAnswerText = r.data.correct_answer_text || '';
-        this.lastCorrectAnswerTexts = r.data.correct_answer_texts || [this.lastCorrectAnswerText];
-        if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
-        if (r.data.new_box === 5) { celebrateMastery(); }
-        this.appendNewBadges(r.data.newly_earned_badges);
-        if (r.data.level_before && r.data.level_after) { this.levelBefore = r.data.level_before; this.levelAfter = r.data.level_after; }
-      } catch (e) { showError(t('learning', 'Failed to submit answer')); }
-      finally { this.submitting = false; }
+      await this.submitLeitnerAnswer({
+        itemId: this.currentItem.id,
+        answerText: this.openAnswer,
+      }, t('learning', 'Failed to submit answer'), true)
     },
     async submitPbqAnswer(pbqAnswers) {
-      this.submitting = true;
-      try {
-        var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
+      await this.submitLeitnerAnswer({
           itemId: this.currentItem.id,
           pbqAnswers,
-          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
-        });
-        this.pbqPoints = r.data.pbq_points ?? 0;
-        this.pbqMaxPoints = r.data.pbq_max_points ?? 1;
-        this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
-        if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
-        if (r.data.new_box === 5) { celebrateMastery(); }
-        this.appendNewBadges(r.data.newly_earned_badges);
-        if (r.data.level_before && r.data.level_after) { this.levelBefore = r.data.level_before; this.levelAfter = r.data.level_after; }
-      } catch (e) { showError(t('learning', 'Failed to submit answer')); }
-      finally { this.submitting = false; }
+      }, t('learning', 'Failed to submit answer'), true)
     },
     async submitMultiAnswer() {
-      this.submitting = true;
       this.lastSelectedAnswerIds = this.selectedAnswerIds.slice();
-      try {
-        var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
+      await this.submitLeitnerAnswer({
           itemId: this.currentItem.id,
           answerIds: this.selectedAnswerIds,
-          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
-        });
-        this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
-        this.lastCorrectAnswerText = r.data.correct_answer_text || '';
-        this.lastCorrectAnswerTexts = r.data.correct_answer_texts || [this.lastCorrectAnswerText];
-        if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
-        if (r.data.new_box === 5) { celebrateMastery(); }
-        this.appendNewBadges(r.data.newly_earned_badges);
-        if (r.data.level_before && r.data.level_after) { this.levelBefore = r.data.level_before; this.levelAfter = r.data.level_after; }
-      } catch (e) { showError(t('learning', 'Failed to record answer')); }
-      finally { this.submitting = false; }
+      }, t('learning', 'Failed to record answer'), true)
     },
     async submitAnswer(answer) {
-      this.submitting = true;
       this.lastSelectedAnswerId = answer.id;
-      try {
-        var r = await axios.post(generateUrl('/apps/learning/api/leitner/answer'), {
+      await this.submitLeitnerAnswer({
           itemId: this.currentItem.id,
           answerId: answer.id,
-          ...(this.effectiveContentLanguage ? { lang: this.effectiveContentLanguage } : {}),
-        });
-        this.lastAnswer = r.data.correct; this.lastMoveTarget = r.data.new_box; this.answered = true;
-        this.lastCorrectAnswerText = r.data.correct_answer_text || '';
-        this.lastCorrectAnswerTexts = r.data.correct_answer_texts || [this.lastCorrectAnswerText];
-        if (r.data.correct) this.sessionCorrect++; else this.sessionIncorrect++;
-        if (r.data.new_box === 5) { celebrateMastery(); }
-        this.appendNewBadges(r.data.newly_earned_badges);
-        if (r.data.level_before && r.data.level_after) { this.levelBefore = r.data.level_before; this.levelAfter = r.data.level_after; }
-      } catch (e) { showError(t('learning', 'Failed to record answer')); }
-      finally { this.submitting = false; }
+      }, t('learning', 'Failed to record answer'), true)
     },
     getCorrectAnswer() {
       if (this.displayCorrectAnswerTexts.length > 1) {
@@ -539,7 +790,8 @@ export default {
     async nextQuestion() {
       clearInterval(this.explainPollTimer);
       this.explainTaskId = null; this.explainText = ''; this.explainLoading = false;
-      if (this.currentIndex < this.dueQuestions.length - 1) { this.currentIndex++; this.answered = false; this.selectedAnswerIds = []; this.lastSelectedAnswerId = null; this.lastSelectedAnswerIds = []; this.openAnswer = ''; this.lastOpenAnswer = ''; }
+      this.clearFsrsIntervalNotice();
+      if (this.currentIndex < this.dueQuestions.length - 1) { this.currentIndex++; this.answered = false; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastReviewResult = null; this.lastSubmittedRating = null; this.selectedAnswerIds = []; this.lastSelectedAnswerId = null; this.lastSelectedAnswerIds = []; this.openAnswer = ''; this.lastOpenAnswer = ''; }
       else {
         const oldStreak = this.streak.current_streak;
         await this.fetchStreak();
@@ -562,7 +814,7 @@ export default {
       } catch (e) { /* streak is optional, ignore errors */ }
     },
     boxPercentage(n) { return this.stats.total === 0 ? 0 : Math.round((this.stats['box_' + n] || 0) / this.stats.total * 100); },
-    finishReview() { this.started = false; this.currentIndex = 0; this.answered = false; this.showResults = false; this.openAnswer = ''; this.lastOpenAnswer = ''; this.checkInitialized(); this.fetchStreak(); }
+    finishReview() { this.started = false; this.currentIndex = 0; this.answered = false; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastSubmittedRating = null; this.lastReviewResult = null; this.showResults = false; this.openAnswer = ''; this.lastOpenAnswer = ''; this.clearFsrsIntervalNotice(); this.checkInitialized(); this.fetchStreak(); }
   }
 };
 </script>
@@ -653,4 +905,109 @@ export default {
 .open-answer-review { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .open-review-row { padding: 10px 14px; border-radius: 8px; background: var(--color-background-hover); font-size: 14px; line-height: 1.5; }
 .leitner-meta-hint { font-size: 13px; color: var(--color-text-maxcontrast); margin-bottom: 16px; }
+.fsrs-interval-notice {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--sim-accent, var(--color-primary-element)) 28%, var(--color-border));
+  background: color-mix(in srgb, var(--sim-accent, var(--color-primary-element)) 10%, var(--color-main-background));
+  color: var(--color-main-text);
+  font-weight: 600;
+  animation: fsrs-notice-fade 1.5s ease both;
+}
+.fsrs-stability {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-primary-element) 6%, var(--color-main-background));
+}
+.fsrs-stability__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.fsrs-stability__label { font-size: 13px; color: var(--color-text-maxcontrast); }
+.fsrs-stability__value { font-size: 13px; color: var(--color-main-text); }
+.fsrs-stability__track {
+  overflow: hidden;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-border) 55%, transparent);
+}
+.fsrs-stability__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--sim-warn, var(--color-warning)), var(--sim-accent, var(--color-primary-element)));
+}
+.fsrs-rating-panel {
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-primary-element) 5%, var(--color-main-background));
+}
+.fsrs-rating-title {
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-main-text);
+}
+.fsrs-rating-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+.fsrs-btn {
+  --fsrs-tone: var(--color-primary-element);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 72px;
+  padding: 14px 16px;
+  border: 2px solid var(--fsrs-tone);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--fsrs-tone) 10%, var(--color-main-background));
+  color: var(--color-main-text);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.fsrs-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--fsrs-tone) 18%, transparent);
+  background: color-mix(in srgb, var(--fsrs-tone) 16%, var(--color-main-background));
+}
+.fsrs-btn:disabled { opacity: 0.7; cursor: wait; }
+.fsrs-btn--again { --fsrs-tone: var(--sim-danger, var(--color-error)); }
+.fsrs-btn--hard { --fsrs-tone: var(--sim-warn, var(--color-warning)); }
+.fsrs-btn--good { --fsrs-tone: var(--color-primary-element); }
+.fsrs-btn--easy { --fsrs-tone: var(--sim-accent, var(--color-primary-element)); }
+.fsrs-btn-top { display: flex; align-items: center; gap: 10px; }
+.fsrs-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--fsrs-tone);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.fsrs-label { font-size: 15px; font-weight: 700; color: var(--color-main-text); }
+.fsrs-btn-meta { font-size: 12px; color: var(--color-text-maxcontrast); }
+@keyframes fsrs-notice-fade {
+  0% { opacity: 0; transform: translateY(-4px); }
+  15% { opacity: 1; transform: translateY(0); }
+  70% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+@media (max-width: 480px) {
+  .fsrs-rating-buttons { grid-template-columns: 1fr; }
+}
 </style>

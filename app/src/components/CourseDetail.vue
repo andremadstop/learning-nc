@@ -56,6 +56,7 @@
 				:all-pools="allPools"
 				:active-tab="currentTab"
 				:content-language="contentLanguage"
+				:fsrs-detailed-stats="fsrsDetailedStats"
 				@all-pools-loaded="allPools = $event"
 				@error="error = $event"
 				@knowledge-pending-count="knowledgePendingCount = $event"
@@ -162,6 +163,10 @@ export default {
 		contentLanguage: {
 			type: String,
 			default: '',
+		},
+		fsrsDetailedStats: {
+			type: Boolean,
+			default: false,
 		},
 		presetDuelCode: {
 			type: String,
