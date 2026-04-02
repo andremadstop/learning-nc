@@ -114,3 +114,24 @@ app/tests/*
 tests/auth-state.json
 test-results/
 !scripts/check-vhtml-security.py
+
+# Build output (full app build — not for repo)
+/build/learning/
+
+# Release archives
+learning-*.tar.gz
+
+# Root-level tooling artefacts (Codex/Gemini session files)
+/package.json
+/package-lock.json
+/*.py
+/VIRTPROF_ASSET_LIBRARY.js
+/CHANGELOG_V360_DRAFT.md
+/.codex
+/security_plus_lehrplan.md
+/security_plus_wissensbasis_shared.md
+CODEX_NACHTSCHICHT.md
+CODEX_DAUERAUFTRAG.md
+CODEX_HOTFIX*.md
+CODEX_5PERSPEKTIVEN*.md
+CODEX_SELF_REVIEW.md
