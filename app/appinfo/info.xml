@@ -106,6 +106,10 @@ Play through 20 real-world IT incident campaigns (SolarWinds, WannaCry, Colonial
         <command>OCA\Learning\Command\ImportVaultCommand</command>
     </commands>
 
+    <background-jobs>
+        <job>OCA\Learning\BackgroundJob\SendRemindersJob</job>
+    </background-jobs>
+
     <settings>
         <admin>OCA\Learning\Settings\AdminSettings</admin>
         <admin-section>OCA\Learning\Settings\AdminSection</admin-section>

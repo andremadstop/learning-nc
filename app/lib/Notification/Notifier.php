@@ -4,6 +4,7 @@ namespace OCA\Learning\Notification;
 
 use OCP\IURLGenerator;
 use OCP\L10N\IFactory;
+use OCP\Notification\UnknownNotificationException;
 use OCP\Notification\INotification;
 use OCP\Notification\INotifier;
 
@@ -26,7 +27,7 @@ class Notifier implements INotifier {
 
     public function prepare(INotification $notification, string $languageCode): INotification {
         if ($notification->getApp() !== 'learning') {
-            throw new \InvalidArgumentException('Wrong app');
+            throw new UnknownNotificationException('Wrong app');
         }
 
         $l = $this->l10nFactory->get('learning', $languageCode);
@@ -48,24 +49,36 @@ class Notifier implements INotifier {
                 $params = $notification->getSubjectParameters();
                 $days = $params['streak_days'] ?? 0;
                 $notification->setParsedSubject(
-                    $l->t('Don\'t break your %s-day streak! Review some cards today.', [(string)$days])
+                    $l->t('Your %s-day streak expires today!', [(string)$days])
                 );
                 $notification->setLink($appUrl);
                 $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
                 break;
 
+            case 'due_cards':
             case 'due_reminder':
                 $params = $notification->getSubjectParameters();
                 $dueCount = $params['due_count'] ?? 0;
                 $notification->setParsedSubject(
-                    $l->t('You have %s cards waiting for review', [(string)$dueCount])
+                    $l->t('You have %s due cards. Time to study!', [(string)$dueCount])
+                );
+                $notification->setLink($appUrl);
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
+                break;
+
+            case 'exam_reminder':
+                $params = $notification->getSubjectParameters();
+                $days = max(1, (int)($params['days'] ?? 0));
+                $courseTitle = (string)($params['course_title'] ?? '');
+                $notification->setParsedSubject(
+                    $l->n('Exam in %n day: %s', 'Exam in %n days: %s', $days, [$courseTitle])
                 );
                 $notification->setLink($appUrl);
                 $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
                 break;
 
             default:
-                throw new \InvalidArgumentException('Unknown subject');
+                throw new UnknownNotificationException('Unknown subject');
         }
 
         return $notification;

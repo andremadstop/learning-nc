@@ -5,6 +5,7 @@ namespace OCA\Learning\AppInfo;
 use OCA\Learning\BackgroundJob\ChunkingJob;
 use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
 use OCA\Learning\BackgroundJob\NotificationJob;
+use OCA\Learning\BackgroundJob\SendRemindersJob;
 use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
 use OCA\Learning\Command\ImportVaultCommand;
 use OCA\Learning\Dashboard\LearningWidget;
@@ -50,8 +51,11 @@ class Application extends App implements IBootstrap {
         $this->syncThemingLegalLinks($container);
         $jobList = $container->get(IJobList::class);
         try {
-            if (!$jobList->has(NotificationJob::class, null)) {
-                $jobList->add(NotificationJob::class);
+            if ($jobList->has(NotificationJob::class, null)) {
+                $jobList->remove(NotificationJob::class, null);
+            }
+            if (!$jobList->has(SendRemindersJob::class, null)) {
+                $jobList->add(SendRemindersJob::class);
             }
             if (!$jobList->has(ConsistencyCheckJob::class, null)) {
                 $jobList->add(ConsistencyCheckJob::class);
