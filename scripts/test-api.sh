@@ -1,0 +1,634 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+BASE_URL="${BASE_URL:-https://devcloud.andrestiebitz.de}"
+ADMIN_USER="${ADMIN_USER:-admin}"
+ADMIN_PASS="${ADMIN_PASS:-}"
+SECOND_USER="${SECOND_USER:-}"
+SECOND_PASS="${SECOND_PASS:-}"
+TRANSPORT="${TRANSPORT:-local}"
+REMOTE_HOST="${REMOTE_HOST:-learning-dev}"
+CONTAINER_NAME="${CONTAINER_NAME:-learning-app}"
+CONTAINER_USER="${CONTAINER_USER:-www-data}"
+BRUTEFORCE_RESET_IPS="${BRUTEFORCE_RESET_IPS:-127.0.0.1 172.18.0.1}"
+
+PASS=0
+FAIL=0
+SKIP=0
+TMP_DIR="$(mktemp -d)"
+LAST_BODY="$TMP_DIR/last-body.out"
+LAST_STATUS="000"
+
+POOL_ID=""
+QUESTION_ID=""
+COURSE_ID=""
+INJECTION_POOL_ID=""
+LONG_TEXT_QUESTION_ID=""
+CORRECT_ANSWER_ID=""
+LEITNER_ITEM_ID=""
+DUEL_CODE=""
+CAMPAIGN_ID=""
+SOURCE_IP=""
+
+ADMIN_COOKIE_HEADER=""
+ADMIN_REQUEST_TOKEN=""
+SECOND_COOKIE_HEADER=""
+SECOND_REQUEST_TOKEN=""
+
+cleanup() {
+    if [[ -n "$QUESTION_ID" ]]; then
+        request_silent DELETE admin "/apps/learning/api/questions/${QUESTION_ID}" || true
+    fi
+
+    if [[ -n "$LONG_TEXT_QUESTION_ID" ]]; then
+        request_silent DELETE admin "/apps/learning/api/questions/${LONG_TEXT_QUESTION_ID}" || true
+    fi
+
+    if [[ -n "$INJECTION_POOL_ID" ]]; then
+        request_silent DELETE admin "/apps/learning/api/pools/${INJECTION_POOL_ID}" || true
+    fi
+
+    if [[ -n "$COURSE_ID" ]]; then
+        request_silent DELETE admin "/apps/learning/api/courses/${COURSE_ID}" || true
+    fi
+
+    if [[ -n "$POOL_ID" ]]; then
+        request_silent DELETE admin "/apps/learning/api/pools/${POOL_ID}" || true
+    fi
+
+    rm -rf "$TMP_DIR"
+}
+
+trap cleanup EXIT
+
+body_snippet() {
+    if [[ -s "$LAST_BODY" ]]; then
+        head -c 240 "$LAST_BODY" | tr '\n' ' '
+    else
+        printf '<empty>'
+    fi
+}
+
+pass() {
+    local label="$1"
+    printf 'PASS %s\n' "$label"
+    PASS=$((PASS + 1))
+}
+
+fail() {
+    local label="$1"
+    local detail="${2:-}"
+    printf 'FAIL %s' "$label"
+    if [[ -n "$detail" ]]; then
+        printf ' (%s)' "$detail"
+    fi
+    printf '\n'
+    FAIL=$((FAIL + 1))
+}
+
+skip() {
+    local label="$1"
+    local detail="${2:-}"
+    printf 'SKIP %s' "$label"
+    if [[ -n "$detail" ]]; then
+        printf ' (%s)' "$detail"
+    fi
+    printf '\n'
+    SKIP=$((SKIP + 1))
+}
+
+json_to_form_pairs() {
+    local json="$1"
+
+    jq -j '
+        def form_key($path):
+            ($path[0] | tostring) + ($path[1:] | map("[" + tostring + "]") | join(""));
+
+        paths(scalars) as $path
+        | form_key($path)
+        + "="
+        + (
+            getpath($path)
+            | if . == null then
+                ""
+              elif type == "boolean" then
+                (if . then "1" else "0" end)
+              else
+                tostring
+              end
+          )
+        + "\u0000"
+    ' <<<"$json"
+}
+
+run_remote() {
+    local remote_cmd=("$@")
+    local quoted=""
+
+    printf -v quoted '%q ' "${remote_cmd[@]}"
+    ssh "$REMOTE_HOST" "$quoted"
+}
+
+run_curl() {
+    if [[ "$TRANSPORT" == "remote-container" ]]; then
+        run_remote docker exec -u "$CONTAINER_USER" "$CONTAINER_NAME" "$@"
+        return
+    fi
+
+    "$@"
+}
+
+base_host() {
+    printf '%s\n' "$BASE_URL" | sed -E 's#^[a-zA-Z]+://([^/:]+).*$#\1#'
+}
+
+detect_source_ip() {
+    local host host_ip
+
+    host="$(base_host)"
+    host_ip="$(getent ahostsv4 "$host" 2>/dev/null | awk 'NR == 1 { print $1 }')"
+    if [[ -z "$host_ip" ]]; then
+        return
+    fi
+
+    SOURCE_IP="$(ip route get "$host_ip" 2>/dev/null | awk '{for (i = 1; i <= NF; i++) if ($i == "src") { print $(i + 1); exit }}')"
+}
+
+reset_bruteforce() {
+    local ip
+    local -a reset_ips=()
+
+    if [[ "$TRANSPORT" != "remote-container" ]]; then
+        return
+    fi
+
+    if [[ -n "$SOURCE_IP" ]]; then
+        reset_ips+=("$SOURCE_IP")
+    fi
+
+    for ip in $BRUTEFORCE_RESET_IPS; do
+        reset_ips+=("$ip")
+    done
+
+    for ip in $(printf '%s\n' "${reset_ips[@]}" | awk 'NF && !seen[$0]++'); do
+        run_remote docker exec -u "$CONTAINER_USER" "$CONTAINER_NAME" \
+            php occ security:bruteforce:reset "$ip" >/dev/null 2>&1 || true
+    done
+}
+
+cookie_for_session() {
+    local var_name="${1^^}_COOKIE_HEADER"
+    printf '%s' "${!var_name-}"
+}
+
+token_for_session() {
+    local var_name="${1^^}_REQUEST_TOKEN"
+    printf '%s' "${!var_name-}"
+}
+
+login_session() {
+    local session_name="$1"
+    local user="$2"
+    local password="$3"
+    local payload cookie_header request_token error_detail
+    local cookie_var="${session_name^^}_COOKIE_HEADER"
+    local token_var="${session_name^^}_REQUEST_TOKEN"
+
+    if [[ -z "$user" || -z "$password" ]]; then
+        fail "Session login for ${session_name}" "missing credentials"
+        return 1
+    fi
+
+    if ! payload="$(LOGIN_BASE_URL="$BASE_URL" LOGIN_USER="$user" LOGIN_PASS="$password" node <<'NODE' 2>&1
+const { chromium } = require('./app/node_modules/playwright');
+
+async function loginWithCredentials(page, user, password) {
+  await page.goto(process.env.LOGIN_BASE_URL + '/login', { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.locator('input[name="user"]').fill(user);
+  await page.locator('input[name="password"]').fill(password);
+  await page.locator('button[type="submit"]').click({ noWaitAfter: true });
+}
+
+(async() => {
+  const baseUrl = process.env.LOGIN_BASE_URL;
+  const loginUser = process.env.LOGIN_USER;
+  const loginPass = process.env.LOGIN_PASS;
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+
+  await loginWithCredentials(page, loginUser, loginPass);
+
+  const deadline = Date.now() + 45000;
+  let reenteredPassword = false;
+
+  while (Date.now() < deadline) {
+    const url = page.url();
+    if (url.includes('/apps/learning/')) {
+      await page.waitForLoadState('domcontentloaded').catch(() => {});
+      await page.waitForTimeout(1500);
+
+      const requesttoken = await page.evaluate(() => {
+        return document.head?.dataset?.requesttoken
+          || document.documentElement?.dataset?.requesttoken
+          || window.OC?.requestToken
+          || null;
+      }).catch(() => null);
+
+      const cookies = await page.context().cookies(baseUrl);
+      const cookieHeader = cookies.map(({ name, value }) => `${name}=${value}`).join('; ');
+
+      console.log(JSON.stringify({
+        ok: true,
+        url,
+        cookieHeader,
+        requesttoken,
+      }));
+      await browser.close();
+      return;
+    }
+
+    if (!reenteredPassword && url.includes('direct=1')) {
+      reenteredPassword = true;
+      await page.locator('input[name="password"]').fill(loginPass);
+      await page.locator('button[type="submit"]').click({ noWaitAfter: true });
+    }
+
+    await page.waitForTimeout(500);
+  }
+
+  const text = await page.locator('body').textContent().catch(() => '');
+  console.log(JSON.stringify({
+    ok: false,
+    url: page.url(),
+    text: String(text).replace(/\s+/g, ' ').slice(0, 400),
+  }));
+  await browser.close();
+  process.exit(1);
+})().catch((error) => {
+  console.log(JSON.stringify({ ok: false, error: error.message }));
+  process.exit(1);
+});
+NODE
+)"; then
+        error_detail="$(jq -r '.error // .text // .url // empty' <<<"$payload" 2>/dev/null)"
+        fail "Session login for ${session_name}" "${error_detail:-login failed}"
+        return 1
+    fi
+
+    cookie_header="$(jq -r '.cookieHeader // empty' <<<"$payload" 2>/dev/null)"
+    request_token="$(jq -r '.requesttoken // empty' <<<"$payload" 2>/dev/null)"
+
+    if [[ -z "$cookie_header" || -z "$request_token" ]]; then
+        error_detail="$(jq -r '.error // .text // .url // empty' <<<"$payload" 2>/dev/null)"
+        fail "Session login for ${session_name}" "${error_detail:-missing cookie header or request token}"
+        return 1
+    fi
+
+    printf -v "$cookie_var" '%s' "$cookie_header"
+    printf -v "$token_var" '%s' "$request_token"
+    pass "Session login for ${session_name}"
+}
+
+request() {
+    local method="$1"
+    local session_name="${2:-}"
+    local path="$3"
+    local data="${4:-}"
+    local response
+    local marker="__CODEX_STATUS__:"
+    local cookie_header request_token
+
+    : >"$LAST_BODY"
+
+    local curl_args=(
+        curl -sS
+        -H "Accept: application/json"
+        -H "OCS-APIREQUEST: true"
+        -X "$method"
+    )
+
+    if [[ -n "$session_name" ]]; then
+        cookie_header="$(cookie_for_session "$session_name")"
+        request_token="$(token_for_session "$session_name")"
+
+        if [[ -n "$cookie_header" ]]; then
+            curl_args+=(--cookie "$cookie_header")
+        fi
+        if [[ -n "$request_token" ]]; then
+            curl_args+=(-H "requesttoken: $request_token")
+        fi
+    fi
+
+    if [[ -n "$data" ]]; then
+        while IFS= read -r -d '' pair; do
+            curl_args+=(--data-urlencode "$pair")
+        done < <(json_to_form_pairs "$data")
+    fi
+
+    curl_args+=("${BASE_URL}${path}")
+    curl_args+=(-w "${marker}%{http_code}")
+
+    if ! response="$(run_curl "${curl_args[@]}")"; then
+        LAST_STATUS="000"
+        printf '{"error":"curl_failed"}' >"$LAST_BODY"
+        return
+    fi
+
+    LAST_STATUS="${response##*${marker}}"
+    printf '%s' "${response%${marker}*}" >"$LAST_BODY"
+}
+
+request_stream() {
+    local session_name="$1"
+    local path="$2"
+    local max_time="${3:-5}"
+    local cookie_header request_token
+    local headers_file="$TMP_DIR/stream-headers.out"
+    local curl_exit=0
+
+    : >"$LAST_BODY"
+    : >"$headers_file"
+
+    local curl_args=(
+        curl -sS
+        --no-buffer
+        --max-time "$max_time"
+        -D "$headers_file"
+        -o "$LAST_BODY"
+        -H "Accept: text/event-stream"
+        -H "OCS-APIREQUEST: true"
+    )
+
+    cookie_header="$(cookie_for_session "$session_name")"
+    request_token="$(token_for_session "$session_name")"
+
+    if [[ -n "$cookie_header" ]]; then
+        curl_args+=(--cookie "$cookie_header")
+    fi
+    if [[ -n "$request_token" ]]; then
+        curl_args+=(-H "requesttoken: $request_token")
+    fi
+
+    curl_args+=("${BASE_URL}${path}")
+
+    run_curl "${curl_args[@]}"
+    curl_exit=$?
+
+    LAST_STATUS="$(awk 'toupper($1) ~ /^HTTP\\// { code = $2 } END { print code ? code : "000" }' "$headers_file")"
+
+    if [[ "$curl_exit" -ne 0 && "$curl_exit" -ne 28 ]]; then
+        LAST_STATUS="000"
+        printf 'stream_failed' >"$LAST_BODY"
+        return
+    fi
+}
+
+request_silent() {
+    local method="$1"
+    local session_name="${2:-}"
+    local path="$3"
+    local data="${4:-}"
+    local cookie_header request_token
+
+    local curl_args=(
+        curl -sS
+        -H "Accept: application/json"
+        -H "OCS-APIREQUEST: true"
+        -X "$method"
+    )
+
+    if [[ -n "$session_name" ]]; then
+        cookie_header="$(cookie_for_session "$session_name")"
+        request_token="$(token_for_session "$session_name")"
+
+        if [[ -n "$cookie_header" ]]; then
+            curl_args+=(--cookie "$cookie_header")
+        fi
+        if [[ -n "$request_token" ]]; then
+            curl_args+=(-H "requesttoken: $request_token")
+        fi
+    fi
+
+    if [[ -n "$data" ]]; then
+        while IFS= read -r -d '' pair; do
+            curl_args+=(--data-urlencode "$pair")
+        done < <(json_to_form_pairs "$data")
+    fi
+
+    curl_args+=("${BASE_URL}${path}")
+    run_curl "${curl_args[@]}" >/dev/null 2>&1
+}
+
+assert_status() {
+    local label="$1"
+    local expected="$2"
+
+    if [[ "$LAST_STATUS" == "$expected" ]]; then
+        pass "$label"
+    else
+        fail "$label" "expected ${expected}, got ${LAST_STATUS}, body: $(body_snippet)"
+    fi
+}
+
+assert_status_in() {
+    local label="$1"
+    shift
+    local expected=("$@")
+    local candidate
+
+    for candidate in "${expected[@]}"; do
+        if [[ "$LAST_STATUS" == "$candidate" ]]; then
+            pass "$label"
+            return
+        fi
+    done
+
+    fail "$label" "expected one of ${expected[*]}, got ${LAST_STATUS}, body: $(body_snippet)"
+}
+
+assert_not_status() {
+    local label="$1"
+    local forbidden="$2"
+
+    if [[ "$LAST_STATUS" != "$forbidden" ]]; then
+        pass "$label"
+    else
+        fail "$label" "unexpected ${forbidden}, body: $(body_snippet)"
+    fi
+}
+
+assert_json() {
+    local label="$1"
+    shift
+    local jq_expr="${@: -1}"
+    local jq_args=("${@:1:$#-1}")
+
+    if jq -e "${jq_args[@]}" "$jq_expr" "$LAST_BODY" >/dev/null 2>&1; then
+        pass "$label"
+    else
+        fail "$label" "jq assertion failed: ${jq_expr}, body: $(body_snippet)"
+    fi
+}
+
+assert_contains() {
+    local label="$1"
+    local pattern="$2"
+
+    if rg -q --fixed-strings "$pattern" "$LAST_BODY"; then
+        pass "$label"
+    else
+        fail "$label" "missing pattern: ${pattern}, body: $(body_snippet)"
+    fi
+}
+
+detect_source_ip
+reset_bruteforce
+
+if [[ -z "$ADMIN_PASS" ]]; then
+    fail "Admin credentials are available" "set ADMIN_PASS"
+    printf '\nResults: %d passed, %d failed, %d skipped\n' "$PASS" "$FAIL" "$SKIP"
+    exit 1
+fi
+
+login_session admin "$ADMIN_USER" "$ADMIN_PASS" || {
+    printf '\nResults: %d passed, %d failed, %d skipped\n' "$PASS" "$FAIL" "$SKIP"
+    exit 1
+}
+
+if [[ -n "$SECOND_USER" && -n "$SECOND_PASS" ]]; then
+    if ! login_session second "$SECOND_USER" "$SECOND_PASS"; then
+        skip "Second user permission checks" "login failed for ${SECOND_USER}"
+        SECOND_USER=""
+        SECOND_PASS=""
+    fi
+else
+    skip "Second user permission checks" "SECOND_USER or SECOND_PASS not configured"
+fi
+
+suffix="$(date +%s)"
+
+request GET "" "/apps/learning/api/pools"
+assert_status "Unauthenticated pools request is rejected" "401"
+
+pool_name="Codex API Pool ${suffix}"
+pool_body="$(jq -nc --arg name "$pool_name" --arg description "Codex integration test pool" '{name:$name,description:$description}')"
+request POST admin "/apps/learning/api/pools" "$pool_body"
+assert_status "Admin can create pool" "201"
+assert_json "Created pool response contains id" '.id | numbers'
+POOL_ID="$(jq -r '.id // empty' "$LAST_BODY")"
+
+request GET admin "/apps/learning/api/pools"
+assert_status "Admin can list pools" "200"
+assert_json "Pools response contains own array" '.own | arrays'
+
+question_body="$(jq -nc \
+    --argjson poolId "$POOL_ID" \
+    --arg text "Which answer is correct?" \
+    --arg explanation "" \
+    --arg difficulty "easy" \
+    '{poolId:$poolId,text:$text,explanation:$explanation,difficulty:$difficulty,questionType:"single",answers:[{text:"Correct",is_correct:true,position:1},{text:"Wrong",is_correct:false,position:2}]}
+')"
+request POST admin "/apps/learning/api/questions" "$question_body"
+assert_status "Admin can create question" "201"
+assert_json "Question response includes answers" '.answers | length == 2'
+QUESTION_ID="$(jq -r '.id // empty' "$LAST_BODY")"
+CORRECT_ANSWER_ID="$(jq -r '.answers[] | select(.is_correct == true) | .id' "$LAST_BODY")"
+
+request GET admin "/apps/learning/api/pools/${POOL_ID}/questions"
+assert_status "Questions list for pool works" "200"
+assert_json "Created question is visible in pool listing" --argjson questionId "$QUESTION_ID" 'map(select(.id == $questionId)) | length == 1'
+
+course_body="$(jq -nc --arg title "Codex API Course ${suffix}" --arg description "Codex integration test course" '{title:$title,description:$description}')"
+request POST admin "/apps/learning/api/courses" "$course_body"
+assert_status "Admin can create course" "201"
+assert_json "Course creation response contains id" '.id | numbers'
+COURSE_ID="$(jq -r '.id // empty' "$LAST_BODY")"
+
+request PATCH admin "/apps/learning/api/courses/${COURSE_ID}/exam-date" "$(jq -nc '{examDate:"2030-12-31"}')"
+assert_status "Course exam date can be updated" "200"
+assert_json "Exam date response reflects the saved value" '.exam_date == "2030-12-31"'
+
+request GET admin "/apps/learning/api/story/campaigns"
+assert_status "Campaign discovery works" "200"
+assert_json "Campaign listing returns an array" 'type == "array"'
+CAMPAIGN_ID="$(jq -r '.[0].campaign_id // empty' "$LAST_BODY")"
+
+if [[ -n "$CAMPAIGN_ID" ]]; then
+    request PATCH admin "/apps/learning/api/courses/${COURSE_ID}/campaign-selection" "$(jq -nc --arg campaignId "$CAMPAIGN_ID" '{campaignIds:[$campaignId]}')"
+    assert_status "Course campaign selection can be updated" "200"
+    assert_json "Campaign selection echoes the chosen campaign" --arg campaignId "$CAMPAIGN_ID" '.allowed_campaigns == [$campaignId]'
+else
+    skip "Course campaign selection can be updated" "no campaigns available"
+fi
+
+request POST admin "/apps/learning/api/leitner/initialize" "$(jq -nc --argjson poolId "$POOL_ID" '{poolId:$poolId}')"
+assert_status "Leitner initialize works for the created pool" "200"
+assert_json "Leitner initialize returns initialized count" '.initialized | numbers'
+
+request GET admin "/apps/learning/api/leitner/due?poolId=${POOL_ID}&limit=5"
+assert_status "Leitner due queue works" "200"
+assert_json "Leitner due queue returns at least one item" 'length > 0'
+LEITNER_ITEM_ID="$(jq -r '.[0].id // empty' "$LAST_BODY")"
+
+request POST admin "/apps/learning/api/leitner/answer" "$(jq -nc --argjson itemId "$LEITNER_ITEM_ID" --argjson answerId "$CORRECT_ANSWER_ID" '{itemId:$itemId,answerId:$answerId,preview:true}')"
+assert_status "Leitner preview answer works" "200"
+assert_json "Leitner preview marks the review as awaiting rating" '.preview == true and .awaiting_rating == true'
+
+request POST admin "/apps/learning/api/leitner/answer" "$(jq -nc --argjson itemId "$LEITNER_ITEM_ID" --argjson answerId "$CORRECT_ANSWER_ID" '{itemId:$itemId,answerId:$answerId,rating:3}')"
+assert_status "Leitner FSRS answer works" "200"
+assert_json "Leitner FSRS response includes rating" '.rating == 3'
+assert_json "Leitner FSRS response includes stability" '.stability > 0'
+assert_json "Leitner FSRS response includes difficulty" '.difficulty > 0'
+assert_json "Leitner FSRS response includes retrievability" '.retrievability >= 0'
+
+request POST admin "/apps/learning/api/duels" "$(jq -nc --argjson poolId "$POOL_ID" '{poolId:$poolId,numQuestions:5}')"
+assert_status "Duel creation works" "201"
+assert_json "Duel creation returns a code" '.code | strings | length > 0'
+DUEL_CODE="$(jq -r '.code // empty' "$LAST_BODY")"
+
+request_stream admin "/apps/learning/api/sse/duel/${DUEL_CODE}" 5
+assert_status "Duel SSE endpoint is reachable" "200"
+assert_contains "Duel SSE emits a state event" "event: state"
+assert_contains "Duel SSE payload includes the duel code" "\"code\":\"${DUEL_CODE}\""
+
+if [[ -n "$SECOND_USER" ]]; then
+    request GET second "/apps/learning/api/pools/${POOL_ID}"
+    assert_status_in "Second user cannot read foreign pool" "403" "404"
+
+    request GET second "/apps/learning/api/courses/${COURSE_ID}"
+    assert_status_in "Second user cannot read foreign course" "403" "404"
+fi
+
+sql_name="Codex'; DROP TABLE learning_pools; -- ${suffix}"
+request POST admin "/apps/learning/api/pools" "$(jq -nc --arg name "$sql_name" '{name:$name,description:"sql injection probe"}')"
+assert_not_status "SQL injection-style pool name does not crash the API" "500"
+if [[ "$LAST_STATUS" == "201" ]]; then
+    INJECTION_POOL_ID="$(jq -r '.id // empty' "$LAST_BODY")"
+fi
+
+long_text="$(head -c 10000 </dev/zero | tr '\0' 'L')"
+long_text_body="$(jq -nc \
+    --argjson poolId "$POOL_ID" \
+    --arg text "$long_text" \
+    '{poolId:$poolId,text:$text,explanation:"",difficulty:"easy",questionType:"single",answers:[{text:"A",is_correct:true,position:1},{text:"B",is_correct:false,position:2}]}
+')"
+request POST admin "/apps/learning/api/questions" "$long_text_body"
+assert_not_status "Extremely long question text does not trigger a server error" "500"
+if [[ "$LAST_STATUS" == "201" ]]; then
+    LONG_TEXT_QUESTION_ID="$(jq -r '.id // empty' "$LAST_BODY")"
+fi
+
+request DELETE admin "/apps/learning/api/courses/${COURSE_ID}"
+assert_status "Admin can delete course" "204"
+COURSE_ID=""
+
+request DELETE admin "/apps/learning/api/pools/${POOL_ID}"
+assert_status "Admin can delete pool" "204"
+POOL_ID=""
+QUESTION_ID=""
+LONG_TEXT_QUESTION_ID=""
+
+printf '\nResults: %d passed, %d failed, %d skipped\n' "$PASS" "$FAIL" "$SKIP"
+if [[ "$FAIL" -ne 0 ]]; then
+    exit 1
+fi

@@ -96,6 +96,7 @@ scripts/*
 !scripts/devcloud-sanitize.py
 !scripts/devcloud-staleness.sh
 !scripts/fill_pool_explanations.php
+!scripts/test-api.sh
 .env
 .ralph/
 certs/
