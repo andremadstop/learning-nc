@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.9.0] - 2026-04-02
+
+### Added
+- **FSRS Precision Scheduling**: Leitner items now store stability, difficulty, and last rating. Smart Queue and due-card ordering prioritize the lowest retrievability first instead of rigid box timing.
+- **Confidence-Based Review UI**: Learners now rate cards by confidence (`Nochmal`, `War schwer`, `War einfach`) with an optional detailed stats mode for interval previews and FSRS internals.
+- **Critical Card Analytics**: Instructor dashboards expose students' critical cards via indexed FSRS aggregation, making weak retrieval states visible at a glance.
+
+### Changed
+- **Router-View App Shell**: `App.vue` now resolves top-level views through `vue-router`, completing the deep-link/back-forward migration for the main shell.
+- **API Smoke Harness**: `test-api.sh` targets cookie-based Nextcloud sessions and exercises modern endpoints including FSRS ratings, course exam dates, campaign selection, and duel SSE.
+
+### Fixed
+- **A11Y Polish**: Timers announce warning phases in text, dialogs keep focus correctly trapped, and FSRS rating controls expose accessible labels and group semantics.
+- **FSRS Dev Schema Drift**: The development environment schema was brought back in sync with the Phase-125 FSRS columns so final review submissions no longer fail on missing `stability` fields.
+
 ## [3.8.0] - 2026-04-02
 
 ### Added

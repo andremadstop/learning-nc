@@ -13,7 +13,7 @@ Play through 20 real-world IT incident campaigns (SolarWinds, WannaCry, Colonial
 ## Learning Modes
 
 - **Smart Queue** — One-click review of all due cards, prioritized by urgency
-- **Leitner Spaced Repetition** — 5-box system (1d, 3d, 7d, 14d intervals)
+- **FSRS Smart Repetition** — confidence-based review with adaptive intervals per card
 - **Training Mode** — Quick quiz sessions with immediate feedback
 - **Exam Mode** — Timed exams with configurable question count
 - **PBQ Simulations** — Performance-based questions with CLI terminals, dropdowns, network topology placement
@@ -62,7 +62,7 @@ Play through 20 real-world IT incident campaigns (SolarWinds, WannaCry, Colonial
 - Optional: Google Gemini API key for AI features
     ]]></description>
 
-    <version>3.8.0</version>
+    <version>3.9.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>
