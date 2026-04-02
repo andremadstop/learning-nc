@@ -15,8 +15,12 @@ async function goToAdmin(page) {
 }
 
 async function dismissInstructorOnboarding(page) {
-  const skipBtn = page.getByRole('button', { name: /Skip tour|Start learning/i }).first()
-  if (await skipBtn.isVisible({ timeout: 5_000 }).catch(() => false)) {
+  // Onboarding has a splash phase (up to 4s) before skip/start buttons appear.
+  // Labels are localised: EN "Skip tour"/"Start learning", DE "Tour überspringen"/"Loslegen".
+  const skipBtn = page.getByRole('button', {
+    name: /Skip tour|Start learning|Tour überspringen|Loslegen/i,
+  }).first()
+  if (await skipBtn.isVisible({ timeout: 6_000 }).catch(() => false)) {
     await skipBtn.click()
     await page.waitForTimeout(400)
     await page.waitForLoadState('networkidle').catch(() => {})
