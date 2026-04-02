@@ -27,6 +27,7 @@ export const de = {
   "Choose a topic first. Then I will show the most common questions inside it.": "Wähle zuerst ein Thema. Danach zeige ich dir die häufigsten Fragen dazu.",
   "Clear chat history": "Chatverlauf löschen",
   "Close": "Schließen",
+  "Close panel": "Panel schließen",
   "Closed": "Geschlossen",
   "Congratulations! You unlocked a new badge: {badgeName}": "Glückwunsch! Sie haben ein neues Abzeichen freigeschaltet: {badgeName}",
   "Course": "Kurs",
@@ -78,6 +79,7 @@ export const de = {
   "League play happens inside one course. Everyone plays everyone, and the top 4 move on to the final round.": "Das Ligaspiel findet innerhalb eines Kurses statt. Jeder spielt gegen jeden und die Top 4 kommen in die Endrunde.",
   "Leitner & Queue": "Leitner & Warteschlange",
   "Liga": "Liga",
+  "Minimize panel": "Panel minimieren",
   "MC/Wahr-Falsch-Toggle": "MC/Wahr-Falsch-Toggle",
   "Mastery, Rangliste, XP, Streaks und Badges.": "Mastery, Rangliste, XP, Streaks und Badges.",
   "Message": "Nachricht",
@@ -513,4 +515,3 @@ export const ar = {
   "{days} days in a row. Consistency beats intensity.": "{days} أيام متتالية. الاتساق يتفوق على الشدة.",
   "Close panel": "Panel schließen"
 }
-
