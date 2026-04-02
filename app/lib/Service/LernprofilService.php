@@ -22,7 +22,9 @@ class LernprofilService {
     private ICacheFactory $cacheFactory;
 
     private const CACHE_TTL = 300; // 5 minutes
-    private const CACHE_PREFIX = 'lernprofil_';
+    private const CACHE_NAMESPACE = 'learning';
+    private const CACHE_PREFIX = 'profile_';
+    private const LEGACY_CACHE_PREFIX = 'lernprofil_';
 
     public function __construct(IDBConnection $db, ICacheFactory $cacheFactory) {
         $this->db = $db;
@@ -42,8 +44,8 @@ class LernprofilService {
      *   cached_at — unix timestamp of when this result was generated
      */
     public function aggregateProfile(string $userId, ?int $courseId = null): array {
-        $cacheKey = self::CACHE_PREFIX . $userId . '_' . ($courseId ?? 'all');
-        $cache = $this->cacheFactory->createDistributed('learning');
+        $cacheKey = $this->profileCacheKey($userId, $courseId);
+        $cache = $this->cacheFactory->createDistributed(self::CACHE_NAMESPACE);
 
         $cached = $cache->get($cacheKey);
         if ($cached !== null && is_array($cached)) {
@@ -319,10 +321,11 @@ class LernprofilService {
      * PROF-04 — passive update trigger.
      */
     public function invalidateCache(string $userId): void {
-        $cache = $this->cacheFactory->createDistributed('learning');
+        $cache = $this->cacheFactory->createDistributed(self::CACHE_NAMESPACE);
         // Remove global cache and any course-specific caches
         // We can't enumerate keys easily, so remove the known patterns
-        $cache->remove(self::CACHE_PREFIX . $userId . '_all');
+        $cache->remove($this->profileCacheKey($userId, null));
+        $cache->remove(self::LEGACY_CACHE_PREFIX . $userId . '_all');
         // For course-specific keys we rely on the TTL (5 min) — acceptable latency
         // A full invalidation would require a user-keyed set; overkill for this use case
     }
@@ -621,5 +624,9 @@ class LernprofilService {
             return 'declining';
         }
         return 'stable';
+    }
+
+    private function profileCacheKey(string $userId, ?int $courseId): string {
+        return self::CACHE_PREFIX . $userId . '_' . ($courseId ?? 'all');
     }
 }

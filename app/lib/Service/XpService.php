@@ -2,16 +2,24 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
+use OCP\ICacheFactory;
 use OCP\IDBConnection;
 use OCP\IConfig;
 
 class XpService {
+    private const CACHE_NAMESPACE = 'learning';
+    private const USER_STATE_CACHE_PREFIX = 'user_state_';
+    private const PROFILE_CACHE_PREFIX = 'profile_';
+    private const LEGACY_PROFILE_CACHE_PREFIX = 'lernprofil_';
+
     private IDBConnection $db;
     private IConfig $config;
+    private ICacheFactory $cacheFactory;
 
-    public function __construct(IDBConnection $db, IConfig $config) {
+    public function __construct(IDBConnection $db, IConfig $config, ICacheFactory $cacheFactory) {
         $this->db = $db;
         $this->config = $config;
+        $this->cacheFactory = $cacheFactory;
     }
 
     public function isGamificationEnabled(): bool {
@@ -179,6 +187,7 @@ class XpService {
                ))
                ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
             $qb->executeStatement();
+            $this->invalidateUserCaches($userId);
             return;
         }
 
@@ -292,6 +301,8 @@ class XpService {
                 }
             }
         }
+
+        $this->invalidateUserCaches($userId);
     }
 
     /**
@@ -353,5 +364,13 @@ class XpService {
            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
            ->andWhere($qb->expr()->lt('current_level', $qb->createNamedParameter($levelData['level'])));
         $qb->executeStatement();
+        $this->invalidateUserCaches($userId);
+    }
+
+    private function invalidateUserCaches(string $userId): void {
+        $cache = $this->cacheFactory->createDistributed(self::CACHE_NAMESPACE);
+        $cache->remove(self::USER_STATE_CACHE_PREFIX . $userId);
+        $cache->remove(self::PROFILE_CACHE_PREFIX . $userId . '_all');
+        $cache->remove(self::LEGACY_PROFILE_CACHE_PREFIX . $userId . '_all');
     }
 }

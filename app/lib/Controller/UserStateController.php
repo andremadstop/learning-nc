@@ -15,6 +15,9 @@ use OCP\IDBConnection;
 use OCP\IRequest;
 
 class UserStateController extends Controller {
+    private const CACHE_NAMESPACE = 'learning';
+    private const USER_STATE_CACHE_PREFIX = 'user_state_';
+
     private BadgeService $badgeService;
     private StreakService $streakService;
     private XpService $xpService;
@@ -92,7 +95,7 @@ class UserStateController extends Controller {
         }
 
         // Invalidate cache
-        $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $this->userId);
+        $this->invalidateUserStateCache();
 
         return new DataResponse(['daily_goal' => $daily_goal]);
     }
@@ -397,7 +400,7 @@ class UserStateController extends Controller {
         }
 
         // Invalidate cache
-        $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $this->userId);
+        $this->invalidateUserStateCache();
 
         // Get explanation
         $qb = $this->db->getQueryBuilder();
@@ -421,8 +424,8 @@ class UserStateController extends Controller {
      */
     #[UserRateLimit(limit: 20, period: 60)]
     public function state(): DataResponse {
-        $cache = $this->cacheFactory->createDistributed('learning');
-        $cacheKey = 'user_state_' . $this->userId;
+        $cache = $this->cacheFactory->createDistributed(self::CACHE_NAMESPACE);
+        $cacheKey = $this->userStateCacheKey();
 
         $cached = $cache->get($cacheKey);
         if ($cached !== null) {
@@ -512,12 +515,20 @@ class UserStateController extends Controller {
     public function claimMission(string $missionKey): DataResponse {
         try {
             $result = $this->missionService->claimMission((string)$this->userId, $missionKey);
-            $this->cacheFactory->createDistributed('learning')->remove('user_state_' . $this->userId);
+            $this->invalidateUserStateCache();
             return new DataResponse($result);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], 400);
         } catch (\Throwable $e) {
             return new DataResponse(['error' => 'Failed to claim mission'], 400);
         }
+    }
+
+    private function userStateCacheKey(): string {
+        return self::USER_STATE_CACHE_PREFIX . (string)$this->userId;
+    }
+
+    private function invalidateUserStateCache(): void {
+        $this->cacheFactory->createDistributed(self::CACHE_NAMESPACE)->remove($this->userStateCacheKey());
     }
 }
