@@ -4,7 +4,6 @@ import { translate as t, translatePlural as n } from '@nextcloud/l10n';
 
 // Nextcloud Vue styles
 import '@nextcloud/dialogs/style.css';
-import '../css/epoch-tokens.css';
 // Ghostline Quest visual takeover effects
 import './css/ghostline.css';
 // Skill-Map force-directed graph styles
