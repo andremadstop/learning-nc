@@ -12,7 +12,35 @@
       <!-- Image mode: existing behavior unchanged -->
       <img v-else-if="scenarioImage" :src="scenarioImage" class="pbq-diagram-img" :alt="t('learning', 'Network diagram')" />
       <!-- Fallback topology grid when no diagram image is available -->
-      <div v-else class="pbq-topology-grid">
+      <div v-else class="pbq-topology-grid pbq-topology-grid--with-bg">
+        <svg class="pbq-placement__fallback-bg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Router (Mitte) -->
+          <rect x="175" y="130" width="50" height="35" rx="4" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="2"/>
+          <text x="200" y="152" text-anchor="middle" font-size="10" fill="var(--color-text-maxcontrast, #666)">Router</text>
+          <!-- Switch links -->
+          <rect x="60" y="220" width="50" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1.5"/>
+          <text x="85" y="239" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">SW1</text>
+          <!-- Switch rechts -->
+          <rect x="290" y="220" width="50" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1.5"/>
+          <text x="315" y="239" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">SW2</text>
+          <!-- Verbindungen Router→Switches -->
+          <line x1="200" y1="165" x2="85" y2="220" stroke="var(--color-border-dark, #888)" stroke-width="1.5"/>
+          <line x1="200" y1="165" x2="315" y2="220" stroke="var(--color-border-dark, #888)" stroke-width="1.5"/>
+          <!-- PCs -->
+          <rect x="20" y="60" width="40" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
+          <text x="40" y="79" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">PC1</text>
+          <rect x="100" y="60" width="40" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
+          <text x="120" y="79" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">PC2</text>
+          <rect x="260" y="60" width="40" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
+          <text x="280" y="79" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">PC3</text>
+          <rect x="340" y="60" width="40" height="30" rx="3" fill="none" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
+          <text x="360" y="79" text-anchor="middle" font-size="9" fill="var(--color-text-maxcontrast, #666)">PC4</text>
+          <!-- Verbindungen Switches→PCs -->
+          <line x1="85" y1="220" x2="40" y2="90" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
+          <line x1="85" y1="220" x2="120" y2="90" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
+          <line x1="315" y1="220" x2="280" y2="90" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
+          <line x1="315" y1="220" x2="360" y2="90" stroke="var(--color-border-dark, #888)" stroke-width="1"/>
+        </svg>
         <div
           v-for="pos in config.positions"
           :key="pos.id"
@@ -177,6 +205,16 @@ export default {
   border: 1px solid var(--color-border);
   width: 100%;
   box-sizing: border-box;
+  position: relative;
+}
+.pbq-placement__fallback-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.3;
+  pointer-events: none;
 }
 .pbq-topology-node {
   display: flex; flex-direction: column; align-items: center;
