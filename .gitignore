@@ -10,6 +10,10 @@ app/js/*.LICENSE.txt
 .planning/
 .githooks/
 CLAUDE.md
+/COLLABORATION.md
+/CODEX_RESULT*.md
+/CODEX_SIGNALS.md
+/GEMINI_RESULT*.json
 starter-kit/
 tests/
 !app/tests/
@@ -38,6 +42,10 @@ LAUNCH_READINESS_REPORT*.md
 *.pdf
 *.odt
 *.txt
+/comptia_*.json
+/questions_*.json
+/security_plus_domain_*.json
+/app/data/security_plus_domain_*.json
 !app/README.md
 !README.md
 !app/CHANGELOG.md
@@ -59,6 +67,8 @@ docker-compose*.yml
 !docker-compose.e2e.yml
 
 # App internals (keep in repo but not these)
+/app/appinfo/signature.json
+/build/learning/appinfo/signature.json
 app/docs/API_CONTRACTS.md
 app/docs/PBQ-PDF-AUDIT*.md
 app/examples/comptia_*.json
@@ -79,6 +89,9 @@ Thumbs.db
 
 # Backup
 .git-backup-*
+/.tmp_questions/
+/.tmpq/
+/.tmpq_upgrade2/
 scripts/*
 !scripts/devcloud-sanitize.py
 !scripts/devcloud-staleness.sh
