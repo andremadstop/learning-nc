@@ -13,12 +13,11 @@ DEFAULT_INPUT = pathlib.Path.home() / 'Workspace/Lokal/comptia-extraktion/compti
 DEFAULT_OUTPUT = DEFAULT_INPUT.with_name('00-Buchfragen-clean.json')
 
 NOISE_PATTERNS = [
-    r'LICENSED FOR USE ONLY BY:.*',
+    r'LICENSED FOR USE ONLY BY:[^\n]*',
     r'SY0-701_[^\n]+',
-    r'Lesson \d+.*',
-    r'Appendix A.*',
-    r'Solutions?\s+\|.*',
-    r'Solutions?\s+',
+    r'Lesson \d+\s*\|[^\n]*',
+    r'Appendix A\s*\|[^\n]*',
+    r'Solutions?\s+\|[^\n]*',
 ]
 
 CHOICE_KEYS = ['A', 'B', 'C', 'D']
@@ -27,7 +26,7 @@ CHOICE_KEYS = ['A', 'B', 'C', 'D']
 def clean_text(raw: object) -> str:
     text = str(raw or '').replace('\x0c', ' ')
     for pattern in NOISE_PATTERNS:
-        text = re.sub(pattern, ' ', text, flags=re.IGNORECASE | re.DOTALL)
+        text = re.sub(pattern, ' ', text, flags=re.IGNORECASE)
 
     text = re.sub(r'\s+', ' ', text).strip()
     return text
