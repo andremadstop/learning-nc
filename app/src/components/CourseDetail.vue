@@ -288,6 +288,11 @@ export default {
 	},
 
 	watch: {
+		$route(route) {
+			if (route && Number(route.params?.id || 0) === Number(this.courseId || 0)) {
+				this.syncCurrentTabFromRoute(route.params?.tab || '')
+			}
+		},
 		visibleTabs(tabs) {
 			const ids = tabs.map((t) => t.id)
 			const isCoveredByMega = this.isLernraumTab(this.currentTab)
@@ -319,6 +324,7 @@ export default {
 			if (mega) {
 				this.activeMegaTab = mega
 			}
+			useOptionalCourseStore()?.setTab(tab)
 			if (this.isStudentLearningTab) {
 				this.activeLearningMode = tab
 				this.selectedLearningPool = null
@@ -345,6 +351,46 @@ export default {
 	},
 
 	methods: {
+		currentRouteTab() {
+			if (!this.$route || Number(this.$route.params?.id || 0) !== Number(this.courseId || 0)) {
+				return ''
+			}
+			return String(this.$route.params?.tab || '').trim()
+		},
+		syncCurrentTabFromRoute(tabId = '') {
+			if (!tabId) {
+				return
+			}
+			const resolvedTabId = this.resolveSelectableTab(String(tabId))
+			this.currentTab = resolvedTabId
+			if (['lernraum', 'teilnehmer', 'wettbewerb', 'kommunikation', 'verwaltung'].includes(String(tabId))) {
+				this.activeMegaTab = String(tabId)
+			} else {
+				const mega = this.megaTabForLeaf(resolvedTabId)
+				if (mega) {
+					this.activeMegaTab = mega
+				}
+			}
+		},
+		pushCourseTabRoute(tabId) {
+			if (!this.$router || !this.courseId) {
+				return
+			}
+			const nextTab = String(tabId || '').trim()
+			if (!nextTab) {
+				return
+			}
+			const navigation = this.$router.push({
+				name: 'course-tab',
+				params: {
+					id: String(this.courseId),
+					tab: nextTab,
+				},
+			})
+			if (navigation && typeof navigation.catch === 'function') {
+				navigation.catch(() => {})
+			}
+		},
 		defaultLernraumTab() {
 			return this.lernraumLeafTabs[0] || (this.isInstructor ? 'pools' : 'training')
 		},
@@ -504,6 +550,7 @@ export default {
 			const resolvedTabId = this.resolveSelectableTab(megaTabId)
 			this.currentTab = resolvedTabId
 			useOptionalCourseStore()?.setTab(resolvedTabId)
+			this.pushCourseTabRoute(megaTabId)
 			if (resolvedTabId !== 'arena') {
 				this.arenaSubMode = null
 			}
@@ -521,6 +568,7 @@ export default {
 		onLeafTabChange(leafTabId) {
 			this.currentTab = leafTabId
 			useOptionalCourseStore()?.setTab(leafTabId)
+			this.pushCourseTabRoute(leafTabId)
 			if (leafTabId !== 'arena') {
 				this.arenaSubMode = null
 			}
@@ -535,6 +583,7 @@ export default {
 			const resolvedTabId = this.resolveSelectableTab(tabId)
 			this.currentTab = resolvedTabId
 			useOptionalCourseStore()?.setTab(resolvedTabId)
+			this.pushCourseTabRoute(tabId)
 			if (resolvedTabId !== 'arena') {
 				this.arenaSubMode = null
 			}
@@ -586,6 +635,7 @@ export default {
 					this.activeMegaTab = 'wettbewerb'
 					this.arenaSubMode = 'duel'
 				}
+				this.syncCurrentTabFromRoute(this.currentRouteTab())
 				this.$nextTick(() => {
 					this.emitVirtuProfContext()
 				})

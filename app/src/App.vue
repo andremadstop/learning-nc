@@ -546,9 +546,16 @@ export default {
       );
     }
     await Promise.all([this.fetchRole(), this.fetchPersonalSettings(), this.fetchEnabledTools()]);
-    this.applyInitialAdventureRoute();
     this.appInitialized = true;
     this.checkInstructorOnboarding();
+    const openedAdventureRoute = this.applyInitialAdventureRoute();
+    if (!openedAdventureRoute) {
+      if (this.$route?.name === 'home') {
+        this.navigateToDefaultRoute(true);
+      } else {
+        this.applyRouteState(this.$route);
+      }
+    }
     this.$nextTick(() => {
       this.emitVirtuProfContext();
     });
@@ -560,6 +567,9 @@ export default {
     }
   },
   watch: {
+    $route(route) {
+      this.applyRouteState(route);
+    },
     mainView() {
       this.emitVirtuProfContext();
       this.emitToolGuide();
@@ -1086,7 +1096,6 @@ export default {
         return;
       }
 
-      this.mainView = 'courses';
       this.selectedStudent = null;
       this.courseView = 'list';
       this.pendingVirtuProfDuel = {
@@ -1106,6 +1115,7 @@ export default {
           title: '',
         };
       }
+      this.pushAppRoute(this.courseRouteLocation(courseId, 'wettbewerb'));
     },
 
     handleTablistKeydown(event) {
@@ -1135,15 +1145,11 @@ export default {
       } catch (err) {
         this.userRole = 'student';
       }
-      // Students start on Dashboard, instructors on Kurse
-      if (this.userRole === 'student') {
-        this.mainView = 'dashboard';
-      }
     },
 
     applyInitialAdventureRoute() {
       if (typeof window === 'undefined') {
-        return;
+        return false;
       }
 
       const params = new URLSearchParams(window.location.search || '');
@@ -1153,15 +1159,140 @@ export default {
       const wantsCoop = ['1', 'true', 'yes'].includes(String(coopParam || '').toLowerCase()) || coopCode.length > 0;
 
       if (requestedView !== 'abenteuer' && !wantsCoop) {
-        return;
+        return false;
       }
 
-      this.mainView = 'pools';
-      this.currentView = 'abenteuer';
-      this.adventureRoute = {
+      this._pendingAdventureRoute = {
         coop: wantsCoop,
         code: coopCode,
       };
+      this.pushAppRoute({ name: 'pools' }, true);
+      return true;
+    },
+    navigateToDefaultRoute(replace = false) {
+      const target = this.userRole === 'student' ? { name: 'dashboard' } : { name: 'courses' };
+      this.pushAppRoute(target, replace);
+    },
+    courseRouteLocation(courseId, tab = 'lernraum') {
+      return {
+        name: 'course-tab',
+        params: {
+          id: String(courseId),
+          tab,
+        },
+      };
+    },
+    routeLocationForView(view) {
+      if (view === 'dashboard') {
+        return { name: 'dashboard' };
+      }
+      if (view === 'courses') {
+        return { name: 'courses' };
+      }
+      if (view === 'pools') {
+        return { name: 'pools' };
+      }
+      if (view === 'werkzeuge') {
+        return { name: 'tools', query: this.toolsView ? { tool: this.toolsView } : {} };
+      }
+      if (view === 'skillmap') {
+        return { name: 'skill-map' };
+      }
+      if (view === 'settings') {
+        return { name: 'settings' };
+      }
+      if (view === 'virtuprof-fullscreen') {
+        return { name: 'virtuprof' };
+      }
+      return null;
+    },
+    pushAppRoute(location, replace = false) {
+      if (!this.$router || !location) {
+        return;
+      }
+      const navigation = replace ? this.$router.replace(location) : this.$router.push(location);
+      if (navigation && typeof navigation.catch === 'function') {
+        navigation.catch(() => {});
+      }
+    },
+    applyRouteState(route) {
+      if (!route || route.name === 'home') {
+        return;
+      }
+
+      if (route.name === 'dashboard') {
+        this.mainView = 'dashboard';
+        this.selectedCourse = null;
+        this.selectedStudent = null;
+        this.courseView = 'list';
+        useOptionalCourseStore()?.setCourse(null);
+        return;
+      }
+
+      if (route.name === 'courses') {
+        this.mainView = 'courses';
+        this.selectedCourse = null;
+        this.selectedStudent = null;
+        this.courseView = 'list';
+        useOptionalCourseStore()?.setCourse(null);
+        this.backToPools();
+        return;
+      }
+
+      if (route.name === 'course-tab') {
+        const courseId = Number(route.params?.id || 0);
+        const routeTab = String(route.params?.tab || '').trim();
+        this.mainView = 'courses';
+        this.selectedStudent = null;
+        this.courseView = 'list';
+        if (courseId) {
+          if (!this.selectedCourse || Number(this.selectedCourse.id) !== courseId) {
+            this.selectedCourse = {
+              id: courseId,
+              title: this.selectedCourse?.title || '',
+            };
+          }
+          useOptionalCourseStore()?.setCourse(courseId);
+          if (routeTab) {
+            useOptionalCourseStore()?.setTab(routeTab);
+          }
+        }
+        return;
+      }
+
+      if (route.name === 'pools') {
+        this.mainView = 'pools';
+        this.backToPools();
+        if (this._pendingAdventureRoute) {
+          this.currentView = 'abenteuer';
+          this.adventureRoute = { ...this._pendingAdventureRoute };
+          this._pendingAdventureRoute = null;
+        }
+        return;
+      }
+
+      if (route.name === 'tools') {
+        this.mainView = 'werkzeuge';
+        const toolId = String(route.query?.tool || '').trim();
+        if (toolId) {
+          this.toolsView = toolId;
+        }
+        return;
+      }
+
+      if (route.name === 'skill-map') {
+        this.mainView = 'skillmap';
+        return;
+      }
+
+      if (route.name === 'settings') {
+        this.mainView = 'settings';
+        return;
+      }
+
+      if (route.name === 'virtuprof') {
+        this.mainView = 'virtuprof-fullscreen';
+      }
     },
 
     switchMainView(view) {
@@ -1175,17 +1306,7 @@ export default {
       } else if (view !== 'virtuprof-fullscreen') {
         this.previousMainView = view;
       }
-
-      this.mainView = view;
-      if (view === 'courses') {
-        this.selectedCourse = null;
-        this.selectedStudent = null;
-        this.courseView = 'list';
-        useOptionalCourseStore()?.setCourse(null);
-        this.backToPools();
-      }
-      // settings: no state reset needed
-      // duel: no state reset needed — DuelMode is self-contained
+      this.pushAppRoute(this.routeLocationForView(view));
     },
     openVirtuProfFullscreen() {
       if (!this.showVirtuProfDock) {
@@ -1202,13 +1323,13 @@ export default {
       if (this.mainView !== 'virtuprof-fullscreen') {
         this.previousMainView = this.mainView;
       }
-      this.mainView = 'virtuprof-fullscreen';
+      this.pushAppRoute({ name: 'virtuprof' });
     },
     closeVirtuProfFullscreen() {
       const fallbackView = this.previousMainView && this.previousMainView !== 'virtuprof-fullscreen'
         ? this.previousMainView
         : (this.userRole === 'student' ? 'dashboard' : 'courses');
-      this.mainView = fallbackView;
+      this.pushAppRoute(this.routeLocationForView(fallbackView), true);
     },
 
     // --- Pools methods ---
@@ -1252,12 +1373,12 @@ export default {
       this.poolFromCourse = false;
       this.poolFromCourseObj = null;
       if (course) {
-        this.mainView = 'courses';
         this.selectedCourse = course;
         useOptionalCourseStore()?.setCourse(course.id || null);
+        this.pushAppRoute(this.courseRouteLocation(course.id || this.courseId, 'lernraum'));
       } else {
-        this.mainView = 'courses';
         useOptionalCourseStore()?.setCourse(null);
+        this.pushAppRoute({ name: 'courses' });
       }
     },
     openSmartQueue() {
@@ -1265,10 +1386,10 @@ export default {
       this.currentView = 'smartQueue';
     },
     openCourseTool(toolId) {
-      this.mainView = 'werkzeuge';
       if (toolId) {
         this.toolsView = toolId;
       }
+      this.pushAppRoute(this.routeLocationForView('werkzeuge'));
     },
     openRemediation() {
       this.smartQueueMode = 'remediation';
@@ -1300,6 +1421,9 @@ export default {
       this.selectedCourse = course;
       this.selectedStudent = null;
       useOptionalCourseStore()?.setCourse(course?.id || null);
+      if (course?.id) {
+        this.pushAppRoute(this.courseRouteLocation(course.id, 'lernraum'));
+      }
     },
     selectStudent(studentInfo) {
       this.selectedStudent = studentInfo;
@@ -1307,9 +1431,9 @@ export default {
     async openPoolFromCourse(poolId) {
       this.poolFromCourse = true;
       this.poolFromCourseObj = this.selectedCourse;
-      this.mainView = 'pools';
       this.selectedCourse = null;
       useOptionalCourseStore()?.setCourse(null);
+      this.pushAppRoute({ name: 'pools' });
       try {
         const response = await axios.get(
           generateUrl('/apps/learning/api/pools/' + poolId)
@@ -1323,7 +1447,7 @@ export default {
 
     // --- Skill-Map methods ---
     async openPoolFromSkillMap(poolId) {
-      this.mainView = 'pools';
+      this.pushAppRoute({ name: 'pools' });
       try {
         const response = await axios.get(
           generateUrl('/apps/learning/api/pools/' + poolId)

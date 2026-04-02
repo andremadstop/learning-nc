@@ -2,6 +2,7 @@ import Vue from 'vue';
 import App from './App.vue';
 import { translate as t, translatePlural as n } from '@nextcloud/l10n';
 import { createPinia, PiniaVuePlugin } from 'pinia';
+import router from './router/index.js';
 
 // Nextcloud Vue styles
 import '@nextcloud/dialogs/style.css';
@@ -24,5 +25,6 @@ const pinia = createPinia();
 // Mount Vue app
 new Vue({
   pinia,
+  router,
   render: h => h(App)
 }).$mount('#app-content');

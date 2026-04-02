@@ -29,7 +29,8 @@
     "d3-zoom": "^3.0.0",
     "linkifyjs": "^4.3.2",
     "pinia": "^2.3.1",
-    "vue": "^2.7.16"
+    "vue": "^2.7.16",
+    "vue-router": "^3.6.5"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
