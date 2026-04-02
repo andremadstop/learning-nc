@@ -1348,6 +1348,8 @@ OC.L10N.register(
     "Cards adapt to your pace. After each reveal, rate whether a card felt hard or easy. Difficult cards return sooner, easy cards later." : "Karten passen sich deinem Tempo an. Nach jeder aufgedeckten Antwort bewertest du, ob sich eine Karte schwer oder leicht angefühlt hat. Schwierige Karten kommen früher wieder, leichte später.",
     "Choose how this card felt" : "Wähle, wie sich diese Karte angefühlt hat",
     "Critical" : "Kritisch",
+    "Critical Cards" : "Kritische Karten",
+    "Critical cards: {n}" : "Kritische Karten: {n}",
     "Exam time expired" : "Prüfungszeit abgelaufen",
     "Exam time: {time} remaining, {phase}" : "Prüfungszeit: {time} verbleibend, {phase}",
     "Expired" : "Abgelaufen",

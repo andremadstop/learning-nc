@@ -362,11 +362,12 @@ class CourseController extends Controller {
         }
 
         $handle = fopen('php://temp', 'r+');
-        fputcsv($handle, ['Name', 'Risk Level', 'Risk Reasons', 'Accuracy (%)', 'Last Active']);
-        foreach ($students as $s) {
+        fputcsv($handle, ['Name', 'Risk Level', 'Critical Cards', 'Risk Reasons', 'Accuracy (%)', 'Last Active']);
+        foreach (($students['at_risk'] ?? []) as $s) {
             fputcsv($handle, [
                 $s['display_name'] ?? $s['user_id'] ?? '',
                 $s['risk_level'] ?? '',
+                $s['critical_cards_count'] ?? 0,
                 implode('; ', $s['risk_reasons'] ?? []),
                 $s['accuracy'] ?? '',
                 $s['last_active'] ?? '',

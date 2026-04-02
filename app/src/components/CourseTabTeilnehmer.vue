@@ -110,6 +110,7 @@
 							</span>
 						</div>
 						<div class="at-risk-meta">
+							<span v-if="student.critical_cards_count > 0">{{ t('learning', 'Critical cards: {n}', { n: student.critical_cards_count }) }}</span>
 							<span v-if="student.accuracy !== null">{{ t('learning', 'Accuracy: {n}%', { n: student.accuracy }) }}</span>
 							<span v-if="student.last_active">{{ t('learning', 'Last active: {date}', { date: formatLastActive(student.last_active) }) }}</span>
 						</div>
@@ -144,6 +145,12 @@
 								{{ t('learning', 'XP') }}
 								<span v-if="progressSortKey === 'total_xp'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
 							</th>
+							<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
+								:aria-sort="progressSortKey === 'critical_cards_count' ? (progressSortAsc ? 'ascending' : 'descending') : 'none'"
+								@click="setProgressSort('critical_cards_count')" @keydown.enter="setProgressSort('critical_cards_count')" @keydown.space.prevent="setProgressSort('critical_cards_count')">
+								{{ t('learning', 'Critical Cards') }}
+								<span v-if="progressSortKey === 'critical_cards_count'" class="sort-arrow">{{ progressSortAsc ? '\u25B2' : '\u25BC' }}</span>
+							</th>
 							<th v-for="pool in coursePools"
 								:key="'th-' + pool.id"
 								class="pool-col"
@@ -175,6 +182,11 @@
 								</span>
 							</td>
 							<td class="stat-col">{{ formatXp(row.total_xp) }}</td>
+							<td class="stat-col critical-cards-col">
+								<span class="critical-cards-pill" :class="criticalCardsClass(row.critical_cards_count)">
+									{{ row.critical_cards_count || 0 }}
+								</span>
+							</td>
 							<td v-for="pool in coursePools"
 								:key="'td-' + pool.id"
 								class="pool-col"
@@ -624,6 +636,12 @@ export default {
 			if (mastery >= 40) return 'mastery-medium'
 			return 'mastery-low'
 		},
+		criticalCardsClass(count) {
+			const value = Number(count || 0)
+			if (value >= 10) return 'critical-cards-high'
+			if (value >= 3) return 'critical-cards-medium'
+			return 'critical-cards-low'
+		},
 		sortedDistributionEntries(source) {
 			if (!source || typeof source !== 'object') return []
 			return Object.entries(source)
@@ -1029,6 +1047,29 @@ export default {
 td.mastery-high { background: color-mix(in srgb, var(--color-success) 10%, transparent); color: var(--color-success); font-weight: 700; border-inline-start: 3px solid var(--color-success); }
 td.mastery-medium { background: color-mix(in srgb, var(--color-warning) 10%, transparent); color: var(--color-warning); font-weight: 700; border-inline-start: 3px solid var(--color-warning); }
 td.mastery-low { background: color-mix(in srgb, var(--color-error) 10%, transparent); color: var(--color-error); font-weight: 700; border-inline-start: 3px solid var(--color-error); }
+.critical-cards-col { text-align: center; }
+.critical-cards-pill {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 34px;
+	padding: 4px 10px;
+	border-radius: 999px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+.critical-cards-high {
+	background: color-mix(in srgb, var(--color-error) 16%, transparent);
+	color: var(--color-error);
+}
+.critical-cards-medium {
+	background: color-mix(in srgb, var(--color-warning) 18%, transparent);
+	color: var(--color-warning);
+}
+.critical-cards-low {
+	background: color-mix(in srgb, var(--color-success) 14%, transparent);
+	color: var(--color-success);
+}
 
 .level-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; font-weight: 700; white-space: nowrap; }
 .level-grey { background: var(--color-background-dark); color: var(--color-text-maxcontrast); }

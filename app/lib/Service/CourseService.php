@@ -1052,6 +1052,57 @@ class CourseService {
     }
 
     /**
+     * Batch-load reviewed FSRS cards and critical-card counts per student.
+     * Returns: [user_id => ['critical' => int, 'reviewed' => int]]
+     */
+    private function getBatchCriticalCardStats(array $studentIds, array $poolIds): array {
+        if (empty($studentIds) || empty($poolIds)) {
+            return [];
+        }
+
+        $criticalRatioThreshold = log(0.7) / log(0.9);
+        $now = time();
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('user_id', 'stability', 'last_reviewed')
+            ->from('learning_leitner_items')
+            ->where($qb->expr()->in('user_id', $qb->createNamedParameter($studentIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)))
+            ->andWhere($qb->expr()->in('pool_id', $qb->createNamedParameter($poolIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
+            ->andWhere($qb->expr()->isNotNull('stability'))
+            ->andWhere($qb->expr()->isNotNull('last_reviewed'));
+
+        $result = $qb->executeQuery();
+        $data = [];
+        while ($row = $result->fetch()) {
+            $studentId = (string)$row['user_id'];
+            $stability = (float)($row['stability'] ?? 0);
+            $lastReviewed = (int)($row['last_reviewed'] ?? 0);
+
+            if (!isset($data[$studentId])) {
+                $data[$studentId] = [
+                    'critical' => 0,
+                    'reviewed' => 0,
+                ];
+            }
+
+            if ($stability <= 0 || $lastReviewed <= 0) {
+                continue;
+            }
+
+            $data[$studentId]['reviewed']++;
+            $elapsedDays = max(0, $now - $lastReviewed) / 86400;
+            $elapsedRatio = $elapsedDays / $stability;
+
+            if ($elapsedRatio > $criticalRatioThreshold) {
+                $data[$studentId]['critical']++;
+            }
+        }
+        $result->closeCursor();
+
+        return $data;
+    }
+
+    /**
      * Batch-load session stats (accuracy + last active) per user per pool.
      * Returns: [user_id => [pool_id => [total_q, correct, last_active]]]
      */
@@ -1134,7 +1185,7 @@ class CourseService {
         // Normalize pagination/sorting inputs.
         $limit = max(1, min(100, $limit));
         $offset = max(0, $offset);
-        $allowedSortKeys = ['user_id', 'current_level', 'total_xp', 'overall_mastery', 'last_activity_date'];
+        $allowedSortKeys = ['user_id', 'current_level', 'total_xp', 'critical_cards_count', 'overall_mastery', 'last_activity_date'];
         $sortKey = in_array($sortKey, $allowedSortKeys, true) ? $sortKey : 'total_xp';
         $sortDir = strtolower((string)$sortDir) === 'asc' ? 'asc' : 'desc';
 
@@ -1186,6 +1237,7 @@ class CourseService {
                     'total_xp' => $stats ? $stats['total_xp'] : 0,
                     'current_level' => $stats ? $stats['current_level'] : 1,
                     'current_streak' => $stats ? $stats['current_streak'] : 0,
+                    'critical_cards_count' => 0,
                     'last_activity_date' => $stats ? $stats['last_activity_date'] : null,
                     'overall_mastery' => null,
                     'pools' => [],
@@ -1211,6 +1263,7 @@ class CourseService {
         $questionCounts = $this->getQuestionCounts($poolIds);
         $masteryData = $this->getBatchMastery($studentIds, $poolIds);
         $sessionData = $this->getBatchSessionStats($studentIds, $poolIds);
+        $criticalCardData = $this->getBatchCriticalCardStats($studentIds, $poolIds);
         $userStats = $this->getBatchUserStats($studentIds);
 
         // Assemble per-student results
@@ -1245,6 +1298,7 @@ class CourseService {
                 ? (int)round($totalMastered / $totalQuestions * 100)
                 : null;
             $stats = $userStats[$sid] ?? null;
+            $criticalCards = $criticalCardData[$sid]['critical'] ?? 0;
             $students[] = [
                 'user_id' => $sid,
                 'display_name' => $this->getDisplayName($sid),
@@ -1252,6 +1306,7 @@ class CourseService {
                 'total_xp' => $stats ? $stats['total_xp'] : 0,
                 'current_level' => $stats ? $stats['current_level'] : 1,
                 'current_streak' => $stats ? $stats['current_streak'] : 0,
+                'critical_cards_count' => $criticalCards,
                 'last_activity_date' => $stats ? $stats['last_activity_date'] : null,
                 'overall_mastery' => $overallMastery,
                 'pools' => $poolProgress,
@@ -1591,7 +1646,7 @@ class CourseService {
 
     /**
      * Get at-risk students for a course (instructor only).
-     * Uses rule-based signals: inactivity, low accuracy, box-1 stall, lost streak, few sessions.
+     * Uses rule-based signals: inactivity, low accuracy, FSRS critical cards, lost streak, few sessions.
      */
     public function getAtRiskStudents(int $courseId, string $userId): array {
         $course = $this->courseMapper->findById($courseId);
@@ -1614,6 +1669,7 @@ class CourseService {
         // Batch data
         $userStats = $this->getBatchUserStats($studentIds);
         $sessionStats = !empty($poolIds) ? $this->getBatchSessionStats($studentIds, $poolIds) : [];
+        $criticalCardData = !empty($poolIds) ? $this->getBatchCriticalCardStats($studentIds, $poolIds) : [];
 
         // Batch: box distribution per student across course pools
         $boxData = [];
@@ -1693,11 +1749,23 @@ class CourseService {
                 $score += 2;
             }
 
-            // Signal 3: Box-1 stall >60% (MEDIUM)
+            // Signal 3: FSRS critical cards, with legacy box-1 fallback.
+            $criticalCards = $criticalCardData[$sid]['critical'] ?? 0;
+            $reviewedFsrsCards = $criticalCardData[$sid]['reviewed'] ?? 0;
             $boxes = $boxData[$sid] ?? [];
             $totalCards = array_sum($boxes);
             $box1Count = $boxes[1] ?? 0;
-            if ($totalCards > 0 && ($box1Count / $totalCards) > 0.6) {
+
+            if ($reviewedFsrsCards > 0) {
+                $criticalShare = $criticalCards / $reviewedFsrsCards;
+                if ($criticalCards >= 10 || $criticalShare >= 0.35) {
+                    $reasons[] = "{$criticalCards} kritische Karten";
+                    $score += 2;
+                } elseif ($criticalCards >= 3 || $criticalShare >= 0.2) {
+                    $reasons[] = "{$criticalCards} kritische Karten";
+                    $score += 1;
+                }
+            } elseif ($totalCards > 0 && ($box1Count / $totalCards) > 0.6) {
                 $pct = round($box1Count / $totalCards * 100);
                 $reasons[] = "{$pct}% der Karten in Box 1";
                 $score += 1;
@@ -1737,12 +1805,25 @@ class CourseService {
                     'risk_reasons' => $reasons,
                     'last_active' => $lastActive,
                     'accuracy' => $accuracy,
+                    'critical_cards_count' => $criticalCards,
                 ];
             }
         }
 
-        // Sort by risk score descending
-        usort($atRisk, fn($a, $b) => $b['risk_score'] - $a['risk_score']);
+        // Sort by risk score descending, then by critical cards descending.
+        usort($atRisk, static function (array $a, array $b): int {
+            $scoreCmp = (int)$b['risk_score'] <=> (int)$a['risk_score'];
+            if ($scoreCmp !== 0) {
+                return $scoreCmp;
+            }
+
+            $criticalCmp = (int)$b['critical_cards_count'] <=> (int)$a['critical_cards_count'];
+            if ($criticalCmp !== 0) {
+                return $criticalCmp;
+            }
+
+            return strcmp((string)($a['user_id'] ?? ''), (string)($b['user_id'] ?? ''));
+        });
 
         return ['at_risk' => $atRisk];
     }

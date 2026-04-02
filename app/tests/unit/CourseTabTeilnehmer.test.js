@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import axios from '@nextcloud/axios'
 
 vi.mock('@nextcloud/axios', () => ({
 	default: {
@@ -130,5 +131,30 @@ describe('CourseTabTeilnehmer', () => {
 		expect(instance.getPoolMastery(row, 10)).toBe(80)
 		expect(instance.getPoolMastery(row, 20)).toBe(0)
 		expect(instance.getPoolMastery(row, 99)).toBeNull()
+	})
+
+	it('maps critical-card counts to dashboard severity classes', () => {
+		const instance = createInstance()
+
+		expect(instance.criticalCardsClass(0)).toBe('critical-cards-low')
+		expect(instance.criticalCardsClass(3)).toBe('critical-cards-medium')
+		expect(instance.criticalCardsClass(10)).toBe('critical-cards-high')
+	})
+
+	it('loads at-risk students including FSRS critical-card counts', async () => {
+		axios.get.mockResolvedValue({
+			data: {
+				at_risk: [
+					{ user_id: 'bob', display_name: 'Bob', critical_cards_count: 4 },
+				],
+			},
+		})
+		const instance = createInstance()
+
+		await instance.fetchAtRisk()
+
+		expect(instance.atRiskStudents).toEqual([
+			{ user_id: 'bob', display_name: 'Bob', critical_cards_count: 4 },
+		])
 	})
 })
