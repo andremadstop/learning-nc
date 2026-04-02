@@ -44,7 +44,7 @@ export default {
 .legal-page {
 	max-width: 1040px;
 	margin: 0 auto;
-	padding: 40px 20px 56px;
+	padding: 40px 20px 120px;
 }
 
 .legal-page__hero {

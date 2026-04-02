@@ -50,7 +50,5 @@ module.exports = {
     }
   },
   devtool: false,
-  externals: {
-    linkifyjs: 'linkifyjs'
-  }
+  externals: {}
 };

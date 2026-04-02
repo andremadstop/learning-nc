@@ -306,7 +306,7 @@ export default {
     explainViaVirtuProf() {
       if (!this.currentQuestion) return;
       this.$root.$emit('virtuprof:explain-question', {
-        questionText: this.currentQuestion.question,
+        questionText: this.currentQuestion.text,
         correctAnswer: this.displayCorrectAnswerTexts.join(', '),
         poolId: this.poolId,
         courseId: this.courseId,

@@ -12,13 +12,20 @@ class QuestionMapper extends QBMapper {
         parent::__construct($db, 'learning_questions', Question::class);
     }
 
+    private function applyBookQuestionOrder(IQueryBuilder $qb): void {
+        // Keep handbook-tagged questions in chapter order and push untagged items to the end.
+        $qb->orderBy($qb->createFunction('COALESCE(chapter_order, 999999)'), 'ASC')
+           ->addOrderBy('created_at', 'ASC')
+           ->addOrderBy('id', 'ASC');
+    }
+
     public function findByPool(int $poolId, string $userId): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
            ->from($this->getTableName())
            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)))
-           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
-           ->orderBy('created_at', 'DESC');
+           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)));
+        $this->applyBookQuestionOrder($qb);
         return $this->findEntities($qb);
     }
 
@@ -26,8 +33,8 @@ class QuestionMapper extends QBMapper {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
            ->from($this->getTableName())
-           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)))
-           ->orderBy('created_at', 'DESC');
+           ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)));
+        $this->applyBookQuestionOrder($qb);
         return $this->findEntities($qb);
     }
 
@@ -36,9 +43,9 @@ class QuestionMapper extends QBMapper {
         $qb->select('*')
            ->from($this->getTableName())
            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId, IQueryBuilder::PARAM_INT)))
-           ->orderBy('created_at', 'DESC')
            ->setMaxResults($limit)
            ->setFirstResult($offset);
+        $this->applyBookQuestionOrder($qb);
         return $this->findEntities($qb);
     }
 

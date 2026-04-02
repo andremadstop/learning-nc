@@ -510,6 +510,7 @@ export const ar = {
   "What can I do here?": "ماذا يمكنني أن أفعل هنا؟",
   "Your duel invite is waiting for a response from the opponent.": "دعوة المبارزة الخاصة بك بانتظار رد الخصم.",
   "Your message will be stored as a support ticket with context, so an admin can answer it manually later.": "سيتم حفظ رسالتك كتذكرة دعم مع السياق، حتى يتمكن المشرف من الرد عليها يدويًا لاحقًا.",
-  "{days} days in a row. Consistency beats intensity.": "{days} أيام متتالية. الاتساق يتفوق على الشدة."
+  "{days} days in a row. Consistency beats intensity.": "{days} أيام متتالية. الاتساق يتفوق على الشدة.",
+  "Close panel": "Panel schließen"
 }
 

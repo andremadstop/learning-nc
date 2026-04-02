@@ -1354,32 +1354,48 @@ export default {
 /* Top-level navigation */
 .main-nav {
   display: flex;
-  gap: 0;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 24px;
-  border-bottom: 2px solid var(--color-border);
-  max-width: 500px;
+  padding: 0 0 12px;
+  border-bottom: 1px solid var(--color-border);
+  width: 100%;
+  max-width: 100%;
+  overflow: visible;
 }
 
 .main-nav-btn {
-  padding: 10px 28px;
-  border: none;
+  flex: 0 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 999px;
   background: transparent;
   cursor: pointer;
   font-weight: 600;
   font-size: 15px;
   color: var(--color-text-maxcontrast);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: color 0.2s, border-color 0.2s;
+  margin-bottom: 0;
+  line-height: 1.2;
+  transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 
 .main-nav-btn:hover {
   color: var(--color-main-text);
+  background: var(--color-background-hover);
 }
 
 .main-nav-btn.active {
   color: var(--color-primary-element);
-  border-bottom-color: var(--color-primary-element);
+  border-color: color-mix(in srgb, var(--color-primary-element) 45%, var(--color-border));
+  background: color-mix(in srgb, var(--color-primary-element) 10%, transparent);
 }
 
 /* Course sub-navigation */
@@ -1466,6 +1482,6 @@ export default {
   .app-shell { gap: 16px; }
   .pool-view-header { flex-direction: column; align-items: flex-start; }
   .mode-selector { flex-direction: column; max-width: 100%; }
-  .main-nav { max-width: 100%; }
+  .main-nav-btn { padding: 9px 14px; font-size: 14px; }
 }
 </style>

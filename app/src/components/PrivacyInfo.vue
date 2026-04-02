@@ -52,7 +52,7 @@
 				class="privacy-info__category-card">
 				<div class="privacy-info__category-header">
 					<h5>{{ group.title }}</h5>
-					<span class="privacy-info__category-count">{{ group.entries.length }}</span>
+					<span v-if="group.entries.length > 1" class="privacy-info__category-count">{{ group.entries.length }}</span>
 				</div>
 
 				<div

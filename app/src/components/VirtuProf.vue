@@ -428,7 +428,11 @@ export default {
     showBubble(value) {
       if (value) {
         this.$nextTick(() => {
-          this.$refs.virtuprofPanel?.focus({ preventScroll: true })
+          if (typeof this.$refs.virtuprofPanel?.focus === 'function') {
+            this.$refs.virtuprofPanel.focus({ preventScroll: true })
+          } else if (this.$refs.virtuprofPanel?.$el?.focus) {
+            this.$refs.virtuprofPanel.$el.focus({ preventScroll: true })
+          }
         })
       }
     },
@@ -2184,7 +2188,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: clamp(520px, calc(100vh - 100px), 760px);
   max-height: calc(100vh - 80px);
 }
 
@@ -2194,10 +2197,7 @@ export default {
   justify-content: space-between;
   gap: 12px;
   padding: 14px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  background: color-mix(in srgb, var(--color-main-background) 90%, var(--color-background-hover));
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .virtuprof-panel-toggle {
@@ -2261,7 +2261,6 @@ export default {
   }
 
   .virtuprof-panel {
-    min-height: 300px;
     max-height: calc(100vh - 120px);
   }
 
