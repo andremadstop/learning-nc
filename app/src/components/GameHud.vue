@@ -92,7 +92,7 @@ const ITEM_META = {
 	server_logs: {
 		icon: '📋',
 		label: 'Server Logs',
-		description: 'Gesammelte Log-Dateien fuer die Analyse.',
+		description: 'Gesammelte Log-Dateien für die Analyse.',
 	},
 	incident_report: {
 		icon: '🧾',
@@ -102,7 +102,7 @@ const ITEM_META = {
 	backup_tape: {
 		icon: '💾',
 		label: 'Backup Tape',
-		description: 'Offline-Backup fuer den Notfall.',
+		description: 'Offline-Backup für den Notfall.',
 	},
 	kaffee: {
 		icon: '☕',
@@ -112,7 +112,7 @@ const ITEM_META = {
 	key_card: {
 		icon: '🪪',
 		label: 'Key Card',
-		description: 'Zugang fuer gesicherte Bereiche.',
+		description: 'Zugang für gesicherte Bereiche.',
 	},
 }
 

@@ -298,7 +298,7 @@
 					<div class="vlan-card__header">
 						<div>
 							<h3 class="vlan-card__title">{{ t('learning', '802.1Q Frame') }}</h3>
-							<p class="subnet-help">{{ t('learning', 'Vergleiche den Ethernet-Frame fuer Access- und Trunk-Ports.') }}</p>
+							<p class="subnet-help">{{ t('learning', 'Vergleiche den Ethernet-Frame für Access- und Trunk-Ports.') }}</p>
 						</div>
 					</div>
 

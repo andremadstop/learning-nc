@@ -382,7 +382,7 @@
 
 		<div v-if="currentSubTab === 'summary' && isInstructor" class="summary-section">
 			<NcNoteCard type="info">
-				{{ t('learning', 'Der Klassen-Abschlussbericht folgt in Phase 107. Hier erscheint spaeter die Dozentenansicht fuer den Kursabschluss.') }}
+				{{ t('learning', 'Der Klassen-Abschlussbericht folgt in Phase 107. Hier erscheint später die Dozentenansicht für den Kursabschluss.') }}
 			</NcNoteCard>
 		</div>
 

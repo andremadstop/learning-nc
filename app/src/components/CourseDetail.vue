@@ -484,7 +484,7 @@ export default {
 					key: 'mode:course-summary',
 					title: t('learning', 'Kursabschluss'),
 					text: t('learning', 'This area condenses your course progress into a final overview with mastery, streaks, badges and the questions that still need work.'),
-					shortText: t('learning', 'Kursabschluss zeigt deinen zusammengefassten Stand fuer den Kurs.'),
+					shortText: t('learning', 'Kursabschluss zeigt deinen zusammengefassten Stand für den Kurs.'),
 				},
 			}
 			return guides[tabId] || null

@@ -18,7 +18,7 @@
         <section class="ab-campaign-section">
           <div class="ab-section-header">
             <h3>{{ t('learning', 'Empfohlene Kampagnen') }}</h3>
-            <p>{{ t('learning', 'Kurzer Kernpfad mit den produktiven Story-Kampagnen fuer Bootcamps und Intensivkurse.') }}</p>
+            <p>{{ t('learning', 'Kurzer Kernpfad mit den produktiven Story-Kampagnen für Bootcamps und Intensivkurse.') }}</p>
           </div>
           <div class="ab-campaign-grid">
             <div
@@ -61,7 +61,7 @@
         <section v-if="bonusCampaigns.length > 0" class="ab-campaign-section">
           <div class="ab-section-header">
             <h3>{{ t('learning', 'Bonus-Kampagnen') }}</h3>
-            <p>{{ t('learning', 'Weitere Storys fuer Zusatzrunden oder Vertiefung außerhalb des Kernpfads.') }}</p>
+            <p>{{ t('learning', 'Weitere Storys für Zusatzrunden oder Vertiefung außerhalb des Kernpfads.') }}</p>
           </div>
           <div class="ab-campaign-grid ab-campaign-grid--bonus">
             <div
@@ -629,7 +629,7 @@ const STATIC_CAMPAIGNS = [
 		id: 'test_graph_campaign',
 		icon: '🧪',
 		title: 'Test Graph Kampagne',
-		description: 'Interne Test-Kampagne fuer den Graph-Modus mit Simulator-Challenges.',
+		description: 'Interne Test-Kampagne für den Graph-Modus mit Simulator-Challenges.',
 		difficulty: 'intermediate',
 		focus_areas: ['Network+'],
 		duration_minutes: 30,

@@ -74,7 +74,7 @@
 
 			<div class="exam-date-config tool-config-section">
 				<h3>{{ t('learning', 'Prüfungstermin') }}</h3>
-				<p class="mode-config-hint">{{ t('learning', 'Optionales Prüfungsdatum fuer den Dashboard-Countdown setzen.') }}</p>
+				<p class="mode-config-hint">{{ t('learning', 'Optionales Prüfungsdatum für den Dashboard-Countdown setzen.') }}</p>
 				<div class="exam-date-row">
 					<input v-model="examDateLocal" type="date" class="exam-date-input" />
 					<NcButton type="primary" :disabled="savingExamDate" @click="saveExamDate">

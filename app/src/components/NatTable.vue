@@ -190,7 +190,7 @@ export default {
   },
   beforeDestroy() {
     // Keine aktiven Timer oder globalen Event-Listener registriert.
-    // Hook vorhanden fuer sauberes Embedded-Rendering in SimulatorShell.
+    // Hook vorhanden für sauberes Embedded-Rendering in SimulatorShell.
   },
   methods: {
     simulateCurrent() {

@@ -187,7 +187,7 @@ export default {
 					text: this.textContent,
 				})
 				const data = response.data
-				this.success = t('learning', '{chunks} Chunks ({tokens} Tokens) importiert fuer "{title}"', {
+				this.success = t('learning', '{chunks} Chunks ({tokens} Tokens) importiert für "{title}"', {
 					chunks: data.chunks,
 					tokens: data.tokens,
 					title: data.title,
@@ -214,7 +214,7 @@ export default {
 				formData.append('file', this.selectedFile)
 				const response = await axios.post(url, formData)
 				const data = response.data
-				this.success = t('learning', '{chunks} Chunks ({tokens} Tokens) importiert fuer "{title}"', {
+				this.success = t('learning', '{chunks} Chunks ({tokens} Tokens) importiert für "{title}"', {
 					chunks: data.chunks,
 					tokens: data.tokens,
 					title: data.title,
