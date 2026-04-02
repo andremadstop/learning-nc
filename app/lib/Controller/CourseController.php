@@ -710,6 +710,48 @@ class CourseController extends Controller {
         }
     }
 
+    /**
+     * Update allowed campaigns for a course.
+     * NULL means all campaigns available, empty array means none.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function updateCampaignSelection(int $courseId, ?array $campaignIds = null): DataResponse {
+        try {
+            if ($this->userId === null) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+
+            $course = $this->courseMapper->findById($courseId);
+            if (!$this->canManageCourse($course, $this->userId)) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+
+            if ($campaignIds !== null) {
+                // Sanitize: only allow non-empty string IDs, max 100
+                $campaignIds = array_values(array_filter(
+                    array_slice($campaignIds, 0, 100),
+                    fn($id) => is_string($id) && trim($id) !== ''
+                ));
+                $course->setAllowedCampaigns(json_encode($campaignIds));
+            } else {
+                $course->setAllowedCampaigns(null);
+            }
+            $course->setUpdatedAt(time());
+            $this->courseMapper->update($course);
+
+            return new DataResponse([
+                'allowed_campaigns' => $campaignIds,
+            ]);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('updateCampaignSelection error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     private function canManageCourse(Course $course, string $userId): bool {
         if ($course->getInstructorId() === $userId) {
             return true;

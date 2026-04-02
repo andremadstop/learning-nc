@@ -86,6 +86,32 @@
 				</div>
 				<NcNoteCard v-if="examDateSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
 			</div>
+
+			<div class="campaign-config tool-config-section">
+				<h3>{{ t('learning', 'Abenteuer-Kampagnen') }}</h3>
+				<p class="mode-config-hint">{{ t('learning', 'Wähle welche Kampagnen für Studierende sichtbar sind. Keine Auswahl = alle verfügbar.') }}</p>
+				<div v-if="loadingCampaignList" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
+				<template v-else>
+					<div class="campaign-quick-actions">
+						<NcButton type="tertiary" @click="selectAllCampaigns">{{ t('learning', 'Alle auswählen') }}</NcButton>
+						<NcButton type="tertiary" @click="selectTop5Campaigns">{{ t('learning', 'Top 5 empfohlen') }}</NcButton>
+						<NcButton type="tertiary" @click="clearCampaignSelection">{{ t('learning', 'Keine (alle verfügbar)') }}</NcButton>
+					</div>
+					<div class="mode-toggles">
+						<div v-for="c in availableCampaigns" :key="c.campaign_id" class="mode-toggle-row">
+							<label class="mode-toggle-label">
+								<input type="checkbox" :checked="selectedCampaignIds.includes(c.campaign_id)" @change="toggleCampaign(c.campaign_id, $event.target.checked)" />
+								{{ c.title }}
+							</label>
+							<small class="mode-config-note">{{ c.difficulty }}</small>
+						</div>
+					</div>
+					<NcButton type="primary" :disabled="savingCampaigns" @click="saveCampaignSelection">
+						{{ savingCampaigns ? t('learning', 'Saving...') : t('learning', 'Save') }}
+					</NcButton>
+					<NcNoteCard v-if="campaignsSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
+				</template>
+			</div>
 		</div>
 
 		<!-- Exam Slot -->
@@ -174,6 +200,11 @@ export default {
 			examSlotDuration: 90,
 			examSlotScope: 'all',
 			startingExamSlot: false,
+			availableCampaigns: [],
+			selectedCampaignIds: [],
+			loadingCampaignList: false,
+			savingCampaigns: false,
+			campaignsSaved: false,
 		}
 	},
 
@@ -255,6 +286,7 @@ export default {
 				this.modeConfigLocal = this.normalizeModeConfig(this.course?.mode_config || {})
 				this.modeConfigSaved = false
 				this.loadToolSettings()
+				this.loadCampaignList()
 			}
 			if (tab === 'exam-slot') {
 				this.fetchActiveExamSlot()
@@ -469,6 +501,70 @@ export default {
 			}
 		},
 
+		async loadCampaignList() {
+			this.loadingCampaignList = true
+			try {
+				const res = await axios.get(generateUrl('/apps/learning/api/story/campaigns'))
+				const raw = res.data.campaigns || res.data || []
+				this.availableCampaigns = Array.isArray(raw) ? raw : []
+				// Init selection from course data
+				const allowed = this.course?.allowed_campaigns
+				if (Array.isArray(allowed) && allowed.length > 0) {
+					this.selectedCampaignIds = [...allowed]
+				} else {
+					this.selectedCampaignIds = []
+				}
+			} catch (e) {
+				this.availableCampaigns = []
+			} finally {
+				this.loadingCampaignList = false
+			}
+		},
+
+		toggleCampaign(campaignId, checked) {
+			if (checked) {
+				if (!this.selectedCampaignIds.includes(campaignId)) {
+					this.selectedCampaignIds.push(campaignId)
+				}
+			} else {
+				this.selectedCampaignIds = this.selectedCampaignIds.filter((id) => id !== campaignId)
+			}
+		},
+
+		selectAllCampaigns() {
+			this.selectedCampaignIds = this.availableCampaigns.map((c) => c.campaign_id)
+		},
+
+		selectTop5Campaigns() {
+			const top5 = ['solarwinds', 'wannacry', 'log4shell', 'phishing_friday', 'ransomware']
+			this.selectedCampaignIds = top5.filter((id) => this.availableCampaigns.some((c) => c.campaign_id === id))
+		},
+
+		clearCampaignSelection() {
+			this.selectedCampaignIds = []
+		},
+
+		async saveCampaignSelection() {
+			this.savingCampaigns = true
+			try {
+				const payload = this.selectedCampaignIds.length > 0
+					? { campaignIds: this.selectedCampaignIds }
+					: { campaignIds: null }
+				await axios.patch(
+					generateUrl(`/apps/learning/api/courses/${this.courseId}/campaign-selection`),
+					payload,
+				)
+				this.campaignsSaved = true
+				setTimeout(() => { this.campaignsSaved = false }, 3000)
+				this.$emit('refresh-course-detail')
+			} catch (e) {
+				console.error('Failed to save campaign selection', e)
+				this.$emit('error', t('learning', 'Failed to save campaign selection'))
+			} finally {
+				this.savingCampaigns = false
+			}
+		},
+
 		formatTimestamp(timestamp) {
 			if (!timestamp) return ''
 			try {
@@ -545,5 +641,11 @@ export default {
 	font-size: 0.95em;
 	width: 280px;
 	max-width: 100%;
+}
+.campaign-quick-actions {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	margin-bottom: 12px;
 }
 </style>

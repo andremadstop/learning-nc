@@ -38,6 +38,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setTalkRoomToken(?string $talkRoomToken)
  * @method bool getLeitnerSprint()
  * @method void setLeitnerSprint(bool $leitnerSprint)
+ * @method string|null getAllowedCampaigns()
+ * @method void setAllowedCampaigns(?string $allowedCampaigns)
  */
 class Course extends Entity {
     protected $title;
@@ -56,6 +58,7 @@ class Course extends Entity {
     protected $enabledTools;
     protected $talkRoomToken;
     protected $leitnerSprint;
+    protected $allowedCampaigns;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -86,6 +89,7 @@ class Course extends Entity {
             'enabled_tools' => $this->enabledTools !== null ? (json_decode($this->enabledTools, true) ?: []) : null,
             'talk_room_token' => $this->talkRoomToken,
             'leitner_sprint' => $this->leitnerSprint ?? false,
+            'allowed_campaigns' => $this->allowedCampaigns !== null ? (json_decode($this->allowedCampaigns, true) ?: []) : null,
         ];
     }
 }

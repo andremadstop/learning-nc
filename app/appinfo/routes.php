@@ -221,6 +221,7 @@ return [
         ['name' => 'course#updateModeConfig', 'url' => '/api/courses/{courseId}/mode-config', 'verb' => 'PUT'],
         ['name' => 'course#getTools', 'url' => '/api/courses/{courseId}/tools', 'verb' => 'GET'],
         ['name' => 'course#updateTools', 'url' => '/api/courses/{courseId}/tools', 'verb' => 'PUT'],
+        ['name' => 'course#updateCampaignSelection', 'url' => '/api/courses/{courseId}/campaign-selection', 'verb' => 'PATCH'],
 
         // Course Summary (Phase 104)
         ['name' => 'summary#getSummary', 'url' => '/api/courses/{courseId}/summary', 'verb' => 'GET'],

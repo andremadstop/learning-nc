@@ -197,6 +197,7 @@
 				:courseId="courseId"
 				:coursePools="coursePools"
 				:contentLanguage="contentLanguage"
+				:allowedCampaigns="course && course.allowed_campaigns ? course.allowed_campaigns : null"
 				@back="$emit('tab-change', 'training')" />
 		</div>
 	</div>

@@ -730,6 +730,10 @@ export default {
 			type: String,
 			default: '',
 		},
+		allowedCampaigns: {
+			type: Array,
+			default: null,
+		},
 	},
 
 	emits: ['back'],
@@ -844,12 +848,19 @@ export default {
 	},
 
 	computed: {
+		filteredCampaigns() {
+			if (!Array.isArray(this.allowedCampaigns)) {
+				return this.campaigns
+			}
+			return this.campaigns.filter((c) => this.allowedCampaigns.includes(c.id))
+		},
+
 		featuredCampaigns() {
-			return this.campaigns.filter((campaign) => campaign.is_featured)
+			return this.filteredCampaigns.filter((campaign) => campaign.is_featured)
 		},
 
 		bonusCampaigns() {
-			return this.campaigns.filter((campaign) => !campaign.is_featured)
+			return this.filteredCampaigns.filter((campaign) => !campaign.is_featured)
 		},
 
 		epilogIcon() {
