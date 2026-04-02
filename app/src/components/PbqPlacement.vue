@@ -46,7 +46,10 @@
           :key="pos.id"
           class="pbq-topology-node"
           :class="{ 'pbq-topology-node--assigned': !!value[pos.id] }"
+          tabindex="0"
+          :aria-label="t('learning', 'Placement: {label}', { label: pos.label })"
           @click="!disabled && openPicker(pos.id)"
+          @keydown.enter.prevent="!disabled && openPicker(pos.id)"
         >
           <div class="pbq-topology-icon">{{ value[pos.id] ? '✓' : '?' }}</div>
           <div class="pbq-topology-label">{{ pos.label }}</div>
@@ -62,7 +65,10 @@
         :style="{ left: pos.x_pct + '%', top: pos.y_pct + '%' }"
         :class="{ 'pbq-hotspot--assigned': !!value[pos.id] }"
         :title="pos.label"
+        tabindex="0"
+        :aria-label="t('learning', 'Placement: {label}', { label: pos.label })"
         @click="!disabled && openPicker(pos.id)"
+        @keydown.enter.prevent="!disabled && openPicker(pos.id)"
       >
         <span v-if="!value[pos.id]">?</span>
         <span v-else class="pbq-hotspot-label">{{ value[pos.id].substring(0,4) }}</span>

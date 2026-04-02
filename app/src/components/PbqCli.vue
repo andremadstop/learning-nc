@@ -21,9 +21,11 @@
             v-if="!disabled"
             v-model="inputBuffers[term.name]"
             @keydown.enter.prevent="submitCommand(term)"
+            @keydown.escape.prevent="clearInput(term)"
             class="pbq-terminal-input"
             autocomplete="off"
             spellcheck="false"
+            autofocus
           />
         </div>
       </div>
@@ -75,6 +77,9 @@ export default {
         return term.initial_prompt
       }
       return getPrompt(domain, mode, term.name, context)
+    },
+    clearInput(term) {
+      this.inputBuffers[term.name] = ''
     },
     submitCommand(term) {
       const cmd = this.inputBuffers[term.name].trim()
