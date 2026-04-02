@@ -298,6 +298,7 @@ import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { botChooseAnswer, botResponseDelay, botChooseCategory, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
+import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 
 const COLORS = ['#2196f3', '#e53935', '#4caf50', '#ffc107', '#9c27b0'];
 const WIN_BLOCKS = 5;
@@ -613,7 +614,7 @@ export default {
     // ---------- Helpers ----------
 
     emitVirtuProf(triggerId, context = {}) {
-      this.$root.$emit('virtuprof:trigger', triggerId, context);
+      useOptionalVirtuProfStore()?.trigger(triggerId, context);
     },
 
     towerBlocks(player) {

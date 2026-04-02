@@ -353,6 +353,7 @@ import {
   buildTelosPayload,
   createTelosForm,
 } from '../utils/telosProfile.js'
+import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 
 const VOICE_LANGUAGE_OPTIONS = [
   { value: 'de-DE', label: 'Deutsch' },
@@ -581,7 +582,7 @@ export default {
         this.saved = true
         this.$emit('content-language-changed', this.form.contentLanguage)
         this.$emit('virtuprof-enabled-changed', this.form.virtuProfEnabled)
-        this.$root.$emit('virtuprof:voice-settings-changed', {
+        useOptionalVirtuProfStore()?.voiceSettingsChanged({
           ttsEnabled: this.form.virtuProfTtsEnabled,
           sttEnabled: this.form.virtuProfSttEnabled,
           voiceLang: this.form.virtuProfVoiceLang,

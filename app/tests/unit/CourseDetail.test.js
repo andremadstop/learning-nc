@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createPinia, setActivePinia } from 'pinia'
 
 vi.mock('@nextcloud/axios', () => ({
 	default: {
@@ -52,6 +53,7 @@ vi.mock('../../src/components/CourseFeed.vue', () => stub('CourseFeed'))
 vi.mock('../../src/components/BuddyMatching.vue', () => stub('BuddyMatching'))
 
 import CourseDetail from '../../src/components/CourseDetail.vue'
+import { useCourseStore } from '../../src/stores/courseStore.js'
 
 globalThis.t = (app, text, vars = {}) => {
 	return Object.entries(vars).reduce((acc, [key, value]) => acc.replace(`{${key}}`, String(value)), text)
@@ -119,6 +121,7 @@ function createInstance(overrides = {}) {
 describe('CourseDetail navigation logic', () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		setActivePinia(createPinia())
 	})
 
 	it('normalizes missing mode config keys with adventure and summary disabled by default', () => {
@@ -220,12 +223,13 @@ describe('CourseDetail navigation logic', () => {
 			activeMegaTab: 'lernraum',
 			currentTab: 'training',
 		})
+		const courseStore = useCourseStore()
 
 		instance.selectMegaTab('wettbewerb')
 
 		expect(instance.activeMegaTab).toBe('wettbewerb')
 		expect(instance.currentTab).toBe('leaderboard')
-		expect(instance.$root.$emit).toHaveBeenCalledWith('course:tab-change', 'leaderboard')
+		expect(courseStore.currentTab).toBe('leaderboard')
 	})
 
 	it('megaTabForLeaf maps leaf IDs to correct mega-tab', () => {
@@ -254,11 +258,12 @@ describe('CourseDetail navigation logic', () => {
 			activeMegaTab: 'lernraum',
 			currentTab: 'training',
 		})
+		const courseStore = useCourseStore()
 
 		instance.onLeafTabChange('arena')
 
 		expect(instance.currentTab).toBe('arena')
-		expect(instance.$root.$emit).toHaveBeenCalledWith('course:tab-change', 'arena')
+		expect(courseStore.currentTab).toBe('arena')
 	})
 
 	it('treats Lernraum leaf tabs as active via the collapsed mega-tab', () => {
@@ -276,11 +281,12 @@ describe('CourseDetail navigation logic', () => {
 		const studentInstance = createInstance({
 			currentTab: 'leaderboard',
 		})
+		const studentCourseStore = useCourseStore()
 
 		studentInstance.selectTab('lernraum')
 
 		expect(studentInstance.currentTab).toBe('training')
-		expect(studentInstance.$root.$emit).toHaveBeenCalledWith('course:tab-change', 'training')
+		expect(studentCourseStore.currentTab).toBe('training')
 
 		const instructorInstance = createInstance({
 			currentTab: 'leaderboard',
@@ -301,10 +307,11 @@ describe('CourseDetail navigation logic', () => {
 			},
 			userRole: 'instructor',
 		})
+		const instructorCourseStore = useCourseStore()
 
 		instructorInstance.selectTab('lernraum')
 
 		expect(instructorInstance.currentTab).toBe('pools')
-		expect(instructorInstance.$root.$emit).toHaveBeenCalledWith('course:tab-change', 'pools')
+		expect(instructorCourseStore.currentTab).toBe('pools')
 	})
 })

@@ -395,6 +395,8 @@ import StudentDashboard from './components/StudentDashboard.vue';
 import { ALL_TOOL_IDS, TOOL_CATALOG } from './utils/toolCatalog.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
+import { useOptionalCourseStore } from './stores/courseStore.js';
+import { useOptionalVirtuProfStore } from './stores/virtuProfStore.js';
 
 const VirtuProf = () => import('./components/VirtuProf.vue');
 
@@ -529,17 +531,33 @@ export default {
     },
   },
   async created() {
+    const courseStore = useOptionalCourseStore();
+    if (courseStore) {
+      this._courseTabUnwatch = this.$watch(
+        () => courseStore.currentTab,
+        (tabId) => {
+          if (!tabId || tabId === this.courseTab) {
+            return;
+          }
+          this.courseTab = tabId;
+          this.emitViewGuide();
+        },
+        { immediate: true }
+      );
+    }
     await Promise.all([this.fetchRole(), this.fetchPersonalSettings(), this.fetchEnabledTools()]);
     this.applyInitialAdventureRoute();
     this.appInitialized = true;
     this.checkInstructorOnboarding();
-    this.$root.$on('course:tab-change', (tabId) => {
-      this.courseTab = tabId;
-      this.emitViewGuide();
-    });
     this.$nextTick(() => {
       this.emitVirtuProfContext();
     });
+  },
+  beforeDestroy() {
+    if (typeof this._courseTabUnwatch === 'function') {
+      this._courseTabUnwatch();
+      this._courseTabUnwatch = null;
+    }
   },
   watch: {
     mainView() {
@@ -646,13 +664,13 @@ export default {
       if (!this.appInitialized || this.userRole !== 'student') {
         return;
       }
-      this.$root.$emit('virtuprof:trigger', triggerId, context);
+      useOptionalVirtuProfStore()?.trigger(triggerId, context);
     },
     emitVirtuProfContext(context = null) {
       if (!this.appInitialized || this.userRole !== 'student') {
         return;
       }
-      this.$root.$emit('virtuprof:context', context || this.virtuprofContextPayload());
+      useOptionalVirtuProfStore()?.updateContext(context || this.virtuprofContextPayload());
     },
     emitToolGuide() {
       if (!this.appInitialized || this.userRole !== 'student' || this.mainView !== 'werkzeuge') {
@@ -660,7 +678,7 @@ export default {
       }
       const payload = this.toolGuidePayload(this.toolsView);
       if (payload) {
-        this.$root.$emit('virtuprof:guide', payload);
+        useOptionalVirtuProfStore()?.guide(payload);
       }
     },
     currentViewKey() {
@@ -738,7 +756,7 @@ export default {
       }
       const payload = this.viewGuidePayload(viewKey);
       if (payload) {
-        this.$root.$emit('virtuprof:guide', payload);
+        useOptionalVirtuProfStore()?.guide(payload);
       }
     },
     viewGuidePayload(viewKey) {
@@ -1163,6 +1181,7 @@ export default {
         this.selectedCourse = null;
         this.selectedStudent = null;
         this.courseView = 'list';
+        useOptionalCourseStore()?.setCourse(null);
         this.backToPools();
       }
       // settings: no state reset needed
@@ -1235,8 +1254,10 @@ export default {
       if (course) {
         this.mainView = 'courses';
         this.selectedCourse = course;
+        useOptionalCourseStore()?.setCourse(course.id || null);
       } else {
         this.mainView = 'courses';
+        useOptionalCourseStore()?.setCourse(null);
       }
     },
     openSmartQueue() {
@@ -1278,6 +1299,7 @@ export default {
     selectCourse(course) {
       this.selectedCourse = course;
       this.selectedStudent = null;
+      useOptionalCourseStore()?.setCourse(course?.id || null);
     },
     selectStudent(studentInfo) {
       this.selectedStudent = studentInfo;
@@ -1287,6 +1309,7 @@ export default {
       this.poolFromCourseObj = this.selectedCourse;
       this.mainView = 'pools';
       this.selectedCourse = null;
+      useOptionalCourseStore()?.setCourse(null);
       try {
         const response = await axios.get(
           generateUrl('/apps/learning/api/pools/' + poolId)

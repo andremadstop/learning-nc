@@ -106,6 +106,7 @@ import {
   buildTelosPayload,
   createTelosForm,
 } from '../utils/telosProfile.js'
+import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 
 const ONBOARDING_PRESETS = [
   {
@@ -454,13 +455,79 @@ export default {
     } catch (e) {
       this.userFirstName = ''
     }
-    this.$root.$on('virtuprof:trigger', this.enqueue)
-    this.$root.$on('virtuprof:context', this.updateContext)
-    this.$root.$on('virtuprof:exam-mode', this.setExamMode)
-    this.$root.$on('virtuprof:refresh-duel-invites', this.handleInviteRefreshRequest)
-    this.$root.$on('virtuprof:explain-question', this.handleExplainQuestion)
-    this.$root.$on('virtuprof:guide', this.handleGuide)
-    this.$root.$on('virtuprof:voice-settings-changed', this.handleVoiceSettingsChanged)
+    const virtuProfStore = useOptionalVirtuProfStore()
+    if (virtuProfStore) {
+      this._storeUnwatchers = [
+        this.$watch(
+          () => virtuProfStore.pendingTrigger,
+          (pendingTrigger) => {
+            if (!pendingTrigger) {
+              return
+            }
+            this.enqueue(pendingTrigger.type, pendingTrigger.payload || {})
+            virtuProfStore.consumeTrigger()
+          },
+          { immediate: true },
+        ),
+        this.$watch(
+          () => virtuProfStore.context,
+          (context) => {
+            if (!context) {
+              return
+            }
+            this.updateContext(context)
+          },
+          { immediate: true },
+        ),
+        this.$watch(
+          () => virtuProfStore.examMode,
+          (active) => {
+            this.setExamMode(active)
+          },
+          { immediate: true },
+        ),
+        this.$watch(
+          () => virtuProfStore.refreshDuelInvites,
+          (value, oldValue) => {
+            if (value === oldValue || value === 0) {
+              return
+            }
+            this.handleInviteRefreshRequest()
+          },
+        ),
+        this.$watch(
+          () => virtuProfStore.explainQuestion,
+          (payload) => {
+            if (!payload) {
+              return
+            }
+            this.handleExplainQuestion(payload)
+            virtuProfStore.consumeExplain()
+          },
+          { immediate: true },
+        ),
+        this.$watch(
+          () => virtuProfStore.guidePayload,
+          (payload) => {
+            if (!payload) {
+              return
+            }
+            this.handleGuide(payload)
+            virtuProfStore.consumeGuide()
+          },
+          { immediate: true },
+        ),
+        this.$watch(
+          () => virtuProfStore.voiceSettingsVersion,
+          (value, oldValue) => {
+            if (value === oldValue || value === 0) {
+              return
+            }
+            this.handleVoiceSettingsChanged(virtuProfStore.voiceSettingsPayload || {})
+          },
+        ),
+      ]
+    }
     await this.loadState()
     // MEM-01: Load persistent chat history so previous conversations are visible immediately
     if (this.aiEnabled) {
@@ -472,13 +539,14 @@ export default {
     this.$emit('ready')
   },
   beforeDestroy() {
-    this.$root.$off('virtuprof:trigger', this.enqueue)
-    this.$root.$off('virtuprof:context', this.updateContext)
-    this.$root.$off('virtuprof:exam-mode', this.setExamMode)
-    this.$root.$off('virtuprof:refresh-duel-invites', this.handleInviteRefreshRequest)
-    this.$root.$off('virtuprof:explain-question', this.handleExplainQuestion)
-    this.$root.$off('virtuprof:guide', this.handleGuide)
-    this.$root.$off('virtuprof:voice-settings-changed', this.handleVoiceSettingsChanged)
+    if (Array.isArray(this._storeUnwatchers)) {
+      this._storeUnwatchers.forEach((unwatch) => {
+        if (typeof unwatch === 'function') {
+          unwatch()
+        }
+      })
+      this._storeUnwatchers = []
+    }
     if (this.pendingTimer) {
       clearTimeout(this.pendingTimer)
       this.pendingTimer = null

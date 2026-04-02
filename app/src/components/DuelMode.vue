@@ -292,6 +292,7 @@ import { generateUrl } from '@nextcloud/router';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { botChooseAnswer, botResponseDelay, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
 import { createSseClient } from '../utils/sse-client.js';
+import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 
 export default {
   name: 'DuelMode',
@@ -521,7 +522,7 @@ export default {
 
   methods: {
     emitVirtuProf(triggerId, context = {}) {
-      this.$root.$emit('virtuprof:trigger', triggerId, context);
+      useOptionalVirtuProfStore()?.trigger(triggerId, context);
     },
     applyInitialPoolSelection() {
       const desiredPoolId = this.initialPoolId;
@@ -707,7 +708,7 @@ export default {
         this.resetRoundState();
         this.readyClicked = false;
         this.phase = 'lobby';
-        this.$root.$emit('virtuprof:refresh-duel-invites');
+        useOptionalVirtuProfStore()?.refreshInvites();
         this.emitVirtuProf('duel-first-start');
         localStorage.setItem('learning_duel_session', JSON.stringify({ code: this.duelCode }));
         this.startPolling();
@@ -1097,7 +1098,7 @@ export default {
         localStorage.removeItem('learning_duel_session');
         this.stopPolling();
         this.phase = 'finished';
-        this.$root.$emit('virtuprof:refresh-duel-invites');
+        useOptionalVirtuProfStore()?.refreshInvites();
         return;
       }
 
@@ -1105,7 +1106,7 @@ export default {
         localStorage.removeItem('learning_duel_session');
         this.stopPolling();
         this.phase = 'expired';
-        this.$root.$emit('virtuprof:refresh-duel-invites');
+        useOptionalVirtuProfStore()?.refreshInvites();
         return;
       }
 
@@ -1117,7 +1118,7 @@ export default {
         this.duelState = null;
         this.readyClicked = false;
         this.resetRoundState();
-        this.$root.$emit('virtuprof:refresh-duel-invites');
+        useOptionalVirtuProfStore()?.refreshInvites();
         return;
       }
 
@@ -1129,7 +1130,7 @@ export default {
         this.duelState = null;
         this.readyClicked = false;
         this.resetRoundState();
-        this.$root.$emit('virtuprof:refresh-duel-invites');
+        useOptionalVirtuProfStore()?.refreshInvites();
         return;
       }
 

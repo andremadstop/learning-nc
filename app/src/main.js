@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import App from './App.vue';
 import { translate as t, translatePlural as n } from '@nextcloud/l10n';
+import { createPinia, PiniaVuePlugin } from 'pinia';
 
 // Nextcloud Vue styles
 import '@nextcloud/dialogs/style.css';
@@ -12,12 +13,16 @@ import './css/skill-map.css';
 import '../css/practicum.css';
 
 Vue.config.productionTip = false;
+Vue.use(PiniaVuePlugin);
 
 // Make t() and n() available in all components
 Vue.prototype.t = t;
 Vue.prototype.n = n;
 
+const pinia = createPinia();
+
 // Mount Vue app
 new Vue({
+  pinia,
   render: h => h(App)
 }).$mount('#app-content');

@@ -200,6 +200,7 @@ import BadgeUnlock from './BadgeUnlock.vue';
 import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
+import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 
 export default {
   name: 'TrainingMode',
@@ -256,7 +257,7 @@ export default {
     currentQuestion: {
       handler(q) {
         if (!q) return;
-        this.$root.$emit('virtuprof:context', {
+        useOptionalVirtuProfStore()?.updateContext({
           poolId: this.poolId,
           courseId: this.courseId,
           questionContext: {
@@ -292,7 +293,7 @@ export default {
     },
   },
   beforeDestroy() {
-    this.$root.$emit('virtuprof:context', { questionContext: null });
+    useOptionalVirtuProfStore()?.updateContext({ questionContext: null });
   },
   methods: {
     getCorrectAnswerIndex(q) {
@@ -301,11 +302,11 @@ export default {
       return idx >= 0 ? idx : null;
     },
     emitVirtuProf(triggerId, context = {}) {
-      this.$root.$emit('virtuprof:trigger', triggerId, context);
+      useOptionalVirtuProfStore()?.trigger(triggerId, context);
     },
     explainViaVirtuProf() {
       if (!this.currentQuestion) return;
-      this.$root.$emit('virtuprof:explain-question', {
+      useOptionalVirtuProfStore()?.explainLastQuestion({
         questionText: this.currentQuestion.text,
         correctAnswer: this.displayCorrectAnswerTexts.join(', '),
         poolId: this.poolId,

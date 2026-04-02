@@ -255,6 +255,7 @@ import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import BadgeUnlock from './BadgeUnlock.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
+import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 
 export default {
   name: 'ExamMode',
@@ -413,7 +414,7 @@ export default {
     currentQuestion: {
       handler(q) {
         if (!q) return;
-        this.$root.$emit('virtuprof:context', {
+        useOptionalVirtuProfStore()?.updateContext({
           poolId: this.poolId,
           courseId: this.courseId,
           questionContext: {
@@ -430,7 +431,7 @@ export default {
   },
   methods: {
     emitVirtuProf(triggerId, context = {}) {
-      this.$root.$emit('virtuprof:trigger', triggerId, context);
+      useOptionalVirtuProfStore()?.trigger(triggerId, context);
     },
     badgeDisplayName(badge) {
       return badge?.badge_name || badge?.name || badge?.title || t('learning', 'New badge');
@@ -591,7 +592,7 @@ export default {
         this.startTimer();
         this.startStatusPolling();
         this.screen = 'exam';
-        this.$root.$emit('virtuprof:exam-mode', true);
+        useOptionalVirtuProfStore()?.setExamMode(true);
         this.$nextTick(() => {
           this.updateSnakeDimensions();
           if (typeof ResizeObserver !== 'undefined') {
@@ -743,7 +744,7 @@ export default {
       this.releaseExamLock()
       this.examEndTime = Math.floor(Date.now() / 1000)
       this.screen = 'results'
-      this.$root.$emit('virtuprof:exam-mode', false);
+      useOptionalVirtuProfStore()?.setExamMode(false);
       this.isLoading = true
       try {
         const cr = await axios.post(generateUrl('/apps/learning/api/training/complete'), this.requestPayload({ sessionId: this.session }))
@@ -865,7 +866,7 @@ export default {
       this.examEndTime = Math.floor(Date.now() / 1000);
       this.isLoading = true;
       this.screen = 'results';
-      this.$root.$emit('virtuprof:exam-mode', false);
+      useOptionalVirtuProfStore()?.setExamMode(false);
 
       try {
         // Collect answered questions into batch
@@ -1002,7 +1003,7 @@ export default {
       }
       this.stopStatusPolling();
       this.releaseExamLock();
-      this.$root.$emit('virtuprof:exam-mode', false);
+      useOptionalVirtuProfStore()?.setExamMode(false);
       if (this.session) {
         try {
           await axios.post(generateUrl('/apps/learning/api/training/abort'), { sessionId: this.session });
@@ -1039,8 +1040,8 @@ export default {
   },
 
   beforeDestroy() {
-    this.$root.$emit('virtuprof:exam-mode', false);
-    this.$root.$emit('virtuprof:context', { questionContext: null });
+    useOptionalVirtuProfStore()?.setExamMode(false);
+    useOptionalVirtuProfStore()?.updateContext({ questionContext: null });
     window.removeEventListener('keydown', this.handleExamHotkeys);
     if (this.timerInterval) clearInterval(this.timerInterval);
     this.stopStatusPolling();

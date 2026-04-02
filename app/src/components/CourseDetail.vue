@@ -130,6 +130,8 @@ import CourseTabTeilnehmer from './CourseTabTeilnehmer.vue'
 import CourseTabWettbewerb from './CourseTabWettbewerb.vue'
 import CourseTabKommunikation from './CourseTabKommunikation.vue'
 import CourseTabVerwaltung from './CourseTabVerwaltung.vue'
+import { useOptionalCourseStore } from '../stores/courseStore.js'
+import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 
 export default {
 	name: 'CourseDetail',
@@ -415,7 +417,7 @@ export default {
 					? `course-${this.activeLearningMode}-active`
 					: `course-${this.activeLearningMode}-pool-select`
 			}
-			this.$root.$emit('virtuprof:context', {
+			useOptionalVirtuProfStore()?.updateContext({
 				area,
 				courseTitle: this.course?.title || '',
 				poolName: this.selectedLearningPool?.pool_name || '',
@@ -427,7 +429,7 @@ export default {
 			}
 			const payload = this.learningGuidePayload(this.currentTab)
 			if (payload) {
-				this.$root.$emit('virtuprof:guide', payload)
+				useOptionalVirtuProfStore()?.guide(payload)
 			}
 		},
 		learningGuidePayload(tabId) {
@@ -501,15 +503,15 @@ export default {
 			this.activeMegaTab = megaTabId
 			const resolvedTabId = this.resolveSelectableTab(megaTabId)
 			this.currentTab = resolvedTabId
-			this.$root.$emit('course:tab-change', resolvedTabId)
+			useOptionalCourseStore()?.setTab(resolvedTabId)
 			if (resolvedTabId !== 'arena') {
 				this.arenaSubMode = null
 			}
 			if (resolvedTabId === 'arena' && !this.isInstructor) {
-				this.$root.$emit('virtuprof:trigger', 'arena-first-visit')
+				useOptionalVirtuProfStore()?.trigger('arena-first-visit')
 			}
 			if (resolvedTabId === 'league' && !this.isInstructor) {
-				this.$root.$emit('virtuprof:trigger', 'liga-first-visit')
+				useOptionalVirtuProfStore()?.trigger('liga-first-visit')
 			}
 		},
 		/**
@@ -518,29 +520,29 @@ export default {
 		 */
 		onLeafTabChange(leafTabId) {
 			this.currentTab = leafTabId
-			this.$root.$emit('course:tab-change', leafTabId)
+			useOptionalCourseStore()?.setTab(leafTabId)
 			if (leafTabId !== 'arena') {
 				this.arenaSubMode = null
 			}
 			if (leafTabId === 'arena' && !this.isInstructor) {
-				this.$root.$emit('virtuprof:trigger', 'arena-first-visit')
+				useOptionalVirtuProfStore()?.trigger('arena-first-visit')
 			}
 			if (leafTabId === 'league' && !this.isInstructor) {
-				this.$root.$emit('virtuprof:trigger', 'liga-first-visit')
+				useOptionalVirtuProfStore()?.trigger('liga-first-visit')
 			}
 		},
 		selectTab(tabId) {
 			const resolvedTabId = this.resolveSelectableTab(tabId)
 			this.currentTab = resolvedTabId
-			this.$root.$emit('course:tab-change', resolvedTabId)
+			useOptionalCourseStore()?.setTab(resolvedTabId)
 			if (resolvedTabId !== 'arena') {
 				this.arenaSubMode = null
 			}
 			if (resolvedTabId === 'arena' && !this.isInstructor) {
-				this.$root.$emit('virtuprof:trigger', 'arena-first-visit')
+				useOptionalVirtuProfStore()?.trigger('arena-first-visit')
 			}
 			if (resolvedTabId === 'league' && !this.isInstructor) {
-				this.$root.$emit('virtuprof:trigger', 'liga-first-visit')
+				useOptionalVirtuProfStore()?.trigger('liga-first-visit')
 			}
 		},
 

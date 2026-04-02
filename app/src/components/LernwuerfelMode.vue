@@ -311,6 +311,7 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue'
 import { botChooseAnswer, botResponseDelay, botRollDice, botPhrase as getBotPhrase } from '../utils/botPlayer.js'
+import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 
 /** Special field definitions matching the backend constants */
 const SPECIAL_FIELDS = {
@@ -1209,7 +1210,7 @@ export default {
     },
 
     emitVirtuProf(triggerId, context = {}) {
-      this.$root.$emit('virtuprof:trigger', triggerId, context)
+      useOptionalVirtuProfStore()?.trigger(triggerId, context)
     },
 
     newRound() {

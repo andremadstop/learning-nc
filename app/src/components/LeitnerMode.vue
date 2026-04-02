@@ -204,6 +204,7 @@ import LevelUpOverlay from './LevelUpOverlay.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import hintMixin from '../hintMixin.js';
+import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
 
 export default {
   name: 'LeitnerMode',
@@ -300,7 +301,7 @@ export default {
     currentItem: {
       handler(q) {
         if (!q) return;
-        this.$root.$emit('virtuprof:context', {
+        useOptionalVirtuProfStore()?.updateContext({
           poolId: this.poolId,
           courseId: this.courseId,
           questionContext: {
@@ -316,7 +317,7 @@ export default {
     },
   },
   beforeDestroy() {
-    this.$root.$emit('virtuprof:context', { questionContext: null });
+    useOptionalVirtuProfStore()?.updateContext({ questionContext: null });
   },
   methods: {
     getCorrectAnswerIndex(q) {
@@ -325,7 +326,7 @@ export default {
       return idx >= 0 ? idx : null;
     },
     emitVirtuProf(triggerId, context = {}) {
-      this.$root.$emit('virtuprof:trigger', triggerId, context);
+      useOptionalVirtuProfStore()?.trigger(triggerId, context);
     },
     badgeDisplayName(badge) {
       return badge?.badge_name || badge?.name || badge?.title || t('learning', 'New badge');

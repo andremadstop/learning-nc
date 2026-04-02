@@ -567,6 +567,7 @@ import {
 	pollCoopState,
 	submitVote,
 } from '../utils/coopEngine.js'
+import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 
 const STATIC_CAMPAIGNS = [
 	{
@@ -1512,10 +1513,10 @@ export default {
 				this.sessionStats.skillChecksPassed++
 				this.skillChecksPassedThisRound++
 				this.skillCheckNpcState = 'celebrate'
-				this.$root.$emit('virtuprof:trigger', 'gameshow-answer-correct', { poolId: this.currentPoolId })
+				useOptionalVirtuProfStore()?.trigger('gameshow-answer-correct', { poolId: this.currentPoolId })
 			} else {
 				this.skillCheckNpcState = 'alert'
-				this.$root.$emit('virtuprof:trigger', 'gameshow-answer-wrong', { poolId: this.currentPoolId })
+				useOptionalVirtuProfStore()?.trigger('gameshow-answer-wrong', { poolId: this.currentPoolId })
 			}
 			setTimeout(() => { this.skillCheckNpcState = 'idle' }, 2000)
 
