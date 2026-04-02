@@ -1,15 +1,17 @@
 <template>
 	<div
 		class="game-timer"
-		:class="timerClasses">
+		:class="timerClasses"
+		role="timer"
+		:aria-label="timerAriaLabel">
 		<div
 			class="game-timer-bar"
 			:style="timerBarStyle" />
 		<div class="game-timer-content">
 			<span class="game-timer-label">{{ timerLabel }}</span>
-			<span class="game-timer-time">{{ timerState.formattedTime }}</span>
+			<span class="game-timer-time" aria-live="polite">{{ timerState.formattedTime }}</span>
 		</div>
-		<div v-if="showExpiredOverlay" class="game-timer-expired">
+		<div v-if="showExpiredOverlay" class="game-timer-expired" aria-live="assertive">
 			{{ t('learning', 'Zeit abgelaufen!') }}
 		</div>
 	</div>
@@ -60,6 +62,21 @@ export default {
 				width: `${this.timerState.fraction * 100}%`,
 				backgroundColor: this.timerState.color,
 			}
+		},
+
+		timerAriaLabel() {
+			if (this.timerState.expired) {
+				return t('learning', 'Time expired')
+			}
+			const time = this.timerState.formattedTime
+			const phase = this.timerState.phase
+			if (phase === 'danger') {
+				return t('learning', 'Exam time: {time} remaining, urgent', { time })
+			}
+			if (phase === 'warning') {
+				return t('learning', 'Exam time: {time} remaining, warning', { time })
+			}
+			return t('learning', 'Exam time: {time} remaining', { time })
 		},
 
 		timerLabel() {
