@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.7.0] - 2026-04-02
+
+### Added
+- **Exam Date Countdown Widget**: Instructors set exam dates per course. Students see a live countdown on the NC Dashboard ("Prüfung in X Tagen"). Widget hidden when no exam date is set.
+- **Metacognition Hints**: Leitner mode shows "Box 2 · Fällig seit 3 Tagen" or "Letzte Antwort falsch" beneath each card, helping learners understand why a card appears.
+- **Campaign Selection per Course**: Instructors can select which adventure campaigns are available (PATCH API + UI). "Top 5 empfohlen" button for curated scenarios (SolarWinds, WannaCry, Log4Shell, Phishing Friday, Ransomware).
+- **Placement SVG Topologies**: 4 reusable network topology backgrounds (basic, server, wan, dmz) for PBQ placement questions. Selectable via `config.scenario_type`.
+- **CLI Terminal Feedback**: PBQ CLI simulator now responds to commands with domain-aware error messages (Cisco IOS: "% Unrecognized command", Linux: "command not found", Windows, SQL, generic). Powered by `cliStateMachine.js`.
+
+### Changed
+- **Smart Queue as Lernraum Entry**: Smart Queue hero card is the primary entry point in student Lernraum view, showing due card count across all courses.
+- **Mode Visibility per Role**: Training mode tab hidden for students. Instructors can toggle individual modes on/off via `mode_config` panel.
+- **True/False → Single Choice**: All `true_false` pool types migrated to `single` with two options. Editor no longer offers Wahr/Falsch as a distinct type. Idempotent DB migration.
+- **Badge streak_30 → streak_14**: Renamed for 4-week bootcamp compatibility. DB migration renames existing awards.
+
+### Fixed
+- **Accessibility**: ArenaSelector uses ARIA radiogroup pattern with `aria-checked` states. PBQ components (CLI, Placement) have keyboard navigation (Tab, Enter, Escape). ExamMode timer has `aria-live` announcements for phase changes (safe → warning → danger → expired).
+- **E2E Tests**: Onboarding dismiss helper supports German labels ("Tour überspringen", "Loslegen") and waits for splash phase (6s timeout).
+- **Umlaut Cleanup**: 17 ASCII umlaut occurrences fixed across 12 Vue components and 2 l10n files.
+
+### Removed
+- **Zeitreise/HackThroughTime**: Dead code removed — 8 API routes, HackThroughTimeController, HackThroughTimeService, epoch-tokens.css (1,230 lines). DB table `learning_epoch_progress` preserved for data safety.
+
+### Security
+- **DSGVO Help Page**: NC Help & Privacy link wired to app's Datenschutzerklärung with 7 GDPR categories. Impressum accessible via NC settings.
+
 ## [3.6.0] - 2026-03-30
 
 ### Added
