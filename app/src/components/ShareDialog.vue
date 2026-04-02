@@ -1,5 +1,5 @@
 <template>
-  <NcDialog :name="t('learning', 'Share: {poolName}', { poolName: poolName })" @closing="$emit('close')" size="normal">
+  <AccessibleDialog :name="t('learning', 'Share: {poolName}', { poolName: poolName })" @closing="$emit('close')" size="normal">
     <NcNoteCard v-if="loadError" type="error">{{ loadError }}</NcNoteCard>
 
     <form @submit.prevent="addShare" class="share-form">
@@ -35,21 +35,21 @@
     <template #actions>
       <NcButton type="primary" @click="$emit('close')">{{ t('learning', 'Done') }}</NcButton>
     </template>
-  </NcDialog>
+  </AccessibleDialog>
 </template>
 
 <script>
-import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js';
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess, showError } from '@nextcloud/dialogs';
+import AccessibleDialog from './AccessibleDialog.vue';
 
 export default {
   name: 'ShareDialog',
-  components: { NcDialog, NcButton, NcNoteCard, NcLoadingIcon },
+  components: { AccessibleDialog, NcButton, NcNoteCard, NcLoadingIcon },
   props: {
     poolId: { type: Number, required: true },
     poolName: { type: String, required: true }

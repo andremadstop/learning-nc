@@ -1,5 +1,5 @@
 <template>
-  <NcDialog :name="t('learning', 'Import Questions')" @closing="$emit('close')" size="normal">
+  <AccessibleDialog :name="t('learning', 'Import Questions')" @closing="$emit('close')" size="normal">
     <div class="format-tabs" role="tablist">
       <button @click="format = 'csv'" :class="['tab-btn', { active: format === 'csv' }]" role="tab" :aria-selected="format === 'csv' ? 'true' : 'false'">{{ t('learning', 'CSV') }}</button>
       <button @click="format = 'json'" :class="['tab-btn', { active: format === 'json' }]" role="tab" :aria-selected="format === 'json' ? 'true' : 'false'">{{ t('learning', 'JSON') }}</button>
@@ -82,16 +82,16 @@
       <NcButton type="tertiary" @click="$emit('close')">{{ result ? t('learning', 'Done') : t('learning', 'Cancel') }}</NcButton>
       <NcButton v-if="!result" type="primary" @click="doImport" :disabled="importing || !textData">{{ importing ? t('learning', 'Importing...') : t('learning', 'Import') }}</NcButton>
     </template>
-  </NcDialog>
+  </AccessibleDialog>
 </template>
 
 <script>
-import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js';
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess } from '@nextcloud/dialogs';
+import AccessibleDialog from './AccessibleDialog.vue';
 
 const CSV_EXAMPLE = `What is the capital of France?,Berlin,Paris,London,Madrid,2,Paris has been the capital since the 10th century
 What color is the sky?,Green,Blue,Red,Yellow,2
@@ -105,7 +105,7 @@ const JSON_EXAMPLE = JSON.stringify([
 
 export default {
   name: 'ImportDialog',
-  components: { NcDialog, NcButton, NcNoteCard },
+  components: { AccessibleDialog, NcButton, NcNoteCard },
   props: { poolId: { type: Number, required: true } },
   data() {
     return { format: 'csv', textData: '', fileName: '', importing: false, result: null, preview: [], dragging: false };

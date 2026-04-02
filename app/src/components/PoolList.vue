@@ -211,7 +211,7 @@
     </div>
 
     <!-- Create/Edit Dialog -->
-    <NcDialog v-if="showDialog" :name="editingPool ? t('learning', 'Edit Pool') : t('learning', 'Create Pool')" @closing="closeDialog">
+    <AccessibleDialog v-if="showDialog" :name="editingPool ? t('learning', 'Edit Pool') : t('learning', 'Create Pool')" @closing="closeDialog">
       <form @submit.prevent="savePool">
         <div class="form-group">
           <label for="pool-name">{{ t('learning', 'Pool Name *') }}</label>
@@ -250,15 +250,15 @@
           </NcButton>
         </div>
       </form>
-    </NcDialog>
+    </AccessibleDialog>
 
-    <NcDialog v-if="showDeleteConfirm" :name="t('learning', 'Delete Pool')" @closing="showDeleteConfirm = false; poolToDelete = null">
+    <AccessibleDialog v-if="showDeleteConfirm" :name="t('learning', 'Delete Pool')" @closing="showDeleteConfirm = false; poolToDelete = null">
       <p>{{ t('learning', 'Are you sure you want to delete "{name}"? This action cannot be undone.', { name: poolToDelete ? poolToDelete.name : '' }) }}</p>
       <template #actions>
         <NcButton type="tertiary" @click="showDeleteConfirm = false; poolToDelete = null">{{ t('learning', 'Cancel') }}</NcButton>
         <NcButton type="error" @click="confirmDeletePool">{{ t('learning', 'Delete') }}</NcButton>
       </template>
-    </NcDialog>
+    </AccessibleDialog>
 
     <ShareDialog v-if="sharingPool" :poolId="sharingPool.id" :poolName="sharingPool.name" @close="sharingPool = null" />
   </div>
@@ -266,7 +266,6 @@
 
 <script>
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js';
 import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js';
 import NcActions from '@nextcloud/vue/dist/Components/NcActions.js';
 import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js';
@@ -277,6 +276,7 @@ import { showSuccess, showError } from '@nextcloud/dialogs';
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import ShareDialog from './ShareDialog.vue';
 import DailyChallengeCard from './DailyChallengeCard.vue';
+import AccessibleDialog from './AccessibleDialog.vue';
 import hintMixin from '../hintMixin.js';
 
 // Simple debounce utility
@@ -291,7 +291,7 @@ const debounce = (func, delay) => {
 
 export default {
   name: 'PoolList',
-  components: { NcButton, NcDialog, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, NcNoteCard, ShareDialog, DailyChallengeCard },
+  components: { AccessibleDialog, NcButton, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, NcNoteCard, ShareDialog, DailyChallengeCard },
   mixins: [hintMixin],
   props: {
     userRole: { type: String, default: 'student' },

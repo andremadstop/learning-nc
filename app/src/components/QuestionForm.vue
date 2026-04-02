@@ -1,5 +1,5 @@
 <template>
-  <NcDialog :name="question ? t('learning', 'Edit Question') : t('learning', 'Create Question')" @closing="$emit('close')" size="normal">
+  <AccessibleDialog :name="question ? t('learning', 'Edit Question') : t('learning', 'Create Question')" @closing="$emit('close')" size="normal">
     <form @submit.prevent="save">
       <div class="form-group">
         <label for="question-text">{{ t('learning', 'Question') }} <span aria-hidden="true">*</span></label>
@@ -149,7 +149,7 @@
         </NcNoteCard>
       </div>
 
-      <NcDialog
+      <AccessibleDialog
         v-if="showAuthorTool"
         :name="t('learning', 'PBQ Config Builder')"
         size="large"
@@ -160,7 +160,7 @@
           :initial-config="parsedPbqConfigForBuilder"
           @apply="applyPbqBuilderConfig"
         />
-      </NcDialog>
+      </AccessibleDialog>
 
       <!-- Instructor Note -->
       <div class="form-group">
@@ -186,21 +186,21 @@
         <NcButton type="primary" native-type="submit" :disabled="saving">{{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}</NcButton>
       </div>
     </form>
-  </NcDialog>
+  </AccessibleDialog>
 </template>
 
 <script>
-import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js';
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
 import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js';
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import PbqAuthorTool from './PbqAuthorTool.vue';
+import AccessibleDialog from './AccessibleDialog.vue';
 
 export default {
   name: 'QuestionForm',
-  components: { NcDialog, NcButton, NcCheckboxRadioSwitch, NcNoteCard, PbqAuthorTool },
+  components: { AccessibleDialog, NcButton, NcCheckboxRadioSwitch, NcNoteCard, PbqAuthorTool },
   props: { question: { type: Object, default: null } },
   data() {
     return {

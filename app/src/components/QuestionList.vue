@@ -72,13 +72,13 @@
       <NcButton type="tertiary" :disabled="(currentPage + 1) * pageSize >= totalQuestions" @click="nextPage">{{ t('learning', 'Next \u2192') }}</NcButton>
     </div>
 
-    <NcDialog v-if="showDeleteConfirm" :name="t('learning', 'Delete Question')" @closing="showDeleteConfirm = false; questionToDelete = null">
+    <AccessibleDialog v-if="showDeleteConfirm" :name="t('learning', 'Delete Question')" @closing="showDeleteConfirm = false; questionToDelete = null">
       <p>{{ t('learning', 'Are you sure you want to delete this question? This action cannot be undone.') }}</p>
       <template #actions>
         <NcButton type="tertiary" @click="showDeleteConfirm = false; questionToDelete = null">{{ t('learning', 'Cancel') }}</NcButton>
         <NcButton type="error" @click="confirmDeleteQuestion">{{ t('learning', 'Delete') }}</NcButton>
       </template>
-    </NcDialog>
+    </AccessibleDialog>
 
     <QuestionForm v-if="showDialog" :question="editingQuestion" @save="saveQuestion" @close="closeDialog" />
     <TranslationDialog v-if="showTranslationDialog" :question="translationQuestion" @close="closeTranslationDialog" @saved="closeTranslationDialog" />
@@ -89,7 +89,6 @@
 
 <script>
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js';
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
 import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js';
 import NcActions from '@nextcloud/vue/dist/Components/NcActions.js';
@@ -102,10 +101,11 @@ import QuestionForm from './QuestionForm.vue';
 import TranslationDialog from './TranslationDialog.vue';
 import ImportDialog from './ImportDialog.vue';
 import AIGenerator from './AIGenerator.vue';
+import AccessibleDialog from './AccessibleDialog.vue';
 
 export default {
   name: 'QuestionList',
-  components: { NcButton, NcDialog, NcNoteCard, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, QuestionForm, TranslationDialog, ImportDialog, AIGenerator },
+  components: { AccessibleDialog, NcButton, NcNoteCard, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, QuestionForm, TranslationDialog, ImportDialog, AIGenerator },
   props: {
     poolId: { type: Number, required: true },
     poolName: { type: String, required: true },

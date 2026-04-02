@@ -66,33 +66,29 @@ export default {
 
 		timerAriaLabel() {
 			if (this.timerState.expired) {
-				return t('learning', 'Time expired')
+				return t('learning', 'Exam time expired')
 			}
-			const time = this.timerState.formattedTime
-			const phase = this.timerState.phase
-			if (phase === 'danger') {
-				return t('learning', 'Exam time: {time} remaining, urgent', { time })
+			return t('learning', 'Exam time: {time} remaining, {phase}', {
+				time: this.timerState.formattedTime,
+				phase: this.timerPhaseLabel,
+			})
+		},
+
+		timerPhaseLabel() {
+			if (this.timerState.expired) {
+				return t('learning', 'Expired')
 			}
-			if (phase === 'warning') {
-				return t('learning', 'Exam time: {time} remaining, warning', { time })
+			if (this.timerState.phase === 'warning') {
+				return t('learning', 'Warning')
 			}
-			return t('learning', 'Exam time: {time} remaining', { time })
+			if (this.timerState.phase === 'danger') {
+				return t('learning', 'Critical')
+			}
+			return t('learning', 'Safe')
 		},
 
 		timerLabel() {
-			if (this.timerState.expired) {
-				return t('learning', 'Timer')
-			}
-			if (this.timerState.lastTenSeconds) {
-				return t('learning', 'Letzte Sekunden')
-			}
-			if (this.timerState.phase === 'warning') {
-				return t('learning', 'Zeit wird knapp')
-			}
-			if (this.timerState.phase === 'danger') {
-				return t('learning', 'Sofort handeln')
-			}
-			return t('learning', 'Zeitfenster aktiv')
+			return this.timerPhaseLabel
 		},
 	},
 

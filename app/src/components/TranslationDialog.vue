@@ -1,5 +1,5 @@
 <template>
-  <NcDialog :name="t('learning', 'Translate Question')" size="large" @closing="$emit('close')">
+  <AccessibleDialog :name="t('learning', 'Translate Question')" size="large" @closing="$emit('close')">
     <div v-if="loading" class="translation-loading">
       <NcLoadingIcon :size="32" />
       <span>{{ t('learning', 'Loading translations...') }}</span>
@@ -69,7 +69,7 @@
         {{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}
       </NcButton>
     </template>
-  </NcDialog>
+  </AccessibleDialog>
 </template>
 
 <script>
@@ -77,13 +77,13 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js'
 import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
 import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import AccessibleDialog from './AccessibleDialog.vue'
 
 export default {
   name: 'TranslationDialog',
-  components: { NcButton, NcDialog, NcLoadingIcon, NcNoteCard },
+  components: { AccessibleDialog, NcButton, NcLoadingIcon, NcNoteCard },
   props: {
     question: {
       type: Object,

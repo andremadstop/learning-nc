@@ -108,13 +108,15 @@
           </NcNoteCard>
           <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
             <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
-            <div class="fsrs-rating-buttons">
+            <div class="fsrs-rating-buttons" role="radiogroup" :aria-label="t('learning', 'Review confidence')">
               <button
                 v-for="option in fsrsRatingOptions"
                 :key="option.id"
                 class="fsrs-btn"
                 :class="'fsrs-btn--' + option.tone"
                 :disabled="submitting"
+                :aria-keyshortcuts="option.keyHint"
+                :aria-label="fsrsOptionAriaLabel(option)"
                 @click="rateCard(option.rating)">
                 <span class="fsrs-btn-top">
                   <span class="fsrs-key">{{ option.keyHint }}</span>
@@ -167,13 +169,15 @@
           </NcNoteCard>
           <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
             <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
-            <div class="fsrs-rating-buttons">
+            <div class="fsrs-rating-buttons" role="radiogroup" :aria-label="t('learning', 'Review confidence')">
               <button
                 v-for="option in fsrsRatingOptions"
                 :key="option.id"
                 class="fsrs-btn"
                 :class="'fsrs-btn--' + option.tone"
                 :disabled="submitting"
+                :aria-keyshortcuts="option.keyHint"
+                :aria-label="fsrsOptionAriaLabel(option)"
                 @click="rateCard(option.rating)">
                 <span class="fsrs-btn-top">
                   <span class="fsrs-key">{{ option.keyHint }}</span>
@@ -217,13 +221,15 @@
           </NcNoteCard>
           <div v-if="awaitingFsrsRating" class="fsrs-rating-panel">
             <div class="fsrs-rating-title">{{ fsrsPromptText }}</div>
-            <div class="fsrs-rating-buttons">
+            <div class="fsrs-rating-buttons" role="radiogroup" :aria-label="t('learning', 'Review confidence')">
               <button
                 v-for="option in fsrsRatingOptions"
                 :key="option.id"
                 class="fsrs-btn"
                 :class="'fsrs-btn--' + option.tone"
                 :disabled="submitting"
+                :aria-keyshortcuts="option.keyHint"
+                :aria-label="fsrsOptionAriaLabel(option)"
                 @click="rateCard(option.rating)">
                 <span class="fsrs-btn-top">
                   <span class="fsrs-key">{{ option.keyHint }}</span>
@@ -509,6 +515,13 @@ export default {
             easy: t('learning', 'That was easy'),
           }
       return labels[id] || t('learning', 'Good')
+    },
+    fsrsOptionAriaLabel(option) {
+      const interval = option?.intervalLabel || t('learning', 'Soon again')
+      return t('learning', '{label} — next review in {interval}', {
+        label: option?.label || t('learning', 'Good'),
+        interval,
+      })
     },
     badgeDisplayName(badge) {
       return badge?.badge_name || badge?.name || badge?.title || t('learning', 'New badge');
