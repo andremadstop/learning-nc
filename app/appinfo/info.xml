@@ -62,7 +62,7 @@ Play through 20 real-world IT incident campaigns (SolarWinds, WannaCry, Colonial
 - Optional: Google Gemini API key for AI features
     ]]></description>
 
-    <version>3.6.0</version>
+    <version>3.8.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>

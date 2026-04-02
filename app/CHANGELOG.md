@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.8.0] - 2026-04-02
+
+### Added
+- **SSE Real-Time Engine**: Duel and Gameshow now use Server-Sent Events by default via dedicated streaming endpoints and a shared `sse-client.js` wrapper. Existing `/state` polling remains as a fallback for compatibility.
+- **Push Reminders**: Nextcloud-native reminder notifications for due cards, streak expiry, and exam dates (7/3/1 days before) are now sent through a dedicated timed background job.
+- **Deep-Link Navigation**: `vue-router@3` adds real URLs for dashboard, courses, mega-tabs, tools, skill map, settings, and VirtuProf, enabling reload-safe views and browser back/forward navigation.
+
+### Changed
+- **State Management with Pinia**: The root Vue event bus has been removed from `app/src/`. Course navigation state and VirtuProf UI state now flow through Pinia stores for clearer cross-component coordination.
+- **Reminder Preferences**: The existing personal setting `notifications_enabled` now controls the new learning reminder notifications as well, instead of living as an unused preference.
+- **Background Job Registration**: Reminder delivery moved off the older generic `NotificationJob` path onto a dedicated `SendRemindersJob`, with explicit registration in app bootstrap and `info.xml`.
+
+### Fixed
+- **Redis / Distributed Cache Consistency**: Cache keys were normalized to `user_state_*` and `profile_*`, with XP recalculation now invalidating those caches directly so Redis-backed Nextcloud installs see fresh state immediately.
+- **Notification API Compatibility**: The Learning notifier now throws `UnknownNotificationException` for unknown subjects, aligning with current Nextcloud expectations and avoiding deprecated notifier behavior.
+- **Realtime Traffic Volume**: SSE streams hash state payloads and only emit when duel/gameshow state actually changes, reducing redundant client updates compared to naive short-polling.
+
 ## [3.7.0] - 2026-04-02
 
 ### Added
@@ -770,4 +787,3 @@ All notable changes to this project will be documented in this file.
 - Vue 2.7 frontend with @nextcloud/vue components
 - 35 API endpoints, 10 database tables
 - 3 database migrations
-
