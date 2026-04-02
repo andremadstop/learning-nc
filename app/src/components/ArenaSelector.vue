@@ -1,11 +1,12 @@
 <template>
-	<div class="arena-selector" role="list">
+	<div class="arena-selector" role="radiogroup" :aria-label="t('learning', 'Arena-Modus wählen')">
 		<button
 			v-for="card in cards"
 			:key="card.mode"
 			class="arena-card"
-			role="listitem"
-			@click="$emit('select-mode', card.mode)">
+			role="radio"
+			:aria-checked="selectedMode === card.mode ? 'true' : 'false'"
+			@click="selectMode(card.mode)">
 			<span class="arena-icon" aria-hidden="true">{{ card.icon }}</span>
 			<span class="arena-title">{{ card.title }}</span>
 			<span class="arena-desc">{{ card.desc }}</span>
@@ -25,6 +26,19 @@ export default {
 	},
 
 	emits: ['select-mode'],
+
+	data() {
+		return {
+			selectedMode: null,
+		}
+	},
+
+	methods: {
+		selectMode(mode) {
+			this.selectedMode = mode
+			this.$emit('select-mode', mode)
+		},
+	},
 
 	computed: {
 		cards() {
@@ -94,6 +108,11 @@ export default {
 
 .arena-card:hover {
 	background: var(--color-primary-light, #e8f4ff);
+}
+
+.arena-card:focus-visible {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
 }
 
 .arena-icon {
