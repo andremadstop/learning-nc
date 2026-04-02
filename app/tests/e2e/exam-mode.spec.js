@@ -12,8 +12,23 @@ test.describe('Learning App Shell', () => {
     await visitLearningApp(page)
   })
 
-  test('shows VirtuProf dock after login', async ({ page }) => {
+  test('shows instructor onboarding or a VirtuProf entry point after login', async ({ page }) => {
     await visitLearningApp(page)
-    await expect(page.locator('.app-virtuprof-dock')).toBeVisible({ timeout: 30_000 })
+
+    const onboardingIntro = page.locator('.onboarding-intro')
+    const virtuProfEntryPoint = page.locator('.virtuprof-rail, .virtuprof-panel, .app-virtuprof-dock .virtuprof-container').first()
+
+    await expect.poll(async () => {
+      if (await onboardingIntro.isVisible().catch(() => false)) {
+        return 'onboarding'
+      }
+      if (await virtuProfEntryPoint.isVisible().catch(() => false)) {
+        return 'virtuprof'
+      }
+      return 'pending'
+    }, {
+      timeout: 30_000,
+      message: 'expected either the instructor onboarding overlay or a visible VirtuProf entry point',
+    }).not.toBe('pending')
   })
 })

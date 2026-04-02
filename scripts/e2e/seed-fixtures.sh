@@ -11,6 +11,7 @@ E2E_BASE_URL="${E2E_BASE_URL:-http://localhost:8080/apps/learning}"
 OUT_ENV_FILE="${OUT_ENV_FILE:-app/tests/e2e/.env.generated}"
 
 POOL_NAME="E2E Fixture Pool"
+COURSE_TITLE="E2E Fixture Course"
 QUESTION_TEXT="E2E: What is 2+2?"
 
 echo "[e2e] enabling learning app and running migrations"
@@ -66,6 +67,21 @@ WHERE pool_id IN (
 
 DELETE FROM ${TABLE_PREFIX}learning_pools
 WHERE user_id = '${E2E_USER}' AND name = '${POOL_NAME}';
+
+DELETE FROM ${TABLE_PREFIX}learning_course_members
+WHERE course_id IN (
+  SELECT id FROM ${TABLE_PREFIX}learning_courses
+  WHERE instructor_id = '${E2E_USER}' AND title = '${COURSE_TITLE}'
+);
+
+DELETE FROM ${TABLE_PREFIX}learning_course_pools
+WHERE course_id IN (
+  SELECT id FROM ${TABLE_PREFIX}learning_courses
+  WHERE instructor_id = '${E2E_USER}' AND title = '${COURSE_TITLE}'
+);
+
+DELETE FROM ${TABLE_PREFIX}learning_courses
+WHERE instructor_id = '${E2E_USER}' AND title = '${COURSE_TITLE}';
 "
 
 echo "[e2e] creating fixture pool/question/answers"
@@ -94,6 +110,18 @@ INSERT INTO ${TABLE_PREFIX}learning_answers (question_id, text, is_correct, posi
 VALUES (${QUESTION_ID}, '5', false, 1)
 RETURNING id;
 " | grep -E '^[0-9]+$')"
+
+echo "[e2e] creating fixture course and assigning seeded pool"
+COURSE_ID="$(docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -At -v ON_ERROR_STOP=1 -c "
+INSERT INTO ${TABLE_PREFIX}learning_courses (title, description, instructor_id, status, created_at, updated_at)
+VALUES ('${COURSE_TITLE}', 'Seeded course for E2E flows', '${E2E_USER}', 'active', ${NOW}, ${NOW})
+RETURNING id;
+" | grep -E '^[0-9]+$')"
+
+docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -v ON_ERROR_STOP=1 -c "
+INSERT INTO ${TABLE_PREFIX}learning_course_pools (course_id, pool_id, sort_order, required)
+VALUES (${COURSE_ID}, ${POOL_ID}, 0, 1);
+"
 
 echo "[e2e] creating exam/training fixture sessions"
 EXAM_SESSION_ID="$(docker exec "${DB_CONTAINER}" psql -U "${NC_DB_USER}" -d "${NC_DB_NAME}" -At -v ON_ERROR_STOP=1 -c "
@@ -127,12 +155,19 @@ INSERT INTO ${TABLE_PREFIX}learning_sessions (pool_id, user_id, started_at, comp
 VALUES (${POOL_ID}, '${E2E_USER}', ${STARTED_TRAINING}, ${COMPLETED_RECENT}, 10, 8, 'training', NULL, '[${QUESTION_ID}]');
 "
 
+printf -v COURSE_TITLE_ENV '%q' "${COURSE_TITLE}"
+printf -v POOL_NAME_ENV '%q' "${POOL_NAME}"
+
 mkdir -p "$(dirname "${OUT_ENV_FILE}")"
 cat > "${OUT_ENV_FILE}" <<EOF
 E2E_AUTH_READY=1
 E2E_BASE_URL=${E2E_BASE_URL}
 E2E_USERNAME=${E2E_USER}
 E2E_PASSWORD=${E2E_PASSWORD}
+E2E_COURSE_ID=${COURSE_ID}
+E2E_COURSE_TITLE=${COURSE_TITLE_ENV}
+E2E_POOL_ID=${POOL_ID}
+E2E_POOL_NAME=${POOL_NAME_ENV}
 E2E_EXAM_SESSION_ID=${EXAM_SESSION_ID}
 E2E_EXAM_QUESTION_ID=${QUESTION_ID}
 E2E_EXAM_ANSWER_ID=${WRONG_ANSWER_ID}
@@ -146,4 +181,4 @@ E2E_UNCOMPLETED_MISSION_KEY=daily_cards_20
 EOF
 
 echo "[e2e] fixture env written to ${OUT_ENV_FILE}"
-echo "[e2e] pool=${POOL_ID} question=${QUESTION_ID} examSession=${EXAM_SESSION_ID}"
+echo "[e2e] course=${COURSE_ID} pool=${POOL_ID} question=${QUESTION_ID} examSession=${EXAM_SESSION_ID}"

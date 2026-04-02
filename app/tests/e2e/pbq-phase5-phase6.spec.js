@@ -6,16 +6,44 @@ const { test, expect } = require('@playwright/test')
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
+const FIXTURE_COURSE_TITLE = process.env.E2E_COURSE_TITLE || 'E2E Fixture Course'
+const FIXTURE_POOL_NAME = process.env.E2E_POOL_NAME || 'E2E Fixture Pool'
+
 async function goToAdmin(page) {
   await page.goto('/apps/learning/')
   await page.waitForLoadState('networkidle')
 }
 
+async function dismissInstructorOnboarding(page) {
+  const skipBtn = page.getByRole('button', { name: /Skip tour|Start learning/i }).first()
+  if (await skipBtn.isVisible({ timeout: 5_000 }).catch(() => false)) {
+    await skipBtn.click()
+    await page.waitForTimeout(400)
+    await page.waitForLoadState('networkidle').catch(() => {})
+  }
+}
+
 async function openFirstPool(page) {
   await goToAdmin(page)
-  // Admin has instructor role in CI (learning-instructors group) so mainView stays 'pools'
-  await page.waitForSelector('.pool-card', { timeout: 30_000 })
-  await page.locator('.pool-card').first().click()
+  await dismissInstructorOnboarding(page)
+
+  // Instructors now reach question pools through the course detail "Pools" tab.
+  const courseCard = page.locator('.course-card').filter({ hasText: FIXTURE_COURSE_TITLE }).first()
+  if (await courseCard.isVisible({ timeout: 10_000 }).catch(() => false)) {
+    await courseCard.click()
+  } else {
+    await page.waitForSelector('.course-card', { timeout: 30_000 })
+    await page.locator('.course-card').first().click()
+  }
+  await page.waitForLoadState('networkidle')
+
+  const poolItem = page.locator('.pool-item').filter({ hasText: FIXTURE_POOL_NAME }).first()
+  if (await poolItem.isVisible({ timeout: 10_000 }).catch(() => false)) {
+    await poolItem.click()
+  } else {
+    await page.waitForSelector('.pool-item', { timeout: 30_000 })
+    await page.locator('.pool-item').first().click()
+  }
   await page.waitForLoadState('networkidle')
 }
 
