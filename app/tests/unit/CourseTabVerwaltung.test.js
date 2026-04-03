@@ -14,8 +14,8 @@ vi.mock('@nextcloud/router', () => ({
 	generateUrl: vi.fn((url) => url),
 }))
 
-vi.mock('@nextcloud/vue/dist/Components/NcButton.js', () => ({ default: { name: 'NcButton', template: '<button><slot /></button>' } }))
-vi.mock('@nextcloud/vue/dist/Components/NcNoteCard.js', () => ({ default: { name: 'NcNoteCard', template: '<div><slot /></div>' } }))
+vi.mock('@nextcloud/vue/components/NcButton', () => ({ default: { name: 'NcButton', template: '<button><slot /></button>' } }))
+vi.mock('@nextcloud/vue/components/NcNoteCard', () => ({ default: { name: 'NcNoteCard', template: '<div><slot /></div>' } }))
 
 import CourseTabVerwaltung from '../../src/components/CourseTabVerwaltung.vue'
 

@@ -900,7 +900,7 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
 import { translate as t } from '@nextcloud/l10n'
 import { translateVirtuProf } from '../utils/virtuprof-i18n.js'
 
@@ -1050,7 +1050,7 @@ export default {
       this.setupSpeechRecognition()
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.stopListening()
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.cancel()

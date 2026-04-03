@@ -187,10 +187,10 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
-import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js';
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js';
+import NcButton from '@nextcloud/vue/components/NcButton';
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
+import NcProgressBar from '@nextcloud/vue/components/NcProgressBar';
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showError } from '@nextcloud/dialogs';
@@ -292,7 +292,7 @@ export default {
       return Array.isArray(this.correctAnswerTexts) ? this.correctAnswerTexts.filter(Boolean) : [];
     },
   },
-  beforeDestroy() {
+  beforeUnmount() {
     useOptionalVirtuProfStore()?.updateContext({ questionContext: null });
   },
   methods: {

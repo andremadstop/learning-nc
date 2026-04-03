@@ -147,8 +147,8 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 
 export default {
@@ -312,7 +312,7 @@ export default {
 		},
 
 		toggleMode(key, value) {
-			this.$set(this.modeConfigLocal, key, value)
+			this.modeConfigLocal[key] = value
 		},
 
 		async saveModeConfig() {
@@ -350,7 +350,7 @@ export default {
 
 		toggleCourseTool(key, value) {
 			if (!this.isAdminToolEnabled(key)) return
-			this.$set(this.toolConfigLocal, key, value)
+			this.toolConfigLocal[key] = value
 		},
 
 		async loadToolSettings() {

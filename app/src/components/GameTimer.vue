@@ -113,7 +113,7 @@ export default {
 		this.restartTimer()
 	},
 
-	beforeDestroy() {
+	beforeUnmount() {
 		if (this._timerInterval) {
 			clearInterval(this._timerInterval)
 			this._timerInterval = null

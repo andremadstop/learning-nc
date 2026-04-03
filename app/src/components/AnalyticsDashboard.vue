@@ -218,7 +218,7 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
+import NcButton from '@nextcloud/vue/components/NcButton';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 

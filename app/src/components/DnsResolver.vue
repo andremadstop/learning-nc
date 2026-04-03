@@ -249,8 +249,8 @@
 </template>
 
 <script>
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js';
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent';
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import PracticumRunner from './PracticumRunner.vue';
 import dnsScenarios from '../../data/dns_scenarios.json';
 import {
@@ -369,7 +369,7 @@ export default {
       this.prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.clearTimer();
   },
   methods: {

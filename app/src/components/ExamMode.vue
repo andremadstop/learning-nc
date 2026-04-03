@@ -243,15 +243,15 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js';
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js';
+import NcButton from '@nextcloud/vue/components/NcButton';
+import NcProgressBar from '@nextcloud/vue/components/NcProgressBar';
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showError } from '@nextcloud/dialogs';
 import { celebratePerfectSession } from '../confetti.js';
 import { countUp } from '../countUp.js';
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import BadgeUnlock from './BadgeUnlock.vue';
 import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
@@ -771,7 +771,7 @@ export default {
         // Toggle multi-select
         const qId = this.currentQuestion.id;
         if (!this.multiSelections[qId]) {
-          this.$set(this.multiSelections, qId, []);
+          this.multiSelections[qId] = [];
         }
         const idx = this.multiSelections[qId].indexOf(answerId);
         if (idx >= 0) {
@@ -781,7 +781,7 @@ export default {
         }
         return; // Don't auto-advance for multi
       }
-      this.$set(this.userAnswers, this.currentQuestion.id, answerId);
+      this.userAnswers[this.currentQuestion.id] = answerId;
       this.advanceToNext();
     },
     submitOpenExamAnswer() {
@@ -789,21 +789,21 @@ export default {
       const qId = this.currentQuestion.id;
       const text = (this.openAnswerTexts[qId] || '').trim();
       if (!text) return;
-      this.$set(this.userAnswers, qId, { answerText: text });
+      this.userAnswers[qId] = { answerText: text };
       this.advanceToNext();
     },
     confirmMultiAnswer() {
       if (this.lockDenied) return;
       const qId = this.currentQuestion.id;
       // Store the multi selection as the answer
-      this.$set(this.userAnswers, qId, this.multiSelections[qId].slice());
+      this.userAnswers[qId] = this.multiSelections[qId].slice();
       this.advanceToNext();
     },
 
     skipQuestion() {
       if (this.lockDenied) return;
       if (this.userAnswers[this.currentQuestion.id] === undefined) {
-        this.$set(this.userAnswers, this.currentQuestion.id, null);
+        this.userAnswers[this.currentQuestion.id] = null;
       }
       this.advanceToNext();
     },
@@ -1039,7 +1039,7 @@ export default {
     this.emitVirtuProf('exam-first-start');
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     useOptionalVirtuProfStore()?.setExamMode(false);
     useOptionalVirtuProfStore()?.updateContext({ questionContext: null });
     window.removeEventListener('keydown', this.handleExamHotkeys);

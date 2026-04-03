@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitest/config'
-import vue2 from '@vitejs/plugin-vue2'
+import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
-  plugins: [vue2()],
+  plugins: [vue()],
   test: {
     include: ['tests/unit/**/*.test.js'],
     exclude: ['tests/e2e/**'],

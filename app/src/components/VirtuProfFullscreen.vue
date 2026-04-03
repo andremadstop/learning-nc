@@ -146,9 +146,9 @@
           <div class="virtuprof-fullscreen__context-section">
             <h3>{{ t('learning', 'Kontext') }}</h3>
             <dl class="virtuprof-fullscreen__context-list">
-              <template v-for="entry in contextEntries">
-                <dt :key="entry.key + '-label'">{{ entry.label }}</dt>
-                <dd :key="entry.key + '-value'">{{ entry.value }}</dd>
+              <template v-for="entry in contextEntries" :key="entry.key">
+                <dt>{{ entry.label }}</dt>
+                <dd>{{ entry.value }}</dd>
               </template>
             </dl>
           </div>
@@ -318,7 +318,7 @@ export default {
       document.addEventListener('keydown', this.handleGlobalKeydown)
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (typeof window !== 'undefined') {
       window.removeEventListener('resize', this.updateViewportMode)
       document.removeEventListener('keydown', this.handleGlobalKeydown)

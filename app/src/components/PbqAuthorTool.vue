@@ -353,7 +353,7 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
 import { DOMAIN_SCHEMAS } from '../utils/cliStateMachine.js'
 import { DEVICE_ICONS } from '../utils/networkTopologyIcons.js'
 import PbqRenderer from './PbqRenderer.vue'
@@ -692,7 +692,7 @@ export default {
         case 'switch_config':
         case 'routing_config':
         case 'diagnostic':
-          this.$set(this.rawConfigForms, subtype, stringifyPretty(config))
+          this.rawConfigForms[subtype] = stringifyPretty(config)
           break
         default:
           break
@@ -943,7 +943,7 @@ export default {
       if (this.cliForm.outputScope === 'per_terminal') {
         this.cliForm.commandOutputs.forEach(pair => {
           if (!pair.terminal) {
-            this.$set(pair, 'terminal', this.cliTerminalNames[0])
+            pair.terminal = this.cliTerminalNames[0]
           }
         })
       }
@@ -1024,35 +1024,31 @@ export default {
       this.dropdownForm.questions.splice(i, 1)
     },
     addDropdownOption(qi) {
-      this.$set(
-        this.dropdownForm.questions[qi],
-        'options',
-        [...this.dropdownForm.questions[qi].options, ''],
-      )
+      this.dropdownForm.questions[qi].options = [...this.dropdownForm.questions[qi].options, '']
     },
     removeDropdownOption(qi, oi) {
       const options = [...this.dropdownForm.questions[qi].options]
       options.splice(oi, 1)
-      this.$set(this.dropdownForm.questions[qi], 'options', options.length ? options : [''])
+      this.dropdownForm.questions[qi].options = options.length ? options : ['']
     },
     updateDropdownOption(qi, oi, value) {
       const opts = [...this.dropdownForm.questions[qi].options]
       opts[oi] = value
-      this.$set(this.dropdownForm.questions[qi], 'options', opts)
+      this.dropdownForm.questions[qi].options = opts
     },
     resetRawConfigTemplate() {
       switch (this.selectedSubtype) {
         case 'cable':
-          this.$set(this.rawConfigForms, 'cable', stringifyPretty(createCableTemplate()))
+          this.rawConfigForms.cable = stringifyPretty(createCableTemplate())
           break
         case 'switch_config':
-          this.$set(this.rawConfigForms, 'switch_config', stringifyPretty(createSwitchTemplate()))
+          this.rawConfigForms.switch_config = stringifyPretty(createSwitchTemplate())
           break
         case 'routing_config':
-          this.$set(this.rawConfigForms, 'routing_config', stringifyPretty(createRoutingTemplate()))
+          this.rawConfigForms.routing_config = stringifyPretty(createRoutingTemplate())
           break
         case 'diagnostic':
-          this.$set(this.rawConfigForms, 'diagnostic', stringifyPretty(createDiagnosticTemplate()))
+          this.rawConfigForms.diagnostic = stringifyPretty(createDiagnosticTemplate())
           break
         default:
           break

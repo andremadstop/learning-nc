@@ -417,12 +417,12 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js'
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
-import NcModal from '@nextcloud/vue/dist/Components/NcModal.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import NcModal from '@nextcloud/vue/components/NcModal'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import CourseKnowledgeImport from './CourseKnowledgeImport.vue'
 import CourseMaterials from './CourseMaterials.vue'
 import ExamMode from './ExamMode.vue'
@@ -764,7 +764,7 @@ export default {
 		async fetchPoolQuestionCount(poolId) {
 			const pool = this.coursePools.find((item) => item.pool_id === poolId)
 			if (pool && typeof pool.question_count === 'number') {
-				this.$set(this.poolQuestionCounts, poolId, pool.question_count)
+				this.poolQuestionCounts[poolId] = pool.question_count
 				return pool.question_count
 			}
 			if (this.poolQuestionCounts[poolId] !== undefined) {
@@ -774,7 +774,7 @@ export default {
 			const url = generateUrl('/apps/learning/api/pools/{poolId}/questions', { poolId })
 			const response = await axios.get(url)
 			const questionCount = Array.isArray(response.data) ? response.data.length : 0
-			this.$set(this.poolQuestionCounts, poolId, questionCount)
+			this.poolQuestionCounts[poolId] = questionCount
 			return questionCount
 		},
 		async selectLearningPool(pool) {

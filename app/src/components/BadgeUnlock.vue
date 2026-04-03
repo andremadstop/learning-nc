@@ -78,7 +78,7 @@ export default {
       setTimeout(() => this.showNext(), 300)
     },
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.timer) clearTimeout(this.timer)
   },
 }

@@ -976,7 +976,7 @@ export default {
 		this.fetchCampaigns()
 	},
 
-	beforeDestroy() {
+	beforeUnmount() {
 		window.removeEventListener('keydown', this.handleGlobalKeydown)
 		this.clearTimers()
 	},

@@ -25,7 +25,7 @@ vi.mock('@nextcloud/l10n', () => ({
 }))
 
 // Mock @nextcloud/vue components
-vi.mock('@nextcloud/vue/dist/Components/NcLoadingIcon.js', () => ({
+vi.mock('@nextcloud/vue/components/NcLoadingIcon', () => ({
 	default: { name: 'NcLoadingIcon', template: '<span />' },
 }))
 

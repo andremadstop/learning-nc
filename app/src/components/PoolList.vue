@@ -166,7 +166,7 @@
              @keydown.space.prevent="selectPool(pool)">
           <div class="pool-card-header">
             <h4>{{ pool.name }}</h4>
-            <NcActions v-if="userRole === 'instructor'" @click.native.stop>
+            <NcActions v-if="userRole === 'instructor'" @click.stop>
               <NcActionButton @click="sharePool(pool)" close-after-click>{{ t('learning', 'Share') }}</NcActionButton>
               <NcActionButton @click="editPool(pool)" close-after-click>{{ t('learning', 'Edit') }}</NcActionButton>
               <NcActionButton @click="deletePool(pool)" close-after-click>{{ t('learning', 'Delete') }}</NcActionButton>
@@ -265,15 +265,15 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js';
-import NcActions from '@nextcloud/vue/dist/Components/NcActions.js';
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js';
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js';
+import NcButton from '@nextcloud/vue/components/NcButton';
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent';
+import NcActions from '@nextcloud/vue/components/NcActions';
+import NcActionButton from '@nextcloud/vue/components/NcActionButton';
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess, showError } from '@nextcloud/dialogs';
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import ShareDialog from './ShareDialog.vue';
 import DailyChallengeCard from './DailyChallengeCard.vue';
 import AccessibleDialog from './AccessibleDialog.vue';
@@ -390,7 +390,7 @@ export default {
       if (saved) this.activeLangs = JSON.parse(saved);
     } catch (e) { /* ignore */ }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {

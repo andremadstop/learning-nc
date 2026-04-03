@@ -266,9 +266,9 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
-import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js';
+import NcButton from '@nextcloud/vue/components/NcButton';
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
+import NcProgressBar from '@nextcloud/vue/components/NcProgressBar';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess, showError } from '@nextcloud/dialogs';
@@ -476,7 +476,7 @@ export default {
       immediate: true,
     },
   },
-  beforeDestroy() {
+  beforeUnmount() {
     useOptionalVirtuProfStore()?.updateContext({ questionContext: null });
     window.removeEventListener('keydown', this.handleFsrsKeydown);
     this.clearFsrsIntervalNotice();

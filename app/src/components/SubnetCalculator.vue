@@ -77,12 +77,12 @@
 
 			<table v-if="calculatorResult" class="subnet-table">
 				<tbody>
-					<template v-for="row in calculatorRowsWithKeys">
-						<tr :key="'row-' + row.key">
+					<template v-for="row in calculatorRowsWithKeys" :key="row.key">
+						<tr>
 							<th scope="row">{{ row.label }}</th>
 							<td>{{ row.value }}</td>
 						</tr>
-						<tr v-if="explainMode && row.why" :key="'why-' + row.key" class="subnet-table__why">
+						<tr v-if="explainMode && row.why" class="subnet-table__why">
 							<td colspan="2">
 								<span class="why-badge">{{ t('learning', 'Warum?') }}</span>
 								{{ row.why }}
@@ -992,14 +992,14 @@ export default {
 
 	methods: {
 		switchTab(id) {
-			this.$set(this.$data, 'activeTab', id)
+			this.activeTab = id
 		},
 		applyPreset(presetName) {
 			this.activePreset = presetName
 			this.visibleRows = getVisibleRows(presetName)
 		},
 		toggleRow(key) {
-			this.$set(this.visibleRows, key, !this.visibleRows[key])
+			this.visibleRows[key] = !this.visibleRows[key]
 			this.activePreset = 'custom'
 		},
 		formatAddress(octets) {

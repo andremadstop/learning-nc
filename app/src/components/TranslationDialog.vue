@@ -76,9 +76,9 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { showError, showSuccess } from '@nextcloud/dialogs'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import AccessibleDialog from './AccessibleDialog.vue'
 
 export default {
@@ -118,8 +118,8 @@ export default {
     initializeAnswerState() {
       const answers = Array.isArray(this.question.answers) ? this.question.answers : []
       answers.forEach(answer => {
-        this.$set(this.answerTranslations, answer.id, { de: '', en: '', ru: '' })
-        this.$set(this.existingAnswerTranslations, answer.id, {})
+        this.answerTranslations[answer.id] = { de: '', en: '', ru: '' }
+        this.existingAnswerTranslations[answer.id] = {}
       })
     },
     async loadTranslations() {

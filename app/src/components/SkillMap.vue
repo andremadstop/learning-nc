@@ -150,7 +150,7 @@ export default {
 		this._fetchData();
 	},
 
-	beforeDestroy: function() {
+	beforeUnmount: function() {
 		if (this._simulation) {
 			this._simulation.stop();
 			this._simulation = null;

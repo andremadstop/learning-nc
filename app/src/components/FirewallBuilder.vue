@@ -190,8 +190,8 @@
 </template>
 
 <script>
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import PracticumRunner from './PracticumRunner.vue'
 import firewallScenarios from '../../data/firewall_scenarios.json'
 import { createRule, evaluatePacket, reorderRules } from '../utils/firewallEngine.js'
@@ -255,7 +255,7 @@ export default {
       this.loadScenario(this.scenario)
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     // Keine aktiven Timer oder globalen Event-Listener registriert.
     // Hook vorhanden für sauberes Embedded-Rendering in SimulatorShell.
   },

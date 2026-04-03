@@ -1,5 +1,6 @@
 <?php
 script('learning', 'learning-privacy-page');
+style('learning', 'learning-privacy-page');
 style('learning', 'style');
 ?>
 <div

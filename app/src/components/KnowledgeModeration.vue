@@ -101,7 +101,7 @@ export default {
 		},
 
 		async moderate(chunkId, action) {
-			this.$set(this.moderating, chunkId, true)
+			this.moderating[chunkId] = true
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/knowledge/moderate/{chunkId}', {
 					courseId: this.courseId,
@@ -113,7 +113,7 @@ export default {
 			} catch (e) {
 				console.error('Failed to moderate contribution', e)
 			} finally {
-				this.$set(this.moderating, chunkId, false)
+				this.moderating[chunkId] = false
 			}
 		},
 

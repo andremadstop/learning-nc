@@ -113,7 +113,7 @@
 </template>
 
 <script>
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { buildPrivacyCategoryGroups, getPrivacyInfoData } from '../utils/privacyInfo.js'
 
 export default {

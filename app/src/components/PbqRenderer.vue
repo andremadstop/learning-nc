@@ -86,7 +86,7 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
 import { generateUrl } from '@nextcloud/router'
 import PbqDropdown  from './PbqDropdown.vue'
 import PbqPlacement from './PbqPlacement.vue'
@@ -196,7 +196,7 @@ export default {
       return url
     },
     onUpdate(key, value) {
-      this.$set(this.localAnswer, String(key), value)
+      this.localAnswer[String(key)] = value
       this.$emit('change', { ...this.localAnswer })
     },
   },

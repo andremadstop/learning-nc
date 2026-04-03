@@ -127,8 +127,8 @@
 </template>
 
 <script>
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import PracticumRunner from './PracticumRunner.vue'
 import portscanScenarios from '../../data/portscan_scenarios.json'
 import {
@@ -206,7 +206,7 @@ export default {
       this.loadScenario(this.scenario)
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     window.clearInterval(this.intervalId)
   },
   methods: {

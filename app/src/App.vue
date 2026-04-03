@@ -367,9 +367,9 @@
 </template>
 
 <script>
-import NcAppContent from '@nextcloud/vue/dist/Components/NcAppContent.js';
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
+import NcAppContent from '@nextcloud/vue/components/NcAppContent';
+import NcButton from '@nextcloud/vue/components/NcButton';
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import PoolList from './components/PoolList.vue';
 import QuestionList from './components/QuestionList.vue';
 import TrainingMode from './components/TrainingMode.vue';
@@ -567,7 +567,7 @@ export default {
       this.emitVirtuProfContext();
     });
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (typeof this._courseTabUnwatch === 'function') {
       this._courseTabUnwatch();
       this._courseTabUnwatch = null;

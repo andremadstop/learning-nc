@@ -124,10 +124,10 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
-import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js';
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js';
+import NcButton from '@nextcloud/vue/components/NcButton';
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
+import NcProgressBar from '@nextcloud/vue/components/NcProgressBar';
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showError } from '@nextcloud/dialogs';

@@ -1,11 +1,9 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-
-Vue.use(VueRouter)
+import { h } from 'vue'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const RouteShellMarker = {
 	name: 'RouteShellMarker',
-	render(h) {
+	render() {
 		return h('div')
 	},
 }
@@ -20,15 +18,14 @@ const routes = [
   { path: '/skill-map', name: 'skill-map', component: RouteShellMarker, meta: { mainView: 'skillmap' } },
   { path: '/settings', name: 'settings', component: RouteShellMarker, meta: { mainView: 'settings' } },
   { path: '/virtuprof', name: 'virtuprof', component: RouteShellMarker, meta: { mainView: 'virtuprof-fullscreen' } },
-  { path: '*', redirect: '/' },
+  { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
-const router = new VueRouter({
-  mode: 'history',
-  base: '/apps/learning/',
+const router = createRouter({
+  history: createWebHistory('/apps/learning/'),
   routes,
   scrollBehavior() {
-    return { x: 0, y: 0 }
+    return { left: 0, top: 0 }
   },
 })
 

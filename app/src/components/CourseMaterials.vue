@@ -217,7 +217,7 @@ export default {
 		},
 
 		async extractDocument(doc) {
-			this.$set(this.extracting, doc.id, true)
+			this.extracting[doc.id] = true
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/documents/{documentId}/extract', {
 					courseId: this.courseId,
@@ -226,16 +226,16 @@ export default {
 				const response = await axios.post(url)
 				const index = this.documents.findIndex(d => d.id === doc.id)
 				if (index !== -1) {
-					this.$set(this.documents, index, response.data)
+					this.documents[index] = response.data
 				}
 			} catch (e) {
 				console.error('Failed to extract document', e)
 				const index = this.documents.findIndex(d => d.id === doc.id)
 				if (index !== -1) {
-					this.$set(this.documents[index], 'status', 'error')
+					this.documents[index].status = 'error'
 				}
 			} finally {
-				this.$set(this.extracting, doc.id, false)
+				this.extracting[doc.id] = false
 			}
 		},
 

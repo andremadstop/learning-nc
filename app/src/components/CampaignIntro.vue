@@ -159,7 +159,7 @@ export default {
 		}
 	},
 
-	beforeDestroy() {
+	beforeUnmount() {
 		if (this.doneTimer) {
 			clearTimeout(this.doneTimer)
 		}

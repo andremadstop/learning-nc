@@ -79,7 +79,7 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
 import CourseFeed from './CourseFeed.vue'
 import BuddyMatching from './BuddyMatching.vue'
 import StudentKnowledgeContribute from './StudentKnowledgeContribute.vue'
@@ -265,7 +265,7 @@ export default {
 					ticket.status = 'answered'
 					ticket.answer_text = answer
 				}
-				this.$delete(this.ticketReplies, ticketId)
+				delete this.ticketReplies[ticketId]
 			} catch (e) {
 				console.error('Failed to answer ticket', e)
 			}

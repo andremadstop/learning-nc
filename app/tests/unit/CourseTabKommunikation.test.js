@@ -13,7 +13,7 @@ vi.mock('@nextcloud/router', () => ({
 	generateUrl: vi.fn((url) => url),
 }))
 
-vi.mock('@nextcloud/vue/dist/Components/NcButton.js', () => ({ default: { name: 'NcButton', template: '<button><slot /></button>' } }))
+vi.mock('@nextcloud/vue/components/NcButton', () => ({ default: { name: 'NcButton', template: '<button><slot /></button>' } }))
 
 const { stub } = vi.hoisted(() => ({
 	stub: (name) => ({ default: { name, template: '<div />' } }),

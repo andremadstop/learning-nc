@@ -52,7 +52,7 @@ export default {
       this.visible = false;
     },
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.timer) clearTimeout(this.timer);
   },
 };

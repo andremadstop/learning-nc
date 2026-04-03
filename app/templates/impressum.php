@@ -1,5 +1,6 @@
 <?php
 script('learning', 'learning-imprint-page');
+style('learning', 'learning-imprint-page');
 style('learning', 'style');
 ?>
 <div

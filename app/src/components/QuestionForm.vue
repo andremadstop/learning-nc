@@ -190,9 +190,9 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcCheckboxRadioSwitch from '@nextcloud/vue/dist/Components/NcCheckboxRadioSwitch.js';
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
+import NcButton from '@nextcloud/vue/components/NcButton';
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch';
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import PbqAuthorTool from './PbqAuthorTool.vue';
@@ -504,7 +504,7 @@ export default {
       this.saving = false;
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.imagePreview) {
       URL.revokeObjectURL(this.imagePreview);
     }

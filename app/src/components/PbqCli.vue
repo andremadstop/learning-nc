@@ -104,10 +104,10 @@ export default {
         history.push(line)
       }
 
-      // Update reactive state using $set (Vue 2 reactivity safe)
-      this.$set(this.localHistory, term.name, history)
-      this.$set(this.termModes, term.name, result.nextMode)
-      this.$set(this.termContexts, term.name, result.nextContext)
+      // Update per-terminal reactive state after each command.
+      this.localHistory[term.name] = history
+      this.termModes[term.name] = result.nextMode
+      this.termContexts[term.name] = result.nextContext
 
       // Clear input
       this.inputBuffers[term.name] = ''

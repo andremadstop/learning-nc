@@ -253,7 +253,7 @@ export default {
 		},
 	},
 
-	beforeDestroy() {
+	beforeUnmount() {
 		if (this._itemHighlightTimer) {
 			clearTimeout(this._itemHighlightTimer)
 			this._itemHighlightTimer = null

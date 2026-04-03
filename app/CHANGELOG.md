@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.0] - 2026-04-03
+
+### Breaking Changes
+- **Requires Nextcloud 33+**: The frontend runtime now targets the current Vue-3-compatible Nextcloud stack and drops NC 29-31.
+- **Frontend Runtime Upgrade**: Vue 2.7, `@nextcloud/vue@8`, `vue-router@3`, and Pinia 2 are replaced by their Vue-3-compatible counterparts.
+
+### Changed
+- **Bootstrap Migration**: Main app, admin settings, personal settings, privacy page, and imprint page now mount via `createApp()` with `vue-router@4` and Pinia 3.
+- **Build Stack Modernized**: Frontend bundling moved from webpack to Vite with five classic Nextcloud-compatible entry bundles and explicit per-entry stylesheet loading in templates.
+- **Nextcloud UI Imports Updated**: Components now import from `@nextcloud/vue/components/*`, aligning the app with `@nextcloud/vue@9`.
+
+### Fixed
+- **Vue 3 Compatibility Cleanup**: Removed legacy `this.$set` / `this.$delete`, `.native`, `.sync`, `$listeners`, and renamed old lifecycle hooks (`beforeDestroy` / `destroyed`) to Vue-3 equivalents.
+- **Template Parser Compliance**: `template v-for` keys were moved to fragment roots, avoiding Vue-3 SFC compiler failures in calculator and context UIs.
+- **Transition Semantics**: Onboarding and VirtuProf transition classes were updated from old `*-enter` rules to Vue-3-compatible `*-enter-from` variants.
+
 ## [3.9.0] - 2026-04-02
 
 ### Added

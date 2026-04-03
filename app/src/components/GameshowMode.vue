@@ -486,9 +486,9 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
-import NcProgressBar from '@nextcloud/vue/dist/Components/NcProgressBar.js';
+import NcButton from '@nextcloud/vue/components/NcButton';
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
+import NcProgressBar from '@nextcloud/vue/components/NcProgressBar';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
@@ -775,7 +775,7 @@ export default {
     this.fetchHistory();
   },
 
-  destroyed() {
+  unmounted() {
     this.stopPolling();
     this.stopTimer();
     this.clearBotTimeout();

@@ -538,7 +538,7 @@ export default {
     this.startInvitePolling()
     this.$emit('ready')
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (Array.isArray(this._storeUnwatchers)) {
       this._storeUnwatchers.forEach((unwatch) => {
         if (typeof unwatch === 'function') {
@@ -738,7 +738,7 @@ export default {
       }
       const segments = String(field).split('.')
       if (segments.length === 1) {
-        this.$set(this.telosForm, segments[0], value)
+        this.telosForm[segments[0]] = value
         return
       }
 
@@ -746,11 +746,11 @@ export default {
       for (let index = 0; index < segments.length - 1; index += 1) {
         const key = segments[index]
         if (!target[key] || typeof target[key] !== 'object') {
-          this.$set(target, key, {})
+          target[key] = {}
         }
         target = target[key]
       }
-      this.$set(target, segments[segments.length - 1], value)
+      target[segments[segments.length - 1]] = value
     },
     async submitTelosForm() {
       this.telosSaving = true
@@ -2311,7 +2311,7 @@ export default {
   transition: opacity 0.2s ease;
 }
 
-.virtuprof-enter-enter,
+.virtuprof-enter-enter-from,
 .virtuprof-enter-leave-to {
   opacity: 0;
 }

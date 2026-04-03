@@ -234,7 +234,7 @@ export default {
   mounted() {
     window.addEventListener('scroll', this.closePicker, { passive: true })
   },
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener('scroll', this.closePicker)
   },
   methods: {

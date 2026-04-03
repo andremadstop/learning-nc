@@ -91,7 +91,7 @@ export default {
 		this._edgeData = null;
 	},
 
-	beforeDestroy: function() {
+	beforeUnmount: function() {
 		if (this._simulation) {
 			this._simulation.stop();
 			this._simulation = null;

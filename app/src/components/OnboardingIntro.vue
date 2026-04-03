@@ -154,7 +154,7 @@ export default {
 		document.addEventListener('touchend', this.handleTouchEnd)
 	},
 
-	beforeDestroy() {
+	beforeUnmount() {
 		if (this.splashTimer) clearTimeout(this.splashTimer)
 		if (this.autoplayTimer) clearInterval(this.autoplayTimer)
 		document.removeEventListener('keydown', this.handleKeydown)
@@ -239,7 +239,7 @@ export default {
 .onb-content-leave-active {
 	transition: opacity 0.5s ease;
 }
-.onb-content-enter {
+.onb-content-enter-from {
 	opacity: 0;
 	transform: translateY(16px);
 }
@@ -360,9 +360,9 @@ export default {
 	transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.slide-next-enter  { opacity: 0; transform: translateX(40px); }
+.slide-next-enter-from  { opacity: 0; transform: translateX(40px); }
 .slide-next-leave-to { opacity: 0; transform: translateX(-40px); }
-.slide-prev-enter  { opacity: 0; transform: translateX(-40px); }
+.slide-prev-enter-from  { opacity: 0; transform: translateX(-40px); }
 .slide-prev-leave-to { opacity: 0; transform: translateX(40px); }
 
 /* ── Nav ─────────────────────────────────────────────── */
@@ -478,9 +478,9 @@ export default {
 		transition-duration: 0.15s;
 	}
 
-	.slide-next-enter,
+	.slide-next-enter-from,
 	.slide-next-leave-to,
-	.slide-prev-enter,
+	.slide-prev-enter-from,
 	.slide-prev-leave-to {
 		transform: none;
 	}

@@ -7,32 +7,32 @@ import PortScanner from '../../src/components/PortScanner.vue'
 import WiresharkLite from '../../src/components/WiresharkLite.vue'
 import AuthFlowSimulator from '../../src/components/AuthFlowSimulator.vue'
 
-describe('Simulator Lifecycle — beforeDestroy hooks', () => {
-	it('FirewallBuilder has beforeDestroy hook', () => {
-		expect(typeof FirewallBuilder.beforeDestroy).toBe('function')
+describe('Simulator Lifecycle — beforeUnmount hooks', () => {
+	it('FirewallBuilder has beforeUnmount hook', () => {
+		expect(typeof FirewallBuilder.beforeUnmount).toBe('function')
 	})
 
-	it('RoutingTable has beforeDestroy hook', () => {
-		expect(typeof RoutingTable.beforeDestroy).toBe('function')
+	it('RoutingTable has beforeUnmount hook', () => {
+		expect(typeof RoutingTable.beforeUnmount).toBe('function')
 	})
 
-	it('NatTable has beforeDestroy hook', () => {
-		expect(typeof NatTable.beforeDestroy).toBe('function')
+	it('NatTable has beforeUnmount hook', () => {
+		expect(typeof NatTable.beforeUnmount).toBe('function')
 	})
 
-	it('WiresharkLite has beforeDestroy hook', () => {
-		expect(typeof WiresharkLite.beforeDestroy).toBe('function')
+	it('WiresharkLite has beforeUnmount hook', () => {
+		expect(typeof WiresharkLite.beforeUnmount).toBe('function')
 	})
 
-	it('AuthFlowSimulator has beforeDestroy hook', () => {
-		expect(typeof AuthFlowSimulator.beforeDestroy).toBe('function')
+	it('AuthFlowSimulator has beforeUnmount hook', () => {
+		expect(typeof AuthFlowSimulator.beforeUnmount).toBe('function')
 	})
 
-	it('DnsResolver has beforeDestroy hook (regression guard)', () => {
-		expect(typeof DnsResolver.beforeDestroy).toBe('function')
+	it('DnsResolver has beforeUnmount hook (regression guard)', () => {
+		expect(typeof DnsResolver.beforeUnmount).toBe('function')
 	})
 
-	it('PortScanner has beforeDestroy hook (regression guard)', () => {
-		expect(typeof PortScanner.beforeDestroy).toBe('function')
+	it('PortScanner has beforeUnmount hook (regression guard)', () => {
+		expect(typeof PortScanner.beforeUnmount).toBe('function')
 	})
 })

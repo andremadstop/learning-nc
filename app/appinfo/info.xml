@@ -56,13 +56,13 @@ Play through 20 real-world IT incident campaigns (SolarWinds, WannaCry, Colonial
 
 ## Requirements
 
-- Nextcloud 29, 30, or 31
+- Nextcloud 33, 34, or 35
 - PHP 8.1+
 - PostgreSQL 13+ or MySQL 8+
 - Optional: Google Gemini API key for AI features
     ]]></description>
 
-    <version>3.9.0</version>
+    <version>4.0.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>
@@ -98,7 +98,7 @@ Play through 20 real-world IT incident campaigns (SolarWinds, WannaCry, Colonial
     <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/08-instructor-leaderboard.png</screenshot>
 
     <dependencies>
-        <nextcloud min-version="29" max-version="31"/>
+        <nextcloud min-version="33" max-version="35"/>
         <php min-version="8.1"/>
     </dependencies>
 

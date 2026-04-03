@@ -88,12 +88,12 @@
 </template>
 
 <script>
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js';
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js';
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js';
-import NcActions from '@nextcloud/vue/dist/Components/NcActions.js';
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js';
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js';
+import NcButton from '@nextcloud/vue/components/NcButton';
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent';
+import NcActions from '@nextcloud/vue/components/NcActions';
+import NcActionButton from '@nextcloud/vue/components/NcActionButton';
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { showSuccess, showError } from '@nextcloud/dialogs';

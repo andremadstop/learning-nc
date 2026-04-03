@@ -127,8 +127,8 @@
 </template>
 
 <script>
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import PracticumRunner from './PracticumRunner.vue'
 import natScenarios from '../../data/nat_scenarios.json'
 import { buildNatVisualization, findHairpinTranslation, simulateNat } from '../utils/natEngine.js'
@@ -188,7 +188,7 @@ export default {
       this.loadScenario(this.scenario)
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     // Keine aktiven Timer oder globalen Event-Listener registriert.
     // Hook vorhanden für sauberes Embedded-Rendering in SimulatorShell.
   },

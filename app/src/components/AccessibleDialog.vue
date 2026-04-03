@@ -2,8 +2,7 @@
   <NcDialog
     ref="dialog"
     v-bind="$attrs"
-    v-on="$listeners"
-    @keydown.native.capture="handleKeydown">
+    @keydown.capture="handleKeydown">
     <div ref="content" class="accessible-dialog__content" tabindex="-1">
       <slot />
     </div>
@@ -14,7 +13,7 @@
 </template>
 
 <script>
-import NcDialog from '@nextcloud/vue/dist/Components/NcDialog.js'
+import NcDialog from '@nextcloud/vue/components/NcDialog'
 import { focusFirstElement, trapTabKey } from '../utils/dialogFocus.js'
 
 export default {

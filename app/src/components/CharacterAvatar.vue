@@ -15,9 +15,8 @@
 			<path :d="bodyPath" :fill="character.palette.accent" />
 
 			<!-- Distinguishing feature elements -->
-			<template v-for="(el, i) in featureElements">
+			<template v-for="(el, i) in featureElements" :key="'f-' + i">
 				<circle v-if="el.type === 'circle'"
-					:key="'f-' + i"
 					:cx="el.cx"
 					:cy="el.cy"
 					:r="el.r"
@@ -25,7 +24,6 @@
 					:stroke="el.stroke || 'none'"
 					:stroke-width="el.strokeWidth || 0" />
 				<rect v-else-if="el.type === 'rect'"
-					:key="'f-' + i"
 					:x="el.x"
 					:y="el.y"
 					:width="el.w"
@@ -35,7 +33,6 @@
 					:stroke="el.stroke || 'none'"
 					:stroke-width="el.strokeWidth || 0" />
 				<path v-else-if="el.type === 'path'"
-					:key="'f-' + i"
 					:d="el.d"
 					:fill="el.fill || 'none'"
 					:stroke="el.stroke || character.palette.accent"

@@ -235,7 +235,7 @@ export default {
 		async deleteImport(title) {
 			if (!confirm(t('learning', 'Wirklich löschen?'))) return
 			this.error = null
-			this.$set(this.deleting, title, true)
+			this.deleting[title] = true
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/knowledge/{title}', {
 					courseId: this.courseId,
@@ -246,7 +246,7 @@ export default {
 			} catch (e) {
 				this.error = e.response?.data?.error || t('learning', 'Löschen fehlgeschlagen')
 			} finally {
-				this.$set(this.deleting, title, false)
+				this.deleting[title] = false
 			}
 		},
 

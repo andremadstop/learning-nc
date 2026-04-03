@@ -125,7 +125,7 @@
 				<div class="form-group">
 					<label for="course-title">{{ t('learning', 'Title') }} *</label>
 					<NcTextField id="course-title"
-						:value.sync="formData.title"
+						v-model="formData.title"
 						:label="t('learning', 'Course title')"
 						:error="!formData.title && formSubmitted"
 						:disabled="saving" />
@@ -147,7 +147,7 @@
 				<div v-if="userRole === 'instructor'" class="form-group">
 					<label for="course-group">{{ t('learning', 'NC Group ID') }}</label>
 					<NcTextField id="course-group"
-						:value.sync="formData.ncGroupId"
+						v-model="formData.ncGroupId"
 						:label="t('learning', 'Nextcloud group for auto-enrollment')"
 						:disabled="saving" />
 					<p class="field-hint">
@@ -205,14 +205,14 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import NcButton from '@nextcloud/vue/dist/Components/NcButton.js'
-import NcEmptyContent from '@nextcloud/vue/dist/Components/NcEmptyContent.js'
-import NcModal from '@nextcloud/vue/dist/Components/NcModal.js'
-import NcTextField from '@nextcloud/vue/dist/Components/NcTextField.js'
-import NcActions from '@nextcloud/vue/dist/Components/NcActions.js'
-import NcActionButton from '@nextcloud/vue/dist/Components/NcActionButton.js'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
-import NcNoteCard from '@nextcloud/vue/dist/Components/NcNoteCard.js'
+import NcButton from '@nextcloud/vue/components/NcButton'
+import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
+import NcModal from '@nextcloud/vue/components/NcModal'
+import NcTextField from '@nextcloud/vue/components/NcTextField'
+import NcActions from '@nextcloud/vue/components/NcActions'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { showSuccess } from '@nextcloud/dialogs'
 import hintMixin from '../hintMixin.js'
 

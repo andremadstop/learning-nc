@@ -99,7 +99,7 @@
 <script>
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
-import NcLoadingIcon from '@nextcloud/vue/dist/Components/NcLoadingIcon.js'
+import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import DailyChallengeCard from './DailyChallengeCard.vue'
 import GlobalFeed from './GlobalFeed.vue'
 

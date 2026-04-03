@@ -1,12 +1,10 @@
-import Vue from 'vue';
+import { createApp } from 'vue';
 import { translate as t, translatePlural as n } from '@nextcloud/l10n';
 import '@nextcloud/dialogs/style.css';
 import AdminSettings from './components/AdminSettings.vue';
 
-Vue.config.productionTip = false;
-Vue.prototype.t = t;
-Vue.prototype.n = n;
+const app = createApp(AdminSettings);
 
-new Vue({
-  render: h => h(AdminSettings),
-}).$mount('#learning-admin-settings');
+app.config.globalProperties.t = t;
+app.config.globalProperties.n = n;
+app.mount('#learning-admin-settings');

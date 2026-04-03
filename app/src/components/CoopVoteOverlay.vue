@@ -138,7 +138,7 @@ export default {
 		},
 	},
 
-	beforeDestroy() {
+	beforeUnmount() {
 		if (this.countdownTimer) {
 			clearInterval(this.countdownTimer)
 			this.countdownTimer = null
