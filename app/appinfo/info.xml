@@ -3,63 +3,60 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>learning</id>
     <name>Learning</name>
-    <summary>Spaced Repetition, Story-RPG Campaigns, AI Tutor &amp; Gamification for Nextcloud</summary>
-    <description><![CDATA[**Learning** turns Nextcloud into a full-featured learning platform with spaced repetition, story-driven campaigns, AI tutoring, and competitive game modes.
+    <summary>Self-hosted flashcards with FSRS scheduling, IT simulators, AI tutor &amp; instructor analytics</summary>
+    <description><![CDATA[**Learning** is a self-hosted learning platform for Nextcloud. Your questions, progress, and student data never leave your server.
 
-## Story RPG — "Abenteuer" Mode
+Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject. Instructors create courses, track student progress, and identify at-risk learners. Students drill with scientifically-backed spaced repetition and hands-on simulations.
 
-Play through 20 real-world IT incident campaigns (SolarWinds, WannaCry, Colonial Pipeline, and more). Choose your character class, make decisions, pass skill checks, and learn through narrative. AI-powered narrator generates dynamic NPC dialog and validates freetext actions.
+## Why Learning?
 
-## Learning Modes
+- **Your data stays on your server** — no cloud dependency, full GDPR compliance
+- **FSRS adaptive scheduling** — cards are prioritized by memory strength, not rigid intervals
+- **9 interactive IT simulators** — CLI terminals, firewall builders, DNS resolvers, subnet calculators, network topology placement
+- **AI tutor (optional)** — answers questions by citing your uploaded course materials
 
-- **Smart Queue** — One-click review of all due cards, prioritized by urgency
-- **FSRS Smart Repetition** — confidence-based review with adaptive intervals per card
-- **Training Mode** — Quick quiz sessions with immediate feedback
-- **Exam Mode** — Timed exams with configurable question count
-- **PBQ Simulations** — Performance-based questions with CLI terminals, dropdowns, network topology placement
-- **Trouble Spots** — Focused practice on your hardest questions
-- **Daily Challenge** — One question per day with bonus XP
+## For Instructors
 
-## Competitive Modes
+- Course management with pool assignment and student enrollment
+- **At-risk warnings** — automatic detection of struggling students
+- **Chapter heatmaps** — see where the class struggles at a glance
+- Curriculum scoping, exam scheduling, and leaderboards
+- Campaign selection — choose which story scenarios are available per course
 
-- **Live Duel** — 1v1 real-time quiz battles with invite system
-- **Sprint** — 2-5 players, fastest correct answer scores highest
-- **Elimination** — Last player standing, 3 lives each
-- **Liga** — Seasonal league with weekly rankings
-- **Oldschool** — Board games: Lernwuerfel (dice) and Wissensturm (tower)
+## For Learners
 
-## AI Features (optional, requires Gemini API key)
+- **Smart Queue** — one-click review of all due cards, sorted by urgency
+- **Training &amp; Exam Mode** — practice or simulate timed exams
+- **PBQ Simulations** — performance-based questions with interactive CLI, drag-and-drop placement, and wiring tasks
+- **Story Campaigns** — learn through real IT incident scenarios (WannaCry, SolarWinds, Log4Shell)
+- **Live Duels &amp; Sprint** — real-time multiplayer quiz battles via Server-Sent Events
+- **Gamification** — XP, levels, streaks, 10 badges, seasonal league
 
-- **VirtuProf** — AI learning assistant with fullscreen mode, chat, RAG-powered course material answers with source citations, and personalized course-end reflection
-- **AI Question Generator** — Generate questions from pasted text
+## AI Features (optional)
+
+Requires a Google Gemini API key. Without it, the app is fully functional — AI features are simply hidden. Each user must explicitly opt in before any data is sent to the API.
+
+- **VirtuProf** — AI learning assistant with RAG-powered answers and source citations
+- **Question Generator** — create flashcards from pasted text
 - **Note Generator** — AI-powered topic summaries saved to Nextcloud Files
-- **Ticket Triage** — AI classification of student support tickets
-
-## Tools
-
-- **Subnet Calculator** — IPv4 subnet calculator with binary display and VLSM planner
 
 ## Question Types
 
-- Multiple Choice, Free Text (fuzzy matching), PBQ Simulations
-- CSV/JSON Import &amp; Export, Pool Sharing, Multi-Language Translations
+- Multiple Choice, Free Text with fuzzy matching, PBQ Simulations
+- CSV/JSON import &amp; export, pool sharing, multi-language translations
 
-## Gamification
+## Technical
 
-- XP &amp; Levels, 10 Active Badges, Streak Multipliers, Daily Goal, Level-Up Celebration
-
-## Course Management
-
-- Instructor courses with pool assignment, student enrollment, leaderboard
-- Per-student progress tracking, at-risk warnings, role-based UX
-- Course material upload with RAG integration
+- Vue 3, Vite, Pinia — modern frontend stack
+- 763 unit tests, PHPStan Level 5, 4-gate CI pipeline
+- Native Nextcloud integration: Dashboard widgets, Notifications, Talk, Files
+- AGPL-3.0 — fully open source
 
 ## Requirements
 
-- Nextcloud 33, 34, or 35
+- Nextcloud 33+
 - PHP 8.1+
 - PostgreSQL 13+ or MySQL 8+
-- Optional: Google Gemini API key for AI features
     ]]></description>
 
     <version>4.0.0</version>
