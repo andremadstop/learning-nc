@@ -16,9 +16,10 @@ describe('SIMULATOR_MAP', () => {
 		expect(Object.keys(SIMULATOR_MAP).sort()).toEqual(expected.sort())
 	})
 
-	it('each value is a function (dynamic import factory)', () => {
+	it('each value is a Vue async component (defineAsyncComponent)', () => {
 		for (const key of Object.keys(SIMULATOR_MAP)) {
-			expect(typeof SIMULATOR_MAP[key]).toBe('function')
+			expect(typeof SIMULATOR_MAP[key]).toBe('object')
+			expect(SIMULATOR_MAP[key].__asyncLoader).toBeDefined()
 		}
 	})
 })
