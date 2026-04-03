@@ -11,7 +11,7 @@ import './css/ghostline.css';
 // Skill-Map force-directed graph styles
 import './css/skill-map.css';
 // Practicum session runner styles
-import '../css/practicum.css';
+import './css/practicum.css';
 
 const pinia = createPinia();
 const app = createApp(App);
