@@ -47,25 +47,30 @@
 			</div>
 
 			<!-- Mega-tab content -->
-			<CourseTabLernraum
-				v-if="activeMegaTab === 'lernraum'"
-				:course-id="courseId"
-				:course="course"
-				:user-role="userRole"
-				:course-pools="coursePools"
-				:all-pools="allPools"
-				:active-tab="currentTab"
-				:content-language="contentLanguage"
-				:fsrs-detailed-stats="fsrsDetailedStats"
-				@all-pools-loaded="allPools = $event"
-				@error="error = $event"
-				@knowledge-pending-count="knowledgePendingCount = $event"
-				@mode-activated="activeLearningMode = $event"
-				@openPool="$emit('openPool', $event)"
-				@open-tool="$emit('open-tool', $event)"
-				@pool-selected="selectedLearningPool = $event"
-				@refresh-course-detail="fetchCourseDetail"
-				@tab-change="onLeafTabChange" />
+			<div v-if="activeMegaTab === 'lernraum'" class="lernraum-mega-tab">
+				<ExamReadiness
+					v-if="!isInstructor && course.exam_date"
+					:course-id="courseId" />
+
+				<CourseTabLernraum
+					:course-id="courseId"
+					:course="course"
+					:user-role="userRole"
+					:course-pools="coursePools"
+					:all-pools="allPools"
+					:active-tab="currentTab"
+					:content-language="contentLanguage"
+					:fsrs-detailed-stats="fsrsDetailedStats"
+					@all-pools-loaded="allPools = $event"
+					@error="error = $event"
+					@knowledge-pending-count="knowledgePendingCount = $event"
+					@mode-activated="activeLearningMode = $event"
+					@openPool="$emit('openPool', $event)"
+					@open-tool="$emit('open-tool', $event)"
+					@pool-selected="selectedLearningPool = $event"
+					@refresh-course-detail="fetchCourseDetail"
+					@tab-change="onLeafTabChange" />
+			</div>
 
 			<CourseTabTeilnehmer
 				v-if="activeMegaTab === 'teilnehmer'"
@@ -131,6 +136,7 @@ import CourseTabTeilnehmer from './CourseTabTeilnehmer.vue'
 import CourseTabWettbewerb from './CourseTabWettbewerb.vue'
 import CourseTabKommunikation from './CourseTabKommunikation.vue'
 import CourseTabVerwaltung from './CourseTabVerwaltung.vue'
+import ExamReadiness from './ExamReadiness.vue'
 import { useOptionalCourseStore } from '../stores/courseStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 
@@ -141,6 +147,7 @@ export default {
 		NcButton,
 		NcLoadingIcon,
 		NcNoteCard,
+		ExamReadiness,
 		CourseTabLernraum,
 		CourseTabTeilnehmer,
 		CourseTabWettbewerb,

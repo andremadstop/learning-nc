@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\LeitnerService;
+use OCA\Learning\Service\ReadinessService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\XpService;
@@ -16,14 +17,16 @@ class LeitnerController extends Controller {
     private StreakService $streakService;
     private BadgeService $badgeService;
     private XpService $xpService;
+    private ReadinessService $readinessService;
     private ?string $userId;
 
-    public function __construct(string $appName, IRequest $request, LeitnerService $service, StreakService $streakService, BadgeService $badgeService, XpService $xpService, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, LeitnerService $service, StreakService $streakService, BadgeService $badgeService, XpService $xpService, ReadinessService $readinessService, ?string $userId) {
         parent::__construct($appName, $request);
         $this->service = $service;
         $this->streakService = $streakService;
         $this->badgeService = $badgeService;
         $this->xpService = $xpService;
+        $this->readinessService = $readinessService;
         $this->userId = $userId;
     }
 
@@ -168,6 +171,20 @@ class LeitnerController extends Controller {
             return new DataResponse(['progress' => $this->badgeService->getBadgeProgress($this->userId)]);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to load badge progress'], 400);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function readiness(int $courseId): DataResponse {
+        try {
+            return new DataResponse($this->readinessService->getCourseReadiness($courseId, (string)$this->userId));
+        } catch (\RuntimeException $e) {
+            return new DataResponse(['error' => $e->getMessage()], 400);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to load readiness'], 400);
         }
     }
 }
