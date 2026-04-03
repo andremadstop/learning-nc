@@ -402,9 +402,10 @@ import { ALL_TOOL_IDS, TOOL_CATALOG } from './utils/toolCatalog.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import { useOptionalCourseStore } from './stores/courseStore.js';
+import { defineAsyncComponent } from 'vue';
 import { useOptionalVirtuProfStore } from './stores/virtuProfStore.js';
 
-const VirtuProf = () => import('./components/VirtuProf.vue');
+const VirtuProf = defineAsyncComponent(() => import('./components/VirtuProf.vue'));
 
 export default {
   name: 'App',
