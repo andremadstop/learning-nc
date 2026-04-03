@@ -1,7 +1,7 @@
 #!/bin/bash
 # Deploy learning-nc to learning-dev Docker container
 # Usage: ./scripts/deploy-dev.sh [--php-only | --js-only | --full]
-set -e
+set -eo pipefail
 
 MODE="${1:---full}"
 HOST="learning-dev"
@@ -52,18 +52,25 @@ deploy_php() {
 deploy_js() {
   echo "→ Syncing Vue sources..."
   rsync -az app/src/ "$HOST:~/learning-nc/app/src/"
-  rsync -az app/package.json app/package-lock.json app/vite.config.mjs "$HOST:~/learning-nc/app/"
+  rsync -az app/css/ "$HOST:~/learning-nc/app/css/"
+  rsync -az app/package.json app/package-lock.json app/vite.config.mjs app/build-vite.mjs "$HOST:~/learning-nc/app/"
 
   echo "→ Installing frontend dependencies + building..."
-  ssh "$HOST" "cd ~/learning-nc/app && npm install --no-audit --no-fund >/dev/null && npm run build 2>&1 | tail -3"
+  ssh "$HOST" "cd ~/learning-nc/app && npm install --no-audit --no-fund >/dev/null && npm run build 2>&1"
+  if [ $? -ne 0 ]; then
+    echo "✗ Vite build failed — deploy aborted!"
+    exit 1
+  fi
 
-  echo "→ Deploying JS bundle..."
-  ssh "$HOST" "cd ~/learning-nc/app && tar cf /tmp/js-bundle.tar js/ && \
+  echo "→ Deploying JS + CSS bundles..."
+  ssh "$HOST" "cd ~/learning-nc/app && \
+    docker exec $CONTAINER bash -c 'find $APP_PATH/js/ -type f -delete; find $APP_PATH/css/ -type f -delete' && \
+    tar cf /tmp/js-bundle.tar js/ css/ && \
     docker cp /tmp/js-bundle.tar $CONTAINER:/tmp/ && \
     docker exec $CONTAINER bash -c 'cd $APP_PATH && tar xf /tmp/js-bundle.tar'"
   # Ensure apps/learning symlink exists (lost after container restarts)
   ssh "$HOST" "docker exec $CONTAINER bash -c 'test -L /var/www/html/apps/learning || ln -sf $APP_PATH /var/www/html/apps/learning'"
-  echo "✓ JS deployed"
+  echo "✓ JS + CSS deployed"
 }
 
 run_phpunit() {
