@@ -22,7 +22,7 @@ starter-kit/
 tests/
 !app/tests/
 playwright.config.mjs
-screenshots/
+# screenshots tracked for App Store (raw.githubusercontent.com URLs in info.xml)
 CODEX_HANDOFF*.md
 CODEX_PLAN_*.md
 GEMINI*.md
