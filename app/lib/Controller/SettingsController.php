@@ -20,6 +20,7 @@ class SettingsController extends Controller {
         'wireshark',
         'authflow',
     ];
+    private const AVAILABLE_AI_PROVIDERS = ['gemini', 'ollama', 'disabled'];
 
     private IConfig $config;
     private IDBConnection $db;
@@ -45,6 +46,9 @@ class SettingsController extends Controller {
             'exam_attempt_limit_per_day' => (int)$this->config->getAppValue('learning', 'exam_attempt_limit_per_day', '5'),
             'exam_attempt_cooldown_minutes' => (int)$this->config->getAppValue('learning', 'exam_attempt_cooldown_minutes', '10'),
             'gemini_api_key_set' => $this->config->getAppValue('learning', 'gemini_api_key', '') !== '',
+            'ai_provider' => $this->normalizeAiProvider($this->config->getAppValue('learning', 'ai_provider', 'gemini')),
+            'ai_ollama_url' => $this->config->getAppValue('learning', 'ai_ollama_url', 'http://localhost:11434'),
+            'ai_ollama_model' => $this->config->getAppValue('learning', 'ai_ollama_model', 'llama3'),
             'ai_enabled' => $this->config->getAppValue('learning', 'ai_enabled', 'no'),
         ]);
     }
@@ -93,6 +97,9 @@ class SettingsController extends Controller {
         int $exam_attempt_limit_per_day = 5,
         int $exam_attempt_cooldown_minutes = 10,
         ?string $gemini_api_key = null,
+        string $ai_provider = 'gemini',
+        string $ai_ollama_url = 'http://localhost:11434',
+        string $ai_ollama_model = 'llama3',
         string $ai_enabled = 'no'
     ): DataResponse {
         $this->config->setAppValue('learning', 'daily_challenge_enabled', $daily_challenge_enabled === 'yes' ? 'yes' : 'no');
@@ -111,7 +118,11 @@ class SettingsController extends Controller {
                 $this->config->setAppValue('learning', 'gemini_api_key', trim($gemini_api_key));
             }
         }
-        $this->config->setAppValue('learning', 'ai_enabled', $ai_enabled === 'yes' ? 'yes' : 'no');
+        $provider = $this->normalizeAiProvider($ai_provider);
+        $this->config->setAppValue('learning', 'ai_provider', $provider);
+        $this->config->setAppValue('learning', 'ai_ollama_url', trim($ai_ollama_url) !== '' ? trim($ai_ollama_url) : 'http://localhost:11434');
+        $this->config->setAppValue('learning', 'ai_ollama_model', trim($ai_ollama_model) !== '' ? trim($ai_ollama_model) : 'llama3');
+        $this->config->setAppValue('learning', 'ai_enabled', ($ai_enabled === 'yes' && $provider !== 'disabled') ? 'yes' : 'no');
 
         return new DataResponse(['status' => 'ok']);
     }
@@ -207,5 +218,10 @@ class SettingsController extends Controller {
         }
 
         return array_values($normalized);
+    }
+
+    private function normalizeAiProvider(string $provider): string {
+        $provider = strtolower(trim($provider));
+        return in_array($provider, self::AVAILABLE_AI_PROVIDERS, true) ? $provider : 'gemini';
     }
 }

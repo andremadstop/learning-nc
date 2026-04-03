@@ -21,6 +21,9 @@ class AdminSettings implements ISettings {
             'max_import_size_mb' => (int)$this->config->getAppValue('learning', 'max_import_size_mb', '2'),
             'gamification_enabled' => $this->config->getAppValue('learning', 'gamification_enabled', 'yes'),
             'gemini_api_key_set' => $this->config->getAppValue('learning', 'gemini_api_key', '') !== '',
+            'ai_provider' => $this->config->getAppValue('learning', 'ai_provider', 'gemini'),
+            'ai_ollama_url' => $this->config->getAppValue('learning', 'ai_ollama_url', 'http://localhost:11434'),
+            'ai_ollama_model' => $this->config->getAppValue('learning', 'ai_ollama_model', 'llama3'),
             'ai_enabled' => $this->config->getAppValue('learning', 'ai_enabled', 'no'),
         ];
 

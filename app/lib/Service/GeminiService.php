@@ -13,9 +13,8 @@ class GeminiService {
     private ICacheFactory $cacheFactory;
     private IDBConnection $db;
     private LoggerInterface $logger;
+    private LlmService $llmService;
 
-    private const MODEL = 'gemini-2.5-flash';
-    private const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/' . self::MODEL . ':generateContent';
     private const MAX_INPUT_CHARS = 500;
     private const RATE_LIMIT_MIN = 10;
     private const RATE_LIMIT_DAY = 100;
@@ -25,12 +24,18 @@ class GeminiService {
         IConfig $config,
         ICacheFactory $cacheFactory,
         IDBConnection $db,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        LlmService $llmService
     ) {
         $this->config = $config;
         $this->cacheFactory = $cacheFactory;
         $this->db = $db;
         $this->logger = $logger;
+        $this->llmService = $llmService;
+    }
+
+    public function isAvailable(): bool {
+        return $this->llmService->isAvailable();
     }
 
     /**
@@ -76,7 +81,7 @@ class GeminiService {
 
         // API call with Layer 3 (output validation) and Layer 5 (audit log)
         try {
-            $rawOutput = $this->callGeminiApi($systemPrompt, $userMessage, $detailed ? 2048 : 1200);
+            $rawOutput = $this->callModelApi($systemPrompt, $userMessage, $detailed ? 2048 : 1200);
 
             // Layer 3 — Output validation (SEC-03)
             $validationResult = $this->validateOutput($rawOutput, $userId, $sanitizedInput);
@@ -89,7 +94,7 @@ class GeminiService {
 
             return ['answer' => $rawOutput, 'fallback' => false];
         } catch (\RuntimeException $e) {
-            $this->logger->warning('GeminiService API error: ' . $e->getMessage(), ['app' => 'learning']);
+            $this->logger->warning('GeminiService provider error: ' . $e->getMessage(), ['app' => 'learning']);
             $this->writeAuditLog($userId, $sanitizedInput, '[api_error: ' . $e->getMessage() . ']');
             return ['answer' => null, 'fallback' => true, 'reason' => 'api_error'];
         }
@@ -126,12 +131,12 @@ class GeminiService {
         }
 
         try {
-            $rawOutput = $this->callGeminiApi($systemPrompt, $this->buildUserMessage($normalizedPrompt), $maxOutputTokens);
+            $rawOutput = $this->callModelApi($systemPrompt, $this->buildUserMessage($normalizedPrompt), $maxOutputTokens);
             $this->writeAuditLogWithKey($eventKey, $userId, $normalizedPrompt, $rawOutput);
 
             return ['answer' => $rawOutput, 'fallback' => false];
         } catch (\RuntimeException $e) {
-            $this->logger->warning('GeminiService structured API error: ' . $e->getMessage(), ['app' => 'learning']);
+            $this->logger->warning('GeminiService structured provider error: ' . $e->getMessage(), ['app' => 'learning']);
             $this->writeAuditLogWithKey($eventKey, $userId, $normalizedPrompt, '[api_error: ' . $e->getMessage() . ']');
 
             return ['answer' => null, 'fallback' => true, 'reason' => 'api_error'];
@@ -281,62 +286,15 @@ class GeminiService {
      * @throws \RuntimeException  On API error or empty response
      */
     public function generateNote(string $systemPrompt, string $userPrompt): string {
-        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
-        if ($apiKey === '') {
-            throw new \RuntimeException('Gemini API key not configured');
-        }
-
-        $payload = json_encode([
-            'system_instruction' => [
-                'parts' => [['text' => $systemPrompt]],
-            ],
-            'contents' => [
-                [
-                    'role' => 'user',
-                    'parts' => [['text' => $userPrompt]],
-                ],
-            ],
-            'generationConfig' => [
+        try {
+            $text = $this->llmService->generateText($userPrompt, [
+                'system_prompt' => $systemPrompt,
                 'temperature' => 0.5,
-                'maxOutputTokens' => 2048,
-                'candidateCount' => 1,
-            ],
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        $ch = curl_init(self::API_URL);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_CONNECTTIMEOUT => 5,
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                'x-goog-api-key: ' . $apiKey,
-            ],
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-
-        if ($response === false) {
-            $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), '[curl error: ' . $curlError . ']');
-            throw new \RuntimeException('curl error: ' . $curlError);
-        }
-
-        if ($httpCode !== 200) {
-            $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), '[HTTP ' . $httpCode . ']');
-            throw new \RuntimeException('HTTP ' . $httpCode);
-        }
-
-        $data = json_decode((string)$response, true);
-        $text = $this->normalizeModelTextOutput((string)($data['candidates'][0]['content']['parts'][0]['text'] ?? ''));
-
-        if ($text === '') {
-            $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), '[empty response]');
-            throw new \RuntimeException('Empty response from Gemini API');
+                'max_output_tokens' => 2048,
+            ]);
+        } catch (\RuntimeException $e) {
+            $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), '[provider error: ' . $e->getMessage() . ']');
+            throw $e;
         }
 
         $this->writeAuditLogWithKey('note_generation', 'system', mb_substr($userPrompt, 0, 200), mb_substr($text, 0, 1000));
@@ -367,8 +325,7 @@ class GeminiService {
             'followup_question' => null,
         ];
 
-        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
-        if ($apiKey === '') {
+        if (!$this->llmService->isAvailable()) {
             return $fallback;
         }
 
@@ -399,7 +356,7 @@ PROMPT;
         $userMessage = "<ticket>\n{$combined}\n</ticket>";
 
         try {
-            $rawOutput = $this->callGeminiApi($systemPrompt, $userMessage);
+            $rawOutput = $this->callModelApi($systemPrompt, $userMessage);
 
             // Strip markdown code fences if model wraps response
             $cleaned = preg_replace('/^```(?:json)?\s*/i', '', trim($rawOutput));
@@ -436,7 +393,7 @@ PROMPT;
                 'followup_question' => $followupQuestion,
             ];
         } catch (\RuntimeException $e) {
-            $this->logger->warning('GeminiService::classifyTicket API error: ' . $e->getMessage(), ['app' => 'learning']);
+            $this->logger->warning('GeminiService::classifyTicket provider error: ' . $e->getMessage(), ['app' => 'learning']);
             return $fallback;
         }
     }
@@ -997,96 +954,16 @@ PROMPT;
     }
 
     /**
-     * Execute the Gemini API call via curl.
+     * Execute the configured LLM provider call.
      *
-     * @throws \RuntimeException on API error, missing key, or HTTP failure
+     * @throws \RuntimeException on provider error
      */
-    private function callGeminiApi(string $systemPrompt, string $userMessage, int $maxOutputTokens = 1200): string {
-        $apiKey = $this->config->getAppValue('learning', 'gemini_api_key', '');
-        if ($apiKey === '') {
-            throw new \RuntimeException('Gemini API key not configured');
-        }
-
-        $payload = json_encode([
-            'system_instruction' => [
-                'parts' => [['text' => $systemPrompt]],
-            ],
-            'contents' => [
-                [
-                    'role' => 'user',
-                    'parts' => [['text' => $userMessage]],
-                ],
-            ],
-            'generationConfig' => [
-                'temperature' => 0.7,
-                'maxOutputTokens' => $maxOutputTokens,
-                'candidateCount' => 1,
-            ],
-        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        $ch = curl_init(self::API_URL);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_CONNECTTIMEOUT => 5,
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                'x-goog-api-key: ' . $apiKey,
-            ],
+    private function callModelApi(string $systemPrompt, string $userMessage, int $maxOutputTokens = 1200): string {
+        return $this->llmService->generateText($userMessage, [
+            'system_prompt' => $systemPrompt,
+            'temperature' => 0.7,
+            'max_output_tokens' => $maxOutputTokens,
         ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-
-        if ($response === false) {
-            throw new \RuntimeException('curl error: ' . $curlError);
-        }
-
-        if ($httpCode !== 200) {
-            throw new \RuntimeException('HTTP ' . $httpCode);
-        }
-
-        $data = json_decode((string)$response, true);
-        $text = $this->normalizeModelTextOutput((string)($data['candidates'][0]['content']['parts'][0]['text'] ?? ''));
-
-        if ($text === '') {
-            throw new \RuntimeException('Empty response from Gemini API');
-        }
-
-        return $text;
-    }
-
-    /**
-     * Gemini occasionally returns unicode-escaped or mojibake text. Normalize both centrally
-     * so story narration, notes and chat outputs stay readable end-to-end.
-     */
-    private function normalizeModelTextOutput(string $text): string {
-        $normalized = preg_replace('/^\xEF\xBB\xBF/', '', trim($text));
-        if (!is_string($normalized) || $normalized === '') {
-            return '';
-        }
-
-        $normalized = preg_replace_callback('/\\\\u([0-9a-fA-F]{4})/', static function (array $matches): string {
-            $decoded = json_decode('"\\u' . $matches[1] . '"', true);
-            return is_string($decoded) ? $decoded : $matches[0];
-        }, $normalized) ?? $normalized;
-
-        if ($this->looksLikeMojibake($normalized)) {
-            $converted = mb_convert_encoding($normalized, 'Windows-1252', 'UTF-8');
-            if (is_string($converted) && $converted !== '' && mb_check_encoding($converted, 'UTF-8') && !$this->looksLikeMojibake($converted)) {
-                $normalized = $converted;
-            }
-        }
-
-        return $normalized;
-    }
-
-    private function looksLikeMojibake(string $text): bool {
-        return preg_match('/(?:Ã.|Â.|â€|â€“|â€”|â€ž|â€œ|â€˜|â€™)/u', $text) === 1;
     }
 
     /**
@@ -1152,7 +1029,7 @@ PROMPT;
                     'context_json' => $qb->createNamedParameter(json_encode([
                         'input' => mb_substr($input, 0, 500),
                         'output' => mb_substr($output, 0, 1000),
-                        'model' => self::MODEL,
+                        'model' => $this->llmService->getProviderId(),
                     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
                     'created_at' => $qb->createNamedParameter(time()),
                 ]);

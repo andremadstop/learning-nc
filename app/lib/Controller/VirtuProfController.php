@@ -129,7 +129,7 @@ class VirtuProfController extends Controller {
                 $this->config->getUserValue($this->userId, 'learning', 'virtuprof_language', '')
             ),
             'visited_tools' => is_array($visitedTools) ? array_values($visitedTools) : [],
-            'ai_enabled' => $this->config->getAppValue('learning', 'ai_enabled', 'no') === 'yes',
+            'ai_enabled' => $this->isAiFeatureAvailable(),
             'tts_enabled' => $this->getTtsEnabled(),
             'stt_enabled' => $this->getSttEnabled(),
             'voice_lang' => $this->getVoiceLanguage(),
@@ -178,6 +178,14 @@ class VirtuProfController extends Controller {
     private function normalizeVoiceLanguage(string $language): string {
         $normalized = trim($language);
         return in_array($normalized, self::ALLOWED_VOICE_LANGUAGES, true) ? $normalized : '';
+    }
+
+    private function isAiFeatureAvailable(): bool {
+        if ($this->config->getAppValue('learning', 'ai_enabled', 'no') !== 'yes') {
+            return false;
+        }
+
+        return $this->geminiService->isAvailable();
     }
 
     /**
@@ -365,7 +373,7 @@ class VirtuProfController extends Controller {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
 
-        if ($this->config->getAppValue('learning', 'ai_enabled', 'no') !== 'yes') {
+        if (!$this->isAiFeatureAvailable()) {
             return new DataResponse(['error' => 'AI feature disabled'], Http::STATUS_SERVICE_UNAVAILABLE);
         }
 
@@ -459,7 +467,7 @@ class VirtuProfController extends Controller {
         }
 
         // Admin guard: ai_enabled must be 'yes'
-        if ($this->config->getAppValue('learning', 'ai_enabled', 'no') !== 'yes') {
+        if (!$this->isAiFeatureAvailable()) {
             return new DataResponse(['error' => 'AI feature disabled'], Http::STATUS_SERVICE_UNAVAILABLE);
         }
 

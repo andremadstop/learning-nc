@@ -100,7 +100,23 @@
       <div class="ai-section">
         <h3>{{ t('learning', 'VirtuProf AI Assistant') }}</h3>
 
-        <NcNoteCard type="info" class="dpa-hint">
+        <div class="field-row">
+          <label for="ai-provider">{{ t('learning', 'AI provider') }}</label>
+          <select
+            id="ai-provider"
+            v-model="form.aiProvider"
+            class="nc-input"
+            @change="handleAiProviderChange">
+            <option value="gemini">{{ t('learning', 'Google Gemini (external)') }}</option>
+            <option value="ollama">{{ t('learning', 'Ollama (local/self-hosted)') }}</option>
+            <option value="disabled">{{ t('learning', 'Disabled') }}</option>
+          </select>
+          <small class="field-help">
+            {{ t('learning', 'Choose whether VirtuProf uses Google Gemini, a local Ollama endpoint, or stays disabled for all users.') }}
+          </small>
+        </div>
+
+        <NcNoteCard v-if="showGeminiConfig" type="info" class="dpa-hint">
           <span>
             {{ t('learning', 'When AI is enabled, user questions and the currently displayed quiz question (text, answer options, explanation) are sent to Google Gemini (an external AI service). In exam mode, the correct answer is never transmitted. Error reports stay local and are not sent to Gemini. Admins subject to GDPR/DSGVO must review and accept the') }}
             {{ ' ' }}
@@ -111,18 +127,29 @@
           </span>
         </NcNoteCard>
 
+        <NcNoteCard v-else-if="showOllamaConfig" type="info" class="dpa-hint">
+          {{ t('learning', 'Local-first mode: VirtuProf requests stay on your configured Ollama host. Verify the URL, the installed model, and your internal access controls before enabling chat for users.') }}
+        </NcNoteCard>
+
+        <NcNoteCard v-else type="warning" class="dpa-hint">
+          {{ t('learning', 'AI is globally disabled. VirtuProf chat stays hidden for all users until you choose a provider and enable the feature again.') }}
+        </NcNoteCard>
+
         <div class="field-row">
           <label>{{ t('learning', 'Enable AI chat (VirtuProf)') }}</label>
           <NcCheckboxRadioSwitch
             :model-value="form.aiEnabled"
+            :disabled="isAiProviderDisabled"
             type="switch"
             @update:model-value="form.aiEnabled = !!$event" />
           <small class="field-help">
-            {{ t('learning', 'When disabled, the AI chat input is hidden for all users. When enabled, each user must give consent before their first message is sent.') }}
+            {{ isAiProviderDisabled
+              ? t('learning', 'Select a provider first. The chat remains disabled while the provider is set to Disabled.')
+              : t('learning', 'When disabled, the AI chat input is hidden for all users. When enabled, each user must give consent before their first message is sent.') }}
           </small>
         </div>
 
-        <div class="field-row">
+        <div v-if="showGeminiConfig" class="field-row">
           <label for="gemini-api-key">{{ t('learning', 'Gemini API Key') }}</label>
           <input
             id="gemini-api-key"
@@ -138,6 +165,34 @@
               target="_blank"
               rel="noopener noreferrer">Google AI Studio</a>.
             {{ t('learning', 'Leave blank to keep the existing key.') }}
+          </small>
+        </div>
+
+        <div v-if="showOllamaConfig" class="field-row">
+          <label for="ai-ollama-url">{{ t('learning', 'Ollama URL') }}</label>
+          <input
+            id="ai-ollama-url"
+            v-model.trim="form.aiOllamaUrl"
+            class="nc-input"
+            type="url"
+            autocomplete="off"
+            placeholder="http://localhost:11434" />
+          <small class="field-help">
+            {{ t('learning', 'Base URL of the Ollama API that should answer VirtuProf requests.') }}
+          </small>
+        </div>
+
+        <div v-if="showOllamaConfig" class="field-row">
+          <label for="ai-ollama-model">{{ t('learning', 'Ollama model') }}</label>
+          <input
+            id="ai-ollama-model"
+            v-model.trim="form.aiOllamaModel"
+            class="nc-input"
+            type="text"
+            autocomplete="off"
+            placeholder="llama3" />
+          <small class="field-help">
+            {{ t('learning', 'Model name passed to Ollama, for example llama3, mistral, or a custom local model tag.') }}
           </small>
         </div>
       </div>
@@ -278,6 +333,9 @@ export default {
         examAttemptLimitPerDay: 5,
         examAttemptCooldownMinutes: 10,
         aiEnabled: false,
+        aiProvider: 'gemini',
+        aiOllamaUrl: 'http://localhost:11434',
+        aiOllamaModel: 'llama3',
         geminiApiKey: '',
         geminiApiKeySet: false,
       },
@@ -295,11 +353,29 @@ export default {
         label: t('learning', tool.labelKey),
       }))
     },
+    isAiProviderDisabled() {
+      return this.form.aiProvider === 'disabled'
+    },
+    showGeminiConfig() {
+      return this.form.aiProvider === 'gemini'
+    },
+    showOllamaConfig() {
+      return this.form.aiProvider === 'ollama'
+    },
   },
   methods: {
     normalizeEnabledTools(enabledTools) {
       const source = Array.isArray(enabledTools) ? enabledTools : ALL_TOOL_IDS
       return ALL_TOOL_IDS.filter((toolId) => source.includes(toolId))
+    },
+    normalizeAiProvider(provider) {
+      return ['gemini', 'ollama', 'disabled'].includes(provider) ? provider : 'gemini'
+    },
+    handleAiProviderChange() {
+      this.form.aiProvider = this.normalizeAiProvider(this.form.aiProvider)
+      if (this.form.aiProvider === 'disabled') {
+        this.form.aiEnabled = false
+      }
     },
     async load() {
       this.loading = true
@@ -319,7 +395,10 @@ export default {
         this.form.examAttemptLimitPerDay = Math.max(1, Math.min(50, Number(data.exam_attempt_limit_per_day || 5)))
         this.form.examAttemptCooldownMinutes = Math.max(0, Math.min(1440, Number(data.exam_attempt_cooldown_minutes || 10)))
         // PRIV-02 / PRIV-05: AI settings
-        this.form.aiEnabled = (data.ai_enabled || 'no') === 'yes'
+        this.form.aiProvider = this.normalizeAiProvider(data.ai_provider)
+        this.form.aiOllamaUrl = (data.ai_ollama_url || 'http://localhost:11434').trim() || 'http://localhost:11434'
+        this.form.aiOllamaModel = (data.ai_ollama_model || 'llama3').trim() || 'llama3'
+        this.form.aiEnabled = this.form.aiProvider !== 'disabled' && (data.ai_enabled || 'no') === 'yes'
         this.form.geminiApiKeySet = data.gemini_api_key_set === true
         this.form.geminiApiKey = ''
       } catch (e) {
@@ -343,7 +422,10 @@ export default {
             exam_attempt_limit_per_day: Math.max(1, Math.min(50, Number(this.form.examAttemptLimitPerDay || 5))),
             exam_attempt_cooldown_minutes: Math.max(0, Math.min(1440, Number(this.form.examAttemptCooldownMinutes || 10))),
             // PRIV-02 / PRIV-05: AI settings
-            ai_enabled: this.form.aiEnabled ? 'yes' : 'no',
+            ai_provider: this.normalizeAiProvider(this.form.aiProvider),
+            ai_ollama_url: (this.form.aiOllamaUrl || 'http://localhost:11434').trim() || 'http://localhost:11434',
+            ai_ollama_model: (this.form.aiOllamaModel || 'llama3').trim() || 'llama3',
+            ai_enabled: this.form.aiProvider !== 'disabled' && this.form.aiEnabled ? 'yes' : 'no',
             ...(this.form.geminiApiKey.trim() !== '' ? { gemini_api_key: this.form.geminiApiKey.trim() } : {}),
           }),
           axios.put(generateUrl('/apps/learning/api/settings/tools'), {
