@@ -32,6 +32,7 @@ const { stub } = vi.hoisted(() => ({
 vi.mock('../../src/components/StudentDetail.vue', () => stub('StudentDetail'))
 vi.mock('../../src/components/CourseSummary.vue', () => stub('CourseSummary'))
 vi.mock('../../src/components/BuddyMatching.vue', () => stub('BuddyMatching'))
+vi.mock('../../src/components/Klassenbuch.vue', () => stub('Klassenbuch'))
 
 import CourseTabTeilnehmer from '../../src/components/CourseTabTeilnehmer.vue'
 
@@ -77,15 +78,15 @@ describe('CourseTabTeilnehmer', () => {
 		vi.clearAllMocks()
 	})
 
-	it('builds instructor sub-tabs: members, progress, heatmap, weak-questions, class-profile, summary', () => {
+	it('builds instructor sub-tabs: members, classbook, progress, heatmap, weak-questions, class-profile, summary', () => {
 		const instance = createInstance()
 
 		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual([
-			'members', 'progress', 'heatmap', 'weak-questions', 'class-profile', 'summary',
+			'members', 'classbook', 'progress', 'heatmap', 'weak-questions', 'class-profile', 'summary',
 		])
 	})
 
-	it('builds student sub-tabs with my-progress only (no summary when disabled)', () => {
+	it('builds student sub-tabs with classbook + my-progress (no summary when disabled)', () => {
 		const instance = createInstance({
 			course: {
 				is_instructor: false,
@@ -94,7 +95,7 @@ describe('CourseTabTeilnehmer', () => {
 			userRole: 'student',
 		})
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['my-progress'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['classbook', 'my-progress'])
 	})
 
 	it('shows summary pill for students when course_summary is enabled', () => {
@@ -106,7 +107,7 @@ describe('CourseTabTeilnehmer', () => {
 			userRole: 'student',
 		})
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['my-progress', 'summary'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['classbook', 'my-progress', 'summary'])
 	})
 
 	it('emits tab-change with correct leaf ID when selecting a sub-tab', () => {

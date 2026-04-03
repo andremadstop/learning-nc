@@ -254,9 +254,9 @@ export default {
 		},
 		teilnehmerLeafTabs() {
 			if (this.isInstructor) {
-				return ['members', 'progress', 'heatmap', 'weak-questions', 'class-profile', 'summary']
+				return ['members', 'classbook', 'progress', 'heatmap', 'weak-questions', 'class-profile', 'summary']
 			}
-			const tabs = ['my-progress']
+			const tabs = ['classbook', 'my-progress']
 			if (this.isCourseSummaryReleased) tabs.push('summary')
 			return tabs
 		},
@@ -277,7 +277,7 @@ export default {
 			}
 			return [
 				{ id: 'lernraum', label: t('learning', 'Lernraum') },
-				{ id: 'teilnehmer', label: t('learning', 'Mein Fortschritt') },
+				{ id: 'teilnehmer', label: t('learning', 'Teilnehmer') },
 				// Wettbewerb always visible (leaderboard is always enabled)
 				{ id: 'wettbewerb', label: t('learning', 'Wettbewerb') },
 				{ id: 'kommunikation', label: t('learning', 'Kommunikation') },

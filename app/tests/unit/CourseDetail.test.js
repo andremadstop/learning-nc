@@ -145,7 +145,7 @@ describe('CourseDetail navigation logic', () => {
 		expect(hiddenInstance.visibleMegaTabs.map((tab) => tab.id)).toContain('lernraum')
 		expect(hiddenInstance.visibleMegaTabs.map((tab) => tab.id)).not.toContain('training')
 		// summary is now a leaf inside teilnehmer mega-tab, not in visibleMegaTabs directly
-		expect(hiddenInstance.teilnehmerLeafTabs).toEqual(['my-progress'])
+		expect(hiddenInstance.teilnehmerLeafTabs).toEqual(['classbook', 'my-progress'])
 
 		const releasedInstance = createInstance({
 			course: {
@@ -166,7 +166,7 @@ describe('CourseDetail navigation logic', () => {
 		})
 
 		expect(releasedInstance.teilnehmerLeafTabs).toContain('summary')
-		expect(releasedInstance.teilnehmerLeafTabs).toEqual(['my-progress', 'summary'])
+		expect(releasedInstance.teilnehmerLeafTabs).toEqual(['classbook', 'my-progress', 'summary'])
 	})
 
 	it('keeps the instructor mega-tabs and delegates summary to teilnehmerLeafTabs', () => {

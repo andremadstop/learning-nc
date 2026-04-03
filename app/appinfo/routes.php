@@ -246,6 +246,7 @@ return [
         // Classbook (Phase 108-109)
         ['name' => 'classbook#index', 'url' => '/api/courses/{courseId}/classbook', 'verb' => 'GET'],
         ['name' => 'classbook#toggleVisibility', 'url' => '/api/courses/{courseId}/classbook/visibility', 'verb' => 'POST'],
+        ['name' => 'classbook#giveKudos', 'url' => '/api/courses/{courseId}/kudos', 'verb' => 'POST'],
         ['name' => 'classbook#exportVcard', 'url' => '/api/courses/{courseId}/classbook/vcard', 'verb' => 'GET'],
 
         // Gameshow

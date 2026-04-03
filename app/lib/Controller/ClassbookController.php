@@ -2,21 +2,21 @@
 declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
-use OCA\Learning\Db\CourseMemberMapper;
-use OCA\Learning\Db\UserTelosMapper;
+use OCA\Learning\Service\ClassbookService;
 use OCA\Learning\Service\CourseService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\Attributes\UserRateLimit;
 use OCP\IRequest;
 use OCP\IUserManager;
 
 class ClassbookController extends Controller {
     private ?string $userId;
     private CourseService $courseService;
-    private CourseMemberMapper $courseMemberMapper;
-    private UserTelosMapper $telosMapper;
+    private ClassbookService $classbookService;
+    private \OCA\Learning\Db\UserTelosMapper $telosMapper;
     private IUserManager $userManager;
 
     public function __construct(
@@ -24,14 +24,14 @@ class ClassbookController extends Controller {
         IRequest $request,
         ?string $userId,
         CourseService $courseService,
-        CourseMemberMapper $courseMemberMapper,
-        UserTelosMapper $telosMapper,
+        ClassbookService $classbookService,
+        \OCA\Learning\Db\UserTelosMapper $telosMapper,
         IUserManager $userManager
     ) {
         parent::__construct($appName, $request);
         $this->userId = $userId;
         $this->courseService = $courseService;
-        $this->courseMemberMapper = $courseMemberMapper;
+        $this->classbookService = $classbookService;
         $this->telosMapper = $telosMapper;
         $this->userManager = $userManager;
     }
@@ -42,64 +42,29 @@ class ClassbookController extends Controller {
      *
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 30, period: 60)]
     public function index(int $courseId): DataResponse {
         try {
-            // Verify access
-            $this->courseService->findById($courseId, $this->userId);
+            return new DataResponse($this->classbookService->getClassbook($courseId, (string)$this->userId));
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'No access'], Http::STATUS_FORBIDDEN);
         }
+    }
 
-        $members = $this->courseMemberMapper->findByCourse($courseId);
-        $memberIds = array_map(fn($m) => $m->getUserId(), $members);
-        $memberRoles = [];
-        foreach ($members as $m) {
-            $memberRoles[$m->getUserId()] = $m->getRole();
+    /**
+     * Give kudos to another course member.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function giveKudos(int $courseId, string $toUser, string $message = ''): DataResponse {
+        try {
+            return new DataResponse($this->classbookService->giveKudos($courseId, (string)$this->userId, $toUser, $message), Http::STATUS_CREATED);
+        } catch (\RuntimeException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'No access'], Http::STATUS_FORBIDDEN);
         }
-
-        $allTelos = $this->telosMapper->findByUserIds($memberIds);
-        $telosMap = [];
-        foreach ($allTelos as $t) {
-            $telosMap[$t->getUserId()] = $t;
-        }
-
-        $profiles = [];
-        foreach ($memberIds as $uid) {
-            $telos = $telosMap[$uid] ?? null;
-            // Instructors always visible, students only if opt-in
-            $isInstructor = ($memberRoles[$uid] ?? '') === 'instructor';
-            $visibility = $telos ? $telos->getVisibility() : 'private';
-
-            if (!$isInstructor && $visibility === 'private') {
-                continue;
-            }
-
-            $user = $this->userManager->get($uid);
-            $displayName = $user ? $user->getDisplayName() : $uid;
-            $telosData = $telos ? $telos->getTelosData() : [];
-
-            $profiles[] = [
-                'user_id' => $uid,
-                'display_name' => $displayName,
-                'role' => $memberRoles[$uid] ?? 'student',
-                'bio' => $telos ? $telos->getBio() : null,
-                'help_offer' => $telos ? $telos->getHelpOfferList() : [],
-                'help_wanted' => $telos ? $telos->getHelpWantedList() : [],
-                'superpower' => $telosData['superpower'] ?? null,
-                'why' => $telosData['why'] ?? null,
-                'visibility' => $visibility,
-            ];
-        }
-
-        // Instructors first, then alphabetical
-        usort($profiles, function ($a, $b) {
-            if ($a['role'] !== $b['role']) {
-                return $a['role'] === 'instructor' ? -1 : 1;
-            }
-            return strcasecmp($a['display_name'], $b['display_name']);
-        });
-
-        return new DataResponse($profiles);
     }
 
     /**
@@ -107,6 +72,7 @@ class ClassbookController extends Controller {
      *
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 5, period: 60)]
     public function toggleVisibility(int $courseId): DataResponse {
         try {
             $this->courseService->findById($courseId, $this->userId);
@@ -133,6 +99,7 @@ class ClassbookController extends Controller {
      *
      * @NoAdminRequired
      */
+    #[UserRateLimit(limit: 10, period: 60)]
     public function exportVcard(int $courseId): Http\Response {
         try {
             $this->courseService->findById($courseId, $this->userId);

@@ -11,6 +11,10 @@
 			</button>
 		</div>
 
+		<div v-if="currentSubTab === 'classbook'" class="classbook-section">
+			<Klassenbuch :course-id="courseId" :user-role="userRole" />
+		</div>
+
 		<!-- Members (instructor only) -->
 		<div v-if="currentSubTab === 'members' && isInstructor" class="members-section">
 			<div class="section-header">
@@ -431,6 +435,7 @@ import NcTextField from '@nextcloud/vue/components/NcTextField'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatXp, formatRelativeDateString } from '../format.js'
+import Klassenbuch from './Klassenbuch.vue'
 import StudentDetail from './StudentDetail.vue'
 import CourseSummary from './CourseSummary.vue'
 import BuddyMatching from './BuddyMatching.vue'
@@ -445,6 +450,7 @@ export default {
 		NcModal,
 		NcTextField,
 		NcNoteCard,
+		Klassenbuch,
 		StudentDetail,
 		CourseSummary,
 		BuddyMatching,
@@ -525,6 +531,7 @@ export default {
 			if (this.isInstructor) {
 				return [
 					{ id: 'members', label: t('learning', 'Members') },
+					{ id: 'classbook', label: t('learning', 'Klassenbuch') },
 					{ id: 'progress', label: t('learning', 'Progress') },
 					{ id: 'heatmap', label: t('learning', 'Heatmap') },
 					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
@@ -533,6 +540,7 @@ export default {
 				]
 			}
 			const tabs = [
+				{ id: 'classbook', label: t('learning', 'Klassenbuch') },
 				{ id: 'my-progress', label: t('learning', 'Mein Fortschritt') },
 			]
 			if (this.isCourseSummaryReleased) {
