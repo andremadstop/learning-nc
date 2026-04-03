@@ -62,6 +62,9 @@ deploy_js() {
     exit 1
   fi
 
+  # Re-sync static CSS that Vite doesn't produce (style.css, practicum.css)
+  rsync -az app/css/style.css app/css/practicum.css "$HOST:~/learning-nc/app/css/" 2>/dev/null || true
+
   echo "→ Deploying JS + CSS bundles..."
   ssh "$HOST" "cd ~/learning-nc/app && \
     docker exec $CONTAINER bash -c 'find $APP_PATH/js/ -type f -delete; find $APP_PATH/css/ -type f -delete' && \
