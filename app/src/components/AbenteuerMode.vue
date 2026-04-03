@@ -3356,7 +3356,7 @@ export default {
 .rpg-fade-leave-active {
   transition: opacity 0.3s ease;
 }
-.rpg-fade-enter,
+.rpg-fade-enter-from,
 .rpg-fade-leave-to {
   opacity: 0;
 }

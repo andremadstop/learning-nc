@@ -14,16 +14,18 @@ import authflowScenarios from '../../data/authflow_scenarios.json'
 import terminalScenarios from '../../data/terminal_scenarios.json'
 import { SCENARIOS as subnetScenarios } from './scenarios.js'
 
+import { defineAsyncComponent } from 'vue'
+
 export const SIMULATOR_MAP = {
-	firewall: () => import('../components/FirewallBuilder.vue'),
-	dns: () => import('../components/DnsResolver.vue'),
-	routing: () => import('../components/RoutingTable.vue'),
-	nat: () => import('../components/NatTable.vue'),
-	portscan: () => import('../components/PortScanner.vue'),
-	wireshark: () => import('../components/WiresharkLite.vue'),
-	authflow: () => import('../components/AuthFlowSimulator.vue'),
-	terminal: () => import('../components/TerminalPuzzle.vue'),
-	subnet: () => import('../components/SubnetCalculator.vue'),
+	firewall: defineAsyncComponent(() => import('../components/FirewallBuilder.vue')),
+	dns: defineAsyncComponent(() => import('../components/DnsResolver.vue')),
+	routing: defineAsyncComponent(() => import('../components/RoutingTable.vue')),
+	nat: defineAsyncComponent(() => import('../components/NatTable.vue')),
+	portscan: defineAsyncComponent(() => import('../components/PortScanner.vue')),
+	wireshark: defineAsyncComponent(() => import('../components/WiresharkLite.vue')),
+	authflow: defineAsyncComponent(() => import('../components/AuthFlowSimulator.vue')),
+	terminal: defineAsyncComponent(() => import('../components/TerminalPuzzle.vue')),
+	subnet: defineAsyncComponent(() => import('../components/SubnetCalculator.vue')),
 }
 
 export const SCENARIOS = {
