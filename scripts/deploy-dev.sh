@@ -66,10 +66,10 @@ deploy_js() {
   rsync -az app/css/style.css app/css/practicum.css "$HOST:~/learning-nc/app/css/" 2>/dev/null || true
 
   echo "→ Deploying JS + CSS bundles..."
-  # JS + CSS in ONE tar, piped into container (avoids docker cp directory bugs)
-  ssh "$HOST" "cd ~/learning-nc/app && \
-    docker exec $CONTAINER bash -c 'find $APP_PATH/js/ -type f -delete; find $APP_PATH/css/ -type f -delete' && \
-    tar cf - js/ css/ | docker exec -i $CONTAINER tar xf - -C $APP_PATH/"
+  # Clean old bundles in container
+  ssh "$HOST" "docker exec $CONTAINER bash -c 'find $APP_PATH/js/ -type f -delete; find $APP_PATH/css/ -type f -delete'"
+  # Pipe LOCAL js/ + css/ directly into container (bypasses remote filesystem issues)
+  cd "$(dirname "$0")/.." && tar cf - app/js/ app/css/ --transform='s|^app/||' | ssh "$HOST" "docker exec -i $CONTAINER tar xf - -C $APP_PATH/"
   # Ensure apps/learning symlink exists (lost after container restarts)
   ssh "$HOST" "docker exec $CONTAINER bash -c 'test -L /var/www/html/apps/learning || ln -sf $APP_PATH /var/www/html/apps/learning'"
   echo "✓ JS + CSS deployed"
