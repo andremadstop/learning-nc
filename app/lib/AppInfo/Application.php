@@ -12,6 +12,8 @@ use OCA\Learning\Dashboard\LearningWidget;
 use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Listener\UserDeletedListener;
 use OCA\Learning\Notification\Notifier;
+use OCA\Learning\Search\PoolSearchProvider;
+use OCA\Learning\Search\QuestionSearchProvider;
 use OCA\Learning\Settings\LegalNoticeHelpSettings;
 use OCA\Learning\Settings\PrivacyHelpSettings;
 use OCP\AppFramework\App;
@@ -37,6 +39,8 @@ class Application extends App implements IBootstrap {
         $context->registerDashboardWidget(LearningWidget::class);
         $context->registerNotifierService(Notifier::class);
         $context->registerEventListener(UserDeletedEvent::class, UserDeletedListener::class);
+        $context->registerSearchProvider(PoolSearchProvider::class);
+        $context->registerSearchProvider(QuestionSearchProvider::class);
         $context->registerService(ImportVaultCommand::class, function (ContainerInterface $container): ImportVaultCommand {
             return new ImportVaultCommand(
                 $container->get(RagChunkMapper::class),

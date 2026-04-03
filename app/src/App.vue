@@ -1275,6 +1275,10 @@ export default {
       if (route.name === 'pools') {
         this.mainView = 'pools';
         this.backToPools();
+        const routePoolId = Number(route.query?.poolId || 0);
+        if (routePoolId > 0) {
+          this.openPoolFromRoute(routePoolId);
+        }
         if (this._pendingAdventureRoute) {
           this.currentView = 'abenteuer';
           this.adventureRoute = { ...this._pendingAdventureRoute };
@@ -1358,6 +1362,14 @@ export default {
       } catch (err) {
         this.error = t('learning', 'Failed to load question count');
         this.questionCount = 0;
+      }
+    },
+    async openPoolFromRoute(poolId) {
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/pools/' + poolId));
+        await this.selectPool(response.data);
+      } catch (err) {
+        this.error = t('learning', 'Failed to open pool');
       }
     },
     backToPools() {
