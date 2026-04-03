@@ -159,7 +159,7 @@
             <input
               type="checkbox"
               :value="dt"
-              :checked="placementForm.deviceOptions.includes(dt)"
+              :model-value="placementForm.deviceOptions.includes(dt)"
               @change="toggleDeviceOption(dt)"
             />
             {{ dt }}

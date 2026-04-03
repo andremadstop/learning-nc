@@ -223,8 +223,8 @@
 			<template v-else>
 				<div class="curriculum-toggle">
 					<NcCheckboxRadioSwitch
-						:checked="curriculumEnabled"
-						@update:checked="curriculumEnabled = $event">
+						:model-value="curriculumEnabled"
+						@update:model-value="curriculumEnabled = $event">
 						{{ t('learning', 'Kapitel-Filter aktiv') }}
 					</NcCheckboxRadioSwitch>
 				</div>
@@ -243,8 +243,8 @@
 							:key="chapter.chapter_key"
 							class="curriculum-chapter-row">
 							<NcCheckboxRadioSwitch
-								:checked="selectedChapterKeys.includes(chapter.chapter_key)"
-								@update:checked="toggleChapter(chapter.chapter_key, $event)">
+								:model-value="selectedChapterKeys.includes(chapter.chapter_key)"
+								@update:model-value="toggleChapter(chapter.chapter_key, $event)">
 								<span class="chapter-title">{{ chapter.chapter_title || chapter.chapter_key }}</span>
 								<span v-if="chapter.chapter_order" class="chapter-order">{{ t('learning', 'Kap. {n}', { n: chapter.chapter_order }) }}</span>
 							</NcCheckboxRadioSwitch>

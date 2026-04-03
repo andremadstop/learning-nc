@@ -85,15 +85,15 @@
           <div v-for="(answer, index) in form.answers" :key="index" class="answer-row">
             <NcCheckboxRadioSwitch
               v-if="form.questionType === 'single'"
-              :checked="correctAnswerIndex === index"
-              @update:checked="correctAnswerIndex = index"
+              :model-value="correctAnswerIndex === index"
+              @update:model-value="correctAnswerIndex = index"
               type="radio"
               name="correct-answer"
             />
             <NcCheckboxRadioSwitch
               v-else
-              :checked="correctAnswerIndices.has(index)"
-              @update:checked="toggleCorrectIndex(index)"
+              :model-value="correctAnswerIndices.has(index)"
+              @update:model-value="toggleCorrectIndex(index)"
               type="checkbox"
             />
             <input type="text" v-model="answer.text" :placeholder="t('learning', 'Answer {n}', { n: index + 1 })" aria-required="true" required class="nc-input" />
@@ -173,8 +173,8 @@
           class="nc-input"
         ></textarea>
         <NcCheckboxRadioSwitch
-          :checked="form.noteVisible"
-          @update:checked="form.noteVisible = $event"
+          :model-value="form.noteVisible"
+          @update:model-value="form.noteVisible = $event"
           type="checkbox"
         >
           {{ t('learning', 'Visible to students') }}

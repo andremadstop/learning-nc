@@ -37,7 +37,7 @@
 						<label class="mode-toggle-label">
 							<input
 								type="checkbox"
-								:checked="toolConfigLocal[tool.key] !== false"
+								:model-value="toolConfigLocal[tool.key] !== false"
 								:disabled="!isAdminToolEnabled(tool.key)"
 								@change="toggleCourseTool(tool.key, $event.target.checked)" />
 							{{ tool.label }}

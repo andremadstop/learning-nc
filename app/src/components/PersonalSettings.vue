@@ -11,9 +11,9 @@
       <div class="field-row">
         <label>{{ t('learning', 'Daily Challenge enabled') }}</label>
         <NcCheckboxRadioSwitch
-          :checked="form.dailyChallengeEnabled"
+          :model-value="form.dailyChallengeEnabled"
           type="switch"
-          @update:checked="form.dailyChallengeEnabled = !!$event" />
+          @update:model-value="form.dailyChallengeEnabled = !!$event" />
       </div>
 
       <div class="field-row">
@@ -39,9 +39,9 @@
       <div class="field-row">
         <label>{{ t('learning', 'Virtual assistant') }}</label>
         <NcCheckboxRadioSwitch
-          :checked="form.virtuProfEnabled"
+          :model-value="form.virtuProfEnabled"
           type="switch"
-          @update:checked="form.virtuProfEnabled = !!$event" />
+          @update:model-value="form.virtuProfEnabled = !!$event" />
       </div>
 
       <hr class="section-divider" />
@@ -52,26 +52,26 @@
       <div class="field-row">
         <label>{{ t('learning', 'Speech output') }}</label>
         <NcCheckboxRadioSwitch
-          :checked="form.virtuProfTtsEnabled"
+          :model-value="form.virtuProfTtsEnabled"
           type="switch"
-          @update:checked="form.virtuProfTtsEnabled = !!$event" />
+          @update:model-value="form.virtuProfTtsEnabled = !!$event" />
       </div>
 
       <div class="field-row">
         <label>{{ t('learning', 'Voice input (push-to-talk)') }}</label>
         <NcCheckboxRadioSwitch
-          :checked="form.virtuProfSttEnabled"
+          :model-value="form.virtuProfSttEnabled"
           type="switch"
-          @update:checked="form.virtuProfSttEnabled = !!$event" />
+          @update:model-value="form.virtuProfSttEnabled = !!$event" />
       </div>
 
       <div class="field-row">
         <label>{{ t('learning', 'Bot sounds') }}</label>
         <p class="field-desc">{{ t('learning', 'Short sound cues for bot interactions') }}</p>
         <NcCheckboxRadioSwitch
-          :checked="form.botSoundsEnabled"
+          :model-value="form.botSoundsEnabled"
           type="switch"
-          @update:checked="onBotSoundsToggle(!!$event)" />
+          @update:model-value="onBotSoundsToggle(!!$event)" />
       </div>
 
       <div class="field-row">
@@ -89,18 +89,18 @@
       <div class="field-row">
         <label>{{ t('learning', 'Notifications enabled') }}</label>
         <NcCheckboxRadioSwitch
-          :checked="form.notificationsEnabled"
+          :model-value="form.notificationsEnabled"
           type="switch"
-          @update:checked="form.notificationsEnabled = !!$event" />
+          @update:model-value="form.notificationsEnabled = !!$event" />
       </div>
 
       <div class="field-row">
         <label>{{ t('learning', 'Extended learning statistics') }}</label>
         <p class="field-desc">{{ t('learning', 'Show detailed FSRS intervals, stability and recall estimates in Leitner mode.') }}</p>
         <NcCheckboxRadioSwitch
-          :checked="form.fsrsDetailedStats"
+          :model-value="form.fsrsDetailedStats"
           type="switch"
-          @update:checked="form.fsrsDetailedStats = !!$event" />
+          @update:model-value="form.fsrsDetailedStats = !!$event" />
       </div>
 
       <NcNoteCard v-if="error" type="error">{{ error }}</NcNoteCard>

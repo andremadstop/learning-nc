@@ -15,9 +15,9 @@
       <div class="field-row">
         <label>{{ t('learning', 'Daily Challenge enabled') }}</label>
         <NcCheckboxRadioSwitch
-          :checked="form.dailyChallengeEnabled"
+          :model-value="form.dailyChallengeEnabled"
           type="switch"
-          @update:checked="form.dailyChallengeEnabled = !!$event" />
+          @update:model-value="form.dailyChallengeEnabled = !!$event" />
       </div>
 
       <div class="field-row">
@@ -42,9 +42,9 @@
       <div class="field-row">
         <label>{{ t('learning', 'Gamification enabled') }}</label>
         <NcCheckboxRadioSwitch
-          :checked="form.gamificationEnabled"
+          :model-value="form.gamificationEnabled"
           type="switch"
-          @update:checked="form.gamificationEnabled = !!$event" />
+          @update:model-value="form.gamificationEnabled = !!$event" />
       </div>
 
       <div class="field-row">
@@ -56,7 +56,7 @@
           <label v-for="tool in toolOptions" :key="tool.id" class="tool-toggle-row">
             <input
               type="checkbox"
-              :checked="form.enabledTools.includes(tool.id)"
+              :model-value="form.enabledTools.includes(tool.id)"
               @change="toggleTool(tool.id, $event.target.checked)">
             <span>{{ tool.label }}</span>
           </label>
@@ -66,9 +66,9 @@
       <div class="field-row">
         <label>{{ t('learning', 'Allow course-based instructor fallback') }}</label>
         <NcCheckboxRadioSwitch
-          :checked="form.allowCourseInstructorFallback"
+          :model-value="form.allowCourseInstructorFallback"
           type="switch"
-          @update:checked="form.allowCourseInstructorFallback = !!$event" />
+          @update:model-value="form.allowCourseInstructorFallback = !!$event" />
         <small class="field-help">
           {{ t('learning', 'If disabled (recommended), only members of the configured instructor group get global instructor privileges.') }}
         </small>
@@ -114,9 +114,9 @@
         <div class="field-row">
           <label>{{ t('learning', 'Enable AI chat (VirtuProf)') }}</label>
           <NcCheckboxRadioSwitch
-            :checked="form.aiEnabled"
+            :model-value="form.aiEnabled"
             type="switch"
-            @update:checked="form.aiEnabled = !!$event" />
+            @update:model-value="form.aiEnabled = !!$event" />
           <small class="field-help">
             {{ t('learning', 'When disabled, the AI chat input is hidden for all users. When enabled, each user must give consent before their first message is sent.') }}
           </small>

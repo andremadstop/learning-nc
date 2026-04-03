@@ -25,6 +25,7 @@ import { translateVirtuProf } from '../../utils/virtuprof-i18n.js'
 export default {
 	name: 'NovaDock',
 	components: { NovaAvatar },
+	emits: ['click'],
 	props: {
 		animation: { type: String, default: 'idle' },
 		emotion: { type: String, default: null },
