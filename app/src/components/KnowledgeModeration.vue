@@ -23,6 +23,10 @@
 				<div class="pending-meta">
 					{{ formatDate(item.created_at) }}
 				</div>
+				<div v-if="item.pii_warnings && item.pii_warnings.length" class="pending-warning">
+					<strong>{{ t('learning', 'PII-Warnung') }}:</strong>
+					{{ t('learning', 'Mögliche personenbezogene Daten erkannt: {types}', { types: piiWarningTypes(item.pii_warnings) }) }}
+				</div>
 				<div class="pending-actions">
 					<button
 						class="material-btn small primary"
@@ -127,6 +131,15 @@ export default {
 			if (!timestamp) return '-'
 			return new Date(timestamp * 1000).toLocaleDateString('de-DE')
 		},
+		piiWarningTypes(warnings) {
+			const labels = {
+				email: t('learning', 'E-Mail'),
+				phone: t('learning', 'Telefon'),
+				name: t('learning', 'Klarname'),
+			}
+			const uniqueTypes = [...new Set((warnings || []).map((warning) => labels[warning.type] || warning.type))]
+			return uniqueTypes.join(', ')
+		},
 	},
 }
 </script>
@@ -196,6 +209,14 @@ export default {
 	font-size: 12px;
 	color: var(--color-text-maxcontrast, #767676);
 	margin-bottom: 8px;
+}
+
+.pending-warning {
+	margin-bottom: 10px;
+	padding: 8px 10px;
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--color-warning, #f0b429) 18%, white);
+	font-size: 13px;
 }
 
 .pending-actions {

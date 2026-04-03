@@ -130,6 +130,59 @@ class RagImportService {
     }
 
     /**
+     * Detect likely PII without blocking the contribution flow.
+     *
+     * @return array<int, array{type: string, offset: int, length: int}>
+     */
+    public function detectPii(string $text): array {
+        $warnings = [];
+
+        $patterns = [
+            'email' => '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/u',
+            'phone' => '/(?:\+?\d[\d\s().\/-]{6,}\d)/u',
+        ];
+
+        foreach ($patterns as $type => $pattern) {
+            if (preg_match_all($pattern, $text, $matches, PREG_OFFSET_CAPTURE)) {
+                foreach ($matches[0] as $match) {
+                    $warnings[] = [
+                        'type' => $type,
+                        'offset' => (int)$match[1],
+                        'length' => mb_strlen((string)$match[0]),
+                    ];
+                }
+            }
+        }
+
+        $namePatterns = [
+            '/(?:\b(?:name|kontakt|ansprechpartner)\s*[:\-]?\s*)([A-ZÄÖÜ][a-zäöüß]+(?:\s+[A-ZÄÖÜ][a-zäöüß]+){1,2})/u',
+            '/(?:\b(?:mein name ist|ich bin|i am|my name is)\s+)([A-ZÄÖÜ][a-zäöüß]+(?:\s+[A-ZÄÖÜ][a-zäöüß]+){1,2})/iu',
+        ];
+
+        foreach ($namePatterns as $pattern) {
+            if (preg_match_all($pattern, $text, $matches, PREG_OFFSET_CAPTURE)) {
+                foreach ($matches[1] ?? [] as $match) {
+                    $warnings[] = [
+                        'type' => 'name',
+                        'offset' => (int)$match[1],
+                        'length' => mb_strlen((string)$match[0]),
+                    ];
+                }
+            }
+        }
+
+        usort($warnings, static fn(array $left, array $right): int => $left['offset'] <=> $right['offset']);
+
+        $unique = [];
+        foreach ($warnings as $warning) {
+            $key = $warning['type'] . ':' . $warning['offset'] . ':' . $warning['length'];
+            $unique[$key] = $warning;
+        }
+
+        return array_values($unique);
+    }
+
+    /**
      * Clean Obsidian/Markdown: strip frontmatter, image embeds, wikilinks, callouts.
      *
      * Copied from ImportVaultCommand for consistency.

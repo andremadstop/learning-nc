@@ -193,11 +193,7 @@ class RagImportController extends Controller {
                 return new DataResponse(['error' => 'Content contains disallowed patterns'], Http::STATUS_BAD_REQUEST);
             }
 
-            // SEC: Check for PII (emails, phone numbers) in content
-            $piiWarning = self::detectPii($combined);
-            if ($piiWarning !== null) {
-                return new DataResponse(['error' => $piiWarning], Http::STATUS_BAD_REQUEST);
-            }
+            $piiWarnings = $this->importService->detectPii($combined);
 
             $existing = $this->chunkMapper->countByUserIdAndCourseId($this->userId, $courseId);
             if ($existing >= self::MAX_STUDENT_CHUNKS_PER_COURSE) {
@@ -214,6 +210,11 @@ class RagImportController extends Controller {
 
             // Check swarm badge after successful student contribution
             $this->badgeService->checkAndAward($this->userId, 'swarm_contribution', []);
+
+            if ($piiWarnings !== []) {
+                $result['warning'] = 'Potential personal data detected. Please review your contribution before it is approved.';
+                $result['pii_warnings'] = $piiWarnings;
+            }
 
             return new DataResponse($result, Http::STATUS_CREATED);
         } catch (\InvalidArgumentException $e) {
@@ -236,7 +237,15 @@ class RagImportController extends Controller {
             }
 
             $chunks = $this->chunkMapper->findByCourseIdAndStatus($courseId, 'pending');
-            return new DataResponse(array_map(fn($c) => $c->jsonSerialize(), $chunks));
+            return new DataResponse(array_map(function ($chunk) {
+                $data = $chunk->jsonSerialize();
+                $combined = trim((string)($data['source_file'] ?? '') . ' ' . (string)($data['text'] ?? ''));
+                $warnings = $combined !== '' ? $this->importService->detectPii($combined) : [];
+                if ($warnings !== []) {
+                    $data['pii_warnings'] = $warnings;
+                }
+                return $data;
+            }, $chunks));
         } catch (\Exception $e) {
             $this->logger->error('RagImportController::listPending failed: ' . $e->getMessage(), ['app' => 'learning']);
             return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
@@ -308,22 +317,4 @@ class RagImportController extends Controller {
         }
     }
 
-    /**
-     * Detect personally identifiable information in text.
-     *
-     * Returns a user-facing error message if PII is found, null otherwise.
-     */
-    private static function detectPii(string $text): ?string {
-        // Email addresses
-        if (preg_match('/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/', $text)) {
-            return 'Content must not contain email addresses — please remove before submitting';
-        }
-
-        // Phone numbers (international formats)
-        if (preg_match('/(\+?\d{1,4}[\s\-.]?)?\(?\d{2,5}\)?[\s\-.]?\d{3,}[\s\-.]?\d{2,}/', $text)) {
-            return 'Content must not contain phone numbers — please remove before submitting';
-        }
-
-        return null;
-    }
 }

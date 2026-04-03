@@ -53,6 +53,10 @@
 			<div v-if="success" class="success-message">
 				{{ success }}
 			</div>
+			<div v-if="piiWarnings.length" class="warning-message">
+				<strong>{{ t('learning', 'Hinweis zu personenbezogenen Daten:') }}</strong>
+				{{ t('learning', 'Bitte prüfe deinen Beitrag noch einmal. Er enthält möglicherweise: {types}.', { types: formatPiiWarningTypes(piiWarnings) }) }}
+			</div>
 			<div v-if="error" class="error-message">
 				{{ error }}
 			</div>
@@ -114,6 +118,7 @@ export default {
 			submitting: false,
 			error: null,
 			success: null,
+			piiWarnings: [],
 			maxContributions: 50,
 			showConsentInfo: !localStorage.getItem('learning_swarm_consent_v1'),
 		}
@@ -159,6 +164,7 @@ export default {
 			this.submitting = true
 			this.error = null
 			this.success = null
+			this.piiWarnings = []
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/knowledge/contribute', {
 					courseId: this.courseId,
@@ -169,6 +175,7 @@ export default {
 				})
 				const data = response.data
 				const chunks = data.chunks || 1
+				this.piiWarnings = Array.isArray(data.pii_warnings) ? data.pii_warnings : []
 				this.success = t('learning', 'Beitrag eingereicht ({chunks} Chunks). Warte auf Freigabe.', {
 					chunks,
 				})
@@ -199,6 +206,15 @@ export default {
 		formatDate(timestamp) {
 			if (!timestamp) return '-'
 			return new Date(timestamp * 1000).toLocaleDateString('de-DE')
+		},
+		formatPiiWarningTypes(warnings) {
+			const labels = {
+				email: t('learning', 'E-Mail-Adressen'),
+				phone: t('learning', 'Telefonnummern'),
+				name: t('learning', 'Klarnamen'),
+			}
+			const uniqueTypes = [...new Set((warnings || []).map((warning) => labels[warning.type] || warning.type))]
+			return uniqueTypes.join(', ')
 		},
 
 		autoDismissSuccess() {
@@ -316,6 +332,15 @@ export default {
 	padding: 8px 12px;
 	background: #e8f5e9;
 	color: #2e7d32;
+	border-radius: var(--border-radius, 4px);
+	font-size: 14px;
+}
+
+.warning-message {
+	margin-top: 10px;
+	padding: 8px 12px;
+	background: color-mix(in srgb, var(--color-warning, #f0b429) 18%, white);
+	color: var(--color-main-text, #222);
 	border-radius: var(--border-radius, 4px);
 	font-size: 14px;
 }
