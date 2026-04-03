@@ -1,4 +1,6 @@
 import { build } from 'vite'
+import { copyFileSync, mkdirSync, readdirSync } from 'fs'
+import { join } from 'path'
 import { buildEntries, createLearningViteConfig } from './vite.config.mjs'
 
 const watch = process.argv.includes('--watch')
@@ -17,6 +19,16 @@ for (const [index, entry] of buildEntries.entries()) {
 
 	if (watch && result && typeof result.close === 'function') {
 		watchers.push(result)
+	}
+}
+
+// Copy CSS from js/ to css/ — NC's style() helper looks in css/, not js/
+if (!watch) {
+	mkdirSync('css', { recursive: true })
+	for (const file of readdirSync('js')) {
+		if (file.endsWith('.css')) {
+			copyFileSync(join('js', file), join('css', file))
+		}
 	}
 }
 
