@@ -83,7 +83,8 @@ describe('CourseTabVerwaltung', () => {
 		expect(keys).toContain('duel')
 		expect(keys).toContain('abenteuer')
 		expect(keys).not.toContain('swipe')
-		expect(keys.length).toBe(9)
+		expect(keys).not.toContain('oldschool')
+		expect(keys.length).toBe(8)
 	})
 
 	it('emits tab-change when selecting exam-slot pill', () => {

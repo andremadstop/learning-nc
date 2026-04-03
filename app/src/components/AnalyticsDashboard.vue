@@ -222,7 +222,7 @@ import NcButton from '@nextcloud/vue/components/NcButton';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 
-const ACTIVE_BADGE_ORDER = ['pioneer', 'streak_7', 'streak_14', 'mastermind', 'exam_ready', 'simulator', 'weekend', 'swarm', 'trouble_fixer'];
+const ACTIVE_BADGE_ORDER = ['pioneer', 'streak_7', 'streak_14', 'mastermind', 'exam_ready', 'simulator', 'weekend', 'swarm', 'trouble_fixer', 'quick_thinker'];
 
 export default {
   name: 'AnalyticsDashboard',

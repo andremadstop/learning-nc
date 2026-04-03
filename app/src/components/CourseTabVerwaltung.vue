@@ -66,7 +66,7 @@
 				<div class="talk-token-row">
 					<input type="text" v-model="talkRoomToken" :placeholder="t('learning', 'Talk-Token')" maxlength="255" class="talk-token-input" />
 					<NcButton type="primary" @click="saveTalkRoomToken" :disabled="savingTalkToken">
-						{{ savingTalkToken ? t('learning', 'Saving...') : t('learning', 'Speichern') }}
+						{{ savingTalkToken ? t('learning', 'Saving...') : t('learning', 'Save') }}
 					</NcButton>
 				</div>
 				<NcNoteCard v-if="talkTokenSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
@@ -78,7 +78,7 @@
 				<div class="exam-date-row">
 					<input v-model="examDateLocal" type="date" class="exam-date-input" />
 					<NcButton type="primary" :disabled="savingExamDate" @click="saveExamDate">
-						{{ savingExamDate ? t('learning', 'Saving...') : t('learning', 'Speichern') }}
+						{{ savingExamDate ? t('learning', 'Saving...') : t('learning', 'Save') }}
 					</NcButton>
 					<NcButton v-if="examDateLocal" :disabled="savingExamDate" @click="clearExamDate">
 						{{ t('learning', 'Entfernen') }}
@@ -226,7 +226,6 @@ export default {
 				{ key: 'duel', label: t('learning', 'Duell') },
 				{ key: 'gameshow', label: t('learning', 'Gameshow') },
 				{ key: 'league', label: t('learning', 'Liga') },
-				{ key: 'oldschool', label: t('learning', 'Oldschool') },
 				{ key: 'abenteuer', label: t('learning', 'Abenteuer') },
 				{ key: 'course_summary', label: t('learning', 'Abschluss-Tab') },
 			]
@@ -301,7 +300,7 @@ export default {
 				duel: true,
 				gameshow: true,
 				league: true,
-				oldschool: true,
+				oldschool: false,
 				abenteuer: false,
 				course_summary: false,
 			}, modeConfig || {})

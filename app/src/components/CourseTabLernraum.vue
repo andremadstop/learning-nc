@@ -254,9 +254,9 @@
 
 				<div class="curriculum-actions">
 					<NcButton type="primary" :disabled="savingCurriculum" @click="saveCurriculumScope">
-						{{ savingCurriculum ? t('learning', 'Speichere…') : t('learning', 'Speichern') }}
+						{{ savingCurriculum ? t('learning', 'Saving...') : t('learning', 'Save') }}
 					</NcButton>
-					<span v-if="curriculumSaved" class="curriculum-saved-hint">✓ {{ t('learning', 'Gespeichert') }}</span>
+					<span v-if="curriculumSaved" class="curriculum-saved-hint">✓ {{ t('learning', 'Saved.') }}</span>
 				</div>
 			</template>
 		</div>

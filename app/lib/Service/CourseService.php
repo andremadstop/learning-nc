@@ -744,6 +744,7 @@ class CourseService {
         $course->setStatus('active');
         $course->setCreatedAt($now);
         $course->setUpdatedAt($now);
+        $course->setAllowedCampaigns(json_encode(['solarwinds', 'wannacry', 'log4shell', 'phishing_friday', 'ransomware']));
 
         return $this->courseMapper->insert($course);
     }

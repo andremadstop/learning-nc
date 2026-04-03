@@ -64,13 +64,6 @@ export default {
 					title: t('learning', 'Elimination (2–5)'),
 					desc: t('learning', 'Falsche Antwort kostet ein Leben — wer zuletzt steht, gewinnt.'),
 				},
-				{
-					mode: 'oldschool',
-					configKey: 'oldschool',
-					icon: '🎲',
-					title: t('learning', 'Oldschool'),
-					desc: t('learning', 'Lernwürfel und Wissensturm — klassische Brettspiel-Mechanik.'),
-				},
 			]
 			return allCards.filter(c => this.modeConfig[c.configKey] !== false)
 		},
