@@ -24,6 +24,8 @@ export function createLearningViteConfig(entryName = 'learning', { emptyOutDir =
 		define: {
 			__VUE_OPTIONS_API__: true,
 			__VUE_PROD_DEVTOOLS__: false,
+			'process.env.NODE_ENV': JSON.stringify('production'),
+			'process.env': JSON.stringify({}),
 			appName: JSON.stringify('learning'),
 			appVersion: JSON.stringify('0.1.0'),
 		},
