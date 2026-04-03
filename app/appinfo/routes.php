@@ -6,6 +6,17 @@ return [
         ['name' => 'page#privacy', 'url' => '/privacy', 'verb' => 'GET'],
         ['name' => 'page#impressum', 'url' => '/impressum', 'verb' => 'GET'],
 
+        // Vue Router History-Mode catch-all: serves index.php for all frontend routes
+        // so that direct navigation / browser refresh on /courses, /tools etc. works
+        ['name' => 'page#index', 'url' => '/courses', 'verb' => 'GET', 'postfix' => 'courses'],
+        ['name' => 'page#index', 'url' => '/courses/{path}', 'verb' => 'GET', 'postfix' => 'coursePath', 'requirements' => ['path' => '.+']],
+        ['name' => 'page#index', 'url' => '/tools', 'verb' => 'GET', 'postfix' => 'tools'],
+        ['name' => 'page#index', 'url' => '/skill-map', 'verb' => 'GET', 'postfix' => 'skillmap'],
+        ['name' => 'page#index', 'url' => '/settings', 'verb' => 'GET', 'postfix' => 'settings'],
+        ['name' => 'page#index', 'url' => '/dashboard', 'verb' => 'GET', 'postfix' => 'dashboard'],
+        ['name' => 'page#index', 'url' => '/virtuprof', 'verb' => 'GET', 'postfix' => 'virtuprof'],
+        ['name' => 'page#index', 'url' => '/pools', 'verb' => 'GET', 'postfix' => 'pools'],
+
         // Pools
         ['name' => 'pool#index', 'url' => '/api/pools', 'verb' => 'GET'],
         ['name' => 'pool#show', 'url' => '/api/pools/{id}', 'verb' => 'GET'],
