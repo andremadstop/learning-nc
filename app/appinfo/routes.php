@@ -85,6 +85,7 @@ return [
         ['name' => 'export#exportCsv', 'url' => '/api/pools/{poolId}/export/csv', 'verb' => 'GET'],
         ['name' => 'export#exportJson', 'url' => '/api/pools/{poolId}/export/json', 'verb' => 'GET'],
         ['name' => 'export#exportIcs', 'url' => '/api/leitner/schedule.ics', 'verb' => 'GET'],
+        ['name' => 'dataExport#myData', 'url' => '/api/export/my-data', 'verb' => 'GET'],
         ['name' => 'export#getCalendarToken', 'url' => '/api/v1/user/calendar-token', 'verb' => 'GET'],
         ['name' => 'export#regenerateCalendarToken', 'url' => '/api/v1/user/calendar-token/regenerate', 'verb' => 'POST'],
         ['name' => 'export#exportIcsPublic', 'url' => '/api/v1/calendar/{token}.ics', 'verb' => 'GET'],

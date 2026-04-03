@@ -308,6 +308,16 @@
             {{ t('learning', 'Reset profile') }}
           </NcButton>
         </div>
+
+        <div class="export-data-row">
+          <div>
+            <strong>{{ t('learning', 'Data export') }}</strong>
+            <p class="field-desc">{{ t('learning', 'Download your learning profile, progress, badges, sessions and course memberships as JSON.') }}</p>
+          </div>
+          <NcButton type="secondary" @click="downloadMyData">
+            {{ t('learning', 'Export my data') }}
+          </NcButton>
+        </div>
       </template>
 
       <hr class="section-divider" />
@@ -529,6 +539,9 @@ export default {
         this.telosLoading = false
       }
     },
+    downloadMyData() {
+      window.location.href = generateUrl('/apps/learning/api/export/my-data')
+    },
     confirmResetProfile() {
       if (!window.confirm(t('learning', 'This will clear your learning profile. VirtuProf will no longer give personalized tips. Continue?'))) {
         return
@@ -639,6 +652,12 @@ export default {
   font-weight: 600;
 }
 
+.field-desc {
+  margin: 0;
+  color: var(--color-text-maxcontrast);
+  font-size: 0.9em;
+}
+
 .nc-input {
   max-width: 280px;
 }
@@ -710,6 +729,17 @@ export default {
   gap: 8px;
 }
 
+.export-data-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-main-background) 92%, var(--color-primary-element) 8%);
+}
+
 .weak-topics-list {
   margin: 0;
   padding-inline-start: 18px;
@@ -748,6 +778,11 @@ export default {
 
   .field-row--full {
     grid-column: auto;
+  }
+
+  .export-data-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
