@@ -8,6 +8,10 @@ app/js/*.LICENSE.txt
 
 # Internal planning, tooling & dev files
 .planning/
+.claude/
+.paul/
+.ralphrc
+tools/
 .githooks/
 CLAUDE.md
 /COLLABORATION.md
