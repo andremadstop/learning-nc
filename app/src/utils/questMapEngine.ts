@@ -4,12 +4,44 @@
  * No DOM or D3 dependencies. All functions are pure and fully testable with Vitest.
  */
 
+interface QuestNode {
+	id: string | number
+}
+
+interface QuestStateBag {
+	_visited_nodes?: Array<string | number>
+}
+
+interface QuestEdgeConditions {
+	requires_flag?: string
+	requires_item?: string
+	min_reputation?: Record<string, number>
+}
+
+interface QuestEdge {
+	id: string | number
+	to: string
+	conditions?: QuestEdgeConditions
+}
+
+interface QuestGraph {
+	nodes: QuestNode[]
+	edges: QuestEdge[]
+}
+
+export type QuestNodeState = 'visited' | 'current' | 'reachable' | 'locked'
+
+export interface QuestEdgeState {
+	reachable: boolean
+	conditionText: string
+}
+
 /**
  * Convert a flag name like "server_logs_found" to "Server Logs Found".
  * @param {string} flag
  * @returns {string}
  */
-function formatFlagName(flag) {
+function formatFlagName(flag: string): string {
 	return flag
 		.split('_')
 		.map(w => w.charAt(0).toUpperCase() + w.slice(1))
@@ -25,8 +57,13 @@ function formatFlagName(flag) {
  * @param {Array<{to: string}>} availableEdges
  * @returns {Map<string, 'visited'|'current'|'reachable'|'locked'>}
  */
-export function computeNodeStates(graph, currentNodeId, stateBag, availableEdges) {
-	const states = new Map();
+export function computeNodeStates(
+	graph: QuestGraph,
+	currentNodeId: string,
+	stateBag: QuestStateBag | null | undefined,
+	availableEdges: Array<{ to: string }>,
+): Map<string, QuestNodeState> {
+	const states = new Map<string, QuestNodeState>();
 	const visited = deriveVisitedNodes(stateBag);
 	const reachableSet = new Set(availableEdges.map(e => e.to));
 
@@ -52,11 +89,11 @@ export function computeNodeStates(graph, currentNodeId, stateBag, availableEdges
  * @param {object|null|undefined} stateBag
  * @returns {Set<string>}
  */
-export function deriveVisitedNodes(stateBag) {
+export function deriveVisitedNodes(stateBag: QuestStateBag | null | undefined): Set<string> {
 	if (!stateBag || !Array.isArray(stateBag._visited_nodes)) {
 		return new Set();
 	}
-	return new Set(stateBag._visited_nodes);
+	return new Set(stateBag._visited_nodes.map((nodeId) => String(nodeId)));
 }
 
 /**
@@ -65,7 +102,7 @@ export function deriveVisitedNodes(stateBag) {
  * @param {object|null|undefined} conditions
  * @returns {string}
  */
-export function conditionToText(conditions) {
+export function conditionToText(conditions: QuestEdgeConditions | null | undefined): string {
 	if (!conditions || typeof conditions !== 'object') {
 		return '';
 	}
@@ -96,7 +133,7 @@ export function conditionToText(conditions) {
  * @param {string} targetNodeId
  * @returns {object|null}
  */
-export function findEdgeForNavigation(availableEdges, targetNodeId) {
+export function findEdgeForNavigation<T extends { to: string }>(availableEdges: T[], targetNodeId: string): T | null {
 	for (const edge of availableEdges) {
 		if (edge.to === targetNodeId) {
 			return edge;
@@ -113,8 +150,12 @@ export function findEdgeForNavigation(availableEdges, targetNodeId) {
  * @param {string} currentNodeId
  * @returns {Map<string, {reachable: boolean, conditionText: string}>}
  */
-export function computeEdgeStates(edges, availableEdges, currentNodeId) {
-	const states = new Map();
+export function computeEdgeStates(
+	edges: QuestEdge[],
+	availableEdges: Array<{ id: string }>,
+	_currentNodeId: string,
+): Map<string, QuestEdgeState> {
+	const states = new Map<string, QuestEdgeState>();
 	const availableIds = new Set(availableEdges.map(e => e.id));
 
 	for (const edge of edges) {

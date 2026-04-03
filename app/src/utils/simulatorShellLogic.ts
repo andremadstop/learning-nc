@@ -16,7 +16,38 @@ import { SCENARIOS as subnetScenarios } from './scenarios.js'
 
 import { defineAsyncComponent } from 'vue'
 
-export const SIMULATOR_MAP = {
+export type SimulatorType =
+	| 'firewall'
+	| 'dns'
+	| 'routing'
+	| 'nat'
+	| 'portscan'
+	| 'wireshark'
+	| 'authflow'
+	| 'terminal'
+	| 'subnet'
+
+export interface SimulatorScenario {
+	id?: string
+	[key: string]: unknown
+}
+
+export interface SimulatorResult {
+	kind?: string
+	correct?: boolean
+	passed?: boolean
+	[key: string]: unknown
+}
+
+export interface NormalizedSimulatorResult {
+	passed: boolean
+	score: number
+	rawResult: SimulatorResult
+}
+
+type ScenarioCollection = SimulatorScenario[] | Record<string, SimulatorScenario>
+
+export const SIMULATOR_MAP: Record<SimulatorType, ReturnType<typeof defineAsyncComponent>> = {
 	firewall: defineAsyncComponent(() => import('../components/FirewallBuilder.vue')),
 	dns: defineAsyncComponent(() => import('../components/DnsResolver.vue')),
 	routing: defineAsyncComponent(() => import('../components/RoutingTable.vue')),
@@ -28,7 +59,7 @@ export const SIMULATOR_MAP = {
 	subnet: defineAsyncComponent(() => import('../components/SubnetCalculator.vue')),
 }
 
-export const SCENARIOS = {
+export const SCENARIOS: Record<SimulatorType, ScenarioCollection> = {
 	firewall: firewallScenarios,
 	dns: dnsScenarios,
 	routing: routingScenarios,
@@ -47,13 +78,17 @@ export const SCENARIOS = {
  * @param {object|null} scenarioOverride - Direct scenario object (takes precedence)
  * @returns {object|null}
  */
-export function resolveScenario(type, scenarioId, scenarioOverride) {
+export function resolveScenario(
+	type: SimulatorType | string,
+	scenarioId: string,
+	scenarioOverride: SimulatorScenario | null,
+): SimulatorScenario | null {
 	if (scenarioOverride) return scenarioOverride
-	const collection = SCENARIOS[type]
+	const collection = SCENARIOS[type as SimulatorType]
 	if (!collection || !scenarioId) return null
 
 	if (Array.isArray(collection)) {
-		return collection.find(s => s.id === scenarioId) || null
+		return collection.find((scenario) => scenario.id === scenarioId) || null
 	}
 
 	if (typeof collection === 'object') {
@@ -71,7 +106,7 @@ export function resolveScenario(type, scenarioId, scenarioOverride) {
  * @param {object} rawResult - Raw result from simulator component
  * @returns {{ passed: boolean, score: number, rawResult: object }|null}
  */
-export function normalizeResult(rawResult) {
+export function normalizeResult(rawResult: SimulatorResult): NormalizedSimulatorResult | null {
 	if (rawResult.kind === 'lookup') return null
 
 	let correct = false

@@ -3,7 +3,7 @@ import {
 	generateIPv4Steps,
 	generateIPv6Steps,
 	generateWhyExplanation,
-} from '../../src/utils/subnetExplainer.js'
+} from '../../src/utils/subnetExplainer'
 
 describe('generateIPv4Steps', () => {
 	it('returns correct steps for /24', () => {

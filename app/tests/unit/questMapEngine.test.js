@@ -5,7 +5,7 @@ import {
 	conditionToText,
 	findEdgeForNavigation,
 	computeEdgeStates,
-} from '../../src/utils/questMapEngine.js';
+} from '../../src/utils/questMapEngine';
 
 // Minimal graph fixture matching test_graph_campaign.json structure
 const graph = {

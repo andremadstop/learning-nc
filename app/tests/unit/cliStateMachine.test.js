@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { DOMAIN_SCHEMAS, evaluateCommand, getPrompt } from '../../src/utils/cliStateMachine.js'
+import { DOMAIN_SCHEMAS, evaluateCommand, getPrompt } from '../../src/utils/cliStateMachine'
 
 // ─── DOMAIN_SCHEMAS ───────────────────────────────────────────────────────────
 

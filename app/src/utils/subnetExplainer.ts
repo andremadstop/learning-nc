@@ -4,12 +4,47 @@
  * No Vue dependency, no external deps — pure ES module.
  */
 
+export interface ExplanationStep {
+	label: string
+	formula: string
+	result: string
+}
+
+export interface IPv4CalculationResult {
+	ip: number[]
+	network: number[]
+	broadcast: number[]
+	firstHost: number[] | null
+	lastHost: number[] | null
+	hostCount: number
+	mask: number[]
+	wildcard: number[]
+	prefix: number
+}
+
+export interface IPv6CalculationResult {
+	networkGroups: number[]
+	firstHostGroups: number[]
+	lastHostGroups: number[]
+	hostCount: bigint | number
+}
+
+export type IPv4WhyField =
+	| 'network'
+	| 'broadcast'
+	| 'mask'
+	| 'wildcard'
+	| 'hostCount'
+	| 'firstHost'
+	| 'lastHost'
+	| 'cidr'
+
 /**
  * Format mask octets as dotted binary string.
  * @param {number[]} octets e.g. [255, 255, 255, 0]
  * @returns {string} e.g. "11111111.11111111.11111111.00000000"
  */
-function formatBinaryMask(octets) {
+function formatBinaryMask(octets: number[]): string {
 	return octets.map(o => o.toString(2).padStart(8, '0')).join('.')
 }
 
@@ -18,7 +53,7 @@ function formatBinaryMask(octets) {
  * @param {number[]} octets
  * @returns {string}
  */
-function formatOctets(octets) {
+function formatOctets(octets: number[]): string {
 	return octets.join('.')
 }
 
@@ -27,7 +62,7 @@ function formatOctets(octets) {
  * @param {number[]} groups 8 uint16 groups
  * @returns {string}
  */
-function formatIPv6Groups(groups) {
+function formatIPv6Groups(groups: number[]): string {
 	return groups.map(g => g.toString(16).padStart(4, '0')).join(':')
 }
 
@@ -36,10 +71,10 @@ function formatIPv6Groups(groups) {
  * @param {object} r calculateSubnet() result
  * @returns {{ label: string, formula: string, result: string }[]}
  */
-export function generateIPv4Steps(r) {
+export function generateIPv4Steps(r: IPv4CalculationResult): ExplanationStep[] {
 	const hostBits = 32 - r.prefix
 	const blockSize = Math.pow(2, hostBits)
-	const steps = []
+	const steps: ExplanationStep[] = []
 
 	// Step 1: Prefix breakdown
 	const hostBitWord = hostBits === 1 ? '1 Host-Bit' : `${hostBits} Host-Bits`
@@ -148,9 +183,9 @@ export function generateIPv4Steps(r) {
  * @param {number} prefix Prefix length
  * @returns {{ label: string, formula: string, result: string }[]}
  */
-export function generateIPv6Steps(r, prefix) {
+export function generateIPv6Steps(r: IPv6CalculationResult, prefix: number): ExplanationStep[] {
 	const interfaceBits = 128 - prefix
-	const steps = []
+	const steps: ExplanationStep[] = []
 
 	// Step 1: Prefix breakdown
 	steps.push({
@@ -199,7 +234,7 @@ export function generateIPv6Steps(r, prefix) {
  * @param {object} r calculateSubnet() result
  * @returns {string|null} Explanation string or null for unknown keys
  */
-export function generateWhyExplanation(fieldKey, r) {
+export function generateWhyExplanation(fieldKey: IPv4WhyField | string, r: IPv4CalculationResult): string | null {
 	const hostBits = 32 - r.prefix
 
 	switch (fieldKey) {

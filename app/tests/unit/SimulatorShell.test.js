@@ -4,7 +4,7 @@ import {
 	SIMULATOR_MAP,
 	normalizeResult,
 	resolveScenario,
-} from '../../src/utils/simulatorShellLogic.js'
+} from '../../src/utils/simulatorShellLogic'
 
 describe('SIMULATOR_MAP', () => {
 	it('has exactly 9 keys', () => {

@@ -24,7 +24,7 @@ import {
 	computeNodeStates,
 	computeEdgeStates,
 	findEdgeForNavigation,
-} from '../utils/questMapEngine.js';
+} from '../utils/questMapEngine';
 import {
 	createQuestMap,
 	createSimulation,

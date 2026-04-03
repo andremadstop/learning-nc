@@ -280,7 +280,7 @@ import PbqRenderer from './PbqRenderer.vue';
 import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import hintMixin from '../hintMixin.js';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
-import { buildFsrsRatingOptions, previewFsrsReview } from '../utils/fsrsScheduler.js';
+import { buildFsrsRatingOptions, previewFsrsReview } from '../utils/fsrsScheduler';
 
 export default {
   name: 'LeitnerMode',

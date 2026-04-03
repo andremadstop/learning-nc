@@ -9,17 +9,62 @@
  * Zero external dependencies. Pure ES module.
  */
 
+export type CliDomain = 'cisco_ios' | 'linux' | 'windows' | 'sql' | 'generic'
+
+export interface CliContext {
+	[key: string]: unknown
+	user?: string
+	interface?: string
+}
+
+export interface PbqCliConfig {
+	domain?: CliDomain
+	host?: string
+	mode?: string
+	context?: CliContext
+	command_outputs?: Record<string, string>
+}
+
+interface StaticTransition {
+	toMode: string
+}
+
+interface DynamicTransition {
+	mode: string
+	pattern: RegExp
+	toMode: string
+	contextKey: string
+	contextFn: (match: RegExpMatchArray) => unknown
+}
+
+type PromptRenderer = (host: string, ctx: CliContext) => string
+
+interface DomainSchema {
+	modes: Record<string, PromptRenderer>
+	defaultMode: string
+	transitions: Record<string, Record<string, StaticTransition>>
+	dynamicTransitions: DynamicTransition[]
+	errorMsg: string | ((cmd: string) => string)
+}
+
+export interface CliEvaluationResult {
+	type: 'transition' | 'output' | 'error'
+	nextMode: string
+	nextContext: CliContext
+	lines: string[]
+}
+
 // ---------------------------------------------------------------------------
 // DOMAIN_SCHEMAS
 // ---------------------------------------------------------------------------
 
-export const DOMAIN_SCHEMAS = {
+export const DOMAIN_SCHEMAS: Record<CliDomain, DomainSchema> = {
 
   cisco_ios: {
     modes: {
-      exec:         (host)       => host + '>',
-      config:       (host)       => host + '(config)#',
-      'config-if':  (host, ctx)  => host + '(config-if)#',
+      exec:        (host: string) => host + '>',
+      config:      (host: string) => host + '(config)#',
+      'config-if': (host: string) => host + '(config-if)#',
     },
     defaultMode: 'exec',
     transitions: {
@@ -51,27 +96,27 @@ export const DOMAIN_SCHEMAS = {
 
   linux: {
     modes: {
-      shell: (host, ctx) => (ctx.user || 'user') + '@' + host + ':~$ ',
+      shell: (host: string, ctx: CliContext) => String(ctx.user || 'user') + '@' + host + ':~$ ',
     },
     defaultMode: 'shell',
     transitions: {},
     dynamicTransitions: [],
-    errorMsg: (cmd) => 'bash: ' + cmd + ': command not found',
+    errorMsg: (cmd: string) => 'bash: ' + cmd + ': command not found',
   },
 
   windows: {
     modes: {
-      cmd: () => 'C:\\Users\\Administrator> ',
+      cmd: (_host: string, _ctx: CliContext) => 'C:\\Users\\Administrator> ',
     },
     defaultMode: 'cmd',
     transitions: {},
     dynamicTransitions: [],
-    errorMsg: (cmd) => "'" + cmd + "' is not recognized as an internal or external command.",
+    errorMsg: (cmd: string) => "'" + cmd + "' is not recognized as an internal or external command.",
   },
 
   sql: {
     modes: {
-      prompt: () => 'mysql> ',
+      prompt: (_host: string, _ctx: CliContext) => 'mysql> ',
     },
     defaultMode: 'prompt',
     transitions: {},
@@ -81,7 +126,7 @@ export const DOMAIN_SCHEMAS = {
 
   generic: {
     modes: {
-      prompt: (host) => host + '> ',
+      prompt: (host: string) => host + '> ',
     },
     defaultMode: 'prompt',
     transitions: {},
@@ -104,8 +149,8 @@ export const DOMAIN_SCHEMAS = {
  * @param {Object} context  - extra state (e.g. { user: 'root', interface: 'Fa0/0' })
  * @returns {string}
  */
-export function getPrompt(domain, mode, host, context) {
-  const schema = DOMAIN_SCHEMAS[domain] || DOMAIN_SCHEMAS.generic
+export function getPrompt(domain: string, mode: string | null | undefined, host: string, context: CliContext): string {
+  const schema = DOMAIN_SCHEMAS[domain as CliDomain] || DOMAIN_SCHEMAS.generic
   const effectiveMode = mode || schema.defaultMode
   const promptFn = schema.modes[effectiveMode] || schema.modes[schema.defaultMode]
   if (promptFn) {
@@ -134,10 +179,16 @@ export function getPrompt(domain, mode, host, context) {
  * @param {Object} commandOutputs - map of command string -> output string (may be undefined)
  * @returns {{ type: string, nextMode: string, nextContext: Object, lines: string[] }}
  */
-export function evaluateCommand(cmd, domain, currentMode, context, commandOutputs) {
+export function evaluateCommand(
+  cmd: string,
+  domain: string,
+  currentMode: string,
+  context?: CliContext,
+  commandOutputs?: Record<string, string>,
+): CliEvaluationResult {
   const ctx = context || {}
   const outputs = commandOutputs || {}
-  const schema = DOMAIN_SCHEMAS[domain] || DOMAIN_SCHEMAS.generic
+  const schema = DOMAIN_SCHEMAS[domain as CliDomain] || DOMAIN_SCHEMAS.generic
   const normalized = cmd.toLowerCase().trim()
 
   // Step 1 — Static transition lookup
@@ -171,7 +222,7 @@ export function evaluateCommand(cmd, domain, currentMode, context, commandOutput
   }
 
   // Step 3 — command_outputs lookup (case-insensitive exact match)
-  const matchKey = Object.keys(outputs).find(k => k.toLowerCase() === normalized)
+  const matchKey = Object.keys(outputs).find((key) => key.toLowerCase() === normalized)
   if (matchKey !== undefined) {
     const outputText = outputs[matchKey]
     const lines = outputText.split('\n')

@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import { SIMULATOR_MAP, resolveScenario, normalizeResult } from '../utils/simulatorShellLogic.js'
+import { SIMULATOR_MAP, resolveScenario, normalizeResult } from '../utils/simulatorShellLogic'
 
 export { SIMULATOR_MAP }
 

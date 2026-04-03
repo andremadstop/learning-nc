@@ -568,7 +568,7 @@ import {
 	vlsmAllocate,
 } from '../utils/subnetMath.js'
 import { ROW_KEYS, getVisibleRows } from '../utils/togglePresets.js'
-import { generateIPv4Steps, generateIPv6Steps, generateWhyExplanation } from '../utils/subnetExplainer.js'
+import { generateIPv4Steps, generateIPv6Steps, generateWhyExplanation } from '../utils/subnetExplainer'
 import {
 	createPracticeSession,
 	nextScenario,

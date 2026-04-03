@@ -4,7 +4,7 @@ import {
 	buildFsrsRatingOptions,
 	initializeFsrsFromRating,
 	previewFsrsReview,
-} from '../../src/utils/fsrsScheduler.js'
+} from '../../src/utils/fsrsScheduler'
 
 describe('fsrsScheduler', () => {
 	it('builds the default three-button rating model for learners', () => {
