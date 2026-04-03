@@ -66,12 +66,13 @@ deploy_js() {
   rsync -az app/css/style.css app/css/practicum.css "$HOST:~/learning-nc/app/css/" 2>/dev/null || true
 
   echo "→ Deploying JS + CSS bundles..."
-  # Clean old bundles in container
-  ssh "$HOST" "docker exec $CONTAINER bash -c 'find $APP_PATH/js/ -type f -delete; find $APP_PATH/css/ -type f -delete'"
-  # JS via tar (large single file works fine)
-  ssh "$HOST" "cd ~/learning-nc/app && tar cf /tmp/js-bundle.tar js/ && docker cp /tmp/js-bundle.tar $CONTAINER:/tmp/ && docker exec $CONTAINER bash -c 'cd $APP_PATH && tar xf /tmp/js-bundle.tar'"
-  # CSS via individual docker cp (tar loses CSS files over SSHFS streams)
-  ssh "$HOST" "cd ~/learning-nc/app && for f in css/*.css; do docker cp \"\$f\" $CONTAINER:$APP_PATH/css/; done"
+  # Everything in ONE ssh session to avoid file-disappearing issues between sessions
+  ssh "$HOST" "cd ~/learning-nc/app && \
+    docker exec $CONTAINER bash -c 'find $APP_PATH/js/ -type f -delete; find $APP_PATH/css/ -type f -delete' && \
+    tar cf /tmp/js-bundle.tar js/ && \
+    docker cp /tmp/js-bundle.tar $CONTAINER:/tmp/ && \
+    docker exec $CONTAINER bash -c 'cd $APP_PATH && tar xf /tmp/js-bundle.tar' && \
+    docker cp css $CONTAINER:$APP_PATH/"
   # Ensure apps/learning symlink exists (lost after container restarts)
   ssh "$HOST" "docker exec $CONTAINER bash -c 'test -L /var/www/html/apps/learning || ln -sf $APP_PATH /var/www/html/apps/learning'"
   echo "✓ JS + CSS deployed"
