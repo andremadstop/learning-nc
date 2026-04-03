@@ -271,7 +271,7 @@ describe('CourseDetail navigation logic', () => {
 			currentTab: 'exam',
 		})
 
-		expect(instance.lernraumLeafTabs).toEqual(['training', 'leitner', 'exam'])
+		expect(instance.lernraumLeafTabs).toEqual(['training', 'leitner', 'exam', 'tools'])
 		expect(instance.isLernraumTab('exam')).toBe(true)
 		expect(instance.isTabActive('lernraum')).toBe(true)
 		expect(instance.isTabActive('leaderboard')).toBe(false)

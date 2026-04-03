@@ -34,7 +34,7 @@
 						:key="'instructor-tool-' + tool.id"
 						type="button"
 						class="course-tool-chip"
-						@click="$emit('open-tool', tool.id)"
+						@click="openCourseTool(tool.id)"
 					>
 						<span class="course-tool-chip__icon" aria-hidden="true">{{ tool.icon }}</span>
 						<span>{{ tool.shortLabel }}</span>
@@ -121,7 +121,7 @@
 						:key="'student-tool-' + tool.id"
 						type="button"
 						class="course-tool-chip"
-						@click="$emit('open-tool', tool.id)"
+						@click="openCourseTool(tool.id)"
 					>
 						<span class="course-tool-chip__icon" aria-hidden="true">{{ tool.icon }}</span>
 						<span>{{ tool.shortLabel }}</span>
@@ -209,6 +209,50 @@
 				:totalQuestions="selectedLearningPoolQuestionCount"
 				:contentLanguage="contentLanguage"
 				@back="resetLearningPoolSelection" />
+		</div>
+
+		<div v-else-if="currentSubTab === 'tools'" class="course-tools-section">
+			<div class="section-header course-tools-section__header">
+				<div>
+					<h4>{{ t('learning', 'Werkzeuge') }}</h4>
+					<p>{{ t('learning', 'Alle freigeschalteten Simulatoren dieses Kurses bleiben direkt im Lernraum verfügbar.') }}</p>
+				</div>
+			</div>
+
+			<NcEmptyContent
+				v-if="courseToolTabs.length === 0"
+				:name="t('learning', 'Keine Werkzeuge freigeschaltet')">
+				<template #description>
+					{{ t('learning', 'Aktiviere Werkzeuge in der Kursverwaltung, damit sie hier erscheinen.') }}
+				</template>
+			</NcEmptyContent>
+
+			<template v-else>
+				<div class="sim-nav" role="tablist" :aria-label="t('learning', 'Werkzeuge im Kurs')">
+					<button
+						v-for="tool in courseToolTabs"
+						:key="'course-tool-tab-' + tool.id"
+						type="button"
+						class="sim-nav__item"
+						:class="{ 'sim-nav__item--active': activeToolId === tool.id }"
+						:aria-selected="activeToolId === tool.id ? 'true' : 'false'"
+						@click="activeToolId = tool.id">
+						<span class="sim-nav__icon" aria-hidden="true">{{ tool.icon }}</span>
+						<span class="sim-nav__label">{{ tool.shortLabel }}</span>
+					</button>
+				</div>
+
+				<div class="course-tool-runtime">
+					<SubnetCalculator v-if="activeToolId === 'subnet'" />
+					<DnsResolver v-else-if="activeToolId === 'dns'" />
+					<FirewallBuilder v-else-if="activeToolId === 'firewall'" />
+					<PortScanner v-else-if="activeToolId === 'portscan'" />
+					<RoutingTable v-else-if="activeToolId === 'routing'" />
+					<NatTable v-else-if="activeToolId === 'nat'" />
+					<WiresharkLite v-else-if="activeToolId === 'wireshark'" />
+					<AuthFlowSimulator v-else-if="activeToolId === 'authflow'" />
+				</div>
+			</template>
 		</div>
 
 		<div v-else-if="currentSubTab === 'curriculum' && isInstructor" class="curriculum-section">
@@ -423,18 +467,29 @@ import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcModal from '@nextcloud/vue/components/NcModal'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import AuthFlowSimulator from './AuthFlowSimulator.vue'
 import CourseKnowledgeImport from './CourseKnowledgeImport.vue'
 import CourseMaterials from './CourseMaterials.vue'
+import DnsResolver from './DnsResolver.vue'
 import ExamMode from './ExamMode.vue'
+import FirewallBuilder from './FirewallBuilder.vue'
 import KnowledgeModeration from './KnowledgeModeration.vue'
 import LeitnerMode from './LeitnerMode.vue'
+import NatTable from './NatTable.vue'
+import PortScanner from './PortScanner.vue'
+import RoutingTable from './RoutingTable.vue'
+import SubnetCalculator from './SubnetCalculator.vue'
 import TrainingMode from './TrainingMode.vue'
+import WiresharkLite from './WiresharkLite.vue'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 
 export default {
 	name: 'CourseTabLernraum',
 
 	components: {
+		AuthFlowSimulator,
+		DnsResolver,
+		FirewallBuilder,
 		NcButton,
 		NcCheckboxRadioSwitch,
 		NcEmptyContent,
@@ -446,7 +501,12 @@ export default {
 		ExamMode,
 		KnowledgeModeration,
 		LeitnerMode,
+		NatTable,
+		PortScanner,
+		RoutingTable,
+		SubnetCalculator,
 		TrainingMode,
+		WiresharkLite,
 	},
 
 	props: {
@@ -521,6 +581,7 @@ export default {
 			curriculumEnabled: false,
 			selectedChapterKeys: [],
 			curriculumAvailableChapters: [],
+			activeToolId: '',
 		}
 	},
 
@@ -530,12 +591,18 @@ export default {
 		},
 		visibleSubTabs() {
 			if (this.isInstructor) {
-				return [
+				const tabs = [
 					{ id: 'pools', label: t('learning', 'Pools') },
+				]
+				if (this.courseToolTabs.length > 0) {
+					tabs.push({ id: 'tools', label: t('learning', 'Werkzeuge') })
+				}
+				tabs.push(
 					{ id: 'curriculum', label: t('learning', 'Themen') },
 					{ id: 'materials', label: t('learning', 'Materialien') },
 					{ id: 'knowledge', label: t('learning', 'Wissen') + (this.knowledgePendingCount > 0 ? ' (' + this.knowledgePendingCount + ')' : '') },
-				]
+				)
+				return tabs
 			}
 			const tabs = []
 			if (this.modeEnabled('training')) {
@@ -546,6 +613,9 @@ export default {
 			}
 			if (this.modeEnabled('exam')) {
 				tabs.push({ id: 'exam', label: t('learning', 'Exam') })
+			}
+			if (this.courseToolTabs.length > 0) {
+				tabs.push({ id: 'tools', label: t('learning', 'Werkzeuge') })
 			}
 			if (this.course?.material_folder) {
 				tabs.push({ id: 'materials', label: t('learning', 'Materialien') })
@@ -606,6 +676,7 @@ export default {
 		if (!this.isInstructor) {
 			this.fetchQueueCount()
 		}
+		this.ensureActiveToolVisible()
 	},
 
 	watch: {
@@ -636,6 +707,9 @@ export default {
 			}
 			this.selectedLearningPool = nextPool
 		},
+		courseToolTabs() {
+			this.ensureActiveToolVisible()
+		},
 	},
 
 	methods: {
@@ -659,6 +733,15 @@ export default {
 		isVisibleSubTab(tabId) {
 			return this.visibleSubTabs.some((tab) => tab.id === tabId)
 		},
+		ensureActiveToolVisible() {
+			if (this.courseToolTabs.length === 0) {
+				this.activeToolId = ''
+				return
+			}
+			if (!this.courseToolTabs.some((tool) => tool.id === this.activeToolId)) {
+				this.activeToolId = this.courseToolTabs[0].id
+			}
+		},
 		syncFromActiveTab(tabId) {
 			const resolvedTab = this.isVisibleSubTab(tabId) ? tabId : this.defaultSubTab()
 			const previousTab = this.currentSubTab
@@ -666,6 +749,9 @@ export default {
 			if (['training', 'leitner', 'exam'].includes(resolvedTab) && previousTab !== resolvedTab) {
 				this.selectedLearningPool = null
 				this.loadingLearningPoolId = null
+			}
+			if (resolvedTab === 'tools') {
+				this.ensureActiveToolVisible()
 			}
 			if (resolvedTab === 'curriculum' && this.isInstructor) {
 				this.fetchCurriculumScope()
@@ -679,6 +765,14 @@ export default {
 				this.$emit('mode-activated', tabId)
 			}
 			this.$emit('tab-change', tabId)
+		},
+		openCourseTool(toolId) {
+			this.ensureActiveToolVisible()
+			if (this.courseToolTabs.some((tool) => tool.id === toolId)) {
+				this.activeToolId = toolId
+			}
+			this.currentSubTab = 'tools'
+			this.$emit('tab-change', 'tools')
 		},
 		handleKnowledgePendingCount(count) {
 			this.knowledgePendingCount = Number(count || 0)
@@ -1046,6 +1140,11 @@ export default {
 	color: var(--color-text-maxcontrast);
 }
 
+.course-tools-section__header p {
+	margin: 4px 0 0 0;
+	color: var(--color-text-maxcontrast);
+}
+
 .course-tools-grid {
 	display: flex;
 	flex-wrap: wrap;
@@ -1075,6 +1174,40 @@ export default {
 
 .course-tool-chip__icon {
 	font-size: 15px;
+}
+
+.sim-nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 16px;
+}
+
+.sim-nav__item {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 14px;
+	border: 1px solid var(--color-border);
+	border-radius: 999px;
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	cursor: pointer;
+}
+
+.sim-nav__item--active {
+	border-color: var(--color-primary-element);
+	background: color-mix(in srgb, var(--color-primary-element) 12%, transparent);
+}
+
+.sim-nav__icon {
+	font-size: 15px;
+}
+
+.course-tool-runtime {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
 }
 
 .pool-item {

@@ -35,14 +35,6 @@
             {{ t('learning', 'Pools') }}
           </button>
           <button
-            :class="['main-nav-btn', { active: mainView === 'werkzeuge' }]"
-            role="tab"
-            :aria-selected="mainView === 'werkzeuge' ? 'true' : 'false'"
-            @click="switchMainView('werkzeuge')"
-          >
-            {{ t('learning', 'Werkzeuge') }}
-          </button>
-          <button
             v-if="userRole === 'student' && showVirtuProfDock"
             :class="['main-nav-btn', { active: mainView === 'virtuprof-fullscreen' }]"
             role="tab"
@@ -1292,10 +1284,10 @@ export default {
       }
 
       if (route.name === 'tools') {
-        this.mainView = 'werkzeuge';
-        const toolId = String(route.query?.tool || '').trim();
-        if (toolId) {
-          this.toolsView = toolId;
+        if (this.selectedCourse?.id) {
+          this.pushAppRoute(this.courseRouteLocation(this.selectedCourse.id, 'tools'), true);
+        } else {
+          this.pushAppRoute({ name: 'courses' }, true);
         }
         return;
       }
@@ -1406,10 +1398,11 @@ export default {
       this.currentView = 'smartQueue';
     },
     openCourseTool(toolId) {
-      if (toolId) {
-        this.toolsView = toolId;
+      if (this.selectedCourse?.id) {
+        this.pushAppRoute(this.courseRouteLocation(this.selectedCourse.id, 'tools'));
+        return;
       }
-      this.pushAppRoute(this.routeLocationForView('werkzeuge'));
+      this.pushAppRoute({ name: 'courses' });
     },
     openRemediation() {
       this.smartQueueMode = 'remediation';

@@ -26,10 +26,18 @@ const { stub } = vi.hoisted(() => ({
 
 vi.mock('../../src/components/CourseKnowledgeImport.vue', () => stub('CourseKnowledgeImport'))
 vi.mock('../../src/components/CourseMaterials.vue', () => stub('CourseMaterials'))
+vi.mock('../../src/components/AuthFlowSimulator.vue', () => stub('AuthFlowSimulator'))
+vi.mock('../../src/components/DnsResolver.vue', () => stub('DnsResolver'))
 vi.mock('../../src/components/ExamMode.vue', () => stub('ExamMode'))
+vi.mock('../../src/components/FirewallBuilder.vue', () => stub('FirewallBuilder'))
 vi.mock('../../src/components/KnowledgeModeration.vue', () => stub('KnowledgeModeration'))
 vi.mock('../../src/components/LeitnerMode.vue', () => stub('LeitnerMode'))
+vi.mock('../../src/components/NatTable.vue', () => stub('NatTable'))
+vi.mock('../../src/components/PortScanner.vue', () => stub('PortScanner'))
+vi.mock('../../src/components/RoutingTable.vue', () => stub('RoutingTable'))
+vi.mock('../../src/components/SubnetCalculator.vue', () => stub('SubnetCalculator'))
 vi.mock('../../src/components/TrainingMode.vue', () => stub('TrainingMode'))
+vi.mock('../../src/components/WiresharkLite.vue', () => stub('WiresharkLite'))
 
 import CourseTabLernraum from '../../src/components/CourseTabLernraum.vue'
 
@@ -91,7 +99,7 @@ describe('CourseTabLernraum', () => {
 	it('builds student sub-tabs from the enabled learning modes', () => {
 		const instance = createInstance()
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['training', 'leitner', 'exam', 'materials'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['training', 'leitner', 'exam', 'tools', 'materials'])
 		expect(instance.defaultSubTab()).toBe('training')
 	})
 
@@ -109,7 +117,19 @@ describe('CourseTabLernraum', () => {
 			userRole: 'instructor',
 		})
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['pools', 'curriculum', 'materials', 'knowledge'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['pools', 'tools', 'curriculum', 'materials', 'knowledge'])
+	})
+
+	it('switches into the embedded tools leaf and remembers the requested simulator', () => {
+		const instance = createInstance({
+			currentSubTab: 'training',
+		})
+
+		instance.openCourseTool('dns')
+
+		expect(instance.currentSubTab).toBe('tools')
+		expect(instance.activeToolId).toBe('dns')
+		expect(instance.$emit).toHaveBeenCalledWith('tab-change', 'tools')
 	})
 
 	it('emits leaf-tab changes from the sub-navigation', () => {

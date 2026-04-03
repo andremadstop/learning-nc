@@ -226,6 +226,9 @@ export default {
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentTab)
 		},
+		hasCourseTools() {
+			return Array.isArray(this.course?.enabled_tools) ? this.course.enabled_tools.length > 0 : true
+		},
 		kommunikationLeafTabs() {
 			if (this.isInstructor) {
 				return ['announcements', 'feed', 'requests']
@@ -237,13 +240,17 @@ export default {
 		},
 		lernraumLeafTabs() {
 			if (this.isInstructor) {
-				return ['pools', 'curriculum', 'materials', 'knowledge']
+				const tabs = ['pools']
+				if (this.hasCourseTools) tabs.push('tools')
+				tabs.push('curriculum', 'materials', 'knowledge')
+				return tabs
 			}
 			const mc = this.course?.mode_config || {}
 			const enabled = (key) => mc[key] !== false
 			const tabs = ['training']
 			if (enabled('leitner')) tabs.push('leitner')
 			if (enabled('exam')) tabs.push('exam')
+			if (this.hasCourseTools) tabs.push('tools')
 			if (this.course?.material_folder) tabs.push('materials')
 			return tabs
 		},
