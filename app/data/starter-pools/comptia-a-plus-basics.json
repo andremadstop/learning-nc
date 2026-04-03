@@ -1,0 +1,317 @@
+{
+  "_meta": {
+    "title": "CompTIA A+ Basics",
+    "description": "Starter pool with entry-level hardware, operating system, security, and troubleshooting questions aligned to common A+ objectives.",
+    "exam": "CompTIA A+",
+    "difficulty": "easy",
+    "language": "en",
+    "exam_key": "comptia-a-plus",
+    "handbook_key": "starter-comptia-a-plus",
+    "handbook_title": "CompTIA A+ Basics",
+    "chapter_key": "fundamentals",
+    "chapter_title": "Core Fundamentals",
+    "chapter_order": 1
+  },
+  "questions": [
+    {
+      "text": "Which component performs the main calculations in a computer?",
+      "answers": [
+        { "text": "CPU", "is_correct": true },
+        { "text": "Power supply", "is_correct": false },
+        { "text": "Hard drive", "is_correct": false },
+        { "text": "NIC", "is_correct": false }
+      ],
+      "explanation": "The CPU executes instructions and performs the primary processing tasks."
+    },
+    {
+      "text": "What is a key characteristic of RAM?",
+      "answers": [
+        { "text": "It is volatile memory", "is_correct": true },
+        { "text": "It stores data without power forever", "is_correct": false },
+        { "text": "It is only used for backups", "is_correct": false },
+        { "text": "It cannot be upgraded", "is_correct": false }
+      ],
+      "explanation": "RAM is volatile, so its contents are lost when power is removed."
+    },
+    {
+      "text": "Which storage device has no moving parts?",
+      "answers": [
+        { "text": "SSD", "is_correct": true },
+        { "text": "HDD", "is_correct": false },
+        { "text": "DVD-RW", "is_correct": false },
+        { "text": "Tape drive", "is_correct": false }
+      ],
+      "explanation": "Solid-state drives use flash memory instead of spinning platters."
+    },
+    {
+      "text": "What is the main purpose of BIOS or UEFI firmware?",
+      "answers": [
+        { "text": "Initialize hardware before the operating system loads", "is_correct": true },
+        { "text": "Encrypt all user files", "is_correct": false },
+        { "text": "Assign IP addresses on the network", "is_correct": false },
+        { "text": "Create backup images automatically", "is_correct": false }
+      ],
+      "explanation": "BIOS or UEFI performs startup checks and prepares hardware so the OS can boot."
+    },
+    {
+      "text": "What does a power supply unit do inside a desktop PC?",
+      "answers": [
+        { "text": "Converts AC power into DC power for components", "is_correct": true },
+        { "text": "Stores the operating system", "is_correct": false },
+        { "text": "Manages wireless connections", "is_correct": false },
+        { "text": "Cools the CPU with liquid", "is_correct": false }
+      ],
+      "explanation": "A PSU converts incoming AC electricity to the DC voltages used by internal hardware."
+    },
+    {
+      "text": "Which tool helps prevent electrostatic discharge damage during hardware repair?",
+      "answers": [
+        { "text": "Anti-static wrist strap", "is_correct": true },
+        { "text": "Punch-down tool", "is_correct": false },
+        { "text": "Loopback plug", "is_correct": false },
+        { "text": "Cable toner", "is_correct": false }
+      ],
+      "explanation": "An anti-static wrist strap grounds the technician and reduces ESD risk."
+    },
+    {
+      "text": "Which cable category commonly supports 10 Gbps on short runs?",
+      "answers": [
+        { "text": "Cat 6", "is_correct": true },
+        { "text": "Cat 3", "is_correct": false },
+        { "text": "Coax RG-59", "is_correct": false },
+        { "text": "USB 2.0", "is_correct": false }
+      ],
+      "explanation": "Cat 6 cabling supports 10 Gigabit Ethernet over shorter distances."
+    },
+    {
+      "text": "What consumable does a laser printer use?",
+      "answers": [
+        { "text": "Toner", "is_correct": true },
+        { "text": "Ribbon", "is_correct": false },
+        { "text": "Liquid ink only", "is_correct": false },
+        { "text": "Thermal paper roll", "is_correct": false }
+      ],
+      "explanation": "Laser printers use toner powder, not ink cartridges."
+    },
+    {
+      "text": "Which service automatically assigns IP addresses to client devices?",
+      "answers": [
+        { "text": "DHCP", "is_correct": true },
+        { "text": "DNS", "is_correct": false },
+        { "text": "FTP", "is_correct": false },
+        { "text": "SMTP", "is_correct": false }
+      ],
+      "explanation": "Dynamic Host Configuration Protocol leases IP settings to clients."
+    },
+    {
+      "text": "Compared with 5 GHz Wi-Fi, 2.4 GHz Wi-Fi usually provides what advantage?",
+      "answers": [
+        { "text": "Longer range", "is_correct": true },
+        { "text": "Always higher speed", "is_correct": false },
+        { "text": "No interference", "is_correct": false },
+        { "text": "Built-in encryption without configuration", "is_correct": false }
+      ],
+      "explanation": "2.4 GHz generally travels farther, though it often has more interference."
+    },
+    {
+      "text": "Which Windows utility is commonly used to view running processes and performance data?",
+      "answers": [
+        { "text": "Task Manager", "is_correct": true },
+        { "text": "Disk Cleanup", "is_correct": false },
+        { "text": "Device Manager", "is_correct": false },
+        { "text": "Paint", "is_correct": false }
+      ],
+      "explanation": "Task Manager shows processes, resource usage, and startup items."
+    },
+    {
+      "text": "What does Safe Mode do in Windows troubleshooting?",
+      "answers": [
+        { "text": "Loads the system with minimal drivers and services", "is_correct": true },
+        { "text": "Permanently resets all user settings", "is_correct": false },
+        { "text": "Formats the system drive", "is_correct": false },
+        { "text": "Disables networking forever", "is_correct": false }
+      ],
+      "explanation": "Safe Mode starts Windows with only essential components to help isolate problems."
+    },
+    {
+      "text": "Which Windows feature encrypts an entire drive?",
+      "answers": [
+        { "text": "BitLocker", "is_correct": true },
+        { "text": "Clipboard history", "is_correct": false },
+        { "text": "Remote Desktop", "is_correct": false },
+        { "text": "System Restore", "is_correct": false }
+      ],
+      "explanation": "BitLocker provides full-disk encryption for supported Windows editions."
+    },
+    {
+      "text": "A message urges a user to click a login link and verify account details immediately. What is this most likely?",
+      "answers": [
+        { "text": "Phishing", "is_correct": true },
+        { "text": "Defragmentation", "is_correct": false },
+        { "text": "Load balancing", "is_correct": false },
+        { "text": "Tokenization", "is_correct": false }
+      ],
+      "explanation": "Phishing attempts trick users into revealing credentials or other sensitive data."
+    },
+    {
+      "text": "Which option is an example of multifactor authentication?",
+      "answers": [
+        { "text": "Password plus authenticator app code", "is_correct": true },
+        { "text": "Password plus security question", "is_correct": false },
+        { "text": "PIN plus password", "is_correct": false },
+        { "text": "Two copies of the same password", "is_correct": false }
+      ],
+      "explanation": "MFA uses different factor types, such as something you know and something you have."
+    },
+    {
+      "text": "What does a VPN primarily provide for a remote worker?",
+      "answers": [
+        { "text": "Encrypted access to a private network", "is_correct": true },
+        { "text": "Automatic hardware upgrades", "is_correct": false },
+        { "text": "Unlimited cloud storage", "is_correct": false },
+        { "text": "A replacement for antivirus software", "is_correct": false }
+      ],
+      "explanation": "A VPN creates an encrypted tunnel for secure remote access."
+    },
+    {
+      "text": "Which address is usually the public IP in a small office network?",
+      "answers": [
+        { "text": "The IP on the router WAN interface", "is_correct": true },
+        { "text": "The printer IP on the LAN", "is_correct": false },
+        { "text": "The loopback address 127.0.0.1", "is_correct": false },
+        { "text": "Any address beginning with 192.168", "is_correct": false }
+      ],
+      "explanation": "The public IP is typically assigned to the router or firewall interface facing the internet."
+    },
+    {
+      "text": "What does the 3-2-1 backup rule recommend?",
+      "answers": [
+        { "text": "Three copies of data, on two media types, with one offsite copy", "is_correct": true },
+        { "text": "Three passwords, two users, one admin", "is_correct": false },
+        { "text": "Three servers, two switches, one router", "is_correct": false },
+        { "text": "Three updates per week, two scans per day, one reboot", "is_correct": false }
+      ],
+      "explanation": "The 3-2-1 rule improves backup resilience and disaster recovery readiness."
+    },
+    {
+      "text": "What is the main purpose of a UPS?",
+      "answers": [
+        { "text": "Provide battery backup during short power loss", "is_correct": true },
+        { "text": "Increase internet bandwidth", "is_correct": false },
+        { "text": "Translate DNS names", "is_correct": false },
+        { "text": "Encrypt local files", "is_correct": false }
+      ],
+      "explanation": "A UPS gives temporary power so equipment can stay online or shut down safely."
+    },
+    {
+      "text": "Which connector is commonly used for Ethernet patch cables?",
+      "answers": [
+        { "text": "RJ45", "is_correct": true },
+        { "text": "USB-C", "is_correct": false },
+        { "text": "DB9", "is_correct": false },
+        { "text": "Molex", "is_correct": false }
+      ],
+      "explanation": "RJ45 connectors are standard for twisted-pair Ethernet cabling."
+    },
+    {
+      "text": "Which interface can carry both digital video and audio to a monitor or TV?",
+      "answers": [
+        { "text": "HDMI", "is_correct": true },
+        { "text": "PS/2", "is_correct": false },
+        { "text": "RJ11", "is_correct": false },
+        { "text": "SATA", "is_correct": false }
+      ],
+      "explanation": "HDMI transports digital video and audio over one cable."
+    },
+    {
+      "text": "Which display technology is known for strong color accuracy and wide viewing angles?",
+      "answers": [
+        { "text": "IPS", "is_correct": true },
+        { "text": "TN only", "is_correct": false },
+        { "text": "Dot matrix", "is_correct": false },
+        { "text": "CRT phosphor boost", "is_correct": false }
+      ],
+      "explanation": "IPS panels are commonly chosen for better color and wider viewing angles."
+    },
+    {
+      "text": "A technician resolves a user issue. What should happen next according to good support practice?",
+      "answers": [
+        { "text": "Document the fix and close the ticket appropriately", "is_correct": true },
+        { "text": "Delete the ticket with no notes", "is_correct": false },
+        { "text": "Ignore the user confirmation", "is_correct": false },
+        { "text": "Replace all workstation hardware", "is_correct": false }
+      ],
+      "explanation": "Accurate documentation supports future troubleshooting and accountability."
+    },
+    {
+      "text": "Which security principle gives users only the access they need to do their job?",
+      "answers": [
+        { "text": "Least privilege", "is_correct": true },
+        { "text": "Open trust", "is_correct": false },
+        { "text": "Full administrator rights", "is_correct": false },
+        { "text": "Shared credentials", "is_correct": false }
+      ],
+      "explanation": "Least privilege limits permissions to reduce risk."
+    },
+    {
+      "text": "A web application looks broken after an update, but only in one browser. What is a common first troubleshooting step?",
+      "answers": [
+        { "text": "Clear the browser cache", "is_correct": true },
+        { "text": "Replace the motherboard", "is_correct": false },
+        { "text": "Disable the monitor", "is_correct": false },
+        { "text": "Reformat the domain controller", "is_correct": false }
+      ],
+      "explanation": "Old cached files can cause display and functionality problems after updates."
+    },
+    {
+      "text": "A workstation is suspected to be infected with malware. What is a good immediate action?",
+      "answers": [
+        { "text": "Isolate it from the network", "is_correct": true },
+        { "text": "Share its files with everyone", "is_correct": false },
+        { "text": "Disable all user passwords", "is_correct": false },
+        { "text": "Ignore the symptoms until later", "is_correct": false }
+      ],
+      "explanation": "Isolation helps stop malware from spreading while investigation begins."
+    },
+    {
+      "text": "Which mobile feature lets a phone provide internet access to a laptop?",
+      "answers": [
+        { "text": "Hotspot or tethering", "is_correct": true },
+        { "text": "Airplane mode", "is_correct": false },
+        { "text": "NFC pairing only", "is_correct": false },
+        { "text": "Disk defragmentation", "is_correct": false }
+      ],
+      "explanation": "A hotspot shares the phone cellular connection with other devices."
+    },
+    {
+      "text": "What is the main purpose of a docking station for a laptop?",
+      "answers": [
+        { "text": "Expand connectivity for peripherals and displays", "is_correct": true },
+        { "text": "Replace the CPU with a faster one", "is_correct": false },
+        { "text": "Act as antivirus software", "is_correct": false },
+        { "text": "Provide internet over power lines", "is_correct": false }
+      ],
+      "explanation": "Docking stations provide extra ports, network access, and monitor connections."
+    },
+    {
+      "text": "Which file system is commonly used by modern Windows installations?",
+      "answers": [
+        { "text": "NTFS", "is_correct": true },
+        { "text": "ext4", "is_correct": false },
+        { "text": "HFS+", "is_correct": false },
+        { "text": "ZFS only", "is_correct": false }
+      ],
+      "explanation": "NTFS is the standard Windows file system for internal drives."
+    },
+    {
+      "text": "Which command-line tool can verify basic IP configuration on a Windows system?",
+      "answers": [
+        { "text": "ipconfig", "is_correct": true },
+        { "text": "format", "is_correct": false },
+        { "text": "diskpart clean", "is_correct": false },
+        { "text": "shutdown /s only", "is_correct": false }
+      ],
+      "explanation": "ipconfig displays local IP addressing details and related network settings."
+    }
+  ]
+}

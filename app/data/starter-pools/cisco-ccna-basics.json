@@ -1,0 +1,217 @@
+{
+  "_meta": {
+    "title": "Cisco CCNA Basics",
+    "description": "Starter pool with introductory switching, routing, and Cisco administration questions aligned to common CCNA fundamentals.",
+    "exam": "Cisco CCNA",
+    "difficulty": "easy",
+    "language": "en",
+    "exam_key": "cisco-ccna",
+    "handbook_key": "starter-cisco-ccna",
+    "handbook_title": "Cisco CCNA Basics",
+    "chapter_key": "fundamentals",
+    "chapter_title": "Cisco Networking Fundamentals",
+    "chapter_order": 1
+  },
+  "questions": [
+    {
+      "text": "What is the main purpose of a VLAN on a switch?",
+      "answers": [
+        { "text": "Create separate Layer 2 broadcast domains", "is_correct": true },
+        { "text": "Increase CPU clock speed", "is_correct": false },
+        { "text": "Replace routing protocols", "is_correct": false },
+        { "text": "Provide wireless encryption", "is_correct": false }
+      ],
+      "explanation": "VLANs logically segment switch ports into different broadcast domains."
+    },
+    {
+      "text": "What type of switch port is used to carry traffic for multiple VLANs?",
+      "answers": [
+        { "text": "Trunk port", "is_correct": true },
+        { "text": "Access port", "is_correct": false },
+        { "text": "Console port", "is_correct": false },
+        { "text": "Loopback port", "is_correct": false }
+      ],
+      "explanation": "Trunk links transport tagged traffic for multiple VLANs."
+    },
+    {
+      "text": "What VLAN behavior is typical for an access port?",
+      "answers": [
+        { "text": "It carries traffic for a single VLAN", "is_correct": true },
+        { "text": "It always carries all VLANs", "is_correct": false },
+        { "text": "It disables MAC learning", "is_correct": false },
+        { "text": "It acts as a routed port by default", "is_correct": false }
+      ],
+      "explanation": "Access ports connect end devices and normally belong to one VLAN."
+    },
+    {
+      "text": "Which route matches all unknown IPv4 destinations?",
+      "answers": [
+        { "text": "0.0.0.0/0", "is_correct": true },
+        { "text": "127.0.0.1/32", "is_correct": false },
+        { "text": "169.254.0.0/16", "is_correct": false },
+        { "text": "224.0.0.0/4", "is_correct": false }
+      ],
+      "explanation": "The default route is used when no more specific route exists."
+    },
+    {
+      "text": "What metric does OSPF use to choose a best path?",
+      "answers": [
+        { "text": "Cost", "is_correct": true },
+        { "text": "Hop count only", "is_correct": false },
+        { "text": "Signal strength", "is_correct": false },
+        { "text": "ARP age", "is_correct": false }
+      ],
+      "explanation": "OSPF uses cost, often derived from interface bandwidth."
+    },
+    {
+      "text": "What is the role of the root bridge in spanning tree?",
+      "answers": [
+        { "text": "It is the central reference point for path selection", "is_correct": true },
+        { "text": "It assigns IP addresses", "is_correct": false },
+        { "text": "It replaces DHCP", "is_correct": false },
+        { "text": "It encrypts trunk links", "is_correct": false }
+      ],
+      "explanation": "STP elects a root bridge and calculates loop-free paths from it."
+    },
+    {
+      "text": "What is EtherChannel used for?",
+      "answers": [
+        { "text": "Bundle multiple links into one logical connection", "is_correct": true },
+        { "text": "Translate NAT rules", "is_correct": false },
+        { "text": "Create wireless SSIDs", "is_correct": false },
+        { "text": "Run SNMP queries", "is_correct": false }
+      ],
+      "explanation": "EtherChannel improves redundancy and bandwidth by grouping links."
+    },
+    {
+      "text": "What is a key benefit of DHCP snooping?",
+      "answers": [
+        { "text": "It helps block unauthorized DHCP servers", "is_correct": true },
+        { "text": "It compresses syslog messages", "is_correct": false },
+        { "text": "It replaces DNS", "is_correct": false },
+        { "text": "It disables trunking", "is_correct": false }
+      ],
+      "explanation": "DHCP snooping protects clients from rogue DHCP responses."
+    },
+    {
+      "text": "What does switch port security help limit?",
+      "answers": [
+        { "text": "The MAC addresses allowed on a port", "is_correct": true },
+        { "text": "The OSPF area number", "is_correct": false },
+        { "text": "The router boot image size", "is_correct": false },
+        { "text": "The number of DNS zones", "is_correct": false }
+      ],
+      "explanation": "Port security restricts which MAC addresses can use a switch port."
+    },
+    {
+      "text": "What is required for inter-VLAN routing?",
+      "answers": [
+        { "text": "A Layer 3 device such as a router or multilayer switch", "is_correct": true },
+        { "text": "Only a patch panel", "is_correct": false },
+        { "text": "A longer Ethernet cable", "is_correct": false },
+        { "text": "A printer queue", "is_correct": false }
+      ],
+      "explanation": "Traffic moving between VLANs must be routed by a Layer 3 device."
+    },
+    {
+      "text": "What can an ACL on a Cisco router do?",
+      "answers": [
+        { "text": "Permit or deny traffic based on matching conditions", "is_correct": true },
+        { "text": "Increase fan speed", "is_correct": false },
+        { "text": "Replace switch stacking", "is_correct": false },
+        { "text": "Provide UPS runtime", "is_correct": false }
+      ],
+      "explanation": "Access control lists filter traffic using rules like IP, protocol, and port."
+    },
+    {
+      "text": "What is NAT overload also commonly called?",
+      "answers": [
+        { "text": "PAT", "is_correct": true },
+        { "text": "HSRP", "is_correct": false },
+        { "text": "VTP", "is_correct": false },
+        { "text": "CDP", "is_correct": false }
+      ],
+      "explanation": "Port Address Translation lets many private hosts share one public IP."
+    },
+    {
+      "text": "Which neighbor discovery protocol is Cisco proprietary?",
+      "answers": [
+        { "text": "CDP", "is_correct": true },
+        { "text": "LLDP", "is_correct": false },
+        { "text": "RIP", "is_correct": false },
+        { "text": "NTP", "is_correct": false }
+      ],
+      "explanation": "Cisco Discovery Protocol is Cisco-specific, while LLDP is vendor-neutral."
+    },
+    {
+      "text": "Which protocol is the vendor-neutral alternative to CDP?",
+      "answers": [
+        { "text": "LLDP", "is_correct": true },
+        { "text": "ARP", "is_correct": false },
+        { "text": "BGP", "is_correct": false },
+        { "text": "HSRP", "is_correct": false }
+      ],
+      "explanation": "Link Layer Discovery Protocol works across different vendors."
+    },
+    {
+      "text": "Which remote management protocol is preferred over Telnet for Cisco devices?",
+      "answers": [
+        { "text": "SSH", "is_correct": true },
+        { "text": "FTP", "is_correct": false },
+        { "text": "TFTP", "is_correct": false },
+        { "text": "SNMP trap", "is_correct": false }
+      ],
+      "explanation": "SSH encrypts management traffic, unlike Telnet."
+    },
+    {
+      "text": "How many usable host addresses are available in a /30 IPv4 subnet?",
+      "answers": [
+        { "text": "2", "is_correct": true },
+        { "text": "4", "is_correct": false },
+        { "text": "6", "is_correct": false },
+        { "text": "14", "is_correct": false }
+      ],
+      "explanation": "A /30 has four total addresses: network, two hosts, and broadcast."
+    },
+    {
+      "text": "How does a switch learn entries for its MAC address table?",
+      "answers": [
+        { "text": "By recording source MAC addresses seen on incoming frames", "is_correct": true },
+        { "text": "By asking DHCP for them", "is_correct": false },
+        { "text": "By copying DNS records", "is_correct": false },
+        { "text": "By reading USB devices", "is_correct": false }
+      ],
+      "explanation": "Switches learn source MAC addresses and associate them with interfaces."
+    },
+    {
+      "text": "What is the purpose of NTP in a Cisco network?",
+      "answers": [
+        { "text": "Synchronize time across devices", "is_correct": true },
+        { "text": "Route multicast traffic", "is_correct": false },
+        { "text": "Assign VLAN IDs", "is_correct": false },
+        { "text": "Create static NAT rules", "is_correct": false }
+      ],
+      "explanation": "Consistent time is important for logs, certificates, and troubleshooting."
+    },
+    {
+      "text": "What is syslog used for?",
+      "answers": [
+        { "text": "Send device log messages to a central collector", "is_correct": true },
+        { "text": "Replace routing tables", "is_correct": false },
+        { "text": "Provide end-user authentication", "is_correct": false },
+        { "text": "Create loopback interfaces", "is_correct": false }
+      ],
+      "explanation": "Syslog centralizes operational and security messages from network devices."
+    },
+    {
+      "text": "Why is saving the running configuration to startup configuration important?",
+      "answers": [
+        { "text": "So changes persist after a reboot", "is_correct": true },
+        { "text": "So the switch learns MAC addresses faster", "is_correct": false },
+        { "text": "So VLAN tagging is disabled", "is_correct": false },
+        { "text": "So DHCP stops working", "is_correct": false }
+      ],
+      "explanation": "Unsaved running configuration changes are lost when the device restarts."
+    }
+  ]
+}

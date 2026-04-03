@@ -1,0 +1,317 @@
+{
+  "_meta": {
+    "title": "CompTIA Network+ Basics",
+    "description": "Starter pool with foundational networking, protocols, addressing, and operations questions aligned to common Network+ objectives.",
+    "exam": "CompTIA Network+",
+    "difficulty": "easy",
+    "language": "en",
+    "exam_key": "comptia-network-plus",
+    "handbook_key": "starter-comptia-network-plus",
+    "handbook_title": "CompTIA Network+ Basics",
+    "chapter_key": "fundamentals",
+    "chapter_title": "Network Fundamentals",
+    "chapter_order": 1
+  },
+  "questions": [
+    {
+      "text": "At which OSI layer does IP operate?",
+      "answers": [
+        { "text": "Layer 3", "is_correct": true },
+        { "text": "Layer 1", "is_correct": false },
+        { "text": "Layer 5", "is_correct": false },
+        { "text": "Layer 7", "is_correct": false }
+      ],
+      "explanation": "IP is a network layer protocol responsible for logical addressing and routing."
+    },
+    {
+      "text": "Which protocol is connection-oriented and provides reliable delivery?",
+      "answers": [
+        { "text": "TCP", "is_correct": true },
+        { "text": "UDP", "is_correct": false },
+        { "text": "ICMP", "is_correct": false },
+        { "text": "ARP", "is_correct": false }
+      ],
+      "explanation": "TCP uses acknowledgments and sequencing to provide reliable transport."
+    },
+    {
+      "text": "Which transport protocol is commonly used for fast DNS queries?",
+      "answers": [
+        { "text": "UDP", "is_correct": true },
+        { "text": "SCTP", "is_correct": false },
+        { "text": "SSH", "is_correct": false },
+        { "text": "RDP", "is_correct": false }
+      ],
+      "explanation": "DNS typically uses UDP for standard queries because it is lightweight and fast."
+    },
+    {
+      "text": "What subnet mask corresponds to a /24 network?",
+      "answers": [
+        { "text": "255.255.255.0", "is_correct": true },
+        { "text": "255.255.0.0", "is_correct": false },
+        { "text": "255.0.0.0", "is_correct": false },
+        { "text": "255.255.255.240", "is_correct": false }
+      ],
+      "explanation": "A /24 prefix means the first 24 bits are network bits, which equals 255.255.255.0."
+    },
+    {
+      "text": "What is the purpose of a default gateway?",
+      "answers": [
+        { "text": "Send traffic to destinations outside the local subnet", "is_correct": true },
+        { "text": "Translate hostnames to IP addresses", "is_correct": false },
+        { "text": "Assign DNS suffixes to users", "is_correct": false },
+        { "text": "Encrypt wireless frames", "is_correct": false }
+      ],
+      "explanation": "The default gateway forwards traffic for remote networks."
+    },
+    {
+      "text": "Why is NAT commonly used on edge routers?",
+      "answers": [
+        { "text": "To allow private addresses to share public IPv4 space", "is_correct": true },
+        { "text": "To replace DNS entirely", "is_correct": false },
+        { "text": "To increase cable length limits", "is_correct": false },
+        { "text": "To disable routing loops", "is_correct": false }
+      ],
+      "explanation": "Network Address Translation lets many private devices use fewer public IPv4 addresses."
+    },
+    {
+      "text": "What is a primary benefit of using VLANs on a switch?",
+      "answers": [
+        { "text": "They separate broadcast domains logically", "is_correct": true },
+        { "text": "They remove the need for IP addressing", "is_correct": false },
+        { "text": "They turn switches into firewalls automatically", "is_correct": false },
+        { "text": "They guarantee internet access", "is_correct": false }
+      ],
+      "explanation": "VLANs segment traffic logically and reduce unnecessary broadcasts."
+    },
+    {
+      "text": "Which service resolves hostnames like example.com to IP addresses?",
+      "answers": [
+        { "text": "DNS", "is_correct": true },
+        { "text": "DHCP", "is_correct": false },
+        { "text": "NTP", "is_correct": false },
+        { "text": "LDAP", "is_correct": false }
+      ],
+      "explanation": "The Domain Name System translates names into IP addresses."
+    },
+    {
+      "text": "What does a DHCP scope define?",
+      "answers": [
+        { "text": "The pool of addresses available for lease", "is_correct": true },
+        { "text": "The maximum Wi-Fi speed", "is_correct": false },
+        { "text": "The cable color standard", "is_correct": false },
+        { "text": "The DNS root zone", "is_correct": false }
+      ],
+      "explanation": "A DHCP scope contains the address range and options a server can lease to clients."
+    },
+    {
+      "text": "A switch makes forwarding decisions primarily based on which information?",
+      "answers": [
+        { "text": "Destination MAC address", "is_correct": true },
+        { "text": "Destination URL", "is_correct": false },
+        { "text": "Source hostname", "is_correct": false },
+        { "text": "Application process ID", "is_correct": false }
+      ],
+      "explanation": "Layer 2 switches forward Ethernet frames using MAC address tables."
+    },
+    {
+      "text": "What is the main function of a router?",
+      "answers": [
+        { "text": "Connect different IP networks and forward packets between them", "is_correct": true },
+        { "text": "Store files for users", "is_correct": false },
+        { "text": "Print documents", "is_correct": false },
+        { "text": "Replace all DNS servers", "is_correct": false }
+      ],
+      "explanation": "Routers operate at Layer 3 to move traffic between networks."
+    },
+    {
+      "text": "What does PoE provide over Ethernet cabling?",
+      "answers": [
+        { "text": "Electrical power to devices such as phones or access points", "is_correct": true },
+        { "text": "Optical signals for fiber links", "is_correct": false },
+        { "text": "Automatic subnetting", "is_correct": false },
+        { "text": "Built-in encryption only", "is_correct": false }
+      ],
+      "explanation": "Power over Ethernet supplies power and data on the same cable."
+    },
+    {
+      "text": "Which protocol helps prevent Layer 2 switching loops?",
+      "answers": [
+        { "text": "STP", "is_correct": true },
+        { "text": "FTP", "is_correct": false },
+        { "text": "RDP", "is_correct": false },
+        { "text": "SMTP", "is_correct": false }
+      ],
+      "explanation": "Spanning Tree Protocol blocks redundant paths to avoid loops."
+    },
+    {
+      "text": "Why is fiber-optic cabling often preferred for very long runs?",
+      "answers": [
+        { "text": "It supports long distances and is resistant to electromagnetic interference", "is_correct": true },
+        { "text": "It can only be used indoors", "is_correct": false },
+        { "text": "It requires no transceivers", "is_correct": false },
+        { "text": "It always costs less than copper", "is_correct": false }
+      ],
+      "explanation": "Fiber supports longer links and is not affected by EMI the way copper can be."
+    },
+    {
+      "text": "Which wireless security standard is the most modern of these options?",
+      "answers": [
+        { "text": "WPA3", "is_correct": true },
+        { "text": "WEP", "is_correct": false },
+        { "text": "WPA", "is_correct": false },
+        { "text": "Open network", "is_correct": false }
+      ],
+      "explanation": "WPA3 improves security over earlier Wi-Fi protection standards."
+    },
+    {
+      "text": "What is the role of a wireless access point?",
+      "answers": [
+        { "text": "Bridge wireless clients onto the wired network", "is_correct": true },
+        { "text": "Replace the need for all switches", "is_correct": false },
+        { "text": "Perform full disk encryption", "is_correct": false },
+        { "text": "Act as a UPS battery", "is_correct": false }
+      ],
+      "explanation": "Access points provide wireless connectivity to the LAN."
+    },
+    {
+      "text": "What does traceroute help an administrator identify?",
+      "answers": [
+        { "text": "The path traffic takes through network hops", "is_correct": true },
+        { "text": "The BIOS version on a PC", "is_correct": false },
+        { "text": "The local printer toner level", "is_correct": false },
+        { "text": "The SQL schema of a database", "is_correct": false }
+      ],
+      "explanation": "Traceroute reveals each hop along the path to a destination."
+    },
+    {
+      "text": "Which protocol and message type are used by a basic ping test?",
+      "answers": [
+        { "text": "ICMP echo", "is_correct": true },
+        { "text": "TCP SYN", "is_correct": false },
+        { "text": "UDP broadcast", "is_correct": false },
+        { "text": "SMTP HELO", "is_correct": false }
+      ],
+      "explanation": "Ping uses ICMP echo request and echo reply messages."
+    },
+    {
+      "text": "What does a firewall policy do?",
+      "answers": [
+        { "text": "Allow or block traffic based on defined rules", "is_correct": true },
+        { "text": "Physically amplify Wi-Fi signal only", "is_correct": false },
+        { "text": "Provide cloud object storage", "is_correct": false },
+        { "text": "Assign MAC addresses to hosts", "is_correct": false }
+      ],
+      "explanation": "Firewalls enforce traffic control based on rule sets."
+    },
+    {
+      "text": "What is the common Ethernet MTU on many IPv4 networks?",
+      "answers": [
+        { "text": "1500 bytes", "is_correct": true },
+        { "text": "64 bytes", "is_correct": false },
+        { "text": "4096 bytes", "is_correct": false },
+        { "text": "65,535 bytes", "is_correct": false }
+      ],
+      "explanation": "A standard Ethernet MTU is 1500 bytes."
+    },
+    {
+      "text": "What does full duplex mean on an Ethernet link?",
+      "answers": [
+        { "text": "Devices can send and receive at the same time", "is_correct": true },
+        { "text": "Traffic only flows one way", "is_correct": false },
+        { "text": "The cable has two colors", "is_correct": false },
+        { "text": "Only broadcast traffic is allowed", "is_correct": false }
+      ],
+      "explanation": "Full-duplex communication supports simultaneous transmission and reception."
+    },
+    {
+      "text": "Which well-known port is used by HTTPS?",
+      "answers": [
+        { "text": "443", "is_correct": true },
+        { "text": "21", "is_correct": false },
+        { "text": "23", "is_correct": false },
+        { "text": "110", "is_correct": false }
+      ],
+      "explanation": "HTTPS uses TCP port 443 by default."
+    },
+    {
+      "text": "What is the role of a load balancer?",
+      "answers": [
+        { "text": "Distribute client requests across multiple servers", "is_correct": true },
+        { "text": "Generate DNS root hints", "is_correct": false },
+        { "text": "Terminate copper cable runs", "is_correct": false },
+        { "text": "Replace endpoint antivirus", "is_correct": false }
+      ],
+      "explanation": "Load balancers spread traffic to improve availability and performance."
+    },
+    {
+      "text": "How does an IPS differ from an IDS?",
+      "answers": [
+        { "text": "An IPS can block traffic inline", "is_correct": true },
+        { "text": "An IPS cannot inspect packets", "is_correct": false },
+        { "text": "An IPS only works on Wi-Fi", "is_correct": false },
+        { "text": "An IPS assigns IP addresses", "is_correct": false }
+      ],
+      "explanation": "An intrusion prevention system sits inline and can actively block malicious traffic."
+    },
+    {
+      "text": "What is the purpose of a site-to-site VPN?",
+      "answers": [
+        { "text": "Securely connect two networks across an untrusted network", "is_correct": true },
+        { "text": "Replace switch uplinks inside a rack", "is_correct": false },
+        { "text": "Increase RAM on a workstation", "is_correct": false },
+        { "text": "Provide local printer sharing only", "is_correct": false }
+      ],
+      "explanation": "Site-to-site VPNs encrypt traffic between remote networks."
+    },
+    {
+      "text": "Which protocol is commonly used to monitor network devices?",
+      "answers": [
+        { "text": "SNMP", "is_correct": true },
+        { "text": "POP3", "is_correct": false },
+        { "text": "SMB", "is_correct": false },
+        { "text": "SFTP", "is_correct": false }
+      ],
+      "explanation": "Simple Network Management Protocol is widely used for monitoring and management."
+    },
+    {
+      "text": "What kind of cable jacket should be used in air-handling spaces when required by code?",
+      "answers": [
+        { "text": "Plenum-rated", "is_correct": true },
+        { "text": "Speaker cable", "is_correct": false },
+        { "text": "Flat satin cable", "is_correct": false },
+        { "text": "Unshielded coax only", "is_correct": false }
+      ],
+      "explanation": "Plenum-rated cable is designed for spaces that handle airflow in buildings."
+    },
+    {
+      "text": "What is a benefit of link aggregation?",
+      "answers": [
+        { "text": "Multiple physical links can act as one logical connection", "is_correct": true },
+        { "text": "It replaces all routing protocols", "is_correct": false },
+        { "text": "It disables spanning tree", "is_correct": false },
+        { "text": "It converts copper to fiber automatically", "is_correct": false }
+      ],
+      "explanation": "Link aggregation can improve bandwidth and redundancy."
+    },
+    {
+      "text": "A Windows host has an address beginning with 169.254. What is the most likely cause?",
+      "answers": [
+        { "text": "It could not obtain a DHCP lease", "is_correct": true },
+        { "text": "It has a valid public address from the ISP", "is_correct": false },
+        { "text": "It is using loopback", "is_correct": false },
+        { "text": "It is configured for IPv6 only", "is_correct": false }
+      ],
+      "explanation": "APIPA addresses in 169.254.0.0/16 often appear when DHCP fails."
+    },
+    {
+      "text": "What device is typically used to terminate many copper Ethernet cables in a wiring closet?",
+      "answers": [
+        { "text": "Patch panel", "is_correct": true },
+        { "text": "UPS", "is_correct": false },
+        { "text": "Projector", "is_correct": false },
+        { "text": "NAS battery", "is_correct": false }
+      ],
+      "explanation": "Patch panels provide organized termination points for structured cabling."
+    }
+  ]
+}

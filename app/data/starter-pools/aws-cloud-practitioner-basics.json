@@ -1,0 +1,217 @@
+{
+  "_meta": {
+    "title": "AWS Cloud Practitioner Basics",
+    "description": "Starter pool with introductory AWS services, pricing, security, and cloud concepts aligned to Cloud Practitioner fundamentals.",
+    "exam": "AWS Certified Cloud Practitioner",
+    "difficulty": "easy",
+    "language": "en",
+    "exam_key": "aws-cloud-practitioner",
+    "handbook_key": "starter-aws-cloud-practitioner",
+    "handbook_title": "AWS Cloud Practitioner Basics",
+    "chapter_key": "fundamentals",
+    "chapter_title": "AWS Fundamentals",
+    "chapter_order": 1
+  },
+  "questions": [
+    {
+      "text": "Which AWS service provides virtual machines in the cloud?",
+      "answers": [
+        { "text": "Amazon EC2", "is_correct": true },
+        { "text": "Amazon S3", "is_correct": false },
+        { "text": "Amazon Route 53", "is_correct": false },
+        { "text": "Amazon CloudFront", "is_correct": false }
+      ],
+      "explanation": "Amazon EC2 provides resizable compute instances."
+    },
+    {
+      "text": "Which AWS service is primarily used for object storage?",
+      "answers": [
+        { "text": "Amazon S3", "is_correct": true },
+        { "text": "Amazon RDS", "is_correct": false },
+        { "text": "Amazon EC2", "is_correct": false },
+        { "text": "Amazon VPC", "is_correct": false }
+      ],
+      "explanation": "Amazon S3 stores objects such as files, backups, and static assets."
+    },
+    {
+      "text": "Which AWS service offers a managed relational database?",
+      "answers": [
+        { "text": "Amazon RDS", "is_correct": true },
+        { "text": "Amazon DynamoDB", "is_correct": false },
+        { "text": "Amazon SNS", "is_correct": false },
+        { "text": "Amazon SQS", "is_correct": false }
+      ],
+      "explanation": "Amazon RDS manages relational database engines like MySQL and PostgreSQL."
+    },
+    {
+      "text": "Which AWS service is used to manage users, groups, and permissions?",
+      "answers": [
+        { "text": "AWS IAM", "is_correct": true },
+        { "text": "AWS WAF", "is_correct": false },
+        { "text": "AWS Direct Connect", "is_correct": false },
+        { "text": "AWS Glue", "is_correct": false }
+      ],
+      "explanation": "Identity and Access Management controls access to AWS resources."
+    },
+    {
+      "text": "What is an Availability Zone?",
+      "answers": [
+        { "text": "An isolated data center location within an AWS Region", "is_correct": true },
+        { "text": "A user account boundary", "is_correct": false },
+        { "text": "A billing report", "is_correct": false },
+        { "text": "A virtual private gateway", "is_correct": false }
+      ],
+      "explanation": "Regions contain multiple Availability Zones for resilience."
+    },
+    {
+      "text": "In the shared responsibility model, what is AWS responsible for?",
+      "answers": [
+        { "text": "Security of the cloud infrastructure", "is_correct": true },
+        { "text": "Customer application passwords only", "is_correct": false },
+        { "text": "Customer data classification only", "is_correct": false },
+        { "text": "All operating system patching in every case", "is_correct": false }
+      ],
+      "explanation": "AWS secures the infrastructure that runs cloud services."
+    },
+    {
+      "text": "What does Auto Scaling do?",
+      "answers": [
+        { "text": "Adjusts compute capacity automatically based on demand", "is_correct": true },
+        { "text": "Encrypts all S3 buckets automatically", "is_correct": false },
+        { "text": "Replaces IAM policies", "is_correct": false },
+        { "text": "Creates VPC peering only", "is_correct": false }
+      ],
+      "explanation": "Auto Scaling increases or decreases resources to match workload needs."
+    },
+    {
+      "text": "What is the purpose of Elastic Load Balancing?",
+      "answers": [
+        { "text": "Distribute incoming traffic across multiple targets", "is_correct": true },
+        { "text": "Store objects for archival", "is_correct": false },
+        { "text": "Manage IAM users", "is_correct": false },
+        { "text": "Provide DNS registrar services only", "is_correct": false }
+      ],
+      "explanation": "Elastic Load Balancing improves availability by spreading traffic."
+    },
+    {
+      "text": "Which AWS service is a content delivery network?",
+      "answers": [
+        { "text": "Amazon CloudFront", "is_correct": true },
+        { "text": "Amazon EBS", "is_correct": false },
+        { "text": "Amazon Inspector", "is_correct": false },
+        { "text": "Amazon WorkSpaces", "is_correct": false }
+      ],
+      "explanation": "CloudFront caches content close to users for faster delivery."
+    },
+    {
+      "text": "Which AWS service runs code without provisioning or managing servers?",
+      "answers": [
+        { "text": "AWS Lambda", "is_correct": true },
+        { "text": "Amazon EC2", "is_correct": false },
+        { "text": "Amazon Lightsail", "is_correct": false },
+        { "text": "Amazon ECS on EC2", "is_correct": false }
+      ],
+      "explanation": "Lambda is a serverless compute service."
+    },
+    {
+      "text": "What is an Amazon VPC?",
+      "answers": [
+        { "text": "A logically isolated virtual network in AWS", "is_correct": true },
+        { "text": "A billing alert", "is_correct": false },
+        { "text": "A physical data center", "is_correct": false },
+        { "text": "A support plan", "is_correct": false }
+      ],
+      "explanation": "A Virtual Private Cloud lets customers define their own network topology in AWS."
+    },
+    {
+      "text": "Which AWS service provides DNS and domain routing features?",
+      "answers": [
+        { "text": "Amazon Route 53", "is_correct": true },
+        { "text": "Amazon Athena", "is_correct": false },
+        { "text": "Amazon Kinesis", "is_correct": false },
+        { "text": "Amazon Macie", "is_correct": false }
+      ],
+      "explanation": "Route 53 provides DNS, health checks, and domain registration features."
+    },
+    {
+      "text": "Which AWS service is used for monitoring metrics and setting alarms?",
+      "answers": [
+        { "text": "Amazon CloudWatch", "is_correct": true },
+        { "text": "AWS Artifact", "is_correct": false },
+        { "text": "AWS Outposts", "is_correct": false },
+        { "text": "Amazon Cognito", "is_correct": false }
+      ],
+      "explanation": "CloudWatch tracks metrics, logs, and alarms for AWS resources."
+    },
+    {
+      "text": "Which storage class is intended for data accessed less frequently but requiring rapid retrieval?",
+      "answers": [
+        { "text": "S3 Standard-IA", "is_correct": true },
+        { "text": "S3 Express One Zone", "is_correct": false },
+        { "text": "EBS gp3", "is_correct": false },
+        { "text": "Instance store", "is_correct": false }
+      ],
+      "explanation": "S3 Standard-IA is designed for infrequent access with low latency retrieval."
+    },
+    {
+      "text": "Which AWS service helps manage multiple AWS accounts centrally?",
+      "answers": [
+        { "text": "AWS Organizations", "is_correct": true },
+        { "text": "Amazon Polly", "is_correct": false },
+        { "text": "AWS Backup", "is_correct": false },
+        { "text": "AWS X-Ray", "is_correct": false }
+      ],
+      "explanation": "AWS Organizations supports centralized governance across accounts."
+    },
+    {
+      "text": "What type of storage does Amazon EBS provide?",
+      "answers": [
+        { "text": "Block storage for EC2 instances", "is_correct": true },
+        { "text": "Object storage for websites", "is_correct": false },
+        { "text": "Cold archive tape only", "is_correct": false },
+        { "text": "Shared file storage for on-premises printers", "is_correct": false }
+      ],
+      "explanation": "Elastic Block Store volumes attach to EC2 instances as block devices."
+    },
+    {
+      "text": "Which AWS database service is a managed NoSQL key-value and document store?",
+      "answers": [
+        { "text": "Amazon DynamoDB", "is_correct": true },
+        { "text": "Amazon Aurora", "is_correct": false },
+        { "text": "Amazon Redshift", "is_correct": false },
+        { "text": "Amazon Neptune", "is_correct": false }
+      ],
+      "explanation": "DynamoDB is AWS managed NoSQL service for high-scale workloads."
+    },
+    {
+      "text": "What does AWS Trusted Advisor provide?",
+      "answers": [
+        { "text": "Recommendations for cost, security, performance, and fault tolerance", "is_correct": true },
+        { "text": "A relational database engine", "is_correct": false },
+        { "text": "A replacement for IAM", "is_correct": false },
+        { "text": "A static website builder only", "is_correct": false }
+      ],
+      "explanation": "Trusted Advisor reviews AWS environments and suggests improvements."
+    },
+    {
+      "text": "Which pricing concept means customers pay only for the resources they use?",
+      "answers": [
+        { "text": "Pay-as-you-go", "is_correct": true },
+        { "text": "Fixed perpetual license", "is_correct": false },
+        { "text": "One-time capital purchase", "is_correct": false },
+        { "text": "Mandatory three-year prepayment only", "is_correct": false }
+      ],
+      "explanation": "AWS pricing is based heavily on consumption rather than large upfront capital expense."
+    },
+    {
+      "text": "Which AWS tool helps estimate the monthly cost of a planned deployment?",
+      "answers": [
+        { "text": "AWS Pricing Calculator", "is_correct": true },
+        { "text": "Amazon Inspector", "is_correct": false },
+        { "text": "AWS Budgets only", "is_correct": false },
+        { "text": "CloudFormation Designer", "is_correct": false }
+      ],
+      "explanation": "The AWS Pricing Calculator is used to model expected service costs."
+    }
+  ]
+}

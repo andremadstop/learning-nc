@@ -227,6 +227,10 @@ return [
         // Note Generator (Phase 24)
         ['name' => 'noteGenerator#generate', 'url' => '/api/notes/generate', 'verb' => 'POST'],
 
+        // Starter Pools
+        ['name' => 'starterPool#index', 'url' => '/api/starter-pools', 'verb' => 'GET'],
+        ['name' => 'starterPool#import', 'url' => '/api/starter-pools/{id}/import', 'verb' => 'POST'],
+
         // Lernplan + Fortschritt (Phase 25)
         ['name' => 'lernplan#generatePlan', 'url' => '/api/lernbot/plan/generate', 'verb' => 'POST'],
         ['name' => 'lernplan#generateFortschritt', 'url' => '/api/lernbot/fortschritt/generate', 'verb' => 'POST'],

@@ -1,0 +1,317 @@
+{
+  "_meta": {
+    "title": "CompTIA Security+ Basics",
+    "description": "Starter pool with foundational security, identity, risk, and response questions aligned to common Security+ objectives.",
+    "exam": "CompTIA Security+",
+    "difficulty": "easy",
+    "language": "en",
+    "exam_key": "comptia-security-plus",
+    "handbook_key": "starter-comptia-security-plus",
+    "handbook_title": "CompTIA Security+ Basics",
+    "chapter_key": "fundamentals",
+    "chapter_title": "Security Fundamentals",
+    "chapter_order": 1
+  },
+  "questions": [
+    {
+      "text": "Which part of the CIA triad is focused on preventing unauthorized disclosure of data?",
+      "answers": [
+        { "text": "Confidentiality", "is_correct": true },
+        { "text": "Availability", "is_correct": false },
+        { "text": "Accounting", "is_correct": false },
+        { "text": "Scalability", "is_correct": false }
+      ],
+      "explanation": "Confidentiality ensures data is only seen by authorized parties."
+    },
+    {
+      "text": "What kind of attack tries to trick a user into revealing credentials through a fake message or site?",
+      "answers": [
+        { "text": "Phishing", "is_correct": true },
+        { "text": "Load balancing", "is_correct": false },
+        { "text": "Compression", "is_correct": false },
+        { "text": "Sandboxing", "is_correct": false }
+      ],
+      "explanation": "Phishing is a social engineering attack designed to steal sensitive information."
+    },
+    {
+      "text": "What security property is primarily provided by a cryptographic hash?",
+      "answers": [
+        { "text": "Integrity", "is_correct": true },
+        { "text": "Availability", "is_correct": false },
+        { "text": "Nonrepudiation only", "is_correct": false },
+        { "text": "Physical protection", "is_correct": false }
+      ],
+      "explanation": "Hashes help verify that data has not been altered."
+    },
+    {
+      "text": "Which option is an example of multifactor authentication?",
+      "answers": [
+        { "text": "Password and hardware token", "is_correct": true },
+        { "text": "Password and PIN", "is_correct": false },
+        { "text": "Username and password", "is_correct": false },
+        { "text": "Two security questions", "is_correct": false }
+      ],
+      "explanation": "MFA uses different factor types, such as something you know and something you have."
+    },
+    {
+      "text": "What is the principle of least privilege?",
+      "answers": [
+        { "text": "Grant only the minimum access needed", "is_correct": true },
+        { "text": "Give all users local admin rights", "is_correct": false },
+        { "text": "Share one account for the whole team", "is_correct": false },
+        { "text": "Avoid using groups for permissions", "is_correct": false }
+      ],
+      "explanation": "Least privilege reduces risk by limiting access rights."
+    },
+    {
+      "text": "What is a zero-day vulnerability?",
+      "answers": [
+        { "text": "A flaw that is unknown or unpatched when attackers exploit it", "is_correct": true },
+        { "text": "A vulnerability that only exists for one day", "is_correct": false },
+        { "text": "A backup scheduled for midnight", "is_correct": false },
+        { "text": "A password reset policy", "is_correct": false }
+      ],
+      "explanation": "Zero-day flaws are dangerous because defenses and patches may not yet be available."
+    },
+    {
+      "text": "What does ransomware typically do?",
+      "answers": [
+        { "text": "Encrypts data and demands payment", "is_correct": true },
+        { "text": "Improves system performance", "is_correct": false },
+        { "text": "Creates VLANs automatically", "is_correct": false },
+        { "text": "Checks printer toner levels", "is_correct": false }
+      ],
+      "explanation": "Ransomware locks data or systems and demands a ransom for recovery."
+    },
+    {
+      "text": "What is the main purpose of a firewall?",
+      "answers": [
+        { "text": "Filter traffic based on security rules", "is_correct": true },
+        { "text": "Generate cryptographic hashes", "is_correct": false },
+        { "text": "Replace all endpoint backups", "is_correct": false },
+        { "text": "Manage printer queues", "is_correct": false }
+      ],
+      "explanation": "Firewalls enforce network traffic policies."
+    },
+    {
+      "text": "How does an IDS differ from an IPS?",
+      "answers": [
+        { "text": "An IDS alerts, while an IPS can also block", "is_correct": true },
+        { "text": "An IDS assigns IP addresses", "is_correct": false },
+        { "text": "An IDS only protects laptops", "is_correct": false },
+        { "text": "An IDS is a backup device", "is_correct": false }
+      ],
+      "explanation": "Intrusion detection systems alert on suspicious activity, while prevention systems can stop it."
+    },
+    {
+      "text": "Why is patch management important?",
+      "answers": [
+        { "text": "It reduces exposure to known vulnerabilities", "is_correct": true },
+        { "text": "It guarantees zero outages", "is_correct": false },
+        { "text": "It removes the need for authentication", "is_correct": false },
+        { "text": "It replaces asset inventories", "is_correct": false }
+      ],
+      "explanation": "Applying patches closes known security gaps."
+    },
+    {
+      "text": "Which cryptographic approach is generally faster for bulk data encryption?",
+      "answers": [
+        { "text": "Symmetric encryption", "is_correct": true },
+        { "text": "Asymmetric encryption", "is_correct": false },
+        { "text": "Hashing", "is_correct": false },
+        { "text": "Steganography", "is_correct": false }
+      ],
+      "explanation": "Symmetric algorithms are typically used for large-volume data because they are efficient."
+    },
+    {
+      "text": "In a typical TLS handshake, what is a public key commonly used for?",
+      "answers": [
+        { "text": "Securely exchanging or protecting a session key", "is_correct": true },
+        { "text": "Replacing the firewall", "is_correct": false },
+        { "text": "Creating VLAN IDs", "is_correct": false },
+        { "text": "Powering access points", "is_correct": false }
+      ],
+      "explanation": "Public-key cryptography is often used to establish the symmetric session key."
+    },
+    {
+      "text": "Why are salts added to password hashes?",
+      "answers": [
+        { "text": "To make precomputed hash attacks less effective", "is_correct": true },
+        { "text": "To speed up brute-force attacks", "is_correct": false },
+        { "text": "To replace MFA", "is_correct": false },
+        { "text": "To compress the password database", "is_correct": false }
+      ],
+      "explanation": "Salts make identical passwords produce different hashes."
+    },
+    {
+      "text": "An unauthorized person follows an employee through a secure door. What is this called?",
+      "answers": [
+        { "text": "Tailgating", "is_correct": true },
+        { "text": "Hash collision", "is_correct": false },
+        { "text": "Subnetting", "is_correct": false },
+        { "text": "Tokenization", "is_correct": false }
+      ],
+      "explanation": "Tailgating is a physical security breach using someone else's access."
+    },
+    {
+      "text": "Why do organizations classify data?",
+      "answers": [
+        { "text": "To apply protections based on sensitivity", "is_correct": true },
+        { "text": "To make backups optional", "is_correct": false },
+        { "text": "To avoid using encryption", "is_correct": false },
+        { "text": "To increase printer speed", "is_correct": false }
+      ],
+      "explanation": "Data classification supports appropriate controls for different sensitivity levels."
+    },
+    {
+      "text": "Why are offline or immutable backups valuable against ransomware?",
+      "answers": [
+        { "text": "Attackers cannot easily encrypt or delete them", "is_correct": true },
+        { "text": "They remove the need for endpoint security", "is_correct": false },
+        { "text": "They automatically patch systems", "is_correct": false },
+        { "text": "They disable phishing emails", "is_correct": false }
+      ],
+      "explanation": "Protected backups help recovery even when production data is compromised."
+    },
+    {
+      "text": "What does a SIEM platform primarily do?",
+      "answers": [
+        { "text": "Collect and correlate security logs and alerts", "is_correct": true },
+        { "text": "Physically lock server rooms", "is_correct": false },
+        { "text": "Assign DHCP addresses", "is_correct": false },
+        { "text": "Manufacture hardware tokens", "is_correct": false }
+      ],
+      "explanation": "Security information and event management tools centralize and analyze event data."
+    },
+    {
+      "text": "What is the main benefit of a VPN for remote access?",
+      "answers": [
+        { "text": "It encrypts traffic over untrusted networks", "is_correct": true },
+        { "text": "It increases monitor resolution", "is_correct": false },
+        { "text": "It replaces access control lists", "is_correct": false },
+        { "text": "It removes the need for MFA", "is_correct": false }
+      ],
+      "explanation": "VPNs protect confidentiality and integrity of remote traffic."
+    },
+    {
+      "text": "What is a data loss prevention solution designed to do?",
+      "answers": [
+        { "text": "Detect and stop sensitive data from leaving approved channels", "is_correct": true },
+        { "text": "Replace user awareness training", "is_correct": false },
+        { "text": "Upgrade routers automatically", "is_correct": false },
+        { "text": "Generate SSL certificates", "is_correct": false }
+      ],
+      "explanation": "DLP tools monitor and control sensitive data handling."
+    },
+    {
+      "text": "What is a secure disposal method for retired storage media?",
+      "answers": [
+        { "text": "Destroy or sanitize it according to policy", "is_correct": true },
+        { "text": "Leave it in an unlocked drawer", "is_correct": false },
+        { "text": "Reuse it without wiping", "is_correct": false },
+        { "text": "Throw it into regular office trash", "is_correct": false }
+      ],
+      "explanation": "Secure disposal prevents data exposure from decommissioned media."
+    },
+    {
+      "text": "How does a penetration test differ from a vulnerability scan?",
+      "answers": [
+        { "text": "A penetration test actively attempts exploitation", "is_correct": true },
+        { "text": "A penetration test is only a software inventory", "is_correct": false },
+        { "text": "A vulnerability scan always changes firewall rules", "is_correct": false },
+        { "text": "There is no difference", "is_correct": false }
+      ],
+      "explanation": "Pen tests validate exploitable weaknesses beyond passive identification."
+    },
+    {
+      "text": "A host is actively spreading malware internally. What is a strong immediate response action?",
+      "answers": [
+        { "text": "Contain the system to stop further spread", "is_correct": true },
+        { "text": "Delete all logs first", "is_correct": false },
+        { "text": "Share the malware sample broadly", "is_correct": false },
+        { "text": "Disable backups permanently", "is_correct": false }
+      ],
+      "explanation": "Containment is a key first action in incident response once malicious activity is confirmed."
+    },
+    {
+      "text": "What access control model assigns permissions based on job role?",
+      "answers": [
+        { "text": "RBAC", "is_correct": true },
+        { "text": "MAC randomization", "is_correct": false },
+        { "text": "NAT", "is_correct": false },
+        { "text": "DHCP relay", "is_correct": false }
+      ],
+      "explanation": "Role-based access control maps permissions to job functions."
+    },
+    {
+      "text": "What does the false acceptance rate measure for biometric systems?",
+      "answers": [
+        { "text": "How often unauthorized users are accepted", "is_correct": true },
+        { "text": "How often authorized users are rejected", "is_correct": false },
+        { "text": "How often backups fail", "is_correct": false },
+        { "text": "How many passwords are weak", "is_correct": false }
+      ],
+      "explanation": "FAR tracks the rate of false positive acceptance."
+    },
+    {
+      "text": "What is the main purpose of sandboxing suspicious code?",
+      "answers": [
+        { "text": "Isolate it from critical systems", "is_correct": true },
+        { "text": "Increase wireless coverage", "is_correct": false },
+        { "text": "Improve keyboard response time", "is_correct": false },
+        { "text": "Format cloud storage", "is_correct": false }
+      ],
+      "explanation": "Sandboxing limits damage by containing untrusted code."
+    },
+    {
+      "text": "Which wireless security setting is preferred for a modern enterprise WLAN?",
+      "answers": [
+        { "text": "WPA3", "is_correct": true },
+        { "text": "WEP", "is_correct": false },
+        { "text": "No password", "is_correct": false },
+        { "text": "MAC filtering alone", "is_correct": false }
+      ],
+      "explanation": "WPA3 is stronger than older Wi-Fi protection methods."
+    },
+    {
+      "text": "How does network segmentation improve security?",
+      "answers": [
+        { "text": "It limits lateral movement and separates trust zones", "is_correct": true },
+        { "text": "It removes the need for patching", "is_correct": false },
+        { "text": "It makes all traffic anonymous", "is_correct": false },
+        { "text": "It turns switches into hypervisors", "is_correct": false }
+      ],
+      "explanation": "Segmentation contains attacks and reduces exposure between systems."
+    },
+    {
+      "text": "What does a digital certificate bind to an identity?",
+      "answers": [
+        { "text": "A public key", "is_correct": true },
+        { "text": "A BIOS password", "is_correct": false },
+        { "text": "A MAC table entry", "is_correct": false },
+        { "text": "A cable serial number", "is_correct": false }
+      ],
+      "explanation": "Certificates associate a public key with an entity and are signed by a trusted CA."
+    },
+    {
+      "text": "What is disaster recovery focused on?",
+      "answers": [
+        { "text": "Restoring systems and operations after a disruptive event", "is_correct": true },
+        { "text": "Writing software requirements only", "is_correct": false },
+        { "text": "Ordering office supplies", "is_correct": false },
+        { "text": "Creating phishing campaigns", "is_correct": false }
+      ],
+      "explanation": "Disaster recovery addresses how technology services are restored after major incidents."
+    },
+    {
+      "text": "Looking at sensitive information on someone else's screen without permission is known as what?",
+      "answers": [
+        { "text": "Shoulder surfing", "is_correct": true },
+        { "text": "Token rotation", "is_correct": false },
+        { "text": "Port forwarding", "is_correct": false },
+        { "text": "Jailbreaking", "is_correct": false }
+      ],
+      "explanation": "Shoulder surfing is a simple but effective physical information-gathering attack."
+    }
+  ]
+}

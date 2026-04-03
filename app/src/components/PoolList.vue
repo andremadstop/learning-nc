@@ -2,9 +2,14 @@
   <div class="pool-list">
     <div class="pool-list-header">
       <h3>{{ t('learning', 'Question Pools') }}</h3>
-      <NcButton v-if="userRole === 'instructor'" type="primary" @click="showCreateDialog">
-        {{ t('learning', '+ Create Pool') }}
-      </NcButton>
+      <div v-if="userRole === 'instructor'" class="pool-list-header__actions">
+        <NcButton type="secondary" @click="openStarterDialog">
+          {{ t('learning', 'Starter-Pool hinzufügen') }}
+        </NcButton>
+        <NcButton type="primary" @click="showCreateDialog">
+          {{ t('learning', '+ Create Pool') }}
+        </NcButton>
+      </div>
     </div>
 
     <!-- Instructor welcome hint -->
@@ -261,6 +266,47 @@
     </AccessibleDialog>
 
     <ShareDialog v-if="sharingPool" :poolId="sharingPool.id" :poolName="sharingPool.name" @close="sharingPool = null" />
+
+    <AccessibleDialog v-if="showStarterDialog" :name="t('learning', 'Starter Pools')" @closing="closeStarterDialog">
+      <div class="starter-pools-dialog">
+        <p class="starter-pools-dialog__intro">
+          {{ t('learning', 'Import curated starter content and activate a complete question pool with one click.') }}
+        </p>
+
+        <NcLoadingIcon v-if="starterLoading" :size="32" class="loading-center" />
+
+        <NcEmptyContent
+          v-else-if="starterPools.length === 0"
+          :name="t('learning', 'No starter pools available')"
+          :description="t('learning', 'Starter content files were not found on this instance.')" />
+
+        <div v-else class="starter-pools-list">
+          <div v-for="starter in starterPools" :key="starter.id" class="starter-pool-card">
+            <div class="starter-pool-card__copy">
+              <h4>{{ starter.title }}</h4>
+              <p>{{ starter.description }}</p>
+              <div class="starter-pool-card__meta">
+                <span>{{ starter.question_count }} {{ t('learning', 'questions') }}</span>
+                <span v-if="starter.exam">{{ starter.exam }}</span>
+                <span>{{ starter.language }}</span>
+              </div>
+            </div>
+            <NcButton
+              type="primary"
+              :disabled="starterImportingId === starter.id"
+              @click="importStarterPool(starter)">
+              {{ starterImportingId === starter.id ? t('learning', 'Importing...') : t('learning', 'Import') }}
+            </NcButton>
+          </div>
+        </div>
+      </div>
+
+      <template #actions>
+        <NcButton type="tertiary" @click="closeStarterDialog">
+          {{ t('learning', 'Close') }}
+        </NcButton>
+      </template>
+    </AccessibleDialog>
   </div>
 </template>
 
@@ -305,6 +351,10 @@ export default {
       showDialog: false,
       editingPool: null,
       sharingPool: null,
+      showStarterDialog: false,
+      starterPools: [],
+      starterLoading: false,
+      starterImportingId: '',
       saving: false,
       form: {
         name: '',
@@ -463,6 +513,14 @@ export default {
       this.form = this.emptyForm();
       this.showDialog = true;
     },
+    async openStarterDialog() {
+      this.showStarterDialog = true;
+      await this.loadStarterPools();
+    },
+    closeStarterDialog() {
+      this.showStarterDialog = false;
+      this.starterImportingId = '';
+    },
     editPool(pool) {
       this.editingPool = pool;
       this.form = {
@@ -499,6 +557,31 @@ export default {
         showError(t('learning', 'Failed to save pool'));
       } finally {
         this.saving = false;
+      }
+    },
+    async loadStarterPools() {
+      this.starterLoading = true;
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/starter-pools'));
+        this.starterPools = Array.isArray(response.data?.pools) ? response.data.pools : [];
+      } catch (error) {
+        this.starterPools = [];
+        showError(t('learning', 'Failed to load starter pools'));
+      } finally {
+        this.starterLoading = false;
+      }
+    },
+    async importStarterPool(starter) {
+      this.starterImportingId = starter.id
+      try {
+        await axios.post(generateUrl('/apps/learning/api/starter-pools/{id}/import', { id: starter.id }))
+        showSuccess(t('learning', 'Starter pool imported'))
+        await this.loadPools()
+        this.closeStarterDialog()
+      } catch (error) {
+        showError(error?.response?.data?.error || t('learning', 'Failed to import starter pool'))
+      } finally {
+        this.starterImportingId = ''
       }
     },
     deletePool(pool) {
