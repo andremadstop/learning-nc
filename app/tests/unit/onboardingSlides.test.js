@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest'
 
-import { STUDENT_SLIDES, getSlidesForRole } from '../../src/utils/onboarding-slides.js'
+import {
+	STUDENT_SLIDES,
+	STUDENT_SLIDES_FULL,
+	ADMIN_SLIDES,
+	GOAL_TILES,
+	INTENSITY_TILES,
+	AI_CONSENT_TILES,
+	getSlidesForRole,
+	getSlidesForRoleFull,
+} from '../../src/utils/onboarding-slides.js'
 
 describe('onboarding slides', () => {
-	it('includes the FSRS slide directly after the Leitner slide for students', () => {
-		const ids = STUDENT_SLIDES.map((slide) => slide.id)
+	it('includes the FSRS slide directly after the Leitner slide for students (full)', () => {
+		const ids = STUDENT_SLIDES_FULL.map((slide) => slide.id)
 		const leitnerIndex = ids.indexOf('leitner')
 		const fsrsIndex = ids.indexOf('fsrs')
 
@@ -12,8 +21,8 @@ describe('onboarding slides', () => {
 		expect(fsrsIndex).toBe(leitnerIndex + 1)
 	})
 
-	it('exposes the FSRS slide through the student role helper', () => {
-		const studentSlides = getSlidesForRole('student')
+	it('exposes the FSRS slide through the full student role helper', () => {
+		const studentSlides = getSlidesForRoleFull('student')
 		const fsrsSlide = studentSlides.find((slide) => slide.id === 'fsrs')
 
 		expect(fsrsSlide).toMatchObject({
@@ -21,5 +30,26 @@ describe('onboarding slides', () => {
 			titleKey: 'slide:student:fsrs:title',
 			textKey: 'slide:student:fsrs:text',
 		})
+	})
+
+	it('trimmed student slides have exactly 3 entries', () => {
+		expect(STUDENT_SLIDES).toHaveLength(3)
+		expect(getSlidesForRole('student')).toHaveLength(3)
+	})
+
+	it('getSlidesForRole returns admin slides for admin role', () => {
+		expect(getSlidesForRole('admin')).toBe(ADMIN_SLIDES)
+		expect(ADMIN_SLIDES).toHaveLength(3)
+	})
+
+	it('getSlidesForRole accepts dozent as instructor alias', () => {
+		expect(getSlidesForRole('dozent')).toEqual(getSlidesForRole('instructor'))
+	})
+
+	it('exports tile data arrays', () => {
+		expect(GOAL_TILES).toHaveLength(3)
+		expect(INTENSITY_TILES).toHaveLength(3)
+		expect(AI_CONSENT_TILES).toHaveLength(2)
+		expect(INTENSITY_TILES[0]).toHaveProperty('hours')
 	})
 })

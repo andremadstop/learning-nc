@@ -72,7 +72,7 @@
 
 <script>
 import { translateVirtuProf, detectVirtuProfLanguage } from '../utils/virtuprof-i18n.js'
-import { getSlidesForRole } from '../utils/onboarding-slides.js'
+import { getSlidesForRoleFull as getSlidesForRole } from '../utils/onboarding-slides.js'
 
 export default {
 	name: 'OnboardingIntro',
