@@ -333,7 +333,7 @@ export default {
 }
 
 .status-badge.active {
-	background: color-mix(in srgb, var(--color-success) 15%, transparent);
+	background: color-mix(in srgb, var(--color-success) 40%, transparent);
 	color: var(--color-success);
 }
 

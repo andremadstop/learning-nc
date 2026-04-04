@@ -82,14 +82,14 @@
           :question="currentQuestion"
           :initial-value="pbqAnswers[currentQuestion.id] || null"
           :disabled="screen !== 'exam' || lockDenied"
-          @change="(ans) => $set(pbqAnswers, currentQuestion.id, ans)"
-          @submit="(ans) => { $set(pbqAnswers, currentQuestion.id, ans); $set(userAnswers, currentQuestion.id, 'pbq_submitted'); advanceToNext() }"
+          @change="(ans) => { pbqAnswers[currentQuestion.id] = ans }"
+          @submit="(ans) => { pbqAnswers[currentQuestion.id] = ans; userAnswers[currentQuestion.id] = 'pbq_submitted'; advanceToNext() }"
           @skip="advanceToNext()"
         />
         <div v-else-if="isCurrentOpen" class="open-answer-area">
           <textarea
             :value="openAnswerTexts[currentQuestion.id] || ''"
-            @input="$set(openAnswerTexts, currentQuestion.id, $event.target.value)"
+            @input="openAnswerTexts[currentQuestion.id] = $event.target.value"
             :placeholder="t('learning', 'Type your answer...')"
             rows="3"
             class="nc-input open-textarea"
