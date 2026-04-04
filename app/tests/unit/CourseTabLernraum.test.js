@@ -40,6 +40,7 @@ vi.mock('../../src/components/TrainingMode.vue', () => stub('TrainingMode'))
 vi.mock('../../src/components/WiresharkLite.vue', () => stub('WiresharkLite'))
 
 import CourseTabLernraum from '../../src/components/CourseTabLernraum.vue'
+import { ALL_TOOL_IDS, TOOL_CATALOG } from '../../src/utils/toolCatalog.js'
 
 globalThis.t = (app, text, vars = {}) => {
 	return Object.entries(vars).reduce((acc, [key, value]) => acc.replace(`{${key}}`, String(value)), text)
@@ -73,6 +74,20 @@ function createInstance(overrides = {}) {
 
 	Object.defineProperties(instance, {
 		isInstructor: { get: () => CourseTabLernraum.computed.isInstructor.call(instance) },
+		courseToolTabs: {
+			get: () => {
+				const enabled = Array.isArray(instance.course?.enabled_tools) && instance.course.enabled_tools.length
+					? instance.course.enabled_tools
+					: ALL_TOOL_IDS
+				const enabledSet = new Set(enabled)
+				return TOOL_CATALOG
+					.filter((tool) => enabledSet.has(tool.id))
+					.map((tool) => ({
+						...tool,
+						shortLabel: t('learning', tool.shortLabelKey),
+					}))
+			},
+		},
 		visibleSubTabs: { get: () => CourseTabLernraum.computed.visibleSubTabs.call(instance) },
 		selectedLearningPoolQuestionCount: { get: () => CourseTabLernraum.computed.selectedLearningPoolQuestionCount.call(instance) },
 		currentRequiredBlockers: { get: () => CourseTabLernraum.computed.currentRequiredBlockers.call(instance) },

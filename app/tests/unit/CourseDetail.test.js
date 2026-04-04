@@ -101,6 +101,7 @@ function createInstance(overrides = {}) {
 	Object.defineProperties(instance, {
 		isInstructor: { get: () => CourseDetail.computed.isInstructor.call(instance) },
 		isCourseSummaryReleased: { get: () => CourseDetail.computed.isCourseSummaryReleased.call(instance) },
+		hasCourseTools: { get: () => CourseDetail.computed.hasCourseTools.call(instance) },
 		lernraumLeafTabs: { get: () => CourseDetail.computed.lernraumLeafTabs.call(instance) },
 		teilnehmerLeafTabs: { get: () => CourseDetail.computed.teilnehmerLeafTabs.call(instance) },
 		wettbewerbLeafTabs: { get: () => CourseDetail.computed.wettbewerbLeafTabs.call(instance) },
