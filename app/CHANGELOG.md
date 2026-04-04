@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.1.0] - 2026-04-04
+
+### Added
+- **Klassenbuch / Squad Identity** — Opt-in student profiles within courses with kudos system (max 3/day), squad grid, and buddy matching based on Telos help_offer fields
+- **Predictive Exam Readiness** — FSRS-based pass probability widget shows per-course readiness percentage when exam date is set
+- **Simulators embedded in courses** — 9 IT simulators moved from global Tools tab into course Lernraum, filterable per course via tool_config
+- **Full data export (GDPR Art. 20)** — Users can download all personal data (stats, telos, badges, answers, sessions, pools, courses) as JSON
+- **PII filter for Schwarm contributions** — Automatic detection of email addresses, phone numbers, and name patterns during RAG moderation with non-blocking warnings
+- **Unified Search** — Flashcard questions and pools are now searchable via Nextcloud's global search bar
+- **Local-First AI (Ollama)** — VirtuProf and question generation can now use a local LLM via Ollama as alternative to Gemini API. Configurable in admin settings (gemini/ollama/disabled)
+- **Starter content pools** — 5 pre-built question pools (CompTIA A+, Network+, Security+, Cisco CCNA, AWS Cloud Practitioner) importable with one click
+- **TypeScript** — Migrated 5 core utility files (fsrsScheduler, simulatorShellLogic, cliStateMachine, questMapEngine, subnetExplainer) to TypeScript with type definitions
+
+### Fixed
+- **NcNoteCard visual hierarchy** — Explanations, due-count banners, privacy notices changed from warning (brown) to info (blue) to reduce "amber overload" in dark mode
+- **Badge display order** — Added missing quick_thinker to ACTIVE_BADGE_ORDER
+- **Language consistency** — Unified DE/EN label mix (Speichern→Save) across 4 components
+- **Oldschool modes hidden** — Lernwürfel/Wissensturm removed from ArenaSelector and mode config UI
+
 ## [4.0.0] - 2026-04-03
 
 ### Breaking Changes

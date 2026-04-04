@@ -1595,7 +1595,7 @@ export default {
 .vlan-grid {
 	display: grid;
 	gap: var(--subnet-space-lg);
-	grid-template-columns: repeat(2, minmax(0, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
 }
 
 .vlan-card {

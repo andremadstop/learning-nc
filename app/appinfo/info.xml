@@ -59,7 +59,7 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 - PostgreSQL 13+ or MySQL 8+
     ]]></description>
 
-    <version>4.0.0</version>
+    <version>4.1.0</version>
     <licence>agpl</licence>
     <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
     <namespace>Learning</namespace>
