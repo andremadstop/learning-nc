@@ -1,7 +1,7 @@
 <template>
   <div class="onb-screen onb-privacy">
     <div class="onb-privacy__content">
-      <span class="onb-privacy__icon" aria-hidden="true">\uD83D\uDEE1\uFE0F</span>
+      <span class="onb-privacy__icon" aria-hidden="true">🛡️</span>
       <h2 class="onb-privacy__title">{{ t('learning', 'Deine Daten') }}</h2>
       <p class="onb-privacy__text">
         {{ t('learning', 'Dein Lernfortschritt bleibt auf diesem Server. Nur du und deine Dozenten sehen deine Ergebnisse.') }}

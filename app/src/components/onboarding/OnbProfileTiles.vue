@@ -1,8 +1,8 @@
 <template>
   <div class="onb-screen onb-profile-tiles">
     <div class="onb-profile-tiles__content">
-      <!-- Goal -->
-      <div class="onb-tile-group">
+      <!-- Goal (students only) -->
+      <div v-if="isStudent" class="onb-tile-group">
         <h3 class="onb-tile-group__label">{{ t('learning', 'Was ist dein Ziel?') }}</h3>
         <div class="onb-tile-group__grid">
           <button
@@ -19,8 +19,8 @@
         </div>
       </div>
 
-      <!-- Intensity -->
-      <div class="onb-tile-group">
+      <!-- Intensity (students only) -->
+      <div v-if="isStudent" class="onb-tile-group">
         <h3 class="onb-tile-group__label">{{ t('learning', 'Wie intensiv lernst du?') }}</h3>
         <div class="onb-tile-group__grid">
           <button
@@ -82,12 +82,16 @@ export default {
   },
 
   computed: {
+    isStudent() { return this.store.role === 'student' },
     goalTiles() { return GOAL_TILES },
     intensityTiles() { return INTENSITY_TILES },
     aiConsentTiles() { return AI_CONSENT_TILES },
     allSelected() {
       const c = this.store.profileChoices
-      return c.goal !== null && c.intensity !== null && c.aiConsent !== null
+      if (this.isStudent) {
+        return c.goal !== null && c.intensity !== null && c.aiConsent !== null
+      }
+      return c.aiConsent !== null
     },
   },
 

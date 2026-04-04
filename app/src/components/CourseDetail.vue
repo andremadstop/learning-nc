@@ -49,7 +49,7 @@
 			<!-- Mega-tab content -->
 			<div v-if="activeMegaTab === 'lernraum'" class="lernraum-mega-tab">
 				<ExamReadiness
-					v-if="!isInstructor && course.exam_date"
+					v-if="course.exam_date"
 					:course-id="courseId" />
 
 				<CourseTabLernraum

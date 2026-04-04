@@ -137,63 +137,63 @@ export const INSTRUCTOR_SLIDES_FULL = [
 export const STUDENT_SLIDES = [
   {
     id: 'courses',
-    icon: '\uD83D\uDCDA',
-    titleKey: 'slide:student:courses:title',
-    textKey: 'slide:student:courses:text',
+    icon: '📚',
+    titleKey: 'Kurse & Fragenpools',
+    textKey: 'Deine Kurse und Fragenpools findest du unter "Kurse". Tritt einem Kurs bei oder erstelle eigene Pools.',
   },
   {
     id: 'training',
-    icon: '\uD83C\uDFAF',
-    titleKey: 'slide:student:training:title',
-    textKey: 'slide:student:training:text',
+    icon: '🎯',
+    titleKey: 'Lernmodi',
+    textKey: 'Smart Queue fuer taegliches Lernen, Training zum Ueben, Pruefungsmodus fuer den Ernstfall.',
   },
   {
     id: 'progress',
-    icon: '\uD83D\uDCCA',
-    titleKey: 'slide:student:progress:title',
-    textKey: 'slide:student:progress:text',
+    icon: '📊',
+    titleKey: 'Fortschritt & VirtuProf',
+    textKey: 'Dein Dashboard zeigt faellige Karten, Streak und Level. VirtuProf hilft dir bei Fragen.',
   },
 ]
 
 export const INSTRUCTOR_SLIDES = [
   {
     id: 'dashboard',
-    icon: '\uD83D\uDCCB',
-    titleKey: 'slide:instructor:dashboard:title',
-    textKey: 'slide:instructor:dashboard:text',
+    icon: '📋',
+    titleKey: 'Dozenten-Dashboard',
+    textKey: 'Erstelle Kurse, verwalte Teilnehmer und behalte den Ueberblick ueber den Lernfortschritt.',
   },
   {
     id: 'pools',
-    icon: '\uD83D\uDDC2\uFE0F',
-    titleKey: 'slide:instructor:pools:title',
-    textKey: 'slide:instructor:pools:text',
+    icon: '🗂️',
+    titleKey: 'Pools & Fragen',
+    textKey: 'Erstelle Fragenpools, importiere per CSV/JSON oder lass die KI Fragen aus deinem Material generieren.',
   },
   {
     id: 'analytics',
-    icon: '\uD83D\uDCCA',
-    titleKey: 'slide:instructor:analytics:title',
-    textKey: 'slide:instructor:analytics:text',
+    icon: '📊',
+    titleKey: 'Analytics & Fruehwarnung',
+    textKey: 'Kapitel-Heatmap, At-Risk-Warnung und Leaderboard helfen dir, deine Klasse zu steuern.',
   },
 ]
 
 export const ADMIN_SLIDES = [
   {
     id: 'users',
-    icon: '\uD83D\uDC65',
-    titleKey: 'slide:admin:users:title',
-    textKey: 'slide:admin:users:text',
+    icon: '👥',
+    titleKey: 'User-Verwaltung',
+    textKey: 'Verwalte Accounts, Rollen und Berechtigungen fuer alle Teilnehmer.',
   },
   {
     id: 'settings',
-    icon: '\u2699\uFE0F',
-    titleKey: 'slide:admin:settings:title',
-    textKey: 'slide:admin:settings:text',
+    icon: '⚙️',
+    titleKey: 'App-Einstellungen',
+    textKey: 'Konfiguriere KI-Provider, Gamification und globale Lernmodi.',
   },
   {
     id: 'analytics',
-    icon: '\uD83D\uDCCA',
-    titleKey: 'slide:admin:analytics:title',
-    textKey: 'slide:admin:analytics:text',
+    icon: '📊',
+    titleKey: 'Auswertungen',
+    textKey: 'Ueberblick ueber Nutzung, Aktivitaet und Systemgesundheit.',
   },
 ]
 
