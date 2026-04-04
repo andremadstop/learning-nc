@@ -45,7 +45,7 @@
             {{ isCorrect ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}
             — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
           </NcNoteCard>
-          <NcNoteCard v-if="currentQuestion.explanation" type="warning">
+          <NcNoteCard v-if="currentQuestion.explanation" type="info">
             <strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}
           </NcNoteCard>
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
@@ -95,7 +95,7 @@
             <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
             <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts[0] || '' }}</div>
           </div>
-          <NcNoteCard v-if="currentQuestion.explanation" type="warning"><strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}</NcNoteCard>
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
           </NcNoteCard>
@@ -129,7 +129,7 @@
             <strong>{{ displayCorrectAnswerTexts.length > 1 ? t('learning', 'Correct answers:') : t('learning', 'Correct answer:') }}</strong>
             {{ displayCorrectAnswerTexts.join(', ') }}
           </div>
-          <NcNoteCard v-if="currentQuestion.explanation" type="warning"><strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentQuestion.explanation" type="info"><strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentQuestion.explanation }}</NcNoteCard>
           <NcNoteCard v-if="currentQuestion.note_visible && currentQuestion.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentQuestion.instructor_note }}
           </NcNoteCard>

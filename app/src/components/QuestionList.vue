@@ -60,7 +60,7 @@
             {{ answer.text }}
           </div>
         </div>
-        <NcNoteCard v-if="question.explanation" type="warning" class="explanation-card">
+        <NcNoteCard v-if="question.explanation" type="info" class="explanation-card">
           <strong>{{ t('learning', 'Explanation:') }}</strong> {{ question.explanation }}
         </NcNoteCard>
       </div>

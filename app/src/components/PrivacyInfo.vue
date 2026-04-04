@@ -24,7 +24,7 @@
 			</a>
 		</div>
 
-		<NcNoteCard v-if="aiNotice.provider" type="warning" class="privacy-info__notice">
+		<NcNoteCard v-if="aiNotice.provider" type="info" class="privacy-info__notice">
 			<p><strong>{{ t('learning', 'KI-Hinweis') }}</strong></p>
 			<p>{{ t('learning', 'Diese App nutzt {provider} für KI-gestützte Erklärungen.', { provider: aiNotice.provider }) }}</p>
 			<p v-if="aiNotice.what_is_sent">{{ aiNotice.what_is_sent }}</p>

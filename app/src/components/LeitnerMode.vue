@@ -22,7 +22,7 @@
     </div>
 
     <div v-else-if="!started" class="leitner-dashboard">
-      <NcNoteCard v-if="stats.due_count > 0" type="warning" class="due-banner">
+      <NcNoteCard v-if="stats.due_count > 0" type="info" class="due-banner">
         <strong>{{ t('learning', '{n} questions due for review', { n: stats.due_count }) }}</strong>
         <NcButton type="primary" @click="startReview" class="due-start-btn">
           {{ t('learning', 'Start Review') }}
@@ -100,7 +100,7 @@
             {{ lastAnswer ? t('learning', 'Correct!') : t('learning', 'Incorrect') }}
             — {{ pbqPoints }}/{{ pbqMaxPoints }} {{ t('learning', 'points') }}
           </NcNoteCard>
-          <NcNoteCard v-if="currentItem.explanation" type="warning">
+          <NcNoteCard v-if="currentItem.explanation" type="info">
             <strong>{{ t('learning', 'Explanation:') }}</strong> {{ currentItem.explanation }}
           </NcNoteCard>
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
@@ -163,7 +163,7 @@
             <div class="open-review-row"><strong>{{ t('learning', 'Your answer') }}:</strong> {{ lastOpenAnswer }}</div>
             <div class="open-review-row"><strong>{{ t('learning', 'Model answer') }}:</strong> {{ displayCorrectAnswerTexts.length > 0 ? displayCorrectAnswerTexts[0] : '' }}</div>
           </div>
-          <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentItem.explanation" type="info">{{ currentItem.explanation }}</NcNoteCard>
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>
@@ -215,7 +215,7 @@
             </template>
             <em v-else>{{ t('learning', 'Correct answer hidden during active exam') }}</em>
           </div>
-          <NcNoteCard v-if="currentItem.explanation" type="warning">{{ currentItem.explanation }}</NcNoteCard>
+          <NcNoteCard v-if="currentItem.explanation" type="info">{{ currentItem.explanation }}</NcNoteCard>
           <NcNoteCard v-if="currentItem.note_visible && currentItem.instructor_note" type="info">
             <strong>{{ t('learning', 'Note:') }}</strong> {{ currentItem.instructor_note }}
           </NcNoteCard>

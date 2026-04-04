@@ -131,7 +131,7 @@
           {{ t('learning', 'Local-first mode: VirtuProf requests stay on your configured Ollama host. Verify the URL, the installed model, and your internal access controls before enabling chat for users.') }}
         </NcNoteCard>
 
-        <NcNoteCard v-else type="warning" class="dpa-hint">
+        <NcNoteCard v-else type="info" class="dpa-hint">
           {{ t('learning', 'AI is globally disabled. VirtuProf chat stays hidden for all users until you choose a provider and enable the feature again.') }}
         </NcNoteCard>
 

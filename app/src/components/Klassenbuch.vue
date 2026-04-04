@@ -26,7 +26,7 @@
 			</div>
 		</div>
 
-		<NcNoteCard v-if="myVisibility === 'private' && canToggleVisibility" type="warning" class="klassenbuch-note">
+		<NcNoteCard v-if="myVisibility === 'private' && canToggleVisibility" type="info" class="klassenbuch-note">
 			{{ t('learning', 'Dein Profil ist aktuell privat. Du siehst das Klassenbuch trotzdem, andere sehen dich aber erst nach dem Opt-in.') }}
 		</NcNoteCard>
 
