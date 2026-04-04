@@ -115,7 +115,7 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
-import { showSuccess, showError } from '@nextcloud/dialogs';
+import { showSuccess } from '@nextcloud/dialogs';
 
 export default {
   name: 'AIGenerator',

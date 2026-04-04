@@ -75,7 +75,8 @@ class QuestionSearchProvider implements IProvider {
         $expr = $qb->expr();
         $like = '%' . $this->db->escapeLikeParameter($term) . '%';
 
-        $qb->selectDistinct('q.id', 'q.pool_id', 'q.text', 'q.explanation', 'q.chapter_title', 'q.exam_key', 'p.name AS pool_name')
+        $qb->selectDistinct('q.id')
+            ->addSelect('q.pool_id', 'q.text', 'q.explanation', 'q.chapter_title', 'q.exam_key', 'p.name AS pool_name')
             ->from('learning_questions', 'q')
             ->innerJoin('q', 'learning_pools', 'p', $expr->eq('q.pool_id', 'p.id'))
             ->leftJoin('p', 'learning_pool_shares', 's', $expr->andX(

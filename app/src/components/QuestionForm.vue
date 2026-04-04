@@ -193,7 +193,6 @@
 import NcButton from '@nextcloud/vue/components/NcButton';
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch';
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
-import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
 import PbqAuthorTool from './PbqAuthorTool.vue';
 import AccessibleDialog from './AccessibleDialog.vue';

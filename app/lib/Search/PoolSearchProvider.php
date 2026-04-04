@@ -75,7 +75,8 @@ class PoolSearchProvider implements IProvider {
         $expr = $qb->expr();
         $like = '%' . $this->db->escapeLikeParameter($term) . '%';
 
-        $qb->selectDistinct('p.id', 'p.name', 'p.description', 'p.handbook_title', 'p.chapter_title')
+        $qb->selectDistinct('p.id')
+            ->addSelect('p.name', 'p.description', 'p.handbook_title', 'p.chapter_title')
             ->from('learning_pools', 'p')
             ->leftJoin('p', 'learning_pool_shares', 's', $expr->andX(
                 $expr->eq('s.pool_id', 'p.id'),

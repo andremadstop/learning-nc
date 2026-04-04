@@ -161,7 +161,7 @@ class RagImportService {
 
         foreach ($namePatterns as $pattern) {
             if (preg_match_all($pattern, $text, $matches, PREG_OFFSET_CAPTURE)) {
-                foreach ($matches[1] ?? [] as $match) {
+                foreach ($matches[1] as $match) {
                     $warnings[] = [
                         'type' => 'name',
                         'offset' => (int)$match[1],

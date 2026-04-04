@@ -102,7 +102,7 @@ export function generateIPv4Steps(r: IPv4CalculationResult): ExplanationStep[] {
 	if (r.prefix > 0 && r.prefix < 32) {
 		const interestingOctet = Math.floor((r.prefix - 1) / 8)
 		const ipByte = r.ip[interestingOctet]
-		const maskByte = r.mask[interestingOctet]
+		const _maskByte = r.mask[interestingOctet]
 		const netByte = r.network[interestingOctet]
 		const bitsInOctet = r.prefix - (interestingOctet * 8)
 		const hostBitsInOctet = 8 - bitsInOctet

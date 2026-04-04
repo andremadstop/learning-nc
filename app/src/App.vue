@@ -1409,7 +1409,7 @@ export default {
       this.smartQueueMode = 'queue';
       this.currentView = 'smartQueue';
     },
-    openCourseTool(toolId) {
+    openCourseTool(_toolId) {
       if (this.selectedCourse?.id) {
         this.pushAppRoute(this.courseRouteLocation(this.selectedCourse.id, 'tools'));
         return;
