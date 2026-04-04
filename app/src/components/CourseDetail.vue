@@ -44,13 +44,14 @@
 					@click="selectMegaTab(tab.id)">
 					{{ tab.label }}
 				</button>
+				<ExamReadiness
+					v-if="course.exam_date"
+					:course-id="courseId"
+					class="mega-tab-countdown" />
 			</div>
 
 			<!-- Mega-tab content -->
 			<div v-if="activeMegaTab === 'lernraum'" class="lernraum-mega-tab">
-				<ExamReadiness
-					v-if="course.exam_date"
-					:course-id="courseId" />
 
 				<CourseTabLernraum
 					:course-id="courseId"
@@ -798,6 +799,10 @@ export default {
 	color: var(--color-primary-element);
 	border-bottom-color: var(--color-primary-element);
 	font-weight: 600;
+}
+
+.mega-tab-countdown {
+	margin-inline-start: auto;
 }
 
 /* Talk link in header */
