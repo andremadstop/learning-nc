@@ -304,6 +304,12 @@ return [
         ['name' => 'rag_import#listImported',   'url' => '/api/courses/{courseId}/knowledge',              'verb' => 'GET'],
         ['name' => 'rag_import#deleteImported', 'url' => '/api/courses/{courseId}/knowledge/{title}',      'verb' => 'DELETE'],
 
+        // Pool Generator (Phase 145)
+        ['name' => 'pool_generator#providerInfo', 'url' => '/api/pool-generator/provider-info', 'verb' => 'GET'],
+        ['name' => 'pool_generator#fromText', 'url' => '/api/pool-generator/from-text', 'verb' => 'POST'],
+        ['name' => 'pool_generator#fromFile', 'url' => '/api/pool-generator/from-file', 'verb' => 'POST'],
+        ['name' => 'pool_generator#createPool', 'url' => '/api/pool-generator/create-pool', 'verb' => 'POST'],
+
         // Schwarmgedaechtnis (Student Contributions + Moderation)
         ['name' => 'rag_import#contributeNote',   'url' => '/api/courses/{courseId}/knowledge/contribute',          'verb' => 'POST'],
         ['name' => 'rag_import#myContributions',  'url' => '/api/courses/{courseId}/knowledge/my-contributions',    'verb' => 'GET'],
