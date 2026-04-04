@@ -20,6 +20,11 @@
 		</div>
 
 		<template v-else>
+			<div v-if="daysUntilExam > 0" class="exam-readiness-card__countdown" :class="countdownClass">
+				<span class="countdown-number">{{ daysUntilExam }}</span>
+				<span class="countdown-label">{{ t('learning', 'Tage bis zur Pruefung') }}</span>
+			</div>
+
 			<div class="exam-readiness-card__status-row">
 				<span class="readiness-status" :class="'readiness-status--' + statusKey">
 					{{ statusLabel }}
@@ -104,6 +109,11 @@ export default {
 			return this.statusKey === 'on_track'
 				? t('learning', 'Auf Kurs')
 				: t('learning', 'Mehr lernen')
+		},
+		countdownClass() {
+			if (this.daysUntilExam < 7) return 'countdown--red'
+			if (this.daysUntilExam <= 14) return 'countdown--yellow'
+			return 'countdown--green'
 		},
 		ringStyle() {
 			const percent = Math.max(0, Math.min(100, Number(this.readinessPercent || 0)))
@@ -229,8 +239,8 @@ export default {
 }
 
 .readiness-status--needs_practice {
-	background: color-mix(in srgb, var(--color-warning) 20%, transparent);
-	color: var(--color-warning);
+	background: var(--color-primary-element);
+	color: var(--color-primary-element-text);
 }
 
 .readiness-meta {
@@ -272,6 +282,40 @@ export default {
 	height: 100%;
 	border-radius: inherit;
 	background: linear-gradient(90deg, var(--color-error), var(--color-warning), var(--color-success));
+}
+
+.exam-readiness-card__countdown {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	padding: 8px 14px;
+	border-radius: 12px;
+}
+
+.countdown-number {
+	font-size: 32px;
+	font-weight: 800;
+	line-height: 1;
+}
+
+.countdown-label {
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.countdown--green {
+	background: color-mix(in srgb, var(--color-success) 12%, transparent);
+	color: var(--color-success);
+}
+
+.countdown--yellow {
+	background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+	color: var(--color-warning);
+}
+
+.countdown--red {
+	background: color-mix(in srgb, var(--color-error) 14%, transparent);
+	color: var(--color-error);
 }
 
 @media (max-width: 720px) {

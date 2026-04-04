@@ -65,6 +65,9 @@
 						</div>
 					</div>
 					<div class="pool-badges">
+						<span v-if="pool.exam_relevant" class="required-badge exam-relevant-badge">
+							{{ t('learning', 'Exam') }}
+						</span>
 						<span v-if="pool.required" class="required-badge">
 							{{ t('learning', 'Required') }}
 						</span>
@@ -400,6 +403,13 @@
 
 				<div class="rules-field">
 					<label class="rules-checkbox">
+						<input v-model="poolRulesForm.examRelevant" type="checkbox">
+						<span>{{ t('learning', 'Exam relevant (counts towards exam readiness)') }}</span>
+					</label>
+				</div>
+
+				<div class="rules-field">
+					<label class="rules-checkbox">
 						<input v-model="poolRulesForm.required" type="checkbox">
 						<span>{{ t('learning', 'Show this pool as required') }}</span>
 					</label>
@@ -568,6 +578,7 @@ export default {
 			poolRulesError: '',
 			savingPoolRules: false,
 			poolRulesForm: {
+				examRelevant: false,
 				required: true,
 				requiredEnforced: false,
 				filterExamKey: '',
@@ -816,6 +827,7 @@ export default {
 			this.editingPoolRules = { ...pool }
 			this.poolRulesError = ''
 			this.poolRulesForm = {
+				examRelevant: pool.exam_relevant === true,
 				required: pool.required !== false,
 				requiredEnforced: pool.required_enforced === true,
 				filterExamKey: pool.filter_exam_key || '',
@@ -846,6 +858,7 @@ export default {
 					filterExamKey: this.poolRulesForm.filterExamKey || null,
 					filterChapterKey: this.poolRulesForm.filterChapterKey || null,
 					filterQuestionIds: this.parsePoolRuleQuestionIds(),
+					examRelevant: this.poolRulesForm.examRelevant,
 				})
 				this.closePoolRulesModal()
 				this.$emit('refresh-course-detail')
@@ -1306,6 +1319,11 @@ export default {
 .required-enforced-badge {
 	background: color-mix(in srgb, var(--color-error) 12%, transparent);
 	color: var(--color-error);
+}
+
+.exam-relevant-badge {
+	background: color-mix(in srgb, var(--color-success) 15%, transparent);
+	color: var(--color-success);
 }
 
 .filter-badge {
