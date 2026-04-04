@@ -6,6 +6,9 @@
         <NcButton type="secondary" @click="openStarterDialog">
           {{ t('learning', 'Starter-Pool hinzufügen') }}
         </NcButton>
+        <NcButton type="secondary" @click="showPoolGenerator = true">
+          {{ t('learning', 'Generate Questions') }}
+        </NcButton>
         <NcButton type="primary" @click="showCreateDialog">
           {{ t('learning', '+ Create Pool') }}
         </NcButton>
@@ -267,6 +270,8 @@
 
     <ShareDialog v-if="sharingPool" :poolId="sharingPool.id" :poolName="sharingPool.name" @close="sharingPool = null" />
 
+    <PoolGenerator v-if="showPoolGenerator" @close="showPoolGenerator = false" @created="showPoolGenerator = false; loadPools()" />
+
     <AccessibleDialog v-if="showStarterDialog" :name="t('learning', 'Starter Pools')" @closing="closeStarterDialog">
       <div class="starter-pools-dialog">
         <p class="starter-pools-dialog__intro">
@@ -323,6 +328,7 @@ import NcNoteCard from '@nextcloud/vue/components/NcNoteCard';
 import ShareDialog from './ShareDialog.vue';
 import DailyChallengeCard from './DailyChallengeCard.vue';
 import AccessibleDialog from './AccessibleDialog.vue';
+import PoolGenerator from './PoolGenerator.vue';
 import hintMixin from '../hintMixin.js';
 
 // Simple debounce utility
@@ -337,7 +343,7 @@ const debounce = (func, delay) => {
 
 export default {
   name: 'PoolList',
-  components: { AccessibleDialog, NcButton, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, NcNoteCard, ShareDialog, DailyChallengeCard },
+  components: { AccessibleDialog, NcButton, NcEmptyContent, NcActions, NcActionButton, NcLoadingIcon, NcNoteCard, ShareDialog, DailyChallengeCard, PoolGenerator },
   mixins: [hintMixin],
   props: {
     userRole: { type: String, default: 'student' },
@@ -373,6 +379,7 @@ export default {
       searchLoading: false,
       poolSearchResults: [], // Client-side filtered pools
       questionSearchResults: [], // API results for questions
+      showPoolGenerator: false,
       showDeleteConfirm: false,
       poolToDelete: null,
       // Smart Queue + Remediation + Daily Goal
