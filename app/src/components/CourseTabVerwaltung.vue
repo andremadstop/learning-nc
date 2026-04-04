@@ -320,9 +320,6 @@ export default {
 				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/mode-config`), {
 					modeConfig: this.modeConfigLocal,
 				})
-				if (this.course) {
-					this.course.mode_config = this.normalizeModeConfig(res.data?.mode_config || this.modeConfigLocal)
-				}
 				this.modeConfigSaved = true
 				setTimeout(() => { this.modeConfigSaved = false }, 3000)
 				this.$emit('refresh-course-detail')
@@ -364,9 +361,6 @@ export default {
 				)
 				const enabledTools = courseResponse.data?.enabled_tools ?? null
 				this.toolConfigLocal = this.normalizeToolSelection(enabledTools, this.adminEnabledTools)
-				if (this.course) {
-					this.course.enabled_tools = enabledTools
-				}
 				this.toolConfigSaved = false
 			} catch (e) {
 				this.adminEnabledTools = [...ALL_TOOL_IDS]
@@ -389,10 +383,8 @@ export default {
 				const res = await axios.put(generateUrl(`/apps/learning/api/courses/${this.courseId}/tools`), {
 					enabledTools: payloadEnabledTools,
 				})
-				if (this.course) {
-					this.course.enabled_tools = res.data?.enabled_tools ?? payloadEnabledTools
-				}
-				this.toolConfigLocal = this.normalizeToolSelection(this.course?.enabled_tools ?? null, this.adminEnabledTools)
+				const savedTools = res.data?.enabled_tools ?? payloadEnabledTools
+				this.toolConfigLocal = this.normalizeToolSelection(savedTools, this.adminEnabledTools)
 				this.toolConfigSaved = true
 				setTimeout(() => { this.toolConfigSaved = false }, 3000)
 			} catch (e) {
@@ -409,12 +401,7 @@ export default {
 					modeConfig: this.modeConfigLocal,
 					leitnerSprint: this.leitnerSprint,
 				})
-				if (this.course) {
-					this.course.leitner_sprint = this.leitnerSprint
-					if (res.data?.mode_config) {
-						this.course.mode_config = this.normalizeModeConfig(res.data.mode_config)
-					}
-				}
+				this.$emit('refresh-course-detail')
 			} catch (e) {
 				console.error('Failed to save leitner sprint', e)
 			}
@@ -427,12 +414,7 @@ export default {
 					modeConfig: this.modeConfigLocal,
 					talkRoomToken: this.talkRoomToken,
 				})
-				if (this.course) {
-					this.course.talk_room_token = this.talkRoomToken
-					if (res.data?.mode_config) {
-						this.course.mode_config = this.normalizeModeConfig(res.data.mode_config)
-					}
-				}
+				this.$emit('refresh-course-detail')
 				this.talkTokenSaved = true
 				setTimeout(() => { this.talkTokenSaved = false }, 3000)
 			} catch (e) {

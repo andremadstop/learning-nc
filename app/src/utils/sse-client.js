@@ -102,7 +102,15 @@ export function createSseClient(url, { onState, onClose, onFallback } = {}) {
     }
 
     source.onopen = () => {
+      const wasReconnect = reconnectAttempts > 0
       reconnectAttempts = 0
+      if (wasReconnect) {
+        // After reconnect, fetch current state to recover any missed updates
+        fetch(url.replace('/sse', '/state'), { credentials: 'same-origin' })
+          .then(r => r.ok ? r.json() : null)
+          .then(data => { if (data && typeof onState === 'function') onState(data) })
+          .catch(() => {}) // SSE stream will deliver state anyway
+      }
     }
 
     source.addEventListener('state', (event) => {
