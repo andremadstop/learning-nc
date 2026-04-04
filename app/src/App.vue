@@ -350,8 +350,12 @@
           @enabled-change="handleVirtuProfEnabledChange" />
       </aside>
 
+      <OnboardingRedesign
+        v-if="showOnboarding"
+        @done="onOnboardingDone" />
+
       <OnboardingIntro
-        v-if="showInstructorOnboarding"
+        v-if="showInstructorOnboarding && !showOnboarding"
         role="instructor"
         @done="onInstructorOnboardingDone" />
     </div>
@@ -388,6 +392,7 @@ import NatTable from './components/NatTable.vue';
 import WiresharkLite from './components/WiresharkLite.vue';
 import AuthFlowSimulator from './components/AuthFlowSimulator.vue';
 import OnboardingIntro from './components/OnboardingIntro.vue';
+import OnboardingRedesign from './components/OnboardingRedesign.vue';
 import SkillMap from './components/SkillMap.vue';
 import StudentDashboard from './components/StudentDashboard.vue';
 import { ALL_TOOL_IDS, TOOL_CATALOG } from './utils/toolCatalog.js';
@@ -432,6 +437,7 @@ export default {
     WiresharkLite,
     AuthFlowSimulator,
     OnboardingIntro,
+    OnboardingRedesign,
     SkillMap,
     StudentDashboard,
   },
@@ -475,6 +481,7 @@ export default {
         coop: false,
         code: '',
       },
+      showOnboarding: false,
       showInstructorOnboarding: false,
     };
   },
@@ -547,6 +554,7 @@ export default {
     }
     await Promise.all([this.fetchRole(), this.fetchPersonalSettings(), this.fetchEnabledTools()]);
     this.appInitialized = true;
+    this.checkOnboarding();
     this.checkInstructorOnboarding();
     const openedAdventureRoute = this.applyInitialAdventureRoute();
     if (!openedAdventureRoute) {
@@ -654,6 +662,19 @@ export default {
       if (!this.virtuProfEnabled && this.mainView === 'virtuprof-fullscreen') {
         this.closeVirtuProfFullscreen();
       }
+    },
+    checkOnboarding() {
+      try {
+        const uid = (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function' && OC.getCurrentUser()?.uid) || 'user';
+        if (!window.localStorage.getItem(`learning:onboarding-seen:${uid}`)) {
+          this.showOnboarding = true;
+        }
+      } catch {
+        // Ignore
+      }
+    },
+    onOnboardingDone() {
+      this.showOnboarding = false;
     },
     checkInstructorOnboarding() {
       if (this.userRole !== 'instructor') return;
