@@ -20,6 +20,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setFilterChapterKey(?string $filterChapterKey)
  * @method ?string getFilterQuestionIds()
  * @method void setFilterQuestionIds(?string $filterQuestionIds)
+ * @method bool getExamRelevant()
+ * @method void setExamRelevant(bool $examRelevant)
  */
 class CoursePool extends Entity {
     protected $courseId;
@@ -30,6 +32,7 @@ class CoursePool extends Entity {
     protected $filterExamKey;
     protected $filterChapterKey;
     protected $filterQuestionIds;
+    protected $examRelevant;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -41,6 +44,7 @@ class CoursePool extends Entity {
         $this->addType('filterExamKey', 'string');
         $this->addType('filterChapterKey', 'string');
         $this->addType('filterQuestionIds', 'string');
+        $this->addType('examRelevant', 'integer');
     }
 
     public function jsonSerialize(): array {
@@ -54,6 +58,7 @@ class CoursePool extends Entity {
             'filter_exam_key' => $this->filterExamKey,
             'filter_chapter_key' => $this->filterChapterKey,
             'filter_question_ids' => $this->filterQuestionIds ? (json_decode($this->filterQuestionIds, true) ?: []) : [],
+            'exam_relevant' => (bool)($this->examRelevant ?? false),
         ];
     }
 }

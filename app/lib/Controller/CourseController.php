@@ -158,7 +158,8 @@ class CourseController extends Controller {
         bool $requiredEnforced = false,
         ?string $filterExamKey = null,
         ?string $filterChapterKey = null,
-        ?array $filterQuestionIds = null
+        ?array $filterQuestionIds = null,
+        ?bool $examRelevant = null
     ): DataResponse {
         try {
             $cp = $this->courseService->updatePoolRules(
@@ -169,7 +170,8 @@ class CourseController extends Controller {
                 $filterExamKey,
                 $filterChapterKey,
                 $filterQuestionIds,
-                $this->userId
+                $this->userId,
+                $examRelevant
             );
             return new DataResponse($cp);
         } catch (\InvalidArgumentException $e) {

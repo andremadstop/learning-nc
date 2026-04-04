@@ -35,7 +35,10 @@ class ReadinessService {
         }
 
         $targetTimestamp = max(time(), $examTimestamp);
-        $coursePools = $this->coursePoolMapper->findByCourse($courseId);
+        $allCoursePools = $this->coursePoolMapper->findByCourse($courseId);
+        $examRelevantPools = array_filter($allCoursePools, static fn(CoursePool $pool): bool => (bool)$pool->getExamRelevant());
+        // If no pool is marked exam_relevant, fall back to all pools (backward compat)
+        $coursePools = $examRelevantPools !== [] ? array_values($examRelevantPools) : $allCoursePools;
         $poolNames = $this->getPoolNames(array_map(static fn(CoursePool $pool): int => $pool->getPoolId(), $coursePools));
 
         $courseReadinessTotal = 0.0;

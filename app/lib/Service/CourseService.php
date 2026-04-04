@@ -444,7 +444,8 @@ class CourseService {
         ?string $filterExamKey,
         ?string $filterChapterKey,
         ?array $filterQuestionIds,
-        string $userId
+        string $userId,
+        ?bool $examRelevant = null
     ): CoursePool {
         $course = $this->courseMapper->findById($courseId);
         if (!$this->isInstructorOfCourse($course, $userId)) {
@@ -457,6 +458,9 @@ class CourseService {
         $coursePool->setFilterExamKey($this->normalizeCoursePoolFilterValue($filterExamKey, 64));
         $coursePool->setFilterChapterKey($this->normalizeCoursePoolFilterValue($filterChapterKey, 64));
         $coursePool->setFilterQuestionIds($this->normalizeCoursePoolQuestionIds($filterQuestionIds, $poolId));
+        if ($examRelevant !== null) {
+            $coursePool->setExamRelevant($examRelevant);
+        }
 
         return $this->coursePoolMapper->update($coursePool);
     }
