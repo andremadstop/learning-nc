@@ -193,7 +193,7 @@ export const ADMIN_SLIDES = [
     id: 'analytics',
     icon: '📊',
     titleKey: 'Auswertungen',
-    textKey: 'Ueberblick ueber Nutzung, Aktivitaet und Systemgesundheit.',
+    textKey: 'Überblick über Nutzung, Aktivität und Systemgesundheit.',
   },
 ]
 
