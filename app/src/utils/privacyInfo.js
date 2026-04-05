@@ -29,7 +29,7 @@ const CATEGORY_GROUPS = [
 	{
 		id: 'assessment',
 		title: 'Prüfungsdaten',
-		matches: [/^assessment$/i, /Pruef/i, /Prüf/i, /Snapshot/i],
+		matches: [/^assessment$/i, /Prüf/i, /Snapshot/i],
 	},
 	{
 		id: 'external',

@@ -145,13 +145,13 @@ export const STUDENT_SLIDES = [
     id: 'training',
     icon: '🎯',
     titleKey: 'Lernmodi',
-    textKey: 'Smart Queue fuer taegliches Lernen, Training zum Ueben, Pruefungsmodus fuer den Ernstfall.',
+    textKey: 'Smart Queue für tägliches Lernen, Training zum Üben, Prüfungsmodus für den Ernstfall.',
   },
   {
     id: 'progress',
     icon: '📊',
     titleKey: 'Fortschritt & VirtuProf',
-    textKey: 'Dein Dashboard zeigt faellige Karten, Streak und Level. VirtuProf hilft dir bei Fragen.',
+    textKey: 'Dein Dashboard zeigt fällige Karten, Streak und Level. VirtuProf hilft dir bei Fragen.',
   },
 ]
 
@@ -160,7 +160,7 @@ export const INSTRUCTOR_SLIDES = [
     id: 'dashboard',
     icon: '📋',
     titleKey: 'Dozenten-Dashboard',
-    textKey: 'Erstelle Kurse, verwalte Teilnehmer und behalte den Ueberblick ueber den Lernfortschritt.',
+    textKey: 'Erstelle Kurse, verwalte Teilnehmer und behalte den Überblick über den Lernfortschritt.',
   },
   {
     id: 'pools',
@@ -181,7 +181,7 @@ export const ADMIN_SLIDES = [
     id: 'users',
     icon: '👥',
     titleKey: 'User-Verwaltung',
-    textKey: 'Verwalte Accounts, Rollen und Berechtigungen fuer alle Teilnehmer.',
+    textKey: 'Verwalte Accounts, Rollen und Berechtigungen für alle Teilnehmer.',
   },
   {
     id: 'settings',

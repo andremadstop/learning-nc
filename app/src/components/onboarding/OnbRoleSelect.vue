@@ -4,7 +4,7 @@
     <div
       class="onb-role-select__grid"
       role="radiogroup"
-      :aria-label="t('learning', 'Rolle waehlen')"
+      :aria-label="t('learning', 'Rolle wählen')"
       @keydown="handleKeydown"
     >
       <button
