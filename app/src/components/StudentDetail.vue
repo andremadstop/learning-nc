@@ -151,7 +151,7 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatRelativeDateString } from '../format.js'
 
-const ACTIVE_BADGE_ORDER = ['pioneer', 'streak_7', 'streak_14', 'mastermind', 'exam_ready', 'simulator', 'weekend', 'swarm', 'trouble_fixer']
+const ACTIVE_BADGE_ORDER = ['pioneer', 'streak_7', 'streak_14', 'mastermind', 'exam_ready', 'simulator', 'weekend', 'swarm', 'trouble_fixer', 'quick_thinker']
 
 export default {
 	name: 'StudentDetail',
