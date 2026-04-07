@@ -513,7 +513,8 @@ class TrainingService {
         string $mode = 'training',
         ?int $timeLimitSeconds = null,
         ?string $lang = null,
-        ?int $courseId = null
+        ?int $courseId = null,
+        ?string $questionType = null
     ): array {
         $contentLanguage = $this->resolveContentLanguage($lang, $userId);
 
@@ -576,6 +577,11 @@ class TrainingService {
             $questions = $this->questionMapper->findByIds($questionIds);
         } else {
             $questions = $this->questionMapper->findByPoolId($poolId);
+        }
+
+        // Filter by question type if requested (e.g. 'pbq' for simulator-only practice)
+        if ($questionType !== null && in_array($questionType, ['single', 'multi', 'open', 'pbq'], true)) {
+            $questions = array_values(array_filter($questions, static fn($q) => $q->getQuestionType() === $questionType));
         }
 
         if (empty($questions)) {

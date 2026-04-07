@@ -882,6 +882,11 @@ PROMPT;
             return '';
         }
 
+        // PBQ/Simulator questions get a specialized context
+        if (($questionContext['questionType'] ?? '') === 'pbq' && !empty($questionContext['pbqSubtype'])) {
+            return $this->buildPbqContextAddendum($questionContext);
+        }
+
         $lines = [];
         $lines[] = 'The user is currently looking at this question:';
         $lines[] = 'Question: ' . mb_substr((string)($questionContext['questionText'] ?? ''), 0, 500);
@@ -910,6 +915,109 @@ PROMPT;
         $lines[] = 'When the user asks about "this question", "diese Frage", or refers to answer options by letter (A, B, C, D), '
             . 'use the question context above to give a helpful, specific answer. '
             . 'Do not simply repeat the question — explain the concept behind it.';
+
+        return implode("\n", $lines);
+    }
+
+    /**
+     * Build a PBQ/Simulator-specific context addendum.
+     *
+     * Provides VirtuProf with detailed information about the simulation type,
+     * available tools, expected steps, and how to guide the student through
+     * the interactive exercise step by step.
+     */
+    private function buildPbqContextAddendum(array $ctx): string {
+        $subtype = $ctx['pbqSubtype'];
+        $config = $ctx['pbqConfig'] ?? [];
+        $lines = [];
+
+        $lines[] = 'The user is working on an INTERACTIVE SIMULATION (Performance-Based Question).';
+        $lines[] = 'Simulation type: ' . $subtype;
+        $lines[] = 'Task: ' . mb_substr((string)($ctx['questionText'] ?? ''), 0, 500);
+
+        // Subtype-specific context
+        switch ($subtype) {
+            case 'cli':
+                $domain = $config['domain'] ?? 'generic';
+                $lines[] = "This is a CLI/Terminal simulation (domain: {$domain}).";
+                if (!empty($config['terminals']) && is_array($config['terminals'])) {
+                    $lines[] = 'Available terminals: ' . implode(', ', array_map(fn($t) => $t['label'] ?? $t['id'] ?? 'Terminal', $config['terminals']));
+                }
+                if (!empty($config['hint'])) {
+                    $lines[] = 'Built-in hint: ' . mb_substr((string)$config['hint'], 0, 300);
+                }
+                $lines[] = '';
+                $lines[] = 'When helping the student:';
+                $lines[] = '- Explain which CLI mode they need to be in (e.g. User EXEC, Privileged EXEC, Global Config, Interface Config)';
+                $lines[] = '- Guide them through the commands step by step, explaining what each command does';
+                $lines[] = '- If they are stuck, explain the command syntax and common parameters';
+                $lines[] = '- Do NOT give the full solution at once — guide them one step at a time';
+                break;
+
+            case 'placement':
+                $lines[] = 'This is a network topology placement task (drag & drop devices onto a diagram).';
+                if (!empty($config['positions']) && is_array($config['positions'])) {
+                    $labels = array_map(fn($p) => $p['label'] ?? '?', $config['positions']);
+                    $lines[] = 'Positions to fill: ' . implode(', ', $labels);
+                }
+                if (!empty($config['device_options']) && is_array($config['device_options'])) {
+                    $lines[] = 'Available devices: ' . implode(', ', $config['device_options']);
+                }
+                $lines[] = '';
+                $lines[] = 'When helping: explain WHY each device belongs at its position (function in the network, OSI layer, traffic flow).';
+                break;
+
+            case 'dropdown':
+                $lines[] = 'This is a dropdown selection task on a network diagram.';
+                if (!empty($config['questions']) && is_array($config['questions'])) {
+                    $labels = array_map(fn($q) => $q['label'] ?? '?', $config['questions']);
+                    $lines[] = 'Selection points: ' . implode(', ', $labels);
+                }
+                $lines[] = '';
+                $lines[] = 'When helping: explain the networking concept behind each selection point and why certain values are correct.';
+                break;
+
+            case 'cable':
+                $lines[] = 'This is a cable/wiring task (pin assignments, connector types).';
+                $lines[] = '';
+                $lines[] = 'When helping: explain cable standards (T568A/B), pin functions, and when to use straight-through vs crossover cables.';
+                break;
+
+            case 'routing_config':
+                $lines[] = 'This is a routing table configuration task.';
+                $lines[] = '';
+                $lines[] = 'When helping: explain network/subnet, next-hop, metric concepts. Guide through each route entry.';
+                break;
+
+            case 'switch_config':
+                $lines[] = 'This is a switch configuration task.';
+                $lines[] = '';
+                $lines[] = 'When helping: explain VLANs, trunk/access ports, STP, and port security concepts step by step.';
+                break;
+
+            case 'diagnostic':
+                $lines[] = 'This is a network diagnostic/troubleshooting task.';
+                $lines[] = '';
+                $lines[] = 'When helping: guide through systematic troubleshooting (bottom-up OSI, divide-and-conquer). Explain what each diagnostic tool reveals.';
+                break;
+
+            default:
+                $lines[] = 'When helping: explain the simulation scenario and guide the student step by step.';
+                break;
+        }
+
+        if (!empty($ctx['explanation'])) {
+            $lines[] = '';
+            $lines[] = 'Solution explanation (reveal gradually, NOT all at once): ' . mb_substr(strip_tags((string)$ctx['explanation']), 0, 500);
+        }
+
+        $lines[] = '';
+        $lines[] = 'IMPORTANT GUIDELINES FOR SIMULATOR HELP:';
+        $lines[] = '- Be a patient tutor. Guide step by step, do not dump the full solution.';
+        $lines[] = '- Start by explaining what the simulation expects and how the interface works.';
+        $lines[] = '- If the student asks "what should I do?" explain the FIRST step only.';
+        $lines[] = '- Use concrete examples from the scenario (device names, IPs, ports shown).';
+        $lines[] = '- If the student made a mistake, explain what went wrong and what to try instead.';
 
         return implode("\n", $lines);
     }

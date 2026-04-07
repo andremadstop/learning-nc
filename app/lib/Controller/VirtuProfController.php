@@ -507,6 +507,27 @@ class VirtuProfController extends Controller {
             if (isset($questionContext['correctAnswerIndex']) && $questionContext['correctAnswerIndex'] !== null) {
                 $questionContext['correctAnswerIndex'] = (int)$questionContext['correctAnswerIndex'];
             }
+            // PBQ/Simulator fields
+            if (isset($questionContext['questionType'])) {
+                $questionContext['questionType'] = in_array($questionContext['questionType'], ['single', 'multi', 'open', 'pbq'], true)
+                    ? $questionContext['questionType'] : null;
+            }
+            if (isset($questionContext['pbqSubtype'])) {
+                $allowed = ['cli', 'dropdown', 'placement', 'cable', 'routing_config', 'switch_config', 'diagnostic', 'multi_panel'];
+                $questionContext['pbqSubtype'] = in_array($questionContext['pbqSubtype'], $allowed, true)
+                    ? $questionContext['pbqSubtype'] : null;
+            }
+            if (isset($questionContext['pbqConfig']) && is_array($questionContext['pbqConfig'])) {
+                // Pass through but limit serialized size to 4KB for prompt budget
+                $serialized = json_encode($questionContext['pbqConfig']);
+                if ($serialized !== false && mb_strlen($serialized) > 4096) {
+                    // Keep only essential keys for context
+                    $keep = ['domain', 'terminals', 'positions', 'device_options', 'questions', 'hint', 'pins', 'scenario_type'];
+                    $questionContext['pbqConfig'] = array_intersect_key($questionContext['pbqConfig'], array_flip($keep));
+                }
+            } else {
+                $questionContext['pbqConfig'] = null;
+            }
         } else {
             $questionContext = null;
         }

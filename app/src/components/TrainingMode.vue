@@ -4,8 +4,21 @@
       <h3>{{ t('learning', 'Start Training Session') }}</h3>
       <p v-if="totalQuestions > 0">{{ t('learning', 'Test your knowledge with {n} questions', { n: totalQuestions }) }}</p>
       <NcEmptyContent v-else :name="t('learning', 'No questions')" :description="t('learning', 'No questions available for training')" />
-      <div class="start-actions">
-        <NcButton v-if="totalQuestions > 0" type="primary" @click="startTraining" :disabled="starting">{{ starting ? t('learning', 'Starting...') : t('learning', 'Start Training') }}</NcButton>
+      <div v-if="totalQuestions > 0" class="training-start-controls">
+        <div class="question-type-filter">
+          <button class="filter-pill" :class="{ active: activeQuestionType === null }" @click="activeQuestionType = null">
+            <span class="filter-pill-icon">📝</span> {{ t('learning', 'All questions') }}
+          </button>
+          <button class="filter-pill" :class="{ active: activeQuestionType === 'pbq' }" @click="activeQuestionType = 'pbq'">
+            <span class="filter-pill-icon">🖥️</span> {{ t('learning', 'Simulators only') }}
+          </button>
+        </div>
+        <div class="start-actions">
+          <NcButton type="primary" @click="startTraining" :disabled="starting">{{ starting ? t('learning', 'Starting...') : (activeQuestionType === 'pbq' ? t('learning', 'Start simulator training') : t('learning', 'Start Training')) }}</NcButton>
+          <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
+        </div>
+      </div>
+      <div v-else class="start-actions">
         <NcButton type="tertiary" @click="$emit('back')">{{ t('learning', 'Back') }}</NcButton>
       </div>
     </div>
@@ -210,6 +223,7 @@ export default {
     courseId: { type: Number, default: null },
     totalQuestions: { type: Number, required: true },
     contentLanguage: { type: String, default: '' },
+    initialQuestionType: { type: String, default: null },
   },
   data() {
     return {
@@ -234,6 +248,7 @@ export default {
       explainText: '',
       explainPollTimer: null,
       questionLanguage: this.contentLanguage || '',
+      activeQuestionType: this.initialQuestionType || null,
       // TRIG-02 / TRIG-04: wrong answer tracking + summary generation
       wrongAnswersOnPool: 0,
       summaryGenerating: false,
@@ -257,16 +272,25 @@ export default {
     currentQuestion: {
       handler(q) {
         if (!q) return;
+        const ctx = {
+          questionText: q.text || '',
+          answers: (q.answers || []).map(a => a.text || a),
+          correctAnswerIndex: this.getCorrectAnswerIndex(q),
+          explanation: q.explanation || null,
+          questionId: q.id || null,
+        };
+        // Include PBQ-specific data for VirtuProf simulator guidance
+        if (q.question_type === 'pbq') {
+          ctx.questionType = 'pbq';
+          ctx.pbqSubtype = q.pbq_subtype || null;
+          try {
+            ctx.pbqConfig = typeof q.pbq_config === 'string' ? JSON.parse(q.pbq_config) : (q.pbq_config || null);
+          } catch { ctx.pbqConfig = null; }
+        }
         useOptionalVirtuProfStore()?.updateContext({
           poolId: this.poolId,
           courseId: this.courseId,
-          questionContext: {
-            questionText: q.text || '',
-            answers: (q.answers || []).map(a => a.text || a),
-            correctAnswerIndex: this.getCorrectAnswerIndex(q),
-            explanation: q.explanation || null,
-            questionId: q.id || null,
-          },
+          questionContext: ctx,
         });
       },
       immediate: true,
@@ -365,7 +389,9 @@ export default {
     async startTraining() {
       this.starting = true; this.loadError = null;
       try {
-        const response = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload({ poolId: this.poolId }));
+        const payload = { poolId: this.poolId };
+        if (this.activeQuestionType) { payload.questionType = this.activeQuestionType; }
+        const response = await axios.post(generateUrl('/apps/learning/api/training/start'), this.requestPayload(payload));
         this.session = response.data.session_id; this.questions = response.data.questions;
       } catch (error) { this.loadError = error.response?.data?.error || t('learning', 'Failed to start training.'); }
       finally { this.starting = false; }
@@ -597,20 +623,28 @@ export default {
 .training-start { text-align: center; padding: 80px 20px; }
 .training-start h3 { font-size: 28px; margin-bottom: 12px; font-weight: 700; color: var(--color-main-text); }
 .training-start p { font-size: 16px; color: var(--color-text-maxcontrast); margin-bottom: 28px; }
-.start-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.training-start-controls { display: flex; flex-direction: column; align-items: center; gap: 32px; margin-top: 12px; }
+.question-type-filter { display: inline-flex; gap: 4px; padding: 4px; background: var(--color-background-dark); border-radius: 22px; }
+.filter-pill { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border: none; border-radius: 18px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; background: transparent; color: var(--color-text-maxcontrast); }
+.filter-pill:hover { color: var(--color-main-text); background: var(--color-background-hover); }
+.filter-pill.active { background: var(--color-primary); color: var(--color-primary-text); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); }
+.filter-pill-icon { font-size: 16px; line-height: 1; }
+.start-actions { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
 .question-counter { text-align: center; font-size: 14px; color: var(--color-text-maxcontrast); margin: 12px 0 28px; font-weight: 500; display: flex; justify-content: center; align-items: center; gap: 8px; }
 .question-db-id { font-size: 11px; font-weight: 400; color: var(--color-text-maxcontrast); opacity: 0.6; font-family: monospace; background: var(--color-background-hover); padding: 1px 5px; border-radius: 4px; }
+.training-active { max-width: 740px; margin: 0 auto; }
+.training-active:has(.pbq-renderer) { max-width: 100%; }
 .question-card { position: relative; background: var(--color-main-background); border: 1px solid var(--color-border); border-radius: 16px; padding: 60px 32px 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
 .question-image { max-width: 100%; max-height: 240px; border-radius: 12px; border: 1px solid var(--color-border); margin-bottom: 16px; object-fit: contain; display: block; }
 .question-text { font-size: 20px; font-weight: 500; margin-bottom: 28px; line-height: 1.6; color: var(--color-main-text); }
 .multi-hint { text-align: center; font-size: 14px; font-weight: 600; color: var(--color-primary-element); margin-bottom: 16px; padding: 8px; background: color-mix(in srgb, var(--color-primary-element) 8%, transparent); border-radius: 8px; }
-.answers-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.answers-grid { display: flex; flex-direction: column; gap: 10px; }
 .answer-btn { padding: 16px 20px; border: 2px solid var(--color-border); border-radius: 12px; background: var(--color-main-background); cursor: pointer; text-align: start; font-size: 15px; transition: all 0.15s; min-height: 56px; line-height: 1.5; color: var(--color-main-text); }
 .answer-btn:hover:not(:disabled) { border-color: var(--color-primary-element); background: var(--color-primary-element-light); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 .answer-btn:disabled { opacity: 0.7; cursor: wait; }
 .answer-btn.answer-selected { border-color: var(--color-primary-element); background: color-mix(in srgb, var(--color-primary-element) 12%, var(--color-main-background)); color: var(--color-primary-element); font-weight: 600; }
-.multi-submit-area { grid-column: 1 / -1; text-align: center; margin-top: 8px; }
-.no-answers { grid-column: 1 / -1; text-align: center; padding: 20px; color: var(--color-text-maxcontrast); }
+.multi-submit-area { text-align: center; margin-top: 8px; }
+.no-answers { text-align: center; padding: 20px; color: var(--color-text-maxcontrast); }
 .open-answer-area { display: flex; flex-direction: column; gap: 12px; align-items: center; }
 .open-textarea { width: 100%; padding: 14px; font-size: 15px; border: 2px solid var(--color-border); border-radius: 12px; resize: vertical; min-height: 80px; box-sizing: border-box; }
 .open-textarea:focus { border-color: var(--color-primary-element); outline: none; }
@@ -636,7 +670,7 @@ export default {
   .training-start { padding: 40px 16px; }
   .question-card { padding: 56px 20px 20px; border-radius: 12px; }
   .question-text { font-size: 17px; }
-  .answers-grid { grid-template-columns: 1fr; }
+  .answers-grid { gap: 8px; }
   .score-circle { width: 140px; height: 140px; }
   .score-number { font-size: 36px; }
 }
