@@ -1,35 +1,69 @@
-# Learning - Nextcloud App
+# Learning — Nextcloud App
 
-Spaced Repetition Learning with Leitner System for Nextcloud.
+A self-hosted learning platform for Nextcloud. Flashcards with spaced repetition, interactive IT simulators, AI tutor, and instructor analytics. Your data never leaves your server.
 
-![Nextcloud](https://img.shields.io/badge/Nextcloud-29--31-blue)
+![Nextcloud](https://img.shields.io/badge/Nextcloud-33%2B-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
+![Tests](https://img.shields.io/badge/Tests-961%20passed-brightgreen)
+![Version](https://img.shields.io/badge/Version-4.1.0-orange)
+
+Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject — from vocabulary drilling to exam preparation.
+
+![Training Mode](app/img/screenshots/02-training-mode.png)
 
 ## Features
 
-- **Question Pools** — Organize questions into themed pools
-- **Multiple Choice** — Questions with 2-8 answers, explanations, difficulty levels
-- **Leitner System** — 5-box spaced repetition with automatic scheduling
-- **Training Mode** — Quick quiz sessions with immediate feedback
-- **Exam Mode** — Timed exams with configurable question count and batch submission
-- **Swipe Mode** — Touch-friendly swipe-based flashcard review
-- **Course Management** — Instructors create courses, assign pools, track student progress
-- **Pool Sharing** — Share with users (read-only or edit permissions)
-- **CSV/JSON Import** — Bulk import questions from files
-- **Multi-Language** — Translate questions and answers into any language
-- **Search** — Full-text search across all question pools
-- **Analytics** — Per-pool statistics with accuracy trends
-- **Dashboard Widget** — See due questions from the Nextcloud Dashboard
-- **Mobile Friendly** — Responsive touch-optimized design
+### Learning Modes
+- **Smart Queue** — one-click review of all due cards, sorted by memory strength (FSRS-5)
+- **Leitner System** — classic 5-box spaced repetition with automatic scheduling
+- **Training Mode** — quick quiz sessions with immediate feedback and confidence buttons
+- **Exam Simulator** — timed exams with configurable presets, passing thresholds, and scaled scoring
+- **Story Campaigns** — learn through real IT incident scenarios (WannaCry, SolarWinds, Log4Shell)
+
+### Interactive Simulators (9)
+- CLI Terminal, Subnet Calculator, DNS Resolver, Firewall Builder
+- Port Scanner, Routing Table, NAT Table, Wireshark Lite, Network Topology Placement
+
+![Subnet Calculator](app/img/screenshots/06-subnet-calculator.png)
+
+### Multiplayer & Gamification
+- **Live Duels** — real-time 1v1 quiz battles via Server-Sent Events
+- **Sprint & Elimination** — 2-5 player gameshow modes
+- **Seasonal League** — weekly competition with promotion/relegation
+- XP, levels, streaks, 10 badges
+
+### For Instructors
+- Course management with pool assignment and student enrollment
+- **At-risk detection** — automatic warnings for struggling students
+- **Chapter heatmaps** — see where the class struggles at a glance
+- Curriculum scoping, exam scheduling, and leaderboards
+- Collaborative knowledge base with student contributions and moderation
+
+### AI Features (optional)
+Requires a Google Gemini API key. Without it, the app is fully functional — AI features are simply hidden. Each user must explicitly opt in (GDPR-compliant consent flow).
+
+- **VirtuProf** — AI learning assistant with RAG-powered answers and source citations
+- **Question Generator** — create flashcards from pasted text
+- **Note Generator** — AI-powered topic summaries saved to Nextcloud Files
+
+### Question Types
+- Multiple Choice (single & multi-select)
+- Free Text with fuzzy matching
+- Performance-Based Questions (PBQ) — interactive CLI, drag-and-drop, wiring tasks
+- CSV/JSON import & export, pool sharing, multi-language translations
+
+![Courses Overview](app/img/screenshots/01-courses-overview.png)
 
 ## Installation
 
 ### From Nextcloud App Store (Recommended)
 
 1. Go to **Apps** in your Nextcloud admin panel
-2. Search for "Learning"
+2. Search for **"Learning"**
 3. Click **Download and enable**
+
+[View on App Store](https://apps.nextcloud.com/apps/learning)
 
 ### Manual Installation
 
@@ -39,96 +73,52 @@ git clone https://github.com/andremadstop/learning-nc.git learning
 cd learning/app
 npm install
 npm run build
+php /path/to/nextcloud/occ app:enable learning
 ```
 
-Then enable the app:
-```bash
-php occ app:enable learning
-```
+## Privacy & Data Protection
 
-## Usage
+**No data leaves your server** unless AI features are explicitly enabled by an admin AND the user has given consent.
 
-See the full [User Guide](app/README.md) for detailed instructions on:
+### When AI is enabled (optional)
 
-- Creating and managing question pools
-- Importing questions via CSV/JSON
-- Using Leitner spaced repetition
-- Setting up courses as an instructor
-- Sharing pools with other users
-
-## Repository Structure
-
-```
-app/            # The Nextcloud app (this gets installed)
-  appinfo/      # App metadata and routes
-  lib/          # PHP backend (Controllers, Services, Mappers, Migrations)
-  src/          # Vue.js frontend source
-  js/           # Built frontend (webpack output)
-  css/          # Stylesheets
-  img/          # Icons and images
-  l10n/         # Translations
-  templates/    # PHP templates
-docker-compose.yml  # Local development environment
-```
-
-## Development
-
-```bash
-# Start local dev environment
-docker-compose up -d
-
-# Install frontend dependencies
-cd app && npm install
-
-# Development build with watch
-npm run dev
-
-# Production build
-npm run build
-```
-
-## Privacy & AI
-
-The VirtuProf AI assistant is **optional** and requires explicit admin activation and user consent.
-
-### Data sent to Google Gemini (only when AI is enabled and user has consented)
-
-| Data | Details |
-|------|---------|
+| Data sent to Gemini API | Details |
+|---|---|
 | Question text | Up to 500 characters, stripped of HTML |
-| Pool sample questions | Up to 15 questions with answer options (text only, truncated) |
-| Course name | Name of the active course (no enrollment data) |
-| Leitner box counts | Numeric box distribution (e.g. Box1=3, Box2=5) — no question content |
-| Last wrong question | Question text and correct answer text (if triggered via "Explain") |
+| Pool sample questions | Up to 15 questions (text only, truncated) |
+| Course name | Name only — no enrollment data |
+| Leitner box counts | Numeric distribution only |
 
-### Data never sent to Google Gemini
-
-- Nextcloud username, display name, or email address
-- User ID or any user identifier
-- Passwords or authentication tokens
-- System paths or server configuration
-- Any personal or demographic data
+**Never sent:** usernames, emails, passwords, server paths, personal data.
 
 ### Admin controls
+- Global AI toggle in admin settings
+- Per-user consent required before first interaction
+- Rate limiting: 10 req/min, 100 req/day per user
+- Full audit log of all AI requests
 
-- **Admin toggle**: AI feature can be globally disabled in the Learning Admin Settings. When disabled, the chat UI is hidden for all users.
-- **User consent**: Each user must explicitly agree before their first chat message is sent.
-- **Rate limiting**: 10 requests per minute, 100 per day per user.
-- **Audit log**: Every AI request is logged internally (input, output, timestamp, Nextcloud user ID) for security auditing.
+When AI is enabled, data is processed by Google Gemini API. For GDPR compliance, review Google's [Data Processing Addendum](https://cloud.google.com/terms/data-processing-addendum).
 
-### Data Processing
+## Technical
 
-When AI is enabled, messages are processed by **Google Gemini API**. Admins operating in jurisdictions requiring a Data Processing Agreement (GDPR/DSGVO) should review and sign Google's [Data Processing Addendum (DPA)](https://cloud.google.com/terms/data-processing-addendum).
-
-- Google Privacy Policy: https://policies.google.com/privacy
-- Google Cloud Terms: https://cloud.google.com/terms/service-terms
+- **Frontend:** Vue 3.5, Vite, Pinia, @nextcloud/vue 9
+- **Backend:** PHP 8.1+, Nextcloud App Framework, QBMapper
+- **Tests:** 961 unit tests (Vitest), PHPStan Level 5, ESLint, 4-gate CI pipeline
+- **Real-time:** Server-Sent Events for multiplayer modes
+- **Caching:** Redis support for leaderboard and session data
 
 ## Requirements
 
-- Nextcloud 29, 30, or 31
-- PHP 8.1 or higher
+- Nextcloud 33+
+- PHP 8.1+
 - PostgreSQL 13+ or MySQL 8+
+
+## Contributing
+
+Contributions are welcome! Whether it's bug reports, feature ideas, translations, or code — feel free to open an issue or PR.
+
+The app is primarily developed in German (l10n), but the codebase and documentation are in English.
 
 ## License
 
-AGPL-3.0 — see [LICENSE](app/LICENSE)
+AGPL-3.0 — see [LICENSE](LICENSE)

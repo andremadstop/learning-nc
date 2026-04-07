@@ -1295,7 +1295,9 @@ export default {
 
       if (route.name === 'pools') {
         this.mainView = 'pools';
-        this.backToPools();
+        if (!this._skipRouteReset) {
+          this.backToPools();
+        }
         const routePoolId = Number(route.query?.poolId || 0);
         if (routePoolId > 0) {
           this.openPoolFromRoute(routePoolId);
@@ -1479,7 +1481,9 @@ export default {
       this.poolFromCourseObj = this.selectedCourse;
       this.selectedCourse = null;
       useOptionalCourseStore()?.setCourse(null);
+      this._skipRouteReset = true;
       this.pushAppRoute({ name: 'pools' });
+      this.$nextTick(() => { this._skipRouteReset = false; });
       try {
         const response = await axios.get(
           generateUrl('/apps/learning/api/pools/' + poolId)
