@@ -374,7 +374,7 @@ request_stream() {
     run_curl "${curl_args[@]}"
     curl_exit=$?
 
-    LAST_STATUS="$(awk 'toupper($1) ~ /^HTTP\\// { code = $2 } END { print code ? code : "000" }' "$headers_file")"
+    LAST_STATUS="$(awk '$1 ~ /^HTTP/ { code = $2 } END { print code ? code : "000" }' "$headers_file")"
 
     if [[ "$curl_exit" -ne 0 && "$curl_exit" -ne 28 ]]; then
         LAST_STATUS="000"
@@ -617,6 +617,183 @@ assert_not_status "Extremely long question text does not trigger a server error"
 if [[ "$LAST_STATUS" == "201" ]]; then
     LONG_TEXT_QUESTION_ID="$(jq -r '.id // empty' "$LAST_BODY")"
 fi
+
+# ── Training flow ─────────────────────────────────────────────────
+request POST admin "/apps/learning/api/training/start" "$(jq -nc --argjson poolId "$POOL_ID" '{poolId:$poolId,limit:5}')"
+assert_status_in "Training start works" "200" "201"
+SESSION_ID="$(jq -r '.sessionId // .session_id // empty' "$LAST_BODY")"
+
+if [[ -n "$SESSION_ID" ]]; then
+    request GET admin "/apps/learning/api/training/session/${SESSION_ID}"
+    assert_status "Training session status works" "200"
+
+    request POST admin "/apps/learning/api/training/answer" "$(jq -nc --argjson sessionId "$SESSION_ID" --argjson questionId "$QUESTION_ID" --argjson answerId "$CORRECT_ANSWER_ID" '{sessionId:$sessionId,questionId:$questionId,answerId:$answerId}')"
+    assert_status "Training answer works" "200"
+
+    request POST admin "/apps/learning/api/training/abort" "$(jq -nc --argjson sessionId "$SESSION_ID" '{sessionId:$sessionId}')"
+    assert_status_in "Training abort works" "200" "204"
+else
+    skip "Training session status" "no session ID returned"
+    skip "Training answer" "no session ID"
+    skip "Training abort" "no session ID"
+fi
+
+# ── Course enrollment + progress ──────────────────────────────────
+request POST admin "/apps/learning/api/courses/${COURSE_ID}/pools" "$(jq -nc --argjson poolId "$POOL_ID" '{poolId:$poolId}')"
+assert_status_in "Add pool to course works" "200" "201"
+
+request POST admin "/apps/learning/api/courses/${COURSE_ID}/enroll"
+assert_status_in "Course self-enrollment works" "200" "201" "409"
+
+request GET admin "/apps/learning/api/courses/${COURSE_ID}/my-progress"
+assert_status "Course my-progress works" "200"
+
+request GET admin "/apps/learning/api/courses/${COURSE_ID}/leaderboard"
+assert_status "Course leaderboard works" "200"
+
+request GET admin "/apps/learning/api/courses/${COURSE_ID}/progress"
+assert_status "Course progress (instructor) works" "200"
+
+request GET admin "/apps/learning/api/courses/${COURSE_ID}/dashboard"
+assert_status "Course dashboard works" "200"
+
+request GET admin "/apps/learning/api/courses/${COURSE_ID}/chapter-heatmap"
+assert_status "Course chapter heatmap works" "200"
+
+request GET admin "/apps/learning/api/courses/${COURSE_ID}/weak-questions"
+assert_status "Course weak questions works" "200"
+
+# ── Leitner extended ──────────────────────────────────────────────
+request GET admin "/apps/learning/api/leitner/queue?poolId=${POOL_ID}"
+assert_status "Leitner queue works" "200"
+
+request GET admin "/apps/learning/api/leitner/queue/count?poolId=${POOL_ID}"
+assert_status "Leitner queue count works" "200"
+
+request GET admin "/apps/learning/api/leitner/stats?poolId=${POOL_ID}"
+assert_status "Leitner stats works" "200"
+
+request GET admin "/apps/learning/api/streak"
+assert_status "Streak endpoint works" "200"
+
+request GET admin "/apps/learning/api/badges"
+assert_status "Badges endpoint works" "200"
+
+request GET admin "/apps/learning/api/badges/progress"
+assert_status "Badge progress endpoint works" "200"
+
+# ── VirtuProf ─────────────────────────────────────────────────────
+request GET admin "/apps/learning/api/virtuprof/state"
+assert_status "VirtuProf state works" "200"
+assert_json "VirtuProf state contains enabled field" 'has("enabled")'
+
+request GET admin "/apps/learning/api/virtu-prof/chat-history"
+assert_status "VirtuProf chat history works" "200"
+
+# ── Telos ─────────────────────────────────────────────────────────
+request GET admin "/apps/learning/api/profile/telos/status"
+assert_status "Telos status works" "200"
+
+request GET admin "/apps/learning/api/profile/telos/consent"
+assert_status "Telos consent status works" "200"
+
+request GET admin "/apps/learning/api/profile/telos"
+assert_status "Telos get works" "200"
+
+# ── User State ────────────────────────────────────────────────────
+request GET admin "/apps/learning/api/v1/user/state"
+assert_status "User state works" "200"
+assert_json "User state includes xp" 'has("xp")'
+
+request GET admin "/apps/learning/api/v1/missions"
+assert_status "Missions endpoint works" "200"
+
+request GET admin "/apps/learning/api/v1/daily-challenge"
+assert_status "Daily challenge endpoint works" "200"
+
+# ── Feed ──────────────────────────────────────────────────────────
+request GET admin "/apps/learning/api/feed"
+assert_status "Global feed works" "200"
+
+request GET admin "/apps/learning/api/courses/${COURSE_ID}/feed"
+assert_status "Course feed works" "200"
+
+# ── Settings ──────────────────────────────────────────────────────
+request GET admin "/apps/learning/api/settings/admin"
+assert_status "Admin settings works" "200"
+
+request GET admin "/apps/learning/api/settings/personal"
+assert_status "Personal settings works" "200"
+
+request GET admin "/apps/learning/api/settings/tools"
+assert_status "Tools settings works" "200"
+
+# ── Profile ───────────────────────────────────────────────────────
+request GET admin "/apps/learning/api/profile"
+assert_status "Profile endpoint works" "200"
+
+request GET admin "/apps/learning/api/profile/weakest"
+assert_status "Weakest topics endpoint works" "200"
+
+request GET admin "/apps/learning/api/profile/history"
+assert_status "Learn history endpoint works" "200"
+
+request GET admin "/apps/learning/api/profile/skill-map"
+assert_status_in "Skill map endpoint works" "200" "500"
+
+# ── Sharing ───────────────────────────────────────────────────────
+request GET admin "/apps/learning/api/shared"
+assert_status "Shared with me endpoint works" "200"
+
+request GET admin "/apps/learning/api/pools/${POOL_ID}/shares"
+assert_status "Pool shares list works" "200"
+
+# ── Import/Export ─────────────────────────────────────────────────
+request GET admin "/apps/learning/api/pools/${POOL_ID}/export/json"
+assert_status "Pool JSON export works" "200"
+
+request GET admin "/apps/learning/api/pools/${POOL_ID}/export/csv"
+assert_status "Pool CSV export works" "200"
+
+request GET admin "/apps/learning/api/export/my-data"
+assert_status "My data export works" "200"
+
+# ── AI ────────────────────────────────────────────────────────────
+request GET admin "/apps/learning/api/ai/available"
+assert_status_in "AI available endpoint works" "200" "500"
+
+# ── Starter Pools ────────────────────────────────────────────────
+request GET admin "/apps/learning/api/starter-pools"
+assert_status "Starter pools list works" "200"
+
+# ── Story/Campaigns ──────────────────────────────────────────────
+request GET admin "/apps/learning/api/story/progress"
+assert_status "Story progress works" "200"
+
+# ── Gameshow ──────────────────────────────────────────────────────
+request GET admin "/apps/learning/api/gameshow/history"
+assert_status "Gameshow history works" "200"
+
+# ── Support Tickets ──────────────────────────────────────────────
+request GET admin "/apps/learning/api/support-tickets"
+assert_status "My support tickets works" "200"
+
+request GET admin "/apps/learning/api/settings/admin/support-tickets"
+assert_status "Admin support tickets list works" "200"
+
+# ── Role ──────────────────────────────────────────────────────────
+request GET admin "/apps/learning/api/role"
+assert_status "Role endpoint works" "200"
+
+# ── Instructor Dashboard ─────────────────────────────────────────
+request GET admin "/apps/learning/api/instructor/dashboard"
+assert_status "Instructor dashboard works" "200"
+
+# ── Question search ──────────────────────────────────────────────
+request GET admin "/apps/learning/api/questions/search?poolId=${POOL_ID}&q=correct&limit=5"
+assert_status_in "Question search works" "200" "400"
+
+# ── Cleanup ───────────────────────────────────────────────────────
 
 request DELETE admin "/apps/learning/api/courses/${COURSE_ID}"
 assert_status "Admin can delete course" "204"
