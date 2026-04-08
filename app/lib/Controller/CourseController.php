@@ -5,6 +5,7 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
+use OCA\Learning\Service\CourseArchiveService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\ScheduleService;
@@ -19,6 +20,7 @@ use Psr\Log\LoggerInterface;
 class CourseController extends Controller {
     private CourseMapper $courseMapper;
     private CourseMemberMapper $courseMemberMapper;
+    private CourseArchiveService $archiveService;
     private CourseService $courseService;
     private RoleService $roleService;
     private ScheduleService $scheduleService;
@@ -30,6 +32,7 @@ class CourseController extends Controller {
         IRequest $request,
         CourseMapper $courseMapper,
         CourseMemberMapper $courseMemberMapper,
+        CourseArchiveService $archiveService,
         CourseService $courseService,
         RoleService $roleService,
         ScheduleService $scheduleService,
@@ -39,6 +42,7 @@ class CourseController extends Controller {
         parent::__construct($appName, $request);
         $this->courseMapper = $courseMapper;
         $this->courseMemberMapper = $courseMemberMapper;
+        $this->archiveService = $archiveService;
         $this->courseService = $courseService;
         $this->roleService = $roleService;
         $this->scheduleService = $scheduleService;
@@ -857,5 +861,59 @@ class CourseController extends Controller {
         }
 
         return $examDate;
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 5, period: 60)]
+    public function archiveCourse(int $courseId): DataResponse {
+        try {
+            $result = $this->archiveService->archiveCourse($courseId, $this->userId);
+            return new DataResponse($result);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'Not authorized'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            $this->logger->error('Archive failed: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Failed to archive course'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    public function listSnapshots(int $courseId): DataResponse {
+        try {
+            $snapshots = $this->archiveService->listSnapshots($courseId, $this->userId);
+            return new DataResponse($snapshots);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'Not authorized'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            $this->logger->error('List snapshots failed: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Failed to list snapshots'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    public function showSnapshot(int $courseId, int $snapshotId): DataResponse {
+        try {
+            $snapshot = $this->archiveService->getSnapshot($snapshotId, $this->userId);
+            if ($snapshot === null) {
+                return new DataResponse(['error' => 'Snapshot not found'], Http::STATUS_NOT_FOUND);
+            }
+            if ((int) $snapshot['course_id'] !== $courseId) {
+                return new DataResponse(['error' => 'Snapshot does not belong to this course'], Http::STATUS_BAD_REQUEST);
+            }
+            return new DataResponse($snapshot);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'Not authorized'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            $this->logger->error('Get snapshot failed: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Failed to get snapshot'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
     }
 }

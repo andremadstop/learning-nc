@@ -315,6 +315,11 @@ return [
         ['name' => 'pool_generator#fromFile', 'url' => '/api/pool-generator/from-file', 'verb' => 'POST'],
         ['name' => 'pool_generator#createPool', 'url' => '/api/pool-generator/create-pool', 'verb' => 'POST'],
 
+        // Course Archive & Snapshots (Phase 147)
+        ['name' => 'course#archiveCourse', 'url' => '/api/courses/{courseId}/archive', 'verb' => 'POST'],
+        ['name' => 'course#listSnapshots', 'url' => '/api/courses/{courseId}/snapshots', 'verb' => 'GET'],
+        ['name' => 'course#showSnapshot', 'url' => '/api/courses/{courseId}/snapshots/{snapshotId}', 'verb' => 'GET'],
+
         // Schwarmgedaechtnis (Student Contributions + Moderation)
         ['name' => 'rag_import#contributeNote',   'url' => '/api/courses/{courseId}/knowledge/contribute',          'verb' => 'POST'],
         ['name' => 'rag_import#myContributions',  'url' => '/api/courses/{courseId}/knowledge/my-contributions',    'verb' => 'GET'],

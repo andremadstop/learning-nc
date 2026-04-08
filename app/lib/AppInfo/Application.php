@@ -7,9 +7,13 @@ use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
 use OCA\Learning\BackgroundJob\NotificationJob;
 use OCA\Learning\BackgroundJob\SendRemindersJob;
 use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
+use OCA\Learning\Command\ArchiveCourseCommand;
 use OCA\Learning\Command\ExportCourseCommand;
 use OCA\Learning\Command\ExportPoolCommand;
 use OCA\Learning\Command\ImportVaultCommand;
+use OCA\Learning\Command\MergeCourseCommand;
+use OCA\Learning\Service\CourseArchiveService;
+use OCA\Learning\Service\CourseMergeService;
 use OCA\Learning\Dashboard\LearningWidget;
 use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Service\DataMobilityService;
@@ -58,6 +62,16 @@ class Application extends App implements IBootstrap {
         $context->registerService(ExportCourseCommand::class, function (ContainerInterface $container): ExportCourseCommand {
             return new ExportCourseCommand(
                 $container->get(DataMobilityService::class)
+            );
+        });
+        $context->registerService(ArchiveCourseCommand::class, function (ContainerInterface $container): ArchiveCourseCommand {
+            return new ArchiveCourseCommand(
+                $container->get(CourseArchiveService::class)
+            );
+        });
+        $context->registerService(MergeCourseCommand::class, function (ContainerInterface $container): MergeCourseCommand {
+            return new MergeCourseCommand(
+                $container->get(CourseMergeService::class)
             );
         });
     }
