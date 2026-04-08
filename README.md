@@ -10,7 +10,7 @@ A self-hosted learning platform for Nextcloud. Flashcards with spaced repetition
 
 Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject — from vocabulary drilling to exam preparation.
 
-![Training Mode](app/img/screenshots/02-training-mode.png)
+![Training with VirtuProf](app/img/screenshots/09-training-virtuprof.png)
 
 ## Features
 
@@ -25,7 +25,7 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 - CLI Terminal, Subnet Calculator, DNS Resolver, Firewall Builder
 - Port Scanner, Routing Table, NAT Table, Wireshark Lite, Network Topology Placement
 
-![Subnet Calculator](app/img/screenshots/06-subnet-calculator.png)
+![Course Tools](app/img/screenshots/06-course-tools.png)
 
 ### Multiplayer & Gamification
 - **Live Duels** — real-time 1v1 quiz battles via Server-Sent Events
@@ -53,7 +53,7 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 - Performance-Based Questions (PBQ) — interactive CLI, drag-and-drop, wiring tasks
 - CSV/JSON import & export, pool sharing, multi-language translations
 
-![Courses Overview](app/img/screenshots/01-courses-overview.png)
+![Courses Overview](app/img/screenshots/04-courses-overview.png)
 
 ## Installation
 

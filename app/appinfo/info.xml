@@ -85,12 +85,12 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
         </privacyPolicies>
     </privacy>
 
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/01-dashboard-smart-queue.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/02-courses-overview.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/03-course-instructor.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/05-subnet-calculator.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/06-arena-modes.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/08-personal-settings.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/01-courses-overview.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/02-student-dashboard.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/03-training-virtuprof.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/04-onboarding-tour.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/05-course-materials.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/06-course-tools.png</screenshot>
 
     <dependencies>
         <nextcloud min-version="33" max-version="35"/>
