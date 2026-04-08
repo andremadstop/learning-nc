@@ -43,7 +43,7 @@ test.describe('Phase 5 — PBQ Author Tool', () => {
     await openPoolManageView(page)
 
     // Click "+ Frage hinzufügen"
-    const addBtn = page.locator('button').filter({ hasText: /Frage hinzufügen|\+ Frage/ }).first()
+    const addBtn = page.locator('button').filter({ hasText: /Frage hinzufügen|\+ Frage|Add Question|\+ Add/ }).first()
     await expect(addBtn).toBeVisible({ timeout: 15_000 })
     await addBtn.click()
     await page.waitForSelector('#question-text', { timeout: 15_000 })
@@ -70,7 +70,7 @@ test.describe('Phase 5 — PBQ Author Tool', () => {
   test('P5-2: PBQ subtype options cover all required types', async ({ page }) => {
     await openPoolManageView(page)
 
-    const addBtn = page.locator('button').filter({ hasText: /Frage hinzufügen|\+ Frage/ }).first()
+    const addBtn = page.locator('button').filter({ hasText: /Frage hinzufügen|\+ Frage|Add Question|\+ Add/ }).first()
     await expect(addBtn).toBeVisible({ timeout: 15_000 })
     await addBtn.click()
     await page.waitForSelector('#question-text', { timeout: 15_000 })
@@ -89,7 +89,7 @@ test.describe('Phase 5 — PBQ Author Tool', () => {
   test('P5-3: PBQ config textarea accepts valid JSON', async ({ page }) => {
     await openPoolManageView(page)
 
-    const addBtn = page.locator('button').filter({ hasText: /Frage hinzufügen|\+ Frage/ }).first()
+    const addBtn = page.locator('button').filter({ hasText: /Frage hinzufügen|\+ Frage|Add Question|\+ Add/ }).first()
     await expect(addBtn).toBeVisible({ timeout: 15_000 })
     await addBtn.click()
     await page.waitForSelector('#question-text', { timeout: 15_000 })
@@ -115,7 +115,7 @@ test.describe('Phase 6 — Instructor Notes', () => {
   test('P6-1: Instructor Note field exists in QuestionForm', async ({ page }) => {
     await openPoolManageView(page)
 
-    const addBtn = page.locator('button').filter({ hasText: /Frage hinzufügen|\+ Frage/ }).first()
+    const addBtn = page.locator('button').filter({ hasText: /Frage hinzufügen|\+ Frage|Add Question|\+ Add/ }).first()
     await expect(addBtn).toBeVisible({ timeout: 15_000 })
     await addBtn.click()
     await page.waitForSelector('#question-text', { timeout: 15_000 })
@@ -129,7 +129,7 @@ test.describe('Phase 6 — Instructor Notes', () => {
   test('P6-2: Question can be saved with note and retrieved', async ({ page }) => {
     await openPoolManageView(page)
 
-    const addBtn = page.locator('button').filter({ hasText: /Frage hinzufügen|\+ Frage/ }).first()
+    const addBtn = page.locator('button').filter({ hasText: /Frage hinzufügen|\+ Frage|Add Question|\+ Add/ }).first()
     await expect(addBtn).toBeVisible({ timeout: 15_000 })
     await addBtn.click()
     await page.waitForSelector('#question-text', { timeout: 15_000 })
