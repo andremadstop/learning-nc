@@ -7,6 +7,7 @@ use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\RoleService;
+use OCA\Learning\Service\ScheduleService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
@@ -20,6 +21,7 @@ class CourseController extends Controller {
     private CourseMemberMapper $courseMemberMapper;
     private CourseService $courseService;
     private RoleService $roleService;
+    private ScheduleService $scheduleService;
     private LoggerInterface $logger;
     private ?string $userId;
 
@@ -30,6 +32,7 @@ class CourseController extends Controller {
         CourseMemberMapper $courseMemberMapper,
         CourseService $courseService,
         RoleService $roleService,
+        ScheduleService $scheduleService,
         LoggerInterface $logger,
         ?string $userId
     ) {
@@ -38,6 +41,7 @@ class CourseController extends Controller {
         $this->courseMemberMapper = $courseMemberMapper;
         $this->courseService = $courseService;
         $this->roleService = $roleService;
+        $this->scheduleService = $scheduleService;
         $this->logger = $logger;
         $this->userId = $userId;
     }
@@ -751,6 +755,69 @@ class CourseController extends Controller {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
         } catch (\Exception $e) {
             $this->logger->error('updateCampaignSelection error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 30, period: 60)]
+    public function getSchedule(int $courseId): DataResponse {
+        try {
+            if ($this->userId === null) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+            return new DataResponse($this->scheduleService->getSchedule($courseId, $this->userId));
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('getSchedule error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function setSchedule(int $courseId, array $entries = []): DataResponse {
+        try {
+            if ($this->userId === null) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+            return new DataResponse($this->scheduleService->setSchedule($courseId, $entries, $this->userId));
+        } catch (\InvalidArgumentException $e) {
+            return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('setSchedule error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function deleteSchedule(int $courseId): DataResponse {
+        try {
+            if ($this->userId === null) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+            $this->scheduleService->deleteSchedule($courseId, $this->userId);
+            return new DataResponse([], Http::STATUS_NO_CONTENT);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('deleteSchedule error: ' . $e->getMessage(), ['app' => 'learning']);
             return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }

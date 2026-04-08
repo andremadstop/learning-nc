@@ -7,9 +7,12 @@ use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
 use OCA\Learning\BackgroundJob\NotificationJob;
 use OCA\Learning\BackgroundJob\SendRemindersJob;
 use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
+use OCA\Learning\Command\ExportCourseCommand;
+use OCA\Learning\Command\ExportPoolCommand;
 use OCA\Learning\Command\ImportVaultCommand;
 use OCA\Learning\Dashboard\LearningWidget;
 use OCA\Learning\Db\RagChunkMapper;
+use OCA\Learning\Service\DataMobilityService;
 use OCA\Learning\Listener\UserDeletedListener;
 use OCA\Learning\Notification\Notifier;
 use OCA\Learning\Search\PoolSearchProvider;
@@ -45,6 +48,16 @@ class Application extends App implements IBootstrap {
             return new ImportVaultCommand(
                 $container->get(RagChunkMapper::class),
                 $container->get(LoggerInterface::class)
+            );
+        });
+        $context->registerService(ExportPoolCommand::class, function (ContainerInterface $container): ExportPoolCommand {
+            return new ExportPoolCommand(
+                $container->get(DataMobilityService::class)
+            );
+        });
+        $context->registerService(ExportCourseCommand::class, function (ContainerInterface $container): ExportCourseCommand {
+            return new ExportCourseCommand(
+                $container->get(DataMobilityService::class)
             );
         });
     }

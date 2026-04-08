@@ -241,6 +241,11 @@ return [
         ['name' => 'course#updateTools', 'url' => '/api/courses/{courseId}/tools', 'verb' => 'PUT'],
         ['name' => 'course#updateCampaignSelection', 'url' => '/api/courses/{courseId}/campaign-selection', 'verb' => 'PATCH'],
 
+        // Course Schedule (Timeline)
+        ['name' => 'course#getSchedule', 'url' => '/api/courses/{courseId}/schedule', 'verb' => 'GET'],
+        ['name' => 'course#setSchedule', 'url' => '/api/courses/{courseId}/schedule', 'verb' => 'PUT'],
+        ['name' => 'course#deleteSchedule', 'url' => '/api/courses/{courseId}/schedule', 'verb' => 'DELETE'],
+
         // Course Summary (Phase 104)
         ['name' => 'summary#getSummary', 'url' => '/api/courses/{courseId}/summary', 'verb' => 'GET'],
         ['name' => 'summary#createSnapshot', 'url' => '/api/courses/{courseId}/summary/snapshot', 'verb' => 'POST'],

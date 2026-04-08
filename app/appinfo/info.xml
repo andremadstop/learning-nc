@@ -99,6 +99,8 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 
     <commands>
         <command>OCA\Learning\Command\ImportVaultCommand</command>
+        <command>OCA\Learning\Command\ExportPoolCommand</command>
+        <command>OCA\Learning\Command\ExportCourseCommand</command>
     </commands>
 
     <background-jobs>
