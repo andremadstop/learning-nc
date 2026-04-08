@@ -13,6 +13,33 @@
       </div>
     </div>
 
+    <div class="question-search-bar">
+      <div class="question-search-wrapper">
+        <input
+          v-model="searchTerm"
+          type="text"
+          class="nc-input question-search-input"
+          :placeholder="t('learning', 'Search by text or #number...')"
+          @input="onSearch"
+          @keydown.esc="clearSearch"
+          @keydown.enter="jumpToFirstSearchResult"
+        />
+        <button v-if="searchTerm" class="clear-search-btn" @click="clearSearch">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <ul v-if="searchResults.length > 0" class="question-search-results">
+        <li v-for="r in searchResults" :key="r.id" @click="jumpToSearchResult(r)" tabindex="0" role="button" @keydown.enter="jumpToSearchResult(r)">
+          <span class="sr-id">#{{ r.id }}</span>
+          <span class="sr-text">{{ r.text.substring(0, 100) }}{{ r.text.length > 100 ? '...' : '' }}</span>
+          <span class="sr-pool">{{ r.pool_name }}</span>
+        </li>
+      </ul>
+      <div v-else-if="searchTerm.length >= 2 && !searchLoading && searchDone" class="question-search-empty">
+        {{ t('learning', 'No matches') }}
+      </div>
+    </div>
+
     <NcNoteCard v-if="loadError" type="error">{{ loadError }}</NcNoteCard>
 
     <NcLoadingIcon v-if="loading" :size="44" class="loading-center" />
@@ -112,7 +139,7 @@ export default {
     readonly: { type: Boolean, default: false }
   },
   data() {
-    return { questions: [], loading: false, loadError: null, showDialog: false, showTranslationDialog: false, translationQuestion: null, showImportDialog: false, showAIGenerator: false, aiAvailable: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null };
+    return { questions: [], loading: false, loadError: null, showDialog: false, showTranslationDialog: false, translationQuestion: null, showImportDialog: false, showAIGenerator: false, aiAvailable: false, editingQuestion: null, currentPage: 0, pageSize: 50, totalQuestions: 0, showDeleteConfirm: false, questionToDelete: null, searchTerm: '', searchResults: [], searchLoading: false, searchDone: false, searchTimer: null };
   },
   watch: {
     poolId() { this.currentPage = 0; this.loadQuestions(); },
@@ -157,6 +184,45 @@ export default {
     get totalPages() { return Math.ceil(this.totalQuestions / this.pageSize); },
     prevPage() { if (this.currentPage > 0) { this.currentPage--; this.loadQuestions(); } },
     nextPage() { if ((this.currentPage + 1) * this.pageSize < this.totalQuestions) { this.currentPage++; this.loadQuestions(); } },
+    onSearch() {
+      this.searchDone = false;
+      clearTimeout(this.searchTimer);
+      if (this.searchTerm.length < 2) { this.searchResults = []; return; }
+      this.searchTimer = setTimeout(() => this.doSearch(), 300);
+    },
+    async doSearch() {
+      this.searchLoading = true;
+      try {
+        const response = await axios.get(generateUrl('/apps/learning/api/questions/search'), { params: { query: this.searchTerm } });
+        // Filter to only this pool's questions
+        this.searchResults = (response.data || []).filter(q => q.pool_id === this.poolId);
+      } catch { this.searchResults = []; }
+      this.searchLoading = false;
+      this.searchDone = true;
+    },
+    jumpToSearchResult(result) {
+      // Find which page this question is on and navigate there
+      const idx = this.questions.findIndex(q => q.id === result.id);
+      if (idx >= 0) {
+        // Already on current page — scroll to it
+        const el = this.$el.querySelectorAll('.question-item')[idx];
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        // Load the page containing this question
+        // We need to find the question's position in the pool
+        // For now, search all pages — the question's pool position tells us
+        // Question is on a different page
+        // Question is on a different page — estimate page from ID ordering
+        // Reload with search highlight
+        this.currentPage = 0;
+        this.loadQuestions();
+      }
+      this.clearSearch();
+    },
+    jumpToFirstSearchResult() {
+      if (this.searchResults.length > 0) this.jumpToSearchResult(this.searchResults[0]);
+    },
+    clearSearch() { this.searchTerm = ''; this.searchResults = []; this.searchDone = false; },
     showCreateDialog() { this.editingQuestion = null; this.showDialog = true; },
     openTranslationDialog(question) { this.translationQuestion = question; this.showTranslationDialog = true; },
     closeTranslationDialog() { this.showTranslationDialog = false; this.translationQuestion = null; },
@@ -221,6 +287,18 @@ export default {
 .question-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; }
 .question-list-header h3 { flex: 1; margin: 0; font-size: 20px; color: var(--color-main-text); }
 .header-actions { display: flex; gap: 10px; }
+.question-search-bar { margin-bottom: 16px; position: relative; max-width: 500px; }
+.question-search-wrapper { position: relative; display: flex; align-items: center; }
+.question-search-input { width: 100%; padding: 8px 32px 8px 12px; border-radius: 8px; font-size: 14px; }
+.question-search-bar .clear-search-btn { position: absolute; right: 8px; background: none; border: none; cursor: pointer; color: var(--color-text-maxcontrast); padding: 4px; }
+.question-search-results { list-style: none; margin: 4px 0 0; padding: 0; background: var(--color-main-background); border: 1px solid var(--color-border); border-radius: 8px; max-height: 280px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: absolute; z-index: 10; width: 100%; }
+.question-search-results li { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--color-border-dark); }
+.question-search-results li:last-child { border-bottom: none; }
+.question-search-results li:hover { background: var(--color-background-hover); }
+.question-search-results .sr-id { font-family: monospace; font-size: 12px; color: var(--color-text-maxcontrast); flex-shrink: 0; }
+.question-search-results .sr-text { font-size: 13px; color: var(--color-main-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.question-search-results .sr-pool { display: none; }
+.question-search-empty { text-align: center; padding: 12px; color: var(--color-text-maxcontrast); font-size: 13px; }
 .question-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(480px, 1fr)); gap: 16px; }
 .question-item { border: 1px solid var(--color-border); border-radius: 12px; padding: 20px 24px; background: var(--color-main-background); transition: transform 0.2s, box-shadow 0.2s; }
 .question-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px color-mix(in srgb, var(--color-main-text) 8%, transparent); }

@@ -36,6 +36,30 @@
       <div class="question-counter">
         {{ t('learning', 'Question {n} of {total}', { n: currentIndex + 1, total: questions.length }) }}
         <span v-if="currentQuestion && currentQuestion.pool_position" class="question-db-id">#{{ currentQuestion.pool_position }}</span>
+        <button class="search-toggle-btn" :class="{ active: showQuestionSearch }" @click="showQuestionSearch = !showQuestionSearch" :title="t('learning', 'Search questions')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </div>
+      <div v-if="showQuestionSearch" class="training-search">
+        <input
+          ref="trainingSearchInput"
+          v-model="questionSearchTerm"
+          type="text"
+          class="nc-input training-search-input"
+          :placeholder="t('learning', 'Search by text or #number...')"
+          @input="onQuestionSearch"
+          @keydown.esc="showQuestionSearch = false; questionSearchTerm = ''"
+          @keydown.enter="jumpToFirstResult"
+        />
+        <ul v-if="questionSearchResults.length > 0" class="training-search-results">
+          <li v-for="result in questionSearchResults" :key="result.index" @click="jumpToQuestion(result.index)" tabindex="0" role="button" @keydown.enter="jumpToQuestion(result.index)">
+            <span class="result-id">#{{ result.question.pool_position || result.question.id }}</span>
+            <span class="result-text">{{ result.question.text.substring(0, 80) }}{{ result.question.text.length > 80 ? '...' : '' }}</span>
+          </li>
+        </ul>
+        <div v-else-if="questionSearchTerm.length >= 2" class="training-search-empty">
+          {{ t('learning', 'No matches') }}
+        </div>
       </div>
       <div v-if="currentQuestion" class="question-card">
         <QuestionLanguageSwitcher v-model="questionLanguage" :question="currentQuestion" />
@@ -254,6 +278,10 @@ export default {
       summaryGenerating: false,
       summaryPath: null,
       summaryError: null,
+      // Question search within pool
+      showQuestionSearch: false,
+      questionSearchTerm: '',
+      questionSearchResults: [],
     };
   },
   mounted() {
@@ -261,6 +289,11 @@ export default {
     this.emitVirtuProf('training-first-start');
   },
   watch: {
+    showQuestionSearch(val) {
+      if (val) {
+        this.$nextTick(() => this.$refs.trainingSearchInput?.focus());
+      }
+    },
     contentLanguage(newLang, oldLang) {
       if (!this.questionLanguage || this.questionLanguage === oldLang) {
         this.questionLanguage = newLang || '';
@@ -324,6 +357,40 @@ export default {
       if (!q || !q.answers) return null;
       const idx = q.answers.findIndex(a => a.is_correct || a.correct);
       return idx >= 0 ? idx : null;
+    },
+    onQuestionSearch() {
+      const term = this.questionSearchTerm.trim().toLowerCase();
+      if (term.length < 2) {
+        this.questionSearchResults = [];
+        return;
+      }
+      const isNumeric = /^#?\d+$/.test(term);
+      const num = parseInt(term.replace('#', ''), 10);
+      this.questionSearchResults = this.questions
+        .map((q, index) => ({ question: q, index }))
+        .filter(({ question }) => {
+          if (isNumeric) {
+            return (question.pool_position || question.id) === num
+              || question.text.toLowerCase().includes(term.replace('#', ''));
+          }
+          return question.text.toLowerCase().includes(term);
+        })
+        .slice(0, 10);
+    },
+    jumpToQuestion(index) {
+      this.currentIndex = index;
+      this.answered = false;
+      this.selectedAnswerId = null;
+      this.selectedAnswerIds = [];
+      this.openAnswer = '';
+      this.showQuestionSearch = false;
+      this.questionSearchTerm = '';
+      this.questionSearchResults = [];
+    },
+    jumpToFirstResult() {
+      if (this.questionSearchResults.length > 0) {
+        this.jumpToQuestion(this.questionSearchResults[0].index);
+      }
     },
     emitVirtuProf(triggerId, context = {}) {
       useOptionalVirtuProfStore()?.trigger(triggerId, context);
@@ -632,6 +699,17 @@ export default {
 .start-actions { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
 .question-counter { text-align: center; font-size: 14px; color: var(--color-text-maxcontrast); margin: 12px 0 28px; font-weight: 500; display: flex; justify-content: center; align-items: center; gap: 8px; }
 .question-db-id { font-size: 11px; font-weight: 400; color: var(--color-text-maxcontrast); opacity: 0.6; font-family: monospace; background: var(--color-background-hover); padding: 1px 5px; border-radius: 4px; }
+.search-toggle-btn { background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 4px; color: var(--color-text-maxcontrast); transition: all 0.15s; }
+.search-toggle-btn:hover, .search-toggle-btn.active { color: var(--color-primary); background: var(--color-primary-element-light); }
+.training-search { max-width: 500px; margin: 0 auto 16px; position: relative; }
+.training-search-input { width: 100%; padding: 8px 12px; border-radius: 8px; font-size: 14px; }
+.training-search-results { list-style: none; margin: 4px 0 0; padding: 0; background: var(--color-main-background); border: 1px solid var(--color-border); border-radius: 8px; max-height: 240px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.training-search-results li { display: flex; align-items: center; gap: 8px; padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--color-border-dark); }
+.training-search-results li:last-child { border-bottom: none; }
+.training-search-results li:hover { background: var(--color-background-hover); }
+.training-search-results .result-id { font-family: monospace; font-size: 12px; color: var(--color-text-maxcontrast); flex-shrink: 0; }
+.training-search-results .result-text { font-size: 13px; color: var(--color-main-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.training-search-empty { text-align: center; padding: 12px; color: var(--color-text-maxcontrast); font-size: 13px; }
 .training-active { max-width: 740px; margin: 0 auto; }
 .training-active:has(.pbq-renderer) { max-width: 100%; }
 .question-card { position: relative; background: var(--color-main-background); border: 1px solid var(--color-border); border-radius: 16px; padding: 60px 32px 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }

@@ -39,7 +39,8 @@ $gemini = new GeminiService(
     $server->get(IConfig::class),
     $server->get(ICacheFactory::class),
     $db,
-    $server->get(LoggerInterface::class)
+    $server->get(LoggerInterface::class),
+    $server->get(\OCA\Learning\Service\LlmService::class)
 );
 $questionMapper = new QuestionMapper($db);
 $answerMapper = new AnswerMapper($db);
@@ -138,6 +139,16 @@ function shouldReplaceExplanation(string $explanation): bool {
     }
 
     if ((bool)preg_match('/^Die richtige Antwort ist:\s*.+\.?$/u', $trimmed)) {
+        return true;
+    }
+
+    // "Correct: A" or similar one-liner without real explanation
+    if ((bool)preg_match('/^Correct:\s*[A-F]$/i', $trimmed)) {
+        return true;
+    }
+
+    // Too short to be a real explanation
+    if (mb_strlen($trimmed) < 20) {
         return true;
     }
 

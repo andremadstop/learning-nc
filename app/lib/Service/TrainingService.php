@@ -265,10 +265,8 @@ class TrainingService {
             sort($questionIds);
         }
 
-        // Compute 1-based pool position (rank by id ascending)
-        $sortedPoolIds = array_keys($byId);
-        sort($sortedPoolIds);
-        $poolPositions = array_flip($sortedPoolIds); // id => 0-based index
+        // Compute 1-based pool position (preserves pool order: chapter_order, created_at, id)
+        $poolPositions = array_flip(array_keys($byId)); // id => 0-based index
 
         $questionsWithAnswers = [];
         foreach ($questionIds as $qid) {

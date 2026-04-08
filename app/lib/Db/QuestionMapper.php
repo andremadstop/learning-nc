@@ -148,7 +148,14 @@ class QuestionMapper extends QBMapper {
                $expr->eq("c.instructor_id", $qb->createNamedParameter($userId)),
                $expr->isNotNull("cm.id")
            ))
-           ->andWhere($qb->expr()->iLike("q.text", $qb->createNamedParameter("%" . $this->db->escapeLikeParameter($query) . "%")))
+           ->andWhere(
+               ctype_digit($query)
+                   ? $expr->orX(
+                       $expr->eq("q.id", $qb->createNamedParameter((int)$query, IQueryBuilder::PARAM_INT)),
+                       $qb->expr()->iLike("q.text", $qb->createNamedParameter("%" . $this->db->escapeLikeParameter($query) . "%"))
+                   )
+                   : $qb->expr()->iLike("q.text", $qb->createNamedParameter("%" . $this->db->escapeLikeParameter($query) . "%"))
+           )
            ->orderBy("q.created_at", "DESC")
            ->setMaxResults($limit);
         return $qb->executeQuery()->fetchAll();

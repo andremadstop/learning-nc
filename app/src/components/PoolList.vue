@@ -124,6 +124,7 @@
                   tabindex="0" role="button"
                   @keydown.enter="selectQuestion(question)"
                   @keydown.space.prevent="selectQuestion(question)">
+                <span class="result-id">#{{ question.id }}</span>
                 <span class="result-text">"{{ question.text }}"</span>
                 <span class="result-subtext">{{ t('learning', 'in {pool}', { pool: question.pool_name }) }}</span>
               </li>
@@ -835,6 +836,13 @@ export default {
 }
 .results-list li:hover {
   background-color: var(--color-background-hover);
+}
+.result-id {
+  color: var(--color-text-maxcontrast);
+  font-size: 12px;
+  font-family: monospace;
+  margin-right: 6px;
+  flex-shrink: 0;
 }
 .result-text {
   color: var(--color-main-text);
