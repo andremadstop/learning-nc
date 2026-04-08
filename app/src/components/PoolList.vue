@@ -963,7 +963,7 @@ export default {
 .goal-ring { flex-shrink: 0; }
 .goal-ring-progress { transition: stroke-dashoffset 0.5s ease-out; }
 
-.daily-goal-info { display: flex; flex-direction: column; gap: 2px; }
+.daily-goal-info { display: flex; flex-direction: column; gap: 6px; }
 .daily-goal-pct { font-size: 14px; font-weight: 700; color: var(--color-primary-element); }
 .daily-goal-label { font-size: 12px; color: var(--color-text-maxcontrast); }
 .daily-goal-edit-btn {

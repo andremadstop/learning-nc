@@ -81,7 +81,7 @@ class GeminiService {
 
         // API call with Layer 3 (output validation) and Layer 5 (audit log)
         try {
-            $rawOutput = $this->callModelApi($systemPrompt, $userMessage, $detailed ? 2048 : 1800);
+            $rawOutput = $this->callModelApi($systemPrompt, $userMessage, $detailed ? 3200 : 2400);
 
             // Layer 3 — Output validation (SEC-03)
             $validationResult = $this->validateOutput($rawOutput, $userId, $sanitizedInput);

@@ -22,7 +22,7 @@
 
       <template v-else>
         <div class="onb-hook__badge" :class="{ 'onb-hook__badge--visible': badgeVisible }">
-          <span class="onb-hook__badge-icon" aria-hidden="true">\u2B50</span>
+          <span class="onb-hook__badge-icon" aria-hidden="true">⭐</span>
           <h2 class="onb-hook__badge-text">{{ t('learning', 'Erste Karte gemeistert!') }}</h2>
         </div>
       </template>
