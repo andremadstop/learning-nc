@@ -2,9 +2,14 @@
 	<div class="instructor-dashboard">
 		<div class="dashboard-header">
 			<h3>{{ t('learning', 'Instructor Dashboard') }}</h3>
-			<NcButton type="tertiary" @click="loadDashboard">
-				{{ t('learning', 'Refresh') }}
-			</NcButton>
+			<div class="header-actions">
+				<NcButton type="secondary" @click="exportAllCsv" :disabled="courses.length === 0">
+					{{ t('learning', 'Batch Export') }}
+				</NcButton>
+				<NcButton type="tertiary" @click="loadDashboard">
+					{{ t('learning', 'Refresh') }}
+				</NcButton>
+			</div>
 		</div>
 
 		<div v-if="loading" class="loading-container">
@@ -69,7 +74,10 @@
 							</div>
 						</div>
 						<div class="card-footer">
-							{{ t('learning', 'Created {date}', { date: formatDate(course.created_at) }) }}
+							<span>{{ t('learning', 'Created {date}', { date: formatDate(course.created_at) }) }}</span>
+							<NcButton type="tertiary" :aria-label="t('learning', 'Export statistics')" class="export-btn" @click.stop="exportCourseCsv(course)">
+								{{ t('learning', 'CSV Export') }}
+							</NcButton>
 						</div>
 					</div>
 				</div>
@@ -165,6 +173,34 @@ export default {
 		truncate(text, maxLength) {
 			if (!text) return ''
 			return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
+		},
+
+		triggerDownload(content, filename, mimeType) {
+			const blob = new Blob([content], { type: mimeType })
+			const url = URL.createObjectURL(blob)
+			const a = document.createElement('a')
+			a.href = url
+			a.download = filename
+			a.click()
+			URL.revokeObjectURL(url)
+		},
+
+		async exportCourseCsv(course) {
+			try {
+				const url = generateUrl(`/apps/learning/api/courses/${course.id}/summary/export/csv`)
+				const response = await axios.get(url, { responseType: 'text' })
+				const filename = `${course.title.replace(/[^a-zA-Z0-9-_]/g, '_')}_stats.csv`
+				this.triggerDownload(response.data, filename, 'text/csv;charset=utf-8')
+			} catch (err) {
+				console.error('CSV export failed:', err)
+				this.error = t('learning', 'Export failed for {title}', { title: course.title })
+			}
+		},
+
+		async exportAllCsv() {
+			for (const course of this.courses) {
+				await this.exportCourseCsv(course)
+			}
 		},
 	},
 }
@@ -376,6 +412,17 @@ export default {
 	font-size: 0.8em;
 	color: var(--color-text-maxcontrast);
 	margin-top: auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.export-btn { font-size: 0.85em; }
+
+.header-actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
 }
 
 @media (max-width: 768px) {
