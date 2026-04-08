@@ -67,10 +67,10 @@ describe('CourseTabVerwaltung', () => {
 		vi.clearAllMocks()
 	})
 
-	it('has mode-config and exam-slot sub-tabs', () => {
+	it('has mode-config, schedule and exam-slot sub-tabs', () => {
 		const instance = createInstance()
 
-		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['mode-config', 'exam-slot'])
+		expect(instance.visibleSubTabs.map((tab) => tab.id)).toEqual(['mode-config', 'schedule', 'exam-slot'])
 	})
 
 	it('modeConfigKeys returns expected mode keys', () => {

@@ -114,6 +114,68 @@
 			</div>
 		</div>
 
+		<!-- Schedule -->
+		<div v-if="currentSubTab === 'schedule'" class="tab-content schedule-section">
+			<h3>{{ t('learning', 'Kurs-Zeitplan') }}</h3>
+			<p class="mode-config-hint">{{ t('learning', 'Kapitel mit Start- und Zieldatum planen. Studierende sehen den Zeitplan als Timeline.') }}</p>
+
+			<div v-if="loadingSchedule" class="loading-hint">{{ t('learning', 'Loading...') }}</div>
+
+			<template v-else>
+				<table v-if="scheduleItems.length" class="schedule-table">
+					<thead>
+						<tr>
+							<th>{{ t('learning', 'Kapitel') }}</th>
+							<th>{{ t('learning', 'Startdatum') }}</th>
+							<th>{{ t('learning', 'Zieldatum') }}</th>
+							<th />
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="(item, idx) in scheduleItems" :key="idx">
+							<td>
+								<input
+									v-model="item.chapter_title"
+									type="text"
+									class="schedule-input schedule-input--title"
+									:placeholder="t('learning', 'Kapitelname')" />
+							</td>
+							<td>
+								<input
+									v-model="item.start_date"
+									type="date"
+									class="schedule-input" />
+							</td>
+							<td>
+								<input
+									v-model="item.target_date"
+									type="date"
+									class="schedule-input" />
+							</td>
+							<td>
+								<button class="schedule-remove-btn" :title="t('learning', 'Entfernen')" @click="removeScheduleRow(idx)">
+									&times;
+								</button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<div class="schedule-actions">
+					<NcButton type="secondary" @click="addScheduleRow">
+						{{ t('learning', '+ Kapitel hinzufuegen') }}
+					</NcButton>
+					<NcButton type="primary" :disabled="savingSchedule || !scheduleItems.length" @click="saveSchedule">
+						{{ savingSchedule ? t('learning', 'Saving...') : t('learning', 'Zeitplan speichern') }}
+					</NcButton>
+					<NcButton v-if="scheduleItems.length" type="error" :disabled="deletingSchedule" @click="deleteSchedule">
+						{{ deletingSchedule ? t('learning', 'Deleting...') : t('learning', 'Zeitplan loeschen') }}
+					</NcButton>
+				</div>
+				<NcNoteCard v-if="scheduleSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
+			</template>
+		</div>
+
 		<!-- Exam Slot -->
 		<div v-if="currentSubTab === 'exam-slot'" class="tab-content exam-slot-section">
 			<div v-if="activeExamSlot" class="active-slot-banner">
@@ -205,6 +267,11 @@ export default {
 			loadingCampaignList: false,
 			savingCampaigns: false,
 			campaignsSaved: false,
+			scheduleItems: [],
+			loadingSchedule: false,
+			savingSchedule: false,
+			scheduleSaved: false,
+			deletingSchedule: false,
 		}
 	},
 
@@ -215,6 +282,7 @@ export default {
 		visibleSubTabs() {
 			return [
 				{ id: 'mode-config', label: t('learning', 'Kursregeln') },
+				{ id: 'schedule', label: t('learning', 'Zeitplan') },
 				{ id: 'exam-slot', label: t('learning', 'Prüfungs-Slot') },
 			]
 		},
@@ -286,6 +354,9 @@ export default {
 				this.modeConfigSaved = false
 				this.loadToolSettings()
 				this.loadCampaignList()
+			}
+			if (tab === 'schedule') {
+				this.loadSchedule()
 			}
 			if (tab === 'exam-slot') {
 				this.fetchActiveExamSlot()
@@ -554,6 +625,77 @@ export default {
 				return String(timestamp)
 			}
 		},
+
+		async loadSchedule() {
+			this.loadingSchedule = true
+			try {
+				const res = await axios.get(generateUrl(`/apps/learning/api/courses/${this.courseId}/schedule`))
+				const items = res.data?.schedule || []
+				this.scheduleItems = items.map((item) => ({ ...item }))
+			} catch (e) {
+				this.scheduleItems = []
+			} finally {
+				this.loadingSchedule = false
+			}
+		},
+
+		addScheduleRow() {
+			const nextOrder = this.scheduleItems.length + 1
+			this.scheduleItems.push({
+				chapter_ref: '',
+				chapter_title: '',
+				start_date: '',
+				target_date: '',
+				sort_order: nextOrder,
+			})
+		},
+
+		removeScheduleRow(idx) {
+			this.scheduleItems.splice(idx, 1)
+			this.scheduleItems.forEach((item, i) => {
+				item.sort_order = i + 1
+			})
+		},
+
+		async saveSchedule() {
+			this.savingSchedule = true
+			this.scheduleSaved = false
+			try {
+				const payload = this.scheduleItems.map((item, idx) => ({
+					chapter_ref: item.chapter_ref || item.chapter_title?.toLowerCase().replace(/\s+/g, '-') || `ch-${idx + 1}`,
+					chapter_title: item.chapter_title || '',
+					start_date: item.start_date || null,
+					target_date: item.target_date || null,
+					sort_order: idx + 1,
+				}))
+				const res = await axios.put(
+					generateUrl(`/apps/learning/api/courses/${this.courseId}/schedule`),
+					{ schedule: payload },
+				)
+				const saved = res.data?.schedule || payload
+				this.scheduleItems = saved.map((item) => ({ ...item }))
+				this.scheduleSaved = true
+				setTimeout(() => { this.scheduleSaved = false }, 3000)
+			} catch (e) {
+				console.error('Failed to save schedule', e)
+				this.$emit('error', t('learning', 'Failed to save schedule'))
+			} finally {
+				this.savingSchedule = false
+			}
+		},
+
+		async deleteSchedule() {
+			this.deletingSchedule = true
+			try {
+				await axios.delete(generateUrl(`/apps/learning/api/courses/${this.courseId}/schedule`))
+				this.scheduleItems = []
+			} catch (e) {
+				console.error('Failed to delete schedule', e)
+				this.$emit('error', t('learning', 'Failed to delete schedule'))
+			} finally {
+				this.deletingSchedule = false
+			}
+		},
 	},
 }
 </script>
@@ -628,5 +770,64 @@ export default {
 	gap: 8px;
 	flex-wrap: wrap;
 	margin-bottom: 12px;
+}
+
+/* Schedule */
+.schedule-section { padding: 16px 0; }
+
+.schedule-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 16px;
+}
+
+.schedule-table th {
+	text-align: left;
+	font-size: 0.85em;
+	font-weight: 600;
+	color: var(--color-text-maxcontrast);
+	padding: 8px 8px 8px 0;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.schedule-table td {
+	padding: 6px 8px 6px 0;
+	vertical-align: middle;
+}
+
+.schedule-input {
+	padding: 6px 10px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	font-size: 0.9em;
+	width: 100%;
+	max-width: 100%;
+}
+
+.schedule-input--title {
+	min-width: 180px;
+}
+
+.schedule-remove-btn {
+	background: none;
+	border: none;
+	font-size: 1.3em;
+	color: var(--color-error);
+	cursor: pointer;
+	padding: 4px 8px;
+	border-radius: var(--border-radius);
+	transition: background 0.15s;
+}
+
+.schedule-remove-btn:hover {
+	background: color-mix(in srgb, var(--color-error) 10%, transparent);
+}
+
+.schedule-actions {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
 }
 </style>

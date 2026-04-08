@@ -88,6 +88,27 @@
         </div>
       </div>
 
+      <!-- Timeline Widget -->
+      <div v-if="showTimeline" class="dashboard-timeline-section">
+        <div class="widget-card widget-timeline">
+          <div class="timeline-header">
+            <p class="section-label">{{ t('learning', 'Zeitplan') }}</p>
+            <select
+              v-if="enrolledCourses.length > 1"
+              v-model="selectedTimelineCourse"
+              class="timeline-course-select">
+              <option v-for="c in enrolledCourses" :key="c.id" :value="c.id">
+                {{ c.title }}
+              </option>
+            </select>
+            <span v-else-if="enrolledCourses.length === 1" class="timeline-course-name">
+              {{ enrolledCourses[0].title }}
+            </span>
+          </div>
+          <CourseTimeline v-if="timelineCourseId" :course-id="timelineCourseId" />
+        </div>
+      </div>
+
       <!-- Global Feed Section -->
       <div class="dashboard-feed-section">
         <GlobalFeed />
@@ -102,6 +123,7 @@ import { generateUrl } from '@nextcloud/router'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import DailyChallengeCard from './DailyChallengeCard.vue'
 import GlobalFeed from './GlobalFeed.vue'
+import CourseTimeline from './CourseTimeline.vue'
 
 export default {
   name: 'StudentDashboard',
@@ -110,6 +132,7 @@ export default {
     NcLoadingIcon,
     DailyChallengeCard,
     GlobalFeed,
+    CourseTimeline,
   },
 
   data() {
@@ -117,6 +140,8 @@ export default {
       loading: false,
       queueCount: 0,
       remediationCount: 0,
+      enrolledCourses: [],
+      selectedTimelineCourse: null,
       userState: {
         streak: {
           current_streak: 0,
@@ -135,6 +160,13 @@ export default {
   },
 
   computed: {
+    timelineCourseId() {
+      if (this.selectedTimelineCourse) return this.selectedTimelineCourse
+      return this.enrolledCourses.length > 0 ? this.enrolledCourses[0].id : null
+    },
+    showTimeline() {
+      return this.enrolledCourses.length > 0
+    },
     streakCurrent() {
       return this.userState.streak.current_streak || 0
     },
@@ -170,6 +202,7 @@ export default {
           this.loadQueueCount(),
           this.loadRemediationCount(),
           this.loadUserState(),
+          this.loadEnrolledCourses(),
         ])
       } finally {
         this.loading = false
@@ -187,6 +220,14 @@ export default {
       try {
         const r = await axios.get(generateUrl('/apps/learning/api/leitner/remediation/count'))
         this.remediationCount = r.data.count || 0
+      } catch (e) { /* optional */ }
+    },
+
+    async loadEnrolledCourses() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/courses'))
+        const courses = r.data?.courses || r.data || []
+        this.enrolledCourses = Array.isArray(courses) ? courses.filter((c) => !c.is_instructor) : []
       } catch (e) { /* optional */ }
     },
 
@@ -490,6 +531,42 @@ export default {
 .link-btn:hover {
   border-color: var(--color-primary-element);
   background: color-mix(in srgb, var(--color-primary-element) 6%, var(--color-main-background));
+}
+
+/* Timeline Section */
+.dashboard-timeline-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
+}
+
+.widget-timeline {
+  border-left: 3px solid var(--color-primary-element);
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.timeline-header .section-label {
+  margin: 0;
+}
+
+.timeline-course-select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: var(--color-main-background);
+  color: var(--color-main-text);
+  font-size: 0.85em;
+}
+
+.timeline-course-name {
+  font-size: 0.85em;
+  color: var(--color-text-maxcontrast);
 }
 
 /* Feed Section */
