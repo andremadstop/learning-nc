@@ -2,13 +2,15 @@
 
 A self-hosted learning platform for Nextcloud. Flashcards with spaced repetition, interactive IT simulators, AI tutor, and instructor analytics. Your data never leaves your server.
 
-![Nextcloud](https://img.shields.io/badge/Nextcloud-33%2B-blue)
+![Nextcloud](https://img.shields.io/badge/Nextcloud-29--33-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
 ![Tests](https://img.shields.io/badge/Tests-961%20passed-brightgreen)
-![Version](https://img.shields.io/badge/Version-4.1.0-orange)
+![Version](https://img.shields.io/badge/Version-4.2.0-orange)
 
 Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject — from vocabulary drilling to exam preparation.
+
+> **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. Demo accounts available. [Open an issue](https://github.com/andremadstop/learning-nc/issues) or email me.
 
 ![Training with VirtuProf](app/img/screenshots/09-training-virtuprof.png)
 
@@ -37,8 +39,13 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 - Course management with pool assignment and student enrollment
 - **At-risk detection** — automatic warnings for struggling students
 - **Chapter heatmaps** — see where the class struggles at a glance
-- Curriculum scoping, exam scheduling, and leaderboards
+- **Curriculum timeline** — plan course schedule with milestones
+- **Admin dashboard** — CSV export, course archiving, cohort merging
 - Collaborative knowledge base with student contributions and moderation
+
+### Post-Course Retention
+- **Maintenance Mode** — automated long-term review schedule after course ends
+- **Trouble-spot cheat sheet** — export your weakest topics for targeted exam prep
 
 ### AI Features (optional)
 Requires a Google Gemini API key. Without it, the app is fully functional — AI features are simply hidden. Each user must explicitly opt in (GDPR-compliant consent flow).
@@ -109,9 +116,21 @@ When AI is enabled, data is processed by Google Gemini API. For GDPR compliance,
 
 ## Requirements
 
-- Nextcloud 33+
+- Nextcloud 29–33
 - PHP 8.1+
 - PostgreSQL 13+ or MySQL 8+
+
+## Try It
+
+A public demo is available at **devcloud.andrestiebitz.de** with pre-configured accounts:
+
+| Account | Role | What you'll see |
+|---------|------|-----------------|
+| `demo-student` | Student | 50 flashcards across Leitner boxes, Level 7, 14-day streak, badges, due cards in Smart Queue |
+| `demo-dozent` | Instructor | Course dashboard, student progress, curriculum timeline |
+| `demo-admin` | Admin | Admin dashboard, CSV export, all courses |
+
+Demo data resets nightly. [Request passwords via GitHub issue](https://github.com/andremadstop/learning-nc/issues).
 
 ## Contributing
 
