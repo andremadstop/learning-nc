@@ -29,9 +29,6 @@ vi.mock('../../src/components/LeagueTab.vue', () => stub('LeagueTab'))
 vi.mock('../../src/components/ArenaSelector.vue', () => stub('ArenaSelector'))
 vi.mock('../../src/components/DuelMode.vue', () => stub('DuelMode'))
 vi.mock('../../src/components/GameshowMode.vue', () => stub('GameshowMode'))
-vi.mock('../../src/components/OldschoolSelector.vue', () => stub('OldschoolSelector'))
-vi.mock('../../src/components/WissensturmMode.vue', () => stub('WissensturmMode'))
-vi.mock('../../src/components/LernwuerfelMode.vue', () => stub('LernwuerfelMode'))
 vi.mock('../../src/components/AbenteuerMode.vue', () => stub('AbenteuerMode'))
 
 import CourseTabWettbewerb from '../../src/components/CourseTabWettbewerb.vue'
@@ -54,7 +51,6 @@ function createInstance(overrides = {}) {
 				duel: true,
 				gameshow: true,
 				league: true,
-				oldschool: true,
 				abenteuer: false,
 			},
 		},
@@ -98,7 +94,6 @@ describe('CourseTabWettbewerb', () => {
 				mode_config: {
 					duel: false,
 					gameshow: false,
-					oldschool: false,
 					league: true,
 					abenteuer: false,
 				},
@@ -144,6 +139,5 @@ describe('CourseTabWettbewerb', () => {
 		instance.selectSubTab('leaderboard')
 
 		expect(instance.arenaSubMode).toBeNull()
-		expect(instance.oldschoolSubMode).toBeNull()
 	})
 })

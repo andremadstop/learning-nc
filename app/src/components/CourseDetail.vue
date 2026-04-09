@@ -278,7 +278,7 @@ export default {
 		hasEnabledArenaModes() {
 			const mc = this.course?.mode_config || {}
 			const enabled = (key) => mc[key] !== false
-			return enabled('duel') || enabled('gameshow') || enabled('oldschool')
+			return enabled('duel') || enabled('gameshow')
 		},
 		visibleMegaTabs() {
 			if (this.isInstructor) {
@@ -623,7 +623,6 @@ export default {
 				duel: true,
 				gameshow: true,
 				league: true,
-				oldschool: false,
 				abenteuer: false,
 				course_summary: false,
 			}, modeConfig || {})

@@ -371,7 +371,6 @@ export default {
 				duel: true,
 				gameshow: true,
 				league: true,
-				oldschool: false,
 				abenteuer: false,
 				course_summary: false,
 			}, modeConfig || {})

@@ -174,21 +174,6 @@
 				:contentLanguage="contentLanguage"
 				:mode="'elimination'"
 				@back="arenaSubMode = null" />
-			<OldschoolSelector
-				v-else-if="arenaSubMode === 'oldschool' && oldschoolSubMode === null"
-				@select-mode="onOldschoolSelectMode" />
-			<LernwuerfelMode
-				v-else-if="arenaSubMode === 'oldschool' && oldschoolSubMode === 'lernwuerfel'"
-				:courseId="courseId"
-				:coursePools="coursePools"
-				:contentLanguage="contentLanguage"
-				@back="oldschoolSubMode = null" />
-			<WissensturmMode
-				v-else-if="arenaSubMode === 'oldschool' && oldschoolSubMode === 'wissensturm'"
-				:courseId="courseId"
-				:coursePools="coursePools"
-				:contentLanguage="contentLanguage"
-				@back="oldschoolSubMode = null" />
 		</div>
 
 		<!-- Abenteuer -->
@@ -215,9 +200,6 @@ import LeagueTab from './LeagueTab.vue'
 import ArenaSelector from './ArenaSelector.vue'
 import DuelMode from './DuelMode.vue'
 import GameshowMode from './GameshowMode.vue'
-import OldschoolSelector from './OldschoolSelector.vue'
-import WissensturmMode from './WissensturmMode.vue'
-import LernwuerfelMode from './LernwuerfelMode.vue'
 import AbenteuerMode from './AbenteuerMode.vue'
 
 export default {
@@ -231,9 +213,6 @@ export default {
 		ArenaSelector,
 		DuelMode,
 		GameshowMode,
-		OldschoolSelector,
-		WissensturmMode,
-		LernwuerfelMode,
 		AbenteuerMode,
 	},
 
@@ -268,7 +247,6 @@ export default {
 
 			// Arena sub-mode
 			arenaSubMode: null,
-			oldschoolSubMode: null,
 		}
 	},
 
@@ -283,7 +261,7 @@ export default {
 		hasEnabledArenaModes() {
 			const mc = this.course?.mode_config || {}
 			const enabled = (key) => mc[key] !== false
-			return enabled('duel') || enabled('gameshow') || enabled('oldschool')
+			return enabled('duel') || enabled('gameshow')
 		},
 		visibleSubTabs() {
 			const mc = this.course?.mode_config || {}
@@ -360,7 +338,6 @@ export default {
 			this.$emit('tab-change', tabId)
 			if (tabId !== 'arena') {
 				this.arenaSubMode = null
-				this.oldschoolSubMode = null
 			}
 			this.lazyLoad(tabId)
 		},
@@ -378,9 +355,6 @@ export default {
 
 		onArenaSelectMode(mode) {
 			this.arenaSubMode = mode
-		},
-		onOldschoolSelectMode(mode) {
-			this.oldschoolSubMode = mode
 		},
 
 		setLeaderboardSort(key) {

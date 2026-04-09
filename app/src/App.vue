@@ -99,15 +99,15 @@
 
             <div v-else-if="currentView === 'questions'" class="pool-view">
               <div class="pool-view-header">
-                <NcButton type="tertiary" @click="poolFromCourse ? backToCourse() : backToPools()" :aria-label="poolFromCourse ? t('learning', '← Back to Course') : t('learning', 'Back to Pools')">
-                  {{ poolFromCourse ? t('learning', '← Back to Course') : t('learning', '← Back to Pools') }}
+                <NcButton type="tertiary" @click="poolFromCourse ? backToCourse() : backToPools()" :aria-label="poolFromCourse ? t('learning', '← Zurück zum Kurs') : t('learning', 'Zurück zu Pools')">
+                  {{ poolFromCourse ? t('learning', '← Zurück zum Kurs') : t('learning', '← Zurück zu Pools') }}
                 </NcButton>
                 <h3 class="pool-title">{{ selectedPool.name }}</h3>
               </div>
 
               <!-- Read-only banner for shared pools -->
               <NcNoteCard v-if="poolPermission === 'read'" type="info">
-                {{ t('learning', 'This pool is shared with you (view only)') }}
+                {{ t('learning', 'Dieser Pool wurde mit dir geteilt (nur Ansicht)') }}
               </NcNoteCard>
 
               <div class="mode-selector" role="tablist" @keydown="handleTablistKeydown">
@@ -251,7 +251,7 @@
                 :aria-selected="courseView === 'list' ? 'true' : 'false'"
                 @click="courseView = 'list'"
               >
-                {{ t('learning', 'Course List') }}
+                {{ t('learning', 'Kursliste') }}
               </button>
               <button
                 :class="['mode-btn', { active: courseView === 'dashboard' }]"
@@ -490,10 +490,10 @@ export default {
       return [
         { id: 'train', label: t('learning', 'Training') },
         { id: 'leitner', label: t('learning', 'Leitner') },
-        { id: 'exam', label: t('learning', 'Exam') },
+        { id: 'exam', label: t('learning', 'Prüfung') },
         { id: 'gameshow', label: t('learning', 'Arena') },
-        { id: 'stats', label: t('learning', 'Stats') },
-        { id: 'manage', label: this.poolPermission === 'read' ? t('learning', 'View Questions') : t('learning', 'Manage') }
+        { id: 'stats', label: t('learning', 'Statistik') },
+        { id: 'manage', label: this.poolPermission === 'read' ? t('learning', 'Fragen ansehen') : t('learning', 'Verwalten') }
       ];
     },
     filteredModes() {
@@ -528,12 +528,12 @@ export default {
     },
     modeDescriptions() {
       return {
-        train: t('learning', 'Quick quiz — test your knowledge with random questions.'),
-        leitner: t('learning', 'Spaced repetition — difficult questions come back more often. 5 boxes, step by step.'),
-        exam: t('learning', 'Exam mode — no feedback until the end, like a real exam.'),
+        train: t('learning', 'Schnelles Quiz — teste dein Wissen mit zufälligen Fragen.'),
+        leitner: t('learning', 'Spaced Repetition — schwierige Fragen kommen häufiger. 5 Boxen, Schritt für Schritt.'),
+        exam: t('learning', 'Prüfungsmodus — kein Feedback bis zum Ende, wie eine echte Prüfung.'),
         gameshow: t('learning', 'Arena mit Duell, Sprint oder Elimination.'),
-        stats: t('learning', 'Learning statistics and box distribution for this pool.'),
-        manage: t('learning', 'Add, edit, delete and import questions.'),
+        stats: t('learning', 'Lernstatistiken und Box-Verteilung für diesen Pool.'),
+        manage: t('learning', 'Fragen hinzufügen, bearbeiten, löschen und importieren.'),
       };
     },
   },
@@ -739,7 +739,6 @@ export default {
             'leaderboard': 'view:course-leaderboard',
             'league': 'view:course-league',
             'arena': 'view:course-arena',
-            'oldschool': 'view:course-oldschool',
             'abenteuer': 'view:course-abenteuer',
             'pools': 'view:course-pools',
             'members': 'view:course-members',
@@ -799,130 +798,125 @@ export default {
       const guides = {
         'view:dashboard': {
           title: t('learning', 'Dashboard'),
-          text: t('learning', 'Your daily learning overview: due cards, Daily Challenge, streak and quick links. Start your learning session from here.'),
-          shortText: t('learning', 'Daily overview with due cards, challenge and streak.'),
+          text: t('learning', 'Deine tägliche Lernübersicht: fällige Karten, Daily Challenge, Streak und Schnellzugriffe. Starte deine Lernsession von hier.'),
+          shortText: t('learning', 'Tagesübersicht mit fälligen Karten, Challenge und Streak.'),
         },
         'view:courses': {
-          title: t('learning', 'Courses'),
-          text: t('learning', 'Here you see all your courses. Select a course to open its learning modes. Courses can contain Training, Leitner, Exam and Arena.'),
-          shortText: t('learning', 'Select a course to open your learning modes.'),
+          title: t('learning', 'Kurse'),
+          text: t('learning', 'Hier siehst du alle deine Kurse. Wähle einen Kurs, um die Lernmodi zu öffnen. Kurse können Training, Leitner, Prüfung und Arena enthalten.'),
+          shortText: t('learning', 'Wähle einen Kurs, um deine Lernmodi zu öffnen.'),
         },
         'view:course-detail': {
-          title: t('learning', 'Course Detail'),
-          text: t('learning', 'In this course you can start Training, Leitner, True/False or Exam mode. Choose the mode that fits your current learning goal.'),
-          shortText: t('learning', 'Start Training, Leitner, Exam or Arena from this course.'),
+          title: t('learning', 'Kursdetail'),
+          text: t('learning', 'In diesem Kurs kannst du Training, Leitner, Richtig/Falsch oder Prüfungsmodus starten. Wähle den Modus, der zu deinem aktuellen Lernziel passt.'),
+          shortText: t('learning', 'Starte Training, Leitner, Prüfung oder Arena in diesem Kurs.'),
         },
         // Student course tabs
         'view:course-training': {
           title: t('learning', 'Training'),
-          text: t('learning', 'Training is the direct-feedback mode for quick practice. Pick a pool, answer questions and see immediately whether you got it right.'),
-          shortText: t('learning', 'Quick practice with immediate feedback.'),
+          text: t('learning', 'Training ist der Modus mit direktem Feedback für schnelles Üben. Wähle einen Pool, beantworte Fragen und sieh sofort, ob du richtig lagst.'),
+          shortText: t('learning', 'Schnelles Üben mit sofortigem Feedback.'),
         },
         'view:course-leitner': {
-          title: t('learning', 'Leitner System'),
-          text: t('learning', 'The Leitner system shows you due cards based on your progress. The more often you answer a card correctly, the less often it appears — until it is mastered.'),
-          shortText: t('learning', 'Answer due cards. Correct ones move forward, wrong ones go back.'),
+          title: t('learning', 'Leitner-System'),
+          text: t('learning', 'Das Leitner-System zeigt dir fällige Karten basierend auf deinem Fortschritt. Je öfter du eine Karte richtig beantwortest, desto seltener erscheint sie — bis sie gemeistert ist.'),
+          shortText: t('learning', 'Beantworte fällige Karten. Richtige rücken vor, falsche gehen zurück.'),
         },
         'view:course-exam': {
-          title: t('learning', 'Exam Simulation'),
-          text: t('learning', 'Exam mode simulates a real test: no hints, a time limit and your result only at the end. Use it to check whether you are ready.'),
-          shortText: t('learning', 'Simulated exam — result shown after all questions.'),
+          title: t('learning', 'Prüfungssimulation'),
+          text: t('learning', 'Prüfungsmodus simuliert einen echten Test: keine Hinweise, ein Zeitlimit und dein Ergebnis erst am Ende. Nutze ihn, um zu prüfen ob du bereit bist.'),
+          shortText: t('learning', 'Simulierte Prüfung — Ergebnis erst nach allen Fragen.'),
         },
         'view:course-my-progress': {
-          title: t('learning', 'My Progress'),
-          text: t('learning', 'Here you see your personal learning progress in this course: mastered questions, current streak, XP and level. Track how far you have come.'),
-          shortText: t('learning', 'Your personal stats: mastered, streak, XP.'),
+          title: t('learning', 'Mein Fortschritt'),
+          text: t('learning', 'Hier siehst du deinen persönlichen Lernfortschritt in diesem Kurs: gemeisterte Fragen, aktueller Streak, XP und Level. Verfolge, wie weit du gekommen bist.'),
+          shortText: t('learning', 'Deine persönliche Statistik: gemeistert, Streak, XP.'),
         },
         'view:course-summary': {
           title: t('learning', 'Kursabschluss'),
-          text: t('learning', 'Your course summary turns mastery, sessions, streaks, badges and trouble spots into one final overview for this course.'),
-          shortText: t('learning', 'Final course overview with mastery, badges and trouble spots.'),
+          text: t('learning', 'Dein Kursabschluss fasst Meisterschaft, Sessions, Streaks, Badges und Problemstellen in einer Gesamtübersicht zusammen.'),
+          shortText: t('learning', 'Kursübersicht mit Meisterschaft, Badges und Problemstellen.'),
         },
         'view:course-leaderboard': {
-          title: t('learning', 'Leaderboard'),
-          text: t('learning', 'The leaderboard ranks all course members by XP and mastered questions. See where you stand compared to your classmates.'),
-          shortText: t('learning', 'Course ranking by XP and mastered questions.'),
+          title: t('learning', 'Rangliste'),
+          text: t('learning', 'Die Rangliste ordnet alle Kursteilnehmer nach XP und gemeisterten Fragen. Sieh, wo du im Vergleich zu deinen Mitschülern stehst.'),
+          shortText: t('learning', 'Kurs-Ranking nach XP und gemeisterten Fragen.'),
         },
         'view:course-league': {
-          title: t('learning', 'League'),
-          text: t('learning', 'The league system groups learners into tiers based on weekly activity. Stay active to climb up — or risk dropping a tier.'),
-          shortText: t('learning', 'Weekly competition tiers based on activity.'),
+          title: t('learning', 'Liga'),
+          text: t('learning', 'Das Liga-System gruppiert Lernende in Stufen basierend auf wöchentlicher Aktivität. Bleib aktiv, um aufzusteigen — oder riskiere einen Abstieg.'),
+          shortText: t('learning', 'Wöchentliche Wettbewerbsstufen basierend auf Aktivität.'),
         },
         'view:course-arena': {
           title: t('learning', 'Arena'),
-          text: t('learning', 'Arena mode lets you compete in real-time quiz battles: Sprint (speed round) or Elimination (last one standing). Challenge your course mates!'),
-          shortText: t('learning', 'Real-time quiz battles: Sprint or Elimination.'),
-        },
-        'view:course-oldschool': {
-          title: t('learning', 'Oldschool'),
-          text: t('learning', 'Classic board-game style learning: Lernwürfel (dice + questions) and Wissenssturm (5 categories, steal mechanics). Play with 2-4 people at the same screen.'),
-          shortText: t('learning', 'Board-game learning: dice, categories, steal.'),
+          text: t('learning', 'Im Arena-Modus trittst du in Echtzeit-Quiz-Duellen an: Sprint (Schnellrunde) oder Elimination (letzter steht). Fordere deine Kurskameraden heraus!'),
+          shortText: t('learning', 'Echtzeit-Quiz-Duelle: Sprint oder Elimination.'),
         },
         'view:course-abenteuer': {
-          title: t('learning', 'Adventure'),
-          text: t('learning', 'Adventure mode wraps learning in a story with branching paths. Solve network problems, make decisions and reach different endings.'),
-          shortText: t('learning', 'Story-driven learning with branching paths.'),
+          title: t('learning', 'Abenteuer'),
+          text: t('learning', 'Der Abenteuermodus verpackt Lernen in eine Geschichte mit Verzweigungen. Löse Netzwerkprobleme, triff Entscheidungen und erreiche verschiedene Enden.'),
+          shortText: t('learning', 'Story-basiertes Lernen mit verzweigten Pfaden.'),
         },
         // Instructor course tabs
         'view:course-pools': {
-          title: t('learning', 'Course Pools'),
-          text: t('learning', 'Manage question pools assigned to this course. Add or remove pools, set them as required or optional for students.'),
-          shortText: t('learning', 'Manage pools for this course.'),
+          title: t('learning', 'Kurs-Pools'),
+          text: t('learning', 'Verwalte die Fragenpools dieses Kurses. Füge Pools hinzu oder entferne sie, lege sie als Pflicht oder optional für Studierende fest.'),
+          shortText: t('learning', 'Pools für diesen Kurs verwalten.'),
         },
         'view:course-members': {
-          title: t('learning', 'Members'),
-          text: t('learning', 'View and manage course members. Add students, assign roles or remove inactive members.'),
-          shortText: t('learning', 'Manage course members and roles.'),
+          title: t('learning', 'Mitglieder'),
+          text: t('learning', 'Sieh und verwalte Kursmitglieder. Füge Studierende hinzu, weise Rollen zu oder entferne inaktive Mitglieder.'),
+          shortText: t('learning', 'Kursmitglieder und Rollen verwalten.'),
         },
         'view:course-progress': {
-          title: t('learning', 'Student Progress'),
-          text: t('learning', 'Overview of all students: mastered questions, XP, last activity. Identify who needs help and who is ahead.'),
-          shortText: t('learning', 'Track student progress and identify at-risk learners.'),
+          title: t('learning', 'Studierendenfortschritt'),
+          text: t('learning', 'Übersicht aller Studierenden: gemeisterte Fragen, XP, letzte Aktivität. Erkenne, wer Hilfe braucht und wer voraus ist.'),
+          shortText: t('learning', 'Fortschritt der Studierenden verfolgen und Risikolerner erkennen.'),
         },
         'view:course-class-profile': {
-          title: t('learning', 'Class Profile'),
-          text: t('learning', 'Aggregated class profile from Telos onboarding: experience levels, target certifications, learning goals. Understand your class at a glance.'),
-          shortText: t('learning', 'Aggregated student profiles and learning goals.'),
+          title: t('learning', 'Klassen-Profil'),
+          text: t('learning', 'Aggregiertes Klassenprofil aus dem Telos-Onboarding: Erfahrungslevel, Ziel-Zertifizierungen, Lernziele. Verstehe deine Klasse auf einen Blick.'),
+          shortText: t('learning', 'Aggregierte Studierendenprofile und Lernziele.'),
         },
         'view:course-heatmap': {
           title: t('learning', 'Heatmap'),
-          text: t('learning', 'Visual heatmap showing which questions are easy (green) and which are hard (red) across the whole class. Spot trouble areas quickly.'),
-          shortText: t('learning', 'Question difficulty heatmap across all students.'),
+          text: t('learning', 'Visuelle Heatmap, die zeigt welche Fragen leicht (grün) und welche schwer (rot) sind — klassenübergreifend. Erkenne Problemzonen schnell.'),
+          shortText: t('learning', 'Schwierigkeits-Heatmap über alle Studierenden.'),
         },
         'view:course-weak-questions': {
-          title: t('learning', 'Weak Questions'),
-          text: t('learning', 'Questions with the highest error rate across all students. These are the topics your class struggles with most — focus your teaching here.'),
-          shortText: t('learning', 'Questions students get wrong most often.'),
+          title: t('learning', 'Schwache Fragen'),
+          text: t('learning', 'Fragen mit der höchsten Fehlerquote über alle Studierenden. Das sind die Themen, bei denen deine Klasse am meisten Probleme hat — fokussiere deinen Unterricht hier.'),
+          shortText: t('learning', 'Fragen, die Studierende am häufigsten falsch beantworten.'),
         },
         'view:course-announcements': {
-          title: t('learning', 'Announcements'),
-          text: t('learning', 'Post announcements visible to all course members. Use for exam reminders, schedule changes or study tips.'),
-          shortText: t('learning', 'Post messages visible to all students.'),
+          title: t('learning', 'Ankündigungen'),
+          text: t('learning', 'Veröffentliche Ankündigungen für alle Kursteilnehmer. Nutze sie für Prüfungserinnerungen, Terminänderungen oder Lerntipps.'),
+          shortText: t('learning', 'Nachrichten für alle Studierenden veröffentlichen.'),
         },
         'view:course-exam-slot': {
-          title: t('learning', 'Exam Slot'),
-          text: t('learning', 'Schedule exam time windows: set start/end, choose pools and configure time limits. Students can only take the exam during the slot.'),
-          shortText: t('learning', 'Schedule timed exam windows for students.'),
+          title: t('learning', 'Prüfungstermin'),
+          text: t('learning', 'Plane Prüfungszeitfenster: Start/Ende festlegen, Pools wählen und Zeitlimits konfigurieren. Studierende können die Prüfung nur während des Zeitfensters ablegen.'),
+          shortText: t('learning', 'Zeitgesteuerte Prüfungsfenster für Studierende planen.'),
         },
         'view:course-requests': {
-          title: t('learning', 'Requests'),
-          text: t('learning', 'Student requests and error reports. Review flagged questions, respond to help requests and improve your content.'),
-          shortText: t('learning', 'Review student requests and error reports.'),
+          title: t('learning', 'Anfragen'),
+          text: t('learning', 'Studierenden-Anfragen und Fehlermeldungen. Prüfe gemeldete Fragen, beantworte Hilfeanfragen und verbessere deine Inhalte.'),
+          shortText: t('learning', 'Studierenden-Anfragen und Fehlermeldungen prüfen.'),
         },
         'view:course-mode-config': {
-          title: t('learning', 'Mode Config'),
-          text: t('learning', 'Enable or disable learning modes for this course: Training, Leitner, Exam, Arena, Oldschool, Adventure. Control what students can access.'),
-          shortText: t('learning', 'Enable/disable learning modes for students.'),
+          title: t('learning', 'Modus-Konfiguration'),
+          text: t('learning', 'Aktiviere oder deaktiviere Lernmodi für diesen Kurs: Training, Leitner, Prüfung, Arena, Oldschool, Abenteuer. Steuere, worauf Studierende zugreifen können.'),
+          shortText: t('learning', 'Lernmodi für Studierende aktivieren/deaktivieren.'),
         },
         'view:course-materials': {
-          title: t('learning', 'Materials'),
-          text: t('learning', 'Upload and manage learning materials: PDFs, links, documents. Students see these as reference material alongside their questions.'),
-          shortText: t('learning', 'Upload reference materials for students.'),
+          title: t('learning', 'Materialien'),
+          text: t('learning', 'Lade Lernmaterialien hoch und verwalte sie: PDFs, Links, Dokumente. Studierende sehen diese als Referenzmaterial neben ihren Fragen.'),
+          shortText: t('learning', 'Referenzmaterialien für Studierende hochladen.'),
         },
         'view:course-curriculum': {
-          title: t('learning', 'Curriculum'),
-          text: t('learning', 'Structure your course content into chapters and topics. Map questions to curriculum objectives for targeted learning.'),
-          shortText: t('learning', 'Organize content into chapters and topics.'),
+          title: t('learning', 'Lehrplan'),
+          text: t('learning', 'Strukturiere deine Kursinhalte in Kapitel und Themen. Ordne Fragen Lehrplanzielen zu für gezieltes Lernen.'),
+          shortText: t('learning', 'Inhalte in Kapitel und Themen organisieren.'),
         },
         // Pool-level views (outside courses)
         'view:training': {
