@@ -1,9 +1,6 @@
 #!/bin/bash
-# Deploy learning-nc to Relay (Production) Docker container
-# Usage: ./scripts/deploy-prod.sh [--php-only | --js-only | --full]
-#
-# IMPORTANT: Run deploy-dev.sh first! PHPStan + tests run on staging only.
-# This script deploys pre-validated code to production.
+# Deploy learning-nc to Relay (Production)
+# Usage: ./scripts/deploy-prod.sh [--php-only | --js-only | --full | --phpstan | --test]
 set -eo pipefail
 
 MODE="${1:---full}"
@@ -11,9 +8,20 @@ HOST="relais"
 CONTAINER="devcloud-app"
 APP_PATH="/var/www/html/custom_apps/learning"
 
-echo "=== Learning-NC Deploy to PROD ($HOST) ==="
-echo "⚠  Make sure deploy-dev.sh passed all gates first!"
-echo ""
+echo "=== Learning-NC Deploy to $HOST ==="
+
+run_phpstan() {
+  echo "→ Running PHPStan analysis..."
+  rsync -az app/phpstan.neon app/phpstan-baseline.neon "$HOST:~/learning-nc/app/" 2>/dev/null
+  ssh "$HOST" "docker cp ~/learning-nc/app/phpstan.neon $CONTAINER:$APP_PATH/phpstan.neon && \
+    docker cp ~/learning-nc/app/phpstan-baseline.neon $CONTAINER:$APP_PATH/phpstan-baseline.neon" 2>/dev/null
+  ssh "$HOST" "docker exec -w $APP_PATH $CONTAINER php vendor/bin/phpstan analyse --no-progress 2>&1"
+  if [ $? -ne 0 ]; then
+    echo "✗ PHPStan found errors — deploy aborted!"
+    exit 1
+  fi
+  echo "✓ PHPStan clean"
+}
 
 deploy_php() {
   echo "→ Syncing PHP + l10n to $HOST..."
@@ -35,37 +43,54 @@ deploy_php() {
     docker exec $CONTAINER apache2ctl graceful"
   echo "→ Verifying deploy..."
   ssh "$HOST" "docker exec $CONTAINER php -r \"require '$APP_PATH/lib/AppInfo/Application.php';\" 2>&1 || echo 'WARN: PHP syntax issue detected'"
-  # Ensure apps/learning symlink exists (lost after container restarts)
   ssh "$HOST" "docker exec $CONTAINER bash -c 'test -L /var/www/html/apps/learning || ln -sf $APP_PATH /var/www/html/apps/learning'"
-  echo "✓ PHP deployed to PROD"
+  echo "✓ PHP deployed"
 }
 
 deploy_js() {
+  local REPO_ROOT
+  REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
   echo "→ Building JS locally..."
-  cd "$(dirname "$0")/../app"
+  cd "$REPO_ROOT/app"
   npm install --no-audit --no-fund >/dev/null
   npm run build 2>&1
   if [ $? -ne 0 ]; then
     echo "✗ Vite build failed — deploy aborted!"
     exit 1
   fi
-  cd "$(dirname "$0")/.."
+  cd "$REPO_ROOT"
+
+  # Re-sync static CSS that Vite doesn't produce
+  rsync -az app/css/style.css app/css/practicum.css "$HOST:~/learning-nc/app/css/" 2>/dev/null || true
 
   echo "→ Deploying JS + CSS bundles to $HOST..."
-  # Clean old bundles in container
   ssh "$HOST" "docker exec $CONTAINER bash -c 'find $APP_PATH/js/ -type f -delete; find $APP_PATH/css/ -type f -delete'"
-  # Pipe LOCAL js/ + css/ directly into container
   tar cf - app/js/ app/css/ --transform='s|^app/||' | ssh "$HOST" "docker exec -i $CONTAINER tar xf - -C $APP_PATH/"
-  # Ensure apps/learning symlink exists
   ssh "$HOST" "docker exec $CONTAINER bash -c 'test -L /var/www/html/apps/learning || ln -sf $APP_PATH /var/www/html/apps/learning'"
-  echo "✓ JS + CSS deployed to PROD"
+  echo "✓ JS + CSS deployed"
+}
+
+run_phpunit() {
+  echo "→ Running PHPUnit tests..."
+  rsync -az --include='*.php' --exclude='*.js' app/tests/ "$HOST:~/learning-nc/app/tests/"
+  ssh "$HOST" "for f in tests/Support/PhpUnitStubs.php tests/Support/FakeInfrastructure.php tests/bootstrap.php; do \
+    docker cp ~/learning-nc/app/\$f $CONTAINER:$APP_PATH/\$f 2>/dev/null; done && \
+    docker exec -w $APP_PATH $CONTAINER php vendor/bin/phpunit 2>&1"
+  if [ $? -ne 0 ]; then
+    echo "✗ PHPUnit tests failed!"
+    exit 1
+  fi
+  echo "✓ PHPUnit clean"
 }
 
 case "$MODE" in
-  --php-only)    deploy_php ;;
+  --php-only)    deploy_php; run_phpstan ;;
   --js-only)     deploy_js ;;
-  --full)        deploy_php; deploy_js ;;
-  *) echo "Usage: $0 [--php-only | --js-only | --full]"; exit 1 ;;
+  --full)        deploy_php; run_phpstan; deploy_js ;;
+  --phpstan)     run_phpstan ;;
+  --test)        run_phpstan; run_phpunit ;;
+  *) echo "Usage: $0 [--php-only | --js-only | --full | --phpstan | --test]"; exit 1 ;;
 esac
 
-echo "=== PROD Deploy complete ==="
+echo "=== Deploy complete ==="
