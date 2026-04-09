@@ -1795,13 +1795,30 @@ export default {
         this.chatMessages = []
       }
     },
-    handleReportError() {
-      const qId = this.currentContext?.questionContext?.questionId
-      if (!qId) {
+    async handleReportError() {
+      const ctx = this.currentContext?.questionContext
+      if (!ctx?.questionId) {
         return
       }
-      const message = 'Fehler melden: Frage #' + qId
-      this.handleChatSend(message)
+      try {
+        await axios.post(generateUrl('/apps/learning/api/support-tickets'), {
+          subject: 'Fehlermeldung: Frage #' + ctx.questionId,
+          message: 'Ein Nutzer hat diese Frage als fehlerhaft gemeldet.',
+          category: 'question_error',
+          questionId: ctx.questionId,
+          poolId: ctx.poolId || null,
+          courseId: ctx.courseId || null,
+        })
+        this.chatMessages.push({
+          role: 'assistant',
+          content: 'Danke für die Meldung! Dein Dozent wurde benachrichtigt und wird die Frage prüfen.',
+        })
+      } catch {
+        this.chatMessages.push({
+          role: 'assistant',
+          content: 'Die Fehlermeldung konnte leider nicht gesendet werden. Bitte versuche es später erneut.',
+        })
+      }
     },
 
     isHintRequest(message) {
