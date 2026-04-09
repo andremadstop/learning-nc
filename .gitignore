@@ -97,6 +97,7 @@ Thumbs.db
 /.tmpq/
 /.tmpq_upgrade2/
 scripts/*
+!scripts/deploy-prod.sh
 !scripts/devcloud-sanitize.py
 !scripts/devcloud-staleness.sh
 !scripts/fill_pool_explanations.php

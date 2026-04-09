@@ -1,16 +1,16 @@
 <template>
   <div class="pool-list">
     <div class="pool-list-header">
-      <h3>{{ t('learning', 'Question Pools') }}</h3>
+      <h3>{{ t('learning', 'Fragenpools') }}</h3>
       <div v-if="userRole === 'instructor'" class="pool-list-header__actions">
         <NcButton type="secondary" @click="openStarterDialog">
           {{ t('learning', 'Starter-Pool hinzufügen') }}
         </NcButton>
         <NcButton type="secondary" @click="showPoolGenerator = true">
-          {{ t('learning', 'Generate Questions') }}
+          {{ t('learning', 'Fragen generieren') }}
         </NcButton>
         <NcButton type="primary" @click="showCreateDialog">
-          {{ t('learning', '+ Create Pool') }}
+          {{ t('learning', '+ Pool erstellen') }}
         </NcButton>
       </div>
     </div>
@@ -716,6 +716,7 @@ export default {
 <style scoped>
 .pool-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .pool-list-header h3 { font-size: 22px; font-weight: 600; margin: 0; color: var(--color-main-text); }
+.pool-list-header__actions { display: flex; gap: 8px; align-items: center; }
 .pool-tabs { display: flex; gap: 4px; margin-bottom: 24px; padding: 5px; background: var(--color-background-hover); border-radius: 10px; max-width: 440px; }
 .tab-btn { flex: 1; padding: 10px 20px; border: none; background: transparent; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; transition: all 0.2s; color: var(--color-main-text); }
 .tab-btn:hover { background: var(--color-background-dark); }
