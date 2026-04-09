@@ -20,7 +20,8 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 - Course management with pool assignment and student enrollment
 - **At-risk warnings** — automatic detection of struggling students
 - **Chapter heatmaps** — see where the class struggles at a glance
-- Curriculum scoping, exam scheduling, and leaderboards
+- **Curriculum timeline** — plan course schedule with milestones
+- **Admin dashboard** — CSV export, course archiving, cohort merging
 - Campaign selection — choose which story scenarios are available per course
 
 ## For Learners
@@ -31,6 +32,8 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 - **Story Campaigns** — learn through real IT incident scenarios (WannaCry, SolarWinds, Log4Shell)
 - **Live Duels &amp; Sprint** — real-time multiplayer quiz battles via Server-Sent Events
 - **Gamification** — XP, levels, streaks, 10 badges, seasonal league
+- **Maintenance Mode** — long-term retention schedule after course ends
+- **Trouble-spot cheat sheet** — export your weakest topics for exam prep
 
 ## AI Features (optional)
 
@@ -48,15 +51,17 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 ## Technical
 
 - Vue 3, Vite, Pinia — modern frontend stack
-- 763 unit tests, PHPStan Level 5, 4-gate CI pipeline
+- 961 unit tests, PHPStan Level 5, 4-gate CI pipeline
 - Native Nextcloud integration: Dashboard widgets, Notifications, Talk, Files
 - AGPL-3.0 — fully open source
 
 ## Requirements
 
-- Nextcloud 33+
+- Nextcloud 29–33
 - PHP 8.1+
 - PostgreSQL 13+ or MySQL 8+
+
+**Looking for pilot partners!** If you run Nextcloud at a school, university, or training provider — we'd love your feedback. Demo available.
     ]]></description>
 
     <version>4.1.0</version>
