@@ -120,7 +120,7 @@ describe('CourseTabVerwaltung', () => {
 
 		CourseTabVerwaltung.watch.course.handler.call(instance, instance.course)
 
-		expect(instance.examDateLocal).toBe('2026-04-15')
+		expect(instance.examDateLocal).toBe('2026-04-15T09:00')
 	})
 
 	it('component has correct name', () => {
@@ -168,17 +168,17 @@ describe('CourseTabVerwaltung', () => {
 
 		it('saves exam_date via PATCH and refreshes the course detail', async () => {
 			const axios = (await import('@nextcloud/axios')).default
-			axios.patch.mockResolvedValue({ data: { exam_date: '2026-04-20' } })
+			axios.patch.mockResolvedValue({ data: { exam_date: '2026-04-20T10:00' } })
 
 			const instance = createInstance()
-			instance.examDateLocal = '2026-04-20'
+			instance.examDateLocal = '2026-04-20T10:00'
 
 			await instance.saveExamDate()
 
 			expect(axios.patch).toHaveBeenCalledWith('/apps/learning/api/courses/5/exam-date', {
-				examDate: '2026-04-20',
+				examDate: '2026-04-20T10:00',
 			})
-			expect(instance.examDateLocal).toBe('2026-04-20')
+			expect(instance.examDateLocal).toBe('2026-04-20T10:00')
 			expect(instance.$emit).toHaveBeenCalledWith('refresh-course-detail')
 		})
 

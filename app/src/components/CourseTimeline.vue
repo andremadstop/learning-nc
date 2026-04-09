@@ -113,7 +113,16 @@ export default {
 			if (!this.examDate) return -1
 			const now = new Date()
 			now.setHours(0, 0, 0, 0)
-			const exam = new Date(this.examDate)
+			let exam
+			if (this.examDate.includes('T')) {
+				const [datePart, timePart] = this.examDate.split('T')
+				const [y, m, d] = datePart.split('-').map(Number)
+				const [h, min] = timePart.split(':').map(Number)
+				exam = new Date(y, m - 1, d, h, min)
+			} else {
+				const [y, m, d] = this.examDate.split('-').map(Number)
+				exam = new Date(y, m - 1, d)
+			}
 			exam.setHours(0, 0, 0, 0)
 			return Math.ceil((exam - now) / 86400000)
 		},

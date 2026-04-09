@@ -82,7 +82,17 @@ export default {
 				const data = response.data || {}
 				const dateStr = data.exam_date || ''
 				if (dateStr) {
-					this.examTimestamp = Math.floor(new Date(dateStr).getTime() / 1000)
+					if (dateStr.includes('T')) {
+						// "2026-04-10T10:00" — parse as local time
+						const [datePart, timePart] = dateStr.split('T')
+						const [y, m, d] = datePart.split('-').map(Number)
+						const [h, min] = timePart.split(':').map(Number)
+						this.examTimestamp = Math.floor(new Date(y, m - 1, d, h, min).getTime() / 1000)
+					} else {
+						// Legacy "2026-04-10" — local midnight
+						const [y, m, d] = dateStr.split('-').map(Number)
+						this.examTimestamp = Math.floor(new Date(y, m - 1, d).getTime() / 1000)
+					}
 				}
 			} catch (e) {
 				this.error = e?.response?.data?.error || ''

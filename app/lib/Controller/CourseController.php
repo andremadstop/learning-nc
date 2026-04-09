@@ -849,6 +849,17 @@ class CourseController extends Controller {
             return null;
         }
 
+        // Accept "YYYY-MM-DDTHH:MM" (datetime-local) or legacy "YYYY-MM-DD"
+        if (preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $examDate)) {
+            $parsed = \DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $examDate);
+            $errors = \DateTimeImmutable::getLastErrors();
+            $hasWarnings = is_array($errors) && (($errors['warning_count'] ?? 0) > 0 || ($errors['error_count'] ?? 0) > 0);
+            if ($parsed === false || $hasWarnings) {
+                throw new \InvalidArgumentException('Invalid exam date');
+            }
+            return $examDate;
+        }
+
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $examDate)) {
             throw new \InvalidArgumentException('Invalid exam date format');
         }

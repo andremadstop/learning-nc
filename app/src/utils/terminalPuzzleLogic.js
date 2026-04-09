@@ -8,6 +8,85 @@ function normalizeCommand(command) {
 	return String(command || '').trim().toLowerCase()
 }
 
+/**
+ * Domain-aware default outputs for common commands that aren't in valid_commands.
+ * Gives realistic feedback instead of "Command not recognized".
+ */
+const DOMAIN_DEFAULTS = {
+	whoami: 'student',
+	hostname: 'training-vm',
+	date: () => new Date().toUTCString(),
+	uptime: ' 10:23:45 up 3 days,  2:15,  1 user,  load average: 0.12, 0.08, 0.05',
+	id: 'uid=1000(student) gid=1000(student) groups=1000(student),27(sudo)',
+	uname: 'Linux',
+	'uname -a': 'Linux training-vm 6.1.0-18-amd64 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux',
+	'uname -r': '6.1.0-18-amd64',
+	echo: (input) => input.replace(/^echo\s+/i, '').replace(/^["']|["']$/g, ''),
+	'cat /etc/hostname': 'training-vm',
+	'cat /etc/os-release': 'PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"\nNAME="Debian GNU/Linux"\nVERSION_ID="12"\nID=debian',
+	ifconfig: 'eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500\n        inet 192.168.10.25  netmask 255.255.255.0  broadcast 192.168.10.255',
+	'ip a': (input, validCommands) => {
+		const full = (validCommands || []).find(c => normalizeCommand(c.command).startsWith('ip addr'))
+		return full ? full.output : '2: eth0: <BROADCAST,UP> mtu 1500\n    inet 192.168.10.25/24 scope global eth0'
+	},
+	'ip route': 'default via 192.168.10.1 dev eth0 proto dhcp\n192.168.10.0/24 dev eth0 proto kernel scope link src 192.168.10.25',
+	'ip link': '1: lo: <LOOPBACK,UP> mtu 65536 state UNKNOWN\n2: eth0: <BROADCAST,UP> mtu 1500 state UP',
+	ls: (input, validCommands) => {
+		const laMatch = (validCommands || []).find(c => normalizeCommand(c.command) === 'ls -la')
+		if (laMatch) return laMatch.output.split('\n').filter(l => !l.startsWith('total') && !l.includes(' .')).map(l => l.split(/\s+/).pop()).filter(Boolean).join('  ')
+		return 'Desktop  Documents  Downloads'
+	},
+	'which': (input) => {
+		const cmd = input.replace(/^which\s+/i, '').trim()
+		const known = { ping: '/usr/bin/ping', nslookup: '/usr/bin/nslookup', curl: '/usr/bin/curl', ss: '/usr/bin/ss', ip: '/sbin/ip', cat: '/usr/bin/cat', grep: '/usr/bin/grep', iptables: '/usr/sbin/iptables' }
+		return known[cmd] || cmd + ' not found'
+	},
+	'ping localhost': 'PING localhost (127.0.0.1): 56 data bytes\n64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.1 ms',
+	man: 'What manual page do you want?\nFor example, try \'man ls\'.',
+}
+
+/**
+ * Try to find a near-miss from valid_commands and suggest it.
+ */
+function findNearMatch(input, validCommands) {
+	const lower = normalizeCommand(input)
+	const words = lower.split(/\s+/)
+	const baseCmd = words[0]
+
+	for (const vc of (validCommands || [])) {
+		const vcLower = normalizeCommand(vc.command)
+		const vcBase = vcLower.split(/\s+/)[0]
+
+		// Same base command, different flags
+		if (baseCmd === vcBase && lower !== vcLower) {
+			return vc.command
+		}
+	}
+	return null
+}
+
+/**
+ * Check domain defaults for a realistic response.
+ */
+function checkDomainDefault(input, validCommands) {
+	const lower = normalizeCommand(input)
+
+	// Exact match
+	if (DOMAIN_DEFAULTS[lower]) {
+		const val = DOMAIN_DEFAULTS[lower]
+		return typeof val === 'function' ? val(input, validCommands) : val
+	}
+
+	// Base command match (e.g. "echo hello" matches "echo")
+	const baseCmd = lower.split(/\s+/)[0]
+	if (DOMAIN_DEFAULTS[baseCmd]) {
+		const val = DOMAIN_DEFAULTS[baseCmd]
+		return typeof val === 'function' ? val(input, validCommands) : val
+	}
+
+	return null
+}
+
 function buildHelpOutput(validCommands, hint) {
 	const seen = new Set()
 	const availableCommands = []
@@ -119,9 +198,29 @@ export function validateCommand(input, validCommands, options = {}) {
 		}
 	}
 
+	// Near-miss: same base command, different flags → suggest the right one
+	const nearMatch = findNearMatch(trimmed, validCommands)
+	if (nearMatch) {
+		return {
+			valid: false,
+			output: `Versuch: ${nearMatch}`,
+			responseType: 'hint',
+		}
+	}
+
+	// Domain defaults: realistic output for common commands
+	const defaultOutput = checkDomainDefault(trimmed, validCommands)
+	if (defaultOutput) {
+		return {
+			valid: false,
+			output: defaultOutput,
+			responseType: 'system',
+		}
+	}
+
 	return {
 		valid: false,
-		output: "Command not recognized. Try 'help' for available commands.",
+		output: `bash: ${trimmed}: Befehl nicht gefunden. Tippe 'help' für verfügbare Befehle.`,
 		responseType: 'error',
 	}
 }

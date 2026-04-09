@@ -171,6 +171,15 @@ class ReadinessService {
             return null;
         }
 
+        // "YYYY-MM-DDTHH:MM" (datetime-local with time)
+        if (str_contains($examDate, 'T')) {
+            $date = \DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $examDate);
+            if ($date !== false) {
+                return $date->getTimestamp();
+            }
+        }
+
+        // Legacy "YYYY-MM-DD" — assume end of day
         $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $examDate);
         if ($date === false) {
             return null;

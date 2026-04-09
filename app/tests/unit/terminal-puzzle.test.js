@@ -72,7 +72,7 @@ describe('validateCommand', () => {
 	it('returns valid=false for an unknown command', () => {
 		const result = validateCommand('rm -rf /', mockScenario.valid_commands)
 		expect(result.valid).toBe(false)
-		expect(result.output).toBe("Command not recognized. Try 'help' for available commands.")
+		expect(result.output).toContain('rm -rf /')
 		expect(result.responseType).toBe('error')
 	})
 

@@ -74,9 +74,9 @@
 
 			<div class="exam-date-config tool-config-section">
 				<h3>{{ t('learning', 'Prüfungstermin') }}</h3>
-				<p class="mode-config-hint">{{ t('learning', 'Optionales Prüfungsdatum für den Dashboard-Countdown setzen.') }}</p>
+				<p class="mode-config-hint">{{ t('learning', 'Prüfungsdatum und -uhrzeit für den Dashboard-Countdown setzen.') }}</p>
 				<div class="exam-date-row">
-					<input v-model="examDateLocal" type="date" class="exam-date-input" />
+					<input v-model="examDateLocal" type="datetime-local" class="exam-date-input" />
 					<NcButton type="primary" :disabled="savingExamDate" @click="saveExamDate">
 						{{ savingExamDate ? t('learning', 'Saving...') : t('learning', 'Save') }}
 					</NcButton>
@@ -390,7 +390,11 @@ export default {
 		},
 
 		normalizeExamDate(examDate) {
-			return typeof examDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(examDate) ? examDate : ''
+			if (typeof examDate !== 'string') return ''
+			// "YYYY-MM-DDTHH:MM" (datetime-local) or legacy "YYYY-MM-DD"
+			if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(examDate)) return examDate
+			if (/^\d{4}-\d{2}-\d{2}$/.test(examDate)) return examDate + 'T09:00'
+			return ''
 		},
 
 		toggleMode(key, value) {

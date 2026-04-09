@@ -283,6 +283,12 @@ export default {
 	background: rgba(107, 114, 128, 0.12);
 }
 
+.terminal-puzzle__response--hint {
+	color: #fde68a;
+	border-left-color: #f59e0b;
+	background: rgba(245, 158, 11, 0.12);
+}
+
 .terminal-puzzle__input-row {
 	display: flex;
 	gap: 8px;
