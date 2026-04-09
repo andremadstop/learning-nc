@@ -87,6 +87,16 @@
 				<NcNoteCard v-if="examDateSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
 			</div>
 
+			<div class="maintenance-config tool-config-section">
+				<h3>{{ t('learning', 'Maintenance Mode') }}</h3>
+				<p class="mode-config-hint">{{ t('learning', 'Studenten erhalten nach Kursende taeglich eine kleine Wiederholungs-Portion basierend auf dem FSRS-Algorithmus.') }}</p>
+				<label class="mode-toggle-label">
+					<input type="checkbox" v-model="maintenanceMode" @change="saveMaintenanceMode" />
+					{{ t('learning', 'Maintenance Mode nach Kursende') }}
+				</label>
+				<NcNoteCard v-if="maintenanceModeSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
+			</div>
+
 			<div class="campaign-config tool-config-section">
 				<h3>{{ t('learning', 'Abenteuer-Kampagnen') }}</h3>
 				<p class="mode-config-hint">{{ t('learning', 'Wähle welche Kampagnen für Studierende sichtbar sind. Keine Auswahl = alle verfügbar.') }}</p>
@@ -267,6 +277,8 @@ export default {
 			loadingCampaignList: false,
 			savingCampaigns: false,
 			campaignsSaved: false,
+			maintenanceMode: false,
+			maintenanceModeSaved: false,
 			scheduleItems: [],
 			loadingSchedule: false,
 			savingSchedule: false,
@@ -320,6 +332,7 @@ export default {
 					this.leitnerSprint = !!c.leitner_sprint
 					this.talkRoomToken = c.talk_room_token || ''
 					this.examDateLocal = this.normalizeExamDate(c.exam_date)
+					this.maintenanceMode = !!c.maintenance_mode
 				}
 			},
 		},
@@ -462,6 +475,21 @@ export default {
 				this.$emit('error', t('learning', 'Failed to save tool config'))
 			} finally {
 				this.savingToolConfig = false
+			}
+		},
+
+		async saveMaintenanceMode() {
+			try {
+				await axios.patch(
+					generateUrl(`/apps/learning/api/courses/${this.courseId}/maintenance`),
+					{ enabled: this.maintenanceMode },
+				)
+				this.maintenanceModeSaved = true
+				setTimeout(() => { this.maintenanceModeSaved = false }, 3000)
+				this.$emit('refresh-course-detail')
+			} catch (e) {
+				console.error('Failed to save maintenance mode', e)
+				this.$emit('error', t('learning', 'Failed to save maintenance mode'))
 			}
 		},
 

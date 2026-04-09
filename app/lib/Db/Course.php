@@ -40,6 +40,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setLeitnerSprint(bool $leitnerSprint)
  * @method string|null getAllowedCampaigns()
  * @method void setAllowedCampaigns(?string $allowedCampaigns)
+ * @method bool getMaintenanceMode()
+ * @method void setMaintenanceMode(bool $maintenanceMode)
  */
 class Course extends Entity {
     protected $title;
@@ -59,6 +61,7 @@ class Course extends Entity {
     protected $talkRoomToken;
     protected $leitnerSprint;
     protected $allowedCampaigns;
+    protected $maintenanceMode;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -68,6 +71,7 @@ class Course extends Entity {
         $this->addType('examAttemptsPerDay', 'integer');
         $this->addType('examRequiresTraining', 'boolean');
         $this->addType('leitnerSprint', 'boolean');
+        $this->addType('maintenanceMode', 'boolean');
     }
 
     public function jsonSerialize(): array {
@@ -90,6 +94,7 @@ class Course extends Entity {
             'talk_room_token' => $this->talkRoomToken,
             'leitner_sprint' => $this->leitnerSprint ?? false,
             'allowed_campaigns' => $this->allowedCampaigns !== null ? (json_decode($this->allowedCampaigns, true) ?: []) : null,
+            'maintenance_mode' => $this->maintenanceMode ?? false,
         ];
     }
 }
