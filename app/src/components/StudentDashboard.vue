@@ -33,6 +33,22 @@
             </div>
           </div>
 
+          <!-- Maintenance Widget -->
+          <div v-if="maintenanceStats && maintenanceStats.due_cards > 0" class="widget-card widget-maintenance">
+            <p class="section-label">{{ t('learning', 'Wartungsmodus') }}</p>
+            <div class="maintenance-body">
+              <span class="maintenance-icon">&#x1F527;</span>
+              <div class="maintenance-info">
+                <span class="maintenance-count">{{ maintenanceStats.due_cards }}</span>
+                <span class="maintenance-label">{{ t('learning', 'Karten faellig aus {n} Kursen', { n: maintenanceStats.courses }) }}</span>
+              </div>
+            </div>
+            <p class="maintenance-estimate">~{{ maintenanceStats.estimated_minutes }} {{ t('learning', 'Min.') }}</p>
+            <button class="sq-start-btn maintenance-start-btn" @click="startMaintenanceSession">
+              {{ t('learning', '10 Min Wartung') }}
+            </button>
+          </div>
+
           <!-- Daily Challenge -->
           <DailyChallengeCard />
         </div>
@@ -109,6 +125,11 @@
         </div>
       </div>
 
+      <!-- Cheat Sheet Export -->
+      <div class="dashboard-cheatsheet-section">
+        <CheatSheetExport :user-name="userName" />
+      </div>
+
       <!-- Global Feed Section -->
       <div class="dashboard-feed-section">
         <GlobalFeed />
@@ -124,6 +145,7 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import DailyChallengeCard from './DailyChallengeCard.vue'
 import GlobalFeed from './GlobalFeed.vue'
 import CourseTimeline from './CourseTimeline.vue'
+import CheatSheetExport from './CheatSheetExport.vue'
 
 export default {
   name: 'StudentDashboard',
@@ -133,6 +155,7 @@ export default {
     DailyChallengeCard,
     GlobalFeed,
     CourseTimeline,
+    CheatSheetExport,
   },
 
   data() {
@@ -140,6 +163,7 @@ export default {
       loading: false,
       queueCount: 0,
       remediationCount: 0,
+      maintenanceStats: null,
       enrolledCourses: [],
       selectedTimelineCourse: null,
       userState: {
@@ -160,6 +184,13 @@ export default {
   },
 
   computed: {
+    userName() {
+      if (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function') {
+        const user = OC.getCurrentUser()
+        return user?.displayName || user?.uid || ''
+      }
+      return ''
+    },
     timelineCourseId() {
       if (this.selectedTimelineCourse) return this.selectedTimelineCourse
       return this.enrolledCourses.length > 0 ? this.enrolledCourses[0].id : null
@@ -203,6 +234,7 @@ export default {
           this.loadRemediationCount(),
           this.loadUserState(),
           this.loadEnrolledCourses(),
+          this.loadMaintenanceStats(),
         ])
       } finally {
         this.loading = false
@@ -244,6 +276,17 @@ export default {
           this.userState.daily_progress = r.data.daily_progress
         }
       } catch (e) { /* optional */ }
+    },
+
+    async loadMaintenanceStats() {
+      try {
+        const r = await axios.get(generateUrl('/apps/learning/api/maintenance/stats'))
+        this.maintenanceStats = r.data
+      } catch (e) { /* optional */ }
+    },
+
+    startMaintenanceSession() {
+      this.$emit('openSmartQueue', { maintenance: true })
     },
 
     goToView(view) {
@@ -410,6 +453,50 @@ export default {
   font-size: 12px;
 }
 
+/* Maintenance Widget */
+.widget-maintenance {
+  border-left: 3px solid var(--color-primary-element);
+  background: color-mix(in srgb, var(--color-primary-element) 3%, var(--color-main-background));
+}
+
+.maintenance-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.maintenance-icon { font-size: 28px; }
+
+.maintenance-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.maintenance-count {
+  font-size: 2em;
+  font-weight: 700;
+  color: var(--color-primary-element);
+  line-height: 1;
+}
+
+.maintenance-label {
+  font-size: 13px;
+  color: var(--color-text-maxcontrast);
+  font-weight: 500;
+}
+
+.maintenance-estimate {
+  font-size: 12px;
+  color: var(--color-text-maxcontrast);
+  margin: 0 0 12px;
+}
+
+.maintenance-start-btn {
+  background: var(--color-primary-element);
+}
+
 /* Streak Widget */
 .widget-streak {
   border-left: 3px solid var(--color-warning);
@@ -567,6 +654,13 @@ export default {
 .timeline-course-name {
   font-size: 0.85em;
   color: var(--color-text-maxcontrast);
+}
+
+/* Cheat Sheet Section */
+.dashboard-cheatsheet-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
 }
 
 /* Feed Section */

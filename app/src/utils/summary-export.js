@@ -153,3 +153,61 @@ export function exportJson(summary, courseName, userName) {
 export function exportPrint() {
 	window.print()
 }
+
+/**
+ * Convert cheat-sheet data to Markdown.
+ *
+ * @param {object} cheatSheet - Response from GET /api/profile/cheat-sheet
+ * @param {string} userName
+ * @returns {string} Markdown content
+ */
+export function cheatSheetToMarkdown(cheatSheet, userName) {
+	const lines = []
+	const date = new Date().toLocaleDateString('de-DE')
+	const spots = cheatSheet.spots || []
+
+	lines.push(`# ${t('learning', 'Spickzettel — Schwachstellen')}`)
+	lines.push(`**${userName}** — ${date}`)
+	lines.push(`${t('learning', '{count} Schwachstellen aus {courses} Kursen', { count: spots.length, courses: cheatSheet.course_count || 0 })}`)
+	lines.push('')
+
+	// Group by chapter
+	const byChapter = {}
+	for (const sp of spots) {
+		const chapter = sp.chapter_title || sp.chapter_key || t('learning', 'Ohne Kapitel')
+		if (!byChapter[chapter]) {
+			byChapter[chapter] = []
+		}
+		byChapter[chapter].push(sp)
+	}
+
+	for (const [chapter, items] of Object.entries(byChapter)) {
+		lines.push(`## ${chapter}`)
+		lines.push('')
+		for (const sp of items) {
+			lines.push(`### ${sp.question_text}`)
+			lines.push(`*${t('learning', 'Pool')}: ${sp.pool_name}${sp.course_name ? ' — ' + sp.course_name : ''} | ${t('learning', 'Genauigkeit')}: ${sp.accuracy}% (${sp.attempts} ${t('learning', 'Versuche')})*`)
+			lines.push('')
+			if (sp.correct_answers && sp.correct_answers.length > 0) {
+				lines.push(`**${t('learning', 'Korrekte Antwort')}:** ${sp.correct_answers.join('; ')}`)
+			}
+			if (sp.explanation) {
+				lines.push(`> ${sp.explanation.replace(/\n/g, '\n> ')}`)
+			}
+			lines.push('')
+		}
+	}
+
+	lines.push('---')
+	lines.push(`*${t('learning', 'Exportiert aus Learning-NC')} — ${date}*`)
+
+	return lines.join('\n')
+}
+
+/**
+ * Export cheat-sheet as Markdown file.
+ */
+export function exportCheatSheetMarkdown(cheatSheet, userName) {
+	const md = cheatSheetToMarkdown(cheatSheet, userName)
+	downloadFile(md, `Spickzettel_${new Date().toISOString().slice(0, 10)}.md`, 'text/markdown')
+}

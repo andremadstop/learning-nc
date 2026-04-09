@@ -330,6 +330,179 @@ class LernprofilService {
         // A full invalidation would require a user-keyed set; overkill for this use case
     }
 
+    /**
+     * Collect trouble-spot questions (accuracy <50%) across all enrolled courses.
+     *
+     * Returns enriched data per question: text, correct answers, explanation,
+     * pool name, chapter, accuracy — sorted by lowest accuracy first.
+     *
+     * @param string $userId
+     * @param int    $limit  Max questions to return (1-100, default 50)
+     * @return array{spots: array, course_count: int, total_found: int}
+     */
+    public function getCheatSheet(string $userId, int $limit = 50): array {
+        $limit = max(1, min($limit, 100));
+
+        // 1. Get all accessible pool IDs
+        $poolIds = $this->resolvePoolIds($userId, null);
+        if (empty($poolIds)) {
+            return ['spots' => [], 'course_count' => 0, 'total_found' => 0];
+        }
+
+        // 2. Get per-question accuracy from leitner_items (accuracy < 50%)
+        $qb = $this->db->getQueryBuilder();
+        $qb->select(
+                'li.question_id',
+                'li.pool_id',
+                $qb->createFunction('COALESCE(SUM(li.correct_count), 0) as correct_count'),
+                $qb->createFunction('COALESCE(SUM(li.incorrect_count), 0) as incorrect_count')
+            )
+           ->from('learning_leitner_items', 'li')
+           ->where($qb->expr()->eq('li.user_id', $qb->createNamedParameter($userId)))
+           ->andWhere($qb->expr()->in('li.pool_id', $qb->createNamedParameter(
+               $poolIds,
+               \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY
+           )))
+           ->groupBy('li.question_id', 'li.pool_id');
+
+        $result = $qb->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+
+        // Filter to accuracy < 50% and need at least 1 attempt
+        $troubleItems = [];
+        foreach ($rows as $row) {
+            $correct = (int)$row['correct_count'];
+            $incorrect = (int)$row['incorrect_count'];
+            $total = $correct + $incorrect;
+            if ($total < 1) {
+                continue;
+            }
+            $accuracy = round($correct / $total * 100, 1);
+            if ($accuracy < 50.0) {
+                $troubleItems[] = [
+                    'question_id' => (int)$row['question_id'],
+                    'pool_id' => (int)$row['pool_id'],
+                    'accuracy' => $accuracy,
+                    'attempts' => $total,
+                ];
+            }
+        }
+
+        // Sort by accuracy ASC (worst first)
+        usort($troubleItems, fn($a, $b) => $a['accuracy'] <=> $b['accuracy']);
+        $totalFound = count($troubleItems);
+        $troubleItems = array_slice($troubleItems, 0, $limit);
+
+        if (empty($troubleItems)) {
+            return ['spots' => [], 'course_count' => 0, 'total_found' => 0];
+        }
+
+        // 3. Fetch question details (text, explanation, chapter)
+        $questionIds = array_column($troubleItems, 'question_id');
+        $qb2 = $this->db->getQueryBuilder();
+        $qb2->select('id', 'text', 'explanation', 'chapter_key', 'chapter_title', 'pool_id')
+            ->from('learning_questions')
+            ->where($qb2->expr()->in('id', $qb2->createNamedParameter(
+                $questionIds,
+                \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY
+            )));
+        $result2 = $qb2->executeQuery();
+        $questionRows = $result2->fetchAll();
+        $result2->closeCursor();
+
+        $questionMap = [];
+        foreach ($questionRows as $qr) {
+            $questionMap[(int)$qr['id']] = $qr;
+        }
+
+        // 4. Fetch correct answers for these questions
+        $qb3 = $this->db->getQueryBuilder();
+        $qb3->select('question_id', 'text')
+            ->from('learning_answers')
+            ->where($qb3->expr()->in('question_id', $qb3->createNamedParameter(
+                $questionIds,
+                \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY
+            )))
+            ->andWhere($qb3->expr()->eq('is_correct', $qb3->createNamedParameter(true, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)))
+            ->orderBy('question_id')
+            ->addOrderBy('position');
+        $result3 = $qb3->executeQuery();
+        $answerRows = $result3->fetchAll();
+        $result3->closeCursor();
+
+        $correctAnswers = [];
+        foreach ($answerRows as $ar) {
+            $correctAnswers[(int)$ar['question_id']][] = $ar['text'];
+        }
+
+        // 5. Get pool names and course data
+        $poolIdsInResult = array_unique(array_column($troubleItems, 'pool_id'));
+        $poolNames = $this->getPoolNames($poolIdsInResult);
+
+        // Pool-to-course mapping
+        $qb4 = $this->db->getQueryBuilder();
+        $expr4 = $qb4->expr();
+        $qb4->select('cp.pool_id', 'c.id AS course_id', 'c.name AS course_name')
+            ->from('learning_course_pools', 'cp')
+            ->innerJoin('cp', 'learning_courses', 'c', $expr4->eq('cp.course_id', 'c.id'))
+            ->where($expr4->in('cp.pool_id', $qb4->createNamedParameter(
+                $poolIdsInResult,
+                \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY
+            )));
+        $result4 = $qb4->executeQuery();
+        $courseRows = $result4->fetchAll();
+        $result4->closeCursor();
+
+        $poolCourseMap = [];
+        foreach ($courseRows as $cr) {
+            $pid = (int)$cr['pool_id'];
+            if (!isset($poolCourseMap[$pid])) {
+                $poolCourseMap[$pid] = [
+                    'course_id' => (int)$cr['course_id'],
+                    'course_name' => $cr['course_name'],
+                ];
+            }
+        }
+
+        // 6. Assemble result
+        $courseIds = [];
+        $spots = [];
+        foreach ($troubleItems as $item) {
+            $qid = $item['question_id'];
+            $pid = $item['pool_id'];
+            $q = $questionMap[$qid] ?? null;
+            if ($q === null) {
+                continue;
+            }
+
+            $courseInfo = $poolCourseMap[$pid] ?? null;
+            if ($courseInfo) {
+                $courseIds[$courseInfo['course_id']] = true;
+            }
+
+            $spots[] = [
+                'question_id' => $qid,
+                'question_text' => $q['text'] ?? '',
+                'correct_answers' => $correctAnswers[$qid] ?? [],
+                'explanation' => $q['explanation'] ?? '',
+                'pool_id' => $pid,
+                'pool_name' => $poolNames[$pid] ?? ('Pool ' . $pid),
+                'chapter_key' => $q['chapter_key'] ?? null,
+                'chapter_title' => $q['chapter_title'] ?? null,
+                'course_name' => $courseInfo['course_name'] ?? null,
+                'accuracy' => $item['accuracy'],
+                'attempts' => $item['attempts'],
+            ];
+        }
+
+        return [
+            'spots' => $spots,
+            'course_count' => count($courseIds),
+            'total_found' => $totalFound,
+        ];
+    }
+
     // -------------------------------------------------------------------------
     // Private helpers
     // -------------------------------------------------------------------------

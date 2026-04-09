@@ -104,6 +104,27 @@ class LernprofilController extends Controller {
     }
 
     /**
+     * Returns a cheat-sheet of trouble-spot questions (accuracy <50%)
+     * across all enrolled courses, enriched with correct answers and explanations.
+     *
+     * @NoAdminRequired
+     * @param int $limit Max questions (1-100, default 50)
+     */
+    #[UserRateLimit(limit: 10, period: 60)]
+    public function cheatSheet(int $limit = 50): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        try {
+            $data = $this->lernprofilService->getCheatSheet($this->userId, $limit);
+            return new DataResponse($data);
+        } catch (\Throwable $e) {
+            return new DataResponse(['error' => 'Cheat sheet generation failed'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * Returns skill-map data: all pools enriched with course grouping.
      *
      * @NoAdminRequired

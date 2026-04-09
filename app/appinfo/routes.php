@@ -219,6 +219,7 @@ return [
         ['name' => 'lernprofil#weakestTopics', 'url' => '/api/profile/weakest', 'verb' => 'GET'],
         ['name' => 'lernprofil#lernhistorie', 'url' => '/api/profile/history', 'verb' => 'GET'],
         ['name' => 'lernprofil#skillMap', 'url' => '/api/profile/skill-map', 'verb' => 'GET'],
+        ['name' => 'lernprofil#cheatSheet', 'url' => '/api/profile/cheat-sheet', 'verb' => 'GET'],
 
         // Lernbot Files (Phase 23)
         ['name' => 'lernbotFiles#listFiles', 'url' => '/api/lernbot/files', 'verb' => 'GET'],
@@ -319,6 +320,11 @@ return [
         ['name' => 'course#archiveCourse', 'url' => '/api/courses/{courseId}/archive', 'verb' => 'POST'],
         ['name' => 'course#listSnapshots', 'url' => '/api/courses/{courseId}/snapshots', 'verb' => 'GET'],
         ['name' => 'course#showSnapshot', 'url' => '/api/courses/{courseId}/snapshots/{snapshotId}', 'verb' => 'GET'],
+
+        // Maintenance Mode (Post-Course Retention)
+        ['name' => 'maintenance#toggle', 'url' => '/api/courses/{courseId}/maintenance', 'verb' => 'PATCH'],
+        ['name' => 'maintenance#queue', 'url' => '/api/maintenance/queue', 'verb' => 'GET'],
+        ['name' => 'maintenance#stats', 'url' => '/api/maintenance/stats', 'verb' => 'GET'],
 
         // Schwarmgedaechtnis (Student Contributions + Moderation)
         ['name' => 'rag_import#contributeNote',   'url' => '/api/courses/{courseId}/knowledge/contribute',          'verb' => 'POST'],
