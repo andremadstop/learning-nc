@@ -351,30 +351,30 @@
 								<strong>{{ entry.value }}</strong>
 							</li>
 						</ul>
-						<p v-else class="class-profile-empty">{{ t('learning', 'No onboarding data yet.') }}</p>
+						<p v-else class="class-profile-empty">{{ t('learning', 'Noch keine Onboarding-Daten.') }}</p>
 					</div>
 
 					<div class="class-profile-panel">
-						<h5>{{ t('learning', 'Target certifications') }}</h5>
+						<h5>{{ t('learning', 'Ziel-Zertifizierungen') }}</h5>
 						<ul v-if="sortedDistributionEntries(telosAggregate.target_certs).length" class="class-profile-list">
 							<li v-for="entry in sortedDistributionEntries(telosAggregate.target_certs)" :key="'cert-' + entry.key">
 								<span>{{ entry.key }}</span>
 								<strong>{{ entry.value }}</strong>
 							</li>
 						</ul>
-						<p v-else class="class-profile-empty">{{ t('learning', 'No target certifications recorded yet.') }}</p>
+						<p v-else class="class-profile-empty">{{ t('learning', 'Noch keine Ziel-Zertifizierungen erfasst.') }}</p>
 					</div>
 				</div>
 
 				<div class="class-profile-panel">
-					<h5>{{ t('learning', 'Upcoming exams') }}</h5>
+					<h5>{{ t('learning', 'Anstehende Prüfungen') }}</h5>
 					<ul v-if="(telosAggregate.upcoming_exams || []).length" class="class-profile-list">
 						<li v-for="exam in telosAggregate.upcoming_exams" :key="exam.user_id + '-' + exam.target_date">
 							<span>{{ exam.user_id }} · {{ exam.target_cert || t('learning', 'Exam') }}</span>
 							<strong>{{ exam.target_date }} · {{ t('learning', '{n} days', { n: exam.days_until }) }}</strong>
 						</li>
 					</ul>
-					<p v-else class="class-profile-empty">{{ t('learning', 'No upcoming exam dates in the next 180 days.') }}</p>
+					<p v-else class="class-profile-empty">{{ t('learning', 'Keine anstehenden Prüfungstermine in den nächsten 180 Tagen.') }}</p>
 				</div>
 			</div>
 
@@ -405,18 +405,18 @@
 		<!-- Remove member confirmation modal -->
 		<NcModal v-if="showRemoveMemberModal" @close="showRemoveMemberModal = false" @closing="showRemoveMemberModal = false" size="small">
 			<div class="modal-content">
-				<h3>{{ t('learning', 'Remove Member') }}</h3>
-				<p>{{ t('learning', 'Remove "{name}" from this course?', { name: removingMember ? removingMember.user_id : '' }) }}</p>
+				<h3>{{ t('learning', 'Mitglied entfernen') }}</h3>
+				<p>{{ t('learning', '"{name}" aus diesem Kurs entfernen?', { name: removingMember ? removingMember.user_id : '' }) }}</p>
 				<div class="modal-actions">
 					<NcButton type="tertiary"
 						:disabled="savingMember !== null"
 						@click="showRemoveMemberModal = false">
-						{{ t('learning', 'Cancel') }}
+						{{ t('learning', 'Abbrechen') }}
 					</NcButton>
 					<NcButton type="error"
 						:disabled="savingMember !== null"
 						@click="removeMember">
-						{{ savingMember !== null ? t('learning', 'Removing...') : t('learning', 'Remove') }}
+						{{ savingMember !== null ? t('learning', 'Entferne...') : t('learning', 'Entfernen') }}
 					</NcButton>
 				</div>
 			</div>
@@ -530,9 +530,9 @@ export default {
 		visibleSubTabs() {
 			if (this.isInstructor) {
 				return [
-					{ id: 'members', label: t('learning', 'Members') },
+					{ id: 'members', label: t('learning', 'Mitglieder') },
 					{ id: 'classbook', label: t('learning', 'Klassenbuch') },
-					{ id: 'progress', label: t('learning', 'Progress') },
+					{ id: 'progress', label: t('learning', 'Fortschritt') },
 					{ id: 'heatmap', label: t('learning', 'Heatmap') },
 					{ id: 'weak-questions', label: t('learning', 'Schwache Fragen') },
 					{ id: 'class-profile', label: t('learning', 'Klassen-Profil') },
@@ -672,11 +672,11 @@ export default {
 				console.error('Failed to add member:', err)
 				const message = err.response?.data?.error || err.response?.data?.message
 				if (err.response?.status === 404) {
-					this.memberError = t('learning', 'User "{name}" not found.', { name: username })
+					this.memberError = t('learning', 'Benutzer "{name}" nicht gefunden.', { name: username })
 				} else if (err.response?.status === 409) {
-					this.memberError = t('learning', 'User "{name}" is already a member.', { name: username })
+					this.memberError = t('learning', 'Benutzer "{name}" ist bereits Mitglied.', { name: username })
 				} else {
-					this.memberError = message || t('learning', 'Failed to add member.')
+					this.memberError = message || t('learning', 'Mitglied konnte nicht hinzugefügt werden.')
 				}
 			} finally {
 				this.addingMember = false
@@ -691,7 +691,7 @@ export default {
 				this.$emit('members-changed')
 			} catch (err) {
 				console.error('Failed to update member role:', err)
-				this.memberError = t('learning', 'Failed to update member role.')
+				this.memberError = t('learning', 'Mitgliedsrolle konnte nicht aktualisiert werden.')
 			} finally {
 				this.savingMember = null
 			}
@@ -714,7 +714,7 @@ export default {
 				this.$emit('members-changed')
 			} catch (err) {
 				console.error('Failed to remove member:', err)
-				this.memberError = t('learning', 'Failed to remove member.')
+				this.memberError = t('learning', 'Mitglied konnte nicht entfernt werden.')
 			} finally {
 				this.savingMember = null
 			}
@@ -770,7 +770,7 @@ export default {
 				}
 			} catch (err) {
 				console.error('Failed to fetch progress:', err)
-				this.$emit('error', t('learning', 'Failed to load progress data.'))
+				this.$emit('error', t('learning', 'Fortschrittsdaten konnten nicht geladen werden.'))
 			} finally {
 				this.progressLoading = false
 			}
@@ -804,7 +804,7 @@ export default {
 				}
 			} catch (err) {
 				console.error('Failed to fetch class profile:', err)
-				this.telosAggregateError = t('learning', 'Failed to load class profile.')
+				this.telosAggregateError = t('learning', 'Klassen-Profil konnte nicht geladen werden.')
 			} finally {
 				this.telosAggregateLoading = false
 			}

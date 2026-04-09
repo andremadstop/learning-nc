@@ -3,7 +3,7 @@
     <div class="onb-splash__content">
       <CharacterAvatar character-id="nova" :size="96" state="idle" />
       <h1 class="onb-splash__title">
-        {{ t('learning', 'Hi {name}, ready for your mission?', { name: firstName }) }}
+        {{ t('learning', 'Hi {name}, bereit für deine Mission?', { name: firstName }) }}
       </h1>
       <button
         type="button"
@@ -18,7 +18,7 @@
       class="onb-skip-link"
       @click="store.skip(); $emit('next')"
     >
-      {{ t('learning', 'Skip') }}
+      {{ t('learning', 'Überspringen') }}
     </button>
   </div>
 </template>

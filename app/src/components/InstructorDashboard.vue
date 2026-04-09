@@ -1,20 +1,20 @@
 <template>
 	<div class="instructor-dashboard">
 		<div class="dashboard-header">
-			<h3>{{ t('learning', 'Instructor Dashboard') }}</h3>
+			<h3>{{ t('learning', 'Dozenten-Dashboard') }}</h3>
 			<div class="header-actions">
 				<NcButton type="secondary" @click="exportAllCsv" :disabled="courses.length === 0">
-					{{ t('learning', 'Batch Export') }}
+					{{ t('learning', 'Sammel-Export') }}
 				</NcButton>
 				<NcButton type="tertiary" @click="loadDashboard">
-					{{ t('learning', 'Refresh') }}
+					{{ t('learning', 'Aktualisieren') }}
 				</NcButton>
 			</div>
 		</div>
 
 		<div v-if="loading" class="loading-container">
 			<NcLoadingIcon :size="44" />
-			<p>{{ t('learning', 'Loading...') }}</p>
+			<p>{{ t('learning', 'Laden...') }}</p>
 		</div>
 
 		<NcNoteCard v-if="error" type="error">
@@ -23,19 +23,19 @@
 
 		<template v-if="!loading">
 			<!-- Summary cards -->
-			<p class="section-label">{{ t('learning', 'Overview') }}</p>
+			<p class="section-label">{{ t('learning', 'Übersicht') }}</p>
 			<div class="summary-cards">
 				<div class="summary-card card-courses">
 					<span class="summary-value">{{ totalCourses }}</span>
-					<span class="summary-label">{{ t('learning', 'Courses') }}</span>
+					<span class="summary-label">{{ t('learning', 'Kurse') }}</span>
 				</div>
 				<div class="summary-card card-students">
 					<span class="summary-value">{{ totalStudents }}</span>
-					<span class="summary-label">{{ t('learning', 'Students') }}</span>
+					<span class="summary-label">{{ t('learning', 'Studierende') }}</span>
 				</div>
 				<div class="summary-card card-active">
 					<span class="summary-value">{{ activeCourses }}</span>
-					<span class="summary-label">{{ t('learning', 'Active') }}</span>
+					<span class="summary-label">{{ t('learning', 'Aktiv') }}</span>
 				</div>
 				<div class="summary-card card-pools">
 					<span class="summary-value">{{ totalPools }}</span>
@@ -45,7 +45,7 @@
 
 			<!-- Course cards -->
 			<div v-if="courses.length > 0">
-				<p class="section-label">{{ t('learning', 'Your Courses') }}</p>
+				<p class="section-label">{{ t('learning', 'Deine Kurse') }}</p>
 				<div class="course-cards">
 					<div v-for="course in courses"
 						:key="course.id"
@@ -57,7 +57,7 @@
 						<div class="card-header">
 							<h4>{{ course.title }}</h4>
 							<span class="status-badge" :class="course.status">
-								{{ course.status === 'active' ? t('learning', 'Active') : t('learning', 'Archived') }}
+								{{ course.status === 'active' ? t('learning', 'Aktiv') : t('learning', 'Archiviert') }}
 							</span>
 						</div>
 						<p v-if="course.description" class="card-description">
@@ -70,12 +70,12 @@
 							</div>
 							<div class="stat">
 								<span class="stat-value">{{ course.student_count || 0 }}</span>
-								<span class="stat-label">{{ t('learning', 'Students') }}</span>
+								<span class="stat-label">{{ t('learning', 'Studierende') }}</span>
 							</div>
 						</div>
 						<div class="card-footer">
-							<span>{{ t('learning', 'Created {date}', { date: formatDate(course.created_at) }) }}</span>
-							<NcButton type="tertiary" :aria-label="t('learning', 'Export statistics')" class="export-btn" @click.stop="exportCourseCsv(course)">
+							<span>{{ t('learning', 'Erstellt {date}', { date: formatDate(course.created_at) }) }}</span>
+							<NcButton type="tertiary" :aria-label="t('learning', 'Statistiken exportieren')" class="export-btn" @click.stop="exportCourseCsv(course)">
 								{{ t('learning', 'CSV Export') }}
 							</NcButton>
 						</div>
@@ -84,9 +84,9 @@
 			</div>
 
 			<NcEmptyContent v-if="courses.length === 0 && !loading"
-				:name="t('learning', 'No courses yet')">
+				:name="t('learning', 'Noch keine Kurse')">
 				<template #description>
-					{{ t('learning', 'Create your first course to get started') }}
+					{{ t('learning', 'Erstelle deinen ersten Kurs, um loszulegen') }}
 				</template>
 			</NcEmptyContent>
 		</template>
@@ -150,7 +150,7 @@ export default {
 				this.uniqueStudentCount = response.data.unique_student_count || 0
 			} catch (err) {
 				console.error('Failed to load dashboard:', err)
-				this.error = t('learning', 'Failed to load dashboard.')
+				this.error = t('learning', 'Dashboard konnte nicht geladen werden.')
 			} finally {
 				this.loading = false
 			}
@@ -193,7 +193,7 @@ export default {
 				this.triggerDownload(response.data, filename, 'text/csv;charset=utf-8')
 			} catch (err) {
 				console.error('CSV export failed:', err)
-				this.error = t('learning', 'Export failed for {title}', { title: course.title })
+				this.error = t('learning', 'Export fehlgeschlagen für {title}', { title: course.title })
 			}
 		},
 

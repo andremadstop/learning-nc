@@ -3,13 +3,13 @@
     <div class="question-list-header">
       <h3>{{ poolName }}</h3>
       <div v-if="!readonly" class="header-actions">
-        <NcButton v-if="aiAvailable" @click="showAIGenerator = true" type="secondary">{{ t('learning', 'Generate with AI') }}</NcButton>
+        <NcButton v-if="aiAvailable" @click="showAIGenerator = true" type="secondary">{{ t('learning', 'Mit KI generieren') }}</NcButton>
         <NcActions v-if="questions.length > 0">
           <NcActionButton @click="exportCsv" close-after-click>{{ t('learning', 'Export CSV') }}</NcActionButton>
           <NcActionButton @click="exportJson" close-after-click>{{ t('learning', 'Export JSON') }}</NcActionButton>
         </NcActions>
-        <NcButton @click="showImportDialog = true" type="secondary">{{ t('learning', 'Import') }}</NcButton>
-        <NcButton @click="showCreateDialog" type="primary">{{ t('learning', '+ Add Question') }}</NcButton>
+        <NcButton @click="showImportDialog = true" type="secondary">{{ t('learning', 'Importieren') }}</NcButton>
+        <NcButton @click="showCreateDialog" type="primary">{{ t('learning', '+ Frage hinzufügen') }}</NcButton>
       </div>
     </div>
 
@@ -19,7 +19,7 @@
           v-model="searchTerm"
           type="text"
           class="nc-input question-search-input"
-          :placeholder="t('learning', 'Search by text or #number...')"
+          :placeholder="t('learning', 'Nach Text oder #Nummer suchen...')"
           @input="onSearch"
           @keydown.esc="clearSearch"
           @keydown.enter="jumpToFirstSearchResult"
@@ -36,7 +36,7 @@
         </li>
       </ul>
       <div v-else-if="searchTerm.length >= 2 && !searchLoading && searchDone" class="question-search-empty">
-        {{ t('learning', 'No matches') }}
+        {{ t('learning', 'Keine Treffer') }}
       </div>
     </div>
 
@@ -45,10 +45,10 @@
     <NcLoadingIcon v-if="loading" :size="44" class="loading-center" />
 
     <NcEmptyContent v-else-if="questions.length === 0 && !loadError"
-      :name="t('learning', 'No questions yet')"
-      :description="!readonly ? t('learning', 'Create your first question or import from CSV/JSON') : t('learning', 'This pool has no questions yet')">
+      :name="t('learning', 'Noch keine Fragen')"
+      :description="!readonly ? t('learning', 'Erstelle deine erste Frage oder importiere aus CSV/JSON') : t('learning', 'Dieser Pool hat noch keine Fragen')">
       <template v-if="!readonly" #action>
-        <NcButton type="primary" @click="showImportDialog = true">{{ t('learning', 'Import Questions') }}</NcButton>
+        <NcButton type="primary" @click="showImportDialog = true">{{ t('learning', 'Fragen importieren') }}</NcButton>
       </template>
     </NcEmptyContent>
 
@@ -57,13 +57,13 @@
         <div class="question-header">
           <span class="question-number">Q{{ currentPage * pageSize + index + 1 }}</span>
           <span v-if="question.question_type === 'multi'" class="multi-badge">{{ t('learning', 'Multi') }}</span>
-          <span v-if="question.question_type === 'open'" class="open-badge">{{ t('learning', 'Free text') }}</span>
+          <span v-if="question.question_type === 'open'" class="open-badge">{{ t('learning', 'Freitext') }}</span>
           <span v-if="question.difficulty" class="difficulty-badge" :class="question.difficulty">{{ t('learning', question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1)) }}</span>
           <div v-if="!readonly" class="question-actions">
             <NcActions>
-              <NcActionButton @click="openTranslationDialog(question)" close-after-click>{{ t('learning', 'Translate') }}</NcActionButton>
-              <NcActionButton @click="editQuestion(question)" close-after-click>{{ t('learning', 'Edit') }}</NcActionButton>
-              <NcActionButton @click="deleteQuestion(question)" close-after-click>{{ t('learning', 'Delete') }}</NcActionButton>
+              <NcActionButton @click="openTranslationDialog(question)" close-after-click>{{ t('learning', 'Übersetzen') }}</NcActionButton>
+              <NcActionButton @click="editQuestion(question)" close-after-click>{{ t('learning', 'Bearbeiten') }}</NcActionButton>
+              <NcActionButton @click="deleteQuestion(question)" close-after-click>{{ t('learning', 'Löschen') }}</NcActionButton>
             </NcActions>
           </div>
         </div>
@@ -78,7 +78,7 @@
         <img v-if="question.image_path" :src="questionImageUrl(question.id)" :alt="question.text" class="question-image" />
         <div class="question-text">{{ question.text }}</div>
         <div v-if="question.question_type === 'open'" class="model-answer-display">
-          <span class="model-answer-label">{{ t('learning', 'Model answer') }}:</span>
+          <span class="model-answer-label">{{ t('learning', 'Musterantwort') }}:</span>
           {{ question.answers && question.answers.length > 0 ? question.answers[0].text : '' }}
         </div>
         <div v-else class="answers-list">
@@ -88,22 +88,22 @@
           </div>
         </div>
         <NcNoteCard v-if="question.explanation" type="info" class="explanation-card">
-          <strong>{{ t('learning', 'Explanation:') }}</strong> {{ question.explanation }}
+          <strong>{{ t('learning', 'Erklärung:') }}</strong> {{ question.explanation }}
         </NcNoteCard>
       </div>
     </div>
 
     <div v-if="totalQuestions > pageSize" class="pagination-bar">
-      <NcButton type="tertiary" :disabled="currentPage === 0" @click="prevPage">{{ t('learning', '\u2190 Previous') }}</NcButton>
+      <NcButton type="tertiary" :disabled="currentPage === 0" @click="prevPage">{{ t('learning', '\u2190 Zurück') }}</NcButton>
       <span class="pagination-info">{{ currentPage * pageSize + 1 }}\u2013{{ Math.min((currentPage + 1) * pageSize, totalQuestions) }} / {{ totalQuestions }}</span>
-      <NcButton type="tertiary" :disabled="(currentPage + 1) * pageSize >= totalQuestions" @click="nextPage">{{ t('learning', 'Next \u2192') }}</NcButton>
+      <NcButton type="tertiary" :disabled="(currentPage + 1) * pageSize >= totalQuestions" @click="nextPage">{{ t('learning', 'Weiter \u2192') }}</NcButton>
     </div>
 
-    <AccessibleDialog v-if="showDeleteConfirm" :name="t('learning', 'Delete Question')" @closing="showDeleteConfirm = false; questionToDelete = null">
-      <p>{{ t('learning', 'Are you sure you want to delete this question? This action cannot be undone.') }}</p>
+    <AccessibleDialog v-if="showDeleteConfirm" :name="t('learning', 'Frage löschen')" @closing="showDeleteConfirm = false; questionToDelete = null">
+      <p>{{ t('learning', 'Möchtest du diese Frage wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.') }}</p>
       <template #actions>
-        <NcButton type="tertiary" @click="showDeleteConfirm = false; questionToDelete = null">{{ t('learning', 'Cancel') }}</NcButton>
-        <NcButton type="error" @click="confirmDeleteQuestion">{{ t('learning', 'Delete') }}</NcButton>
+        <NcButton type="tertiary" @click="showDeleteConfirm = false; questionToDelete = null">{{ t('learning', 'Abbrechen') }}</NcButton>
+        <NcButton type="error" @click="confirmDeleteQuestion">{{ t('learning', 'Löschen') }}</NcButton>
       </template>
     </AccessibleDialog>
 
@@ -178,7 +178,7 @@ export default {
           this.totalQuestions = this.questions.length;
         }
       } catch (error) {
-        this.loadError = t('learning', 'Failed to load questions. Check your connection and try again.');
+        this.loadError = t('learning', 'Fragen konnten nicht geladen werden. Prüfe deine Verbindung und versuche es erneut.');
       } finally { this.loading = false; }
     },
     get totalPages() { return Math.ceil(this.totalQuestions / this.pageSize); },
@@ -238,11 +238,11 @@ export default {
         if (this.editingQuestion) {
           await axios.put(generateUrl('/apps/learning/api/questions/' + this.editingQuestion.id), data);
           questionId = this.editingQuestion.id;
-          showSuccess(t('learning', 'Question updated'));
+          showSuccess(t('learning', 'Frage aktualisiert'));
         } else {
           const response = await axios.post(generateUrl('/apps/learning/api/questions'), { ...data, poolId: this.poolId });
           questionId = response.data.id;
-          showSuccess(t('learning', 'Question created'));
+          showSuccess(t('learning', 'Frage erstellt'));
         }
 
         // Handle image upload/removal after question save
@@ -257,7 +257,7 @@ export default {
         }
 
         this.closeDialog(); this.loadQuestions();
-      } catch (error) { showError(error.response?.data?.error || t('learning', 'Failed to save question')); }
+      } catch (error) { showError(error.response?.data?.error || t('learning', 'Frage konnte nicht gespeichert werden')); }
     },
     exportCsv() {
       window.location.href = generateUrl('/apps/learning/api/pools/' + this.poolId + '/export/csv');
@@ -273,11 +273,11 @@ export default {
       if (!this.questionToDelete) return;
       try {
         await axios.delete(generateUrl('/apps/learning/api/questions/' + this.questionToDelete.id));
-        showSuccess(t('learning', 'Question deleted'));
+        showSuccess(t('learning', 'Frage gelöscht'));
         this.showDeleteConfirm = false;
         this.questionToDelete = null;
         this.loadQuestions();
-      } catch (error) { showError(error.response?.data?.error || t('learning', 'Failed to delete question')); }
+      } catch (error) { showError(error.response?.data?.error || t('learning', 'Frage konnte nicht gelöscht werden')); }
     }
   }
 };

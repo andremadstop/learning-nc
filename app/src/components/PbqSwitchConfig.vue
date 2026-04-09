@@ -66,8 +66,8 @@
       <div v-if="activePort.notes" class="pbq-port-notes">{{ activePort.notes }}</div>
 
       <div class="pbq-port-editor__actions">
-        <button class="pbq-port-action pbq-port-action--secondary" @click="resetDraft" :disabled="disabled">{{ t('learning', 'Reset Port') }}</button>
-        <button class="pbq-port-action" @click="saveDraft" :disabled="disabled">{{ t('learning', 'Save Port') }}</button>
+        <button class="pbq-port-action pbq-port-action--secondary" @click="resetDraft" :disabled="disabled">{{ t('learning', 'Port zurücksetzen') }}</button>
+        <button class="pbq-port-action" @click="saveDraft" :disabled="disabled">{{ t('learning', 'Port speichern') }}</button>
       </div>
     </div>
   </div>

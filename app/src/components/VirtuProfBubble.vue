@@ -438,8 +438,8 @@
             <a href="#/settings/privacy">{{ t('learning', 'Mehr zum Datenschutz') }}</a>
           </p>
           <div class="ai-consent-actions">
-            <NcButton type="primary" size="small" @click="$emit('consent-accept')">{{ consentData.accept_label || t('learning', 'Accept') }}</NcButton>
-            <NcButton type="secondary" size="small" @click="$emit('consent-decline')">{{ consentData.decline_label || t('learning', 'Decline') }}</NcButton>
+            <NcButton type="primary" size="small" @click="$emit('consent-accept')">{{ consentData.accept_label || t('learning', 'Akzeptieren') }}</NcButton>
+            <NcButton type="secondary" size="small" @click="$emit('consent-decline')">{{ consentData.decline_label || t('learning', 'Ablehnen') }}</NcButton>
           </div>
         </div>
 

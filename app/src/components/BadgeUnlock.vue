@@ -1,14 +1,14 @@
 <template>
   <div>
     <div aria-live="polite" class="sr-only">
-      <span v-if="visible">{{ t('learning', 'Achievement Unlocked!') }}: {{ badgeLabel(badge) }}</span>
+      <span v-if="visible">{{ t('learning', 'Erfolg freigeschaltet!') }}: {{ badgeLabel(badge) }}</span>
     </div>
     <transition name="badge-pop">
       <div v-if="visible" ref="overlay" class="badge-overlay" role="dialog" aria-modal="true" tabindex="-1" :aria-label="badgeLabel(badge)" @click.self="dismiss" @keydown.escape="dismiss">
         <div class="badge-card">
           <div class="badge-glow"></div>
           <div class="badge-emoji">{{ badge.emoji }}</div>
-          <div class="badge-title">{{ t('learning', 'Achievement Unlocked!') }}</div>
+          <div class="badge-title">{{ t('learning', 'Erfolg freigeschaltet!') }}</div>
           <div class="badge-name">{{ badgeLabel(badge) }}</div>
           <div class="badge-description">{{ badgeDescription(badge) }}</div>
         </div>

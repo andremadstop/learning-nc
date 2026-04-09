@@ -1,7 +1,7 @@
 <template>
   <div class="pbq-renderer">
     <div v-if="instructions.length" class="pbq-instructions">
-      <p class="pbq-instructions__title">{{ t('learning', 'Instructions') }}</p>
+      <p class="pbq-instructions__title">{{ t('learning', 'Anweisungen') }}</p>
       <ul>
         <li v-for="instruction in instructions" :key="instruction">{{ instruction }}</li>
       </ul>
@@ -13,7 +13,7 @@
     />
 
     <div v-else-if="scenarioImageUrl && subtype !== 'placement'" class="pbq-scenario-image-wrapper">
-      <img :src="scenarioImageUrl" class="pbq-scenario-image" :alt="t('learning', 'Scenario')" />
+      <img :src="scenarioImageUrl" class="pbq-scenario-image" :alt="t('learning', 'Szenario')" />
     </div>
 
     <PbqDropdown

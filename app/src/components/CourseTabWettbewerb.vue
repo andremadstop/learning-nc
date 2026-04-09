@@ -14,27 +14,27 @@
 		<!-- Leaderboard -->
 		<div v-if="currentSubTab === 'leaderboard'" class="leaderboard-section">
 			<div class="section-header">
-				<h4>{{ t('learning', 'Leaderboard') }}</h4>
+				<h4>{{ t('learning', 'Rangliste') }}</h4>
 				<div class="leaderboard-header-actions">
 					<label class="leaderboard-active-toggle">
 						<input
 							type="checkbox"
 							:model-value="leaderboardActiveOnly"
 							@change="toggleLeaderboardActiveOnly($event.target.checked)">
-						<span>{{ t('learning', 'Only active ({n}d)', { n: leaderboardActiveDays }) }}</span>
+						<span>{{ t('learning', 'Nur aktive ({n}T)', { n: leaderboardActiveDays }) }}</span>
 					</label>
 					<NcButton type="tertiary" @click="fetchLeaderboard">
-						{{ t('learning', 'Refresh') }}
+						{{ t('learning', 'Aktualisieren') }}
 					</NcButton>
 				</div>
 			</div>
 
 			<div v-if="leaderboardLoading" class="loading-container">
 				<NcLoadingIcon :size="44" />
-				<p>{{ t('learning', 'Loading leaderboard...') }}</p>
+				<p>{{ t('learning', 'Lade Rangliste...') }}</p>
 			</div>
 
-			<div v-else-if="leaderboardData.length > 0" class="progress-table-container" role="region" :aria-label="t('learning', 'Course leaderboard')">
+			<div v-else-if="leaderboardData.length > 0" class="progress-table-container" role="region" :aria-label="t('learning', 'Kurs-Rangliste')">
 				<table class="progress-table leaderboard-table">
 					<thead>
 						<tr>
@@ -42,7 +42,7 @@
 							<th class="student-col sortable-col" scope="col" role="button" tabindex="0"
 								:aria-sort="leaderboardSortKey === 'user_id' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
 								@click="setLeaderboardSort('user_id')" @keydown.enter="setLeaderboardSort('user_id')" @keydown.space.prevent="setLeaderboardSort('user_id')">
-								{{ t('learning', 'Student') }}
+								{{ t('learning', 'Studierende/r') }}
 								<span v-if="leaderboardSortKey === 'user_id'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 							</th>
 							<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
@@ -60,7 +60,7 @@
 							<th class="stat-col sortable-col" scope="col" role="button" tabindex="0"
 								:aria-sort="leaderboardSortKey === 'total_mastered' ? (leaderboardSortAsc ? 'ascending' : 'descending') : 'none'"
 								@click="setLeaderboardSort('total_mastered')" @keydown.enter="setLeaderboardSort('total_mastered')" @keydown.space.prevent="setLeaderboardSort('total_mastered')">
-								{{ t('learning', 'Mastered') }}
+								{{ t('learning', 'Gemeistert') }}
 								<span v-if="leaderboardSortKey === 'total_mastered'" class="sort-arrow">{{ leaderboardSortAsc ? '\u25B2' : '\u25BC' }}</span>
 							</th>
 							<template v-if="isInstructor">
@@ -109,7 +109,7 @@
 				</table>
 				<div class="progress-pagination">
 					<div class="progress-pagination-meta">
-						{{ t('learning', 'Showing {start}-{end} of {total}', {
+						{{ t('learning', 'Zeige {start}-{end} von {total}', {
 							start: leaderboardPageStart,
 							end: leaderboardPageEnd,
 							total: leaderboardMeta.total,
@@ -117,22 +117,22 @@
 					</div>
 					<div class="progress-pagination-actions">
 						<NcButton type="tertiary" :disabled="!canLeaderboardPagePrev || leaderboardLoading" @click="pageLeaderboardPrev">
-							{{ t('learning', 'Previous') }}
+							{{ t('learning', 'Zurück') }}
 						</NcButton>
 						<NcButton type="tertiary" :disabled="!canLeaderboardPageNext || leaderboardLoading" @click="pageLeaderboardNext">
-							{{ t('learning', 'Next') }}
+							{{ t('learning', 'Weiter') }}
 						</NcButton>
 					</div>
 				</div>
 				<p v-if="myRank !== null && !isInstructor" class="my-rank-info">
-					{{ t('learning', 'Your rank: #{rank}', { rank: myRank }) }}
+					{{ t('learning', 'Dein Rang: #{rank}', { rank: myRank }) }}
 				</p>
 			</div>
 
 			<NcEmptyContent v-else
-				:name="t('learning', 'No leaderboard data')">
+				:name="t('learning', 'Keine Ranglistendaten')">
 				<template #description>
-					{{ t('learning', 'The leaderboard will appear once students start learning.') }}
+					{{ t('learning', 'Die Rangliste erscheint, sobald Studierende mit dem Lernen beginnen.') }}
 				</template>
 			</NcEmptyContent>
 		</div>
@@ -267,7 +267,7 @@ export default {
 			const mc = this.course?.mode_config || {}
 			const enabled = (key) => mc[key] !== false
 			const tabs = [
-				{ id: 'leaderboard', label: t('learning', 'Leaderboard') },
+				{ id: 'leaderboard', label: t('learning', 'Rangliste') },
 			]
 			if (this.isInstructor || enabled('league')) {
 				tabs.push({ id: 'league', label: t('learning', 'Liga') })
@@ -409,7 +409,7 @@ export default {
 				}
 			} catch (err) {
 				console.error('Failed to fetch leaderboard:', err)
-				this.$emit('error', t('learning', 'Failed to load leaderboard.'))
+				this.$emit('error', t('learning', 'Rangliste konnte nicht geladen werden.'))
 			} finally {
 				this.leaderboardLoading = false
 			}

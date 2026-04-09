@@ -14,10 +14,10 @@
       </p>
       <div class="ai-consent-actions">
         <button type="button" class="header-action header-action--primary" @click="$emit('consent-accept')">
-          {{ consentData.accept_label || t('learning', 'Accept') }}
+          {{ consentData.accept_label || t('learning', 'Akzeptieren') }}
         </button>
         <button type="button" class="header-action" @click="$emit('consent-decline')">
-          {{ consentData.decline_label || t('learning', 'Decline') }}
+          {{ consentData.decline_label || t('learning', 'Ablehnen') }}
         </button>
       </div>
     </div>
@@ -45,7 +45,7 @@
           <button
             type="button"
             class="header-action header-action--close"
-            :aria-label="t('learning', 'Close fullscreen')"
+            :aria-label="t('learning', 'Vollbild schließen')"
             @click="$emit('close')">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -67,7 +67,7 @@
             :aria-label="t('learning', 'VirtuProf chat')">
             <div v-if="!aiEnabled" class="virtuprof-fullscreen__empty-state">
               <h3>{{ t('learning', 'AI chat is currently disabled') }}</h3>
-              <p>{{ t('learning', 'VirtuProf can still guide you in the sidebar, but chat answers are unavailable until the admin enables AI again.') }}</p>
+              <p>{{ t('learning', 'VirtuProf kann dich weiterhin in der Sidebar begleiten, aber Chat-Antworten sind nicht verfügbar, bis der Admin die KI wieder aktiviert.') }}</p>
             </div>
             <div v-else-if="chatMessages.length === 0" class="virtuprof-fullscreen__empty-state">
               <h3>{{ t('learning', 'Frag mich alles zu deinem Lernstoff.') }}</h3>
@@ -95,14 +95,14 @@
               </a>
             </article>
 
-            <div v-if="chatLoading" class="virtuprof-fullscreen__typing" :aria-label="t('learning', 'VirtuProf is typing')">
+            <div v-if="chatLoading" class="virtuprof-fullscreen__typing" :aria-label="t('learning', 'VirtuProf tippt')">
               <span class="typing-dot" />
               <span class="typing-dot" />
               <span class="typing-dot" />
             </div>
           </div>
 
-          <div v-if="aiEnabled && !examBlocked" class="virtuprof-fullscreen__suggestions" :aria-label="t('learning', 'Quick suggestions')" role="group">
+          <div v-if="aiEnabled && !examBlocked" class="virtuprof-fullscreen__suggestions" :aria-label="t('learning', 'Schnellvorschläge')" role="group">
             <button
               v-for="suggestion in quickSuggestions"
               :key="suggestion.key"
@@ -116,7 +116,7 @@
 
           <div v-if="examBlocked" class="virtuprof-fullscreen__exam-blocked" role="status">
             <span aria-hidden="true">&#128274;</span>
-            {{ t('learning', 'VirtuProf chat is unavailable during exam mode.') }}
+            {{ t('learning', 'VirtuProf-Chat ist im Prüfungsmodus nicht verfügbar.') }}
           </div>
 
           <form v-if="aiEnabled && !examBlocked" class="virtuprof-fullscreen__composer" @submit.prevent="sendChat">
@@ -184,7 +184,7 @@
         v-if="isMobile && mobileContextOpen"
         type="button"
         class="virtuprof-fullscreen__mobile-backdrop"
-        :aria-label="t('learning', 'Close context panel')"
+        :aria-label="t('learning', 'Kontextfeld schließen')"
         @click="mobileContextOpen = false" />
     </div>
   </section>

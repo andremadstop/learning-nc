@@ -3,12 +3,12 @@
 		<!-- Header -->
 		<div class="course-detail-header">
 			<NcButton type="tertiary" @click="$emit('back')">
-				{{ t('learning', '\u2190 Back to Courses') }}
+				{{ t('learning', '\u2190 Zurück zu Kursen') }}
 			</NcButton>
 			<div class="header-title">
-				<h3>{{ course ? course.title : t('learning', 'Loading...') }}</h3>
+				<h3>{{ course ? course.title : t('learning', 'Laden...') }}</h3>
 				<span v-if="course && course.status" class="status-badge" :class="course.status">
-					{{ course.status === 'active' ? t('learning', 'Active') : t('learning', 'Archived') }}
+					{{ course.status === 'active' ? t('learning', 'Aktiv') : t('learning', 'Archiviert') }}
 				</span>
 			</div>
 			<p v-if="course && course.description" class="course-description">
@@ -26,7 +26,7 @@
 		<!-- Loading state -->
 		<div v-if="loading" class="loading-container">
 			<NcLoadingIcon :size="44" />
-			<p>{{ t('learning', 'Loading course details...') }}</p>
+			<p>{{ t('learning', 'Lade Kursdetails...') }}</p>
 		</div>
 
 		<!-- Error state -->
@@ -503,55 +503,55 @@ export default {
 				training: {
 					key: 'mode:course-training',
 					title: t('learning', 'Training'),
-					text: t('learning', 'Training gives immediate feedback after every answer. It is the best mode for active practice when you still want explanations and quick correction.'),
-					shortText: t('learning', 'Training is the direct-feedback mode for quick practice.'),
+					text: t('learning', 'Training gibt dir sofortiges Feedback nach jeder Antwort. Der beste Modus für aktives Üben, wenn du noch Erklärungen und schnelle Korrekturen brauchst.'),
+					shortText: t('learning', 'Training ist der Modus mit direktem Feedback für schnelles Üben.'),
 				},
 				leitner: {
 					key: 'mode:course-leitner',
 					title: t('learning', 'Leitner'),
-					text: t('learning', 'Leitner focuses on spaced repetition. Hard cards return faster, mastered cards disappear for longer, and that makes it your main long-term retention mode.'),
-					shortText: t('learning', 'Leitner repeats weak cards more often and mastered cards less often.'),
+					text: t('learning', 'Leitner fokussiert auf Spaced Repetition. Schwierige Karten kommen schneller zurück, gemeisterte verschwinden länger — dein Hauptmodus für langfristiges Behalten.'),
+					shortText: t('learning', 'Leitner wiederholt schwache Karten häufiger und gemeisterte seltener.'),
 				},
 				exam: {
 					key: 'mode:course-exam',
 					title: t('learning', 'Exam'),
-					text: t('learning', 'Exam mode hides feedback until the end so you can simulate a real test run. Use it when you want pressure, pacing and a cleaner score signal.'),
-					shortText: t('learning', 'Exam mode saves feedback until the end of the run.'),
+					text: t('learning', 'Der Prüfungsmodus verbirgt Feedback bis zum Ende, damit du einen echten Testlauf simulieren kannst. Nutze ihn, wenn du Druck, Tempo und ein klareres Ergebnis willst.'),
+					shortText: t('learning', 'Prüfungsmodus zeigt Feedback erst am Ende des Durchlaufs.'),
 				},
 				leaderboard: {
 					key: 'mode:course-leaderboard',
 					title: t('learning', 'Leaderboard'),
-					text: t('learning', 'The leaderboard compares course activity and mastery. It is useful for spotting momentum, not just raw ranking, especially when active-only filtering is enabled.'),
-					shortText: t('learning', 'The leaderboard compares XP, mastery and recent activity inside the course.'),
+					text: t('learning', 'Die Rangliste vergleicht Kursaktivität und Meisterschaft. Nützlich, um Dynamik zu erkennen — nicht nur reines Ranking, besonders mit Aktiv-Filter.'),
+					shortText: t('learning', 'Die Rangliste vergleicht XP, Meisterschaft und aktuelle Aktivität im Kurs.'),
 				},
 				league: {
 					key: 'mode:course-league',
 					title: t('learning', 'Liga'),
-					text: t('learning', 'Liga tracks longer-running competitive progress across the course. It is less about one session and more about sustained learning performance over time.'),
-					shortText: t('learning', 'Liga highlights sustained course progress over time.'),
+					text: t('learning', 'Liga verfolgt langfristigen Wettbewerbsfortschritt im Kurs. Es geht weniger um eine einzelne Session und mehr um anhaltende Lernleistung über die Zeit.'),
+					shortText: t('learning', 'Liga zeigt anhaltenden Kursfortschritt über die Zeit.'),
 				},
 				arena: {
 					key: 'mode:course-arena',
 					title: t('learning', 'Arena'),
-					text: t('learning', 'Arena is for competitive formats like duel, sprint and elimination. Use it when you want speed, pressure and direct comparison with other learners.'),
-					shortText: t('learning', 'Arena bundles the competitive learning modes.'),
+					text: t('learning', 'Arena ist für Wettbewerbsformate wie Duell, Sprint und Elimination. Nutze sie, wenn du Tempo, Druck und direkten Vergleich mit anderen Lernenden willst.'),
+					shortText: t('learning', 'Arena bündelt die kompetitiven Lernmodi.'),
 				},
 				abenteuer: {
 					key: 'mode:course-abenteuer',
 					title: t('learning', 'Abenteuer'),
-					text: t('learning', 'Adventure mode wraps learning in narrative progression. It is useful when you want more atmosphere and a slower, guided rhythm than raw quiz mode.'),
-					shortText: t('learning', 'Adventure mode adds narrative progression around the questions.'),
+					text: t('learning', 'Abenteuermodus verpackt Lernen in narrative Progression. Nützlich, wenn du mehr Atmosphäre und einen langsameren, geführten Rhythmus als reinen Quiz-Modus willst.'),
+					shortText: t('learning', 'Abenteuermodus fügt narrative Progression um die Fragen hinzu.'),
 				},
 				'my-progress': {
 					key: 'mode:course-my-progress',
-					title: t('learning', 'My Progress'),
-					text: t('learning', 'This area summarizes your own learning state in the course. Use it to see where mastery is building and where gaps still remain.'),
-					shortText: t('learning', 'My Progress shows your current state across the course.'),
+					title: t('learning', 'Mein Fortschritt'),
+					text: t('learning', 'Dieser Bereich fasst deinen eigenen Lernstand im Kurs zusammen. Sieh, wo sich Meisterschaft aufbaut und wo Lücken bleiben.'),
+					shortText: t('learning', 'Mein Fortschritt zeigt deinen aktuellen Stand im Kurs.'),
 				},
 				summary: {
 					key: 'mode:course-summary',
 					title: t('learning', 'Kursabschluss'),
-					text: t('learning', 'This area condenses your course progress into a final overview with mastery, streaks, badges and the questions that still need work.'),
+					text: t('learning', 'Dieser Bereich fasst deinen Kursfortschritt in eine Übersicht mit Meisterschaft, Streaks, Badges und offenen Fragen zusammen.'),
 					shortText: t('learning', 'Kursabschluss zeigt deinen zusammengefassten Stand für den Kurs.'),
 				},
 			}
@@ -661,11 +661,11 @@ export default {
 			} catch (err) {
 				console.error('Failed to fetch course detail:', err)
 				if (err.response?.status === 404) {
-					this.error = t('learning', 'Course not found.')
+					this.error = t('learning', 'Kurs nicht gefunden.')
 				} else if (err.response?.status === 403) {
-					this.error = t('learning', 'You do not have access to this course.')
+					this.error = t('learning', 'Du hast keinen Zugriff auf diesen Kurs.')
 				} else {
-					this.error = t('learning', 'Failed to load course details. Please try again.')
+					this.error = t('learning', 'Kursdetails konnten nicht geladen werden. Bitte erneut versuchen.')
 				}
 			} finally {
 				this.loading = false

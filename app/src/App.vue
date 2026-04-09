@@ -921,38 +921,38 @@ export default {
         // Pool-level views (outside courses)
         'view:training': {
           title: t('learning', 'Training'),
-          text: t('learning', 'Here you practise questions in flashcard style. After each answer you immediately see whether it was correct. Correct answers move up to higher Leitner boxes.'),
-          shortText: t('learning', 'Answer questions and learn from immediate feedback.'),
+          text: t('learning', 'Hier übst du Fragen im Karteikarten-Stil. Nach jeder Antwort siehst du sofort, ob sie richtig war. Richtige Antworten wandern in höhere Leitner-Boxen.'),
+          shortText: t('learning', 'Beantworte Fragen und lerne aus sofortigem Feedback.'),
         },
         'view:leitner': {
-          title: t('learning', 'Leitner System'),
-          text: t('learning', 'The Leitner system shows you due cards based on your progress. The more often you answer a card correctly, the less often it appears — until it is mastered.'),
-          shortText: t('learning', 'Answer due cards. Correct ones move forward, wrong ones go back.'),
+          title: t('learning', 'Leitner-System'),
+          text: t('learning', 'Das Leitner-System zeigt dir fällige Karten basierend auf deinem Fortschritt. Je öfter du eine Karte richtig beantwortest, desto seltener erscheint sie — bis sie gemeistert ist.'),
+          shortText: t('learning', 'Beantworte fällige Karten. Richtige rücken vor, falsche gehen zurück.'),
         },
         'view:exam': {
-          title: t('learning', 'Exam Simulation'),
-          text: t('learning', 'Exam mode: no hints, no immediate feedback, time limit like in the real exam. You see your result only at the end.'),
-          shortText: t('learning', 'Exam mode without hints — result shown after all questions.'),
+          title: t('learning', 'Prüfungssimulation'),
+          text: t('learning', 'Prüfungsmodus: keine Hinweise, kein sofortiges Feedback, Zeitlimit wie in der echten Prüfung. Dein Ergebnis siehst du erst am Ende.'),
+          shortText: t('learning', 'Prüfungsmodus ohne Hinweise — Ergebnis erst nach allen Fragen.'),
         },
         'view:pool-manage': {
-          title: t('learning', 'Pool Management'),
-          text: t('learning', 'Here you create and manage questions in this pool. You can add, edit, delete and import questions via CSV or JSON.'),
-          shortText: t('learning', 'Add, edit, delete and import questions.'),
+          title: t('learning', 'Pool-Verwaltung'),
+          text: t('learning', 'Hier erstellst und verwaltest du Fragen in diesem Pool. Du kannst Fragen hinzufügen, bearbeiten, löschen und per CSV oder JSON importieren.'),
+          shortText: t('learning', 'Fragen hinzufügen, bearbeiten, löschen und importieren.'),
         },
         'view:pools': {
-          title: t('learning', 'Question Pools'),
-          text: t('learning', 'Here you see all your question pools. Select a pool to start practising. As an instructor you can also create and manage pools.'),
-          shortText: t('learning', 'Select a pool to start practising.'),
+          title: t('learning', 'Fragenpools'),
+          text: t('learning', 'Hier siehst du alle deine Fragenpools. Wähle einen Pool, um mit dem Üben zu beginnen. Als Dozent kannst du auch Pools erstellen und verwalten.'),
+          shortText: t('learning', 'Wähle einen Pool, um mit dem Üben zu beginnen.'),
         },
         'view:abenteuer': {
-          title: t('learning', 'Adventure Mode'),
-          text: t('learning', 'Start a campaign and solve network problems in a story. Every decision moves you forward — mistakes cost life points.'),
-          shortText: t('learning', 'Solve network problems in an interactive story.'),
+          title: t('learning', 'Abenteuermodus'),
+          text: t('learning', 'Starte eine Kampagne und löse Netzwerkprobleme in einer Geschichte. Jede Entscheidung bringt dich weiter — Fehler kosten Lebenspunkte.'),
+          shortText: t('learning', 'Löse Netzwerkprobleme in einer interaktiven Geschichte.'),
         },
         'view:settings': {
-          title: t('learning', 'Settings'),
-          text: t('learning', 'Personal settings: learning language, Telos profile and VirtuProf options. You can also enable or disable VirtuProf here.'),
-          shortText: t('learning', 'Set language, Telos profile and VirtuProf options.'),
+          title: t('learning', 'Einstellungen'),
+          text: t('learning', 'Persönliche Einstellungen: Lernsprache, Telos-Profil und VirtuProf-Optionen. Hier kannst du VirtuProf auch aktivieren oder deaktivieren.'),
+          shortText: t('learning', 'Sprache, Telos-Profil und VirtuProf-Optionen einstellen.'),
         },
       };
 
@@ -971,44 +971,44 @@ export default {
     toolGuidePayload(toolId) {
       const guides = {
         subnet: {
-          title: t('learning', 'Subnet Calculator'),
-          text: t('learning', 'This tool breaks down CIDR networks into network address, broadcast, host range and binary form. Use it when subnet masks still feel abstract.'),
-          shortText: t('learning', 'The subnet calculator shows network, broadcast and host range for one CIDR block.'),
+          title: t('learning', 'Subnetzrechner'),
+          text: t('learning', 'Dieses Tool zerlegt CIDR-Netzwerke in Netzadresse, Broadcast, Hostbereich und Binärform. Nutze es, wenn Subnetzmasken noch abstrakt wirken.'),
+          shortText: t('learning', 'Der Subnetzrechner zeigt Netzwerk, Broadcast und Hostbereich für einen CIDR-Block.'),
         },
         dns: {
-          title: t('learning', 'DNS Resolver'),
-          text: t('learning', 'This simulator walks through recursive DNS lookups step by step. It helps you see which server answers what and where common DNS failures appear.'),
-          shortText: t('learning', 'The DNS resolver shows the lookup chain from resolver to authoritative answer.'),
+          title: t('learning', 'DNS-Resolver'),
+          text: t('learning', 'Dieser Simulator durchläuft rekursive DNS-Lookups Schritt für Schritt. Er hilft dir zu sehen, welcher Server was antwortet und wo typische DNS-Fehler auftreten.'),
+          shortText: t('learning', 'Der DNS-Resolver zeigt die Lookup-Kette vom Resolver bis zur autoritativen Antwort.'),
         },
         firewall: {
           title: t('learning', 'Firewall / ACL Builder'),
-          text: t('learning', 'Here you build ordered firewall rules and test packets against them. It is useful for understanding first-match logic, allow/deny decisions and implicit deny.'),
-          shortText: t('learning', 'The firewall builder lets you test packet flow against ordered ACL rules.'),
+          text: t('learning', 'Hier baust du geordnete Firewall-Regeln und testest Pakete dagegen. Nützlich zum Verständnis von First-Match-Logik, Allow/Deny-Entscheidungen und Implicit Deny.'),
+          shortText: t('learning', 'Der Firewall-Builder lässt dich Paketflüsse gegen geordnete ACL-Regeln testen.'),
         },
         portscan: {
-          title: t('learning', 'Port Scanner'),
-          text: t('learning', 'This tool simulates typical scan results for different host profiles. Use it to practice reading service exposure and spotting suspicious open ports quickly.'),
-          shortText: t('learning', 'The port scanner shows which services a host exposes and what that implies.'),
+          title: t('learning', 'Port-Scanner'),
+          text: t('learning', 'Dieses Tool simuliert typische Scan-Ergebnisse für verschiedene Host-Profile. Nutze es, um Service-Exposition zu lesen und verdächtige offene Ports schnell zu erkennen.'),
+          shortText: t('learning', 'Der Port-Scanner zeigt, welche Dienste ein Host exponiert und was das bedeutet.'),
         },
         routing: {
-          title: t('learning', 'Routing Table'),
-          text: t('learning', 'This simulator compares routes by prefix length and metric. It is designed to make longest-prefix-match and default-route behavior visible instead of purely theoretical.'),
-          shortText: t('learning', 'The routing table simulator explains longest-prefix-match and route selection.'),
+          title: t('learning', 'Routing-Tabelle'),
+          text: t('learning', 'Dieser Simulator vergleicht Routen nach Präfixlänge und Metrik. Er macht Longest-Prefix-Match und Default-Route-Verhalten sichtbar statt rein theoretisch.'),
+          shortText: t('learning', 'Der Routing-Tabellen-Simulator erklärt Longest-Prefix-Match und Routenauswahl.'),
         },
         nat: {
-          title: t('learning', 'NAT Table'),
-          text: t('learning', 'This tool demonstrates static NAT, dynamic NAT and PAT with live translations. Use it to see how inside and outside addresses are rewritten in each mode.'),
-          shortText: t('learning', 'The NAT simulator shows how private and public addresses are translated.'),
+          title: t('learning', 'NAT-Tabelle'),
+          text: t('learning', 'Dieses Tool demonstriert statisches NAT, dynamisches NAT und PAT mit Live-Übersetzungen. Sieh, wie interne und externe Adressen in jedem Modus umgeschrieben werden.'),
+          shortText: t('learning', 'Der NAT-Simulator zeigt, wie private und öffentliche Adressen übersetzt werden.'),
         },
         wireshark: {
           title: t('learning', 'Wireshark Lite'),
-          text: t('learning', 'This packet viewer strips captures down to the essential layers and anomalies. It is meant for practicing protocol reading without getting lost in every field.'),
-          shortText: t('learning', 'Wireshark Lite highlights the important packet layers and anomalies.'),
+          text: t('learning', 'Dieser Paket-Viewer reduziert Captures auf die wesentlichen Layer und Anomalien. Gedacht zum Üben des Protokoll-Lesens, ohne sich in jedem Feld zu verlieren.'),
+          shortText: t('learning', 'Wireshark Lite hebt die wichtigen Paket-Layer und Anomalien hervor.'),
         },
         authflow: {
           title: t('learning', '802.1X Auth Flow'),
-          text: t('learning', 'This simulator compares EAP-based authentication flows step by step. Use it to understand who talks to whom during 802.1X and where credentials or certificates are checked.'),
-          shortText: t('learning', 'The auth-flow simulator compares the main 802.1X handshakes.'),
+          text: t('learning', 'Dieser Simulator vergleicht EAP-basierte Authentifizierungsabläufe Schritt für Schritt. Verstehe, wer mit wem während 802.1X kommuniziert und wo Credentials oder Zertifikate geprüft werden.'),
+          shortText: t('learning', 'Der Auth-Flow-Simulator vergleicht die wichtigsten 802.1X-Handshakes.'),
         },
       };
 
@@ -1377,7 +1377,7 @@ export default {
         );
         this.questionCount = response.data.length;
       } catch (err) {
-        this.error = t('learning', 'Failed to load question count');
+        this.error = t('learning', 'Fragenanzahl konnte nicht geladen werden');
         this.questionCount = 0;
       }
     },
@@ -1386,7 +1386,7 @@ export default {
         const response = await axios.get(generateUrl('/apps/learning/api/pools/' + poolId));
         await this.selectPool(response.data);
       } catch (err) {
-        this.error = t('learning', 'Failed to open pool');
+        this.error = t('learning', 'Pool konnte nicht geöffnet werden');
       }
     },
     backToPools() {

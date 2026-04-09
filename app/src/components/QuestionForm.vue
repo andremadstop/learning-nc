@@ -1,86 +1,86 @@
 <template>
-  <AccessibleDialog :name="question ? t('learning', 'Edit Question') : t('learning', 'Create Question')" @closing="$emit('close')" size="normal">
+  <AccessibleDialog :name="question ? t('learning', 'Frage bearbeiten') : t('learning', 'Frage erstellen')" @closing="$emit('close')" size="normal">
     <form @submit.prevent="save">
       <div class="form-group">
-        <label for="question-text">{{ t('learning', 'Question') }} <span aria-hidden="true">*</span></label>
-        <textarea id="question-text" v-model="form.text" aria-required="true" required rows="3" :placeholder="t('learning', 'Enter your question...')" class="nc-input"></textarea>
+        <label for="question-text">{{ t('learning', 'Frage') }} <span aria-hidden="true">*</span></label>
+        <textarea id="question-text" v-model="form.text" aria-required="true" required rows="3" :placeholder="t('learning', 'Frage eingeben...')" class="nc-input"></textarea>
       </div>
 
       <!-- Image Upload -->
       <div class="form-group">
-        <label>{{ t('learning', 'Image (optional)') }}</label>
+        <label>{{ t('learning', 'Bild (optional)') }}</label>
         <div v-if="imagePreview || existingImagePath" class="image-preview-area">
           <img :src="imagePreview || existingImageUrl" alt="Question image" class="image-preview" />
-          <NcButton type="error" @click="removeImage" class="remove-image-btn">{{ t('learning', 'Remove Image') }}</NcButton>
+          <NcButton type="error" @click="removeImage" class="remove-image-btn">{{ t('learning', 'Bild entfernen') }}</NcButton>
         </div>
         <div v-else class="image-upload-area">
           <input type="file" ref="imageInput" accept="image/jpeg,image/png,image/gif,image/webp" @change="onImageSelected" class="image-input" />
-          <NcButton type="secondary" @click="$refs.imageInput.click()">{{ t('learning', 'Upload Image') }}</NcButton>
+          <NcButton type="secondary" @click="$refs.imageInput.click()">{{ t('learning', 'Bild hochladen') }}</NcButton>
           <span class="upload-hint">{{ t('learning', 'JPEG, PNG, GIF, WebP (max 5MB)') }}</span>
         </div>
         <NcNoteCard v-if="imageError" type="error" class="image-error">{{ imageError }}</NcNoteCard>
       </div>
 
       <div class="form-group">
-        <label for="difficulty">{{ t('learning', 'Difficulty') }}</label>
+        <label for="difficulty">{{ t('learning', 'Schwierigkeit') }}</label>
         <select id="difficulty" v-model="form.difficulty" class="nc-input">
-          <option value="">{{ t('learning', 'None') }}</option>
-          <option value="easy">{{ t('learning', 'Easy') }}</option>
-          <option value="medium">{{ t('learning', 'Medium') }}</option>
-          <option value="hard">{{ t('learning', 'Hard') }}</option>
+          <option value="">{{ t('learning', 'Keine') }}</option>
+          <option value="easy">{{ t('learning', 'Leicht') }}</option>
+          <option value="medium">{{ t('learning', 'Mittel') }}</option>
+          <option value="hard">{{ t('learning', 'Schwer') }}</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label for="question-type">{{ t('learning', 'Answer Type') }}</label>
+        <label for="question-type">{{ t('learning', 'Antworttyp') }}</label>
         <select id="question-type" v-model="form.questionType" class="nc-input" @change="onQuestionTypeChange">
-          <option value="single">{{ t('learning', 'Single answer') }}</option>
-          <option value="multi">{{ t('learning', 'Multiple answers') }}</option>
-          <option value="open">{{ t('learning', 'Free text') }}</option>
+          <option value="single">{{ t('learning', 'Einzelauswahl') }}</option>
+          <option value="multi">{{ t('learning', 'Mehrfachauswahl') }}</option>
+          <option value="open">{{ t('learning', 'Freitext') }}</option>
         </select>
       </div>
 
       <div class="metadata-grid">
         <div class="form-group">
-          <label for="exam-key">{{ t('learning', 'Exam Key (optional)') }}</label>
+          <label for="exam-key">{{ t('learning', 'Prüfungsschlüssel (optional)') }}</label>
           <input id="exam-key" v-model.trim="form.examKey" type="text" :placeholder="t('learning', 'e.g., n10-009 or 220-1101')" class="nc-input" />
         </div>
         <div class="form-group">
-          <label for="handbook-key">{{ t('learning', 'Handbook Key (optional)') }}</label>
+          <label for="handbook-key">{{ t('learning', 'Handbuch-Schlüssel (optional)') }}</label>
           <input id="handbook-key" v-model.trim="form.handbookKey" type="text" :placeholder="t('learning', 'e.g., kammermann-network-plus-9ed-2024')" class="nc-input" />
         </div>
       </div>
 
       <div class="form-group">
-        <label for="handbook-title">{{ t('learning', 'Handbook Title (optional)') }}</label>
+        <label for="handbook-title">{{ t('learning', 'Handbuch-Titel (optional)') }}</label>
         <input id="handbook-title" v-model.trim="form.handbookTitle" type="text" :placeholder="t('learning', 'e.g., Kammermann CompTIA Network+ (9. Auflage, 2024)')" class="nc-input" />
       </div>
 
       <div class="metadata-grid">
         <div class="form-group">
-          <label for="chapter-key">{{ t('learning', 'Chapter Key (optional)') }}</label>
+          <label for="chapter-key">{{ t('learning', 'Kapitelschlüssel (optional)') }}</label>
           <input id="chapter-key" v-model.trim="form.chapterKey" type="text" :placeholder="t('learning', 'e.g., chapter-09-ip')" class="nc-input" />
         </div>
         <div class="form-group">
-          <label for="chapter-order">{{ t('learning', 'Chapter Number (optional)') }}</label>
+          <label for="chapter-order">{{ t('learning', 'Kapitelnummer (optional)') }}</label>
           <input id="chapter-order" v-model.number="form.chapterOrder" type="number" min="1" max="9999" :placeholder="t('learning', 'e.g., 9')" class="nc-input" />
         </div>
       </div>
 
       <div class="form-group">
-        <label for="chapter-title">{{ t('learning', 'Chapter Title (optional)') }}</label>
+        <label for="chapter-title">{{ t('learning', 'Kapiteltitel (optional)') }}</label>
         <input id="chapter-title" v-model.trim="form.chapterTitle" type="text" :placeholder="t('learning', 'e.g., Mein Name ist IP – Internet Protocol')" class="nc-input" />
       </div>
 
       <!-- Open-question: single model answer -->
       <div v-if="form.questionType === 'open'" class="form-group">
-        <label for="model-answer">{{ t('learning', 'Model answer') }} <span aria-hidden="true">*</span></label>
-        <textarea id="model-answer" v-model="modelAnswer" aria-required="true" required rows="2" :placeholder="t('learning', 'The expected correct answer...')" class="nc-input"></textarea>
+        <label for="model-answer">{{ t('learning', 'Musterantwort') }} <span aria-hidden="true">*</span></label>
+        <textarea id="model-answer" v-model="modelAnswer" aria-required="true" required rows="2" :placeholder="t('learning', 'Die erwartete richtige Antwort...')" class="nc-input"></textarea>
       </div>
 
       <!-- MC answers -->
       <div v-else class="form-group">
-        <label>{{ form.questionType === 'multi' ? t('learning', 'Answers (select all correct)') : t('learning', 'Answers (select the correct one)') }} <span aria-hidden="true">*</span></label>
+        <label>{{ form.questionType === 'multi' ? t('learning', 'Antworten (alle richtigen auswählen)') : t('learning', 'Antworten (die richtige auswählen)') }} <span aria-hidden="true">*</span></label>
         <div class="answers-form">
           <div v-for="(answer, index) in form.answers" :key="index" class="answer-row">
             <NcCheckboxRadioSwitch
@@ -96,28 +96,28 @@
               @update:model-value="toggleCorrectIndex(index)"
               type="checkbox"
             />
-            <input type="text" v-model="answer.text" :placeholder="t('learning', 'Answer {n}', { n: index + 1 })" aria-required="true" required class="nc-input" />
-            <button v-if="form.answers.length > 2" type="button" class="remove-answer-btn" @click="removeAnswer(index)" :aria-label="t('learning', 'Remove answer')">&#215;</button>
+            <input type="text" v-model="answer.text" :placeholder="t('learning', 'Antwort {n}', { n: index + 1 })" aria-required="true" required class="nc-input" />
+            <button v-if="form.answers.length > 2" type="button" class="remove-answer-btn" @click="removeAnswer(index)" :aria-label="t('learning', 'Antwort entfernen')">&#215;</button>
           </div>
         </div>
         <div class="answer-actions">
           <NcButton type="secondary" @click="addAnswer" :disabled="form.answers.length >= 8">
-            {{ t('learning', '+ Add Answer') }}
+            {{ t('learning', '+ Antwort hinzufügen') }}
           </NcButton>
         </div>
         <NcNoteCard v-if="multiWarning" type="warning" class="multi-warning">
-          {{ t('learning', 'Multi-select questions should have at least 2 correct answers.') }}
+          {{ t('learning', 'Mehrfachauswahl-Fragen sollten mindestens 2 richtige Antworten haben.') }}
         </NcNoteCard>
       </div>
       <div class="form-group">
-        <label for="explanation">{{ t('learning', 'Explanation (optional)') }}</label>
-        <textarea id="explanation" v-model="form.explanation" rows="2" :placeholder="t('learning', 'Explain why the answer is correct...')" class="nc-input"></textarea>
+        <label for="explanation">{{ t('learning', 'Erklärung (optional)') }}</label>
+        <textarea id="explanation" v-model="form.explanation" rows="2" :placeholder="t('learning', 'Erkläre, warum die Antwort richtig ist...')" class="nc-input"></textarea>
       </div>
       <!-- PBQ Config Section -->
       <div class="form-group">
         <label for="pbq-subtype">{{ t('learning', 'PBQ Type (optional)') }}</label>
         <select id="pbq-subtype" v-model="form.pbqSubtype" class="nc-input" @change="onPbqSubtypeChange">
-          <option value="">{{ t('learning', 'None (standard question)') }}</option>
+          <option value="">{{ t('learning', 'Keine (Standardfrage)') }}</option>
           <option value="cli">CLI Terminal</option>
           <option value="placement">Device Placement</option>
           <option value="dropdown">Inline Dropdown</option>
@@ -141,7 +141,7 @@
           v-model="form.pbqConfig"
           @input="pbqConfigManualError = null"
           rows="6"
-          :placeholder="t('learning', 'Paste JSON from PBQ Config Builder or enter manually...')"
+          :placeholder="t('learning', 'JSON aus dem PBQ Config Builder einfügen oder manuell eingeben...')"
           class="nc-input pbq-config-textarea"
         ></textarea>
         <NcNoteCard v-if="pbqConfigDisplayError" type="error" class="pbq-config-error">
@@ -164,12 +164,12 @@
 
       <!-- Instructor Note -->
       <div class="form-group">
-        <label for="instructor-note">{{ t('learning', 'Instructor Note (optional)') }}</label>
+        <label for="instructor-note">{{ t('learning', 'Dozenten-Notiz (optional)') }}</label>
         <textarea
           id="instructor-note"
           v-model="form.instructorNote"
           rows="3"
-          :placeholder="t('learning', 'Private note for instructors...')"
+          :placeholder="t('learning', 'Private Notiz für Dozenten...')"
           class="nc-input"
         ></textarea>
         <NcCheckboxRadioSwitch
@@ -177,13 +177,13 @@
           @update:model-value="form.noteVisible = $event"
           type="checkbox"
         >
-          {{ t('learning', 'Visible to students') }}
+          {{ t('learning', 'Für Studierende sichtbar') }}
         </NcCheckboxRadioSwitch>
       </div>
 
       <div class="dialog-actions">
-        <NcButton type="tertiary" @click="$emit('close')">{{ t('learning', 'Cancel') }}</NcButton>
-        <NcButton type="primary" native-type="submit" :disabled="saving">{{ saving ? t('learning', 'Saving...') : t('learning', 'Save') }}</NcButton>
+        <NcButton type="tertiary" @click="$emit('close')">{{ t('learning', 'Abbrechen') }}</NcButton>
+        <NcButton type="primary" native-type="submit" :disabled="saving">{{ saving ? t('learning', 'Speichern...') : t('learning', 'Speichern') }}</NcButton>
       </div>
     </form>
   </AccessibleDialog>
@@ -315,7 +315,7 @@ export default {
       const file = event.target.files[0];
       if (!file) return;
       if (file.size > 5 * 1024 * 1024) {
-        this.imageError = t('learning', 'Image too large (max 5MB)');
+        this.imageError = t('learning', 'Bild zu groß (max. 5 MB)');
         return;
       }
       this.imageError = null;
@@ -404,7 +404,7 @@ export default {
         return {
           pbqSubtype: null,
           pbqConfig: null,
-          error: t('learning', 'Select a PBQ Type before saving PBQ Config.'),
+          error: t('learning', 'Wähle einen PBQ-Typ bevor du die PBQ-Konfiguration speicherst.'),
         };
       }
 

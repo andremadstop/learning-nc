@@ -20,15 +20,15 @@
 
       <div class="pbq-routing-panel__body">
         <div class="pbq-routing-table">
-          <h4>{{ t('learning', 'Routing Table') }}</h4>
+          <h4>{{ t('learning', 'Routing-Tabelle') }}</h4>
           <pre>{{ activeRouter.routing_table }}</pre>
         </div>
 
         <div class="pbq-routing-form">
-          <h4>{{ t('learning', 'Routing Configuration') }}</h4>
+          <h4>{{ t('learning', 'Routing-Konfiguration') }}</h4>
 
           <label class="pbq-routing-field">
-            <span>{{ t('learning', 'Was a problem found?') }}</span>
+            <span>{{ t('learning', 'Wurde ein Problem gefunden?') }}</span>
             <select v-model="draft.problem_found" :disabled="disabled">
               <option v-for="option in ['Yes', 'No']" :key="option" :value="option">{{ t('learning', option) }}</option>
             </select>
@@ -47,7 +47,7 @@
           <label class="pbq-routing-field">
             <span>{{ t('learning', 'Interface') }}</span>
             <select v-model="draft.interface" :disabled="disabled">
-              <option value="">{{ t('learning', 'Select interface') }}</option>
+              <option value="">{{ t('learning', 'Interface auswählen') }}</option>
               <option v-for="option in activeRouter.interface_options || []" :key="option" :value="option">{{ option }}</option>
             </select>
           </label>
@@ -55,8 +55,8 @@
       </div>
 
       <div class="pbq-routing-actions">
-        <button class="pbq-routing-action pbq-routing-action--secondary" @click="resetDraft" :disabled="disabled">{{ t('learning', 'Reset Router') }}</button>
-        <button class="pbq-routing-action" @click="saveDraft" :disabled="disabled">{{ t('learning', 'Save Router') }}</button>
+        <button class="pbq-routing-action pbq-routing-action--secondary" @click="resetDraft" :disabled="disabled">{{ t('learning', 'Router zurücksetzen') }}</button>
+        <button class="pbq-routing-action" @click="saveDraft" :disabled="disabled">{{ t('learning', 'Router speichern') }}</button>
       </div>
     </div>
   </div>

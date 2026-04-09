@@ -38,7 +38,7 @@
 
 			<div class="summary-grid">
 				<div class="widget-card mastery-card">
-					<p class="card-kicker">{{ t('learning', 'Mastery') }}</p>
+					<p class="card-kicker">{{ t('learning', 'Meisterschaft') }}</p>
 					<div class="mastery-ring-shell">
 						<svg class="mastery-ring" viewBox="0 0 140 140" aria-hidden="true">
 							<circle class="mastery-ring-track" cx="70" cy="70" r="54" />
@@ -88,7 +88,7 @@
 					<div class="stat-meta">{{ t('learning', 'Level {n}', { n: xp.current_level || 1 }) }}</div>
 				</div>
 				<div class="widget-card stat-card">
-					<p class="card-kicker">{{ t('learning', 'Sessions & Accuracy') }}</p>
+					<p class="card-kicker">{{ t('learning', 'Sessions & Genauigkeit') }}</p>
 					<div class="stat-value">{{ formatNumber(sessions.total_sessions) }}</div>
 					<div class="stat-meta">{{ formatPercent(sessions.overall_accuracy) }} {{ t('learning', 'Genauigkeit') }}</div>
 				</div>
@@ -125,7 +125,7 @@
 
 				<div class="widget-card trouble-card">
 					<div class="detail-header">
-						<p class="card-kicker">{{ t('learning', 'Trouble Spots') }}</p>
+						<p class="card-kicker">{{ t('learning', 'Problemstellen') }}</p>
 						<span class="detail-count">{{ troubleSpots.length }}</span>
 					</div>
 					<div v-if="troubleSpots.length > 0" class="trouble-list">
