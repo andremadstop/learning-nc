@@ -8,25 +8,25 @@ use Psr\Log\LoggerInterface;
 
 class PoolGeneratorService {
     private LlmService $llmService;
-    private DocumentService $documentService;
     private PoolService $poolService;
     private QuestionService $questionService;
     private LoggerInterface $logger;
+    private \OCP\Files\IRootFolder $rootFolder;
 
     private const MAX_CHUNK_WORDS = 3000;
 
     public function __construct(
         LlmService $llmService,
-        DocumentService $documentService,
         PoolService $poolService,
         QuestionService $questionService,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        \OCP\Files\IRootFolder $rootFolder
     ) {
         $this->llmService = $llmService;
-        $this->documentService = $documentService;
         $this->poolService = $poolService;
         $this->questionService = $questionService;
         $this->logger = $logger;
+        $this->rootFolder = $rootFolder;
     }
 
     /**
@@ -104,8 +104,7 @@ class PoolGeneratorService {
      * @return array<int, array<string, mixed>> Draft questions
      */
     public function generateFromFile(string $filePath, string $userId, int $questionCount = 20): array {
-        // Use DocumentService's extraction logic via NC filesystem
-        $userFolder = \OC::$server->get(\OCP\Files\IRootFolder::class)->getUserFolder($userId);
+        $userFolder = $this->rootFolder->getUserFolder($userId);
 
         try {
             /** @var \OCP\Files\File $file */
