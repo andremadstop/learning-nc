@@ -1092,7 +1092,7 @@ PROMPT;
         }
 
         $blocklist = [
-            '/\b(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|EXEC)\b/i',
+            '/\b(SELECT|INSERT INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM|DROP\s+TABLE|ALTER\s+TABLE|EXEC\s+\w)/i',
             '/<\?(php|=)/i',
             '/<script\b/i',
             '/password\s*[:=]/i',

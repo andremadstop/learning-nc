@@ -298,7 +298,7 @@ class RagContextService {
     private function loadUserWeaknesses(string $userId, int $poolId): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('ua.question_id')
-           ->selectAlias($qb->createFunction('COUNT(*) as total_answers'), 'total_answers')
+           ->selectAlias($qb->createFunction('COUNT(*)'), 'total_answers')
            ->selectAlias(
                $qb->createFunction(
                    'SUM(CASE WHEN ua.is_correct = ' . $qb->createNamedParameter(false, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)
