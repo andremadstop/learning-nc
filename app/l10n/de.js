@@ -1611,7 +1611,9 @@ OC.L10N.register(
     "AI Question Generator" : "KI-Fragengenerator",
     "AI is generating {n} questions..." : "Die KI generiert {n} Fragen...",
     "AI returned no valid questions. Try different text or fewer questions." : "Die KI hat keine gültigen Fragen zurückgegeben. Versuche anderen Text oder weniger Fragen.",
-    "AI generation failed" : "KI-Generierung fehlgeschlagen"
+    "AI generation failed" : "KI-Generierung fehlgeschlagen",
+    "Keep Learning" : "Weiterlernen",
+    "Guessed" : "Geraten"
     },
     "nplurals=2; plural=(n != 1);"
 );

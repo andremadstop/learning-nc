@@ -258,7 +258,10 @@
         <div class="session-stat incorrect"><div class="session-stat-value">{{ sessionIncorrect }}</div><div class="session-stat-label">{{ t('learning', 'Incorrect') }}</div></div>
         <div class="session-stat accuracy"><div class="session-stat-value" ref="leitnerAccuracy">{{ sessionAccuracy }}%</div><div class="session-stat-label">{{ t('learning', 'Accuracy') }}</div></div>
       </div>
-      <NcButton type="primary" @click="finishReview">{{ t('learning', 'Back to Dashboard') }}</NcButton>
+      <div class="review-complete-actions">
+        <NcButton type="primary" @click="continueLearning">{{ t('learning', 'Keep Learning') }}</NcButton>
+        <NcButton type="secondary" @click="finishReview">{{ t('learning', 'Back to Dashboard') }}</NcButton>
+      </div>
       <BadgeUnlock :badges="newBadges" />
       <LevelUpOverlay :levelBefore="levelBefore" :levelAfter="levelAfter" />
     </div>
@@ -423,11 +426,21 @@ export default {
           preview: previewFsrsReview(this.currentItem, 1),
         }]
       }
-      return buildFsrsRatingOptions(this.currentItem, this.fsrsDetailedStats).map(option => ({
+      const baseOptions = buildFsrsRatingOptions(this.currentItem, this.fsrsDetailedStats).map(option => ({
         ...option,
         label: this.labelForFsrsOption(option.id),
         intervalLabel: this.formatFsrsInterval(option.preview.intervalDays),
       }))
+      const guessedOption = {
+        id: 'guessed',
+        keyHint: 'G',
+        rating: 1,
+        tone: 'guessed',
+        label: this.labelForFsrsOption('guessed'),
+        intervalLabel: this.formatFsrsInterval(previewFsrsReview(this.currentItem, 1).intervalDays),
+        preview: previewFsrsReview(this.currentItem, 1),
+      }
+      return [guessedOption, ...baseOptions]
     },
     displayCorrectAnswerTexts() {
       if (this.currentItem && Array.isArray(this.currentItem.answers)) {
@@ -503,12 +516,14 @@ export default {
     labelForFsrsOption(id) {
       const labels = this.fsrsDetailedStats
         ? {
+            guessed: t('learning', 'Guessed'),
             again: t('learning', 'Again'),
             hard: t('learning', 'Hard'),
             good: t('learning', 'Good'),
             easy: t('learning', 'Easy'),
           }
         : {
+            guessed: t('learning', 'Guessed'),
             again: t('learning', 'Again'),
             hard: t('learning', 'That was hard'),
             good: t('learning', 'Good'),
@@ -827,7 +842,8 @@ export default {
       } catch (e) { /* streak is optional, ignore errors */ }
     },
     boxPercentage(n) { return this.stats.total === 0 ? 0 : Math.round((this.stats['box_' + n] || 0) / this.stats.total * 100); },
-    finishReview() { this.started = false; this.currentIndex = 0; this.answered = false; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastSubmittedRating = null; this.lastReviewResult = null; this.showResults = false; this.openAnswer = ''; this.lastOpenAnswer = ''; this.clearFsrsIntervalNotice(); this.checkInitialized(); this.fetchStreak(); }
+    finishReview() { this.started = false; this.currentIndex = 0; this.answered = false; this.awaitingFsrsRating = false; this.pendingAnswerPayload = null; this.lastSubmittedRating = null; this.lastReviewResult = null; this.showResults = false; this.openAnswer = ''; this.lastOpenAnswer = ''; this.clearFsrsIntervalNotice(); this.checkInitialized(); this.fetchStreak(); },
+    continueLearning() { this.finishReview(); this.$emit('back'); }
   }
 };
 </script>
@@ -878,6 +894,7 @@ export default {
 .ai-explain-box { background: color-mix(in srgb, var(--color-primary-element) 8%, transparent); border-inline-start: 3px solid var(--color-primary-element); border-radius: var(--border-radius); padding: 10px 14px; font-size: 0.92em; color: var(--color-main-text); line-height: 1.5; }
 .review-complete { text-align: center; padding: 40px 20px; }
 .review-complete h3 { font-size: 28px; margin-bottom: 32px; color: var(--color-main-text); }
+.review-complete-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
 .session-stats { display: flex; justify-content: center; gap: 32px; margin-bottom: 32px; }
 .session-stat { text-align: center; }
 .session-stat-value { font-size: 36px; font-weight: 700; }
@@ -996,6 +1013,7 @@ export default {
 }
 .fsrs-btn:disabled { opacity: 0.7; cursor: wait; }
 .fsrs-btn--again { --fsrs-tone: var(--sim-danger, var(--color-error)); }
+.fsrs-btn--guessed { --fsrs-tone: var(--sim-warn, var(--color-warning)); }
 .fsrs-btn--hard { --fsrs-tone: var(--sim-warn, var(--color-warning)); }
 .fsrs-btn--good { --fsrs-tone: var(--color-primary-element); }
 .fsrs-btn--easy { --fsrs-tone: var(--sim-accent, var(--color-primary-element)); }

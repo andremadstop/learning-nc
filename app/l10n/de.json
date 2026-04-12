@@ -1663,6 +1663,8 @@
     "AI returned no valid questions. Try different text or fewer questions.": "Die KI hat keine gültigen Fragen zurückgegeben. Versuche anderen Text oder weniger Fragen.",
     "AI generation failed": "KI-Generierung fehlgeschlagen",
     "← Back to Courses": "← Zurück zu den Kursen",
-    "answered": "beantwortet"
+    "answered": "beantwortet",
+    "Keep Learning": "Weiterlernen",
+    "Guessed": "Geraten"
   }
 }
