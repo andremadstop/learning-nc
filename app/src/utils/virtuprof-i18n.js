@@ -1,10 +1,11 @@
-import { ar, de, en, ru } from '../l10n/virtuprof-strings.js'
+import { ar, de, en, fr, ru } from '../l10n/virtuprof-strings.js'
 
-const ALLOWED = ['de', 'en', 'ru', 'ar']
+const ALLOWED = ['de', 'en', 'fr', 'ru', 'ar']
 
 const DICTS = {
   de,
   en,
+  fr,
   ru,
   ar,
 }
