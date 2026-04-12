@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.1] - 2026-04-12
+
+### Added
+- **Complete English translation** — 510 → 1613 keys, all UI strings now properly translated
+- **Complete French translation** — 1613 keys, formal (vous) for UI, informal (tu) for VirtuProf chat
+- **VirtuProf French support** — 252 chat strings translated, language auto-detection enabled
+
 ## [4.2.0] - 2026-04-12
 
 ### Added
