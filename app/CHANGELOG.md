@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.0] - 2026-04-12
+
+### Added
+- **Lehrplan-Timeline** — Course schedule with weekly topics, instructor editor, student progress view
+- **OCC Export Commands** — `export-pool`, `export-course`, `archive-course`, `merge-course` for CLI data management
+- **Course Archival** — Snapshot courses before resetting, restore from snapshots
+- **Yearly Merge** — Merge courses across semesters preserving FSRS learning state
+- **Admin Dashboard CSV Export** — Batch and per-course CSV export for analytics
+- **Maintenance Mode** — Post-course 10-minute retention training
+- **Trouble-Spot Cheat-Sheet** — Printable weak-question export for exam prep
+- **FSRS Guessed Button** — Rate answers as "guessed" (keeps XP, resets FSRS interval to 1)
+- **Keep Learning Button** — Continue learning after review session without returning to dashboard
+- **Report Error Button** — Creates support ticket instead of chat message
+- **CLI Simulator Feedback** — Inline feedback for CLI simulator exercises
+- **Question Search** — Full-text + number search in Training and Manage views
+
+### Fixed
+- **MySQL/MariaDB compatibility** — Foreign key constraint error on install (signed/unsigned mismatch on pool_id)
+- **Admin instructor role** — Nextcloud admins are now automatically recognized as instructors
+- **VirtuProf output validator** — Was too aggressive, blocking valid responses
+- **PHPStan errors** — Resolved 2 errors in PoolGeneratorService
+
+### Changed
+- **Deploy consolidated** — Single `deploy-prod.sh` for Relay, removed staging dependency
+- **Oldschool modes removed** — Lernwürfel and Wissensturm removed (-3698 lines)
+- **154 labels translated** — EN→DE across 16 components
+- **Exam datetime-local** — Exam slots now use datetime-local input
+
 ## [4.1.0] - 2026-04-04
 
 ### Added
