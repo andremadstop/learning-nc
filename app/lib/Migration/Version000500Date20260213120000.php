@@ -33,7 +33,7 @@ class Version000500Date20260213120000 extends SimpleMigrationStep {
             $table = $schema->createTable('learning_course_pools');
             $table->addColumn('id', Types::BIGINT, ['autoincrement' => true, 'notnull' => true, 'length' => 8]);
             $table->addColumn('course_id', Types::BIGINT, ['notnull' => true, 'length' => 8]);
-            $table->addColumn('pool_id', Types::BIGINT, ['notnull' => true, 'length' => 8]);
+            $table->addColumn('pool_id', Types::BIGINT, ['notnull' => true, 'unsigned' => true]);
             $table->addColumn('sort_order', Types::INTEGER, ['notnull' => true, 'default' => 0]);
             $table->addColumn('required', Types::SMALLINT, ['notnull' => true, 'default' => 1]);
             $table->setPrimaryKey(['id']);

@@ -38,6 +38,13 @@ class Version000700Date20260218000000 extends SimpleMigrationStep {
 
         if ($schema->hasTable('learning_course_pools')) {
             $table = $schema->getTable('learning_course_pools');
+
+            // Fix signed/unsigned mismatch: pool_id must be unsigned to match learning_pools.id
+            $poolIdCol = $table->getColumn('pool_id');
+            if (!$poolIdCol->getUnsigned()) {
+                $poolIdCol->setUnsigned(true);
+            }
+
             if (!$table->hasForeignKey('fk_lcp_course')) {
                 $table->addForeignKeyConstraint(
                     $schema->getTable('learning_courses'),

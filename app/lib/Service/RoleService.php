@@ -28,6 +28,11 @@ class RoleService {
     }
 
     public function isInstructor(string $userId): bool {
+        // Nextcloud admins are always instructors
+        if ($this->groupManager->isAdmin($userId)) {
+            return true;
+        }
+
         $group = $this->getInstructorGroup();
         if ($this->groupManager->isInGroup($userId, $group)) {
             return true;
