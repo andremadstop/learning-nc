@@ -22,10 +22,15 @@ if (!class_exists(GeminiService::class)) {
 
 $poolId = 124;
 $dryRun = false;
+$lang = 'de';
 
 foreach (array_slice($argv, 1) as $arg) {
     if ($arg === '--dry-run') {
         $dryRun = true;
+        continue;
+    }
+    if ($arg === '--en') {
+        $lang = 'en';
         continue;
     }
     if (preg_match('/^\d+$/', $arg)) {
@@ -70,7 +75,7 @@ foreach ($targets as $index => $question) {
     $answerRows = array_map(static fn($answer) => $answer->jsonSerialize(), $answers);
 
     try {
-        $explanation = generateExplanation($gemini, $questionRow, $answerRows);
+        $explanation = generateExplanation($gemini, $questionRow, $answerRows, $lang);
         $usedFallback = false;
     } catch (\Throwable $e) {
         $explanation = buildFallbackExplanation($questionRow, $answerRows);
@@ -180,7 +185,7 @@ function isFallbackTemplateExplanation(string $explanation): bool {
     );
 }
 
-function generateExplanation(GeminiService $gemini, array $questionRow, array $answerRows): string {
+function generateExplanation(GeminiService $gemini, array $questionRow, array $answerRows, string $lang = 'de'): string {
     $questionText = trim((string)($questionRow['text'] ?? ''));
     if ($questionText === '') {
         throw new \RuntimeException('Fragetext fehlt');
@@ -195,7 +200,9 @@ function generateExplanation(GeminiService $gemini, array $questionRow, array $a
 
     $answerLines = [];
     foreach ($answerRows as $idx => $answer) {
-        $prefix = ((bool)($answer['is_correct'] ?? false)) ? '[korrekt]' : '[Ablenker]';
+        $correctLabel = $lang === 'en' ? '[correct]' : '[korrekt]';
+        $distractorLabel = $lang === 'en' ? '[distractor]' : '[Ablenker]';
+        $prefix = ((bool)($answer['is_correct'] ?? false)) ? $correctLabel : $distractorLabel;
         $answerLines[] = sprintf(
             "%d. %s %s",
             $idx + 1,
@@ -204,22 +211,32 @@ function generateExplanation(GeminiService $gemini, array $questionRow, array $a
         );
     }
 
-    $systemPrompt = implode("\n", [
-        'Du schreibst fachlich korrekte Kurz-Erklärungen für eine Learning-App zu CompTIA Network+.',
-        'Antworte auf Deutsch.',
-        'Form: genau 1 bis 2 Sätze, Klartext ohne Markdown, ohne Aufzählungen, ohne Einleitung wie "Die richtige Antwort ist".',
-        'Erkläre, warum die korrekte Antwort fachlich passt, und grenze wenn sinnvoll typische Ablenker kurz ab.',
-        'Bleibe konkret zur Frage. Maximal 320 Zeichen.',
-    ]);
+    if ($lang === 'en') {
+        $systemPrompt = implode("\n", [
+            'You write technically accurate brief explanations for a learning app covering CompTIA Security+ (SY0-701).',
+            'Answer in English.',
+            'Format: exactly 1 to 2 sentences, plain text without Markdown, without bullet lists, without introductions like "The correct answer is".',
+            'Explain why the correct answer is technically right, and briefly distinguish it from typical distractors when useful.',
+            'Stay specific to the question. Maximum 320 characters.',
+        ]);
+    } else {
+        $systemPrompt = implode("\n", [
+            'Du schreibst fachlich korrekte Kurz-Erklärungen für eine Learning-App zu CompTIA Network+.',
+            'Antworte auf Deutsch.',
+            'Form: genau 1 bis 2 Sätze, Klartext ohne Markdown, ohne Aufzählungen, ohne Einleitung wie "Die richtige Antwort ist".',
+            'Erkläre, warum die korrekte Antwort fachlich passt, und grenze wenn sinnvoll typische Ablenker kurz ab.',
+            'Bleibe konkret zur Frage. Maximal 320 Zeichen.',
+        ]);
+    }
 
     $userPrompt = implode("\n", [
-        'Frage:',
+        ($lang === 'en' ? 'Question:' : 'Frage:'),
         $questionText,
         '',
-        'Fragetyp: ' . $questionType,
-        'Schwierigkeit: ' . ($difficulty !== '' ? $difficulty : 'unbekannt'),
+        ($lang === 'en' ? 'Type: ' : 'Fragetyp: ') . $questionType,
+        ($lang === 'en' ? 'Difficulty: ' : 'Schwierigkeit: ') . ($difficulty !== '' ? $difficulty : ($lang === 'en' ? 'unknown' : 'unbekannt')),
         '',
-        'Antwortoptionen:',
+        ($lang === 'en' ? 'Answer options:' : 'Antwortoptionen:'),
         implode("\n", $answerLines),
     ]);
 
@@ -276,7 +293,25 @@ function buildFallbackExplanation(array $questionRow, array $answerRows): string
 
 function detectTopicLabel(string $questionText, array $correctTexts): string {
     $haystack = mb_strtolower($questionText . ' ' . implode(' ', $correctTexts));
-    $topics = [
+
+    // Security+ (SY0-701) topics
+    $securityTopics = [
+        'threat actors, attack vectors, and social engineering' => ['phishing', 'social engineering', 'threat actor', 'vishing', 'smishing', 'pretexting', 'watering hole', 'typosquatting', 'whaling'],
+        'malware and attack techniques' => ['malware', 'ransomware', 'trojan', 'worm', 'rootkit', 'spyware', 'keylogger', 'fileless', 'polymorphic', 'logic bomb'],
+        'vulnerability management and scanning' => ['vulnerability', 'cve', 'patch', 'remediation', 'scan', 'penetration test', 'pentest', 'exploit', 'zero-day', 'bug bounty'],
+        'identity and access management' => ['authentication', 'authorization', 'mfa', 'sso', 'ldap', 'kerberos', 'saml', 'oauth', 'rbac', 'pam', 'privilege'],
+        'cryptography and PKI' => ['encryption', 'certificate', 'pki', 'tls', 'ssl', 'aes', 'rsa', 'hash', 'sha', 'hmac', 'digital signature', 'key exchange', 'diffie-hellman', 'cipher'],
+        'network security and architecture' => ['firewall', 'ids', 'ips', 'vpn', 'dmz', 'proxy', 'nat', 'segmentation', 'zero trust', 'sase', 'sd-wan', 'nac'],
+        'wireless security' => ['wpa', 'wpa2', 'wpa3', 'wifi', 'wlan', 'ssid', '802.1x', 'eap', 'radius', 'rogue ap', 'evil twin', 'deauthentication'],
+        'cloud and virtualization security' => ['cloud', 'iaas', 'paas', 'saas', 'container', 'docker', 'kubernetes', 'hypervisor', 'serverless', 'casb', 'cspm'],
+        'incident response and forensics' => ['incident', 'forensic', 'chain of custody', 'eradication', 'containment', 'recovery', 'playbook', 'ioc', 'siem', 'soar'],
+        'governance, risk, and compliance' => ['compliance', 'gdpr', 'hipaa', 'pci', 'risk assessment', 'bcp', 'drp', 'rpo', 'rto', 'audit', 'framework', 'nist', 'iso 27001', 'policy'],
+        'endpoint and application security' => ['endpoint', 'edr', 'antivirus', 'sandbox', 'application security', 'input validation', 'xss', 'sql injection', 'csrf', 'buffer overflow', 'code review'],
+        'physical security' => ['physical', 'badge', 'mantrap', 'bollard', 'cctv', 'biometric', 'fence', 'lock'],
+    ];
+
+    // Network+ topics
+    $networkTopics = [
         'routing und Weiterleitungsentscheidungen' => ['routing', 'ospf', 'bgp', 'rip', 'eigrp', 'route', 'router'],
         'switching, VLANs und Layer-2-Verhalten' => ['vlan', 'switch', 'trunk', 'stp', 'spanning tree', 'port-security', '802.1q'],
         'dns und Namensauflösung' => ['dns', 'record', 'zone', 'mx', 'cname', 'ptr', 'resolver'],
@@ -290,7 +325,8 @@ function detectTopicLabel(string $questionText, array $correctTexts): string {
         'performance, monitoring oder troubleshooting' => ['latency', 'jitter', 'throughput', 'monitor', 'snmp', 'syslog', 'wireshark', 'troubleshooting'],
     ];
 
-    foreach ($topics as $label => $keywords) {
+    // Try Security+ topics first (more specific), then Network+
+    foreach ($securityTopics as $label => $keywords) {
         foreach ($keywords as $keyword) {
             if (str_contains($haystack, $keyword)) {
                 return $label;
@@ -298,7 +334,15 @@ function detectTopicLabel(string $questionText, array $correctTexts): string {
         }
     }
 
-    return 'die beschriebene Netzwerksituation';
+    foreach ($networkTopics as $label => $keywords) {
+        foreach ($keywords as $keyword) {
+            if (str_contains($haystack, $keyword)) {
+                return $label;
+            }
+        }
+    }
+
+    return 'the described security scenario';
 }
 
 function joinAnswerTexts(array $answers): string {
