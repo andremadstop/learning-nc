@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.2.2] - 2026-04-13
+
+### Added
+- **Complete Russian translation** — 250 → 1613 keys, formal вы for UI, informal ты for VirtuProf
+- **Complete Arabic translation** — 250 → 1613 keys, Modern Standard Arabic (فصحى)
+- **VirtuProf RU/AR support** — 252 chat strings each, fully translated
+
+### Changed
+- All 5 languages now at 100% coverage: DE, EN, FR, RU, AR
+
 ## [4.2.1] - 2026-04-12
 
 ### Added
