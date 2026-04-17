@@ -1,0 +1,36 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits"
+  ],
+  "timezone": "Europe/Berlin",
+  "schedule": ["before 6am on monday"],
+  "prHourlyLimit": 4,
+  "prConcurrentLimit": 6,
+  "labels": ["renovate", "dependencies"],
+  "docker": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "description": "Group all docker-compose service images",
+      "matchDatasources": ["docker"],
+      "groupName": "docker images"
+    },
+    {
+      "description": "Group npm dev dependencies",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "groupName": "npm dev dependencies"
+    },
+    {
+      "description": "Auto-merge patch updates of dev tooling",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": false
+    }
+  ]
+}
