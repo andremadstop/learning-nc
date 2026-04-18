@@ -29,6 +29,7 @@ TRACKS = {
     "Comptia Security+": "Security-Plus",
     "Comptia Linux+": "Linux-Plus",
     "Comptia CySA+": "CySA-Plus",
+    "Comptia A+ (Service und Support)": "A-Plus",
 }
 
 BASE = os.path.expanduser("~/ObsidianVaults/Personal/Wissen/IT")
