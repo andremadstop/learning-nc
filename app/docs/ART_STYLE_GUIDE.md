@@ -2,176 +2,201 @@
 
 > **Purpose:** Operational art-direction spec for all character SVG work in v4.4.0 and beyond.
 > **Audience:** Illustrators and developers producing SVG assets (Phase 152 SCHOLAR-01/02/03).
-> **Status:** Normative — Phase 152 SVG-Freeze is gated by Section 5 sign-off.
+> **Status:** Normative — Phase 152 SVG-Freeze is gated by Section 5 internal review.
 > **Pairs with:** `.planning/CHARACTER_BIBLE.md` (tonality + behaviour for the 12 existing characters).
 
 ---
 
 ## 1. Style-Regime pro Category
 
-All characters in the app fall into exactly one of three categories. The style is not a preference — it is load-bearing for legal, a11y, and respectful-representation reasons.
+Alle Charaktere teilen eine konsistente **Comic-Superhero-Ästhetik**. Wissenschaftler-Archetypen sind nicht semi-realistische Portraits, sondern stilisierte "Science Heroes" — inspiriert vom Empowerment-Narrativ, nicht von Mitleid oder dokumentarischer Treue.
 
 | Category | Style | Rationale |
 |----------|-------|-----------|
-| **NOVA (hero)** | Futuristic chibi / particle-heavy — unchanged from v4.0.0 | Fictional AR entity, no real-world reference. Continuity with existing users. |
-| **Prof. Lern Classic** | Chibi / rounded / friendly — restoration of v2.6.1 visual identity | Fictional character, no real-world reference. Nostalgic restoration. |
-| **Archetype-Scholars** (Der Theoretiker, Der Kosmologe, Der Astrophysik-Popularisierer) | **Semi-realistic / illustrated** — NOT chibi | Identity-sensitive archetypes that reference real-world physicist typologies. Chibi would trivialize disability / race / historical gravitas. |
+| **NOVA (hero)** | Futuristic chibi / particle-heavy — unchanged from v4.0.0 | AR-Entity, keine reale Referenz, bestehende User-Kontinuität |
+| **Prof. Lern Classic** | Chibi / rounded / friendly — Restoration v2.6.1 | Fictional, keine reale Referenz, Nostalgie |
+| **Archetype-Scholars** (Theoretiker / Kosmologe / Astrophysik-Popularisierer) | **Comic-Superhero / stylized-empowerment** | Heroic personas, nicht Portraits. Visual Language orientiert sich an Pixar / Into the Spider-Verse / Invincible — nicht an Wikipedia-Fotos. |
 
 ### Core Rule
 
-> **Semi-realistic illustration style is mandatory for identity-sensitive characters. Chibi is reserved for fictional-only characters with no real-world reference.**
+> **Alle drei Scholar-Archetypen werden als Science-Heroes stilisiert: leicht exaggerierte Proportionen, dynamische Posen, Energy-Effekte, Palette mit Glow-Anteil. Keine semi-realistischen Portraits.**
 
-Chibi exaggerates single features for cuteness. When a single feature is a disability or a race marker, "cute chibi" becomes caricature (see Section 3). The archetype-scholars therefore use a proportionate, semi-realistic register — closer to a portrait-illustration than a mascot.
+Diese Regel löst die frühere Empfehlung „semi-realistic für identity-sensitive characters" ab. Begründung: Empowerment-Narrativ (besonders für den Kosmologen) ist stärker als dokumentarische Respekts-Darstellung. Ein cooler Rollstuhl mit Raketenantrieb kommuniziert „Held mit Super-Tool", nicht „Opfer einer Krankheit".
 
 ---
 
 ## 2. Per-Archetype Palette + Silhouette
 
-Each archetype has: defining features, palette, pose, drawing order (when relevant), and a concrete No-Go list. Archetype names are the only permissible identifier — real-person names must not appear anywhere (code, comments, metadata, file names, commit messages, design-tool layer names).
+Jeder Archetyp hat: Defining Features, Palette, Pose, Power-Element, konkrete No-Go-Liste. Archetype-Labels sind die einzigen erlaubten Identifier — reale Namen dürfen nirgends auftauchen (Code, Kommentare, Metadata, File-Names, Commit-Messages, Design-Tool-Layer-Names).
 
 ### 2.1 Der Theoretiker
 
-**Defining features:**
-- Wild curly hair, bushy moustache
-- Cardigan-era wardrobe: warm brown + off-white layered knitwear
-- Thoughtful, slightly hunched stance
+**Defining Features:**
+- Wildes, elektrostatisch abstehendes graues Haar (leichter Energie-Effekt)
+- Buschiger Schnurrbart
+- Cardigan mit leuchtendem Saum-Akzent
+
+**Power-Element:**
+- **Kreide-Energie**: schwebende Formel-Symbole um die Hände (abstrakte Glyphen, keine echten Formeln wie E=mc²)
+- Optional: Haar-Glow wenn er "denkt"
 
 **Palette:**
-- Primary: warm amber / brown (knitwear base)
-- Secondary: muted cream (shirt, undertones)
-- Accent: chalkboard-green (books, background elements)
+- Primär: warmes Bernstein / Braun (Cardigan-Base)
+- Sekundär: Cream / Off-White (Shirt)
+- Accent: elektrisches Gelb-Grün (Energie, Formel-Glyphen)
 
 **Pose:**
-- Standing, slightly hunched, contemplative
-- Gaze forward or slightly down — thinking posture
-- Hands: near chin, holding a book, or resting on jacket pocket
+- Stehend, leicht nach vorne gelehnt, Hände gestikulieren
+- Gaze fokussiert-intensiv, nicht hunched-sad
+- Energetische Ausstrahlung — "Aha-Moment in Aktion"
 
 **No-Go (concrete):**
-- ❌ Tongue-out poses (leaks a specific famous photograph)
-- ❌ `E=mc²` pattern anywhere on clothing, hat, pin, or background
-- ❌ Chalkboard formulae that mimic the well-known lecture-hall photograph
-- ❌ Any resemblance to a specific historical portrait or photograph
-- ❌ Name cues anywhere — no "Albert", no initials on a blackboard
+- ❌ Tongue-out Pose (leaks berühmtes Foto)
+- ❌ `E=mc²` oder andere echte Formeln lesbar auf Kleidung/Tafel
+- ❌ Tafelformeln die bekannte Lecture-Fotos imitieren
+- ❌ Name-Cues: kein "Albert", keine Initialen, keine Jahreszahl-Referenzen
+- ❌ Passive-introvertierte Hunched-Pose → muss energisch wirken
 
 ### 2.2 Der Kosmologe
 
-**Defining features:**
-- Glasses
-- Seated posture, upright and engaged
-- Wheelchair is present as **ONE of several details** — never the defining trait
-- Blue-palette wardrobe
+**Defining Features:**
+- Brille mit subtilem Blauglühen
+- **Raketenrollstuhl**: Rollstuhl mit sichtbaren Thrustern, Energie-Spuren, optional Schwebe-Effekt
+- Aufrechte, zugewandte Haltung
+- Blaue Signature-Palette mit Kosmos-Akzenten
+
+**Power-Element:**
+- **Raketenantrieb am Rollstuhl**: Thruster-Glow am Heck, optional Schwebe-Partikel
+- Energie-Aura um die Figur (leichter Saum)
+- Optional: Stern-Muster-Projektion aus den Händen
 
 **Palette:**
-- Primary: cool blue (sweater or shirt)
-- Secondary: muted grey (trousers, wheelchair frame)
-- Accent: subtle teal (background, highlights)
+- Primär: tiefes Kosmos-Blau (Shirt, Rollstuhl-Frame)
+- Sekundär: Silber-Grau (Thruster, Trousers)
+- Accent: Cyan-Glow (Thruster-Flammen, Brillen-Reflexion, Aura)
 
 **Pose:**
-- Seated, upright, engaged — intellectually active, NOT "sad lonely wheelchair user"
-- Gaze forward or toward an imagined listener
-- Hands visible, gesturing or resting naturally
+- Sitzend, upright, engaged — aktiv-heroisch, nie passiv-leidend
+- Arms open, gestikulierend oder Energy-Projektion
+- Gaze forward, confident
+- Rollstuhl darf dynamisch gezeigt werden (leicht angewinkelt, "im Flug", Thruster an)
 
-**Character-first drawing order (mandatory):**
-1. Clothing
-2. Pose + body proportion
-3. Face + expression
-4. Hair
-5. **Wheelchair — LAST**
+**Power-First Drawing Order (mandatory):**
+1. Charakter-Körper + Pose
+2. Gesicht + Ausdruck
+3. Haare + Brille
+4. Rollstuhl inkl. Raketenantrieb
+5. Energie-Effekte (Aura, Thruster-Glow, Partikel)
 
-Draw the character as a full person first. The wheelchair is equipment, not identity. This ordering is the single most important rule in this document (CHI 2024 research: "They only care to show us the wheelchair").
+Der Rollstuhl ist **heroisches Super-Tool, kein neutrales medizinisches Gerät**. Er soll als Teil der Identität sichtbar sein — aber als Empowerment-Element, nicht als Passiv-Symbol.
 
 **No-Go (concrete):**
-- ❌ **Animated wheelchair** — no rolling, no wheelie, no "rolling-comedy" frame. This is the most important single No-Go in the entire document.
-- ❌ Sad-lonely-pose framing
-- ❌ Voice-synthesizer visual cue (no speech-synth box, no robotic-voice metaphor)
-- ❌ Any animation that treats the wheelchair as a comic prop
-- ❌ "Hawking-inspired" / "ALS-inspired" / any real-person reference in comments, layer names, commit messages, file names, or metadata
-- ❌ Wheelchair as the visual anchor (largest / brightest / most detailed element)
-- ❌ Name cues anywhere — no initials, no book titles, no lecture-title references
+- ❌ **Sad-lonely-pose-Framing** — Figur muss aktiv/heroisch wirken
+- ❌ Voice-Synthesizer-Visual-Cue (keine Sprach-Synthese-Box, keine robotische-Stimme-Metapher)
+- ❌ Comic-Prop-Rollstuhl (Wheelie als Joke, Slapstick-Animation) — Raketen ja, Slapstick nein
+- ❌ "Hawking-inspired" / "ALS-inspired" in Kommentaren, Layer-Namen, Commit-Messages, File-Names, Metadata
+- ❌ Name-Cues: keine Initialen, keine Buchtitel, keine Lecture-Title-Referenzen
+- ❌ Medical-Device-Ästhetik (kein "Hospital-Look") — der Raketenstuhl ist Sci-Fi-Gear, nicht Krankenhaus-Equipment
 
 ### 2.3 Der Astrophysik-Popularisierer
 
-**Defining features:**
-- Standing, confident posture
-- Goatee (generic style — NOT a specific real-person's cut)
-- Vest (generic — NOT a specific real-person's signature pattern or lapel)
-- Star-glow background accent (magenta-violet nebula)
+**Defining Features:**
+- Stehend, confident, einladende Haltung
+- Kinnbart (generisch, nicht spezifisches Real-Person-Cut)
+- Weste mit Sternen-Muster oder Kosmos-Print
+- Magenta-Violett Signature mit starkem Stern-Glow
+
+**Power-Element:**
+- **Kosmos-Projektion aus den Händen** — Mini-Galaxie oder Sternen-Nebel schwebt vor den Fingern
+- Umhang-Artige Weste die leicht flattert / nebelartig verläuft
+- Optional: konstellations-artige Linien im Hintergrund
 
 **Palette:**
-- Primary: magenta (vest or shirt accent)
-- Secondary: violet (background, star-glow)
-- Accent: warm star-glow — purple-to-magenta gradient
-- Skin tones rendered from reference photos for proportion; semi-realistic (NEVER exaggerated)
+- Primär: Magenta (Weste)
+- Sekundär: Violett (Background, Star-Glow, Umhang)
+- Accent: warmes Gold / Weiß (Stern-Highlights, Nebel-Schein)
+- Haut-Töne: stylized-saturated (Comic-Book-Stil), NICHT exaggerated-realistic
 
 **Pose:**
-- Standing, confident, arms-open or teaching gesture
-- Gaze forward, engaged, warm
-- Stance wide enough to read as "communicator", not "lecturer behind podium"
+- Stehend, Arme offen, erklärend-einladend
+- Gaze forward, warm-charismatisch
+- Stance weit genug für "Kosmos-Kommunikator", nicht "hinter Podium stehender Dozent"
 
 **No-Go (concrete):**
-- ❌ StarTalk-style typography anywhere near or on the character
-- ❌ Cosmos (the show) apparel references or iconography
-- ❌ Signature vest-pattern that identifies a specific real person (striped lapels, specific pocket placement)
-- ❌ Exaggerated racial features — over-dark skin tone, over-sharp jaw / cheekbones, over-large facial features
-- ❌ Reference actual portrait photos for **proportion**, then render semi-realistically — never copy or trace
-- ❌ Name cues anywhere — no "Neil", no "deGrasse", no podcast/show titles in background
+- ❌ "StarTalk"-artige Typografie irgendwo auf/bei der Figur
+- ❌ "Cosmos" (die Show) Apparel-Referenzen, Logo, Iconografie
+- ❌ Signature-Westen-Muster einer spezifischen realen Person (Streifen-Lapel, bestimmte Pocket-Platzierung)
+- ❌ Racial Exaggeration (übertrieben-dunkler Hautton, over-sharp Kiefer/Wangenknochen, over-large Features)
+- ❌ Reale Portrait-Fotos tracen oder kopieren — Referenz ist Comic-Ästhetik (Spider-Verse, Pixar), nicht Wikipedia
+- ❌ Name-Cues: kein "Neil", kein "deGrasse", keine Podcast/Show-Titel im Background
 
 ---
 
 ## 3. Universal No-Gos
 
-These apply to ALL archetype-scholar characters and to any future character referencing a real-world identity type.
+Gelten für ALLE Charaktere (NOVA, Prof. Lern Classic, alle 3 Scholars + zukünftige Archetypen).
 
-- ❌ **Chibi style for any scholar-category character** — chibi is restricted to NOVA and Prof. Lern Classic.
-- ❌ **Racial exaggeration** in any character — reference real photos for proportion, render semi-realistically, no single-feature hyperbole.
-- ❌ **Photographic reference copying** — no traceable poses, no copied clothing patterns, no recreated hairstyling of a specific real person. Reference = inspiration-for-proportion, never transfer.
-- ❌ **Endorsement-indicia** — no named books, signature vest patterns, catchphrases on background, book-spine titles, or any visual element that triggers "this is X-person-endorsed".
-- ❌ **Real-person names anywhere** — layer names, file names, commit messages, code comments, SVG metadata, design-tool annotations. Archetype labels only.
-- ❌ **`scaleX(-1)` on the character body in RTL layouts** — mirror the UI chrome (arrows, speech-bubble pointers), never the character itself. Character faces forward or has an RTL-specific pose variant. (Pitfall #15)
-- ❌ **`<title>` element inside the SVG root or any child** — screen-readers dutifully announce every `<title>`, causing audio spam on state changes. Designer-tool exports must be stripped. (Pitfall #9)
-- ❌ **Inline `<script>` elements inside any SVG** — security vector, out-of-scope for custom-upload v5.x discussions.
-- ❌ **`<foreignObject>` elements inside any SVG** — security vector (HTML/script injection surface).
-- ❌ **External `xlink:href` references** in SVG — data-exfiltration / network-fingerprint vector.
-- ❌ **`onXXX=` event-handler attributes** inside any SVG.
+- ❌ **Reale Namen irgendwo** — Layer-Names, File-Names, Commit-Messages, Code-Kommentare, SVG-Metadata, Design-Tool-Annotations. Archetype-Labels only.
+- ❌ **Racial Exaggeration** — Haut-Ton-Saturierung im Comic-Stil OK, aber keine karikaturhaften Proportionen. Comic ≠ Karikatur.
+- ❌ **Photographic Reference Copying** — keine tracebaren Posen, keine kopierten Kleidungs-Muster, keine nachgestellten Hairstylings spezifischer realer Personen. Reference = inspiration für Proportion, niemals Transfer.
+- ❌ **Endorsement-Indicia** — keine Named-Books, Signature-Vest-Muster, Catchphrases, Buchrücken-Titel, oder visuelle Elemente die "X-Person-endorsed" triggern.
+- ❌ **`scaleX(-1)` auf Charakter-Body in RTL-Layouts** — UI-Chrome (Pfeile, Sprechblasen-Pointer) spiegeln, nicht den Charakter. Charakter hat RTL-spezifische Pose-Variante falls nötig. (Pitfall #15)
+- ❌ **`<title>`-Element im SVG-Root oder Child** — Screen-Reader spammen das. Designer-Tool-Exports müssen gestrippt werden. (Pitfall #9)
+- ❌ **Inline `<script>`-Elemente in SVG** — Security-Vektor.
+- ❌ **`<foreignObject>`-Elemente in SVG** — Security-Vektor (HTML-Injection-Surface).
+- ❌ **Externe `xlink:href`-Referenzen** — Data-Exfiltration / Network-Fingerprint.
+- ❌ **`onXXX=`-Event-Handler-Attribute** in SVG.
 
-**Sanitization step (Phase 152 CI):** every authored SVG runs through `svgo` with plugins that strip `<title>`, `<script>`, `<foreignObject>`, and `on*` attributes. No exceptions.
+**Sanitization-Schritt (Phase 152 CI):** jede authored SVG läuft durch `svgo` mit Plugins die `<title>`, `<script>`, `<foreignObject>` und `on*`-Attribute strippen. Keine Ausnahmen.
 
 ---
 
 ## 4. Animation Constraints (foreshadows Phase 150)
 
-The animation primitive developed in Phase 150 will enforce these constraints globally. Archetype-scholar SVGs authored in Phase 152 must already comply so the primitive does not need defensive logic.
+Die Animation-Primitive aus Phase 150 erzwingt diese Constraints global. Scholar-SVGs in Phase 152 müssen bereits compliant sein.
 
-- **Idle loops: `transform` and `opacity` only** — GPU-composited, off main thread. Never animate `width`, `height`, `top`, `left`, `filter`, `box-shadow`, or any paint-triggering property inside idle loops.
-- **Respect `prefers-reduced-motion: reduce`** — render static pose, no motion, no scale bobbing. CSS `@media (prefers-reduced-motion: reduce) { animation: none; }` for every keyframe. JS-driven animations gate on `window.matchMedia('(prefers-reduced-motion: reduce)').matches`.
-- **`IntersectionObserver`-pause off-screen** — when the avatar is not intersecting the viewport, pause animations. When `document.visibilityState === 'hidden'`, pause. Use `@vueuse/core` helpers (`useIntersectionObserver`, `useDocumentVisibility`) — already a project dep.
-- **Avatar SVG root: `role="img"` + static `aria-label`** — label set once per character, localized. Never tie ARIA announcements to animation state. Do not announce "blinking" / "thinking" per frame.
-- **`aria-hidden="true"` + `focusable="false"`** on purely decorative header/corner placements; `role="img"` + static label only where the character *represents* the speaker (chat interface, VirtuProf fullscreen).
-- **Animation-count budget per archetype: 3 minimum** (idle/blink, wave, celebrate) — reference ANIM-05 in Phase 152 requirements. Additional animations may be authored but must pass the same constraints.
-- **No manual `setInterval` / `requestAnimationFrame`** — use `@vueuse/core` composables (`useIntervalFn`, `useRafFn`) that auto-cleanup on unmount. (Pitfall #12)
-- **`will-change: transform`** hint on the animated root element — prevents paint thrash on first animation trigger.
-- **No animation-tied state transitions on `aria-label`** — screen readers must hear the same label in every animation state.
+- **Idle-Loops: `transform` und `opacity` only** — GPU-composited. Niemals `width`, `height`, `top`, `left`, `filter`, `box-shadow` oder andere paint-triggernde Props in Idle-Loops.
+- **Respect `prefers-reduced-motion: reduce`** — statische Pose, keine Motion, keine Scale-Bobbing. CSS `@media (prefers-reduced-motion: reduce) { animation: none; }` pro Keyframe. JS-Animations gaten auf `window.matchMedia('(prefers-reduced-motion: reduce)').matches`.
+  - **Besonders wichtig:** Thruster-Glow beim Kosmologen = animated → muss bei reduced-motion zu statischem Glow werden (Opacity-only, kein Flicker).
+- **`IntersectionObserver`-Pause off-screen** — wenn Avatar nicht im Viewport, pausieren. `document.visibilityState === 'hidden'` → pausieren. `@vueuse/core` Helpers.
+- **Avatar SVG Root: `role="img"` + statisches `aria-label`** — Label einmal pro Charakter, localized. Niemals ARIA-Announcements an Animation-State koppeln.
+- **`aria-hidden="true"` + `focusable="false"`** bei rein dekorativen Platzierungen; `role="img"` + statisches Label wo Charakter den Speaker repräsentiert.
+- **Animation-Count-Budget pro Archetyp: 3 Minimum** (idle/blink, wave, celebrate) — ANIM-05 in Phase 152. Power-Effekte (Thruster, Kosmos-Projektion, Energy-Aura) zählen als zusätzliche Animationen, müssen dieselben Constraints erfüllen.
+- **Kein manuelles `setInterval` / `requestAnimationFrame`** — `@vueuse/core` Composables (`useIntervalFn`, `useRafFn`) mit Auto-Cleanup.
+- **`will-change: transform`** Hint am animierten Root-Element.
+- **Keine Animation-tied State-Transitions auf `aria-label`** — Screen-Reader hört in jedem Animation-State dasselbe Label.
 
 ---
 
-## 5. Sensitivity-Review-Gate
+## 5. Internal Review Gate
 
-Phase 152 SVG-Freeze is **blocked** until all three conditions below are satisfied and documented in `.planning/sensitivity-review/SIGNOFF.md`:
+Phase 152 SVG-Freeze ist **geblockt** bis alle drei Bedingungen erfüllt und in `.planning/sensitivity-review/SIGNOFF.md` dokumentiert sind:
 
-- ✅ **External sensitivity-review signed off** by a DE-market reviewer with disability-representation expertise (via Leidmedien.de / Sozialhelden e.V. or equivalent). Sign-off covers both Der Kosmologe (disability representation) and Der Astrophysik-Popularisierer (racial representation).
-- ✅ **All Universal No-Gos (Section 3) confirmed absent** in the reviewed draft. Reviewer-checklist or explicit written statement required.
-- ✅ **Palette + silhouette per archetype matches Section 2 spec** — confirmed by the Phase 152 executor before commit, and by the reviewer before sign-off.
+- ✅ **Internal Review durchgeführt** (Projekt-Owner + Co-Review). Fokus: Empowerment-Narrativ, Racial-Darstellung, Archetype-Konsistenz.
+- ✅ **Alle Universal No-Gos (Section 3) confirmed absent** im Review-Draft. Checklist-Eintrag pro Archetyp.
+- ✅ **Palette + Silhouette + Power-Element pro Archetyp matches Section 2** — bestätigt vom Phase 152 Executor vor Commit.
 
 **Process:**
 
-1. Illustrator produces concept-art for all three archetypes.
-2. Author / maintainer runs sanitization + No-Go self-check against Section 3.
-3. Concept-art submitted to sensitivity-reviewer (`REQUEST.md` template).
-4. Reviewer returns signed-off versions or annotated change requests.
-5. Changes integrated. If non-trivial, loop back to step 2.
-6. Final SVGs committed only after `SIGNOFF.md` is in place.
+1. Illustrator produziert Concept-Art für alle 3 Archetypen im Comic-Superhero-Stil
+2. Maintainer läuft Sanitization + No-Go-Self-Check gegen Section 3
+3. Internal Review (Andre + Tools-Review): Empowerment-Narrativ-Check, Racial-Check, Stil-Konsistenz
+4. Änderungen integriert. Bei non-trivial: loop zu Schritt 2
+5. Finale SVGs committed erst nach `SIGNOFF.md`-Eintrag
 
-**Hard constraint:** no SVG for Der Kosmologe or Der Astrophysik-Popularisierer ships to `main`, DevCloud, or the App Store without an entry in `.planning/sensitivity-review/SIGNOFF.md` for that archetype.
+**Review-Checklist (je Archetyp):**
+- [ ] Archetype-Label only — keine realen Namen im File/Layer/Metadata
+- [ ] Power-Element sichtbar und positiv konnotiert (nicht Mitleid/Comedy)
+- [ ] Palette matched Section 2 Vorgabe
+- [ ] Pose ist aktiv-heroisch, nicht passiv-leidend
+- [ ] Alle Universal No-Gos absent
+- [ ] SVG sanitized (svgo Pass 1)
+- [ ] Reduced-Motion-Fallback definiert
+- [ ] aria-label statisch + lokalisiert
+
+**Hard Constraint:** keine SVG für einen Scholar-Archetyp shipt zu `main`, DevCloud, oder App Store ohne entsprechenden Eintrag in `.planning/sensitivity-review/SIGNOFF.md`.
+
+**Budget-Entscheidung:** Projekt-Owner hat entschieden, kein externes Sensitivity-Review zu beauftragen. Review-Verantwortung liegt intern. Rationale: Die Empowerment-Comic-Ästhetik (Raketenrollstuhl, Kosmos-Projektion, Energy-Effekte) ist ein klarer Bruch zur realistisch-portraithaften Darstellung, die die ursprünglichen Sensitivity-Risiken produziert hätte. Comic-Superhero-Stil hat andere Risiko-Profile (Karikatur, Racial-Stereotype), die durch Internal Review + Universal-No-Gos + Comic-Book-Precedent abgedeckt sind.
 
 ---
 
@@ -179,10 +204,11 @@ Phase 152 SVG-Freeze is **blocked** until all three conditions below are satisfi
 
 - **Character tonality and behaviour** (existing 12 characters): `.planning/CHARACTER_BIBLE.md`
 - **Legal analysis and trademark rationale:** `.planning/LEGAL.md`
-- **Pitfall research (disability caricature #7, RTL #15, a11y #9, animation budget #4):** `.planning/research/PITFALLS.md`
+- **Pitfall research (Racial-Stereotypes, RTL, A11y, Animation-Budget):** `.planning/research/PITFALLS.md`
 - **Phase 149 context and decisions:** `.planning/phases/149-legal-art-direction/149-CONTEXT.md`
 - **CI guard for forbidden names:** `scripts/check-forbidden-names.sh`
 
 ---
 
-*Art Style Guide v1.0 — created in Phase 149 Plan 03 — 2026-04-18*
+*Art Style Guide v2.0 — updated in Phase 149 after Empowerment-Comic pivot — 2026-04-18*
+*v1.0 (2026-04-18) was semi-realistic; v2.0 switched to Comic-Superhero nach User-Entscheidung*
