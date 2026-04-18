@@ -31,28 +31,33 @@
 - ✅ **v3.9.0 Precision Learning** — Phases 125-129 (shipped 2026-04-03)
 - ✅ **v4.0.0 Vue 3 Migration** — Phases 130-134 (shipped 2026-04-03)
 - ✅ **v4.1.0 Social Learning & Consolidation** — Phases 135-143 (shipped 2026-04-04)
-- **v4.2.0 Lehrplan-Timeline + Admin-Werkzeuge** — Phases 144-148 (planned)
-- **v4.3.0 Onboarding & Content Intelligence** — Phases 149-152 (planned)
-- **v5.0.0 Universal Learning Platform** — Phases 153+ (vision)
+- ✅ **v4.2.0 Lehrplan-Timeline + Admin-Werkzeuge** — Phases 144-148 (shipped 2026-04-08)
+- **v4.4.0 Character & Personality** — Phases 149-153 (planned, ships before v4.3.0)
+- **v4.3.0 Onboarding & Content Intelligence** — Phases 154-157 (planned, ships after v4.4.0)
+- **v5.0.0 Universal Learning Platform** — Phases 158+ (vision)
 
-## v4.2.0 — Lehrplan-Timeline + Admin-Werkzeuge
+## v4.4.0 — Character & Personality
 
-| Phase | Titel | Scope | Aufwand |
-|-------|-------|-------|---------|
-| 144 | Timeline DB + Backend | Migration `course_schedule`, ScheduleService CRUD, API-Endpunkte, curriculum_scopes Sync | 1 Tag |
-| 145 | Timeline Frontend | CourseTimeline.vue Komponente, Integration in StudentDashboard + CourseDetail, ExamReadiness-Station | 1-2 Tage |
-| 146 | OCC Export-Commands | DataMobilityService (Export-Logik aus Controller extrahiert), `occ learning:export-pool`, `occ learning:export-course` | 1 Tag |
-| 147 | Kurs-Archivierung + Merge | CourseArchiveService (Snapshot JSON), `occ learning:merge-course` mit FSRS-Erhalt, Validierung | 1-2 Tage |
-| 148 | Admin-Dashboard Export-UI | Batch-Export-Button, Kurs-Statistik CSV-Download im Frontend | 0.5 Tage |
+> **Ziel:** VirtuProf bekommt ein Gesicht — weg von der futuristischen Box (NovaDock), zurück zu figürlicher Tiefe und Persönlichkeit. User können das Erscheinungsbild anpassen inkl. Archetype-Presets (Theoretiker / Kosmologe / Astrophysik-Popularisierer) und wiederbelebter Prof. Lern Classic.
+>
+> **Product Decisions:** Archetype-Naming (keine realen Namen, App-Store-sicher), externe Sensitivity-Review vor Phase 152 Freeze (~€300), Zero-Change-Default für Bestandsuser (NOVA bleibt), neue User starten mit Prof. Lern Classic. Keine neuen npm-Dependencies.
+
+### Phases
+
+- [ ] **Phase 149: Legal, Art Direction & Copy Guidelines** — Named-vs-Archetype-Entscheidung zementieren, Sensitivity-Review beauftragen, Style-Guide + Grep-CI für verbotene Eigennamen (gates BLOCKER #1-3, #7, #17)
+- [ ] **Phase 150: Animation Architecture & A11y Primitive** — Shared CSS `@keyframes` + WAAPI-Helpers mit `prefers-reduced-motion` + named SVG `<g>` + `transform-box: fill-box` + screen-reader-sichere Semantik (gates HIGH #4, #5, #9, #12)
+- [ ] **Phase 151: Skin Picker Framework & Prof. Lern Classic** — SkinRenderer-Dispatcher, SkinPicker-Komponente, Pinia-Store + NC user_config-Persistierung, Git-Restore ProfLernAvatar.vue + Vue 3 Composition API Migration, Meta-Schema-Extension (gates MEDIUM #10, #11)
+- [ ] **Phase 152: Three Archetype Presets** — Theoretiker + Kosmologe + Popularisierer als SVG-Silhouetten parallel, characters.js-Einträge, je ≥3 Animationen (idle/blink, wave, celebrate); Sensitivity-Sign-off vor Freeze (gates HIGH #7, #8, #15)
+- [ ] **Phase 153: Migration, Tests, Deploy & App Store** — Zero-Change-Default-Migration, One-time-Hinweis, Vitest + Playwright (animations disabled), PHPStan, i18n-5-Sprachen-Parität, DevCloud-Test, stale-JS-chunk-Cleanup, signature.json re-sign, App-Store-Push (gates MEDIUM #6, #13, #14, #17)
 
 ## v4.3.0 — Onboarding & Content Intelligence
 
 | Phase | Titel | Scope | Aufwand |
 |-------|-------|-------|---------|
-| 149 | Onboarding Redesign (Option B) | 2-Ebenen Fullscreen: Splash→Rolle→Tour→Datenschutz→Profil-Kacheln→Content-Jumpstart→Hook | 2-3 Tage |
-| 150 | Material → Pool Generator (3 Modi) | Drei Wege zum Pool: Gemini Cloud, Lokal Ollama, Manuell CSV/JSON. PoolDraftReview.vue | 3-4 Tage |
-| 151 | NOVA Sprachausgabe (Gemini TTS) | Vorlese-Button, 30 HD-Stimmen, Browser SpeechSynthesis Fallback | 2-3 Tage |
-| 152 | Video/Audio → Pool Generator | YouTube-URL + Audio-Upload, Gemini Video API + Whisper ASR | 2-3 Tage |
+| 154 | Onboarding Redesign (Option B) | 2-Ebenen Fullscreen: Splash→Rolle→Tour→Datenschutz→Profil-Kacheln→Content-Jumpstart→Hook | 2-3 Tage |
+| 155 | Material → Pool Generator (3 Modi) | Drei Wege zum Pool: Gemini Cloud, Lokal Ollama, Manuell CSV/JSON. PoolDraftReview.vue | 3-4 Tage |
+| 156 | NOVA Sprachausgabe (Gemini TTS) | Vorlese-Button, 30 HD-Stimmen, Browser SpeechSynthesis Fallback | 2-3 Tage |
+| 157 | Video/Audio → Pool Generator | YouTube-URL + Audio-Upload, Gemini Video API + Whisper ASR | 2-3 Tage |
 
 ## v5.0.0 — Universal Learning Platform
 
@@ -204,6 +209,16 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 - [ ] **Phase 128: Dashboard & Performance** - Dozenten-Aggregation optimized for FSRS data, DB indexes on badge/stats tables, materialized stats for 100+ users
 - [ ] **Phase 129: App Shell & Release** - router-view in App.vue, test-api.sh modernized, App Store v3.9.0 signing + upload
 
+### v4.4.0 Character & Personality (Phases 149-153)
+
+**Milestone Goal:** VirtuProf bekommt ein Gesicht. User können zwischen NOVA (Default für Bestandsuser), Prof. Lern Classic (Default für neue User) und drei Archetype-Presets (Theoretiker / Kosmologe / Popularisierer) wählen. Shared Animation-Engine mit WCAG 2.3.3 und Sensitivity-Review für Darstellung.
+
+- [ ] **Phase 149: Legal, Art Direction & Copy Guidelines** - Archetype-Naming-Entscheidung dokumentiert, Sensitivity-Reviewer beauftragt, Style-Guide für Chibi-vs-Semi-Realistic, CI-Grep-Check gegen verbotene Eigennamen (LEGAL-01..04, MIGR-04)
+- [ ] **Phase 150: Animation Architecture & A11y Primitive** - character-animations.css + .js, character-reaction-engine.js (generalisiert aus Nova), SVG `<g>`-Sub-Groups mit `transform-box: fill-box`, `prefers-reduced-motion` von Tag 1 gated, A11y-Semantik (ANIM-01..04, A11Y-01..05)
+- [ ] **Phase 151: Skin Picker Framework & Prof. Lern Classic** - SkinRenderer.vue Dispatcher ersetzt NovaDock-Hardcode, SkinPicker.vue in PersonalSettings, Pinia-Store + NC user_config-Persistierung, ProfLernAvatar.vue aus v2.6.1 Git restored + Vue 3 migriert, Meta-Schema-Extension (PICK-01..05, CLASSIC-01..04, META-01..03)
+- [ ] **Phase 152: Three Archetype Presets** - SVG-Silhouetten für Theoretiker + Kosmologe + Popularisierer parallel, characters.js-Einträge, je ≥3 Animationen (idle/blink, wave, celebrate), Sensitivity-Sign-off vor Freeze, ANIM-05 Animation-Coverage je Skin (SCHOLAR-01..04, ANIM-05)
+- [ ] **Phase 153: Migration, Tests, Deploy & App Store** - Zero-Change-Default-Migration, One-time-In-App-Hinweis, Vitest (SkinRenderer + resolveReaction + 4 Avatar-Snapshots), Playwright E2E mit `animations: 'disabled'`, manueller A11y-Audit (prefers-reduced-motion + Screen-Reader + RTL + Keyboard), i18n-5-Sprachen-Parität + CI-Key-Check, DevCloud-Test (Kurs 21 + ernesst), stale-JS-chunk-Cleanup, signature.json re-sign, App-Store-Push (MIGR-01..05, TEST-01..06, I18N-01..03)
+
 ## Phase Details
 
 ### Phase 110: Foundation & Security
@@ -321,6 +336,68 @@ Plans:
   4. When exam_date is today or in the past, the widget shows a suitable terminal state message rather than a negative countdown
 **Plans**: TBD
 
+### Phase 149: Legal, Art Direction & Copy Guidelines
+**Goal**: Archetype-Naming is locked in writing, external sensitivity review is commissioned, and automated guardrails ensure no forbidden real-person names leak into code, i18n, or App Store assets
+**Depends on**: Nothing (first phase of v4.4.0 — gates all art production)
+**Requirements**: LEGAL-01, LEGAL-02, LEGAL-03, LEGAL-04, MIGR-04
+**Success Criteria** (what must be TRUE):
+  1. `.planning/LEGAL.md` documents the Archetype-Naming decision with rationale (App-Store-Safety, Hawking-Estate-Trademark, Tyson-right-of-publicity, Einstein-Hebrew-University-Trademark) and is committed to git
+  2. A grep-based CI check (`scripts/check-forbidden-names.sh` or equivalent) fails the pipeline if "Einstein", "Hawking", "Tyson", "Neil deGrasse", "Cosmos", or "StarTalk" appears anywhere in `app/src/**`, `app/l10n/**`, `CHANGELOG.md`, or `appinfo/info.xml`
+  3. At least one external sensitivity reviewer is commissioned in writing (~€300 budget confirmed) with a sign-off deadline before Phase 152 SVG-freeze
+  4. CHANGELOG v4.4.0 draft entry uses archetype names ("Der Theoretiker" / "Der Kosmologe" / "Der Astrophysik-Popularisierer") and explicitly does NOT name the historical inspirations
+  5. Style-Guide document specifies: Chibi for fictional Prof. Lern Classic only; semi-realistic illustration style for all three scholar archetypes; no animated wheelchair, no racially exaggerated features
+**Plans**: TBD
+
+### Phase 150: Animation Architecture & A11y Primitive
+**Goal**: A shared animation engine exists that every skin can use; every animation respects `prefers-reduced-motion` from day one; avatars are screen-reader-friendly and free of memory leaks
+**Depends on**: Phase 149 (style-guide must be locked before animation primitives are designed)
+**Requirements**: ANIM-01, ANIM-02, ANIM-03, ANIM-04, A11Y-01, A11Y-02, A11Y-03, A11Y-04, A11Y-05
+**Success Criteria** (what must be TRUE):
+  1. `character-animations.css` provides shared `@keyframes` (blink, slight sway) all wrapped in `@media (prefers-reduced-motion: no-preference)`; enabling OS-level reduced-motion emulation in DevTools stops ALL avatar animation immediately with a static pose rendered
+  2. `character-animations.js` exposes WAAPI helpers (`playWave`, `playCelebrate`, `playShrug`) each gated by `matchMedia('(prefers-reduced-motion: reduce)')`, returning instantly without side effects when reduced-motion is active
+  3. `character-reaction-engine.js` is generalised from `nova-reaction-engine.js` and returns `{animation, emotion, sound, duration}` for each supported event; when a skin does not support the requested state it falls back to `idle` with no error
+  4. Every animated SVG `<g>` uses named ids (`head`, `arms`, `body`) with `transform-box: fill-box` inline, verified via a snapshot-test that pivots correctly in Safari pre-16 emulation
+  5. Avatar SVG root carries `role="img"` + a static i18n `aria-label` (never per-animation-state); NVDA/VoiceOver manual walkthrough confirms the avatar does not interrupt navigation and does not spam per-frame announcements
+  6. PersonalSettings "Ruhige Darstellung"-Toggle overrides OS preference when enabled and takes effect without page reload; Keyboard-Navigation (Tab + Arrow + Enter) reaches every control with a visible `focus-visible` ring
+**Plans**: TBD
+
+### Phase 151: Skin Picker Framework & Prof. Lern Classic
+**Goal**: Users can select their VirtuProf skin in PersonalSettings and the choice persists in NC user_config; the dispatcher picks the right avatar at runtime; Prof. Lern Classic is restored from git v2.6.1 and migrated to Vue 3 as the simplest proof-case of the picker framework
+**Depends on**: Phase 150 (animation primitives must exist before Prof. Lern Classic can reuse them)
+**Requirements**: PICK-01, PICK-02, PICK-03, PICK-04, PICK-05, CLASSIC-01, CLASSIC-02, CLASSIC-03, CLASSIC-04, META-01, META-02, META-03
+**Success Criteria** (what must be TRUE):
+  1. User opens PersonalSettings and sees a dropdown listing Nova + Prof. Lern Classic + three archetype-placeholders, filtered from `characters.js` by `user_selectable === true`; selecting any entry saves the value to NC user_config key `learning.virtuprof_skin` via `VirtuProfController` and persists across a hard reload
+  2. VirtuProf.vue no longer hardcodes `<NovaDock>` — `SkinRenderer.vue` dispatches polymorphically (Nova → NovaDock, prof_lern_classic → ProfLernAvatar, else → CharacterAvatar with given id), and an invalid/removed skinId gracefully falls back to Nova without a runtime error
+  3. Changing skin from Nova to Prof. Lern Classic mid-session updates the avatar instantly — no page reload — verified by `<SkinRenderer :key="skinPreference">` remount and Pinia `skinStore` as single source of truth (no stale `data()` copies)
+  4. `ProfLernAvatar.vue` is restored from git tag v2.6.1, migrated to Vue 3 `<script setup>`, and renders the characteristic features: reading behind a book, gaze follows cursor on hover, arm-wave on click (auto-hides after 1.2s), question mark on body — each respecting `prefers-reduced-motion`
+  5. `characters.js` is extended additively with three new fields (`user_selectable`, `category`, `preview_thumbnail_svg`); all 12 existing entries still load and render in Campaign code without any change to their call-sites (non-breaking default mechanism verified by vitest)
+**Plans**: TBD
+
+### Phase 152: Three Archetype Presets
+**Goal**: The three scholar archetypes (Theoretiker, Kosmologe, Astrophysik-Popularisierer) exist as selectable skins with distinct silhouettes, palettes, and ≥3 animation states each; the external sensitivity review is signed off before any SVG is frozen
+**Depends on**: Phase 151 (picker framework + CharacterAvatar extension + meta-schema must exist to host the new entries)
+**Requirements**: SCHOLAR-01, SCHOLAR-02, SCHOLAR-03, SCHOLAR-04, ANIM-05
+**Success Criteria** (what must be TRUE):
+  1. Three new entries exist in `characters.js` (`theoretiker`, `kosmologe`, `popularisierer`) with complete meta-schema (id, name, role, personality, palette, silhouette key, states list, campaignAppearances, user_selectable=true, category='scholar', preview_thumbnail_svg) — naming uses archetypes exclusively, grep for forbidden real-person names returns zero hits
+  2. CharacterAvatar.vue renders distinct SVG silhouettes for each archetype: Theoretiker (wild hair + mustache + cardigan-palette amber/muted), Kosmologe (glasses + understated wheelchair detail + blue-palette, drawn as full person first, mobility aid last, never animated), Popularisierer (goatee + vest + star-glow + magenta-violet-palette)
+  3. Each of the four new avatars (Prof. Lern Classic from Phase 151 + three archetypes) supports ≥3 animations: idle/blink, wave, celebrate — verified by vitest snapshot test for each skin × each state
+  4. External sensitivity reviewer has signed off on Kosmologe + Popularisierer archetypes in writing BEFORE any SVG is committed to main (sign-off artefact stored in `.planning/sensitivity-review/`); any requested changes are incorporated before the phase completes
+  5. Switching between all five skins (Nova, Prof. Lern, Theoretiker, Kosmologe, Popularisierer) in PersonalSettings produces correct reactive re-render without regression of previous skins
+**Plans**: TBD
+
+### Phase 153: Migration, Tests, Deploy & App Store
+**Goal**: Existing users remain on NOVA (zero-change default); new users get Prof. Lern Classic; all quality gates pass; v4.4.0 ships to the App Store with stale JS chunks cleaned and signature.json re-signed
+**Depends on**: Phase 152 (all visual assets must be final and sensitivity-approved before signing)
+**Requirements**: MIGR-01, MIGR-02, MIGR-03, MIGR-05, TEST-01, TEST-02, TEST-03, TEST-04, TEST-05, TEST-06, I18N-01, I18N-02, I18N-03
+**Success Criteria** (what must be TRUE):
+  1. Post-deploy verification on DevCloud Kurs 21 (15 students) confirms every existing user still sees NOVA (no silent migration) and a new test-account registered after deploy sees Prof. Lern Classic as default; a one-time in-app hint "Neue Skins verfügbar in den Einstellungen" appears and auto-dismisses after 7 days or user-click
+  2. Vitest suite green: unit tests for `SkinRenderer` dispatch + fallback, unit tests for `resolveReaction()` fallback on unsupported state, snapshot tests for all four new avatars in every supported state (≥3 states × 4 skins = ≥12 snapshots); `CharacterAvatar.spec.ts` has ≤3 presentational smoke tests (no over-testing of Vue reactivity)
+  3. Playwright E2E green with `animations: 'disabled'` flag: open PersonalSettings → select skin → VirtuProf updates without reload → log out and back in → selection persists; test runs 10 consecutive times in CI without flake
+  4. Manual A11y audit documented and signed off: `prefers-reduced-motion` emulation stops all animations; NVDA + VoiceOver navigate without avatar interruption; Arabic RTL screenshot confirms avatar is NOT mirrored; keyboard-only navigation reaches every picker control
+  5. i18n parity green across all five languages (DE/EN/FR/RU/AR): CI key-parity check passes for the new avatar-picker keys; Arabic RTL renders picker labels right-aligned with avatar unmirrored; tested with DevCloud external user ernesst (French) and Kurs 21 ADHS-user before App-Store-push
+  6. Deploy script deletes old `js/*.js` and `js/*.css` chunks in container before rsync so hard-refresh of an older session does not 404; signature.json is re-signed AFTER final SVG assets land; App Store listing uses archetype names in all screenshots + description; CHANGELOG.md + info.xml version bumped to v4.4.0
+**Plans**: TBD
+
 ## Progress Table
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -344,3 +421,8 @@ Plans:
 | 122. Redis Cache Option | v3.8.0 | 1/1 | Complete | 2026-04-02 |
 | 123. Push-Notifications | v3.8.0 | 1/1 | Complete | 2026-04-02 |
 | 124. Content Audit | v3.8.0 | 2/2 | Complete | 2026-04-02 |
+| 149. Legal, Art Direction & Copy | 4/5 | In Progress|  | — |
+| 150. Animation Architecture & A11y | v4.4.0 | 0/TBD | Not started | — |
+| 151. Skin Picker & Prof. Lern Classic | v4.4.0 | 0/TBD | Not started | — |
+| 152. Three Archetype Presets | v4.4.0 | 0/TBD | Not started | — |
+| 153. Migration, Tests, Deploy & App Store | v4.4.0 | 0/TBD | Not started | — |
