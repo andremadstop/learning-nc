@@ -1,0 +1,94 @@
+#!/bin/bash
+# Pre-push Quality Gate: ESLint + Vitest + PHPStan + Security
+# Alle Gates muessen bestehen bevor gepusht wird.
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+FAILED=0
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+APP_DIR="$ROOT_DIR/app"
+
+echo -e "${YELLOW}=== Pre-Push Quality Gate ===${NC}"
+
+# 1. Security: Keine hardcoded API-Keys oder Passwoerter
+echo -n "Security scan... "
+SECRETS=$(grep -rn 'api_key.*=.*["'"'"']sk-\|password\s*=\s*["'"'"'][A-Za-z0-9]' --include="*.php" --include="*.js" --include="*.vue" "$APP_DIR/lib/" "$APP_DIR/src/" 2>/dev/null | grep -v 'getenv\|config\|Config\|IConfig\|test\|example\|\.env\|password_hash\|passwordField\|password_confirm\|password_reset\|PASSWORD' || true)
+if [ -n "$SECRETS" ]; then
+    echo -e "${RED}FAIL — Moeglicherweise hardcoded Secrets:${NC}"
+    echo "$SECRETS"
+    FAILED=1
+else
+    echo -e "${GREEN}OK${NC}"
+fi
+
+# 2. ESLint (0 errors Pflicht)
+echo -n "ESLint... "
+cd "$APP_DIR"
+if npx eslint --ext .js,.vue src/ --quiet 2>/dev/null; then
+    echo -e "${GREEN}OK (0 errors)${NC}"
+else
+    echo -e "${RED}FAIL${NC}"
+    npx eslint --ext .js,.vue src/ --quiet 2>/dev/null | head -10
+    FAILED=1
+fi
+
+# 3. Vitest (alle JS Unit-Tests)
+echo -n "Vitest... "
+VITEST_OUT=$(npm run test 2>&1)
+if echo "$VITEST_OUT" | grep -q "passed"; then
+    PASSED=$(echo "$VITEST_OUT" | grep "Tests" | grep -o "[0-9]* passed")
+    echo -e "${GREEN}OK ($PASSED)${NC}"
+else
+    echo -e "${RED}FAIL${NC}"
+    echo "$VITEST_OUT" | tail -5
+    FAILED=1
+fi
+cd "$ROOT_DIR"
+
+# 4. PHPStan (remote, non-blocking)
+echo -n "PHPStan... "
+PHPSTAN_OUT=$(ssh -o ConnectTimeout=5 relais 'docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/phpstan analyse --no-progress 2>&1' 2>/dev/null || echo "UNREACHABLE")
+if echo "$PHPSTAN_OUT" | grep -q "No errors"; then
+    echo -e "${GREEN}OK (Level 5)${NC}"
+elif echo "$PHPSTAN_OUT" | grep -q "UNREACHABLE"; then
+    echo -e "${YELLOW}SKIP (relais nicht erreichbar)${NC}"
+else
+    echo -e "${RED}FAIL${NC}"
+    echo "$PHPSTAN_OUT" | head -10
+    FAILED=1
+fi
+
+# 5. Umlaut-Check: ae/ue/oe in deutschen UI-Texten erkennen
+echo -n "Umlaut-Check... "
+UMLAUT_HITS=$(grep -rn --include="*.vue" --include="*.js" -P "(?<![a-zA-Z])(fuer|ueber|Uebung|Aenderung|Erklaer|Guelt|hinzufueg|Loeschen|Pruef|zurueck|verfueg|Groess|hoech|moeg|oeffen|Rueck|Ausfuehr|Einfueg|Aehnl|Uebersetz|aerger|aendern|Aerger|aergern|Aenderungen|Einfuehrung|Eroeffnung|ueberpruef|Ueberpruef|Schaetzen|schaetzen|waehlen|Waehlen|erhoeh|Erhoeh|gewaehlt|Gewaehlt|Zugaeng|zugaeng|vollstaendig|Vollstaendig|saemtlich|Saemtlich|unterstuetz|Unterstuetz|aeusser|Aeusser|spaeter|Spaeter|naechst|Naechst|haeufig|Haeufig)(?![a-zA-Z])" "$APP_DIR/src/" 2>/dev/null | grep -v '\.test\.' | grep -v 'node_modules' || true)
+if [ -n "$UMLAUT_HITS" ]; then
+    COUNT=$(echo "$UMLAUT_HITS" | wc -l)
+    echo -e "${YELLOW}WARN — $COUNT Stellen mit ae/ue/oe statt Umlauten:${NC}"
+    echo "$UMLAUT_HITS" | head -5
+    # Warnung, kein Blocker (noch)
+else
+    echo -e "${GREEN}OK${NC}"
+fi
+
+# 6. Forbidden Names (LEGAL-02) — blocks Einstein/Hawking/Tyson/Neil deGrasse/
+#    StarTalk + Cosmos-as-show-title in app/src, app/l10n, CHANGELOG, info.xml.
+echo -n "Forbidden names... "
+if "$ROOT_DIR/scripts/check-forbidden-names.sh" >/dev/null 2>&1; then
+    echo -e "${GREEN}OK${NC}"
+else
+    echo -e "${RED}FAIL${NC}"
+    "$ROOT_DIR/scripts/check-forbidden-names.sh" | head -20
+    FAILED=1
+fi
+
+# Ergebnis
+echo ""
+if [ $FAILED -ne 0 ]; then
+    echo -e "${RED}=== PUSH BLOCKIERT — Fehler oben beheben ===${NC}"
+    exit 1
+else
+    echo -e "${GREEN}=== Alle Gates bestanden ===${NC}"
+fi

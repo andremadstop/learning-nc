@@ -12,7 +12,8 @@ app/js/*.LICENSE.txt
 .paul/
 .ralphrc
 tools/
-.githooks/
+.githooks/*
+!.githooks/pre-push
 CLAUDE.md
 /COLLABORATION.md
 /CODEX_RESULT*.md
