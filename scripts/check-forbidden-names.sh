@@ -6,7 +6,7 @@
 # Blocks production-scope references to real-person names that carry
 # trademark or right-of-publicity risk for Learning-NC v4.4.0+.
 #
-# Scope (strict): app/src/, app/l10n/, CHANGELOG.md, appinfo/info.xml
+# Scope (strict): app/src/, app/l10n/, app/CHANGELOG.md, app/appinfo/info.xml
 # Scope explicitly EXCLUDES .planning/ — LEGAL.md contains the
 # trademark analysis itself and would otherwise self-fail.
 #
@@ -39,8 +39,8 @@ SCOPE_DIRS=()
 [ -d "$ROOT_DIR/app/l10n" ] && SCOPE_DIRS+=("$ROOT_DIR/app/l10n/")
 
 SCOPE_FILES=()
-[ -f "$ROOT_DIR/CHANGELOG.md" ]       && SCOPE_FILES+=("$ROOT_DIR/CHANGELOG.md")
-[ -f "$ROOT_DIR/appinfo/info.xml" ]   && SCOPE_FILES+=("$ROOT_DIR/appinfo/info.xml")
+[ -f "$ROOT_DIR/app/CHANGELOG.md" ]       && SCOPE_FILES+=("$ROOT_DIR/app/CHANGELOG.md")
+[ -f "$ROOT_DIR/app/appinfo/info.xml" ]   && SCOPE_FILES+=("$ROOT_DIR/app/appinfo/info.xml")
 
 if [ ${#SCOPE_DIRS[@]} -eq 0 ] && [ ${#SCOPE_FILES[@]} -eq 0 ]; then
     # Nothing in scope — treat as clean.
