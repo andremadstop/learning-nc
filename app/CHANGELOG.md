@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.4.0] - UNRELEASED — Character & Personality
+
+### Added
+- **Skin-Picker in PersonalSettings** — Users können das Erscheinungsbild von VirtuProf anpassen. Wählbar sind NOVA, Prof. Lern Classic und drei neue Archetypen.
+- **Prof. Lern Classic** — Die ursprüngliche VirtuProf-Figur ist als Skin zurück und wird der Default für **neu registrierte** User.
+- **Drei Archetype-Presets** (stilisierte Figuren, inhaltlich unabhängig von realen Personen):
+  - **Der Theoretiker** — Archetyp mit wildem Haar, Schnurrbart und Cardigan-Palette (warme Brauntöne).
+  - **Der Kosmologe** — Archetyp im Rollstuhl, mit Brille, blaue Palette. Rollstuhl wird statisch dargestellt (siehe Accessibility).
+  - **Der Astrophysik-Popularisierer** — Archetyp mit Kinnbart, Weste und magenta-violettem Sternen-Glow.
+- **Animation Engine** — 3 Mikro-Animationen pro Character (Blink, Wave, Celebrate), GPU-composited (`transform` + `opacity` only), `prefers-reduced-motion`-aware, IntersectionObserver-gepaused, wenn der Avatar off-screen ist.
+- **„Ruhige Darstellung"** — Manueller Toggle in PersonalSettings, unabhängig von OS-Settings. Deaktiviert alle Character-Animationen und Partikel-Effekte.
+
+### Changed
+- **Zero-Change-Default für Bestandsuser** — Alle bestehenden User bleiben auf NOVA. Der neue Skin-Picker ist rein additiv und muss explizit geöffnet werden, um andere Skins zu wählen. Das ist eine bewusste Entscheidung nach dem Feedback zum Nova-Rework in früheren Versionen: keine stillschweigenden Persönlichkeits-Wechsel.
+
+### Accessibility
+- WCAG 2.3.3 (Animation from Interactions) wird für alle neuen Animationen respektiert — `prefers-reduced-motion` pausiert sämtliche Mikro-Animationen, der Character bleibt in einer statischen Pose.
+- Screen-Reader-Spam vermieden — `aria-label` bleibt statisch über den gesamten Animations-Zyklus, keine DOM-Updates pro Frame.
+- RTL-Layout: Character wird **nicht** horizontal gespiegelt (kein `scaleX(-1)`), Rollstuhl und Händigkeit behalten ihre ursprüngliche Semantik.
+- Rollstuhl-Darstellung folgt dem Art-Style-Guide (siehe `app/docs/ART_STYLE_GUIDE.md`): kein „rolling comedy", kein animiertes Rad, keine isolierenden Posen.
+
+### Internationalization
+- Alle Picker-Strings und Skin-Beschreibungen sind in den 5 unterstützten Sprachen verfügbar: DE, EN, FR, RU, AR.
+- Archetype-Labels bleiben in allen Sprachen als Konzept-Label erhalten (z. B. „The Theorist", „The Cosmologist", „The Astrophysics Populariser" im EN), Transliterationen für RU/AR wurden sprach-sensitiv gewählt.
+
 ## [4.2.2] - 2026-04-13
 
 ### Added
