@@ -55,6 +55,8 @@ Progress: [■■■■□] 4/5 plans (80%)
 - [149-01] Bash-script-sourced pre-push gate pattern (testable, reusable in CI) chosen over inline hook logic
 - [149-01] .githooks/pre-push kept as tracked mirror for fresh clones (gitignore allowlist added) rather than deprecated
 - [149-01] LEGAL-EXCEPTION inline marker established as escape hatch for legal-review documents that must reference forbidden names
+- [149-02] LEGAL.md v1.0 created — 5-chapter trademark analysis locks Archetype-Naming (USPTO #3591305 Einstein, #5980163 Hawking, Tyson right-of-publicity, 2022 CA ruling); amendment protocol version-bumps the doc for any future change
+- [149-02] Gitignore allowlist pattern /.planning/* + explicit !/.planning/LEGAL.md (and STATE/ROADMAP/REQUIREMENTS/PROJECT) preserves phases/** ignore + app/.planning/ ignore; tracked meta files stay tracked
 - [149-03] `app/docs/ART_STYLE_GUIDE.md` chosen as separate file over CHARACTER_BIBLE.md integration — ships with app, discoverable from README/CHANGELOG/App Store docs
 - [149-03] Character-first drawing order (clothing → pose → face → hair → wheelchair LAST) mandatory in Section 2.2 Der Kosmologe — single most load-bearing rule against CHI-2024 caricature trap
 - [149-03] SVG security bans (`<script>`, `<foreignObject>`, external `xlink:href`, `on*` attrs) elevated to Universal No-Gos — pre-empts custom-upload attack surface and locks Phase 152 svgo sanitization contract
