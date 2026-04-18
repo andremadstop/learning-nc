@@ -991,6 +991,15 @@ class CourseService {
         return $name;
     }
 
+    private function getFirstName(string $userId): string {
+        $full = trim($this->getDisplayName($userId));
+        if ($full === '') {
+            return $userId;
+        }
+        $parts = preg_split('/\s+/', $full, 2);
+        return $parts[0] !== '' ? $parts[0] : $full;
+    }
+
     /**
      * Batch-load pool names for a set of pool IDs.
      */
@@ -1510,7 +1519,8 @@ class CourseService {
             ->from('learning_course_members', 'cm')
             ->leftJoin('cm', 'learning_user_stats', 'us', $qbCount->expr()->eq('cm.user_id', 'us.user_id'))
             ->where($qbCount->expr()->eq('cm.course_id', $qbCount->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-            ->andWhere($qbCount->expr()->eq('cm.role', $qbCount->createNamedParameter('student')));
+            ->andWhere($qbCount->expr()->eq('cm.role', $qbCount->createNamedParameter('student')))
+            ->andWhere($qbCount->expr()->notLike('cm.user_id', $qbCount->createNamedParameter('demo-%')));
         if ($activeOnly) {
             $qbCount->andWhere($qbCount->expr()->isNotNull('us.last_activity_date'))
                 ->andWhere($qbCount->expr()->gte('us.last_activity_date', $qbCount->createNamedParameter($activeSince)));
@@ -1531,7 +1541,8 @@ class CourseService {
             ->from('learning_course_members', 'cm')
             ->leftJoin('cm', 'learning_user_stats', 'us', $qb->expr()->eq('cm.user_id', 'us.user_id'))
             ->where($qb->expr()->eq('cm.course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')));
+            ->andWhere($qb->expr()->eq('cm.role', $qb->createNamedParameter('student')))
+            ->andWhere($qb->expr()->notLike('cm.user_id', $qb->createNamedParameter('demo-%')));
         if ($activeOnly) {
             $qb->andWhere($qb->expr()->isNotNull('us.last_activity_date'))
                 ->andWhere($qb->expr()->gte('us.last_activity_date', $qb->createNamedParameter($activeSince)));
@@ -1546,7 +1557,7 @@ class CourseService {
             $rank++;
             $entries[] = [
                 'user_id' => $row['user_id'],
-                'display_name' => $this->getDisplayName($row['user_id']),
+                'display_name' => $this->getFirstName($row['user_id']),
                 'total_xp' => (int)$row['total_xp'],
                 'current_level' => (int)$row['current_level'],
                 'total_mastered' => (int)$row['total_mastered'],
@@ -1583,6 +1594,7 @@ class CourseService {
                     ))
                     ->where($qb2->expr()->eq('cm.course_id', $qb2->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
                     ->andWhere($qb2->expr()->eq('cm.role', $qb2->createNamedParameter('student')))
+                    ->andWhere($qb2->expr()->notLike('cm.user_id', $qb2->createNamedParameter('demo-%')))
                     ->andWhere($qb2->expr()->orX(
                         // Higher XP
                         $qb2->expr()->gt(
