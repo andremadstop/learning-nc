@@ -13,6 +13,8 @@ app/js/*.LICENSE.txt
 !/.planning/ROADMAP.md
 !/.planning/REQUIREMENTS.md
 !/.planning/PROJECT.md
+!/.planning/sensitivity-review/
+!/.planning/sensitivity-review/**
 app/.planning/
 .claude/
 .paul/
