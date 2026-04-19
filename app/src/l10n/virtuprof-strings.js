@@ -251,7 +251,18 @@ export const de = {
   "slide:student:welcome:title": "Willkommen in deinem Lernraum",
   "{cert} prep active": "{cert}-Vorbereitung aktiv",
   "{days} days in a row. Consistency beats intensity.": "{days} Tage hintereinander. Konsistenz schlägt Intensität.",
-  "{winnerName} gewinnt die Arena-Runde!": "{winnerName} gewinnt die Arena-Runde!"
+  "{winnerName} gewinnt die Arena-Runde!": "{winnerName} gewinnt die Arena-Runde!",
+  "Ruhige Darstellung": "Ruhige Darstellung",
+  "Stops avatar motion and particle effects immediately.": "Stoppt Avatar-Bewegung und Partikel-Effekte sofort.",
+  "VirtuProf appearance": "VirtuProf-Erscheinungsbild",
+  "Choose how VirtuProf appears in the dock and chat.": "Wähle, wie VirtuProf im Dock und im Chat erscheint.",
+  "Current preview": "Aktuelle Vorschau",
+  "Prof. Lern Classic": "Prof. Lern Classic",
+  "Der Theoretiker": "Der Theoretiker",
+  "Der Kosmologe": "Der Kosmologe",
+  "Der Astrophysik-Popularisierer": "Der Astrophysik-Popularisierer",
+  "New: choose a VirtuProf skin in Personal Settings.": "Neu: Wähle in den persönlichen Einstellungen einen VirtuProf-Skin.",
+  "Learning assistant": "Lernassistent"
 };
 export const en = {
   "A classmate challenged you to a duel. Accept it to jump straight into the duel lobby.": "A classmate challenged you to a duel. Accept it to jump straight into the duel lobby.",
@@ -505,7 +516,18 @@ export const en = {
   "slide:student:welcome:title": "Welcome to your learning space",
   "{cert} prep active": "{cert} prep active",
   "{days} days in a row. Consistency beats intensity.": "{days} days in a row. Consistency beats intensity.",
-  "{winnerName} gewinnt die Arena-Runde!": "{winnerName} gewinnt die Arena-Runde!"
+  "{winnerName} gewinnt die Arena-Runde!": "{winnerName} gewinnt die Arena-Runde!",
+  "Ruhige Darstellung": "Reduced motion",
+  "Stops avatar motion and particle effects immediately.": "Stops avatar motion and particle effects immediately.",
+  "VirtuProf appearance": "VirtuProf appearance",
+  "Choose how VirtuProf appears in the dock and chat.": "Choose how VirtuProf appears in the dock and chat.",
+  "Current preview": "Current preview",
+  "Prof. Lern Classic": "Prof. Lern Classic",
+  "Der Theoretiker": "The Theorist",
+  "Der Kosmologe": "The Cosmologist",
+  "Der Astrophysik-Popularisierer": "The Astrophysics Populariser",
+  "New: choose a VirtuProf skin in Personal Settings.": "New: choose a VirtuProf skin in Personal Settings.",
+  "Learning assistant": "Learning assistant"
 };
 export const fr = {
   "A classmate challenged you to a duel. Accept it to jump straight into the duel lobby.": "Un(e) camarade vous a défié(e) en duel. Acceptez pour rejoindre directement le lobby du duel.",
@@ -759,7 +781,18 @@ export const fr = {
   "slide:student:welcome:title": "Bienvenue dans ton espace d'apprentissage",
   "{cert} prep active": "Préparation {cert} active",
   "{days} days in a row. Consistency beats intensity.": "{days} jours d'affilée. La régularité prime sur l'intensité.",
-  "{winnerName} gewinnt die Arena-Runde!": "{winnerName} remporte le tour d'Arène !"
+  "{winnerName} gewinnt die Arena-Runde!": "{winnerName} remporte le tour d'Arène !",
+  "Ruhige Darstellung": "Affichage calme",
+  "Stops avatar motion and particle effects immediately.": "Arrete immediatement les mouvements d'avatar et les effets de particules.",
+  "VirtuProf appearance": "Apparence de VirtuProf",
+  "Choose how VirtuProf appears in the dock and chat.": "Choisis comment VirtuProf apparait dans le dock et le chat.",
+  "Current preview": "Apercu actuel",
+  "Prof. Lern Classic": "Prof. Lern Classic",
+  "Der Theoretiker": "Le Theoricien",
+  "Der Kosmologe": "Le Cosmologiste",
+  "Der Astrophysik-Popularisierer": "Le Vulgarisateur d'astrophysique",
+  "New: choose a VirtuProf skin in Personal Settings.": "Nouveau : choisis un skin VirtuProf dans les parametres personnels.",
+  "Learning assistant": "Assistant d'apprentissage"
 };
 export const ru = {
   "A classmate challenged you to a duel. Accept it to jump straight into the duel lobby.": "Однокурсник вызвал вас на дуэль. Примите вызов, чтобы сразу перейти в лобби дуэли.",
@@ -1013,7 +1046,18 @@ export const ru = {
   "slide:student:welcome:title": "Добро пожаловать в твоё учебное пространство",
   "{cert} prep active": "Подготовка к {cert} активна",
   "{days} days in a row. Consistency beats intensity.": "{days} дней подряд. Постоянство важнее интенсивности.",
-  "{winnerName} gewinnt die Arena-Runde!": "{winnerName} выигрывает раунд Арены!"
+  "{winnerName} gewinnt die Arena-Runde!": "{winnerName} выигрывает раунд Арены!",
+  "Ruhige Darstellung": "Spokoinyi rezhim",
+  "Stops avatar motion and particle effects immediately.": "Srazu otklyuchaet dvizhenie avatara i effekty chastits.",
+  "VirtuProf appearance": "Vneshnii vid VirtuProf",
+  "Choose how VirtuProf appears in the dock and chat.": "Vyberite, kak VirtuProf vyglyadit v doke i chate.",
+  "Current preview": "Tekushii predprosmotr",
+  "Prof. Lern Classic": "Prof. Lern Classic",
+  "Der Theoretiker": "Teoretik",
+  "Der Kosmologe": "Kosmolog",
+  "Der Astrophysik-Popularisierer": "Popularizator astrofiziki",
+  "New: choose a VirtuProf skin in Personal Settings.": "Novoe: vyberite skin VirtuProf v lichnykh nastroikakh.",
+  "Learning assistant": "Uchebnyi pomoshchnik"
 };
 export const ar = {
   "A classmate challenged you to a duel. Accept it to jump straight into the duel lobby.": "تحدّاك أحد زملائك في مبارزة. اقبل التحدي للانضمام مباشرةً إلى غرفة الانتظار.",
@@ -1267,5 +1311,16 @@ export const ar = {
   "slide:student:welcome:title": "مرحبًا بك في مساحة تعلمك",
   "{cert} prep active": "التحضير لـ {cert} نشط",
   "{days} days in a row. Consistency beats intensity.": "{days} أيام متتالية. الاتساق يتفوق على الكثافة.",
-  "{winnerName} gewinnt die Arena-Runde!": "{winnerName} يفوز بجولة Arena!"
+  "{winnerName} gewinnt die Arena-Runde!": "{winnerName} يفوز بجولة Arena!",
+  "Ruhige Darstellung": "عرض هادئ",
+  "Stops avatar motion and particle effects immediately.": "يوقف حركة الصورة الرمزية وتأثيرات الجسيمات فوراً.",
+  "VirtuProf appearance": "مظهر VirtuProf",
+  "Choose how VirtuProf appears in the dock and chat.": "اختر كيف يظهر VirtuProf في الشريط والدردشة.",
+  "Current preview": "المعاينة الحالية",
+  "Prof. Lern Classic": "Prof. Lern Classic",
+  "Der Theoretiker": "المنظّر",
+  "Der Kosmologe": "عالم الكونيات",
+  "Der Astrophysik-Popularisierer": "مبسّط الفيزياء الفلكية",
+  "New: choose a VirtuProf skin in Personal Settings.": "جديد: اختر مظهراً لـ VirtuProf في الإعدادات الشخصية.",
+  "Learning assistant": "المساعد التعليمي"
 };

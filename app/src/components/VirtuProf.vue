@@ -25,10 +25,19 @@
       v-if="enabled && !fullscreenActive"
       class="virtuprof-container"
       :class="{ minimized: isMinimized, 'is-open': showBubble }">
-      <NovaDock
+      <div v-if="showSkinNotice" class="virtuprof-skin-notice">
+        <span>{{ vt('New: choose a VirtuProf skin in Personal Settings.') }}</span>
+        <button type="button" class="virtuprof-skin-notice__dismiss" @click.stop="dismissSkinNotice">
+          {{ vt('Ok, got it') }}
+        </button>
+      </div>
+      <SkinRenderer
         v-if="!showBubble"
+        :key="skinId"
+        :skin-id="skinId"
         :animation="currentAnimation"
         :emotion="currentEmotion"
+        :language="language"
         :has-message="visible && !isMinimized"
         :invite-count="duelInvites.incoming.length"
         :status-text="dockStatusText"
@@ -89,10 +98,12 @@
 import axios from '@nextcloud/axios'
 import { getCurrentUser } from '@nextcloud/auth'
 import { generateUrl } from '@nextcloud/router'
-import NovaDock from './nova/NovaDock.vue'
+import SkinRenderer from './SkinRenderer.vue'
 import NovaPanel from './nova/NovaPanel.vue'
 import VirtuProfBubble from './VirtuProfBubble.vue'
 import VirtuProfFullscreen from './VirtuProfFullscreen.vue'
+import { getCharacter } from '../data/characters.js'
+import { characterReactions } from '../utils/character-reaction-engine.js'
 import { novaReactions } from '../utils/nova-reaction-engine.js'
 import OnboardingIntro from './OnboardingIntro.vue'
 import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
@@ -106,6 +117,7 @@ import {
   buildTelosPayload,
   createTelosForm,
 } from '../utils/telosProfile.js'
+import { useOptionalSkinStore } from '../stores/skinStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 
 const ONBOARDING_PRESETS = [
@@ -216,7 +228,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 
 export default {
   name: 'VirtuProf',
-  components: { NovaDock, NovaPanel, VirtuProfBubble, VirtuProfFullscreen, OnboardingIntro },
+  components: { SkinRenderer, NovaPanel, VirtuProfBubble, VirtuProfFullscreen, OnboardingIntro },
   props: {
     enabled: {
       type: Boolean,
@@ -243,6 +255,7 @@ export default {
       stepIndex: 0,
       currentAnimation: 'idle',
       currentEmotion: null,
+      skinId: 'nova',
       language: detectVirtuProfLanguage(),
       dismissedTriggers: [],
       queue: [],
@@ -295,6 +308,7 @@ export default {
       ttsEnabled: false,
       sttEnabled: false,
       voiceLang: '',
+      showSkinNotice: false,
       onboardingReminderCount: 0,
       // Journey state (opt-in step-by-step onboarding)
       journeyStepIndex: 0,
@@ -456,6 +470,7 @@ export default {
       this.userFirstName = ''
     }
     const virtuProfStore = useOptionalVirtuProfStore()
+    const skinStore = useOptionalSkinStore()
     if (virtuProfStore) {
       this._storeUnwatchers = [
         this.$watch(
@@ -528,6 +543,21 @@ export default {
         ),
       ]
     }
+    if (skinStore) {
+      this._storeUnwatchers = [
+        ...(this._storeUnwatchers || []),
+        this.$watch(
+          () => skinStore.selectedSkinId,
+          (skinId) => {
+            if (!skinId) {
+              return
+            }
+            this.skinId = skinId
+          },
+          { immediate: true },
+        ),
+      ]
+    }
     await this.loadState()
     // MEM-01: Load persistent chat history so previous conversations are visible immediately
     if (this.aiEnabled) {
@@ -570,6 +600,8 @@ export default {
         this.ttsEnabled = false
         this.sttEnabled = false
         this.voiceLang = this.getBrowserVoiceLanguage()
+        this.skinId = 'nova'
+        this.showSkinNotice = false
         this.onboardingReminderCount = 0
       }
     },
@@ -605,6 +637,8 @@ export default {
       this.aiEnabled = data.ai_enabled === true
       this.ttsEnabled = data.tts_enabled === true
       this.sttEnabled = data.stt_enabled === true
+      this.skinId = useOptionalSkinStore()?.loadFromServerPayload(data) || 'nova'
+      this.showSkinNotice = data.showSkinNotice === true
       this.voiceLang = VOICE_LANGUAGE_OPTIONS.some(option => option.value === data.voice_lang)
         ? data.voice_lang
         : this.getBrowserVoiceLanguage()
@@ -1107,6 +1141,19 @@ export default {
         this.voiceLang = payload.voiceLang
       }
     },
+    dismissSkinNotice() {
+      this.showSkinNotice = false
+      this.saveVirtuProfPreferences({ migrationNoticeDismissed: true }).catch(() => {})
+    },
+    supportedSkinStates() {
+      if (this.skinId === 'nova') {
+        return ['idle', 'talk', 'celebrate']
+      }
+      if (this.skinId === 'prof_lern_classic') {
+        return ['idle', 'talk', 'wave', 'celebrate']
+      }
+      return getCharacter(this.skinId).states || ['idle']
+    },
     async markHandled(triggerId, script) {
       if (!triggerId || !script) {
         return
@@ -1182,7 +1229,9 @@ export default {
       this.telosCompletionProfile = null
     },
     applyReaction(eventType, context = {}) {
-      const reaction = novaReactions.react(eventType, context)
+      const reaction = this.skinId === 'nova'
+        ? novaReactions.react(eventType, context)
+        : characterReactions.react(eventType, this.supportedSkinStates(), context)
       if (!reaction) return
       this.currentAnimation = reaction.animation
       this.currentEmotion = reaction.emotion
@@ -2196,6 +2245,30 @@ export default {
 </script>
 
 <style scoped>
+.virtuprof-skin-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-primary-element) 22%, var(--color-border));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-main-background) 88%, var(--color-primary-element) 12%);
+  color: var(--color-main-text);
+  font-size: 13px;
+}
+
+.virtuprof-skin-notice__dismiss {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-main-background);
+  color: var(--color-main-text);
+  padding: 6px 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
 .virtuprof-container {
   width: 100%;
   display: grid;

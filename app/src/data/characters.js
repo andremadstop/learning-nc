@@ -1,16 +1,37 @@
 /**
- * Character Registry — All 12 figures for Learning-NC campaign system.
+ * Character Registry — campaign figures plus user-selectable VirtuProf skins.
  *
- * Each character has: id, name, role, personality, palette (primary/accent/glow
- * referencing --lnc-* design tokens), silhouette key, states, campaignAppearances.
- *
- * @module data/characters
+ * Each character has: id, name, role, personality, palette, silhouette, states,
+ * campaignAppearances, user_selectable, category, preview_thumbnail_svg.
  */
 
-/**
- * Fallback character for unknown or missing IDs.
- */
-const FALLBACK_CHARACTER = Object.freeze({
+const DEFAULT_META = Object.freeze({
+	user_selectable: false,
+	category: 'campaign',
+	preview_thumbnail_svg: '',
+})
+
+function createPreviewSvg(primary, accent, glow) {
+	return [
+		'<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">',
+		`<circle cx="24" cy="15" r="8" fill="${primary}" />`,
+		`<path d="M14 25 Q24 20 34 25 L37 40 H11 Z" fill="${accent}" />`,
+		`<circle cx="36" cy="12" r="4" fill="${glow}" opacity="0.8" />`,
+		'</svg>',
+	].join('')
+}
+
+function defineCharacter(character) {
+	return Object.freeze({
+		...DEFAULT_META,
+		...character,
+		palette: Object.freeze(character.palette),
+		states: Object.freeze([...(character.states || [])]),
+		campaignAppearances: Object.freeze([...(character.campaignAppearances || [])]),
+	})
+}
+
+const FALLBACK_CHARACTER = defineCharacter({
 	id: 'unknown',
 	name: '???',
 	role: 'Unbekannt',
@@ -25,14 +46,8 @@ const FALLBACK_CHARACTER = Object.freeze({
 	campaignAppearances: [],
 })
 
-/**
- * All 12 characters: 6 heroes + 6 workplace figures.
- */
 const CHARACTERS = Object.freeze({
-
-	// ── Heroes ──────────────────────────────────────────────────────────
-
-	nova: Object.freeze({
+	nova: defineCharacter({
 		id: 'nova',
 		name: 'NOVA',
 		role: 'KI-Tutor / VirtuProf',
@@ -43,11 +58,86 @@ const CHARACTERS = Object.freeze({
 			glow: 'var(--lnc-cyan)',
 		},
 		silhouette: 'nova',
-		states: ['idle', 'thinking', 'explain', 'alert', 'celebrate'],
+		states: ['idle', 'thinking', 'talk', 'celebrate', 'explain', 'alert'],
 		campaignAppearances: ['*'],
+		user_selectable: true,
+		category: 'assistant',
+		preview_thumbnail_svg: createPreviewSvg('var(--lnc-primary)', 'var(--lnc-cyan)', 'var(--lnc-cyan)'),
 	}),
 
-	architect: Object.freeze({
+	prof_lern_classic: defineCharacter({
+		id: 'prof_lern_classic',
+		name: 'Prof. Lern Classic',
+		role: 'VirtuProf Classic',
+		personality: 'freundlich, nostalgisch, erklaert geduldig',
+		palette: {
+			primary: '#f3c7a6',
+			accent: '#2c6c9f',
+			glow: '#f2c230',
+		},
+		silhouette: 'prof_lern_classic',
+		states: ['idle', 'talk', 'wave', 'celebrate'],
+		campaignAppearances: [],
+		user_selectable: true,
+		category: 'assistant',
+		preview_thumbnail_svg: createPreviewSvg('#f3c7a6', '#2c6c9f', '#f2c230'),
+	}),
+
+	theoretiker: defineCharacter({
+		id: 'theoretiker',
+		name: 'Der Theoretiker',
+		role: 'Science Hero',
+		personality: 'intensiv, gedankenschnell, elektrisiert den Raum',
+		palette: {
+			primary: 'var(--lnc-amber)',
+			accent: '#8b5e34',
+			glow: '#c8ff5a',
+		},
+		silhouette: 'theoretiker',
+		states: ['idle', 'thinking', 'wave', 'celebrate'],
+		campaignAppearances: [],
+		user_selectable: true,
+		category: 'scholar',
+		preview_thumbnail_svg: createPreviewSvg('var(--lnc-amber)', '#8b5e34', '#c8ff5a'),
+	}),
+
+	kosmologe: defineCharacter({
+		id: 'kosmologe',
+		name: 'Der Kosmologe',
+		role: 'Science Hero',
+		personality: 'ruhig, mutig, praesentiert Komplexitaet mit Leichtigkeit',
+		palette: {
+			primary: '#274d8f',
+			accent: '#92a7c2',
+			glow: '#67d8ff',
+		},
+		silhouette: 'kosmologe',
+		states: ['idle', 'thinking', 'wave', 'celebrate'],
+		campaignAppearances: [],
+		user_selectable: true,
+		category: 'scholar',
+		preview_thumbnail_svg: createPreviewSvg('#274d8f', '#92a7c2', '#67d8ff'),
+	}),
+
+	popularisierer: defineCharacter({
+		id: 'popularisierer',
+		name: 'Der Astrophysik-Popularisierer',
+		role: 'Science Hero',
+		personality: 'charismatisch, warm, macht Kosmos greifbar',
+		palette: {
+			primary: '#b83fd7',
+			accent: '#5a2b74',
+			glow: '#ffd86a',
+		},
+		silhouette: 'popularisierer',
+		states: ['idle', 'thinking', 'wave', 'celebrate'],
+		campaignAppearances: [],
+		user_selectable: true,
+		category: 'scholar',
+		preview_thumbnail_svg: createPreviewSvg('#b83fd7', '#5a2b74', '#ffd86a'),
+	}),
+
+	architect: defineCharacter({
 		id: 'architect',
 		name: 'ARCHITECT',
 		role: 'Netzwerk-Architekt',
@@ -62,7 +152,7 @@ const CHARACTERS = Object.freeze({
 		campaignAppearances: ['netzwerk_grundlagen', 'grosser_ausfall'],
 	}),
 
-	security: Object.freeze({
+	security: defineCharacter({
 		id: 'security',
 		name: 'SECURITY',
 		role: 'Incident Responder',
@@ -77,7 +167,7 @@ const CHARACTERS = Object.freeze({
 		campaignAppearances: ['sicherheits_audit', 'ransomware_angriff'],
 	}),
 
-	sysadmin: Object.freeze({
+	sysadmin: defineCharacter({
 		id: 'sysadmin',
 		name: 'SYSADMIN',
 		role: 'Linux-Veteran',
@@ -92,7 +182,7 @@ const CHARACTERS = Object.freeze({
 		campaignAppearances: ['server_migration', 'grosser_ausfall'],
 	}),
 
-	helpdesk: Object.freeze({
+	helpdesk: defineCharacter({
 		id: 'helpdesk',
 		name: 'HELPDESK',
 		role: 'Troubleshooter',
@@ -107,7 +197,7 @@ const CHARACTERS = Object.freeze({
 		campaignAppearances: ['erste_woche', 'grosser_ausfall'],
 	}),
 
-	ghostline: Object.freeze({
+	ghostline: defineCharacter({
 		id: 'ghostline',
 		name: 'GHOSTLINE',
 		role: 'Antagonist',
@@ -122,9 +212,7 @@ const CHARACTERS = Object.freeze({
 		campaignAppearances: ['ransomware_angriff', 'sicherheits_audit'],
 	}),
 
-	// ── Workplace Figures ───────────────────────────────────────────────
-
-	klaus_dau: Object.freeze({
+	klaus_dau: defineCharacter({
 		id: 'klaus_dau',
 		name: 'Klaus DAU',
 		role: 'Endanwender',
@@ -139,7 +227,7 @@ const CHARACTERS = Object.freeze({
 		campaignAppearances: ['erste_woche', 'grosser_ausfall'],
 	}),
 
-	dr_hartmann: Object.freeze({
+	dr_hartmann: defineCharacter({
 		id: 'dr_hartmann',
 		name: 'Dr. Hartmann',
 		role: 'Geschaeftsfuehrer',
@@ -154,7 +242,7 @@ const CHARACTERS = Object.freeze({
 		campaignAppearances: ['erste_woche', 'grosser_ausfall'],
 	}),
 
-	frau_weber: Object.freeze({
+	frau_weber: defineCharacter({
 		id: 'frau_weber',
 		name: 'Frau Weber',
 		role: 'Datenschutzbeauftragte',
@@ -169,7 +257,7 @@ const CHARACTERS = Object.freeze({
 		campaignAppearances: ['sicherheits_audit', 'datenschutz_check'],
 	}),
 
-	uschi: Object.freeze({
+	uschi: defineCharacter({
 		id: 'uschi',
 		name: 'Uschi',
 		role: 'Sekretaerin',
@@ -184,7 +272,7 @@ const CHARACTERS = Object.freeze({
 		campaignAppearances: ['erste_woche', 'grosser_ausfall'],
 	}),
 
-	tim_azubi: Object.freeze({
+	tim_azubi: defineCharacter({
 		id: 'tim_azubi',
 		name: 'Tim (Azubi)',
 		role: 'Azubi',
@@ -199,7 +287,7 @@ const CHARACTERS = Object.freeze({
 		campaignAppearances: ['erste_woche'],
 	}),
 
-	sven_berater: Object.freeze({
+	sven_berater: defineCharacter({
 		id: 'sven_berater',
 		name: 'Sven (Berater)',
 		role: 'Externer Consultant',
@@ -215,19 +303,40 @@ const CHARACTERS = Object.freeze({
 	}),
 })
 
-/**
- * Look up a character by ID. Returns FALLBACK_CHARACTER for unknown IDs.
- *
- * @param {string} id — character identifier
- * @returns {object} character data
- */
-function getCharacter(id) {
+export const VIRTUPROF_SKIN_IDS = Object.freeze([
+	'nova',
+	'prof_lern_classic',
+	'theoretiker',
+	'kosmologe',
+	'popularisierer',
+])
+
+export function getCharacter(id) {
 	return CHARACTERS[id] || FALLBACK_CHARACTER
 }
 
-// Support both ESM and CJS consumption
-if (typeof module !== 'undefined' && module.exports) {
-	module.exports = { CHARACTERS, getCharacter, FALLBACK_CHARACTER }
+export function resolveVirtuProfSkinId(id) {
+	return VIRTUPROF_SKIN_IDS.includes(id) ? id : 'nova'
 }
 
-export { CHARACTERS, getCharacter, FALLBACK_CHARACTER }
+export function getSelectableVirtuProfSkins() {
+	return VIRTUPROF_SKIN_IDS
+		.map((id) => getCharacter(id))
+		.filter((character) => character.user_selectable === true)
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+	module.exports = {
+		CHARACTERS,
+		FALLBACK_CHARACTER,
+		VIRTUPROF_SKIN_IDS,
+		getCharacter,
+		getSelectableVirtuProfSkins,
+		resolveVirtuProfSkinId,
+	}
+}
+
+export {
+	CHARACTERS,
+	FALLBACK_CHARACTER,
+}

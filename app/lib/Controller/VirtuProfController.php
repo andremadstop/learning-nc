@@ -20,6 +20,7 @@ use OCP\IUserManager;
 
 class VirtuProfController extends Controller {
     private const ALLOWED_INTERFACE_LANGUAGES = ['', 'de', 'en', 'ru', 'ar'];
+    private const ALLOWED_SKIN_IDS = ['nova', 'prof_lern_classic', 'theoretiker', 'kosmologe', 'popularisierer'];
     private const ALLOWED_VOICE_LANGUAGES = [
         'de-DE',
         'en-US',
@@ -54,6 +55,7 @@ class VirtuProfController extends Controller {
         'nl' => 'nl-NL',
         'uk' => 'uk-UA',
     ];
+    private const SKIN_NOTICE_WINDOW_SECONDS = 604800;
 
     private IConfig $config;
     private ?string $userId;
@@ -110,7 +112,7 @@ class VirtuProfController extends Controller {
     }
 
     /**
-     * @return array{dismissed: array<int, string>, enabled: bool, language: string, visited_tools: array<int, string>, ai_enabled: bool, tts_enabled: bool, stt_enabled: bool, voice_lang: string, onboarding_reminder_count: int, onboarding_declined: bool}
+     * @return array{dismissed: array<int, string>, enabled: bool, language: string, visited_tools: array<int, string>, ai_enabled: bool, tts_enabled: bool, stt_enabled: bool, bot_sounds_enabled: bool, voice_lang: string, skinId: string, showSkinNotice: bool, onboarding_reminder_count: int, onboarding_declined: bool}
      */
     private function buildStatePayload(): array {
         $dismissed = json_decode(
@@ -132,7 +134,10 @@ class VirtuProfController extends Controller {
             'ai_enabled' => $this->isAiFeatureAvailable(),
             'tts_enabled' => $this->getTtsEnabled(),
             'stt_enabled' => $this->getSttEnabled(),
+            'bot_sounds_enabled' => $this->getBotSoundsEnabled(),
             'voice_lang' => $this->getVoiceLanguage(),
+            'skinId' => $this->getSkinId(),
+            'showSkinNotice' => $this->shouldShowSkinNotice(),
             'onboarding_reminder_count' => $this->getOnboardingReminderCount(),
             'onboarding_declined' => $this->config->getUserValue($this->userId, 'learning', 'onboarding_declined', 'no') === 'yes',
         ];
@@ -144,6 +149,10 @@ class VirtuProfController extends Controller {
 
     private function getSttEnabled(): bool {
         return $this->config->getUserValue($this->userId, 'learning', 'virtuprof_stt_enabled', 'no') === 'yes';
+    }
+
+    private function getBotSoundsEnabled(): bool {
+        return $this->config->getUserValue($this->userId, 'learning', 'virtuprof_bot_sounds_enabled', 'no') === 'yes';
     }
 
     private function getVoiceLanguage(): string {
@@ -165,6 +174,14 @@ class VirtuProfController extends Controller {
         return self::VOICE_LANGUAGE_MAP[$interfaceLanguage] ?? '';
     }
 
+    private function getSkinId(): string {
+        $stored = $this->normalizeSkinId(
+            $this->config->getUserValue($this->userId, 'learning', 'virtuprof_skin', '')
+        );
+
+        return $stored !== '' ? $stored : 'nova';
+    }
+
     private function getOnboardingReminderCount(): int {
         $raw = (int)$this->config->getUserValue($this->userId, 'learning', 'onboarding_reminder_count', '0');
         return max(0, min(3, $raw));
@@ -178,6 +195,31 @@ class VirtuProfController extends Controller {
     private function normalizeVoiceLanguage(string $language): string {
         $normalized = trim($language);
         return in_array($normalized, self::ALLOWED_VOICE_LANGUAGES, true) ? $normalized : '';
+    }
+
+    private function normalizeSkinId(string $skinId): string {
+        $normalized = trim($skinId);
+        return in_array($normalized, self::ALLOWED_SKIN_IDS, true) ? $normalized : '';
+    }
+
+    private function shouldShowSkinNotice(): bool {
+        if ($this->config->getUserValue($this->userId, 'learning', 'virtuprof_skin_notice_dismissed', 'no') === 'yes') {
+            return false;
+        }
+
+        $firstSeen = (int)$this->config->getUserValue($this->userId, 'learning', 'virtuprof_skin_notice_first_seen_at', '0');
+        $now = time();
+        if ($firstSeen <= 0) {
+            $this->config->setUserValue($this->userId, 'learning', 'virtuprof_skin_notice_first_seen_at', (string)$now);
+            return true;
+        }
+
+        if (($now - $firstSeen) >= self::SKIN_NOTICE_WINDOW_SECONDS) {
+            $this->config->setUserValue($this->userId, 'learning', 'virtuprof_skin_notice_dismissed', 'yes');
+            return false;
+        }
+
+        return true;
     }
 
     private function isAiFeatureAvailable(): bool {
@@ -327,9 +369,12 @@ class VirtuProfController extends Controller {
     public function savePreferences(
         ?bool $ttsEnabled = null,
         ?bool $sttEnabled = null,
+        ?bool $botSoundsEnabled = null,
         ?string $voiceLang = null,
+        ?string $skinId = null,
         ?int $onboardingReminderCount = null,
-        ?bool $onboardingDeclined = null
+        ?bool $onboardingDeclined = null,
+        ?bool $migrationNoticeDismissed = null
     ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -344,12 +389,24 @@ class VirtuProfController extends Controller {
         if ($sttEnabled !== null) {
             $this->config->setUserValue($this->userId, 'learning', 'virtuprof_stt_enabled', $sttEnabled ? 'yes' : 'no');
         }
+        if ($botSoundsEnabled !== null) {
+            $this->config->setUserValue($this->userId, 'learning', 'virtuprof_bot_sounds_enabled', $botSoundsEnabled ? 'yes' : 'no');
+        }
         if ($voiceLang !== null) {
             $this->config->setUserValue(
                 $this->userId,
                 'learning',
                 'virtuprof_voice_lang',
                 $this->normalizeVoiceLanguage($voiceLang)
+            );
+        }
+        if ($skinId !== null) {
+            $normalizedSkinId = $this->normalizeSkinId($skinId);
+            $this->config->setUserValue(
+                $this->userId,
+                'learning',
+                'virtuprof_skin',
+                $normalizedSkinId !== '' ? $normalizedSkinId : 'nova'
             );
         }
         if ($onboardingReminderCount !== null) {
@@ -359,6 +416,9 @@ class VirtuProfController extends Controller {
                 'onboarding_reminder_count',
                 (string)max(0, min(3, $onboardingReminderCount))
             );
+        }
+        if ($migrationNoticeDismissed === true) {
+            $this->config->setUserValue($this->userId, 'learning', 'virtuprof_skin_notice_dismissed', 'yes');
         }
 
         return new DataResponse(['ok' => true] + $this->buildStatePayload());

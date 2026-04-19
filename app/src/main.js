@@ -12,13 +12,18 @@ import './css/ghostline.css';
 import './css/skill-map.css';
 // Practicum session runner styles
 import './css/practicum.css';
+import './styles/character-animations.css';
+import { setAnimationsEnabledGetter } from './utils/character-animations.js';
+import { useA11yStore } from './stores/a11yStore.js';
 
 const pinia = createPinia();
+const a11yStore = useA11yStore(pinia);
 const app = createApp(App);
 
 // Make t() and n() available in all components
 app.config.globalProperties.t = t;
 app.config.globalProperties.n = n;
+setAnimationsEnabledGetter(() => a11yStore.animationsEnabled);
 app.use(pinia);
 app.use(router);
 app.mount('#app-content');

@@ -44,10 +44,41 @@
           @update:model-value="form.virtuProfEnabled = !!$event" />
       </div>
 
+      <div class="field-row lnc-a11y-toggle">
+        <label>{{ t('learning', 'Ruhige Darstellung') }}</label>
+        <p class="field-desc">{{ t('learning', 'Stops avatar motion and particle effects immediately.') }}</p>
+        <NcCheckboxRadioSwitch
+          :model-value="form.animationsEnabled"
+          type="switch"
+          @update:model-value="onAnimationsEnabledChange(!!$event)" />
+      </div>
+
       <hr class="section-divider" />
 
       <h3>{{ t('learning', 'VirtuProf Settings') }}</h3>
       <p class="section-desc">{{ t('learning', 'Control whether VirtuProf reads answers aloud and whether push-to-talk is available in the chat bubble.') }}</p>
+
+      <div class="field-row lnc-skin-picker">
+        <label for="virtuprof-skin">{{ t('learning', 'VirtuProf appearance') }}</label>
+        <p class="field-desc">{{ t('learning', 'Choose how VirtuProf appears in the dock and chat.') }}</p>
+        <select id="virtuprof-skin" v-model="form.virtuProfSkin" class="nc-input" @change="onSkinChange(form.virtuProfSkin)">
+          <option
+            v-for="skin in availableSkins"
+            :key="skin.id"
+            :value="skin.id">
+            {{ t('learning', skin.name) }}
+          </option>
+        </select>
+        <div class="skin-preview-card">
+          <span class="field-hint">{{ t('learning', 'Current preview') }}</span>
+          <SkinRenderer
+            :key="form.virtuProfSkin"
+            :skin-id="form.virtuProfSkin"
+            animation="idle"
+            :language="previewLanguage"
+            :status-text="t('learning', 'Current preview')" />
+        </div>
+      </div>
 
       <div class="field-row">
         <label>{{ t('learning', 'Speech output') }}</label>
@@ -366,12 +397,16 @@ import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwit
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import PrivacyInfo from './PrivacyInfo.vue'
+import SkinRenderer from './SkinRenderer.vue'
+import { getSelectableVirtuProfSkins } from '../data/characters.js'
 import { novaAudio } from '../utils/nova-audio-manager.js'
 import {
   applyTelosToForm,
   buildTelosPayload,
   createTelosForm,
 } from '../utils/telosProfile.js'
+import { useA11yStore } from '../stores/a11yStore.js'
+import { useSkinStore } from '../stores/skinStore.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 
 const VOICE_LANGUAGE_OPTIONS = [
@@ -394,7 +429,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 
 export default {
   name: 'PersonalSettings',
-  components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, PrivacyInfo },
+  components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, PrivacyInfo, SkinRenderer },
   data() {
     return {
       loading: true,
@@ -406,6 +441,8 @@ export default {
         uiLanguage: '',
         contentLanguage: '',
         virtuProfEnabled: true,
+        animationsEnabled: true,
+        virtuProfSkin: 'nova',
         virtuProfTtsEnabled: false,
         virtuProfSttEnabled: false,
         botSoundsEnabled: false,
@@ -438,8 +475,14 @@ export default {
     }
   },
   computed: {
+    availableSkins() {
+      return getSelectableVirtuProfSkins()
+    },
     voiceLanguageOptions() {
       return VOICE_LANGUAGE_OPTIONS
+    },
+    previewLanguage() {
+      return ['de', 'en', 'fr', 'ru', 'ar'].includes(this.form.uiLanguage) ? this.form.uiLanguage : 'de'
     },
     visibilityHint() {
       const hints = {
@@ -501,10 +544,13 @@ export default {
         ])
         const data = settingsResponse.data || {}
         const virtuProfData = virtuProfResponse.data || {}
+        useA11yStore().loadFromServerPayload(data)
+        this.form.animationsEnabled = (data.animations_enabled || 'yes') !== 'no'
         this.form.dailyChallengeEnabled = (data.daily_challenge || 'yes') === 'yes'
         this.form.uiLanguage = ['de', 'en', ''].includes(data.ui_language) ? data.ui_language : ''
         this.form.contentLanguage = ['de', 'en', 'ru', 'ar', ''].includes(data.content_language) ? data.content_language : ''
         this.form.virtuProfEnabled = (data.virtuprof_enabled || 'yes') !== 'no'
+        this.form.virtuProfSkin = useSkinStore().loadFromServerPayload(virtuProfData)
         this.form.virtuProfTtsEnabled = virtuProfData.tts_enabled === true
         this.form.virtuProfSttEnabled = virtuProfData.stt_enabled === true
         this.form.botSoundsEnabled = virtuProfData.bot_sounds_enabled === true
@@ -581,21 +627,30 @@ export default {
       this.form.botSoundsEnabled = val
       novaAudio.setEnabled(val)
     },
+    onAnimationsEnabledChange(val) {
+      this.form.animationsEnabled = val
+      useA11yStore().setEnabled(val)
+    },
+    onSkinChange(value) {
+      this.form.virtuProfSkin = useSkinStore().setSkinId(value)
+    },
     async save() {
       this.saving = true
       this.error = ''
       this.saved = false
       try {
-        await Promise.all([
+        const [, virtuProfResponse] = await Promise.all([
           axios.put(generateUrl('/apps/learning/api/settings/personal'), {
             daily_challenge: this.form.dailyChallengeEnabled ? 'yes' : 'no',
             ui_language: ['de', 'en'].includes(this.form.uiLanguage) ? this.form.uiLanguage : '',
             content_language: ['de', 'en', 'ru', 'ar'].includes(this.form.contentLanguage) ? this.form.contentLanguage : '',
             virtuprof_enabled: this.form.virtuProfEnabled ? 'yes' : 'no',
+            animations_enabled: this.form.animationsEnabled ? 'yes' : 'no',
             notifications_enabled: this.form.notificationsEnabled ? 'yes' : 'no',
             fsrs_detailed_stats: this.form.fsrsDetailedStats ? 'yes' : 'no',
           }),
           axios.put(generateUrl('/apps/learning/api/virtuprof/preferences'), {
+            skinId: this.form.virtuProfSkin,
             ttsEnabled: this.form.virtuProfTtsEnabled,
             sttEnabled: this.form.virtuProfSttEnabled,
             botSoundsEnabled: this.form.botSoundsEnabled,
@@ -604,6 +659,7 @@ export default {
               : 'de-DE',
           }),
         ])
+        this.form.virtuProfSkin = useSkinStore().loadFromServerPayload(virtuProfResponse.data || {})
         this.saved = true
         this.$emit('content-language-changed', this.form.contentLanguage)
         this.$emit('virtuprof-enabled-changed', this.form.virtuProfEnabled)
@@ -675,6 +731,16 @@ export default {
 
 .actions {
   padding-top: 4px;
+}
+
+.skin-preview-card {
+  display: grid;
+  gap: 8px;
+  max-width: 420px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-main-background) 92%, var(--color-primary-element) 8%);
 }
 
 .section-divider {

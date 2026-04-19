@@ -17,6 +17,7 @@ use OCA\Learning\Service\CourseMergeService;
 use OCA\Learning\Dashboard\LearningWidget;
 use OCA\Learning\Db\RagChunkMapper;
 use OCA\Learning\Service\DataMobilityService;
+use OCA\Learning\Listener\UserCreatedListener;
 use OCA\Learning\Listener\UserDeletedListener;
 use OCA\Learning\Notification\Notifier;
 use OCA\Learning\Search\PoolSearchProvider;
@@ -31,6 +32,7 @@ use OCP\BackgroundJob\IJobList;
 use OCP\IConfig;
 use OCP\IURLGenerator;
 use OCP\Settings\IManager as SettingsManager;
+use OCP\User\Events\UserCreatedEvent;
 use OCP\User\Events\UserDeletedEvent;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -45,6 +47,7 @@ class Application extends App implements IBootstrap {
     public function register(IRegistrationContext $context): void {
         $context->registerDashboardWidget(LearningWidget::class);
         $context->registerNotifierService(Notifier::class);
+        $context->registerEventListener(UserCreatedEvent::class, UserCreatedListener::class);
         $context->registerEventListener(UserDeletedEvent::class, UserDeletedListener::class);
         $context->registerSearchProvider(PoolSearchProvider::class);
         $context->registerSearchProvider(QuestionSearchProvider::class);
