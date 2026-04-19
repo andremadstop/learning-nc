@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.4.0] - UNRELEASED — Character & Personality
+## [4.4.0] - 2026-04-19 — Character & Personality
 
 ### Added
 - **Skin-Picker in PersonalSettings** — Users können das Erscheinungsbild von VirtuProf anpassen. Wählbar sind NOVA, Prof. Lern Classic und drei neue Archetypen.
