@@ -31,6 +31,26 @@
       "matchDepTypes": ["devDependencies"],
       "matchUpdateTypes": ["patch"],
       "automerge": false
+    },
+    {
+      "description": "Block postgres major — DevCloud runs pg16, upgrade requires DB migration project",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["postgres"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Block vue-router major — just migrated to v4 in v4.0.0, v5 is too fresh",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["vue-router"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Block node major — must align with Relay container + CI runtime",
+      "matchPackageNames": ["node"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ]
 }
