@@ -6,50 +6,86 @@
     ":semanticCommits"
   ],
   "timezone": "Europe/Berlin",
-  "schedule": ["before 6am on monday"],
+  "schedule": [
+    "before 6am on monday"
+  ],
   "prHourlyLimit": 4,
   "prConcurrentLimit": 6,
-  "labels": ["renovate", "dependencies"],
-  "docker": {
-    "enabled": true
-  },
+  "labels": [
+    "renovate",
+    "dependencies"
+  ],
   "packageRules": [
     {
+      "matchCategories": [
+        "docker"
+      ],
+      "enabled": true
+    },
+    {
       "description": "Group all docker-compose service images",
-      "matchDatasources": ["docker"],
+      "matchDatasources": [
+        "docker"
+      ],
       "groupName": "docker images"
     },
     {
       "description": "Group npm dev dependencies",
-      "matchManagers": ["npm"],
-      "matchDepTypes": ["devDependencies"],
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
       "groupName": "npm dev dependencies"
     },
     {
       "description": "Auto-merge patch updates of dev tooling",
-      "matchManagers": ["npm"],
-      "matchDepTypes": ["devDependencies"],
-      "matchUpdateTypes": ["patch"],
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
       "automerge": false
     },
     {
       "description": "Block postgres major — DevCloud runs pg16, upgrade requires DB migration project",
-      "matchDatasources": ["docker"],
-      "matchPackageNames": ["postgres"],
-      "matchUpdateTypes": ["major"],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "postgres"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "enabled": false
     },
     {
       "description": "Block vue-router major — just migrated to v4 in v4.0.0, v5 is too fresh",
-      "matchManagers": ["npm"],
-      "matchPackageNames": ["vue-router"],
-      "matchUpdateTypes": ["major"],
+      "matchManagers": [
+        "npm"
+      ],
+      "matchPackageNames": [
+        "vue-router"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "enabled": false
     },
     {
       "description": "Block node major — must align with Relay container + CI runtime",
-      "matchPackageNames": ["node"],
-      "matchUpdateTypes": ["major"],
+      "matchPackageNames": [
+        "node"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "enabled": false
     }
   ]
