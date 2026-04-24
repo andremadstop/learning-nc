@@ -223,7 +223,11 @@ class MaintenanceService {
     }
 
     /**
-     * Hydrate items with answer options.
+     * Hydrate items with answer options. is_correct is intentionally kept off the
+     * client payload — same reasoning as LeitnerService::attachAnswersToItems: any
+     * value the client can read in DevTools before submission is a cheat vector.
+     * Runtime question_type normalization is applied as defense-in-depth against
+     * future imports that slip through with the wrong type label.
      */
     private function hydrateAnswers(array &$items): void {
         if ($items === []) {
@@ -236,24 +240,39 @@ class MaintenanceService {
         }
 
         $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
+        $qb->select('id', 'question_id', 'text', 'is_correct', 'position')
             ->from('learning_answers')
-            ->where($qb->expr()->in('question_id', $qb->createNamedParameter($questionIds, IQueryBuilder::PARAM_INT_ARRAY)));
+            ->where($qb->expr()->in('question_id', $qb->createNamedParameter($questionIds, IQueryBuilder::PARAM_INT_ARRAY)))
+            ->orderBy('position', 'ASC');
 
         $result = $qb->executeQuery();
         $answersByQuestion = [];
+        $correctCountByQuestion = [];
         while ($row = $result->fetch()) {
             $qid = (int) $row['question_id'];
+            $isCorrect = (bool) $row['is_correct'];
             $answersByQuestion[$qid][] = [
                 'id' => (int) $row['id'],
                 'text' => $row['text'],
-                'is_correct' => (bool) $row['is_correct'],
+                'position' => (int) $row['position'],
             ];
+            if ($isCorrect) {
+                $correctCountByQuestion[$qid] = ($correctCountByQuestion[$qid] ?? 0) + 1;
+            }
         }
         $result->closeCursor();
 
         foreach ($items as &$item) {
-            $item['answers'] = $answersByQuestion[(int) $item['question_id']] ?? [];
+            $qid = (int) $item['question_id'];
+            $item['answers'] = $answersByQuestion[$qid] ?? [];
+
+            $currentType = $item['question_type'] ?? 'single';
+            if ($currentType === 'multiple') {
+                $item['question_type'] = 'multi';
+            } elseif (($correctCountByQuestion[$qid] ?? 0) > 1
+                && !in_array($currentType, ['multi', 'pbq', 'open'], true)) {
+                $item['question_type'] = 'multi';
+            }
         }
     }
 
