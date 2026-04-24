@@ -422,7 +422,7 @@ Plans:
 | 123. Push-Notifications | v3.8.0 | 1/1 | Complete | 2026-04-02 |
 | 124. Content Audit | v3.8.0 | 2/2 | Complete | 2026-04-02 |
 | 149. Legal, Art Direction & Copy | v4.4.0 | 5/5 | Complete | 2026-04-24 |
-| 150. Animation Architecture & A11y | v4.4.0 | 0/TBD | Ready to plan | — |
+| 150. Animation Architecture & A11y | v4.4.0 | 0/6 | Ready to execute | — |
 | 151. Skin Picker & Prof. Lern Classic | v4.4.0 | 0/TBD | Not started | — |
 | 152. Three Archetype Presets | v4.4.0 | 0/TBD | Not started | — |
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 0/TBD | Not started | — |
