@@ -44,7 +44,7 @@
 
 ### Phases
 
-- [ ] **Phase 149: Legal, Art Direction & Copy Guidelines** — Named-vs-Archetype-Entscheidung zementieren, Sensitivity-Review beauftragen, Style-Guide + Grep-CI für verbotene Eigennamen (gates BLOCKER #1-3, #7, #17)
+- [x] **Phase 149: Legal, Art Direction & Copy Guidelines** — LEGAL.md v1.0 (Trademark-Analyse), Style-Guide v2.0 (Comic-Superhero-Pivot), CHANGELOG-Draft Archetype-Labels, Grep-CI Forbidden-Names, Internal-Sensitivity-Sign-off statt extern (3/3 Archetypen ✅ 2026-04-19) — completed 2026-04-24
 - [ ] **Phase 150: Animation Architecture & A11y Primitive** — Shared CSS `@keyframes` + WAAPI-Helpers mit `prefers-reduced-motion` + named SVG `<g>` + `transform-box: fill-box` + screen-reader-sichere Semantik (gates HIGH #4, #5, #9, #12)
 - [ ] **Phase 151: Skin Picker Framework & Prof. Lern Classic** — SkinRenderer-Dispatcher, SkinPicker-Komponente, Pinia-Store + NC user_config-Persistierung, Git-Restore ProfLernAvatar.vue + Vue 3 Composition API Migration, Meta-Schema-Extension (gates MEDIUM #10, #11)
 - [ ] **Phase 152: Three Archetype Presets** — Theoretiker + Kosmologe + Popularisierer als SVG-Silhouetten parallel, characters.js-Einträge, je ≥3 Animationen (idle/blink, wave, celebrate); Sensitivity-Sign-off vor Freeze (gates HIGH #7, #8, #15)
@@ -421,8 +421,8 @@ Plans:
 | 122. Redis Cache Option | v3.8.0 | 1/1 | Complete | 2026-04-02 |
 | 123. Push-Notifications | v3.8.0 | 1/1 | Complete | 2026-04-02 |
 | 124. Content Audit | v3.8.0 | 2/2 | Complete | 2026-04-02 |
-| 149. Legal, Art Direction & Copy | 4/5 | In Progress|  | — |
-| 150. Animation Architecture & A11y | v4.4.0 | 0/TBD | Not started | — |
+| 149. Legal, Art Direction & Copy | v4.4.0 | 5/5 | Complete | 2026-04-24 |
+| 150. Animation Architecture & A11y | v4.4.0 | 0/TBD | Ready to plan | — |
 | 151. Skin Picker & Prof. Lern Classic | v4.4.0 | 0/TBD | Not started | — |
 | 152. Three Archetype Presets | v4.4.0 | 0/TBD | Not started | — |
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 0/TBD | Not started | — |
