@@ -142,6 +142,91 @@ class LeitnerServiceTest extends TestCase {
         $this->assertGreaterThan($items[0]['retrievability'], $items[1]['retrievability']);
     }
 
+    public function testGetDueQuestionsStripsIsCorrectFromAnswers(): void {
+        $itemsBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            [
+                'id' => 1,
+                'question_id' => 10,
+                'text' => 'Q',
+                'question_type' => 'single',
+                'pbq_subtype' => null,
+                'pbq_config' => null,
+            ],
+        ]));
+        $answersBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            ['id' => 99, 'question_id' => 10, 'text' => 'A', 'is_correct' => true, 'position' => 1],
+            ['id' => 100, 'question_id' => 10, 'text' => 'B', 'is_correct' => false, 'position' => 2],
+        ]));
+
+        $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $service = $this->createService($db, $poolMapper);
+
+        $items = $service->getDueQuestions(42, 'alice', 10);
+
+        $this->assertNotEmpty($items[0]['answers']);
+        foreach ($items[0]['answers'] as $answer) {
+            $this->assertArrayNotHasKey('is_correct', $answer, 'is_correct must never leak to the client before submission');
+        }
+    }
+
+    public function testGetDueQuestionsNormalizesLegacyMultipleLabelToMulti(): void {
+        $itemsBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            [
+                'id' => 1,
+                'question_id' => 10,
+                'text' => 'Pick all that apply',
+                'question_type' => 'multiple',
+                'pbq_subtype' => null,
+                'pbq_config' => null,
+            ],
+        ]));
+        $answersBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            ['id' => 99, 'question_id' => 10, 'text' => 'A', 'is_correct' => true, 'position' => 1],
+            ['id' => 100, 'question_id' => 10, 'text' => 'B', 'is_correct' => true, 'position' => 2],
+        ]));
+
+        $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $service = $this->createService($db, $poolMapper);
+
+        $items = $service->getDueQuestions(42, 'alice', 10);
+
+        $this->assertSame('multi', $items[0]['question_type']);
+    }
+
+    public function testGetDueQuestionsUpgradesSingleWithMultiCorrectToMulti(): void {
+        $itemsBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            [
+                'id' => 1,
+                'question_id' => 10,
+                'text' => 'Which two apply?',
+                'question_type' => 'single',
+                'pbq_subtype' => null,
+                'pbq_config' => null,
+            ],
+        ]));
+        $answersBuilder = new FakeQueryBuilder(FakeResult::fromFetchAll([
+            ['id' => 99, 'question_id' => 10, 'text' => 'A', 'is_correct' => true, 'position' => 1],
+            ['id' => 100, 'question_id' => 10, 'text' => 'B', 'is_correct' => true, 'position' => 2],
+            ['id' => 101, 'question_id' => 10, 'text' => 'C', 'is_correct' => false, 'position' => 3],
+        ]));
+
+        $db = new FakeDbConnection([$itemsBuilder, $answersBuilder]);
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $service = $this->createService($db, $poolMapper);
+
+        $items = $service->getDueQuestions(42, 'alice', 10);
+
+        $this->assertSame('multi', $items[0]['question_type']);
+    }
+
     private function createService(FakeDbConnection $db, PoolMapper $poolMapper): LeitnerService {
         $shareMapper = $this->createMock(PoolShareMapper::class);
         $badgeService = $this->createMock(BadgeService::class);

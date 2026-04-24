@@ -129,6 +129,29 @@ class LeitnerService {
             return;
         }
 
+        $this->attachAnswersToItems($items);
+
+        foreach ($items as &$item) {
+            if (isset($item['pbq_config']) && is_string($item['pbq_config'])) {
+                $item['pbq_config'] = json_decode($item['pbq_config'], true) ?: null;
+            }
+        }
+
+        $this->stripOpenAnswers($items);
+    }
+
+    /**
+     * Loads answers for every item, normalizes question_type when the data shows a
+     * multi-correct question mislabeled as single/multiple, and strips is_correct
+     * before the items leave the server. Client code must never see is_correct for
+     * unanswered questions — otherwise the correct answer is trivially readable in
+     * DevTools.
+     */
+    private function attachAnswersToItems(array &$items): void {
+        if ($items === []) {
+            return;
+        }
+
         $questionIds = array_unique(array_column($items, 'question_id'));
         $aqb = $this->db->getQueryBuilder();
         $aqb->select('id', 'question_id', 'text', 'is_correct', 'position')
@@ -140,18 +163,29 @@ class LeitnerService {
         $aResult->closeCursor();
 
         $answersByQuestion = [];
+        $correctCountByQuestion = [];
         foreach ($allAnswers as $answer) {
-            $answersByQuestion[$answer['question_id']][] = $answer;
-        }
-
-        foreach ($items as &$item) {
-            $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
-            if (isset($item['pbq_config']) && is_string($item['pbq_config'])) {
-                $item['pbq_config'] = json_decode($item['pbq_config'], true) ?: null;
+            $qid = (int) $answer['question_id'];
+            $isCorrect = (bool) $answer['is_correct'];
+            unset($answer['is_correct']);
+            $answersByQuestion[$qid][] = $answer;
+            if ($isCorrect) {
+                $correctCountByQuestion[$qid] = ($correctCountByQuestion[$qid] ?? 0) + 1;
             }
         }
 
-        $this->stripOpenAnswers($items);
+        foreach ($items as &$item) {
+            $qid = (int) $item['question_id'];
+            $item['answers'] = $answersByQuestion[$qid] ?? [];
+
+            $currentType = $item['question_type'] ?? 'single';
+            if ($currentType === 'multiple') {
+                $item['question_type'] = 'multi';
+            } elseif (($correctCountByQuestion[$qid] ?? 0) > 1
+                && !in_array($currentType, ['multi', 'pbq', 'open'], true)) {
+                $item['question_type'] = 'multi';
+            }
+        }
     }
 
     private function attachRetrievability(array &$items): void {
@@ -670,27 +704,13 @@ class LeitnerService {
         }));
 
         if (!empty($items)) {
-            $questionIds = array_unique(array_column($items, 'question_id'));
-            $aqb = $this->db->getQueryBuilder();
-            $aqb->select('id', 'question_id', 'text', 'is_correct', 'position')
-               ->from('learning_answers')
-               ->where($aqb->expr()->in('question_id', $aqb->createNamedParameter($questionIds, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT_ARRAY)))
-               ->orderBy('position', 'ASC');
-            $aResult = $aqb->executeQuery();
-            $allAnswers = $aResult->fetchAll();
-            $aResult->closeCursor();
-
-            $answersByQuestion = [];
-            foreach ($allAnswers as $answer) {
-                $answersByQuestion[$answer['question_id']][] = $answer;
-            }
-
+            $this->attachAnswersToItems($items);
             foreach ($items as &$item) {
-                $item['answers'] = $answersByQuestion[$item['question_id']] ?? [];
                 if (isset($item['pbq_config']) && is_string($item['pbq_config'])) {
                     $item['pbq_config'] = json_decode($item['pbq_config'], true) ?: null;
                 }
             }
+            unset($item);
             $this->stripOpenAnswers($items);
         }
 
