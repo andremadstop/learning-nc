@@ -162,8 +162,8 @@ foreach ($candidates as $index => $candidate) {
     $report['changes'][] = $change;
 }
 
-$reportPath = __DIR__ . '/cleanup_pool144_report.json';
-$manualReviewPath = __DIR__ . '/cleanup_pool144_manual_review.md';
+$reportPath = __DIR__ . '/cleanup_pool' . $poolId . '_report.json';
+$manualReviewPath = __DIR__ . '/cleanup_pool' . $poolId . '_manual_review.md';
 writeJsonFile($reportPath, $report);
 writeManualReviewFile($manualReviewPath, $report);
 

@@ -1,0 +1,188 @@
+{
+    "generated_at": "2026-04-24T18:11:33+00:00",
+    "pool_id": 139,
+    "dry_run": true,
+    "candidate_threshold": 80,
+    "candidates": 20,
+    "auto_fix_count": 0,
+    "manual_review_count": 2,
+    "unchanged_count": 18,
+    "gemini_available": true,
+    "changes": [],
+    "manual_review": [
+        {
+            "answer_id": 57457,
+            "question_id": 15189,
+            "position": 7,
+            "is_correct": false,
+            "reason": "cut_ratio_below_half",
+            "reason_detail": "Proposed answer keeps only 3.17% of the original text.",
+            "old_text": "Hop count der Administrator gibt im Router „von Hand“ ein, welche der Routen verwendet werden soll (die Route, die mit der niedrigsten „Administrativen Distanz“ und modifiziert um einen Hop-Count z.B. gemessen oder definiert wird, ein automatisches Fail-over erfolgt dabei aber nicht.",
+            "question_preview": "Ein Unternehmen erhält von seinem ISP eine Unterlassungsanordnung bezüglich verbotener Torrent-Aktivitäten. Welche der folgenden Maßnahmen sollte umgesetzt werden, um der Unterlas...",
+            "proposed_answer": "Hop count",
+            "proposed_explanation": "der Administrator gibt im Router „von Hand“ ein, welche der Routen verwendet werden soll (die Route, die mit der niedrigsten „Administrativen Distanz“ und modifiziert um einen Hop-Count z.B. gemessen oder definiert wird, ein automatisches Fail-over erfolgt dabei aber nicht.",
+            "confidence": "high",
+            "method": "gemini"
+        },
+        {
+            "answer_id": 57796,
+            "question_id": 15270,
+            "position": 7,
+            "is_correct": false,
+            "reason": "cut_ratio_below_half",
+            "reason_detail": "Proposed answer keeps only 6.35% of the original text.",
+            "old_text": "Jumbo frames beim VXLAN werden VLAN(-Tags UND der restliche Ethernet-Frame) in UDP-Datagramme eingepackt, dadurch wird im äußeren Ethernet-Frame fragmentiert, wenn nicht die MTU erhöht wird",
+            "question_preview": "Ein Netzwerkadministrator muss Dienste auf eine externe Umgebung umleiten. Dieser Prozess wird vier Wochen dauern, bis er vollständig funktionsfähig ist. Welches der folgenden DR-...",
+            "proposed_answer": "Jumbo frames",
+            "proposed_explanation": "beim VXLAN werden VLAN(-Tags UND der restliche Ethernet-Frame) in UDP-Datagramme eingepackt, dadurch wird im äußeren Ethernet-Frame fragmentiert, wenn nicht die MTU erhöht wird",
+            "confidence": "high",
+            "method": "gemini"
+        }
+    ],
+    "unchanged": [
+        {
+            "answer_id": 57168,
+            "question_id": 15120,
+            "position": 3,
+            "is_correct": false,
+            "reason": "The text is a clean, complete answer option without any prefixes, suffixes, or extraneous information.",
+            "preview": "Eine logische Schnittstelle, die verwendet wird, wenn die Anzahl der physischen Ports unzureichend ist"
+        },
+        {
+            "answer_id": 57390,
+            "question_id": 15175,
+            "position": 0,
+            "is_correct": true,
+            "reason": "",
+            "preview": "Überprüfen Sie, ob die Endverbindungen vor dem Abschluss mit Kupferband umwickelt waren."
+        },
+        {
+            "answer_id": 57391,
+            "question_id": 15175,
+            "position": 1,
+            "is_correct": false,
+            "reason": "",
+            "preview": "Verwenden Sie durchgehende modulare Crimpstopfen anstelle herkömmlicher Crimpstopfen."
+        },
+        {
+            "answer_id": 57393,
+            "question_id": 15175,
+            "position": 3,
+            "is_correct": false,
+            "reason": "",
+            "preview": "Führe einen Geschwindigkeitstest auf einem Gerät durch, das nur 100 Mbit/s erreichen kann."
+        },
+        {
+            "answer_id": 57605,
+            "question_id": 15225,
+            "position": 0,
+            "is_correct": false,
+            "reason": "",
+            "preview": "Ändern Sie die Konfiguration des E-Mail-Clients, sodass sie mit dem MX-Datensatz übereinstimmt."
+        },
+        {
+            "answer_id": 57608,
+            "question_id": 15225,
+            "position": 3,
+            "is_correct": false,
+            "reason": "",
+            "preview": "Aktualisieren Sie den NS-Datensatz, um die Änderung der IP-Adresse widerzuspiegeln."
+        },
+        {
+            "answer_id": 57721,
+            "question_id": 15253,
+            "position": 0,
+            "is_correct": false,
+            "reason": "",
+            "preview": "Verwenden Sie Version 1 von SNMP und verwenden Sie einen Community-String als PSK"
+        },
+        {
+            "answer_id": 57722,
+            "question_id": 15253,
+            "position": 1,
+            "is_correct": true,
+            "reason": "",
+            "preview": "Verwenden Sie Version 3 von SNMP und richten Sie Trap-Nachrichten für kritische Ereignisse im Netzwerk ein"
+        },
+        {
+            "answer_id": 57723,
+            "question_id": 15253,
+            "position": 2,
+            "is_correct": false,
+            "reason": "",
+            "preview": "Verwenden Sie Version 2c von SNMP und verwenden Sie Informs zur Validierung der Geräteauthentifizierung"
+        },
+        {
+            "answer_id": 57724,
+            "question_id": 15253,
+            "position": 3,
+            "is_correct": false,
+            "reason": "The text is already a clean and well-formed answer option without any extraneous prefixes, suffixes, or instructor comments.",
+            "preview": "Verwenden Sie Version 2u von SNMP, um Geräte für die Netzwerküberwachung zu authentifizieren"
+        },
+        {
+            "answer_id": 57731,
+            "question_id": 15255,
+            "position": 2,
+            "is_correct": false,
+            "reason": "",
+            "preview": "Die VLAN-Datenbank wurde nicht gelöscht, bevor die Ausrüstung wieder online gebracht wurde"
+        },
+        {
+            "answer_id": 57818,
+            "question_id": 15275,
+            "position": 1,
+            "is_correct": true,
+            "reason": "",
+            "preview": "Aktualisieren Sie das Firewall-ACL, um Zugriff auf den neuen Server zu ermöglichen."
+        },
+        {
+            "answer_id": 57820,
+            "question_id": 15275,
+            "position": 3,
+            "is_correct": false,
+            "reason": "",
+            "preview": "Fügen Sie einen statischen ARP-Eintrag für den neuen Server auf dem Layer-3-Switch ein."
+        },
+        {
+            "answer_id": 57873,
+            "question_id": 15289,
+            "position": 0,
+            "is_correct": true,
+            "reason": "",
+            "preview": "Nutzer dazu bringen, einen AP mit einer SSID zu verwenden, die identisch mit einem legitimen Netzwerk ist."
+        },
+        {
+            "answer_id": 57874,
+            "question_id": 15289,
+            "position": 1,
+            "is_correct": false,
+            "reason": "",
+            "preview": "Adressauflösung manipulieren, um Geräte auf einen bösartigen Endpunkt zu verweisen."
+        },
+        {
+            "answer_id": 57875,
+            "question_id": 15289,
+            "position": 2,
+            "is_correct": false,
+            "reason": "The answer option is already clean and well-formed.",
+            "preview": "Eine identische MAC präsentieren, um unbefugten Zugriff auf Netzwerkressourcen zu erhalten."
+        },
+        {
+            "answer_id": 58135,
+            "question_id": 15353,
+            "position": 0,
+            "is_correct": false,
+            "reason": "The text is already a clean, standalone answer option without any prefixes, merged content, or extraneous information.",
+            "preview": "Eine Kombination aus öffentlichen und privaten Cloud-Diensten zur Wiederherstellung von Daten"
+        },
+        {
+            "answer_id": 58137,
+            "question_id": 15353,
+            "position": 2,
+            "is_correct": false,
+            "reason": "",
+            "preview": "Eine vollständige elektrische Infrastruktur vorhanden, aber keine Kundengeräte vor Ort"
+        }
+    ]
+}

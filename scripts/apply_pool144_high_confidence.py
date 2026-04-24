@@ -16,11 +16,18 @@ still equal to the old_text recorded in the report. Already-fixed rows skip.
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
 
-REPORT = Path(__file__).parent / "cleanup_pool144_report.json"
+SCRIPT_DIR = Path(__file__).parent
+# Accept --report=scripts/cleanup_poolN_report.json; default stays Pool 144 for
+# backward compatibility with the original single-pool run.
+REPORT = SCRIPT_DIR / "cleanup_pool144_report.json"
+for _arg in sys.argv[1:]:
+    if _arg.startswith("--report="):
+        REPORT = Path(_arg.split("=", 1)[1])
 DRY_RUN = "--apply" not in sys.argv
 
 
@@ -115,14 +122,14 @@ def main() -> int:
     print(f"\nExecuting {len(safe)} answer updates + explanation appends as one transaction…")
     run_sql(sql)
 
-    # Verify
+    pool_id = data.get("pool_id", 144)
     verify_sql = (
         "SELECT COUNT(*) FROM oc_learning_answers a "
         "JOIN oc_learning_questions q ON q.id = a.question_id "
-        "WHERE q.pool_id = 144 AND LENGTH(a.text) > 80;"
+        f"WHERE q.pool_id = {int(pool_id)} AND LENGTH(a.text) > 80;"
     )
     remaining = run_sql(verify_sql, fetch=True).strip()
-    print(f"Pool 144 answers with LENGTH(text) > 80 remaining: {remaining}")
+    print(f"Pool {pool_id} answers with LENGTH(text) > 80 remaining: {remaining}")
     return 0
 
 
