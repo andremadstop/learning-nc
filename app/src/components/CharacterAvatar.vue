@@ -407,6 +407,36 @@ export default {
 					{ type: 'path', d: `M${cx + s * 0.22} ${hcy - hr} L${cx + s * 0.20} ${hcy - hr + 4} L${cx + s * 0.26} ${hcy - hr}`, fill: pal.glow },
 				]
 
+			case 'theoretiker':
+				// ART_STYLE_GUIDE Section 2.1 — Comic-Superhero stylized thinker.
+				// Pose: standing, slight forward lean (default trapezoid, width 0.32).
+				// Power-Element = Kreide-Energie-Glyphen — abstract decorative paths,
+				// NOT readable symbols, NO <text> elements (Pitfall 6).
+				return [
+					// ── Wild grey hair tufts (head region) ──
+					{ type: 'path', d: `M${cx - hr + 2} ${hcy - hr - 2} Q${cx - hr - 6} ${hcy - hr - 14} ${cx - hr + 6} ${hcy - hr - 16}`, stroke: pal.primary, strokeWidth: 2.5 },
+					{ type: 'path', d: `M${cx - hr * 0.4} ${hcy - hr - 4} Q${cx - hr * 0.2} ${hcy - hr - 18} ${cx + hr * 0.2} ${hcy - hr - 14}`, stroke: pal.primary, strokeWidth: 2.5 },
+					{ type: 'path', d: `M${cx + hr * 0.3} ${hcy - hr - 4} Q${cx + hr * 0.5} ${hcy - hr - 16} ${cx + hr - 2} ${hcy - hr - 12}`, stroke: pal.primary, strokeWidth: 2.5 },
+					{ type: 'path', d: `M${cx + hr - 2} ${hcy - hr - 2} Q${cx + hr + 6} ${hcy - hr - 12} ${cx + hr + 4} ${hcy - hr + 4}`, stroke: pal.primary, strokeWidth: 2.5 },
+					{ type: 'path', d: `M${cx - hr - 2} ${hcy - hr + 2} Q${cx - hr - 8} ${hcy - hr - 4} ${cx - hr - 4} ${hcy - hr + 8}`, stroke: pal.primary, strokeWidth: 2 },
+					// ── Bushy mustache (head region, just below nose at hcy + 4) ──
+					{ type: 'path', d: `M${cx - 8} ${hcy + 5} Q${cx - 4} ${hcy + 9} ${cx} ${hcy + 6} Q${cx + 4} ${hcy + 9} ${cx + 8} ${hcy + 5}`, stroke: pal.primary, strokeWidth: 3, fill: 'none' },
+					// ── Eyebrows (head region) ──
+					{ type: 'line', x1: cx - hr * 0.55, y1: hcy - 3, x2: cx - hr * 0.15, y2: hcy - 4, stroke: pal.primary, strokeWidth: 1.5 },
+					{ type: 'line', x1: cx + hr * 0.15, y1: hcy - 4, x2: cx + hr * 0.55, y2: hcy - 3, stroke: pal.primary, strokeWidth: 1.5 },
+					// ── Cardigan accent stripe (arms region — Saum-Akzent in cream) ──
+					{ type: 'rect', x: cx - hr * 1.2, y: this.bodyTop + 8, w: hr * 2.4, h: 2, fill: pal.accent },
+					// ── Hand position circles (arms region — small markers where glyphen emanate) ──
+					{ type: 'circle', cx: cx - s * 0.22, cy: this.bodyTop + 18, r: 3, fill: pal.primary },
+					{ type: 'circle', cx: cx + s * 0.22, cy: this.bodyTop + 18, r: 3, fill: pal.primary },
+					// ── Kreide-Energie-Glyphen (Power-Element — region: 'power' renders LAST in <g id="powerEffect">) ──
+					// Abstract decorative paths. NOT real symbols. NO <text> elements (Pitfall 6).
+					{ type: 'path', region: 'power', d: `M${cx + s * 0.18} ${hcy + 8} Q${cx + s * 0.24} ${hcy + 4} ${cx + s * 0.22} ${hcy + 14}`, stroke: pal.glow, strokeWidth: 1.5, fill: 'none' },
+					{ type: 'path', region: 'power', d: `M${cx - s * 0.22} ${hcy + 10} L${cx - s * 0.18} ${hcy + 6} L${cx - s * 0.20} ${hcy + 16}`, stroke: pal.glow, strokeWidth: 1.5, fill: 'none' },
+					{ type: 'path', region: 'power', d: `M${cx + s * 0.16} ${this.bodyTop - 4} A 4 4 0 1 1 ${cx + s * 0.22} ${this.bodyTop}`, stroke: pal.glow, strokeWidth: 1.5, fill: 'none' },
+					{ type: 'path', region: 'power', d: `M${cx - s * 0.18} ${this.bodyTop - 6} Q${cx - s * 0.14} ${this.bodyTop - 10} ${cx - s * 0.10} ${this.bodyTop - 4}`, stroke: pal.glow, strokeWidth: 1.5, fill: 'none' },
+				]
+
 			default:
 				// Fallback: question mark
 				return [
