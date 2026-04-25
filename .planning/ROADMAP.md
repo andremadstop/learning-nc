@@ -405,7 +405,16 @@ Plans:
   4. Manual A11y audit documented and signed off: `prefers-reduced-motion` emulation stops all animations; NVDA + VoiceOver navigate without avatar interruption; Arabic RTL screenshot confirms avatar is NOT mirrored; keyboard-only navigation reaches every picker control
   5. i18n parity green across all five languages (DE/EN/FR/RU/AR): CI key-parity check passes for the new avatar-picker keys; Arabic RTL renders picker labels right-aligned with avatar unmirrored; tested with DevCloud external user ernesst (French) and Kurs 21 ADHS-user before App-Store-push
   6. Deploy script deletes old `js/*.js` and `js/*.css` chunks in container before rsync so hard-refresh of an older session does not 404; signature.json is re-signed AFTER final SVG assets land; App Store listing uses archetype names in all screenshots + description; CHANGELOG.md + info.xml version bumped to v4.4.0
-**Plans**: TBD
+**Plans**: 7 plans
+
+Plans:
+- [ ] 153-01-PLAN.md — Wave 0: i18n parity script + pre-push/CI wireups + OQ4 grep verdict + Pitfall 3/7 audit greps (I18N-02)
+- [ ] 153-02-PLAN.md — Wave 0: 5 test scaffolds (Vitest + PHPUnit + Playwright) + A11y audit doc + DevCloud creds verification (TEST-02, TEST-04, TEST-05, TEST-06, MIGR-03, MIGR-05)
+- [ ] 153-03-PLAN.md — Wave 1: VirtuProfController.getSkin() rewrite with Pattern 1 first-touch-coercion + un-skip 3 PHPUnit tests + augment SkinRenderer.test.js +1 case (MIGR-01, MIGR-02, TEST-01, TEST-03)
+- [ ] 153-04-PLAN.md — Wave 1: PersonalSettings.vue NcNoteCard hint + ~20 i18n keys in 5 langs lockstep (MIGR-03, I18N-01)
+- [ ] 153-05-PLAN.md — Wave 2: un-skip Playwright spec + visual baseline + info.xml version bump + REQUIREMENTS.md cosmetic close-outs (TEST-04, TEST-05)
+- [ ] 153-06-PLAN.md — Wave 3 (autonomous: false): manual A11y audit + RTL + MIGR-05 multi-account smoke combined session (TEST-06, I18N-03, MIGR-05)
+- [ ] 153-07-PLAN.md — Wave 4 (autonomous: false): CHANGELOG date lock + signing + signature.json commit + tag + tarball + GitHub release + App Store API push + state updates
 
 ## Progress Table
 
