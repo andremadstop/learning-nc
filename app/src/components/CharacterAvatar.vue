@@ -9,6 +9,17 @@
 			xmlns="http://www.w3.org/2000/svg"
 			role="img"
 			:aria-label="ariaLabel">
+			<defs>
+				<!-- Phase 152 Plan 05: Kosmos-Projektion gradient for Popularisierer.
+					Magenta center to violet-tinted edge to transparent fade. Used by
+					case 'popularisierer' Kosmos-Projektion center circle. Harmless extra
+					DOM for the other 14 silhouettes (no fill='url(#...)' references). -->
+				<radialGradient id="popularisierer-projection-gradient" cx="50%" cy="50%" r="50%">
+					<stop offset="0%" stop-color="var(--lnc-magenta)" stop-opacity="0.9" />
+					<stop offset="60%" stop-color="var(--lnc-magenta)" stop-opacity="0.4" />
+					<stop offset="100%" stop-color="var(--lnc-magenta)" stop-opacity="0" />
+				</radialGradient>
+			</defs>
 			<!-- Body: main silhouette -->
 			<g id="body" :style="groupStyleBody">
 				<path :d="bodyPath" :fill="character.palette.accent" />
@@ -285,6 +296,7 @@ export default {
 				sven_berater: 0.30,
 				theoretiker: 0.32,
 				kosmologe: 0.36,
+				popularisierer: 0.34,
 				fallback: 0.30,
 			}
 			const hw = s * (widths[sil] || 0.30)
