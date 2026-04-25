@@ -686,6 +686,17 @@ assert_status "Badge progress endpoint works" "200"
 request GET admin "/apps/learning/api/virtuprof/state"
 assert_status "VirtuProf state works" "200"
 assert_json "VirtuProf state contains enabled field" 'has("enabled")'
+assert_json "VirtuProf state contains skin field" 'has("skin")'
+
+request PUT admin "/apps/learning/api/virtuprof/preferences" '{"skin":"prof_lern_classic"}'
+assert_status "VirtuProf skin preference can be saved" "200"
+assert_json "VirtuProf skin save response echoes prof_lern_classic" '.skin == "prof_lern_classic"'
+
+request GET admin "/apps/learning/api/virtuprof/state"
+assert_status "VirtuProf skin preference round-trip GET works" "200"
+assert_json "VirtuProf skin preference round-trip persists prof_lern_classic" '.skin == "prof_lern_classic"'
+
+request_silent PUT admin "/apps/learning/api/virtuprof/preferences" '{"skin":"nova"}'
 
 request GET admin "/apps/learning/api/virtu-prof/chat-history"
 assert_status "VirtuProf chat history works" "200"

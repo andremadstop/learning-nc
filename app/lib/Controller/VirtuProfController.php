@@ -20,6 +20,13 @@ use OCP\IUserManager;
 
 class VirtuProfController extends Controller {
     private const ALLOWED_INTERFACE_LANGUAGES = ['', 'de', 'en', 'ru', 'ar'];
+    private const ALLOWED_SKINS = [
+        'nova',
+        'prof_lern_classic',
+        'theoretiker',
+        'kosmologe',
+        'popularisierer',
+    ];
     private const ALLOWED_VOICE_LANGUAGES = [
         'de-DE',
         'en-US',
@@ -110,7 +117,7 @@ class VirtuProfController extends Controller {
     }
 
     /**
-     * @return array{dismissed: array<int, string>, enabled: bool, language: string, visited_tools: array<int, string>, ai_enabled: bool, tts_enabled: bool, stt_enabled: bool, voice_lang: string, onboarding_reminder_count: int, onboarding_declined: bool}
+     * @return array{dismissed: array<int, string>, enabled: bool, language: string, visited_tools: array<int, string>, ai_enabled: bool, tts_enabled: bool, stt_enabled: bool, voice_lang: string, onboarding_reminder_count: int, onboarding_declined: bool, skin: string}
      */
     private function buildStatePayload(): array {
         $dismissed = json_decode(
@@ -135,6 +142,7 @@ class VirtuProfController extends Controller {
             'voice_lang' => $this->getVoiceLanguage(),
             'onboarding_reminder_count' => $this->getOnboardingReminderCount(),
             'onboarding_declined' => $this->config->getUserValue($this->userId, 'learning', 'onboarding_declined', 'no') === 'yes',
+            'skin' => $this->getSkin(),
         ];
     }
 
@@ -170,6 +178,12 @@ class VirtuProfController extends Controller {
         return max(0, min(3, $raw));
     }
 
+    private function getSkin(): string {
+        return $this->normalizeSkin(
+            $this->config->getUserValue($this->userId, 'learning', 'virtuprof_skin', 'nova')
+        );
+    }
+
     private function normalizeInterfaceLanguage(string $language): string {
         $normalized = strtolower(trim($language));
         return in_array($normalized, self::ALLOWED_INTERFACE_LANGUAGES, true) ? $normalized : '';
@@ -178,6 +192,10 @@ class VirtuProfController extends Controller {
     private function normalizeVoiceLanguage(string $language): string {
         $normalized = trim($language);
         return in_array($normalized, self::ALLOWED_VOICE_LANGUAGES, true) ? $normalized : '';
+    }
+
+    private function normalizeSkin(string $skin): string {
+        return in_array($skin, self::ALLOWED_SKINS, true) ? $skin : 'nova';
     }
 
     private function isAiFeatureAvailable(): bool {
@@ -329,7 +347,8 @@ class VirtuProfController extends Controller {
         ?bool $sttEnabled = null,
         ?string $voiceLang = null,
         ?int $onboardingReminderCount = null,
-        ?bool $onboardingDeclined = null
+        ?bool $onboardingDeclined = null,
+        ?string $skin = null
     ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
@@ -358,6 +377,14 @@ class VirtuProfController extends Controller {
                 'learning',
                 'onboarding_reminder_count',
                 (string)max(0, min(3, $onboardingReminderCount))
+            );
+        }
+        if ($skin !== null) {
+            $this->config->setUserValue(
+                $this->userId,
+                'learning',
+                'virtuprof_skin',
+                $this->normalizeSkin($skin)
             );
         }
 
