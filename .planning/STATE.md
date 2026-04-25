@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v4.4.0
 milestone_name: Character & Personality
-current_phase: 151
+current_phase: 152
 current_plan: null
-status: phase-150-complete-ready-for-151
-stopped_at: Phase 150 closed (6/6 plans, 1009/1009 tests, three-layer animation gate live, deployed to relay 2026-04-25)
-last_updated: "2026-04-25T06:30:00+02:00"
+status: phase-151-complete-ready-for-152
+stopped_at: Phase 151 closed (7/7 plans, 1036/1036 tests, three-layer skin architecture live, deployed to relay 2026-04-25)
+last_updated: "2026-04-25T10:15:00+02:00"
 last_activity: 2026-04-25
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 11
-  completed_plans: 11
-  percent: 40
+  completed_phases: 3
+  total_plans: 18
+  completed_plans: 18
+  percent: 60
 ---
 
 # Project State
@@ -27,12 +27,12 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 151 (next, planned but not yet researched)
+Phase: 152 (next, not yet researched)
 Current Plan: —
 Total Plans in Phase: TBD
-Status: Phase 150 complete (6/6 plans). Codex did Wave 1 plans 02/03/04 in parallel; Claude did 01 (TDD-init), 05 (CharacterAvatar named-g + native pause), 06 (a11yStore + PersonalSettings + backend). Verifier: passed, 9/9 must-haves green, no regression. Manual A11y walkthrough deferred to ad-hoc bug-hunt.
-Last activity: 2026-04-25 — Phase 150 shipped to relay + verified
-Progress (v4.4.0): [■■□□□] 2/5 phases complete (40%)
+Status: Phase 151 complete (7/7 plans). Codex did Wave 1+2 plans 02/04/06; Claude did 01/03/05/07. Verifier passed 12/12 requirements, 1036/1036 tests, three-layer skin architecture (backend + Pinia + dispatcher) live, NovaDock→SkinRenderer swap clean, novaReactions non-breaking guarantee held. Manual visual walkthrough deferred to ad-hoc bug-hunt.
+Last activity: 2026-04-25 — Phase 151 shipped to relay + verified
+Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 
 ## Performance Metrics
 
@@ -108,6 +108,6 @@ Progress (v4.4.0): [■■□□□] 2/5 phases complete (40%)
 
 ## Session Continuity
 
-Last session: 2026-04-25T06:30:00+02:00
-Stopped at: Phase 150 closure committed (verifier passed)
-Next action: `/gsd:plan-phase 151` — Skin Picker Framework + Prof. Lern Classic restore. Plan 150 primitives (setAnimationsEnabledGetter, resolveReaction, playWave/Celebrate/Shrug, named g sub-groups, lnc-quiet reactive class) all available for consumption.
+Last session: 2026-04-25T10:15:00+02:00
+Stopped at: Phase 151 closure committed (verifier passed)
+Next action: `/gsd:plan-phase 152` — Three Archetype Presets (Theoretiker / Kosmologe / Astrophysik-Popularisierer SVGs). Phase 151 primitives ready: SkinRenderer dispatcher auto-routes new ids to CharacterAvatar; characters.js can be extended additively; VirtuProfController allowlist already preallows the three archetype ids. Sensitivity-Sign-off in `.planning/sensitivity-review/SIGNOFF.md` is hard gate before SVG freeze.
