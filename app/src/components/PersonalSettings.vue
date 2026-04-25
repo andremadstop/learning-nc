@@ -103,6 +103,18 @@
           @update:model-value="form.fsrsDetailedStats = !!$event" />
       </div>
 
+      <div class="field-row">
+        <label for="virtuprof-skin">{{ t('learning', 'Charakter-Auswahl') }}</label>
+        <p class="field-desc">{{ t('learning', 'Welcher Lernbegleiter soll dich begleiten? Aenderungen wirken sofort.') }}</p>
+        <NcSelect
+          id="virtuprof-skin"
+          :model-value="selectedSkinOption"
+          :options="skinOptions"
+          :clearable="false"
+          label-outside
+          @update:model-value="onSkinChange" />
+      </div>
+
       <div class="field-row lnc-a11y-toggle">
         <label>{{ t('learning', 'Ruhige Darstellung (keine Avatar-Animationen)') }}</label>
         <p class="field-desc">{{ t('learning', 'Stoppt Avatar-Animationen unabhaengig vom Betriebssystem. Setzt OS-Bewegungspraeferenzen nie ausser Kraft.') }}</p>
@@ -374,6 +386,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import NcSelect from '@nextcloud/vue/components/NcSelect'
 import PrivacyInfo from './PrivacyInfo.vue'
 import { novaAudio } from '../utils/nova-audio-manager.js'
 import {
@@ -383,6 +396,7 @@ import {
 } from '../utils/telosProfile.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
 import { useA11yStore } from '../stores/a11yStore.js'
+import { useSkinStore } from '../stores/skinStore.js'
 
 const VOICE_LANGUAGE_OPTIONS = [
   { value: 'de-DE', label: 'Deutsch' },
@@ -404,7 +418,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 
 export default {
   name: 'PersonalSettings',
-  components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, PrivacyInfo },
+  components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, NcSelect, PrivacyInfo },
   data() {
     return {
       loading: true,
@@ -423,6 +437,7 @@ export default {
         notificationsEnabled: true,
         fsrsDetailedStats: false,
         animationsEnabled: true,
+        skinId: 'nova',
       },
       // Calendar token
       calTokenLoading: true,
@@ -449,6 +464,12 @@ export default {
     }
   },
   computed: {
+    skinOptions() {
+      return useSkinStore().availableSkins.map(c => ({ value: c.id, label: c.name }))
+    },
+    selectedSkinOption() {
+      return this.skinOptions.find(o => o.value === this.form.skinId) || this.skinOptions[0] || null
+    },
     voiceLanguageOptions() {
       return VOICE_LANGUAGE_OPTIONS
     },
@@ -528,6 +549,9 @@ export default {
         this.form.animationsEnabled = (data.animations_enabled || 'yes') !== 'no'
         // Hydrate the a11y store so the WAAPI gate sees the server value on first paint.
         useA11yStore().loadFromServerPayload(data)
+        // Hydrate the skin store from /api/virtuprof/state payload (Pattern A)
+        this.form.skinId = virtuProfData.skin || 'nova'
+        useSkinStore().loadFromServerPayload(virtuProfData)
       } catch (e) {
         this.error = t('learning', 'Failed to load settings')
       } finally {
@@ -601,6 +625,13 @@ export default {
       // Persistence happens on Save-button click via the existing save() method.
       useA11yStore().setEnabled(this.form.animationsEnabled)
     },
+    onSkinChange(option) {
+      const id = (option && typeof option === 'object' && option.value) || option || 'nova'
+      this.form.skinId = id
+      // Apply IMMEDIATELY for reactive feedback (avatar swaps without reload).
+      // Persistence happens on Save-button click via the existing save() method.
+      useSkinStore().setSkin(id)
+    },
     async save() {
       this.saving = true
       this.error = ''
@@ -623,6 +654,7 @@ export default {
             voiceLang: VOICE_LANGUAGE_OPTIONS.some(option => option.value === this.form.virtuProfVoiceLang)
               ? this.form.virtuProfVoiceLang
               : 'de-DE',
+            skin: this.form.skinId,
           }),
         ])
         this.saved = true

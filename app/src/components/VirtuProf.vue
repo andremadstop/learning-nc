@@ -25,7 +25,7 @@
       v-if="enabled && !fullscreenActive"
       class="virtuprof-container"
       :class="{ minimized: isMinimized, 'is-open': showBubble }">
-      <NovaDock
+      <SkinRenderer
         v-if="!showBubble"
         :animation="currentAnimation"
         :emotion="currentEmotion"
@@ -89,7 +89,7 @@
 import axios from '@nextcloud/axios'
 import { getCurrentUser } from '@nextcloud/auth'
 import { generateUrl } from '@nextcloud/router'
-import NovaDock from './nova/NovaDock.vue'
+import SkinRenderer from './SkinRenderer.vue'
 import NovaPanel from './nova/NovaPanel.vue'
 import VirtuProfBubble from './VirtuProfBubble.vue'
 import VirtuProfFullscreen from './VirtuProfFullscreen.vue'
@@ -216,7 +216,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 
 export default {
   name: 'VirtuProf',
-  components: { NovaDock, NovaPanel, VirtuProfBubble, VirtuProfFullscreen, OnboardingIntro },
+  components: { SkinRenderer, NovaPanel, VirtuProfBubble, VirtuProfFullscreen, OnboardingIntro },
   props: {
     enabled: {
       type: Boolean,
