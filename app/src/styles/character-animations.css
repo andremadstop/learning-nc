@@ -1,6 +1,72 @@
 /**
  * Shared character avatar animations.
- * Populated in Phase 150 Plan 02 (Wave 1).
- * ALL @keyframes MUST be wrapped in @media (prefers-reduced-motion: no-preference)
- * + fallback @media (prefers-reduced-motion: reduce) { animation: none !important; }.
+ * Used by NOVA, Prof. Lern Classic, and all Scholar archetypes.
+ * ART_STYLE_GUIDE.md Section 4: transform + opacity only, reduced-motion hard-stop.
  */
+
+@media (prefers-reduced-motion: no-preference) {
+	@keyframes blink {
+		0%,
+		88%,
+		100% {
+			transform: scaleY(1);
+		}
+
+		92%,
+		96% {
+			transform: scaleY(0.1);
+		}
+	}
+
+	@keyframes sway {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+
+		50% {
+			transform: translateY(-2px);
+		}
+	}
+
+	.character-avatar {
+		will-change: transform;
+		animation: sway 5s ease-in-out infinite;
+	}
+
+	.character-avatar .eye,
+	.character-avatar g#head .eye {
+		transform-origin: center;
+		transform-box: fill-box;
+		animation: blink 6s infinite;
+	}
+
+	.character-avatar .eye:nth-of-type(2),
+	.character-avatar g#head .eye:nth-of-type(2) {
+		animation-delay: 120ms;
+	}
+}
+
+.lnc-quiet .character-avatar,
+.lnc-quiet .character-avatar *,
+.character-avatar.lnc-quiet,
+.character-avatar.lnc-quiet * {
+	animation: none !important;
+	transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.character-avatar,
+	.character-avatar * {
+		animation: none !important;
+		transition: none !important;
+	}
+}
+
+.character-avatar:focus-visible,
+.lnc-skin-picker :focus-visible,
+.lnc-a11y-toggle :focus-visible {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 2px;
+	border-radius: 4px;
+}

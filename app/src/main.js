@@ -12,6 +12,8 @@ import './css/ghostline.css';
 import './css/skill-map.css';
 // Practicum session runner styles
 import './css/practicum.css';
+// Shared character avatar animation primitives
+import './styles/character-animations.css';
 
 const pinia = createPinia();
 const app = createApp(App);
