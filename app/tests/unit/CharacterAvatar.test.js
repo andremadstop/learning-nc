@@ -88,7 +88,7 @@ describe('CharacterAvatar SVG structure (Phase 150 Plan 05)', () => {
 		expect(root.querySelector('svg title')).toBeNull()
 	})
 
-	it.each(['nova', 'architect', 'ghostline', 'sysadmin', 'theoretiker'])(
+	it.each(['nova', 'architect', 'ghostline', 'sysadmin', 'theoretiker', 'kosmologe'])(
 		'renders silhouette "%s" without error',
 		(characterId) => {
 			const root = mountAvatar({ characterId })

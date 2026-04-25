@@ -426,6 +426,59 @@ export default {
 					{ type: 'path', d: `M${cx + s * 0.22} ${hcy - hr} L${cx + s * 0.20} ${hcy - hr + 4} L${cx + s * 0.26} ${hcy - hr}`, fill: pal.glow },
 				]
 
+			case 'kosmologe':
+				// ART_STYLE_GUIDE Section 2.2 — Active-heroic seated science-hero with Raketenrollstuhl.
+				// Empowerment-Narrativ: Rollstuhl = Super-Tool, NICHT medizinisches Geraet.
+				// Power-First Drawing Order (Section 2.2 line 84-89):
+				//   1. Body+Pose (indices 0-3) → 2. Face (index 4) → 3. Brille (5-9)
+				//   → 4. Rollstuhl LAST (10-16) → 5. Energie-Effekte LAST-of-LAST (17-19, region: 'power')
+				// SVG renders in document order = array order = paint order.
+				// Thruster elements carry class='thruster' for CSS keyframe targeting.
+				return [
+					// ── 1. Body (seated, upright) ── arms region (cy >= bodyTop)
+					// Torso trapezoid (sitting upright)
+					{ type: 'rect', x: cx - hr * 0.9, y: this.bodyTop, w: hr * 1.8, h: hr * 1.4, rx: 4, fill: pal.primary },
+					// Shoulders / collar
+					{ type: 'rect', x: cx - hr * 1.0, y: this.bodyTop, w: hr * 2.0, h: 4, rx: 2, fill: pal.primary },
+					// Arms (open, gestikulierend — Section 2.2 "Arms open")
+					{ type: 'path', d: `M${cx - hr * 0.9} ${this.bodyTop + 6} Q${cx - hr * 1.4} ${this.bodyTop + 14} ${cx - hr * 1.2} ${this.bodyTop + 22}`, stroke: pal.primary, strokeWidth: 5, fill: 'none', linecap: 'round' },
+					{ type: 'path', d: `M${cx + hr * 0.9} ${this.bodyTop + 6} Q${cx + hr * 1.4} ${this.bodyTop + 14} ${cx + hr * 1.2} ${this.bodyTop + 22}`, stroke: pal.primary, strokeWidth: 5, fill: 'none', linecap: 'round' },
+
+					// ── 2. Face (head region — engaged expression) ──
+					{ type: 'path', d: `M${cx - 4} ${hcy + 6} Q${cx} ${hcy + 8} ${cx + 4} ${hcy + 6}`, stroke: pal.primary, strokeWidth: 1.5, fill: 'none' },
+
+					// ── 3. Brille mit subtilem Blauglühen (head region) ──
+					{ type: 'circle', cx: cx - hr * 0.4, cy: hcy - 1, r: hr * 0.32, fill: 'none', stroke: pal.glow, strokeWidth: 1.5 },
+					{ type: 'circle', cx: cx + hr * 0.4, cy: hcy - 1, r: hr * 0.32, fill: 'none', stroke: pal.glow, strokeWidth: 1.5 },
+					{ type: 'line', x1: cx - hr * 0.1, y1: hcy - 1, x2: cx + hr * 0.1, y2: hcy - 1, stroke: pal.glow, strokeWidth: 1 },
+					// Subtiler Blau-Glow innerhalb der Glaeser
+					{ type: 'circle', cx: cx - hr * 0.4, cy: hcy - 1, r: 1.5, fill: pal.glow },
+					{ type: 'circle', cx: cx + hr * 0.4, cy: hcy - 1, r: 1.5, fill: pal.glow },
+
+					// ── 4. Rollstuhl LAST among solids (Power-First Drawing Order) ── arms region
+					// Rueckenlehne hinter dem Koerper
+					{ type: 'rect', x: cx - hr * 1.1, y: this.bodyTop - 2, w: hr * 2.2, h: 3, fill: pal.accent },
+					// Sitzflaeche unter dem Koerper
+					{ type: 'rect', x: cx - hr * 1.1, y: this.bodyTop + hr * 1.4, w: hr * 2.2, h: 4, rx: 1, fill: pal.accent },
+					// Rahmen-Seitenstreben
+					{ type: 'line', x1: cx - hr * 1.0, y1: this.bodyTop + hr * 1.4 + 4, x2: cx - hr * 0.7, y2: this.bodyBottom - 4, stroke: pal.accent, strokeWidth: 2 },
+					{ type: 'line', x1: cx + hr * 1.0, y1: this.bodyTop + hr * 1.4 + 4, x2: cx + hr * 0.7, y2: this.bodyBottom - 4, stroke: pal.accent, strokeWidth: 2 },
+					// Raeder
+					{ type: 'circle', cx: cx - hr * 0.8, cy: this.bodyBottom - 2, r: 5, fill: 'none', stroke: pal.accent, strokeWidth: 2 },
+					{ type: 'circle', cx: cx + hr * 0.8, cy: this.bodyBottom - 2, r: 5, fill: 'none', stroke: pal.accent, strokeWidth: 2 },
+					// Rad-Naben
+					{ type: 'circle', cx: cx - hr * 0.8, cy: this.bodyBottom - 2, r: 1.5, fill: pal.accent },
+					{ type: 'circle', cx: cx + hr * 0.8, cy: this.bodyBottom - 2, r: 1.5, fill: pal.accent },
+
+					// ── 5. Raketenantrieb + Energie-Aura (region: 'power' — renders LAST in <g id="powerEffect">) ──
+					// Thruster-Duese (am Heck, hinter dem Sitz)
+					{ type: 'rect', region: 'power', x: cx - 3, y: this.bodyBottom - 2, w: 6, h: 4, rx: 1, fill: pal.accent, class: 'thruster' },
+					// Thruster-Flammen (cyan glow)
+					{ type: 'path', region: 'power', d: `M${cx - 4} ${this.bodyBottom + 2} Q${cx} ${this.bodyBottom + 8} ${cx + 4} ${this.bodyBottom + 2} L${cx + 2} ${this.bodyBottom + 6} L${cx} ${this.bodyBottom + 10} L${cx - 2} ${this.bodyBottom + 6} Z`, fill: pal.glow, stroke: 'none', class: 'thruster' },
+					// Energie-Aura (subtiler Saum um die Figur)
+					{ type: 'circle', region: 'power', cx, cy: this.bodyTop + hr * 0.7, r: hr * 1.8, fill: 'none', stroke: pal.glow, strokeWidth: 0.8, class: 'thruster' },
+				]
+
 			case 'theoretiker':
 				// ART_STYLE_GUIDE Section 2.1 — Comic-Superhero stylized thinker.
 				// Pose: standing, slight forward lean (default trapezoid, width 0.32).
@@ -602,6 +655,20 @@ export default {
 	0% { transform: translateY(0); }
 	40% { transform: translateY(-3px); }
 	100% { transform: translateY(0); }
+}
+
+/* ── Kosmologe Thruster Idle Flicker (Phase 152 Plan 04) ── */
+/* Subtle opacity flicker on rocket-wheelchair thruster glow during idle state. */
+/* Opacity-only — NO paint-triggering props per ART_STYLE_GUIDE Section 4 line 158. */
+/* Reduced-motion: caught by global rule below (.character-avatar * { animation: none }) */
+@keyframes ca-thruster-flicker {
+	0%, 100% { opacity: 0.85; }
+	50% { opacity: 1; }
+}
+
+.character-state--idle .thruster {
+	animation: ca-thruster-flicker 1500ms ease-in-out infinite;
+	will-change: opacity;
 }
 
 /* ── Accessibility: reduce motion ── */
