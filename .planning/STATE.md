@@ -4,16 +4,16 @@ milestone: v4.4.0
 milestone_name: Character & Personality
 current_phase: 152
 current_plan: 5
-status: phase-152-in-progress
-stopped_at: Plan 152-04 complete (Kosmologe silhouette + Raketenrollstuhl + thruster opacity-only keyframe shipped, Vitest 20/20 GREEN, ESLint+forbidden-names CI clean, vite build clean)
-last_updated: "2026-04-25T12:35:49.648Z"
+status: phase-152-ready-for-verification
+stopped_at: Plan 152-05 complete (Popularisierer silhouette + inline <defs> radialGradient shipped; Vitest 21/21 GREEN, ESLint+forbidden-names CI clean, vite build clean, Section 2.3 No-Go grep exit 1 — all 3 scholar archetypes now silhouette-complete in CharacterAvatar.vue, file LOCKED for Plan 06 close-out)
+last_updated: "2026-04-25T12:50:34.825Z"
 last_activity: 2026-04-25
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 19
   completed_plans: 19
-  percent: 60
+  percent: 80
 ---
 
 # Project State
@@ -27,12 +27,12 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 152 (in progress)
-Current Plan: 5
-Total Plans in Phase: 5
-Status: Phase 152 plan 04 complete (Kosmologe silhouette case in CharacterAvatar.vue with Raketenrollstuhl + opacity-only thruster keyframe + reduced-motion inheritance via Phase 150 global rule). 21 elements in Power-First Drawing Order (body→face→glasses→wheelchair LAST→energy LAST-of-LAST). Vitest 20/20 (target files) GREEN, ESLint clean, forbidden-names CI clean, vite build clean. Plan 05 (Popularisierer) next — reuses powerEffect group + same template-free pattern, only adds `case 'popularisierer':` branch. Plan 06 closer with manual sensitivity-review checkpoint.
+Phase: 152 (ready for verification — silhouette plans complete, Plan 06 close-out remaining)
+Current Plan: 5 (last)
+Total Plans in Phase: 5 (data + 3 silhouettes + close-out)
+Status: Phase 152 Plan 05 complete (Popularisierer silhouette + inline <defs> radialGradient shipped). 21 elements (6 head + 9 arms + 6 power) — kinnbart triangle + magenta vest + 5 generic star-pattern dots + 2 open-arm Q-curves + Kosmos-Projektion gradient circle (fill='url(#popularisierer-projection-gradient)') + 5 star highlights. Vitest 21/21 GREEN, ESLint+forbidden-names CI clean, vite build clean (267ms), Section 2.3 No-Go awk-grep exit 1 (no hits). All 3 scholar archetypes (Theoretiker / Kosmologe / Popularisierer) now silhouette-complete. CharacterAvatar.vue grew 520→739 LOC (+219 net) across Plans 03+04+05 (6 commits). File now effectively LOCKED for Plan 06. Plan 06 = sensitivity-review SIGNOFF + close-out (Wave-0 stubs from a9f00de get filled, no further CharacterAvatar.vue edits).
 Last activity: 2026-04-25
-Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
+Progress (v4.4.0): [■■■■□] 4/5 phases complete (80% — 152 awaiting Plan 06 close-out)
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 | 152 | 02 | ~15min | 1 | 2 |
 | Phase 152 P03 | 12min | 2 tasks | 2 files |
 | Phase 152 P04 | 6min | 2 tasks | 2 files |
+| Phase 152 P05 | 5min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,10 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 - [152-04] Element dispatch :class extends ALL 3 groups (head/arms/powerEffect = 12 occurrences total = 3 groups × 4 shape branches) for forward-compat; thruster CSS targeting via class:'thruster' on featureElements + dispatch `:class="el.class || null"` propagates to SVG primitive
 - [152-04] Thruster keyframe opacity-only (0.85↔1.0, 1500ms ease-in-out) per Section 4 line 158 — no width/height/top/left/filter/box-shadow paint-triggering props; reduced-motion fallback inherited via Phase 150 global `.character-avatar *` descendant selector at lines 661-667 (no new @media block needed)
 - [152-04] 21 elements (4 body + 1 face + 5 brille + 8 rollstuhl + 3 power) instead of plan's recommended ~25 — plan said approximate; shipped recommended layout exactly without padding (advisor confirmed correct count)
+- [152-05] Popularisierer silhouette case shipped (~21 elements: 6 head + 9 arms + 6 power) with inline `<defs>` radialGradient (popularisierer-projection-gradient, magenta 0.9→0.4→0 fade) referenced via `fill='url(#...)'` on Kosmos-Projektion center circle. Default trapezoid bodyPath with width 0.34 (broader than theoretiker 0.32 due to vest) — no special-case bodyPath branch needed.
+- [152-05] ART_STYLE_GUIDE Section 2.3 compliance verified via 5 independent gates (forbidden-names CI exit 0, No-Go awk-grep over case body exit 1, `<text>` grep exit 1, ESLint clean, vite build clean) — generic kinnbart triangle + 5 scattered vest dots + magenta/violet/gold-driven palette (NOT skin-tone-driven) avoid both real-person likeness AND racial-exaggeration.
+- [152-05] Phase 152 silhouette LOC delta: CharacterAvatar.vue grew 520→739 lines (+219 net) across 6 commits in Plans 03/04/05 — file now effectively LOCKED for Plan 06 close-out (Plan 06 only writes new test files + sensitivity-review SIGNOFF, no further CharacterAvatar.vue edits).
+- [152-05] gsd-tools `state advance-plan` + `update-progress` regression noted: advance-plan stripped `milestone`/`milestone_name`/`current_phase` from frontmatter and reset to defaults (v2.3/milestone/missing); update-progress recalculated 160/154 by counting all on-disk SUMMARYs vs total_plans=154. Restored frontmatter manually. add-decision/record-session also failed ("Decisions section not found" — heading is `### Decisions (v4.4.0)`, tool expects bare `## Decisions`). Bug-log candidate for INBOX (third gsd-tools regression in this milestone).
 - [v4.4.0] Archetype-Naming zementiert — keine realen Namen (Einstein/Hawking/Tyson) wegen Trademark + Right-of-Publicity; Labels "Der Theoretiker / Der Kosmologe / Der Astrophysik-Popularisierer"
 - [v4.4.0] Zero-Change-Default für Bestandsuser — NOVA bleibt für alle aktuellen User, Prof. Lern Classic wird Default NUR für neu registrierte User (Nova-Removal-Trauma-Repeat vermeiden)
 - [v4.4.0] Externe Sensitivity-Review vor Phase 152 Freeze — ~€300 Budget, gated durch Phase 149
@@ -123,6 +128,6 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 
 ## Session Continuity
 
-Last session: 2026-04-25T12:35:49.645Z
-Stopped at: Plan 152-04 complete (Kosmologe silhouette + Raketenrollstuhl + thruster opacity-only keyframe shipped, Vitest 20/20 GREEN, ESLint+forbidden-names CI clean, vite build clean)
-Next action: Execute Plan 152-04 — Kosmologe silhouette case in CharacterAvatar.vue (Raketenrollstuhl + Thruster-Glow + Sternenstaub Power-Element). Plan 03 already shipped the shared `<g id="powerEffect">` group + `region: 'power'` filter pattern, so Plan 04 only adds a new `case 'kosmologe':` branch — no further template/computed changes needed. Plan 05 (Popularisierer) follows the same template-free pattern. Plan 06 closer with manual sensitivity-review checkpoint.
+Last session: 2026-04-25T12:50:34.822Z
+Stopped at: Plan 152-05 complete (Popularisierer silhouette + inline <defs> radialGradient shipped; Vitest 21/21 GREEN, ESLint+forbidden-names CI clean, vite build clean, Section 2.3 No-Go grep exit 1 — all 3 scholar archetypes now silhouette-complete in CharacterAvatar.vue, file LOCKED for Plan 06 close-out)
+Next action: Phase 152 verification + Plan 06 close-out. Plan 06 is the manual sensitivity-review SIGNOFF + Wave-0 test-stub fill (test files already scaffolded in commit a9f00de: scholarAnimations.test.js + scholarSvgSecurity.test.js). After Plan 06 SIGNOFF, Phase 152 closes and v4.4.0 advances to Phase 153 (release-and-l10n: App Store description + i18n parity for the 3 new scholar archetypes). CharacterAvatar.vue is LOCKED — no further silhouette edits expected in Phase 152.
