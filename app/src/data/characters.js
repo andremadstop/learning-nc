@@ -23,6 +23,9 @@ const FALLBACK_CHARACTER = Object.freeze({
 	silhouette: 'fallback',
 	states: ['idle'],
 	campaignAppearances: [],
+	user_selectable: false,
+	category: 'campaign',
+	preview_thumbnail_svg: null,
 })
 
 /**
@@ -45,6 +48,27 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'nova',
 		states: ['idle', 'thinking', 'explain', 'alert', 'celebrate'],
 		campaignAppearances: ['*'],
+		user_selectable: true,
+		category: 'hero',
+		preview_thumbnail_svg: null,
+	}),
+
+	prof_lern_classic: Object.freeze({
+		id: 'prof_lern_classic',
+		name: 'Prof. Lern',
+		role: 'Klassischer Lernbegleiter',
+		personality: 'Buchgelehrt, freundlich, klassische Schulhaus-Aesthetik. Wartet hinter einem Buch, schaut den Cursor an, winkt bei Klick.',
+		palette: {
+			primary: 'var(--lnc-primary)',
+			accent: 'var(--lnc-warning)',
+			glow: 'var(--lnc-cyan)',
+		},
+		silhouette: 'prof_lern',
+		states: ['idle', 'wave', 'thinking'],
+		campaignAppearances: [],
+		user_selectable: true,
+		category: 'classic',
+		preview_thumbnail_svg: null,
 	}),
 
 	architect: Object.freeze({
@@ -60,6 +84,9 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'architect',
 		states: ['idle', 'thinking', 'alert', 'celebrate'],
 		campaignAppearances: ['netzwerk_grundlagen', 'grosser_ausfall'],
+		user_selectable: false,
+		category: 'campaign',
+		preview_thumbnail_svg: null,
 	}),
 
 	security: Object.freeze({
@@ -75,6 +102,9 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'security',
 		states: ['idle', 'thinking', 'alert', 'celebrate'],
 		campaignAppearances: ['sicherheits_audit', 'ransomware_angriff'],
+		user_selectable: false,
+		category: 'campaign',
+		preview_thumbnail_svg: null,
 	}),
 
 	sysadmin: Object.freeze({
@@ -90,6 +120,9 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'sysadmin',
 		states: ['idle', 'thinking', 'alert', 'celebrate'],
 		campaignAppearances: ['server_migration', 'grosser_ausfall'],
+		user_selectable: false,
+		category: 'campaign',
+		preview_thumbnail_svg: null,
 	}),
 
 	helpdesk: Object.freeze({
@@ -105,6 +138,9 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'helpdesk',
 		states: ['idle', 'thinking', 'alert', 'celebrate'],
 		campaignAppearances: ['erste_woche', 'grosser_ausfall'],
+		user_selectable: false,
+		category: 'campaign',
+		preview_thumbnail_svg: null,
 	}),
 
 	ghostline: Object.freeze({
@@ -120,6 +156,9 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'ghostline',
 		states: ['idle', 'thinking', 'alert', 'celebrate'],
 		campaignAppearances: ['ransomware_angriff', 'sicherheits_audit'],
+		user_selectable: false,
+		category: 'campaign',
+		preview_thumbnail_svg: null,
 	}),
 
 	// ── Workplace Figures ───────────────────────────────────────────────
@@ -137,6 +176,9 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'klaus_dau',
 		states: ['idle', 'confused', 'frustrated', 'relieved', 'impressed'],
 		campaignAppearances: ['erste_woche', 'grosser_ausfall'],
+		user_selectable: false,
+		category: 'campaign',
+		preview_thumbnail_svg: null,
 	}),
 
 	dr_hartmann: Object.freeze({
@@ -152,6 +194,9 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'dr_hartmann',
 		states: ['idle', 'confused', 'frustrated', 'relieved', 'impressed'],
 		campaignAppearances: ['erste_woche', 'grosser_ausfall'],
+		user_selectable: false,
+		category: 'campaign',
+		preview_thumbnail_svg: null,
 	}),
 
 	frau_weber: Object.freeze({
@@ -167,6 +212,9 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'frau_weber',
 		states: ['idle', 'confused', 'frustrated', 'relieved', 'impressed'],
 		campaignAppearances: ['sicherheits_audit', 'datenschutz_check'],
+		user_selectable: false,
+		category: 'campaign',
+		preview_thumbnail_svg: null,
 	}),
 
 	uschi: Object.freeze({
@@ -182,6 +230,9 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'uschi',
 		states: ['idle', 'confused', 'frustrated', 'relieved', 'impressed'],
 		campaignAppearances: ['erste_woche', 'grosser_ausfall'],
+		user_selectable: false,
+		category: 'campaign',
+		preview_thumbnail_svg: null,
 	}),
 
 	tim_azubi: Object.freeze({
@@ -197,6 +248,9 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'tim_azubi',
 		states: ['idle', 'confused', 'frustrated', 'relieved', 'impressed'],
 		campaignAppearances: ['erste_woche'],
+		user_selectable: false,
+		category: 'campaign',
+		preview_thumbnail_svg: null,
 	}),
 
 	sven_berater: Object.freeze({
@@ -212,6 +266,9 @@ const CHARACTERS = Object.freeze({
 		silhouette: 'sven_berater',
 		states: ['idle', 'confused', 'frustrated', 'relieved', 'impressed'],
 		campaignAppearances: ['grosser_ausfall'],
+		user_selectable: false,
+		category: 'campaign',
+		preview_thumbnail_svg: null,
 	}),
 })
 
