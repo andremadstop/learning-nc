@@ -374,16 +374,25 @@ Plans:
 **Plans**: TBD
 
 ### Phase 152: Three Archetype Presets
-**Goal**: The three scholar archetypes (Theoretiker, Kosmologe, Astrophysik-Popularisierer) exist as selectable skins with distinct silhouettes, palettes, and ≥3 animation states each; the external sensitivity review is signed off before any SVG is frozen
+**Goal**: The three scholar archetypes (Theoretiker, Kosmologe, Astrophysik-Popularisierer) exist as selectable skins with distinct silhouettes, palettes, and ≥3 animation states each; the internal sensitivity review (per Phase 149 pivot — owner-led 8-point checklist in ART_STYLE_GUIDE Section 5) is signed off post-art before any SVG is frozen
 **Depends on**: Phase 151 (picker framework + CharacterAvatar extension + meta-schema must exist to host the new entries)
 **Requirements**: SCHOLAR-01, SCHOLAR-02, SCHOLAR-03, SCHOLAR-04, ANIM-05
 **Success Criteria** (what must be TRUE):
   1. Three new entries exist in `characters.js` (`theoretiker`, `kosmologe`, `popularisierer`) with complete meta-schema (id, name, role, personality, palette, silhouette key, states list, campaignAppearances, user_selectable=true, category='scholar', preview_thumbnail_svg) — naming uses archetypes exclusively, grep for forbidden real-person names returns zero hits
   2. CharacterAvatar.vue renders distinct SVG silhouettes for each archetype: Theoretiker (wild hair + mustache + cardigan-palette amber/muted), Kosmologe (glasses + understated wheelchair detail + blue-palette, drawn as full person first, mobility aid last, never animated), Popularisierer (goatee + vest + star-glow + magenta-violet-palette)
-  3. Each of the four new avatars (Prof. Lern Classic from Phase 151 + three archetypes) supports ≥3 animations: idle/blink, wave, celebrate — verified by vitest snapshot test for each skin × each state
-  4. External sensitivity reviewer has signed off on Kosmologe + Popularisierer archetypes in writing BEFORE any SVG is committed to main (sign-off artefact stored in `.planning/sensitivity-review/`); any requested changes are incorporated before the phase completes
+  3. Each of the four new avatars (Prof. Lern Classic from Phase 151 + three archetypes) supports ≥3 animations: idle/blink, wave, celebrate — verified by 12-case structural vitest matrix (`scholarAnimations.test.js`, 4 skins × 3 states; structural querySelector assertions per RESEARCH Pitfall 5, NO `toMatchSnapshot`)
+  4. **Internal sensitivity review** (per Phase 149 pivot — replaces obsolete external Leidmedien.de plan) has appended one final-art sign-off row per archetype to `.planning/sensitivity-review/SIGNOFF.md` confirming the 8-point ART_STYLE_GUIDE Section 5 checklist (archetype-label only, Power-Element positiv konnotiert, palette matched, pose aktiv-heroisch, Universal No-Gos absent, SVG-security `scholarSvgSecurity.test.js` GREEN, reduced-motion fallback verified, aria-label statisch) — sign-off occurs AFTER deploy-prod and BEFORE Phase 152 closure
   5. Switching between all five skins (Nova, Prof. Lern, Theoretiker, Kosmologe, Popularisierer) in PersonalSettings produces correct reactive re-render without regression of previous skins
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 152-02-PLAN.md — Add 3 scholar entries to characters.js (flips Codex Wave-0 RED tests GREEN)
+- [ ] 152-03-PLAN.md — Theoretiker silhouette case + shared `<g id="powerEffect">` infrastructure
+- [ ] 152-04-PLAN.md — Kosmologe silhouette (Power-First Drawing Order, seated body, thruster CSS keyframe with reduced-motion fallback)
+- [ ] 152-05-PLAN.md — Popularisierer silhouette (kinnbart + vest + Kosmos-Projektion radialGradient)
+- [ ] 152-06-PLAN.md — scholarAnimations.test.js (12-case matrix) + scholarSvgSecurity.test.js (zero-deps svgo replacement) + SIGNOFF.md final-art update + deploy + manual checkpoint (autonomous: false)
+
+> **Wave structure:** Wave 0 already shipped via Codex (commits `7c726d7` + `c2aae01` — RED tests + CHARACTER_BIBLE scholar entries). Wave 1 = 152-02 (parallel-safe). Waves 2/3/4 = 152-03/04/05 SEQUENTIAL (file-conflict on CharacterAvatar.vue silhouette switch). Wave 5 = 152-06 closer (autonomous: false — manual sensitivity-review checkpoint).
 
 ### Phase 153: Migration, Tests, Deploy & App Store
 **Goal**: Existing users remain on NOVA (zero-change default); new users get Prof. Lern Classic; all quality gates pass; v4.4.0 ships to the App Store with stale JS chunks cleaned and signature.json re-signed
@@ -424,5 +433,5 @@ Plans:
 | 149. Legal, Art Direction & Copy | v4.4.0 | 5/5 | Complete | 2026-04-24 |
 | 150. Animation Architecture & A11y | v4.4.0 | Complete    | 2026-04-25 | — |
 | 151. Skin Picker & Prof. Lern Classic | v4.4.0 | Complete    | 2026-04-25 | — |
-| 152. Three Archetype Presets | v4.4.0 | 0/TBD | Not started | — |
+| 152. Three Archetype Presets | v4.4.0 | 1/5 | In progress | — |
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 0/TBD | Not started | — |

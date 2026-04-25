@@ -38,7 +38,7 @@ Drei Archetyp-Figuren inspired by Scientist, ohne reale Namen.
 - [ ] **SCHOLAR-01**: "Der Theoretiker" — stylized Archetyp mit wildem Haar, Schnurrbart, Cardigan-Palette (Inspiration Einstein-esk, aber anonymisiert)
 - [ ] **SCHOLAR-02**: "Der Kosmologe" — stylized Archetyp mit Brille + Rollstuhl-Andeutung, Blau-Palette (Inspiration Hawking-esk, respektvoll gestaltet nach Sensitivity-Review)
 - [ ] **SCHOLAR-03**: "Der Astrophysik-Popularisierer" — stylized Archetyp mit Kinnbart, Weste, Sternen-Glow, Magenta-Violett (Inspiration Tyson-esk, anonymisiert)
-- [ ] **SCHOLAR-04**: Alle 3 Archetypen als Einträge in `characters.js` mit vollständigem Meta-Schema (palette, silhouette, states, personality)
+- [x] **SCHOLAR-04**: Alle 3 Archetypen als Einträge in `characters.js` mit vollständigem Meta-Schema (palette, silhouette, states, personality) — completed 2026-04-25 (commit `ab26155`, Plan 152-02)
 
 ### Meta-Schema Extension (META)
 
@@ -151,7 +151,7 @@ Roadmap mapping 2026-04-18. 100% coverage (40/40 REQs).
 | SCHOLAR-01 | Phase 152 | Pending |
 | SCHOLAR-02 | Phase 152 | Pending |
 | SCHOLAR-03 | Phase 152 | Pending |
-| SCHOLAR-04 | Phase 152 | Pending |
+| SCHOLAR-04 | Phase 152 | Complete (ab26155) |
 | META-01 | Phase 151 | Pending |
 | META-02 | Phase 151 | Pending |
 | META-03 | Phase 151 | Pending |
@@ -198,4 +198,4 @@ Roadmap mapping 2026-04-18. 100% coverage (40/40 REQs).
 
 ---
 *Requirements defined: 2026-04-18*
-*Last updated: 2026-04-18 — Roadmap mapping complete (40/40 coverage)*
+*Last updated: 2026-04-25 — SCHOLAR-04 complete via Plan 152-02 (commit ab26155)*

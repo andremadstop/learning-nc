@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v4.4.0
 milestone_name: Character & Personality
 current_phase: 152
-current_plan: null
-status: phase-151-complete-ready-for-152
-stopped_at: Phase 151 closed (7/7 plans, 1036/1036 tests, three-layer skin architecture live, deployed to relay 2026-04-25)
-last_updated: "2026-04-25T10:15:00+02:00"
+current_plan: 3
+status: phase-152-in-progress
+stopped_at: Plan 152-02 complete (data-layer scholar entries shipped, Vitest 1044/1044 GREEN)
+last_updated: "2026-04-25T12:15:00+02:00"
 last_activity: 2026-04-25
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 18
-  completed_plans: 18
+  total_plans: 19
+  completed_plans: 19
   percent: 60
 ---
 
@@ -27,11 +27,11 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 152 (next, not yet researched)
-Current Plan: —
-Total Plans in Phase: TBD
-Status: Phase 151 complete (7/7 plans). Codex did Wave 1+2 plans 02/04/06; Claude did 01/03/05/07. Verifier passed 12/12 requirements, 1036/1036 tests, three-layer skin architecture (backend + Pinia + dispatcher) live, NovaDock→SkinRenderer swap clean, novaReactions non-breaking guarantee held. Manual visual walkthrough deferred to ad-hoc bug-hunt.
-Last activity: 2026-04-25 — Phase 151 shipped to relay + verified
+Phase: 152 (in progress)
+Current Plan: 3
+Total Plans in Phase: 5
+Status: Phase 152 plan 02 complete (data-layer scholar entries shipped). Codex Wave-0 RED tests flipped GREEN, Vitest 1044/1044, ESLint clean, forbidden-names CI clean. Plans 03/04/05 next (sequential — file-conflict on CharacterAvatar.vue), then 06 closer with manual sensitivity-review checkpoint.
+Last activity: 2026-04-25
 Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 
 ## Performance Metrics
@@ -48,6 +48,7 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 | Phase 149 P04 | 2 min | 1 tasks | 1 files |
 | Phase 149 P03 | 3 min | 2 tasks | 2 files |
 | Phase 149 P02 | 4min | 1 tasks | 2 files |
+| 152 | 02 | ~15min | 1 | 2 |
 
 ## Accumulated Context
 
@@ -64,6 +65,10 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 - [149-03] Sensitivity-Review-Gate is hard blocker for Phase 152 SVG-Freeze — no SVG ships without `.planning/sensitivity-review/SIGNOFF.md` entry per archetype
 - [149-04] CHANGELOG v4.4.0 UNRELEASED entry locked with archetype-label-only naming (Theoretiker / Kosmologe / Popularisierer) at top of `app/CHANGELOG.md`; Added/Changed blocks ready for Phase 153 App Store copy-paste
 - [149-04] CHANGELOG canonical path is `app/CHANGELOG.md` (not repo root); `scripts/check-forbidden-names.sh` scope-path mismatch logged to `phases/149-legal-art-direction/deferred-items.md` for future fix
+- [152-02] Palette tokens used as planned: theoretiker=amber/text-muted/green, kosmologe=primary/ink/cyan, popularisierer=magenta/warning/magenta — `--lnc-warning` referenced but not defined as :root var (relies on NC cascade chain like prof_lern_classic precedent at line 64 of characters.js); flagged for future audit
+- [152-02] States array set to exactly ['idle', 'wave', 'celebrate'] (≥3 per ANIM-05 + RED-test arrayContaining superset). 'thinking' deferred to Plan 06 if scholarAnimations 12-case matrix demands it
+- [152-02] preview_thumbnail_svg: null for all 3 entries (Phase 153 fills) — Phase 152 is data layer + silhouette layer only
+- [152-02] Updated stale Phase 151 picker assertion in characters.test.js (was hardcoded to ['nova', 'prof_lern_classic']) — Rule 1 deviation, single source of truth shifted to SELECTABLE_CHARACTER_IDS const
 - [v4.4.0] Archetype-Naming zementiert — keine realen Namen (Einstein/Hawking/Tyson) wegen Trademark + Right-of-Publicity; Labels "Der Theoretiker / Der Kosmologe / Der Astrophysik-Popularisierer"
 - [v4.4.0] Zero-Change-Default für Bestandsuser — NOVA bleibt für alle aktuellen User, Prof. Lern Classic wird Default NUR für neu registrierte User (Nova-Removal-Trauma-Repeat vermeiden)
 - [v4.4.0] Externe Sensitivity-Review vor Phase 152 Freeze — ~€300 Budget, gated durch Phase 149
@@ -108,6 +113,6 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 
 ## Session Continuity
 
-Last session: 2026-04-25T10:15:00+02:00
-Stopped at: Phase 151 closure committed (verifier passed)
-Next action: `/gsd:plan-phase 152` — Three Archetype Presets (Theoretiker / Kosmologe / Astrophysik-Popularisierer SVGs). Phase 151 primitives ready: SkinRenderer dispatcher auto-routes new ids to CharacterAvatar; characters.js can be extended additively; VirtuProfController allowlist already preallows the three archetype ids. Sensitivity-Sign-off in `.planning/sensitivity-review/SIGNOFF.md` is hard gate before SVG freeze.
+Last session: 2026-04-25T12:15:00+02:00
+Stopped at: Plan 152-02 complete (data-layer scholar entries shipped, 1044/1044 GREEN, ESLint+forbidden-names CI clean)
+Next action: Execute Plan 152-03 — Theoretiker silhouette case + shared `<g id="powerEffect">` infrastructure in CharacterAvatar.vue. Plans 03/04/05 are SEQUENTIAL (file-conflict on switch statement). characters.js exposes silhouette keys 'theoretiker'/'kosmologe'/'popularisierer' ready for `case` branches. Sensitivity-Sign-off in `.planning/sensitivity-review/SIGNOFF.md` is hard gate before Phase 152 closure (Plan 06).
