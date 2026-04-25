@@ -216,7 +216,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 - [ ] **Phase 149: Legal, Art Direction & Copy Guidelines** - Archetype-Naming-Entscheidung dokumentiert, Sensitivity-Reviewer beauftragt, Style-Guide für Chibi-vs-Semi-Realistic, CI-Grep-Check gegen verbotene Eigennamen (LEGAL-01..04, MIGR-04)
 - [ ] **Phase 150: Animation Architecture & A11y Primitive** - character-animations.css + .js, character-reaction-engine.js (generalisiert aus Nova), SVG `<g>`-Sub-Groups mit `transform-box: fill-box`, `prefers-reduced-motion` von Tag 1 gated, A11y-Semantik (ANIM-01..04, A11Y-01..05)
 - [ ] **Phase 151: Skin Picker Framework & Prof. Lern Classic** - SkinRenderer.vue Dispatcher ersetzt NovaDock-Hardcode, SkinPicker.vue in PersonalSettings, Pinia-Store + NC user_config-Persistierung, ProfLernAvatar.vue aus v2.6.1 Git restored + Vue 3 migriert, Meta-Schema-Extension (PICK-01..05, CLASSIC-01..04, META-01..03)
-- [ ] **Phase 152: Three Archetype Presets** - SVG-Silhouetten für Theoretiker + Kosmologe + Popularisierer parallel, characters.js-Einträge, je ≥3 Animationen (idle/blink, wave, celebrate), Sensitivity-Sign-off vor Freeze, ANIM-05 Animation-Coverage je Skin (SCHOLAR-01..04, ANIM-05)
+- [x] **Phase 152: Three Archetype Presets** - SVG-Silhouetten für Theoretiker + Kosmologe + Popularisierer parallel, characters.js-Einträge, je ≥3 Animationen (idle/blink, wave, celebrate), Sensitivity-Sign-off vor Freeze, ANIM-05 Animation-Coverage je Skin (SCHOLAR-01..04, ANIM-05) (completed 2026-04-25)
 - [ ] **Phase 153: Migration, Tests, Deploy & App Store** - Zero-Change-Default-Migration, One-time-In-App-Hinweis, Vitest (SkinRenderer + resolveReaction + 4 Avatar-Snapshots), Playwright E2E mit `animations: 'disabled'`, manueller A11y-Audit (prefers-reduced-motion + Screen-Reader + RTL + Keyboard), i18n-5-Sprachen-Parität + CI-Key-Check, DevCloud-Test (Kurs 21 + ernesst), stale-JS-chunk-Cleanup, signature.json re-sign, App-Store-Push (MIGR-01..05, TEST-01..06, I18N-01..03)
 
 ## Phase Details
@@ -433,5 +433,5 @@ Plans:
 | 149. Legal, Art Direction & Copy | v4.4.0 | 5/5 | Complete | 2026-04-24 |
 | 150. Animation Architecture & A11y | v4.4.0 | Complete    | 2026-04-25 | — |
 | 151. Skin Picker & Prof. Lern Classic | v4.4.0 | Complete    | 2026-04-25 | — |
-| 152. Three Archetype Presets | v4.4.0 | 5/5 | Complete | 2026-04-25 |
+| 152. Three Archetype Presets | v4.4.0 | Complete    | 2026-04-25 | 2026-04-25 |
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 0/TBD | Not started | — |
