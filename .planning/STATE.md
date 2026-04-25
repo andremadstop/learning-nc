@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v4.4.0
 milestone_name: Character & Personality
 current_phase: 152
-current_plan: 5
-status: phase-152-ready-for-verification
-stopped_at: Plan 152-05 complete (Popularisierer silhouette + inline <defs> radialGradient shipped; Vitest 21/21 GREEN, ESLint+forbidden-names CI clean, vite build clean, Section 2.3 No-Go grep exit 1 — all 3 scholar archetypes now silhouette-complete in CharacterAvatar.vue, file LOCKED for Plan 06 close-out)
-last_updated: "2026-04-25T12:50:34.825Z"
+current_plan: 6
+status: phase-152-complete-ready-for-153
+stopped_at: Plan 152-06 complete (sensitivity-review SIGNOFF appended for 3 archetypes post-deploy on relay devcloud, scholarAnimations 23/23 + scholarSvgSecurity 7/7 GREEN, vitest 1077/1077, forbidden-names CI exit 0; Phase 152 closes — SCHOLAR-01..04 + ANIM-05 satisfied; v4.4.0 advances to Phase 153 release-and-l10n)
+last_updated: "2026-04-25T19:55:00.000Z"
 last_activity: 2026-04-25
 progress:
   total_phases: 5
-  completed_phases: 4
-  total_plans: 19
-  completed_plans: 19
-  percent: 80
+  completed_phases: 5
+  total_plans: 20
+  completed_plans: 20
+  percent: 100
 ---
 
 # Project State
@@ -27,12 +27,12 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 152 (ready for verification — silhouette plans complete, Plan 06 close-out remaining)
-Current Plan: 5 (last)
+Phase: 152 (COMPLETE — all 5 plans shipped, ready for Phase 153)
+Current Plan: 6 (last)
 Total Plans in Phase: 5 (data + 3 silhouettes + close-out)
-Status: Phase 152 Plan 05 complete (Popularisierer silhouette + inline <defs> radialGradient shipped). 21 elements (6 head + 9 arms + 6 power) — kinnbart triangle + magenta vest + 5 generic star-pattern dots + 2 open-arm Q-curves + Kosmos-Projektion gradient circle (fill='url(#popularisierer-projection-gradient)') + 5 star highlights. Vitest 21/21 GREEN, ESLint+forbidden-names CI clean, vite build clean (267ms), Section 2.3 No-Go awk-grep exit 1 (no hits). All 3 scholar archetypes (Theoretiker / Kosmologe / Popularisierer) now silhouette-complete. CharacterAvatar.vue grew 520→739 LOC (+219 net) across Plans 03+04+05 (6 commits). File now effectively LOCKED for Plan 06. Plan 06 = sensitivity-review SIGNOFF + close-out (Wave-0 stubs from a9f00de get filled, no further CharacterAvatar.vue edits).
+Status: Phase 152 COMPLETE. Plan 06 close-out shipped: scholarAnimations.test.js 23/23 GREEN (3 scholars × 3 states + classic dispatch + export-check satisfying ANIM-05 ≥12-case matrix), scholarSvgSecurity.test.js 7/7 GREEN (composite FORBIDDEN regex zero-deps svgo replacement), BIBLE↔characters.js verbatim sync verified (no drift), `./scripts/deploy-prod.sh --js-only` deployed all 3 scholar skins to relay devcloud-app at 15:00 UTC, manual 8-point ART_STYLE_GUIDE Section 5 sensitivity-review APPROVED for all 3 archetypes by user 2026-04-25, 3 final-art SIGNOFF.md rows appended (Theoretiker / Kosmologe / Popularisierer), Vitest 1077/1077 GREEN, forbidden-names CI exit 0, ESLint+build clean. Phase 152 satisfies SCHOLAR-01..04 + ANIM-05. CharacterAvatar.vue final at 739 LOC. SIGNOFF.md row count: 3→6 (concept-only 2026-04-19 + final-art 2026-04-25). v4.4.0 advances to Phase 153 (release-and-l10n: i18n 5 languages, MIGR-01..05, TEST-01..06 — App Store push).
 Last activity: 2026-04-25
-Progress (v4.4.0): [■■■■□] 4/5 phases complete (80% — 152 awaiting Plan 06 close-out)
+Progress (v4.4.0): [■■■■■] 5/5 phases complete (100% — Phase 152 closed; Phase 153 next for release-and-l10n)
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Progress (v4.4.0): [■■■■□] 4/5 phases complete (80% — 152 awaiting P
 | Phase 152 P03 | 12min | 2 tasks | 2 files |
 | Phase 152 P04 | 6min | 2 tasks | 2 files |
 | Phase 152 P05 | 5min | 2 tasks | 2 files |
+| Phase 152 P06 | ~30min | 4 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,10 @@ Progress (v4.4.0): [■■■■□] 4/5 phases complete (80% — 152 awaiting P
 - [152-05] ART_STYLE_GUIDE Section 2.3 compliance verified via 5 independent gates (forbidden-names CI exit 0, No-Go awk-grep over case body exit 1, `<text>` grep exit 1, ESLint clean, vite build clean) — generic kinnbart triangle + 5 scattered vest dots + magenta/violet/gold-driven palette (NOT skin-tone-driven) avoid both real-person likeness AND racial-exaggeration.
 - [152-05] Phase 152 silhouette LOC delta: CharacterAvatar.vue grew 520→739 lines (+219 net) across 6 commits in Plans 03/04/05 — file now effectively LOCKED for Plan 06 close-out (Plan 06 only writes new test files + sensitivity-review SIGNOFF, no further CharacterAvatar.vue edits).
 - [152-05] gsd-tools `state advance-plan` + `update-progress` regression noted: advance-plan stripped `milestone`/`milestone_name`/`current_phase` from frontmatter and reset to defaults (v2.3/milestone/missing); update-progress recalculated 160/154 by counting all on-disk SUMMARYs vs total_plans=154. Restored frontmatter manually. add-decision/record-session also failed ("Decisions section not found" — heading is `### Decisions (v4.4.0)`, tool expects bare `## Decisions`). Bug-log candidate for INBOX (third gsd-tools regression in this milestone).
+- [152-06] Augment-don't-replace strategy for Wave-0 test scaffolds (Codex commit a9f00de) — they covered 16 cases of real ground; replacing risked regression. Augmented to 30 cases (scholarAnimations 23 + scholarSvgSecurity 7) satisfying all must_haves grep checks (describe.each(SCHOLAR_SKINS), prof_lern_classic literal, FORBIDDEN regex extracted). Rule 4 advisor consult prevented over-correction.
+- [152-06] BIBLE personality strings already verbatim-match characters.js — Plan 02 copied them correctly; no BIBLE update needed. Sync verified, not modified. Documents that production code (characters.js) is source of truth.
+- [152-06] Internal sensitivity-review SIGNOFF process completed (replaces obsolete external Leidmedien.de plan per Phase 149 pivot). Two-phase: concept-only (2026-04-19, 3 rows) + final-art post-deploy (2026-04-25, 3 rows). Owner-led 8-point ART_STYLE_GUIDE Section 5 checklist confirmed for all 3 archetypes on relay-deployed visual. LEGAL-04 in REQUIREMENTS.md still references "Externe" — cosmetic label-update for Phase 153 close-out.
+- [152-06] Phase 152 closes with all 5 plans shipped: 02 (data), 03 (Theoretiker), 04 (Kosmologe), 05 (Popularisierer), 06 (validation+SIGNOFF). Requirements satisfied: SCHOLAR-01..04, ANIM-05. Zero new npm deps. v4.4.0 advances to Phase 153 (release-and-l10n).
 - [v4.4.0] Archetype-Naming zementiert — keine realen Namen (Einstein/Hawking/Tyson) wegen Trademark + Right-of-Publicity; Labels "Der Theoretiker / Der Kosmologe / Der Astrophysik-Popularisierer"
 - [v4.4.0] Zero-Change-Default für Bestandsuser — NOVA bleibt für alle aktuellen User, Prof. Lern Classic wird Default NUR für neu registrierte User (Nova-Removal-Trauma-Repeat vermeiden)
 - [v4.4.0] Externe Sensitivity-Review vor Phase 152 Freeze — ~€300 Budget, gated durch Phase 149
@@ -128,6 +133,6 @@ Progress (v4.4.0): [■■■■□] 4/5 phases complete (80% — 152 awaiting P
 
 ## Session Continuity
 
-Last session: 2026-04-25T12:50:34.822Z
-Stopped at: Plan 152-05 complete (Popularisierer silhouette + inline <defs> radialGradient shipped; Vitest 21/21 GREEN, ESLint+forbidden-names CI clean, vite build clean, Section 2.3 No-Go grep exit 1 — all 3 scholar archetypes now silhouette-complete in CharacterAvatar.vue, file LOCKED for Plan 06 close-out)
-Next action: Phase 152 verification + Plan 06 close-out. Plan 06 is the manual sensitivity-review SIGNOFF + Wave-0 test-stub fill (test files already scaffolded in commit a9f00de: scholarAnimations.test.js + scholarSvgSecurity.test.js). After Plan 06 SIGNOFF, Phase 152 closes and v4.4.0 advances to Phase 153 (release-and-l10n: App Store description + i18n parity for the 3 new scholar archetypes). CharacterAvatar.vue is LOCKED — no further silhouette edits expected in Phase 152.
+Last session: 2026-04-25T19:55:00.000Z
+Stopped at: Plan 152-06 complete (sensitivity-review SIGNOFF appended for 3 archetypes post-deploy on relay devcloud, scholarAnimations 23/23 + scholarSvgSecurity 7/7 GREEN, vitest 1077/1077, forbidden-names CI exit 0; Phase 152 closes — SCHOLAR-01..04 + ANIM-05 satisfied; v4.4.0 advances to Phase 153 release-and-l10n)
+Next action: Phase 153 (Migration, Tests, Deploy & App Store). Scope: zero-change-default migration (MIGR-01..05), Vitest unit tests for SkinRenderer + resolveReaction + 4 Avatar-Snapshots (TEST-01..03), Playwright E2E with `animations: 'disabled'` (TEST-04..05), manual A11y-Audit (TEST-06), i18n 5-language parity for new scholar archetype labels + picker UI (I18N-01..03), DevCloud-Test on Kurs 21 + ernesst, stale-JS-chunk-Cleanup, signature.json re-sign, App Store v4.4.0 push. Phase 152 closure note: LEGAL-04 cosmetic label update ("Externe" → "Interne" per Phase 149 pivot) is OK to bundle into Phase 153 docs/legal-cleanup.

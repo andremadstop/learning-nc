@@ -56,7 +56,7 @@ Shared Animation-Primitives für alle Skins.
 - [ ] **ANIM-02**: `character-animations.js` exportiert WAAPI-Helpers für Event-Triggered Animationen (wave, celebrate, shrug) — alle mit `matchMedia('(prefers-reduced-motion: reduce)')`-Guard
 - [ ] **ANIM-03**: `character-reaction-engine.js` generalisiert aus `nova-reaction-engine.js`, mapped Events (answer-correct, answer-wrong, chat-message, badge-earned) auf `{animation, emotion, sound, duration}` mit graceful Fallback wenn Skin State nicht supportet
 - [ ] **ANIM-04**: CharacterAvatar.vue SVG in named `<g id="head">`, `<g id="arms">`, `<g id="body">` sub-groups gewrappt mit `transform-box: fill-box` (Safari pre-16 Fix)
-- [ ] **ANIM-05**: Jeder Archetype + Prof. Lern Classic unterstützt mindestens 3 Animationen (idle/blink, wave, celebrate)
+- [x] **ANIM-05**: Jeder Archetype + Prof. Lern Classic unterstützt mindestens 3 Animationen (idle/blink, wave, celebrate) — completed 2026-04-25 (commit `0b9f13c`, Plan 152-06; 23 GREEN cases in scholarAnimations.test.js)
 
 ### Internationalization (I18N)
 
@@ -159,7 +159,7 @@ Roadmap mapping 2026-04-18. 100% coverage (40/40 REQs).
 | ANIM-02 | Phase 150 | Pending |
 | ANIM-03 | Phase 150 | Pending |
 | ANIM-04 | Phase 150 | Pending |
-| ANIM-05 | Phase 152 | Pending |
+| ANIM-05 | Phase 152 | Complete (0b9f13c) |
 | I18N-01 | Phase 153 | Pending |
 | I18N-02 | Phase 153 | Pending |
 | I18N-03 | Phase 153 | Pending |
@@ -198,4 +198,4 @@ Roadmap mapping 2026-04-18. 100% coverage (40/40 REQs).
 
 ---
 *Requirements defined: 2026-04-18*
-*Last updated: 2026-04-25 — SCHOLAR-04 complete via Plan 152-02 (commit ab26155)*
+*Last updated: 2026-04-25 — Phase 152 complete: SCHOLAR-01..04 + ANIM-05 (commits ab26155, ..., bbf2367, Plan 152-06)*
