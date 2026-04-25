@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v4.4.0
 milestone_name: Character & Personality
 current_phase: 152
-current_plan: 4
+current_plan: 5
 status: phase-152-in-progress
-stopped_at: Plan 152-03 complete (Theoretiker silhouette + shared <g id="powerEffect"> infrastructure shipped, Vitest 1061/1061 GREEN)
-last_updated: "2026-04-25T12:19:28.736Z"
+stopped_at: Plan 152-04 complete (Kosmologe silhouette + Raketenrollstuhl + thruster opacity-only keyframe shipped, Vitest 20/20 GREEN, ESLint+forbidden-names CI clean, vite build clean)
+last_updated: "2026-04-25T12:35:49.648Z"
 last_activity: 2026-04-25
 progress:
   total_phases: 5
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 ## Current Position
 
 Phase: 152 (in progress)
-Current Plan: 4
+Current Plan: 5
 Total Plans in Phase: 5
-Status: Phase 152 plan 03 complete (Theoretiker silhouette + shared `<g id="powerEffect">` infrastructure shipped). Vitest 1061/1061 GREEN, ESLint clean, forbidden-names CI clean, vite build clean. Plans 04 (Kosmologe) and 05 (Popularisierer) next — both reuse the powerEffect group and only add new `case` branches with `region: 'power'` items, so file-conflict-managed but template-stable. Plan 06 closer with manual sensitivity-review checkpoint.
+Status: Phase 152 plan 04 complete (Kosmologe silhouette case in CharacterAvatar.vue with Raketenrollstuhl + opacity-only thruster keyframe + reduced-motion inheritance via Phase 150 global rule). 21 elements in Power-First Drawing Order (body→face→glasses→wheelchair LAST→energy LAST-of-LAST). Vitest 20/20 (target files) GREEN, ESLint clean, forbidden-names CI clean, vite build clean. Plan 05 (Popularisierer) next — reuses powerEffect group + same template-free pattern, only adds `case 'popularisierer':` branch. Plan 06 closer with manual sensitivity-review checkpoint.
 Last activity: 2026-04-25
 Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 
@@ -50,6 +50,7 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 | Phase 149 P02 | 4min | 1 tasks | 2 files |
 | 152 | 02 | ~15min | 1 | 2 |
 | Phase 152 P03 | 12min | 2 tasks | 2 files |
+| Phase 152 P04 | 6min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,10 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 - [152-03] Three-way feature partition pattern: `featureElements` → `headFeatures` (y < bodyTop, region !== 'power') / `armsFeatures` (y >= bodyTop, region !== 'power') / `powerFeatures` (region === 'power'). Backward-compat via filter short-circuit — existing 14 silhouettes never set `region` so they fall through unchanged.
 - [152-03] Theoretiker glyph paths chosen as deliberately abstract (1 Q-curlicue, 1 zigzag, 1 small A-arc r=4, 1 Q-arch) — none are traceable to a real math symbol; A-arc kept under 4px so it can't read as phi/zero/circle. ART_STYLE_GUIDE Section 2.1 No-Go list cleared (no E=mc, no name-cues, no <text> with letters).
 - [152-03] Eyebrows added beyond plan recommendation (plan said optional) to balance head silhouette — without them mustache reads alone and over-weights the lower face. 2 short `<line>` elements, strokeWidth 1.5.
+- [152-04] bodyPath kosmologe special-case returns '' (empty path) — seated body fully painted via 21-element featureElements case in Power-First Drawing Order; cleaner than custom seated path because wheelchair LAST z-order naturally works (RESEARCH Pattern 2)
+- [152-04] Element dispatch :class extends ALL 3 groups (head/arms/powerEffect = 12 occurrences total = 3 groups × 4 shape branches) for forward-compat; thruster CSS targeting via class:'thruster' on featureElements + dispatch `:class="el.class || null"` propagates to SVG primitive
+- [152-04] Thruster keyframe opacity-only (0.85↔1.0, 1500ms ease-in-out) per Section 4 line 158 — no width/height/top/left/filter/box-shadow paint-triggering props; reduced-motion fallback inherited via Phase 150 global `.character-avatar *` descendant selector at lines 661-667 (no new @media block needed)
+- [152-04] 21 elements (4 body + 1 face + 5 brille + 8 rollstuhl + 3 power) instead of plan's recommended ~25 — plan said approximate; shipped recommended layout exactly without padding (advisor confirmed correct count)
 - [v4.4.0] Archetype-Naming zementiert — keine realen Namen (Einstein/Hawking/Tyson) wegen Trademark + Right-of-Publicity; Labels "Der Theoretiker / Der Kosmologe / Der Astrophysik-Popularisierer"
 - [v4.4.0] Zero-Change-Default für Bestandsuser — NOVA bleibt für alle aktuellen User, Prof. Lern Classic wird Default NUR für neu registrierte User (Nova-Removal-Trauma-Repeat vermeiden)
 - [v4.4.0] Externe Sensitivity-Review vor Phase 152 Freeze — ~€300 Budget, gated durch Phase 149
@@ -118,6 +123,6 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 
 ## Session Continuity
 
-Last session: 2026-04-25T14:18:00+02:00
-Stopped at: Plan 152-03 complete (Theoretiker silhouette + shared `<g id="powerEffect">` infrastructure in CharacterAvatar.vue, Vitest 1061/1061 GREEN, ESLint+forbidden-names CI clean, vite build clean)
+Last session: 2026-04-25T12:35:49.645Z
+Stopped at: Plan 152-04 complete (Kosmologe silhouette + Raketenrollstuhl + thruster opacity-only keyframe shipped, Vitest 20/20 GREEN, ESLint+forbidden-names CI clean, vite build clean)
 Next action: Execute Plan 152-04 — Kosmologe silhouette case in CharacterAvatar.vue (Raketenrollstuhl + Thruster-Glow + Sternenstaub Power-Element). Plan 03 already shipped the shared `<g id="powerEffect">` group + `region: 'power'` filter pattern, so Plan 04 only adds a new `case 'kosmologe':` branch — no further template/computed changes needed. Plan 05 (Popularisierer) follows the same template-free pattern. Plan 06 closer with manual sensitivity-review checkpoint.
