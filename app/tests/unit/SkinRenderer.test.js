@@ -5,11 +5,13 @@ import SkinRenderer from '../../src/components/SkinRenderer.vue'
 import { useSkinStore } from '../../src/stores/skinStore.js'
 
 let mountedApp = null
+let pinia = null
 
 beforeEach(() => {
 	if (mountedApp) { mountedApp.unmount(); mountedApp = null }
 	document.body.innerHTML = '<div id="app"></div>'
-	setActivePinia(createPinia())
+	pinia = createPinia()
+	setActivePinia(pinia)
 })
 
 afterEach(() => {
@@ -18,7 +20,7 @@ afterEach(() => {
 
 function mount(props = {}) {
 	const app = createApp({ render: () => h(SkinRenderer, props) })
-	app.use(createPinia())
+	app.use(pinia)
 	app.config.globalProperties.t = (appName, str) => str
 	app.mount('#app')
 	mountedApp = app
