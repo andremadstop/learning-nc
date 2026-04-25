@@ -24,7 +24,8 @@
 						:r="el.r"
 						:fill="el.fill || character.palette.accent"
 						:stroke="el.stroke || 'none'"
-						:stroke-width="el.strokeWidth || 0" />
+						:stroke-width="el.strokeWidth || 0"
+						:class="el.class || null" />
 					<rect v-else-if="el.type === 'rect'"
 						:x="el.x"
 						:y="el.y"
@@ -33,13 +34,15 @@
 						:rx="el.rx || 0"
 						:fill="el.fill || character.palette.accent"
 						:stroke="el.stroke || 'none'"
-						:stroke-width="el.strokeWidth || 0" />
+						:stroke-width="el.strokeWidth || 0"
+						:class="el.class || null" />
 					<path v-else-if="el.type === 'path'"
 						:d="el.d"
 						:fill="el.fill || 'none'"
 						:stroke="el.stroke || character.palette.accent"
 						:stroke-width="el.strokeWidth || 2"
-						:stroke-linecap="el.linecap || 'round'" />
+						:stroke-linecap="el.linecap || 'round'"
+						:class="el.class || null" />
 					<line v-else-if="el.type === 'line'"
 						:x1="el.x1"
 						:y1="el.y1"
@@ -47,7 +50,8 @@
 						:y2="el.y2"
 						:stroke="el.stroke || character.palette.accent"
 						:stroke-width="el.strokeWidth || 2"
-						:stroke-linecap="el.linecap || 'round'" />
+						:stroke-linecap="el.linecap || 'round'"
+						:class="el.class || null" />
 					<text v-else-if="el.type === 'text'"
 						:x="el.x"
 						:y="el.y"
@@ -67,7 +71,8 @@
 						:r="el.r"
 						:fill="el.fill || character.palette.accent"
 						:stroke="el.stroke || 'none'"
-						:stroke-width="el.strokeWidth || 0" />
+						:stroke-width="el.strokeWidth || 0"
+						:class="el.class || null" />
 					<rect v-else-if="el.type === 'rect'"
 						:x="el.x"
 						:y="el.y"
@@ -76,13 +81,15 @@
 						:rx="el.rx || 0"
 						:fill="el.fill || character.palette.accent"
 						:stroke="el.stroke || 'none'"
-						:stroke-width="el.strokeWidth || 0" />
+						:stroke-width="el.strokeWidth || 0"
+						:class="el.class || null" />
 					<path v-else-if="el.type === 'path'"
 						:d="el.d"
 						:fill="el.fill || 'none'"
 						:stroke="el.stroke || character.palette.accent"
 						:stroke-width="el.strokeWidth || 2"
-						:stroke-linecap="el.linecap || 'round'" />
+						:stroke-linecap="el.linecap || 'round'"
+						:class="el.class || null" />
 					<line v-else-if="el.type === 'line'"
 						:x1="el.x1"
 						:y1="el.y1"
@@ -90,7 +97,8 @@
 						:y2="el.y2"
 						:stroke="el.stroke || character.palette.accent"
 						:stroke-width="el.strokeWidth || 2"
-						:stroke-linecap="el.linecap || 'round'" />
+						:stroke-linecap="el.linecap || 'round'"
+						:class="el.class || null" />
 					<text v-else-if="el.type === 'text'"
 						:x="el.x"
 						:y="el.y"
@@ -112,7 +120,8 @@
 						:r="el.r"
 						:fill="el.fill || character.palette.accent"
 						:stroke="el.stroke || 'none'"
-						:stroke-width="el.strokeWidth || 0" />
+						:stroke-width="el.strokeWidth || 0"
+						:class="el.class || null" />
 					<rect v-else-if="el.type === 'rect'"
 						:x="el.x"
 						:y="el.y"
@@ -121,13 +130,15 @@
 						:rx="el.rx || 0"
 						:fill="el.fill || character.palette.accent"
 						:stroke="el.stroke || 'none'"
-						:stroke-width="el.strokeWidth || 0" />
+						:stroke-width="el.strokeWidth || 0"
+						:class="el.class || null" />
 					<path v-else-if="el.type === 'path'"
 						:d="el.d"
 						:fill="el.fill || 'none'"
 						:stroke="el.stroke || character.palette.accent"
 						:stroke-width="el.strokeWidth || 2"
-						:stroke-linecap="el.linecap || 'round'" />
+						:stroke-linecap="el.linecap || 'round'"
+						:class="el.class || null" />
 					<line v-else-if="el.type === 'line'"
 						:x1="el.x1"
 						:y1="el.y1"
@@ -135,7 +146,8 @@
 						:y2="el.y2"
 						:stroke="el.stroke || character.palette.accent"
 						:stroke-width="el.strokeWidth || 2"
-						:stroke-linecap="el.linecap || 'round'" />
+						:stroke-linecap="el.linecap || 'round'"
+						:class="el.class || null" />
 				</template>
 			</g>
 		</svg>
@@ -272,10 +284,17 @@ export default {
 				tim_azubi: 0.28,
 				sven_berater: 0.30,
 				theoretiker: 0.32,
+				kosmologe: 0.36,
 				fallback: 0.30,
 			}
 			const hw = s * (widths[sil] || 0.30)
 
+			if (sil === 'kosmologe') {
+				// Seated body — fully painted via featureElements (wheelchair backrest + seat + body atop).
+				// Returning empty path = <path d="" /> = no visible body shape.
+				// The seated form lives in arms region (cy >= bodyTop). RESEARCH Pattern 2.
+				return ''
+			}
 			if (sil === 'ghostline') {
 				// Angular hood shape
 				return `M${cx} ${top - 4} L${cx + hw} ${bot} L${cx - hw} ${bot} Z`
