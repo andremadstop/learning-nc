@@ -1,12 +1,18 @@
 <template>
   <div
+    ref="wrapperRef"
     class="virtuprof-avatar-wrapper"
+    :class="{ 'is-waving': waving }"
     @click="handleClick">
     <div
       class="virtuprof-avatar"
       :class="[`animation-${animation}`, { 'has-message': hasMessage, 'is-waving': waving }]">
 
-      <svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <svg
+        viewBox="0 0 60 80"
+        xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        :aria-label="ariaLabel">
 
         <!-- Körper -->
         <rect x="15" y="40" width="30" height="30" rx="6" fill="#2c6c9f" />
@@ -19,8 +25,15 @@
         <!-- Fragezeichen -->
         <text x="30" y="63" text-anchor="middle" font-size="14" font-weight="bold" fill="rgba(255,255,255,0.85)" font-family="serif">?</text>
 
+        <!-- Buch -->
+        <g data-prof-feature="book">
+          <rect x="16" y="50" width="28" height="13" rx="2" fill="#f2c230" stroke="#173a58" stroke-width="1" />
+          <line x1="30" y1="50" x2="30" y2="63" stroke="#173a58" stroke-width="1" />
+          <path d="M 19 54 L 27 54 M 33 54 L 41 54 M 19 58 L 27 58 M 33 58 L 41 58" stroke="rgba(23,58,88,0.55)" stroke-width="0.8" stroke-linecap="round" />
+        </g>
+
         <!-- Wink-Arm (nur sichtbar in is-waving) -->
-        <g class="wave-arm">
+        <g ref="armRef" class="wave-arm">
           <path d="M 42 42 Q 52 34 50 24" stroke="#f3c7a6" stroke-width="4.5" fill="none" stroke-linecap="round" />
           <circle cx="50" cy="22" r="4" fill="#f3c7a6" />
         </g>
@@ -38,7 +51,7 @@
         </g>
 
         <!-- Augen (Weiß + Iris + Pupille + Lichtpunkt) -->
-        <g class="pupils">
+        <g class="pupils" data-prof-feature="pupils" :style="pupilsStyle">
           <!-- Linkes Auge -->
           <ellipse cx="24" cy="27" rx="3.8" ry="3.2" fill="white" />
           <circle cx="24" cy="27" r="2.1" fill="#5b8fd4" />
@@ -93,8 +106,11 @@
 </template>
 
 <script>
+import { useA11yStore } from '../stores/a11yStore.js'
+import { playWave } from '../utils/character-animations.js'
+
 export default {
-  name: 'VirtuProfAvatar',
+  name: 'ProfLernAvatar',
   props: {
     animation: {
       type: String,
@@ -110,14 +126,86 @@ export default {
     },
   },
   data() {
-    return { waving: false }
+    return {
+      mousemoveHandler: null,
+      pupilOffsetX: 0,
+      pupilOffsetY: 0,
+      waveTimer: null,
+      waving: false,
+    }
+  },
+  computed: {
+    ariaLabel() {
+      return 'Prof. Lern'
+    },
+    pupilsStyle() {
+      return `transform: translate(${this.pupilOffsetX}px, ${this.pupilOffsetY}px);`
+    },
+  },
+  mounted() {
+    this.mousemoveHandler = (event) => this.handleMouseMove(event)
+    this.$refs.wrapperRef?.addEventListener('mousemove', this.mousemoveHandler)
+  },
+  beforeUnmount() {
+    if (this.mousemoveHandler && this.$refs.wrapperRef) {
+      this.$refs.wrapperRef.removeEventListener('mousemove', this.mousemoveHandler)
+    }
+    if (this.waveTimer) {
+      clearTimeout(this.waveTimer)
+    }
   },
   methods: {
+    animationsDisabled() {
+      const prefersReduced = typeof window !== 'undefined'
+        && typeof window.matchMedia === 'function'
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (prefersReduced) {
+        return true
+      }
+
+      try {
+        return useA11yStore().animationsEnabled === false
+      } catch (e) {
+        return false
+      }
+    },
+    handleMouseMove(event) {
+      if (this.animationsDisabled()) {
+        return
+      }
+
+      const wrapper = this.$refs.wrapperRef
+      if (!wrapper) {
+        return
+      }
+
+      const rect = wrapper.getBoundingClientRect()
+      if (!rect.width || !rect.height) {
+        return
+      }
+
+      const centerX = rect.left + rect.width / 2
+      const centerY = rect.top + rect.height / 2
+      const dx = (event.clientX - centerX) / rect.width
+      const dy = (event.clientY - centerY) / rect.height
+
+      this.pupilOffsetX = Math.max(-3, Math.min(3, dx * 6))
+      this.pupilOffsetY = Math.max(-2, Math.min(2, dy * 4))
+    },
     handleClick() {
       this.$emit('click')
-      if (this.waving) return
+      const arm = this.$refs.armRef
+      if (arm) {
+        playWave(arm)
+      }
+      if (this.waveTimer) {
+        clearTimeout(this.waveTimer)
+      }
       this.waving = true
-      setTimeout(() => { this.waving = false }, 1200)
+      this.waveTimer = setTimeout(() => {
+        this.waving = false
+        this.waveTimer = null
+      }, 1200)
     },
   },
 }
