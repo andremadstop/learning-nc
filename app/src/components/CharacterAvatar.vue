@@ -521,6 +521,51 @@ export default {
 					{ type: 'path', region: 'power', d: `M${cx - s * 0.18} ${this.bodyTop - 6} Q${cx - s * 0.14} ${this.bodyTop - 10} ${cx - s * 0.10} ${this.bodyTop - 4}`, stroke: pal.glow, strokeWidth: 1.5, fill: 'none' },
 				]
 
+			case 'popularisierer':
+				// ART_STYLE_GUIDE Section 2.3 — Confident, einladend Kosmos-Kommunikator.
+				// No real-person likeness: generic kinnbart, generic scattered star-pattern (NOT a signature),
+				// Comic-saturated palette (magenta/violet/gold), NOT exaggerated-realistic skin-tones.
+				// Power-Element: Kosmos-Projektion (radialGradient circle + 5 star highlights, region: 'power').
+				// Pitfall 6: NO <text> elements (no name-cues, no readable show-titles).
+				return [
+					// ── Head features (cy < bodyTop) ──
+					// Generic kinnbart (chin-beard, single small triangle below mouth)
+					{ type: 'path', d: `M${cx - 3} ${hcy + 8} L${cx} ${hcy + 14} L${cx + 3} ${hcy + 8} Z`, fill: pal.primary },
+					// Mouth (warm-charismatic, slight smile)
+					{ type: 'path', d: `M${cx - 4} ${hcy + 5} Q${cx} ${hcy + 7} ${cx + 4} ${hcy + 5}`, stroke: pal.primary, strokeWidth: 1.5, fill: 'none' },
+					// Eyes (forward-facing, simple dots)
+					{ type: 'circle', cx: cx - hr * 0.35, cy: hcy - 1, r: 1.5, fill: pal.primary },
+					{ type: 'circle', cx: cx + hr * 0.35, cy: hcy - 1, r: 1.5, fill: pal.primary },
+					// Eyebrows (warm, slightly raised)
+					{ type: 'line', x1: cx - hr * 0.55, y1: hcy - 4, x2: cx - hr * 0.15, y2: hcy - 5, stroke: pal.primary, strokeWidth: 1.5 },
+					{ type: 'line', x1: cx + hr * 0.15, y1: hcy - 5, x2: cx + hr * 0.55, y2: hcy - 4, stroke: pal.primary, strokeWidth: 1.5 },
+
+					// ── Body / vest (arms region, cy >= bodyTop) ──
+					// Vest base (magenta) — covers default trapezoid body partially
+					{ type: 'rect', x: cx - hr * 1.0, y: this.bodyTop + 4, w: hr * 2.0, h: hr * 2.4, rx: 3, fill: pal.primary },
+					// Vest collar (V-shape opening)
+					{ type: 'path', d: `M${cx - hr * 0.5} ${this.bodyTop + 4} L${cx} ${this.bodyTop + 14} L${cx + hr * 0.5} ${this.bodyTop + 4}`, stroke: pal.glow, strokeWidth: 2, fill: 'none' },
+					// Star-pattern accent on vest — generic scattered dots (NOT a recognizable signature pattern)
+					{ type: 'circle', cx: cx - hr * 0.5, cy: this.bodyTop + 18, r: 1.5, fill: pal.accent },
+					{ type: 'circle', cx: cx + hr * 0.4, cy: this.bodyTop + 22, r: 1.5, fill: pal.accent },
+					{ type: 'circle', cx: cx - hr * 0.2, cy: this.bodyTop + 28, r: 1.5, fill: pal.accent },
+					{ type: 'circle', cx: cx + hr * 0.6, cy: this.bodyTop + 14, r: 1.5, fill: pal.accent },
+					{ type: 'circle', cx, cy: this.bodyTop + 32, r: 1.5, fill: pal.accent },
+					// Arms open (gestikulierend outward — Section 2.3 "Arme offen, erklaerend-einladend")
+					{ type: 'path', d: `M${cx - hr * 1.0} ${this.bodyTop + 8} Q${cx - hr * 1.6} ${this.bodyTop + 18} ${cx - hr * 1.4} ${this.bodyTop + 28}`, stroke: pal.primary, strokeWidth: 5, fill: 'none', linecap: 'round' },
+					{ type: 'path', d: `M${cx + hr * 1.0} ${this.bodyTop + 8} Q${cx + hr * 1.6} ${this.bodyTop + 18} ${cx + hr * 1.4} ${this.bodyTop + 28}`, stroke: pal.primary, strokeWidth: 5, fill: 'none', linecap: 'round' },
+
+					// ── Kosmos-Projektion (region: 'power' — renders LAST in <g id="powerEffect">) ──
+					// Mini-Galaxie center: large gradient circle (magenta-violet fade)
+					{ type: 'circle', region: 'power', cx: cx + s * 0.18, cy: this.bodyTop + 8, r: s * 0.12, fill: 'url(#popularisierer-projection-gradient)', stroke: 'none' },
+					// Star highlights (warm gold/white) — 5 small circles scattered around the Kosmos-Projektion
+					{ type: 'circle', region: 'power', cx: cx + s * 0.10, cy: this.bodyTop + 2, r: 1.2, fill: pal.accent },
+					{ type: 'circle', region: 'power', cx: cx + s * 0.26, cy: this.bodyTop + 4, r: 1.5, fill: pal.accent },
+					{ type: 'circle', region: 'power', cx: cx + s * 0.14, cy: this.bodyTop + 16, r: 1, fill: pal.accent },
+					{ type: 'circle', region: 'power', cx: cx + s * 0.24, cy: this.bodyTop + 14, r: 1.3, fill: pal.accent },
+					{ type: 'circle', region: 'power', cx: cx + s * 0.20, cy: this.bodyTop - 2, r: 0.8, fill: pal.accent },
+				]
+
 			default:
 				// Fallback: question mark
 				return [
