@@ -433,5 +433,5 @@ Plans:
 | 149. Legal, Art Direction & Copy | v4.4.0 | 5/5 | Complete | 2026-04-24 |
 | 150. Animation Architecture & A11y | v4.4.0 | Complete    | 2026-04-25 | — |
 | 151. Skin Picker & Prof. Lern Classic | v4.4.0 | Complete    | 2026-04-25 | — |
-| 152. Three Archetype Presets | v4.4.0 | 1/5 | In progress | — |
+| 152. Three Archetype Presets | v4.4.0 | 2/5 | In Progress | — |
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 0/TBD | Not started | — |

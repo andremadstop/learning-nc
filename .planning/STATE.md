@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v4.4.0
 milestone_name: Character & Personality
 current_phase: 152
-current_plan: 3
+current_plan: 4
 status: phase-152-in-progress
-stopped_at: Plan 152-02 complete (data-layer scholar entries shipped, Vitest 1044/1044 GREEN)
-last_updated: "2026-04-25T12:15:00+02:00"
+stopped_at: Plan 152-03 complete (Theoretiker silhouette + shared <g id="powerEffect"> infrastructure shipped, Vitest 1061/1061 GREEN)
+last_updated: "2026-04-25T12:19:28.736Z"
 last_activity: 2026-04-25
 progress:
   total_phases: 5
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 ## Current Position
 
 Phase: 152 (in progress)
-Current Plan: 3
+Current Plan: 4
 Total Plans in Phase: 5
-Status: Phase 152 plan 02 complete (data-layer scholar entries shipped). Codex Wave-0 RED tests flipped GREEN, Vitest 1044/1044, ESLint clean, forbidden-names CI clean. Plans 03/04/05 next (sequential — file-conflict on CharacterAvatar.vue), then 06 closer with manual sensitivity-review checkpoint.
+Status: Phase 152 plan 03 complete (Theoretiker silhouette + shared `<g id="powerEffect">` infrastructure shipped). Vitest 1061/1061 GREEN, ESLint clean, forbidden-names CI clean, vite build clean. Plans 04 (Kosmologe) and 05 (Popularisierer) next — both reuse the powerEffect group and only add new `case` branches with `region: 'power'` items, so file-conflict-managed but template-stable. Plan 06 closer with manual sensitivity-review checkpoint.
 Last activity: 2026-04-25
 Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 
@@ -49,6 +49,7 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 | Phase 149 P03 | 3 min | 2 tasks | 2 files |
 | Phase 149 P02 | 4min | 1 tasks | 2 files |
 | 152 | 02 | ~15min | 1 | 2 |
+| Phase 152 P03 | 12min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,10 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 - [152-02] States array set to exactly ['idle', 'wave', 'celebrate'] (≥3 per ANIM-05 + RED-test arrayContaining superset). 'thinking' deferred to Plan 06 if scholarAnimations 12-case matrix demands it
 - [152-02] preview_thumbnail_svg: null for all 3 entries (Phase 153 fills) — Phase 152 is data layer + silhouette layer only
 - [152-02] Updated stale Phase 151 picker assertion in characters.test.js (was hardcoded to ['nova', 'prof_lern_classic']) — Rule 1 deviation, single source of truth shifted to SELECTABLE_CHARACTER_IDS const
+- [152-03] Shared `<g id="powerEffect">` overlay group landed in CharacterAvatar.vue — region-tagged elements (`region: 'power'`) automatically render LAST in the SVG drawing order (Pitfall 2 z-order); template has NO `<text>` branch by design (Pitfall 6 structural prevention). Plans 04/05 reuse this with zero further template changes.
+- [152-03] Three-way feature partition pattern: `featureElements` → `headFeatures` (y < bodyTop, region !== 'power') / `armsFeatures` (y >= bodyTop, region !== 'power') / `powerFeatures` (region === 'power'). Backward-compat via filter short-circuit — existing 14 silhouettes never set `region` so they fall through unchanged.
+- [152-03] Theoretiker glyph paths chosen as deliberately abstract (1 Q-curlicue, 1 zigzag, 1 small A-arc r=4, 1 Q-arch) — none are traceable to a real math symbol; A-arc kept under 4px so it can't read as phi/zero/circle. ART_STYLE_GUIDE Section 2.1 No-Go list cleared (no E=mc, no name-cues, no <text> with letters).
+- [152-03] Eyebrows added beyond plan recommendation (plan said optional) to balance head silhouette — without them mustache reads alone and over-weights the lower face. 2 short `<line>` elements, strokeWidth 1.5.
 - [v4.4.0] Archetype-Naming zementiert — keine realen Namen (Einstein/Hawking/Tyson) wegen Trademark + Right-of-Publicity; Labels "Der Theoretiker / Der Kosmologe / Der Astrophysik-Popularisierer"
 - [v4.4.0] Zero-Change-Default für Bestandsuser — NOVA bleibt für alle aktuellen User, Prof. Lern Classic wird Default NUR für neu registrierte User (Nova-Removal-Trauma-Repeat vermeiden)
 - [v4.4.0] Externe Sensitivity-Review vor Phase 152 Freeze — ~€300 Budget, gated durch Phase 149
@@ -113,6 +118,6 @@ Progress (v4.4.0): [■■■□□] 3/5 phases complete (60%)
 
 ## Session Continuity
 
-Last session: 2026-04-25T12:15:00+02:00
-Stopped at: Plan 152-02 complete (data-layer scholar entries shipped, 1044/1044 GREEN, ESLint+forbidden-names CI clean)
-Next action: Execute Plan 152-03 — Theoretiker silhouette case + shared `<g id="powerEffect">` infrastructure in CharacterAvatar.vue. Plans 03/04/05 are SEQUENTIAL (file-conflict on switch statement). characters.js exposes silhouette keys 'theoretiker'/'kosmologe'/'popularisierer' ready for `case` branches. Sensitivity-Sign-off in `.planning/sensitivity-review/SIGNOFF.md` is hard gate before Phase 152 closure (Plan 06).
+Last session: 2026-04-25T14:18:00+02:00
+Stopped at: Plan 152-03 complete (Theoretiker silhouette + shared `<g id="powerEffect">` infrastructure in CharacterAvatar.vue, Vitest 1061/1061 GREEN, ESLint+forbidden-names CI clean, vite build clean)
+Next action: Execute Plan 152-04 — Kosmologe silhouette case in CharacterAvatar.vue (Raketenrollstuhl + Thruster-Glow + Sternenstaub Power-Element). Plan 03 already shipped the shared `<g id="powerEffect">` group + `region: 'power'` filter pattern, so Plan 04 only adds a new `case 'kosmologe':` branch — no further template/computed changes needed. Plan 05 (Popularisierer) follows the same template-free pattern. Plan 06 closer with manual sensitivity-review checkpoint.
