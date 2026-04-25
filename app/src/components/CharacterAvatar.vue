@@ -100,6 +100,44 @@
 						dominant-baseline="central">{{ el.content }}</text>
 				</template>
 			</g>
+
+			<!-- Power-Effect overlay: rendered LAST so Power-Elements (Kreide-Energie,
+				Thruster-Glow, Kosmos-Projektion) paint on top of head/arms.
+				Phase 152 Pitfall 2 = drawing order; Pitfall 6 = no <text> branch (no letter content). -->
+			<g id="powerEffect" :style="groupStylePower">
+				<template v-for="(el, i) in powerFeatures" :key="'p-' + i">
+					<circle v-if="el.type === 'circle'"
+						:cx="el.cx"
+						:cy="el.cy"
+						:r="el.r"
+						:fill="el.fill || character.palette.accent"
+						:stroke="el.stroke || 'none'"
+						:stroke-width="el.strokeWidth || 0" />
+					<rect v-else-if="el.type === 'rect'"
+						:x="el.x"
+						:y="el.y"
+						:width="el.w"
+						:height="el.h"
+						:rx="el.rx || 0"
+						:fill="el.fill || character.palette.accent"
+						:stroke="el.stroke || 'none'"
+						:stroke-width="el.strokeWidth || 0" />
+					<path v-else-if="el.type === 'path'"
+						:d="el.d"
+						:fill="el.fill || 'none'"
+						:stroke="el.stroke || character.palette.accent"
+						:stroke-width="el.strokeWidth || 2"
+						:stroke-linecap="el.linecap || 'round'" />
+					<line v-else-if="el.type === 'line'"
+						:x1="el.x1"
+						:y1="el.y1"
+						:x2="el.x2"
+						:y2="el.y2"
+						:stroke="el.stroke || character.palette.accent"
+						:stroke-width="el.strokeWidth || 2"
+						:stroke-linecap="el.linecap || 'round'" />
+				</template>
+			</g>
 		</svg>
 		<!-- State glow overlay -->
 		<div v-if="showGlow" class="character-glow" :style="glowStyle" />
@@ -179,6 +217,7 @@ export default {
 		groupStyleHead() { return 'transform-origin: 50% 40%; transform-box: fill-box;' },
 		groupStyleBody() { return 'transform-origin: 50% 80%; transform-box: fill-box;' },
 		groupStyleArms() { return 'transform-origin: 50% 65%; transform-box: fill-box;' },
+		groupStylePower() { return 'transform-origin: 50% 50%; transform-box: fill-box;' },
 
 		/** Base metrics derived from size */
 		cx() { return this.size / 2 },
@@ -190,6 +229,7 @@ export default {
 		headFeatures() {
 			const bt = this.bodyTop
 			return this.featureElements.filter(el => {
+				if (el.region === 'power') return false
 				const y = el.cy ?? el.y ?? el.y1 ?? 0
 				return y < bt
 			})
@@ -198,9 +238,14 @@ export default {
 		armsFeatures() {
 			const bt = this.bodyTop
 			return this.featureElements.filter(el => {
+				if (el.region === 'power') return false
 				const y = el.cy ?? el.y ?? el.y1 ?? 0
 				return y >= bt
 			})
+		},
+
+		powerFeatures() {
+			return this.featureElements.filter(el => el.region === 'power')
 		},
 
 		/** Body path varies by silhouette type */
@@ -226,6 +271,7 @@ export default {
 				uschi: 0.34,
 				tim_azubi: 0.28,
 				sven_berater: 0.30,
+				theoretiker: 0.32,
 				fallback: 0.30,
 			}
 			const hw = s * (widths[sil] || 0.30)
