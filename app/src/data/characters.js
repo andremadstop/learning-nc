@@ -270,6 +270,62 @@ const CHARACTERS = Object.freeze({
 		category: 'campaign',
 		preview_thumbnail_svg: null,
 	}),
+
+	// ── Scholar Archetypes ──────────────────────────────────────────────
+
+	theoretiker: Object.freeze({
+		id: 'theoretiker',
+		name: 'Der Theoretiker',
+		role: 'Grundlagen-Denker',
+		personality: 'Ruhig, praezise, liebt Modelle und Herleitungen. Fragt nach Annahmen, definiert Begriffe sauber und macht aus Chaos ein Diagramm. Humor trocken, nie abgehoben.',
+		palette: {
+			primary: 'var(--lnc-amber)',
+			accent: 'var(--lnc-text-muted)',
+			glow: 'var(--lnc-green)',
+		},
+		silhouette: 'theoretiker',
+		states: ['idle', 'wave', 'celebrate'],
+		campaignAppearances: [],
+		user_selectable: true,
+		category: 'scholar',
+		preview_thumbnail_svg: null,
+	}),
+
+	kosmologe: Object.freeze({
+		id: 'kosmologe',
+		name: 'Der Kosmologe',
+		role: 'System-Zusammenhaenge',
+		personality: 'Warm, weitblickend, denkt in grossen Skalen ohne den Boden zu verlieren. Verbindet Einzelfakten zu Landschaften, zeigt Abhaengigkeiten und warnt vor Tunnelblick.',
+		palette: {
+			primary: 'var(--lnc-primary)',
+			accent: 'var(--lnc-ink)',
+			glow: 'var(--lnc-cyan)',
+		},
+		silhouette: 'kosmologe',
+		states: ['idle', 'wave', 'celebrate'],
+		campaignAppearances: [],
+		user_selectable: true,
+		category: 'scholar',
+		preview_thumbnail_svg: null,
+	}),
+
+	popularisierer: Object.freeze({
+		id: 'popularisierer',
+		name: 'Der Astrophysik-Popularisierer',
+		role: 'Anschaulicher Uebersetzer',
+		personality: 'Energiegeladen, klar, buehnentauglich ohne Show-Gehabe. Uebersetzt abstrakte Technik in einpraegsame Bilder, stellt Rueckfragen und holt Lernende aktiv ab.',
+		palette: {
+			primary: 'var(--lnc-magenta)',
+			accent: 'var(--lnc-warning)',
+			glow: 'var(--lnc-magenta)',
+		},
+		silhouette: 'popularisierer',
+		states: ['idle', 'wave', 'celebrate'],
+		campaignAppearances: [],
+		user_selectable: true,
+		category: 'scholar',
+		preview_thumbnail_svg: null,
+	}),
 })
 
 /**

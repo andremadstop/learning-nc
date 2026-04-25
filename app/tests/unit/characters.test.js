@@ -16,6 +16,14 @@ const CAMPAIGN_CHARACTER_IDS = [
 	'sven_berater',
 ]
 
+const SELECTABLE_CHARACTER_IDS = [
+	'kosmologe',
+	'nova',
+	'popularisierer',
+	'prof_lern_classic',
+	'theoretiker',
+]
+
 describe('characters registry metadata', () => {
 	it('adds picker metadata fields to every exported character', () => {
 		for (const character of Object.values(CHARACTERS)) {
@@ -79,12 +87,12 @@ describe('characters registry metadata', () => {
 		})
 	})
 
-	it('exposes only nova and prof_lern_classic as Phase 151 picker options', () => {
+	it('exposes shipped selectable skins as picker options', () => {
 		const selectable = Object.values(CHARACTERS)
 			.filter((character) => character.user_selectable)
 			.map((character) => character.id)
 			.sort()
 
-		expect(selectable).toEqual(['nova', 'prof_lern_classic'].sort())
+		expect(selectable).toEqual(SELECTABLE_CHARACTER_IDS.sort())
 	})
 })
