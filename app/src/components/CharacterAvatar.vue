@@ -1,5 +1,6 @@
 <template>
-	<div class="character-avatar"
+	<div ref="rootRef"
+		class="character-avatar"
 		:class="stateClasses"
 		:style="avatarStyle">
 		<svg :width="size"
@@ -7,55 +8,98 @@
 			:viewBox="'0 0 ' + size + ' ' + size"
 			xmlns="http://www.w3.org/2000/svg"
 			role="img"
-			:aria-label="character.name + ' (' + state + ')'">
-			<!-- Head -->
-			<circle :cx="cx" :cy="headCy" :r="headR" :fill="character.palette.primary" />
+			:aria-label="ariaLabel">
+			<!-- Body: main silhouette -->
+			<g id="body" :style="groupStyleBody">
+				<path :d="bodyPath" :fill="character.palette.accent" />
+			</g>
 
-			<!-- Body -->
-			<path :d="bodyPath" :fill="character.palette.accent" />
+			<!-- Head: skull + head-region features (above bodyTop) -->
+			<g id="head" :style="groupStyleHead">
+				<circle :cx="cx" :cy="headCy" :r="headR" :fill="character.palette.primary" />
+				<template v-for="(el, i) in headFeatures" :key="'h-' + i">
+					<circle v-if="el.type === 'circle'"
+						:cx="el.cx"
+						:cy="el.cy"
+						:r="el.r"
+						:fill="el.fill || character.palette.accent"
+						:stroke="el.stroke || 'none'"
+						:stroke-width="el.strokeWidth || 0" />
+					<rect v-else-if="el.type === 'rect'"
+						:x="el.x"
+						:y="el.y"
+						:width="el.w"
+						:height="el.h"
+						:rx="el.rx || 0"
+						:fill="el.fill || character.palette.accent"
+						:stroke="el.stroke || 'none'"
+						:stroke-width="el.strokeWidth || 0" />
+					<path v-else-if="el.type === 'path'"
+						:d="el.d"
+						:fill="el.fill || 'none'"
+						:stroke="el.stroke || character.palette.accent"
+						:stroke-width="el.strokeWidth || 2"
+						:stroke-linecap="el.linecap || 'round'" />
+					<line v-else-if="el.type === 'line'"
+						:x1="el.x1"
+						:y1="el.y1"
+						:x2="el.x2"
+						:y2="el.y2"
+						:stroke="el.stroke || character.palette.accent"
+						:stroke-width="el.strokeWidth || 2"
+						:stroke-linecap="el.linecap || 'round'" />
+					<text v-else-if="el.type === 'text'"
+						:x="el.x"
+						:y="el.y"
+						:fill="el.fill || character.palette.primary"
+						:font-size="el.fontSize || 14"
+						text-anchor="middle"
+						dominant-baseline="central">{{ el.content }}</text>
+				</template>
+			</g>
 
-			<!-- Distinguishing feature elements -->
-			<template v-for="(el, i) in featureElements" :key="'f-' + i">
-				<circle v-if="el.type === 'circle'"
-					:cx="el.cx"
-					:cy="el.cy"
-					:r="el.r"
-					:fill="el.fill || character.palette.accent"
-					:stroke="el.stroke || 'none'"
-					:stroke-width="el.strokeWidth || 0" />
-				<rect v-else-if="el.type === 'rect'"
-					:x="el.x"
-					:y="el.y"
-					:width="el.w"
-					:height="el.h"
-					:rx="el.rx || 0"
-					:fill="el.fill || character.palette.accent"
-					:stroke="el.stroke || 'none'"
-					:stroke-width="el.strokeWidth || 0" />
-				<path v-else-if="el.type === 'path'"
-					:d="el.d"
-					:fill="el.fill || 'none'"
-					:stroke="el.stroke || character.palette.accent"
-					:stroke-width="el.strokeWidth || 2"
-					:stroke-linecap="el.linecap || 'round'" />
-				<line v-else-if="el.type === 'line'"
-					:key="'f-' + i"
-					:x1="el.x1"
-					:y1="el.y1"
-					:x2="el.x2"
-					:y2="el.y2"
-					:stroke="el.stroke || character.palette.accent"
-					:stroke-width="el.strokeWidth || 2"
-					:stroke-linecap="el.linecap || 'round'" />
-				<text v-else-if="el.type === 'text'"
-					:key="'f-' + i"
-					:x="el.x"
-					:y="el.y"
-					:fill="el.fill || character.palette.primary"
-					:font-size="el.fontSize || 14"
-					text-anchor="middle"
-					dominant-baseline="central">{{ el.content }}</text>
-			</template>
+			<!-- Arms: body-region features (>= bodyTop) — coffee mug, laptop, briefcase, etc. -->
+			<g id="arms" :style="groupStyleArms">
+				<template v-for="(el, i) in armsFeatures" :key="'a-' + i">
+					<circle v-if="el.type === 'circle'"
+						:cx="el.cx"
+						:cy="el.cy"
+						:r="el.r"
+						:fill="el.fill || character.palette.accent"
+						:stroke="el.stroke || 'none'"
+						:stroke-width="el.strokeWidth || 0" />
+					<rect v-else-if="el.type === 'rect'"
+						:x="el.x"
+						:y="el.y"
+						:width="el.w"
+						:height="el.h"
+						:rx="el.rx || 0"
+						:fill="el.fill || character.palette.accent"
+						:stroke="el.stroke || 'none'"
+						:stroke-width="el.strokeWidth || 0" />
+					<path v-else-if="el.type === 'path'"
+						:d="el.d"
+						:fill="el.fill || 'none'"
+						:stroke="el.stroke || character.palette.accent"
+						:stroke-width="el.strokeWidth || 2"
+						:stroke-linecap="el.linecap || 'round'" />
+					<line v-else-if="el.type === 'line'"
+						:x1="el.x1"
+						:y1="el.y1"
+						:x2="el.x2"
+						:y2="el.y2"
+						:stroke="el.stroke || character.palette.accent"
+						:stroke-width="el.strokeWidth || 2"
+						:stroke-linecap="el.linecap || 'round'" />
+					<text v-else-if="el.type === 'text'"
+						:x="el.x"
+						:y="el.y"
+						:fill="el.fill || character.palette.primary"
+						:font-size="el.fontSize || 14"
+						text-anchor="middle"
+						dominant-baseline="central">{{ el.content }}</text>
+				</template>
+			</g>
 		</svg>
 		<!-- State glow overlay -->
 		<div v-if="showGlow" class="character-glow" :style="glowStyle" />
@@ -83,10 +127,57 @@ export default {
 		},
 	},
 
+	data() {
+		return {
+			observer: null,
+			onVisibilityChange: null,
+			lastIntersecting: true,
+		}
+	},
+
+	mounted() {
+		this.setupVisibilityPause()
+	},
+
+	beforeUnmount() {
+		this.observer?.disconnect()
+		if (this.onVisibilityChange) {
+			document.removeEventListener('visibilitychange', this.onVisibilityChange)
+		}
+	},
+
+	methods: {
+		setupVisibilityPause() {
+			const root = this.$refs.rootRef
+			if (!root || typeof IntersectionObserver === 'undefined') return
+			const apply = () => {
+				const svg = root.getElementsByTagName('svg')[0]
+				if (!svg || typeof svg.getAnimations !== 'function') return
+				const shouldPause = !this.lastIntersecting || document.visibilityState === 'hidden'
+				svg.getAnimations({ subtree: true }).forEach(a => shouldPause ? a.pause() : a.play())
+			}
+			this.observer = new IntersectionObserver(([entry]) => {
+				this.lastIntersecting = entry.isIntersecting
+				apply()
+			})
+			this.observer.observe(root)
+			this.onVisibilityChange = apply
+			document.addEventListener('visibilitychange', this.onVisibilityChange)
+		},
+	},
+
 	computed: {
 		character() {
 			return getCharacter(this.characterId)
 		},
+
+		ariaLabel() {
+			return this.character.name || this.characterId
+		},
+
+		groupStyleHead() { return 'transform-origin: 50% 40%; transform-box: fill-box;' },
+		groupStyleBody() { return 'transform-origin: 50% 80%; transform-box: fill-box;' },
+		groupStyleArms() { return 'transform-origin: 50% 65%; transform-box: fill-box;' },
 
 		/** Base metrics derived from size */
 		cx() { return this.size / 2 },
@@ -94,6 +185,22 @@ export default {
 		headR() { return this.size * 0.16 },
 		bodyTop() { return this.size * 0.46 },
 		bodyBottom() { return this.size * 0.88 },
+
+		headFeatures() {
+			const bt = this.bodyTop
+			return this.featureElements.filter(el => {
+				const y = el.cy ?? el.y ?? el.y1 ?? 0
+				return y < bt
+			})
+		},
+
+		armsFeatures() {
+			const bt = this.bodyTop
+			return this.featureElements.filter(el => {
+				const y = el.cy ?? el.y ?? el.y1 ?? 0
+				return y >= bt
+			})
+		},
 
 		/** Body path varies by silhouette type */
 		bodyPath() {
