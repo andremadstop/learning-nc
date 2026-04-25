@@ -142,6 +142,7 @@ class SettingsController extends Controller {
             'virtuprof_enabled' => $this->config->getUserValue($this->userId, 'learning', 'virtuprof_enabled', 'yes'),
             'notifications_enabled' => $this->config->getUserValue($this->userId, 'learning', 'notifications_enabled', 'yes'),
             'fsrs_detailed_stats' => $this->config->getUserValue($this->userId, 'learning', 'fsrs_detailed_stats', 'no'),
+            'animations_enabled' => $this->config->getUserValue($this->userId, 'learning', 'animations_enabled', 'yes'),
         ]);
     }
 
@@ -154,7 +155,8 @@ class SettingsController extends Controller {
         string $notifications_enabled,
         string $content_language = '',
         string $virtuprof_enabled = 'yes',
-        string $fsrs_detailed_stats = 'no'
+        string $fsrs_detailed_stats = 'no',
+        string $animations_enabled = 'yes'
     ): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], 401);
@@ -166,6 +168,7 @@ class SettingsController extends Controller {
         $this->config->setUserValue($this->userId, 'learning', 'virtuprof_enabled', $virtuprof_enabled === 'no' ? 'no' : 'yes');
         $this->config->setUserValue($this->userId, 'learning', 'notifications_enabled', $notifications_enabled === 'yes' ? 'yes' : 'no');
         $this->config->setUserValue($this->userId, 'learning', 'fsrs_detailed_stats', $fsrs_detailed_stats === 'yes' ? 'yes' : 'no');
+        $this->config->setUserValue($this->userId, 'learning', 'animations_enabled', $animations_enabled === 'no' ? 'no' : 'yes');
 
         return new DataResponse(['status' => 'ok']);
     }

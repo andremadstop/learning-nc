@@ -103,6 +103,15 @@
           @update:model-value="form.fsrsDetailedStats = !!$event" />
       </div>
 
+      <div class="field-row lnc-a11y-toggle">
+        <label>{{ t('learning', 'Ruhige Darstellung (keine Avatar-Animationen)') }}</label>
+        <p class="field-desc">{{ t('learning', 'Stoppt Avatar-Animationen unabhaengig vom Betriebssystem. Setzt OS-Bewegungspraeferenzen nie ausser Kraft.') }}</p>
+        <NcCheckboxRadioSwitch
+          :model-value="form.animationsEnabled"
+          type="switch"
+          @update:model-value="onAnimationsEnabledChange(!!$event)" />
+      </div>
+
       <NcNoteCard v-if="error" type="error">{{ error }}</NcNoteCard>
       <NcNoteCard v-if="saved" type="success">{{ t('learning', 'Settings saved') }}</NcNoteCard>
 
@@ -373,6 +382,7 @@ import {
   createTelosForm,
 } from '../utils/telosProfile.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
+import { useA11yStore } from '../stores/a11yStore.js'
 
 const VOICE_LANGUAGE_OPTIONS = [
   { value: 'de-DE', label: 'Deutsch' },
@@ -412,6 +422,7 @@ export default {
         virtuProfVoiceLang: 'de-DE',
         notificationsEnabled: true,
         fsrsDetailedStats: false,
+        animationsEnabled: true,
       },
       // Calendar token
       calTokenLoading: true,
@@ -514,6 +525,9 @@ export default {
           : 'de-DE'
         this.form.notificationsEnabled = (data.notifications_enabled || 'yes') === 'yes'
         this.form.fsrsDetailedStats = (data.fsrs_detailed_stats || 'no') === 'yes'
+        this.form.animationsEnabled = (data.animations_enabled || 'yes') !== 'no'
+        // Hydrate the a11y store so the WAAPI gate sees the server value on first paint.
+        useA11yStore().loadFromServerPayload(data)
       } catch (e) {
         this.error = t('learning', 'Failed to load settings')
       } finally {
@@ -581,6 +595,12 @@ export default {
       this.form.botSoundsEnabled = val
       novaAudio.setEnabled(val)
     },
+    onAnimationsEnabledChange(val) {
+      this.form.animationsEnabled = !!val
+      // Apply IMMEDIATELY for reactive feedback (avatar stops/starts without reload).
+      // Persistence happens on Save-button click via the existing save() method.
+      useA11yStore().setEnabled(this.form.animationsEnabled)
+    },
     async save() {
       this.saving = true
       this.error = ''
@@ -594,6 +614,7 @@ export default {
             virtuprof_enabled: this.form.virtuProfEnabled ? 'yes' : 'no',
             notifications_enabled: this.form.notificationsEnabled ? 'yes' : 'no',
             fsrs_detailed_stats: this.form.fsrsDetailedStats ? 'yes' : 'no',
+            animations_enabled: this.form.animationsEnabled ? 'yes' : 'no',
           }),
           axios.put(generateUrl('/apps/learning/api/virtuprof/preferences'), {
             ttsEnabled: this.form.virtuProfTtsEnabled,

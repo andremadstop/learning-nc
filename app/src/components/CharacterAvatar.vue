@@ -108,6 +108,7 @@
 
 <script>
 import { getCharacter } from '../data/characters.js'
+import { useA11yStore } from '../stores/a11yStore.js'
 
 export default {
 	name: 'CharacterAvatar',
@@ -372,6 +373,17 @@ export default {
 			return {
 				'character-avatar': true,
 				['character-state--' + this.state]: true,
+				'lnc-quiet': this.animationsQuiet,
+			}
+		},
+
+		animationsQuiet() {
+			// Reactive read of the a11y store. Falls back to false (animated)
+			// when no Pinia is active (e.g. ad-hoc unit-test mounts without Pinia).
+			try {
+				return !useA11yStore().animationsEnabled
+			} catch (e) {
+				return false
 			}
 		},
 
