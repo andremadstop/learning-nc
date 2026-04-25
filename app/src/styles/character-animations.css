@@ -1,0 +1,6 @@
+/**
+ * Shared character avatar animations.
+ * Populated in Phase 150 Plan 02 (Wave 1).
+ * ALL @keyframes MUST be wrapped in @media (prefers-reduced-motion: no-preference)
+ * + fallback @media (prefers-reduced-motion: reduce) { animation: none !important; }.
+ */
