@@ -1,8 +1,9 @@
 ---
 phase: 150-animation-architecture
 plan: 06
-status: completed-pending-manual-checkpoint
+status: completed-deploy-shipped-walkthrough-deferred
 completed: 2026-04-25
+deployed: 2026-04-25
 requirements: [A11Y-02, A11Y-04, A11Y-05]
 ---
 
@@ -32,8 +33,11 @@ End-to-end "Ruhige Darstellung" toggle wired: Pinia `a11yStore` + PersonalSettin
 - `npx eslint --ext .vue,.js src/components/CharacterAvatar.vue src/components/PersonalSettings.vue src/stores/a11yStore.js src/main.js tests/unit/a11yStore.test.js` → exit 0
 - `ssh relais 'docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/phpstan analyse --no-progress lib/Controller/SettingsController.php'` → **No errors**
 
-### Manual (⏳ pending — Task 3 checkpoint)
-14-step walkthrough per Plan 06 `<how-to-verify>`. Requires deploy via `./scripts/deploy-prod.sh --js-only` first. Checks A11Y-02 (toggle works without reload + persists), A11Y-04 (keyboard navigation), A11Y-05 (focus-visible ring), Plan 02 OS-level regression, other PersonalSettings field regression.
+### Deploy (✅ shipped 2026-04-25)
+- `./scripts/deploy-prod.sh --full` → PHP + l10n + JS deployed to Relay (`devcloud.andrestiebitz.de`). All Vite chunks rebuilt cleanly (`learning-personal-settings.js` 207 kB → 74 kB gzip). Build-check post-step passed.
+
+### Manual (⏳ deferred to bug-hunting pass)
+14-step walkthrough per Plan 06 `<how-to-verify>` deferred. User explicitly chose to ship without manual gate, will hunt bugs ad-hoc post-deploy. Items remain executable any time: A11Y-02 (toggle without reload + persists), A11Y-04 (keyboard navigation), A11Y-05 (focus-visible ring), Plan 02 OS-level regression, other PersonalSettings field regression. **No code blocker — all three gates technically operational.**
 
 ## Three-Layer Animation Gate (Phase 150 Goal)
 

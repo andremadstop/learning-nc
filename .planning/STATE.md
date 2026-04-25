@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v4.4.0
 milestone_name: Character & Personality
-current_phase: 150
+current_phase: 151
 current_plan: null
-status: phase-150-ready-to-execute
-stopped_at: Phase 150 plans audited (6 plans, 4 waves, vueuse->native pivot for v4.4.0 zero-deps decision)
-last_updated: "2026-04-24T22:00:00+02:00"
-last_activity: 2026-04-24
+status: phase-150-complete-ready-for-151
+stopped_at: Phase 150 closed (6/6 plans, 1009/1009 tests, three-layer animation gate live, deployed to relay 2026-04-25)
+last_updated: "2026-04-25T06:30:00+02:00"
+last_activity: 2026-04-25
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 11
-  completed_plans: 5
-  percent: 20
+  completed_plans: 11
+  percent: 40
 ---
 
 # Project State
@@ -27,12 +27,12 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 150 (planned, ready to execute)
-Current Plan: 150-01 (Wave 0, TDD-Init)
-Total Plans in Phase: 6
-Status: Phase 149 complete (5/5 plans). Phase 150 plans audited 2026-04-24 — 6 plans across 4 waves (W0 init, W1 parallel core primitives, W2 component refactor, W3 UI integration). vueuse-Composables durch native IntersectionObserver/visibilitychange ersetzt (v4.4.0 Zero-Deps-Decision konsistent). VALIDATION.md beachtet vitest.config.js statt .mjs.
-Last activity: 2026-04-24 — Phase 149 closed + Phase 150 sanity-check
-Progress (v4.4.0): [■□□□□] 1/5 phases complete (20%)
+Phase: 151 (next, planned but not yet researched)
+Current Plan: —
+Total Plans in Phase: TBD
+Status: Phase 150 complete (6/6 plans). Codex did Wave 1 plans 02/03/04 in parallel; Claude did 01 (TDD-init), 05 (CharacterAvatar named-g + native pause), 06 (a11yStore + PersonalSettings + backend). Verifier: passed, 9/9 must-haves green, no regression. Manual A11y walkthrough deferred to ad-hoc bug-hunt.
+Last activity: 2026-04-25 — Phase 150 shipped to relay + verified
+Progress (v4.4.0): [■■□□□] 2/5 phases complete (40%)
 
 ## Performance Metrics
 
@@ -108,6 +108,6 @@ Progress (v4.4.0): [■□□□□] 1/5 phases complete (20%)
 
 ## Session Continuity
 
-Last session: 2026-04-24T22:00:00+02:00
-Stopped at: Phase 150 plans audited + vueuse->native pivot
-Next action: `/gsd:execute-phase 150` — start with Wave 0 (150-01 TDD-Init: stub files + test scaffolding), then Wave 1 in parallel (150-02 CSS, 150-03 WAAPI JS, 150-04 reaction-engine), then Wave 2 (150-05 CharacterAvatar refactor), then Wave 3 (150-06 a11yStore + PersonalSettings + backend)
+Last session: 2026-04-25T06:30:00+02:00
+Stopped at: Phase 150 closure committed (verifier passed)
+Next action: `/gsd:plan-phase 151` — Skin Picker Framework + Prof. Lern Classic restore. Plan 150 primitives (setAnimationsEnabledGetter, resolveReaction, playWave/Celebrate/Shrug, named g sub-groups, lnc-quiet reactive class) all available for consumption.
