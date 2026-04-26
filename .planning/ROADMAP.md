@@ -411,7 +411,7 @@ Plans:
 - [x] 153-01-PLAN.md — Wave 0: i18n parity script + pre-push/CI wireups + OQ4 grep verdict + Pitfall 3/7 audit greps (I18N-02) ✓ 2026-04-26
 - [x] 153-02-PLAN.md — Wave 0: 5 test scaffolds (Vitest + PHPUnit + Playwright) + A11y audit doc + DevCloud creds verification (TEST-02, TEST-04, TEST-05, TEST-06, MIGR-03, MIGR-05) ✓ 2026-04-26
 - [x] 153-03-PLAN.md — Wave 1: VirtuProfController.getSkin() rewrite with Pattern 1 first-touch-coercion + un-skip 3 PHPUnit tests + augment SkinRenderer.test.js +1 case (MIGR-01, MIGR-02, TEST-01, TEST-03) ✓ 2026-04-26
-- [ ] 153-04-PLAN.md — Wave 1: PersonalSettings.vue NcNoteCard hint + ~20 i18n keys in 5 langs lockstep (MIGR-03, I18N-01)
+- [x] 153-04-PLAN.md — Wave 1: PersonalSettings.vue NcNoteCard hint + ~20 i18n keys in 5 langs lockstep (MIGR-03, I18N-01) ✓ 2026-04-26
 - [ ] 153-05-PLAN.md — Wave 2: un-skip Playwright spec + visual baseline + info.xml version bump + REQUIREMENTS.md cosmetic close-outs (TEST-04, TEST-05)
 - [ ] 153-06-PLAN.md — Wave 3 (autonomous: false): manual A11y audit + RTL + MIGR-05 multi-account smoke combined session (TEST-06, I18N-03, MIGR-05)
 - [ ] 153-07-PLAN.md — Wave 4 (autonomous: false): CHANGELOG date lock + signing + signature.json commit + tag + tarball + GitHub release + App Store API push + state updates
