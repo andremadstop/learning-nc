@@ -1,5 +1,14 @@
 <template>
   <div class="learning-settings-wrap">
+    <NcNoteCard
+      v-if="showSkinPickerHint"
+      type="info"
+      :show-action="true"
+      :action-text="t('learning', 'Hinweis schließen')"
+      @click-action="dismissHint('skin-picker-v440')">
+      {{ t('learning', 'Neue Skins verfügbar in den Einstellungen') }}
+    </NcNoteCard>
+
     <h2>{{ t('learning', 'Personal Settings') }}</h2>
 
     <div v-if="loading" class="loading">
@@ -388,6 +397,7 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
 import PrivacyInfo from './PrivacyInfo.vue'
+import hintMixin from '../hintMixin.js'
 import { novaAudio } from '../utils/nova-audio-manager.js'
 import {
   applyTelosToForm,
@@ -419,6 +429,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 export default {
   name: 'PersonalSettings',
   components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, NcSelect, PrivacyInfo },
+  mixins: [hintMixin],
   data() {
     return {
       loading: true,
@@ -464,6 +475,19 @@ export default {
     }
   },
   computed: {
+    showSkinPickerHint() {
+      const HINT_ID = 'skin-picker-v440'
+      if (this.hintDismissed(HINT_ID)) return false
+
+      const SHOWN_KEY = `learning-hint-${HINT_ID}-shown-at`
+      let shownAt = parseInt(localStorage.getItem(SHOWN_KEY) || '0', 10)
+      if (!shownAt) {
+        shownAt = Date.now()
+        try { localStorage.setItem(SHOWN_KEY, String(shownAt)) } catch (e) { /* ignore — private mode */ }
+      }
+      const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000
+      return (Date.now() - shownAt) < SEVEN_DAYS_MS
+    },
     skinOptions() {
       return useSkinStore().availableSkins.map(c => ({ value: c.id, label: c.name }))
     },
