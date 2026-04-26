@@ -123,6 +123,8 @@ scripts/*
 certs/
 translations/
 app/test-results/
+app/tests/e2e/.auth/
+app/tests/e2e/.env.generated
 app/playwright-report/
 app/tests/
 !app/tests/
