@@ -27,6 +27,15 @@ class VirtuProfController extends Controller {
         'kosmologe',
         'popularisierer',
     ];
+
+    // MIGR-01/02 (Phase 153): First-touch-coercion via IConfig::getUserKeys()
+    // existence signal. DO NOT replace with IUser::getLastLogin() — login() updates
+    // lastLogin BEFORE controllers run, causing existing users to falsely look "new"
+    // on their first post-deploy login → silent flip to classic = Nova-Removal-Trauma.
+    // See .planning/phases/153-migration-tests-deploy-app-store/153-RESEARCH.md Pitfall 5.
+    private const NEW_USER_DEFAULT_SKIN = 'prof_lern_classic';
+    private const LEGACY_USER_DEFAULT_SKIN = 'nova';
+
     private const ALLOWED_VOICE_LANGUAGES = [
         'de-DE',
         'en-US',
@@ -178,10 +187,46 @@ class VirtuProfController extends Controller {
         return max(0, min(3, $raw));
     }
 
+    /**
+     * Resolve the user's VirtuProf skin with first-touch-coercion (MIGR-01/02).
+     *
+     * Fast path: if a `virtuprof_skin` row exists, return it (after allowlist
+     * sanitization). Existing user choices are preserved verbatim.
+     *
+     * Slow path (first touch only): if no row exists, peek at the user's
+     * `learning.*` user_config keyset. Non-empty → user has interacted with
+     * the learning app before (consent, language, telos, etc.) → resolve to
+     * 'nova' (Zero-Change-Default for legacy users). Empty → brand-new account
+     * → resolve to 'prof_lern_classic' (new-user default per v4.4.0 milestone).
+     *
+     * The resolved value is written back so subsequent reads hit the fast path
+     * (O(1) on the row, not O(N) on the keyset).
+     */
     private function getSkin(): string {
-        return $this->normalizeSkin(
-            $this->config->getUserValue($this->userId, 'learning', 'virtuprof_skin', 'nova')
+        // Sentinel '' means "no row exists" — distinct from any allowlisted skin id.
+        $existing = $this->config->getUserValue(
+            $this->userId, 'learning', 'virtuprof_skin', ''
         );
+        if ($existing !== '') {
+            // Fast path: existing row → return as-is (after allowlist sanitization).
+            // Existing users with prior explicit choices keep that choice.
+            return $this->normalizeSkin($existing);
+        }
+        // No row exists — apply first-touch-coercion via existence-signal.
+        // Any non-empty key-set under 'learning' app means the user has interacted
+        // with the learning app before (consent, language, telos, exam_date, etc.).
+        // Empty key-set means a fresh account that has never touched the app.
+        $existingKeys = $this->config->getUserKeys($this->userId, 'learning');
+        $resolved = empty($existingKeys)
+            ? self::NEW_USER_DEFAULT_SKIN     // brand-new user
+            : self::LEGACY_USER_DEFAULT_SKIN; // existing user, just never picked a skin
+
+        // Write-once so we never re-evaluate (and so subsequent reads are O(1) on the row).
+        $this->config->setUserValue(
+            $this->userId, 'learning', 'virtuprof_skin', $resolved
+        );
+
+        return $this->normalizeSkin($resolved);
     }
 
     private function normalizeInterfaceLanguage(string $language): string {
