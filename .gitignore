@@ -128,6 +128,15 @@ app/tests/
 app/tests/*
 !app/tests/unit/
 !app/tests/unit/*.test.js
+!app/tests/Unit/
+!app/tests/Unit/Controller/
+!app/tests/Unit/Controller/*.php
+!app/tests/Unit/Service/
+!app/tests/Unit/Service/*.php
+!app/tests/e2e/
+!app/tests/e2e/*.spec.js
+!app/tests/e2e/*.setup.js
+!app/tests/e2e/README.md
 *.bak
 .gitnexus
 
