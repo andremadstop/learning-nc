@@ -63,7 +63,7 @@ Shared Animation-Primitives für alle Skins.
 5 Sprachen parallel.
 
 - [ ] **I18N-01**: Alle neuen UI-Strings (Picker-Label, Skin-Namen, Kategorien, Beschreibungen) in allen 5 Sprachen (DE/EN/FR/RU/AR) mit Release gelandet
-- [x] **I18N-02**: CI key-parity-check covert die neuen Keys — kein Merge mit fehlenden Übersetzungen (geliefert via 153-01: scripts/check-i18n-parity.sh + .githooks/pre-push block 7 + .github/workflows/security-regression.yml step; baseline-green auf 5×1631 Keys, drift-getestet; commit 9fa6b8d)
+- [x] **I18N-02**: CI key-parity-check (eingeführt in Phase 153, v4.4.0 — `scripts/check-i18n-parity.sh`) covert die neuen Keys — kein Merge mit fehlenden Übersetzungen (geliefert via 153-01: scripts/check-i18n-parity.sh + .githooks/pre-push block 7 + .github/workflows/security-regression.yml step; baseline-green auf 5×1631 Keys, drift-getestet; commit 9fa6b8d)
 - [ ] **I18N-03**: RTL-Layout für Arabic getestet: Avatar wird NICHT gespiegelt (wäre falsch für Gesichter), Text daneben korrekt rechtsbündig
 
 ### Accessibility (A11Y)
@@ -83,7 +83,7 @@ Archetype-Naming durchgängig.
 - [x] **LEGAL-01**: `LEGAL.md` in `.planning/` dokumentiert die Archetype-Naming-Entscheidung + Rationale (App-Store-Safety, keine Trademark-Konflikte)
 - [x] **LEGAL-02**: Grep-Test CI: Zero-Treffer für "Einstein", "Hawking", "Tyson", "Neil deGrasse", "Cosmos", "StarTalk" in `app/src/**`, `app/l10n/**`, App-Store-Listing
 - [x] **LEGAL-03**: CHANGELOG.md + App-Store-Description nennen Archetype-Namen, nicht Vorbilder
-- [ ] **LEGAL-04**: Externe Sensitivity-Review für Kosmologe-Archetyp + Popularisierer-Archetyp durchgeführt und signed off vor Phase 4 Freeze (~€300 Budget)
+- [x] **LEGAL-04**: Sensitivity-Review für Kosmologe + Popularisierer durchgeführt und signed off vor Phase 152 Freeze — Phase 149 Pivot von externer ~€300 Review zu owner-led 8-Punkte-Review nach ART_STYLE_GUIDE Section 5; final-art SIGNOFF.md 2026-04-25 (3 Archetypen)
 
 ### Migration (MIGR)
 
@@ -171,7 +171,7 @@ Roadmap mapping 2026-04-18. 100% coverage (40/40 REQs).
 | LEGAL-01 | Phase 149 | Complete |
 | LEGAL-02 | Phase 149 | Complete |
 | LEGAL-03 | Phase 149 | Complete |
-| LEGAL-04 | Phase 149 | Pending |
+| LEGAL-04 | Phase 149 | Complete (Phase 149 pivot, internal review SIGNOFF 2026-04-25) |
 | MIGR-01 | Phase 153 | Complete |
 | MIGR-02 | Phase 153 | Complete |
 | MIGR-03 | Phase 153 | Pending |
