@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v4.4.0
 milestone_name: Character & Personality
 current_phase: 153
-current_plan: 03
-status: phase-153-wave-1-plan-03-complete-plan-04-pending
+current_plan: 04
+status: phase-153-wave-1-complete-ready-for-wave-2
 stopped_at: Phase 153 Plan 03 COMPLETE — VirtuProfController::getSkin() rewritten with Pattern 1 first-touch-coercion via IConfig::getUserKeys() (MIGR-01/02). 4 PHPUnit cases on relay: existing-user-resolves-nova + new-user-resolves-classic + existing-row-fast-path + orphan-sanitization (4/4 GREEN, 8 assertions). 1 new Vitest case (orphan/dropped skin id → NovaDock fallback) brings suite to 1087 GREEN (1086 baseline + 1 new TEST-01). TEST-03 baseline (scholarAnimations.test.js 23 cases) cross-referenced + unchanged. PhpUnitStubs.php extended (IConfig::getUserKeys/setUserValue + IRequest + Controller + Http + DataResponse + UserRateLimit attribute) — sibling EncryptionServiceTest+AnalyticsServiceTest 12/12 GREEN confirms non-regressive. PHPStan Level 5 clean. ESLint 0 errors. forbidden-names CI exit 0. i18n parity OK across 5 langs. GitNexus stale-index waiver documented (npm tree-sitter-dart bug, INBOX-tracked) with manual blast-radius assessment (LOW: private method, single internal call site). Wave 1 partial — Plan 04 (PersonalSettings hint + ~20 i18n keys) parallel-safe still pending.
 last_updated: "2026-04-26T04:53:00.000Z"
 last_activity: 2026-04-26
@@ -12,8 +12,8 @@ progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 30
-  completed_plans: 26
-  percent: 87
+  completed_plans: 27
+  percent: 90
 ---
 
 # Project State
