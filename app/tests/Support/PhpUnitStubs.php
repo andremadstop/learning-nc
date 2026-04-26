@@ -39,6 +39,13 @@ namespace OCP {
             public function getUserValue(string $userId, string $appName, string $key, string $default = '');
 
             public function getAppValue(string $appName, string $key, string $default = '');
+
+            public function setUserValue(string $userId, string $appName, string $key, string $value);
+
+            /**
+             * @return string[]
+             */
+            public function getUserKeys(string $userId, string $appName): array;
         }
     }
 
@@ -49,6 +56,68 @@ namespace OCP {
 
     if (!interface_exists(IUserManager::class)) {
         interface IUserManager {
+        }
+    }
+
+    if (!interface_exists(IRequest::class)) {
+        interface IRequest {
+            public function getParam(string $key, $default = null);
+            public function getMethod();
+        }
+    }
+}
+
+namespace OCP\AppFramework {
+    if (!class_exists(Controller::class)) {
+        class Controller {
+            protected string $appName;
+            protected $request;
+
+            public function __construct(string $appName, $request) {
+                $this->appName = $appName;
+                $this->request = $request;
+            }
+        }
+    }
+
+    if (!class_exists(Http::class)) {
+        class Http {
+            public const STATUS_OK = 200;
+            public const STATUS_BAD_REQUEST = 400;
+            public const STATUS_UNAUTHORIZED = 401;
+            public const STATUS_TOO_MANY_REQUESTS = 429;
+            public const STATUS_SERVICE_UNAVAILABLE = 503;
+        }
+    }
+}
+
+namespace OCP\AppFramework\Http {
+    if (!class_exists(DataResponse::class)) {
+        class DataResponse {
+            private $data;
+            private int $status;
+
+            public function __construct($data = [], int $status = 200) {
+                $this->data = $data;
+                $this->status = $status;
+            }
+
+            public function getData() {
+                return $this->data;
+            }
+
+            public function getStatus(): int {
+                return $this->status;
+            }
+        }
+    }
+}
+
+namespace OCP\AppFramework\Http\Attributes {
+    if (!class_exists(UserRateLimit::class)) {
+        #[\Attribute]
+        class UserRateLimit {
+            public function __construct(int $limit = 0, int $period = 0) {}
         }
     }
 }
