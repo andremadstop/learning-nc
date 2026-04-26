@@ -45,6 +45,9 @@ jobs:
             exit 1
           fi
 
+      - name: i18n key-parity check
+        run: bash scripts/check-i18n-parity.sh
+
   frontend-build:
     runs-on: ubuntu-latest
     defaults:

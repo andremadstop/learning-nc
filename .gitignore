@@ -117,6 +117,7 @@ scripts/*
 !scripts/test-api.sh
 !scripts/check-forbidden-names.sh
 !scripts/check-forbidden-names.test.sh
+!scripts/check-i18n-parity.sh
 .env
 .ralph/
 certs/

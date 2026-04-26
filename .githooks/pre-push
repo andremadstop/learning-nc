@@ -84,6 +84,16 @@ else
     FAILED=1
 fi
 
+# 7. i18n Key-Parity (I18N-02) — DE/EN/FR/RU/AR must share key-set.
+echo -n "i18n key-parity... "
+if PARITY_OUT=$(bash "$ROOT_DIR/scripts/check-i18n-parity.sh" 2>&1); then
+    echo -e "${GREEN}OK${NC}"
+else
+    echo -e "${RED}FAIL — i18n key-parity check failed (fix l10n drift before pushing):${NC}"
+    echo "$PARITY_OUT" | head -20
+    FAILED=1
+fi
+
 # Ergebnis
 echo ""
 if [ $FAILED -ne 0 ]; then
