@@ -63,7 +63,7 @@ Shared Animation-Primitives für alle Skins.
 5 Sprachen parallel.
 
 - [ ] **I18N-01**: Alle neuen UI-Strings (Picker-Label, Skin-Namen, Kategorien, Beschreibungen) in allen 5 Sprachen (DE/EN/FR/RU/AR) mit Release gelandet
-- [ ] **I18N-02**: CI key-parity-check (existiert seit v4.2.2) covert die neuen Keys — kein Merge mit fehlenden Übersetzungen
+- [x] **I18N-02**: CI key-parity-check covert die neuen Keys — kein Merge mit fehlenden Übersetzungen (geliefert via 153-01: scripts/check-i18n-parity.sh + .githooks/pre-push block 7 + .github/workflows/security-regression.yml step; baseline-green auf 5×1631 Keys, drift-getestet; commit 9fa6b8d)
 - [ ] **I18N-03**: RTL-Layout für Arabic getestet: Avatar wird NICHT gespiegelt (wäre falsch für Gesichter), Text daneben korrekt rechtsbündig
 
 ### Accessibility (A11Y)
@@ -161,7 +161,7 @@ Roadmap mapping 2026-04-18. 100% coverage (40/40 REQs).
 | ANIM-04 | Phase 150 | Pending |
 | ANIM-05 | Phase 152 | Complete (0b9f13c) |
 | I18N-01 | Phase 153 | Pending |
-| I18N-02 | Phase 153 | Pending |
+| I18N-02 | Phase 153 | Complete (153-01, 9fa6b8d) |
 | I18N-03 | Phase 153 | Pending |
 | A11Y-01 | Phase 150 | Pending |
 | A11Y-02 | Phase 150 | Pending |

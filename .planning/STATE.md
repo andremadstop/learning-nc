@@ -4,9 +4,9 @@ milestone: v4.4.0
 milestone_name: Character & Personality
 current_phase: 153
 current_plan: 02
-status: phase-153-wave-0-in-progress
-stopped_at: Plan 153-02 complete (Wave-0 scaffolds: characterReactionEngine.test.js 5 GREEN + skinPickerHint.test.js 4 GREEN + VirtuProfControllerTest.php 3 skipped on relay + skin-picker.spec.js 2 specs discoverable + A11Y-AUDIT-v4.4.0.md checklist + DevCloud creds verified 7-of-9; vitest 1086/1086 GREEN; Plan 01 i18n-parity gate also shipped in parallel as 9fa6b8d)
-last_updated: "2026-04-26T04:05:00.000Z"
+status: phase-153-wave-0-complete-ready-for-wave-1
+stopped_at: Phase 153 Wave 0 COMPLETE (both plans shipped) — Plan 153-02 scaffolds (characterReactionEngine.test.js 5 GREEN + skinPickerHint.test.js 4 GREEN + VirtuProfControllerTest.php 3 skipped on relay + skin-picker.spec.js 2 specs discoverable + A11Y-AUDIT-v4.4.0.md checklist + DevCloud creds 7-of-9 verified) + Plan 153-01 i18n-parity gate (scripts/check-i18n-parity.sh executable + baseline-green + drift-tested, pre-push block 7 wired, security-regression.yml step wired, gitignore allowlist extended) + OQ4 GREEN verdict (Plan 03 Pattern 1 IConfig::getUserKeys() discriminator safe — clears MIGR-01/02 architecture) + Audit A CLEAN (RTL avatar mirror) + Audit B ACTIVE (deploy-prod stale-chunk cleanup verified). Vitest 1086/1086 GREEN. Wave 1 (Plans 03+04, parallel-safe) cleared to start.
+last_updated: "2026-04-26T04:25:00.000Z"
 last_activity: 2026-04-26
 progress:
   total_phases: 5
@@ -53,6 +53,7 @@ Progress (v4.4.0): [■■■■■] 5/5 phases complete (100% — Phase 152 clo
 | Phase 152 P04 | 6min | 2 tasks | 2 files |
 | Phase 152 P05 | 5min | 2 tasks | 2 files |
 | Phase 152 P06 | ~30min | 4 tasks | 3 files |
+| Phase 153 P01 | 51min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,11 @@ Progress (v4.4.0): [■■■■■] 5/5 phases complete (100% — Phase 152 clo
 - [152-06] BIBLE personality strings already verbatim-match characters.js — Plan 02 copied them correctly; no BIBLE update needed. Sync verified, not modified. Documents that production code (characters.js) is source of truth.
 - [152-06] Internal sensitivity-review SIGNOFF process completed (replaces obsolete external Leidmedien.de plan per Phase 149 pivot). Two-phase: concept-only (2026-04-19, 3 rows) + final-art post-deploy (2026-04-25, 3 rows). Owner-led 8-point ART_STYLE_GUIDE Section 5 checklist confirmed for all 3 archetypes on relay-deployed visual. LEGAL-04 in REQUIREMENTS.md still references "Externe" — cosmetic label-update for Phase 153 close-out.
 - [152-06] Phase 152 closes with all 5 plans shipped: 02 (data), 03 (Theoretiker), 04 (Kosmologe), 05 (Popularisierer), 06 (validation+SIGNOFF). Requirements satisfied: SCHOLAR-01..04, ANIM-05. Zero new npm deps. v4.4.0 advances to Phase 153 (release-and-l10n).
+- [153-01] OQ4 verdict GREEN — comprehensive grep proves no `learning.*` user_config key auto-write during NC user creation. All 14 setUserValue('learning',...) calls in app/lib/ are gated by $this->userId auth check + explicit POST/PUT request payload. Zero FirstLoginListener / callForSeenUsers / RepairStep / UserCreatedEvent registrations. Plan 03 ships Pattern 1 (IConfig::getUserKeys() empty-vs-non-empty discriminator) as designed; Option A RepairStep fallback NOT needed. Forensic record: `.planning/phases/153-migration-tests-deploy-app-store/153-OQ4-FINDINGS.md`.
+- [153-01] RTL Audit A CLEAN — only one bundled scaleX(-1) rule exists (`.icon-vue--directional[data-v-aaedb1c3] svg:dir(rtl)`, vendor NcIconSvgWrapper). `.character-avatar` does NOT use that class — selector specificity structurally enforces I18N-03 unmirrored-avatar guarantee. Other [dir="rtl"] selectors in app/src adjust only translateX for slide transitions, never scaleX. Belt-and-braces TEST-06 RTL screenshot still recommended for Plan 06 but no remediation needed.
+- [153-01] Deploy-prod stale-chunk Audit B ACTIVE — line 68 of scripts/deploy-prod.sh runs both `find $APP_PATH/js/ -type f -delete` and `find $APP_PATH/css/ -type f -delete` in single combined ssh+docker-exec invocation. Success-criterion #6 first half pre-satisfied. Plan 01 boundary: do NOT modify deploy-prod.sh; verified, not duplicated.
+- [153-01] gitignore allowlist extended (!scripts/check-i18n-parity.sh, mirrors !scripts/check-forbidden-names.sh from Phase 149). Required because `scripts/*` denied by default.
+- [153-01] Plan-execution adaptations (4 Rule 3 deviations, all blocking-issue fixes): (a) gitignore allowlist for new script, (b) used existing $ROOT_DIR variable in pre-push hook (NOT plan's invented $REPO_ROOT), (c) anchored CI step after "Check for security anti-patterns" (forbidden-names step doesn't exist in security-regression.yml — plan instruction was outdated), (d) Audit B verify uses two `grep -q` presence checks (NOT `wc -l ≥ 2` which would fail on the legitimate single-line form). All four are plan→reality adaptations; no application code changes.
 - [v4.4.0] Archetype-Naming zementiert — keine realen Namen (Einstein/Hawking/Tyson) wegen Trademark + Right-of-Publicity; Labels "Der Theoretiker / Der Kosmologe / Der Astrophysik-Popularisierer"
 - [v4.4.0] Zero-Change-Default für Bestandsuser — NOVA bleibt für alle aktuellen User, Prof. Lern Classic wird Default NUR für neu registrierte User (Nova-Removal-Trauma-Repeat vermeiden)
 - [v4.4.0] Externe Sensitivity-Review vor Phase 152 Freeze — ~€300 Budget, gated durch Phase 149
@@ -133,6 +139,6 @@ Progress (v4.4.0): [■■■■■] 5/5 phases complete (100% — Phase 152 clo
 
 ## Session Continuity
 
-Last session: 2026-04-25T19:55:00.000Z
-Stopped at: Plan 152-06 complete (sensitivity-review SIGNOFF appended for 3 archetypes post-deploy on relay devcloud, scholarAnimations 23/23 + scholarSvgSecurity 7/7 GREEN, vitest 1077/1077, forbidden-names CI exit 0; Phase 152 closes — SCHOLAR-01..04 + ANIM-05 satisfied; v4.4.0 advances to Phase 153 release-and-l10n)
-Next action: Phase 153 (Migration, Tests, Deploy & App Store). Scope: zero-change-default migration (MIGR-01..05), Vitest unit tests for SkinRenderer + resolveReaction + 4 Avatar-Snapshots (TEST-01..03), Playwright E2E with `animations: 'disabled'` (TEST-04..05), manual A11y-Audit (TEST-06), i18n 5-language parity for new scholar archetype labels + picker UI (I18N-01..03), DevCloud-Test on Kurs 21 + ernesst, stale-JS-chunk-Cleanup, signature.json re-sign, App Store v4.4.0 push. Phase 152 closure note: LEGAL-04 cosmetic label update ("Externe" → "Interne" per Phase 149 pivot) is OK to bundle into Phase 153 docs/legal-cleanup.
+Last session: 2026-04-26T04:25:00.000Z
+Stopped at: Phase 153 Wave 0 COMPLETE — Plan 153-01 (i18n-parity gate + OQ4 GREEN + RTL/deploy audits, commit 9fa6b8d, 51min, 3 tasks, 6 files) and Plan 153-02 (5 test scaffolds + A11y doc + DevCloud creds, commit 54345c8, parallel-safe). I18N-02 satisfied. Wave 1 cleared.
+Next action: Phase 153 Wave 1 — Plan 153-03 (VirtuProfController.getSkin() rewrite with Pattern 1 first-touch-coercion + un-skip 3 PHPUnit tests + augment SkinRenderer.test.js +1 case, MIGR-01/02/TEST-01/03) and Plan 153-04 (PersonalSettings.vue NcNoteCard hint + ~20 i18n keys in 5 langs lockstep, MIGR-03/I18N-01) — parallel-safe. OQ4 GREEN verdict in 153-OQ4-FINDINGS.md unblocks Pattern 1 architecture; Plan 03 ships as designed without Option A fallback. Phase 152 closure note: LEGAL-04 cosmetic label update ("Externe" → "Interne" per Phase 149 pivot) is OK to bundle into Phase 153 docs/legal-cleanup (Plan 05/07).
