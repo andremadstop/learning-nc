@@ -102,8 +102,8 @@ Qualitätssicherung aller Layers.
 - [x] **TEST-01**: Vitest Unit-Tests für SkinRenderer (Dispatch korrekt pro skinId, Fallback bei ungültig)
 - [ ] **TEST-02**: Vitest Unit-Tests für `resolveReaction()` (Fallback bei unsupportiertem State)
 - [x] **TEST-03**: Vitest Snapshot-Tests für alle 4 neuen Avatare (Prof. Lern + 3 Archetypen) in allen supporteten States
-- [ ] **TEST-04**: Playwright E2E: User öffnet PersonalSettings → wählt Skin → VirtuProf updated ohne reload → persistiert across reload
-- [ ] **TEST-05**: Playwright visual-comparison mit `animations: 'disabled'` Flag (stabil gegen Animation-Flakes)
+- [x] **TEST-04**: Playwright E2E: User öffnet PersonalSettings → wählt Skin → VirtuProf updated ohne reload → persistiert across reload (geliefert via 153-05: skin-picker.spec.js, 10× consecutive runs zero flake against relay devcloud, commit 6eb1f4a)
+- [x] **TEST-05**: Playwright visual-comparison mit `animations: 'disabled'` Flag (stabil gegen Animation-Flakes) (geliefert via 153-05: per-screenshot animations:'disabled', baseline skin-renderer-classic-chromium-linux.png 760x37, commit 6eb1f4a)
 - [ ] **TEST-06**: Manual A11y-Audit: prefers-reduced-motion + Screen-Reader + RTL (Arabic) + Keyboard-Nav
 
 ## Out of Scope
@@ -180,8 +180,8 @@ Roadmap mapping 2026-04-18. 100% coverage (40/40 REQs).
 | TEST-01 | Phase 153 | Complete |
 | TEST-02 | Phase 153 | Pending |
 | TEST-03 | Phase 153 | Complete |
-| TEST-04 | Phase 153 | Pending |
-| TEST-05 | Phase 153 | Pending |
+| TEST-04 | Phase 153 | Complete (153-05, 6eb1f4a) |
+| TEST-05 | Phase 153 | Complete (153-05, 6eb1f4a) |
 | TEST-06 | Phase 153 | Pending |
 
 **Coverage:**
