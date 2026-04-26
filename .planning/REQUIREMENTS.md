@@ -89,8 +89,8 @@ Archetype-Naming durchgängig.
 
 Nova-Removal-Trauma-Repeat vermeiden.
 
-- [ ] **MIGR-01**: Bestehende User sehen weiterhin NOVA als Default (Zero-Change) — `learning.virtuprof_skin` bleibt bei ihnen auf `'nova'`
-- [ ] **MIGR-02**: Neu registrierte User bekommen Default-Skin `prof_lern_classic`
+- [x] **MIGR-01**: Bestehende User sehen weiterhin NOVA als Default (Zero-Change) — `learning.virtuprof_skin` bleibt bei ihnen auf `'nova'`
+- [x] **MIGR-02**: Neu registrierte User bekommen Default-Skin `prof_lern_classic`
 - [ ] **MIGR-03**: One-time non-intrusive In-App-Hinweis nach v4.4.0-Deploy: "Neue Skins verfügbar in den Einstellungen" (auto-dismiss nach 7 Tagen oder User-Klick)
 - [x] **MIGR-04**: CHANGELOG v4.4.0 erklärt die neue Customization explizit
 - [ ] **MIGR-05**: DevCloud Kurs 21 + externe User (ernesst) testen v4.4.0 VOR App-Store-Push
@@ -99,9 +99,9 @@ Nova-Removal-Trauma-Repeat vermeiden.
 
 Qualitätssicherung aller Layers.
 
-- [ ] **TEST-01**: Vitest Unit-Tests für SkinRenderer (Dispatch korrekt pro skinId, Fallback bei ungültig)
+- [x] **TEST-01**: Vitest Unit-Tests für SkinRenderer (Dispatch korrekt pro skinId, Fallback bei ungültig)
 - [ ] **TEST-02**: Vitest Unit-Tests für `resolveReaction()` (Fallback bei unsupportiertem State)
-- [ ] **TEST-03**: Vitest Snapshot-Tests für alle 4 neuen Avatare (Prof. Lern + 3 Archetypen) in allen supporteten States
+- [x] **TEST-03**: Vitest Snapshot-Tests für alle 4 neuen Avatare (Prof. Lern + 3 Archetypen) in allen supporteten States
 - [ ] **TEST-04**: Playwright E2E: User öffnet PersonalSettings → wählt Skin → VirtuProf updated ohne reload → persistiert across reload
 - [ ] **TEST-05**: Playwright visual-comparison mit `animations: 'disabled'` Flag (stabil gegen Animation-Flakes)
 - [ ] **TEST-06**: Manual A11y-Audit: prefers-reduced-motion + Screen-Reader + RTL (Arabic) + Keyboard-Nav
@@ -172,14 +172,14 @@ Roadmap mapping 2026-04-18. 100% coverage (40/40 REQs).
 | LEGAL-02 | Phase 149 | Complete |
 | LEGAL-03 | Phase 149 | Complete |
 | LEGAL-04 | Phase 149 | Pending |
-| MIGR-01 | Phase 153 | Pending |
-| MIGR-02 | Phase 153 | Pending |
+| MIGR-01 | Phase 153 | Complete |
+| MIGR-02 | Phase 153 | Complete |
 | MIGR-03 | Phase 153 | Pending |
 | MIGR-04 | Phase 149 | Complete |
 | MIGR-05 | Phase 153 | Pending |
-| TEST-01 | Phase 153 | Pending |
+| TEST-01 | Phase 153 | Complete |
 | TEST-02 | Phase 153 | Pending |
-| TEST-03 | Phase 153 | Pending |
+| TEST-03 | Phase 153 | Complete |
 | TEST-04 | Phase 153 | Pending |
 | TEST-05 | Phase 153 | Pending |
 | TEST-06 | Phase 153 | Pending |

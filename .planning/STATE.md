@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v4.4.0
 milestone_name: Character & Personality
 current_phase: 153
-current_plan: 02
-status: phase-153-wave-0-complete-ready-for-wave-1
-stopped_at: Phase 153 Wave 0 COMPLETE (both plans shipped) — Plan 153-02 scaffolds (characterReactionEngine.test.js 5 GREEN + skinPickerHint.test.js 4 GREEN + VirtuProfControllerTest.php 3 skipped on relay + skin-picker.spec.js 2 specs discoverable + A11Y-AUDIT-v4.4.0.md checklist + DevCloud creds 7-of-9 verified) + Plan 153-01 i18n-parity gate (scripts/check-i18n-parity.sh executable + baseline-green + drift-tested, pre-push block 7 wired, security-regression.yml step wired, gitignore allowlist extended) + OQ4 GREEN verdict (Plan 03 Pattern 1 IConfig::getUserKeys() discriminator safe — clears MIGR-01/02 architecture) + Audit A CLEAN (RTL avatar mirror) + Audit B ACTIVE (deploy-prod stale-chunk cleanup verified). Vitest 1086/1086 GREEN. Wave 1 (Plans 03+04, parallel-safe) cleared to start.
-last_updated: "2026-04-26T04:25:00.000Z"
+current_plan: 03
+status: phase-153-wave-1-plan-03-complete-plan-04-pending
+stopped_at: Phase 153 Plan 03 COMPLETE — VirtuProfController::getSkin() rewritten with Pattern 1 first-touch-coercion via IConfig::getUserKeys() (MIGR-01/02). 4 PHPUnit cases on relay: existing-user-resolves-nova + new-user-resolves-classic + existing-row-fast-path + orphan-sanitization (4/4 GREEN, 8 assertions). 1 new Vitest case (orphan/dropped skin id → NovaDock fallback) brings suite to 1087 GREEN (1086 baseline + 1 new TEST-01). TEST-03 baseline (scholarAnimations.test.js 23 cases) cross-referenced + unchanged. PhpUnitStubs.php extended (IConfig::getUserKeys/setUserValue + IRequest + Controller + Http + DataResponse + UserRateLimit attribute) — sibling EncryptionServiceTest+AnalyticsServiceTest 12/12 GREEN confirms non-regressive. PHPStan Level 5 clean. ESLint 0 errors. forbidden-names CI exit 0. i18n parity OK across 5 langs. GitNexus stale-index waiver documented (npm tree-sitter-dart bug, INBOX-tracked) with manual blast-radius assessment (LOW: private method, single internal call site). Wave 1 partial — Plan 04 (PersonalSettings hint + ~20 i18n keys) parallel-safe still pending.
+last_updated: "2026-04-26T04:53:00.000Z"
 last_activity: 2026-04-26
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 30
-  completed_plans: 25
-  percent: 83
+  completed_plans: 26
+  percent: 87
 ---
 
 # Project State
@@ -27,12 +27,12 @@ See: .planning/PROJECT.md (updated 2026-04-18)
 
 ## Current Position
 
-Phase: 152 (COMPLETE — all 5 plans shipped, ready for Phase 153)
-Current Plan: 6 (last)
-Total Plans in Phase: 5 (data + 3 silhouettes + close-out)
-Status: Phase 152 COMPLETE. Plan 06 close-out shipped: scholarAnimations.test.js 23/23 GREEN (3 scholars × 3 states + classic dispatch + export-check satisfying ANIM-05 ≥12-case matrix), scholarSvgSecurity.test.js 7/7 GREEN (composite FORBIDDEN regex zero-deps svgo replacement), BIBLE↔characters.js verbatim sync verified (no drift), `./scripts/deploy-prod.sh --js-only` deployed all 3 scholar skins to relay devcloud-app at 15:00 UTC, manual 8-point ART_STYLE_GUIDE Section 5 sensitivity-review APPROVED for all 3 archetypes by user 2026-04-25, 3 final-art SIGNOFF.md rows appended (Theoretiker / Kosmologe / Popularisierer), Vitest 1077/1077 GREEN, forbidden-names CI exit 0, ESLint+build clean. Phase 152 satisfies SCHOLAR-01..04 + ANIM-05. CharacterAvatar.vue final at 739 LOC. SIGNOFF.md row count: 3→6 (concept-only 2026-04-19 + final-art 2026-04-25). v4.4.0 advances to Phase 153 (release-and-l10n: i18n 5 languages, MIGR-01..05, TEST-01..06 — App Store push).
-Last activity: 2026-04-25
-Progress (v4.4.0): [■■■■■] 5/5 phases complete (100% — Phase 152 closed; Phase 153 next for release-and-l10n)
+Phase: 153 (IN PROGRESS — Wave 0 done, Plan 03 of Wave 1 done, Plan 04 of Wave 1 still pending)
+Current Plan: 03 of 7 complete
+Total Plans in Phase: 7 (Wave 0: i18n + scaffolds; Wave 1: migration + hint; Wave 2: E2E; Wave 3: manual; Wave 4: release)
+Status: Plan 153-03 COMPLETE — Pattern 1 first-touch-coercion shipped via VirtuProfController::getSkin() rewrite (MIGR-01/02). 4 PHPUnit + 1 Vitest case (4+1 new) GREEN; full Vitest suite 1087/1087; PHPStan Level 5 clean. Plan 153-04 (PersonalSettings hint + ~20 i18n keys, MIGR-03/I18N-01) is the next parallel-safe Wave-1 plan.
+Last activity: 2026-04-26
+Progress (v4.4.0): [■■■■◐] Phase 153 3/7 plans complete (Phases 149-152 closed; Phase 153 in progress)
 
 ## Performance Metrics
 
@@ -54,6 +54,7 @@ Progress (v4.4.0): [■■■■■] 5/5 phases complete (100% — Phase 152 clo
 | Phase 152 P05 | 5min | 2 tasks | 2 files |
 | Phase 152 P06 | ~30min | 4 tasks | 3 files |
 | Phase 153 P01 | 51min | 3 tasks | 6 files |
+| Phase 153 P03 | ~28min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,11 @@ Progress (v4.4.0): [■■■■■] 5/5 phases complete (100% — Phase 152 clo
 - [153-01] Deploy-prod stale-chunk Audit B ACTIVE — line 68 of scripts/deploy-prod.sh runs both `find $APP_PATH/js/ -type f -delete` and `find $APP_PATH/css/ -type f -delete` in single combined ssh+docker-exec invocation. Success-criterion #6 first half pre-satisfied. Plan 01 boundary: do NOT modify deploy-prod.sh; verified, not duplicated.
 - [153-01] gitignore allowlist extended (!scripts/check-i18n-parity.sh, mirrors !scripts/check-forbidden-names.sh from Phase 149). Required because `scripts/*` denied by default.
 - [153-01] Plan-execution adaptations (4 Rule 3 deviations, all blocking-issue fixes): (a) gitignore allowlist for new script, (b) used existing $ROOT_DIR variable in pre-push hook (NOT plan's invented $REPO_ROOT), (c) anchored CI step after "Check for security anti-patterns" (forbidden-names step doesn't exist in security-regression.yml — plan instruction was outdated), (d) Audit B verify uses two `grep -q` presence checks (NOT `wc -l ≥ 2` which would fail on the legitimate single-line form). All four are plan→reality adaptations; no application code changes.
+- [153-03] Pattern 1 (IConfig::getUserKeys) shipped per 153-01 OQ4 GREEN verdict — first-touch-coercion via existence-signal. Empty key-set → 'prof_lern_classic' (MIGR-02). Non-empty key-set → 'nova' (MIGR-01 Zero-Change-Default). Write-once after resolve so subsequent reads are O(1) on the row. No deploy-date AppValue, no RepairStep, no `getLastLogin()`. Inline 5-line DO-NOT comment at lines 31-35 of VirtuProfController.php forbids future regression to `getLastLogin()` (Pitfall 5 prevention).
+- [153-03] PhpUnitStubs.php expansion is canonical, NOT a workaround. tests/bootstrap.php deliberately does NOT load vendor/autoload.php — stubs are the single source of OCP types in PHPUnit context. Added 5 new namespaces (IRequest, AppFramework\\Controller, Http, DataResponse, UserRateLimit attribute) + 2 new IConfig methods (getUserKeys, setUserValue) under the existing `if (!interface_exists)` guards. Verified non-regressive: EncryptionServiceTest + AnalyticsServiceTest 12/12 GREEN.
+- [153-03] Plan-spec correction: SkinRenderer reads `useSkinStore().skinId`, NOT a `skinId` prop. Plan's pseudocode `mount(SkinRenderer, { props: { skinId: 'einstein_v0_dropped' } })` would silently render NovaDock for `'nova'` (the store default), not for the supposedly tested invalid id. Test correctly uses `useSkinStore().setSkin('einstein_v0_dropped')` exercising the realistic path: setSkin coerces invalid → DEFAULT_SKIN='nova' → SkinRenderer reads 'nova' → NovaDock renders. Same final assertion through the actual code path.
+- [153-03] Plan automated verify rule `! grep -q "getLastLogin"` contradicts plan `<action>` block instruction to add inline `DO NOT replace with IUser::getLastLogin()` comment. The contract being protected is "no call site," not "no string match." `<action>` wins over `<verify>` — the warning IS the prevention mechanism. Future plans should refine to `! grep -E "[^/]getLastLogin\\(" file` to exclude comment lines.
+- [153-03] GitNexus index stale waiver — npm tree-sitter-dart bug (INBOX-tracked 2026-04-25) prevents `npx gitnexus analyze`. Manual blast-radius assessment substituted: `getSkin()` is `private`, single call site `buildStatePayload()`, return type unchanged, public API surface unchanged, ALLOWED_SKINS allowlist unchanged. Risk LOW. Documented in deferred-items.md.
 - [v4.4.0] Archetype-Naming zementiert — keine realen Namen (Einstein/Hawking/Tyson) wegen Trademark + Right-of-Publicity; Labels "Der Theoretiker / Der Kosmologe / Der Astrophysik-Popularisierer"
 - [v4.4.0] Zero-Change-Default für Bestandsuser — NOVA bleibt für alle aktuellen User, Prof. Lern Classic wird Default NUR für neu registrierte User (Nova-Removal-Trauma-Repeat vermeiden)
 - [v4.4.0] Externe Sensitivity-Review vor Phase 152 Freeze — ~€300 Budget, gated durch Phase 149
@@ -139,6 +145,6 @@ Progress (v4.4.0): [■■■■■] 5/5 phases complete (100% — Phase 152 clo
 
 ## Session Continuity
 
-Last session: 2026-04-26T04:25:00.000Z
-Stopped at: Phase 153 Wave 0 COMPLETE — Plan 153-01 (i18n-parity gate + OQ4 GREEN + RTL/deploy audits, commit 9fa6b8d, 51min, 3 tasks, 6 files) and Plan 153-02 (5 test scaffolds + A11y doc + DevCloud creds, commit 54345c8, parallel-safe). I18N-02 satisfied. Wave 1 cleared.
-Next action: Phase 153 Wave 1 — Plan 153-03 (VirtuProfController.getSkin() rewrite with Pattern 1 first-touch-coercion + un-skip 3 PHPUnit tests + augment SkinRenderer.test.js +1 case, MIGR-01/02/TEST-01/03) and Plan 153-04 (PersonalSettings.vue NcNoteCard hint + ~20 i18n keys in 5 langs lockstep, MIGR-03/I18N-01) — parallel-safe. OQ4 GREEN verdict in 153-OQ4-FINDINGS.md unblocks Pattern 1 architecture; Plan 03 ships as designed without Option A fallback. Phase 152 closure note: LEGAL-04 cosmetic label update ("Externe" → "Interne" per Phase 149 pivot) is OK to bundle into Phase 153 docs/legal-cleanup (Plan 05/07).
+Last session: 2026-04-26T04:53:00.000Z
+Stopped at: Phase 153 Plan 03 COMPLETE — VirtuProfController::getSkin() rewritten with Pattern 1 first-touch-coercion (commits 8b91726 feat, 307a010 test, a3345e4 test). MIGR-01 + MIGR-02 + TEST-01 + TEST-03 satisfied. PHPUnit 4/4 GREEN on relay (8 assertions). Vitest 1087/1087 GREEN. PHPStan Level 5 clean. PhpUnitStubs.php expansion non-regressive (sibling tests 12/12 GREEN). GitNexus stale-index waiver documented with manual blast-radius assessment.
+Next action: Phase 153 Plan 04 — PersonalSettings.vue NcNoteCard hint + ~20 i18n keys in 5 langs lockstep (MIGR-03 + I18N-01). Plan 04 was parallel-safe with Plan 03 (zero file overlap) and is now the only Wave-1 plan still pending. After Plan 04 ships, Phase 153 advances to Wave 2 (Plan 05: Playwright spec un-skip + visual baseline + info.xml bump). Phase 152 closure note: LEGAL-04 cosmetic label update ("Externe" → "Interne" per Phase 149 pivot) is OK to bundle into Phase 153 docs/legal-cleanup (Plan 05/07).
