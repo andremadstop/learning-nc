@@ -1,12 +1,12 @@
 ---
 gsd_state_version: 1.0
-milestone: v4.4.0
-milestone_name: Character & Personality
-current_phase: 153
-current_plan: 07
-status: phase-153-complete-milestone-v440-shipped
-stopped_at: v4.4.0 LIVE on apps.nextcloud.com 2026-04-27 ~18:05 UTC. Plan 07 release ritual completed end-to-end (8/8 tasks): CHANGELOG date lock 2026-04-27 (commit 2c2221d) + CI E2E snapshot tolerance gap-fix maxDiffPixels:300 (commit fed30f0) + NC integrity:sign-app on relay devcloud-app + signature.json separate commit + tag (commit 2703d24) + tarball build 15.6MB + GitHub release v4.4.0 + openssl SHA-512 signature + POST /api/v1/apps/releases HTTP 201 Created + App Store HTML page confirmed v4.4.0 visible. Cert+key handling clean (Pitfall 9): keys deleted from container + relay home immediately post-sign, never appeared in chat/logs. Phase 153: 7/7 plans complete. Milestone v4.4.0 (Character & Personality, Phases 149-153, 30 plans, 0 new npm deps, 5-language i18n parity): SHIPPED. Post-merge TODO: 5-min NVDA/VoiceOver spot-check on relay (CP2 deferred-coverage from Plan 06).
-last_updated: "2026-04-27T18:10:00.000Z"
+milestone: archived
+milestone_name: "v4.4.0 Character & Personality archived; awaiting next milestone"
+current_phase: null
+current_plan: null
+status: milestone-v4.4.0-shipped-ready-for-new-milestone
+stopped_at: "Milestone v4.4.0 (Character & Personality) SHIPPED 2026-04-27 — App Store live (HTTP 201). 5/5 phases (149-153), 30/30 plans, 47/47 requirements satisfied, 7/7 E2E flows, audit passed. Tag v4.4.0 + GitHub Release published. REQUIREMENTS.md + ROADMAP.md sections archived to .planning/milestones/v4.4.0-*.md. MILESTONES.md entry added with stats + key accomplishments. Post-merge TODO: 5-min NVDA/VoiceOver spot-check on relay (CP2 deferred-coverage from Plan 153-06) before any v4.5.x dev session begins. Next: /gsd:new-milestone to start v4.3.0 (Onboarding & Content Intelligence, Phases 154-157) or audit deferred-items/INBOX before scoping."
+last_updated: "2026-04-27T19:35:00.000Z"
 last_activity: 2026-04-27
 progress:
   total_phases: 5

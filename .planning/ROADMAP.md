@@ -36,19 +36,22 @@
 - **v4.3.0 Onboarding & Content Intelligence** — Phases 154-157 (planned, ships after v4.4.0)
 - **v5.0.0 Universal Learning Platform** — Phases 158+ (vision)
 
-## v4.4.0 — Character & Personality
+<details>
+<summary>✅ <strong>v4.4.0 Character & Personality</strong> — Phases 149-153 — SHIPPED 2026-04-27 (App Store live)</summary>
 
-> **Ziel:** VirtuProf bekommt ein Gesicht — weg von der futuristischen Box (NovaDock), zurück zu figürlicher Tiefe und Persönlichkeit. User können das Erscheinungsbild anpassen inkl. Archetype-Presets (Theoretiker / Kosmologe / Astrophysik-Popularisierer) und wiederbelebter Prof. Lern Classic.
->
-> **Product Decisions:** Archetype-Naming (keine realen Namen, App-Store-sicher), externe Sensitivity-Review vor Phase 152 Freeze (~€300), Zero-Change-Default für Bestandsuser (NOVA bleibt), neue User starten mit Prof. Lern Classic. Keine neuen npm-Dependencies.
+> **Ziel:** VirtuProf bekommt ein Gesicht — Skin-Picker mit 5 wählbaren Skins (NOVA / Prof. Lern Classic / Theoretiker / Kosmologe / Astrophysik-Popularisierer), Zero-Change-Default für Bestandsuser, 0 neue npm-Dependencies, 5-Sprachen i18n-Parität.
 
 ### Phases
 
-- [x] **Phase 149: Legal, Art Direction & Copy Guidelines** — LEGAL.md v1.0 (Trademark-Analyse), Style-Guide v2.0 (Comic-Superhero-Pivot), CHANGELOG-Draft Archetype-Labels, Grep-CI Forbidden-Names, Internal-Sensitivity-Sign-off statt extern (3/3 Archetypen ✅ 2026-04-19) — completed 2026-04-24
-- [x] **Phase 150: Animation Architecture & A11y Primitive** — Shared CSS `@keyframes` + WAAPI-Helpers mit `prefers-reduced-motion` + named SVG `<g>` + `transform-box: fill-box` + screen-reader-sichere Semantik (gates HIGH #4, #5, #9, #12) (completed 2026-04-25)
-- [x] **Phase 151: Skin Picker Framework & Prof. Lern Classic** — SkinRenderer-Dispatcher, SkinPicker-Komponente, Pinia-Store + NC user_config-Persistierung, Git-Restore ProfLernAvatar.vue + Vue 3 Composition API Migration, Meta-Schema-Extension (gates MEDIUM #10, #11) (completed 2026-04-25)
-- [x] **Phase 152: Three Archetype Presets** — Theoretiker + Kosmologe + Popularisierer als SVG-Silhouetten parallel, characters.js-Einträge, je ≥3 Animationen (idle/blink, wave, celebrate); Sensitivity-Sign-off vor Freeze (gates HIGH #7, #8, #15) (completed 2026-04-25)
-- [x] **Phase 153: Migration, Tests, Deploy & App Store** — Zero-Change-Default-Migration, One-time-Hinweis, Vitest + Playwright (animations disabled), PHPStan, i18n-5-Sprachen-Parität, DevCloud-Test, stale-JS-chunk-Cleanup, signature.json re-sign, App-Store-Push (gates MEDIUM #6, #13, #14, #17) (completed 2026-04-27 — v4.4.0 LIVE on apps.nextcloud.com)
+- [x] **Phase 149: Legal, Art Direction & Copy Guidelines** — LEGAL.md (Trademark-Analyse), ART_STYLE_GUIDE, forbidden-names CI, Internal-Sensitivity-Sign-off (5/5 Plans, 2026-04-24)
+- [x] **Phase 150: Animation Architecture & A11y Primitive** — character-animations.css/js + character-reaction-engine + 3-layer reduced-motion gate + screen-reader-sichere Semantik (6/6 Plans, 2026-04-25)
+- [x] **Phase 151: Skin Picker Framework & Prof. Lern Classic** — SkinRenderer-Dispatcher + Pinia skinStore + NC user_config-Persistierung + ProfLernAvatar Vue 3 Restore + Meta-Schema additiv (7/7 Plans, 2026-04-25)
+- [x] **Phase 152: Three Archetype Presets** — Theoretiker + Kosmologe (Power-First Drawing Order) + Astrophysik-Popularisierer SVG-Silhouetten + Sensitivity-SIGNOFF (5/5 Plans, 2026-04-25)
+- [x] **Phase 153: Migration, Tests, Deploy & App Store** — Pattern-1 first-touch-coercion + 19 i18n-Keys × 5 Langs + Playwright E2E + i18n-parity-CI + signed Tarball + App Store API Push HTTP 201 (7/7 Plans, 2026-04-27)
+
+Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMENTS.md](milestones/v4.4.0-REQUIREMENTS.md) · [v4.4.0-MILESTONE-AUDIT.md](milestones/v4.4.0-MILESTONE-AUDIT.md)
+
+</details>
 
 ## v4.3.0 — Onboarding & Content Intelligence
 
