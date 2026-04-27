@@ -93,8 +93,14 @@ test.describe('Skin picker (TEST-04 + TEST-05)', () => {
 		// beforeEach reducedMotion. The combo is the Playwright-recommended
 		// pattern for animated UI. The picker control is the only stable target
 		// on the settings page (SkinRenderer/VirtuProf dock are NOT mounted here).
+		// maxDiffPixels: 300 — absorbs cross-platform anti-aliasing drift between
+		// local-Chromium (relay/devcloud, where baseline was captured 2026-04-26)
+		// and CI-Chromium (GitHub Actions Linux). Observed drift ~154px / 14000px
+		// (ratio 0.01) on the bf81d3e+9112d81 baseline run; 300 leaves headroom
+		// for font-rendering shifts without hiding actual layout regressions.
 		await expect(picker).toHaveScreenshot('skin-renderer-classic.png', {
 			animations: 'disabled',
+			maxDiffPixels: 300,
 		})
 	})
 })
