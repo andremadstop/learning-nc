@@ -48,7 +48,7 @@
 - [x] **Phase 150: Animation Architecture & A11y Primitive** — Shared CSS `@keyframes` + WAAPI-Helpers mit `prefers-reduced-motion` + named SVG `<g>` + `transform-box: fill-box` + screen-reader-sichere Semantik (gates HIGH #4, #5, #9, #12) (completed 2026-04-25)
 - [x] **Phase 151: Skin Picker Framework & Prof. Lern Classic** — SkinRenderer-Dispatcher, SkinPicker-Komponente, Pinia-Store + NC user_config-Persistierung, Git-Restore ProfLernAvatar.vue + Vue 3 Composition API Migration, Meta-Schema-Extension (gates MEDIUM #10, #11) (completed 2026-04-25)
 - [x] **Phase 152: Three Archetype Presets** — Theoretiker + Kosmologe + Popularisierer als SVG-Silhouetten parallel, characters.js-Einträge, je ≥3 Animationen (idle/blink, wave, celebrate); Sensitivity-Sign-off vor Freeze (gates HIGH #7, #8, #15) (completed 2026-04-25)
-- [ ] **Phase 153: Migration, Tests, Deploy & App Store** — Zero-Change-Default-Migration, One-time-Hinweis, Vitest + Playwright (animations disabled), PHPStan, i18n-5-Sprachen-Parität, DevCloud-Test, stale-JS-chunk-Cleanup, signature.json re-sign, App-Store-Push (gates MEDIUM #6, #13, #14, #17)
+- [x] **Phase 153: Migration, Tests, Deploy & App Store** — Zero-Change-Default-Migration, One-time-Hinweis, Vitest + Playwright (animations disabled), PHPStan, i18n-5-Sprachen-Parität, DevCloud-Test, stale-JS-chunk-Cleanup, signature.json re-sign, App-Store-Push (gates MEDIUM #6, #13, #14, #17) (completed 2026-04-27 — v4.4.0 LIVE on apps.nextcloud.com)
 
 ## v4.3.0 — Onboarding & Content Intelligence
 
@@ -414,7 +414,7 @@ Plans:
 - [x] 153-04-PLAN.md — Wave 1: PersonalSettings.vue NcNoteCard hint + ~20 i18n keys in 5 langs lockstep (MIGR-03, I18N-01) ✓ 2026-04-26
 - [x] 153-05-PLAN.md — Wave 2: un-skip Playwright spec + visual baseline + info.xml version bump + REQUIREMENTS.md cosmetic close-outs (TEST-04, TEST-05) ✓ 2026-04-26
 - [x] 153-06-PLAN.md — Wave 3: A11y audit + RTL + MIGR-05 (scope-pivot to structural coverage + 4-account API smoke, user-approved; CP2 screen-reader deferred to post-merge spot-check) (TEST-06, I18N-03, MIGR-05) ✓ 2026-04-27
-- [ ] 153-07-PLAN.md — Wave 4 (autonomous: false): CHANGELOG date lock + signing + signature.json commit + tag + tarball + GitHub release + App Store API push + state updates
+- [x] 153-07-PLAN.md — Wave 4: release ritual (CHANGELOG date lock + sign + signature.json commit + tag v4.4.0 + tarball + GitHub release + App Store API push HTTP 201 + state updates) ✓ 2026-04-27
 
 ## Progress Table
 

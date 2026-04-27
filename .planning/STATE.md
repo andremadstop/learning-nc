@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v4.4.0
 milestone_name: Character & Personality
 current_phase: 153
-current_plan: 06
-status: phase-153-wave-3-complete-ready-for-wave-4
-stopped_at: Phase 153 Plan 06 COMPLETE + 2 gap-closure fixes (commit 9112d81). Pivot from manual 30-min walkthrough to structural-coverage uncovered 2 production bugs that hand-verification surfaced before signing — committed as Plan-06 follow-up: PersonalSettings.vue skinOptions wraps c.name in t() (FR/RU/AR users saw German source strings); VirtuProf.vue applyVirtuProfState calls useSkinStore().loadFromServerPayload (main-app dock was stuck on store-default 'nova' for users who picked another skin). MIGR-05 4-account API smoke (alexander/adaeze/azad → nova; fresh testnew260427 → prof_lern_classic, deleted post-test). CP1 structural via Phase 150 + 152 SIGNOFF. CP3 mirror via Plan 01 Audit A re-verified. CP4 via NcSelect + Plan 05 E2E. I18N-03 via parity-gate. CP2 deferred to post-merge NVDA/VoiceOver spot-check. Vitest 1087 GREEN, ESLint clean. Untracked scratch (a11y-v440.spec.js 527-line community contribution, 1 partial RTL PNG nova-only, BadgeServiceTest+TelosServiceTest stubs, .understand-anything) intentionally NOT committed — not runnable end-to-end (env vars + listener-architecture mismatch) and not blocker for tag/tarball. Plan 07 release ritual cleared.
-last_updated: "2026-04-27T08:30:00.000Z"
+current_plan: 07
+status: phase-153-complete-milestone-v440-shipped
+stopped_at: v4.4.0 LIVE on apps.nextcloud.com 2026-04-27 ~18:05 UTC. Plan 07 release ritual completed end-to-end (8/8 tasks): CHANGELOG date lock 2026-04-27 (commit 2c2221d) + CI E2E snapshot tolerance gap-fix maxDiffPixels:300 (commit fed30f0) + NC integrity:sign-app on relay devcloud-app + signature.json separate commit + tag (commit 2703d24) + tarball build 15.6MB + GitHub release v4.4.0 + openssl SHA-512 signature + POST /api/v1/apps/releases HTTP 201 Created + App Store HTML page confirmed v4.4.0 visible. Cert+key handling clean (Pitfall 9): keys deleted from container + relay home immediately post-sign, never appeared in chat/logs. Phase 153: 7/7 plans complete. Milestone v4.4.0 (Character & Personality, Phases 149-153, 30 plans, 0 new npm deps, 5-language i18n parity): SHIPPED. Post-merge TODO: 5-min NVDA/VoiceOver spot-check on relay (CP2 deferred-coverage from Plan 06).
+last_updated: "2026-04-27T18:10:00.000Z"
 last_activity: 2026-04-27
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 30
-  completed_plans: 29
-  percent: 97
+  completed_plans: 30
+  percent: 100
 ---
 
 # Project State
