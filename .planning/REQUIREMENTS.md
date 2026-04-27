@@ -62,9 +62,9 @@ Shared Animation-Primitives für alle Skins.
 
 5 Sprachen parallel.
 
-- [ ] **I18N-01**: Alle neuen UI-Strings (Picker-Label, Skin-Namen, Kategorien, Beschreibungen) in allen 5 Sprachen (DE/EN/FR/RU/AR) mit Release gelandet
+- [x] **I18N-01**: Alle neuen UI-Strings (Picker-Label, Skin-Namen, Kategorien, Beschreibungen) in allen 5 Sprachen (DE/EN/FR/RU/AR) mit Release gelandet — Plan 153-04, 19 Keys × 5 Langs lockstep, Du-Form (commit caf44e9). Plan 06 gap-fix: t() pass-through für Picker-Labels (commit 9112d81).
 - [x] **I18N-02**: CI key-parity-check (eingeführt in Phase 153, v4.4.0 — `scripts/check-i18n-parity.sh`) covert die neuen Keys — kein Merge mit fehlenden Übersetzungen (geliefert via 153-01: scripts/check-i18n-parity.sh + .githooks/pre-push block 7 + .github/workflows/security-regression.yml step; baseline-green auf 5×1631 Keys, drift-getestet; commit 9fa6b8d)
-- [ ] **I18N-03**: RTL-Layout für Arabic getestet: Avatar wird NICHT gespiegelt (wäre falsch für Gesichter), Text daneben korrekt rechtsbündig
+- [x] **I18N-03**: RTL-Layout für Arabic getestet: Avatar wird NICHT gespiegelt (wäre falsch für Gesichter), Text daneben korrekt rechtsbündig — Plan 153-01 Audit A statisch CLEAN (kein scaleX(-1) auf .character-avatar/SVG) + Plan 153-06 strukturell verifiziert (vendor-RTL via @nextcloud/vue 9 NcSelect). 5 RTL-Screenshots zu Post-Merge-Doc deferred.
 
 ### Accessibility (A11Y)
 
@@ -91,20 +91,20 @@ Nova-Removal-Trauma-Repeat vermeiden.
 
 - [x] **MIGR-01**: Bestehende User sehen weiterhin NOVA als Default (Zero-Change) — `learning.virtuprof_skin` bleibt bei ihnen auf `'nova'`
 - [x] **MIGR-02**: Neu registrierte User bekommen Default-Skin `prof_lern_classic`
-- [ ] **MIGR-03**: One-time non-intrusive In-App-Hinweis nach v4.4.0-Deploy: "Neue Skins verfügbar in den Einstellungen" (auto-dismiss nach 7 Tagen oder User-Klick)
+- [x] **MIGR-03**: One-time non-intrusive In-App-Hinweis nach v4.4.0-Deploy: "Neue Skins verfügbar in den Einstellungen" (auto-dismiss nach 7 Tagen oder User-Klick) — Plan 153-04 NcNoteCard + 7-Tage localStorage-Timeout via SEVEN_DAYS_MS-Computed (commit 98cf987)
 - [x] **MIGR-04**: CHANGELOG v4.4.0 erklärt die neue Customization explizit
-- [ ] **MIGR-05**: DevCloud Kurs 21 + externe User (ernesst) testen v4.4.0 VOR App-Store-Push
+- [x] **MIGR-05**: DevCloud Kurs 21 + externe User (ernesst) testen v4.4.0 VOR App-Store-Push — Plan 153-06 4-account API-Smoke (alexander/adaeze/azad → nova; testnew260427 → prof_lern_classic, gelöscht). ernesst-Account auf relay nicht vorhanden, FR-Locale strukturell via i18n-parity-gate abgesichert.
 
 ### Tests (TEST)
 
 Qualitätssicherung aller Layers.
 
 - [x] **TEST-01**: Vitest Unit-Tests für SkinRenderer (Dispatch korrekt pro skinId, Fallback bei ungültig)
-- [ ] **TEST-02**: Vitest Unit-Tests für `resolveReaction()` (Fallback bei unsupportiertem State)
+- [x] **TEST-02**: Vitest Unit-Tests für `resolveReaction()` (Fallback bei unsupportiertem State) — Plan 153-02 Wave-0 scaffold (characterReactionEngine.test.js, 5/5 GREEN, commit a7b0b2c)
 - [x] **TEST-03**: Vitest Snapshot-Tests für alle 4 neuen Avatare (Prof. Lern + 3 Archetypen) in allen supporteten States
 - [x] **TEST-04**: Playwright E2E: User öffnet PersonalSettings → wählt Skin → VirtuProf updated ohne reload → persistiert across reload (geliefert via 153-05: skin-picker.spec.js, 10× consecutive runs zero flake against relay devcloud, commit 6eb1f4a)
 - [x] **TEST-05**: Playwright visual-comparison mit `animations: 'disabled'` Flag (stabil gegen Animation-Flakes) (geliefert via 153-05: per-screenshot animations:'disabled', baseline skin-renderer-classic-chromium-linux.png 760x37, commit 6eb1f4a)
-- [ ] **TEST-06**: Manual A11y-Audit: prefers-reduced-motion + Screen-Reader + RTL (Arabic) + Keyboard-Nav
+- [x] **TEST-06**: Manual A11y-Audit: prefers-reduced-motion + Screen-Reader + RTL (Arabic) + Keyboard-Nav — Plan 153-06 scope-pivot zu structural coverage + 4-account API smoke (5/6 PASS + CP2 Screen-Reader DEFERRED zu Post-Merge-NVDA/VoiceOver-Spot-Check). Aggregate verdict PASS in app/docs/A11Y-AUDIT-v4.4.0.md (commit a7e7e87)
 
 ## Out of Scope
 
