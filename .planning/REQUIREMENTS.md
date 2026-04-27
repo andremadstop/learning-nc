@@ -16,20 +16,20 @@
 
 Grundlage für alles — ohne Picker keine User-Customization.
 
-- [ ] **PICK-01**: User kann VirtuProf-Skin in PersonalSettings über Dropdown auswählen (Nova / Prof. Lern Classic / 3 Archetypen)
-- [ ] **PICK-02**: Skin-Auswahl wird pro User in NC user_config persistiert (`learning.virtuprof_skin`)
-- [ ] **PICK-03**: VirtuProf.vue rendert conditional den richtigen Avatar (NovaDock / ProfLernAvatar / CharacterAvatar) via SkinRenderer-Dispatcher
-- [ ] **PICK-04**: Skin-Wechsel wirkt reactive ohne Page-Reload (Pinia Store + `:key`-Remount)
-- [ ] **PICK-05**: Fallback auf Nova bei ungültiger/entfernter skinId (graceful degradation)
+- [x] **PICK-01**: User kann VirtuProf-Skin in PersonalSettings über Dropdown auswählen — Phase 151 SkinPicker + PersonalSettings.vue:116
+- [x] **PICK-02**: Skin-Auswahl wird pro User in NC user_config persistiert (`learning.virtuprof_skin`) — Phase 151 + VirtuProfController.savePreferences:425-432
+- [x] **PICK-03**: VirtuProf.vue rendert conditional den richtigen Avatar via SkinRenderer-Dispatcher — Phase 151 SkinRenderer.vue:48-51
+- [x] **PICK-04**: Skin-Wechsel wirkt reactive ohne Page-Reload (Pinia Store + `:key`-Remount) — Phase 151 skinStore + SkinRenderer.vue:4
+- [x] **PICK-05**: Fallback auf Nova bei ungültiger/entfernter skinId (graceful degradation) — Phase 151 + Plan 153-03 SkinRenderer.test.js +1 invalid-id case
 
 ### Prof. Lern Classic (CLASSIC)
 
 Die "kleine Figur vom Anfang" zurückbringen.
 
-- [ ] **CLASSIC-01**: `VirtuProfAvatar.vue` aus Git-History v2.6.1 restauriert und auf Vue 3 Composition API migriert
-- [ ] **CLASSIC-02**: Prof. Lern Classic zeigt charakteristische Features: liest hinter Buch, Blick-Folge-Effekt (hover gaze), Arm-Wave bei Klick (auto-hides after 1.2s), Fragezeichen auf Körper
-- [ ] **CLASSIC-03**: Als Skin-Option `prof_lern_classic` im Picker verfügbar
-- [ ] **CLASSIC-04**: Default-Skin für neu registrierte User (nach v4.4.0-Deploy)
+- [x] **CLASSIC-01**: ProfLernAvatar.vue aus Git-History v2.6.1 restauriert und auf Vue 3 Composition API migriert — Phase 151
+- [x] **CLASSIC-02**: Prof. Lern Classic zeigt charakteristische Features (Buch + Gaze + Arm-Wave + Fragezeichen) — Phase 151 ProfLernAvatar.vue
+- [x] **CLASSIC-03**: Als Skin-Option `prof_lern_classic` im Picker verfügbar — Phase 151 characters.js:56-71 + user_selectable: true
+- [x] **CLASSIC-04**: Default-Skin für neu registrierte User (nach v4.4.0-Deploy) — Phase 153 Pattern 1 NEW_USER_DEFAULT_SKIN (commit 8b91726, Plan 153-03)
 
 ### Scholar Archetypes (SCHOLAR)
 
@@ -44,18 +44,18 @@ Drei Archetyp-Figuren inspired by Scientist, ohne reale Namen.
 
 characters.js erweitern, non-breaking.
 
-- [ ] **META-01**: `characters.js` erweitert um 3 neue Felder: `user_selectable` (Boolean), `category` (String: `'hero'|'scholar'|'classic'|'workplace'`), `preview_thumbnail_svg` (String, inline mini-SVG)
-- [ ] **META-02**: Additiver Default-Mechanismus: bestehende 12 Charaktere laufen unverändert (Defaults für neue Felder)
-- [ ] **META-03**: SkinPicker filtert Charaktere nach `user_selectable === true`
+- [x] **META-01**: characters.js erweitert um 3 neue Felder (user_selectable, category, preview_thumbnail_svg) — Phase 151
+- [x] **META-02**: Additiver Default-Mechanismus, bestehende 12 Charaktere unverändert — Phase 151 + Phase 152 vitest regression guard
+- [x] **META-03**: SkinPicker filtert Charaktere nach `user_selectable === true` — Phase 151 skinStore.availableSkins → PersonalSettings.skinOptions:500
 
 ### Animation Engine (ANIM)
 
 Shared Animation-Primitives für alle Skins.
 
-- [ ] **ANIM-01**: `character-animations.css` enthält `@keyframes` für Idle-Loops (blink, slight sway) — alle gated in `@media (prefers-reduced-motion: no-preference)`
-- [ ] **ANIM-02**: `character-animations.js` exportiert WAAPI-Helpers für Event-Triggered Animationen (wave, celebrate, shrug) — alle mit `matchMedia('(prefers-reduced-motion: reduce)')`-Guard
-- [ ] **ANIM-03**: `character-reaction-engine.js` generalisiert aus `nova-reaction-engine.js`, mapped Events (answer-correct, answer-wrong, chat-message, badge-earned) auf `{animation, emotion, sound, duration}` mit graceful Fallback wenn Skin State nicht supportet
-- [ ] **ANIM-04**: CharacterAvatar.vue SVG in named `<g id="head">`, `<g id="arms">`, `<g id="body">` sub-groups gewrappt mit `transform-box: fill-box` (Safari pre-16 Fix)
+- [x] **ANIM-01**: character-animations.css `@keyframes` für Idle-Loops gated in `prefers-reduced-motion: no-preference` — Phase 150
+- [x] **ANIM-02**: character-animations.js WAAPI-Helpers (wave/celebrate/shrug) mit matchMedia-Guard — Phase 150, 16 unit tests
+- [x] **ANIM-03**: character-reaction-engine.js generalisiert aus nova-reaction-engine.js mit graceful Fallback — Phase 150 + Phase 153 TEST-02 scaffold (5/5 GREEN)
+- [x] **ANIM-04**: CharacterAvatar.vue SVG named `<g>` sub-groups + `transform-box: fill-box` — Phase 150 + Phase 152 powerEffect-Region-Erweiterung
 - [x] **ANIM-05**: Jeder Archetype + Prof. Lern Classic unterstützt mindestens 3 Animationen (idle/blink, wave, celebrate) — completed 2026-04-25 (commit `0b9f13c`, Plan 152-06; 23 GREEN cases in scholarAnimations.test.js)
 
 ### Internationalization (I18N)
@@ -70,11 +70,11 @@ Shared Animation-Primitives für alle Skins.
 
 WCAG 2.3.3 + Vestibular Safety + Screen-Reader.
 
-- [ ] **A11Y-01**: `prefers-reduced-motion: reduce` stoppt alle Animationen komplett (CSS `@media` + JS `matchMedia`-Guard)
-- [ ] **A11Y-02**: Manueller "Ruhige Darstellung"-Toggle in PersonalSettings (unabhängig vom OS-Preference, falls User OS-Settings nicht ändern will/kann)
-- [ ] **A11Y-03**: Avatar hat `role="img"` + statisches `aria-label` (nicht animation-state-abhängig — sonst spamt Screen-Reader)
-- [ ] **A11Y-04**: Keyboard-Navigation im Picker funktioniert (Tab + Arrow + Enter)
-- [ ] **A11Y-05**: Fokus-Indikator sichtbar (focus-visible)
+- [x] **A11Y-01**: `prefers-reduced-motion: reduce` stoppt alle Animationen (3-layer gate: CSS @media + JS matchMedia + a11yStore) — Phase 150 + character-animations.css line 732
+- [x] **A11Y-02**: Manueller "Ruhige Darstellung"-Toggle in PersonalSettings — Phase 150 + SettingsController.savePersonal:171
+- [x] **A11Y-03**: Avatar `role="img"` + statisches aria-label (nicht state-abhängig) — Phase 150 + Phase 152 SIGNOFF row "aria-label statisch" verifiziert
+- [x] **A11Y-04**: Keyboard-Navigation im Picker (Tab/Arrow/Enter) — Phase 150 NcCheckboxRadioSwitch + NcSelect vendor-a11y, Plan 153-05 Playwright tab-flow
+- [x] **A11Y-05**: Fokus-Indikator sichtbar (focus-visible) — Phase 150 character-animations.css `:focus-visible` + .lnc-a11y-toggle
 
 ### Legal & Copy (LEGAL)
 
@@ -139,50 +139,50 @@ Roadmap mapping 2026-04-18. 100% coverage (40/40 REQs).
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PICK-01 | Phase 151 | Pending |
-| PICK-02 | Phase 151 | Pending |
-| PICK-03 | Phase 151 | Pending |
-| PICK-04 | Phase 151 | Pending |
-| PICK-05 | Phase 151 | Pending |
-| CLASSIC-01 | Phase 151 | Pending |
-| CLASSIC-02 | Phase 151 | Pending |
-| CLASSIC-03 | Phase 151 | Pending |
-| CLASSIC-04 | Phase 151 | Pending |
+| PICK-01 | Phase 151 | Complete |
+| PICK-02 | Phase 151 | Complete |
+| PICK-03 | Phase 151 | Complete |
+| PICK-04 | Phase 151 | Complete |
+| PICK-05 | Phase 151 | Complete (153-03 Vitest fallback case) |
+| CLASSIC-01 | Phase 151 | Complete |
+| CLASSIC-02 | Phase 151 | Complete |
+| CLASSIC-03 | Phase 151 | Complete |
+| CLASSIC-04 | Phase 153 | Complete (Pattern 1 NEW_USER_DEFAULT_SKIN, 8b91726) |
 | SCHOLAR-01 | Phase 152 | Complete |
 | SCHOLAR-02 | Phase 152 | Complete |
 | SCHOLAR-03 | Phase 152 | Complete |
 | SCHOLAR-04 | Phase 152 | Complete (ab26155) |
-| META-01 | Phase 151 | Pending |
-| META-02 | Phase 151 | Pending |
-| META-03 | Phase 151 | Pending |
-| ANIM-01 | Phase 150 | Pending |
-| ANIM-02 | Phase 150 | Pending |
-| ANIM-03 | Phase 150 | Pending |
-| ANIM-04 | Phase 150 | Pending |
+| META-01 | Phase 151 | Complete |
+| META-02 | Phase 151 | Complete |
+| META-03 | Phase 151 | Complete |
+| ANIM-01 | Phase 150 | Complete |
+| ANIM-02 | Phase 150 | Complete |
+| ANIM-03 | Phase 150 | Complete |
+| ANIM-04 | Phase 150 | Complete (Phase 152 powerEffect-Erweiterung) |
 | ANIM-05 | Phase 152 | Complete (0b9f13c) |
-| I18N-01 | Phase 153 | Pending |
+| I18N-01 | Phase 153 | Complete (caf44e9 + Plan 06 t() pass-through 9112d81) |
 | I18N-02 | Phase 153 | Complete (153-01, 9fa6b8d) |
-| I18N-03 | Phase 153 | Pending |
-| A11Y-01 | Phase 150 | Pending |
-| A11Y-02 | Phase 150 | Pending |
-| A11Y-03 | Phase 150 | Pending |
-| A11Y-04 | Phase 150 | Pending |
-| A11Y-05 | Phase 150 | Pending |
+| I18N-03 | Phase 153 | Complete (Audit A clean + structural mirror-prevention) |
+| A11Y-01 | Phase 150 | Complete |
+| A11Y-02 | Phase 150 | Complete |
+| A11Y-03 | Phase 150 | Complete |
+| A11Y-04 | Phase 150 | Complete (NcSelect vendor-a11y + Plan 05 E2E) |
+| A11Y-05 | Phase 150 | Complete |
 | LEGAL-01 | Phase 149 | Complete |
 | LEGAL-02 | Phase 149 | Complete |
 | LEGAL-03 | Phase 149 | Complete |
 | LEGAL-04 | Phase 149 | Complete (Phase 149 pivot, internal review SIGNOFF 2026-04-25) |
 | MIGR-01 | Phase 153 | Complete |
 | MIGR-02 | Phase 153 | Complete |
-| MIGR-03 | Phase 153 | Pending |
+| MIGR-03 | Phase 153 | Complete (98cf987 NcNoteCard + 7-Tage timeout) |
 | MIGR-04 | Phase 149 | Complete |
-| MIGR-05 | Phase 153 | Pending |
+| MIGR-05 | Phase 153 | Complete (Plan 06 4-account API smoke) |
 | TEST-01 | Phase 153 | Complete |
-| TEST-02 | Phase 153 | Pending |
+| TEST-02 | Phase 153 | Complete (153-02 scaffold, 5/5 GREEN) |
 | TEST-03 | Phase 153 | Complete |
 | TEST-04 | Phase 153 | Complete (153-05, 6eb1f4a) |
 | TEST-05 | Phase 153 | Complete (153-05, 6eb1f4a) |
-| TEST-06 | Phase 153 | Pending |
+| TEST-06 | Phase 153 | Complete (Plan 06 scope-pivot, A11Y-AUDIT-v4.4.0.md aggregate PASS) |
 
 **Coverage:**
 - v4.4.0 requirements: 40 total
