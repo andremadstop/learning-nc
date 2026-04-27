@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v4.4.0
 milestone_name: Character & Personality
 current_phase: 153
-current_plan: 05
-status: phase-153-wave-2-complete-ready-for-wave-3
-stopped_at: Phase 153 Plan 05 COMPLETE — TEST-04 + TEST-05 Playwright spec un-skipped (commit 6eb1f4a), 10× consecutive runs against relay devcloud all GREEN (zero flake, ~19s/run, --retries=0). Visual snapshot baseline generated via --update-snapshots (1654 bytes, 760x37px PNG). info.xml bumped 4.2.2 → 4.4.0 (commit 244cb61). REQUIREMENTS.md cosmetic close-outs landed: I18N-02 wording corrected ("existiert seit v4.2.2" → "eingeführt in Phase 153, v4.4.0"), LEGAL-04 wording corrected (external ~€300 → Phase 149 internal-pivot owner-led 8-Punkte-Review per ART_STYLE_GUIDE Section 5) + status [x] + traceability table row updated. Rule 1 deviation discovered + auto-fixed (commit bf81d3e): PersonalSettings.vue mount-time crash on relay — Pinia not installed on personal-settings entry point (Plan 04 wired useSkinStore into computed skinOptions without app.use(pinia) in entry); error TypeError "Cannot read properties of undefined (reading '_s')" left settings page rendering empty <div id="learning-personal-settings"></div>. Fix mirrors main.js pattern (createPinia + app.use). Rule 3 deviation: Playwright spec selectors refined to actual NcSelect render (.vs__dropdown-toggle inner clickable, display name "Prof. Lern" not "Prof. Lern Classic"); SkinRenderer assertion dropped (lives in main App at #learning, NOT on settings page); resetSkinToNova(page) helper in beforeEach for deterministic state via PUT /api/virtuprof/preferences. Quality gates: forbidden-names exit 0, i18n-parity 5×1631 OK, ESLint clean, Vitest 1087/1087 GREEN. Auth gate resolved without checkpoint — admin creds sourced from Obsidian vault, OCS API probe HTTP 200, bruteforce reset between runs. GitNexus stale-index waiver continued (same npm tree-sitter-dart bug as Plan 03).
-last_updated: "2026-04-26T11:17:00.000Z"
-last_activity: 2026-04-26
+current_plan: 06
+status: phase-153-wave-3-complete-ready-for-wave-4
+stopped_at: Phase 153 Plan 06 COMPLETE (orchestrator-driven scope-pivot, Rule 3 deviation, user-approved 2026-04-27) — manual 30-min A11y walkthrough pivoted to structural-coverage proof + 4-account API smoke. Aggregate verdict PASS (5/6 sign-off rows). MIGR-05 4-account API smoke (alexander/adaeze/azad → nova existing-path; fresh testnew260427 → prof_lern_classic new-user-path; user deleted post-test, HTTP 401 confirms cleanup). CP1 reduced-motion structural via Phase 150 global CSS rule + Phase 152 SIGNOFF.md. CP3 mirror-prevention via Plan 01 Audit A re-verified (scaleX(-1) grep CLEAN on .character-avatar/SVG). CP4 keyboard via NcSelect vendor-a11y + Plan 05 E2E 10× GREEN + Phase 150 :focus-visible. I18N-03 FR via parity-gate green + 19 FR Du-form keys present. CP2 screen-reader DEFERRED to post-merge 5-min NVDA/VoiceOver spot-check (cannot automate; structural aria-label binding clean). Plan 07 release ritual cleared. Commit a7e7e87.
+last_updated: "2026-04-27T07:30:00.000Z"
+last_activity: 2026-04-27
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 30
-  completed_plans: 28
-  percent: 93
+  completed_plans: 29
+  percent: 97
 ---
 
 # Project State
