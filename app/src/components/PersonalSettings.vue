@@ -489,7 +489,15 @@ export default {
       return (Date.now() - shownAt) < SEVEN_DAYS_MS
     },
     skinOptions() {
-      return useSkinStore().availableSkins.map(c => ({ value: c.id, label: c.name }))
+      // Pass character display name through `t('learning', ...)` so the picker
+      // dropdown shows the user's locale-translated label (Phase 153 Plan 06).
+      // The l10n catalog (app/l10n/{de,en,fr,ru,ar}.json) keys ARE the source
+      // German names from characters.js — passing c.name as the source string
+      // resolves to the locale value (e.g. fr.json["Der Theoretiker"] →
+      // "Le Théoricien"). When no translation exists (legacy skins), gettext
+      // falls back to the source string unchanged. Auto-fix Rule 1 — Plan 04
+      // shipped this raw, breaking I18N-01 picker labels.
+      return useSkinStore().availableSkins.map(c => ({ value: c.id, label: this.t('learning', c.name) }))
     },
     selectedSkinOption() {
       return this.skinOptions.find(o => o.value === this.form.skinId) || this.skinOptions[0] || null

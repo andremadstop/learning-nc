@@ -107,6 +107,7 @@ import {
   createTelosForm,
 } from '../utils/telosProfile.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
+import { useSkinStore } from '../stores/skinStore.js'
 
 const ONBOARDING_PRESETS = [
   {
@@ -596,6 +597,12 @@ export default {
       return { ...step, title, text }
     },
     applyVirtuProfState(data = {}) {
+      // Hydrate the Pinia skinStore from /api/virtuprof/state.skin so the
+      // dock-mounted SkinRenderer dispatches the persisted skin (Phase 153
+      // Plan 06 Rule 1 auto-fix: Plan 04 wired loadFromServerPayload only
+      // into PersonalSettings.vue, leaving the main app dock stuck at the
+      // store default 'nova' for users who picked any other skin).
+      useSkinStore().loadFromServerPayload(data)
       this.dismissedTriggers = Array.isArray(data.dismissed) ? data.dismissed : []
       this.language = detectVirtuProfLanguage()
       if (typeof data.enabled === 'boolean') {
