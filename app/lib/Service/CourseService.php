@@ -128,15 +128,23 @@ class CourseService {
         $languageOrder = ['de', 'en', 'ru', 'ar'];
         $available = [];
         foreach ($poolIds as $poolId) {
-            $totalQuestions = $this->countQuestionsInPool($poolId);
-            $langs = ['de'];
-            foreach (['en', 'ru', 'ar'] as $lang) {
-                if ($this->hasPoolQuestionTranslations($poolId, $lang, $totalQuestions)) {
-                    $langs[] = $lang;
+            try {
+                $totalQuestions = $this->countQuestionsInPool($poolId);
+                $langs = ['de'];
+                foreach (['en', 'ru', 'ar'] as $lang) {
+                    if ($this->hasPoolQuestionTranslations($poolId, $lang, $totalQuestions)) {
+                        $langs[] = $lang;
+                    }
                 }
+                usort($langs, static fn(string $a, string $b): int => array_search($a, $languageOrder, true) <=> array_search($b, $languageOrder, true));
+                $available[$poolId] = $langs;
+            } catch (\Throwable $e) {
+                \OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning(
+                    'getAvailableContentLanguagesByPoolIds failed for pool ' . $poolId . ': ' . $e->getMessage(),
+                    ['app' => 'learning']
+                );
+                $available[$poolId] = ['de'];
             }
-            usort($langs, static fn(string $a, string $b): int => array_search($a, $languageOrder, true) <=> array_search($b, $languageOrder, true));
-            $available[$poolId] = $langs;
         }
 
         return $available;
@@ -147,17 +155,25 @@ class CourseService {
             return false;
         }
 
-        $inner = method_exists($this->db, 'getInner') ? $this->db->getInner() : $this->db;
-        $prefix = method_exists($inner, 'getPrefix') ? $inner->getPrefix() : 'oc_';
-        $result = $this->db->executeQuery(
-            "SELECT COUNT(DISTINCT qt.question_id) AS translated_questions
-             FROM {$prefix}learning_qst_translations qt
-             INNER JOIN {$prefix}learning_questions q ON qt.question_id = q.id
-             WHERE q.pool_id = ? AND qt.lang = ?",
-            [$poolId, $lang]
-        );
-        $translatedQuestions = (int)$result->fetchOne();
-        $result->closeCursor();
+        try {
+            $qb = $this->db->getQueryBuilder();
+            $qb->selectAlias($qb->createFunction('COUNT(DISTINCT qt.question_id)'), 'translated_questions')
+                ->from('learning_qst_translations', 'qt')
+                ->innerJoin('qt', 'learning_questions', 'q', $qb->expr()->eq('qt.question_id', 'q.id'))
+                ->where($qb->expr()->eq('q.pool_id', $qb->createNamedParameter($poolId)))
+                ->andWhere($qb->expr()->eq('qt.lang', $qb->createNamedParameter($lang)));
+            $result = $qb->executeQuery();
+            $translatedQuestions = (int)$result->fetchOne();
+            $result->closeCursor();
+        } catch (\Throwable $e) {
+            // Issue #9: missing/renamed translations table on some installs must not
+            // break course detail loading. Degrade gracefully — only DE is guaranteed.
+            \OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning(
+                'hasPoolQuestionTranslations failed, treating as untranslated: ' . $e->getMessage(),
+                ['app' => 'learning']
+            );
+            return false;
+        }
 
         $requiredForVisibility = max(1, (int)ceil($totalQuestions * 0.95));
         return $translatedQuestions >= $requiredForVisibility;
@@ -652,8 +668,24 @@ class CourseService {
 
         $isInstructor = $this->isInstructorOfCourse($course, $userId);
         $coursePools = $this->coursePoolMapper->findByCourse($courseId);
-        $availableContentLanguages = $this->getAvailableContentLanguagesByPoolIds(array_map(static fn(CoursePool $cp): int => $cp->getPoolId(), $coursePools));
-        $requiredProgressMap = $isInstructor ? [] : $this->buildRequiredProgressMap($coursePools, $userId);
+        try {
+            $availableContentLanguages = $this->getAvailableContentLanguagesByPoolIds(array_map(static fn(CoursePool $cp): int => $cp->getPoolId(), $coursePools));
+        } catch (\Throwable $e) {
+            \OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning(
+                'getAvailableContentLanguagesByPoolIds failed entirely: ' . $e->getMessage(),
+                ['app' => 'learning']
+            );
+            $availableContentLanguages = [];
+        }
+        try {
+            $requiredProgressMap = $isInstructor ? [] : $this->buildRequiredProgressMap($coursePools, $userId);
+        } catch (\Throwable $e) {
+            \OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning(
+                'buildRequiredProgressMap failed: ' . $e->getMessage(),
+                ['app' => 'learning']
+            );
+            $requiredProgressMap = [];
+        }
         $outstandingRequiredPoolIds = [];
         if (!$isInstructor) {
             foreach ($coursePools as $coursePool) {
@@ -689,6 +721,22 @@ class CourseService {
                 $cpData['chapter_order'] = null;
                 $cpData['available_filters'] = ['exam_keys' => [], 'chapters' => []];
                 $cpData['available_content_languages'] = ['de'];
+            } catch (\Throwable $e) {
+                // Issue #9: any unexpected DB/schema error in pool enrichment must not 500 the whole course.
+                \OCP\Server::get(\Psr\Log\LoggerInterface::class)->warning(
+                    'Pool enrichment failed for pool ' . $cp->getPoolId() . ': ' . $e->getMessage(),
+                    ['app' => 'learning']
+                );
+                $cpData['pool_name'] = $cpData['pool_name'] ?? '(unavailable)';
+                $cpData['question_count'] = $cpData['question_count'] ?? 0;
+                $cpData['total_question_count'] = $cpData['total_question_count'] ?? 0;
+                $cpData['handbook_key'] = $cpData['handbook_key'] ?? null;
+                $cpData['handbook_title'] = $cpData['handbook_title'] ?? null;
+                $cpData['chapter_key'] = $cpData['chapter_key'] ?? null;
+                $cpData['chapter_title'] = $cpData['chapter_title'] ?? null;
+                $cpData['chapter_order'] = $cpData['chapter_order'] ?? null;
+                $cpData['available_filters'] = $cpData['available_filters'] ?? ['exam_keys' => [], 'chapters' => []];
+                $cpData['available_content_languages'] = $cpData['available_content_languages'] ?? ['de'];
             }
 
             if (!$isInstructor) {
