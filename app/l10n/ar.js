@@ -1105,6 +1105,8 @@ OC.L10N.register(
     "Shared with me ({n})" : "مشارَك معي ({n})",
     "Short summary" : "ملخص مختصر",
     "Show detailed FSRS intervals, stability and recall estimates in Leitner mode." : "عرض فترات FSRS التفصيلية والاستقرار وتقديرات الاسترجاع في وضع Leitner.",
+    "Show student view" : "عرض واجهة الطالب",
+    "Display the learner-facing tabs (Today, Pools, Skill-Map) even though you are an instructor or admin. Useful for previewing what students see." : "اعرض علامات تبويب المتعلمين (اليوم، التجمعات، خريطة المهارات) حتى لو كنت مدرسًا أو مديرًا. مفيد لمعاينة ما يراه الطلاب.",
     "Show this pool as required" : "عرض هذه المجموعة كإلزامية",
     "Show worst questions" : "عرض الأسئلة الأضعف",
     "Showing {start}-{end} of {total}" : "عرض {start}-{end} من {total}",

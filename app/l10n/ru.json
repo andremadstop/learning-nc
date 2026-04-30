@@ -1119,6 +1119,8 @@
     "Shared with me ({n})": "Общие со мной ({n})",
     "Short summary": "Краткое резюме",
     "Show detailed FSRS intervals, stability and recall estimates in Leitner mode.": "Показывать подробные интервалы FSRS, стабильность и оценки воспроизведения в режиме Leitner.",
+    "Show student view": "Показать вид студента",
+    "Display the learner-facing tabs (Today, Pools, Skill-Map) even though you are an instructor or admin. Useful for previewing what students see.": "Показывать вкладки для учащихся (Сегодня, Пулы, Skill-Map), даже если вы преподаватель или администратор. Полезно для предварительного просмотра того, что видят студенты.",
     "Show this pool as required": "Показывать этот пул как обязательный",
     "Show worst questions": "Показать худшие вопросы",
     "Showing {start}-{end} of {total}": "Показано {start}–{end} из {total}",

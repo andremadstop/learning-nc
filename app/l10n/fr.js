@@ -1105,6 +1105,8 @@ OC.L10N.register(
     "Shared with me ({n})" : "Shared with me ({n})",
     "Short summary" : "Short summary",
     "Show detailed FSRS intervals, stability and recall estimates in Leitner mode." : "Show detailed FSRS intervals, stability and recall estimates in Leitner mode.",
+    "Show student view" : "Afficher la vue étudiant",
+    "Display the learner-facing tabs (Today, Pools, Skill-Map) even though you are an instructor or admin. Useful for previewing what students see." : "Affiche les onglets destinés aux apprenants (Aujourd'hui, Pools, Skill-Map) même si vous êtes formateur ou administrateur. Utile pour prévisualiser ce que voient les étudiants.",
     "Show this pool as required" : "Show this pool as required",
     "Show worst questions" : "Show worst questions",
     "Showing {start}-{end} of {total}" : "Showing {start}-{end} of {total}",
