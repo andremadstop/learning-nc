@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.4.1] - 2026-04-30 — Bugfixes (Issue #9 + #10)
+
+### Fixed
+- **Course detail no longer 500s when a pool is attached on fresh installs (#9).** Commit `7016ddd` (v3.5.0) renamed `learning_q_translations` → `learning_qst_translations` and `learning_a_translations` → `learning_ans_translations` in the Mapper classes but never shipped a schema migration. New migration `Version007900` performs the rename idempotently. Reported by @BrdrTck on MariaDB 10.11 / NC 33.0.2.
+- **Defensive try/catch in `CourseService::findById`.** Pool enrichment failures (missing translations table, broken filter JSON, schema drift) now degrade gracefully to safe defaults instead of taking down the whole course detail endpoint. Replaced raw SQL in `hasPoolQuestionTranslations` with QueryBuilder.
+
+### Added
+- **"Show student view" toggle for instructors/admins (#10).** NC admins are auto-classified as instructors and therefore lose the four student-only top tabs (Today / Pools / Erklärbot / Skill-Map). Self-hosters who want to use the app as a learner can now enable the student view in Personal Settings. Per-browser, persisted in localStorage. Reported by @BrdrTck.
+
 ## [4.4.0] - 2026-04-27 — Character & Personality
 
 ### Added
