@@ -17,6 +17,17 @@
     </div>
 
     <div v-else class="settings-form">
+      <div v-if="userRole === 'instructor'" class="field-row student-view-override">
+        <div class="student-view-override__label">
+          <label>{{ t('learning', 'Show student view') }}</label>
+          <p class="section-desc">{{ t('learning', 'Display the learner-facing tabs (Today, Pools, Skill-Map) even though you are an instructor or admin. Useful for previewing what students see.') }}</p>
+        </div>
+        <NcCheckboxRadioSwitch
+          :model-value="studentViewOverride"
+          type="switch"
+          @update:model-value="$emit('student-view-override-changed', !!$event)" />
+      </div>
+
       <div class="field-row">
         <label>{{ t('learning', 'Daily Challenge enabled') }}</label>
         <NcCheckboxRadioSwitch
@@ -430,6 +441,17 @@ export default {
   name: 'PersonalSettings',
   components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, NcSelect, PrivacyInfo },
   mixins: [hintMixin],
+  props: {
+    userRole: {
+      type: String,
+      default: 'student',
+    },
+    studentViewOverride: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['content-language-changed', 'virtuprof-enabled-changed', 'fsrs-detailed-stats-changed', 'student-view-override-changed'],
   data() {
     return {
       loading: true,
