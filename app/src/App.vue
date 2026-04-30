@@ -3,13 +3,13 @@
     <div class="app-shell" :class="{ 'app-shell--with-virtuprof': showVirtuProfDock }">
       <div class="app-main">
         <div class="app-content-header">
-          <h2>{{ userRole === 'student' ? t('learning', 'Learning') : t('learning', 'Learning - Spaced Repetition') }}</h2>
+          <h2>{{ effectiveUserRole === 'student' ? t('learning', 'Learning') : t('learning', 'Learning - Spaced Repetition') }}</h2>
         </div>
 
         <!-- Top-level navigation -->
         <div class="main-nav" role="tablist" @keydown="handleTablistKeydown">
           <button
-            v-if="userRole === 'student'"
+            v-if="effectiveUserRole === 'student'"
             :class="['main-nav-btn', { active: mainView === 'dashboard' }]"
             role="tab"
             :aria-selected="mainView === 'dashboard' ? 'true' : 'false'"
@@ -26,7 +26,7 @@
             {{ t('learning', 'Kurse') }}
           </button>
           <button
-            v-if="userRole === 'student'"
+            v-if="effectiveUserRole === 'student'"
             :class="['main-nav-btn', { active: mainView === 'pools' }]"
             role="tab"
             :aria-selected="mainView === 'pools' ? 'true' : 'false'"
@@ -35,7 +35,7 @@
             {{ t('learning', 'Pools') }}
           </button>
           <button
-            v-if="userRole === 'student' && showVirtuProfDock"
+            v-if="effectiveUserRole === 'student' && showVirtuProfDock"
             :class="['main-nav-btn', { active: mainView === 'virtuprof-fullscreen' }]"
             role="tab"
             :aria-selected="mainView === 'virtuprof-fullscreen' ? 'true' : 'false'"
@@ -44,7 +44,7 @@
             {{ t('learning', 'Erklärbot') }}
           </button>
           <button
-            v-if="userRole === 'student'"
+            v-if="effectiveUserRole === 'student'"
             :class="['main-nav-btn', { active: mainView === 'skillmap' }]"
             role="tab"
             :aria-selected="mainView === 'skillmap' ? 'true' : 'false'"
@@ -207,7 +207,7 @@
           <!-- ==================== SETTINGS VIEW ==================== -->
           <template v-else-if="route && route.name === 'settings'">
             <!-- Instructor: sub-tabs for Kurs-Verwaltung + Meine Einstellungen -->
-            <template v-if="userRole !== 'student'">
+            <template v-if="effectiveUserRole !== 'student'">
               <div class="course-sub-nav" role="tablist" @keydown="handleTablistKeydown">
                 <button
                   :class="['mode-btn', { active: settingsSubTab === 'admin' }]"
@@ -229,9 +229,12 @@
               <AdminSettings v-if="settingsSubTab === 'admin'" />
               <PersonalSettings
                 v-else
+                :user-role="userRole"
+                :student-view-override="studentViewOverride"
                 @content-language-changed="updateContentLanguage"
                 @virtuprof-enabled-changed="updateVirtuProfEnabled"
-                @fsrs-detailed-stats-changed="updateFsrsDetailedStats" />
+                @fsrs-detailed-stats-changed="updateFsrsDetailedStats"
+                @student-view-override-changed="setStudentViewOverride" />
             </template>
             <!-- Student: only PersonalSettings, no sub-tabs -->
             <PersonalSettings
@@ -244,7 +247,7 @@
           <!-- ==================== COURSES VIEW ==================== -->
           <template v-else-if="route && (route.name === 'courses' || route.name === 'course-tab')">
             <!-- Instructor sub-navigation: List | Dashboard -->
-            <div v-if="userRole === 'instructor' && !selectedCourse" class="course-sub-nav" role="tablist" @keydown="handleTablistKeydown">
+            <div v-if="effectiveUserRole === 'instructor' && !selectedCourse" class="course-sub-nav" role="tablist" @keydown="handleTablistKeydown">
               <button
                 :class="['mode-btn', { active: courseView === 'list' }]"
                 role="tab"
@@ -264,7 +267,7 @@
             </div>
 
             <InstructorDashboard
-              v-if="userRole === 'instructor' && !selectedCourse && courseView === 'dashboard'"
+              v-if="effectiveUserRole === 'instructor' && !selectedCourse && courseView === 'dashboard'"
               @selectCourse="selectCourse"
             />
 
@@ -446,6 +449,10 @@ export default {
       // Top-level navigation
       mainView: 'courses',
       userRole: 'student',
+      // Issue #10: NC-admins are auto-classified as instructors. This client-side
+      // override lets a self-hosting admin/instructor flip into the student view
+      // without juggling accounts. Persisted in localStorage.
+      studentViewOverride: false,
 
       // Pools view state
       currentView: 'pools',
@@ -486,6 +493,9 @@ export default {
     };
   },
   computed: {
+    effectiveUserRole() {
+      return this.studentViewOverride && this.userRole === 'instructor' ? 'student' : this.userRole;
+    },
     modes() {
       return [
         { id: 'train', label: t('learning', 'Training') },
@@ -497,7 +507,7 @@ export default {
       ];
     },
     filteredModes() {
-      if (this.userRole === 'student') {
+      if (this.effectiveUserRole === 'student') {
         return this.modes.filter(m => ['train', 'leitner', 'exam', 'gameshow'].includes(m.id));
       }
       return this.modes;
@@ -508,7 +518,7 @@ export default {
     toolsTabs() {
       let enabled = this.normalizeEnabledTools(this.enabledTools);
       // Course-level tool restriction for students
-      if (this.userRole === 'student' && this.selectedCourse?.enabled_tools) {
+      if (this.effectiveUserRole === 'student' && this.selectedCourse?.enabled_tools) {
         const courseTools = this.selectedCourse.enabled_tools;
         if (Array.isArray(courseTools)) {
           enabled = enabled.filter(toolId => courseTools.includes(toolId));
@@ -538,6 +548,14 @@ export default {
     },
   },
   async created() {
+    // Issue #10: hydrate student-view override before role fetch so the initial
+    // render is consistent with the user's last choice (admins/instructors only).
+    try {
+      this.studentViewOverride = typeof window !== 'undefined'
+        && window.localStorage?.getItem('learning:view-as-student') === 'yes';
+    } catch (_e) {
+      this.studentViewOverride = false;
+    }
     const courseStore = useOptionalCourseStore();
     if (courseStore) {
       this._courseTabUnwatch = this.$watch(
@@ -1167,6 +1185,32 @@ export default {
       }
     },
 
+    // Issue #10: persist student-view override and re-route to a sensible page
+    // if the user is currently on a route that no longer matches the new view.
+    setStudentViewOverride(enabled) {
+      const next = !!enabled;
+      this.studentViewOverride = next;
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          if (next) {
+            window.localStorage.setItem('learning:view-as-student', 'yes');
+          } else {
+            window.localStorage.removeItem('learning:view-as-student');
+          }
+        }
+      } catch (_e) {
+        // localStorage may be unavailable (private mode) — fail silently
+      }
+      const studentRoutes = ['dashboard', 'pools', 'skillmap', 'virtuprof-fullscreen'];
+      const instructorRoutes = ['courses', 'course-tab'];
+      const currentName = this.$route?.name;
+      if (next && currentName && instructorRoutes.includes(currentName)) {
+        this.pushAppRoute({ name: 'dashboard' });
+      } else if (!next && currentName && studentRoutes.includes(currentName)) {
+        this.pushAppRoute({ name: 'courses' });
+      }
+    },
+
     applyInitialAdventureRoute() {
       if (typeof window === 'undefined') {
         return false;
@@ -1190,7 +1234,7 @@ export default {
       return true;
     },
     navigateToDefaultRoute(replace = false) {
-      const target = this.userRole === 'student' ? { name: 'dashboard' } : { name: 'courses' };
+      const target = this.effectiveUserRole === 'student' ? { name: 'dashboard' } : { name: 'courses' };
       this.pushAppRoute(target, replace);
     },
     courseRouteLocation(courseId, tab = 'lernraum') {

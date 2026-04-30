@@ -1119,6 +1119,8 @@
     "Shared with me ({n})": "Mit mir geteilt ({n})",
     "Short summary": "Kurze Zusammenfassung",
     "Show detailed FSRS intervals, stability and recall estimates in Leitner mode.": "Zeige im Leitner-Modus detaillierte FSRS-Intervalle, Stabilität und Abrufschätzungen an.",
+    "Show student view": "Schüler-Ansicht anzeigen",
+    "Display the learner-facing tabs (Today, Pools, Skill-Map) even though you are an instructor or admin. Useful for previewing what students see.": "Zeige die Schüler-Tabs (Heute, Pools, Skill-Map) auch wenn du Dozent oder Admin bist. Praktisch um die Schüler-Ansicht zu testen.",
     "Show this pool as required": "Diesen Pool als Pflicht markieren",
     "Show worst questions": "Schwächste Fragen anzeigen",
     "Showing {start}-{end} of {total}": "{start}–{end} von {total}",
