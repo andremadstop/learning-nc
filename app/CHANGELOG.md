@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.4.2] - 2026-04-30 — Hotfix for Issue #9 migration crash
+
+### Fixed
+- **Migration `Version007900` is now self-healing.** v4.4.1 attempted a simple `ALTER TABLE … RENAME TO …`, which crashed with `1146 Table 'oc_learning_q_translations' doesn't exist` on installs where `Version000350` had silently failed and the legacy table was never created in the first place — blocking the upgrade entirely. The migration now checks the real DB state via `information_schema` (not the Doctrine schema cache) and handles three states: new table already exists → no-op; legacy table exists → `ALTER TABLE` rename inside try/catch; neither exists → `CREATE TABLE` from scratch as recovery. MariaDB / MySQL, PostgreSQL and SQLite all supported.
+- Reported by @BrdrTck on the v4.4.1 upgrade attempt.
+
 ## [4.4.1] - 2026-04-30 — Bugfixes (Issue #9 + #10)
 
 ### Fixed
