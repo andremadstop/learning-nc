@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.4.3] - 2026-05-02 — Pool-Tab visibility fix (Issue #15)
+
+### Fixed
+- **Instructors and admins can now see the "Pools" top-tab without enabling the student-view toggle (#15).** Since v4.0.0 the Pools-Tab in the top navigation was gated on `effectiveUserRole === 'student'`, hiding it from instructors/admins entirely. The "+ Pool erstellen" / "Starter-Pool hinzufügen" / "Fragen generieren" buttons live inside that tab and are gated on the *real* role (`userRole === 'instructor'`), so instructors had no native path to the pool editor — they had to discover the v4.4.1 "Show student view" workaround. The Pools-Tab is now visible whenever the user has student permissions OR is an instructor. Switching the student-view toggle off no longer redirects an instructor away from `/pools`. The toggle remains as the route to the genuinely student-only tabs (Today / Erklärbot / Skill-Map). Reported by @autopilot01tr on a fresh v4.4.2 install.
+
 ## [4.4.2] - 2026-04-30 — Hotfix for Issue #9 migration crash
 
 ### Fixed
