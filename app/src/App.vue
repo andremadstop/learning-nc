@@ -26,7 +26,7 @@
             {{ t('learning', 'Kurse') }}
           </button>
           <button
-            v-if="effectiveUserRole === 'student'"
+            v-if="effectiveUserRole === 'student' || userRole === 'instructor'"
             :class="['main-nav-btn', { active: mainView === 'pools' }]"
             role="tab"
             :aria-selected="mainView === 'pools' ? 'true' : 'false'"
@@ -1201,7 +1201,7 @@ export default {
       } catch (_e) {
         // localStorage may be unavailable (private mode) — fail silently
       }
-      const studentRoutes = ['dashboard', 'pools', 'skillmap', 'virtuprof-fullscreen'];
+      const studentRoutes = ['dashboard', 'skillmap', 'virtuprof-fullscreen'];
       const instructorRoutes = ['courses', 'course-tab'];
       const currentName = this.$route?.name;
       if (next && currentName && instructorRoutes.includes(currentName)) {
