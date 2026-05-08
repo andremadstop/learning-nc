@@ -1,36 +1,53 @@
 <template>
-	<component
-		:is="rendererComponent"
-		:key="skinId"
-		v-bind="forwardedProps"
-		@click="$emit('click')" />
+	<VirtuProfDock
+		:has-message="hasMessage"
+		:invite-count="inviteCount"
+		:status-text="statusText"
+		:expanded="expanded"
+		@click="$emit('click')">
+		<component
+			:is="avatarComponent"
+			:key="skinId"
+			v-bind="forwardedProps" />
+	</VirtuProfDock>
 </template>
 
 <script>
-import NovaDock from './nova/NovaDock.vue'
+import VirtuProfDock from './VirtuProfDock.vue'
+import NovaAvatar from './nova/NovaAvatar.vue'
 import ProfLernAvatar from './ProfLernAvatar.vue'
+import TheoretikerAvatar from './TheoretikerAvatar.vue'
+import KosmologeAvatar from './KosmologeAvatar.vue'
+import PopularisiererAvatar from './PopularisiererAvatar.vue'
 import CharacterAvatar from './CharacterAvatar.vue'
 import { useSkinStore } from '../stores/skinStore.js'
 
+const AVATAR_SIZE = 80
+
+const CHIBI_SCHOLAR_COMPONENTS = {
+	theoretiker: TheoretikerAvatar,
+	kosmologe: KosmologeAvatar,
+	popularisierer: PopularisiererAvatar,
+}
+
 /**
- * Polymorphic VirtuProf skin dispatcher (Phase 151 Plan 05).
+ * Polymorphic VirtuProf skin dispatcher.
  *
- * Reads useSkinStore().skinId and renders the matching avatar component:
- * - 'nova'              → NovaDock (Phase 150 unchanged Nova specialised renderer)
- * - 'prof_lern_classic' → ProfLernAvatar (Phase 151 Plan 06 chibi avatar)
- * - any other valid id  → CharacterAvatar with character-id prop
+ * Reads useSkinStore().skinId, wraps the chosen avatar in VirtuProfDock so every
+ * skin shares the same kicker/title/status pill layout. Avatar dispatch:
+ *   - 'nova'              → NovaAvatar
+ *   - 'prof_lern_classic' → ProfLernAvatar
+ *   - any valid char id   → CharacterAvatar (characterId prop)
  *
- * Invalid skinId is coerced upstream by skinStore.setSkin (PICK-05); SkinRenderer
- * trusts the store and falls through to NovaDock if no specific branch matches.
+ * Invalid ids are coerced upstream by skinStore.setSkin and fall through to
+ * NovaAvatar via the dispatcher branch.
  *
- * `:key="skinId"` triggers full re-render on skin change (PICK-04 reactive remount)
- * — without it Vue would patch props into the new component shape and likely crash
- * because NovaDock/ProfLernAvatar use dock-style props while CharacterAvatar uses
- * characterId/state/size.
+ * `:key="skinId"` triggers full remount on skin change so each avatar mounts
+ * with its own prop shape.
  */
 export default {
 	name: 'SkinRenderer',
-	components: { NovaDock, ProfLernAvatar, CharacterAvatar },
+	components: { VirtuProfDock, NovaAvatar, ProfLernAvatar, TheoretikerAvatar, KosmologeAvatar, PopularisiererAvatar, CharacterAvatar },
 	emits: ['click'],
 	props: {
 		animation: { type: String, default: 'idle' },
@@ -44,28 +61,35 @@ export default {
 		skinId() {
 			return useSkinStore().skinId
 		},
-		rendererComponent() {
-			if (this.skinId === 'nova') return NovaDock
+		avatarComponent() {
+			if (this.skinId === 'nova') return NovaAvatar
 			if (this.skinId === 'prof_lern_classic') return ProfLernAvatar
-			// Valid campaign character id (architect, security, ...) — store guarantees validity
+			if (CHIBI_SCHOLAR_COMPONENTS[this.skinId]) return CHIBI_SCHOLAR_COMPONENTS[this.skinId]
 			return CharacterAvatar
 		},
 		forwardedProps() {
-			if (this.rendererComponent === CharacterAvatar) {
+			if (this.avatarComponent === CharacterAvatar) {
 				return {
 					characterId: this.skinId,
 					state: this.animation,
-					size: 64,
+					size: AVATAR_SIZE,
 				}
 			}
-			// NovaDock + ProfLernAvatar share dock-style props
+			if (this.avatarComponent === NovaAvatar) {
+				return {
+					animation: this.animation,
+					emotion: this.emotion,
+					hasMessage: this.hasMessage,
+					inviteCount: this.inviteCount,
+					size: AVATAR_SIZE,
+				}
+			}
+			// ProfLern + chibi scholars share the same prop shape
 			return {
 				animation: this.animation,
-				emotion: this.emotion,
 				hasMessage: this.hasMessage,
 				inviteCount: this.inviteCount,
-				statusText: this.statusText,
-				expanded: this.expanded,
+				size: AVATAR_SIZE,
 			}
 		},
 	},

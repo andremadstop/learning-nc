@@ -3,10 +3,12 @@
     ref="wrapperRef"
     class="virtuprof-avatar-wrapper"
     :class="{ 'is-waving': waving }"
+    :style="sizeStyle"
     @click="handleClick">
     <div
       class="virtuprof-avatar"
-      :class="[`animation-${animation}`, { 'has-message': hasMessage, 'is-waving': waving }]">
+      :class="[`animation-${animation}`, { 'has-message': hasMessage, 'is-waving': waving }]"
+      :style="avatarSizeStyle">
 
       <svg
         viewBox="0 0 60 80"
@@ -124,6 +126,10 @@ export default {
       type: Number,
       default: 0,
     },
+    size: {
+      type: Number,
+      default: 80,
+    },
   },
   data() {
     return {
@@ -140,6 +146,18 @@ export default {
     },
     pupilsStyle() {
       return `transform: translate(${this.pupilOffsetX}px, ${this.pupilOffsetY}px);`
+    },
+    sizeStyle() {
+      // Wrapper: square box matching the avatar height so flex layouts align cleanly.
+      const px = this.size + 'px'
+      return { width: px, height: px }
+    },
+    avatarSizeStyle() {
+      // Inner avatar keeps its native 60×80 viewBox proportions; we scale uniformly.
+      // Width derived from the 60/80 viewBox ratio so the silhouette never stretches.
+      const h = this.size
+      const w = Math.round((h * 60) / 80)
+      return { width: w + 'px', height: h + 'px' }
     },
   },
   mounted() {
@@ -219,8 +237,6 @@ export default {
 }
 
 .virtuprof-avatar {
-  width: 64px;
-  height: 84px;
   transition: transform 0.2s ease, filter 0.2s ease;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
 }

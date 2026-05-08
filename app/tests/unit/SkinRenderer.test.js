@@ -4,11 +4,10 @@ import { createPinia, setActivePinia } from 'pinia'
 import SkinRenderer from '../../src/components/SkinRenderer.vue'
 import { useSkinStore } from '../../src/stores/skinStore.js'
 
-// TEST-03 BASELINE NOTE (Phase 153):
-// The 4-avatar × 3-state matrix for Prof. Lern Classic + Theoretiker + Kosmologe + Popularisierer
-// is covered by app/tests/unit/scholarAnimations.test.js (Phase 152, 23 GREEN cases).
-// Phase 153 TEST-03 is satisfied by that file's structural matrix — see
-// .planning/phases/152-three-archetype-presets/152-VERIFICATION.md "Quality Gate Status".
+// SkinRenderer wraps every skin in <VirtuProfDock> and dispatches the inner
+// avatar component (NovaAvatar / ProfLernAvatar / CharacterAvatar) so the
+// kicker/title/status shell is identical across all 14 skins. Tests therefore
+// check for both the dock wrapper AND the correct nested avatar marker.
 
 let mountedApp = null
 let pinia = null
@@ -34,54 +33,60 @@ function mount(props = {}) {
 }
 
 describe('SkinRenderer dispatch', () => {
-	it('PICK-03 renders NovaDock when skinId is "nova"', () => {
+	it('always wraps the avatar in .virtuprof-dock', () => {
 		useSkinStore().setSkin('nova')
 		const root = mount()
-		expect(root.querySelector('.virtuprof-rail, .nova-dock')).not.toBeNull()
+		expect(root.querySelector('.virtuprof-dock')).not.toBeNull()
 	})
 
-	it('PICK-03 renders ProfLernAvatar when skinId is "prof_lern_classic"', () => {
+	it('PICK-03 renders NovaAvatar inside dock when skinId is "nova"', () => {
+		useSkinStore().setSkin('nova')
+		const root = mount()
+		expect(root.querySelector('.virtuprof-dock .nova-avatar-wrapper')).not.toBeNull()
+	})
+
+	it('PICK-03 renders ProfLernAvatar inside dock when skinId is "prof_lern_classic"', () => {
 		useSkinStore().setSkin('prof_lern_classic')
 		const root = mount()
-		expect(root.querySelector('.virtuprof-avatar-wrapper, .prof-lern-avatar')).not.toBeNull()
+		expect(root.querySelector('.virtuprof-dock .virtuprof-avatar-wrapper')).not.toBeNull()
 	})
 
-	it('PICK-03 renders CharacterAvatar when skinId is a valid campaign character ("architect")', () => {
+	it('PICK-03 renders CharacterAvatar inside dock when skinId is a valid campaign character ("architect")', () => {
 		useSkinStore().setSkin('architect')
 		const root = mount()
-		expect(root.querySelector('.character-avatar')).not.toBeNull()
+		expect(root.querySelector('.virtuprof-dock .character-avatar')).not.toBeNull()
 	})
 
-	it('PICK-05 falls back to NovaDock on invalid skinId (skinStore coerces to nova; renderer follows)', () => {
+	it('PICK-05 falls back to NovaAvatar inside dock on invalid skinId', () => {
 		useSkinStore().setSkin('__nope__')
 		const root = mount()
-		expect(root.querySelector('.virtuprof-rail, .nova-dock')).not.toBeNull()
-	})
-
-	it('TEST-01 / PICK-05 falls back to NovaDock when skinId is an invalid skin id (e.g. orphan einstein_v0_dropped)', () => {
-		// Simulate an orphan/dropped skin id reaching the store (e.g. via stale
-		// server payload after a Phase removal or a malformed user_config row).
-		// Both store entry points coerce invalid ids back to 'nova':
-		//   - setSkin('einstein_v0_dropped') → CHARACTERS check fails → DEFAULT_SKIN='nova'
-		//   - loadFromServerPayload({skin:'einstein_v0_dropped'}) → CHARACTERS check fails → state unchanged (stays 'nova')
-		// Either way, the renderer must show NovaDock — graceful PICK-05 degradation.
-		useSkinStore().setSkin('einstein_v0_dropped')
-		const root = mount()
-		// Must render NovaDock fallback (same as the controller's normalizeSkin enforces server-side)
-		expect(root.querySelector('.virtuprof-rail, .nova-dock')).not.toBeNull()
-		// Negative: NOT routed to .character-avatar (would mean the dispatcher
-		// misclassified an unknown id as a generic scholar)
+		expect(root.querySelector('.virtuprof-dock .nova-avatar-wrapper')).not.toBeNull()
 		expect(root.querySelector('.character-avatar')).toBeNull()
 	})
 
-	it('PICK-04 :key remount — changing skinId from nova to prof_lern_classic swaps the rendered child', async () => {
+	it('TEST-01 / PICK-05 falls back to NovaAvatar when skinId is an orphan id (e.g. einstein_v0_dropped)', () => {
+		useSkinStore().setSkin('einstein_v0_dropped')
+		const root = mount()
+		expect(root.querySelector('.virtuprof-dock .nova-avatar-wrapper')).not.toBeNull()
+		expect(root.querySelector('.character-avatar')).toBeNull()
+	})
+
+	it('PICK-04 :key remount — changing skinId from nova to prof_lern_classic swaps the inner avatar', async () => {
 		const store = useSkinStore()
 		store.setSkin('nova')
 		const root = mount()
-		expect(root.querySelector('.virtuprof-rail, .nova-dock')).not.toBeNull()
+		expect(root.querySelector('.virtuprof-dock .nova-avatar-wrapper')).not.toBeNull()
 		store.setSkin('prof_lern_classic')
 		await new Promise(resolve => setTimeout(resolve, 0))
-		expect(root.querySelector('.virtuprof-avatar-wrapper, .prof-lern-avatar')).not.toBeNull()
-		expect(root.querySelector('.virtuprof-rail, .nova-dock')).toBeNull()
+		expect(root.querySelector('.virtuprof-dock .virtuprof-avatar-wrapper')).not.toBeNull()
+		expect(root.querySelector('.nova-avatar-wrapper')).toBeNull()
+	})
+
+	it('renders the per-skin dock label kicker (Klassik for prof_lern_classic)', () => {
+		useSkinStore().setSkin('prof_lern_classic')
+		const root = mount()
+		const kicker = root.querySelector('.virtuprof-dock-kicker')
+		expect(kicker).not.toBeNull()
+		expect(kicker.textContent.trim()).toBe('Klassik')
 	})
 })

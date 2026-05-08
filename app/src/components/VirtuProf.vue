@@ -2208,7 +2208,7 @@ export default {
   display: grid;
 }
 
-.virtuprof-rail {
+.virtuprof-container :deep(.virtuprof-dock) {
   appearance: none;
   width: 100%;
   display: flex;
@@ -2226,22 +2226,17 @@ export default {
   transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.virtuprof-rail :deep(.virtuprof-avatar) {
-  width: 48px;
-  height: 63px;
-}
-
-.virtuprof-rail:hover {
+.virtuprof-container :deep(.virtuprof-dock:hover) {
   transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--color-primary-element) 45%, var(--color-border));
   box-shadow: 0 16px 32px rgba(15, 23, 42, 0.08);
 }
 
-.virtuprof-rail.has-invite {
+.virtuprof-container :deep(.virtuprof-dock.has-invite) {
   border-color: color-mix(in srgb, var(--color-primary-element) 60%, var(--color-border));
 }
 
-.virtuprof-rail-copy,
+.virtuprof-container :deep(.virtuprof-dock-copy),
 .virtuprof-panel-copy {
   min-width: 0;
   flex: 1;
@@ -2249,7 +2244,7 @@ export default {
   gap: 4px;
 }
 
-.virtuprof-rail-kicker,
+.virtuprof-container :deep(.virtuprof-dock-kicker),
 .virtuprof-panel-kicker {
   font-size: 11px;
   font-weight: 700;
@@ -2258,7 +2253,7 @@ export default {
   color: var(--color-text-maxcontrast);
 }
 
-.virtuprof-rail-title,
+.virtuprof-container :deep(.virtuprof-dock-title),
 .virtuprof-panel-title {
   min-width: 0;
   font-size: 15px;
@@ -2267,7 +2262,7 @@ export default {
   overflow-wrap: anywhere;
 }
 
-.virtuprof-rail-status,
+.virtuprof-container :deep(.virtuprof-dock-status),
 .virtuprof-panel-status {
   min-width: 0;
   font-size: 12px;
@@ -2320,7 +2315,7 @@ export default {
   min-height: 0;
 }
 
-.virtuprof-rail,
+.virtuprof-container :deep(.virtuprof-dock),
 .virtuprof-panel {
   animation: virtuprof-fade-in 0.22s ease both;
 }
@@ -2341,15 +2336,10 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .virtuprof-rail {
+  .virtuprof-container :deep(.virtuprof-dock) {
     padding: 14px 16px;
     border-radius: 16px;
     min-height: 64px;
-  }
-
-  .virtuprof-rail :deep(.virtuprof-avatar) {
-    width: 40px;
-    height: 52px;
   }
 
   .virtuprof-panel {
@@ -2362,7 +2352,7 @@ export default {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .virtuprof-rail,
+  .virtuprof-container :deep(.virtuprof-dock),
   .virtuprof-panel {
     animation: none;
   }

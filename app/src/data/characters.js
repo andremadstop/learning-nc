@@ -26,6 +26,7 @@ const FALLBACK_CHARACTER = Object.freeze({
 	user_selectable: false,
 	category: 'campaign',
 	preview_thumbnail_svg: null,
+	dockLabel: { kicker: 'VirtuProf', title: 'Lernassistentin' },
 })
 
 /**
@@ -51,6 +52,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: true,
 		category: 'hero',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'VirtuProf', title: 'Lernassistentin' },
 	}),
 
 	prof_lern_classic: Object.freeze({
@@ -69,6 +71,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: true,
 		category: 'classic',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Klassik', title: 'Prof. Lern' },
 	}),
 
 	architect: Object.freeze({
@@ -87,6 +90,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Netzwerk', title: 'Architect' },
 	}),
 
 	security: Object.freeze({
@@ -105,6 +109,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Security', title: 'Incident Responder' },
 	}),
 
 	sysadmin: Object.freeze({
@@ -123,6 +128,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Linux', title: 'Sysadmin' },
 	}),
 
 	helpdesk: Object.freeze({
@@ -141,6 +147,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Support', title: 'Helpdesk' },
 	}),
 
 	ghostline: Object.freeze({
@@ -159,6 +166,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Antagonist', title: 'Ghostline' },
 	}),
 
 	// ── Workplace Figures ───────────────────────────────────────────────
@@ -179,6 +187,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Endanwender', title: 'Klaus DAU' },
 	}),
 
 	dr_hartmann: Object.freeze({
@@ -197,6 +206,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Geschaeftsfuehrung', title: 'Dr. Hartmann' },
 	}),
 
 	frau_weber: Object.freeze({
@@ -215,6 +225,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Datenschutz', title: 'Frau Weber' },
 	}),
 
 	uschi: Object.freeze({
@@ -233,6 +244,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Sekretariat', title: 'Uschi' },
 	}),
 
 	tim_azubi: Object.freeze({
@@ -251,6 +263,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Azubi', title: 'Tim' },
 	}),
 
 	sven_berater: Object.freeze({
@@ -269,6 +282,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: false,
 		category: 'campaign',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Consulting', title: 'Sven Berater' },
 	}),
 
 	// ── Scholar Archetypes ──────────────────────────────────────────────
@@ -289,6 +303,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: true,
 		category: 'scholar',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Theorie', title: 'Theoretiker' },
 	}),
 
 	kosmologe: Object.freeze({
@@ -307,6 +322,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: true,
 		category: 'scholar',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Systeme', title: 'Kosmologe' },
 	}),
 
 	popularisierer: Object.freeze({
@@ -325,6 +341,7 @@ const CHARACTERS = Object.freeze({
 		user_selectable: true,
 		category: 'scholar',
 		preview_thumbnail_svg: null,
+		dockLabel: { kicker: 'Kosmos', title: 'Popularisierer' },
 	}),
 })
 
