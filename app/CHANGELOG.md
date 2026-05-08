@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.4.4] - 2026-05-08 — i18n hotfix: 548 untranslated German strings (Issue #18)
+
+### Fixed
+- **English locale now actually shows English throughout the UI.** Reported by @Kerasit: when a student set their default language to English, the introduction/demo stayed German, and many labels remained German across `/courses` (top tabs "Kurse" / "Pool" / "Einstellungen", button "Kursliste") and the Pools tab (headline "Fragenpools", buttons "Starter-Pool hinzufügen" / "Fragen generieren" / "+ Pool erstellen"). Root cause: the app uses German source strings as i18n keys in `t('learning', '…')` calls (a deviation from the Nextcloud convention of English-as-source), but `en.json` either had those keys identity-mapped (`"Kurse": "Kurse"`) or missing entirely. An automated audit found **455 affected strings**; 548 keys (including missing entries in fr/ru/ar) now have real English translations. Additionally, the VirtuProf onboarding intro (`vt()` system in `src/l10n/virtuprof-strings.js`) had **53 German identity-mappings in its `en` dictionary** which now also contain real English text — this fixes the "introduction/demo enforced upon you as a student" complaint. fr/ru/ar got the same key-set with the English translation as a fallback (proper localization for those languages remains a follow-up). Parity check (`scripts/check-i18n-parity.sh`) passes with 2200 keys per language.
+
 ## [4.4.3] - 2026-05-02 — Pool-Tab visibility fix (Issue #15)
 
 ### Fixed
