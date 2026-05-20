@@ -10,6 +10,7 @@ use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
 use OCA\Learning\Command\ArchiveCourseCommand;
 use OCA\Learning\Command\ExportCourseCommand;
 use OCA\Learning\Command\ExportPoolCommand;
+use OCA\Learning\Command\ImportPoolJsonCommand;
 use OCA\Learning\Command\ImportVaultCommand;
 use OCA\Learning\Command\MergeCourseCommand;
 use OCA\Learning\Service\CourseArchiveService;
@@ -57,6 +58,12 @@ class Application extends App implements IBootstrap {
         $context->registerService(ExportPoolCommand::class, function (ContainerInterface $container): ExportPoolCommand {
             return new ExportPoolCommand(
                 $container->get(DataMobilityService::class)
+            );
+        });
+        $context->registerService(ImportPoolJsonCommand::class, function (ContainerInterface $container): ImportPoolJsonCommand {
+            return new ImportPoolJsonCommand(
+                $container->get(\OCA\Learning\Service\PoolService::class),
+                $container->get(\OCA\Learning\Service\QuestionService::class)
             );
         });
         $context->registerService(ExportCourseCommand::class, function (ContainerInterface $container): ExportCourseCommand {
