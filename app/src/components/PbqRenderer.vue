@@ -74,6 +74,13 @@
       :disabled="disabled"
       @update="onUpdate"
     />
+    <PbqRanking
+      v-else-if="subtype === 'ranking'"
+      :config="config"
+      :value="localAnswer"
+      :disabled="disabled"
+      @update="onUpdate"
+    />
 
     <div class="pbq-footer">
       <span class="pbq-progress">{{ answeredCount }} / {{ totalCount }} beantwortet</span>
@@ -96,6 +103,7 @@ import PbqMultiPanel from './PbqMultiPanel.vue'
 import PbqSwitchConfig from './PbqSwitchConfig.vue'
 import PbqRoutingConfig from './PbqRoutingConfig.vue'
 import PbqDiagnostic from './PbqDiagnostic.vue'
+import PbqRanking from './PbqRanking.vue'
 import PbqReferenceGallery from './PbqReferenceGallery.vue'
 
 export default {
@@ -110,6 +118,7 @@ export default {
     PbqSwitchConfig,
     PbqRoutingConfig,
     PbqDiagnostic,
+    PbqRanking,
     PbqReferenceGallery,
   },
   props: {
@@ -128,6 +137,7 @@ export default {
       // Auto-detect subtype from config structure
       const cfg = this.config
       if (cfg.terminals && cfg.terminals.length > 0) return 'cli'
+      if (cfg.items && cfg.items.length > 0 && cfg.items[0].correct_position !== undefined) return 'ranking'
       if (cfg.questions && cfg.questions.length > 0) return 'dropdown'
       if (cfg.devices || cfg.hotspots) return 'placement'
       if (cfg.pins) return 'cable'
@@ -170,6 +180,8 @@ export default {
           return (cfg.routers || []).length
         case 'diagnostic':
           return (cfg.findings || []).length
+        case 'ranking':
+          return (cfg.items || []).length
         default: return 0
       }
     },

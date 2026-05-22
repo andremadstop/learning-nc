@@ -8,7 +8,7 @@
     >
       <header v-if="section.title || section.note" class="pbq-section__header">
         <h3 v-if="section.title">{{ section.title }}</h3>
-        <p v-if="section.note">{{ section.note }}</p>
+        <p v-if="section.note" :class="{ 'pbq-section__log': section.note_format === 'log' }">{{ section.note }}</p>
       </header>
 
       <div v-if="section.questions.length" class="pbq-section__body">
@@ -95,24 +95,37 @@ export default {
 }
 
 .pbq-section--cards {
-  background: #f7fbff;
+  background: color-mix(in srgb, var(--color-primary-element) 4%, var(--color-main-background));
 }
 
 .pbq-section__header {
   padding: 14px 16px;
-  background: color-mix(in srgb, var(--color-primary-element) 12%, white);
+  background: color-mix(in srgb, var(--color-primary-element) 12%, var(--color-main-background));
   border-bottom: 1px solid var(--color-border);
 }
 
 .pbq-section__header h3 {
   margin: 0;
   font-size: 16px;
+  color: var(--color-main-text);
 }
 
 .pbq-section__header p {
   margin: 6px 0 0;
-  color: var(--color-text-maxcontrast);
+  color: var(--color-main-text);
   font-size: 13px;
+  white-space: pre-wrap;
+  font-family: var(--font-face, inherit);
+}
+
+.pbq-section__header p.pbq-section__log {
+  font-family: ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  background: color-mix(in srgb, var(--color-main-text) 4%, transparent);
+  padding: 8px 10px;
+  border-radius: 4px;
+  overflow-x: auto;
 }
 
 .pbq-section__body {

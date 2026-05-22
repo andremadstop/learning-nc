@@ -10,14 +10,19 @@ PBQ (Performance-Based Questions) sind interaktive Prüfungsaufgaben, die prakti
 
 ### Architektur
 
-Die App unterstützt 4 PBQ-Subtypen:
+Die App unterstützt 5 Core-PBQ-Subtypen + N+-Custom-Subtypen:
 
 | Subtype | Komponente | Beschreibung |
 |---------|-----------|--------------|
-| `cli` | `PbqCli.vue` | Terminal-Emulator mit Cisco IOS / Linux / Windows CLI |
+| `cli` | `PbqCli.vue` | Terminal-Emulator mit Cisco IOS / Linux / Windows / SQL / Generic CLI |
 | `placement` | `PbqPlacement.vue` | Geräte per Klick auf Netzwerktopologie-Positionen platzieren |
-| `dropdown` | `PbqDropdown.vue` | Multiple-Choice-Fragen als Dropdown-Auswahl |
-| `cable` | `PbqCable.vue` | Kabelfehler identifizieren (Pin-Mapping) |
+| `dropdown` | `PbqDropdown.vue` | Multiple-Choice-Fragen mit Sections (Tabs) + Multi-Select |
+| `cable` | `PbqCable.vue` | Kabelfehler identifizieren (Pin-Mapping) — nur N+ |
+| `ranking` | `PbqRanking.vue` | Items per Drag-and-Drop in die richtige Reihenfolge sortieren (NEU 2026-05-22) |
+| `multi_panel` | `PbqMultiPanel.vue` | CLI links + Dropdown/Placement rechts im Splitscreen |
+| `switch_config` | `PbqSwitchConfig.vue` | N+-Custom: Switchport-Konfiguration |
+| `routing_config` | `PbqRoutingConfig.vue` | N+-Custom: Routing-Tabellen-Eingabe |
+| `diagnostic` | `PbqDiagnostic.vue` | N+-Custom: Multi-Komponenten-Diagnose |
 
 ### Daten-Flow
 
@@ -292,6 +297,43 @@ Nach Stromausfall Performance-Probleme und VoIP-Störungen. Dashboard zeigt WAN1
 ```
 
 **Wichtig:** `correct` muss exakt mit einem Wert in `options` übereinstimmen (case-sensitive).
+
+### Ranking-Format (seit 2026-05-22)
+
+Drag-Sort: User zieht Items in die korrekte Reihenfolge. Eignet sich für Order of Volatility, IR-Phasen, Kill Chain, Vuln-Priorisierung.
+
+```json
+{
+  "intro_note": "Drag the items into the correct order.",
+  "instructions": ["Optional Top-Level-Hinweise"],
+  "items": [
+    { "id": "i1", "label": "CPU registers and L1/L2 cache",  "correct_position": 1 },
+    { "id": "i2", "label": "Active TCP/UDP connections",     "correct_position": 2 },
+    { "id": "i3", "label": "Process memory, loaded DLLs",    "correct_position": 3 }
+  ]
+}
+```
+
+**Wichtig:**
+- `correct_position` ist 1-basiert.
+- Author-supplied Items-Reihenfolge sollte gemischt sein (sonst sieht der User die Lösung als Initialzustand). Empfehlung: vor dem `INSERT` mit `random.shuffle(items)` permutieren.
+- User-Answer kommt als `{itemId: positionInt}` zurück; Scoring matched pro Item.
+- Component bietet Shuffle-Button + zeigt nach Submit ✓/✗ pro Position.
+
+### Multi-Panel-Format
+
+Splitscreen mit `cli` + (`dropdown` ODER `placement`). Config ist verschachtelt:
+
+```json
+{
+  "instructions": ["Run commands left, answer questions right."],
+  "cli": { /* full cli config inkl. evaluation[] */ },
+  "dropdown": { /* full dropdown config */ },
+  "placement": { /* full placement config — optional, exklusiv zu dropdown */ }
+}
+```
+
+User-Answer: `{cli: {term: [history]}, dropdown: {qid: value}, placement: {posid: device}}`.
 
 ---
 
