@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.4.5] - 2026-06-15 — i18n: course-detail in English/French (Issue #21 + #19)
+
+### Fixed
+- **English UI regression in the course-detail view (#21).** Reported by @KannoNyatsume: with the UI language set to English, the course sub-tabs ("Lernraum", "Teilnehmer", "Wettbewerb", "Kommunikation", "Verwaltung") and the Lernraum pills ("Werkzeuge", "Themen", "Materialien", "Wissen") stayed German, along with the in-app FAQ, the Arena/league copy and ~125 strings in total. Root cause: the **frontend** loads `l10n/<lang>.js` (`OC.L10N.register`), but the v4.4.4 (#18) pass only touched `en.json` — `en.js` was never regenerated, so the browser kept serving the stale German identity-mappings. Two tab keys ("Kommunikation", "Verwaltung") were also missing from every catalog, so `t()` fell back to the German source string. All genuinely-German identity strings in `en.json` now carry real English, the two missing keys were added to all five catalogs, and **every `l10n/<lang>.js` is regenerated from its `.json`** so the frontend matches. Legitimately identical terms (Pool, XP, VirtuProf, VLAN, Dashboard, Leaderboard, Sprint …) were left untouched.
+- **French catalog completion (#19).** `fr.json` still carried 143 untranslated German identity strings (same surface as #21). They are now translated to proper French (vous form) and `fr.js` regenerated. The remaining English-fallback strings in fr/ru/ar are unchanged and tracked as a separate localization follow-up.
+
+Parity check (`scripts/check-i18n-parity.sh`) passes with 2202 keys per language.
+
 ## [4.4.4] - 2026-05-08 — i18n hotfix: 548 untranslated German strings (Issue #18)
 
 ### Fixed
