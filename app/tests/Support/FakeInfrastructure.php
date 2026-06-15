@@ -87,6 +87,14 @@ final class FakeExpressionBuilder {
         return ['type' => 'in', 'left' => $left, 'right' => $right];
     }
 
+    public function like(mixed $left, mixed $right): array {
+        return ['type' => 'like', 'left' => $left, 'right' => $right];
+    }
+
+    public function iLike(mixed $left, mixed $right): array {
+        return ['type' => 'iLike', 'left' => $left, 'right' => $right];
+    }
+
     public function isNull(string $field): array {
         return ['type' => 'isNull', 'field' => $field];
     }
@@ -104,7 +112,7 @@ final class FakeExpressionBuilder {
     }
 }
 
-final class FakeQueryBuilder {
+class FakeQueryBuilder {
     public array $selects = [];
     public array $from = [];
     public array $joins = [];
@@ -114,6 +122,7 @@ final class FakeQueryBuilder {
     public array $groupBys = [];
     public array $orderBys = [];
     public ?int $maxResults = null;
+    public ?int $firstResult = null;
     public ?string $operation = null;
     public ?string $table = null;
     public array $insertValues = [];
@@ -213,6 +222,11 @@ final class FakeQueryBuilder {
         return $this->orderBy($field, $direction);
     }
 
+    public function setFirstResult(int $offset): self {
+        $this->firstResult = $offset;
+        return $this;
+    }
+
     public function setMaxResults(int $limit): self {
         $this->maxResults = $limit;
         return $this;
@@ -289,6 +303,10 @@ final class FakeDbConnection implements IDBConnection {
     public function executeQuery(string $sql, array $params = []): FakeResult {
         $this->executedQueries[] = ['sql' => $sql, 'params' => $params];
         return array_shift($this->rawResults) ?? new FakeResult();
+    }
+
+    public function escapeLikeParameter(string $input): string {
+        return addcslashes($input, '\\%_');
     }
 }
 

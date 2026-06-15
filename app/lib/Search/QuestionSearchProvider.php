@@ -14,6 +14,8 @@ use OCP\Search\SearchResult;
 use OCP\Search\SearchResultEntry;
 
 class QuestionSearchProvider implements IProvider {
+    private const MAX_TERM_LENGTH = 128;
+
     private IL10N $l10n;
     private IURLGenerator $urlGenerator;
     private IDBConnection $db;
@@ -38,33 +40,37 @@ class QuestionSearchProvider implements IProvider {
 
     public function search(IUser $user, ISearchQuery $query): SearchResult {
         $term = $this->resolveTerm($query);
-        if (mb_strlen($term) < 2) {
+        if (strlen($term) < 2) {
             return SearchResult::complete($this->getName(), []);
         }
 
         $offset = max(0, (int)($query->getCursor() ?? 0));
         $limit = max(1, min(50, (int)$query->getLimit()));
-        $entries = [];
+        try {
+            $entries = [];
 
-        foreach ($this->findQuestions($term, $user->getUID(), $limit, $offset) as $row) {
-            $entry = new SearchResultEntry(
-                $this->urlGenerator->imagePath(Application::APP_ID, 'app.svg'),
-                $this->buildTitle($row),
-                $this->buildSubline($row),
-                $this->buildPoolUrl((int)$row['pool_id'])
-            );
+            foreach ($this->findQuestions($term, $user->getUID(), $limit, $offset) as $row) {
+                $entry = new SearchResultEntry(
+                    $this->urlGenerator->imagePath(Application::APP_ID, 'app.svg'),
+                    $this->buildTitle($row),
+                    $this->buildSubline($row),
+                    $this->buildPoolUrl((int)$row['pool_id'])
+                );
 
-            if (method_exists($entry, 'addAttribute')) {
-                $entry->addAttribute('type', 'question');
-                $entry->addAttribute('questionId', (string)$row['id']);
-                $entry->addAttribute('poolId', (string)$row['pool_id']);
+                if (method_exists($entry, 'addAttribute')) {
+                    $entry->addAttribute('type', 'question');
+                    $entry->addAttribute('questionId', (string)$row['id']);
+                    $entry->addAttribute('poolId', (string)$row['pool_id']);
+                }
+
+                $entries[] = $entry;
             }
 
-            $entries[] = $entry;
+            $nextCursor = count($entries) === $limit ? $offset + $limit : null;
+            return SearchResult::paginated($this->getName(), $entries, $nextCursor);
+        } catch (\Throwable $e) {
+            return SearchResult::complete($this->getName(), []);
         }
-
-        $nextCursor = count($entries) === $limit ? $offset + $limit : null;
-        return SearchResult::paginated($this->getName(), $entries, $nextCursor);
     }
 
     /**
@@ -112,18 +118,28 @@ class QuestionSearchProvider implements IProvider {
     }
 
     private function resolveTerm(ISearchQuery $query): string {
+        $term = '';
         if (method_exists($query, 'getTerm')) {
-            return trim((string)$query->getTerm());
-        }
-
-        if (method_exists($query, 'getFilter')) {
+            $term = (string)$query->getTerm();
+        } elseif (method_exists($query, 'getFilter')) {
             $termFilter = $query->getFilter('term');
             if ($termFilter !== null && method_exists($termFilter, 'get')) {
-                return trim((string)$termFilter->get());
+                $term = (string)$termFilter->get();
             }
         }
 
-        return '';
+        return $this->normalizeTerm($term);
+    }
+
+    private function normalizeTerm(string $term): string {
+        $term = preg_replace('/[\x00-\x1F\x7F]+/', ' ', $term) ?? $term;
+        $term = trim(preg_replace('/\s+/', ' ', $term) ?? $term);
+
+        if (strlen($term) > self::MAX_TERM_LENGTH) {
+            $term = mb_substr($term, 0, self::MAX_TERM_LENGTH);
+        }
+
+        return $term;
     }
 
     /**

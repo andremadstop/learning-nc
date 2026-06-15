@@ -10,6 +10,37 @@ namespace OCP\DB\QueryBuilder {
     }
 }
 
+namespace OCP\AppFramework {
+    if (!class_exists(App::class)) {
+        class App {
+            public function __construct(string $appName = '') {}
+        }
+    }
+
+    if (!interface_exists(IBootstrap::class)) {
+        interface IBootstrap {
+        }
+    }
+}
+
+namespace OCP\AppFramework\Bootstrap {
+    if (!interface_exists(IBootContext::class)) {
+        interface IBootContext {
+            public function getServerContainer();
+        }
+    }
+
+    if (!interface_exists(IRegistrationContext::class)) {
+        interface IRegistrationContext {
+            public function registerDashboardWidget(string $widgetClass): void;
+            public function registerNotifierService(string $notifierClass): void;
+            public function registerEventListener(string $eventClass, string $listenerClass): void;
+            public function registerSearchProvider(string $providerClass): void;
+            public function registerService(string $className, callable $factory): void;
+        }
+    }
+}
+
 namespace OCP\Security {
     if (!interface_exists(ICrypto::class)) {
         interface ICrypto {
@@ -25,12 +56,36 @@ namespace OCP {
             public function getQueryBuilder();
 
             public function executeQuery(string $sql, array $params = []);
+
+            public function escapeLikeParameter(string $input): string;
         }
     }
 
     if (!interface_exists(ICacheFactory::class)) {
         interface ICacheFactory {
             public function createDistributed(string $appName);
+        }
+    }
+
+    if (!interface_exists(IL10N::class)) {
+        interface IL10N {
+            public function t(string $text, array $parameters = []): string;
+        }
+    }
+
+    if (!interface_exists(IURLGenerator::class)) {
+        interface IURLGenerator {
+            public function imagePath(string $appName, string $image): string;
+
+            public function linkToRoute(string $route, array $parameters = []): string;
+
+            public function linkToRouteAbsolute(string $route, array $parameters = []): string;
+        }
+    }
+
+    if (!interface_exists(IUser::class)) {
+        interface IUser {
+            public function getUID(): string;
         }
     }
 
@@ -118,6 +173,73 @@ namespace OCP\AppFramework\Http\Attributes {
         #[\Attribute]
         class UserRateLimit {
             public function __construct(int $limit = 0, int $period = 0) {}
+        }
+    }
+}
+
+namespace OCP\Search {
+    if (!interface_exists(IProvider::class)) {
+        interface IProvider {
+            public function getId(): string;
+            public function getName(): string;
+            public function getOrder(string $route, array $routeParameters): int;
+            public function search(\OCP\IUser $user, ISearchQuery $query): SearchResult;
+        }
+    }
+
+    if (!interface_exists(ISearchQuery::class)) {
+        interface ISearchQuery {
+            public function getTerm();
+            public function getCursor();
+            public function getLimit();
+            public function getFilter(string $name);
+        }
+    }
+
+    if (!class_exists(SearchResult::class)) {
+        class SearchResult {
+            public string $name;
+            /** @var array<int, mixed> */
+            public array $entries;
+            public ?int $cursor;
+            public bool $complete;
+
+            public function __construct(string $name, array $entries = [], ?int $cursor = null, bool $complete = false) {
+                $this->name = $name;
+                $this->entries = $entries;
+                $this->cursor = $cursor;
+                $this->complete = $complete;
+            }
+
+            public static function complete(string $name, array $entries = []): self {
+                return new self($name, $entries, null, true);
+            }
+
+            public static function paginated(string $name, array $entries = [], ?int $cursor = null): self {
+                return new self($name, $entries, $cursor, false);
+            }
+        }
+    }
+
+    if (!class_exists(SearchResultEntry::class)) {
+        class SearchResultEntry {
+            public string $icon;
+            public string $title;
+            public string $subline;
+            public string $url;
+            /** @var array<string, string> */
+            public array $attributes = [];
+
+            public function __construct(string $icon, string $title, string $subline, string $url) {
+                $this->icon = $icon;
+                $this->title = $title;
+                $this->subline = $subline;
+                $this->url = $url;
+            }
+
+            public function addAttribute(string $name, string $value): void {
+                $this->attributes[$name] = $value;
+            }
         }
     }
 }
