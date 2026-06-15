@@ -2201,5 +2201,7 @@ OC.L10N.register(
     "← Zurück zu Kursen" : "← Zurück zu Kursen",
     "← Zurück zu Pools" : "← Zurück zu Pools",
     "← Zurück zum Kurs" : "← Zurück zum Kurs",
+    "Kommunikation" : "Kommunikation",
+    "Verwaltung" : "Verwaltung",
 },
 "nplurals=2; plural=(n != 1);");
