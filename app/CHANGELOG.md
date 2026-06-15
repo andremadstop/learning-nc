@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.4.6] - 2026-06-15 — Packaging hotfix: restore `data/` dropped in v4.4.5
+
+### Fixed
+- **v4.4.5 shipped without the `data/` directory** (starter pools, campaigns, simulator scenarios, `privacy-info.json`, PWA guide, course materials — 77 files). The release build followed a `cp` file-list that omitted `data/`, so on a clean v4.4.5 install the "Add starter pool" feature, campaigns, the practicum/simulator scenarios and the privacy page had no backing data. v4.4.6 restores `data/` (verified: tarball file-set now matches the last-known-good v4.4.4 manifest). The i18n content of v4.4.5 (#21 + #19) is unchanged and included.
+
 ## [4.4.5] - 2026-06-15 — i18n: course-detail in English/French (Issue #21 + #19)
 
 ### Fixed
