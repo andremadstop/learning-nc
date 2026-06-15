@@ -89,6 +89,7 @@ run_phpunit() {
 }
 
 case "$MODE" in
+  --help|-h)     echo "Usage: $0 [--php-only | --js-only | --full | --phpstan | --test]"; exit 0 ;;
   --php-only)    deploy_php; run_phpstan ;;
   --js-only)     deploy_js ;;
   --full)        deploy_php; run_phpstan; deploy_js ;;

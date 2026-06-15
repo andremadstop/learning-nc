@@ -8,7 +8,7 @@
 set -euo pipefail
 
 TALK_TOKEN="amc9qut5"
-NC_URL="${DEVCLOUD_URL:-http://learning-dev:8080}"
+NC_URL="${DEVCLOUD_URL:-https://devcloud.andrestiebitz.de}"
 NC_USER="${DEVCLOUD_USER:-andre}"
 NC_PASS="${DEVCLOUD_PASS:-}"
 

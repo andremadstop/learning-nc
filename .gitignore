@@ -119,6 +119,7 @@ scripts/*
 !scripts/check-forbidden-names.test.sh
 !scripts/check-i18n-parity.sh
 .env
+.env.*
 .ralph/
 certs/
 translations/
@@ -150,6 +151,11 @@ app/tests/*
 tests/auth-state.json
 test-results/
 !scripts/check-vhtml-security.py
+
+# Local tooling / scratch artefacts
+/.understand-anything/
+/temp_cysa/
+/mdpdf.log
 
 # Build output (full app build — not for repo)
 /build/learning/
