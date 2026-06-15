@@ -152,6 +152,10 @@ tests/auth-state.json
 test-results/
 !scripts/check-vhtml-security.py
 
+# Copyright-sensitive question dump — local only, never ship as starter pool
+/app/data/starter-pools/comptia-cysa-plus-cs0-003.json
+/app/data/starter-pools/comptia-cysa-plus-cs0-003.INFO.md
+
 # Local tooling / scratch artefacts
 /.understand-anything/
 /temp_cysa/
