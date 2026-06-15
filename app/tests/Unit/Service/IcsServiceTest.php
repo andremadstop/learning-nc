@@ -136,7 +136,7 @@ namespace Sabre\VObject\Component {
     }
 }
 
-namespace OCA\Learning\Tests\Unit\Service;
+namespace OCA\Learning\Tests\Unit\Service {
 
 use DateTimeImmutable;
 use DateTimeZone;
@@ -384,4 +384,5 @@ class IcsServiceTest extends TestCase {
     private function todayStart(): int {
         return (new DateTimeImmutable('today', new DateTimeZone('UTC')))->getTimestamp();
     }
+}
 }
