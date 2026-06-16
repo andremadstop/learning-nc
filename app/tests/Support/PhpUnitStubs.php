@@ -122,6 +122,20 @@ namespace OCP {
     }
 }
 
+namespace OCP\Notification {
+    if (!interface_exists(IManager::class)) {
+        interface IManager {
+        }
+    }
+}
+
+namespace OCP\Activity {
+    if (!interface_exists(IManager::class)) {
+        interface IManager {
+        }
+    }
+}
+
 namespace OCP\AppFramework {
     if (!class_exists(Controller::class)) {
         class Controller {
@@ -247,10 +261,13 @@ namespace OCP\Search {
 namespace OCP\AppFramework\Db {
     if (!class_exists(Entity::class)) {
         class Entity implements \JsonSerializable {
-            public int $id = 0;
+            // Mirror NC's real Entity: a fresh, unpersisted entity has a null id.
+            // (Was `int $id = 0`, which made new entities report id 0 and pushed
+            //  "id === null ? insert : update" logic down the update path in tests.)
+            public ?int $id = null;
             protected array $updatedFields = [];
 
-            public function getId(): int { return $this->id; }
+            public function getId(): ?int { return $this->id; }
             public function setId(int $id): void { $this->id = $id; }
             public function jsonSerialize(): array { return ['id' => $this->id]; }
 
