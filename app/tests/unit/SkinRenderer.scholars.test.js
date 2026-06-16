@@ -5,7 +5,11 @@ import { createPinia, setActivePinia } from 'pinia'
 import SkinRenderer from '../../src/components/SkinRenderer.vue'
 import { useSkinStore } from '../../src/stores/skinStore.js'
 
-const SCHOLAR_IDS = ['theoretiker', 'kosmologe', 'popularisierer']
+const SCHOLAR_CASES = [
+	{ id: 'theoretiker', wrapper: '.theoretiker-avatar-wrapper' },
+	{ id: 'kosmologe', wrapper: '.kosmologe-avatar-wrapper' },
+	{ id: 'popularisierer', wrapper: '.popularisierer-avatar-wrapper' },
+]
 
 let mountedApp = null
 let pinia = null
@@ -36,25 +40,29 @@ function mountRenderer(props = {}) {
 	return document.getElementById('app')
 }
 
-describe('Phase 152 SkinRenderer scholar dispatch', () => {
-	it.each(SCHOLAR_IDS)('renders CharacterAvatar for scholar skin "%s"', async (skinId) => {
+describe('SkinRenderer scholar dispatch (chibi family)', () => {
+	it.each(SCHOLAR_CASES)('renders the dedicated chibi wrapper inside .virtuprof-dock for "$id"', async ({ id, wrapper }) => {
 		const store = useSkinStore()
-		store.setSkin(skinId)
+		store.setSkin(id)
 
 		const root = mountRenderer({ animation: 'idle' })
 		await new Promise((resolve) => setTimeout(resolve, 0))
 
-		const avatar = root.querySelector('.character-avatar')
-		expect(avatar).not.toBeNull()
-		expect(root.querySelector('.virtuprof-rail, .nova-dock')).toBeNull()
-		expect(root.querySelector('.virtuprof-avatar-wrapper, .prof-lern-avatar')).toBeNull()
+		expect(root.querySelector('.virtuprof-dock')).not.toBeNull()
+		expect(root.querySelector(`.virtuprof-dock ${wrapper}`)).not.toBeNull()
+		// All 3 chibi scholars share the family class.
+		expect(root.querySelector(`${wrapper}.chibi-avatar-wrapper`)).not.toBeNull()
+		// Must NOT fall back to the generic stick-figure CharacterAvatar.
+		expect(root.querySelector('.character-avatar')).toBeNull()
+		// Must NOT render Nova or ProfLern wrappers.
+		expect(root.querySelector('.nova-avatar-wrapper')).toBeNull()
 	})
 
 	it('exposes all scholar skins in the available skin list', () => {
 		const store = useSkinStore()
 		const ids = store.availableSkins.map((character) => character.id)
 
-		for (const id of SCHOLAR_IDS) {
+		for (const { id } of SCHOLAR_CASES) {
 			expect(ids).toContain(id)
 		}
 	})

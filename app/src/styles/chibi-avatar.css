@@ -1,0 +1,168 @@
+/* Shared styles for chibi-style scholar avatars (Theoretiker, Kosmologe,
+ * Popularisierer). Same idle/hover/wave/celebrate vocabulary as ProfLernAvatar
+ * so all 4 chibi skins feel like one family.
+ */
+
+.chibi-avatar-wrapper {
+	position: relative;
+	display: inline-block;
+	cursor: pointer;
+}
+
+.chibi-avatar {
+	transition: transform 0.2s ease, filter 0.2s ease;
+	filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
+}
+
+.chibi-avatar svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+/* Hover */
+.chibi-avatar-wrapper:hover .chibi-avatar {
+	transform: scale(1.08) translateY(-3px);
+	filter: drop-shadow(0 6px 16px rgba(44, 108, 159, 0.45));
+}
+
+.chibi-avatar-wrapper:hover .pupils,
+.chibi-avatar-wrapper:hover .glasses {
+	transform: translateY(-1.5px);
+	transition: transform 0.2s ease-out;
+}
+
+.chibi-avatar-wrapper:hover .eyebrows {
+	transform: translateY(-1px);
+	transition: transform 0.2s ease-out;
+}
+
+.chibi-avatar-wrapper:hover .animation-idle {
+	animation-play-state: paused;
+}
+
+/* Invite badge */
+.chibi-invite-badge {
+	position: absolute;
+	top: -4px;
+	right: -4px;
+	min-width: 20px;
+	height: 20px;
+	border-radius: 10px;
+	background: #e53935;
+	color: #fff;
+	font-size: 11px;
+	font-weight: 700;
+	line-height: 20px;
+	text-align: center;
+	padding: 0 4px;
+	pointer-events: none;
+	box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+	animation: chibi-badge-pop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes chibi-badge-pop {
+	0% { transform: scale(0); }
+	100% { transform: scale(1); }
+}
+
+/* Wave-arm + particles default hidden */
+.wave-arm,
+.celebrate-particles {
+	opacity: 0;
+}
+
+/* Idle bob */
+.animation-idle {
+	animation: chibi-idle-bob 3s ease-in-out infinite;
+}
+
+@keyframes chibi-idle-bob {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-4px); }
+}
+
+/* Talk nod */
+.animation-talk {
+	animation: chibi-talk-nod 0.5s ease-in-out infinite;
+}
+
+@keyframes chibi-talk-nod {
+	0%, 100% { transform: rotate(0deg); }
+	25% { transform: rotate(-2.5deg); }
+	75% { transform: rotate(2.5deg); }
+}
+
+/* Wave */
+.animation-wave {
+	animation: chibi-wave-bob 0.8s ease-in-out infinite;
+}
+
+.is-waving .wave-arm {
+	opacity: 1;
+	transform-origin: 42px 42px;
+	animation: chibi-wave-swing 0.4s ease-in-out 3;
+}
+
+@keyframes chibi-wave-bob {
+	0%, 100% { transform: rotate(-4deg); }
+	50% { transform: rotate(4deg); }
+}
+
+@keyframes chibi-wave-swing {
+	0%, 100% { transform: rotate(-20deg) translateY(0); }
+	50% { transform: rotate(20deg) translateY(-8px); }
+}
+
+/* Celebrate */
+.animation-celebrate {
+	animation: chibi-celebrate-jump 0.7s ease-in-out infinite;
+}
+
+.animation-celebrate .celebrate-particles {
+	animation: chibi-particles-burst 1.5s ease-out forwards;
+}
+
+.animation-celebrate .eyebrows {
+	transform: translateY(-2px);
+	transition: transform 0.2s ease;
+}
+
+.animation-celebrate .mouth {
+	transform: scaleX(1.1);
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
+.animation-celebrate .pupils,
+.animation-celebrate .glasses {
+	transform: translateY(-1.5px);
+}
+
+@keyframes chibi-celebrate-jump {
+	0%, 100% { transform: translateY(0) rotate(0deg); }
+	50% { transform: translateY(-10px) rotate(5deg); }
+}
+
+@keyframes chibi-particles-burst {
+	0%   { opacity: 0; transform: scale(0.5); }
+	20%  { opacity: 1; transform: scale(1); }
+	100% { opacity: 0; transform: scale(1.3) translateY(-20px); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	.chibi-avatar,
+	.celebrate-particles,
+	.eyebrows,
+	.pupils,
+	.glasses,
+	.mouth {
+		animation: none !important;
+		transition: none !important;
+	}
+	.is-waving .wave-arm {
+		animation: none !important;
+		opacity: 0 !important;
+	}
+}

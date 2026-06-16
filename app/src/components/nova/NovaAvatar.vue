@@ -1,6 +1,6 @@
 <template>
-  <div class="nova-avatar-wrapper" @click="$emit('click')">
-    <div class="nova-avatar" :class="[stateClass, { 'has-message': hasMessage }]">
+  <div class="nova-avatar-wrapper" :style="sizeStyle" @click="$emit('click')">
+    <div class="nova-avatar" :class="[stateClass, { 'has-message': hasMessage }]" :style="sizeStyle">
       <NovaBitOrbiters :state="novaState" :color="coreColor" />
       <NovaBaseCore :state="novaState" :color="coreColor" />
       <NovaEyeDisplay :emotion="novaEmotion" :color="coreColor" />
@@ -29,6 +29,7 @@ export default {
 		inviteCount: { type: Number, default: 0 },
 		emotion: { type: String, default: null },
 		outfit: { type: String, default: 'standard' },
+		size: { type: Number, default: 64 },
 	},
 	computed: {
 		novaState() {
@@ -46,6 +47,9 @@ export default {
 		},
 		coreColor() {
 			return 'var(--nova-accent-cyan)'
+		},
+		sizeStyle() {
+			return { width: this.size + 'px', height: this.size + 'px' }
 		},
 	},
 }

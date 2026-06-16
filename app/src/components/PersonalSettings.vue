@@ -132,7 +132,20 @@
           :options="skinOptions"
           :clearable="false"
           label-outside
-          @update:model-value="onSkinChange" />
+          @update:model-value="onSkinChange">
+          <template #option="option">
+            <span class="skin-option-row">
+              <SkinOptionPreview :skin-id="option.value" />
+              <span class="skin-option-row__label">{{ option.label }}</span>
+            </span>
+          </template>
+          <template #selected-option="option">
+            <span class="skin-option-row">
+              <SkinOptionPreview :skin-id="option.value" />
+              <span class="skin-option-row__label">{{ option.label }}</span>
+            </span>
+          </template>
+        </NcSelect>
       </div>
 
       <div class="field-row lnc-a11y-toggle">
@@ -408,6 +421,7 @@ import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
 import PrivacyInfo from './PrivacyInfo.vue'
+import SkinOptionPreview from './SkinOptionPreview.vue'
 import hintMixin from '../hintMixin.js'
 import { novaAudio } from '../utils/nova-audio-manager.js'
 import {
@@ -439,7 +453,7 @@ const VOICE_LANGUAGE_OPTIONS = [
 
 export default {
   name: 'PersonalSettings',
-  components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, NcSelect, PrivacyInfo },
+  components: { NcButton, NcCheckboxRadioSwitch, NcLoadingIcon, NcNoteCard, NcSelect, PrivacyInfo, SkinOptionPreview },
   mixins: [hintMixin],
   props: {
     userRole: {
@@ -967,5 +981,20 @@ export default {
   color: var(--color-text-maxcontrast);
   line-height: 1.5;
   margin: 0;
+}
+
+.skin-option-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.skin-option-row__label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
