@@ -254,12 +254,15 @@ async function adminDeleteUser(userid) {
 // Pre-test guards
 // ─────────────────────────────────────────────────────────────────────────
 
+// Local/relais-only audit: needs multiple real student accounts (adaeze,
+// alexander, azad) + admin user-create perms — NOT runnable against the CI
+// fresh-NC (admin/admin only). Skip the whole file when those creds are absent
+// instead of failing CI (was: throw in beforeAll → red E2E on every CI run).
+// Run locally with the creds sourced from the Obsidian vault.
+const A11Y_MISSING_CREDS = ['E2E_ALEXANDER_PW', 'E2E_ADAEZE_PW', 'E2E_AZAD_PW'].filter(k => !process.env[k])
+test.skip(A11Y_MISSING_CREDS.length > 0, `a11y-v440 audit needs relais creds (${A11Y_MISSING_CREDS.join(', ')}); run locally`)
+
 test.beforeAll(() => {
-	const required = ['E2E_USERNAME', 'E2E_PASSWORD', 'E2E_ALEXANDER_PW', 'E2E_ADAEZE_PW', 'E2E_AZAD_PW']
-	const missing = required.filter(k => !process.env[k])
-	if (missing.length) {
-		throw new Error(`Missing required environment variables: ${missing.join(', ')}. Source from Obsidian vault before running.`)
-	}
 	const dir = path.resolve(__dirname, '../../docs/a11y-audit')
 	if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
 })

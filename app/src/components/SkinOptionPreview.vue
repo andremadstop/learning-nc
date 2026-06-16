@@ -1,5 +1,9 @@
 <template>
-	<span class="skin-option-preview" :style="boxStyle">
+	<!-- Decorative preview: the sibling text label names the option. aria-hidden -->
+	<!-- keeps the avatar's role=img/aria-label out of the NcSelect option's -->
+	<!-- accessible name (else it became "<avatar> Prof. Lern" and broke -->
+	<!-- exact-name option lookups + announced redundantly to screen readers). -->
+	<span class="skin-option-preview" :style="boxStyle" aria-hidden="true">
 		<NovaAvatar v-if="skinId === 'nova'" :size="size" />
 		<ProfLernAvatar v-else-if="skinId === 'prof_lern_classic'" :size="size" />
 		<TheoretikerAvatar v-else-if="skinId === 'theoretiker'" :size="size" />
