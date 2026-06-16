@@ -9,6 +9,7 @@ use OCA\Learning\Db\CoopSession;
 use OCA\Learning\Db\CoopSessionMapper;
 use OCA\Learning\Db\CoopVote;
 use OCA\Learning\Db\CoopVoteMapper;
+use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\CoopService;
 use OCA\Learning\Service\StoryEngineService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
@@ -312,6 +313,7 @@ class CoopServiceTest extends TestCase {
         ?CoopPlayerMapper $playerMapper = null,
         ?CoopVoteMapper $voteMapper = null,
         ?StoryEngineService $storyEngineService = null,
+        ?BadgeService $badgeService = null,
         ?IUserManager $userManager = null,
         ?LoggerInterface $logger = null
     ): CoopService {
@@ -319,6 +321,7 @@ class CoopServiceTest extends TestCase {
         $playerMapper ??= $this->createMock(CoopPlayerMapper::class);
         $voteMapper ??= $this->createMock(CoopVoteMapper::class);
         $storyEngineService ??= $this->createMock(StoryEngineService::class);
+        $badgeService ??= $this->createMock(BadgeService::class);
         $userManager ??= $this->getMockBuilder(IUserManager::class)->addMethods(['get'])->getMock();
         $logger ??= $this->createMock(LoggerInterface::class);
 
@@ -327,6 +330,7 @@ class CoopServiceTest extends TestCase {
             $playerMapper,
             $voteMapper,
             $storyEngineService,
+            $badgeService,
             $userManager,
             $db,
             $logger

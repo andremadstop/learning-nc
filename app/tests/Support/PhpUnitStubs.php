@@ -284,6 +284,10 @@ namespace OCP\AppFramework\Db {
         abstract class QBMapper {
             protected $db;
             public function __construct($db) { $this->db = $db; }
+            public function insert($entity) { return $entity; }
+            public function update($entity) { return $entity; }
+            public function insertOrUpdate($entity) { return $entity; }
+            public function delete($entity) { return $entity; }
         }
     }
 

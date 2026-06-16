@@ -11,6 +11,7 @@ use OCA\Learning\Db\CoursePoolMapper;
 use OCA\Learning\Db\CurriculumScopeMapper;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\FeedService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
@@ -37,6 +38,7 @@ class CourseServiceTest extends TestCase {
         $badgeService = $this->createMock(BadgeService::class);
         $streakService = $this->createMock(StreakService::class);
         $curriculumScopeMapper = $this->createMock(CurriculumScopeMapper::class);
+        $feedService = $this->createMock(FeedService::class);
 
         $this->service = new CourseService(
             $this->courseMapper,
@@ -49,7 +51,8 @@ class CourseServiceTest extends TestCase {
             $xpService,
             $badgeService,
             $streakService,
-            $curriculumScopeMapper
+            $curriculumScopeMapper,
+            $feedService
         );
     }
 

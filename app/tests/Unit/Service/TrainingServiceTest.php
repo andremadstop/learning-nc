@@ -120,6 +120,7 @@ class TrainingServiceTest extends TestCase {
                     'correct_answers' => 3,
                     'completed_at' => 200,
                     'started_at' => 100,
+                    'time_limit_seconds' => 0,
                 ],
                 3
             )
