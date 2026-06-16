@@ -27,4 +27,11 @@ if [ "$FAIL" -eq 1 ]; then
   echo "Fix: add missing keys (or remove extras) so all 5 langs share the same key-set."
   exit 1
 fi
-echo "i18n key-parity OK across DE/EN/FR/RU/AR (1631 keys each on baseline)"
+echo "i18n key-parity OK across DE/EN/FR/RU/AR ($(echo "$DE_KEYS" | wc -l | tr -d ' ') keys each)"
+
+# Gate 2: .js<->.json value-sync.
+# Key-parity above only compares .json key-SETS. The frontend reads l10n/<lang>.js,
+# so a value edited in .json but not regenerated into .js (issues #18 -> #21) slips
+# through. This asserts every .js equals regen(.json).
+echo ""
+python3 "$ROOT_DIR/scripts/l10n_js_sync.py" --check

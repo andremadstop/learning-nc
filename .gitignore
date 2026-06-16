@@ -118,6 +118,7 @@ scripts/*
 !scripts/check-forbidden-names.sh
 !scripts/check-forbidden-names.test.sh
 !scripts/check-i18n-parity.sh
+!scripts/l10n_js_sync.py
 .env
 .env.*
 .ralph/
