@@ -2,7 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [4.4.6] - 2026-06-15 — Packaging hotfix: restore `data/` dropped in v4.4.5
+## [4.4.7] - 2026-06-19 — DB: primary key for `learning_user_stats` (Issue #24)
+
+### Fixed
+- **`learning_user_stats` had no primary key (#24).** Reported by @haecks on a fresh NC 33.0.5 install: Nextcloud logged *"Table 'oc_learning_user_stats' has no primary key and therefore will not behave sane in clustered setups. This will throw an exception and not be installable in a future version of Nextcloud."* The table was created back in `Version001200` with only a unique index (`learn_ustats_user_uniq`) on `user_id`, never a primary key. Since there is exactly one stats row per user and every access path addresses the table by `user_id`, `user_id` is the natural primary key. A new migration (`Version008000`) drops the now-redundant unique index and promotes `user_id` to the primary key. The migration is idempotent (guards for missing table/column and an already-present primary key) so it is safe on existing installs and re-runs. Verified live on PostgreSQL 16 and independently on MariaDB 11.4 with `utf8mb4` (the `varchar(64)` key stays well under InnoDB's index-length limit).
 
 ### Fixed
 - **v4.4.5 shipped without the `data/` directory** (starter pools, campaigns, simulator scenarios, `privacy-info.json`, PWA guide, course materials — 77 files). The release build followed a `cp` file-list that omitted `data/`, so on a clean v4.4.5 install the "Add starter pool" feature, campaigns, the practicum/simulator scenarios and the privacy page had no backing data. v4.4.6 restores `data/` (verified: tarball file-set now matches the last-known-good v4.4.4 manifest). The i18n content of v4.4.5 (#21 + #19) is unchanged and included.
