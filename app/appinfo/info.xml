@@ -66,14 +66,14 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 
     <version>4.4.7</version>
     <licence>agpl</licence>
-    <author mail="dev@quizdojo.com" homepage="https://github.com/andremadstop">Andre</author>
+    <author mail="dev@quizdojo.com" homepage="https://codeberg.org/andremadstop">Andre</author>
     <namespace>Learning</namespace>
     <category>organization</category>
     <category>tools</category>
 
-    <website>https://github.com/andremadstop/learning-nc</website>
-    <bugs>https://github.com/andremadstop/learning-nc/issues</bugs>
-    <repository type="git">https://github.com/andremadstop/learning-nc.git</repository>
+    <website>https://codeberg.org/andremadstop/learning-nc</website>
+    <bugs>https://codeberg.org/andremadstop/learning-nc/issues</bugs>
+    <repository type="git">https://codeberg.org/andremadstop/learning-nc.git</repository>
 
     <privacy>
         <duplication>false</duplication>
@@ -90,12 +90,12 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
         </privacyPolicies>
     </privacy>
 
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/01-courses-overview.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/02-student-dashboard.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/03-training-virtuprof.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/04-onboarding-tour.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/05-course-materials.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/andremadstop/learning-nc/main/screenshots/06-course-tools.png</screenshot>
+    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/01-courses-overview.png</screenshot>
+    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/02-student-dashboard.png</screenshot>
+    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/03-training-virtuprof.png</screenshot>
+    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/04-onboarding-tour.png</screenshot>
+    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/05-course-materials.png</screenshot>
+    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/06-course-tools.png</screenshot>
 
     <dependencies>
         <nextcloud min-version="33" max-version="35"/>

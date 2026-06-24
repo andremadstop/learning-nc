@@ -37,8 +37,8 @@ Install from the Nextcloud App Store, create a pool, add some questions (or impo
 
 **Links:**
 - [App Store](https://apps.nextcloud.com/apps/learning)
-- [GitHub](https://github.com/andremadstop/learning-nc)
-- [Documentation](https://github.com/andremadstop/learning-nc/blob/main/README.md)
+- [Codeberg](https://codeberg.org/andremadstop/learning-nc)
+- [Documentation](https://codeberg.org/andremadstop/learning-nc/src/branch/main/README.md)
 
 ---
 

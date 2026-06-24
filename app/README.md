@@ -71,7 +71,7 @@ Spaced Repetition Learning with Leitner System for Nextcloud.
 
 ```bash
 cd /path/to/nextcloud/custom_apps/
-git clone https://github.com/andremadstop/learning-nc.git learning
+git clone https://codeberg.org/andremadstop/learning-nc.git learning
 cd learning
 npm install
 npm run build
@@ -203,7 +203,7 @@ php occ learning:import-vault --path=/data/my-vault --course-id=20
 ```bash
 # Clone into custom_apps
 cd /path/to/nextcloud/custom_apps/
-git clone https://github.com/andremadstop/learning-nc.git learning
+git clone https://codeberg.org/andremadstop/learning-nc.git learning
 
 # Install dependencies
 cd learning

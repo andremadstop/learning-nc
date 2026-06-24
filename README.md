@@ -10,7 +10,7 @@ A self-hosted learning platform for Nextcloud. Flashcards with spaced repetition
 
 Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject — from vocabulary drilling to exam preparation.
 
-> **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. Demo accounts available. [Open an issue](https://github.com/andremadstop/learning-nc/issues) or email me.
+> **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. Demo accounts available. [Open an issue](https://codeberg.org/andremadstop/learning-nc/issues) or email me.
 
 ![Training with VirtuProf](app/img/screenshots/09-training-virtuprof.png)
 
@@ -76,7 +76,7 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 
 ```bash
 cd /path/to/nextcloud/custom_apps/
-git clone https://github.com/andremadstop/learning-nc.git learning
+git clone https://codeberg.org/andremadstop/learning-nc.git learning
 cd learning/app
 npm install
 npm run build
@@ -130,7 +130,7 @@ A public demo is available at **devcloud.andrestiebitz.de** with pre-configured 
 | `demo-dozent` | Instructor | Course dashboard, student progress, curriculum timeline |
 | `demo-admin` | Admin | Admin dashboard, CSV export, all courses |
 
-Demo data resets nightly. [Request passwords via GitHub issue](https://github.com/andremadstop/learning-nc/issues).
+Demo data resets nightly. [Request passwords via Codeberg issue](https://codeberg.org/andremadstop/learning-nc/issues).
 
 ## Contributing
 
