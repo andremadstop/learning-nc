@@ -63,6 +63,41 @@ class CourseSummaryService {
     }
 
     /**
+     * Returns the best exam score (0-100) for $userId in $courseId across all completed exam sessions.
+     * Score is computed as (int) round(correct_answers * 100 / total_questions) per session.
+     * Best score is selected in a PHP loop (NOT SQL MAX with integer division, which truncates).
+     * Returns null when no completed exam sessions exist.
+     *
+     * Only counts sessions WHERE mode='exam' AND completed_at IS NOT NULL.
+     * Training sessions and incomplete exams are excluded. This is also the structural
+     * guess exclusion (PASS-05): guessed answers only exist in the Leitner/FSRS flow,
+     * never in exam-mode sessions, so a guess can never inflate the exam score.
+     */
+    public function getExamScore(string $userId, int $courseId): ?int {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('correct_answers', 'total_questions')
+            ->from('learning_sessions')
+            ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
+            ->andWhere($qb->expr()->isNotNull('completed_at'));
+
+        $result = $qb->executeQuery();
+        $bestScore = null;
+        while ($row = $result->fetch()) {
+            $total = (int)$row['total_questions'];
+            if ($total > 0) {
+                $score = (int) round((int)$row['correct_answers'] * 100 / $total);
+                if ($bestScore === null || $score > $bestScore) {
+                    $bestScore = $score;
+                }
+            }
+        }
+        $result->closeCursor();
+        return $bestScore;
+    }
+
+    /**
      * Get class summary for an instructor.
      *
      * @return array{students: array, class_stats: array}
@@ -245,7 +280,7 @@ class CourseSummaryService {
         return $ids;
     }
 
-    private function getMasteryStats(string $userId, array $poolIds): array {
+    public function getMasteryStats(string $userId, array $poolIds): array {
         if (empty($poolIds)) {
             return ['total_mastered' => 0, 'total_questions' => 0, 'mastery_rate' => 0];
         }
