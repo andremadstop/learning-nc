@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
 current_phase: 155
-current_plan: 01
+current_plan: 02
 status: in-progress
-stopped_at: "Completed 155-01-PLAN.md (data layer + ADR anchor): Migration Version009100 (2 tables), CertKey/Certificate entities + mappers, leakage-safe jsonSerialize. PHPStan L5 clean, CertEntityTest 3/3 green on relay. Next: 155-02 (KeyService + DidController)."
+stopped_at: "Completed 155-02-PLAN.md (KeyService + issuer identity): Ed25519 keygen + ICrypto encrypt-at-rest, learning:cert:init-issuer occ command (+--rotate), public did.json (DidController, all non-revoked keys). KeyServiceTest 4/4 green, PHPStan L5 clean on relay. No signing code (155-03 gate respected). Next: 155-03 (SigningService)."
 last_updated: "2026-06-27T00:00:00.000Z"
-last_activity: 2026-06-27 — Plan 155-01 complete: learning_cert_keys + learning_certificates tables (cross-DB-safe), QBMapper entities/mappers, CertKey::jsonSerialize omits secret_key_enc (CERT-03 primitive), 155-ADR-ANCHOR.md freezes VC-JOSE-COSE header. CERT-03/04/06 done. PHPStan L5 clean, PHPUnit 3/3 (15 assertions) on relay.
+last_activity: 2026-06-27 — Plan 155-02 complete: KeyService (init/rotate/getActiveSigningMaterial/hostDid) with sodium keygen + encrypt-at-rest + 64-byte hard-validate (defeats plaintext fallback); learning:cert:init-issuer occ command registered in info.xml + DI; public did.json publishing all non-revoked publicKeyJwk verificationMethods (rotation linchpin). CERT-01..04 code-complete + unit/static-proven but left Pending (live occ/curl needs migration applied → 155-07). PHPStan L5 clean, KeyServiceTest 4/4 (14 assertions) on relay.
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 7
-  completed_plans: 1
-  percent: 14
+  completed_plans: 2
+  percent: 29
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-06-26)
 ## Current Position
 
 Phase: 155 of 157 (Certificate-Artifact & Issuer) — executing
-Plan: 155-01 complete (1/7) — next is 155-02 (KeyService + DidController)
-Status: 155-01 data layer + ADR anchor shipped; entry-gate scope respected (no signing/keygen code yet)
-Last activity: 2026-06-27 — Plan 155-01 complete: two cross-DB-safe tables (learning_cert_keys + learning_certificates), QBMapper entities/mappers, leakage-safe CertKey::jsonSerialize (CERT-03), 155-ADR-ANCHOR.md freezes the VC-JOSE-COSE signing header. PHPStan L5 clean; CertEntityTest 3/3 (15 assertions) green on relay.
+Plan: 155-02 complete (2/7) — next is 155-03 (SigningService)
+Status: 155-02 issuer identity shipped — sodium keygen + ICrypto encrypt-at-rest, occ init-issuer command, public did.json (all non-revoked keys). No signing code yet (155-03 gate respected).
+Last activity: 2026-06-27 — Plan 155-02 complete: KeyService (init/rotate/getActiveSigningMaterial/hostDid), learning:cert:init-issuer occ command (info.xml + DI), public did.json publishing all non-revoked publicKeyJwk verificationMethods. KeyServiceTest 4/4 (14 assertions) + PHPStan L5 clean on relay.
 
-Progress: [█░░░░░░░░░] 14% (1/7 plans in Phase 155)
+Progress: [███░░░░░░░] 29% (2/7 plans in Phase 155)
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Progress: [█░░░░░░░░░] 14% (1/7 plans in Phase 155)
 | 154 Pass-Definition | P04 | ~50min | 3 | 15 |
 | 154 Pass-Definition | P05 | ~25min | 3 | 4 |
 | 155 Cert-Artifact | P01 | ~35min | 3 | 7 |
+| 155 Cert-Artifact | P02 | ~40min | 3 | 7 |
 
 ## Accumulated Context
 
@@ -117,8 +118,17 @@ See PROJECT.md Key Decisions for full table and prior milestone decisions.
 - **Migration NOT applied + info.xml NOT bumped** — cross-DB go/no-go (PG16+MariaDB 11.4) is 155-07; version bump is the v5.0.0 release plan's job (carry-forward from Phase 154).
 - **ADR follow-ups routed:** #1 encoding correctness + #2 independent verifier → 155-03; #3 kid↔did.json curl → 155-07.
 
+### Execution Notes (155-02)
+
+- **Encrypt-at-rest is enforced both ways** — `KeyService::init()` rejects a null/empty/passthrough ciphertext (never stores plaintext) and `sodium_memzero`s every plaintext copy; `getActiveSigningMaterial()` rejects any decrypt that is not exactly 64 bytes, defeating `EncryptionService::decrypt()`'s silent plaintext fallback (the documented silent-corruption trap). 155-04 must call `getActiveSigningMaterial()` (not decrypt directly).
+- **kid single source of truth** — both the occ command and `DidController` derive the did:web string from `KeyService::hostDid()` (`did:web:<host>:apps:learning`). 155-03's JWT `kid` MUST be `hostDid() . '#' . keyId` == `verificationMethod.id`. keyId == base64url(public key).
+- **Rotation = retire-not-delete** — `rotate()` UPDATEs the old active row to `status='retired'` then inserts a fresh active; `did.json` serves all `findAllNonRevoked()` (active + retired). Never delete a key with live certs.
+- **CERT-01..04 left Pending** — code-complete + unit/static-proven, but live occ/curl needs the 155-01 migration applied (table missing on devcloud). A live `occ learning:cert:init-issuer` would fail today. 155-07 applies the migration, runs live occ + did.json curl (ADR #3), and marks all four complete.
+- **deploy-prod.sh --php-only does NOT sync tests/** — only lib/ + l10n. New test files must be scp'd to host + `docker cp`'d into the container, else PHPUnit reports "No tests executed".
+- **did.json content-type = application/json** (plain JSONResponse, per plan + Pattern 2). 155-07 may switch to `application/did+json` if its curl assertion is strict.
+
 ## Session Continuity
 
 Last session: 2026-06-27T00:00:00.000Z
-Stopped at: Completed 155-01-PLAN.md — Phase 155 data layer + ADR anchor shipped (1/7)
+Stopped at: Completed 155-02-PLAN.md — Phase 155 issuer identity (KeyService + did.json) shipped (2/7)
 Resume file: None
