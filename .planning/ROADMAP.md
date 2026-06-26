@@ -463,7 +463,7 @@ Plans:
 **Plans**: 7 plans (waves 1-7, sequential crypto chain)
 
 Plans:
-- [ ] 155-01-PLAN.md — ADR anchor + Migration Version009100 (2 tables) + CertKey/Certificate entities + mappers (data layer)
+- [x] 155-01-PLAN.md — ADR anchor + Migration Version009100 (2 tables) + CertKey/Certificate entities + mappers (data layer) (CERT-03, CERT-04, CERT-06) ✓ 2026-06-27
 - [ ] 155-02-PLAN.md — KeyService (sodium keygen + ICrypto encrypt + rotation) + InitIssuerCommand (occ) + DidController (public did.json)
 - [ ] 155-03-PLAN.md — SigningService VC-JWT EdDSA (TDD round-trip + tamper + independent verifier) — ADR follow-ups #1/#2
 - [ ] 155-04-PLAN.md — IssuanceService (pass hook → OB3 → sign → persist → notify) + Notifier certificate_issued + i18n

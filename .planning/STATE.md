@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
 current_phase: 155
-current_plan: null
-status: ready-to-execute
-stopped_at: "Phase 155 planned + verified (7 plans, 7 waves, plan-checker PASSED after 1 revision) 2026-06-26. ADR-001 (VC-JWT/ext-sodium) Accepted. Ready: /gsd:execute-phase 155."
-last_updated: "2026-06-26T14:35:00.000Z"
-last_activity: 2026-06-26 — Plan 154-05 complete (Vue cert-config block + student Zeugnisstatus card, Options API; ESLint 0, Vitest green incl. 9 new computed tests; human-verify approved 15/15 on relay). Phase 154 closed — all 7 PASS requirements Complete.
+current_plan: 01
+status: in-progress
+stopped_at: "Completed 155-01-PLAN.md (data layer + ADR anchor): Migration Version009100 (2 tables), CertKey/Certificate entities + mappers, leakage-safe jsonSerialize. PHPStan L5 clean, CertEntityTest 3/3 green on relay. Next: 155-02 (KeyService + DidController)."
+last_updated: "2026-06-27T00:00:00.000Z"
+last_activity: 2026-06-27 — Plan 155-01 complete: learning_cert_keys + learning_certificates tables (cross-DB-safe), QBMapper entities/mappers, CertKey::jsonSerialize omits secret_key_enc (CERT-03 primitive), 155-ADR-ANCHOR.md freezes VC-JOSE-COSE header. CERT-03/04/06 done. PHPStan L5 clean, PHPUnit 3/3 (15 assertions) on relay.
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
-  percent: 100
+  total_plans: 7
+  completed_plans: 1
+  percent: 14
 ---
 
 # Project State
@@ -27,12 +27,12 @@ See: .planning/PROJECT.md (updated 2026-06-26)
 
 ## Current Position
 
-Phase: 155 of 157 (Certificate-Artifact & Issuer) — ready to plan
-Plan: — (ready to plan)
-Status: Phase 154 complete + verified (7/7) — next is Phase 155 (Certificate-Artifact & Issuer)
-Last activity: 2026-06-26 — Plan 154-05 complete: Vue instructor cert-config block (CourseTabVerwaltung) + student Zeugnisstatus card (CourseSummary), Options API throughout; ESLint 0, Vitest green incl. 9 new Zeugnisstatus computed tests; human-verify approved 15/15 on relay (instructor persist+reload, student Bestanden/Noch-nicht, audit count=1 idempotent). All 7 PASS requirements Complete.
+Phase: 155 of 157 (Certificate-Artifact & Issuer) — executing
+Plan: 155-01 complete (1/7) — next is 155-02 (KeyService + DidController)
+Status: 155-01 data layer + ADR anchor shipped; entry-gate scope respected (no signing/keygen code yet)
+Last activity: 2026-06-27 — Plan 155-01 complete: two cross-DB-safe tables (learning_cert_keys + learning_certificates), QBMapper entities/mappers, leakage-safe CertKey::jsonSerialize (CERT-03), 155-ADR-ANCHOR.md freezes the VC-JOSE-COSE signing header. PHPStan L5 clean; CertEntityTest 3/3 (15 assertions) green on relay.
 
-Progress: [██████████] 100% (5/5 plans in Phase 154)
+Progress: [█░░░░░░░░░] 14% (1/7 plans in Phase 155)
 
 ## Performance Metrics
 
@@ -47,6 +47,7 @@ Progress: [██████████] 100% (5/5 plans in Phase 154)
 | 154 Pass-Definition | P03 | ~30min | 2 | 4 |
 | 154 Pass-Definition | P04 | ~50min | 3 | 15 |
 | 154 Pass-Definition | P05 | ~25min | 3 | 4 |
+| 155 Cert-Artifact | P01 | ~35min | 3 | 7 |
 
 ## Accumulated Context
 
@@ -107,8 +108,17 @@ See PROJECT.md Key Decisions for full table and prior milestone decisions.
 - **Phase 154 CLOSED** — all 7 PASS requirements Complete. Next: Phase 155 (Certificate-Artifact & Issuer); ENTRY GATE = signing-format ADR (VC-JWT vs eddsa-jcs-2022) as FIRST task, no signing code before ADR.
 - **`CourseService::findById()['pools'][n]['id']` is the course-pool MAPPING row id, NOT the pool id** — actual pool id is `'pool_id'` (`getPoolSnapshot()` adds no id; `CoursePool::jsonSerialize` sets both). Pool-ID validation must read `pool_id`. The plan's interface comment was wrong; fixed post-review in commit `2767662`. Carry into 154-05 when the UI sends `certRequiredPoolIds`.
 
+### Execution Notes (155-01)
+
+- **VC-JOSE-COSE contract is FROZEN** in `155-ADR-ANCHOR.md` — header `{alg:EdDSA,typ:vc+jwt,cty:vc,kid}`, payload = OB3 object DIRECT (no `vc` wrapper, no `iss`/`sub`/`nbf`/`jti` mirroring), sign with `JSON_UNESCAPED_SLASHES`. did:web path-based `did:web:<host>:apps:learning` → `/apps/learning/did.json`, `publicKeyJwk`, kid == verificationMethod.id. Plans 02-07 must satisfy this verbatim.
+- **CERT-03 leakage primitive is structural** — `CertKey::jsonSerialize()` returns an explicit allowlist `['id','key_id','public_key_b64u','status','created_at']`; `secret_key_enc` is never a key in any serialized form. Re-audited in 155-07.
+- **certificate.key_id is a string reference (not a DB FK)** to `learning_cert_keys.key_id` — rotation: retired keys keep verifying past certs (`CertKeyMapper::findAllNonRevoked` = status != 'revoked').
+- **No local PHP on the workstation** — `php` not installed; lint via `docker exec -i devcloud-app php -l`, PHPStan/PHPUnit on relay only. deploy-prod.sh "Verifying deploy" prints a pre-existing harmless `OCP\AppFramework\App not found` (standalone-CLI smoke); PHPStan still reports "No errors".
+- **Migration NOT applied + info.xml NOT bumped** — cross-DB go/no-go (PG16+MariaDB 11.4) is 155-07; version bump is the v5.0.0 release plan's job (carry-forward from Phase 154).
+- **ADR follow-ups routed:** #1 encoding correctness + #2 independent verifier → 155-03; #3 kid↔did.json curl → 155-07.
+
 ## Session Continuity
 
-Last session: 2026-06-26T13:51:58.000Z
-Stopped at: Completed 154-05-PLAN.md — Phase 154 complete
+Last session: 2026-06-27T00:00:00.000Z
+Stopped at: Completed 155-01-PLAN.md — Phase 155 data layer + ADR anchor shipped (1/7)
 Resume file: None
