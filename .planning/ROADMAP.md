@@ -60,7 +60,7 @@ Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMEN
 
 ### Phases
 
-- [ ] **Phase 154: Pass-Definition** — Hard pass criterion per course, lucky-guess exclusion, student status, audit event
+- [x] **Phase 154: Pass-Definition** — Hard pass criterion per course, lucky-guess exclusion, student status, audit event
 - [ ] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn
 - [ ] **Phase 156: Compliance-Report** — Instructor CSV export, date/expiry filters, DSGVO-safe (runs parallel with 157)
 - [ ] **Phase 157: Public-Verify** — Public @PublicPage verify route, signature + revocation check, rate-limit (runs parallel with 156)
@@ -440,7 +440,7 @@ Plans:
 - [x] 154-02-PLAN.md — Wave 2: DB migration Version009000 + Course.php cert field extension
 - [x] 154-03-PLAN.md — Wave 3: Service layer (getExamScore + two-gate PassCriteriaService + PHPUnit GREEN)
 - [x] 154-04-PLAN.md — Wave 4: Controller endpoints (cert-config PATCH + pass-status GET) + JS + i18n
-- [ ] 154-05-PLAN.md — Wave 5: Vue UI (instructor config block + student Zeugnisstatus card) + human verify
+- [x] 154-05-PLAN.md — Wave 5: Vue UI (instructor config block + student Zeugnisstatus card) + human verify
 
 ### Phase 155: Certificate-Artifact & Issuer
 **Goal**: The NC instance has a cryptographic identity (did:web, Ed25519), issues a signed OB3/VC credential automatically on pass, and students can view, print, download, and share it; key rotation preserves all past certificates
@@ -523,7 +523,7 @@ Plans:
 | 151. Skin Picker & Prof. Lern Classic | v4.4.0 | Complete    | 2026-04-25 | — |
 | 152. Three Archetype Presets | v4.4.0 | Complete    | 2026-04-25 | 2026-04-25 |
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 7/7 | Complete | 2026-04-27 |
-| 154. Pass-Definition | v5.0.0 | 4/5 | In Progress | - |
+| 154. Pass-Definition | v5.0.0 | 5/5 | Complete | 2026-06-26 |
 | 155. Certificate-Artifact & Issuer | v5.0.0 | 0/TBD | Not started | - |
 | 156. Compliance-Report | v5.0.0 | 0/TBD | Not started | - |
 | 157. Public-Verify | v5.0.0 | 0/TBD | Not started | - |

@@ -4,16 +4,16 @@ milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
 current_phase: 154
 current_plan: 05
-status: in-progress
-stopped_at: Completed 154-04-PLAN.md
-last_updated: "2026-06-26T14:35:00.000Z"
-last_activity: 2026-06-26 — Plan 154-04 complete (cert-config PATCH + pass-status GET endpoints, CourseService.js client, 5-lang i18n; PHPStan L5 clean, 1091 Vitest green, routes resolve live).
+status: phase-complete
+stopped_at: Completed 154-05-PLAN.md
+last_updated: "2026-06-26T13:51:58.000Z"
+last_activity: 2026-06-26 — Plan 154-05 complete (Vue cert-config block + student Zeugnisstatus card, Options API; ESLint 0, Vitest green incl. 9 new computed tests; human-verify approved 15/15 on relay). Phase 154 closed — all 7 PASS requirements Complete.
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 5
-  completed_plans: 4
-  percent: 80
+  completed_plans: 5
+  percent: 100
 ---
 
 # Project State
@@ -27,12 +27,12 @@ See: .planning/PROJECT.md (updated 2026-06-26)
 
 ## Current Position
 
-Phase: 154 of 157 (Pass-Definition)
-Plan: 05 of 5 (next — 154-04 complete)
-Status: In progress
-Last activity: 2026-06-26 — Plan 154-04 complete: cert-config PATCH (instructor-only, pool-ID validated) + pass-status GET (IDOR-guarded, lazy PASS-07 audit) endpoints; new CourseService.js API client; 9 cert i18n keys across DE/EN/FR/RU/AR. PHPStan L5 clean, 1091/1091 Vitest green, routes resolve live (405/401, no 500).
+Phase: 154 of 157 (Pass-Definition) — COMPLETE
+Plan: 05 of 5 (done — phase closed)
+Status: Phase complete — next is Phase 155 (Certificate-Artifact & Issuer)
+Last activity: 2026-06-26 — Plan 154-05 complete: Vue instructor cert-config block (CourseTabVerwaltung) + student Zeugnisstatus card (CourseSummary), Options API throughout; ESLint 0, Vitest green incl. 9 new Zeugnisstatus computed tests; human-verify approved 15/15 on relay (instructor persist+reload, student Bestanden/Noch-nicht, audit count=1 idempotent). All 7 PASS requirements Complete.
 
-Progress: [████████░░] 80% (4/5 plans in Phase 154)
+Progress: [██████████] 100% (5/5 plans in Phase 154)
 
 ## Performance Metrics
 
@@ -46,6 +46,7 @@ Progress: [████████░░] 80% (4/5 plans in Phase 154)
 | 154 Pass-Definition | P02 | ~20min | 2 | 2 |
 | 154 Pass-Definition | P03 | ~30min | 2 | 4 |
 | 154 Pass-Definition | P04 | ~50min | 3 | 15 |
+| 154 Pass-Definition | P05 | ~25min | 3 | 4 |
 
 ## Accumulated Context
 
@@ -96,10 +97,18 @@ See PROJECT.md Key Decisions for full table and prior milestone decisions.
 - **PASS-01..04/06 still Pending** — endpoints wired but end-to-end (instructor/student-facing) capability needs 154-05 UI. Mark complete at 154-05, consistent with the 154-02/03 deferral notes. No requirements flipped in this plan.
 - **Authenticated live API tests not run** — vault credentials file absent + no `ADMIN_PASS`/`SECOND_PASS` in env. Routes/verbs confirmed via unauthenticated smoke (405 on GET cert-config, 401 on pass-status/PATCH; no 500 → DI sound). Logic unit-proven in 154-03. test-api.sh assertions are `bash -n` valid and run under Gate 2 with creds.
 - **PassCriteriaService autowired** — constructor takes only DI-resolvable services/interfaces; no Application.php registration.
+
+### Execution Notes (154-05)
+
+- **Cert config reads SNAKE_CASE from the `course` prop** (cert_enabled, cert_pass_percent, cert_required_pool_ids, cert_validity_days) — the entity's jsonSerialize emits snake_case (154-02 decision). The plan's camelCase `created()` would never have synced; used the existing `watch.course` (immediate) handler instead.
+- **Pool checkboxes emit integer `pool_id`** — NOT `course['pools'][n]['id']` (that's the mapping-row id). Carried the 154-04 gotcha through. A new `coursePools` prop was threaded CourseDetail → CourseTabVerwaltung (outside the plan's files_modified).
+- **Zeugnisstatus is a NEW widget in CourseSummary.vue** — lines 64-81 were the functional snapshot/swarm card, not a placeholder to replace.
+- **createInstance() test harness hardcodes the exposed computeds** — the 4 new Zeugnisstatus computeds had to be registered in its defineProperties block for the state-assertion tests to read them.
+- **Phase 154 CLOSED** — all 7 PASS requirements Complete. Next: Phase 155 (Certificate-Artifact & Issuer); ENTRY GATE = signing-format ADR (VC-JWT vs eddsa-jcs-2022) as FIRST task, no signing code before ADR.
 - **`CourseService::findById()['pools'][n]['id']` is the course-pool MAPPING row id, NOT the pool id** — actual pool id is `'pool_id'` (`getPoolSnapshot()` adds no id; `CoursePool::jsonSerialize` sets both). Pool-ID validation must read `pool_id`. The plan's interface comment was wrong; fixed post-review in commit `2767662`. Carry into 154-05 when the UI sends `certRequiredPoolIds`.
 
 ## Session Continuity
 
-Last session: 2026-06-26T14:35:00.000Z
-Stopped at: Completed 154-04-PLAN.md
+Last session: 2026-06-26T13:51:58.000Z
+Stopped at: Completed 154-05-PLAN.md — Phase 154 complete
 Resume file: None
