@@ -242,6 +242,10 @@ return [
         ['name' => 'course#updateTools', 'url' => '/api/courses/{courseId}/tools', 'verb' => 'PUT'],
         ['name' => 'course#updateCampaignSelection', 'url' => '/api/courses/{courseId}/campaign-selection', 'verb' => 'PATCH'],
 
+        // Certification config + pass status (Phase 154)
+        ['name' => 'course#updateCertConfig', 'url' => '/api/courses/{courseId}/cert-config', 'verb' => 'PATCH'],
+        ['name' => 'course#getPassStatus',    'url' => '/api/courses/{courseId}/pass-status',  'verb' => 'GET'],
+
         // Course Schedule (Timeline)
         ['name' => 'course#getSchedule', 'url' => '/api/courses/{courseId}/schedule', 'verb' => 'GET'],
         ['name' => 'course#setSchedule', 'url' => '/api/courses/{courseId}/schedule', 'verb' => 'PUT'],

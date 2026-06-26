@@ -7,6 +7,7 @@ use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Service\CourseArchiveService;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\ScheduleService;
 use OCP\AppFramework\Controller;
@@ -24,6 +25,7 @@ class CourseController extends Controller {
     private CourseService $courseService;
     private RoleService $roleService;
     private ScheduleService $scheduleService;
+    private PassCriteriaService $passCriteriaService;
     private LoggerInterface $logger;
     private ?string $userId;
 
@@ -36,6 +38,7 @@ class CourseController extends Controller {
         CourseService $courseService,
         RoleService $roleService,
         ScheduleService $scheduleService,
+        PassCriteriaService $passCriteriaService,
         LoggerInterface $logger,
         ?string $userId
     ) {
@@ -46,6 +49,7 @@ class CourseController extends Controller {
         $this->courseService = $courseService;
         $this->roleService = $roleService;
         $this->scheduleService = $scheduleService;
+        $this->passCriteriaService = $passCriteriaService;
         $this->logger = $logger;
         $this->userId = $userId;
     }
@@ -644,6 +648,133 @@ class CourseController extends Controller {
     }
 
     /**
+     * Update the certification configuration for a course (instructor-only).
+     *
+     * Each field is optional; only provided fields are updated. Pool IDs are normalized
+     * (positive ints, deduped) and validated against the course's own pool list.
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function updateCertConfig(
+        int $courseId,
+        ?bool $certEnabled = null,
+        ?int $certPassPercent = null,
+        ?array $certRequiredPoolIds = null,
+        ?int $certValidityDays = null,
+    ): DataResponse {
+        try {
+            if ($this->userId === null) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+            $course = $this->courseMapper->findById($courseId);
+            if (!$this->canManageCourse($course, $this->userId)) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+
+            if ($certEnabled !== null) {
+                $course->setCertEnabled($certEnabled);
+            }
+            if ($certPassPercent !== null) {
+                if ($certPassPercent < 1 || $certPassPercent > 100) {
+                    return new DataResponse(['error' => 'cert_pass_percent must be 1–100'], Http::STATUS_BAD_REQUEST);
+                }
+                $course->setCertPassPercent($certPassPercent);
+            }
+            if ($certRequiredPoolIds !== null) {
+                // Normalize: cast to positive integers, dedup
+                $normalizedIds = [];
+                foreach ($certRequiredPoolIds as $rawId) {
+                    $id = filter_var($rawId, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+                    if ($id === false) {
+                        return new DataResponse(
+                            ['error' => 'certRequiredPoolIds must contain positive integers'],
+                            Http::STATUS_BAD_REQUEST
+                        );
+                    }
+                    $normalizedIds[$id] = $id;
+                }
+                $certRequiredPoolIds = array_values($normalizedIds); // deduped, reset keys
+
+                // Validate each ID belongs to a pool assigned to this course
+                if (!empty($certRequiredPoolIds)) {
+                    $courseData = $this->courseService->findById($courseId, $this->userId);
+                    $validPoolIds = array_column($courseData['pools'] ?? [], 'id');
+                    foreach ($certRequiredPoolIds as $poolId) {
+                        if (!in_array($poolId, $validPoolIds, true)) {
+                            return new DataResponse(
+                                ['error' => "Pool {$poolId} does not belong to this course"],
+                                Http::STATUS_BAD_REQUEST
+                            );
+                        }
+                    }
+                }
+
+                // Store as JSON text; empty array → null (no required pools)
+                $course->setCertRequiredPoolIds(
+                    empty($certRequiredPoolIds) ? null : json_encode(array_values($certRequiredPoolIds))
+                );
+            }
+            if ($certValidityDays !== null) {
+                if ($certValidityDays < 0) {
+                    return new DataResponse(['error' => 'cert_validity_days must be >= 0'], Http::STATUS_BAD_REQUEST);
+                }
+                $course->setCertValidityDays($certValidityDays);
+            }
+
+            $course->setUpdatedAt(time());
+            $this->courseMapper->update($course);
+
+            return new DataResponse([
+                'certEnabled'         => $course->getCertEnabled() ?? false,
+                'certPassPercent'     => $course->getCertPassPercent() ?? 80,
+                'certRequiredPoolIds' => $course->getCertRequiredPoolIds() !== null
+                    ? json_decode($course->getCertRequiredPoolIds(), true) ?? []
+                    : [],
+                'certValidityDays'    => $course->getCertValidityDays() ?? 0,
+            ]);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('updateCertConfig error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Returns the pass status of the current user for the given course.
+     *
+     * IDOR guard: verifies the requesting user is enrolled in or owns the course
+     * before delegating to PassCriteriaService::evaluate(). Non-enrolled users → 403.
+     * Uses canAccessCourse() which accepts any enrollment role (not just instructor).
+     *
+     * PASS-07 lazy trigger: PassCriteriaService::evaluate() emits a course.passed audit event
+     * the first time this endpoint is called for a qualifying student. Subsequent calls are safe
+     * (idempotent guard inside PassCriteriaService::emitPassEventIfFirst()).
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 60, period: 60)]
+    public function getPassStatus(int $courseId): DataResponse {
+        try {
+            if ($this->userId === null) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+            $course = $this->courseMapper->findById($courseId);
+            if (!$this->canAccessCourse($course, $this->userId)) {
+                return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+            }
+            $result = $this->passCriteriaService->evaluate($this->userId, $courseId);
+            return new DataResponse($result->toArray());
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('getPassStatus error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 30, period: 60)]
@@ -834,6 +965,30 @@ class CourseController extends Controller {
         try {
             $member = $this->courseMemberMapper->findByCourseAndUser($course->getId(), $userId);
             return $member->getRole() === 'instructor';
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Returns true if $userId owns the course OR is enrolled as any role (student, instructor).
+     * Used for endpoints accessible to all course participants (e.g., getPassStatus).
+     *
+     * Use canManageCourse() instead for instructor-only write endpoints (updateCertConfig, etc.).
+     *
+     * Note: getPassStatus() returns an explicit 403 (not the usual 404-for-both obscurity) when
+     * this returns false. This is intentional — the pass-status endpoint is student-facing and
+     * clear error semantics are correct here. See 154-CONTEXT.md IDOR guard requirement.
+     *
+     * Implementation mirrors CourseService::hasAccess() (private — not reachable from controller).
+     */
+    private function canAccessCourse(Course $course, string $userId): bool {
+        if ($course->getInstructorId() === $userId) {
+            return true;
+        }
+        try {
+            $this->courseMemberMapper->findByCourseAndUser($course->getId(), $userId);
+            return true; // any enrollment role (student or instructor) grants access
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return false;
         }
