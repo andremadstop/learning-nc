@@ -5,6 +5,7 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\CourseMapper;
 use OCP\IDBConnection;
+use Psr\Log\LoggerInterface;
 
 /**
  * Evaluates whether a student has met the pass criteria for a certifying course.
@@ -27,6 +28,8 @@ class PassCriteriaService {
         private readonly CourseSummaryService $courseSummaryService,
         private readonly AuditService $auditService,
         private readonly IDBConnection $db,
+        private readonly IssuanceService $issuanceService,
+        private readonly LoggerInterface $logger,
     ) {}
 
     public function evaluate(string $userId, int $courseId): PassResult {
@@ -74,7 +77,25 @@ class PassCriteriaService {
             $passedAt = $this->getPassedAt($userId, $courseId);
         }
 
-        return new PassResult($passed, $score, $threshold, $poolsMastered, $passedAt);
+        $result = new PassResult($passed, $score, $threshold, $poolsMastered, $passedAt);
+
+        if ($passed) {
+            // CERT-05: auto-issue the signed credential immediately after the first-pass audit
+            // event. Issuance is a SIDE-EFFECT of this read path (GET /pass-status) — it must
+            // NEVER break it. If the issuer key or the learning_certificates table is not yet
+            // provisioned (live-applied at 155-07), swallow + log instead of 500-ing the caller.
+            // IssuanceService owns its own idempotency guard, so repeated GETs issue exactly once.
+            try {
+                $this->issuanceService->issueIfPassed($userId, $courseId, $result);
+            } catch (\Throwable $e) {
+                $this->logger->warning(
+                    'Certificate issuance failed for user {user} course {course}: {msg}',
+                    ['user' => $userId, 'course' => $courseId, 'msg' => $e->getMessage()]
+                );
+            }
+        }
+
+        return $result;
     }
 
     /**

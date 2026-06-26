@@ -7,11 +7,13 @@ use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\CourseSummaryService;
+use OCA\Learning\Service\IssuanceService;
 use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\PassResult;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
+use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -49,7 +51,8 @@ class PassCriteriaServiceTest extends TestCase {
         ?int $examScore,
         ?array $masteryStats,
         array $builders,
-        AuditService $audit
+        AuditService $audit,
+        ?IssuanceService $issuance = null
     ): PassCriteriaService {
         $courseMapper = $this->createMock(CourseMapper::class);
         $courseMapper->method('findById')->willReturn($course);
@@ -61,7 +64,9 @@ class PassCriteriaServiceTest extends TestCase {
         }
 
         $db = new FakeDbConnection($builders);
-        return new PassCriteriaService($courseMapper, $summary, $audit, $db);
+        $issuance = $issuance ?? $this->createMock(IssuanceService::class);
+        $logger = $this->createMock(LoggerInterface::class);
+        return new PassCriteriaService($courseMapper, $summary, $audit, $db, $issuance, $logger);
     }
 
     /** Builds the two SELECT result builders a single passing evaluate() consumes. */
@@ -192,5 +197,49 @@ class PassCriteriaServiceTest extends TestCase {
         $this->assertIsString($source);
         $this->assertStringNotContainsString('validity_days', $source,
             'cert_validity_days must not be read or compared in Phase 154 evaluate() — expiry is Phase 155');
+    }
+
+    // CERT-05: a first pass triggers exactly one IssuanceService::issueIfPassed() call, with the PassResult
+    public function testEvaluateIssuesCredentialExactlyOnceOnPass(): void {
+        $audit = $this->createMock(AuditService::class);
+
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->once())->method('issueIfPassed')
+            ->with(self::USER, self::COURSE_ID, $this->callback(
+                fn(PassResult $r): bool => $r->isPassed() && $r->getScore() === 88
+            ));
+
+        $service = $this->makeService($this->makeCourse(true, 80), 88, null, $this->passingBuilders(), $audit, $issuance);
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertTrue($result->isPassed());
+    }
+
+    // CERT-05: a non-pass must NOT attempt issuance
+    public function testEvaluateDoesNotIssueWhenNotPassed(): void {
+        $audit = $this->createMock(AuditService::class);
+
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->never())->method('issueIfPassed');
+
+        $service = $this->makeService($this->makeCourse(true, 80), 50, null, [], $audit, $issuance);
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertFalse($result->isPassed());
+    }
+
+    // Issuance is a side-effect: a throwing IssuanceService must NOT break the pass-status read path
+    public function testEvaluateSwallowsIssuanceFailure(): void {
+        $audit = $this->createMock(AuditService::class);
+
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->method('issueIfPassed')
+            ->willThrowException(new \RuntimeException('No active signing key'));
+
+        $service = $this->makeService($this->makeCourse(true, 80), 95, null, $this->passingBuilders(), $audit, $issuance);
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertTrue($result->isPassed(), 'evaluate() returns a normal PassResult even when issuance throws');
+        $this->assertSame(95, $result->getScore());
     }
 }
