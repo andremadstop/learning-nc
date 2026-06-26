@@ -696,10 +696,13 @@ class CourseController extends Controller {
                 }
                 $certRequiredPoolIds = array_values($normalizedIds); // deduped, reset keys
 
-                // Validate each ID belongs to a pool assigned to this course
+                // Validate each ID belongs to a pool assigned to this course.
+                // NOTE: each pool entry's 'id' is the course-pool MAPPING row id; the actual
+                // pool id is 'pool_id' (CoursePool::jsonSerialize). Cast to int so the strict
+                // in_array() comparison is robust against string-typed DB columns.
                 if (!empty($certRequiredPoolIds)) {
                     $courseData = $this->courseService->findById($courseId, $this->userId);
-                    $validPoolIds = array_column($courseData['pools'] ?? [], 'id');
+                    $validPoolIds = array_map('intval', array_column($courseData['pools'] ?? [], 'pool_id'));
                     foreach ($certRequiredPoolIds as $poolId) {
                         if (!in_array($poolId, $validPoolIds, true)) {
                             return new DataResponse(
