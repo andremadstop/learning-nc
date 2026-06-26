@@ -438,8 +438,8 @@ Plans:
 Plans:
 - [x] 154-01-PLAN.md — Wave 1: Test stubs + PassResult/PassCriteriaService skeletons (suite stays green)
 - [x] 154-02-PLAN.md — Wave 2: DB migration Version009000 + Course.php cert field extension
-- [ ] 154-03-PLAN.md — Wave 3: Service layer (getExamScore + two-gate PassCriteriaService + PHPUnit GREEN)
-- [ ] 154-04-PLAN.md — Wave 4: Controller endpoints (cert-config PATCH + pass-status GET) + JS + i18n
+- [x] 154-03-PLAN.md — Wave 3: Service layer (getExamScore + two-gate PassCriteriaService + PHPUnit GREEN)
+- [x] 154-04-PLAN.md — Wave 4: Controller endpoints (cert-config PATCH + pass-status GET) + JS + i18n
 - [ ] 154-05-PLAN.md — Wave 5: Vue UI (instructor config block + student Zeugnisstatus card) + human verify
 
 ### Phase 155: Certificate-Artifact & Issuer
@@ -523,7 +523,7 @@ Plans:
 | 151. Skin Picker & Prof. Lern Classic | v4.4.0 | Complete    | 2026-04-25 | — |
 | 152. Three Archetype Presets | v4.4.0 | Complete    | 2026-04-25 | 2026-04-25 |
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 7/7 | Complete | 2026-04-27 |
-| 154. Pass-Definition | v5.0.0 | 3/5 | In Progress | - |
+| 154. Pass-Definition | v5.0.0 | 4/5 | In Progress | - |
 | 155. Certificate-Artifact & Issuer | v5.0.0 | 0/TBD | Not started | - |
 | 156. Compliance-Report | v5.0.0 | 0/TBD | Not started | - |
 | 157. Public-Verify | v5.0.0 | 0/TBD | Not started | - |

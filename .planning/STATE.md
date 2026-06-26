@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
 current_phase: 154
-current_plan: 04
+current_plan: 05
 status: in-progress
-stopped_at: Completed 154-03-PLAN.md
-last_updated: "2026-06-26T13:00:00.000Z"
-last_activity: 2026-06-26 — Plan 154-03 complete (PassCriteriaService two-gate eval + getExamScore, 11/11 PHPUnit GREEN).
+stopped_at: Completed 154-04-PLAN.md
+last_updated: "2026-06-26T14:35:00.000Z"
+last_activity: 2026-06-26 — Plan 154-04 complete (cert-config PATCH + pass-status GET endpoints, CourseService.js client, 5-lang i18n; PHPStan L5 clean, 1091 Vitest green, routes resolve live).
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 5
-  completed_plans: 3
-  percent: 60
+  completed_plans: 4
+  percent: 80
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-06-26)
 ## Current Position
 
 Phase: 154 of 157 (Pass-Definition)
-Plan: 04 of 5 (next — 154-03 complete)
+Plan: 05 of 5 (next — 154-04 complete)
 Status: In progress
-Last activity: 2026-06-26 — Plan 154-03 complete: PassCriteriaService two-gate evaluation (exam score + pool mastery) + idempotent course.passed audit + CourseSummaryService::getExamScore. 11/11 PHPUnit GREEN, PHPStan L5 clean.
+Last activity: 2026-06-26 — Plan 154-04 complete: cert-config PATCH (instructor-only, pool-ID validated) + pass-status GET (IDOR-guarded, lazy PASS-07 audit) endpoints; new CourseService.js API client; 9 cert i18n keys across DE/EN/FR/RU/AR. PHPStan L5 clean, 1091/1091 Vitest green, routes resolve live (405/401, no 500).
 
-Progress: [██████░░░░] 60% (3/5 plans in Phase 154)
+Progress: [████████░░] 80% (4/5 plans in Phase 154)
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Progress: [██████░░░░] 60% (3/5 plans in Phase 154)
 | 154 Pass-Definition | P01 | ~15min | 2 | 4 |
 | 154 Pass-Definition | P02 | ~20min | 2 | 2 |
 | 154 Pass-Definition | P03 | ~30min | 2 | 4 |
+| 154 Pass-Definition | P04 | ~50min | 3 | 15 |
 
 ## Accumulated Context
 
@@ -87,8 +88,17 @@ See PROJECT.md Key Decisions for full table and prior milestone decisions.
 - **Accepted race condition (deferred):** emitPassEventIfFirst SELECT→INSERT not atomic; two simultaneous qualifying GETs could double-insert. Append-only audit table → minor data-quality only. Proper fix (course_id column + UNIQUE index) deferred to future migration.
 - **PASS-02/03/05/07 marked complete** in REQUIREMENTS via this plan's frontmatter. PASS-01/04 remain Pending until controller (154-04) + UI (154-05).
 
+### Execution Notes (154-04)
+
+- **`occ routes:list` does not exist on NC 33** — correct command is `occ router:list <app>`. Plan verify commands using `routes:list` fail with "no commands in the routes namespace". Update future plans.
+- **No `app/src/services/` dir existed** — components call axios inline. Created `CourseService.js` as the first service module; 154-05 consumes it (CourseTabVerwaltung + CourseSummary).
+- **i18n parity gate requires all 5 langs** — `check-i18n-parity.sh` enforces identical key-sets across DE/EN/FR/RU/AR. Adding keys to only de+en (as the plan said) would fail Gate 1. Added real FR/RU/AR translations. Regenerate `.js` with `python3 scripts/l10n_js_sync.py`; guard with `--check` + parity script.
+- **PASS-01..04/06 still Pending** — endpoints wired but end-to-end (instructor/student-facing) capability needs 154-05 UI. Mark complete at 154-05, consistent with the 154-02/03 deferral notes. No requirements flipped in this plan.
+- **Authenticated live API tests not run** — vault credentials file absent + no `ADMIN_PASS`/`SECOND_PASS` in env. Routes/verbs confirmed via unauthenticated smoke (405 on GET cert-config, 401 on pass-status/PATCH; no 500 → DI sound). Logic unit-proven in 154-03. test-api.sh assertions are `bash -n` valid and run under Gate 2 with creds.
+- **PassCriteriaService autowired** — constructor takes only DI-resolvable services/interfaces; no Application.php registration.
+
 ## Session Continuity
 
-Last session: 2026-06-26T13:00:00.000Z
-Stopped at: Completed 154-03-PLAN.md
+Last session: 2026-06-26T14:35:00.000Z
+Stopped at: Completed 154-04-PLAN.md
 Resume file: None
