@@ -77,6 +77,16 @@ class Notifier implements INotifier {
                 $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
                 break;
 
+            case 'certificate_issued':
+                $params = $notification->getSubjectParameters();
+                $courseTitle = (string)($params['course_title'] ?? '');
+                $notification->setParsedSubject(
+                    $l->t('Certificate issued: %s', [$courseTitle])
+                );
+                $notification->setLink($appUrl);
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
+                break;
+
             default:
                 throw new UnknownNotificationException('Unknown subject');
         }

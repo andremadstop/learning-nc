@@ -70,6 +70,7 @@ OC.L10N.register(
     "Achievement Unlocked!" : "تم فتح الإنجاز!",
     "Achievement unlocked: %s %s" : "تم فتح الإنجاز: %s %s",
     "Achievements" : "الإنجازات",
+    "Certificate issued: %s" : "تم إصدار الشهادة: %s",
     "Action" : "إجراء",
     "Actions" : "الإجراءات",
     "Activate" : "تفعيل",

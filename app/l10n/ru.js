@@ -70,6 +70,7 @@ OC.L10N.register(
     "Achievement Unlocked!" : "Достижение разблокировано!",
     "Achievement unlocked: %s %s" : "Достижение разблокировано: %s %s",
     "Achievements" : "Достижения",
+    "Certificate issued: %s" : "Сертификат выдан: %s",
     "Action" : "Действие",
     "Actions" : "Действия",
     "Activate" : "Активировать",

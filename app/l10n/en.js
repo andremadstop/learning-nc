@@ -70,6 +70,7 @@ OC.L10N.register(
     "Achievement Unlocked!" : "Achievement Unlocked!",
     "Achievement unlocked: %s %s" : "Achievement unlocked: %s %s",
     "Achievements" : "Achievements",
+    "Certificate issued: %s" : "Certificate issued: %s",
     "Action" : "Action",
     "Actions" : "Actions",
     "Activate" : "Activate",
