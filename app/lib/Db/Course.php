@@ -42,6 +42,14 @@ use OCP\AppFramework\Db\Entity;
  * @method void setAllowedCampaigns(?string $allowedCampaigns)
  * @method bool getMaintenanceMode()
  * @method void setMaintenanceMode(bool $maintenanceMode)
+ * @method bool|null getCertEnabled()
+ * @method void setCertEnabled(bool $certEnabled)
+ * @method int|null getCertPassPercent()
+ * @method void setCertPassPercent(int $certPassPercent)
+ * @method string|null getCertRequiredPoolIds()
+ * @method void setCertRequiredPoolIds(?string $certRequiredPoolIds)
+ * @method int|null getCertValidityDays()
+ * @method void setCertValidityDays(int $certValidityDays)
  */
 class Course extends Entity {
     protected $title;
@@ -62,6 +70,10 @@ class Course extends Entity {
     protected $leitnerSprint;
     protected $allowedCampaigns;
     protected $maintenanceMode;
+    protected $certEnabled;
+    protected $certPassPercent;
+    protected $certRequiredPoolIds;
+    protected $certValidityDays;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -72,6 +84,10 @@ class Course extends Entity {
         $this->addType('examRequiresTraining', 'boolean');
         $this->addType('leitnerSprint', 'boolean');
         $this->addType('maintenanceMode', 'boolean');
+        $this->addType('certEnabled', 'boolean');
+        $this->addType('certPassPercent', 'integer');
+        $this->addType('certRequiredPoolIds', 'text');
+        $this->addType('certValidityDays', 'integer');
     }
 
     public function jsonSerialize(): array {
@@ -95,6 +111,12 @@ class Course extends Entity {
             'leitner_sprint' => $this->leitnerSprint ?? false,
             'allowed_campaigns' => $this->allowedCampaigns !== null ? (json_decode($this->allowedCampaigns, true) ?: []) : null,
             'maintenance_mode' => $this->maintenanceMode ?? false,
+            'cert_enabled' => $this->getCertEnabled() ?? false,
+            'cert_pass_percent' => $this->getCertPassPercent() ?? 80,
+            'cert_required_pool_ids' => $this->getCertRequiredPoolIds() !== null
+                ? (json_decode($this->getCertRequiredPoolIds(), true) ?: [])
+                : [],
+            'cert_validity_days' => $this->getCertValidityDays() ?? 0,
         ];
     }
 }
