@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
 current_phase: 154
-current_plan: null
-status: ready-to-plan
-stopped_at: "Roadmap created 2026-06-26. Phase 154 (Pass-Definition) ready to plan."
-last_updated: "2026-06-26T00:00:00.000Z"
-last_activity: 2026-06-26
+current_plan: 02
+status: in-progress
+stopped_at: Completed 154-01-PLAN.md
+last_updated: "2026-06-26T11:45:30.476Z"
+last_activity: 2026-06-26 — Plan 154-01 complete (pass-criteria interface contracts).
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  total_plans: 5
+  completed_plans: 1
+  percent: 20
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-06-26)
 ## Current Position
 
 Phase: 154 of 157 (Pass-Definition)
-Plan: — (ready to plan)
-Status: Ready to plan
-Last activity: 2026-06-26 — Roadmap created. 4 phases (154-157) mapped to 30 requirements.
+Plan: 02 of 5 (next — 154-01 complete)
+Status: In progress
+Last activity: 2026-06-26 — Plan 154-01 complete: PassResult DTO + PassCriteriaService skeleton + 11 skipped PHPUnit stubs.
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██░░░░░░░░] 20% (1/5 plans in Phase 154)
 
 ## Performance Metrics
 
@@ -40,9 +40,9 @@ Progress: [░░░░░░░░░░] 0%
 - Parallelization: on (Phases 156+157 run parallel after 155)
 - v4.4.0 shipped: 5 phases (149-153), 30 plans — App Store live 2026-04-27
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| v5.0.0: not started | - | - | - |
+| Phase | Plan | Duration | Tasks | Files |
+|-------|------|----------|-------|-------|
+| 154 Pass-Definition | P01 | ~15min | 2 | 4 |
 
 ## Accumulated Context
 
@@ -63,10 +63,14 @@ See PROJECT.md Key Decisions for full table and prior milestone decisions.
 
 ### Blockers/Concerns
 
-None. Phase 154 ready to plan.
+- TOOLING: `gsd-tools state update-progress` / `record-session` corrupted STATE.md frontmatter during 154-01 execution (overwrote milestone v5.0.0 → v2.3, lost current_phase/plan, wrong phase totals). Restored manually. Avoid `state advance-plan`/`update-progress` on this STATE.md until the parser handles the v5.0.0 frontmatter shape.
+
+### Execution Notes (154-01)
+
+- Skeleton constructor uses plain params + scoped `@phpstan-ignore-next-line`: PHPStan L5 rejects both unused promoted readonly properties and unused plain params; deps go unused until 154-03 replaces the body.
 
 ## Session Continuity
 
-Last session: 2026-06-26
-Stopped at: Roadmap created. Phase 154 (Pass-Definition) ready to plan — 7 PASS requirements.
+Last session: 2026-06-26T11:45:30.473Z
+Stopped at: Completed 154-01-PLAN.md
 Resume file: None

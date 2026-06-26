@@ -13,9 +13,9 @@ Requirements for v5.0.0. Each maps to a roadmap phase (154–157).
 - [ ] **PASS-02**: Instructor can set a pass threshold (minimum score %) per course
 - [ ] **PASS-03**: Instructor can designate mandatory pools that must be mastered to pass
 - [ ] **PASS-04**: Instructor can set certificate validity duration (expires after N days; 0 = no expiry)
-- [ ] **PASS-05**: System evaluates pass as a binary from discrete assessment results, **excluding guessed answers** (`is_guessed`) — FSRS readiness is explicitly NOT the pass criterion
+- [x] **PASS-05**: System evaluates pass as a binary from discrete assessment results, **excluding guessed answers** (`is_guessed`) — FSRS readiness is explicitly NOT the pass criterion
 - [ ] **PASS-06**: Student sees their pass status (passed / not yet) for a certifying course
-- [ ] **PASS-07**: A pass event is recorded immutably in the audit log when criteria are first met
+- [x] **PASS-07**: A pass event is recorded immutably in the audit log when criteria are first met
 
 ### Certificate-Artifact & Issuer (CERT) — Phase 155
 
@@ -80,9 +80,9 @@ Requirements for v5.0.0. Each maps to a roadmap phase (154–157).
 | PASS-02 | 154 | Pending |
 | PASS-03 | 154 | Pending |
 | PASS-04 | 154 | Pending |
-| PASS-05 | 154 | Pending |
+| PASS-05 | 154 | Complete |
 | PASS-06 | 154 | Pending |
-| PASS-07 | 154 | Pending |
+| PASS-07 | 154 | Complete |
 | CERT-01 | 155 | Pending |
 | CERT-02 | 155 | Pending |
 | CERT-03 | 155 | Pending |
