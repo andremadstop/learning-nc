@@ -434,7 +434,13 @@ Plans:
 - Lucky-guess exclusion (`is_guessed`) and the FSRS-vs-pass separation are LOCKED here as the foundation gate before any crypto work (Pitfall 3 prevention)
 - Migration Version009000: typed cert-config columns on `learning_courses` (NOT JSON in mode_config; PHPStan-checkable; follows Version003500 pattern)
 - Scope guardrail: NO multi-tenant platform; issuer = NC instance did:web; wallet interop deferred to v6+
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 154-01-PLAN.md — Wave 1: Test stubs + PassResult/PassCriteriaService skeletons (suite stays green)
+- [ ] 154-02-PLAN.md — Wave 2: DB migration Version009000 + Course.php cert field extension
+- [ ] 154-03-PLAN.md — Wave 3: Service layer (getExamScore + two-gate PassCriteriaService + PHPUnit GREEN)
+- [ ] 154-04-PLAN.md — Wave 4: Controller endpoints (cert-config PATCH + pass-status GET) + JS + i18n
+- [ ] 154-05-PLAN.md — Wave 5: Vue UI (instructor config block + student Zeugnisstatus card) + human verify
 
 ### Phase 155: Certificate-Artifact & Issuer
 **Goal**: The NC instance has a cryptographic identity (did:web, Ed25519), issues a signed OB3/VC credential automatically on pass, and students can view, print, download, and share it; key rotation preserves all past certificates
