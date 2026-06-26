@@ -645,6 +645,51 @@ assert_status_in "Add pool to course works" "200" "201"
 request POST admin "/apps/learning/api/courses/${COURSE_ID}/enroll"
 assert_status_in "Course self-enrollment works" "200" "201" "409"
 
+# ── Phase 154: Cert Config + Pass Status ──────────────────────────
+# (placed after the pool is attached to the course so certRequiredPoolIds validation has a valid pool)
+
+# Instructor: enable cert config with valid payload
+request PATCH admin "/apps/learning/api/courses/${COURSE_ID}/cert-config" "$(jq -nc '{certEnabled:true,certPassPercent:80}')"
+assert_status "Instructor can enable cert config" "200"
+assert_json "certConfig response has certEnabled" '.certEnabled == true'
+
+# Instructor: certPassPercent out of range → 400
+request PATCH admin "/apps/learning/api/courses/${COURSE_ID}/cert-config" "$(jq -nc '{certPassPercent:0}')"
+assert_status "certPassPercent=0 rejected with 400" "400"
+
+request PATCH admin "/apps/learning/api/courses/${COURSE_ID}/cert-config" "$(jq -nc '{certPassPercent:101}')"
+assert_status "certPassPercent=101 rejected with 400" "400"
+
+# Instructor: certValidityDays negative → 400
+request PATCH admin "/apps/learning/api/courses/${COURSE_ID}/cert-config" "$(jq -nc '{certValidityDays:-1}')"
+assert_status "certValidityDays=-1 rejected with 400" "400"
+
+# Instructor: foreign pool ID in certRequiredPoolIds → 400
+request PATCH admin "/apps/learning/api/courses/${COURSE_ID}/cert-config" "$(jq -nc '{certRequiredPoolIds:[99999]}')"
+assert_status "Foreign pool ID in certRequiredPoolIds rejected with 400" "400"
+
+# Instructor: pool belonging to this course accepted
+request PATCH admin "/apps/learning/api/courses/${COURSE_ID}/cert-config" "$(jq -nc --argjson poolId "$POOL_ID" '{certRequiredPoolIds:[$poolId]}')"
+assert_status "Own pool ID accepted in certRequiredPoolIds" "200"
+
+# Non-instructor: cert-config write → 403
+if [[ -n "${SECOND_USER}" ]]; then
+    request PATCH second "/apps/learning/api/courses/${COURSE_ID}/cert-config" "$(jq -nc '{certEnabled:false}')"
+    assert_status "Non-instructor cert-config rejected with 403" "403"
+fi
+
+# Course owner: pass status → 200
+request GET admin "/apps/learning/api/courses/${COURSE_ID}/pass-status"
+assert_status "Course owner can read pass status" "200"
+assert_json "Pass status response has applicable boolean" '.applicable | type == "boolean"'
+assert_json "Pass status response has passed boolean" '.passed | type == "boolean"'
+
+# IDOR guard: non-enrolled user → 403
+if [[ -n "${SECOND_USER}" ]]; then
+    request GET second "/apps/learning/api/courses/${COURSE_ID}/pass-status"
+    assert_status "Non-enrolled user blocked from pass-status with 403" "403"
+fi
+
 request GET admin "/apps/learning/api/courses/${COURSE_ID}/my-progress"
 assert_status "Course my-progress works" "200"
 
