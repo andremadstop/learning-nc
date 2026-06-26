@@ -2202,6 +2202,15 @@
         "← Zurück zu Pools": "← Zurück zu Pools",
         "← Zurück zum Kurs": "← Zurück zum Kurs",
         "Kommunikation": "Kommunikation",
-        "Verwaltung": "Verwaltung"
+        "Verwaltung": "Verwaltung",
+        "Zertifizierung aktivieren": "Zertifizierung aktivieren",
+        "Mindest-Score (%)": "Mindest-Score (%)",
+        "Pflicht-Pools": "Pflicht-Pools",
+        "Gültigkeitsdauer (Tage, 0 = unbegrenzt)": "Gültigkeitsdauer (Tage, 0 = unbegrenzt)",
+        "Bestanden": "Bestanden",
+        "Noch nicht bestanden": "Noch nicht bestanden",
+        "Aktueller Score": "Aktueller Score",
+        "Bestanden am": "Bestanden am",
+        "Kein Zertifikat für diesen Kurs": "Kein Zertifikat für diesen Kurs"
     }
 }

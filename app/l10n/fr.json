@@ -2202,6 +2202,15 @@
         "← Zurück zu Pools": "← Back to pools",
         "← Zurück zum Kurs": "← Back to course",
         "Kommunikation": "Communication",
-        "Verwaltung": "Administration"
+        "Verwaltung": "Administration",
+        "Zertifizierung aktivieren": "Activer la certification",
+        "Mindest-Score (%)": "Score minimum (%)",
+        "Pflicht-Pools": "Pools obligatoires",
+        "Gültigkeitsdauer (Tage, 0 = unbegrenzt)": "Durée de validité (jours, 0 = illimité)",
+        "Bestanden": "Réussi",
+        "Noch nicht bestanden": "Pas encore réussi",
+        "Aktueller Score": "Score actuel",
+        "Bestanden am": "Réussi le",
+        "Kein Zertifikat für diesen Kurs": "Aucun certificat pour ce cours"
     }
 }

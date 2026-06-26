@@ -2202,6 +2202,15 @@
         "← Zurück zu Pools": "← Back to pools",
         "← Zurück zum Kurs": "← Back to course",
         "Kommunikation": "التواصل",
-        "Verwaltung": "الإدارة"
+        "Verwaltung": "الإدارة",
+        "Zertifizierung aktivieren": "تفعيل الشهادة",
+        "Mindest-Score (%)": "الحد الأدنى للنتيجة (%)",
+        "Pflicht-Pools": "المجمعات الإلزامية",
+        "Gültigkeitsdauer (Tage, 0 = unbegrenzt)": "مدة الصلاحية (أيام، 0 = غير محدود)",
+        "Bestanden": "ناجح",
+        "Noch nicht bestanden": "لم ينجح بعد",
+        "Aktueller Score": "النتيجة الحالية",
+        "Bestanden am": "تاريخ النجاح",
+        "Kein Zertifikat für diesen Kurs": "لا توجد شهادة لهذه الدورة"
     }
 }

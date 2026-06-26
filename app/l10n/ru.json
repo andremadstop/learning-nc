@@ -2202,6 +2202,15 @@
         "← Zurück zu Pools": "← Back to pools",
         "← Zurück zum Kurs": "← Back to course",
         "Kommunikation": "Коммуникация",
-        "Verwaltung": "Управление"
+        "Verwaltung": "Управление",
+        "Zertifizierung aktivieren": "Включить сертификацию",
+        "Mindest-Score (%)": "Минимальный балл (%)",
+        "Pflicht-Pools": "Обязательные пулы",
+        "Gültigkeitsdauer (Tage, 0 = unbegrenzt)": "Срок действия (дней, 0 = без ограничения)",
+        "Bestanden": "Сдано",
+        "Noch nicht bestanden": "Ещё не сдано",
+        "Aktueller Score": "Текущий балл",
+        "Bestanden am": "Дата сдачи",
+        "Kein Zertifikat für diesen Kurs": "Нет сертификата для этого курса"
     }
 }
