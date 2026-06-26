@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
 current_phase: 155
-current_plan: 02
+current_plan: 03
 status: in-progress
-stopped_at: "Completed 155-02-PLAN.md (KeyService + issuer identity): Ed25519 keygen + ICrypto encrypt-at-rest, learning:cert:init-issuer occ command (+--rotate), public did.json (DidController, all non-revoked keys). KeyServiceTest 4/4 green, PHPStan L5 clean on relay. No signing code (155-03 gate respected). Next: 155-03 (SigningService)."
+stopped_at: "Completed 155-03-PLAN.md (SigningService): VC-JWT EdDSA signer via ext-sodium (no deps) per frozen 155-ADR-ANCHOR; payload = OB3 object direct (no vc wrapper); kid via KeyService::hostDid() (no kid-drift); JSON_UNESCAPED_SLASHES byte-fidelity. SigningServiceTest 5/5 (17 assertions) incl. INDEPENDENT Python cryptography Ed25519 verifier (ADR-001 #2). PHPStan L5 clean on relay. Next: 155-04 (IssuanceService)."
 last_updated: "2026-06-27T00:00:00.000Z"
-last_activity: 2026-06-27 — Plan 155-02 complete: KeyService (init/rotate/getActiveSigningMaterial/hostDid) with sodium keygen + encrypt-at-rest + 64-byte hard-validate (defeats plaintext fallback); learning:cert:init-issuer occ command registered in info.xml + DI; public did.json publishing all non-revoked publicKeyJwk verificationMethods (rotation linchpin). CERT-01..04 code-complete + unit/static-proven but left Pending (live occ/curl needs migration applied → 155-07). PHPStan L5 clean, KeyServiceTest 4/4 (14 assertions) on relay.
+last_activity: 2026-06-27 — Plan 155-03 complete: SigningService.sign/verify/b64u — compact VC-JWT EdDSA (ext-sodium, NO Composer deps) per the FROZEN signing contract; header {alg:EdDSA,typ:vc+jwt,cty:vc,kid}, payload = OB3 credential DIRECTLY (no vc/vp wrapper, no iss/sub/nbf/jti), JSON_UNESCAPED_SLASHES so signed bytes == emitted bytes. kid = KeyService::hostDid().'#'.keyId (same string as DidController.verificationMethod.id, kid-drift impossible). scripts/verify-credential.py = dev-only INDEPENDENT Python cryptography Ed25519 verifier (ADR-001 follow-up #2; never ships — outside release allowlist). TDD 5/5 green (17 assertions) incl. independent verify (valid→exit0, tampered→non-zero); PHPStan L5 clean. CERT-06 left Pending (signing mechanism done; field-embedding = 155-04, live verify = 155-07).
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 7
-  completed_plans: 2
-  percent: 29
+  completed_plans: 3
+  percent: 43
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-06-26)
 ## Current Position
 
 Phase: 155 of 157 (Certificate-Artifact & Issuer) — executing
-Plan: 155-02 complete (2/7) — next is 155-03 (SigningService)
-Status: 155-02 issuer identity shipped — sodium keygen + ICrypto encrypt-at-rest, occ init-issuer command, public did.json (all non-revoked keys). No signing code yet (155-03 gate respected).
-Last activity: 2026-06-27 — Plan 155-02 complete: KeyService (init/rotate/getActiveSigningMaterial/hostDid), learning:cert:init-issuer occ command (info.xml + DI), public did.json publishing all non-revoked publicKeyJwk verificationMethods. KeyServiceTest 4/4 (14 assertions) + PHPStan L5 clean on relay.
+Plan: 155-03 complete (3/7) — next is 155-04 (IssuanceService)
+Status: 155-03 signing core shipped — SigningService VC-JWT EdDSA (ext-sodium, no deps) per frozen contract; payload = OB3 object direct; kid via hostDid() (no drift); byte-fidelity via JSON_UNESCAPED_SLASHES. Independent Python Ed25519 verifier proves third-party verifiability (ADR-001 #2).
+Last activity: 2026-06-27 — Plan 155-03 complete: SigningService.sign/verify/b64u (VC-JWT EdDSA, ext-sodium, NO Composer deps) + scripts/verify-credential.py (dev-only independent Python cryptography Ed25519 verifier). TDD 5/5 (17 assertions) incl. independent verify; PHPStan L5 clean on relay. CERT-06 left Pending (mechanism done; field-embedding = 155-04, live verify = 155-07).
 
-Progress: [███░░░░░░░] 29% (2/7 plans in Phase 155)
+Progress: [████░░░░░░] 43% (3/7 plans in Phase 155)
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Progress: [███░░░░░░░] 29% (2/7 plans in Phase 155)
 | 154 Pass-Definition | P05 | ~25min | 3 | 4 |
 | 155 Cert-Artifact | P01 | ~35min | 3 | 7 |
 | 155 Cert-Artifact | P02 | ~40min | 3 | 7 |
+| 155 Cert-Artifact | P03 | ~35min | 3 | 4 |
 
 ## Accumulated Context
 
@@ -127,8 +128,17 @@ See PROJECT.md Key Decisions for full table and prior milestone decisions.
 - **deploy-prod.sh --php-only does NOT sync tests/** — only lib/ + l10n. New test files must be scp'd to host + `docker cp`'d into the container, else PHPUnit reports "No tests executed".
 - **did.json content-type = application/json** (plain JSONResponse, per plan + Pattern 2). 155-07 may switch to `application/did+json` if its curl assertion is strict.
 
+### Execution Notes (155-03)
+
+- **SigningService injects KeyService, kid via `hostDid()`** — NOT a private `parse_url` re-derivation. The kid (`hostDid().'#'.keyId`) is the SAME string as `DidController.verificationMethod.id` by construction, so kid-drift (Pitfall 4) is structurally impossible. The plan's Task-2 "host from IURLGenerator" is satisfied by `hostDid()` internally; the must_haves key_link + 155-02 handoff (line 124) settle the wording. 155-04 calls `sign($ob3, $material['key'], $material['secret'])` from `KeyService::getActiveSigningMaterial()`.
+- **Byte fidelity is structural** — header AND payload serialized with `JSON_UNESCAPED_SLASHES`; signing operates on `b64u(header).'.'.b64u(payload)`, so signed bytes == emitted bytes (zero canonicalization). Payload = OB3 object DIRECTLY (no `vc`/`vp` wrapper, no `iss`/`sub`/`nbf`/`jti` — VC-JWT 1.1 forbidden). Proven by byte-stability + header-contract tests (ADR-001 follow-up #1).
+- **Independent verifier runs for real** — `scripts/verify-credential.py` (Python `cryptography` Ed25519) re-verifies `header.payload` from the base64url JWK `x` alone (ADR-001 follow-up #2). Container had `python3` but no `cryptography` and no pip/ensurepip → installed `python3-cryptography` 43.0.0 via `apt-get` (as root). **This install is non-persistent across container rebuild — 155-07's independent-verify gate must (re)ensure `cryptography` is present or it errors instead of pass/fail.** Test invokes phpunit with `-e VERIFY_SCRIPT=/tmp/verify-credential.py` (script `docker cp`'d there; `scripts/` is not in the deploy bundle).
+- **verify-credential.py is dev-only by construction** — repo-root `scripts/` is outside the release Makefile allowlist (`appinfo/css/img/js/lib/templates`) AND the deploy bundle (`lib/ appinfo/ l10n/ templates/`). Added a `!scripts/verify-credential.py` .gitignore negation (the `scripts/*` blanket-ignore otherwise dropped the deliverable). NO new package.json/composer dependency. Re-audited by 155-07 leakage gate (Rule 18).
+- **CERT-06 left Pending** — 155-03 delivers the signing MECHANISM (+ independent verifiability); CERT-06's "self-contained, all-fields-embedded-at-signing-time" substance is realized at issuance (155-04) and verified live at 155-07. Consistent with the 155-02 CERT-01..04 deferral discipline. `requirements mark-complete` NOT run.
+- **TDD 5/5 green (17 assertions)** on relay; RED confirmed first (4× class-not-found + Test 5 script-not-resolvable — Test 5 executed, not skipped). PHPStan L5 clean.
+
 ## Session Continuity
 
 Last session: 2026-06-27T00:00:00.000Z
-Stopped at: Completed 155-02-PLAN.md — Phase 155 issuer identity (KeyService + did.json) shipped (2/7)
+Stopped at: Completed 155-03-PLAN.md — Phase 155 signing core (SigningService VC-JWT EdDSA + independent verifier) shipped (3/7)
 Resume file: None

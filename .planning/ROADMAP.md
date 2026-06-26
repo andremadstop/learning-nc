@@ -61,7 +61,7 @@ Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMEN
 ### Phases
 
 - [x] **Phase 154: Pass-Definition** — Hard pass criterion per course, lucky-guess exclusion, student status, audit event
-- [ ] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn _(2/7 plans: 155-01 data layer + ADR anchor, 155-02 KeyService + occ init-issuer + public did.json)_
+- [ ] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn _(3/7 plans: 155-01 data layer + ADR anchor, 155-02 KeyService + occ init-issuer + public did.json, 155-03 SigningService VC-JWT EdDSA + independent verifier)_
 - [ ] **Phase 156: Compliance-Report** — Instructor CSV export, date/expiry filters, DSGVO-safe (runs parallel with 157)
 - [ ] **Phase 157: Public-Verify** — Public @PublicPage verify route, signature + revocation check, rate-limit (runs parallel with 156)
 
@@ -465,7 +465,7 @@ Plans:
 Plans:
 - [x] 155-01-PLAN.md — ADR anchor + Migration Version009100 (2 tables) + CertKey/Certificate entities + mappers (data layer) (CERT-03, CERT-04, CERT-06) ✓ 2026-06-27
 - [ ] 155-02-PLAN.md — KeyService (sodium keygen + ICrypto encrypt + rotation) + InitIssuerCommand (occ) + DidController (public did.json)
-- [ ] 155-03-PLAN.md — SigningService VC-JWT EdDSA (TDD round-trip + tamper + independent verifier) — ADR follow-ups #1/#2
+- [x] 155-03-PLAN.md — SigningService VC-JWT EdDSA (TDD round-trip + tamper + independent verifier) — ADR follow-ups #1/#2 (CERT-06 mechanism; Pending until 155-04/07) ✓ 2026-06-27
 - [ ] 155-04-PLAN.md — IssuanceService (pass hook → OB3 → sign → persist → notify) + Notifier certificate_issued + i18n
 - [ ] 155-05-PLAN.md — CertificateController (list/show/download, ownership-checked) + CertificateService.js
 - [ ] 155-06-PLAN.md — Certificate.vue (Options API: render/print/QR/download/LinkedIn) + vendored MIT QR + human-verify
