@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
 current_phase: 155
-current_plan: 03
+current_plan: 04
 status: in-progress
-stopped_at: "Completed 155-03-PLAN.md (SigningService): VC-JWT EdDSA signer via ext-sodium (no deps) per frozen 155-ADR-ANCHOR; payload = OB3 object direct (no vc wrapper); kid via KeyService::hostDid() (no kid-drift); JSON_UNESCAPED_SLASHES byte-fidelity. SigningServiceTest 5/5 (17 assertions) incl. INDEPENDENT Python cryptography Ed25519 verifier (ADR-001 #2). PHPStan L5 clean on relay. Next: 155-04 (IssuanceService)."
+stopped_at: "Completed 155-04-PLAN.md (IssuanceService): first-pass → build self-contained OB3/VC (course/score/threshold/dates/issuer+branding/vid frozen at signing) → sign via SigningService (active key, sodium_memzero secret) → persist VC-JWT → ONE deduped NC notification. OWN non-atomic idempotency guard (findByUserAndCourse + not-revoked); NO unique constraint (revoke + re-issue stays possible), deduped on read. Hooked into PassCriteriaService::evaluate() as a SWALLOWED side-effect (try/catch Throwable + log) so it can never 500 the live GET /pass-status. Issuer branding via OCP\\Defaults (IThemingDefaults absent from this NC's OCP package). Notifier 'certificate_issued' + 'Certificate issued: %s' in 5 langs (parity green). Full suite 90/90 (332 assertions); PHPStan L5 clean. CERT-05/06/11/12 Pending (live issuance = 155-07). Next: 155-05 (certificate view)."
 last_updated: "2026-06-27T00:00:00.000Z"
-last_activity: 2026-06-27 — Plan 155-03 complete: SigningService.sign/verify/b64u — compact VC-JWT EdDSA (ext-sodium, NO Composer deps) per the FROZEN signing contract; header {alg:EdDSA,typ:vc+jwt,cty:vc,kid}, payload = OB3 credential DIRECTLY (no vc/vp wrapper, no iss/sub/nbf/jti), JSON_UNESCAPED_SLASHES so signed bytes == emitted bytes. kid = KeyService::hostDid().'#'.keyId (same string as DidController.verificationMethod.id, kid-drift impossible). scripts/verify-credential.py = dev-only INDEPENDENT Python cryptography Ed25519 verifier (ADR-001 follow-up #2; never ships — outside release allowlist). TDD 5/5 green (17 assertions) incl. independent verify (valid→exit0, tampered→non-zero); PHPStan L5 clean. CERT-06 left Pending (signing mechanism done; field-embedding = 155-04, live verify = 155-07).
+last_activity: 2026-06-27 — Plan 155-04 complete: IssuanceService.issueIfPassed() builds a self-contained OB3/VC 2.0 credential (CERT-06: every field frozen into the signed payload), signs it via the 155-03 SigningService with KeyService::getActiveSigningMaterial() (sodium_memzero after), persists the compact VC-JWT, fires one deduped 'certificate_issued' notification (CERT-12), and brands the issuer from OCP\\Defaults name+logo (CERT-11). Hooked into PassCriteriaService::evaluate() (CERT-05) as a swallowed side-effect — sole caller is the live GET /pass-status, and migration+issuer-key are un-provisioned, so try/catch(Throwable)+log keeps the read path from 500-ing. OWN non-atomic idempotency guard (findByUserAndCourse + not-revoked; no unique constraint — revoke+re-issue stays possible; deduped on read). TDD: IssuanceServiceTest 6/6 (36 assertions, real SigningService decodes the actual JWT); + 4 PassCriteriaService hook regressions; full suite 90/90; PHPStan L5 clean. CERT-05/06/11/12 left Pending (code+unit done; live issuance/verify = 155-07).
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 7
-  completed_plans: 3
-  percent: 43
+  completed_plans: 4
+  percent: 57
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-06-26)
 ## Current Position
 
 Phase: 155 of 157 (Certificate-Artifact & Issuer) — executing
-Plan: 155-03 complete (3/7) — next is 155-04 (IssuanceService)
-Status: 155-03 signing core shipped — SigningService VC-JWT EdDSA (ext-sodium, no deps) per frozen contract; payload = OB3 object direct; kid via hostDid() (no drift); byte-fidelity via JSON_UNESCAPED_SLASHES. Independent Python Ed25519 verifier proves third-party verifiability (ADR-001 #2).
-Last activity: 2026-06-27 — Plan 155-03 complete: SigningService.sign/verify/b64u (VC-JWT EdDSA, ext-sodium, NO Composer deps) + scripts/verify-credential.py (dev-only independent Python cryptography Ed25519 verifier). TDD 5/5 (17 assertions) incl. independent verify; PHPStan L5 clean on relay. CERT-06 left Pending (mechanism done; field-embedding = 155-04, live verify = 155-07).
+Plan: 155-04 complete (4/7) — next is 155-05 (certificate view)
+Status: 155-04 issuance shipped — IssuanceService auto-issues a self-contained OB3/VC on first pass (sign via 155-03 SigningService, persist VC-JWT, one deduped notification, issuer branding from OCP\Defaults). Hooked into PassCriteriaService::evaluate() as a swallowed side-effect so it cannot 500 the live GET /pass-status. OWN non-atomic idempotency guard; CERT-05/06/11/12 unit-proven, live issuance = 155-07.
+Last activity: 2026-06-27 — Plan 155-04 complete: IssuanceService.issueIfPassed() (build self-contained OB3 → sign → persist → notify) + PassCriteriaService::evaluate() swallowed-side-effect hook + Notifier certificate_issued + i18n (5 langs). TDD 6/6 (36 assertions, real SigningService decodes the JWT) + 4 hook regressions; full suite 90/90; PHPStan L5 clean. CERT-05/06/11/12 Pending (live issuance/verify = 155-07).
 
-Progress: [████░░░░░░] 43% (3/7 plans in Phase 155)
+Progress: [██████░░░░] 57% (4/7 plans in Phase 155)
 
 ## Performance Metrics
 
@@ -50,6 +50,7 @@ Progress: [████░░░░░░] 43% (3/7 plans in Phase 155)
 | 155 Cert-Artifact | P01 | ~35min | 3 | 7 |
 | 155 Cert-Artifact | P02 | ~40min | 3 | 7 |
 | 155 Cert-Artifact | P03 | ~35min | 3 | 4 |
+| 155 Cert-Artifact | P04 | ~70min | 3 | 15 |
 
 ## Accumulated Context
 
@@ -137,8 +138,18 @@ See PROJECT.md Key Decisions for full table and prior milestone decisions.
 - **CERT-06 left Pending** — 155-03 delivers the signing MECHANISM (+ independent verifiability); CERT-06's "self-contained, all-fields-embedded-at-signing-time" substance is realized at issuance (155-04) and verified live at 155-07. Consistent with the 155-02 CERT-01..04 deferral discipline. `requirements mark-complete` NOT run.
 - **TDD 5/5 green (17 assertions)** on relay; RED confirmed first (4× class-not-found + Test 5 script-not-resolvable — Test 5 executed, not skipped). PHPStan L5 clean.
 
+### Execution Notes (155-04)
+
+- **Issuer branding uses `OCP\Defaults`, NOT `OCP\Theming\IThemingDefaults`** — the latter is ABSENT from this NC's `vendor/nextcloud/ocp` package (PHPStan: 4× "unknown class") and not resolvable at runtime here either (`interface_exists` → false; only the concrete `apps/theming/lib/ThemingDefaults.php` exists). `OCP\Defaults` exposes `getName():string` + `getLogo(bool):string`, is in the OCP package (PHPStan-known), and is DI-autowirable. Use `OCP\Defaults` for any instance-name/logo needs in 155-05/06/07.
+- **Issuance is a SWALLOWED side-effect of `evaluate()`** — the sole caller is `CourseController::getPassStatus()` (live `GET /pass-status`). Migration unapplied + no issuer key ⇒ an un-guarded `issueIfPassed()` would throw (missing `learning_certificates` / "No active signing key") and 500 the endpoint. `evaluate()` wraps the call in `try/catch(\Throwable)+logger->warning`; `IssuanceService` itself stays clean/throwing (unit tests honest). 155-07's live test will see real issuance once the table + key exist.
+- **OWN idempotency guard, non-atomic by design** — `findByUserAndCourse()` + not-revoked → return existing, else issue. NO unique constraint (revoke + re-issue must stay possible); a rare concurrent double-issue is deduped ON READ (earliest non-revoked cert wins). This consciously inherits 154's accepted SELECT→INSERT race. (Task-prompt asked for "atomic even under concurrent evaluate()"; the PLAN's documented non-atomic decision wins — flagged in the SUMMARY.)
+- **Self-contained payload (CERT-06) frozen at signing** — `urn:uuid:<vid>` id, did:web issuer + themed name/logo, `validFrom`, `validUntil` ONLY when `cert_validity_days>0` (`expires_at = issued_at + days*86400`), achievement(name=frozen course title, criteria.narrative w/ threshold), result(score; threshold). `achievement.id = urn:learning:course:<id>` (deterministic). NO plaintext email (DSGVO).
+- **Unit bootstrap OCP gaps** — `tests/Support/PhpUnitStubs.php` lacked `OCP\Notification\INotification`, `OCP\Defaults`, `OCP\AppFramework\Utility\ITimeFactory`, `OCP\L10N\IFactory`, `IURLGenerator::getAbsoluteURL`; mock generation failed until stubbed (additive, `*_exists`-guarded). Future issuance/notification/theming unit tests can rely on these now.
+- **gitnexus impact unavailable** — CLI reinstalled deps then rejected `--target` (index stale at a106ce4). Blast radius done by grep: `evaluate()` has exactly ONE caller (`CourseController::getPassStatus`, `GET /pass-status`); return contract `PassResult` unchanged.
+- **CERT-05/06/11/12 left Pending** — code + unit-proven, not live-verifiable (migration unapplied, no issuer key). 155-07 applies migration, `occ learning:cert:init-issuer`, triggers a live pass, marks all four complete. `requirements mark-complete` NOT run.
+
 ## Session Continuity
 
 Last session: 2026-06-27T00:00:00.000Z
-Stopped at: Completed 155-03-PLAN.md — Phase 155 signing core (SigningService VC-JWT EdDSA + independent verifier) shipped (3/7)
+Stopped at: Completed 155-04-PLAN.md — Phase 155 issuance (IssuanceService auto-issues self-contained OB3 on pass + student notification) shipped (4/7)
 Resume file: None

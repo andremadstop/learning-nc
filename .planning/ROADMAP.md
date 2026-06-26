@@ -61,7 +61,7 @@ Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMEN
 ### Phases
 
 - [x] **Phase 154: Pass-Definition** — Hard pass criterion per course, lucky-guess exclusion, student status, audit event
-- [ ] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn _(3/7 plans: 155-01 data layer + ADR anchor, 155-02 KeyService + occ init-issuer + public did.json, 155-03 SigningService VC-JWT EdDSA + independent verifier)_
+- [ ] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn _(4/7 plans: 155-01 data layer + ADR anchor, 155-02 KeyService + occ init-issuer + public did.json, 155-03 SigningService VC-JWT EdDSA + independent verifier, 155-04 IssuanceService — auto-issue self-contained OB3 on pass + student notification)_
 - [ ] **Phase 156: Compliance-Report** — Instructor CSV export, date/expiry filters, DSGVO-safe (runs parallel with 157)
 - [ ] **Phase 157: Public-Verify** — Public @PublicPage verify route, signature + revocation check, rate-limit (runs parallel with 156)
 
