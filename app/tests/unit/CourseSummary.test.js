@@ -42,6 +42,10 @@ function createInstance(overrides = {}) {
 		troubleSpots: { get: () => CourseSummary.computed.troubleSpots.call(instance) },
 		masteryCircumference: { get: () => CourseSummary.computed.masteryCircumference.call(instance) },
 		masteryDashOffset: { get: () => CourseSummary.computed.masteryDashOffset.call(instance) },
+		zeugnisVisible: { get: () => CourseSummary.computed.zeugnisVisible.call(instance) },
+		certApplicable: { get: () => CourseSummary.computed.certApplicable.call(instance) },
+		hasPassed: { get: () => CourseSummary.computed.hasPassed.call(instance) },
+		passedAtFormatted: { get: () => CourseSummary.computed.passedAtFormatted.call(instance) },
 	})
 
 	for (const [name, fn] of Object.entries(CourseSummary.methods || {})) {
@@ -222,5 +226,71 @@ describe('CourseSummary', () => {
 		vi.runAllTimers()
 		expect(instance.snapshotSaved).toBe(false)
 		vi.useRealTimers()
+	})
+})
+
+describe('Zeugnisstatus computeds (Phase 154)', () => {
+	it('zeugnisVisible is false when passStatus is null', () => {
+		const instance = createInstance({ passStatus: null, passStatusLoading: false })
+		expect(instance.zeugnisVisible).toBe(false)
+	})
+
+	it('zeugnisVisible is false while passStatusLoading=true', () => {
+		const instance = createInstance({
+			passStatus: { applicable: true, passed: false, score: 60, threshold: 80, poolsMastered: false, passedAt: null },
+			passStatusLoading: true,
+		})
+		expect(instance.zeugnisVisible).toBe(false)
+	})
+
+	it('zeugnisVisible is true when passStatus loaded and not loading', () => {
+		const instance = createInstance({
+			passStatus: { applicable: true, passed: false, score: 60, threshold: 80, poolsMastered: false, passedAt: null },
+			passStatusLoading: false,
+		})
+		expect(instance.zeugnisVisible).toBe(true)
+	})
+
+	it('certApplicable is false when applicable=false', () => {
+		const instance = createInstance({
+			passStatus: { applicable: false, passed: false, score: null, threshold: 80, poolsMastered: false, passedAt: null },
+		})
+		expect(instance.certApplicable).toBe(false)
+	})
+
+	it('certApplicable is true when applicable=true', () => {
+		const instance = createInstance({
+			passStatus: { applicable: true, passed: false, score: 60, threshold: 80, poolsMastered: false, passedAt: null },
+		})
+		expect(instance.certApplicable).toBe(true)
+	})
+
+	it('hasPassed is true when passed=true', () => {
+		const instance = createInstance({
+			passStatus: { applicable: true, passed: true, score: 85, threshold: 80, poolsMastered: true, passedAt: 1750000000 },
+		})
+		expect(instance.hasPassed).toBe(true)
+	})
+
+	it('hasPassed is false when passed=false', () => {
+		const instance = createInstance({
+			passStatus: { applicable: true, passed: false, score: 70, threshold: 80, poolsMastered: false, passedAt: null },
+		})
+		expect(instance.hasPassed).toBe(false)
+	})
+
+	it('passedAtFormatted is null when passedAt is null', () => {
+		const instance = createInstance({
+			passStatus: { applicable: true, passed: false, score: 70, threshold: 80, poolsMastered: false, passedAt: null },
+		})
+		expect(instance.passedAtFormatted).toBeNull()
+	})
+
+	it('passedAtFormatted returns a non-empty date string when passedAt is set', () => {
+		const instance = createInstance({
+			passStatus: { applicable: true, passed: true, score: 85, threshold: 80, poolsMastered: true, passedAt: 1750000000 },
+		})
+		expect(typeof instance.passedAtFormatted).toBe('string')
+		expect(instance.passedAtFormatted.length).toBeGreaterThan(0)
 	})
 })
