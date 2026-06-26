@@ -115,6 +115,7 @@
 				v-if="activeMegaTab === 'verwaltung' && isInstructor"
 				:course-id="courseId"
 				:course="course"
+				:course-pools="coursePools"
 				:user-role="userRole"
 				:active-tab="currentTab"
 				@tab-change="onLeafTabChange"

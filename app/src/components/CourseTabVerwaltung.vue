@@ -122,6 +122,57 @@
 					<NcNoteCard v-if="campaignsSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
 				</template>
 			</div>
+
+			<!-- Zertifizierung (Phase 154) -->
+			<div class="cert-config tool-config-section">
+				<h3>{{ t('learning', 'Zertifizierung') }}</h3>
+				<NcCheckboxRadioSwitch :checked="certEnabled" @update:checked="certEnabled = $event">
+					{{ t('learning', 'Zertifizierung aktivieren') }}
+				</NcCheckboxRadioSwitch>
+
+				<template v-if="certEnabled">
+					<div class="cert-config-field">
+						<label>{{ t('learning', 'Mindest-Score (%)') }}</label>
+						<input
+							type="number"
+							:value="certPassPercent"
+							min="1"
+							max="100"
+							class="cert-config-input"
+							@change="certPassPercent = Math.max(1, Math.min(100, parseInt($event.target.value) || 80))" />
+					</div>
+
+					<div v-if="coursePools.length" class="cert-config-field">
+						<label>{{ t('learning', 'Pflicht-Pools') }}</label>
+						<div class="mode-toggles">
+							<div v-for="pool in coursePools" :key="pool.pool_id" class="mode-toggle-row">
+								<label class="mode-toggle-label">
+									<input
+										type="checkbox"
+										:checked="certRequiredPoolIds.includes(Number(pool.pool_id))"
+										@change="toggleCertPool(pool.pool_id, $event.target.checked)" />
+									{{ pool.pool_name }}
+								</label>
+							</div>
+						</div>
+					</div>
+
+					<div class="cert-config-field">
+						<label>{{ t('learning', 'Gültigkeitsdauer (Tage, 0 = unbegrenzt)') }}</label>
+						<input
+							type="number"
+							:value="certValidityDays"
+							min="0"
+							class="cert-config-input"
+							@change="certValidityDays = Math.max(0, parseInt($event.target.value) || 0)" />
+					</div>
+				</template>
+
+				<NcButton type="primary" :disabled="certSaving" @click="saveCertConfig">
+					{{ certSaving ? t('learning', 'Saving...') : t('learning', 'Speichern') }}
+				</NcButton>
+				<NcNoteCard v-if="certSaved" type="success" class="mode-config-saved">{{ t('learning', 'Saved.') }}</NcNoteCard>
+			</div>
 		</div>
 
 		<!-- Schedule -->
@@ -221,7 +272,9 @@ import { generateUrl } from '@nextcloud/router'
 import { translate as t } from '@nextcloud/l10n'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import NcCheckboxRadioSwitch from '@nextcloud/vue/components/NcCheckboxRadioSwitch'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
+import { updateCertConfig } from '../services/CourseService.js'
 
 export default {
 	name: 'CourseTabVerwaltung',
@@ -229,6 +282,7 @@ export default {
 	components: {
 		NcButton,
 		NcNoteCard,
+		NcCheckboxRadioSwitch,
 	},
 
 	props: {
@@ -239,6 +293,10 @@ export default {
 		course: {
 			type: Object,
 			default: null,
+		},
+		coursePools: {
+			type: Array,
+			default: () => [],
 		},
 		userRole: {
 			type: String,
@@ -284,6 +342,12 @@ export default {
 			savingSchedule: false,
 			scheduleSaved: false,
 			deletingSchedule: false,
+			certEnabled: false,
+			certPassPercent: 80,
+			certRequiredPoolIds: [],
+			certValidityDays: 0,
+			certSaving: false,
+			certSaved: false,
 		}
 	},
 
@@ -333,6 +397,13 @@ export default {
 					this.talkRoomToken = c.talk_room_token || ''
 					this.examDateLocal = this.normalizeExamDate(c.exam_date)
 					this.maintenanceMode = !!c.maintenance_mode
+					// Cert config — course prop fields are snake_case (Course::jsonSerialize)
+					this.certEnabled = !!c.cert_enabled
+					this.certPassPercent = c.cert_pass_percent ?? 80
+					this.certRequiredPoolIds = Array.isArray(c.cert_required_pool_ids)
+						? c.cert_required_pool_ids.map((id) => Number(id))
+						: []
+					this.certValidityDays = c.cert_validity_days ?? 0
 				}
 			},
 		},
@@ -727,6 +798,45 @@ export default {
 				this.deletingSchedule = false
 			}
 		},
+
+		toggleCertPool(poolId, checked) {
+			const id = Number(poolId)
+			if (checked) {
+				if (!this.certRequiredPoolIds.includes(id)) {
+					this.certRequiredPoolIds.push(id)
+				}
+			} else {
+				this.certRequiredPoolIds = this.certRequiredPoolIds.filter((p) => p !== id)
+			}
+		},
+
+		async saveCertConfig() {
+			this.certSaving = true
+			this.certSaved = false
+			try {
+				const result = await updateCertConfig(this.courseId, {
+					certEnabled: this.certEnabled,
+					certPassPercent: this.certPassPercent,
+					certRequiredPoolIds: this.certRequiredPoolIds,
+					certValidityDays: this.certValidityDays,
+				})
+				// Server response is camelCase (CourseController::updateCertConfig)
+				this.certEnabled = result.certEnabled ?? false
+				this.certPassPercent = result.certPassPercent ?? 80
+				this.certRequiredPoolIds = Array.isArray(result.certRequiredPoolIds)
+					? result.certRequiredPoolIds.map((id) => Number(id))
+					: []
+				this.certValidityDays = result.certValidityDays ?? 0
+				this.certSaved = true
+				setTimeout(() => { this.certSaved = false }, 3000)
+				this.$emit('refresh-course-detail')
+			} catch (e) {
+				console.error('saveCertConfig failed', e)
+				this.$emit('error', t('learning', 'Failed to save cert config'))
+			} finally {
+				this.certSaving = false
+			}
+		},
 	},
 }
 </script>
@@ -801,6 +911,20 @@ export default {
 	gap: 8px;
 	flex-wrap: wrap;
 	margin-bottom: 12px;
+}
+
+/* Cert config (Phase 154) */
+.cert-config-field { margin: 14px 0; display: flex; flex-direction: column; gap: 6px; }
+.cert-config-field > label { font-weight: 600; font-size: 0.9em; }
+.cert-config-input {
+	padding: 6px 10px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius);
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	font-size: 0.95em;
+	width: 160px;
+	max-width: 100%;
 }
 
 /* Schedule */
