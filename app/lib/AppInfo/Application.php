@@ -12,6 +12,7 @@ use OCA\Learning\Command\ExportCourseCommand;
 use OCA\Learning\Command\ExportPoolCommand;
 use OCA\Learning\Command\ImportPoolJsonCommand;
 use OCA\Learning\Command\ImportVaultCommand;
+use OCA\Learning\Command\InitIssuerCommand;
 use OCA\Learning\Command\MergeCourseCommand;
 use OCA\Learning\Service\CourseArchiveService;
 use OCA\Learning\Service\CourseMergeService;
@@ -79,6 +80,11 @@ class Application extends App implements IBootstrap {
         $context->registerService(MergeCourseCommand::class, function (ContainerInterface $container): MergeCourseCommand {
             return new MergeCourseCommand(
                 $container->get(CourseMergeService::class)
+            );
+        });
+        $context->registerService(InitIssuerCommand::class, function (ContainerInterface $container): InitIssuerCommand {
+            return new InitIssuerCommand(
+                $container->get(\OCA\Learning\Service\KeyService::class)
             );
         });
     }

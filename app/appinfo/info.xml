@@ -109,6 +109,7 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
         <command>OCA\Learning\Command\ExportCourseCommand</command>
         <command>OCA\Learning\Command\ArchiveCourseCommand</command>
         <command>OCA\Learning\Command\MergeCourseCommand</command>
+        <command>OCA\Learning\Command\InitIssuerCommand</command>
     </commands>
 
     <background-jobs>
