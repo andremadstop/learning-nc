@@ -9,8 +9,8 @@ use OCP\IDBConnection;
 /**
  * Evaluates whether a student has met the pass criteria for a certifying course.
  *
- * MUST NOT call ReadinessService — ReadinessService throws without exam_date
- * and pass evaluation is orthogonal to FSRS readiness. See 154-CONTEXT.md locked decisions.
+ * MUST NOT call the FSRS readiness service — it throws without exam_date and
+ * pass evaluation is orthogonal to FSRS readiness. See 154-CONTEXT.md locked decisions.
  *
  * Implementation: see 154-03-PLAN.md (this skeleton is replaced in Wave 3).
  */
