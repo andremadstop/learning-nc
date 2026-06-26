@@ -1,0 +1,159 @@
+<?php
+declare(strict_types=1);
+
+namespace OCA\Learning\Tests\Unit\Service;
+
+use OCA\Learning\Db\CertKey;
+use OCA\Learning\Db\CertKeyMapper;
+use OCA\Learning\Service\EncryptionService;
+use OCA\Learning\Service\KeyService;
+use OCP\IURLGenerator;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * KeyService — sodium keygen + encrypt-at-rest + rotation (155-02).
+ *
+ * Four decisive behaviours (CERT-01/03/04):
+ *  1. encrypt-at-rest      — stored secret_key_enc is ciphertext, never plaintext; round-trips to the 64-byte secret.
+ *  2. rotation-preserves   — rotate() retires (never deletes) the old key; both stay non-revoked.
+ *  3. no-double-active     — init() on an existing active key throws (must use rotate()).
+ *  4. hard-error-on-decrypt— getActiveSigningMaterial() throws if decrypt yields non-64-byte material
+ *                            (defeats EncryptionService's silent plaintext fallback).
+ */
+class KeyServiceTest extends TestCase {
+
+    private function makeMapper(): CertKeyMapper {
+        // In-memory fake: tracks insert/update so rotation (retire-not-delete) is observable.
+        return new class extends CertKeyMapper {
+            /** @var CertKey[] */
+            public array $store = [];
+            private int $nextId = 1;
+
+            public function __construct() {
+                // Skip parent (needs IDBConnection) — pure in-memory.
+            }
+
+            public function insert($entity): CertKey {
+                $entity->setId($this->nextId++);
+                $this->store[] = $entity;
+                return $entity;
+            }
+
+            public function update($entity): CertKey {
+                // Entity is held by reference in $store; status change is already reflected.
+                return $entity;
+            }
+
+            public function findActive(): ?CertKey {
+                $active = array_values(array_filter($this->store, fn(CertKey $k) => $k->getStatus() === 'active'));
+                return $active === [] ? null : end($active);
+            }
+
+            /** @return CertKey[] */
+            public function findAllNonRevoked(): array {
+                return array_values(array_filter($this->store, fn(CertKey $k) => $k->getStatus() !== 'revoked'));
+            }
+        };
+    }
+
+    /**
+     * Reversible transform standing in for ICrypto — encrypt prepends a marker so the
+     * stored value is provably != the plaintext, decrypt strips it back.
+     */
+    private function makeEncryption(): EncryptionService {
+        $enc = $this->createMock(EncryptionService::class);
+        $enc->method('encrypt')->willReturnCallback(
+            fn(?string $p) => $p === null ? null : 'ENC::' . $p
+        );
+        $enc->method('decrypt')->willReturnCallback(
+            fn(?string $c) => $c === null ? null : (str_starts_with($c, 'ENC::') ? substr($c, 5) : $c)
+        );
+        return $enc;
+    }
+
+    private function makeService(CertKeyMapper $mapper, ?EncryptionService $enc = null): KeyService {
+        return new KeyService(
+            $mapper,
+            $enc ?? $this->makeEncryption(),
+            $this->createMock(IURLGenerator::class)
+        );
+    }
+
+    public function testInitEncryptsSecretAtRest(): void {
+        if (!extension_loaded('sodium')) {
+            $this->markTestSkipped('ext-sodium not loaded');
+        }
+        $mapper = $this->makeMapper();
+        $service = $this->makeService($mapper);
+
+        $key = $service->init();
+
+        // Stored value is ciphertext: carries the encrypt marker, not the raw base64 secret.
+        $stored = $key->getSecretKeyEnc();
+        $this->assertStringStartsWith('ENC::', $stored);
+        $this->assertSame('active', $key->getStatus());
+        $this->assertNotSame('', $key->getKeyId());
+        $this->assertSame($key->getKeyId(), $key->getPublicKeyB64u());
+
+        // Round-trip: decrypting yields exactly the 64-byte Ed25519 secret key.
+        $material = $service->getActiveSigningMaterial();
+        $this->assertSame(SODIUM_CRYPTO_SIGN_SECRETKEYBYTES, strlen($material['secret']));
+        // And the stored ciphertext is NOT the plaintext base64 of that secret.
+        $this->assertNotSame(base64_encode($material['secret']), $stored);
+    }
+
+    public function testRotationRetiresOldKeyAndKeepsBoth(): void {
+        if (!extension_loaded('sodium')) {
+            $this->markTestSkipped('ext-sodium not loaded');
+        }
+        $mapper = $this->makeMapper();
+        $service = $this->makeService($mapper);
+
+        $first = $service->init();
+        $second = $service->rotate();
+
+        // Old key retired (NOT deleted), new key active, both still resolvable.
+        $this->assertSame('retired', $first->getStatus());
+        $this->assertSame('active', $second->getStatus());
+        $this->assertNotSame($first->getKeyId(), $second->getKeyId());
+
+        $nonRevoked = $mapper->findAllNonRevoked();
+        $this->assertCount(2, $nonRevoked);
+        $ids = array_map(fn(CertKey $k) => $k->getKeyId(), $nonRevoked);
+        $this->assertContains($first->getKeyId(), $ids);
+        $this->assertContains($second->getKeyId(), $ids);
+    }
+
+    public function testInitTwiceThrowsWithoutRotate(): void {
+        if (!extension_loaded('sodium')) {
+            $this->markTestSkipped('ext-sodium not loaded');
+        }
+        $service = $this->makeService($this->makeMapper());
+        $service->init();
+
+        $this->expectException(\RuntimeException::class);
+        $service->init();
+    }
+
+    public function testGetActiveSigningMaterialHardErrorsOnBadDecrypt(): void {
+        $mapper = $this->makeMapper();
+
+        // Decrypt yields a too-short blob (simulates plaintext-fallback / corruption).
+        $enc = $this->createMock(EncryptionService::class);
+        $enc->method('encrypt')->willReturnCallback(fn(?string $p) => $p);
+        $enc->method('decrypt')->willReturn(base64_encode('not-a-64-byte-key'));
+
+        $service = $this->makeService($mapper, $enc);
+
+        $key = new CertKey();
+        $key->setKeyId('kid');
+        $key->setPublicKeyB64u('pub');
+        $key->setSecretKeyEnc('whatever');
+        $key->setStatus('active');
+        $key->setCreatedAt(1750000000);
+        $mapper->insert($key);
+
+        $this->expectException(\RuntimeException::class);
+        $service->getActiveSigningMaterial();
+    }
+}
