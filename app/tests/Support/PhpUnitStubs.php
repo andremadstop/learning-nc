@@ -80,6 +80,10 @@ namespace OCP {
             public function linkToRoute(string $route, array $parameters = []): string;
 
             public function linkToRouteAbsolute(string $route, array $parameters = []): string;
+
+            public function getAbsoluteURL(string $url): string;
+
+            public function getBaseUrl(): string;
         }
     }
 
@@ -123,8 +127,66 @@ namespace OCP {
 }
 
 namespace OCP\Notification {
+    if (!interface_exists(INotification::class)) {
+        interface INotification {
+            public function setApp(string $app): self;
+            public function setUser(string $user): self;
+            public function setObject(string $type, string $id): self;
+            public function setSubject(string $subject, array $parameters = []): self;
+            public function setDateTime(\DateTime $dateTime): self;
+            public function setParsedSubject(string $subject): self;
+            public function setLink(string $link): self;
+            public function setIcon(string $icon): self;
+            public function getApp(): string;
+            public function getSubject(): string;
+            public function getSubjectParameters(): array;
+        }
+    }
+
     if (!interface_exists(IManager::class)) {
         interface IManager {
+            public function createNotification(): INotification;
+            public function notify(INotification $notification): void;
+            public function getCount(INotification $notification): int;
+        }
+    }
+
+    if (!class_exists(UnknownNotificationException::class)) {
+        class UnknownNotificationException extends \Exception {
+        }
+    }
+
+    if (!interface_exists(INotifier::class)) {
+        interface INotifier {
+            public function getID(): string;
+            public function getName(): string;
+            public function prepare(INotification $notification, string $languageCode): INotification;
+        }
+    }
+}
+
+namespace OCP\Theming {
+    if (!interface_exists(IThemingDefaults::class)) {
+        interface IThemingDefaults {
+            public function getName(): string;
+            public function getLogo(bool $useSvg = true): string;
+        }
+    }
+}
+
+namespace OCP\AppFramework\Utility {
+    if (!interface_exists(ITimeFactory::class)) {
+        interface ITimeFactory {
+            public function getTime(): int;
+            public function getDateTime(string $time = 'now', ?\DateTimeZone $timezone = null): \DateTime;
+        }
+    }
+}
+
+namespace OCP\L10N {
+    if (!interface_exists(IFactory::class)) {
+        interface IFactory {
+            public function get(string $app, ?string $lang = null);
         }
     }
 }
