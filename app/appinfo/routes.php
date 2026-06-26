@@ -336,5 +336,8 @@ return [
         ['name' => 'rag_import#listPending',      'url' => '/api/courses/{courseId}/knowledge/pending',             'verb' => 'GET'],
         ['name' => 'rag_import#moderate',         'url' => '/api/courses/{courseId}/knowledge/moderate/{chunkId}',  'verb' => 'POST'],
 
+        // Issuer did:web document (Phase 155) — public, unauthenticated
+        ['name' => 'did#index', 'url' => '/did.json', 'verb' => 'GET'],
+
     ]
 ];
