@@ -52,7 +52,7 @@ updated: 2026-06-26
 | 155-04-T1 | 04 | 4 | CERT-05/06/11 (issuance) | PHPUnit | `(container) phpunit --filter IssuanceServiceTest` | ✅ created in-task | ⬜ pending |
 | 155-04-T2 | 04 | 4 | CERT-12 (notification) | php -l + parity | `php -l Notifier` + `check-i18n-parity.sh` | ✅ created in-task | ⬜ pending |
 | 155-04-T3 | 04 | 4 | CERT-05 (pass hook) | PHPUnit | `(container) phpunit --filter 'PassCriteriaServiceTest\|IssuanceServiceTest'` | ✅ created in-task | ⬜ pending |
-| 155-05-T1 | 05 | 5 | CERT-07/09 (controller) | PHPUnit | `(container) phpunit --filter CertificateControllerTest` | ✅ created in-task | ⬜ pending |
+| 155-05-T1 | 05 | 5 | CERT-07/09 (controller; download=OB3 JSON-LD EnvelopedVerifiableCredential, ?format=jwt) | PHPUnit | `(container) phpunit --filter CertificateControllerTest` (asserts JSON-LD envelope + raw-jwt) | ✅ created in-task | ⬜ pending |
 | 155-05-T2 | 05 | 5 | CERT-07 (JS client) | ESLint | `npx eslint CertificateService.js` | ✅ created in-task | ⬜ pending |
 | 155-06-T1 | 06 | 6 | CERT-07/08/10/11/13 (Certificate.vue) | ESLint + parity | `npx eslint Certificate.vue` + Options-API grep + `check-i18n-parity.sh` | ✅ created in-task | ⬜ pending |
 | 155-06-T2 | 06 | 6 | CERT-07/08/09/13 (component spec) | Vitest | `npm run test -- Certificate` | ✅ created in-task | ⬜ pending |
@@ -60,6 +60,7 @@ updated: 2026-06-26
 | 155-07-T1 | 07 | 7 | CERT-03 (leakage gate) | PHPUnit + grep | `(container) phpunit --filter LeakageAuditTest` + export-service grep | ✅ created in-task | ⬜ pending |
 | 155-07-T2 | 07 | 7 | CERT-04 (cross-DB) | shell go/no-go | `scripts/cross-db-migration-check.sh` (ephemeral mariadb:11.4 + PG16) | ✅ created in-task | ⬜ pending |
 | 155-07-T3 | 07 | 7 | CERT-04 (kid + rotation) | test-api.sh curl | did.json + kid alignment + rotation-preserves assertions | ✅ created in-task | ⬜ pending |
+| 155-07-T4 | 07 | 7 | CERT-06 (ADR #2 independent-verify on REAL cert) | shell + Python | `scripts/verify-issued-cert-gate.sh` → `python3 scripts/verify-credential.py` (fail-not-skip; valid→0, tampered→≠0) | ✅ created in-task | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -82,7 +83,7 @@ test-api.sh); only new test files + the cross-DB harness + the independent-verif
 |----------|-------------|------------|-------------------|
 | Full student experience (issuance→notify→view→print→QR→download→LinkedIn→i18n) | CERT-05/07/08/09/12/13 | Visual + interactive on a live instance | 155-06 human-verify checkpoint on relay (8 steps) |
 | QR scan → verify URL | CERT-08 | Physical scan with a phone | Scan rendered QR, confirm it targets `<base>/apps/learning/verify/<vid>` |
-| Independent-verifier validation of a REAL issued credential | CERT-06 | ADR follow-up #2 — external Ed25519 verifier | `python3 scripts/verify-credential.py` against a real issued JWT (Python `cryptography` Ed25519; MUST fail-not-skip at the phase gate) |
+| Independent-verifier validation of a REAL issued credential | CERT-06 | ADR follow-up #2 — external Ed25519 verifier | Homed in **155-07 Task 4** (`scripts/verify-issued-cert-gate.sh`): extracts a real issued JWT, runs `python3 scripts/verify-credential.py` (Python `cryptography` Ed25519), MUST fail-not-skip; valid→exit 0, tampered→non-zero |
 | Cross-DB go/no-go | CERT-04 | Needs an ephemeral MariaDB 11.4 container | Run `scripts/cross-db-migration-check.sh`; record GREEN |
 | Private-key leakage sign-off | CERT-03 | Security gate (Rule 18) | 155-LEAKAGE-AUDIT.md enumerated review + LeakageAuditTest |
 
