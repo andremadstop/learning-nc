@@ -4,9 +4,9 @@ milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
 current_phase: 155
 current_plan: null
-status: ready-to-plan
-stopped_at: "Phase 154 complete + verified (7/7 must-haves) 2026-06-26. Phase 155 (Certificate-Artifact & Issuer) ready to plan — entry gate is signing-format ADR (VC-JWT vs eddsa-jcs-2022) as first task."
-last_updated: "2026-06-26T14:05:00.000Z"
+status: ready-to-execute
+stopped_at: "Phase 155 planned + verified (7 plans, 7 waves, plan-checker PASSED after 1 revision) 2026-06-26. ADR-001 (VC-JWT/ext-sodium) Accepted. Ready: /gsd:execute-phase 155."
+last_updated: "2026-06-26T14:35:00.000Z"
 last_activity: 2026-06-26 — Plan 154-05 complete (Vue cert-config block + student Zeugnisstatus card, Options API; ESLint 0, Vitest green incl. 9 new computed tests; human-verify approved 15/15 on relay). Phase 154 closed — all 7 PASS requirements Complete.
 progress:
   total_phases: 4
