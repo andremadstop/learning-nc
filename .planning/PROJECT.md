@@ -8,6 +8,16 @@ Native Nextcloud App fuer Karteikarten-Lernen mit Leitner-System, Kursen, Arena,
 
 Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — fuer Einzellerner und Kursgruppen.
 
+## Current Milestone: v5.0.0 Certification-as-a-Service
+
+**Goal:** Die Learning-App bringt verifizierbare Zertifizierung als natives Nextcloud-Feature mit — ein Kurs-Owner aktiviert "Zertifikat bei Bestehen", definiert das Pass-Kriterium, und die App stellt beim Bestehen ein standardkonformes, signiertes Zertifikat aus. KEINE eigene SaaS-Plattform; Aussteller = die jeweilige NC-Instanz.
+
+**Target features:**
+- "Bestanden"-Definition: hartes Pass-Kriterium pro Kurs (Score ≥ X %, Pflicht-Pools gemeistert) — Readiness ≠ Bestehen
+- Zertifikat-Artefakt im **Open-Badges-3.0 / W3C-Verifiable-Credential**-Format (Ed25519-signiert, `did:web` der Instanz als Aussteller, Verifikations-ID, Logo/Branding, DSGVO-Schulungsnachweis-Format, druckbar via window.print() + QR-Code)
+- Org-Compliance-Report: "wer hat welche Pflichtschulung wann bestanden", exportierbar für Vorgesetzte
+- In-App Verify-Route (öffentlich, gegen Instanz-Key + `oc_learning_audit_events` tamper-evident)
+
 ## Requirements
 
 ### Validated
@@ -38,26 +48,27 @@ Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung �
 - ✓ Narrative Portfolio (Gemini Kursende-Reflexion, Snapshot-Cache) — v3.6.0
 - ✓ Forget-Me-Not ICS (Leitner-Wiederholungskalender, Token-basiert) — v3.6.0
 - ✓ Privacy-Info 7 DSGVO-Kategorien + PWA-Anleitung — v3.6.0
+- ✓ Lehrplan-Timeline + Admin-Export-Werkzeuge (export-pool/course/merge, Archivierung, CSV) — v4.2.0
+- ✓ Vue 3 Migration, Vite-Build, Pinia, Vue Router, SSE/Redis/Push — v4.0.0/v3.8.0
+- ✓ Character & Personality (Skin-Picker, 3 Archetypen, Animation-Engine, 5-Sprachen i18n) — v4.4.0
+- ✓ CySA+ Pool-Konsolidierung + PBQ-Subtypes (inkl. ranking) — v4.4.x
 
 ### Active
 
-**Milestone v4.2.0 — Lehrplan-Timeline + Admin-Werkzeuge:**
-- [ ] TIMELINE-01: Dozent kann Zeitplan pro Kurs definieren (Kapitel → Datum)
-- [ ] TIMELINE-02: Student sieht horizontalen Zeitstrahl mit Kapitel-Stationen und Fortschritt
-- [ ] TIMELINE-03: Timeline integriert mit ExamReadiness Countdown
-- [ ] TIMELINE-04: Zeitplan synchron mit curriculum_scopes (nur aktive Kapitel)
-- [ ] ADMIN-01: OCC-Command `learning:export-pool` (CSV + JSON)
-- [ ] ADMIN-02: OCC-Command `learning:export-course` (Kurs + Pools + Members)
-- [ ] ADMIN-03: OCC-Command `learning:merge-course` (Jahrgangs-Merge mit FSRS-Erhalt)
-- [ ] ADMIN-04: Admin-Dashboard zeigt Batch-Export-Button
-- [ ] ADMIN-05: Kurs-Archivierung mit Snapshot (JSON-Blob für spätere Einsicht)
-- [ ] ADMIN-06: Dozent kann Kurs-Statistik als CSV exportieren
+**Milestone v5.0.0 — Certification-as-a-Service** (REQ-IDs in REQUIREMENTS.md):
+- [ ] Hartes Pass-Kriterium pro Kurs ("bestanden ab X %", Pflicht-Pools)
+- [ ] Signiertes Zertifikat-Artefakt (Open Badges 3.0 / W3C VC, did:web-Issuer, QR, Print)
+- [ ] Org-Compliance-Report (wer-bestand-was-wann, exportierbar)
+- [ ] In-App Verify-Route (öffentlich, tamper-evident gegen Audit-Log)
 
 ### Out of Scope
 
 - Adminer/phpPgAdmin — Sicherheitsrisiko (IDOR, direkte DB-Exposition), NLM-Warnung
 - Kampagnen-Editor GUI — erst nach Engine bewaehrt
-- Mobile App (Capacitor) — eigener Milestone v5.0
+- Mobile App (Capacitor) — verschoben (war als v5.0 angedacht; v5.0.0 ist jetzt Certification)
+- **Eigene Multi-Tenant-Credentialing-Plattform / Org-Issuer-Management** — bewusst NICHT gebaut. Im NC-Rahmen ist der Mandant die Instanz selbst; Tenancy via NC-Gruppen vorhanden. "Andere nutzen es" = sie installieren die App, nicht ich betreibe einen Dienst
+- **Voll-eIDAS QEAA via Qualified Trust Service Provider** — externer Vertrag/Kosten, überdimensioniert für App-Schulungszertifikat; did:web-Eigenaussteller reicht
+- **Externes Verify-Portal für Vorgesetzte ohne NC-Account** — evtl. späteres Sub-Projekt; v5.0.0 liefert In-App-Verify-Route
 - Multi-Provider KI — Fokus auf Gemini 2.5
 - Onboarding Redesign — verschoben nach v4.3.0
 - Pool Generator (Material→Pool) — verschoben nach v4.3.0
@@ -92,6 +103,10 @@ Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung �
 | Narrative via generateNote() | Server-controlled Prompt, kein User-Input | ✓ Good — einmal generiert, dann cached |
 | ICS VEVENTs statt RRULE | Einfacher fuer Kalender-Clients | ✓ Good |
 | Telos nur bio/telos_json verschluesseln | help_offer/help_wanted braucht SQL fuer Buddy-Match | ✓ Good |
+| Zertifikat-Format Open Badges 3.0 / W3C VC | 2026-Konvergenzstandard (eIDAS/EUDI-Wallet Dez 2026), wallet-fähig, kein Format-Lock | — Pending (v5.0.0) |
+| Aussteller = `did:web` der NC-Instanz | Nur JSON-Datei an Standard-Route, kein Ledger/QTSP; Mandant = Instanz | — Pending (v5.0.0) |
+| Signatur Ed25519 statt Eigenbau-Hash | Standardkonform + verifizierbar, gleiche Mechanik wie Hash | — Pending (v5.0.0) |
+| KEINE eigene Credentialing-Plattform | Feature der App, nicht SaaS-Dienst; NC-Tenancy reicht (Over-Engineering verworfen) | — Pending (v5.0.0) |
 
 ---
-*Last updated: 2026-04-08 after v4.2.0 milestone started*
+*Last updated: 2026-06-26 after v5.0.0 Certification-as-a-Service milestone started*

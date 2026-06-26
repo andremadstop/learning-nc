@@ -32,9 +32,10 @@
 - ✅ **v4.0.0 Vue 3 Migration** — Phases 130-134 (shipped 2026-04-03)
 - ✅ **v4.1.0 Social Learning & Consolidation** — Phases 135-143 (shipped 2026-04-04)
 - ✅ **v4.2.0 Lehrplan-Timeline + Admin-Werkzeuge** — Phases 144-148 (shipped 2026-04-08)
-- **v4.4.0 Character & Personality** — Phases 149-153 (planned, ships before v4.3.0)
-- **v4.3.0 Onboarding & Content Intelligence** — Phases 154-157 (planned, ships after v4.4.0)
-- **v5.0.0 Universal Learning Platform** — Phases 158+ (vision)
+- ✅ **v4.4.0 Character & Personality** — Phases 149-153 (shipped 2026-04-27)
+- 🚧 **v5.0.0 Certification-as-a-Service** — Phases 154-157 (active)
+- 📋 **v4.3.0 Onboarding & Content Intelligence** — Phases TBD (deferred — after v5.0.0)
+- 📋 **v6.0.0 Universal Learning Platform (Vision)** — Phases TBD
 
 <details>
 <summary>✅ <strong>v4.4.0 Character & Personality</strong> — Phases 149-153 — SHIPPED 2026-04-27 (App Store live)</summary>
@@ -53,19 +54,21 @@ Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMEN
 
 </details>
 
-## v4.3.0 — Onboarding & Content Intelligence
+## v5.0.0 — Certification-as-a-Service (Active)
 
-| Phase | Titel | Scope | Aufwand |
-|-------|-------|-------|---------|
-| 154 | Onboarding Redesign (Option B) | 2-Ebenen Fullscreen: Splash→Rolle→Tour→Datenschutz→Profil-Kacheln→Content-Jumpstart→Hook | 2-3 Tage |
-| 155 | Material → Pool Generator (3 Modi) | Drei Wege zum Pool: Gemini Cloud, Lokal Ollama, Manuell CSV/JSON. PoolDraftReview.vue | 3-4 Tage |
-| 156 | NOVA Sprachausgabe (Gemini TTS) | Vorlese-Button, 30 HD-Stimmen, Browser SpeechSynthesis Fallback | 2-3 Tage |
-| 157 | Video/Audio → Pool Generator | YouTube-URL + Audio-Upload, Gemini Video API + Whisper ASR | 2-3 Tage |
+**Milestone Goal:** Die App bringt verifizierbare Zertifizierung als natives NC-Feature — Kurs-Owner aktiviert "Zertifikat bei Bestehen", definiert das Pass-Kriterium, und die App stellt beim Bestehen ein standardkonformes, signiertes Zertifikat aus. Aussteller = die jeweilige NC-Instanz (kein SaaS). Wallet interop deferred to v6+.
 
-## v5.0.0 — Universal Learning Platform
+### Phases
+
+- [ ] **Phase 154: Pass-Definition** — Hard pass criterion per course, lucky-guess exclusion, student status, audit event
+- [ ] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn
+- [ ] **Phase 156: Compliance-Report** — Instructor CSV export, date/expiry filters, DSGVO-safe (runs parallel with 157)
+- [ ] **Phase 157: Public-Verify** — Public @PublicPage verify route, signature + revocation check, rate-limit (runs parallel with 156)
+
+## v6.0.0 — Universal Learning Platform (Vision)
 
 > Ziel: Von IT-Drill-Tool zur Lernplattform fuer ALLE Faecher. Schulen, Unis, Fahrschulen, Sprachkurse, Medizin, Jura, Handwerk.
-> Kerngedanke: Der universelle Kern (FSRS, Gamification, VirtuProf, Datensouveraenitaet) funktioniert bereits fachunabhaengig. v5.0 entfernt die IT-Scheuklappen und oeffnet die Plattform.
+> Kerngedanke: Der universelle Kern (FSRS, Gamification, VirtuProf, Datensouveraenitaet) funktioniert bereits fachunabhaengig. v6.0 entfernt die IT-Scheuklappen und oeffnet die Plattform.
 
 ### Primaer-Richtung: Universelle Bildung
 
@@ -83,30 +86,28 @@ Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMEN
 | Feature | Was |
 |---------|-----|
 | **Coop-Kampagnen** | 3-5 Studenten loesen IT-Vorfaelle gemeinsam (SysAdmin fixt, Architect plant) |
-| **Certification-as-a-Service** | PBQ-Exams als Zertifizierungstool mit manipulationssicherem Audit-Log |
 | **IT-Simulatoren** | 9 Simulatoren bleiben als kursweise aktivierbares IT-Modul (via tool_config) |
 
 ### Deep Nextcloud Integration
 
 | Feature | Was |
 |---------|-----|
-| **NC Assistant Provider** | VirtuProf als Provider fuer den NC AI Assistant — "Welche Fragen hab ich falsch?", "Erstelle Pool zu OSI Layer 3", "Wie bereit bin ich fuer die Pruefung?" direkt im NC-Copilot |
+| **NC Assistant Provider** | VirtuProf als Provider fuer den NC AI Assistant direkt im NC-Copilot |
 | **Unified Search** | Lernkarten + Pools ueber NC globale Suche findbar (aus v4.1 Phase 140) |
 | **Deck-Automation** | FSRS erkennt Luecke → erstellt Aufgabe in Nextcloud Deck |
 | **Talk-Trigger** | Mehrere Studenten am selben Thema schwach → automatische Lernsession in NC Talk |
 | **Predictive Career Intelligence** | KI-Kompetenzanalyse, Arbeitgeber-taugliches Portfolio |
 
-### Was sich aendert gegenueber v4.x
+## v4.3.0 — Onboarding & Content Intelligence (Deferred)
 
-| Bereich | v4.x (IT-fokussiert) | v5.0 (universal) |
-|---------|---------------------|-------------------|
-| PBQ | Feste IT-Topologien | Eigene Bilder + Hotspots |
-| Kampagnen | Nur IT-Incidents | Beliebige Fach-Szenarien |
-| Content | Manueller Import + IT-Starter | Federated Hub + Multi-Fach-Starter |
-| Audio | Keins | Karteikarten mit Audio |
-| Look | "Paper & Circuits" | Waehlbare Themes |
-| Simulatoren | Global sichtbar | Kursweise ein/ausblendbar (IT-Vertical) |
-| Jargon | CLI, RAG, Curriculum-Scope | Allgemeinverstaendliche Begriffe |
+> Geplant nach v5.0.0. Phase-Nummern TBD.
+
+| Feature | Scope |
+|---------|-------|
+| Onboarding Redesign (Option B) | 2-Ebenen Fullscreen: Splash→Rolle→Tour→Datenschutz→Profil-Kacheln→Content-Jumpstart→Hook |
+| Material → Pool Generator (3 Modi) | Gemini Cloud, Lokal Ollama, Manuell CSV/JSON. PoolDraftReview.vue |
+| NOVA Sprachausgabe (Gemini TTS) | Vorlese-Button, 30 HD-Stimmen, Browser SpeechSynthesis Fallback |
+| Video/Audio → Pool Generator | YouTube-URL + Audio-Upload, Gemini Video API + Whisper ASR |
 
 ## v4.1.0 — Social Learning & Consolidation
 
@@ -419,6 +420,75 @@ Plans:
 - [x] 153-06-PLAN.md — Wave 3: A11y audit + RTL + MIGR-05 (scope-pivot to structural coverage + 4-account API smoke, user-approved; CP2 screen-reader deferred to post-merge spot-check) (TEST-06, I18N-03, MIGR-05) ✓ 2026-04-27
 - [x] 153-07-PLAN.md — Wave 4: release ritual (CHANGELOG date lock + sign + signature.json commit + tag v4.4.0 + tarball + GitHub release + App Store API push HTTP 201 + state updates) ✓ 2026-04-27
 
+### Phase 154: Pass-Definition
+**Goal**: Instructors can configure a hard pass criterion per course; the system evaluates pass as a binary result from discrete assessments (excluding guessed answers), records it immutably, and students see their pass status
+**Depends on**: Nothing (first phase of v5.0.0)
+**Requirements**: PASS-01, PASS-02, PASS-03, PASS-04, PASS-05, PASS-06, PASS-07
+**Success Criteria** (what must be TRUE):
+  1. Instructor can enable certification for a course, set a score threshold (%), designate mandatory pools, and set a validity duration; all settings persist across reload
+  2. A student who meets the threshold on discrete assessment results (with guessed answers excluded per `is_guessed`) sees "Bestanden" status on their course page
+  3. A student below the threshold sees "Noch nicht bestanden" with their current assessment score; FSRS readiness has no bearing on the pass result
+  4. When a student first meets pass criteria, an immutable pass event appears in the audit log with user_id, course_id, score, threshold, and timestamp
+**Notes**:
+- PassCriteriaService MUST NOT call ReadinessService (ReadinessService throws without exam_date; orthogonal concepts; coupling here would silently break pass evaluation)
+- Lucky-guess exclusion (`is_guessed`) and the FSRS-vs-pass separation are LOCKED here as the foundation gate before any crypto work (Pitfall 3 prevention)
+- Migration Version009000: typed cert-config columns on `learning_courses` (NOT JSON in mode_config; PHPStan-checkable; follows Version003500 pattern)
+- Scope guardrail: NO multi-tenant platform; issuer = NC instance did:web; wallet interop deferred to v6+
+**Plans**: TBD
+
+### Phase 155: Certificate-Artifact & Issuer
+**Goal**: The NC instance has a cryptographic identity (did:web, Ed25519), issues a signed OB3/VC credential automatically on pass, and students can view, print, download, and share it; key rotation preserves all past certificates
+**Depends on**: Phase 154 (pass event must exist before a credential can be issued)
+**Requirements**: CERT-01, CERT-02, CERT-03, CERT-04, CERT-05, CERT-06, CERT-07, CERT-08, CERT-09, CERT-10, CERT-11, CERT-12, CERT-13
+**Success Criteria** (what must be TRUE):
+  1. Admin runs `occ learning:cert:init-issuer` and the instance generates an Ed25519 keypair; the private key is stored only as ICrypto-encrypted ciphertext (`_enc` suffix) — never plaintext, never in exports, snapshots, or app packages
+  2. An unauthenticated HTTP GET to `<nc_base>/apps/learning/did.json` returns a valid DID document with a verificationMethod resolving the instance's public key
+  3. When a student meets the pass criterion, a signed Open Badges 3.0 / W3C VC credential is automatically issued and stored in `learning_certificates`; the student receives an NC notification
+  4. Student can view their certificate (course, score, threshold, issuer branding from NC theming, issue/expiry dates), print it via `window.print()`, scan the QR code to the verify URL, download the credential as OB3 JSON-LD, and copy a pre-filled LinkedIn "Add to Profile" URL; content renders in DE and EN via existing i18n
+  5. Rotating the issuer key (new row in `oc_learning_cert_keys`) does not invalidate previously issued certificates — each credential references its signing key-id
+**Notes**:
+- CRITICAL ENTRY GATE: Signing-format ADR (VC-JWT + EdDSA vs eddsa-jcs-2022 Data Integrity) MUST be recorded as the FIRST task — no signing code before ADR is decided. ADR resolves both signing format and did.json key type simultaneously (VC-JWT → publicKeyJwk; jcs-2022 → publicKeyMultibase)
+- CRITICAL PITFALL 1 (sign-the-wrong-bytes): eddsa-rdfc-2022 needs RDFC-1.0; no conformant PHP lib. If jcs-2022 chosen, verify JCS lib against RFC 8785 test vectors before committing. VC-JWT = zero canonicalization risk
+- CRITICAL PITFALL 2 (private key placement): AppConfig `sensitive:true` hides but does NOT encrypt; key in `app/data/` ships in App Store tarball. Prevention: generate in memory → ICrypto::encrypt() immediately → store only ciphertext. Audit ALL export paths before phase closes
+- did.json + issuer key MUST ship in this phase (NOT deferred to Phase 157); verificationMethod must resolve at issuance time
+- Migration Version009100: creates `learning_certificates` (UUID `verification_id`, `credential_json` TEXT, `revoked` flag) + `oc_learning_cert_keys` (key rotation in scope per owner decision)
+- Cross-DB gate: PG16 + MariaDB 11.4 utf8mb4 migration test = go/no-go before phase closes
+- Scope guardrail: NO multi-tenant platform; wallet interop (Apple/Google/EUDI/Europass) OUT for v5.0.0; deferred to v6+
+**Plans**: TBD
+
+### Phase 156: Compliance-Report
+**Goal**: Instructors can see who passed which certifying course, filter by date/expiry, and export a DSGVO-safe CSV
+**Depends on**: Phase 155 (learning_certificates table must exist with issued credentials); runs parallel with Phase 157
+**Requirements**: REPORT-01, REPORT-02, REPORT-03, REPORT-04
+**Success Criteria** (what must be TRUE):
+  1. Instructor opens a certifying course and sees a compliance table showing: display name, passed date, score, expiry date, verification UUID — no email addresses or user_id values shown
+  2. Instructor can filter the report by passed-date range (from/to) and by expiry window (expiring within N days)
+  3. Instructor clicks "Export CSV" and receives a downloaded file containing the filtered report with display name only (no email, no user_id)
+**Notes**:
+- Implementation pattern: direct copy of SummaryController::exportCsv(); no new architectural patterns needed
+- DSGVO: expose display name only; no plaintext email; no user_id in CSV export (REPORT-04 is non-negotiable)
+- Scope-drift check: export-only feature, NOT a dashboard or analytics product
+- Scope guardrail: NO multi-tenant platform; wallet interop deferred to v6+
+**Plans**: TBD
+
+### Phase 157: Public-Verify
+**Goal**: Anyone can verify a certificate via its verification-id at a public URL; the response is DSGVO-safe for unauthenticated callers; revoked certificates return a tombstone (not 404); the route is hardened against enumeration and abuse
+**Depends on**: Phase 155 (credential schema, verification-id, did.json, and issuer key must exist); runs parallel with Phase 156
+**Requirements**: VERIFY-01, VERIFY-02, VERIFY-03, VERIFY-04, VERIFY-05, VERIFY-06
+**Success Criteria** (what must be TRUE):
+  1. An unauthenticated visitor to `<nc_base>/apps/learning/verify/{verificationId}` sees a human-readable page with: valid/invalid/revoked/expired status, issuer name, course title, issue and expiry dates — the recipient's name and user identity are never exposed to unauthenticated callers
+  2. Verification cryptographically checks the Ed25519 signature against the published public key AND checks revocation/expiry status — a valid signature alone is insufficient to return "valid"
+  3. When an instructor revokes a certificate, subsequent verification returns "withdrawn" with the revocation date (tombstone, not 404)
+  4. Submitting a malformed verification-id returns a validation error; repeated requests trigger rate limiting via NC IThrottlingService and #[BruteForceProtection]
+**Notes**:
+- Route must be #[PublicPage] #[NoCSRFRequired] #[BruteForceProtection] — follow ExportController / IcsController pattern for @PublicPage
+- PII leak prevention: unauthenticated response shape = {valid, revoked, expired, issued_at, course_title} only — no recipient name, no user_id (Pitfall 5 / DSGVO gate)
+- Input validation: UUID format check before any DB query (anti-enumeration / IDOR prevention, VERIFY-06)
+- Playwright: logged-out browser confirms no recipient name leaks before phase closes
+- Scope guardrail: External verify portal for non-NC supervisors deferred beyond v5.0.0; wallet interop deferred to v6+
+**Plans**: TBD
+
+
 ## Progress Table
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -446,4 +516,8 @@ Plans:
 | 150. Animation Architecture & A11y | v4.4.0 | Complete    | 2026-04-25 | — |
 | 151. Skin Picker & Prof. Lern Classic | v4.4.0 | Complete    | 2026-04-25 | — |
 | 152. Three Archetype Presets | v4.4.0 | Complete    | 2026-04-25 | 2026-04-25 |
-| 153. Migration, Tests, Deploy & App Store | v4.4.0 | 5/7 | Wave 2 complete | — |
+| 153. Migration, Tests, Deploy & App Store | v4.4.0 | 7/7 | Complete | 2026-04-27 |
+| 154. Pass-Definition | v5.0.0 | 0/TBD | Not started | - |
+| 155. Certificate-Artifact & Issuer | v5.0.0 | 0/TBD | Not started | - |
+| 156. Compliance-Report | v5.0.0 | 0/TBD | Not started | - |
+| 157. Public-Verify | v5.0.0 | 0/TBD | Not started | - |
