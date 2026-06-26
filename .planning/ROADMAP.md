@@ -460,7 +460,17 @@ Plans:
 - Migration Version009100: creates `learning_certificates` (UUID `verification_id`, `credential_json` TEXT, `revoked` flag) + `oc_learning_cert_keys` (key rotation in scope per owner decision)
 - Cross-DB gate: PG16 + MariaDB 11.4 utf8mb4 migration test = go/no-go before phase closes
 - Scope guardrail: NO multi-tenant platform; wallet interop (Apple/Google/EUDI/Europass) OUT for v5.0.0; deferred to v6+
-**Plans**: TBD
+**Plans**: 7 plans (waves 1-7, sequential crypto chain)
+
+Plans:
+- [ ] 155-01-PLAN.md — ADR anchor + Migration Version009100 (2 tables) + CertKey/Certificate entities + mappers (data layer)
+- [ ] 155-02-PLAN.md — KeyService (sodium keygen + ICrypto encrypt + rotation) + InitIssuerCommand (occ) + DidController (public did.json)
+- [ ] 155-03-PLAN.md — SigningService VC-JWT EdDSA (TDD round-trip + tamper + independent verifier) — ADR follow-ups #1/#2
+- [ ] 155-04-PLAN.md — IssuanceService (pass hook → OB3 → sign → persist → notify) + Notifier certificate_issued + i18n
+- [ ] 155-05-PLAN.md — CertificateController (list/show/download, ownership-checked) + CertificateService.js
+- [ ] 155-06-PLAN.md — Certificate.vue (Options API: render/print/QR/download/LinkedIn) + vendored MIT QR + human-verify
+- [ ] 155-07-PLAN.md — Phase-close gates: leakage audit (Rule 18) + cross-DB (PG16+MariaDB 11.4) + kid↔did.json + rotation-preserves
+
 
 ### Phase 156: Compliance-Report
 **Goal**: Instructors can see who passed which certifying course, filter by date/expiry, and export a DSGVO-safe CSV
@@ -524,6 +534,6 @@ Plans:
 | 152. Three Archetype Presets | v4.4.0 | Complete    | 2026-04-25 | 2026-04-25 |
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 7/7 | Complete | 2026-04-27 |
 | 154. Pass-Definition | v5.0.0 | 5/5 | Complete | 2026-06-26 |
-| 155. Certificate-Artifact & Issuer | v5.0.0 | 0/TBD | Not started | - |
+| 155. Certificate-Artifact & Issuer | v5.0.0 | 0/7 | Planned | - |
 | 156. Compliance-Report | v5.0.0 | 0/TBD | Not started | - |
 | 157. Public-Verify | v5.0.0 | 0/TBD | Not started | - |
