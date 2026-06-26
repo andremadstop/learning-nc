@@ -165,11 +165,13 @@ namespace OCP\Notification {
     }
 }
 
-namespace OCP\Theming {
-    if (!interface_exists(IThemingDefaults::class)) {
-        interface IThemingDefaults {
-            public function getName(): string;
-            public function getLogo(bool $useSvg = true): string;
+namespace OCP {
+    if (!class_exists(Defaults::class)) {
+        class Defaults {
+            public function getName(): string { return ''; }
+            public function getLogo(bool $useSvg = true): string { return ''; }
+            public function getBaseUrl(): string { return ''; }
+            public function getColorPrimary(): string { return ''; }
         }
     }
 }

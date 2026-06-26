@@ -16,7 +16,7 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IURLGenerator;
 use OCP\Notification\IManager;
 use OCP\Notification\INotification;
-use OCP\Theming\IThemingDefaults;
+use OCP\Defaults;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -126,7 +126,7 @@ class IssuanceServiceTest extends TestCase {
             $manager->expects($this->never())->method('notify');
         }
 
-        $theming = $this->createMock(IThemingDefaults::class);
+        $theming = $this->createMock(Defaults::class);
         $theming->method('getName')->willReturn($issuerName);
         $theming->method('getLogo')->willReturn($logoUrl);
 
