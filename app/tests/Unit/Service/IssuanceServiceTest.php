@@ -17,6 +17,8 @@ use OCP\IURLGenerator;
 use OCP\Notification\IManager;
 use OCP\Notification\INotification;
 use OCP\Defaults;
+use OCP\IUser;
+use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -134,6 +136,11 @@ class IssuanceServiceTest extends TestCase {
         $url->method('getAbsoluteURL')->willReturnCallback(fn(string $p): string => 'https://cloud.example' . $p);
         $url->method('imagePath')->willReturn('/apps/learning/img/app.svg');
 
+        $recipient = $this->createMock(IUser::class);
+        $recipient->method('getDisplayName')->willReturn('Alice Example');
+        $userManager = $this->createMock(IUserManager::class);
+        $userManager->method('get')->willReturn($recipient);
+
         $time = $this->createMock(ITimeFactory::class);
         $time->method('getTime')->willReturn(self::ISSUED_AT);
         $time->method('getDateTime')->willReturn(new \DateTime('@' . self::ISSUED_AT));
@@ -148,6 +155,7 @@ class IssuanceServiceTest extends TestCase {
             $manager,
             $theming,
             $url,
+            $userManager,
             $time,
             $logger,
         );
@@ -212,6 +220,8 @@ class IssuanceServiceTest extends TestCase {
         $payload = $this->payloadOf($captured);
 
         $this->assertStringStartsWith('urn:uuid:', $payload['id']);
+        $this->assertSame('Alice Example', $payload['credentialSubject']['name'], 'recipient display name is frozen in (DSGVO: name only, no email)');
+        $this->assertStringNotContainsString('@', json_encode($payload['credentialSubject']), 'no plaintext email in the subject');
         $this->assertSame('Security+ Kurs', $payload['credentialSubject']['achievement']['name']);
         $this->assertStringContainsString('80', $payload['credentialSubject']['achievement']['criteria']['narrative']);
         $this->assertArrayHasKey('validFrom', $payload);

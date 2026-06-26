@@ -90,6 +90,7 @@ namespace OCP {
     if (!interface_exists(IUser::class)) {
         interface IUser {
             public function getUID(): string;
+            public function getDisplayName(): string;
         }
     }
 
@@ -115,6 +116,7 @@ namespace OCP {
 
     if (!interface_exists(IUserManager::class)) {
         interface IUserManager {
+            public function get(string $uid): ?IUser;
         }
     }
 

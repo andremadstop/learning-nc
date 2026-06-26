@@ -9,6 +9,7 @@ use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\CourseMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IURLGenerator;
+use OCP\IUserManager;
 use OCP\Notification\IManager as INotificationManager;
 use OCP\Defaults;
 use Psr\Log\LoggerInterface;
@@ -43,6 +44,7 @@ class IssuanceService {
     private INotificationManager $notificationManager;
     private Defaults $themingDefaults;
     private IURLGenerator $urlGenerator;
+    private IUserManager $userManager;
     private ITimeFactory $timeFactory;
     private LoggerInterface $logger;
 
@@ -54,6 +56,7 @@ class IssuanceService {
         INotificationManager $notificationManager,
         Defaults $themingDefaults,
         IURLGenerator $urlGenerator,
+        IUserManager $userManager,
         ITimeFactory $timeFactory,
         LoggerInterface $logger
     ) {
@@ -64,6 +67,7 @@ class IssuanceService {
         $this->notificationManager = $notificationManager;
         $this->themingDefaults = $themingDefaults;
         $this->urlGenerator = $urlGenerator;
+        $this->userManager = $userManager;
         $this->timeFactory = $timeFactory;
         $this->logger = $logger;
     }
@@ -91,8 +95,9 @@ class IssuanceService {
         $validityDays = $course->getCertValidityDays() ?? 0;
         $expiresAt = $validityDays > 0 ? $issuedAt + $validityDays * 86400 : null;
         $verificationId = $this->uuidv4();
+        $recipientName = $this->resolveDisplayName($userId);
 
-        $credential = $this->buildCredential($verificationId, $courseId, $course, $result, $issuedAt, $expiresAt);
+        $credential = $this->buildCredential($verificationId, $courseId, $course, $result, $recipientName, $issuedAt, $expiresAt);
 
         $material = $this->keyService->getActiveSigningMaterial();
         /** @var CertKey $key */
@@ -135,6 +140,7 @@ class IssuanceService {
         int $courseId,
         $course,
         PassResult $result,
+        string $recipientName,
         int $issuedAt,
         ?int $expiresAt
     ): array {
@@ -166,6 +172,9 @@ class IssuanceService {
 
         $credential['credentialSubject'] = [
             'type' => ['AchievementSubject'],
+            // Recipient identity is the display name ONLY (CERT-06 / plan <interfaces>): a
+            // recipient-bound certificate without leaking a plaintext email (DSGVO).
+            'name' => $recipientName,
             'achievement' => [
                 'id' => 'urn:learning:course:' . $courseId,
                 'type' => ['Achievement'],
@@ -206,6 +215,19 @@ class IssuanceService {
             $notification->setDateTime($this->timeFactory->getDateTime());
             $this->notificationManager->notify($notification);
         }
+    }
+
+    /**
+     * The recipient's NC display name, frozen into the credential as its only PII (DSGVO:
+     * display name, never the email). Falls back to the user id if the account is unresolvable.
+     */
+    private function resolveDisplayName(string $userId): string {
+        $user = $this->userManager->get($userId);
+        if ($user === null) {
+            return $userId;
+        }
+        $name = $user->getDisplayName();
+        return $name !== '' ? $name : $userId;
     }
 
     /**

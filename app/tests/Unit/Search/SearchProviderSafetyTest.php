@@ -128,6 +128,10 @@ class SearchProviderSafetyTest extends TestCase {
             public function getUID(): string {
                 return $this->uid;
             }
+
+            public function getDisplayName(): string {
+                return $this->uid;
+            }
         };
     }
 

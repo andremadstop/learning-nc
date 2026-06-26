@@ -25,9 +25,7 @@ class CoopServiceTest extends TestCase {
         $playerMapper = $this->createMock(CoopPlayerMapper::class);
         $voteMapper = $this->createMock(CoopVoteMapper::class);
         $storyEngineService = $this->createMock(StoryEngineService::class);
-        $userManager = $this->getMockBuilder(IUserManager::class)
-            ->addMethods(['get'])
-            ->getMock();
+        $userManager = $this->createMock(IUserManager::class);
         $logger = $this->createMock(LoggerInterface::class);
         $db = new FakeDbConnection();
 
@@ -66,7 +64,11 @@ class CoopServiceTest extends TestCase {
 
         $userManager->method('get')
             ->with('alice')
-            ->willReturn(new class {
+            ->willReturn(new class implements \OCP\IUser {
+                public function getUID(): string {
+                    return 'alice';
+                }
+
                 public function getDisplayName(): string {
                     return 'Alice Admin';
                 }
@@ -322,7 +324,7 @@ class CoopServiceTest extends TestCase {
         $voteMapper ??= $this->createMock(CoopVoteMapper::class);
         $storyEngineService ??= $this->createMock(StoryEngineService::class);
         $badgeService ??= $this->createMock(BadgeService::class);
-        $userManager ??= $this->getMockBuilder(IUserManager::class)->addMethods(['get'])->getMock();
+        $userManager ??= $this->createMock(IUserManager::class);
         $logger ??= $this->createMock(LoggerInterface::class);
 
         return new CoopService(
