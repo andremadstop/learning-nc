@@ -81,6 +81,28 @@
 				</div>
 			</div>
 
+			<!-- Zeugnisstatus / Pass status (Phase 154) -->
+			<div v-if="zeugnisVisible" class="widget-card zeugnisstatus-card">
+				<p class="card-kicker">{{ t('learning', 'Zertifizierung') }}</p>
+				<!-- Cert not enabled for this course -->
+				<div v-if="!certApplicable" class="zeugnis-state">
+					<span class="zeugnis-label zeugnis-na">{{ t('learning', 'Kein Zertifikat für diesen Kurs') }}</span>
+				</div>
+				<!-- Passed -->
+				<div v-else-if="hasPassed" class="zeugnis-state">
+					<span class="zeugnis-label zeugnis-passed">✓ {{ t('learning', 'Bestanden') }}</span>
+					<span v-if="passedAtFormatted" class="zeugnis-meta">{{ t('learning', 'Bestanden am') }}: {{ passedAtFormatted }}</span>
+				</div>
+				<!-- Not yet passed -->
+				<div v-else class="zeugnis-state">
+					<span class="zeugnis-label zeugnis-not-passed">{{ t('learning', 'Noch nicht bestanden') }}</span>
+					<span v-if="passStatus.score !== null" class="zeugnis-meta">
+						{{ t('learning', 'Aktueller Score') }}: {{ passStatus.score }}%
+						({{ t('learning', 'Mindest-Score (%)') }}: {{ passStatus.threshold }}%)
+					</span>
+				</div>
+			</div>
+
 			<div class="stats-grid">
 				<div class="widget-card stat-card">
 					<p class="card-kicker">{{ t('learning', 'XP & Level') }}</p>
@@ -189,6 +211,7 @@ import { generateUrl } from '@nextcloud/router'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
+import { getPassStatus } from '../services/CourseService.js'
 
 const MASTERY_RING_RADIUS = 54
 
@@ -228,6 +251,8 @@ export default {
 			icsSubscribeUrl: null,
 			icsLoading: false,
 			icsCopied: false,
+			passStatus: null,
+			passStatusLoading: false,
 		}
 	},
 
@@ -263,18 +288,56 @@ export default {
 			const rate = Math.max(0, Math.min(100, Number(this.mastery.mastery_rate || 0)))
 			return this.masteryCircumference * (1 - rate / 100)
 		},
+		// Show the Zeugnis card only once pass status has loaded.
+		zeugnisVisible() {
+			return this.passStatus !== null && !this.passStatusLoading
+		},
+		// Cert applies to this course (cert_enabled=true server-side).
+		certApplicable() {
+			return this.passStatus?.applicable ?? false
+		},
+		// Student has met the pass criteria.
+		hasPassed() {
+			return this.passStatus?.passed ?? false
+		},
+		// Localized pass date string; null when not yet passed.
+		passedAtFormatted() {
+			if (!this.passStatus?.passedAt) return null
+			return new Date(this.passStatus.passedAt * 1000).toLocaleDateString()
+		},
+	},
+
+	mounted() {
+		this.fetchPassStatus()
 	},
 
 	watch: {
 		courseId: {
 			immediate: true,
-			handler() {
+			handler(newId, oldId) {
 				this.loadSummaryState()
+				// Initial load handled by mounted(); refetch only on actual course change.
+				if (oldId !== undefined) {
+					this.fetchPassStatus()
+				}
 			},
 		},
 	},
 
 	methods: {
+		async fetchPassStatus() {
+			if (!this.courseId) return
+			this.passStatusLoading = true
+			try {
+				this.passStatus = await getPassStatus(this.courseId)
+			} catch (e) {
+				console.error('fetchPassStatus failed', e)
+				this.passStatus = null
+			} finally {
+				this.passStatusLoading = false
+			}
+		},
+
 		async loadNarrative() {
 			this.narrativeLoading = true
 			try {
@@ -568,6 +631,38 @@ export default {
 	display: flex;
 	flex-direction: column;
 	gap: 18px;
+}
+
+/* Zeugnisstatus / Pass status (Phase 154) */
+.zeugnisstatus-card {
+	border-left-color: var(--color-success);
+}
+
+.zeugnis-state {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.zeugnis-label {
+	font-size: 1.2em;
+	font-weight: 700;
+}
+
+.zeugnis-passed {
+	color: var(--color-success);
+}
+
+.zeugnis-not-passed {
+	color: var(--color-warning);
+}
+
+.zeugnis-na {
+	color: var(--color-text-maxcontrast);
+}
+
+.zeugnis-meta {
+	color: var(--color-text-maxcontrast);
 }
 
 .snapshot-state {
