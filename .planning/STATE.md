@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
-current_phase: 154
-current_plan: 05
-status: phase-complete
-stopped_at: Completed 154-05-PLAN.md
-last_updated: "2026-06-26T13:51:58.000Z"
+current_phase: 155
+current_plan: null
+status: ready-to-plan
+stopped_at: "Phase 154 complete + verified (7/7 must-haves) 2026-06-26. Phase 155 (Certificate-Artifact & Issuer) ready to plan — entry gate is signing-format ADR (VC-JWT vs eddsa-jcs-2022) as first task."
+last_updated: "2026-06-26T14:05:00.000Z"
 last_activity: 2026-06-26 — Plan 154-05 complete (Vue cert-config block + student Zeugnisstatus card, Options API; ESLint 0, Vitest green incl. 9 new computed tests; human-verify approved 15/15 on relay). Phase 154 closed — all 7 PASS requirements Complete.
 progress:
   total_phases: 4
@@ -23,13 +23,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-26)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** v5.0.0 Certification-as-a-Service — Phase 154: Pass-Definition
+**Current focus:** v5.0.0 Certification-as-a-Service — Phase 155: Certificate-Artifact & Issuer
 
 ## Current Position
 
-Phase: 154 of 157 (Pass-Definition) — COMPLETE
-Plan: 05 of 5 (done — phase closed)
-Status: Phase complete — next is Phase 155 (Certificate-Artifact & Issuer)
+Phase: 155 of 157 (Certificate-Artifact & Issuer) — ready to plan
+Plan: — (ready to plan)
+Status: Phase 154 complete + verified (7/7) — next is Phase 155 (Certificate-Artifact & Issuer)
 Last activity: 2026-06-26 — Plan 154-05 complete: Vue instructor cert-config block (CourseTabVerwaltung) + student Zeugnisstatus card (CourseSummary), Options API throughout; ESLint 0, Vitest green incl. 9 new Zeugnisstatus computed tests; human-verify approved 15/15 on relay (instructor persist+reload, student Bestanden/Noch-nicht, audit count=1 idempotent). All 7 PASS requirements Complete.
 
 Progress: [██████████] 100% (5/5 plans in Phase 154)
