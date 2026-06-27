@@ -83,6 +83,7 @@
 </template>
 
 <script>
+import { generateUrl } from '@nextcloud/router'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
@@ -125,7 +126,9 @@ export default {
 			const origin = (typeof window !== 'undefined' && window.location)
 				? window.location.origin
 				: ''
-			return buildVerifyUrl(origin, this.verificationId)
+			// generateUrl handles webroot + index.php so the URL is correct on every
+			// install (the public verify route ships in Phase 157; its shape is frozen).
+			return buildVerifyUrl(origin, generateUrl('/apps/learning/verify/' + this.verificationId))
 		},
 		downloadHref() {
 			return downloadUrl(this.verificationId)

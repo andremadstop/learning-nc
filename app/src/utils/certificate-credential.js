@@ -92,16 +92,21 @@ export function extractCertificateFields(credential) {
 }
 
 /**
- * Build the PUBLIC verification URL the QR encodes. The verify route itself lands in
- * Phase 157, but its shape is frozen now: `<nc_base>/apps/learning/verify/<verificationId>`.
+ * Build the absolute PUBLIC verification URL the QR encodes by joining the instance
+ * origin with the router-generated app path. The verify route itself lands in Phase 157,
+ * but its frozen shape is `<nc_base>/apps/learning/verify/<verificationId>` — where
+ * `nc_base` INCLUDES the webroot/index.php. The caller passes a `generateUrl(...)` path
+ * (NOT a hardcoded `/apps/...`) so subpath installs (`https://host/nextcloud/...`) and
+ * index.php-routed installs resolve correctly — the app ships to arbitrary instances.
  *
- * @param {string} baseUrl - the instance origin (e.g. window.location.origin)
- * @param {string} verificationId
+ * @param {string} origin - the instance origin (e.g. window.location.origin)
+ * @param {string} path - the router-generated path (e.g. generateUrl('/apps/learning/verify/<id>'))
  * @return {string} absolute verification URL
  */
-export function buildVerifyUrl(baseUrl, verificationId) {
-	const trimmed = String(baseUrl || '').replace(/\/+$/, '')
-	return `${trimmed}/apps/learning/verify/${verificationId}`
+export function buildVerifyUrl(origin, path) {
+	const o = String(origin || '').replace(/\/+$/, '')
+	const p = String(path || '')
+	return `${o}${p.startsWith('/') ? p : '/' + p}`
 }
 
 /**

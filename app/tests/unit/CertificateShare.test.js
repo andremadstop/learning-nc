@@ -95,14 +95,22 @@ describe('extractCertificateFields', () => {
 })
 
 describe('buildVerifyUrl', () => {
-	it('builds the public verify URL containing the verification id', () => {
-		const url = buildVerifyUrl('https://devcloud.andrestiebitz.de', 'abc-123')
+	it('joins origin + a router-generated path containing the verification id', () => {
+		// path mimics generateUrl('/apps/learning/verify/abc-123')
+		const url = buildVerifyUrl('https://devcloud.andrestiebitz.de', '/apps/learning/verify/abc-123')
 		expect(url).toBe('https://devcloud.andrestiebitz.de/apps/learning/verify/abc-123')
 		expect(url).toContain('verify/abc-123')
 	})
 
-	it('trims a trailing slash on the base URL', () => {
-		expect(buildVerifyUrl('https://x.de/', 'v1')).toBe('https://x.de/apps/learning/verify/v1')
+	it('preserves a webroot/index.php path so subpath installs resolve', () => {
+		// generateUrl on a subpath install returns e.g. /nextcloud/index.php/apps/learning/verify/v1
+		expect(buildVerifyUrl('https://host.example', '/nextcloud/index.php/apps/learning/verify/v1'))
+			.toBe('https://host.example/nextcloud/index.php/apps/learning/verify/v1')
+	})
+
+	it('trims a trailing slash on the origin and tolerates a path missing its leading slash', () => {
+		expect(buildVerifyUrl('https://x.de/', 'apps/learning/verify/v1'))
+			.toBe('https://x.de/apps/learning/verify/v1')
 	})
 })
 
