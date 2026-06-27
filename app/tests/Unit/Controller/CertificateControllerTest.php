@@ -1,0 +1,162 @@
+<?php
+declare(strict_types=1);
+
+namespace OCA\Learning\Tests\Unit\Controller;
+
+use OCA\Learning\Controller\CertificateController;
+use OCA\Learning\Db\Certificate;
+use OCA\Learning\Db\CertificateMapper;
+use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\DataDownloadResponse;
+use OCP\AppFramework\Http\JSONResponse;
+use OCP\IRequest;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Phase 155 Plan 05 — CertificateController ownership + OB3 JSON-LD download contract.
+ *
+ * Asserts the student-facing, authenticated certificate endpoints:
+ *   - index()    returns ONLY the current user's certificates (no cross-user listing).
+ *   - show()     403s on a foreign cert (IDOR guard) and 404s on an unknown verification-id.
+ *   - download() default → an Open Badges 3.0 JSON-LD EnvelopedVerifiableCredential
+ *                wrapping the stored compact VC-JWT (application/ld+json), CERT-09.
+ *   - download(?format=jwt) → the raw 3-segment compact JWT (application/vc+jwt).
+ *
+ * The PUBLIC verify route is Phase 157 — NOT exercised here. All routes are owner-scoped.
+ *
+ * @group cert-05
+ */
+class CertificateControllerTest extends TestCase {
+    /** @var CertificateMapper&\PHPUnit\Framework\MockObject\MockObject */
+    private $mapperMock;
+    /** @var IRequest&\PHPUnit\Framework\MockObject\MockObject */
+    private $requestMock;
+
+    protected function setUp(): void {
+        $this->mapperMock = $this->createMock(CertificateMapper::class);
+        $this->requestMock = $this->createMock(IRequest::class);
+    }
+
+    private function makeController(?string $userId): CertificateController {
+        return new CertificateController('learning', $this->requestMock, $this->mapperMock, $userId);
+    }
+
+    private function makeCert(string $vid, string $userId, string $jwt): Certificate {
+        $cert = new Certificate();
+        $cert->setVerificationId($vid);
+        $cert->setUserId($userId);
+        $cert->setCourseId(7);
+        $cert->setKeyId('key-1');
+        $cert->setCredentialJson($jwt);
+        $cert->setRevoked(false);
+        $cert->setIssuedAt(1700000000);
+        $cert->setExpiresAt(null);
+        return $cert;
+    }
+
+    /**
+     * Test 1 (list own): index() returns ONLY the current user's certificates —
+     * the mapper is queried with the authenticated uid, never a caller-supplied one.
+     */
+    public function testIndexReturnsOnlyOwnCertificates(): void {
+        $own = $this->makeCert('vid-A', 'alice', 'h.p.s');
+        $this->mapperMock->expects($this->once())
+            ->method('findByUserId')
+            ->with('alice')
+            ->willReturn([$own]);
+
+        $resp = $this->makeController('alice')->index();
+
+        $this->assertInstanceOf(JSONResponse::class, $resp);
+        $data = $resp->getData();
+        $this->assertCount(1, $data);
+        $this->assertSame('vid-A', $data[0]['verification_id']);
+        $this->assertSame('alice', $data[0]['user_id']);
+    }
+
+    /**
+     * Test 2a (ownership): show() for a verification-id owned by another user → 403,
+     * and the response body must NOT contain the cert (no credential leak).
+     */
+    public function testShowForeignCertReturns403WithoutBody(): void {
+        $foreign = $this->makeCert('vid-B', 'bob', 'h.p.s');
+        $this->mapperMock->method('findByVerificationId')->with('vid-B')->willReturn($foreign);
+
+        $resp = $this->makeController('alice')->show('vid-B');
+
+        $this->assertInstanceOf(JSONResponse::class, $resp);
+        $this->assertSame(Http::STATUS_FORBIDDEN, $resp->getStatus());
+        $this->assertArrayNotHasKey('credential_json', $resp->getData());
+        $this->assertArrayNotHasKey('verification_id', $resp->getData());
+    }
+
+    /**
+     * Test 2b (ownership): download() for a foreign cert → 403 (a JSONResponse error,
+     * never the credential file).
+     */
+    public function testDownloadForeignCertReturns403(): void {
+        $foreign = $this->makeCert('vid-B', 'bob', 'h.p.s');
+        $this->mapperMock->method('findByVerificationId')->with('vid-B')->willReturn($foreign);
+
+        $resp = $this->makeController('alice')->download('vid-B');
+
+        $this->assertInstanceOf(JSONResponse::class, $resp);
+        $this->assertSame(Http::STATUS_FORBIDDEN, $resp->getStatus());
+    }
+
+    /**
+     * Test 3 (download JSON-LD, default): download() for an owned cert returns an OB3
+     * EnvelopedVerifiableCredential — type 'EnvelopedVerifiableCredential',
+     * id begins 'data:application/vc+jwt,' + the stored JWT, content type application/ld+json.
+     */
+    public function testDownloadDefaultReturnsEnvelopedJsonLd(): void {
+        $jwt = 'eyJhbGciOiJFZERTQSIsInR5cCI6InZjK2p3dCJ9.eyJpZCI6InVybjp1dWlkOnZpZC1BIn0.c2ln';
+        $cert = $this->makeCert('vid-A', 'alice', $jwt);
+        $this->mapperMock->method('findByVerificationId')->with('vid-A')->willReturn($cert);
+
+        $resp = $this->makeController('alice')->download('vid-A');
+
+        $this->assertInstanceOf(DataDownloadResponse::class, $resp);
+        $this->assertSame('application/ld+json', $resp->getHeaders()['Content-Type']);
+        $this->assertStringContainsString('certificate-vid-A.json', $resp->getHeaders()['Content-Disposition']);
+
+        $body = json_decode($resp->render(), true);
+        $this->assertIsArray($body);
+        $this->assertSame('EnvelopedVerifiableCredential', $body['type']);
+        $this->assertStringStartsWith('data:application/vc+jwt,', $body['id']);
+        $this->assertStringEndsWith($jwt, $body['id']);
+        $this->assertContains('https://www.w3.org/ns/credentials/v2', $body['@context']);
+    }
+
+    /**
+     * Test 3b (download jwt): download(?format=jwt) returns the raw 3-segment compact JWT,
+     * content type application/vc+jwt.
+     */
+    public function testDownloadJwtFormatReturnsRawCompactJwt(): void {
+        $jwt = 'eyJhbGciOiJFZERTQSIsInR5cCI6InZjK2p3dCJ9.eyJpZCI6InVybjp1dWlkOnZpZC1BIn0.c2ln';
+        $cert = $this->makeCert('vid-A', 'alice', $jwt);
+        $this->mapperMock->method('findByVerificationId')->with('vid-A')->willReturn($cert);
+
+        $resp = $this->makeController('alice')->download('vid-A', 'jwt');
+
+        $this->assertInstanceOf(DataDownloadResponse::class, $resp);
+        $this->assertSame('application/vc+jwt', $resp->getHeaders()['Content-Type']);
+        $this->assertStringContainsString('certificate-vid-A.jwt', $resp->getHeaders()['Content-Disposition']);
+        $this->assertSame($jwt, $resp->render());
+        $this->assertCount(3, explode('.', $resp->render()));
+    }
+
+    /**
+     * Test 4 (missing): show() for an unknown verification-id → 404.
+     */
+    public function testShowUnknownVerificationIdReturns404(): void {
+        $this->mapperMock->method('findByVerificationId')
+            ->willThrowException(new DoesNotExistException('no such cert'));
+
+        $resp = $this->makeController('alice')->show('does-not-exist');
+
+        $this->assertInstanceOf(JSONResponse::class, $resp);
+        $this->assertSame(Http::STATUS_NOT_FOUND, $resp->getStatus());
+    }
+}

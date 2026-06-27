@@ -220,6 +220,8 @@ namespace OCP\AppFramework {
             public const STATUS_OK = 200;
             public const STATUS_BAD_REQUEST = 400;
             public const STATUS_UNAUTHORIZED = 401;
+            public const STATUS_FORBIDDEN = 403;
+            public const STATUS_NOT_FOUND = 404;
             public const STATUS_TOO_MANY_REQUESTS = 429;
             public const STATUS_SERVICE_UNAVAILABLE = 503;
         }
@@ -243,6 +245,59 @@ namespace OCP\AppFramework\Http {
 
             public function getStatus(): int {
                 return $this->status;
+            }
+        }
+    }
+
+    // Base Response so methods typed `: Response` may return JSONResponse|DataDownloadResponse.
+    if (!class_exists(Response::class)) {
+        class Response {
+            protected int $status = 200;
+            public function setStatus(int $status): self { $this->status = $status; return $this; }
+            public function getStatus(): int { return $this->status; }
+            public function render() { return ''; }
+            /** @return array<string, string> */
+            public function getHeaders(): array { return []; }
+        }
+    }
+
+    if (!class_exists(JSONResponse::class)) {
+        class JSONResponse extends Response {
+            private $data;
+
+            public function __construct($data = [], int $status = 200) {
+                $this->data = $data;
+                $this->status = $status;
+            }
+
+            public function getData() {
+                return $this->data;
+            }
+        }
+    }
+
+    if (!class_exists(DataDownloadResponse::class)) {
+        class DataDownloadResponse extends Response {
+            private $data;
+            private string $filename;
+            private string $contentType;
+
+            public function __construct($data, string $filename, string $contentType) {
+                $this->data = $data;
+                $this->filename = $filename;
+                $this->contentType = $contentType;
+            }
+
+            public function render() {
+                return $this->data;
+            }
+
+            /** @return array<string, string> */
+            public function getHeaders(): array {
+                return [
+                    'Content-Type' => $this->contentType,
+                    'Content-Disposition' => 'attachment; filename="' . $this->filename . '"',
+                ];
             }
         }
     }
