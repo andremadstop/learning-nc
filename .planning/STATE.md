@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
 current_phase: 157
-current_plan: 01
-status: phase-157 IN PROGRESS (Public-Verify). 157-01 (Wave 1, revoked_at foundation) COMPLETE. 4 plans remain (157-02 ‖ 157-03 → 157-04 → 157-05). Phases 154+155+156 COMPLETE.
+current_plan: 03
+status: phase-157 IN PROGRESS (Public-Verify). Wave 1 (157-01 revoked_at foundation) + Wave 2 (157-02 CertificateVerifyService ‖ 157-03 revoke write + Widerrufen button) COMPLETE. 2 plans remain (157-04 PublicVerifyController → 157-05 Playwright + provisioning). Phases 154+155+156 COMPLETE.
 stopped_at: "157-01-PLAN COMPLETE (revoked_at tombstone foundation). 2 task commits: 16404e0 (feat — Version009200 dormant ALTER migration adding nullable BIGINT revoked_at to learning_certificates via getTable+addColumn; Certificate entity revokedAt field + addType integer + @method int|null getRevokedAt; jsonSerialize untouched) → 3196785 (test — cross-db-migration-check.sh mirrors revoked_at BIGINT NULL + information_schema.columns assertion, exit 0 GO). Gate 1 GREEN: php -l clean in-container on both PHP files, PHPStan L5 'No errors', cross-DB GO (2 tables + 4 indexes + revoked_at bigint/nullable, no key-too-long, container torn down). info.xml STILL 4.4.8 (NOT bumped — PROD-SAFETY: a bump → needsDbUpgrade, and --php-only rsyncs info.xml WITHOUT occ upgrade → live maintenance page + breaks 157-05 logged-out e2e). Migration DORMANT — live occ upgrade apply DEFERRED to 157-05 authorized provisioning pass (155-01→155-07 pattern). VERIFY-05 NOT flipped (foundation-only; flips at 157 close after live verify, 155-style deferral). Deployed via deploy-prod.sh --php-only (verified-safe path). NEXT: 157-02 (CertificateVerifyService) ‖ 157-03 (revoke write)."
-last_updated: "2026-06-27T17:26:00.000Z"
-last_activity: 2026-06-27 — Executed 157-01-PLAN (revoked_at tombstone foundation). Version009200 dormant ALTER migration + Certificate.revokedAt entity field + cross-DB revoked_at assertion. Gate 1 green (php -l + PHPStan L5 clean, cross-DB GO), info.xml stays 4.4.8 (bump deferred), jsonSerialize untouched. 2 commits (16404e0 feat, 3196785 test). STATE/ROADMAP hand-edited (gsd-tools corrupt v5.0.0 frontmatter).
+last_updated: "2026-06-27T17:43:42.000Z"
+last_activity: 2026-06-27 — Executed 157-03-PLAN (revoke write-path + instructor Widerrufen button, Wave 2 ∥ 157-02). CertificateController::revoke() owner-gated/idempotent/atomic (revoked+revoked_at-first+active_idem_key=NULL), uniform 404, @NoAdminRequired; POST route; REAL-CourseService 6-case PHPUnit (update->never() proves gate-before-write); thin button + 4 i18n keys ×5 langs. Gate 1 green (13/13 PHPUnit, PHPStan L5 clean, ESLint 0, i18n parity, Vitest 26). 2 commits (f51c3b3, 37e5e23). Fixed existing CertificateControllerTest ctor arity (Rule 3). VERIFY-05 NOT flipped (live smoke deferred). STATE/ROADMAP hand-edited (gsd-tools corrupt v5.0.0 frontmatter).
 progress:
   total_phases: 4
   completed_phases: 3
   total_plans: 5
-  completed_plans: 1
-  percent: 78
+  completed_plans: 3
+  percent: 89
 ---
 
 # Project State
@@ -27,12 +27,12 @@ See: .planning/PROJECT.md (updated 2026-06-26)
 
 ## Current Position
 
-Phase: 157 (Public-Verify) — IN PROGRESS. 157-01 (Wave 1, revoked_at foundation) COMPLETE. Phases 154 + 155 + 156 COMPLETE.
-Plan: 157-01 of 5 done (1/5). 157-01-SUMMARY.md written. Wave 2 next (157-02 ‖ 157-03).
+Phase: 157 (Public-Verify) — IN PROGRESS. Wave 1 (157-01) + Wave 2 (157-02 ‖ 157-03) COMPLETE. Phases 154 + 155 + 156 COMPLETE.
+Plan: 157-03 of 5 done (3/5). 157-01/02/03-SUMMARY.md written. Wave 3 next (157-04 PublicVerifyController + verify.php) → Wave 4 (157-05).
 Status: 156-02 delivered the instructor compliance-report UI consuming the clean 156-01 DTO — `app/src/utils/cert-report.js` (buildCertReportQuery: empty/null/0 + stable order; shouldShowCertReport: instructor+cert_enabled gate; formatScore/formatDate) with 15 Vitest cases, and a compliance section in `CourseTabTeilnehmer.vue`'s Abschluss subtab: from/to date + expiringDays filters (→ unix seconds, to=end-of-day inclusive), a table (Name/Bestanden am/Score/Gültig bis/Verifizierungs-ID) rendered straight from `/cert-report` rows (NO user_id), and an Export CSV button. ONE shared `buildCertReportQuery()` builds both the table-fetch URL and the CSV URL → table==CSV filters structural. 12 new i18n keys ×5 langs (real translations). Gate 1 GREEN (15 Vitest, ESLint 0, i18n key-parity + .js↔.json sync), grep gate clean, deployed via --js-only. REPORT-01/02/03 Complete; REPORT-04 preserved (clean DTO, not raw /api/certificates). Live credentialed Gate 2 + browser visual check deferred (user option A — ride demo-course pass).
 Last activity: 2026-06-27 — Executed 156-02-PLAN. See Execution Notes (156-02) below.
 
-Progress: [███████░░░] Phase 156 COMPLETE (2/2 plans). Milestone v5.0.0: 3/4 phases complete (154+155+156); 157 (Public-Verify) remaining.
+Progress: [█████████░] Phase 157 IN PROGRESS (3/5 plans: Waves 1+2 done). Milestone v5.0.0: 3/4 phases complete (154+155+156); 157 (Public-Verify) Wave 3+4 remaining.
 
 ## Synthetic Cert Smoke — 2026-06-27 (authorized by Andre, throwaway data LEFT IN PLACE)
 
@@ -254,6 +254,15 @@ See PROJECT.md Key Decisions for full table and prior milestone decisions.
 - **Discriminating tests (not trivially-passing):** claim-substitution test signs `id=urn:uuid:OTHER` with the SAME key and proves the SAME JWT is `valid` under its OWN vid (positive control → id-binding rejected, not a sig failure); revoked-key test uses a really-signed JWT (status overrides a GOOD sig); rotation test asserts `findByKeyId(->with(cert.key_id))` with a `retired` key.
 - **PhpUnitStubs needed NO additions** — real `SigningService` + mocked `CertificateMapper`/`CertKeyMapper`/`KeyService`(hostDid only)/`ITimeFactory` resolve in the existing bootstrap. Signer and service share ONE KeyService mock so the kid binds by construction. Deployed via scp+docker cp (lib + test; `--php-only` doesn't sync `tests/`), info.xml untouched (4.4.8) — no occ upgrade, no live mutation.
 - **Carry-forward:** 156's `CertificateReportService::decodePayload` reads an UNVERIFIED JWT — `CertificateVerifyService` is now the reusable verify-before-decode primitive a future 156 hardening pass can adopt (flagged only; 156 NOT reopened). 157-04 consumes `verifyByVerificationId()`: UUID precheck before DB, `throttle()` only on `unknown`, identical generic page for malformed AND not-found. VERIFY-02..05 NOT flipped (backend-proven; flip at 157 close after live Playwright + provisioning). STATE/ROADMAP hand-edited (gsd-tools corrupt v5.0.0 frontmatter); only the 157-02 row/section touched (157-03 runs concurrently).
+
+### Execution Notes (157-03) — revoke write-path + instructor Widerrufen button COMPLETE (Wave 2, ∥ 157-02)
+
+- **`CertificateController::revoke()` is the WITHDRAWN-tombstone write 157-02 reads.** Added to the EXISTING CertificateController (already has `UUID_V4` + `CertificateMapper` + `?string $userId` null-guard); added `CourseService` + `ITimeFactory` to the ctor. Order: `userId===null→401`; malformed UUID→404 (no DB lookup); `findByVerificationId` + `assertInstructorOfCourse($cert->getCourseId(),$userId)` in ONE `try/catch (DoesNotExistException|ForbiddenException)` → **uniform 404** (no 403 existence oracle, consistent with show()/download()); then atomic tombstone — `setRevoked(true)` + idempotent `if (getRevokedAt()===null) setRevokedAt(now)` (keep FIRST) + `setActiveIdemKey(null)` (R2-2) → `update()`; returns `{revoked:true,verification_id}`. `@NoAdminRequired` (NOT public). Route `certificate#revoke` POST `/api/certificates/{verificationId}/revoke` (authenticated /api/ section). 2 commits: `f51c3b3` (feat — endpoint+route+test) → `37e5e23` (feat — button+i18n).
+- **[Rule 3 - Blocking deviation] ctor arity broke the EXISTING CertificateControllerTest** — adding 2 ctor params turned its 4-arg `makeController` into an `ArgumentCountError`, silently breaking all 7 index/show/download tests. The plan's `--filter CertificateRevokeTest` would have passed GREEN over a broken sibling test. Fixed: threaded mocked `CourseService`+`ITimeFactory` through `CertificateControllerTest::makeController`; ran `--filter "CertificateControllerTest|CertificateRevokeTest"` → **13/13 GREEN, 54 assertions**. In-lane (sibling 157-02 owns CertificateVerifyService test + PhpUnitStubs, NOT this file). Advisor-caught.
+- **REAL CourseService gate in the unit test** (12 mocked deps, 156-01 pattern — never stub `assertInstructorOfCourse` to a bool). 6 cases: tombstone-fields-together, idempotent-keeps-first-date, owner-gate-before-write (`update()->never()` on non-owner → 404), malformed-UUID-404 (no lookup), unknown-vid-404, unauthenticated-401. The entity handed to `update()` is captured via `willReturnCallback` to assert `active_idem_key` nulled + `revoked_at` NOT overwritten on repeat. No PhpUnitStubs change needed (CertificateReportServiceTest's wiring already resolves every dep).
+- **Instructor button = thin glue (no util)** — per-row `NcButton` "Widerrufen" in a new "Aktion" column of the 156 compliance table; `revokeCertificate(row)`: `window.confirm()` → `axios.post` revoke URL → `showSuccess`+`fetchCertReport()`; `showError` on failure; `revokingVid` disables the clicked row. Always-show + always-POST (the `/cert-report` DTO has NO `revoked` flag — adding one would touch the REPORT-04 no-leak surface; the idempotent backend makes always-POST safe). `eslint:recommended` does NOT enable `no-alert` and `confirm` is a browser global → `window.confirm()` is ESLint-clean.
+- **i18n** — 4 new keys (`Widerrufen`, the confirm string, `Zertifikat wurde widerrufen`, `Widerruf fehlgeschlagen`) ×5 langs (DE source value==key; real EN/FR/RU/AR); "Aktion" already existed in all 5. `.js` regenerated via `l10n_js_sync.py` (it preserves .json key order + only key-SET parity is checked); JSON re-sorted to canonical codepoint order. Parity gate green (2244 keys each + .js↔.json value-sync), ESLint 0, Vitest 26 cert tests pass. Deployed via `--php-only` (lib+routes, tests scp+docker cp) then `--js-only` (rebuilt dist bundles committed).
+- **DEFERRED (flag, not skipped):** live credentialed revoke smoke (instructor 200 / non-owner 404 / repeat-keeps-first) + visual button click ride the demo-course pass (user option A, like 156-02 + CERT-07/08/13 — no ADMIN_PASS in env). **VERIFY-05 NOT flipped** (backend-complete write side + tombstone; flips at 157 close after live verify, 155-style deferral). `revoked_at` column still dormant (Version009200) — a LIVE revoke needs 157-05's info.xml bump + occ upgrade first. STATE/ROADMAP hand-edited (gsd-tools corrupt v5.0.0 frontmatter); only the 157-03 row/section touched.
 
 ## Session Continuity
 
