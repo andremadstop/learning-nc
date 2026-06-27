@@ -61,12 +61,35 @@ class SigningService {
     /**
      * Verify a compact VC-JWT's Ed25519 signature against a raw 32-byte public key.
      * Operates on the `header.payload` signing input — does NOT validate VC claims.
+     *
+     * TWO independent gates, BOTH must pass:
+     *   (1) Header contract — the JWS header MUST be exactly EdDSA / vc+jwt / vc (the frozen
+     *       155-ADR-ANCHOR contract). This denies an `alg:none` / wrong-`typ` / confused header
+     *       BEFORE the signature is even considered, so a future Phase-157 public verifier that
+     *       reuses this routine can never be tricked into an algorithm/type-confusion accept.
+     *   (2) Ed25519 signature — the detached sodium check over `header.payload` (primary gate).
      */
     public function verify(string $jwt, string $publicKeyRaw): bool {
         $parts = explode('.', $jwt);
         if (count($parts) !== 3) {
             return false;
         }
+
+        // Gate 1: header contract. Decode + parse the header segment and require the frozen
+        // {alg:EdDSA, typ:vc+jwt, cty:vc} triple. Any decode/JSON failure or mismatch → reject.
+        $headerJson = base64_decode(strtr($parts[0], '-_', '+/'), true);
+        if ($headerJson === false) {
+            return false;
+        }
+        $header = json_decode($headerJson, true);
+        if (!is_array($header)
+            || ($header['alg'] ?? null) !== 'EdDSA'
+            || ($header['typ'] ?? null) !== 'vc+jwt'
+            || ($header['cty'] ?? null) !== 'vc') {
+            return false;
+        }
+
+        // Gate 2: Ed25519 signature over the verbatim signing input.
         $signingInput = $parts[0] . '.' . $parts[1];
         $signature = base64_decode(strtr($parts[2], '-_', '+/'), true);
         if ($signature === false) {

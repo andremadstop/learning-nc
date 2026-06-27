@@ -104,6 +104,70 @@ class SigningServiceTest extends TestCase {
         $this->assertFalse($service->verify($tampered, $this->publicRaw), 'tampered payload must fail verification');
     }
 
+    /**
+     * Forge a compact JWT with an arbitrary header but a VALID Ed25519 signature over the forged
+     * signing input. This proves the header-contract gate (FIX 3 / R3-4) rejects independently of
+     * signature validity — a confused header is denied even when the signature itself is correct.
+     */
+    private function forge(array $header, array $payload, string $secretRaw): string {
+        $h = $this->b64uEncode(json_encode($header, JSON_UNESCAPED_SLASHES));
+        $p = $this->b64uEncode(json_encode($payload, JSON_UNESCAPED_SLASHES));
+        $sig = sodium_crypto_sign_detached($h . '.' . $p, $secretRaw);
+        return $h . '.' . $p . '.' . $this->b64uEncode($sig);
+    }
+
+    public function testVerifyRejectsAlgNoneHeader(): void {
+        $service = $this->makeService();
+        // alg:none but otherwise plausible — and signed with a VALID signature over the forged input.
+        $jwt = $this->forge(
+            ['alg' => 'none', 'typ' => 'vc+jwt', 'cty' => 'vc', 'kid' => self::HOST_DID . '#x'],
+            $this->sampleCredential(),
+            $this->secretRaw
+        );
+        $this->assertFalse(
+            $service->verify($jwt, $this->publicRaw),
+            'alg:none header must be rejected even with a structurally valid signature'
+        );
+    }
+
+    public function testVerifyRejectsWrongTyp(): void {
+        $service = $this->makeService();
+        $jwt = $this->forge(
+            ['alg' => 'EdDSA', 'typ' => 'JWT', 'cty' => 'vc', 'kid' => self::HOST_DID . '#x'],
+            $this->sampleCredential(),
+            $this->secretRaw
+        );
+        $this->assertFalse($service->verify($jwt, $this->publicRaw), 'wrong typ must be rejected');
+    }
+
+    public function testVerifyRejectsWrongCty(): void {
+        $service = $this->makeService();
+        $jwt = $this->forge(
+            ['alg' => 'EdDSA', 'typ' => 'vc+jwt', 'cty' => 'JWT', 'kid' => self::HOST_DID . '#x'],
+            $this->sampleCredential(),
+            $this->secretRaw
+        );
+        $this->assertFalse($service->verify($jwt, $this->publicRaw), 'wrong cty must be rejected');
+    }
+
+    public function testVerifyRejectsMalformedHeader(): void {
+        $service = $this->makeService();
+        // Header segment is valid base64url but NOT JSON.
+        $h = $this->b64uEncode('this-is-not-json{');
+        $p = $this->b64uEncode(json_encode($this->sampleCredential(), JSON_UNESCAPED_SLASHES));
+        $sig = sodium_crypto_sign_detached($h . '.' . $p, $this->secretRaw);
+        $jwt = $h . '.' . $p . '.' . $this->b64uEncode($sig);
+
+        $this->assertFalse($service->verify($jwt, $this->publicRaw), 'malformed/non-JSON header must be rejected');
+    }
+
+    public function testVerifyAcceptsValidContractToken(): void {
+        // Counterpart to the rejection tests: a correctly-signed, contract-compliant token still verifies.
+        $service = $this->makeService();
+        $jwt = $service->sign($this->sampleCredential(), $this->key, $this->secretRaw);
+        $this->assertTrue($service->verify($jwt, $this->publicRaw), 'a valid contract token still verifies');
+    }
+
     public function testHeaderContractAndNoVcWrapper(): void {
         $service = $this->makeService();
         $jwt = $service->sign($this->sampleCredential(), $this->key, $this->secretRaw);
