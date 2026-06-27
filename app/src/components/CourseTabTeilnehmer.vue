@@ -397,7 +397,62 @@
 		</div>
 
 		<div v-if="currentSubTab === 'summary' && isInstructor" class="summary-section">
-			<NcNoteCard type="info">
+			<!-- Compliance report (instructor + cert_enabled only; clean DTO endpoint, no recipient-id) -->
+			<div v-if="showCertReport" class="cert-report-section">
+				<div class="cert-report-header">
+					<h4 class="cert-report-title">{{ t('learning', 'Compliance-Bericht') }}</h4>
+					<NcButton type="tertiary" size="small" @click="exportCertReportCsv">
+						{{ t('learning', 'Export CSV') }}
+					</NcButton>
+				</div>
+				<NcNoteCard type="info">
+					{{ t('learning', 'Der Bericht zeigt ausgestellte Zertifikate, keine historischen Bestehensereignisse.') }}
+				</NcNoteCard>
+				<div class="cert-report-filters">
+					<label class="cert-filter">
+						<span>{{ t('learning', 'Bestanden ab') }}</span>
+						<input type="date" :value="certFromDate" @input="certFromDate = $event.target.value">
+					</label>
+					<label class="cert-filter">
+						<span>{{ t('learning', 'Bestanden bis') }}</span>
+						<input type="date" :value="certToDate" @input="certToDate = $event.target.value">
+					</label>
+					<label class="cert-filter">
+						<span>{{ t('learning', 'Ablauf innerhalb (Tage)') }}</span>
+						<input type="number" min="0" step="1" :value="certExpiringDays"
+							@input="certExpiringDays = $event.target.value">
+					</label>
+					<NcButton type="secondary" @click="fetchCertReport">
+						{{ t('learning', 'Filter anwenden') }}
+					</NcButton>
+				</div>
+				<p class="cert-report-hint">{{ t('learning', 'Inkl. bereits abgelaufener Zertifikate') }}</p>
+				<div v-if="certRows.length > 0" class="cert-report-table-container" role="region"
+					:aria-label="t('learning', 'Compliance-Bericht')">
+					<table class="cert-report-table">
+						<thead>
+							<tr>
+								<th scope="col">{{ t('learning', 'Name') }}</th>
+								<th scope="col">{{ t('learning', 'Bestanden am') }}</th>
+								<th scope="col">{{ t('learning', 'Score (%)') }}</th>
+								<th scope="col">{{ t('learning', 'Gültig bis') }}</th>
+								<th scope="col">{{ t('learning', 'Verifizierungs-ID') }}</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="row in certRows" :key="row.verification_id">
+								<td>{{ row.display_name }}</td>
+								<td>{{ formatCertDate(row.passed_at) }}</td>
+								<td>{{ formatCertScore(row.score) }}</td>
+								<td>{{ row.expires_at ? formatCertDate(row.expires_at) : t('learning', 'unbegrenzt') }}</td>
+								<td class="cert-vid">{{ row.verification_id }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p v-else class="cert-report-empty">{{ t('learning', 'Noch keine Zertifikate ausgestellt') }}</p>
+			</div>
+			<NcNoteCard v-else type="info">
 				{{ t('learning', 'Der Klassen-Abschlussbericht folgt in Phase 107. Hier erscheint später die Dozentenansicht für den Kursabschluss.') }}
 			</NcNoteCard>
 		</div>
@@ -435,6 +490,7 @@ import NcTextField from '@nextcloud/vue/components/NcTextField'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { formatXp, formatRelativeDateString } from '../format.js'
+import { buildCertReportQuery, shouldShowCertReport, formatDate, formatScore } from '../utils/cert-report.js'
 import Klassenbuch from './Klassenbuch.vue'
 import StudentDetail from './StudentDetail.vue'
 import CourseSummary from './CourseSummary.vue'
@@ -493,6 +549,12 @@ export default {
 			atRiskStudents: [],
 			atRiskCollapsed: false,
 
+			// Compliance report (cert)
+			certRows: [],
+			certFromDate: '',
+			certToDate: '',
+			certExpiringDays: '',
+
 			// Telos aggregate
 			telosAggregateLoading: false,
 			telosAggregateError: '',
@@ -526,6 +588,9 @@ export default {
 		},
 		isCourseSummaryReleased() {
 			return this.course?.mode_config?.course_summary === true
+		},
+		showCertReport() {
+			return shouldShowCertReport(this.isInstructor, this.course)
 		},
 		visibleSubTabs() {
 			if (this.isInstructor) {
@@ -597,6 +662,9 @@ export default {
 			}
 			if (tab === 'weak-questions' && this.isInstructor) {
 				this.fetchWeakQuestions()
+			}
+			if (tab === 'summary' && this.showCertReport && this.certRows.length === 0) {
+				this.fetchCertReport()
 			}
 		},
 		selectSubTab(tabId) {
@@ -787,6 +855,46 @@ export default {
 			} catch (err) {
 				console.error('Failed to fetch at-risk students:', err)
 			}
+		},
+		// Convert a 'YYYY-MM-DD' date-input value to unix seconds (UTC).
+		// endOfDay pushes the upper bound to 23:59:59 so the `to` filter is inclusive.
+		certDateToUnix(dateStr, endOfDay) {
+			if (!dateStr) return null
+			const ms = Date.parse(dateStr + 'T00:00:00Z')
+			if (Number.isNaN(ms)) return null
+			return Math.floor(ms / 1000) + (endOfDay ? 86399 : 0)
+		},
+		certFilters() {
+			const days = this.certExpiringDays
+			return {
+				from: this.certDateToUnix(this.certFromDate, false),
+				to: this.certDateToUnix(this.certToDate, true),
+				expiringDays: (days === '' || days === null || days === undefined) ? null : Number(days),
+			}
+		},
+		formatCertDate(unix) {
+			return formatDate(unix)
+		},
+		formatCertScore(score) {
+			return formatScore(score)
+		},
+		// Table fetch and CSV export share buildCertReportQuery() so their filter
+		// params are byte-identical (must-have: table == CSV filtered set).
+		async fetchCertReport() {
+			try {
+				const qs = buildCertReportQuery(this.certFilters())
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/cert-report', { courseId: this.courseId })
+				const response = await axios.get(url + (qs ? '?' + qs : ''))
+				this.certRows = response.data.rows || []
+			} catch (err) {
+				console.error('Failed to fetch cert report:', err)
+				this.$emit('error', t('learning', 'Compliance-Bericht konnte nicht geladen werden.'))
+			}
+		},
+		exportCertReportCsv() {
+			const qs = buildCertReportQuery(this.certFilters())
+			const url = generateUrl('/apps/learning/api/courses/{courseId}/cert-report/export/csv', { courseId: this.courseId })
+			window.location.href = url + (qs ? '?' + qs : '')
 		},
 		async fetchTelosAggregate() {
 			this.telosAggregateLoading = true
@@ -1112,6 +1220,21 @@ td.mastery-low { background: color-mix(in srgb, var(--color-error) 10%, transpar
 .at-risk-reasons { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .risk-reason-tag { padding: 2px 8px; border-radius: 6px; font-size: 11px; background: var(--color-background-hover); color: var(--color-text-maxcontrast); }
 .at-risk-meta { display: flex; gap: 12px; font-size: 11px; color: var(--color-text-maxcontrast); }
+
+/* Compliance report */
+.cert-report-section { margin-bottom: 24px; border: 1px solid var(--color-border); border-radius: 12px; padding: 16px 20px; background: var(--color-main-background); }
+.cert-report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.cert-report-title { margin: 0; font-size: 16px; font-weight: 700; color: var(--color-main-text); }
+.cert-report-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; margin-top: 12px; }
+.cert-filter { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--color-text-maxcontrast); }
+.cert-filter input { padding: 6px 8px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-main-background); color: var(--color-main-text); }
+.cert-report-hint { margin: 8px 0 0; font-size: 11px; color: var(--color-text-maxcontrast); }
+.cert-report-table-container { margin-top: 12px; overflow-x: auto; }
+.cert-report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.cert-report-table th, .cert-report-table td { text-align: start; padding: 8px 10px; border-bottom: 1px solid var(--color-border); }
+.cert-report-table th { color: var(--color-text-maxcontrast); font-weight: 600; }
+.cert-report-table .cert-vid { font-family: monospace; font-size: 11px; color: var(--color-text-maxcontrast); }
+.cert-report-empty { margin-top: 12px; color: var(--color-text-maxcontrast); font-size: 13px; }
 
 /* Modal */
 .modal-content { padding: 24px; min-width: 320px; }
