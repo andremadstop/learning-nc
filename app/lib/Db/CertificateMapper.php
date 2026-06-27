@@ -68,6 +68,41 @@ class CertificateMapper extends QBMapper {
     }
 
     /**
+     * Owner-scoped compliance-report query (156-01): the non-revoked certificates of one course,
+     * newest first, with optional server-side filtering. TIME-FREE by design — the caller (service)
+     * owns the clock and passes an ABSOLUTE unix cutoff for the expiry window, so this mapper stays
+     * deterministic and unit-testable without an injected ITimeFactory.
+     *
+     * @param int      $courseId      the course whose certificates to list
+     * @param int|null $from          issued_at >= from (inclusive), when not null
+     * @param int|null $to            issued_at <= to (inclusive), when not null
+     * @param int|null $expiresBefore absolute unix cutoff: expires_at IS NOT NULL AND <= cutoff
+     *                                (already-expired INCLUDED; never-expiring EXCLUDED), when not null
+     * @return Certificate[]
+     */
+    public function findByCourseId(int $courseId, ?int $from, ?int $to, ?int $expiresBefore): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+           ->andWhere($qb->expr()->eq('revoked', $qb->createNamedParameter(false, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)));
+
+        if ($from !== null) {
+            $qb->andWhere($qb->expr()->gte('issued_at', $qb->createNamedParameter($from, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        }
+        if ($to !== null) {
+            $qb->andWhere($qb->expr()->lte('issued_at', $qb->createNamedParameter($to, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        }
+        if ($expiresBefore !== null) {
+            $qb->andWhere($qb->expr()->isNotNull('expires_at'))
+               ->andWhere($qb->expr()->lte('expires_at', $qb->createNamedParameter($expiresBefore, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        }
+
+        $qb->orderBy('issued_at', 'DESC');
+        return $this->findEntities($qb);
+    }
+
+    /**
      * All certificates issued to a user, newest first.
      *
      * @return Certificate[]

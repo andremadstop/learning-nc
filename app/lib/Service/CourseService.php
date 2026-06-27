@@ -552,6 +552,23 @@ class CourseService {
     }
 
     /**
+     * Reusable, IDOR-safe per-course owner gate (156-01): load the course, assert the caller is its
+     * instructor (creator OR co-instructor member), and return it. Use this instead of a bare
+     * RoleService::isInstructor() check so authorization is scoped to THIS course, not the role in
+     * general — an instructor of course A must not read course B.
+     *
+     * @throws DoesNotExistException if the course does not exist (controller → 404)
+     * @throws ForbiddenException    if $userId is not an instructor of this course (controller → 403)
+     */
+    public function assertInstructorOfCourse(int $courseId, string $userId): Course {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->isInstructorOfCourse($course, $userId)) {
+            throw new ForbiddenException('No permission');
+        }
+        return $course;
+    }
+
+    /**
      * Check if user has any access to course (instructor, co-instructor, or enrolled student)
      */
     private function hasAccess(Course $course, string $userId): bool {
