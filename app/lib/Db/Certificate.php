@@ -29,6 +29,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setExpiresAt(?int $expiresAt)
  * @method string|null getActiveIdemKey()
  * @method void setActiveIdemKey(?string $activeIdemKey)
+ * @method int|null getRevokedAt()
+ * @method void setRevokedAt(?int $revokedAt)
  */
 class Certificate extends Entity implements \JsonSerializable {
     protected $verificationId;
@@ -44,6 +46,13 @@ class Certificate extends Entity implements \JsonSerializable {
      * (e.g. after revocation). Internal guard column — not exposed in jsonSerialize().
      */
     protected $activeIdemKey;
+    /**
+     * Unix-seconds timestamp of revocation (VERIFY-05). NULL = not revoked. Populated by the
+     * instructor-revoke write (157-04) and read in the public verify WITHDRAWN tombstone branch
+     * (157-02). Internal/owner field — deliberately NOT exposed in jsonSerialize(); the public
+     * DTO is projected server-side in 157-02, never via this serializer.
+     */
+    protected $revokedAt;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -56,6 +65,7 @@ class Certificate extends Entity implements \JsonSerializable {
         $this->addType('issuedAt', 'integer');
         $this->addType('expiresAt', 'integer');
         $this->addType('activeIdemKey', 'string');
+        $this->addType('revokedAt', 'integer');
     }
 
     /**
