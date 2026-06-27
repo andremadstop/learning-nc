@@ -437,6 +437,7 @@
 								<th scope="col">{{ t('learning', 'Score (%)') }}</th>
 								<th scope="col">{{ t('learning', 'Gültig bis') }}</th>
 								<th scope="col">{{ t('learning', 'Verifizierungs-ID') }}</th>
+								<th scope="col">{{ t('learning', 'Aktion') }}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -446,6 +447,14 @@
 								<td>{{ formatCertScore(row.score) }}</td>
 								<td>{{ row.expires_at ? formatCertDate(row.expires_at) : t('learning', 'unbegrenzt') }}</td>
 								<td class="cert-vid">{{ row.verification_id }}</td>
+								<td>
+									<NcButton type="tertiary"
+										size="small"
+										:disabled="revokingVid === row.verification_id"
+										@click="revokeCertificate(row)">
+										{{ t('learning', 'Widerrufen') }}
+									</NcButton>
+								</td>
 							</tr>
 						</tbody>
 					</table>
@@ -483,6 +492,7 @@
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import { getCurrentUser } from '@nextcloud/auth'
+import { showSuccess, showError } from '@nextcloud/dialogs'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcEmptyContent from '@nextcloud/vue/components/NcEmptyContent'
 import NcModal from '@nextcloud/vue/components/NcModal'
@@ -551,6 +561,7 @@ export default {
 
 			// Compliance report (cert)
 			certRows: [],
+			revokingVid: null,
 			certFromDate: '',
 			certToDate: '',
 			certExpiringDays: '',
@@ -895,6 +906,26 @@ export default {
 			const qs = buildCertReportQuery(this.certFilters())
 			const url = generateUrl('/apps/learning/api/courses/{courseId}/cert-report/export/csv', { courseId: this.courseId })
 			window.location.href = url + (qs ? '?' + qs : '')
+		},
+		// Instructor revoke: owner-gated + idempotent server-side (VERIFY-05). The /cert-report DTO
+		// has no revoked flag, so we always allow the click and refetch — a revoked cert reflects
+		// its new status on the next report load. The backend is the single source of truth.
+		async revokeCertificate(row) {
+			if (!window.confirm(t('learning', 'Zertifikat widerrufen? Diese Aktion kann nicht rückgängig gemacht werden.'))) {
+				return
+			}
+			this.revokingVid = row.verification_id
+			try {
+				const url = generateUrl('/apps/learning/api/certificates/{verificationId}/revoke', { verificationId: row.verification_id })
+				await axios.post(url)
+				showSuccess(t('learning', 'Zertifikat wurde widerrufen'))
+				await this.fetchCertReport()
+			} catch (err) {
+				console.error('Failed to revoke certificate:', err)
+				showError(t('learning', 'Widerruf fehlgeschlagen'))
+			} finally {
+				this.revokingVid = null
+			}
 		},
 		async fetchTelosAggregate() {
 			this.telosAggregateLoading = true
