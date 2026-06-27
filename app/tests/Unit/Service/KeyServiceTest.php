@@ -129,6 +129,25 @@ class KeyServiceTest extends TestCase {
         $this->assertSame($second->getKeyId(), $mapper->findActive()->getKeyId(), 'the new key is the active one');
     }
 
+    public function testHostDidPlainHostUnchanged(): void {
+        // CRITICAL: root-domain, default port, no subpath MUST stay the historical form so the
+        // 155-02/03 kid derivation and devcloud expectations never drift.
+        $url = $this->createMock(IURLGenerator::class);
+        $url->method('getBaseUrl')->willReturn('https://example.com');
+        $service = new KeyService($this->makeMapper(), $this->makeEncryption(), $url);
+
+        $this->assertSame('did:web:example.com:apps:learning', $service->hostDid());
+    }
+
+    public function testHostDidEncodesPortAndSubpath(): void {
+        // Non-default port + webroot → spec-correct did:web with %3A-encoded port and colon-joined path.
+        $url = $this->createMock(IURLGenerator::class);
+        $url->method('getBaseUrl')->willReturn('https://example.com:8443/nextcloud');
+        $service = new KeyService($this->makeMapper(), $this->makeEncryption(), $url);
+
+        $this->assertSame('did:web:example.com%3A8443:nextcloud:apps:learning', $service->hostDid());
+    }
+
     /**
      * FIX 4 / R6-6: if creating the NEW key fails mid-rotation, the OLD key must stay active —
      * never a zero-active-key window. Here the mapper throws on the SECOND insert (the rotation's

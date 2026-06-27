@@ -147,15 +147,49 @@ class KeyService {
     }
 
     /**
-     * The instance's path-based did:web identifier: did:web:<host>:apps:learning.
+     * The instance's canonical path-based did:web identifier (FIX 6 / R5-5).
+     *
+     * Derived from the FULL IURLGenerator::getBaseUrl() — host, port AND any webroot/subpath — per
+     * the did:web spec:
+     *   - a non-default port is appended to the host as `%3A<port>` (the colon is percent-encoded),
+     *   - the URL path is split into colon-separated segments, with the app route `apps:learning`
+     *     (where did.json is served) appended last.
+     *
+     * Examples:
+     *   https://example.com                       → did:web:example.com:apps:learning
+     *   https://example.com:8443/nextcloud        → did:web:example.com%3A8443:nextcloud:apps:learning
+     *
+     * The plain root-domain / default-port / no-subpath case is UNCHANGED, so existing devcloud
+     * expectations and the 155-02/03 kid derivation never drift.
+     *
      * Single source of truth so KeyService and DidController agree on the kid prefix.
      */
     public function hostDid(): string {
-        $host = parse_url($this->urlGenerator->getBaseUrl(), PHP_URL_HOST);
+        $base = $this->urlGenerator->getBaseUrl();
+
+        $host = parse_url($base, PHP_URL_HOST);
         if (!is_string($host)) {
             $host = '';
         }
-        return 'did:web:' . $host . ':apps:learning';
+
+        $port = parse_url($base, PHP_URL_PORT);
+        if (is_int($port)) {
+            $host .= '%3A' . $port;
+        }
+
+        $segments = [];
+        $path = parse_url($base, PHP_URL_PATH);
+        if (is_string($path)) {
+            foreach (explode('/', trim($path, '/')) as $segment) {
+                if ($segment !== '') {
+                    $segments[] = rawurlencode($segment);
+                }
+            }
+        }
+        $segments[] = 'apps';
+        $segments[] = 'learning';
+
+        return 'did:web:' . $host . ':' . implode(':', $segments);
     }
 
     /**
