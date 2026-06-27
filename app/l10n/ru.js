@@ -2226,5 +2226,6 @@ OC.L10N.register(
     "Zu LinkedIn-Profil hinzufügen" : "Добавить в профиль LinkedIn",
     "Zertifikat konnte nicht gelesen werden." : "Не удалось прочитать сертификат.",
     "Zertifikat konnte nicht geladen werden." : "Не удалось загрузить сертификат.",
+    "Zertifikat ansehen" : "Посмотреть сертификат",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

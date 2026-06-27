@@ -2226,5 +2226,6 @@ OC.L10N.register(
     "Zu LinkedIn-Profil hinzufügen" : "Add to LinkedIn profile",
     "Zertifikat konnte nicht gelesen werden." : "The certificate could not be read.",
     "Zertifikat konnte nicht geladen werden." : "The certificate could not be loaded.",
+    "Zertifikat ansehen" : "View certificate",
 },
 "nplurals=2; plural=(n != 1);");

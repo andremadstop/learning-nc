@@ -92,6 +92,13 @@
 				<div v-else-if="hasPassed" class="zeugnis-state">
 					<span class="zeugnis-label zeugnis-passed">✓ {{ t('learning', 'Bestanden') }}</span>
 					<span v-if="passedAtFormatted" class="zeugnis-meta">{{ t('learning', 'Bestanden am') }}: {{ passedAtFormatted }}</span>
+					<NcButton
+						v-if="certVerificationId"
+						type="primary"
+						class="zeugnis-cert-action"
+						@click="showCertModal = true">
+						{{ t('learning', 'Zertifikat ansehen') }}
+					</NcButton>
 				</div>
 				<!-- Not yet passed -->
 				<div v-else class="zeugnis-state">
@@ -202,6 +209,15 @@
 				</p>
 			</div>
 		</template>
+
+		<NcModal
+			v-if="showCertModal && certVerificationId"
+			size="large"
+			@close="showCertModal = false">
+			<div class="cert-modal-body">
+				<Certificate :verification-id="certVerificationId" />
+			</div>
+		</NcModal>
 	</div>
 </template>
 
@@ -210,8 +226,11 @@ import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcLoadingIcon from '@nextcloud/vue/components/NcLoadingIcon'
+import NcModal from '@nextcloud/vue/components/NcModal'
 import NcNoteCard from '@nextcloud/vue/components/NcNoteCard'
 import { getPassStatus } from '../services/CourseService.js'
+import { listCertificates } from '../services/CertificateService.js'
+import Certificate from './Certificate.vue'
 
 const MASTERY_RING_RADIUS = 54
 
@@ -219,8 +238,10 @@ export default {
 	name: 'CourseSummary',
 
 	components: {
+		Certificate,
 		NcButton,
 		NcLoadingIcon,
+		NcModal,
 		NcNoteCard,
 	},
 
@@ -253,6 +274,8 @@ export default {
 			icsCopied: false,
 			passStatus: null,
 			passStatusLoading: false,
+			certVerificationId: null,
+			showCertModal: false,
 		}
 	},
 
@@ -330,11 +353,33 @@ export default {
 			this.passStatusLoading = true
 			try {
 				this.passStatus = await getPassStatus(this.courseId)
+				if (this.passStatus?.passed) {
+					this.resolveCertificate()
+				}
 			} catch (e) {
 				console.error('fetchPassStatus failed', e)
 				this.passStatus = null
 			} finally {
 				this.passStatusLoading = false
+			}
+		},
+
+		// Resolve the issued certificate for this course (if any) so the "Zertifikat
+		// ansehen" action can open it. Empty until a real cert exists (issuance + the
+		// 155-01 migration land in 155-07) — the button stays hidden until then.
+		async resolveCertificate() {
+			this.certVerificationId = null
+			try {
+				const certs = await listCertificates()
+				const match = (Array.isArray(certs) ? certs : [])
+					.filter((c) => Number(c.course_id) === Number(this.courseId) && !c.revoked)
+					.sort((a, b) => (b.issued_at || 0) - (a.issued_at || 0))[0]
+				if (match) {
+					this.certVerificationId = match.verification_id
+				}
+			} catch (e) {
+				// No certificate endpoint data yet (table not migrated / none issued) — stay hidden.
+				this.certVerificationId = null
 			}
 		},
 
@@ -663,6 +708,14 @@ export default {
 
 .zeugnis-meta {
 	color: var(--color-text-maxcontrast);
+}
+
+.zeugnis-cert-action {
+	margin-top: 10px;
+}
+
+.cert-modal-body {
+	padding: 24px;
 }
 
 .snapshot-state {
