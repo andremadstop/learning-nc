@@ -859,7 +859,12 @@ assert_status_in "Question search works" "200" "400"
 
 # Decode a compact JWT header and print its `kid` (base64url, padding-restored).
 jwt_header_kid() {
-    local jwt="$1" h="${jwt%%.*}" mod
+    # NOTE: declare separately — a single `local jwt="$1" h="${jwt%%.*}"` expands
+    # ${jwt%%.*} against the OUTER (unset) jwt before local assigns it, which aborts
+    # under `set -u` ("jwt: unbound variable"). Only surfaced once a real cert existed.
+    local jwt="${1:-}"
+    local h="${jwt%%.*}"
+    local mod
     mod=$(( ${#h} % 4 ))
     if [[ $mod -eq 2 ]]; then h="${h}=="; elif [[ $mod -eq 3 ]]; then h="${h}="; fi
     printf '%s' "$h" | tr '_-' '/+' | base64 -d 2>/dev/null | jq -r '.kid // empty' 2>/dev/null
