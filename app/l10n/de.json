@@ -2212,6 +2212,19 @@
         "Noch nicht bestanden": "Noch nicht bestanden",
         "Aktueller Score": "Aktueller Score",
         "Bestanden am": "Bestanden am",
-        "Kein Zertifikat für diesen Kurs": "Kein Zertifikat für diesen Kurs"
+        "Kein Zertifikat für diesen Kurs": "Kein Zertifikat für diesen Kurs",
+        "Lade Zertifikat...": "Lade Zertifikat...",
+        "Zertifikat": "Zertifikat",
+        "Verliehen an": "Verliehen an",
+        "Ergebnis": "Ergebnis",
+        "Ausgestellt am": "Ausgestellt am",
+        "Gültig bis": "Gültig bis",
+        "Verifizieren": "Verifizieren",
+        "QR-Code zur Verifizierung": "QR-Code zur Verifizierung",
+        "Drucken": "Drucken",
+        "Herunterladen": "Herunterladen",
+        "Zu LinkedIn-Profil hinzufügen": "Zu LinkedIn-Profil hinzufügen",
+        "Zertifikat konnte nicht gelesen werden.": "Zertifikat konnte nicht gelesen werden.",
+        "Zertifikat konnte nicht geladen werden.": "Zertifikat konnte nicht geladen werden."
     }
 }

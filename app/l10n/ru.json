@@ -2212,6 +2212,19 @@
         "Noch nicht bestanden": "Ещё не сдано",
         "Aktueller Score": "Текущий балл",
         "Bestanden am": "Дата сдачи",
-        "Kein Zertifikat für diesen Kurs": "Нет сертификата для этого курса"
+        "Kein Zertifikat für diesen Kurs": "Нет сертификата для этого курса",
+        "Lade Zertifikat...": "Загрузка сертификата...",
+        "Zertifikat": "Сертификат",
+        "Verliehen an": "Выдан",
+        "Ergebnis": "Результат",
+        "Ausgestellt am": "Дата выдачи",
+        "Gültig bis": "Действителен до",
+        "Verifizieren": "Проверить",
+        "QR-Code zur Verifizierung": "QR-код для проверки",
+        "Drucken": "Печать",
+        "Herunterladen": "Скачать",
+        "Zu LinkedIn-Profil hinzufügen": "Добавить в профиль LinkedIn",
+        "Zertifikat konnte nicht gelesen werden.": "Не удалось прочитать сертификат.",
+        "Zertifikat konnte nicht geladen werden.": "Не удалось загрузить сертификат."
     }
 }
