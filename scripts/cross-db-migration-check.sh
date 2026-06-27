@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 #
-# cross-db-migration-check.sh — Phase 155 cross-DB go/no-go gate (CERT-04 portability).
+# cross-db-migration-check.sh — cross-DB go/no-go gate (CERT-04 + VERIFY-05 portability).
 #
-# Proves that migration Version009100 (learning_cert_keys + learning_certificates) applies cleanly
-# on BOTH supported engines, so a credential issuer works on any Nextcloud instance regardless of DB:
+# Proves that the cert schema applies cleanly on BOTH supported engines, so a credential issuer
+# works on any Nextcloud instance regardless of DB. Mirrors:
+#   * Version009100 (learning_cert_keys + learning_certificates), AND
+#   * Version009200 (Phase-157 ALTER: nullable BIGINT revoked_at on learning_certificates — the
+#     revocation-tombstone column, VERIFY-05). Folded into the same CREATE TABLE here (raw DDL has
+#     no live table to ALTER), with an explicit column assertion below.
+# on BOTH supported engines:
 #
 #   * MariaDB 11.4 (utf8mb4)  — the risky engine (utf8mb4 = 4 bytes/char ⇒ index key-length blowups,
 #                               64-char index-name limit). Exercised HERE against an EPHEMERAL,
@@ -65,6 +70,7 @@ CREATE TABLE oc_learning_certificates (
     issued_at BIGINT NOT NULL DEFAULT 0,
     expires_at BIGINT NULL,
     active_idem_key VARCHAR(128) NULL,
+    revoked_at BIGINT NULL,
     PRIMARY KEY (id),
     UNIQUE INDEX learn_cert_vid_uniq (verification_id),
     INDEX learn_cert_user_crs_idx (user_id, course_id),
@@ -159,11 +165,26 @@ assert_index oc_learning_certificates  learn_cert_vid_uniq
 assert_index oc_learning_certificates  learn_cert_user_crs_idx
 assert_index oc_learning_certificates  learn_cert_idem_uq
 
+# ── 4b. assert the Version009200 revoked_at column (nullable BIGINT) ───────────────────────────
+# Phase-157 VERIFY-05: the revocation-tombstone column. Mirrors the NC mapping BIGINT → MariaDB
+# `bigint`, notnull=false → nullable. Asserted against information_schema.columns (parallel to the
+# index asserts above): present, correct base type, and IS_NULLABLE=YES.
+echo "→ Asserting Version009200 revoked_at column…"
+rev_row="$(myx -N -B "$DB_NAME" -e \
+    "SELECT data_type, is_nullable FROM information_schema.columns WHERE table_schema='$DB_NAME' AND table_name='oc_learning_certificates' AND column_name='revoked_at';" 2>/dev/null)"
+rev_type="$(printf '%s' "$rev_row" | awk '{print $1}')"
+rev_null="$(printf '%s' "$rev_row" | awk '{print $2}')"
+if [[ "$rev_type" == "bigint" && "$rev_null" == "YES" ]]; then
+    green "  column revoked_at present on oc_learning_certificates (bigint, nullable)"
+else
+    red "  column revoked_at MISSING or wrong shape (got type='$rev_type' nullable='$rev_null', want 'bigint'/'YES')"; FAIL=1
+fi
+
 # ── 5. PostgreSQL 16 — DEFERRED (live schema change gated behind multi-AI review) ──────────────
 echo "→ PostgreSQL 16 (live devcloud engine):"
 note "DEFERRED — applying Version009100 to live PG16 means \`occ upgrade\` on production, which is"
 note "gated behind a multi-AI review (HARD PROD BOUNDARY). This gate does NOT mutate live PG16."
-note "POST-REVIEW the PG side is verified live with:"
+note "POST-REVIEW the PG side is verified live with (revoked_at appears post-Version009200 apply):"
 note "  ssh relais 'docker exec -u www-data devcloud-app php occ db:show-table learning_cert_keys'"
 note "  ssh relais 'docker exec -u www-data devcloud-app php occ db:show-table learning_certificates'"
 note "(NC maps Types::* per-platform; PG16 has no utf8mb4 key-length limit, so MariaDB is the gating engine.)"
@@ -171,7 +192,7 @@ note "(NC maps Types::* per-platform; PG16 has no utf8mb4 key-length limit, so M
 # ── verdict ───────────────────────────────────────────────────────────────────────────────────
 echo
 if [[ "$FAIL" -eq 0 ]]; then
-    green "GO: Version009100 applies clean on MariaDB 11.4 utf8mb4 (PG16 verification deferred to post-review live gate)"
+    green "GO: Version009100 + Version009200 (revoked_at) apply clean on MariaDB 11.4 utf8mb4 (PG16 verification deferred to post-review live gate)"
     exit 0
 else
     red "NO-GO: one or more MariaDB assertions failed"
