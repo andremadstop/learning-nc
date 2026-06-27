@@ -339,5 +339,10 @@ return [
         // Issuer did:web document (Phase 155) — public, unauthenticated
         ['name' => 'did#index', 'url' => '/did.json', 'verb' => 'GET'],
 
+        // Student certificates (Phase 155) — authenticated, owner-scoped (public verify = Phase 157)
+        ['name' => 'certificate#index',    'url' => '/api/certificates',                          'verb' => 'GET'],
+        ['name' => 'certificate#show',     'url' => '/api/certificates/{verificationId}',         'verb' => 'GET'],
+        ['name' => 'certificate#download', 'url' => '/api/certificates/{verificationId}/download', 'verb' => 'GET'], // ?format=jsonld(default)|jwt
+
     ]
 ];
