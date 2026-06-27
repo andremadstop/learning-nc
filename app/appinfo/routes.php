@@ -5,6 +5,8 @@ return [
         ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
         ['name' => 'page#privacy', 'url' => '/privacy', 'verb' => 'GET'],
         ['name' => 'page#impressum', 'url' => '/impressum', 'verb' => 'GET'],
+        // Public certificate verify page (Phase 157) — unauthenticated, server-rendered (NOT /api/)
+        ['name' => 'publicVerify#verify', 'url' => '/verify/{verificationId}', 'verb' => 'GET'],
 
         // Vue Router History-Mode catch-all: serves index.php for all frontend routes
         // so that direct navigation / browser refresh on /courses, /tools etc. works

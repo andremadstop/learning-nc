@@ -19,9 +19,13 @@ parameters:
         - '#should return array<OCA\\Learning\\Db\\.*> but returns array<int, OCP\\AppFramework\\Db\\Entity>#'
         # IQueryBuilder fluent interface not fully typed in stubs
         - '#Call to an undefined method OCP\\DB\\QueryBuilder\\IQueryBuilder#'
-        # Rate limit attributes require NC 29+ stubs
+        # Rate limit + public-page attributes require NC 29+ stubs (absent from the ocp dev package;
+        # present at runtime on the NC server). Phase 157 public verify route uses the attribute form.
         - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\UserRateLimit#'
         - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\NoAdminRequired#'
         - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\NoCSRFRequired#'
+        - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\PublicPage#'
+        - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\BruteForceProtection#'
+        - '#Attribute class OCP\\AppFramework\\Http\\Attributes\\AnonRateLimit#'
     treatPhpDocTypesAsCertain: false
     reportUnmatchedIgnoredErrors: false
