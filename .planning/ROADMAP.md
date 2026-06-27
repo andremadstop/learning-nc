@@ -485,7 +485,11 @@ Plans:
 - DSGVO: expose display name only; no plaintext email; no user_id in CSV export (REPORT-04 is non-negotiable)
 - Scope-drift check: export-only feature, NOT a dashboard or analytics product
 - Scope guardrail: NO multi-tenant platform; wallet interop deferred to v6+
-**Plans**: TBD
+**Plans**: 2 plans (waves 1-2)
+
+Plans:
+- [ ] 156-01-PLAN.md — Wave 1: CertificateReportService (owner-scoped read + JWT decode for score+frozen name + 5-field DSGVO DTO, no user_id) + CertificateMapper::findByCourseId + CourseService::assertInstructorOfCourse gate + CertificateReportController (JSON + injection-safe CSV) + 2 routes + load-bearing no-leak/IDOR/filter PHPUnit (REPORT-01, REPORT-02, REPORT-03, REPORT-04)
+- [ ] 156-02-PLAN.md — Wave 2: instructor compliance section in CourseTabTeilnehmer.vue (filter inputs + table from the clean DTO endpoint + Export CSV button) + pure cert-report util + Vitest + i18n 5 langs; visual render/download folds into the deferred demo-course check (REPORT-01, REPORT-02, REPORT-03)
 
 ### Phase 157: Public-Verify
 **Goal**: Anyone can verify a certificate via its verification-id at a public URL; the response is DSGVO-safe for unauthenticated callers; revoked certificates return a tombstone (not 404); the route is hardened against enumeration and abuse
@@ -535,5 +539,5 @@ Plans:
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 7/7 | Complete | 2026-04-27 |
 | 154. Pass-Definition | v5.0.0 | 5/5 | Complete | 2026-06-26 |
 | 155. Certificate-Artifact & Issuer | v5.0.0 | 7/7 | Complete (CERT-07/08/13 visual verify deferred to demo course) | 2026-06-27 |
-| 156. Compliance-Report | v5.0.0 | 0/TBD | Not started | - |
+| 156. Compliance-Report | v5.0.0 | 0/2 | Planned | - |
 | 157. Public-Verify | v5.0.0 | 0/TBD | Not started | - |
