@@ -61,7 +61,7 @@ Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMEN
 ### Phases
 
 - [x] **Phase 154: Pass-Definition** — Hard pass criterion per course, lucky-guess exclusion, student status, audit event
-- [ ] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn _(4/7 plans: 155-01 data layer + ADR anchor, 155-02 KeyService + occ init-issuer + public did.json, 155-03 SigningService VC-JWT EdDSA + independent verifier, 155-04 IssuanceService — auto-issue self-contained OB3 on pass + student notification)_
+- [ ] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn _(5/7 plans: 155-01 data layer + ADR anchor, 155-02 KeyService + occ init-issuer + public did.json, 155-03 SigningService VC-JWT EdDSA + independent verifier, 155-04 IssuanceService — auto-issue self-contained OB3 on pass + student notification, 155-05 CertificateController owner-scoped list/show/download — OB3 JSON-LD EnvelopedVerifiableCredential + CertificateService.js)_
 - [ ] **Phase 156: Compliance-Report** — Instructor CSV export, date/expiry filters, DSGVO-safe (runs parallel with 157)
 - [ ] **Phase 157: Public-Verify** — Public @PublicPage verify route, signature + revocation check, rate-limit (runs parallel with 156)
 
@@ -464,10 +464,10 @@ Plans:
 
 Plans:
 - [x] 155-01-PLAN.md — ADR anchor + Migration Version009100 (2 tables) + CertKey/Certificate entities + mappers (data layer) (CERT-03, CERT-04, CERT-06) ✓ 2026-06-27
-- [ ] 155-02-PLAN.md — KeyService (sodium keygen + ICrypto encrypt + rotation) + InitIssuerCommand (occ) + DidController (public did.json)
+- [x] 155-02-PLAN.md — KeyService (sodium keygen + ICrypto encrypt + rotation) + InitIssuerCommand (occ) + DidController (public did.json) ✓ 2026-06-27
 - [x] 155-03-PLAN.md — SigningService VC-JWT EdDSA (TDD round-trip + tamper + independent verifier) — ADR follow-ups #1/#2 (CERT-06 mechanism; Pending until 155-04/07) ✓ 2026-06-27
-- [ ] 155-04-PLAN.md — IssuanceService (pass hook → OB3 → sign → persist → notify) + Notifier certificate_issued + i18n
-- [ ] 155-05-PLAN.md — CertificateController (list/show/download, ownership-checked) + CertificateService.js
+- [x] 155-04-PLAN.md — IssuanceService (pass hook → OB3 → sign → persist → notify) + Notifier certificate_issued + i18n ✓ 2026-06-27
+- [x] 155-05-PLAN.md — CertificateController (list/show/download, ownership-checked; OB3 JSON-LD EnvelopedVerifiableCredential per CERT-09) + CertificateService.js ✓ 2026-06-27
 - [ ] 155-06-PLAN.md — Certificate.vue (Options API: render/print/QR/download/LinkedIn) + vendored MIT QR + human-verify
 - [ ] 155-07-PLAN.md — Phase-close gates: leakage audit (Rule 18) + cross-DB (PG16+MariaDB 11.4) + kid↔did.json + rotation-preserves
 
@@ -534,6 +534,6 @@ Plans:
 | 152. Three Archetype Presets | v4.4.0 | Complete    | 2026-04-25 | 2026-04-25 |
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 7/7 | Complete | 2026-04-27 |
 | 154. Pass-Definition | v5.0.0 | 5/5 | Complete | 2026-06-26 |
-| 155. Certificate-Artifact & Issuer | v5.0.0 | 0/7 | Planned | - |
+| 155. Certificate-Artifact & Issuer | v5.0.0 | 5/7 | In Progress | - |
 | 156. Compliance-Report | v5.0.0 | 0/TBD | Not started | - |
 | 157. Public-Verify | v5.0.0 | 0/TBD | Not started | - |

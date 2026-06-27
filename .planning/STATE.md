@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
 current_phase: 155
-current_plan: 04
+current_plan: 05
 status: in-progress
-stopped_at: "Completed 155-04-PLAN.md (IssuanceService): first-pass → build self-contained OB3/VC (course/score/threshold/dates/issuer+branding/vid frozen at signing) → sign via SigningService (active key, sodium_memzero secret) → persist VC-JWT → ONE deduped NC notification. OWN non-atomic idempotency guard (findByUserAndCourse + not-revoked); NO unique constraint (revoke + re-issue stays possible), deduped on read. Hooked into PassCriteriaService::evaluate() as a SWALLOWED side-effect (try/catch Throwable + log) so it can never 500 the live GET /pass-status. Issuer branding via OCP\\Defaults (IThemingDefaults absent from this NC's OCP package). Notifier 'certificate_issued' + 'Certificate issued: %s' in 5 langs (parity green). Full suite 90/90 (332 assertions); PHPStan L5 clean. CERT-05/06/11/12 Pending (live issuance = 155-07). Next: 155-05 (certificate view)."
+stopped_at: "Completed 155-05-PLAN.md (CertificateController read API): owner-scoped, @NoAdminRequired index()/show(vid)/download(vid,format). index → CertificateMapper::findByUserId(currentUid). show → findByVerificationId; 404 unknown, 403 BARE error (no cert body) on foreign — no IDOR. download DEFAULT = CERT-09 artifact: OB3 JSON-LD EnvelopedVerifiableCredential wrapping the stored compact VC-JWT ({'@context':[VC v2],'type':'EnvelopedVerifiableCredential','id':'data:application/vc+jwt,<jwt>'}, application/ld+json, certificate-<vid>.json); ?format=jwt → raw compact JWT (application/vc+jwt). 3 routes live in occ router:list. CertificateService.js (listCertificates/getCertificate/downloadUrl) thin axios client for 155-06 UI. userId via ?string ctor (IcsController pattern, NOT IUserSession); download typed : Response so 403/404 JSONResponse co-exists (PHPStan L5). TDD 6/6 (26 assertions); full suite 96/96 (360); PHPStan L5 clean; ESLint 0. CERT-07/09 Pending (CERT-07 = 155-06 print UI; CERT-09 button = 155-06, live cert = 155-07). Next: 155-06 (Certificate.vue render/print/QR/download/LinkedIn)."
 last_updated: "2026-06-27T00:00:00.000Z"
-last_activity: 2026-06-27 — Plan 155-04 complete: IssuanceService.issueIfPassed() builds a self-contained OB3/VC 2.0 credential (CERT-06: every field frozen into the signed payload), signs it via the 155-03 SigningService with KeyService::getActiveSigningMaterial() (sodium_memzero after), persists the compact VC-JWT, fires one deduped 'certificate_issued' notification (CERT-12), and brands the issuer from OCP\\Defaults name+logo (CERT-11). Hooked into PassCriteriaService::evaluate() (CERT-05) as a swallowed side-effect — sole caller is the live GET /pass-status, and migration+issuer-key are un-provisioned, so try/catch(Throwable)+log keeps the read path from 500-ing. OWN non-atomic idempotency guard (findByUserAndCourse + not-revoked; no unique constraint — revoke+re-issue stays possible; deduped on read). TDD: IssuanceServiceTest 6/6 (36 assertions, real SigningService decodes the actual JWT); + 4 PassCriteriaService hook regressions; full suite 90/90; PHPStan L5 clean. CERT-05/06/11/12 left Pending (code+unit done; live issuance/verify = 155-07).
+last_activity: 2026-06-27 — Plan 155-05 complete: CertificateController exposes the issued credential to its owner over authenticated HTTP — index() lists own certs, show(vid) views one (404 unknown / 403 bare-error foreign, no IDOR), download(vid,format) DEFAULTs to the CERT-09 OB3 JSON-LD EnvelopedVerifiableCredential wrapping the compact VC-JWT (application/ld+json) with an optional ?format=jwt raw-JWT path. All three @NoAdminRequired + owner-scoped against the DI-injected ?string userId (IcsController pattern, not IUserSession). 3 GET routes live (occ router:list). CertificateService.js thin axios client (listCertificates/getCertificate/downloadUrl) for the 155-06 Vue UI. TDD: CertificateControllerTest 6/6 (26 assertions, RED-first); PhpUnitStubs extended (Response base + JSONResponse/DataDownloadResponse, Http 403/404); full suite 96/96; PHPStan L5 clean; ESLint 0. CERT-07/09 left Pending (CERT-07 = 155-06 print UI; CERT-09 download button = 155-06, live real cert = 155-07).
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 7
-  completed_plans: 4
-  percent: 57
+  completed_plans: 5
+  percent: 71
 ---
 
 # Project State
@@ -28,11 +28,11 @@ See: .planning/PROJECT.md (updated 2026-06-26)
 ## Current Position
 
 Phase: 155 of 157 (Certificate-Artifact & Issuer) — executing
-Plan: 155-04 complete (4/7) — next is 155-05 (certificate view)
-Status: 155-04 issuance shipped — IssuanceService auto-issues a self-contained OB3/VC on first pass (sign via 155-03 SigningService, persist VC-JWT, one deduped notification, issuer branding from OCP\Defaults). Hooked into PassCriteriaService::evaluate() as a swallowed side-effect so it cannot 500 the live GET /pass-status. OWN non-atomic idempotency guard; CERT-05/06/11/12 unit-proven, live issuance = 155-07.
-Last activity: 2026-06-27 — Plan 155-04 complete: IssuanceService.issueIfPassed() (build self-contained OB3 → sign → persist → notify) + PassCriteriaService::evaluate() swallowed-side-effect hook + Notifier certificate_issued + i18n (5 langs). TDD 6/6 (36 assertions, real SigningService decodes the JWT) + 4 hook regressions; full suite 90/90; PHPStan L5 clean. CERT-05/06/11/12 Pending (live issuance/verify = 155-07).
+Plan: 155-05 complete (5/7) — next is 155-06 (Certificate.vue render/print/QR/download/LinkedIn)
+Status: 155-05 read API shipped — CertificateController (index/show/download, all @NoAdminRequired + owner-scoped, no IDOR); download DEFAULT = CERT-09 OB3 JSON-LD EnvelopedVerifiableCredential wrapping the compact VC-JWT (application/ld+json), ?format=jwt → raw JWT. 3 routes live (occ router:list). CertificateService.js axios client for the 155-06 UI. TDD 6/6; full suite 96/96; PHPStan L5 clean; ESLint 0. CERT-07/09 Pending (155-06 print UI + download button; live cert = 155-07).
+Last activity: 2026-06-27 — Plan 155-05 complete: CertificateController list/show/download (owner-scoped read API; OB3 JSON-LD EnvelopedVerifiableCredential download per CERT-09 + optional raw-JWT) + 3 routes + CertificateService.js. TDD CertificateControllerTest 6/6 (26 assertions, RED-first) + PhpUnitStubs (Response/JSONResponse/DataDownloadResponse, Http 403/404); full suite 96/96; PHPStan L5 clean; ESLint 0. CERT-07/09 Pending (155-06/07).
 
-Progress: [██████░░░░] 57% (4/7 plans in Phase 155)
+Progress: [███████░░░] 71% (5/7 plans in Phase 155)
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Progress: [██████░░░░] 57% (4/7 plans in Phase 155)
 | 155 Cert-Artifact | P02 | ~40min | 3 | 7 |
 | 155 Cert-Artifact | P03 | ~35min | 3 | 4 |
 | 155 Cert-Artifact | P04 | ~70min | 3 | 15 |
+| 155 Cert-Artifact | P05 | ~35min | 2 | 5 |
 
 ## Accumulated Context
 
@@ -148,8 +149,20 @@ See PROJECT.md Key Decisions for full table and prior milestone decisions.
 - **gitnexus impact unavailable** — CLI reinstalled deps then rejected `--target` (index stale at a106ce4). Blast radius done by grep: `evaluate()` has exactly ONE caller (`CourseController::getPassStatus`, `GET /pass-status`); return contract `PassResult` unchanged.
 - **CERT-05/06/11/12 left Pending** — code + unit-proven, not live-verifiable (migration unapplied, no issuer key). 155-07 applies migration, `occ learning:cert:init-issuer`, triggers a live pass, marks all four complete. `requirements mark-complete` NOT run.
 
+### Execution Notes (155-05)
+
+- **Auth via `?string $userId` ctor param, NOT `IUserSession->getUID()`** — the plan `<interfaces>` text twice said to use `IUserSession`, but a grep found ZERO controllers in this codebase using it; `IcsController` (the cited authenticated reference) injects `?string $userId` and null-guards → 401. Followed the codebase pattern (identical auth, DI-autowired). Carry into 155-06/07.
+- **`@NoAdminRequired` is load-bearing AND unit-uncatchable** — a controller method with NO annotation defaults to admin-required in NC, so a student would 403. Unit tests instantiate the controller directly and bypass the annotation middleware, so they are green regardless. The annotation is present on `index`/`show`/`download`; correctness rests on inspection (and a credentialed Gate 2 at 155-07).
+- **`download()` typed `: Response` (supertype)** — the 403/404 branches return a `JSONResponse`; the plan's literal `: DataDownloadResponse` would be a PHPStan L5 type error. Mirrors `IcsController::feed()`'s `: Http\Response`.
+- **CERT-09 download artifact = OB3 JSON-LD `EnvelopedVerifiableCredential`** wrapping the stored compact VC-JWT (`{'@context':[https://www.w3.org/ns/credentials/v2],'type':'EnvelopedVerifiableCredential','id':'data:application/vc+jwt,<jwt>'}`), `json_encode` w/ `JSON_UNESCAPED_SLASHES`, `application/ld+json`, `certificate-<vid>.json`. `?format=jwt` → raw compact JWT (`application/vc+jwt`). This is the spec-correct way to present a JWT-secured VC as JSON-LD (RESEARCH).
+- **Ownership (no IDOR)** — `show`/`download` load by verification-id then compare `cert.userId === currentUid`: **403 with a BARE error (no cert body)** on mismatch, **404** on not-found. The no-leak behavior is asserted (`assertArrayNotHasKey credential_json/verification_id`).
+- **PhpUnitStubs extended** — added a `Response` base + `JSONResponse`/`DataDownloadResponse` (so `download()`'s `: Response` union resolves in unit tests) and `Http::STATUS_FORBIDDEN`/`STATUS_NOT_FOUND`. Additive, `class_exists`-guarded. Future controller tests can rely on these.
+- **`deploy-prod.sh --php-only` does NOT sync `tests/`** (carried) — rsync tests to host + `docker cp ~/learning-nc/app/tests` into the container before each phpunit run.
+- **CERT-07/09 left Pending** — CERT-07 ("view AND print", window.print + stylesheet) is the 155-06 Vue UI; CERT-09's download MECHANISM is delivered + unit-proven here but the user-facing button is 155-06 and a live real cert is 155-07. `requirements mark-complete` NOT run (deferral discipline).
+- **Gate 2 (live authenticated API) not run** — no vault creds / `ADMIN_PASS` in env (carried from 154-04); routes/verbs live-registered (`occ router:list`), logic unit-proven. With the 155-01 migration unapplied + no issued certs, there is nothing to list live yet anyway.
+
 ## Session Continuity
 
 Last session: 2026-06-27T00:00:00.000Z
-Stopped at: Completed 155-04-PLAN.md — Phase 155 issuance (IssuanceService auto-issues self-contained OB3 on pass + student notification) shipped (4/7)
+Stopped at: Completed 155-05-PLAN.md — Phase 155 owner-scoped certificate read API (CertificateController list/show/download — OB3 JSON-LD EnvelopedVerifiableCredential per CERT-09) + CertificateService.js shipped (5/7)
 Resume file: None
