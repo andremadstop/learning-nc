@@ -61,7 +61,7 @@ Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMEN
 ### Phases
 
 - [x] **Phase 154: Pass-Definition** — Hard pass criterion per course, lucky-guess exclusion, student status, audit event
-- [ ] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn _(5/7 plans: 155-01 data layer + ADR anchor, 155-02 KeyService + occ init-issuer + public did.json, 155-03 SigningService VC-JWT EdDSA + independent verifier, 155-04 IssuanceService — auto-issue self-contained OB3 on pass + student notification, 155-05 CertificateController owner-scoped list/show/download — OB3 JSON-LD EnvelopedVerifiableCredential + CertificateService.js)_
+- [x] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn _(7/7 plans; issuer provisioned live on devcloud, 10/13 CERT reqs live-verified end-to-end; CERT-07/08/13 implemented + Vitest/build-proven, visual eyeball deferred to demo course — user option A, non-blocking)_
 - [ ] **Phase 156: Compliance-Report** — Instructor CSV export, date/expiry filters, DSGVO-safe (runs parallel with 157)
 - [ ] **Phase 157: Public-Verify** — Public @PublicPage verify route, signature + revocation check, rate-limit (runs parallel with 156)
 
@@ -468,8 +468,8 @@ Plans:
 - [x] 155-03-PLAN.md — SigningService VC-JWT EdDSA (TDD round-trip + tamper + independent verifier) — ADR follow-ups #1/#2 (CERT-06 mechanism; Pending until 155-04/07) ✓ 2026-06-27
 - [x] 155-04-PLAN.md — IssuanceService (pass hook → OB3 → sign → persist → notify) + Notifier certificate_issued + i18n ✓ 2026-06-27
 - [x] 155-05-PLAN.md — CertificateController (list/show/download, ownership-checked; OB3 JSON-LD EnvelopedVerifiableCredential per CERT-09) + CertificateService.js ✓ 2026-06-27
-- [ ] 155-06-PLAN.md — Certificate.vue (Options API: render/print/QR/download/LinkedIn) + vendored MIT QR + human-verify — ⏸ code built + frontend-deployed (commits 316bd1b, d4ff9e3); PAUSED at the blocking human-verify (Task 3): devcloud has no oc_learning_cert* tables / issuer key (155-01 migration unapplied), so the live walkthrough is blocked — awaiting decision to defer to 155-07 or provision now
-- [ ] 155-07-PLAN.md — Phase-close gates: leakage audit (Rule 18) + cross-DB (PG16+MariaDB 11.4) + kid↔did.json + rotation-preserves — ⏸ NON-PROD gates RUN + committed (20f3666, be014ab, 93c4d6a, 00cfeca): leakage gate GREEN (LeakageAuditTest 3/3, 39 assertions, PHPStan L5, 10-surface 155-LEAKAGE-AUDIT.md), cross-DB go/no-go GREEN on ephemeral mariadb:11.4 utf8mb4 (GO), independent-verifier mechanism GREEN on a synthetic JWT. STOPPED at the live-provisioning boundary: live PG16 migration (occ upgrade), occ init-issuer, info.xml bump, real pass, live did.json+kid + rotation-preserves + real-cert independent-verify are all DEFERRED behind the multi-AI review. No prod mutation; requirements left Pending.
+- [x] 155-06-PLAN.md — Certificate.vue (Options API: render/print/QR/download/LinkedIn) + vendored MIT QR + webroot-safe verify URL + CourseSummary entry + i18n 5 langs (commits 316bd1b, d4ff9e3, 3ed5376, c714ee3, 8cbfd9d) — CERT-09/10/11 live-verified; CERT-07/08/13 implemented, visual eyeball deferred to demo course (user option A) ✓ 2026-06-27
+- [x] 155-07-PLAN.md — Phase-close gates + live provisioning: leakage audit (Rule 18, 39 assertions) + cross-DB go/no-go GREEN (PG16 + MariaDB 11.4 utf8mb4) + kid↔did.json + independent-verifier gate (commits 20f3666, be014ab, 93c4d6a, 00cfeca, 77e1159, f6e3268). LIVE on devcloud: Version009100 applied PG16, Ed25519 issuer key UI3V-D_j…, did.json HTTP 200; synthetic e2e smoke minted + independently verified a REAL cert + proved idempotency, then cleaned up. CERT-01/02/03/04/06 live-verified (CERT-05/12 closed live) ✓ 2026-06-27
 
 
 ### Phase 156: Compliance-Report
@@ -534,6 +534,6 @@ Plans:
 | 152. Three Archetype Presets | v4.4.0 | Complete    | 2026-04-25 | 2026-04-25 |
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 7/7 | Complete | 2026-04-27 |
 | 154. Pass-Definition | v5.0.0 | 5/5 | Complete | 2026-06-26 |
-| 155. Certificate-Artifact & Issuer | v5.0.0 | 5/7 | In Progress | - |
+| 155. Certificate-Artifact & Issuer | v5.0.0 | 7/7 | Complete (CERT-07/08/13 visual verify deferred to demo course) | 2026-06-27 |
 | 156. Compliance-Report | v5.0.0 | 0/TBD | Not started | - |
 | 157. Public-Verify | v5.0.0 | 0/TBD | Not started | - |

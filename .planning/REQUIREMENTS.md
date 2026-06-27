@@ -19,19 +19,19 @@ Requirements for v5.0.0. Each maps to a roadmap phase (154–157).
 
 ### Certificate-Artifact & Issuer (CERT) — Phase 155
 
-- [ ] **CERT-01**: Admin can initialize the instance issuer identity via OCC command (`learning:cert:init-issuer` — Ed25519 keypair + did:web)
-- [ ] **CERT-02**: The instance publishes a resolvable did:web DID document (`did.json`) at a public route
-- [ ] **CERT-03**: Issuer private key is stored encrypted at rest (ICrypto) — never plaintext, never in export/snapshot/package
-- [ ] **CERT-04**: System supports multiple issuer keys over time with key rotation (`oc_learning_cert_keys`, key-id referenced in each credential) so rotation does not invalidate past certificates
-- [ ] **CERT-05**: On pass, the system **automatically** issues a signed Open Badges 3.0 / W3C VC credential
-- [ ] **CERT-06**: Each credential is self-contained — course, score, threshold, issue/expiry dates, issuer, verification-id embedded at signing time
-- [ ] **CERT-07**: Student can view and print their certificate (window.print + print stylesheet)
-- [ ] **CERT-08**: Certificate displays a QR code linking to its public verification URL
-- [ ] **CERT-09**: Student can download the credential as an Open Badges 3.0 JSON-LD file
-- [ ] **CERT-10**: Certificate content is multilingual — rendered in the viewer's language (DE/EN at minimum) via existing i18n
-- [ ] **CERT-11**: Certificate carries issuer branding (name + logo) pulled from the instance's NC theming settings (generic, zero per-operator config)
-- [ ] **CERT-12**: Student receives a Nextcloud notification when a certificate is issued
-- [ ] **CERT-13**: Student can add the credential to LinkedIn via prefilled "Add to Profile" URL
+- [x] **CERT-01**: Admin can initialize the instance issuer identity via OCC command (`learning:cert:init-issuer` — Ed25519 keypair + did:web)
+- [x] **CERT-02**: The instance publishes a resolvable did:web DID document (`did.json`) at a public route
+- [x] **CERT-03**: Issuer private key is stored encrypted at rest (ICrypto) — never plaintext, never in export/snapshot/package
+- [x] **CERT-04**: System supports multiple issuer keys over time with key rotation (`oc_learning_cert_keys`, key-id referenced in each credential) so rotation does not invalidate past certificates
+- [x] **CERT-05**: On pass, the system **automatically** issues a signed Open Badges 3.0 / W3C VC credential
+- [x] **CERT-06**: Each credential is self-contained — course, score, threshold, issue/expiry dates, issuer, verification-id embedded at signing time
+- [ ] **CERT-07**: Student can view and print their certificate (window.print + print stylesheet) — *implemented + Vitest/build-proven; visual print render deferred to demo course (user option A, non-blocking)*
+- [ ] **CERT-08**: Certificate displays a QR code linking to its public verification URL — *implemented + Vitest/build-proven; physical QR scan deferred to demo course (user option A, non-blocking)*
+- [x] **CERT-09**: Student can download the credential as an Open Badges 3.0 JSON-LD file
+- [x] **CERT-10**: Certificate content is multilingual — rendered in the viewer's language (DE/EN at minimum) via existing i18n
+- [x] **CERT-11**: Certificate carries issuer branding (name + logo) pulled from the instance's NC theming settings (generic, zero per-operator config)
+- [x] **CERT-12**: Student receives a Nextcloud notification when a certificate is issued
+- [ ] **CERT-13**: Student can add the credential to LinkedIn via prefilled "Add to Profile" URL — *implemented + Vitest/build-proven; live redirect click deferred to demo course (user option A, non-blocking)*
 
 ### Compliance-Report (REPORT) — Phase 156
 
@@ -83,19 +83,19 @@ Requirements for v5.0.0. Each maps to a roadmap phase (154–157).
 | PASS-05 | 154 | Complete |
 | PASS-06 | 154 | Complete |
 | PASS-07 | 154 | Complete |
-| CERT-01 | 155 | Pending |
-| CERT-02 | 155 | Pending |
-| CERT-03 | 155 | Pending |
-| CERT-04 | 155 | Pending |
-| CERT-05 | 155 | Pending |
-| CERT-06 | 155 | Pending |
-| CERT-07 | 155 | Pending |
-| CERT-08 | 155 | Pending |
-| CERT-09 | 155 | Pending |
-| CERT-10 | 155 | Pending |
-| CERT-11 | 155 | Pending |
-| CERT-12 | 155 | Pending |
-| CERT-13 | 155 | Pending |
+| CERT-01 | 155 | Complete |
+| CERT-02 | 155 | Complete |
+| CERT-03 | 155 | Complete |
+| CERT-04 | 155 | Complete |
+| CERT-05 | 155 | Complete |
+| CERT-06 | 155 | Complete |
+| CERT-07 | 155 | Implemented (visual verify deferred) |
+| CERT-08 | 155 | Implemented (visual verify deferred) |
+| CERT-09 | 155 | Complete |
+| CERT-10 | 155 | Complete |
+| CERT-11 | 155 | Complete |
+| CERT-12 | 155 | Complete |
+| CERT-13 | 155 | Implemented (visual verify deferred) |
 | REPORT-01 | 156 | Pending |
 | REPORT-02 | 156 | Pending |
 | REPORT-03 | 156 | Pending |
@@ -111,4 +111,4 @@ Requirements for v5.0.0. Each maps to a roadmap phase (154–157).
 
 ---
 *Requirements defined: 2026-06-26*
-*Last updated: 2026-06-26 after v5.0.0 milestone definition*
+*Last updated: 2026-06-27 — Phase 155 close-out: CERT-01..06/09..12 Complete (live-verified); CERT-07/08/13 implemented, visual verify deferred to demo course (user option A)*
