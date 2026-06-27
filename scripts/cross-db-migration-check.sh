@@ -80,7 +80,7 @@ SQL
 
 myx() { docker exec -i "$CONTAINER" mariadb -uroot -p"$ROOT_PW" "$@"; }
 
-echo "=== Cross-DB migration go/no-go (Version009100) ==="
+echo "=== Cross-DB migration go/no-go (Version009100 + Version009200 revoked_at) ==="
 
 # ── 0. docker present ─────────────────────────────────────────────────────────────────────────
 if ! command -v docker >/dev/null 2>&1; then

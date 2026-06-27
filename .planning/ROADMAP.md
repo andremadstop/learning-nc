@@ -509,7 +509,7 @@ Plans:
 **Plans**: 5 plans (waves 1-4)
 
 Plans:
-- [ ] 157-01-PLAN.md — Wave 1: `revoked_at` migration (Version009200) + Certificate entity field + info.xml 4.4.9 bump + cross-DB check (VERIFY-05 foundation)
+- [x] 157-01-PLAN.md — Wave 1: `revoked_at` migration (Version009200, dormant) + Certificate entity field + cross-DB check. info.xml bump DEFERRED (PROD-SAFETY: would force needsDbUpgrade on a --php-only deploy → live maintenance page; bump + occ upgrade ride the 157-05 provisioning pass). VERIFY-05 foundation. _(16404e0 + 3196785; PHPStan L5 clean, cross-DB GO, jsonSerialize untouched)_
 - [ ] 157-02-PLAN.md — Wave 2: CertificateVerifyService (resolve→key-by-id+status→sig→claim-binding→status precedence→DSGVO DTO) + 8-case TDD (VERIFY-02, VERIFY-03, VERIFY-04, VERIFY-05)
 - [ ] 157-03-PLAN.md — Wave 2 (∥ 157-02): revoke write (owner-gated, idempotent, active_idem_key=NULL) + instructor Widerrufen button in CourseTabTeilnehmer compliance table + i18n (VERIFY-05)
 - [ ] 157-04-PLAN.md — Wave 3: PublicVerifyController (#[PublicPage], UUID precheck, throttle-on-unknown, AnonRateLimit) + pure server-rendered verify.php template (4 status banners + missing-name explainer) + page route + i18n 5 langs (VERIFY-01, VERIFY-02, VERIFY-06)
@@ -549,4 +549,4 @@ Plans:
 | 154. Pass-Definition | v5.0.0 | 5/5 | Complete | 2026-06-26 |
 | 155. Certificate-Artifact & Issuer | v5.0.0 | 7/7 | Complete (CERT-07/08/13 visual verify deferred to demo course) | 2026-06-27 |
 | 156. Compliance-Report | v5.0.0 | 2/2 | Complete (156-01 backend + 156-02 UI; all 4 REPORT reqs done) | - |
-| 157. Public-Verify | v5.0.0 | 0/5 | Planned (5 plans, waves 1-4) | - |
+| 157. Public-Verify | v5.0.0 | 1/5 | In Progress (W1 done; 157-01 revoked_at foundation) | - |

@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
-current_phase: 156
-current_plan: 02
-status: phase-156 COMPLETE (156-01 backend + 156-02 UI). All 4 REPORT reqs Complete. Phase 157 (Public-Verify) is the only remaining v5.0.0 phase — runs standalone now.
-stopped_at: "156-02-PLAN COMPLETE (Compliance-Report UI). 3 commits: 8f06204 (test RED) → 45df112 (cert-report util GREEN) → 066b7e3 (compliance section + i18n 5 langs + deploy). Delivered: app/src/utils/cert-report.js (buildCertReportQuery — empty/null/0 + stable order; shouldShowCertReport — instructor+cert_enabled gate; formatScore/formatDate) with 15 Vitest cases; CourseTabTeilnehmer.vue instructor compliance section in the Abschluss subtab (filter inputs from/to date + expiringDays → unix seconds, to=end-of-day inclusive; table Name/Bestanden am/Score/Gültig bis/Verifizierungs-ID rendered straight from the clean /cert-report DTO rows — NO user_id; Export CSV button; fetch-on-reveal via lazyLoad). buildCertReportQuery() drives BOTH the table fetch URL and the CSV URL → table==CSV filters structural. 12 new i18n keys across DE/EN/FR/RU/AR (real translations, .js regenerated). Gate 1 GREEN: 15 Vitest, ESLint 0, i18n key-parity + .js↔.json value-sync; grep gate clean (added code carries no user_id/listCertificates). Built + deployed via deploy-prod.sh --js-only. REPORT-01/02/03 flipped Complete; REPORT-04 preserved (consumes clean DTO, not raw /api/certificates). DEFERRED (user option A, non-blocking): live credentialed Gate 2 (instructor 200/non-owner 403/text-csv/no-@) + browser visual render/CSV download ride Andre's demo-course pass. Carry-forward unchanged: revocation must null active_idem_key (R2-2); reconcile info.xml 4.4.8 → v5.0.0 release bump (CHANGELOG + tag) at milestone close. NEXT: /gsd:plan-phase 157 (Public-Verify) — last v5.0.0 phase."
-last_updated: "2026-06-27T16:50:00.000Z"
-last_activity: 2026-06-27 — Executed 156-02-PLAN (Compliance-Report UI). TDD util (15 Vitest) → instructor compliance section in CourseTabTeilnehmer.vue (filterable table from the clean DTO + Export CSV, one shared query serializer) + 12 i18n keys ×5 langs + deploy. Gate 1 green (Vitest/ESLint/i18n parity), grep gate clean, deployed. REPORT-01/02/03 Complete → Phase 156 done. STATE/ROADMAP/REQUIREMENTS hand-edited (gsd-tools corrupt v5.0.0 frontmatter).
+current_phase: 157
+current_plan: 01
+status: phase-157 IN PROGRESS (Public-Verify). 157-01 (Wave 1, revoked_at foundation) COMPLETE. 4 plans remain (157-02 ‖ 157-03 → 157-04 → 157-05). Phases 154+155+156 COMPLETE.
+stopped_at: "157-01-PLAN COMPLETE (revoked_at tombstone foundation). 2 task commits: 16404e0 (feat — Version009200 dormant ALTER migration adding nullable BIGINT revoked_at to learning_certificates via getTable+addColumn; Certificate entity revokedAt field + addType integer + @method int|null getRevokedAt; jsonSerialize untouched) → 3196785 (test — cross-db-migration-check.sh mirrors revoked_at BIGINT NULL + information_schema.columns assertion, exit 0 GO). Gate 1 GREEN: php -l clean in-container on both PHP files, PHPStan L5 'No errors', cross-DB GO (2 tables + 4 indexes + revoked_at bigint/nullable, no key-too-long, container torn down). info.xml STILL 4.4.8 (NOT bumped — PROD-SAFETY: a bump → needsDbUpgrade, and --php-only rsyncs info.xml WITHOUT occ upgrade → live maintenance page + breaks 157-05 logged-out e2e). Migration DORMANT — live occ upgrade apply DEFERRED to 157-05 authorized provisioning pass (155-01→155-07 pattern). VERIFY-05 NOT flipped (foundation-only; flips at 157 close after live verify, 155-style deferral). Deployed via deploy-prod.sh --php-only (verified-safe path). NEXT: 157-02 (CertificateVerifyService) ‖ 157-03 (revoke write)."
+last_updated: "2026-06-27T17:26:00.000Z"
+last_activity: 2026-06-27 — Executed 157-01-PLAN (revoked_at tombstone foundation). Version009200 dormant ALTER migration + Certificate.revokedAt entity field + cross-DB revoked_at assertion. Gate 1 green (php -l + PHPStan L5 clean, cross-DB GO), info.xml stays 4.4.8 (bump deferred), jsonSerialize untouched. 2 commits (16404e0 feat, 3196785 test). STATE/ROADMAP hand-edited (gsd-tools corrupt v5.0.0 frontmatter).
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 2
-  completed_plans: 2
-  percent: 75
+  total_plans: 5
+  completed_plans: 1
+  percent: 78
 ---
 
 # Project State
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-06-26)
 
 ## Current Position
 
-Phase: 156 of 157 (Compliance-Report) — COMPLETE (156-01 backend + 156-02 UI). Phase 157 (Public-Verify) is the only remaining v5.0.0 phase. (Phases 154 + 155 + 156 COMPLETE.)
-Plan: 156-02 of 2 done (2/2). 156-02-SUMMARY.md written. Phase 156 closed.
+Phase: 157 (Public-Verify) — IN PROGRESS. 157-01 (Wave 1, revoked_at foundation) COMPLETE. Phases 154 + 155 + 156 COMPLETE.
+Plan: 157-01 of 5 done (1/5). 157-01-SUMMARY.md written. Wave 2 next (157-02 ‖ 157-03).
 Status: 156-02 delivered the instructor compliance-report UI consuming the clean 156-01 DTO — `app/src/utils/cert-report.js` (buildCertReportQuery: empty/null/0 + stable order; shouldShowCertReport: instructor+cert_enabled gate; formatScore/formatDate) with 15 Vitest cases, and a compliance section in `CourseTabTeilnehmer.vue`'s Abschluss subtab: from/to date + expiringDays filters (→ unix seconds, to=end-of-day inclusive), a table (Name/Bestanden am/Score/Gültig bis/Verifizierungs-ID) rendered straight from `/cert-report` rows (NO user_id), and an Export CSV button. ONE shared `buildCertReportQuery()` builds both the table-fetch URL and the CSV URL → table==CSV filters structural. 12 new i18n keys ×5 langs (real translations). Gate 1 GREEN (15 Vitest, ESLint 0, i18n key-parity + .js↔.json sync), grep gate clean, deployed via --js-only. REPORT-01/02/03 Complete; REPORT-04 preserved (clean DTO, not raw /api/certificates). Live credentialed Gate 2 + browser visual check deferred (user option A — ride demo-course pass).
 Last activity: 2026-06-27 — Executed 156-02-PLAN. See Execution Notes (156-02) below.
 
@@ -233,13 +233,24 @@ See PROJECT.md Key Decisions for full table and prior milestone decisions.
 - **DEFERRED (user option A, non-blocking — same as CERT-07/08/13):** live render + actual CSV file download ride Andre's demo-course visual check; the credentialed Gate 2 cert-report block (instructor 200 / non-owner 403 / text/csv / no-@) rides the demo-course creds (no ADMIN_PASS in env). No authenticated browser walkthrough ran this plan.
 - **Requirements:** REPORT-01/02/03 flipped Complete (UI path now exists); REPORT-04 already Complete (156-01). REQUIREMENTS/ROADMAP/STATE hand-edited (gsd-tools corrupt v5.0.0 frontmatter).
 
+### Execution Notes (157-01) — revoked_at tombstone foundation COMPLETE
+
+- **Plan executed exactly as written — ZERO deviations (no Rule 1-4).** All `<interfaces>` matched the codebase.
+- **ALTER migration, not createTable** — Version009100 is already applied LIVE on PG16 (155-07) with NO `revoked_at` (RESEARCH Pitfall 1: SPEC ⊥ CODE — note 157-CONTEXT lines 76-77 wrongly list revoked_at as already live; trust the plan). `Version009200Date20260627120000` uses `$schema->getTable('learning_certificates')` + `hasColumn` guard + `addColumn('revoked_at', Types::BIGINT, ['notnull'=>false])`, returns `$changed ? $schema : null`. Mirrors `expires_at` (nullable, no default).
+- **info.xml NOT bumped (PROD-SAFETY, advisor-caught + baked into plan)** — stays 4.4.8. A bump → `needsDbUpgrade`; `deploy-prod.sh --php-only` rsyncs info.xml but does NOT run `occ upgrade`, so a bumped info.xml would deploy to live devcloud and show the maintenance/upgrade page (breaking real users AND 157-05's logged-out e2e). Migration ships DORMANT; bump + `occ upgrade` apply travel together to the 157-05 authorized provisioning pass (155-01→155-07 pattern).
+- **Deploy-first was required for the verify gate** — the plan's Task-1 `php -l` AND the mandatory PHPStan L5 run IN-CONTAINER, but the new files were local-only. Ran `./scripts/deploy-prod.sh --php-only` FIRST (155-07-verified-safe: info.xml unchanged ⇒ rsync + docker cp + apache graceful + PHPStan, NO occ upgrade ⇒ Version009200 stays dormant; deploying dormant code is NOT the forbidden action — the deferral forbids the info.xml bump + occ upgrade). Both files `php -l` clean; PHPStan "No errors". The deploy's `OCP\AppFramework\App not found` line is the documented harmless standalone-CLI smoke artifact.
+- **jsonSerialize() byte-identical** — `revoked_at` deliberately NOT added to the owner serializer (it already emits user_id + credential_json); the public DTO is projected server-side in 157-02. git diff confirms only the property + addType('revokedAt','integer') + @method block changed.
+- **Cross-DB extended** — `scripts/cross-db-migration-check.sh` now mirrors `revoked_at BIGINT NULL` into the ephemeral MariaDB 11.4 DDL + asserts it via `information_schema.columns` (data_type=bigint, is_nullable=YES). Exit 0 GO, container torn down. PG16 stays a documented no-op (live `occ db:show-table` post-upgrade — the deferred PG assertion).
+- **VERIFY-05 NOT flipped** — foundation-only (the column + entity + cross-DB parity); the requirement flips at 157 close after live verify (155-style deferral discipline). `requirements mark-complete` NOT run. STATE/ROADMAP hand-edited (gsd-tools corrupt v5.0.0 frontmatter).
+- **Carry-forward for 157-02/03/04/05:** 157-02 reads `revoked_at` in the public verify WITHDRAWN branch; 157-03/04 revoke write sets `revoked=true` + `revoked_at` (keep FIRST revocation time, idempotent) + `active_idem_key=NULL` (R2-2). Un-applied migration does NOT break the VALID-path e2e (column read only in WITHDRAWN branch). 157-05 provisioning pass: info.xml bump + occ upgrade + `occ db:show-table learning_certificates` (confirm revoked_at on PG16).
+
 ## Session Continuity
 
-Last session: 2026-06-27T16:50:00.000Z
-Stopped at: 156-02-PLAN COMPLETE (Compliance-Report UI). 156-02-SUMMARY.md written; REQUIREMENTS.md (REPORT-01/02/03 Complete), ROADMAP.md (Phase 156 2/2 Complete), STATE.md hand-edited. 3 task commits: 8f06204 (test RED) → 45df112 (cert-report util) → 066b7e3 (compliance section + i18n + deploy). Gate 1 green (15 Vitest, ESLint 0, i18n parity), grep gate clean, deployed via --js-only. Phase 156 closed. Live credentialed Gate 2 + browser visual check deferred (ride demo-course pass).
+Last session: 2026-06-27T17:26:00.000Z
+Stopped at: 157-01-PLAN COMPLETE (revoked_at tombstone foundation, Wave 1). 157-01-SUMMARY.md written; ROADMAP.md (Phase 157 1/5 In Progress, 157-01 checked + info.xml-bump-deferred note), STATE.md hand-edited (gsd-tools corrupt v5.0.0 frontmatter). 2 task commits: 16404e0 (feat — Version009200 dormant ALTER migration + Certificate.revokedAt entity field) → 3196785 (test — cross-DB revoked_at assertion). Gate 1 green (php -l + PHPStan L5 clean, cross-DB GO), info.xml stays 4.4.8, jsonSerialize untouched. VERIFY-05 NOT flipped (foundation-only). Live occ upgrade apply DEFERRED to 157-05.
 
-Resume: /gsd:plan-phase 157 (Public-Verify) — the LAST remaining v5.0.0 phase (@PublicPage verify route + signature/revocation check + rate-limit). Depends on Phase 155 (did.json + issuer key — already live on devcloud). After 157: v5.0.0 release plan (reconcile info.xml 4.4.8 → 5.0.0 bump, CHANGELOG, git tag, demo-course visual checks for the deferred CERT-07/08/13 + the 156-02 render/CSV download).
-Resume file: .planning/ROADMAP.md (Phase 157 = Public-Verify; plans TBD)
+Resume: 157-02 (CertificateVerifyService: resolve→key-by-id+status→sig→claim-binding→status-precedence→DSGVO DTO, 8-case TDD) ‖ 157-03 (revoke write: owner-gated, idempotent, active_idem_key=NULL + instructor Widerrufen button). Both Wave 2, no shared files. Then 157-04 (PublicVerifyController + server-rendered verify.php template) → 157-05 (Playwright logged-out reachability + DOM no-leak + phase gate; the authorized provisioning pass: info.xml bump + occ upgrade applies Version009200 live on PG16). After 157: v5.0.0 release (reconcile info.xml 4.4.8 → 5.0.0 bump, CHANGELOG, git tag, demo-course visual checks for deferred CERT-07/08/13 + 156-02 render/CSV).
+Resume file: .planning/phases/157-public-verify/157-02-PLAN.md (Wave 2)
 
 ### LEGACY (156-01 close) — superseded by the 156-02 close above
 
