@@ -506,7 +506,16 @@ Plans:
 - Input validation: UUID format check before any DB query (anti-enumeration / IDOR prevention, VERIFY-06)
 - Playwright: logged-out browser confirms no recipient name leaks before phase closes
 - Scope guardrail: External verify portal for non-NC supervisors deferred beyond v5.0.0; wallet interop deferred to v6+
-**Plans**: TBD
+**Plans**: 5 plans (waves 1-4)
+
+Plans:
+- [ ] 157-01-PLAN.md — Wave 1: `revoked_at` migration (Version009200) + Certificate entity field + info.xml 4.4.9 bump + cross-DB check (VERIFY-05 foundation)
+- [ ] 157-02-PLAN.md — Wave 2: CertificateVerifyService (resolve→key-by-id+status→sig→claim-binding→status precedence→DSGVO DTO) + 8-case TDD (VERIFY-02, VERIFY-03, VERIFY-04, VERIFY-05)
+- [ ] 157-03-PLAN.md — Wave 2 (∥ 157-02): revoke write (owner-gated, idempotent, active_idem_key=NULL) + instructor Widerrufen button in CourseTabTeilnehmer compliance table + i18n (VERIFY-05)
+- [ ] 157-04-PLAN.md — Wave 3: PublicVerifyController (#[PublicPage], UUID precheck, throttle-on-unknown, AnonRateLimit) + pure server-rendered verify.php template (4 status banners + missing-name explainer) + page route + i18n 5 langs (VERIFY-01, VERIFY-02, VERIFY-06)
+- [ ] 157-05-PLAN.md — Wave 4: Playwright logged-out reachability + DOM no-leak (vs LIVE cert recipient) + cross-DB GO + leak-grep phase gate (VERIFY-01, VERIFY-03)
+
+> **Wave structure:** W1 = 157-01 (migration foundation). W2 = 157-02 ‖ 157-03 (parallel — verify service vs revoke controller, no shared files). W3 = 157-04 (depends 157-02 service + 157-03 shared routes.php/i18n). W4 = 157-05 (e2e + phase gate). Live `occ upgrade` apply + credentialed/visual smokes deferred to the authorized demo-course provisioning pass (user option A).
 
 
 ## Progress Table
@@ -540,4 +549,4 @@ Plans:
 | 154. Pass-Definition | v5.0.0 | 5/5 | Complete | 2026-06-26 |
 | 155. Certificate-Artifact & Issuer | v5.0.0 | 7/7 | Complete (CERT-07/08/13 visual verify deferred to demo course) | 2026-06-27 |
 | 156. Compliance-Report | v5.0.0 | 2/2 | Complete (156-01 backend + 156-02 UI; all 4 REPORT reqs done) | - |
-| 157. Public-Verify | v5.0.0 | 0/TBD | Not started | - |
+| 157. Public-Verify | v5.0.0 | 0/5 | Planned (5 plans, waves 1-4) | - |
