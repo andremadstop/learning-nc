@@ -678,6 +678,51 @@ if [[ -n "${SECOND_USER}" ]]; then
     assert_status "Non-instructor cert-config rejected with 403" "403"
 fi
 
+# ── Compliance report (Phase 156 — REPORT-01..04) ─────────────────────────────
+# Owner-scoped, DSGVO-safe report. The course may have no issued certs yet (rows: []);
+# the HARD no-leak gates below still hold (no recipient-id key, no '@' email token in
+# either the JSON table or the CSV). bruteforce-reset 172.21.0.1 is a precondition (above).
+# This block runs only with credentials — the script already exits earlier when ADMIN_PASS
+# is unset, so the credentialed cert-report run is the deferred Gate 2 (documented in SUMMARY).
+request GET admin "/apps/learning/api/courses/${COURSE_ID}/cert-report"
+assert_status "Instructor can read cert-report (JSON)" "200"
+assert_json "cert-report response has rows array" '.rows | arrays'
+# HARD no-leak: no recipient-id key anywhere in the JSON body.
+assert_json "cert-report JSON exposes no recipient-id key" '[.. | objects | keys[]] | index("user_id") | not'
+if rg -q '@' "$LAST_BODY"; then
+    fail "cert-report JSON body has no @ email token" "found @ in body: $(body_snippet)"
+else
+    pass "cert-report JSON body has no @ email token"
+fi
+
+# IDOR: a non-owner instructor must be refused (403), never a row.
+if [[ -n "${SECOND_USER}" ]]; then
+    request GET second "/apps/learning/api/courses/${COURSE_ID}/cert-report"
+    assert_status "Non-owner blocked from cert-report with 403" "403"
+fi
+
+# CSV export: same filtered set, injection-safe, display-name only, text/csv content-type.
+cert_csv_headers="$TMP_DIR/cert-report-csv-headers.out"
+: >"$cert_csv_headers"
+run_curl curl -sS \
+    --cookie "$(cookie_for_session admin)" \
+    -H "requesttoken: $(token_for_session admin)" \
+    -H "OCS-APIREQUEST: true" \
+    -D "$cert_csv_headers" \
+    -o "$LAST_BODY" \
+    "${BASE_URL}/apps/learning/api/courses/${COURSE_ID}/cert-report/export/csv" >/dev/null 2>&1 || true
+if rg -qi '^content-type:[[:space:]]*text/csv' "$cert_csv_headers"; then
+    pass "cert-report CSV has text/csv content-type"
+else
+    fail "cert-report CSV has text/csv content-type" "headers: $(tr '\n' ' ' <"$cert_csv_headers" | head -c 200)"
+fi
+assert_contains "cert-report CSV has the Verifizierungs-ID header" "Verifizierungs-ID"
+if rg -q '@|user_id' "$LAST_BODY"; then
+    fail "cert-report CSV body has no @ email token and no recipient-id column" "body: $(body_snippet)"
+else
+    pass "cert-report CSV body has no @ email token and no recipient-id column"
+fi
+
 # Course owner: pass status → 200
 request GET admin "/apps/learning/api/courses/${COURSE_ID}/pass-status"
 assert_status "Course owner can read pass status" "200"
