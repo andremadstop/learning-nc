@@ -122,6 +122,65 @@ class KeyServiceTest extends TestCase {
         $ids = array_map(fn(CertKey $k) => $k->getKeyId(), $nonRevoked);
         $this->assertContains($first->getKeyId(), $ids);
         $this->assertContains($second->getKeyId(), $ids);
+
+        // Exactly ONE active key post-rotation; the old one is retired but still published (FIX 4).
+        $activeCount = count(array_filter($nonRevoked, fn(CertKey $k) => $k->getStatus() === 'active'));
+        $this->assertSame(1, $activeCount, 'exactly one active key after rotation');
+        $this->assertSame($second->getKeyId(), $mapper->findActive()->getKeyId(), 'the new key is the active one');
+    }
+
+    /**
+     * FIX 4 / R6-6: if creating the NEW key fails mid-rotation, the OLD key must stay active —
+     * never a zero-active-key window. Here the mapper throws on the SECOND insert (the rotation's
+     * new key); rotate() must propagate the error while leaving the incumbent untouched.
+     */
+    public function testRotateKeepsOldKeyActiveIfNewKeyInsertFails(): void {
+        if (!extension_loaded('sodium')) {
+            $this->markTestSkipped('ext-sodium not loaded');
+        }
+        $mapper = new class extends CertKeyMapper {
+            /** @var CertKey[] */
+            public array $store = [];
+            private int $nextId = 1;
+            private int $inserts = 0;
+
+            public function __construct() {
+            }
+
+            public function insert($entity): CertKey {
+                $this->inserts++;
+                if ($this->inserts >= 2) {
+                    throw new \RuntimeException('simulated DB failure inserting the new active key');
+                }
+                $entity->setId($this->nextId++);
+                $this->store[] = $entity;
+                return $entity;
+            }
+
+            public function update($entity): CertKey {
+                return $entity;
+            }
+
+            public function findActive(): ?CertKey {
+                $active = array_values(array_filter($this->store, fn(CertKey $k) => $k->getStatus() === 'active'));
+                return $active === [] ? null : end($active);
+            }
+        };
+        $service = $this->makeService($mapper);
+
+        $first = $service->init();
+        $this->assertSame('active', $first->getStatus());
+
+        try {
+            $service->rotate();
+            $this->fail('rotate() should have propagated the new-key insert failure');
+        } catch (\RuntimeException $e) {
+            // expected
+        }
+
+        // The old key is STILL active and still the sole active key — no zero-active-key window.
+        $this->assertSame('active', $first->getStatus(), 'old key must remain active when new-key creation fails');
+        $this->assertSame($first, $mapper->findActive(), 'old key is still the active key after a failed rotation');
     }
 
     public function testInitTwiceThrowsWithoutRotate(): void {

@@ -39,11 +39,24 @@ class KeyService {
      *                           or the secret failed to encrypt.
      */
     public function init(): CertKey {
-        if (!extension_loaded('sodium')) {
-            throw new \RuntimeException('ext-sodium is required to generate issuer signing keys');
-        }
         if ($this->certKeyMapper->findActive() !== null) {
             throw new \RuntimeException('An active signing key already exists — use --rotate to rotate it');
+        }
+        return $this->generateActiveKey();
+    }
+
+    /**
+     * Generate + persist a fresh Ed25519 keypair as an active signing key.
+     *
+     * Deliberately does NOT pre-check findActive() — that guard belongs to public init(). rotate()
+     * relies on this so it can durably insert the NEW active key while the OLD one is still active,
+     * eliminating any zero-active-key window (FIX 4 / R6-6).
+     *
+     * @throws \RuntimeException if ext-sodium is missing or the secret failed to encrypt.
+     */
+    private function generateActiveKey(): CertKey {
+        if (!extension_loaded('sodium')) {
+            throw new \RuntimeException('ext-sodium is required to generate issuer signing keys');
         }
 
         $keypair = sodium_crypto_sign_keypair();
@@ -78,19 +91,28 @@ class KeyService {
     }
 
     /**
-     * Rotate the issuer key: retire the current active key (update, never delete) and
-     * generate a fresh active key. Retired keys stay published in did.json so past
-     * certificates remain verifiable.
+     * Rotate the issuer key. Ordering is safety-critical (FIX 4 / R6-6): the NEW active key is
+     * generated and durably inserted FIRST, and only AFTER that succeeds is the previous active key
+     * retired (update, never delete). If new-key creation throws, the old key stays active — there is
+     * never a zero-active-key window. Retired keys stay published in did.json so past certificates
+     * remain verifiable.
      *
-     * @throws \RuntimeException on the same conditions as init().
+     * @throws \RuntimeException if ext-sodium is missing or the new secret failed to encrypt.
      */
     public function rotate(): CertKey {
-        $active = $this->certKeyMapper->findActive();
-        if ($active !== null) {
-            $active->setStatus('retired');
-            $this->certKeyMapper->update($active);
+        $previous = $this->certKeyMapper->findActive();
+
+        // Create + persist the replacement BEFORE touching the incumbent. A throw here leaves the
+        // old active key untouched (still the sole active key).
+        $new = $this->generateActiveKey();
+
+        // New key is durably inserted — now safe to retire the previous one.
+        if ($previous !== null) {
+            $previous->setStatus('retired');
+            $this->certKeyMapper->update($previous);
         }
-        return $this->init();
+
+        return $new;
     }
 
     /**
