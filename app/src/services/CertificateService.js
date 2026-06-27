@@ -20,13 +20,13 @@ export async function listCertificates() {
 
 /**
  * Fetch a single owned certificate by its verification id.
- * Returns 403 if it belongs to another user, 404 if it does not exist (IDOR guard server-side).
+ * Returns a uniform 404 if it does not exist OR belongs to another user (IDOR guard server-side).
  * @param {string} verificationId — the certificate's public verification id
  * @return {Promise<object>} the certificate row
  */
 export async function getCertificate(verificationId) {
 	const response = await axios.get(
-		generateUrl(`/apps/learning/api/certificates/${verificationId}`),
+		generateUrl(`/apps/learning/api/certificates/${encodeURIComponent(verificationId)}`),
 	)
 	return response.data
 }
@@ -40,6 +40,6 @@ export async function getCertificate(verificationId) {
  * @return {string} the generated download URL
  */
 export function downloadUrl(verificationId, format = 'jsonld') {
-	const base = generateUrl(`/apps/learning/api/certificates/${verificationId}/download`)
+	const base = generateUrl(`/apps/learning/api/certificates/${encodeURIComponent(verificationId)}/download`)
 	return format === 'jwt' ? `${base}?format=jwt` : base
 }

@@ -22,6 +22,9 @@ use OCP\IRequest;
  * owner-scoped (CSRF stays automatic in the NC framework on these GETs).
  */
 class CertificateController extends Controller {
+    /** Verification ids are RFC 4122 UUIDv4 (IssuanceService::uuidv4) — reject anything else early. */
+    private const UUID_V4 = '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
+
     private CertificateMapper $certificateMapper;
     private ?string $userId;
 
@@ -66,6 +69,11 @@ class CertificateController extends Controller {
             return new JSONResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
 
+        // Reject malformed ids before any DB lookup (defence-in-depth; the route is owner-scoped).
+        if (preg_match(self::UUID_V4, $verificationId) !== 1) {
+            return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
+        }
+
         try {
             $cert = $this->certificateMapper->findByVerificationIdAndUserId($verificationId, $this->userId);
         } catch (DoesNotExistException $e) {
@@ -93,6 +101,11 @@ class CertificateController extends Controller {
     public function download(string $verificationId, string $format = 'jsonld'): Response {
         if ($this->userId === null) {
             return new JSONResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        // Reject malformed ids before any DB lookup (defence-in-depth; the route is owner-scoped).
+        if (preg_match(self::UUID_V4, $verificationId) !== 1) {
+            return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
         }
 
         try {

@@ -28,6 +28,11 @@ use PHPUnit\Framework\TestCase;
  * @group cert-05
  */
 class CertificateControllerTest extends TestCase {
+    // Verification ids must be valid UUIDv4 — the controller 404s malformed ids before any DB lookup.
+    private const VID_OWN = '11111111-1111-4111-8111-111111111111';
+    private const VID_FOREIGN = '22222222-2222-4222-8222-222222222222';
+    private const VID_MISSING = '33333333-3333-4333-8333-333333333333';
+
     /** @var CertificateMapper&\PHPUnit\Framework\MockObject\MockObject */
     private $mapperMock;
     /** @var IRequest&\PHPUnit\Framework\MockObject\MockObject */
@@ -82,10 +87,10 @@ class CertificateControllerTest extends TestCase {
      */
     public function testShowForeignCertReturns404WithoutBody(): void {
         $this->mapperMock->method('findByVerificationIdAndUserId')
-            ->with('vid-B', 'alice')
+            ->with(self::VID_FOREIGN, 'alice')
             ->willThrowException(new DoesNotExistException('not owned'));
 
-        $resp = $this->makeController('alice')->show('vid-B');
+        $resp = $this->makeController('alice')->show(self::VID_FOREIGN);
 
         $this->assertInstanceOf(JSONResponse::class, $resp);
         $this->assertSame(Http::STATUS_NOT_FOUND, $resp->getStatus());
@@ -99,10 +104,23 @@ class CertificateControllerTest extends TestCase {
      */
     public function testDownloadForeignCertReturns404(): void {
         $this->mapperMock->method('findByVerificationIdAndUserId')
-            ->with('vid-B', 'alice')
+            ->with(self::VID_FOREIGN, 'alice')
             ->willThrowException(new DoesNotExistException('not owned'));
 
-        $resp = $this->makeController('alice')->download('vid-B');
+        $resp = $this->makeController('alice')->download(self::VID_FOREIGN);
+
+        $this->assertInstanceOf(JSONResponse::class, $resp);
+        $this->assertSame(Http::STATUS_NOT_FOUND, $resp->getStatus());
+    }
+
+    /**
+     * Test 2c (input validation, FIX R9-9): a malformed (non-UUIDv4) verification id is rejected with
+     * 404 BEFORE any DB lookup — the mapper is never called.
+     */
+    public function testShowMalformedVerificationIdReturns404(): void {
+        $this->mapperMock->expects($this->never())->method('findByVerificationIdAndUserId');
+
+        $resp = $this->makeController('alice')->show('../../etc/passwd');
 
         $this->assertInstanceOf(JSONResponse::class, $resp);
         $this->assertSame(Http::STATUS_NOT_FOUND, $resp->getStatus());
@@ -115,14 +133,14 @@ class CertificateControllerTest extends TestCase {
      */
     public function testDownloadDefaultReturnsEnvelopedJsonLd(): void {
         $jwt = 'eyJhbGciOiJFZERTQSIsInR5cCI6InZjK2p3dCJ9.eyJpZCI6InVybjp1dWlkOnZpZC1BIn0.c2ln';
-        $cert = $this->makeCert('vid-A', 'alice', $jwt);
-        $this->mapperMock->method('findByVerificationIdAndUserId')->with('vid-A', 'alice')->willReturn($cert);
+        $cert = $this->makeCert(self::VID_OWN, 'alice', $jwt);
+        $this->mapperMock->method('findByVerificationIdAndUserId')->with(self::VID_OWN, 'alice')->willReturn($cert);
 
-        $resp = $this->makeController('alice')->download('vid-A');
+        $resp = $this->makeController('alice')->download(self::VID_OWN);
 
         $this->assertInstanceOf(DataDownloadResponse::class, $resp);
         $this->assertSame('application/ld+json', $resp->getHeaders()['Content-Type']);
-        $this->assertStringContainsString('certificate-vid-A.json', $resp->getHeaders()['Content-Disposition']);
+        $this->assertStringContainsString('certificate-' . self::VID_OWN . '.json', $resp->getHeaders()['Content-Disposition']);
 
         $body = json_decode($resp->render(), true);
         $this->assertIsArray($body);
@@ -138,14 +156,14 @@ class CertificateControllerTest extends TestCase {
      */
     public function testDownloadJwtFormatReturnsRawCompactJwt(): void {
         $jwt = 'eyJhbGciOiJFZERTQSIsInR5cCI6InZjK2p3dCJ9.eyJpZCI6InVybjp1dWlkOnZpZC1BIn0.c2ln';
-        $cert = $this->makeCert('vid-A', 'alice', $jwt);
-        $this->mapperMock->method('findByVerificationIdAndUserId')->with('vid-A', 'alice')->willReturn($cert);
+        $cert = $this->makeCert(self::VID_OWN, 'alice', $jwt);
+        $this->mapperMock->method('findByVerificationIdAndUserId')->with(self::VID_OWN, 'alice')->willReturn($cert);
 
-        $resp = $this->makeController('alice')->download('vid-A', 'jwt');
+        $resp = $this->makeController('alice')->download(self::VID_OWN, 'jwt');
 
         $this->assertInstanceOf(DataDownloadResponse::class, $resp);
         $this->assertSame('application/vc+jwt', $resp->getHeaders()['Content-Type']);
-        $this->assertStringContainsString('certificate-vid-A.jwt', $resp->getHeaders()['Content-Disposition']);
+        $this->assertStringContainsString('certificate-' . self::VID_OWN . '.jwt', $resp->getHeaders()['Content-Disposition']);
         $this->assertSame($jwt, $resp->render());
         $this->assertCount(3, explode('.', $resp->render()));
     }
@@ -157,7 +175,7 @@ class CertificateControllerTest extends TestCase {
         $this->mapperMock->method('findByVerificationIdAndUserId')
             ->willThrowException(new DoesNotExistException('no such cert'));
 
-        $resp = $this->makeController('alice')->show('does-not-exist');
+        $resp = $this->makeController('alice')->show(self::VID_MISSING);
 
         $this->assertInstanceOf(JSONResponse::class, $resp);
         $this->assertSame(Http::STATUS_NOT_FOUND, $resp->getStatus());

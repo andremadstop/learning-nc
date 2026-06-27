@@ -128,7 +128,7 @@ export default {
 				: ''
 			// generateUrl handles webroot + index.php so the URL is correct on every
 			// install (the public verify route ships in Phase 157; its shape is frozen).
-			return buildVerifyUrl(origin, generateUrl('/apps/learning/verify/' + this.verificationId))
+			return buildVerifyUrl(origin, generateUrl('/apps/learning/verify/' + encodeURIComponent(this.verificationId)))
 		},
 		downloadHref() {
 			return downloadUrl(this.verificationId)
