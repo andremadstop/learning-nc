@@ -249,6 +249,33 @@ class KeyServiceTest extends TestCase {
     }
 
     /**
+     * FIX R8-8: keygen is exception-safe. If encrypt() throws AFTER the keypair is generated, the
+     * try/finally still wipes every plaintext secret copy and re-throws. memzero itself isn't
+     * observable, so we prove the finally ran by asserting the exception propagated AND no key row was
+     * inserted (the insert lives inside the try, past the encrypt call).
+     */
+    public function testGenerateActiveKeyRethrowsAndInsertsNothingWhenEncryptThrows(): void {
+        if (!extension_loaded('sodium')) {
+            $this->markTestSkipped('ext-sodium not loaded');
+        }
+        $mapper = $this->makeMapper();
+
+        $enc = $this->createMock(EncryptionService::class);
+        $enc->method('encrypt')->willThrowException(new \RuntimeException('simulated encrypt failure'));
+
+        $service = $this->makeService($mapper, $enc);
+
+        try {
+            $service->init();
+            $this->fail('init() must propagate the encrypt failure');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('simulated encrypt failure', $e->getMessage());
+        }
+
+        $this->assertSame([], $mapper->store, 'no key inserted when encryption throws — finally wiped + rethrew');
+    }
+
+    /**
      * FIX R6-6 (atomicity): if the retire-UPDATE fails mid-rotation, the whole transaction rolls back —
      * the new-key insert is undone too, so exactly ONE active key survives: the ORIGINAL. This closes
      * the "two active keys" window a non-atomic failed retire would leave.

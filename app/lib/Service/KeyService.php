@@ -66,32 +66,35 @@ class KeyService {
         $keypair = sodium_crypto_sign_keypair();
         $public = sodium_crypto_sign_publickey($keypair); // 32 bytes
         $secret = sodium_crypto_sign_secretkey($keypair); // 64 bytes
-
-        $publicKeyB64u = $this->base64url($public);
-        $keyId = $publicKeyB64u; // kid == base64url(public) == did:web fragment
-
         $secretB64 = base64_encode($secret);
-        $secretEnc = $this->encryptionService->encrypt($secretB64);
 
-        // Defence in depth: wipe plaintext secret material as soon as it is encrypted.
-        sodium_memzero($secret);
-        sodium_memzero($keypair);
+        // try/finally guarantees every plaintext secret copy ($secret, $keypair, $secretB64) is wiped
+        // even if encrypt() OR the DB insert throws (R8-8): the finally always runs before the
+        // exception propagates. Declared before the try so the finally never touches an undefined var.
+        try {
+            $publicKeyB64u = $this->base64url($public);
+            $keyId = $publicKeyB64u; // kid == base64url(public) == did:web fragment
 
-        // Never store plaintext: a null/empty/passthrough ciphertext means encryption failed.
-        if ($secretEnc === null || $secretEnc === '' || $secretEnc === $secretB64) {
+            $secretEnc = $this->encryptionService->encrypt($secretB64);
+
+            // Never store plaintext: a null/empty/passthrough ciphertext means encryption failed.
+            if ($secretEnc === null || $secretEnc === '' || $secretEnc === $secretB64) {
+                throw new \RuntimeException('Failed to encrypt issuer secret key at rest');
+            }
+
+            $key = new CertKey();
+            $key->setKeyId($keyId);
+            $key->setPublicKeyB64u($publicKeyB64u);
+            $key->setSecretKeyEnc($secretEnc);
+            $key->setStatus('active');
+            $key->setCreatedAt(time());
+
+            return $this->certKeyMapper->insert($key);
+        } finally {
+            sodium_memzero($secret);
+            sodium_memzero($keypair);
             sodium_memzero($secretB64);
-            throw new \RuntimeException('Failed to encrypt issuer secret key at rest');
         }
-        sodium_memzero($secretB64);
-
-        $key = new CertKey();
-        $key->setKeyId($keyId);
-        $key->setPublicKeyB64u($publicKeyB64u);
-        $key->setSecretKeyEnc($secretEnc);
-        $key->setStatus('active');
-        $key->setCreatedAt(time());
-
-        return $this->certKeyMapper->insert($key);
     }
 
     /**
