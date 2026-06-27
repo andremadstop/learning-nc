@@ -27,6 +27,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setIssuedAt(int $issuedAt)
  * @method int|null getExpiresAt()
  * @method void setExpiresAt(?int $expiresAt)
+ * @method string|null getActiveIdemKey()
+ * @method void setActiveIdemKey(?string $activeIdemKey)
  */
 class Certificate extends Entity implements \JsonSerializable {
     protected $verificationId;
@@ -37,6 +39,11 @@ class Certificate extends Entity implements \JsonSerializable {
     protected $revoked;
     protected $issuedAt;
     protected $expiresAt;
+    /**
+     * Atomic idempotency slot ("<userId>:<courseId>") backed by a UNIQUE index. NULL = slot free
+     * (e.g. after revocation). Internal guard column — not exposed in jsonSerialize().
+     */
+    protected $activeIdemKey;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -48,6 +55,7 @@ class Certificate extends Entity implements \JsonSerializable {
         $this->addType('revoked', 'boolean');
         $this->addType('issuedAt', 'integer');
         $this->addType('expiresAt', 'integer');
+        $this->addType('activeIdemKey', 'string');
     }
 
     /**

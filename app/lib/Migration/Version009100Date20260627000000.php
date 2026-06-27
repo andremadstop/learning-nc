@@ -58,9 +58,15 @@ class Version009100Date20260627000000 extends SimpleMigrationStep {
             $table->addColumn('revoked', Types::BOOLEAN, ['notnull' => true, 'default' => false]);
             $table->addColumn('issued_at', Types::BIGINT, ['notnull' => true, 'default' => 0]);
             $table->addColumn('expires_at', Types::BIGINT, ['notnull' => false]);
+            // active_idem_key — the atomic idempotency slot ("<userId>:<courseId>"). NULLABLE so a
+            // revoked cert (key set to NULL on revoke) frees the slot for re-issue; on PG16 and
+            // MariaDB NULLs are NOT unique-constrained, so only TWO non-revoked issues for the same
+            // (user,course) collide on the UNIQUE index — the DB-level guard the SELECT-then-INSERT lacked.
+            $table->addColumn('active_idem_key', Types::STRING, ['notnull' => false, 'length' => 128, 'default' => null]);
             $table->setPrimaryKey(['id']);
             $table->addUniqueIndex(['verification_id'], 'learn_cert_vid_uniq');
             $table->addIndex(['user_id', 'course_id'], 'learn_cert_user_crs_idx');
+            $table->addUniqueIndex(['active_idem_key'], 'learn_cert_idem_uq');
             $changed = true;
         }
 

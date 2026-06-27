@@ -16,7 +16,7 @@
 #
 # The MariaDB DDL below mirrors Version009100Date20260627000000::changeSchema VERBATIM, with the oc_
 # prefix that Nextcloud auto-prepends (we apply raw SQL, so we prepend it ourselves):
-#   - VARCHAR lengths: key_id(64), public_key_b64u(128), status(16), verification_id(36), user_id(64), key_id(64)
+#   - VARCHAR lengths: key_id(64), public_key_b64u(128), status(16), verification_id(36), user_id(64), key_id(64), active_idem_key(128)
 #   - secret_key_enc + credential_json are TEXT and are NOT indexed (utf8mb4 key-length safety)
 #   - index names verbatim, all <= 27 chars (well under MariaDB's 64-char limit)
 #
@@ -64,9 +64,11 @@ CREATE TABLE oc_learning_certificates (
     revoked TINYINT(1) NOT NULL DEFAULT 0,
     issued_at BIGINT NOT NULL DEFAULT 0,
     expires_at BIGINT NULL,
+    active_idem_key VARCHAR(128) NULL,
     PRIMARY KEY (id),
     UNIQUE INDEX learn_cert_vid_uniq (verification_id),
-    INDEX learn_cert_user_crs_idx (user_id, course_id)
+    INDEX learn_cert_user_crs_idx (user_id, course_id),
+    UNIQUE INDEX learn_cert_idem_uq (active_idem_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 SQL
 
@@ -155,6 +157,7 @@ assert_index() {
 assert_index oc_learning_cert_keys     learn_certkey_kid_uniq
 assert_index oc_learning_certificates  learn_cert_vid_uniq
 assert_index oc_learning_certificates  learn_cert_user_crs_idx
+assert_index oc_learning_certificates  learn_cert_idem_uq
 
 # ── 5. PostgreSQL 16 — DEFERRED (live schema change gated behind multi-AI review) ──────────────
 echo "→ PostgreSQL 16 (live devcloud engine):"

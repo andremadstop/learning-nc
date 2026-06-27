@@ -119,7 +119,24 @@ class IssuanceService {
         $cert->setRevoked(false);
         $cert->setIssuedAt($issuedAt);
         $cert->setExpiresAt($expiresAt);
-        $stored = $this->certificateMapper->insert($cert);
+        // Atomic idempotency slot: the UNIQUE index on active_idem_key turns the racy
+        // SELECT-then-INSERT guard above into a hard DB-level guarantee — two concurrent passes for
+        // the same (user,course) can no longer both produce a valid cert.
+        // NOTE: revocation (Phase 156/157) MUST set active_idem_key = NULL to free this slot for re-issue.
+        $cert->setActiveIdemKey($userId . ':' . $courseId);
+        try {
+            $stored = $this->certificateMapper->insert($cert);
+        } catch (\OCP\DB\Exception $e) {
+            if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+                // A concurrent request won the race and already inserted the active cert. Return the
+                // winner verbatim (no re-issue, no notification) — the loser dedupes onto it.
+                $winner = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
+                if ($winner !== null) {
+                    return $winner;
+                }
+            }
+            throw $e;
+        }
 
         $this->notify($userId, $verificationId, (string)$course->getTitle());
 

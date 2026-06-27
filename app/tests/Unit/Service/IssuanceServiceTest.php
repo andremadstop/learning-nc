@@ -202,6 +202,73 @@ class IssuanceServiceTest extends TestCase {
         $this->assertSame($existing, $cert, 'an existing non-revoked cert is returned, not re-issued');
     }
 
+    /**
+     * Behaviour 6 (atomic dedup, FIX R2-2): the fast-path read sees no cert (null), but a concurrent
+     * request wins the race → insert() hits the active_idem_key UNIQUE index and throws a
+     * REASON_UNIQUE_CONSTRAINT_VIOLATION. The service must re-fetch findByUserAndCourse() and return
+     * the concurrent WINNER verbatim — no duplicate cert, no notification.
+     */
+    public function testDedupesOnUniqueConstraintViolation(): void {
+        $winner = new Certificate();
+        $winner->setVerificationId('winner-vid');
+        $winner->setUserId(self::USER);
+        $winner->setCourseId(self::COURSE_ID);
+        $winner->setRevoked(false);
+        $winner->setCredentialJson('a.b.c');
+
+        $keyService = $this->createMock(KeyService::class);
+        $keyService->method('hostDid')->willReturn(self::HOST_DID);
+        $keyService->method('getActiveSigningMaterial')->willReturn([
+            'key' => $this->key,
+            'secret' => $this->secretRaw,
+        ]);
+        $signingService = new SigningService($keyService);
+
+        $certMapper = $this->createMock(CertificateMapper::class);
+        // null on the fast-path read, the winner on the post-collision re-fetch.
+        $certMapper->method('findByUserAndCourse')->willReturnOnConsecutiveCalls(null, $winner);
+        $certMapper->expects($this->once())->method('insert')
+            ->willThrowException(new \OCP\DB\Exception(\OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION));
+
+        $courseMapper = $this->createMock(CourseMapper::class);
+        $courseMapper->method('findById')->willReturn($this->makeCourse());
+
+        $manager = $this->createMock(IManager::class);
+        $notif = $this->createMock(INotification::class);
+        foreach (['setApp', 'setUser', 'setObject', 'setSubject', 'setDateTime'] as $m) {
+            $notif->method($m)->willReturnSelf();
+        }
+        $manager->method('createNotification')->willReturn($notif);
+        $manager->method('getCount')->willReturn(0);
+        $manager->expects($this->never())->method('notify');
+
+        $theming = $this->createMock(Defaults::class);
+        $theming->method('getName')->willReturn('DevCloud Academy');
+        $theming->method('getLogo')->willReturn('https://cloud.example/logo.png');
+
+        $url = $this->createMock(IURLGenerator::class);
+        $url->method('getAbsoluteURL')->willReturnCallback(fn(string $p): string => 'https://cloud.example' . $p);
+        $url->method('imagePath')->willReturn('/apps/learning/img/app.svg');
+
+        $recipient = $this->createMock(IUser::class);
+        $recipient->method('getDisplayName')->willReturn('Alice Example');
+        $userManager = $this->createMock(IUserManager::class);
+        $userManager->method('get')->willReturn($recipient);
+
+        $time = $this->createMock(ITimeFactory::class);
+        $time->method('getTime')->willReturn(self::ISSUED_AT);
+        $time->method('getDateTime')->willReturn(new \DateTime('@' . self::ISSUED_AT));
+
+        $service = new IssuanceService(
+            $certMapper, $courseMapper, $signingService, $keyService, $manager,
+            $theming, $url, $userManager, $time, $this->createMock(LoggerInterface::class),
+        );
+
+        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+
+        $this->assertSame($winner, $cert, 'the concurrent winner is returned, no duplicate issued');
+    }
+
     public function testReturnsNullWhenNotPassed(): void {
         $captured = null;
         $service = $this->makeService(null, null, $captured, expectInsert: false, expectNotify: false);

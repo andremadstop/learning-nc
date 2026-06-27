@@ -10,6 +10,24 @@ namespace OCP\DB\QueryBuilder {
     }
 }
 
+namespace OCP\DB {
+    if (!class_exists(Exception::class)) {
+        // Minimal stub of OCP\DB\Exception so unit tests can simulate a UNIQUE-constraint violation
+        // (the real class wraps a Doctrine exception; tests only need getReason()).
+        class Exception extends \Exception {
+            public const REASON_UNIQUE_CONSTRAINT_VIOLATION = 7;
+            private int $reason;
+            public function __construct(int $reason = 0, string $message = '') {
+                parent::__construct($message);
+                $this->reason = $reason;
+            }
+            public function getReason(): int {
+                return $this->reason;
+            }
+        }
+    }
+}
+
 namespace OCP\AppFramework {
     if (!class_exists(App::class)) {
         class App {
