@@ -271,11 +271,25 @@ namespace OCP\AppFramework\Http {
     if (!class_exists(Response::class)) {
         class Response {
             protected int $status = 200;
+            // Throttle tracking (test-only): the real Response::throttle() flags the brute-force
+            // middleware; here we just record that the branch was taken so controller tests can assert it.
+            protected bool $throttled = false;
+            /** @var array<string, mixed> */
+            protected array $throttleMetadata = [];
             public function setStatus(int $status): self { $this->status = $status; return $this; }
             public function getStatus(): int { return $this->status; }
             public function render() { return ''; }
             /** @return array<string, string> */
             public function getHeaders(): array { return []; }
+            /** @param array<string, mixed> $metadata */
+            public function throttle(array $metadata = []): self {
+                $this->throttled = true;
+                $this->throttleMetadata = $metadata;
+                return $this;
+            }
+            public function isThrottled(): bool { return $this->throttled; }
+            /** @return array<string, mixed> */
+            public function getThrottleMetadata(): array { return $this->throttleMetadata; }
         }
     }
 
@@ -326,6 +340,60 @@ namespace OCP\AppFramework\Http\Attributes {
         #[\Attribute]
         class UserRateLimit {
             public function __construct(int $limit = 0, int $period = 0) {}
+        }
+    }
+    // Phase 157: public verify route security attributes (autoloaded only on reflection at runtime;
+    // stubbed here so any direct reference in unit context resolves).
+    if (!class_exists(PublicPage::class)) {
+        #[\Attribute]
+        class PublicPage {}
+    }
+    if (!class_exists(NoCSRFRequired::class)) {
+        #[\Attribute]
+        class NoCSRFRequired {}
+    }
+    if (!class_exists(BruteForceProtection::class)) {
+        #[\Attribute]
+        class BruteForceProtection {
+            public function __construct(string $action = '') {}
+        }
+    }
+    if (!class_exists(AnonRateLimit::class)) {
+        #[\Attribute]
+        class AnonRateLimit {
+            public function __construct(int $limit = 0, int $period = 0) {}
+        }
+    }
+}
+
+namespace OCP\AppFramework\Http\Template {
+    if (!class_exists(PublicTemplateResponse::class)) {
+        // Mirrors OCP\AppFramework\Http\Template\PublicTemplateResponse (extends TemplateResponse →
+        // Response). The controller builds one with (app, template, params); tests read getParams()
+        // + isThrottled(). Header title is stored for completeness.
+        class PublicTemplateResponse extends \OCP\AppFramework\Http\Response {
+            private string $appName;
+            private string $templateName;
+            /** @var array<string, mixed> */
+            private array $params;
+            private string $headerTitle = '';
+
+            /**
+             * @param array<string, mixed> $params
+             * @param array<string, string> $headers
+             */
+            public function __construct(string $appName, string $templateName, array $params = [], $status = 200, array $headers = []) {
+                $this->appName = $appName;
+                $this->templateName = $templateName;
+                $this->params = $params;
+                $this->status = $status;
+            }
+
+            /** @return array<string, mixed> */
+            public function getParams(): array { return $this->params; }
+            public function getTemplateName(): string { return $this->templateName; }
+            public function setHeaderTitle(string $title): self { $this->headerTitle = $title; return $this; }
+            public function getHeaderTitle(): string { return $this->headerTitle; }
         }
     }
 }
