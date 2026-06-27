@@ -62,7 +62,7 @@ Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMEN
 
 - [x] **Phase 154: Pass-Definition** — Hard pass criterion per course, lucky-guess exclusion, student status, audit event
 - [x] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn _(7/7 plans; issuer provisioned live on devcloud, 10/13 CERT reqs live-verified end-to-end; CERT-07/08/13 implemented + Vitest/build-proven, visual eyeball deferred to demo course — user option A, non-blocking)_
-- [ ] **Phase 156: Compliance-Report** — Instructor CSV export, date/expiry filters, DSGVO-safe (runs parallel with 157)
+- [x] **Phase 156: Compliance-Report** — Instructor CSV export, date/expiry filters, DSGVO-safe (runs parallel with 157) _(2/2 plans; backend 156-01 + UI 156-02; all 4 REPORT reqs Complete; live credentialed Gate 2 + visual check ride the demo-course pass)_
 - [ ] **Phase 157: Public-Verify** — Public @PublicPage verify route, signature + revocation check, rate-limit (runs parallel with 156)
 
 ## v6.0.0 — Universal Learning Platform (Vision)
@@ -489,7 +489,7 @@ Plans:
 
 Plans:
 - [x] 156-01-PLAN.md — Wave 1: CertificateReportService (owner-scoped read + JWT decode for score+frozen name + 5-field DSGVO DTO, no user_id) + CertificateMapper::findByCourseId + CourseService::assertInstructorOfCourse gate + CertificateReportController (JSON + injection-safe CSV) + 2 routes + load-bearing no-leak/IDOR/filter PHPUnit (REPORT-04 Complete; REPORT-01/02/03 backend-complete → UI in 156-02) — **DONE 2026-06-27** (7 tests/23 assertions green, PHPStan L5 clean, routes live)
-- [ ] 156-02-PLAN.md — Wave 2: instructor compliance section in CourseTabTeilnehmer.vue (filter inputs + table from the clean DTO endpoint + Export CSV button) + pure cert-report util + Vitest + i18n 5 langs; visual render/download folds into the deferred demo-course check (REPORT-01, REPORT-02, REPORT-03)
+- [x] 156-02-PLAN.md — Wave 2: instructor compliance section in CourseTabTeilnehmer.vue (filter inputs + table from the clean DTO endpoint + Export CSV button) + pure cert-report util + Vitest + i18n 5 langs; visual render/download folds into the deferred demo-course check (REPORT-01, REPORT-02, REPORT-03) — **DONE 2026-06-27** (15 Vitest green, ESLint 0, i18n parity green, deployed via --js-only; REPORT-01/02/03 Complete)
 
 ### Phase 157: Public-Verify
 **Goal**: Anyone can verify a certificate via its verification-id at a public URL; the response is DSGVO-safe for unauthenticated callers; revoked certificates return a tombstone (not 404); the route is hardened against enumeration and abuse
@@ -539,5 +539,5 @@ Plans:
 | 153. Migration, Tests, Deploy & App Store | v4.4.0 | 7/7 | Complete | 2026-04-27 |
 | 154. Pass-Definition | v5.0.0 | 5/5 | Complete | 2026-06-26 |
 | 155. Certificate-Artifact & Issuer | v5.0.0 | 7/7 | Complete (CERT-07/08/13 visual verify deferred to demo course) | 2026-06-27 |
-| 156. Compliance-Report | v5.0.0 | 1/2 | In Progress (156-01 backend done; 156-02 UI next) | - |
+| 156. Compliance-Report | v5.0.0 | 2/2 | Complete (156-01 backend + 156-02 UI; all 4 REPORT reqs done) | - |
 | 157. Public-Verify | v5.0.0 | 0/TBD | Not started | - |
