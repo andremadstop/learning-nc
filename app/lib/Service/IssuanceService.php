@@ -102,9 +102,13 @@ class IssuanceService {
         $material = $this->keyService->getActiveSigningMaterial();
         /** @var CertKey $key */
         $key = $material['key'];
-        $secret = $material['secret'];
-        $jwt = $this->signingService->sign($credential, $key, $secret);
-        sodium_memzero($secret);
+        // Secret zeroing must survive a sign() throw → try/finally. Pass the secret straight from
+        // $material so there is no second live copy to forget; sodium_memzero clears it in place.
+        try {
+            $jwt = $this->signingService->sign($credential, $key, $material['secret']);
+        } finally {
+            sodium_memzero($material['secret']);
+        }
 
         $cert = new Certificate();
         $cert->setVerificationId($verificationId);
