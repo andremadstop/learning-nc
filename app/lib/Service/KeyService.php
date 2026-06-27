@@ -177,11 +177,14 @@ class KeyService {
      * Derived from the FULL IURLGenerator::getBaseUrl() — host, port AND any webroot/subpath — per
      * the did:web spec:
      *   - a non-default port is appended to the host as `%3A<port>` (the colon is percent-encoded),
+     *   - an EXPLICIT default port (:443 on https, :80 on http) is treated as absent and OMITTED, so
+     *     the canonical form is byte-identical to the no-port URL (no kid drift),
      *   - the URL path is split into colon-separated segments, with the app route `apps:learning`
      *     (where did.json is served) appended last.
      *
      * Examples:
      *   https://example.com                       → did:web:example.com:apps:learning
+     *   https://example.com:443                    → did:web:example.com:apps:learning  (default port dropped)
      *   https://example.com:8443/nextcloud        → did:web:example.com%3A8443:nextcloud:apps:learning
      *
      * The plain root-domain / default-port / no-subpath case is UNCHANGED, so existing devcloud
@@ -197,9 +200,15 @@ class KeyService {
             $host = '';
         }
 
+        $scheme = parse_url($base, PHP_URL_SCHEME);
         $port = parse_url($base, PHP_URL_PORT);
         if (is_int($port)) {
-            $host .= '%3A' . $port;
+            // An explicit default port (https:443 / http:80) is canonically equivalent to no port —
+            // dropping it keeps did:web byte-identical to the plain-host form (no kid drift).
+            $isDefaultPort = ($scheme === 'https' && $port === 443) || ($scheme === 'http' && $port === 80);
+            if (!$isDefaultPort) {
+                $host .= '%3A' . $port;
+            }
         }
 
         $segments = [];

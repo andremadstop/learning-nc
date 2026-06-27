@@ -195,6 +195,29 @@ class KeyServiceTest extends TestCase {
     }
 
     /**
+     * FIX R5-5 caveat: an EXPLICIT default port (:443 on https, :80 on http) is canonically equivalent
+     * to no port and MUST be dropped — the did:web stays byte-identical to the plain-host form so the
+     * kid never drifts. Non-default ports remain %3A-encoded (covered above).
+     *
+     * @dataProvider defaultPortUrls
+     */
+    public function testHostDidStripsDefaultPort(string $baseUrl): void {
+        $url = $this->createMock(IURLGenerator::class);
+        $url->method('getBaseUrl')->willReturn($baseUrl);
+        $service = new KeyService($this->makeMapper(), $this->makeEncryption(), $url, $this->createMock(IDBConnection::class));
+
+        $this->assertSame('did:web:example.com:apps:learning', $service->hostDid(), 'default port dropped → byte-identical to no-port');
+    }
+
+    /** @return array<string, array{string}> */
+    public static function defaultPortUrls(): array {
+        return [
+            'https default 443' => ['https://example.com:443'],
+            'http default 80'   => ['http://example.com:80'],
+        ];
+    }
+
+    /**
      * FIX 4 / R6-6: if creating the NEW key fails mid-rotation, the OLD key must stay active —
      * never a zero-active-key window. Here the mapper throws on the SECOND insert (the rotation's
      * new key); rotate() must propagate the error while leaving the incumbent untouched.
