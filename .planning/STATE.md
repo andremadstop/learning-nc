@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v5.0.0
 milestone_name: "v5.0.0 Certification-as-a-Service"
 current_phase: 156
-current_plan: 01
-status: phase-155-complete — ready for /gsd:plan-phase 156 (+157 parallel)
-stopped_at: "PHASE 155 CLOSED OUT (doc-only bookkeeping). 155-06-SUMMARY + 155-07-SUMMARY written; REQUIREMENTS/ROADMAP/STATE hand-edited (gsd-tools corrupt v5.0.0 frontmatter). Phase 155 is functionally complete + verified (155-VERIFICATION.md: goal_delivered, 10/13 live-verified, 13/13 code-complete). Issuer LIVE on devcloud: Version009100 applied PG16 (both cert tables + learn_cert_idem_uq UNIQUE), Ed25519 issuer key UI3V-D_j57IeIOlPBAW-2VQRu0dHB2lkZ0rDLj-LBU4, did.json HTTP 200 (public JWK only). A synthetic e2e smoke minted a REAL cert through the genuine pass pipeline, independently verified it (Python Ed25519), proved idempotency (3 passes → 1 cert), then cleaned up. Requirements: CERT-01..06/09..12 Complete (live-verified); CERT-07/08/13 implemented + Vitest/build-proven, VISUAL eyeball (print render / QR scan / LinkedIn click) DEFERRED to the upcoming demo course (user option A — non-blocking, NOT a code gap). CERT-12 'oc_admin recipient' OPEN FINDING RESOLVED: it was a PostgreSQL reserved-word artifact (unquoted SELECT user → CURRENT_USER); the quoted \"user\" column shows real student ids — notification attribution is correct. Carry-forward: reconcile info.xml 4.4.8 → real v5.0.0 release bump (CHANGELOG+tag); revocation path (156/157) MUST null active_idem_key (R2-2); live destructive occ --rotate not exercised (rotation-preserves structurally proven). NEXT: /gsd:plan-phase 156 (Compliance-Report) + 157 (Public-Verify) run parallel."
-last_updated: "2026-06-27T13:00:00.000Z"
-last_activity: 2026-06-27 — Phase 155 close-out (doc-only). Wrote 155-06/155-07 SUMMARYs; marked CERT-01..06/09..12 Complete + CERT-07/08/13 visual-verify-deferred; ROADMAP 7/7 Phase 155 Complete. Resolved the CERT-12 oc_admin finding as a SQL reserved-word artifact (read-only psql on live devcloud). Milestone v5.0.0: 2/4 phases done; Phases 156+157 next (parallel).
+current_plan: 02
+status: phase-156 in progress — 156-01 (backend) COMPLETE, ready for 156-02 (UI). Phase 157 runs parallel.
+stopped_at: "156-01-PLAN COMPLETE (Compliance-Report backend). 3 commits: 5bf9578 (test RED) → e152b3c (mapper+gate+service GREEN) → ba45709 (controller+routes+test-api). Delivered: CertificateMapper::findByCourseId (time-free, filtered, revoked=false, newest-first), CourseService::assertInstructorOfCourse (additive PUBLIC reusable IDOR-safe per-course owner gate), CertificateReportService::getCourseReport (gate-first owner-scoped read + per-cert VC-JWT decode for frozen name+score + strict 5-field DTO with NO recipient-id), CertificateReportController (JSON certReport + injection-safe CSV exportCertReportCsv, both @NoAdminRequired, #[UserRateLimit(10,60)] on CSV, Forbidden→403/DoesNotExist→404, ONE shared method so table==CSV). 7 real-logic PHPUnit tests/23 assertions GREEN (no-leak + IDOR with expects(never()) proving gate-before-read + filter cutoff + malformed-JWT fallback) running the REAL CourseService ownership path; PHPStan L5 clean whole-app; both routes live (occ router:list); grep gate zero recipient-id/getUserId hits in service+controller; bash -n test-api.sh valid. Requirements: REPORT-04 (DSGVO no-email, load-bearing test) Complete; REPORT-01/02/03 backend-complete but DEFERRED to 156-02 (UI re-lists them; '154/155 deferral discipline'). DEFERRED Gate 2: live credentialed test-api.sh cert-report block (no ADMIN_PASS in env) — written+bash-n-valid, rides Andre's demo-course creds. Carry-forward unchanged: revocation must null active_idem_key (R2-2); reconcile info.xml 4.4.8 → v5.0.0 release bump at milestone close. NEXT: /gsd:plan-phase 156 wave 2 (156-02 UI) OR /gsd:plan-phase 157 (Public-Verify, parallel)."
+last_updated: "2026-06-27T14:30:00.000Z"
+last_activity: 2026-06-27 — Executed 156-01-PLAN (Compliance-Report backend). TDD: failing tests → mapper findByCourseId + CourseService owner gate + CertificateReportService + thin CertificateReportController (JSON+CSV) + 2 routes + test-api block. 7 tests/23 assertions green, PHPStan L5 clean, routes live. REPORT-04 Complete; REPORT-01/02/03 backend-done → 156-02 UI. STATE/ROADMAP/REQUIREMENTS hand-edited (gsd-tools corrupt v5.0.0 frontmatter).
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 7
-  percent: 100
+  total_plans: 2
+  completed_plans: 1
+  percent: 50
 ---
 
 # Project State
@@ -23,16 +23,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-26)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung.
-**Current focus:** v5.0.0 Certification-as-a-Service — Phase 155: Certificate-Artifact & Issuer
+**Current focus:** v5.0.0 Certification-as-a-Service — Phase 156: Compliance-Report (backend done; UI next). Phase 157 parallel.
 
 ## Current Position
 
-Phase: 155 of 157 (Certificate-Artifact & Issuer) — COMPLETE + verified. Next: Phase 156 (+157 parallel).
-Plan: 7/7 complete. All SUMMARYs written (155-01..07). 155-VERIFICATION.md verdict: goal_delivered.
-Status: Phase 155 closed out. The issuer is provisioned live on devcloud and the milestone's certificate-artifact goal is delivered: automatic issuance of signed compact VC-JWT (EdDSA/Ed25519, did:web) on course pass, owner-scoped retrieval, and a student certificate UI. 10/13 CERT requirements are proven live end-to-end (CERT-01..06, 09..12); the remaining 3 (CERT-07 print render, CERT-08 QR scan, CERT-13 LinkedIn click) are code-complete + Vitest/build-proven with their purely-VISUAL eyeball deliberately deferred to an upcoming real demo course (user option A) — not a code gap, not a blocker. CERT-12's earlier 'oc_admin recipient' open finding was RESOLVED during close-out as a PostgreSQL reserved-word artifact (`SELECT user` returns CURRENT_USER = the DB role; the quoted `"user"` column shows real student ids — notification attribution is correct, 155-VERIFICATION.md stands). CERT-04 rotation-preserves is structurally + unit proven (findAllNonRevoked serves retired keys; did.json loops all non-revoked); the live destructive `occ --rotate` was not exercised.
-Last activity: 2026-06-27 — Phase 155 close-out (doc-only): 155-06/155-07 SUMMARYs + REQUIREMENTS/ROADMAP/STATE updates. See Execution Notes (155-06/07) + the new close-out note below.
+Phase: 156 of 157 (Compliance-Report) — IN PROGRESS. 156-01 (backend) COMPLETE; 156-02 (UI) next. Phase 157 (Public-Verify) runs parallel. (Phases 154 + 155 COMPLETE.)
+Plan: 156-01 of 2 done (1/2). 156-01-SUMMARY.md written.
+Status: 156-01 delivered the DSGVO-safe, owner-scoped compliance-report BACKEND — `CertificateMapper::findByCourseId` (time-free, filtered, revoked=false, newest-first), the reusable IDOR-safe `CourseService::assertInstructorOfCourse` gate, `CertificateReportService::getCourseReport` (gate-first read + per-cert VC-JWT decode for frozen name+score + strict 5-field DTO with NO recipient-id), and a thin `CertificateReportController` exposing a JSON table + an injection-safe CSV download (both call the ONE shared service method → table == CSV). 7 real-logic PHPUnit tests/23 assertions GREEN (no-leak + IDOR proving gate-before-read + filter cutoff + malformed-JWT fallback) on the REAL CourseService ownership path; PHPStan L5 clean whole-app; both routes live; grep gate zero recipient-id hits. REPORT-04 (DSGVO no-email) Complete; REPORT-01/02/03 backend-complete, deferred to 156-02 (UI). Live credentialed Gate 2 deferred (no ADMIN_PASS — rides demo-course creds).
+Last activity: 2026-06-27 — Executed 156-01-PLAN. See Execution Notes (156-01) below.
 
-Progress: [██████████] Phase 155 COMPLETE (7/7 plans; issuer live; 10/13 CERT reqs live-verified, 3 visual eyeballs deferred to demo course). Milestone v5.0.0: 2/4 phases done.
+Progress: [█████░░░░░] Phase 156 IN PROGRESS (1/2 plans; backend done, UI next). Milestone v5.0.0: 2/4 phases complete (154+155), 156 in progress, 157 parallel-ready.
 
 ## Synthetic Cert Smoke — 2026-06-27 (authorized by Andre, throwaway data LEFT IN PLACE)
 
@@ -209,13 +209,25 @@ See PROJECT.md Key Decisions for full table and prior milestone decisions.
 - **Cosmetic discrepancy (noted, harmless):** InitIssuerCommand CLI printed `did:web:localhost:apps:learning` because in CLI `IURLGenerator::getBaseUrl()` resolved host to localhost (despite overwrite.cli.url=devcloud). The SERVED did.json (HTTP) and HTTP-context issuance (GET /pass-status) both correctly resolve `devcloud.andrestiebitz.de`. `hostDid()` derives host purely from getBaseUrl() at call time — **nothing host-specific is persisted** (cert_keys stores no host), so issued certs (always minted in HTTP context) carry the correct kid that matches did.json. Follow-up: make the command's printed kid match the served host (display-only).
 - **DEFERRED-TO-HUMAN (ride on Andre's 155-06 pass):** (a) Gate 2 `scripts/test-api.sh` authenticated suite — no admin password accessible (vault `DevCloud-Zugangsdaten.md` is a dangling wikilink, absent on workstation+cockpit; no ADMIN_PASS in env). Chromium login mechanism probed OK → `ADMIN_PASS=… TRANSPORT=local scripts/test-api.sh` runs green once Andre supplies the password (bruteforce-reset 172.21.0.1 first). The did.json id-format portion of ADR follow-up #3 is already GREEN unauthenticated (asserted directly). (b) Real-cert independent verify `scripts/verify-issued-cert-gate.sh` — needs a real issued JWT (Andre's pass produces one); verifier MECHANISM already GREEN (synthetic VC-JWT, valid→0/tampered→1); python3-cryptography 43.0.0 present in-container. (c) Rotation-preserves live (`ALLOW_LIVE_ROTATE=1`) — destructive `occ --rotate`, NOT run.
 
+### Execution Notes (156-01) — Compliance-Report backend COMPLETE
+
+- **Plan executed exactly as written — ZERO deviations (no Rule 1-4).** All `<interfaces>` matched the codebase. TDD RED confirmed first (findByCourseId/CertificateReportService not-found), then GREEN on the first implementation attempt.
+- **The owner gate is the REAL CourseService in tests** — `CertificateReportServiceTest` constructs a genuine `CourseService` (12 mocked deps, copied from `CourseServiceTest`'s ctor wiring) so `assertInstructorOfCourse` runs for real; the IDOR test adds `$certMapper->expects($this->never())->method('findByCourseId')` to PROVE the gate runs BEFORE any read (a bare exception assertion wouldn't). Never stubbed the gate to a boolean.
+- **Test JWTs need no signing** — the report DECODES `parts[1]`, never verifies the signature (trusted internal read of already-issued certs), so fixtures are `'header.' . base64url(json) . '.sig'` (no sodium). Mirrors the issuer's `base64_decode(strtr(...,'-_','+/'), true)` strict decode.
+- **csvLine + looksLikeEmail COPIED, not injected** — both are `private` in DataMobilityService / IssuanceService (unreachable by DI). Copied verbatim as private methods; no public-surface widening on either origin class. Email regex `/[^@\s]+@[^@\s]+\.[^@\s]+/` with `trim()` (defence-in-depth re-screen of the already-screened frozen name).
+- **Mapper is time-free; service owns the clock** — `findByCourseId` takes an ABSOLUTE `expiresBefore` cutoff; the `expiringDays → now + days*86400` arithmetic lives in the service (ITimeFactory), so the filter test drives a fake clock through the service and asserts the mapper is called with the computed cutoff. `expires_at IS NOT NULL AND <= cutoff` (already-expired included, never-expiring excluded).
+- **grep gate (REPORT-04) is self-trippable** — keep the instructor param `$userId` (camelCase, won't match `user_id`) and NEVER write the literal recipient-id token in a comment in the service/controller files, or the final `grep "user_id\|getUserId"` gate trips on your own prose. (The mapper file legitimately uses the `course_id` column string — the gate only scans service+controller.)
+- **`@NoAdminRequired` on BOTH controller methods is load-bearing AND unit-uncatchable** — unit tests instantiate the controller directly and bypass the annotation middleware, so they're green even if it's missing; a non-admin instructor would get 403 in prod without it. Verified by inspection + the deferred credentialed Gate 2.
+- **Requirements discipline:** REPORT-04 (pure backend DSGVO guarantee, load-bearing no-leak test) flipped Complete; REPORT-01/02/03 ("instructor can view/filter/export") are backend-complete but DEFERRED to 156-02 (the UI plan re-lists them) — consistent with 154 (marked at UI 154-05) and 155 (marked at live verify). `requirements mark-complete` NOT run (gsd-tools corrupts v5.0.0 frontmatter — REQUIREMENTS hand-edited).
+- **DEFERRED Gate 2** — live credentialed `scripts/test-api.sh` cert-report block (instructor 200 / non-owner 403 / text/csv / no-@ / no-recipient-id) is written + `bash -n` valid; the authenticated section only runs with `ADMIN_PASS` (script exits earlier without it), so it rides Andre's demo-course creds (bruteforce-reset 172.21.0.1 first). Same deferral as 154/155.
+
 ## Session Continuity
 
-Last session: 2026-06-27T13:00:00.000Z
-Stopped at: PHASE 155 CLOSED OUT. 155-06-SUMMARY.md + 155-07-SUMMARY.md written; REQUIREMENTS.md (CERT-01..06/09..12 Complete, CERT-07/08/13 visual-verify-deferred), ROADMAP.md (Phase 155 Complete 7/7), and STATE.md hand-edited. 155-VERIFICATION.md verdict goal_delivered stands. The three deferred items (CERT-07/08/13) are purely-visual eyeballs riding on the upcoming demo course (user option A). CERT-12 oc_admin finding resolved (SQL reserved-word artifact). Issuer live on devcloud; synthetic smoke data cleaned up (0 certs; issuer key + did.json intact).
+Last session: 2026-06-27T14:30:00.000Z
+Stopped at: 156-01-PLAN COMPLETE (Compliance-Report backend). 156-01-SUMMARY.md written; REQUIREMENTS.md (REPORT-04 Complete; REPORT-01/02/03 backend-complete → 156-02 UI), ROADMAP.md (156: 1/2, In Progress), and STATE.md hand-edited (gsd-tools corrupt v5.0.0 frontmatter). 3 task commits: 5bf9578 (test RED) → e152b3c (mapper+gate+service) → ba45709 (controller+routes+test-api). 7 tests/23 assertions green, PHPStan L5 clean, both routes live, grep gate clean. Live credentialed Gate 2 deferred (no ADMIN_PASS — rides demo-course creds).
 
-Resume: /gsd:plan-phase 156 (Compliance-Report) — runs parallel with Phase 157 (Public-Verify). Carry into 156/157: the revocation path MUST set active_idem_key=NULL (R2-2 follow-up); did.json + kid↔verificationMethod.id contract is live and ready for the public verify route; reconcile info.xml 4.4.8 → the v5.0.0 release bump (CHANGELOG + tag) at milestone close.
-Resume file: .planning/ROADMAP.md (Phases 156 + 157, plans TBD)
+Resume: /gsd:plan-phase 156 wave 2 → 156-02 (instructor compliance UI in CourseTabTeilnehmer.vue: filter inputs + table from the clean DTO endpoint + Export CSV button + pure util + Vitest + i18n 5 langs) — OR /gsd:plan-phase 157 (Public-Verify) which runs PARALLEL. Endpoints ready for the UI: GET /api/courses/{courseId}/cert-report (JSON {rows:[…5 fields]}) + /cert-report/export/csv. Carry: revocation path MUST set active_idem_key=NULL (R2-2); reconcile info.xml 4.4.8 → v5.0.0 release bump (CHANGELOG + tag) at milestone close.
+Resume file: .planning/ROADMAP.md (Phase 156 wave 2 = 156-02; Phase 157 plans TBD)
 
 ### POST-REVIEW LIVE PROVISIONING WALKTHROUGH (combined 155-06 + 155-07, run only after the multi-AI review approves the live schema change)
 

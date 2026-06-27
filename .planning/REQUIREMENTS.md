@@ -38,7 +38,7 @@ Requirements for v5.0.0. Each maps to a roadmap phase (154–157).
 - [ ] **REPORT-01**: Instructor can view a compliance report per course (who passed, when, score, expiry, verification-id)
 - [ ] **REPORT-02**: Instructor can filter the report by date range and expiry window
 - [ ] **REPORT-03**: Instructor can export the compliance report as CSV (download)
-- [ ] **REPORT-04**: Report exposes display name only — no plaintext email (DSGVO)
+- [x] **REPORT-04**: Report exposes display name only — no plaintext email (DSGVO) — *156-01: load-bearing no-leak test green (5-field DTO, no recipient-id/email, email-shaped name → 'Teilnehmer:in')*
 
 ### Public-Verification (VERIFY) — Phase 157
 
@@ -96,10 +96,10 @@ Requirements for v5.0.0. Each maps to a roadmap phase (154–157).
 | CERT-11 | 155 | Complete |
 | CERT-12 | 155 | Complete |
 | CERT-13 | 155 | Implemented (visual verify deferred) |
-| REPORT-01 | 156 | Pending |
-| REPORT-02 | 156 | Pending |
-| REPORT-03 | 156 | Pending |
-| REPORT-04 | 156 | Pending |
+| REPORT-01 | 156 | Backend-complete (156-01); UI → 156-02 |
+| REPORT-02 | 156 | Backend-complete (156-01); UI → 156-02 |
+| REPORT-03 | 156 | Backend-complete (156-01); UI → 156-02 |
+| REPORT-04 | 156 | Complete |
 | VERIFY-01 | 157 | Pending |
 | VERIFY-02 | 157 | Pending |
 | VERIFY-03 | 157 | Pending |
