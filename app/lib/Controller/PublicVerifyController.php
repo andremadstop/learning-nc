@@ -6,9 +6,6 @@ namespace OCA\Learning\Controller;
 use OCA\Learning\Service\CertificateVerifyService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attributes\AnonRateLimit;
-use OCP\AppFramework\Http\Attributes\BruteForceProtection;
-use OCP\AppFramework\Http\Attributes\NoCSRFRequired;
-use OCP\AppFramework\Http\Attributes\PublicPage;
 use OCP\AppFramework\Http\Template\PublicTemplateResponse;
 use OCP\Defaults;
 use OCP\IL10N;
@@ -33,8 +30,8 @@ use OCP\L10N\IFactory;
  *   - Always HTTP 200: withdrawn/expired/unknown are tombstone/explainer RENDERS, not 404s.
  *
  * DSGVO: the template only ever receives the service's projected display fields (status, issuer_name,
- * course_title, issued_at, expires_at, revoked_at(withdrawn), verification_id). The recipient name,
- * user_id, key_id and credential_json are never read here and never reach the template.
+ * course_title, issued_at, expires_at, revoked_at(withdrawn), verification_id). The recipient identity
+ * (name / login / signing key / raw credential) is never read here and never reaches the template.
  */
 class PublicVerifyController extends Controller {
     /** Verification ids are RFC 4122 UUIDv4 (IssuanceService::uuidv4) — reject anything else early. */
@@ -65,10 +62,17 @@ class PublicVerifyController extends Controller {
      *
      * Status precedence is owned by the service; this method only adds the format precheck and the
      * throttle-on-unknown policy, then renders. Returns HTTP 200 for every status.
+     *
+     * Publicness/CSRF/brute-force are declared as PHPDoc annotations — the codebase-proven form for
+     * public routes in THIS NC build (DidController/IcsController/PageController all use @PublicPage
+     * PHPDoc; the #[PublicPage] attribute is NOT honoured here → would 401 logged-out). The IP-keyed
+     * #[AnonRateLimit] caps ALL requests and is read via the (working) attribute path, exactly like
+     * IcsController's #[UserRateLimit]. $tpl->throttle() (below) feeds @BruteForceProtection.
+     *
+     * @PublicPage
+     * @NoCSRFRequired
+     * @BruteForceProtection(action=learningVerify)
      */
-    #[PublicPage]
-    #[NoCSRFRequired]
-    #[BruteForceProtection(action: self::THROTTLE_ACTION)]
     #[AnonRateLimit(limit: 30, period: 60)]
     public function verify(string $verificationId): PublicTemplateResponse {
         // VERIFY-06: validate the FORMAT before any DB/service call. A malformed id is treated exactly
