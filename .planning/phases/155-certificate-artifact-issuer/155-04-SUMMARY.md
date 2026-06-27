@@ -66,12 +66,13 @@ completed: 2026-06-27
 - **Duration:** ~70 min
 - **Started:** 2026-06-27
 - **Completed:** 2026-06-27
-- **Tasks:** 3 (Task 1 TDD: RED → GREEN)
-- **Files:** 2 created, 13 modified
+- **Tasks:** 3 (Task 1 TDD: RED → GREEN) + 1 post-review enhancement (recipient identity)
+- **Files:** 2 created, 15 modified
 
 ## Accomplishments
 - **IssuanceService.issueIfPassed()** — bails on non-pass; OWN idempotency guard (`findByUserAndCourse` + not-revoked → return existing, no re-issue); builds the OB3/VC object; signs via `SigningService::sign()` with `KeyService::getActiveSigningMaterial()` (`sodium_memzero`s the secret after); persists the `Certificate` with the compact VC-JWT in `credential_json`; fires one deduped notification.
-- **Self-contained credential (CERT-06)** — `@context` [VC v2, OB3 context-3.0.3], `id` `urn:uuid:<vid>`, `type` [VerifiableCredential, OpenBadgeCredential], `issuer` {did:web, Profile, themed name + logo image}, `validFrom`, `validUntil` (only when `cert_validity_days>0`), `credentialSubject` {AchievementSubject, achievement(name=frozen course title, description, criteria.narrative with threshold), result(score; threshold)}. Every field is frozen into the SIGNED payload — proven by decoding the real JWT in the unit test.
+- **Self-contained credential (CERT-06)** — `@context` [VC v2, OB3 context-3.0.3], `id` `urn:uuid:<vid>`, `type` [VerifiableCredential, OpenBadgeCredential], `issuer` {did:web, Profile, themed name + logo image}, `validFrom`, `validUntil` (only when `cert_validity_days>0`), `credentialSubject` {AchievementSubject, **name=recipient NC display name**, achievement(name=frozen course title, description, criteria.narrative with threshold), result(score; threshold)}. Every field is frozen into the SIGNED payload — proven by decoding the real JWT in the unit test.
+- **Recipient identity (CERT-06, DSGVO)** — `credentialSubject.name` is the recipient's NC display name via `IUserManager::get()->getDisplayName()` (falls back to the user id). The certificate is recipient-bound — required for the AWO compliance use case — while NO plaintext email is ever embedded (the test asserts no `@` in the subject).
 - **Issuer branding (CERT-11)** via `OCP\Defaults::getName()` + `getLogo()`; `absoluteLogoUrl()` passes absolute theming URLs through and `getAbsoluteURL()`-wraps relative ones (falls back to the app icon).
 - **Notifier 'certificate_issued' case (CERT-12)** mirrors `badge_earned`: translated `Certificate issued: %s` subject with the course title, app icon, app link. Fired from IssuanceService with `getCount()===0` dedup (mirrors `NotificationJob::sendNotification`).
 - **i18n parity** — `Certificate issued: %s` added to de/en/fr/ru/ar `.json` in lockstep (real translations, not en-copies); `.js` bundles regenerated via `l10n_js_sync.py`; `check-i18n-parity.sh` green (2214 keys each, value-sync OK).
@@ -89,6 +90,7 @@ completed: 2026-06-27
 2. **Task 1 (GREEN): IssuanceService** — `a1fcff7` (feat) — 6 tests / 36 assertions green, PHPStan L5 clean
 3. **Task 2: Notifier certificate_issued + i18n (5 langs)** — `44fe53e` (feat) — php -l clean, parity green, .js regenerated
 4. **Task 3: wire IssuanceService into evaluate()** — `3054639` (feat) — full suite 90/90 green, PHPStan L5 clean
+5. **Post-review (advisor): freeze recipient display name into credentialSubject** — `ffc2cc8` (feat) — recipient-bound credential (CERT-06), DSGVO name-only; full suite 90/90 (334 assertions), PHPStan L5 clean
 
 **Plan metadata:** _(final docs commit — this SUMMARY + STATE + ROADMAP)_
 
@@ -98,7 +100,8 @@ completed: 2026-06-27
 - `app/lib/Service/PassCriteriaService.php` — inject IssuanceService + LoggerInterface; first-pass swallowed-side-effect hook after emitPassEventIfFirst
 - `app/lib/Notification/Notifier.php` — `case 'certificate_issued'`
 - `app/tests/Unit/Service/PassCriteriaServiceTest.php` — makeService injects mocked IssuanceService + logger; 4 new regression tests (issues-once, no-issue-on-fail, swallows-failure)
-- `app/tests/Support/PhpUnitStubs.php` — added OCP stubs absent from the unit bootstrap: `OCP\Notification\INotification` / extended `IManager` / `INotifier` / `UnknownNotificationException`, `OCP\Defaults`, `OCP\AppFramework\Utility\ITimeFactory`, `OCP\L10N\IFactory`, `IURLGenerator::getAbsoluteURL/getBaseUrl`
+- `app/tests/Support/PhpUnitStubs.php` — added OCP stubs absent from the unit bootstrap: `OCP\Notification\INotification` / extended `IManager` / `INotifier` / `UnknownNotificationException`, `OCP\Defaults`, `OCP\AppFramework\Utility\ITimeFactory`, `OCP\L10N\IFactory`, `IURLGenerator::getAbsoluteURL/getBaseUrl`, `IUserManager::get`, `IUser::getDisplayName`
+- `app/tests/Unit/Service/CoopServiceTest.php` + `app/tests/Unit/Search/SearchProviderSafetyTest.php` — adjusted for the now-typed `IUserManager::get(): ?IUser` / `IUser::getDisplayName()` (createMock instead of addMethods; anon IUser impls add getDisplayName)
 - `app/l10n/{de,en,fr,ru,ar}.json` + `.js` — `Certificate issued: %s` key (5 langs) + regenerated bundles
 
 ## Requirements Status
@@ -129,9 +132,9 @@ The code for all four is complete and unit-proven, but read as live TRUE/FALSE s
 - **gitnexus impact CLI** reinstalled deps then rejected `--target`; index stale at a106ce4. Blast radius done via grep (see above). Did not burn turns fighting the tool (per advisor).
 
 ## Verification Results
-- **IssuanceServiceTest**: `OK (6 tests, 36 assertions)` in the relay container; RED confirmed first (6× class-not-found on IssuanceService). The REAL SigningService signs with a throwaway sodium key and the test decodes the actual JWT payload to assert self-containment + branding + validUntil presence/absence.
+- **IssuanceServiceTest**: `OK (6 tests, ~38 assertions)` in the relay container; RED confirmed first (6× class-not-found on IssuanceService). The REAL SigningService signs with a throwaway sodium key and the test decodes the actual JWT payload to assert self-containment + recipient name + branding + validUntil presence/absence + no-email.
 - **PassCriteriaServiceTest**: `OK` — 11 tests incl. 4 new issuance-hook regressions; no 154 regression.
-- **Full suite**: `OK (90 tests, 332 assertions)` — no regressions from the stub changes.
+- **Full suite**: `OK (90 tests, 334 assertions)` — no regressions from the stub changes (CoopServiceTest + SearchProviderSafetyTest adjusted for the typed IUserManager/IUser).
 - **PHPStan Level 5**: `No errors` (run on relay via `deploy-prod.sh --php-only`, after Task 1 and Task 3).
 - **php -l** clean on Notifier.php (container); **grep** `certificate_issued` present in Notifier.
 - **i18n parity** `check-i18n-parity.sh` green (2214 keys each across DE/EN/FR/RU/AR; .js↔.json value-sync OK); `Certificate issued` present in all 5 `.json`.
@@ -147,8 +150,8 @@ None for this plan. (Live issuance needs `occ learning:cert:init-issuer` + the 1
 ## Self-Check: PASSED
 
 - Files on disk: `app/lib/Service/IssuanceService.php` FOUND, `app/tests/Unit/Service/IssuanceServiceTest.php` FOUND.
-- Commits in history: `053ea02` (RED) FOUND, `a1fcff7` (GREEN IssuanceService) FOUND, `44fe53e` (Notifier+i18n) FOUND, `3054639` (evaluate hook) FOUND.
-- Tests: 90/90 green (332 assertions); PHPStan L5 clean; i18n parity green.
+- Commits in history: `053ea02` (RED) FOUND, `a1fcff7` (GREEN IssuanceService) FOUND, `44fe53e` (Notifier+i18n) FOUND, `3054639` (evaluate hook) FOUND, `ffc2cc8` (recipient name) FOUND.
+- Tests: 90/90 green (334 assertions); PHPStan L5 clean; i18n parity green.
 
 ---
 *Phase: 155-certificate-artifact-issuer*
