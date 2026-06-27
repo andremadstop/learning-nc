@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
  *
  * Asserts the student-facing, authenticated certificate endpoints:
  *   - index()    returns ONLY the current user's certificates (no cross-user listing).
- *   - show()     403s on a foreign cert (IDOR guard) and 404s on an unknown verification-id.
+ *   - show()     uniform 404 on a foreign cert (IDOR guard, no existence oracle) AND on an unknown id.
  *   - download() default → an Open Badges 3.0 JSON-LD EnvelopedVerifiableCredential
  *                wrapping the stored compact VC-JWT (application/ld+json), CERT-09.
  *   - download(?format=jwt) → the raw 3-segment compact JWT (application/vc+jwt).
@@ -76,33 +76,36 @@ class CertificateControllerTest extends TestCase {
     }
 
     /**
-     * Test 2a (ownership): show() for a verification-id owned by another user → 403,
-     * and the response body must NOT contain the cert (no credential leak).
+     * Test 2a (ownership, FIX R3-3): show() for a verification-id owned by another user → uniform 404
+     * (NOT 403) — the owner-scoped mapper query yields no row, so a foreign cert is indistinguishable
+     * from a non-existent one (no existence oracle). The body must NOT contain the cert.
      */
-    public function testShowForeignCertReturns403WithoutBody(): void {
-        $foreign = $this->makeCert('vid-B', 'bob', 'h.p.s');
-        $this->mapperMock->method('findByVerificationId')->with('vid-B')->willReturn($foreign);
+    public function testShowForeignCertReturns404WithoutBody(): void {
+        $this->mapperMock->method('findByVerificationIdAndUserId')
+            ->with('vid-B', 'alice')
+            ->willThrowException(new DoesNotExistException('not owned'));
 
         $resp = $this->makeController('alice')->show('vid-B');
 
         $this->assertInstanceOf(JSONResponse::class, $resp);
-        $this->assertSame(Http::STATUS_FORBIDDEN, $resp->getStatus());
+        $this->assertSame(Http::STATUS_NOT_FOUND, $resp->getStatus());
         $this->assertArrayNotHasKey('credential_json', $resp->getData());
         $this->assertArrayNotHasKey('verification_id', $resp->getData());
     }
 
     /**
-     * Test 2b (ownership): download() for a foreign cert → 403 (a JSONResponse error,
-     * never the credential file).
+     * Test 2b (ownership, FIX R3-3): download() for a foreign cert → uniform 404 (never the
+     * credential file, never a 403 that would leak existence).
      */
-    public function testDownloadForeignCertReturns403(): void {
-        $foreign = $this->makeCert('vid-B', 'bob', 'h.p.s');
-        $this->mapperMock->method('findByVerificationId')->with('vid-B')->willReturn($foreign);
+    public function testDownloadForeignCertReturns404(): void {
+        $this->mapperMock->method('findByVerificationIdAndUserId')
+            ->with('vid-B', 'alice')
+            ->willThrowException(new DoesNotExistException('not owned'));
 
         $resp = $this->makeController('alice')->download('vid-B');
 
         $this->assertInstanceOf(JSONResponse::class, $resp);
-        $this->assertSame(Http::STATUS_FORBIDDEN, $resp->getStatus());
+        $this->assertSame(Http::STATUS_NOT_FOUND, $resp->getStatus());
     }
 
     /**
@@ -113,7 +116,7 @@ class CertificateControllerTest extends TestCase {
     public function testDownloadDefaultReturnsEnvelopedJsonLd(): void {
         $jwt = 'eyJhbGciOiJFZERTQSIsInR5cCI6InZjK2p3dCJ9.eyJpZCI6InVybjp1dWlkOnZpZC1BIn0.c2ln';
         $cert = $this->makeCert('vid-A', 'alice', $jwt);
-        $this->mapperMock->method('findByVerificationId')->with('vid-A')->willReturn($cert);
+        $this->mapperMock->method('findByVerificationIdAndUserId')->with('vid-A', 'alice')->willReturn($cert);
 
         $resp = $this->makeController('alice')->download('vid-A');
 
@@ -136,7 +139,7 @@ class CertificateControllerTest extends TestCase {
     public function testDownloadJwtFormatReturnsRawCompactJwt(): void {
         $jwt = 'eyJhbGciOiJFZERTQSIsInR5cCI6InZjK2p3dCJ9.eyJpZCI6InVybjp1dWlkOnZpZC1BIn0.c2ln';
         $cert = $this->makeCert('vid-A', 'alice', $jwt);
-        $this->mapperMock->method('findByVerificationId')->with('vid-A')->willReturn($cert);
+        $this->mapperMock->method('findByVerificationIdAndUserId')->with('vid-A', 'alice')->willReturn($cert);
 
         $resp = $this->makeController('alice')->download('vid-A', 'jwt');
 
@@ -151,7 +154,7 @@ class CertificateControllerTest extends TestCase {
      * Test 4 (missing): show() for an unknown verification-id → 404.
      */
     public function testShowUnknownVerificationIdReturns404(): void {
-        $this->mapperMock->method('findByVerificationId')
+        $this->mapperMock->method('findByVerificationIdAndUserId')
             ->willThrowException(new DoesNotExistException('no such cert'));
 
         $resp = $this->makeController('alice')->show('does-not-exist');

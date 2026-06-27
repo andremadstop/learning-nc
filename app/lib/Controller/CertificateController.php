@@ -56,7 +56,8 @@ class CertificateController extends Controller {
 
     /**
      * Fetch a single owned certificate by its verification id.
-     * 404 if it does not exist; 403 (bare error, no body) if it belongs to another user.
+     * Uniform 404 for BOTH a non-existent id and a foreign-owned one (no existence oracle / IDOR
+     * side-channel — ownership is enforced in the owner-scoped mapper query).
      *
      * @NoAdminRequired
      */
@@ -66,13 +67,9 @@ class CertificateController extends Controller {
         }
 
         try {
-            $cert = $this->certificateMapper->findByVerificationId($verificationId);
+            $cert = $this->certificateMapper->findByVerificationIdAndUserId($verificationId, $this->userId);
         } catch (DoesNotExistException $e) {
             return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
-        }
-
-        if ($cert->getUserId() !== $this->userId) {
-            return new JSONResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
         }
 
         return new JSONResponse($cert->jsonSerialize());
@@ -99,13 +96,9 @@ class CertificateController extends Controller {
         }
 
         try {
-            $cert = $this->certificateMapper->findByVerificationId($verificationId);
+            $cert = $this->certificateMapper->findByVerificationIdAndUserId($verificationId, $this->userId);
         } catch (DoesNotExistException $e) {
             return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
-        }
-
-        if ($cert->getUserId() !== $this->userId) {
-            return new JSONResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
         }
 
         $jwt = $cert->getCredentialJson();

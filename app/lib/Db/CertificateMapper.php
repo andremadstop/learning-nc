@@ -30,6 +30,24 @@ class CertificateMapper extends QBMapper {
     }
 
     /**
+     * Owner-scoped lookup for the student controller: the certificate with this verification_id that
+     * belongs to $userId. Throws DoesNotExistException for BOTH a missing id AND a foreign-owned one,
+     * so the controller can return a uniform 404 (no 403-vs-404 existence oracle / IDOR side-channel).
+     *
+     * @throws DoesNotExistException if no certificate with this verification_id is owned by $userId
+     */
+    public function findByVerificationIdAndUserId(string $verificationId, string $userId): Certificate {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('verification_id', $qb->createNamedParameter($verificationId)))
+           ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+           ->setMaxResults(1);
+        /** @var Certificate */
+        return $this->findEntity($qb);
+    }
+
+    /**
      * Idempotency guard for issuance (used by 155-04): the existing certificate for a
      * user+course, or null if none has been issued yet.
      */
