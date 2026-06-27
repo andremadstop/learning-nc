@@ -5,6 +5,7 @@ namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\CertKey;
 use OCA\Learning\Db\CertKeyMapper;
+use OCP\IDBConnection;
 use OCP\IURLGenerator;
 
 /**
@@ -20,15 +21,18 @@ class KeyService {
     private CertKeyMapper $certKeyMapper;
     private EncryptionService $encryptionService;
     private IURLGenerator $urlGenerator;
+    private IDBConnection $db;
 
     public function __construct(
         CertKeyMapper $certKeyMapper,
         EncryptionService $encryptionService,
-        IURLGenerator $urlGenerator
+        IURLGenerator $urlGenerator,
+        IDBConnection $db
     ) {
         $this->certKeyMapper = $certKeyMapper;
         $this->encryptionService = $encryptionService;
         $this->urlGenerator = $urlGenerator;
+        $this->db = $db;
     }
 
     /**
@@ -93,23 +97,41 @@ class KeyService {
     /**
      * Rotate the issuer key. Ordering is safety-critical (FIX 4 / R6-6): the NEW active key is
      * generated and durably inserted FIRST, and only AFTER that succeeds is the previous active key
-     * retired (update, never delete). If new-key creation throws, the old key stays active — there is
-     * never a zero-active-key window. Retired keys stay published in did.json so past certificates
+     * retired (update, never delete). Retired keys stay published in did.json so past certificates
      * remain verifiable.
+     *
+     * ATOMICITY (R6-6): both writes — insert-new + retire-old — run in a single DB transaction. If the
+     * retire UPDATE fails, the whole rotation rolls back, so the NEW insert is undone too and exactly
+     * one active key survives: the ORIGINAL. This closes the "two active keys" window a failed retire
+     * would otherwise leave. A throw during new-key creation still leaves the incumbent the sole
+     * active key (the transaction simply never commits).
      *
      * @throws \RuntimeException if ext-sodium is missing or the new secret failed to encrypt.
      */
     public function rotate(): CertKey {
         $previous = $this->certKeyMapper->findActive();
 
-        // Create + persist the replacement BEFORE touching the incumbent. A throw here leaves the
-        // old active key untouched (still the sole active key).
-        $new = $this->generateActiveKey();
+        $this->db->beginTransaction();
+        try {
+            // Create + persist the replacement inside the transaction.
+            $new = $this->generateActiveKey();
 
-        // New key is durably inserted — now safe to retire the previous one.
-        if ($previous !== null) {
-            $previous->setStatus('retired');
-            $this->certKeyMapper->update($previous);
+            // Retire the incumbent in the SAME transaction — if this fails, the new insert rolls back
+            // with it, never leaving two active keys.
+            if ($previous !== null) {
+                $previous->setStatus('retired');
+                $this->certKeyMapper->update($previous);
+            }
+
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            // The DB rollback undoes the new-key insert; the incumbent's in-memory status may have been
+            // flipped to 'retired' before the failure, so restore it to match the rolled-back DB row.
+            if ($previous !== null) {
+                $previous->setStatus('active');
+            }
+            throw $e;
         }
 
         return $new;

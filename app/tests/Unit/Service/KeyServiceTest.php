@@ -7,6 +7,7 @@ use OCA\Learning\Db\CertKey;
 use OCA\Learning\Db\CertKeyMapper;
 use OCA\Learning\Service\EncryptionService;
 use OCA\Learning\Service\KeyService;
+use OCP\IDBConnection;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\TestCase;
 
@@ -75,8 +76,53 @@ class KeyServiceTest extends TestCase {
         return new KeyService(
             $mapper,
             $enc ?? $this->makeEncryption(),
-            $this->createMock(IURLGenerator::class)
+            $this->createMock(IURLGenerator::class),
+            $this->makeTxDb($mapper)
         );
+    }
+
+    /**
+     * A transaction-simulating IDBConnection wired to the in-memory mapper: beginTransaction snapshots
+     * $mapper->store, rollBack restores it. This lets rotate()'s atomic insert-new+retire-old be tested
+     * — a rollback genuinely undoes the new-key insert, exactly as a real DB transaction would.
+     *
+     * Hand-rolled (not createMock) because the test-runtime IDBConnection stub doesn't declare the
+     * transaction methods; an anonymous class can add them without touching the shared stub.
+     */
+    private function makeTxDb(object $mapper): IDBConnection {
+        return new class($mapper) implements IDBConnection {
+            private object $mapper;
+            /** @var CertKey[]|null */
+            private ?array $snapshot = null;
+
+            public function __construct(object $mapper) {
+                $this->mapper = $mapper;
+            }
+
+            public function beginTransaction(): void {
+                $this->snapshot = $this->mapper->store;
+            }
+
+            public function commit(): void {
+            }
+
+            public function rollBack(): void {
+                if ($this->snapshot !== null) {
+                    $this->mapper->store = $this->snapshot;
+                }
+            }
+
+            // Stub-interface members (unused by KeyService) — present so the anon class is concrete.
+            public function getQueryBuilder() {
+            }
+
+            public function executeQuery(string $sql, array $params = []) {
+            }
+
+            public function escapeLikeParameter(string $input): string {
+                return $input;
+            }
+        };
     }
 
     public function testInitEncryptsSecretAtRest(): void {
@@ -134,7 +180,7 @@ class KeyServiceTest extends TestCase {
         // 155-02/03 kid derivation and devcloud expectations never drift.
         $url = $this->createMock(IURLGenerator::class);
         $url->method('getBaseUrl')->willReturn('https://example.com');
-        $service = new KeyService($this->makeMapper(), $this->makeEncryption(), $url);
+        $service = new KeyService($this->makeMapper(), $this->makeEncryption(), $url, $this->createMock(IDBConnection::class));
 
         $this->assertSame('did:web:example.com:apps:learning', $service->hostDid());
     }
@@ -143,7 +189,7 @@ class KeyServiceTest extends TestCase {
         // Non-default port + webroot → spec-correct did:web with %3A-encoded port and colon-joined path.
         $url = $this->createMock(IURLGenerator::class);
         $url->method('getBaseUrl')->willReturn('https://example.com:8443/nextcloud');
-        $service = new KeyService($this->makeMapper(), $this->makeEncryption(), $url);
+        $service = new KeyService($this->makeMapper(), $this->makeEncryption(), $url, $this->createMock(IDBConnection::class));
 
         $this->assertSame('did:web:example.com%3A8443:nextcloud:apps:learning', $service->hostDid());
     }
@@ -200,6 +246,61 @@ class KeyServiceTest extends TestCase {
         // The old key is STILL active and still the sole active key — no zero-active-key window.
         $this->assertSame('active', $first->getStatus(), 'old key must remain active when new-key creation fails');
         $this->assertSame($first, $mapper->findActive(), 'old key is still the active key after a failed rotation');
+    }
+
+    /**
+     * FIX R6-6 (atomicity): if the retire-UPDATE fails mid-rotation, the whole transaction rolls back —
+     * the new-key insert is undone too, so exactly ONE active key survives: the ORIGINAL. This closes
+     * the "two active keys" window a non-atomic failed retire would leave.
+     */
+    public function testRotateRollsBackToOriginalWhenRetireUpdateFails(): void {
+        if (!extension_loaded('sodium')) {
+            $this->markTestSkipped('ext-sodium not loaded');
+        }
+        $mapper = new class extends CertKeyMapper {
+            /** @var CertKey[] */
+            public array $store = [];
+            private int $nextId = 1;
+
+            public function __construct() {
+            }
+
+            public function insert($entity): CertKey {
+                $entity->setId($this->nextId++);
+                $this->store[] = $entity;
+                return $entity;
+            }
+
+            public function update($entity): CertKey {
+                throw new \RuntimeException('simulated DB failure retiring the old key');
+            }
+
+            public function findActive(): ?CertKey {
+                $active = array_values(array_filter($this->store, fn(CertKey $k) => $k->getStatus() === 'active'));
+                return $active === [] ? null : end($active);
+            }
+
+            /** @return CertKey[] */
+            public function findAllNonRevoked(): array {
+                return array_values(array_filter($this->store, fn(CertKey $k) => $k->getStatus() !== 'revoked'));
+            }
+        };
+        $service = $this->makeService($mapper);
+
+        $first = $service->init();
+
+        try {
+            $service->rotate();
+            $this->fail('rotate() must propagate the retire-update failure');
+        } catch (\RuntimeException $e) {
+            // expected — transaction rolled back
+        }
+
+        // Rolled back: the new-key insert was undone, the incumbent is the SOLE surviving active key.
+        $active = array_values(array_filter($mapper->store, fn(CertKey $k) => $k->getStatus() === 'active'));
+        $this->assertCount(1, $active, 'exactly one active key after a rolled-back rotation');
+        $this->assertSame($first->getKeyId(), $active[0]->getKeyId(), 'rotation fully rolled back to the ORIGINAL key');
+        $this->assertSame($first, $mapper->findActive(), 'the original key is still the active one');
     }
 
     public function testInitTwiceThrowsWithoutRotate(): void {
