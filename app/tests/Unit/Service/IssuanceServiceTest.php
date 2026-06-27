@@ -346,6 +346,34 @@ class IssuanceServiceTest extends TestCase {
         $this->assertStringNotContainsString('@', json_encode($payload['credentialSubject']));
     }
 
+    /**
+     * DSGVO (FIX R3-7): the email filter is unanchored + trimmed, so a display name that merely
+     * CONTAINS an email-shaped token — leading/trailing whitespace OR a "Name <email>" wrapper —
+     * still falls back to the neutral pseudonym. No plaintext email reaches the credential.
+     *
+     * @dataProvider emailSmugglingNames
+     */
+    public function testDisplayNameContainingEmailFallsBackToNeutralName(string $displayName): void {
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured, displayName: $displayName);
+
+        $service->issueIfPassed('carol', self::COURSE_ID, $this->passResult());
+        $this->assertNotNull($captured);
+        $payload = $this->payloadOf($captured);
+
+        $this->assertSame('Teilnehmer:in', $payload['credentialSubject']['name'], 'neutral fallback for email-bearing name');
+        $this->assertStringNotContainsString('@', json_encode($payload['credentialSubject']), 'no plaintext email anywhere in the subject');
+    }
+
+    /** @return array<string, array{string}> */
+    public static function emailSmugglingNames(): array {
+        return [
+            'leading/trailing whitespace' => ['  alice@example.com  '],
+            'Name <email> wrapper'        => ['Alice <alice@example.com>'],
+            'prefixed token'              => ['contact: a@b.de'],
+        ];
+    }
+
     public function testIssuerBrandingFromTheming(): void {
         $captured = null;
         $service = $this->makeService(

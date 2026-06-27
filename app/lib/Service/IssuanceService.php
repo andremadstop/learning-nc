@@ -261,10 +261,13 @@ class IssuanceService {
     }
 
     /**
-     * True when the candidate matches a basic email shape (local@domain.tld) — kept out of credentials.
+     * True when the candidate CONTAINS an email-shaped token (local@domain.tld) ANYWHERE — not just
+     * as the whole string. The candidate is trimmed first and the pattern is unanchored, so surrounding
+     * whitespace (" alice@example.com "), a display-name wrapper ("Alice <alice@example.com>") or a
+     * prefix ("contact: a@b.de") can never smuggle a plaintext email into the signed credential (R3-7).
      */
     private function looksLikeEmail(string $candidate): bool {
-        return preg_match('/^[^@\s]+@[^@\s]+\.[^@\s]+$/', $candidate) === 1;
+        return preg_match('/[^@\s]+@[^@\s]+\.[^@\s]+/', trim($candidate)) === 1;
     }
 
     /**
