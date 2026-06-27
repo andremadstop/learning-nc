@@ -24,8 +24,15 @@ module.exports = defineConfig({
     {
       name: 'chromium',
       dependencies: ['setup'],
-      testIgnore: /auth\.setup\.js/,
+      // public-verify is logged-OUT: exclude it here so it never pulls in the admin auth setup.
+      testIgnore: [/auth\.setup\.js/, /public-verify\.spec\.js/],
       use: { storageState: path.join(__dirname, 'tests/e2e/.auth/admin.json') },
+    },
+    {
+      // Logged-out public verify route — NO setup dependency, NO storageState (anonymous visitor).
+      name: 'public-verify',
+      testMatch: /public-verify\.spec\.js/,
+      use: { storageState: { cookies: [], origins: [] } },
     },
   ],
 })
