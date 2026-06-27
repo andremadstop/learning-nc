@@ -849,6 +849,70 @@ assert_status "Instructor dashboard works" "200"
 request GET admin "/apps/learning/api/questions/search?poolId=${POOL_ID}&q=correct&limit=5"
 assert_status_in "Question search works" "200" "400"
 
+# ── Certificates / did:web (Phase 155 — ADR follow-up #3: kid ↔ did.json) ─────────
+# Asserts against a LIVE issuer. These SKIP (not fail) until the 155-01 migration is
+# applied + an issuer key exists (`occ learning:cert:init-issuer`), at which point
+# did.json returns 200 with a non-empty verificationMethod and the block auto-activates
+# to HARD-assert that an issued JWT's `kid` equals a verificationMethod.id. Keeping the
+# interim a SKIP is the honest "written but not live" state (issuer provisioning is gated
+# behind a multi-AI review — HARD PROD BOUNDARY).
+
+# Decode a compact JWT header and print its `kid` (base64url, padding-restored).
+jwt_header_kid() {
+    local jwt="$1" h="${jwt%%.*}" mod
+    mod=$(( ${#h} % 4 ))
+    if [[ $mod -eq 2 ]]; then h="${h}=="; elif [[ $mod -eq 3 ]]; then h="${h}="; fi
+    printf '%s' "$h" | tr '_-' '/+' | base64 -d 2>/dev/null | jq -r '.kid // empty' 2>/dev/null
+}
+
+cert_host="$(base_host)"
+request GET "" "/apps/learning/did.json"
+if [[ "$LAST_STATUS" != "200" ]] || ! jq -e '.verificationMethod | type == "array" and length > 0' "$LAST_BODY" >/dev/null 2>&1; then
+    skip "did.json resolves with verificationMethod" "issuer unprovisioned (155-01 migration unapplied / no issuer key) — HTTP ${LAST_STATUS}; deferred to post-review live gate"
+    skip "JWT kid == did.json verificationMethod.id" "no live did.json — deferred to post-review live gate"
+    skip "rotation preserves retired key in did.json" "no live issuer — deferred to post-review live gate"
+else
+    pass "did.json resolves with verificationMethod"
+    # Every verificationMethod.id must be the path-based did:web fragment of THIS host.
+    assert_json "did.json ids are did:web:${cert_host}:apps:learning#…" --arg h "$cert_host" \
+        '.verificationMethod | all(.[]; .id | startswith("did:web:" + $h + ":apps:learning#"))'
+    cp "$LAST_BODY" "$TMP_DIR/did.json"
+
+    # kid ↔ verificationMethod.id on a REAL issued credential (own certs list).
+    request GET admin "/apps/learning/api/certificates"
+    cert_jwt="$(jq -r 'if type=="array" then .[0] else ((.certificates // .data // [])[0]) end | (.credential_json // .credentialJson // empty)' "$LAST_BODY" 2>/dev/null)"
+    if [[ -z "$cert_jwt" || "$cert_jwt" == "null" ]]; then
+        skip "JWT kid == did.json verificationMethod.id" "no issued certificate for admin yet — trigger a qualifying pass first (post-review live gate)"
+    else
+        cert_kid="$(jwt_header_kid "$cert_jwt")"
+        if [[ -n "$cert_kid" ]] && jq -e --arg k "$cert_kid" 'any(.verificationMethod[]; .id == $k)' "$TMP_DIR/did.json" >/dev/null 2>&1; then
+            pass "JWT kid == did.json verificationMethod.id (kid=${cert_kid})"
+        else
+            fail "JWT kid == did.json verificationMethod.id" "kid '${cert_kid}' not among did.json verificationMethod ids"
+        fi
+    fi
+
+    # rotation-preserves: after --rotate, the PREVIOUS (now retired) key id must still be
+    # served by did.json so credentials signed by it keep verifying. This step runs
+    # `occ learning:cert:init-issuer --rotate` — a DESTRUCTIVE live mutation — so it is
+    # opt-in (ALLOW_LIVE_ROTATE=1) and only in the post-review live gate. Default: SKIP.
+    if [[ "${ALLOW_LIVE_ROTATE:-0}" == "1" && "$TRANSPORT" == "remote-container" ]]; then
+        jq -r '.verificationMethod[].id' "$TMP_DIR/did.json" | sort -u > "$TMP_DIR/prev_ids"
+        run_remote docker exec -u "$CONTAINER_USER" "$CONTAINER_NAME" \
+            php occ learning:cert:init-issuer --rotate >/dev/null 2>&1 || true
+        request GET "" "/apps/learning/did.json"
+        jq -r '.verificationMethod[].id' "$LAST_BODY" 2>/dev/null | sort -u > "$TMP_DIR/now_ids"
+        missing_ids="$(comm -23 "$TMP_DIR/prev_ids" "$TMP_DIR/now_ids")"
+        if [[ -z "$missing_ids" ]]; then
+            pass "rotation preserves retired key in did.json"
+        else
+            fail "rotation preserves retired key in did.json" "vanished after --rotate: ${missing_ids//$'\n'/, }"
+        fi
+    else
+        skip "rotation preserves retired key in did.json" "destructive live --rotate; set ALLOW_LIVE_ROTATE=1 (post-review live gate only)"
+    fi
+fi
+
 # ── Cleanup ───────────────────────────────────────────────────────
 
 request DELETE admin "/apps/learning/api/courses/${COURSE_ID}"
