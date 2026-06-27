@@ -87,7 +87,8 @@ class IssuanceServiceTest extends TestCase {
         string $logoUrl = 'https://cloud.example/logo.png',
         string $issuerName = 'DevCloud Academy',
         bool $expectInsert = true,
-        bool $expectNotify = true
+        bool $expectNotify = true,
+        string $displayName = 'Alice Example'
     ): IssuanceService {
         $keyService = $this->createMock(KeyService::class);
         $keyService->method('hostDid')->willReturn(self::HOST_DID);
@@ -137,7 +138,7 @@ class IssuanceServiceTest extends TestCase {
         $url->method('imagePath')->willReturn('/apps/learning/img/app.svg');
 
         $recipient = $this->createMock(IUser::class);
-        $recipient->method('getDisplayName')->willReturn('Alice Example');
+        $recipient->method('getDisplayName')->willReturn($displayName);
         $userManager = $this->createMock(IUserManager::class);
         $userManager->method('get')->willReturn($recipient);
 
@@ -311,6 +312,38 @@ class IssuanceServiceTest extends TestCase {
 
         $this->assertArrayNotHasKey('validUntil', $payload, 'validUntil ABSENT when cert_validity_days=0');
         $this->assertNull($cert->getExpiresAt());
+    }
+
+    /**
+     * DSGVO (FIX R3-7): an email-shaped userId combined with an empty display name MUST NOT leak the
+     * email into the signed credential — credentialSubject.name is the neutral pseudonym fallback.
+     */
+    public function testEmailLikeIdentityFallsBackToNeutralName(): void {
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured, displayName: '');
+
+        $service->issueIfPassed('a.weber@example.com', self::COURSE_ID, $this->passResult());
+        $this->assertNotNull($captured);
+        $payload = $this->payloadOf($captured);
+
+        $this->assertSame('Teilnehmer:in', $payload['credentialSubject']['name'], 'neutral fallback, never the email');
+        $this->assertStringNotContainsString('@', json_encode($payload['credentialSubject']), 'no plaintext email anywhere in the subject');
+    }
+
+    /**
+     * DSGVO (FIX R3-7): even a RESOLVED user whose display name is itself email-shaped falls back to
+     * the neutral pseudonym — the email never reaches the credential.
+     */
+    public function testEmailShapedDisplayNameFallsBackToNeutralName(): void {
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured, displayName: 'b.mueller@firma.de');
+
+        $service->issueIfPassed('bob', self::COURSE_ID, $this->passResult());
+        $this->assertNotNull($captured);
+        $payload = $this->payloadOf($captured);
+
+        $this->assertSame('Teilnehmer:in', $payload['credentialSubject']['name']);
+        $this->assertStringNotContainsString('@', json_encode($payload['credentialSubject']));
     }
 
     public function testIssuerBrandingFromTheming(): void {

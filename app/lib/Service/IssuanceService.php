@@ -239,16 +239,32 @@ class IssuanceService {
     }
 
     /**
-     * The recipient's NC display name, frozen into the credential as its only PII (DSGVO:
-     * display name, never the email). Falls back to the user id if the account is unresolvable.
+     * Neutral DSGVO fallback recipient name. Used when the account is unresolvable, has no display
+     * name, or whose only candidate identifier is email-shaped. A backend constant (NOT a t() key —
+     * IL10N is not injected here) so it never depends on request locale.
+     */
+    private const FALLBACK_RECIPIENT = 'Teilnehmer:in';
+
+    /**
+     * The recipient's NC display name, frozen into the credential as its only PII (DSGVO: display
+     * name, never an email). NC user-ids can themselves BE emails, so a raw userId is NEVER returned;
+     * an unresolvable account, an empty display name, or an email-shaped name all map to the neutral
+     * pseudonym fallback so no plaintext email lands in the signed, shareable credential (R3-7).
      */
     private function resolveDisplayName(string $userId): string {
         $user = $this->userManager->get($userId);
-        if ($user === null) {
-            return $userId;
+        $name = $user !== null ? $user->getDisplayName() : '';
+        if ($name === '' || $this->looksLikeEmail($name)) {
+            return self::FALLBACK_RECIPIENT;
         }
-        $name = $user->getDisplayName();
-        return $name !== '' ? $name : $userId;
+        return $name;
+    }
+
+    /**
+     * True when the candidate matches a basic email shape (local@domain.tld) — kept out of credentials.
+     */
+    private function looksLikeEmail(string $candidate): bool {
+        return preg_match('/^[^@\s]+@[^@\s]+\.[^@\s]+$/', $candidate) === 1;
     }
 
     /**
