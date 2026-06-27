@@ -469,7 +469,7 @@ Plans:
 - [x] 155-04-PLAN.md — IssuanceService (pass hook → OB3 → sign → persist → notify) + Notifier certificate_issued + i18n ✓ 2026-06-27
 - [x] 155-05-PLAN.md — CertificateController (list/show/download, ownership-checked; OB3 JSON-LD EnvelopedVerifiableCredential per CERT-09) + CertificateService.js ✓ 2026-06-27
 - [ ] 155-06-PLAN.md — Certificate.vue (Options API: render/print/QR/download/LinkedIn) + vendored MIT QR + human-verify — ⏸ code built + frontend-deployed (commits 316bd1b, d4ff9e3); PAUSED at the blocking human-verify (Task 3): devcloud has no oc_learning_cert* tables / issuer key (155-01 migration unapplied), so the live walkthrough is blocked — awaiting decision to defer to 155-07 or provision now
-- [ ] 155-07-PLAN.md — Phase-close gates: leakage audit (Rule 18) + cross-DB (PG16+MariaDB 11.4) + kid↔did.json + rotation-preserves
+- [ ] 155-07-PLAN.md — Phase-close gates: leakage audit (Rule 18) + cross-DB (PG16+MariaDB 11.4) + kid↔did.json + rotation-preserves — ⏸ NON-PROD gates RUN + committed (20f3666, be014ab, 93c4d6a, 00cfeca): leakage gate GREEN (LeakageAuditTest 3/3, 39 assertions, PHPStan L5, 10-surface 155-LEAKAGE-AUDIT.md), cross-DB go/no-go GREEN on ephemeral mariadb:11.4 utf8mb4 (GO), independent-verifier mechanism GREEN on a synthetic JWT. STOPPED at the live-provisioning boundary: live PG16 migration (occ upgrade), occ init-issuer, info.xml bump, real pass, live did.json+kid + rotation-preserves + real-cert independent-verify are all DEFERRED behind the multi-AI review. No prod mutation; requirements left Pending.
 
 
 ### Phase 156: Compliance-Report
