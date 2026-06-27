@@ -468,7 +468,7 @@ Plans:
 - [x] 155-03-PLAN.md — SigningService VC-JWT EdDSA (TDD round-trip + tamper + independent verifier) — ADR follow-ups #1/#2 (CERT-06 mechanism; Pending until 155-04/07) ✓ 2026-06-27
 - [x] 155-04-PLAN.md — IssuanceService (pass hook → OB3 → sign → persist → notify) + Notifier certificate_issued + i18n ✓ 2026-06-27
 - [x] 155-05-PLAN.md — CertificateController (list/show/download, ownership-checked; OB3 JSON-LD EnvelopedVerifiableCredential per CERT-09) + CertificateService.js ✓ 2026-06-27
-- [ ] 155-06-PLAN.md — Certificate.vue (Options API: render/print/QR/download/LinkedIn) + vendored MIT QR + human-verify
+- [ ] 155-06-PLAN.md — Certificate.vue (Options API: render/print/QR/download/LinkedIn) + vendored MIT QR + human-verify — ⏸ code built + frontend-deployed (commits 316bd1b, d4ff9e3); PAUSED at the blocking human-verify (Task 3): devcloud has no oc_learning_cert* tables / issuer key (155-01 migration unapplied), so the live walkthrough is blocked — awaiting decision to defer to 155-07 or provision now
 - [ ] 155-07-PLAN.md — Phase-close gates: leakage audit (Rule 18) + cross-DB (PG16+MariaDB 11.4) + kid↔did.json + rotation-preserves
 
 
