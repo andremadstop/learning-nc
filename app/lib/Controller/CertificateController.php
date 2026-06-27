@@ -5,12 +5,15 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
+use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\ForbiddenException;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\Response;
+use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IRequest;
 
 /**
@@ -26,16 +29,22 @@ class CertificateController extends Controller {
     private const UUID_V4 = '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
 
     private CertificateMapper $certificateMapper;
+    private CourseService $courseService;
+    private ITimeFactory $timeFactory;
     private ?string $userId;
 
     public function __construct(
         string $appName,
         IRequest $request,
         CertificateMapper $certificateMapper,
+        CourseService $courseService,
+        ITimeFactory $timeFactory,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
         $this->certificateMapper = $certificateMapper;
+        $this->courseService = $courseService;
+        $this->timeFactory = $timeFactory;
         $this->userId = $userId;
     }
 
@@ -136,5 +145,51 @@ class CertificateController extends Controller {
             'certificate-' . $verificationId . '.json',
             'application/ld+json'
         );
+    }
+
+    /**
+     * Revoke a certificate (VERIFY-05 write side). Authenticated + owner-gated: only an instructor
+     * of the cert's course may revoke it. The row PERSISTS (revoked=true) as a tombstone the public
+     * verify route reads — it is NOT deleted.
+     *
+     * Hardening (157-CONTEXT review_findings #5):
+     *  - owner gate (assertInstructorOfCourse) runs BEFORE any write;
+     *  - idempotent: a repeat revoke keeps the FIRST revoked_at (does not overwrite);
+     *  - atomic: revoked=true + revoked_at + active_idem_key=NULL are persisted together;
+     *  - active_idem_key=NULL (R2-2) frees the UNIQUE slot so a re-issue stays possible;
+     *  - a foreign OR unknown cert returns a UNIFORM 404 (never 403 — no existence oracle),
+     *    consistent with show()/download().
+     *
+     * @NoAdminRequired
+     */
+    public function revoke(string $verificationId): JSONResponse {
+        if ($this->userId === null) {
+            return new JSONResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        // Reject malformed ids before any DB lookup (anti-enumeration / IDOR).
+        if (preg_match(self::UUID_V4, $verificationId) !== 1) {
+            return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
+        }
+
+        try {
+            $cert = $this->certificateMapper->findByVerificationId($verificationId);
+            // Owner gate BEFORE any write. A non-owner (ForbiddenException) and a missing course
+            // (DoesNotExistException) both collapse to the uniform 404 below — no existence oracle.
+            $this->courseService->assertInstructorOfCourse($cert->getCourseId(), $this->userId);
+        } catch (DoesNotExistException | ForbiddenException $e) {
+            return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
+        }
+
+        $cert->setRevoked(true);
+        // Idempotent: keep the FIRST revocation time on a repeat revoke.
+        if ($cert->getRevokedAt() === null) {
+            $cert->setRevokedAt($this->timeFactory->getTime());
+        }
+        // R2-2: free the UNIQUE idempotency slot so a re-issue stays possible.
+        $cert->setActiveIdemKey(null);
+        $this->certificateMapper->update($cert);
+
+        return new JSONResponse(['revoked' => true, 'verification_id' => $verificationId]);
     }
 }

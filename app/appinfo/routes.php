@@ -345,6 +345,7 @@ return [
         ['name' => 'certificate#index',    'url' => '/api/certificates',                          'verb' => 'GET'],
         ['name' => 'certificate#show',     'url' => '/api/certificates/{verificationId}',         'verb' => 'GET'],
         ['name' => 'certificate#download', 'url' => '/api/certificates/{verificationId}/download', 'verb' => 'GET'], // ?format=jsonld(default)|jwt
+        ['name' => 'certificate#revoke',   'url' => '/api/certificates/{verificationId}/revoke',   'verb' => 'POST'], // instructor-owner-gated revoke (VERIFY-05)
 
     ]
 ];

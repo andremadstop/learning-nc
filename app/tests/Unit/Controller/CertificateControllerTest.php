@@ -6,10 +6,12 @@ namespace OCA\Learning\Tests\Unit\Controller;
 use OCA\Learning\Controller\CertificateController;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
+use OCA\Learning\Service\CourseService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 
@@ -44,7 +46,14 @@ class CertificateControllerTest extends TestCase {
     }
 
     private function makeController(?string $userId): CertificateController {
-        return new CertificateController('learning', $this->requestMock, $this->mapperMock, $userId);
+        return new CertificateController(
+            'learning',
+            $this->requestMock,
+            $this->mapperMock,
+            $this->createMock(CourseService::class),
+            $this->createMock(ITimeFactory::class),
+            $userId
+        );
     }
 
     private function makeCert(string $vid, string $userId, string $jwt): Certificate {
