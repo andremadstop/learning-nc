@@ -510,7 +510,7 @@ Plans:
 
 Plans:
 - [x] 157-01-PLAN.md — Wave 1: `revoked_at` migration (Version009200, dormant) + Certificate entity field + cross-DB check. info.xml bump DEFERRED (PROD-SAFETY: would force needsDbUpgrade on a --php-only deploy → live maintenance page; bump + occ upgrade ride the 157-05 provisioning pass). VERIFY-05 foundation. _(16404e0 + 3196785; PHPStan L5 clean, cross-DB GO, jsonSerialize untouched)_
-- [ ] 157-02-PLAN.md — Wave 2: CertificateVerifyService (resolve→key-by-id+status→sig→claim-binding→status precedence→DSGVO DTO) + 8-case TDD (VERIFY-02, VERIFY-03, VERIFY-04, VERIFY-05)
+- [x] 157-02-PLAN.md — Wave 2: CertificateVerifyService (resolve→key-by-id+status→sig→claim-binding→status precedence→DSGVO DTO) + 10-case TDD (VERIFY-02, VERIFY-03, VERIFY-04, VERIFY-05) — **DONE 2026-06-27** (4638e69 RED + 85b6321 GREEN; 10/10 PHPUnit, PHPStan L5 clean, leak grep clean; Codex #1 revoked-key + #2 claim-binding baked in. VERIFY-02..05 NOT flipped — backend-proven, flip at 157 close after live Playwright)
 - [ ] 157-03-PLAN.md — Wave 2 (∥ 157-02): revoke write (owner-gated, idempotent, active_idem_key=NULL) + instructor Widerrufen button in CourseTabTeilnehmer compliance table + i18n (VERIFY-05)
 - [ ] 157-04-PLAN.md — Wave 3: PublicVerifyController (#[PublicPage], UUID precheck, throttle-on-unknown, AnonRateLimit) + pure server-rendered verify.php template (4 status banners + missing-name explainer) + page route + i18n 5 langs (VERIFY-01, VERIFY-02, VERIFY-06)
 - [ ] 157-05-PLAN.md — Wave 4: Playwright logged-out reachability + DOM no-leak (vs LIVE cert recipient) + cross-DB GO + leak-grep phase gate (VERIFY-01, VERIFY-03)
