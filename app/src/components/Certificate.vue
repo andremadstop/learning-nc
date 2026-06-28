@@ -392,9 +392,11 @@ export default {
 		width: 100%;
 	}
 
-	/* Certificate-grade geometry: a centred card on the A4 page, no screen chrome/shadow. */
+	/* Certificate-grade geometry: card fits the A4 printable area (210mm minus 2x18mm margin = 174mm); */
+	/* border-box keeps the 32px padding INSIDE max-width so the outer box cannot overflow the page. */
 	.certificate-card {
-		max-width: 170mm;
+		box-sizing: border-box;
+		max-width: 165mm;
 		margin: 0 auto;
 		box-shadow: none;
 		border: 1px solid #ccc;
