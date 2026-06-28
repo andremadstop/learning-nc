@@ -109,3 +109,7 @@
 - Brainstorm-Entscheidungen: (A) 1 Pool ~18 MCQ über 4 Themen (Phishing/Fake-Shops, Passwörter/2FA, KI-Scams/Deepfakes, Geld-Betrug/Datenschutz). Ton: Rahmung augenzwinkernd, Fragen+Erklärungen sachlich. Cert: ≥70 %, 365d Gültigkeit, Titel „Internet-Mündigkeit 2026 — I am not an idiot test". Content frisch geschrieben (kein NLM-Reuse).
 - **Andre-Einwurf 2026-06-28 (in Spec eingearbeitet):** (1) Kurs ZWEISPRACHIG erstellen — DE **und** EN. (2) **Vor dem nächsten Publishen** alles nochmal gründlich durch Gemini + sehr übel gelaunten Codex (= etabliertes Pre-Live-Gate, `feedback_prelive_review_gate.md`).
 - Spec: `docs/superpowers/specs/2026-06-28-demo-course-i-am-not-an-idiot-design.md`. Danach writing-plans → GSD. Dann user-gated Provisioning-Pass (occ upgrade etc., Regel 15) → Release-Tag.
+
+## [2026-06-28] Review-Rollen-Swap (Andre, einmalig für v5.0.0-Pre-Release-Cross-Check)
+- "Vorzeichen umdrehen": **Gemini reviewt CODE**, **grumpy Codex reviewt DESIGN & UX** — Gegenprobe zum normalen Gate (Codex=Code), vor dem öffentlichen v5.0.0-Store-Publish.
+- Kontext: Codex-Code-Gate fand echten BLOCKER (Expiry trust mutable DB statt signed validUntil) → gefixt (commit 103489c, RELEASE: GO). Jetzt Cross-Lens vor Publish.

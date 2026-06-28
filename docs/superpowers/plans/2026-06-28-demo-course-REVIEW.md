@@ -48,3 +48,29 @@ VERDICT: SHIP
 - Korrekt-Antwort-Positionen verteilt: {1:5, 2:5, 3:4, 4:4} — kein Antwort-Positions-Muster.
 
 **Gate bestanden — Content ist publish-reif.** Live-Gang bleibt der user-gated Provisioning-Pass (Plan Task 4, Regel 15).
+
+---
+
+## Pre-Release Cross-Check (2026-06-28) — role-swap (Andre)
+
+Final gate before public v5.0.0 store publish. Round 1 normal roles (Codex=code) found+fixed
+a real BLOCKER (verify expiry trusted mutable DB expires_at, not signed validUntil — commit
+103489c, RELEASE: GO). Then role-swap requested.
+
+### Gemini → CODE: **RELEASE: GO**
+All release-critical PHP (verify/sign/key/issuance/public-route/did/cert-controller) judged clean;
+praised the EdDSA header-contract gate, sodium_memzero key hygiene, owner-scoped reads, no-oracle
+public route. Independently confirms the code side.
+
+### grumpy Codex → DESIGN/UX: **UX-RELEASE: NO-GO** — real findings (verified against templates)
+- **BLOCKER** verify.php: green "✓ Digital verifiziert" trust badge renders for withdrawn/expired too (lines 133-135, hardcoded green) → make status-aware (only valid = green verified; withdrawn/expired = neutral "signature genuine but no longer valid").
+- **BLOCKER** verify.php: banner white text fails WCAG contrast on withdrawn #e69900 (2.35:1) and borderline green #2f9a48 (3.6:1) → darken withdrawn; (colors are Playwright-asserted → update spec).
+- **MAJOR** verify.php: valid state over-claims for employers (no "verifies the document ID, not the holder's identity") → add a "what this proves / does not prove" block.
+- **MAJOR** verify.php: unknown/invalid gives no decision guidance → "do not accept as verified; request a fresh PDF/QR".
+- **MAJOR** verify.php: DSGVO explainer says ID is "above" but renders below.
+- **MAJOR** demo content + cert title: "I am not an idiot test" reads as victim-shaming on a public cert/LinkedIn → public title "Internet-Mündigkeit 2026" / "Internet Street-Smarts 2026", playful tone inside. (NB: live cert 2/3 currently carry the bare "(DE)/(EN)" title — a deviation from spec §3's intended professional title; would need re-mint to change the SIGNED achievement.name.)
+- **MAJOR** EN content: "legal imprint" is German legal jargon → "seller identity, business address, contact details".
+- **MAJOR** Certificate.vue: print layout not certificate-grade (no A4/Letter sizing/margins/QR mm); cert-ID affordance weak.
+- MINORs: RTL bidi isolation for IDs/dates; "digitale Unterschrift"→"Signatur"; explanation density; romance "attractive profile" wording; LinkedIn CTA label; issuer-logo alt.
+
+**Status:** code GO, UX NO-GO. Public store publish HELD pending UX fixes + the cert-title decision (user's call; also a spec-compliance fix).
