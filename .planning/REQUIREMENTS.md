@@ -42,12 +42,12 @@ Requirements for v5.0.0. Each maps to a roadmap phase (154–157).
 
 ### Public-Verification (VERIFY) — Phase 157
 
-- [ ] **VERIFY-01**: Anyone can verify a certificate via a public URL using its verification-id (no NC login)
-- [ ] **VERIFY-02**: The verify page shows validity status, issuer, course title, and issue/expiry dates
-- [ ] **VERIFY-03**: The verify response omits recipient personal data for unauthenticated callers (DSGVO)
-- [ ] **VERIFY-04**: Verification cryptographically checks the signature against the issuer's published key AND the revocation/expiry status (signature alone ≠ currently valid)
-- [ ] **VERIFY-05**: Instructor can revoke an issued certificate; verification then returns an explicit "withdrawn" status (tombstone, not 404)
-- [ ] **VERIFY-06**: The verify route is rate-limited and validates input format (anti-enumeration / IDOR)
+- [x] **VERIFY-01**: Anyone can verify a certificate via a public URL using its verification-id (no NC login) — *157-04: `publicVerify#verify` GET /verify/{vid} registered outside /api/, `@PublicPage` PHPDoc (attribute 401'd, d05d593). Live logged-out HTTP 200, no /login redirect (fresh Playwright 2026-06-28)*
+- [x] **VERIFY-02**: The verify page shows validity status, issuer, course title, and issue/expiry dates — *157-04: verify.php renders 4-state banner + course + issuer + issued_at/expires_at from CertificateVerifyService::projectDto(); valid/withdrawn/expired visual eyeball deferred to demo-course pass*
+- [x] **VERIFY-03**: The verify response omits recipient personal data for unauthenticated callers (DSGVO) — *157-02/04: projectDto() reads only 6 non-PII fields, never credentialSubject.name; verify is the sole @PublicPage route touching cert data; unit testDtoNoLeak green; DOM whole-body Playwright gate deferred (no live cert)*
+- [x] **VERIFY-04**: Verification cryptographically checks the signature against the issuer's published key AND the revocation/expiry status (signature alone ≠ currently valid) — *157-02: explicit AND-chain (key-by-id+status → sodium detached sig → claim-binding → revocation → expiry); 10/10 PHPUnit incl. revoked-key + claim-substitution discriminators; live e2e rides demo-course pass*
+- [~] **VERIFY-05**: Instructor can revoke an issued certificate; verification then returns an explicit "withdrawn" status (tombstone, not 404) — *157-03: revoke() owner-gated, idempotent (revoked_at-first, active_idem_key=NULL), uniform 404; read returns withdrawn tombstone (200). Code+unit complete. **Live revoke NOT functional until `occ upgrade` applies dormant Version009200 — rides provisioning pass***
+- [x] **VERIFY-06**: The verify route is rate-limited and validates input format (anti-enumeration / IDOR) — *157-04: UUID_V4 precheck before any DB call, malformed==not-found no oracle — live-proven (fresh Playwright 2026-06-28). 429 rate-limit enforcement (#[AnonRateLimit]) live-UNVERIFIED — #1 check in provisioning pass*
 
 ## v2 Requirements (deferred — v5.1)
 
@@ -100,15 +100,15 @@ Requirements for v5.0.0. Each maps to a roadmap phase (154–157).
 | REPORT-02 | 156 | Complete (156-02 UI) |
 | REPORT-03 | 156 | Complete (156-02 UI) |
 | REPORT-04 | 156 | Complete |
-| VERIFY-01 | 157 | Pending |
-| VERIFY-02 | 157 | Pending |
-| VERIFY-03 | 157 | Pending |
-| VERIFY-04 | 157 | Pending |
-| VERIFY-05 | 157 | Pending |
-| VERIFY-06 | 157 | Pending |
+| VERIFY-01 | 157 | Complete (live-proven) |
+| VERIFY-02 | 157 | Complete (visual deferred) |
+| VERIFY-03 | 157 | Complete (DOM gate deferred) |
+| VERIFY-04 | 157 | Complete (backend; live e2e deferred) |
+| VERIFY-05 | 157 | Implemented (live revoke needs occ upgrade — Version009200 dormant) |
+| VERIFY-06 | 157 | Complete (input-validation live-proven; 429 enforcement deferred) |
 
 **Coverage:** 30/30 v1 requirements mapped (PASS 7 → Phase 154, CERT 13 → Phase 155, REPORT 4 → Phase 156, VERIFY 6 → Phase 157)
 
 ---
 *Requirements defined: 2026-06-26*
-*Last updated: 2026-06-27 — Phase 155 close-out: CERT-01..06/09..12 Complete (live-verified); CERT-07/08/13 implemented, visual verify deferred to demo course (user option A)*
+*Last updated: 2026-06-28 — Phase 157 close-out: VERIFY-01/06 live-proven (fresh logged-out Playwright), VERIFY-02/03/04 backend-proven (visual/DOM/live-e2e deferred), VERIFY-05 implemented (live revoke needs occ upgrade — Version009200 dormant). All 6 verified by gsd-verifier → CLOSE. v5.0.0 = 30/30 requirements addressed; live-activation + visual checks ride the authorized demo-course provisioning pass (user option A)*

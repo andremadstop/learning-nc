@@ -1,45 +1,50 @@
-# HANDOFF — Phase 157 Public-Verify (mid-execution)
+# HANDOFF — Phase 157 Public-Verify ✅ CLOSED (+ v5.0.0 feature-complete)
 
-**Stand:** 2026-06-27, Notbremse (Rechner-Shutdown). Branch `feature/v5.0.0-certification`.
+**Stand:** 2026-06-28. Branch `feature/v5.0.0-certification`. (Ersetzt den mid-execution-Stand von 2026-06-27, der durch die Notbremse abgeschnitten wurde.)
+
+> ⚠ **Korrektur zur Vorversion dieses Docs:** Die Zeile „157-05 ⛔ NICHT GESTARTET" war FALSCH — sie wurde in der Shutdown-Hektik aus einem älteren Stand geschrieben. 157-05 war zum Shutdown-Zeitpunkt bereits **code-complete + committet** (`639b2bc`). Die Artefakte (Commit + 21:33-SUMMARY) schlagen das Handoff-Wort. Diese Session hat das verifiziert und den Phase-Close nachgezogen.
 
 ## Wo wir stehen
 
-**Phase 156 (Compliance-Report): ✅ COMPLETE + verified** (8/8 must-haves, REPORT-01..04 done). Abgeschlossen früher in dieser Session. VERIFICATION committed (`aa8427f`).
+**Phasen 154 + 155 + 156 + 157 ALLE COMPLETE → v5.0.0 ist FEATURE-COMPLETE.**
 
-**Phase 157 (Public-Verify): 4 von 5 Plänen ausgeführt, 1 offen.**
-Geplant + plan-checker-verified (passed, 5 Pläne/4 Wellen). Review-Gate (Codex Security + Gemini UX) lief vor der Planung → 8 Härtungs-Constraints in `157-CONTEXT.md` `<review_findings>`.
+Phase 157 (Public-Verify): 5/5 Pläne, 4 Wellen, alle Gate-1 grün. gsd-verifier-Verdikt **CLOSE 6/6** (`157-VERIFICATION.md`, goal-backward gegen die Codebase, nicht gegen die SUMMARYs).
 
-| Plan | Wave | Status | Commits |
-|------|------|--------|---------|
-| 157-01 revoked_at-Migration (Version009200, dormant) + Entity + cross-DB | 1 | ✅ DONE | 16404e0, 3196785, 69a96fa |
-| 157-02 CertificateVerifyService (Sig+key-status+claim-binding+DSGVO-DTO) | 2 | ✅ DONE | 4638e69, 85b6321, 47941bc |
-| 157-03 Revoke-Write (owner-gated, idempotent, active_idem_key=NULL) + Button | 2 | ✅ DONE | f51c3b3, 37e5e23, 5813849 |
-| 157-04 PublicVerifyController + server-template verify.php + i18n×5 | 3 | ✅ DONE | 70c9695, b463bb1, d05d593, 94f0166, eeed1dc |
-| **157-05 Playwright leak/reachability + cross-DB-GO + phase-gate** | 4 | ⛔ **NICHT GESTARTET** | — |
+| Plan | Status | Kern |
+|------|--------|------|
+| 157-01 | ✅ | Version009200 `revoked_at` (DORMANT) + Entity + cross-DB |
+| 157-02 | ✅ | CertificateVerifyService (sig+key-status+claim-binding+DSGVO-DTO), 10/10 PHPUnit |
+| 157-03 | ✅ | Revoke-Write (owner-gated, idempotent) + „Widerrufen"-Button, 13/13 |
+| 157-04 | ✅ | PublicVerifyController (@PublicPage PHPDoc) + verify.php (4 Banner) + i18n×5, 5/5 |
+| 157-05 | ✅ | Playwright logged-out + Phase-Gate-Sweep. **Live re-run 2026-06-28: VERIFY-01 + VERIFY-06 GREEN**, VERIFY-03 gated-skip |
 
-STATE.md: `milestone: v5.0.0` intakt, `completed_plans: 4`, `current_plan: 04`. Alle Gate-1 grün (PHPUnit/PHPStan L5/ESLint 0/i18n parity). Arbeitsbaum sauber bis auf vor-existierende `.planning/INBOX.md`-Mod (nicht von uns).
+REQUIREMENTS VERIFY-01..06 geflippt (ehrliche deferred-Status). STATE/ROADMAP/REQUIREMENTS hand-editiert (gsd-tools korrumpiert v5.0.0-Frontmatter → NIE benutzen).
 
-## NÄCHSTER SCHRITT (genau hier weitermachen)
+## NÄCHSTER SCHRITT — Entscheidung für Andre (kein Auto-Run!)
 
-1. **157-05 ausführen** (gsd-executor, Plan `.planning/phases/157-public-verify/157-05-PLAN.md`). Es schreibt den Playwright logged-out Spec (Reachability + **DOM**-No-Leak) + cross-DB-GO + phpunit cert-suite. **Kein Prod-Mutieren** (occ upgrade / info.xml-Bump / Cert-Mint / 429-curl-loop = deferred auf autorisierten Provisioning-Pass).
-2. Danach macht der **execute-phase-Orchestrator**: gsd-verifier (Phase-Goal) → bei pass `phase complete` (HAND-EDIT, gsd-tools korrumpiert v5.0.0-Frontmatter!) → offer_next.
+**Der gesamte Rest von v5.0.0 ist Prod-Mutation (Regel 15) und MUSS von dir autorisiert werden.** „mach direkt weiter" hat den Phase-Close autorisiert, NICHT Prod-Writes.
 
-## KRITISCHE Carry-forwards (nicht vergessen)
+**Autorisierter Demo-Course-Provisioning-Pass** (User-Option A — Träger aller deferred Checks):
+1. Demo-Kurs „I am not an idiot test" entwerfen (INBOX-Brainstorm) — oder zuerst Throwaway.
+2. `occ upgrade` → wendet die dormant Version009200 `revoked_at` auf Live-PG16 an (⚠ zeigt Live-Usern kurz die Maintenance-Seite — Timing wählen).
+3. info.xml 4.4.8 → bump (reist MIT `occ upgrade`).
+4. Echten Cert auf dem Demo-Kurs minten (genuine Pass-Pipeline).
+5. Dann die gated Checks ungaten/fahren:
+   - **VERIFY-03** Playwright DOM-no-leak: `LIVE_VID` + beide Recipient-Konstanten in `app/tests/e2e/public-verify.spec.js` atomar setzen + psql-Präsenz bestätigen (sonst skip/vacuous).
+   - **VERIFY-06** Live-429-Curl-Loop (⚠ der `#[AnonRateLimit]`-Pfad ist live-UNVERIFIZIERT auf einem Build, wo das Schwester-`#[PublicPage]`-Attribut still gedroppt wurde — **#1-Check**).
+   - **VERIFY-05** credentialed Revoke-Smoke (instructor 200 / non-owner 404 / repeat-keeps-first-revoked_at; bruteforce-reset 172.21.0.1 zuerst).
+   - valid/withdrawn/expired Banner + RTL-Arabisch visuell.
 
-- **Public-Routes brauchen `@PublicPage`-PHPDoc, NICHT das `#[PublicPage]`-Attribut** — Attribut warf live ein 401 logged-out (157-04 empirischer Fund, fix d05d593). Research sagte fälschlich „Attribut mandaten".
-- **Synthetischer Cert `eb97720c` ist ABGERÄUMT** (DB-Row weg). Der DOM-Leak-Test braucht einen frischen Cert ODER eine lokale Render-Fixture mit echtem Namen — sonst **passt der stärkste VERIFY-03-Gate vacuously**. 157-05-Plan adressiert das; Integrity-Guard beachten (Name muss erst nachweislich IM Render-Pfad sein, bevor man Abwesenheit asserted).
-- **info.xml bleibt 4.4.8** (Prod-Safety: Bump → needsDbUpgrade → `--php-only` bricht Live-App). Bump + `occ upgrade` + Migration-Apply (Version009200 dormant) reisen zusammen zum autorisierten Provisioning-Pass.
-- **revoked_at-Migration ist dormant** (Code da, nicht live appliziert). Tombstone-Read liest die Spalte nur im withdrawn-Branch → un-applizierte Migration bricht den VALID-Pfad NICHT.
-- **gsd-tools `state/roadmap`-Commands korrumpieren v5.0.0-Frontmatter** → STATE/ROADMAP/REQUIREMENTS IMMER hand-editieren, `milestone: v5.0.0` prüfen.
-- **VERIFY-01..06 noch NICHT geflippt** — backend-complete, flippen beim 157-Close nach Live-Verify. Visual/credentialed Checks reiten auf dem Demo-Course-Pass (user option A, wie CERT-07/08/13).
+**Danach: v5.0.0-Milestone-Close-Release** — CHANGELOG + git tag + Store-Release (Codeberg). `/gsd:complete-milestone`.
+
+## Offene INBOX-Entscheidungen (nicht-blockierend)
+- **python3-cryptography im Live-Container devcloud-app** (155-03 installiert, non-persistent): (a) lassen / (b) revert / (c) ins Image backen. Claude-Vorschlag (c). Hängt am Provisioning-Pass (Independent-Verifier braucht es).
+- **Demo-Kurs „I am not an idiot test"** — Brainstorm + Content-Quelle (NotebookLM-Reuse).
+
+## Carry-forwards (nicht verlieren)
+- Public-Routes: `@PublicPage`-**PHPDoc**, NICHT das `#[PublicPage]`-**Attribut** (warf live 401, d05d593).
+- Revocation ist HEUTE NICHT live-funktional (Version009200 dormant) — erst nach `occ upgrade`.
 - `.planning/phases/` ist gitignored → SUMMARYs/VERIFICATION mit `git add -f`.
 
-## Offene Milestone-Carry-forwards (v5.0.0 Close)
-
-- info.xml 4.4.8 → echter v5.0.0-Release-Bump (CHANGELOG + git tag) beim Milestone-Close.
-- 156 Alt-Befund (Codex): `CertificateReportService::decodePayload` liest UNGEPRÜFTEN JWT-Payload → manipulierte DB-Row fälscht Compliance-Report. Mitigation: 157er `CertificateVerifyService` ist die reusable verify-before-decode-Primitive, die 156 später adoptieren kann. 156 NICHT wieder aufgemacht.
-- Demo-Course „I am not an idiot test" (INBOX) — Träger für alle deferred visual/live Checks.
-
-## Resume-Befehl
-
-`/gsd:execute-phase 157` (findet 157-01..04 SUMMARYs → skippt sie → resumed bei 157-05 → Wave 4 → verifier → phase complete).
+## Resume
+Frische Session: lies STATE.md + dieses Doc. Wenn Provisioning-Pass autorisiert → Demo-Kurs zuerst. Sonst → `/gsd:complete-milestone` vorbereiten (aber Live-Checks bleiben dann deferred).

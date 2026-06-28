@@ -33,7 +33,7 @@
 - ✅ **v4.1.0 Social Learning & Consolidation** — Phases 135-143 (shipped 2026-04-04)
 - ✅ **v4.2.0 Lehrplan-Timeline + Admin-Werkzeuge** — Phases 144-148 (shipped 2026-04-08)
 - ✅ **v4.4.0 Character & Personality** — Phases 149-153 (shipped 2026-04-27)
-- 🚧 **v5.0.0 Certification-as-a-Service** — Phases 154-157 (active)
+- 🚧 **v5.0.0 Certification-as-a-Service** — Phases 154-157 ALL COMPLETE (feature-complete; pending authorized demo-course provisioning pass + release bump/tag)
 - 📋 **v4.3.0 Onboarding & Content Intelligence** — Phases TBD (deferred — after v5.0.0)
 - 📋 **v6.0.0 Universal Learning Platform (Vision)** — Phases TBD
 
@@ -63,7 +63,7 @@ Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMEN
 - [x] **Phase 154: Pass-Definition** — Hard pass criterion per course, lucky-guess exclusion, student status, audit event
 - [x] **Phase 155: Certificate-Artifact & Issuer** — Ed25519 keypair + did:web + OB3/VC issuance + print/QR/download/LinkedIn _(7/7 plans; issuer provisioned live on devcloud, 10/13 CERT reqs live-verified end-to-end; CERT-07/08/13 implemented + Vitest/build-proven, visual eyeball deferred to demo course — user option A, non-blocking)_
 - [x] **Phase 156: Compliance-Report** — Instructor CSV export, date/expiry filters, DSGVO-safe (runs parallel with 157) _(2/2 plans; backend 156-01 + UI 156-02; all 4 REPORT reqs Complete; live credentialed Gate 2 + visual check ride the demo-course pass)_
-- [ ] **Phase 157: Public-Verify** — Public @PublicPage verify route, signature + revocation check, rate-limit (runs parallel with 156)
+- [x] **Phase 157: Public-Verify** — Public @PublicPage verify route, signature + revocation check, rate-limit (runs parallel with 156) _(5/5 plans, 4 waves; gsd-verifier CLOSE 6/6. VERIFY-01/06 live-proven, VERIFY-02/03/04 backend-proven, VERIFY-05 implemented (live revoke needs occ upgrade — Version009200 dormant). Live-activation + visual/credentialed/429 smokes ride the demo-course provisioning pass, user option A)_
 
 ## v6.0.0 — Universal Learning Platform (Vision)
 
@@ -513,7 +513,7 @@ Plans:
 - [x] 157-02-PLAN.md — Wave 2: CertificateVerifyService (resolve→key-by-id+status→sig→claim-binding→status precedence→DSGVO DTO) + 10-case TDD (VERIFY-02, VERIFY-03, VERIFY-04, VERIFY-05) — **DONE 2026-06-27** (4638e69 RED + 85b6321 GREEN; 10/10 PHPUnit, PHPStan L5 clean, leak grep clean; Codex #1 revoked-key + #2 claim-binding baked in. VERIFY-02..05 NOT flipped — backend-proven, flip at 157 close after live Playwright)
 - [x] 157-03-PLAN.md — Wave 2 (∥ 157-02): revoke write (owner-gated, idempotent, active_idem_key=NULL) + instructor Widerrufen button in CourseTabTeilnehmer compliance table + i18n (VERIFY-05) — **DONE 2026-06-27** (f51c3b3 endpoint+route+REAL-gate test + 37e5e23 button+i18n; CertificateController::revoke() @NoAdminRequired, uniform 404, atomic revoked+revoked_at-first+active_idem_key=NULL; 13/13 PHPUnit incl. update->never() gate-before-write, PHPStan L5 clean, ESLint 0, i18n parity, Vitest 26. VERIFY-05 NOT flipped — live credentialed revoke smoke rides demo-course pass)
 - [x] 157-04-PLAN.md — Wave 3: PublicVerifyController (@PublicPage PHPDoc — NOT the #[PublicPage] attribute, which 401'd logged-out — UUID precheck, throttle-on-unknown, #[AnonRateLimit]) + pure server-rendered verify.php template (4 status banners + DSGVO missing-name explainer) + page route + i18n 5 langs (VERIFY-01, VERIFY-02, VERIFY-06) — **DONE 2026-06-27** (70c9695 RED + b463bb1 GREEN + d05d593 fix-public-route + 94f0166 template+i18n; 5/5 PHPUnit, PHPStan L5 clean, ESLint 0, i18n parity 2260×5, leak grep clean. LIVE logged-out HTTP 200 + malformed==not-found no-oracle; valid-render proven via non-mutating in-container render smoke — synthetic cert was cleaned up, no prod mint. VERIFY-01/02/06 NOT flipped — flip at 157 close after 157-05 provisioning)
-- [ ] 157-05-PLAN.md — Wave 4: Playwright logged-out reachability + DOM no-leak (vs LIVE cert recipient) + cross-DB GO + leak-grep phase gate (VERIFY-01, VERIFY-03)
+- [x] 157-05-PLAN.md — Wave 4: Playwright logged-out reachability + DOM no-leak (vs LIVE cert recipient) + cross-DB GO + leak-grep phase gate (VERIFY-01, VERIFY-03) — **DONE 2026-06-27, CLOSED 2026-06-28** (639b2bc spec + public-verify project; live re-run 2026-06-28: VERIFY-01 + VERIFY-06 GREEN, VERIFY-03 DOM gate self-skips until a real cert is provisioned; PHPUnit 22/22, cross-DB GO incl. revoked_at, leak-grep clean, PHPStan L5, ESLint 0)
 
 > **Wave structure:** W1 = 157-01 (migration foundation). W2 = 157-02 ‖ 157-03 (parallel — verify service vs revoke controller, no shared files). W3 = 157-04 (depends 157-02 service + 157-03 shared routes.php/i18n). W4 = 157-05 (e2e + phase gate). Live `occ upgrade` apply + credentialed/visual smokes deferred to the authorized demo-course provisioning pass (user option A).
 
@@ -549,4 +549,4 @@ Plans:
 | 154. Pass-Definition | v5.0.0 | 5/5 | Complete | 2026-06-26 |
 | 155. Certificate-Artifact & Issuer | v5.0.0 | 7/7 | Complete (CERT-07/08/13 visual verify deferred to demo course) | 2026-06-27 |
 | 156. Compliance-Report | v5.0.0 | 2/2 | Complete (156-01 backend + 156-02 UI; all 4 REPORT reqs done) | - |
-| 157. Public-Verify | v5.0.0 | 4/5 | In Progress (W1+W2+W3 done; 157-04 PublicVerifyController + verify.php; W4 = 157-05 Playwright + provisioning) | - |
+| 157. Public-Verify | v5.0.0 | 5/5 | ✅ Complete (4 waves; gsd-verifier CLOSE 6/6; live-activation rides demo-course provisioning pass) | 157-VERIFICATION.md |

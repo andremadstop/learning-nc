@@ -86,3 +86,20 @@
 - [2026-03-26] ✓ VirtuProf Token-Fix, Duell-Invite Dismiss
 - [2026-03-27] ✓ Yolo-Mode Phasen 87-89 (Talk, Manifest, Cross-App)
 - [2026-03-29] ✓ Kurs-API 403, E2E Mission Claim, CourseController Error-Handling, VirtuProf l10n
+
+## [2026-06-27] Offen: python3-cryptography im Live-Container devcloud-app
+- 155-03-Executor hat `apt-get install python3-cryptography` (43.0.0) als root im **Live-Prod-Container devcloud-app** (Relay, bedient echte Kursteilnehmer) ausgeführt — für den Independent-Verify-Test (scripts/verify-credential.py).
+- Harmlos + orthogonal zur PHP-Runtime, aber **nicht persistent** (Rebuild verwirft).
+- Auch 155-07 Independent-Verify-Gate braucht diese Dep.
+- **Entscheidung nötig:** (a) lassen / (b) revert / (c) ins Image backen.
+- Claude-Vorschlag: (c) für Reproduzierbarkeit (Dockerfile/compose-Eintrag). Infra-Scope → Andre entscheidet. Blockt Wave 4–6 nicht; vor 155-07 klären.
+
+## [2026-06-27] Demo-Kurs-Idee (brainstorm später) — Andre
+- Wenn 155 fertig: Muster-/Demo-Kurs entwerfen + Demo-Zertifikat ausstellen (erster echter Cert-Case).
+- Erste Idee Telos (User lernt Telos-Prinzip + bekommt eigenes Telos-File) → Andre: "vielleicht zu ambitioniert".
+- **Favorit:** witziger **"I am not an idiot test"** — das Wichtigste, was man als User 2026 übers Internet wissen muss, um nicht abgezockt zu werden. Spielerisch, nützlich, breit anschlussfähig.
+- **Content-Quelle:** vorhandener NotebookLM-Content wiederverwenden, oder die jeweiligen Notebooks zur Kursmaterial-Erstellung nutzen. → eigener Brainstorm.
+- Claude-Vorschlag: Der Demo-Kurs ist gleichzeitig der ideale Ort für den visuellen 155-06-UI-Check (Certificate.vue render/print/QR/LinkedIn mit echtem Student). Throwaway ZZ-TEST-Kurs (59) braucht's dann nicht mehr.
+
+## [2026-06-27] ✓ Erledigt: ZZ-TEST Throwaway abgeräumt
+- User zz-test-cert155, Kurs 59, Pool 160, Cert, Notification, geseedete Rows alle gelöscht (DB-Transaction + occ user:delete). Verifiziert: 0 Certs, Issuer-Key intakt, did.json 200.
