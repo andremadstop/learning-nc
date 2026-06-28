@@ -118,4 +118,14 @@
 - Die Onboarding-Figur ("Hi Demo, bereit für deine Mission?" — blaue Chibi-Figur) sieht schlecht aus.
 - **Andre: "Die müssen ALLE nochmal angeschaut und überarbeitet werden"** — gilt für die ganze Avatar-/Figuren-Familie, nicht nur die eine.
 - Bezug: `feedback_avatar_design.md` (Chibi-Familie), geparktes "v4.5.0 Avatar-Skins". → eigener Design-Durchgang, NICHT Teil v5.0.0-Release.
-- Nächster Schritt: Avatar-Assets inventarisieren (wo überall genutzt: Onboarding-Mission, Dashboard, VirtuProf?), dann Redesign brainstormen.
+
+### ✅ ERLEDIGT 2026-06-28 (Erklärbot-Avatare) — deployed
+- Scope geklärt mit Andre: gemeint waren die **Erklärbot-/VirtuProf-Avatare** (wählbare Skins), nicht der gamifizierte Kampagnen-Modus.
+- **Nova** (Default-Skin) komplett neu als **AI-Chibi** (war geometrischer Roboter): menschlicher Chibi + AR-Akzente (glühende Cyan-Augen, Headset+Antenne, Holo-Würfel, schwebende Bits). `nova/NovaAvatar.vue` von Sub-Komponenten auf einzelnes Chibi-SVG umgeschrieben (Props + nova-states/reaction-engine unangetastet → Tests grün).
+- **Theoretiker/Kosmologe/Popularisierer** poliert (Gradient-Schattierung, größere Augen, Wangen, hellere Signature-Akzente). SIGNOFF.md ergänzt, forbidden-names-Gate grün ("cosmos" aus EN-Kommentaren raus). Prof. Lern = unverändert (Referenz).
+- Gates grün (ESLint 0, Vitest 1119), **deployed --js-only auf devcloud** (live-verifiziert: `nova-cube-glow`/`th-energy` im Bundle). Desktop-Preview: `~/Schreibtisch/learning-nc-avatare-preview.png`.
+
+### ⏸ GEPARKT: Kampagnen-Figuren (11, AbenteuerMode-NPCs)
+- Andre (2026-06-28): "dachte wir arbeiten nur an den Erklärbot-Avataren, wenn die gut sind reicht das" → **bewusst NICHT gemacht.**
+- Rendern weiter als flache Silhouetten (`CharacterAvatar.vue` prozedural). 2 Prototyp-Chibis (architect-Roboter + klaus_dau-Mensch) gebaut + wieder **reverted** (sonst 2/11 schön vs 9 Silhouetten = inkonsistent).
+- Reaktivierbarer Ansatz: parametrisches Chibi-System (`campaign-chibis.js` + CharacterAvatar-Dispatch, Struktur g#body/g#head/g#arms wahren wg. Tests; Helden=Roboter, Büro=Menschen, ghostline=Kapuze). Genutzt in CampaignCard(72px)/DialogueStage+DauBotDialog(64px)/GameHud(36px)/ModeIdentityBanner(28px).

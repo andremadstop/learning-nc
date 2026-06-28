@@ -18,56 +18,81 @@
 
         <defs>
           <radialGradient id="pop-galaxy" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#ff7ad6" stop-opacity="0.95" />
-            <stop offset="55%" stop-color="#a83a8a" stop-opacity="0.55" />
+            <stop offset="0%" stop-color="#ffc2ec" stop-opacity="0.98" />
+            <stop offset="45%" stop-color="#d44fb0" stop-opacity="0.8" />
             <stop offset="100%" stop-color="#1a2535" stop-opacity="0" />
+          </radialGradient>
+          <radialGradient id="pop-skin" cx="40%" cy="30%" r="78%">
+            <stop offset="0%" stop-color="#ffdcb8" />
+            <stop offset="62%" stop-color="#f3c7a6" />
+            <stop offset="100%" stop-color="#e0a87f" />
+          </radialGradient>
+          <linearGradient id="pop-vest" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#bd4a9d" />
+            <stop offset="100%" stop-color="#8c2c74" />
+          </linearGradient>
+          <radialGradient id="pop-aura" cx="50%" cy="42%" r="58%">
+            <stop offset="0%" stop-color="#ff7ad6" stop-opacity="0.28" />
+            <stop offset="100%" stop-color="#ff7ad6" stop-opacity="0" />
           </radialGradient>
         </defs>
 
+        <!-- Star-glow aura (power-element) -->
+        <ellipse cx="30" cy="34" rx="29" ry="32" fill="url(#pop-aura)" />
+
         <!-- Magenta vest body -->
-        <rect x="14" y="40" width="32" height="32" rx="6" fill="#a83a8a" />
+        <rect x="14" y="40" width="32" height="32" rx="6" fill="url(#pop-vest)" />
         <!-- Vest collar V (deeper magenta) -->
         <path d="M 22 40 L 30 50 L 38 40" fill="#6f1f5e" stroke="#4a1240" stroke-width="0.5" stroke-linejoin="round" />
+        <!-- Golden rim light on shoulders -->
+        <path d="M 14 46 Q 14 40 20 40 M 40 40 Q 46 40 46 46" fill="none" stroke="#ffd96b" stroke-width="0.9" stroke-linecap="round" opacity="0.5" />
         <!-- Star pattern on vest -->
         <g class="vest-stars">
-          <circle cx="20" cy="56" r="1" fill="#f2c230" />
-          <circle cx="40" cy="56" r="1" fill="#f2c230" />
-          <circle cx="22" cy="64" r="0.8" fill="#f2c230" />
-          <circle cx="38" cy="64" r="0.8" fill="#f2c230" />
-          <circle cx="30" cy="60" r="1.2" fill="#f2c230" />
-          <circle cx="30" cy="68" r="0.9" fill="#f2c230" />
+          <circle cx="20" cy="56" r="1" fill="#ffd96b" />
+          <circle cx="40" cy="56" r="1" fill="#ffd96b" />
+          <circle cx="22" cy="64" r="0.8" fill="#ffd96b" />
+          <circle cx="38" cy="64" r="0.8" fill="#ffd96b" />
+          <circle cx="30" cy="68" r="0.9" fill="#ffd96b" />
         </g>
 
-        <!-- Mini-Galaxie statt Buch -->
+        <!-- Mini-Galaxie statt Buch (brighter Kosmos projection) -->
         <g data-prof-feature="book">
-          <circle cx="30" cy="56" r="9" fill="url(#pop-galaxy)" />
+          <circle cx="30" cy="56" r="10" fill="url(#pop-galaxy)" />
+          <!-- Orbital ring -->
+          <ellipse cx="30" cy="56" rx="11" ry="3.6" fill="none" stroke="#ffd0f0" stroke-width="0.8" opacity="0.75" transform="rotate(16 30 56)" />
           <circle cx="26" cy="53" r="0.8" fill="#fff" />
-          <circle cx="33" cy="55" r="0.6" fill="#f2c230" />
+          <circle cx="33" cy="55" r="0.6" fill="#ffd96b" />
           <circle cx="29" cy="59" r="0.5" fill="#fff" />
-          <circle cx="35" cy="51" r="0.7" fill="#ff7ad6" />
-          <circle cx="24" cy="58" r="0.5" fill="#f2c230" />
+          <circle cx="35" cy="51" r="0.7" fill="#ffd0f0" />
+          <circle cx="24" cy="58" r="0.5" fill="#ffd96b" />
+          <circle cx="31" cy="52" r="0.5" fill="#fff" />
           <!-- Hands holding the galaxy -->
-          <ellipse cx="20" cy="60" rx="3.2" ry="2.4" fill="#f3c7a6" />
-          <ellipse cx="40" cy="60" rx="3.2" ry="2.4" fill="#f3c7a6" />
+          <ellipse cx="19.5" cy="60" rx="3.2" ry="2.4" fill="url(#pop-skin)" />
+          <ellipse cx="40.5" cy="60" rx="3.2" ry="2.4" fill="url(#pop-skin)" />
         </g>
 
         <!-- Wave-Arm -->
         <g ref="armRef" class="wave-arm">
-          <path d="M 42 42 Q 52 34 50 24" stroke="#f3c7a6" stroke-width="4.5" fill="none" stroke-linecap="round" />
-          <circle cx="50" cy="22" r="4" fill="#f3c7a6" />
+          <path d="M 42 42 Q 52 34 50 24" stroke="#f0bf9a" stroke-width="4.5" fill="none" stroke-linecap="round" />
+          <circle cx="50" cy="22" r="4" fill="url(#pop-skin)" />
         </g>
 
         <!-- Head -->
-        <circle cx="30" cy="28" r="16" fill="#f3c7a6" />
-        <ellipse cx="14.5" cy="28" rx="2" ry="2.8" fill="#ecb48f" />
-        <ellipse cx="45.5" cy="28" rx="2" ry="2.8" fill="#ecb48f" />
+        <circle cx="30" cy="28" r="16" fill="url(#pop-skin)" />
+        <ellipse cx="14.5" cy="28" rx="2" ry="2.8" fill="#e6ab82" />
+        <ellipse cx="45.5" cy="28" rx="2" ry="2.8" fill="#e6ab82" />
+        <!-- Warm cheeks -->
+        <ellipse cx="21" cy="32.5" rx="2.6" ry="1.7" fill="#f0a07a" opacity="0.45" />
+        <ellipse cx="39" cy="32.5" rx="2.6" ry="1.7" fill="#f0a07a" opacity="0.45" />
 
         <!-- Hair (short, dark with magenta highlight) -->
         <g class="hair">
           <path d="M 16 18 Q 18 8 26 9 Q 30 5 34 9 Q 42 8 44 18 Q 44 22 42 22 L 18 22 Q 16 22 16 18 Z"
                 fill="#2a2326" stroke="#16110f" stroke-width="0.6" stroke-linejoin="round" />
           <!-- Magenta streak -->
-          <path d="M 30 9 Q 33 6 37 12" stroke="#a83a8a" stroke-width="1.6" fill="none" stroke-linecap="round" />
+          <path d="M 30 9 Q 33 6 37 12" stroke="#d44fb0" stroke-width="1.7" fill="none" stroke-linecap="round" />
+          <!-- highlight sheen -->
+          <path d="M 20 13 Q 26 9 32 12" fill="none" stroke="#4a4045" stroke-width="1" stroke-linecap="round" opacity="0.7" />
           <!-- Sideburn hint -->
           <path d="M 16 22 Q 14 28 17 30" stroke="#2a2326" stroke-width="2" fill="none" stroke-linecap="round" />
           <path d="M 44 22 Q 46 28 43 30" stroke="#2a2326" stroke-width="2" fill="none" stroke-linecap="round" />
@@ -75,21 +100,21 @@
 
         <!-- Eyebrows (warm, slightly raised) -->
         <g class="eyebrows">
-          <path d="M 19.5 21.5 Q 23.5 18.5 27.5 21" stroke="#2a2326" stroke-width="1.6" fill="none" stroke-linecap="round" />
-          <path d="M 32.5 21 Q 36.5 18.5 40.5 21.5" stroke="#2a2326" stroke-width="1.6" fill="none" stroke-linecap="round" />
+          <path d="M 19.3 21.3 Q 23.5 18.3 27.7 20.8" stroke="#2a2326" stroke-width="1.7" fill="none" stroke-linecap="round" />
+          <path d="M 32.3 20.8 Q 36.5 18.3 40.7 21.3" stroke="#2a2326" stroke-width="1.7" fill="none" stroke-linecap="round" />
         </g>
 
         <!-- Eyes (forward, engaged) -->
         <g class="pupils" data-prof-feature="pupils" :style="pupilsStyle">
-          <ellipse cx="24" cy="27" rx="3.6" ry="3.0" fill="white" />
-          <circle cx="24" cy="27" r="2.0" fill="#7c4a2a" />
-          <circle cx="24" cy="27" r="1.2" fill="#1a2535" />
-          <circle cx="25" cy="26" r="0.6" fill="white" opacity="0.9" />
+          <ellipse cx="24" cy="27" rx="3.8" ry="3.2" fill="white" />
+          <circle cx="24" cy="27" r="2.1" fill="#7c4a2a" />
+          <circle cx="24" cy="27" r="1.25" fill="#1a2535" />
+          <circle cx="25.1" cy="25.9" r="0.7" fill="white" opacity="0.95" />
 
-          <ellipse cx="36" cy="27" rx="3.6" ry="3.0" fill="white" />
-          <circle cx="36" cy="27" r="2.0" fill="#7c4a2a" />
-          <circle cx="36" cy="27" r="1.2" fill="#1a2535" />
-          <circle cx="37" cy="26" r="0.6" fill="white" opacity="0.9" />
+          <ellipse cx="36" cy="27" rx="3.8" ry="3.2" fill="white" />
+          <circle cx="36" cy="27" r="2.1" fill="#7c4a2a" />
+          <circle cx="36" cy="27" r="1.25" fill="#1a2535" />
+          <circle cx="37.1" cy="25.9" r="0.7" fill="white" opacity="0.95" />
         </g>
 
         <!-- Smile (warm-charismatic) -->
@@ -102,12 +127,20 @@
           <path d="M 27 38 Q 30 44 33 38 Q 31 41 30 41 Q 29 41 27 38 Z" fill="#2a2326" />
         </g>
 
+        <!-- Floating star sparks (power-element) -->
+        <g class="energy-glyphs" aria-hidden="true">
+          <path d="M 8 15 L 8 12 M 6.5 13.5 L 9.5 13.5" stroke="#ffd96b" stroke-width="0.7" stroke-linecap="round" />
+          <circle cx="52" cy="13" r="1.3" fill="#ffd0f0" />
+          <circle cx="52" cy="13" r="0.5" fill="#fff" />
+          <path d="M 53 33 L 53 31 M 52 32 L 54 32" stroke="#ffd96b" stroke-width="0.6" stroke-linecap="round" />
+        </g>
+
         <!-- Celebrate particles -->
         <g class="celebrate-particles">
           <circle cx="7"  cy="22" r="2"   fill="#ff7ad6" />
-          <circle cx="53" cy="18" r="1.6" fill="#f2c230" />
+          <circle cx="53" cy="18" r="1.6" fill="#ffd96b" />
           <circle cx="30" cy="5"  r="1.8" fill="#a83a8a" />
-          <circle cx="5"  cy="42" r="1.5" fill="#f2c230" />
+          <circle cx="5"  cy="42" r="1.5" fill="#ffd96b" />
           <circle cx="55" cy="40" r="2"   fill="#ff7ad6" />
         </g>
       </svg>
