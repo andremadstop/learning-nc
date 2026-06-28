@@ -106,29 +106,45 @@
           <circle cx="35" cy="3" r="1.2" fill="#7df0ff" />
         </g>
 
-        <!-- Eyebrows -->
+        <!-- Eyebrows (emotion-aware) -->
         <g class="eyebrows">
-          <path d="M 19.6 21.6 Q 23.6 19.4 27.6 21.4" stroke="#1c3a44" stroke-width="1.4" fill="none" stroke-linecap="round" />
-          <path d="M 32.4 21.4 Q 36.4 19.4 40.4 21.6" stroke="#1c3a44" stroke-width="1.4" fill="none" stroke-linecap="round" />
+          <path :d="browPaths[0]" stroke="#1c3a44" stroke-width="1.4" fill="none" stroke-linecap="round" />
+          <path :d="browPaths[1]" stroke="#1c3a44" stroke-width="1.4" fill="none" stroke-linecap="round" />
         </g>
 
-        <!-- Glowing cyan eyes -->
+        <!-- Glowing cyan eyes (emotion-aware) -->
         <g class="pupils" data-prof-feature="pupils" :style="pupilsStyle">
-          <circle cx="24" cy="27" r="3.2" fill="#2bd0ee" opacity="0.25" />
-          <ellipse cx="24" cy="27" rx="3.8" ry="3.2" fill="white" />
-          <circle cx="24" cy="27" r="2.2" fill="#17c2e6" />
-          <circle cx="24" cy="27" r="1.2" fill="#0a3a47" />
-          <circle cx="25.1" cy="25.9" r="0.75" fill="white" opacity="0.95" />
+          <!-- sleep: closed dashes -->
+          <template v-if="face === 'sleep'">
+            <path d="M 20.5 27 L 27.5 27" stroke="#17c2e6" stroke-width="1.7" stroke-linecap="round" />
+            <path d="M 32.5 27 L 39.5 27" stroke="#17c2e6" stroke-width="1.7" stroke-linecap="round" />
+          </template>
+          <!-- happy / celebrate: upward arcs (^ ^) -->
+          <template v-else-if="face === 'happy' || face === 'celebrate'">
+            <circle cx="24" cy="27" r="3.2" fill="#2bd0ee" opacity="0.22" />
+            <circle cx="36" cy="27" r="3.2" fill="#2bd0ee" opacity="0.22" />
+            <path d="M 20.5 28.6 Q 24 23.8 27.5 28.6" stroke="#17c2e6" stroke-width="1.9" fill="none" stroke-linecap="round" />
+            <path d="M 32.5 28.6 Q 36 23.8 39.5 28.6" stroke="#17c2e6" stroke-width="1.9" fill="none" stroke-linecap="round" />
+          </template>
+          <!-- round eyes: neutral / surprised / sad -->
+          <template v-else>
+            <circle cx="24" cy="27" :r="eyeGlowR" fill="#2bd0ee" opacity="0.25" />
+            <ellipse cx="24" cy="27" :rx="eyeRx" :ry="eyeRy" fill="white" />
+            <circle cx="24" :cy="pupilCy" r="2.2" fill="#17c2e6" />
+            <circle cx="24" :cy="pupilCy" r="1.2" fill="#0a3a47" />
+            <circle cx="25.1" :cy="pupilCy - 1.1" r="0.75" fill="white" opacity="0.95" />
 
-          <circle cx="36" cy="27" r="3.2" fill="#2bd0ee" opacity="0.25" />
-          <ellipse cx="36" cy="27" rx="3.8" ry="3.2" fill="white" />
-          <circle cx="36" cy="27" r="2.2" fill="#17c2e6" />
-          <circle cx="36" cy="27" r="1.2" fill="#0a3a47" />
-          <circle cx="37.1" cy="25.9" r="0.75" fill="white" opacity="0.95" />
+            <circle cx="36" cy="27" :r="eyeGlowR" fill="#2bd0ee" opacity="0.25" />
+            <ellipse cx="36" cy="27" :rx="eyeRx" :ry="eyeRy" fill="white" />
+            <circle cx="36" :cy="pupilCy" r="2.2" fill="#17c2e6" />
+            <circle cx="36" :cy="pupilCy" r="1.2" fill="#0a3a47" />
+            <circle cx="37.1" :cy="pupilCy - 1.1" r="0.75" fill="white" opacity="0.95" />
+          </template>
         </g>
 
-        <!-- Friendly smile -->
-        <path class="mouth" d="M 24.5 34 Q 30 38.5 35.5 34" stroke="#2a4a55" stroke-width="1.5" fill="none" stroke-linecap="round" />
+        <!-- Mouth (emotion-aware) -->
+        <ellipse v-if="face === 'surprised'" class="mouth" cx="30" cy="35.6" rx="2" ry="2.6" fill="#2a4a55" />
+        <path v-else class="mouth" :d="mouthPath" stroke="#2a4a55" stroke-width="1.5" fill="none" stroke-linecap="round" />
 
         <!-- Floating holo-bits (Nova signature) -->
         <g class="energy-glyphs" aria-hidden="true">
@@ -178,6 +194,53 @@ export default {
 		}
 	},
 	computed: {
+		// Emotion drives the face (set by novaReactionEngine via VirtuProf → SkinRenderer).
+		// Vocabulary: neutral | happy | sad | surprised | sleep | celebrate.
+		face() {
+			const valid = ['neutral', 'happy', 'sad', 'surprised', 'sleep', 'celebrate']
+			return valid.includes(this.emotion) ? this.emotion : 'neutral'
+		},
+		eyeRx() {
+			return this.face === 'surprised' ? 4.3 : 3.8
+		},
+		eyeRy() {
+			return this.face === 'surprised' ? 3.7 : 3.2
+		},
+		eyeGlowR() {
+			return this.face === 'surprised' ? 3.7 : 3.2
+		},
+		pupilCy() {
+			// Sad looks down a touch.
+			return this.face === 'sad' ? 28.2 : 27
+		},
+		browPaths() {
+			switch (this.face) {
+			case 'surprised':
+				return ['M 19.6 19.4 Q 23.6 17.2 27.6 19.2', 'M 32.4 19.2 Q 36.4 17.2 40.4 19.4']
+			case 'sad':
+				// Worried: inner ends raised.
+				return ['M 19.6 21.4 Q 23.6 21.2 27.6 19.4', 'M 32.4 19.4 Q 36.4 21.2 40.4 21.4']
+			case 'happy':
+			case 'celebrate':
+				return ['M 19.6 20.8 Q 23.6 18.8 27.6 20.6', 'M 32.4 20.6 Q 36.4 18.8 40.4 20.8']
+			default:
+				return ['M 19.6 21.6 Q 23.6 19.4 27.6 21.4', 'M 32.4 21.4 Q 36.4 19.4 40.4 21.6']
+			}
+		},
+		mouthPath() {
+			switch (this.face) {
+			case 'happy':
+				return 'M 23.5 33.5 Q 30 40 36.5 33.5'
+			case 'celebrate':
+				return 'M 23 33 Q 30 41 37 33'
+			case 'sad':
+				return 'M 25 37 Q 30 33.5 35 37'
+			case 'sleep':
+				return 'M 27 35.5 Q 30 36.6 33 35.5'
+			default:
+				return 'M 24.5 34 Q 30 38.5 35.5 34'
+			}
+		},
 		pupilsStyle() {
 			return `transform: translate(${this.pupilOffsetX}px, ${this.pupilOffsetY}px);`
 		},
