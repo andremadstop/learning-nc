@@ -1,0 +1,182 @@
+[
+  {
+    "text": "Eine SMS von „DHL\" sagt, dein Paket hänge im Zoll fest — klick auf den Link und zahl 2,99 € Gebühr, sonst gehe es zurück. Was tust du?",
+    "answers": [
+      {"text": "Sofort über den Link zahlen — 2,99 € sind ja kaum der Rede wert", "is_correct": false},
+      {"text": "Den Link ignorieren und, falls ich wirklich ein Paket erwarte, direkt in der echten DHL-App oder -Website mit der Sendungsnummer nachsehen", "is_correct": true},
+      {"text": "Auf die SMS antworten und nach Details fragen", "is_correct": false},
+      {"text": "Den Link öffnen, um zu schauen — zahlen tue ich erst, wenn die Seite echt aussieht", "is_correct": false}
+    ],
+    "explanation": "Echte Paketdienste verlangen keine Zollgebühren per SMS-Link. Solches „Smishing\" will Kartendaten abgreifen. Sendungen immer nur über die offizielle App/Website mit der Tracking-Nummer prüfen — nie über den Link aus der Nachricht."
+  },
+  {
+    "text": "Welches Merkmal entlarvt eine Phishing-Mail deiner „Bank\" am zuverlässigsten?",
+    "answers": [
+      {"text": "Die Mail enthält das Bank-Logo", "is_correct": false},
+      {"text": "Die Mail ist fehlerfrei auf Deutsch verfasst", "is_correct": false},
+      {"text": "Die Mail kam an einem Werktag an", "is_correct": false},
+      {"text": "Die Mail fordert dich auf, über einen Link sofort deine Zugangsdaten zu „bestätigen\", sonst werde das Konto gesperrt", "is_correct": true}
+    ],
+    "explanation": "Banken bitten nie per Mail-Link um Passwort- oder PIN-„Bestätigung\" und drohen nicht mit sofortiger Sperre. Logos und fehlerfreie Sprache sind kein Echtheitsbeweis — die kann jeder kopieren. Im Zweifel die Bank-App oder die selbst getippte Bank-Adresse nutzen, nie den Mail-Link."
+  },
+  {
+    "text": "Ein Online-Shop bietet die begehrte Spielkonsole 70 % günstiger als überall sonst. Woran erkennst du am ehesten einen Fake-Shop?",
+    "answers": [
+      {"text": "Nur Vorkasse/Überweisung, kein Impressum, und die Bewertungen wirken generisch", "is_correct": true},
+      {"text": "Die Seite hat ein Schloss-Symbol (https) in der Adressleiste", "is_correct": false},
+      {"text": "Der Shop akzeptiert PayPal-Käuferschutz und Kreditkarte", "is_correct": false},
+      {"text": "Die Produktbilder sehen professionell aus", "is_correct": false}
+    ],
+    "explanation": "Unrealistischer Preis + nur Vorkasse + fehlendes Impressum + generische Bewertungen sind die klassischen Fake-Shop-Zeichen. Ein https-Schloss bedeutet nur verschlüsselte Übertragung, NICHT dass der Shop seriös ist — auch Betrüger haben SSL. Zahlarten mit Käuferschutz schützen dich."
+  },
+  {
+    "text": "Du landest auf einer Login-Seite mit der Adresse `paypa1-sicherheit.com`. Was ist hier faul?",
+    "answers": [
+      {"text": "Nichts — „sicherheit\" im Namen zeigt ja, dass es sicher ist", "is_correct": false},
+      {"text": "Die Seite ist echt, solange sie das PayPal-Logo zeigt", "is_correct": false},
+      {"text": "Die Domain ist gefälscht — echtes PayPal lebt unter paypal.com; hier steht eine „1\" statt „l\" plus eine fremde Zusatz-Domain", "is_correct": true},
+      {"text": "Das kann man von außen gar nicht erkennen", "is_correct": false}
+    ],
+    "explanation": "Betrüger registrieren ähnlich aussehende Domains (Tippfehler, Zusätze, vertauschte Zeichen wie 1↔l oder 0↔o). Maßgeblich ist immer der Teil direkt vor der Endung: bei `paypa1-sicherheit.com` ist die Domain `paypa1-sicherheit`, nicht PayPal. Adresse genau lesen oder selbst eintippen."
+  },
+  {
+    "text": "An der Parkuhr klebt ein QR-Code „Hier bequem online bezahlen\". Warum ist Vorsicht geboten?",
+    "answers": [
+      {"text": "QR-Codes können nie gefährlich sein", "is_correct": false},
+      {"text": "Aufgeklebte QR-Codes können von Betrügern stammen und auf gefälschte Bezahlseiten führen — ein Code verbirgt sein Ziel, bis du ihn scannst", "is_correct": true},
+      {"text": "Nur QR-Codes in E-Mails sind ein Problem", "is_correct": false},
+      {"text": "Solange nach dem Scan ein Bezahlfeld erscheint, ist alles in Ordnung", "is_correct": false}
+    ],
+    "explanation": "„Quishing\" nutzt QR-Codes, weil man die dahinterliegende Adresse nicht sieht. Betrüger überkleben echte Codes an Parkuhren, Ladesäulen oder in Briefen. Nach dem Scan die angezeigte Adresse prüfen — oder gleich die offizielle App des Anbieters nutzen statt fremder Codes."
+  },
+  {
+    "text": "Was macht ein Passwort am stärksten gegen automatisierte Knack-Versuche?",
+    "answers": [
+      {"text": "Seine Länge — eine lange Passphrase aus mehreren zufälligen Wörtern schlägt ein kurzes, kompliziertes Passwort", "is_correct": true},
+      {"text": "Möglichst viele Sonderzeichen wie in P@$$!", "is_correct": false},
+      {"text": "Dass man es regelmäßig um eine Ziffer am Ende erhöht", "is_correct": false},
+      {"text": "Dass es Name plus Geburtsjahr enthält, damit man es nicht vergisst", "is_correct": false}
+    ],
+    "explanation": "Jede zusätzliche Stelle vervielfacht den Rechenaufwand zum Knacken — Länge schlägt Komplexität. Eine Passphrase wie „Hummel-Akku-Wolke-Tango7\" ist sicherer UND merkbarer als „P@$$w0rt\". Name+Geburtsjahr und „+1\"-Muster sind dagegen leicht zu erraten."
+  },
+  {
+    "text": "Warum ist ein Passwort-Manager eine der besten Sicherheitsentscheidungen?",
+    "answers": [
+      {"text": "Weil er Passwörter unverschlüsselt für schnellen Zugriff ablegt", "is_correct": false},
+      {"text": "Weil man sich damit überhaupt kein Master-Passwort mehr merken muss", "is_correct": false},
+      {"text": "Weil man so dasselbe starke Passwort überall sicher verwenden kann", "is_correct": false},
+      {"text": "Weil er für jeden Dienst ein langes, einzigartiges Passwort erzeugt und verschlüsselt speichert, sodass ein Leck bei Dienst A die anderen Konten nicht gefährdet", "is_correct": true}
+    ],
+    "explanation": "Der größte Gewinn ist Einzigartigkeit: ein eigenes, zufälliges Passwort pro Dienst, sodass ein Datenleck nicht auf andere Konten überspringt. Der Manager merkt sie sich verschlüsselt — du brauchst nur EIN starkes Master-Passwort. „Überall dasselbe\" bleibt auch mit Manager falsch."
+  },
+  {
+    "text": "Welche Form der Zwei-Faktor-Authentifizierung (2FA) ist am sichersten?",
+    "answers": [
+      {"text": "Code per SMS aufs Handy", "is_correct": false},
+      {"text": "Passkey bzw. Hardware-Sicherheitsschlüssel — phishing-resistent, weil kryptografisch an die echte Website gebunden", "is_correct": true},
+      {"text": "Gar keine 2FA — ein starkes Passwort reicht", "is_correct": false},
+      {"text": "Die Sicherheitsfrage nach dem Mädchennamen der Mutter", "is_correct": false}
+    ],
+    "explanation": "SMS-Codes sind besser als nichts, aber abfangbar (SIM-Swapping, Phishing-Weiterleitung). Authenticator-Apps (TOTP) sind stärker; Passkeys/Hardware-Schlüssel sind am besten, weil sie an die echte Domain gebunden sind und auf einer Fake-Seite nicht funktionieren. Sicherheitsfragen sind kein zweiter Faktor."
+  },
+  {
+    "text": "Bei einem Online-Forum gab es ein Datenleck. Warum kann das plötzlich auch dein E-Mail-Konto gefährden?",
+    "answers": [
+      {"text": "Gar nicht — ein Forum-Leck bleibt beim Forum", "is_correct": false},
+      {"text": "Nur, wenn das Forum deine Kreditkarte gespeichert hatte", "is_correct": false},
+      {"text": "Wenn du beim Forum und beim E-Mail-Konto dasselbe Passwort nutzt, probieren Betrüger die geleakten Zugangsdaten automatisiert bei vielen Diensten durch (Credential Stuffing)", "is_correct": true},
+      {"text": "Nur, wenn du im Forum deinen echten Namen verwendet hast", "is_correct": false}
+    ],
+    "explanation": "Beim „Credential Stuffing\" werden geleakte E-Mail-/Passwort-Kombis automatisiert bei Hunderten anderer Dienste durchprobiert. Mehrfach genutzte Passwörter machen aus einem kleinen Leck eine Kettenreaktion. Deshalb: pro Dienst ein eigenes Passwort (siehe Passwort-Manager)."
+  },
+  {
+    "text": "Dein „Enkel\" ruft an, die Stimme klingt täuschend echt, er sei in Not und brauche sofort Geld per Überweisung. Was tust du?",
+    "answers": [
+      {"text": "Auflegen und unter der dir bekannten Nummer zurückrufen oder über einen anderen Kanal die Familie gegenprüfen, bevor irgendetwas passiert", "is_correct": true},
+      {"text": "Sofort überweisen — die Stimme war eindeutig echt", "is_correct": false},
+      {"text": "Am Telefon ein paar persönliche Fragen stellen; wer die beantwortet, ist echt", "is_correct": false},
+      {"text": "Das Geld geben, aber nur die Hälfte", "is_correct": false}
+    ],
+    "explanation": "KI kann eine Stimme aus wenigen Sekunden Audio klonen — „klingt echt\" ist kein Beweis mehr. Der Schutz ist immer der Rückruf über einen unabhängigen, bekannten Kanal. Persönliche Fragen helfen kaum, weil vieles online auffindbar ist. Druck + sofortige Überweisung = Alarmsignal."
+  },
+  {
+    "text": "Auf einer Dating- oder Investment-Plattform schreibt dir ein attraktives Profil, baut schnell Vertrauen auf und rät dann zu einer „todsicheren\" Geldanlage. Verdächtig ist vor allem …",
+    "answers": [
+      {"text": "… dass das Profilbild gut aussieht", "is_correct": false},
+      {"text": "… dass die Person nie zu einem spontanen Videocall bereit ist, schnell emotionale Nähe aufbaut und auf eine Geldanlage hinsteuert", "is_correct": true},
+      {"text": "… dass die Person abends online ist", "is_correct": false},
+      {"text": "… nichts, solange man noch kein Geld geschickt hat", "is_correct": false}
+    ],
+    "explanation": "Romance- und Investment-Scams nutzen KI-generierte Fotos und Chat-Texte. Typisch: schnelles „Love-/Trust-Bombing\", Ausreden bei Live-Videocalls (weil hinter dem Profil jemand anders steckt) und früher oder später eine Geldforderung oder „Anlagechance\". Ein unangekündigter Videocall entlarvt viele Fakes."
+  },
+  {
+    "text": "In einem Video empfiehlt ein bekannter Unternehmer eine Krypto-Plattform mit „garantierter Verdopplung\". Wie ordnest du das ein?",
+    "answers": [
+      {"text": "Das Video ist ein Beweis — wenn die Person das sagt, stimmt es", "is_correct": false},
+      {"text": "Seriös, solange das Video viele Likes hat", "is_correct": false},
+      {"text": "Seriös, solange die Plattform eine schöne Website hat", "is_correct": false},
+      {"text": "Sehr wahrscheinlich ein Deepfake oder ein gekapertes Werbekonto; „garantierte\" Gewinne gibt es nicht, und Prominente werden für Fake-Werbung „geklont\"", "is_correct": true}
+    ],
+    "explanation": "Deepfake-Videos setzen echten Personen erfundene Aussagen in den Mund; Promi-„Investment-Tipps\" sind ein Massenphänomen. Das eigentliche Warnsignal steckt im Versprechen selbst: „garantierte\" oder „verdoppelte\" Renditen sind betrügerisch — kein seriöses Investment garantiert Gewinne."
+  },
+  {
+    "text": "Früher galt: schlechte Rechtschreibung entlarvt Phishing. Warum trägt diese Regel heute nicht mehr?",
+    "answers": [
+      {"text": "Weil Betrüger heute Lektoren beschäftigen", "is_correct": false},
+      {"text": "Weil Rechtschreibung noch nie ein Hinweis war", "is_correct": false},
+      {"text": "Weil KI-Textwerkzeuge fehlerfreie, überzeugende und personalisierte Nachrichten in jeder Sprache erzeugen — achte auf Inhalt und Kontext, nicht auf Tippfehler", "is_correct": true},
+      {"text": "Weil moderne Mail-Programme Tippfehler automatisch korrigieren", "is_correct": false}
+    ],
+    "explanation": "KI hat das „Tippfehler\"-Merkmal wertlos gemacht: Phishing ist heute sprachlich perfekt und oft personalisiert. Verlass dich auf den Kontext — unerwartete Aufforderung, Dringlichkeit, Link/Anhang, ungewöhnliche Bitte — statt auf die Sprache."
+  },
+  {
+    "text": "Eine Mail deines „Chefs\" bittet dich dringend, Gutscheinkarten zu kaufen und die Codes zu schicken. Was ist die richtige Reaktion?",
+    "answers": [
+      {"text": "Die Bitte über einen zweiten, bekannten Kanal prüfen (Anruf/persönlich) — echte Vorgesetzte fordern so etwas nicht per Mail an", "is_correct": true},
+      {"text": "Schnell erledigen — der Chef hat es eilig", "is_correct": false},
+      {"text": "Auf die Mail antworten und um Bestätigung bitten", "is_correct": false},
+      {"text": "Die Karten kaufen, aber die Codes erst schicken, wenn der Chef sich nochmal meldet", "is_correct": false}
+    ],
+    "explanation": "Der „CEO-Fraud\"-/Gutschein-Trick lebt von Autorität plus Dringlichkeit. Die Gegenmaßnahme ist immer die Verifikation über einen unabhängigen Kanal — eine Rückfrage per Mail-Antwort landet beim Betrüger. Gutscheincodes als „Zahlung\" sind praktisch immer Betrug."
+  },
+  {
+    "text": "Eine App verspricht „garantierte 2 % Rendite — täglich\". Was sagt dir dein Bauchgefühl (zu Recht)?",
+    "answers": [
+      {"text": "Klingt super — ich investiere meine Ersparnisse", "is_correct": false},
+      {"text": "Garantierte, hohe, regelmäßige Renditen gibt es nicht — das ist das Kennzeichen eines Schneeball- bzw. Anlagebetrugs", "is_correct": true},
+      {"text": "Seriös, solange ich am Anfang kleine Auszahlungen bekomme", "is_correct": false},
+      {"text": "Seriös, solange Freunde auch mitmachen", "is_correct": false}
+    ],
+    "explanation": "„Garantiert\" + hoch + regelmäßig ist finanzmathematisch unmöglich und das Markenzeichen von Ponzi-Systemen. Frühe Mini-Auszahlungen sind Köder, finanziert aus dem Geld neuer Opfer; „Freunde machen mit\" ist genau der Anwerbe-Mechanismus. Seriöse Anlagen schwanken und garantieren nichts."
+  },
+  {
+    "text": "Welches einzelne Merkmal taucht in fast allen Betrugsmaschen auf?",
+    "answers": [
+      {"text": "Eine höfliche Anrede", "is_correct": false},
+      {"text": "Eine lange, sachliche Erklärung", "is_correct": false},
+      {"text": "Ein Angebot, in Ruhe darüber nachzudenken", "is_correct": false},
+      {"text": "Künstlicher Zeitdruck — „sofort handeln, sonst Konto gesperrt / Strafe / Chance weg\"", "is_correct": true}
+    ],
+    "explanation": "Dringlichkeit schaltet das kritische Denken aus — deshalb ist sie der rote Faden fast jeder Masche (Phishing, Enkeltrick, Fake-Behörde, Anlagebetrug). Die beste Gegenmaßnahme ist simpel: bei Druck innehalten, nichts sofort tun, unabhängig gegenprüfen. Seriöse Stellen lassen dir Zeit."
+  },
+  {
+    "text": "Eine simple Taschenlampen-App will Zugriff auf Kontakte, Standort und Mikrofon. Was ist die richtige Schlussfolgerung?",
+    "answers": [
+      {"text": "Diese Berechtigungen haben mit der Funktion nichts zu tun — vermutlich werden Daten gesammelt und verkauft; solche Apps meiden oder die Rechte verweigern", "is_correct": true},
+      {"text": "Einfach erlauben, sonst funktioniert die App vielleicht nicht", "is_correct": false},
+      {"text": "Das ist bei jeder App normal und unbedenklich", "is_correct": false},
+      {"text": "Nur Apps kleiner Anbieter sammeln Daten", "is_correct": false}
+    ],
+    "explanation": "Berechtigungen sollten zur Funktion passen — eine Taschenlampe braucht weder Kontakte noch Standort noch Mikrofon. Überzogene Rechte deuten auf Datensammlung für Werbe-/Datenhändler hin. Auf dem Smartphone Rechte einzeln vergeben und Unnötiges verweigern; im Zweifel die App meiden."
+  },
+  {
+    "text": "Du bist im offenen WLAN am Flughafen und willst kurz ins Online-Banking. Was gilt?",
+    "answers": [
+      {"text": "Offenes WLAN ist immer völlig sicher", "is_correct": false},
+      {"text": "Solange ich schnell bin, kann nichts passieren", "is_correct": false},
+      {"text": "Sensibles wie Banking besser über Mobilfunk oder ein vertrauenswürdiges VPN erledigen; verlass dich nicht allein auf das offene Netz", "is_correct": true},
+      {"text": "Ein VPN macht Online-Banking unsicherer", "is_correct": false}
+    ],
+    "explanation": "In offenen Netzen kannst du nie sicher sein, wer mithört oder ob der Hotspot echt ist (Fake-„Airport_WiFi\"). HTTPS schützt den Inhalt, aber für Sensibles ist Mobilfunk oder ein vertrauenswürdiges VPN die sichere Wahl. Ein VPN erhöht die Sicherheit, es senkt sie nicht."
+  }
+]

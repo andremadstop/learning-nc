@@ -118,6 +118,7 @@ scripts/*
 !scripts/check-forbidden-names.sh
 !scripts/check-forbidden-names.test.sh
 !scripts/check-i18n-parity.sh
+!scripts/validate-pool-json.mjs
 !scripts/l10n_js_sync.py
 !scripts/verify-release.sh
 !scripts/verify-credential.py
