@@ -7,17 +7,17 @@
       {"text": "Reply to the text and ask for details", "is_correct": false},
       {"text": "Open the link just to look — I'll only pay if the page looks legit", "is_correct": false}
     ],
-    "explanation": "Real couriers never demand customs fees via an SMS link. This \"smishing\" is after your card details. Always check shipments only through the official app/website using the tracking number — never via the link in the message."
+    "explanation": "Reputable couriers don't demand customs fees via SMS links — treat such links as a scam attempt (\"smishing,\" after your card details). Always check shipments only through the official app/website using the tracking number, never via the link in the message."
   },
   {
     "text": "Which feature most reliably exposes a phishing email pretending to be from your \"bank\"?",
     "answers": [
       {"text": "The email contains the bank's logo", "is_correct": false},
       {"text": "The email is written in flawless language", "is_correct": false},
-      {"text": "The email arrived on a weekday", "is_correct": false},
+      {"text": "The link in the email starts with \"https://\"", "is_correct": false},
       {"text": "The email tells you to \"confirm\" your login details via a link immediately, or your account will be locked", "is_correct": true}
     ],
-    "explanation": "Banks never ask you to \"confirm\" a password or PIN via an email link and don't threaten instant lockout. Logos and flawless wording prove nothing — anyone can copy them. When in doubt, use the bank app or the address you typed yourself, never the email link."
+    "explanation": "Banks never ask you to \"confirm\" a password or PIN via an email link and don't threaten instant lockout. A logo, flawless wording, and an \"https\" prove nothing — every scam page has those too. When in doubt, use the bank app or the address you typed yourself, never the email link."
   },
   {
     "text": "An online shop offers the sought-after game console 70% cheaper than anywhere else. What's the strongest sign of a fake shop?",
@@ -34,7 +34,7 @@
     "answers": [
       {"text": "Nothing — \"security\" in the name shows it's secure", "is_correct": false},
       {"text": "The page is real as long as it shows the PayPal logo", "is_correct": false},
-      {"text": "The domain is fake — the real PayPal lives at paypal.com; here there's a \"1\" instead of \"l\" plus a foreign extra domain", "is_correct": true},
+      {"text": "The domain is fake: `paypa1-security.com` is a separate, unrelated domain, not paypal.com — with a \"1\" instead of \"l\" to look genuine", "is_correct": true},
       {"text": "You simply can't tell from the outside", "is_correct": false}
     ],
     "explanation": "Scammers register lookalike domains (typos, add-ons, swapped characters like 1↔l or 0↔o). What matters is always the part right before the ending: in `paypa1-security.com` the domain is `paypa1-security`, not PayPal. Read the address carefully or type it yourself."
@@ -57,7 +57,7 @@
       {"text": "Bumping it up by one digit at the end on a regular basis", "is_correct": false},
       {"text": "Containing your name plus birth year so you won't forget it", "is_correct": false}
     ],
-    "explanation": "Every extra character multiplies the effort to crack it — length beats complexity. A passphrase like \"bumblebee-battery-cloud-tango7\" is both safer AND easier to remember than \"P@$$w0rd\". Name+birth-year and \"+1\" patterns, by contrast, are easy to guess."
+    "explanation": "Length beats complexity — provided the password isn't predictable: each extra random character multiplies the cracking effort. A passphrase of genuinely random words like \"bumblebee-battery-cloud-tango7\" is both safer AND easier to remember than \"P@$$w0rd\". Name+birth-year, quotes, and \"+1\" patterns, by contrast, are easy to guess."
   },
   {
     "text": "Why is a password manager one of the best security decisions?",
@@ -70,14 +70,14 @@
     "explanation": "The biggest win is uniqueness: a separate, random password per service, so one data leak doesn't spill over to your other accounts. The manager remembers them encrypted — you only need ONE strong master password. \"Same one everywhere\" stays wrong even with a manager."
   },
   {
-    "text": "Which form of two-factor authentication (2FA) is the most secure?",
+    "text": "Four common two-factor (2FA) methods — which is the most phishing-resistant?",
     "answers": [
       {"text": "A code sent by SMS to your phone", "is_correct": false},
-      {"text": "A passkey or hardware security key — phishing-resistant because it's cryptographically bound to the real website", "is_correct": true},
-      {"text": "No 2FA at all — a strong password is enough", "is_correct": false},
-      {"text": "The security question about your mother's maiden name", "is_correct": false}
+      {"text": "A passkey or hardware security key — cryptographically bound to the real website", "is_correct": true},
+      {"text": "A one-time code from an authenticator app (TOTP)", "is_correct": false},
+      {"text": "Approving a push notification in the app", "is_correct": false}
     ],
-    "explanation": "SMS codes are better than nothing but interceptable (SIM swapping, phishing relay). Authenticator apps (TOTP) are stronger; passkeys/hardware keys are best because they're bound to the real domain and won't work on a fake page. Security questions are not a second factor."
+    "explanation": "All four are 2FA methods, but they differ in strength: SMS codes are interceptable (SIM swapping, phishing relay); authenticator apps (TOTP) and push approvals are better but can still be tricked onto a fake page; passkeys/hardware keys are strongest because they're bound to the real domain and simply won't work on a fake site."
   },
   {
     "text": "An online forum had a data breach. Why can that suddenly endanger your email account too?",
@@ -107,17 +107,17 @@
       {"text": "… that the person is online in the evenings", "is_correct": false},
       {"text": "… nothing, as long as you haven't sent money yet", "is_correct": false}
     ],
-    "explanation": "Romance and investment scams use AI-generated photos and chat text. Typical signs: fast \"love/trust bombing,\" excuses to avoid live video calls (because someone else is behind the profile), and sooner or later a money request or \"investment opportunity.\" An unannounced video call exposes many fakes."
+    "explanation": "Romance and investment scams use AI-generated photos and chat text. Typical signs: fast \"love/trust bombing,\" excuses to avoid live video calls, and sooner or later a money request. Refusing video calls is a warning sign — but a video call is NOT proof of authenticity (live deepfakes exist). The only safe move: verify identity independently and never send money."
   },
   {
     "text": "In a video, a well-known entrepreneur recommends a crypto platform with \"guaranteed doubling.\" How do you read this?",
     "answers": [
       {"text": "The video is proof — if the person says it, it's true", "is_correct": false},
-      {"text": "Legit as long as the video has lots of likes", "is_correct": false},
-      {"text": "Legit as long as the platform has a nice website", "is_correct": false},
-      {"text": "Very likely a deepfake or a hijacked ad account; \"guaranteed\" gains don't exist, and celebrities are \"cloned\" for fake ads", "is_correct": true}
+      {"text": "Legit, because the ad links from a verified-looking account", "is_correct": false},
+      {"text": "Legit, because the platform shows small early payouts", "is_correct": false},
+      {"text": "Very likely a deepfake or a hijacked ad account — a \"guaranteed doubling\" is fraudulent, and celebrities are \"cloned\" for fake ads", "is_correct": true}
     ],
-    "explanation": "Deepfake videos put fabricated statements into real people's mouths; celebrity \"investment tips\" are a mass phenomenon. The real warning sign is in the promise itself: \"guaranteed\" or \"doubled\" returns are fraudulent — no legitimate investment guarantees gains."
+    "explanation": "Deepfake videos put fabricated statements into real people's mouths; celebrity \"investment tips\" are a mass phenomenon. Neither a verified-looking account nor early mini-payouts prove legitimacy. The warning sign is in the promise: legitimate investments never offer a \"guaranteed\" doubling."
   },
   {
     "text": "It used to be: bad spelling exposes phishing. Why doesn't that rule hold today?",
@@ -143,21 +143,21 @@
     "text": "An app promises \"guaranteed 2% returns — daily.\" What does your gut tell you (correctly)?",
     "answers": [
       {"text": "Sounds great — I'll invest my savings", "is_correct": false},
-      {"text": "Guaranteed, high, regular returns don't exist — that's the hallmark of a pyramid/investment scam", "is_correct": true},
+      {"text": "Guaranteed 2% daily is not a legitimate investment promise — it's typical Ponzi-scheme bait", "is_correct": true},
       {"text": "Legit, as long as I get small payouts at the start", "is_correct": false},
       {"text": "Legit, as long as friends are joining in too", "is_correct": false}
     ],
-    "explanation": "\"Guaranteed\" + high + regular is mathematically impossible and the trademark of Ponzi schemes. Early mini-payouts are bait, funded by new victims' money; \"friends are joining in\" is exactly the recruitment mechanism. Legitimate investments fluctuate and guarantee nothing."
+    "explanation": "Guaranteed + high + regular is the trademark of Ponzi schemes: early mini-payouts are bait, funded by new victims' money; \"friends are joining in\" is exactly the recruitment mechanism. Legitimate investments fluctuate and guarantee nothing."
   },
   {
-    "text": "Which single feature shows up in almost every scam?",
+    "text": "Which feature is a very common warning sign across many scams?",
     "answers": [
       {"text": "A polite salutation", "is_correct": false},
       {"text": "A long, factual explanation", "is_correct": false},
       {"text": "An offer to think it over at your leisure", "is_correct": false},
       {"text": "Artificial time pressure — \"act now, or account locked / fine / opportunity gone\"", "is_correct": true}
     ],
-    "explanation": "Urgency switches off critical thinking — which is why it's the common thread of nearly every scam (phishing, grandparent scam, fake authority, investment fraud). The best countermeasure is simple: when pressured, pause, do nothing immediately, verify independently. Legitimate parties give you time."
+    "explanation": "Urgency switches off critical thinking — which is why it's a common thread across many scams (phishing, grandparent scam, fake authority, investment fraud). Not every scam uses time pressure (some rely on trust or run unnoticed), but when pressured: pause, do nothing immediately, verify independently. Legitimate parties give you time."
   },
   {
     "text": "A simple flashlight app wants access to your contacts, location, and microphone. What's the right conclusion?",
@@ -175,8 +175,8 @@
       {"text": "Open Wi-Fi is always completely safe", "is_correct": false},
       {"text": "As long as I'm quick, nothing can happen", "is_correct": false},
       {"text": "Do sensitive things like banking over mobile data or a trustworthy VPN; don't rely on the open network alone", "is_correct": true},
-      {"text": "A VPN makes online banking less secure", "is_correct": false}
+      {"text": "A VPN makes online banking inherently less secure", "is_correct": false}
     ],
-    "explanation": "On open networks you can never be sure who's listening or whether the hotspot is genuine (fake \"Airport_WiFi\"). HTTPS protects the content, but for sensitive tasks, mobile data or a trustworthy VPN is the safe choice. A VPN increases security, it doesn't lower it."
+    "explanation": "On open networks you can never be sure who's listening or whether the hotspot is genuine (fake \"Airport_WiFi\"). HTTPS protects the content, but for sensitive tasks mobile data is the simplest safe choice. A VPN helps — but only a trustworthy provider; a shady VPN just moves the trust and can become a risk itself."
   }
 ]

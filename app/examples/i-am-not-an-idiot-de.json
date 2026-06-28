@@ -7,17 +7,17 @@
       {"text": "Auf die SMS antworten und nach Details fragen", "is_correct": false},
       {"text": "Den Link öffnen, um zu schauen — zahlen tue ich erst, wenn die Seite echt aussieht", "is_correct": false}
     ],
-    "explanation": "Echte Paketdienste verlangen keine Zollgebühren per SMS-Link. Solches „Smishing\" will Kartendaten abgreifen. Sendungen immer nur über die offizielle App/Website mit der Tracking-Nummer prüfen — nie über den Link aus der Nachricht."
+    "explanation": "Seriöse Paketdienste fordern Zollgebühren nicht über SMS-Links an — behandle solche Links als Betrugsversuch („Smishing\", will Kartendaten abgreifen). Sendungen immer nur über die offizielle App/Website mit der Tracking-Nummer prüfen, nie über den Link aus der Nachricht."
   },
   {
     "text": "Welches Merkmal entlarvt eine Phishing-Mail deiner „Bank\" am zuverlässigsten?",
     "answers": [
       {"text": "Die Mail enthält das Bank-Logo", "is_correct": false},
       {"text": "Die Mail ist fehlerfrei auf Deutsch verfasst", "is_correct": false},
-      {"text": "Die Mail kam an einem Werktag an", "is_correct": false},
+      {"text": "Der Link in der Mail beginnt mit „https://\"", "is_correct": false},
       {"text": "Die Mail fordert dich auf, über einen Link sofort deine Zugangsdaten zu „bestätigen\", sonst werde das Konto gesperrt", "is_correct": true}
     ],
-    "explanation": "Banken bitten nie per Mail-Link um Passwort- oder PIN-„Bestätigung\" und drohen nicht mit sofortiger Sperre. Logos und fehlerfreie Sprache sind kein Echtheitsbeweis — die kann jeder kopieren. Im Zweifel die Bank-App oder die selbst getippte Bank-Adresse nutzen, nie den Mail-Link."
+    "explanation": "Banken bitten nie per Mail-Link um Passwort- oder PIN-„Bestätigung\" und drohen nicht mit sofortiger Sperre. Logo, fehlerfreie Sprache und ein „https\" beweisen nichts — die hat auch jede Betrugsseite. Im Zweifel die Bank-App oder die selbst getippte Bank-Adresse nutzen, nie den Mail-Link."
   },
   {
     "text": "Ein Online-Shop bietet die begehrte Spielkonsole 70 % günstiger als überall sonst. Woran erkennst du am ehesten einen Fake-Shop?",
@@ -34,7 +34,7 @@
     "answers": [
       {"text": "Nichts — „sicherheit\" im Namen zeigt ja, dass es sicher ist", "is_correct": false},
       {"text": "Die Seite ist echt, solange sie das PayPal-Logo zeigt", "is_correct": false},
-      {"text": "Die Domain ist gefälscht — echtes PayPal lebt unter paypal.com; hier steht eine „1\" statt „l\" plus eine fremde Zusatz-Domain", "is_correct": true},
+      {"text": "Die Domain ist gefälscht: `paypa1-sicherheit.com` ist eine eigenständige Fremd-Domain, nicht paypal.com — mit „1\" statt „l\", um echt zu wirken", "is_correct": true},
       {"text": "Das kann man von außen gar nicht erkennen", "is_correct": false}
     ],
     "explanation": "Betrüger registrieren ähnlich aussehende Domains (Tippfehler, Zusätze, vertauschte Zeichen wie 1↔l oder 0↔o). Maßgeblich ist immer der Teil direkt vor der Endung: bei `paypa1-sicherheit.com` ist die Domain `paypa1-sicherheit`, nicht PayPal. Adresse genau lesen oder selbst eintippen."
@@ -57,7 +57,7 @@
       {"text": "Dass man es regelmäßig um eine Ziffer am Ende erhöht", "is_correct": false},
       {"text": "Dass es Name plus Geburtsjahr enthält, damit man es nicht vergisst", "is_correct": false}
     ],
-    "explanation": "Jede zusätzliche Stelle vervielfacht den Rechenaufwand zum Knacken — Länge schlägt Komplexität. Eine Passphrase wie „Hummel-Akku-Wolke-Tango7\" ist sicherer UND merkbarer als „P@$$w0rt\". Name+Geburtsjahr und „+1\"-Muster sind dagegen leicht zu erraten."
+    "explanation": "Länge schlägt Komplexität — sofern das Passwort nicht vorhersehbar ist: jede zusätzliche zufällige Stelle vervielfacht den Knack-Aufwand. Eine Passphrase aus echten Zufallswörtern wie „Hummel-Akku-Wolke-Tango7\" ist sicherer UND merkbarer als „P@$$w0rt\". Name+Geburtsjahr, Zitate und „+1\"-Muster sind dagegen leicht zu erraten."
   },
   {
     "text": "Warum ist ein Passwort-Manager eine der besten Sicherheitsentscheidungen?",
@@ -70,14 +70,14 @@
     "explanation": "Der größte Gewinn ist Einzigartigkeit: ein eigenes, zufälliges Passwort pro Dienst, sodass ein Datenleck nicht auf andere Konten überspringt. Der Manager merkt sie sich verschlüsselt — du brauchst nur EIN starkes Master-Passwort. „Überall dasselbe\" bleibt auch mit Manager falsch."
   },
   {
-    "text": "Welche Form der Zwei-Faktor-Authentifizierung (2FA) ist am sichersten?",
+    "text": "Vier gängige Zwei-Faktor-Methoden (2FA) — welche ist am sichersten gegen Phishing?",
     "answers": [
       {"text": "Code per SMS aufs Handy", "is_correct": false},
-      {"text": "Passkey bzw. Hardware-Sicherheitsschlüssel — phishing-resistent, weil kryptografisch an die echte Website gebunden", "is_correct": true},
-      {"text": "Gar keine 2FA — ein starkes Passwort reicht", "is_correct": false},
-      {"text": "Die Sicherheitsfrage nach dem Mädchennamen der Mutter", "is_correct": false}
+      {"text": "Passkey bzw. Hardware-Sicherheitsschlüssel — kryptografisch an die echte Website gebunden", "is_correct": true},
+      {"text": "Einmalcode aus einer Authenticator-App (TOTP)", "is_correct": false},
+      {"text": "Bestätigungs-Tippen einer Push-Benachrichtigung in der App", "is_correct": false}
     ],
-    "explanation": "SMS-Codes sind besser als nichts, aber abfangbar (SIM-Swapping, Phishing-Weiterleitung). Authenticator-Apps (TOTP) sind stärker; Passkeys/Hardware-Schlüssel sind am besten, weil sie an die echte Domain gebunden sind und auf einer Fake-Seite nicht funktionieren. Sicherheitsfragen sind kein zweiter Faktor."
+    "explanation": "Alle vier sind 2FA-Methoden, aber unterschiedlich stark: SMS-Codes sind abfangbar (SIM-Swapping, Phishing-Weiterleitung); Authenticator-Apps (TOTP) und Push-Bestätigungen sind besser, lassen sich aber noch auf eine Fake-Seite überlisten; Passkeys/Hardware-Schlüssel sind am stärksten, weil sie an die echte Domain gebunden sind und auf einer Fake-Seite gar nicht funktionieren."
   },
   {
     "text": "Bei einem Online-Forum gab es ein Datenleck. Warum kann das plötzlich auch dein E-Mail-Konto gefährden?",
@@ -107,17 +107,17 @@
       {"text": "… dass die Person abends online ist", "is_correct": false},
       {"text": "… nichts, solange man noch kein Geld geschickt hat", "is_correct": false}
     ],
-    "explanation": "Romance- und Investment-Scams nutzen KI-generierte Fotos und Chat-Texte. Typisch: schnelles „Love-/Trust-Bombing\", Ausreden bei Live-Videocalls (weil hinter dem Profil jemand anders steckt) und früher oder später eine Geldforderung oder „Anlagechance\". Ein unangekündigter Videocall entlarvt viele Fakes."
+    "explanation": "Romance- und Investment-Scams nutzen KI-generierte Fotos und Chat-Texte. Typisch: schnelles „Love-/Trust-Bombing\", Ausreden bei Live-Videocalls und früher oder später eine Geldforderung. Verweigerte Videocalls sind ein Warnsignal — aber ein Videocall ist KEIN Echtheitsbeweis (Live-Deepfakes existieren). Sicher ist nur: unabhängig die Identität prüfen und niemals Geld schicken."
   },
   {
     "text": "In einem Video empfiehlt ein bekannter Unternehmer eine Krypto-Plattform mit „garantierter Verdopplung\". Wie ordnest du das ein?",
     "answers": [
       {"text": "Das Video ist ein Beweis — wenn die Person das sagt, stimmt es", "is_correct": false},
-      {"text": "Seriös, solange das Video viele Likes hat", "is_correct": false},
-      {"text": "Seriös, solange die Plattform eine schöne Website hat", "is_correct": false},
-      {"text": "Sehr wahrscheinlich ein Deepfake oder ein gekapertes Werbekonto; „garantierte\" Gewinne gibt es nicht, und Prominente werden für Fake-Werbung „geklont\"", "is_correct": true}
+      {"text": "Seriös, weil die Anzeige von einem verifiziert wirkenden Konto verlinkt ist", "is_correct": false},
+      {"text": "Seriös, weil die Plattform anfangs kleine Auszahlungen zeigt", "is_correct": false},
+      {"text": "Sehr wahrscheinlich ein Deepfake oder ein gekapertes Werbekonto — eine „garantierte Verdopplung\" ist betrügerisch, und Prominente werden für Fake-Werbung „geklont\"", "is_correct": true}
     ],
-    "explanation": "Deepfake-Videos setzen echten Personen erfundene Aussagen in den Mund; Promi-„Investment-Tipps\" sind ein Massenphänomen. Das eigentliche Warnsignal steckt im Versprechen selbst: „garantierte\" oder „verdoppelte\" Renditen sind betrügerisch — kein seriöses Investment garantiert Gewinne."
+    "explanation": "Deepfake-Videos setzen echten Personen erfundene Aussagen in den Mund; Promi-„Investment-Tipps\" sind ein Massenphänomen. Weder ein verifiziert wirkendes Konto noch frühe Mini-Auszahlungen sind ein Echtheitsbeweis. Das Warnsignal steckt im Versprechen: eine „garantierte\" Verdopplung gibt es bei seriösen Investments nicht."
   },
   {
     "text": "Früher galt: schlechte Rechtschreibung entlarvt Phishing. Warum trägt diese Regel heute nicht mehr?",
@@ -143,21 +143,21 @@
     "text": "Eine App verspricht „garantierte 2 % Rendite — täglich\". Was sagt dir dein Bauchgefühl (zu Recht)?",
     "answers": [
       {"text": "Klingt super — ich investiere meine Ersparnisse", "is_correct": false},
-      {"text": "Garantierte, hohe, regelmäßige Renditen gibt es nicht — das ist das Kennzeichen eines Schneeball- bzw. Anlagebetrugs", "is_correct": true},
+      {"text": "Garantierte 2 % täglich sind kein seriöses Anlageversprechen, sondern typischer Köder eines Ponzi-/Schneeballsystems", "is_correct": true},
       {"text": "Seriös, solange ich am Anfang kleine Auszahlungen bekomme", "is_correct": false},
       {"text": "Seriös, solange Freunde auch mitmachen", "is_correct": false}
     ],
-    "explanation": "„Garantiert\" + hoch + regelmäßig ist finanzmathematisch unmöglich und das Markenzeichen von Ponzi-Systemen. Frühe Mini-Auszahlungen sind Köder, finanziert aus dem Geld neuer Opfer; „Freunde machen mit\" ist genau der Anwerbe-Mechanismus. Seriöse Anlagen schwanken und garantieren nichts."
+    "explanation": "Garantiert + hoch + regelmäßig ist das Markenzeichen von Ponzi-/Schneeballsystemen: frühe Mini-Auszahlungen sind Köder, finanziert aus dem Geld neuer Opfer; „Freunde machen mit\" ist genau der Anwerbe-Mechanismus. Seriöse Anlagen schwanken und garantieren nichts."
   },
   {
-    "text": "Welches einzelne Merkmal taucht in fast allen Betrugsmaschen auf?",
+    "text": "Welches Merkmal ist ein sehr häufiges Warnsignal in vielen Betrugsmaschen?",
     "answers": [
       {"text": "Eine höfliche Anrede", "is_correct": false},
       {"text": "Eine lange, sachliche Erklärung", "is_correct": false},
       {"text": "Ein Angebot, in Ruhe darüber nachzudenken", "is_correct": false},
       {"text": "Künstlicher Zeitdruck — „sofort handeln, sonst Konto gesperrt / Strafe / Chance weg\"", "is_correct": true}
     ],
-    "explanation": "Dringlichkeit schaltet das kritische Denken aus — deshalb ist sie der rote Faden fast jeder Masche (Phishing, Enkeltrick, Fake-Behörde, Anlagebetrug). Die beste Gegenmaßnahme ist simpel: bei Druck innehalten, nichts sofort tun, unabhängig gegenprüfen. Seriöse Stellen lassen dir Zeit."
+    "explanation": "Dringlichkeit schaltet das kritische Denken aus — deshalb ist sie ein roter Faden vieler Maschen (Phishing, Enkeltrick, Fake-Behörde, Anlagebetrug). Nicht jeder Betrug nutzt Zeitdruck (manche setzen auf Vertrauen oder laufen unbemerkt), aber bei Druck gilt: innehalten, nichts sofort tun, unabhängig gegenprüfen. Seriöse Stellen lassen dir Zeit."
   },
   {
     "text": "Eine simple Taschenlampen-App will Zugriff auf Kontakte, Standort und Mikrofon. Was ist die richtige Schlussfolgerung?",
@@ -175,8 +175,8 @@
       {"text": "Offenes WLAN ist immer völlig sicher", "is_correct": false},
       {"text": "Solange ich schnell bin, kann nichts passieren", "is_correct": false},
       {"text": "Sensibles wie Banking besser über Mobilfunk oder ein vertrauenswürdiges VPN erledigen; verlass dich nicht allein auf das offene Netz", "is_correct": true},
-      {"text": "Ein VPN macht Online-Banking unsicherer", "is_correct": false}
+      {"text": "Ein VPN macht Online-Banking grundsätzlich unsicherer", "is_correct": false}
     ],
-    "explanation": "In offenen Netzen kannst du nie sicher sein, wer mithört oder ob der Hotspot echt ist (Fake-„Airport_WiFi\"). HTTPS schützt den Inhalt, aber für Sensibles ist Mobilfunk oder ein vertrauenswürdiges VPN die sichere Wahl. Ein VPN erhöht die Sicherheit, es senkt sie nicht."
+    "explanation": "In offenen Netzen kannst du nie sicher sein, wer mithört oder ob der Hotspot echt ist (Fake-„Airport_WiFi\"). HTTPS schützt den Inhalt, aber für Sensibles ist Mobilfunk die einfachste sichere Wahl. Ein VPN hilft — aber nur ein vertrauenswürdiger Anbieter; ein unseriöser VPN verlagert das Vertrauen nur und kann selbst zum Risiko werden."
   }
 ]
