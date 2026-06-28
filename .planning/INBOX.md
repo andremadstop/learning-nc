@@ -113,3 +113,9 @@
 ## [2026-06-28] Review-Rollen-Swap (Andre, einmalig für v5.0.0-Pre-Release-Cross-Check)
 - "Vorzeichen umdrehen": **Gemini reviewt CODE**, **grumpy Codex reviewt DESIGN & UX** — Gegenprobe zum normalen Gate (Codex=Code), vor dem öffentlichen v5.0.0-Store-Publish.
 - Kontext: Codex-Code-Gate fand echten BLOCKER (Expiry trust mutable DB statt signed validUntil) → gefixt (commit 103489c, RELEASE: GO). Jetzt Cross-Lens vor Publish.
+
+## [2026-06-28] Avatar/Figuren-Design überarbeiten (Andre — beim demo-idiottest-Onboarding aufgefallen)
+- Die Onboarding-Figur ("Hi Demo, bereit für deine Mission?" — blaue Chibi-Figur) sieht schlecht aus.
+- **Andre: "Die müssen ALLE nochmal angeschaut und überarbeitet werden"** — gilt für die ganze Avatar-/Figuren-Familie, nicht nur die eine.
+- Bezug: `feedback_avatar_design.md` (Chibi-Familie), geparktes "v4.5.0 Avatar-Skins". → eigener Design-Durchgang, NICHT Teil v5.0.0-Release.
+- Nächster Schritt: Avatar-Assets inventarisieren (wo überall genutzt: Onboarding-Mission, Dashboard, VirtuProf?), dann Redesign brainstormen.

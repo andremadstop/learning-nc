@@ -9,11 +9,14 @@ Authorized by Andre (user option A; "1-5 now"; mint method = seed throwaway stud
 | Migration | Version009200 `revoked_at` | applied live via `occ upgrade` (info.xml 4.4.8→4.4.9); column `revoked_at` bigint nullable present on PG16 |
 | Pool DE | 165 | owner `andre`, 18 MCQ (questions 16632–16649) |
 | Pool EN | 166 | owner `andre`, 18 MCQ (questions 16650–16667) |
-| Course DE | 62 | `andre`-owned, cert_enabled, pass 70%, validity 365d, required pool [165] |
-| Course EN | 63 | `andre`-owned, cert_enabled, pass 70%, validity 365d, required pool [166] |
-| Student | `demo-idiottest` | display "Demo Teilnehmer", enrolled in 62+63 (role student) |
-| Cert DE | id 2, vid **603d914c-aaa0-4cf0-a49f-35ea9a219d87** | **VALID** showcase cert (key UI3V-D_j…), issued via genuine pass pipeline |
-| Cert EN | id 3, vid **40689a85-cefa-4db4-9357-73b385ad17f6** | **WITHDRAWN** (revoked 2026-06-28 to prove VERIFY-05) — serves as the withdrawn-banner demo |
+| Course DE | 62 | `andre`-owned, title **"Internet-Mündigkeit 2026 — I am not an idiot test"**, cert 70%/365d, pool [165] |
+| Course EN | 63 | `andre`-owned, title **"Internet Street-Smarts 2026 — I am not an idiot test"**, cert 70%/365d, pool [166] |
+| Student (demo, has cert) | `demo-idiottest` | display "Demo Teilnehmer", enrolled 62+63 |
+| Student (Andre's fresh test) | `andre-learner` | display "André (Test)", enrolled 62+63, Gate-2 pre-seeded, 0 certs (exam open for Andre) |
+| Cert DE | id 4, vid **5362f079-8c6f-4f16-ab14-e3de3bb6df1f** | **VALID** showcase (re-minted with professional signed achievement.name) |
+| Cert EN | id 5, vid **cc8f7e65-0571-43fe-9a95-1e224806c95b** | **VALID** (re-minted; both valid now for a clean bilingual showcase — withdrawn-state already proven + recorded) |
+
+> **NOTE 2026-06-28 eve:** the original certs (id 2/3, vids 603d914c / 40689a85) were DELETED + re-minted (id 4/5) after the courses were retitled to the professional title (UX gate). The withdrawn-banner proof (VERIFY-05) ran on the old EN cert before re-mint. Playwright LIVE_VID now points at 5362f079.
 
 Mint mechanism (per 155 pattern): seeded Gate 1 (completed exam session, course_id-scoped, 18/18) + Gate 2 (18 leitner_items box 5 = 100% mastery), then authenticated `GET /api/courses/{id}/pass-status` as the student → real `evaluate()` → `issueIfPassed()` signed + persisted the cert. NOTE: `getExamScore` filters by `course_id` (not pool_id) — the exam session MUST carry course_id.
 
