@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\KeyService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IConfig;
@@ -25,11 +26,13 @@ class SettingsController extends Controller {
     private IConfig $config;
     private IDBConnection $db;
     private ?string $userId;
+    private KeyService $keyService;
 
-    public function __construct(string $appName, IRequest $request, IConfig $config, IDBConnection $db, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, IConfig $config, IDBConnection $db, KeyService $keyService, ?string $userId) {
         parent::__construct($appName, $request);
         $this->config = $config;
         $this->db = $db;
+        $this->keyService = $keyService;
         $this->userId = $userId;
     }
 
@@ -50,6 +53,9 @@ class SettingsController extends Controller {
             'ai_ollama_url' => $this->config->getAppValue('learning', 'ai_ollama_url', 'http://localhost:11434'),
             'ai_ollama_model' => $this->config->getAppValue('learning', 'ai_ollama_model', 'llama3'),
             'ai_enabled' => $this->config->getAppValue('learning', 'ai_enabled', 'no'),
+            // Certificates (v5.0.0): false on a fresh install until the admin runs
+            // `occ learning:cert:init-issuer`. Drives the admin-settings setup banner.
+            'cert_issuer_ready' => $this->keyService->hasActiveKey(),
         ]);
     }
 

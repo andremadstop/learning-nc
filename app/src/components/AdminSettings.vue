@@ -12,6 +12,14 @@
     </div>
 
     <div v-else class="settings-form">
+      <NcNoteCard v-if="!certIssuerReady" type="warning" class="cert-setup-note">
+        {{ t('learning', 'Certificates are not active yet. To issue signed completion certificates, an administrator must generate the issuer signing key once by running this command on the server:') }}
+        <br />
+        <code>occ learning:cert:init-issuer</code>
+        <br />
+        {{ t('learning', 'Until then, courses can be configured for certification but no certificate will be minted when a learner passes.') }}
+      </NcNoteCard>
+
       <div class="field-row">
         <label>{{ t('learning', 'Daily Challenge enabled') }}</label>
         <NcCheckboxRadioSwitch
@@ -315,6 +323,7 @@ export default {
       saving: false,
       error: '',
       saved: false,
+      certIssuerReady: true,
       auditLoading: false,
       auditEvents: [],
       ticketLoading: false,
@@ -401,6 +410,8 @@ export default {
         this.form.aiEnabled = this.form.aiProvider !== 'disabled' && (data.ai_enabled || 'no') === 'yes'
         this.form.geminiApiKeySet = data.gemini_api_key_set === true
         this.form.geminiApiKey = ''
+        // Certificates (v5.0.0): banner nudges fresh installs to init the signing key.
+        this.certIssuerReady = data.cert_issuer_ready !== false
       } catch (e) {
         this.error = t('learning', 'Failed to load settings')
       } finally {

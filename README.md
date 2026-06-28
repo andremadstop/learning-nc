@@ -83,6 +83,19 @@ npm run build
 php /path/to/nextcloud/occ app:enable learning
 ```
 
+### Certificates setup (one-time)
+
+Signed completion certificates (v5.0.0+) require an issuer signing key. Generate it once
+per server — without it, courses can be configured for certification but no certificate is
+minted when a learner passes:
+
+```bash
+php /path/to/nextcloud/occ learning:cert:init-issuer
+```
+
+The admin settings page shows a reminder until the key exists. Rotate later with
+`occ learning:cert:init-issuer --rotate` (retired keys keep verifying past certificates).
+
 ## Privacy & Data Protection
 
 **No data leaves your server** unless AI features are explicitly enabled by an admin AND the user has given consent.

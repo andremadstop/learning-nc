@@ -50,6 +50,19 @@ class KeyService {
     }
 
     /**
+     * Whether an active issuer signing key exists. Non-throwing: used by the admin-settings
+     * banner to nudge fresh installs to run `occ learning:cert:init-issuer` before certificates
+     * can be minted. Defensive against a missing table (catch → false → banner shown).
+     */
+    public function hasActiveKey(): bool {
+        try {
+            return $this->certKeyMapper->findActive() !== null;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
      * Generate + persist a fresh Ed25519 keypair as an active signing key.
      *
      * Deliberately does NOT pre-check findActive() — that guard belongs to public init(). rotate()

@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.0.0] - 2026-06-28 — Certification-as-a-Service
+
+> Versions 4.4.8 and 4.4.9 were internal migration-vehicle bumps and were never released; this entry covers everything since 4.4.7.
+
+### Added
+- **Signed completion certificates.** A course can define pass criteria (score threshold, validity period). When a learner passes, the app mints a cryptographically signed certificate — a W3C Verifiable Credential (Ed25519 / VC-JWT) bound to the learner and the course.
+- **did:web issuer identity.** Each instance is its own credential issuer via a path-based `did:web` derived from the server URL; the public key is published at the app's `did.json`. Issuer keys are generated with `occ learning:cert:init-issuer`, stored encrypted at rest (ICrypto), and can be rotated without invalidating previously issued certificates.
+- **Public verification portal.** Anyone can verify a certificate by its ID / QR code on a public page. Signature, key status, claim binding, revocation and expiry are checked as an AND-chain; unknown IDs leak no personal data. Course owners can revoke certificates.
+- **Compliance report.** Per-course completion/compliance report for instructors and admins (who passed, when, certificate status).
+- **Certificate view.** A printable, A4-ready certificate with QR code, a prominent Certificate ID and a verification link.
+
+### Changed
+- **Avatars overhauled.** The default assistant **Nova** is now a full chibi character with emotion-aware expressions (neutral / happy / sad / surprised / sleep / celebrate) instead of an abstract shape. The three scholar skins (Theoretiker / Kosmologe / Astrophysik-Popularisierer) were polished — gradient shading, larger eyes, brighter signature accents.
+
+### Setup
+- **Certificates need a one-time key.** Run `occ learning:cert:init-issuer` once per server to generate the issuer signing key. Until it exists, the admin settings page shows a reminder and no certificate is minted when a learner passes. See README → Installation → *Certificates setup*.
+
+### Database
+- `Version009100` creates `learning_cert_keys` and `learning_certificates`; `Version009200` adds `revoked_at`. Verified on PostgreSQL 16 and MariaDB (the `credential_json` / `secret_key_enc` TEXT columns are intentionally unindexed to avoid the utf8mb4 key-length limit).
+
 ## [4.4.7] - 2026-06-19 — DB: primary key for `learning_user_stats` (Issue #24)
 
 ### Fixed
