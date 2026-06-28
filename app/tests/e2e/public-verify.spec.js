@@ -35,10 +35,10 @@ const verifyPath = (vid) => `/apps/learning/verify/${vid}`
 //      If it is instead the fallback "Teilnehmer:in" (IssuanceService::FALLBACK_RECIPIENT), the name was
 //      never in the credential → absence proves NOTHING; pick/mint a cert with a real display name.
 // Only after (3) is the page.content() absence assertion a real VERIFY-03 gate.
-// Provisioned 2026-06-28 (demo-course pass): the live valid DE cert on course 62, recipient
-// "Demo Teilnehmer" (uid demo-idiottest). credentialSubject.name === RECIPIENT_DISPLAY confirmed via
-// psql + base64url-decode before trusting the absence assertion (NOT the IssuanceService fallback).
-const LIVE_VID = '603d914c-aaa0-4cf0-a49f-35ea9a219d87'
+// Provisioned 2026-06-28 (demo-course pass), re-minted with the professional course title: the live
+// valid DE cert on course 62, recipient "Demo Teilnehmer" (uid demo-idiottest). credentialSubject.name
+// === RECIPIENT_DISPLAY confirmed via psql + base64url-decode before trusting the absence assertion.
+const LIVE_VID = '5362f079-8c6f-4f16-ab14-e3de3bb6df1f'
 
 // Assert the LIVE cert's REAL recipient is absent — NOT a unit-test fixture (asserting a name that was
 // never in any real cert would be a vacuous pass). DO NOT "fix" these to a fixture.
