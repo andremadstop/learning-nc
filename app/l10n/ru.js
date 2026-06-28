@@ -2264,5 +2264,9 @@ OC.L10N.register(
     "Akzeptieren Sie dieses Zertifikat nicht als bestätigt. Bitten Sie die vorlegende Person, Ihnen ein frisches PDF oder einen neuen QR-Code direkt aus ihrem Konto zu schicken, und prüfen Sie den Link erneut." : "Не считайте этот сертификат подтверждённым. Попросите предъявителя прислать вам новый PDF или новый QR-код прямо из его учётной записи и проверьте ссылку ещё раз.",
     "Aus Datenschutzgründen (DSGVO) wird der Name des Inhabers auf dieser öffentlichen Seite nicht angezeigt." : "По соображениям защиты данных (GDPR) имя владельца не отображается на этой общедоступной странице.",
     "Das Zertifikat trägt eine digitale Signatur des Ausstellers, mit der sich jede nachträgliche Veränderung erkennen lässt. Diese Seite prüft die Signatur automatisch und zeigt zusätzlich, ob das Zertifikat zurückgezogen oder abgelaufen ist." : "Сертификат содержит цифровую подпись издателя, которая выявляет любые последующие изменения. Эта страница автоматически проверяет подпись и также показывает, отозван ли сертификат или истёк ли его срок.",
+    "Mindestscore" : "Минимальный балл",
+    "Scannen oder ID prüfen unter" : "Отсканируйте или проверьте ID на",
+    "Zertifikat-ID" : "ID сертификата",
+    "Zu LinkedIn hinzufügen (öffnet LinkedIn)" : "Добавить в LinkedIn (откроется LinkedIn)",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

@@ -2264,5 +2264,9 @@ OC.L10N.register(
     "Akzeptieren Sie dieses Zertifikat nicht als bestätigt. Bitten Sie die vorlegende Person, Ihnen ein frisches PDF oder einen neuen QR-Code direkt aus ihrem Konto zu schicken, und prüfen Sie den Link erneut." : "لا تقبل هذه الشهادة على أنها مؤكَّدة. اطلب من الشخص الذي يقدّمها أن يرسل لك ملف PDF جديدًا أو رمز QR جديدًا مباشرة من حسابه، ثم تحقق من الرابط مرة أخرى.",
     "Aus Datenschutzgründen (DSGVO) wird der Name des Inhabers auf dieser öffentlichen Seite nicht angezeigt." : "لأسباب تتعلق بحماية البيانات (اللائحة العامة لحماية البيانات)، لا يُعرض اسم صاحب الشهادة على هذه الصفحة العامة.",
     "Das Zertifikat trägt eine digitale Signatur des Ausstellers, mit der sich jede nachträgliche Veränderung erkennen lässt. Diese Seite prüft die Signatur automatisch und zeigt zusätzlich, ob das Zertifikat zurückgezogen oder abgelaufen ist." : "تحمل الشهادة توقيعًا رقميًا من الجهة المُصدِرة يكشف أي تعديل لاحق. تتحقق هذه الصفحة من التوقيع تلقائيًا وتُظهر أيضًا ما إذا كانت الشهادة قد سُحبت أو انتهت صلاحيتها.",
+    "Mindestscore" : "الحد الأدنى للدرجة",
+    "Scannen oder ID prüfen unter" : "امسح الرمز أو تحقق من المعرّف على",
+    "Zertifikat-ID" : "معرّف الشهادة",
+    "Zu LinkedIn hinzufügen (öffnet LinkedIn)" : "أضف إلى LinkedIn (يفتح LinkedIn)",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

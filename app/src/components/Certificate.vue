@@ -17,7 +17,8 @@
 						<img
 							v-if="fields.issuerLogo"
 							:src="fields.issuerLogo"
-							:alt="fields.issuerName"
+							alt=""
+							aria-hidden="true"
 							class="certificate-logo">
 						<span class="certificate-issuer">{{ fields.issuerName }}</span>
 					</div>
@@ -35,7 +36,7 @@
 							<span class="certificate-meta-value">{{ fields.score }}%</span>
 						</div>
 						<div v-if="fields.threshold !== null" class="certificate-meta-item">
-							<span class="certificate-meta-label">{{ t('learning', 'Mindest-Score (%)') }}</span>
+							<span class="certificate-meta-label">{{ t('learning', 'Mindestscore') }}</span>
 							<span class="certificate-meta-value">{{ fields.threshold }}%</span>
 						</div>
 						<div v-if="issuedDate" class="certificate-meta-item">
@@ -55,27 +56,29 @@
 							:alt="t('learning', 'QR-Code zur Verifizierung')"
 							class="certificate-qr">
 						<div class="certificate-verify-copy">
-							<span class="certificate-meta-label">{{ t('learning', 'Verifizieren') }}</span>
+							<span class="certificate-meta-label">{{ t('learning', 'Scannen oder ID prüfen unter') }}</span>
 							<span class="certificate-verify-url">{{ verifyUrl }}</span>
+							<span class="certificate-verify-id-label">{{ t('learning', 'Zertifikat-ID') }}</span>
+							<span class="certificate-verify-id">{{ verificationId }}</span>
 						</div>
 					</div>
 				</div>
 			</div>
 
 			<div class="certificate-actions no-print">
-				<NcButton type="secondary" @click="print">
+				<NcButton type="primary" @click="print">
 					{{ t('learning', 'Drucken') }}
 				</NcButton>
 				<a
 					:href="downloadHref"
 					class="certificate-download-link"
 					download>
-					<NcButton type="secondary" @click.prevent="download">
+					<NcButton type="primary" @click.prevent="download">
 						{{ t('learning', 'Herunterladen') }}
 					</NcButton>
 				</a>
-				<NcButton type="primary" @click="openLinkedIn">
-					{{ t('learning', 'Zu LinkedIn-Profil hinzufügen') }}
+				<NcButton type="secondary" @click="openLinkedIn">
+					{{ t('learning', 'Zu LinkedIn hinzufügen (öffnet LinkedIn)') }}
 				</NcButton>
 			</div>
 		</template>
@@ -337,6 +340,20 @@ export default {
 	word-break: break-all;
 }
 
+.certificate-verify-id-label {
+	margin-top: 6px;
+	font-size: 0.8em;
+	color: var(--color-text-maxcontrast);
+}
+
+.certificate-verify-id {
+	font-family: monospace;
+	font-size: 0.95em;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+	word-break: break-all;
+}
+
 .certificate-actions {
 	display: flex;
 	flex-wrap: wrap;
@@ -353,6 +370,11 @@ export default {
 /* Print stylesheet (CERT-07): isolate the certificate card so window.print() yields a
    clean certificate with no app chrome. The visibility trick works regardless of the
    modal's DOM nesting (NcModal teleports to <body>). */
+@page {
+	size: A4;
+	margin: 18mm;
+}
+
 @media print {
 	body * {
 		visibility: hidden;
@@ -368,6 +390,20 @@ export default {
 		left: 0;
 		top: 0;
 		width: 100%;
+	}
+
+	/* Certificate-grade geometry: a centred card on the A4 page, no screen chrome/shadow. */
+	.certificate-card {
+		max-width: 170mm;
+		margin: 0 auto;
+		box-shadow: none;
+		border: 1px solid #ccc;
+	}
+
+	/* Guaranteed scannable QR at a fixed physical size (not pixel-dependent). */
+	.certificate-qr {
+		width: 30mm;
+		height: 30mm;
 	}
 
 	.no-print {

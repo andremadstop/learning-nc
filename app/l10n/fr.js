@@ -2264,5 +2264,9 @@ OC.L10N.register(
     "Akzeptieren Sie dieses Zertifikat nicht als bestätigt. Bitten Sie die vorlegende Person, Ihnen ein frisches PDF oder einen neuen QR-Code direkt aus ihrem Konto zu schicken, und prüfen Sie den Link erneut." : "N’acceptez pas ce certificat comme confirmé. Demandez à la personne qui le présente de vous envoyer un nouveau PDF ou un nouveau code QR directement depuis son compte, puis vérifiez à nouveau le lien.",
     "Aus Datenschutzgründen (DSGVO) wird der Name des Inhabers auf dieser öffentlichen Seite nicht angezeigt." : "Pour des raisons de protection des données (RGPD), le nom du titulaire n’est pas affiché sur cette page publique.",
     "Das Zertifikat trägt eine digitale Signatur des Ausstellers, mit der sich jede nachträgliche Veränderung erkennen lässt. Diese Seite prüft die Signatur automatisch und zeigt zusätzlich, ob das Zertifikat zurückgezogen oder abgelaufen ist." : "Le certificat porte une signature numérique de l’émetteur qui révèle toute modification ultérieure. Cette page vérifie la signature automatiquement et indique également si le certificat a été révoqué ou a expiré.",
+    "Mindestscore" : "Score minimum",
+    "Scannen oder ID prüfen unter" : "Scannez ou vérifiez l’identifiant sur",
+    "Zertifikat-ID" : "Identifiant du certificat",
+    "Zu LinkedIn hinzufügen (öffnet LinkedIn)" : "Ajouter à LinkedIn (ouvre LinkedIn)",
 },
 "nplurals=2; plural=(n > 1);");
