@@ -35,12 +35,15 @@ const verifyPath = (vid) => `/apps/learning/verify/${vid}`
 //      If it is instead the fallback "Teilnehmer:in" (IssuanceService::FALLBACK_RECIPIENT), the name was
 //      never in the credential → absence proves NOTHING; pick/mint a cert with a real display name.
 // Only after (3) is the page.content() absence assertion a real VERIFY-03 gate.
-const LIVE_VID = 'eb97720c-59d1-4c65-ba49-229c47341047'
+// Provisioned 2026-06-28 (demo-course pass): the live valid DE cert on course 62, recipient
+// "Demo Teilnehmer" (uid demo-idiottest). credentialSubject.name === RECIPIENT_DISPLAY confirmed via
+// psql + base64url-decode before trusting the absence assertion (NOT the IssuanceService fallback).
+const LIVE_VID = '603d914c-aaa0-4cf0-a49f-35ea9a219d87'
 
-// Assert the LIVE cert's REAL recipient is absent — NOT the unit-test fixture "Jürgen Müller", which
-// was never in any real cert (asserting it would be a vacuous pass). DO NOT "fix" these to the fixture.
-const RECIPIENT_DISPLAY = 'ZZ Testkandidat'
-const RECIPIENT_USERID = 'zz-test-cert155'
+// Assert the LIVE cert's REAL recipient is absent — NOT a unit-test fixture (asserting a name that was
+// never in any real cert would be a vacuous pass). DO NOT "fix" these to a fixture.
+const RECIPIENT_DISPLAY = 'Demo Teilnehmer'
+const RECIPIENT_USERID = 'demo-idiottest'
 
 // Language-NEUTRAL selectors. The h1 text localizes (chromium sends Accept-Language: en →
 // "Verification failed", curl with no header → "Verifizierung fehlgeschlagen"), so we assert on the
