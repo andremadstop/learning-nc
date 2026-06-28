@@ -22,12 +22,12 @@
   {
     "text": "An online shop offers the sought-after game console 70% cheaper than anywhere else. What's the strongest sign of a fake shop?",
     "answers": [
-      {"text": "Prepayment/bank transfer only, no legal imprint, and the reviews feel generic", "is_correct": true},
+      {"text": "Prepayment/bank transfer only, no seller address or contact details, and the reviews feel generic", "is_correct": true},
       {"text": "The site shows a padlock symbol (https) in the address bar", "is_correct": false},
       {"text": "The shop accepts PayPal buyer protection and credit cards", "is_correct": false},
       {"text": "The product photos look professional", "is_correct": false}
     ],
-    "explanation": "An unrealistic price + prepayment only + missing legal imprint + generic reviews are the classic fake-shop tells. An https padlock only means the transfer is encrypted, NOT that the shop is legitimate — scammers have SSL too. Payment methods with buyer protection protect you."
+    "explanation": "An unrealistic price + prepayment only + no verifiable seller (company name, address, contact) + generic reviews are the classic fake-shop tells. An https padlock only means the transfer is encrypted, NOT that the shop is legitimate — scammers have SSL too. Payment methods with buyer protection protect you."
   },
   {
     "text": "You land on a login page at the address `paypa1-security.com`. What's wrong here?",
@@ -100,7 +100,7 @@
     "explanation": "AI can clone a voice from a few seconds of audio — \"sounds real\" is no longer proof. The protection is always a callback through an independent, known channel. Personal questions help little because much is findable online. Pressure + immediate transfer = alarm signal."
   },
   {
-    "text": "On a dating or investment platform, an attractive profile messages you, quickly builds trust, then advises a \"can't-lose\" investment. What's most suspicious?",
+    "text": "On a dating or investment platform, an unusually polished profile messages you, quickly builds trust, then advises a \"can't-lose\" investment. What's most suspicious?",
     "answers": [
       {"text": "… that the profile picture looks good", "is_correct": false},
       {"text": "… that the person is never willing to do a spontaneous video call, builds emotional closeness fast, and steers toward an investment", "is_correct": true},

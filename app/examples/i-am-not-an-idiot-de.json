@@ -100,7 +100,7 @@
     "explanation": "KI kann eine Stimme aus wenigen Sekunden Audio klonen — „klingt echt\" ist kein Beweis mehr. Der Schutz ist immer der Rückruf über einen unabhängigen, bekannten Kanal. Persönliche Fragen helfen kaum, weil vieles online auffindbar ist. Druck + sofortige Überweisung = Alarmsignal."
   },
   {
-    "text": "Auf einer Dating- oder Investment-Plattform schreibt dir ein attraktives Profil, baut schnell Vertrauen auf und rät dann zu einer „todsicheren\" Geldanlage. Verdächtig ist vor allem …",
+    "text": "Auf einer Dating- oder Investment-Plattform schreibt dir ein auffallend makelloses Profil, baut schnell Vertrauen auf und rät dann zu einer „todsicheren\" Geldanlage. Verdächtig ist vor allem …",
     "answers": [
       {"text": "… dass das Profilbild gut aussieht", "is_correct": false},
       {"text": "… dass die Person nie zu einem spontanen Videocall bereit ist, schnell emotionale Nähe aufbaut und auf eine Geldanlage hinsteuert", "is_correct": true},
