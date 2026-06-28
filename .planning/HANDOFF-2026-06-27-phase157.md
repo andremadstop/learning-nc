@@ -20,6 +20,14 @@ Phase 157 (Public-Verify): 5/5 Pläne, 4 Wellen, alle Gate-1 grün. gsd-verifier
 
 REQUIREMENTS VERIFY-01..06 geflippt (ehrliche deferred-Status). STATE/ROADMAP/REQUIREMENTS hand-editiert (gsd-tools korrumpiert v5.0.0-Frontmatter → NIE benutzen).
 
+## UPDATE 2026-06-28 — Demo-Kurs „I am not an idiot test" GEBAUT + SHIP'd
+
+Andre wählte „Demo-Kurs zuerst" (Option 1). Durchlaufen: brainstorming → Spec → writing-plans → executing-plans (inline). **Tasks 1–3 done + committet** (`e45b352` DE-Pool+Validator, `4cfd198` EN-Pool, `6970b17` Multi-KI-Review→SHIP):
+- 18 MCQ DE + 18 EN (treu 1:1), 4 Themen (5/4/5/4), Korrekt-Positionen 5/5/4/4 (kein Muster).
+- `app/examples/i-am-not-an-idiot-{de,en}.json` + `scripts/validate-pool-json.mjs` (in `.gitignore`-Whitelist).
+- Pre-Publish-Gate (fabric→Gemini→grumpy Codex): 9 Fixes (3 gefährlich: Q11 Video≠Beweis, Q12 garantierte-Verdopplung, Q18 unseriöser-VPN), grumpy Codex Bestätigung **VERDICT: SHIP**. Log: `docs/superpowers/plans/2026-06-28-demo-course-REVIEW.md`. Spec: `docs/.../specs/2026-06-28-...-design.md`. Plan: `docs/.../plans/2026-06-28-demo-course-i-am-not-an-idiot.md`.
+- **OFFEN = Plan Task 4 (Live-Provisioning, user-gated, Regel 15):** Pools/Kurse auf DevCloud anlegen, Cert minten, gated 157-Checks grün, Release. Zwei Plan-Entscheidungen: 1-vs-2-Kurse (Empfehlung 2: DE+EN getrennt, je Cert — von Andre bestätigt), Mint echte-Person-vs-seed.
+
 ## NÄCHSTER SCHRITT — Entscheidung für Andre (kein Auto-Run!)
 
 **Der gesamte Rest von v5.0.0 ist Prod-Mutation (Regel 15) und MUSS von dir autorisiert werden.** „mach direkt weiter" hat den Phase-Close autorisiert, NICHT Prod-Writes.
