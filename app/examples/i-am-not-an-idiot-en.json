@@ -1,0 +1,182 @@
+[
+  {
+    "text": "A text from \"DHL\" says your parcel is stuck in customs — tap the link and pay a €2.99 fee or it gets sent back. What do you do?",
+    "answers": [
+      {"text": "Pay through the link right away — €2.99 is barely worth worrying about", "is_correct": false},
+      {"text": "Ignore the link and, if I'm actually expecting a parcel, check directly in the real DHL app or website using the tracking number", "is_correct": true},
+      {"text": "Reply to the text and ask for details", "is_correct": false},
+      {"text": "Open the link just to look — I'll only pay if the page looks legit", "is_correct": false}
+    ],
+    "explanation": "Real couriers never demand customs fees via an SMS link. This \"smishing\" is after your card details. Always check shipments only through the official app/website using the tracking number — never via the link in the message."
+  },
+  {
+    "text": "Which feature most reliably exposes a phishing email pretending to be from your \"bank\"?",
+    "answers": [
+      {"text": "The email contains the bank's logo", "is_correct": false},
+      {"text": "The email is written in flawless language", "is_correct": false},
+      {"text": "The email arrived on a weekday", "is_correct": false},
+      {"text": "The email tells you to \"confirm\" your login details via a link immediately, or your account will be locked", "is_correct": true}
+    ],
+    "explanation": "Banks never ask you to \"confirm\" a password or PIN via an email link and don't threaten instant lockout. Logos and flawless wording prove nothing — anyone can copy them. When in doubt, use the bank app or the address you typed yourself, never the email link."
+  },
+  {
+    "text": "An online shop offers the sought-after game console 70% cheaper than anywhere else. What's the strongest sign of a fake shop?",
+    "answers": [
+      {"text": "Prepayment/bank transfer only, no legal imprint, and the reviews feel generic", "is_correct": true},
+      {"text": "The site shows a padlock symbol (https) in the address bar", "is_correct": false},
+      {"text": "The shop accepts PayPal buyer protection and credit cards", "is_correct": false},
+      {"text": "The product photos look professional", "is_correct": false}
+    ],
+    "explanation": "An unrealistic price + prepayment only + missing legal imprint + generic reviews are the classic fake-shop tells. An https padlock only means the transfer is encrypted, NOT that the shop is legitimate — scammers have SSL too. Payment methods with buyer protection protect you."
+  },
+  {
+    "text": "You land on a login page at the address `paypa1-security.com`. What's wrong here?",
+    "answers": [
+      {"text": "Nothing — \"security\" in the name shows it's secure", "is_correct": false},
+      {"text": "The page is real as long as it shows the PayPal logo", "is_correct": false},
+      {"text": "The domain is fake — the real PayPal lives at paypal.com; here there's a \"1\" instead of \"l\" plus a foreign extra domain", "is_correct": true},
+      {"text": "You simply can't tell from the outside", "is_correct": false}
+    ],
+    "explanation": "Scammers register lookalike domains (typos, add-ons, swapped characters like 1↔l or 0↔o). What matters is always the part right before the ending: in `paypa1-security.com` the domain is `paypa1-security`, not PayPal. Read the address carefully or type it yourself."
+  },
+  {
+    "text": "There's a QR-code sticker on the parking meter: \"Pay conveniently online here.\" Why be careful?",
+    "answers": [
+      {"text": "QR codes can never be dangerous", "is_correct": false},
+      {"text": "Stuck-on QR codes can come from scammers and lead to fake payment pages — a code hides its destination until you scan it", "is_correct": true},
+      {"text": "Only QR codes in emails are a problem", "is_correct": false},
+      {"text": "As long as a payment field appears after scanning, everything's fine", "is_correct": false}
+    ],
+    "explanation": "\"Quishing\" uses QR codes because you can't see the address behind them. Scammers stick fake codes over real ones on parking meters, charging stations, or in letters. After scanning, check the address shown — or just use the provider's official app instead of unknown codes."
+  },
+  {
+    "text": "What makes a password strongest against automated cracking attempts?",
+    "answers": [
+      {"text": "Its length — a long passphrase of several random words beats a short, complicated password", "is_correct": true},
+      {"text": "As many special characters as possible, like in P@$$!", "is_correct": false},
+      {"text": "Bumping it up by one digit at the end on a regular basis", "is_correct": false},
+      {"text": "Containing your name plus birth year so you won't forget it", "is_correct": false}
+    ],
+    "explanation": "Every extra character multiplies the effort to crack it — length beats complexity. A passphrase like \"bumblebee-battery-cloud-tango7\" is both safer AND easier to remember than \"P@$$w0rd\". Name+birth-year and \"+1\" patterns, by contrast, are easy to guess."
+  },
+  {
+    "text": "Why is a password manager one of the best security decisions?",
+    "answers": [
+      {"text": "Because it stores passwords unencrypted for fast access", "is_correct": false},
+      {"text": "Because then you don't have to remember any master password at all", "is_correct": false},
+      {"text": "Because it lets you safely use the same strong password everywhere", "is_correct": false},
+      {"text": "Because it generates and encrypts a long, unique password for every service, so a leak at service A doesn't endanger your other accounts", "is_correct": true}
+    ],
+    "explanation": "The biggest win is uniqueness: a separate, random password per service, so one data leak doesn't spill over to your other accounts. The manager remembers them encrypted — you only need ONE strong master password. \"Same one everywhere\" stays wrong even with a manager."
+  },
+  {
+    "text": "Which form of two-factor authentication (2FA) is the most secure?",
+    "answers": [
+      {"text": "A code sent by SMS to your phone", "is_correct": false},
+      {"text": "A passkey or hardware security key — phishing-resistant because it's cryptographically bound to the real website", "is_correct": true},
+      {"text": "No 2FA at all — a strong password is enough", "is_correct": false},
+      {"text": "The security question about your mother's maiden name", "is_correct": false}
+    ],
+    "explanation": "SMS codes are better than nothing but interceptable (SIM swapping, phishing relay). Authenticator apps (TOTP) are stronger; passkeys/hardware keys are best because they're bound to the real domain and won't work on a fake page. Security questions are not a second factor."
+  },
+  {
+    "text": "An online forum had a data breach. Why can that suddenly endanger your email account too?",
+    "answers": [
+      {"text": "It can't — a forum breach stays with the forum", "is_correct": false},
+      {"text": "Only if the forum had stored your credit card", "is_correct": false},
+      {"text": "If you use the same password for the forum and your email, scammers automatically try the leaked credentials across many services (credential stuffing)", "is_correct": true},
+      {"text": "Only if you used your real name on the forum", "is_correct": false}
+    ],
+    "explanation": "In \"credential stuffing,\" leaked email/password combos are tried automatically against hundreds of other services. Reused passwords turn one small leak into a chain reaction. That's why you want a separate password per service (see password manager)."
+  },
+  {
+    "text": "Your \"grandchild\" calls, the voice sounds convincingly real, they're in trouble and need money by transfer right now. What do you do?",
+    "answers": [
+      {"text": "Hang up and call back on the number I already know, or verify the family through another channel, before anything happens", "is_correct": true},
+      {"text": "Transfer immediately — the voice was clearly real", "is_correct": false},
+      {"text": "Ask a few personal questions on the phone; whoever answers them is genuine", "is_correct": false},
+      {"text": "Give the money, but only half", "is_correct": false}
+    ],
+    "explanation": "AI can clone a voice from a few seconds of audio — \"sounds real\" is no longer proof. The protection is always a callback through an independent, known channel. Personal questions help little because much is findable online. Pressure + immediate transfer = alarm signal."
+  },
+  {
+    "text": "On a dating or investment platform, an attractive profile messages you, quickly builds trust, then advises a \"can't-lose\" investment. What's most suspicious?",
+    "answers": [
+      {"text": "… that the profile picture looks good", "is_correct": false},
+      {"text": "… that the person is never willing to do a spontaneous video call, builds emotional closeness fast, and steers toward an investment", "is_correct": true},
+      {"text": "… that the person is online in the evenings", "is_correct": false},
+      {"text": "… nothing, as long as you haven't sent money yet", "is_correct": false}
+    ],
+    "explanation": "Romance and investment scams use AI-generated photos and chat text. Typical signs: fast \"love/trust bombing,\" excuses to avoid live video calls (because someone else is behind the profile), and sooner or later a money request or \"investment opportunity.\" An unannounced video call exposes many fakes."
+  },
+  {
+    "text": "In a video, a well-known entrepreneur recommends a crypto platform with \"guaranteed doubling.\" How do you read this?",
+    "answers": [
+      {"text": "The video is proof — if the person says it, it's true", "is_correct": false},
+      {"text": "Legit as long as the video has lots of likes", "is_correct": false},
+      {"text": "Legit as long as the platform has a nice website", "is_correct": false},
+      {"text": "Very likely a deepfake or a hijacked ad account; \"guaranteed\" gains don't exist, and celebrities are \"cloned\" for fake ads", "is_correct": true}
+    ],
+    "explanation": "Deepfake videos put fabricated statements into real people's mouths; celebrity \"investment tips\" are a mass phenomenon. The real warning sign is in the promise itself: \"guaranteed\" or \"doubled\" returns are fraudulent — no legitimate investment guarantees gains."
+  },
+  {
+    "text": "It used to be: bad spelling exposes phishing. Why doesn't that rule hold today?",
+    "answers": [
+      {"text": "Because scammers now employ proofreaders", "is_correct": false},
+      {"text": "Because spelling was never a clue", "is_correct": false},
+      {"text": "Because AI text tools produce flawless, convincing, personalized messages in any language — watch the content and context, not the typos", "is_correct": true},
+      {"text": "Because modern email programs auto-correct typos", "is_correct": false}
+    ],
+    "explanation": "AI has made the \"typo\" tell worthless: phishing today is linguistically perfect and often personalized. Rely on context — an unexpected request, urgency, a link/attachment, an unusual ask — instead of the language."
+  },
+  {
+    "text": "An email from your \"boss\" urgently asks you to buy gift cards and send the codes. What's the right response?",
+    "answers": [
+      {"text": "Verify the request through a second, known channel (call/in person) — real managers don't request this by email", "is_correct": true},
+      {"text": "Get it done quickly — the boss is in a hurry", "is_correct": false},
+      {"text": "Reply to the email and ask for confirmation", "is_correct": false},
+      {"text": "Buy the cards, but only send the codes once the boss gets in touch again", "is_correct": false}
+    ],
+    "explanation": "The \"CEO fraud\"/gift-card trick runs on authority plus urgency. The countermeasure is always verification through an independent channel — a reply to the email lands with the scammer. Gift-card codes as \"payment\" are virtually always a scam."
+  },
+  {
+    "text": "An app promises \"guaranteed 2% returns — daily.\" What does your gut tell you (correctly)?",
+    "answers": [
+      {"text": "Sounds great — I'll invest my savings", "is_correct": false},
+      {"text": "Guaranteed, high, regular returns don't exist — that's the hallmark of a pyramid/investment scam", "is_correct": true},
+      {"text": "Legit, as long as I get small payouts at the start", "is_correct": false},
+      {"text": "Legit, as long as friends are joining in too", "is_correct": false}
+    ],
+    "explanation": "\"Guaranteed\" + high + regular is mathematically impossible and the trademark of Ponzi schemes. Early mini-payouts are bait, funded by new victims' money; \"friends are joining in\" is exactly the recruitment mechanism. Legitimate investments fluctuate and guarantee nothing."
+  },
+  {
+    "text": "Which single feature shows up in almost every scam?",
+    "answers": [
+      {"text": "A polite salutation", "is_correct": false},
+      {"text": "A long, factual explanation", "is_correct": false},
+      {"text": "An offer to think it over at your leisure", "is_correct": false},
+      {"text": "Artificial time pressure — \"act now, or account locked / fine / opportunity gone\"", "is_correct": true}
+    ],
+    "explanation": "Urgency switches off critical thinking — which is why it's the common thread of nearly every scam (phishing, grandparent scam, fake authority, investment fraud). The best countermeasure is simple: when pressured, pause, do nothing immediately, verify independently. Legitimate parties give you time."
+  },
+  {
+    "text": "A simple flashlight app wants access to your contacts, location, and microphone. What's the right conclusion?",
+    "answers": [
+      {"text": "These permissions have nothing to do with the function — data is probably being collected and sold; avoid such apps or deny the permissions", "is_correct": true},
+      {"text": "Just allow it, otherwise the app might not work", "is_correct": false},
+      {"text": "That's normal for every app and harmless", "is_correct": false},
+      {"text": "Only apps from small providers collect data", "is_correct": false}
+    ],
+    "explanation": "Permissions should match the function — a flashlight needs neither contacts nor location nor microphone. Excessive permissions point to data collection for ad/data brokers. On your phone, grant permissions individually and deny the unnecessary ones; when in doubt, avoid the app."
+  },
+  {
+    "text": "You're on open airport Wi-Fi and want to quickly do some online banking. What applies?",
+    "answers": [
+      {"text": "Open Wi-Fi is always completely safe", "is_correct": false},
+      {"text": "As long as I'm quick, nothing can happen", "is_correct": false},
+      {"text": "Do sensitive things like banking over mobile data or a trustworthy VPN; don't rely on the open network alone", "is_correct": true},
+      {"text": "A VPN makes online banking less secure", "is_correct": false}
+    ],
+    "explanation": "On open networks you can never be sure who's listening or whether the hotspot is genuine (fake \"Airport_WiFi\"). HTTPS protects the content, but for sensitive tasks, mobile data or a trustworthy VPN is the safe choice. A VPN increases security, it doesn't lower it."
+  }
+]
