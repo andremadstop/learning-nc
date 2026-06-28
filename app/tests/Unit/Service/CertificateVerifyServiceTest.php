@@ -351,6 +351,29 @@ class CertificateVerifyServiceTest extends TestCase {
     }
 
     /**
+     * BLOCKER regression (pre-release grumpy-Codex gate): the SIGNED `validUntil` is the tamper-evident
+     * expiry authority — a DB-only `expires_at` extension must NOT make a signed-expired credential read
+     * 'valid'. Signed validUntil in the PAST + DB expires_at in the FUTURE → 'expired'.
+     */
+    public function testSignedValidUntilBeatsFutureDbExpiry(): void {
+        $keyService = $this->keyServiceWith();
+        $payload = $this->payload(self::VID);
+        $payload['validUntil'] = '2023-01-01T00:00:00+00:00'; // signed expiry: before NOW
+        $jwt = $this->signJwt($payload);
+
+        // DB expires_at far in the FUTURE (the "extension" an attacker with DB write could set).
+        $cert = $this->certificate(self::VID, $jwt, self::KEY_ID, false, null, self::NOW + 10_000_000);
+        $service = $this->buildService(
+            $this->certMapperFor($cert),
+            $this->keyMapperFor($this->certKey(self::KEY_ID, 'active')),
+            $keyService,
+            $this->timeAt(self::NOW)
+        );
+
+        $this->assertSame('expired', $service->verifyByVerificationId(self::VID)['status']);
+    }
+
+    /**
      * Tombstone: revoked=true → 'withdrawn' + revoked_at present (HTTP-200 tombstone, NOT 404),
      * and it takes precedence over expiry.
      */

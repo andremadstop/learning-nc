@@ -114,12 +114,33 @@ class CertificateVerifyService {
             return ['status' => 'withdrawn', 'revoked_at' => $cert->getRevokedAt()] + $dto;
         }
 
-        $exp = $cert->getExpiresAt();
-        if ($exp !== null && $exp < $this->timeFactory->getTime()) {
+        // Expiry. The SIGNED `validUntil` (covered by the EdDSA signature, already verified above) is the
+        // tamper-evident authority — NOT the mutable DB `expires_at` column. A DB-only `expires_at`
+        // extension must NOT make a signed-expired credential read 'valid' (an independent verifier reads
+        // the signed validUntil and would expire it). We expire if EITHER source is past: the signed time
+        // is the authority; the DB column stays as defence-in-depth (and the only source when a cert has
+        // no validUntil — non-expiring certs carry neither). Found by the pre-release grumpy-Codex gate.
+        $now = $this->timeFactory->getTime();
+        $signedExp = $this->parseIso8601($payload['validUntil'] ?? null);
+        $dbExp = $cert->getExpiresAt();
+        if (($signedExp !== null && $signedExp < $now) || ($dbExp !== null && $dbExp < $now)) {
             return ['status' => 'expired'] + $dto;
         }
 
         return ['status' => 'valid'] + $dto;
+    }
+
+    /**
+     * Parse an ISO-8601 UTC timestamp (e.g. "2027-06-28T13:22:33Z") from the signed payload to a unix
+     * time. Any non-string / malformed value → null (never throws — a hostile payload must not crash the
+     * public route). Mirrors IssuanceService::iso8601() on the write side.
+     */
+    private function parseIso8601(mixed $value): ?int {
+        if (!is_string($value) || $value === '') {
+            return null;
+        }
+        $ts = strtotime($value);
+        return $ts === false ? null : $ts;
     }
 
     /**
