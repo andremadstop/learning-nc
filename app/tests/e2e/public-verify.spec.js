@@ -49,9 +49,11 @@ const RECIPIENT_USERID = 'demo-idiottest'
 // "Verification failed", curl with no header → "Verifizierung fehlgeschlagen"), so we assert on the
 // stable banner class + the locked per-status background colours instead of any translated string.
 const BANNER_CLASS = 'lrn-verify__banner'
+// Banner backgrounds are WCAG-AA-darkened (valid/withdrawn) after the pre-release UX gate; expired/red
+// were already compliant. Keep these in sync with templates/verify.php.
 const COLOUR_FAIL = 'background:#d92f2f' // unknown/invalid (the generic no-oracle page)
-const COLOUR_VALID = 'background:#2f9a48'
-const COLOUR_WITHDRAWN = 'background:#e69900'
+const COLOUR_VALID = 'background:#2e7d32'
+const COLOUR_WITHDRAWN = 'background:#8a5a00'
 const COLOUR_EXPIRED = 'background:#6c757d'
 
 test.describe('Public certificate verify — logged out (no NC session)', () => {

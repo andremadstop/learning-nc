@@ -12,11 +12,9 @@
         "Die Gültigkeit endete am %s.": "Validity ended on %s.",
         "unbegrenzt gültig": "valid indefinitely",
         "Hinweis zum Datenschutz": "Privacy notice",
-        "Aus Datenschutzgründen (DSGVO) wird der Name des Inhabers auf dieser öffentlichen Seite nicht angezeigt. So prüfen Sie die Zugehörigkeit: Vergleichen Sie die oben angezeigte Verifizierungs-ID mit der ID auf dem Ihnen vorliegenden Dokument.": "For data protection reasons (GDPR), the holder’s name is not shown on this public page. To verify ownership: compare the verification ID shown above with the ID on the document presented to you.",
         "Abgefragt am": "Queried on",
         "Digital verifiziert": "Digitally verified",
         "Wie funktioniert diese Verifizierung?": "How does this verification work?",
-        "Das Zertifikat enthält eine digitale Unterschrift des Ausstellers. Diese Seite prüft sie automatisch und zeigt zusätzlich, ob das Zertifikat zurückgezogen oder abgelaufen ist.": "The certificate carries a digital signature from the issuer. This page checks it automatically and also shows whether the certificate has been withdrawn or has expired.",
         "\"{name}\" aus diesem Kurs entfernen?": "Remove \"{name}\" from this course?",
         "%n day streak": "%n day streak",
         "%n day until exam": "%n day until exam",
@@ -2258,6 +2256,13 @@
         "← Zurück": "← Back",
         "← Zurück zu Kursen": "← Back to courses",
         "← Zurück zu Pools": "← Back to pools",
-        "← Zurück zum Kurs": "← Back to course"
+        "← Zurück zum Kurs": "← Back to course",
+        "Signatur echt – Zertifikat nicht mehr gültig": "Signature genuine – certificate no longer valid",
+        "Was diese Prüfung bestätigt – und was nicht": "What this check confirms – and what it does not",
+        "Bestätigt: Dieses Zertifikat wurde vom oben genannten Aussteller digital signiert und ist unverändert. Nicht bestätigt: die Identität der Person, die es Ihnen vorlegt. Gleichen Sie dazu die nachstehende Verifizierungs-ID mit der ID auf dem vorgelegten Dokument ab – sie muss exakt übereinstimmen.": "Confirmed: this certificate was digitally signed by the issuer named above and is unaltered. Not confirmed: the identity of the person presenting it to you. To check that, compare the verification ID below with the ID on the document you were given – it must match exactly.",
+        "Was Sie jetzt tun sollten": "What you should do now",
+        "Akzeptieren Sie dieses Zertifikat nicht als bestätigt. Bitten Sie die vorlegende Person, Ihnen ein frisches PDF oder einen neuen QR-Code direkt aus ihrem Konto zu schicken, und prüfen Sie den Link erneut.": "Do not accept this certificate as confirmed. Ask the person presenting it to send you a fresh PDF or a new QR code directly from their account, then check the link again.",
+        "Aus Datenschutzgründen (DSGVO) wird der Name des Inhabers auf dieser öffentlichen Seite nicht angezeigt.": "For data-protection reasons (GDPR), the holder’s name is not shown on this public page.",
+        "Das Zertifikat trägt eine digitale Signatur des Ausstellers, mit der sich jede nachträgliche Veränderung erkennen lässt. Diese Seite prüft die Signatur automatisch und zeigt zusätzlich, ob das Zertifikat zurückgezogen oder abgelaufen ist.": "The certificate carries a digital signature from the issuer that reveals any later alteration. This page checks the signature automatically and also shows whether the certificate has been revoked or has expired."
     }
 }

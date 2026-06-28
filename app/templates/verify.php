@@ -5,10 +5,12 @@
  * interpolated value is HTML-escaped via p(). The params come from PublicVerifyController::buildParams,
  * which carries ONLY the DSGVO display fields — the recipient name is never passed here and never rendered.
  *
- * Four status banners (Gemini-locked): valid (green), withdrawn (ocker tombstone), expired (grey),
- * unknown|invalid (red). For unknown/invalid only the red banner renders (no cert exists → nothing leaks,
- * no enumeration oracle). Information order: banner → course → issuer → data → missing-name explainer →
- * fine print → trust badge → plain-language footer.
+ * Four status banners: valid (green), withdrawn (ocker tombstone), expired (grey), unknown|invalid (red).
+ * For unknown/invalid only the red banner + safe-decision guidance render (no cert exists → nothing leaks,
+ * no enumeration oracle). Banner colours are WCAG-AA against the white text; the trust badge is
+ * status-aware (only a currently-valid cert gets the green "verified" badge). Info order: banner →
+ * (cert:) course → issuer → data → "what this proves / does not prove" → DSGVO explainer → fine print →
+ * status badge → how-it-works.  (unknown:) banner → decision guidance → how-it-works.
  *
  * @var array<string, mixed> $_
  * @var \OCP\IL10N $l
@@ -19,41 +21,51 @@ $isCert = in_array($status, ['valid', 'withdrawn', 'expired'], true);
 
 /** Localised date (falls back to ISO if IL10N->l is unavailable in this context). */
 $fmtDate = static function ($ts) use ($l): string {
-    if ($ts === null || $ts === '') {
-        return '';
-    }
-    try {
-        return (string)$l->l('date', new \DateTime('@' . (int)$ts));
-    } catch (\Throwable $e) {
-        return date('Y-m-d', (int)$ts);
-    }
+	if ($ts === null || $ts === '') {
+		return '';
+	}
+	try {
+		return (string)$l->l('date', new \DateTime('@' . (int)$ts));
+	} catch (\Throwable $e) {
+		return date('Y-m-d', (int)$ts);
+	}
 };
 try {
-    $queryTime = (string)$l->l('datetime', new \DateTime('now'));
+	$queryTime = (string)$l->l('datetime', new \DateTime('now'));
 } catch (\Throwable $e) {
-    $queryTime = date('Y-m-d H:i');
+	$queryTime = date('Y-m-d H:i');
 }
 
-// Banner: red unknown/invalid is the default; the found+sig-OK statuses override it.
+// Banner + status-aware trust badge. Red unknown/invalid is the default; found+sig-OK statuses override.
+// Colours are WCAG-AA (≥4.5:1) against the white banner text: valid green and withdrawn amber were
+// darkened from the original palette per the pre-release UX gate (expired grey + unknown red already pass).
 $glyph = '✕';
 $color = '#d92f2f';
 $bannerTitle = $l->t('Verifizierung fehlgeschlagen');
 $bannerSub = $l->t('Das Zertifikat konnte nicht gefunden werden. Bitte prüfen Sie den Link oder QR-Code.');
+// Badge default (withdrawn/expired): the signature is genuine but the cert is no longer valid — a NEUTRAL
+// badge that must NOT read as "verified". Only the valid branch below promotes it to the green badge.
+$badgeColor = '#5c636a';
+$badgeGlyph = 'ℹ';
+$badgeText = $l->t('Signatur echt – Zertifikat nicht mehr gültig');
 if ($status === 'valid') {
-    $glyph = '✓';
-    $color = '#2f9a48';
-    $bannerTitle = $l->t('Zertifikat erfolgreich verifiziert');
-    $bannerSub = $l->t('Dieses Zertifikat ist gültig.');
+	$glyph = '✓';
+	$color = '#2e7d32';
+	$bannerTitle = $l->t('Zertifikat erfolgreich verifiziert');
+	$bannerSub = $l->t('Dieses Zertifikat ist gültig.');
+	$badgeColor = '#2e7d32';
+	$badgeGlyph = '✓';
+	$badgeText = $l->t('Digital verifiziert');
 } elseif ($status === 'withdrawn') {
-    $glyph = '⦸';
-    $color = '#e69900';
-    $bannerTitle = $l->t('Zertifikat zurückgezogen');
-    $bannerSub = $l->t('Dieses Zertifikat wurde am %s vom Aussteller widerrufen.', [$fmtDate($_['revoked_at'] ?? null)]);
+	$glyph = '⦸';
+	$color = '#8a5a00';
+	$bannerTitle = $l->t('Zertifikat zurückgezogen');
+	$bannerSub = $l->t('Dieses Zertifikat wurde am %s vom Aussteller widerrufen.', [$fmtDate($_['revoked_at'] ?? null)]);
 } elseif ($status === 'expired') {
-    $glyph = '⌛';
-    $color = '#6c757d';
-    $bannerTitle = $l->t('Zertifikat abgelaufen');
-    $bannerSub = $l->t('Die Gültigkeit endete am %s.', [$fmtDate($_['expires_at'] ?? null)]);
+	$glyph = '⌛';
+	$color = '#6c757d';
+	$bannerTitle = $l->t('Zertifikat abgelaufen');
+	$bannerSub = $l->t('Die Gültigkeit endete am %s.', [$fmtDate($_['expires_at'] ?? null)]);
 }
 ?>
 <style>
@@ -65,7 +77,7 @@ if ($status === 'valid') {
 	}
 	.lrn-verify__icon { font-size: 56px; line-height: 1; display: block; margin-bottom: 8px; }
 	.lrn-verify__banner h1 { margin: 0 0 6px; font-size: 1.6em; font-weight: 700; color: #fff; }
-	.lrn-verify__banner p { margin: 0; font-size: 1.05em; opacity: .96; }
+	.lrn-verify__banner p { margin: 0; font-size: 1.05em; opacity: .98; }
 	.lrn-verify__course { margin: 24px 0 8px; font-size: 1.35em; color: #1a3a5c; text-align: start; }
 	.lrn-verify__issuer { display: flex; align-items: center; gap: 12px; margin: 12px 0 24px; }
 	.lrn-verify__issuer img { height: 40px; width: auto; }
@@ -74,15 +86,27 @@ if ($status === 'valid') {
 	.lrn-verify__row { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; }
 	.lrn-verify__row dt { color: #555; margin: 0; }
 	.lrn-verify__row dd { margin: 0; font-weight: 600; color: #1a3a5c; text-align: end; }
+	.lrn-verify__proof {
+		border-inline-start: 4px solid #2e7d32; background: #f1f8f2; border-radius: 8px;
+		padding: 14px 18px; margin: 20px 0; text-align: start;
+	}
 	.lrn-verify__info {
 		border-inline-start: 4px solid #1a3a5c; background: #f4f7fb; border-radius: 8px;
 		padding: 14px 18px; margin: 20px 0; text-align: start;
 	}
-	.lrn-verify__info strong { display: block; margin-bottom: 6px; color: #1a3a5c; }
-	.lrn-verify__fine { font-size: .85em; color: #777; margin: 20px 0; text-align: start; word-break: break-all; }
+	.lrn-verify__warn {
+		border-inline-start: 4px solid #d92f2f; background: #fdf2f2; border-radius: 8px;
+		padding: 14px 18px; margin: 20px 0; text-align: start; color: #1a3a5c;
+	}
+	.lrn-verify__proof strong, .lrn-verify__info strong, .lrn-verify__warn strong {
+		display: block; margin-bottom: 6px; color: #1a3a5c;
+	}
+	.lrn-verify__fine { font-size: .85em; color: #777; margin: 20px 0; text-align: start; }
+	/* Latin tokens (verification id, dates) stay LTR even inside an RTL (Arabic) page — no visual reorder. */
+	.lrn-verify__ltr { unicode-bidi: isolate; direction: ltr; word-break: break-all; }
 	.lrn-verify__badge {
-		display: inline-flex; align-items: center; gap: 6px; font-size: .85em; color: #2f9a48;
-		font-weight: 600; border: 1px solid #2f9a48; border-radius: 999px; padding: 4px 12px;
+		display: inline-flex; align-items: center; gap: 6px; font-size: .85em;
+		font-weight: 600; border: 1px solid currentColor; border-radius: 999px; padding: 4px 12px;
 	}
 	.lrn-verify__how { margin-top: 24px; color: #555; }
 	.lrn-verify__how summary { cursor: pointer; color: #1a3a5c; font-weight: 600; }
@@ -109,34 +133,44 @@ if ($status === 'valid') {
 		<dl class="lrn-verify__data">
 			<div class="lrn-verify__row">
 				<dt><?php p($l->t('Ausgestellt am')); ?></dt>
-				<dd><?php p($fmtDate($_['issued_at'] ?? null)); ?></dd>
+				<dd><span class="lrn-verify__ltr"><?php p($fmtDate($_['issued_at'] ?? null)); ?></span></dd>
 			</div>
 			<div class="lrn-verify__row">
 				<dt><?php p($l->t('Gültig bis')); ?></dt>
-				<dd><?php
+				<dd><span class="lrn-verify__ltr"><?php
 					$exp = $_['expires_at'] ?? null;
 					p($exp !== null ? $fmtDate($exp) : $l->t('unbegrenzt gültig'));
-				?></dd>
+				?></span></dd>
 			</div>
 		</dl>
 
+		<div class="lrn-verify__proof">
+			<strong><?php p($l->t('Was diese Prüfung bestätigt – und was nicht')); ?></strong>
+			<?php p($l->t('Bestätigt: Dieses Zertifikat wurde vom oben genannten Aussteller digital signiert und ist unverändert. Nicht bestätigt: die Identität der Person, die es Ihnen vorlegt. Gleichen Sie dazu die nachstehende Verifizierungs-ID mit der ID auf dem vorgelegten Dokument ab – sie muss exakt übereinstimmen.')); ?>
+		</div>
+
 		<div class="lrn-verify__info">
 			<strong><?php p($l->t('Hinweis zum Datenschutz')); ?></strong>
-			<?php p($l->t('Aus Datenschutzgründen (DSGVO) wird der Name des Inhabers auf dieser öffentlichen Seite nicht angezeigt. So prüfen Sie die Zugehörigkeit: Vergleichen Sie die oben angezeigte Verifizierungs-ID mit der ID auf dem Ihnen vorliegenden Dokument.')); ?>
+			<?php p($l->t('Aus Datenschutzgründen (DSGVO) wird der Name des Inhabers auf dieser öffentlichen Seite nicht angezeigt.')); ?>
 		</div>
 
 		<p class="lrn-verify__fine">
-			<?php p($l->t('Verifizierungs-ID')); ?>: <?php p($_['verification_id'] ?? ''); ?><br>
-			<?php p($l->t('Abgefragt am')); ?>: <?php p($queryTime); ?>
+			<?php p($l->t('Verifizierungs-ID')); ?>: <span class="lrn-verify__ltr"><?php p($_['verification_id'] ?? ''); ?></span><br>
+			<?php p($l->t('Abgefragt am')); ?>: <span class="lrn-verify__ltr"><?php p($queryTime); ?></span>
 		</p>
 
-		<span class="lrn-verify__badge">
-			<span aria-hidden="true">✓</span> <?php p($l->t('Digital verifiziert')); ?>
+		<span class="lrn-verify__badge" style="color:<?php p($badgeColor); ?>;">
+			<span aria-hidden="true"><?php p($badgeGlyph); ?></span> <?php p($badgeText); ?>
 		</span>
+	<?php } else { ?>
+		<div class="lrn-verify__warn">
+			<strong><?php p($l->t('Was Sie jetzt tun sollten')); ?></strong>
+			<?php p($l->t('Akzeptieren Sie dieses Zertifikat nicht als bestätigt. Bitten Sie die vorlegende Person, Ihnen ein frisches PDF oder einen neuen QR-Code direkt aus ihrem Konto zu schicken, und prüfen Sie den Link erneut.')); ?>
+		</div>
 	<?php } ?>
 
 	<details class="lrn-verify__how">
 		<summary><?php p($l->t('Wie funktioniert diese Verifizierung?')); ?></summary>
-		<p><?php p($l->t('Das Zertifikat enthält eine digitale Unterschrift des Ausstellers. Diese Seite prüft sie automatisch und zeigt zusätzlich, ob das Zertifikat zurückgezogen oder abgelaufen ist.')); ?></p>
+		<p><?php p($l->t('Das Zertifikat trägt eine digitale Signatur des Ausstellers, mit der sich jede nachträgliche Veränderung erkennen lässt. Diese Seite prüft die Signatur automatisch und zeigt zusätzlich, ob das Zertifikat zurückgezogen oder abgelaufen ist.')); ?></p>
 	</details>
 </div>
