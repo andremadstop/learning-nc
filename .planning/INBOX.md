@@ -103,3 +103,9 @@
 
 ## [2026-06-27] ✓ Erledigt: ZZ-TEST Throwaway abgeräumt
 - User zz-test-cert155, Kurs 59, Pool 160, Cert, Notification, geseedete Rows alle gelöscht (DB-Transaction + occ user:delete). Verifiziert: 0 Certs, Issuer-Key intakt, did.json 200.
+
+## [2026-06-28] Demo-Kurs „I am not an idiot test" — Brainstorm LÄUFT (Andre: Option A scharfer Mini-Kurs)
+- Phase 157 geschlossen (v5.0.0 feature-complete) → Andre wählt: Demo-Kurs zuerst entwerfen (Option 1).
+- Brainstorm-Entscheidungen: (A) 1 Pool ~18 MCQ über 4 Themen (Phishing/Fake-Shops, Passwörter/2FA, KI-Scams/Deepfakes, Geld-Betrug/Datenschutz). Ton: Rahmung augenzwinkernd, Fragen+Erklärungen sachlich. Cert: ≥70 %, 365d Gültigkeit, Titel „Internet-Mündigkeit 2026 — I am not an idiot test". Content frisch geschrieben (kein NLM-Reuse).
+- **Andre-Einwurf 2026-06-28 (in Spec eingearbeitet):** (1) Kurs ZWEISPRACHIG erstellen — DE **und** EN. (2) **Vor dem nächsten Publishen** alles nochmal gründlich durch Gemini + sehr übel gelaunten Codex (= etabliertes Pre-Live-Gate, `feedback_prelive_review_gate.md`).
+- Spec: `docs/superpowers/specs/2026-06-28-demo-course-i-am-not-an-idiot-design.md`. Danach writing-plans → GSD. Dann user-gated Provisioning-Pass (occ upgrade etc., Regel 15) → Release-Tag.
