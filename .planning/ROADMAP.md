@@ -33,7 +33,7 @@
 - ✅ **v4.1.0 Social Learning & Consolidation** — Phases 135-143 (shipped 2026-04-04)
 - ✅ **v4.2.0 Lehrplan-Timeline + Admin-Werkzeuge** — Phases 144-148 (shipped 2026-04-08)
 - ✅ **v4.4.0 Character & Personality** — Phases 149-153 (shipped 2026-04-27)
-- 🚧 **v5.0.0 Certification-as-a-Service** — Phases 154-157 ALL COMPLETE (feature-complete; pending authorized demo-course provisioning pass + release bump/tag)
+- ✅ **v5.0.0 Certification-as-a-Service** — Phases 154-157 (shipped 2026-06-28, tag v5.0.0) — [archive](milestones/v5.0.0-ROADMAP.md)
 - 📋 **v4.3.0 Onboarding & Content Intelligence** — Phases TBD (deferred — after v5.0.0)
 - 📋 **v6.0.0 Universal Learning Platform (Vision)** — Phases TBD
 

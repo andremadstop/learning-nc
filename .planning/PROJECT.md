@@ -8,9 +8,22 @@ Native Nextcloud App fuer Karteikarten-Lernen mit Leitner-System, Kursen, Arena,
 
 Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — fuer Einzellerner und Kursgruppen.
 
-## Current Milestone: v5.0.0 Certification-as-a-Service
+## Last Shipped: v5.0.0 Certification-as-a-Service (2026-06-28, tag v5.0.0)
+
+Verifizierbare Zertifizierung als natives Nextcloud-Feature: Pass-Kriterium pro Kurs, signiertes
+OB3/VC-Zertifikat (did:web-Issuer), Compliance-Report, öffentliche Verify-Route. 30/30 v1-Requirements.
+Archiv: `milestones/v5.0.0-ROADMAP.md` + `v5.0.0-REQUIREMENTS.md`.
+
+## Next Milestone: v5.1.0 „Ghostline" (in Definition via /gsd:new-milestone)
+
+**Goal:** EIN verbindendes interaktives Story-Universum (Linux→Security→Netzwerk→IT) auf der
+vorhandenen Kampagnen-Engine. Akt 1 = LPIC-101-Mini-Slice (Prüfung 03.07.). Spec:
+`docs/superpowers/specs/2026-06-30-ghostline-interactive-course-design.md`.
+
+<details><summary>Vorheriges Milestone-Ziel (v5.0.0)</summary>
 
 **Goal:** Die Learning-App bringt verifizierbare Zertifizierung als natives Nextcloud-Feature mit — ein Kurs-Owner aktiviert "Zertifikat bei Bestehen", definiert das Pass-Kriterium, und die App stellt beim Bestehen ein standardkonformes, signiertes Zertifikat aus. KEINE eigene SaaS-Plattform; Aussteller = die jeweilige NC-Instanz.
+</details>
 
 **Target features:**
 - "Bestanden"-Definition: hartes Pass-Kriterium pro Kurs (Score ≥ X %, Pflicht-Pools gemeistert) — Readiness ≠ Bestehen
