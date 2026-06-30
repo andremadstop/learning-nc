@@ -96,7 +96,7 @@
             }
           ],
           "correct": "a",
-          "explanation": "BRE behandelt + literal; ERE (grep -E oder egrep) interpretiert + als 'ein oder mehr'. Prüfungsfalle: grep 'a+' vs grep -E 'a+' — BRE vs ERE-Quantifier."
+          "explanation": "BRE behandelt + literal; ERE (grep -E oder egrep) interpretiert + als 'ein oder mehr'. Konkret: grep 'a+' sucht den Literal-String 'a+' und matcht nicht 'aaa' — grep -E 'a+' dagegen matcht jede Folge von einem oder mehr 'a'. Prüfungsfalle: BRE vs ERE-Quantifier."
         },
         "effects": []
       },
@@ -157,12 +157,12 @@
         "id": "a1_k3_history",
         "type": "story",
         "title": "Geist-Erinnerung: Bell Labs, 1969",
-        "narrative": "Ken Thompson brauchte eine Nacht. Dennis Ritchie brauchte ein Werkzeug — eins, das Muster in Chaos findet. Thompson nahm den g/re/p-Befehl aus dem Editor ed und baute ihn heraus: global, regular expression, print. grep. Nicht Magie — Handwerk, eine Nacht, ein PDP-7. Das Werkzeug überlebte Generationen von Entwicklern, Betriebssystemen, Sprachen. Der Geist im Journal ist kein Gespenst. Er ist ein Werkzeug, das Muster findet, seit 1969.",
+        "narrative": "Ken Thompson brauchte eine Nacht. Bell Labs, frühe 1970er Jahre. Jemand fragte: Kann man Dateien nach Mustern durchsuchen? Thompson nahm den g/re/p-Befehl aus dem Editor ed und baute ihn heraus: global, regular expression, print. grep. Nicht Magie — Handwerk, eine Nacht, ein Terminal. Das Werkzeug überlebte Generationen von Entwicklern, Betriebssystemen, Sprachen. Der Geist im Journal ist kein Gespenst. Er ist ein Werkzeug, das Muster findet, seit Bell Labs.",
         "act": 1,
         "npc_dialog": {
           "speaker": "Der Geist",
           "emotion": "nostalgic",
-          "text": "1969. Ken Thompson. Eine Nacht. Ein Werkzeug, das Muster im Chaos findet. Es überlebt uns alle."
+          "text": "Bell Labs. Ken Thompson. Eine Nacht. Ein Werkzeug, das Muster im Chaos findet. Es überlebt uns alle."
         },
         "effects": []
       },
