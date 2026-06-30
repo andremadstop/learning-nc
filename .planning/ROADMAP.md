@@ -85,8 +85,8 @@ Plans:
 - [ ] 158-01-PLAN.md — Graph Validator + 3-Node Smoke (Wave 1: structural validator + Pattern B smoke)
 - [ ] 158-02-PLAN.md — Full K3 Arc Authoring (Wave 2: 9-node story arc, quiz, history vignette, ending)
 - [ ] 158-03-PLAN.md — Terminal Shell Verification (Wave 3: real grep/sed outputs from fixture)
-- [ ] 158-04-PLAN.md — LPIC Content Check (Wave 3: factual cross-check + 6 exam traps, parallel with 158-03)
-- [ ] 158-05-PLAN.md — devcloud Deploy + Playthrough Checkpoint (Wave 4: human K3-01/K3-04 verification)
+- [ ] 158-04-PLAN.md — LPIC Content Check (Wave 4: factual cross-check + 6 exam traps, after 158-03)
+- [ ] 158-05-PLAN.md — devcloud Deploy + Playthrough Checkpoint (Wave 5: human K3-01/K3-04 verification)
 
 ### Phase 159: Akt 1 — Retention, Material & Go-Live
 **Depends on**: Phase 158 (spielbarer K3-Arc muss existieren).
