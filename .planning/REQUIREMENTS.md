@@ -75,9 +75,24 @@ Auf vorhandener Kampagnen-Engine, kein Neubau. Mappt auf Phasen (Nummerierung ab
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (wird beim Roadmap-Schritt gefüllt) | — | Pending |
+| STORY-01 | 158 | Pending |
+| STORY-02 | 158 | Pending |
+| STORY-03 | 158 | Pending |
+| STORY-04 | 158 | Pending |
+| K3-01 | 158 | Pending |
+| K3-02 | 158 | Pending |
+| K3-03 | 158 | Pending |
+| K3-04 | 158 | Pending |
+| TERM-01 | 158 | Pending |
+| TERM-02 | 158 | Pending |
+| CONT-01 | 158 | Pending |
+| CONT-02 | 158 | Pending |
+| RET-01 | 159 | Pending |
+| MAT-01 | 159 | Pending |
+| DEPLOY-01 | 159 | Pending |
+| DEPLOY-02 | 159 | Pending |
 
-**Coverage:** v1 = 14 Requirements (STORY 4, K3 4, TERM 2, CONT 2, RET 1, MAT 1, DEPLOY 2) — Mapping folgt im Roadmap-Schritt.
+**Coverage:** v1 = 16 Requirements, alle gemappt (Phase 158 = 12, Phase 159 = 4). Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-30*

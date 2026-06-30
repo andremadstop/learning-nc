@@ -4,12 +4,12 @@ milestone: v5.1.0
 milestone_name: "v5.1.0 Ghostline"
 current_phase: 158
 current_plan: null
-status: "v5.1.0 Ghostline STARTED (2026-06-30). Verbindendes interaktives Story-Universum (Linux→Security→Netzwerk→IT) auf vorhandener Kampagnen-Engine. Spec freigegeben (docs/superpowers/specs/2026-06-30-ghostline-interactive-course-design.md, inkl. verifizierter Schema-Fakten). Akt 1 = LPIC-101 Mini-Slice, deadline-priorisiert (Prüfung 03.07.), K3/Topic-103 Vertical-Slice zuerst. Research-Phase (4 Researcher: Lerndesign/LPIC-Inhalte/Authoring/Pitfalls) gewählt. NÄCHSTER SCHRITT: Research → Requirements → Roadmap."
-stopped_at: "new-milestone Flow: PROJECT.md + STATE.md gesetzt, v5.0.0 archiviert (commit 1b20721). Als Nächstes: 4 gsd-project-researcher spawnen, dann Requirements, dann gsd-roadmapper."
+status: "v5.1.0 Ghostline — ROADMAP ERSTELLT (2026-06-30). 4-Researcher-Phase abgeschlossen (STACK/FEATURES/ARCHITECTURE/PITFALLS + SUMMARY in .planning/research/). 16 v1-Requirements definiert + freigegeben. Roadmap: 2 Phasen — 158 (K3 Core: Authoring & Korrektheit, 12 Reqs) + 159 (Retention/Material/Go-Live, 4 Reqs). NÄCHSTER SCHRITT: /gsd:plan-phase 158 (K3 Vertical Slice; 3-Node-Smoke → voller K3). Engine/Schema-Fakten im Spec §3+9. Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
+stopped_at: "new-milestone Flow KOMPLETT: PROJECT/STATE/REQUIREMENTS/ROADMAP gesetzt + committed (v5.0.0 archiviert 1b20721, milestone-start afabd24, requirements a81beb1, roadmap commit folgt). Research inline-synthetisiert (4. Agent war gehangen → neu gestartet → ok). Als Nächstes: plan-phase 158."
 last_updated: "2026-06-30"
 last_activity: "2026-06-30 — v5.0.0 milestone abgeschlossen + archiviert; v5.1.0 Ghostline gestartet (Brainstorm→Spec→new-milestone). Research-Phase als Nächstes."
 progress:
-  total_phases: 0
+  total_phases: 2
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-06-30)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements (Research-Phase gewählt → 4 Researcher als Nächstes)
-Last activity: 2026-06-30 — Milestone v5.1.0 gestartet
+Phase: 158 (Akt 1 — K3 Core) — geplant, noch nicht gestartet
+Plan: — (nächster Schritt: /gsd:plan-phase 158)
+Status: Roadmap erstellt (2 Phasen, 16 v1-Reqs). Bereit zum Planen von Phase 158.
+Last activity: 2026-06-30 — Milestone v5.1.0 initialisiert (Research → Requirements → Roadmap komplett)
 
 ## Accumulated Context
 

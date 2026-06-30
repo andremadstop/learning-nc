@@ -34,6 +34,7 @@
 - ✅ **v4.2.0 Lehrplan-Timeline + Admin-Werkzeuge** — Phases 144-148 (shipped 2026-04-08)
 - ✅ **v4.4.0 Character & Personality** — Phases 149-153 (shipped 2026-04-27)
 - ✅ **v5.0.0 Certification-as-a-Service** — Phases 154-157 (shipped 2026-06-28, tag v5.0.0) — [archive](milestones/v5.0.0-ROADMAP.md)
+- 🚧 **v5.1.0 Ghostline** — Phases 158-159 (interaktives Story-Universum; Akt 1 LPIC-101 / K3-Vertical-Slice, Prüfung 03.07.)
 - 📋 **v4.3.0 Onboarding & Content Intelligence** — Phases TBD (deferred — after v5.0.0)
 - 📋 **v6.0.0 Universal Learning Platform (Vision)** — Phases TBD
 
@@ -54,7 +55,41 @@ Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMEN
 
 </details>
 
-## v5.0.0 — Certification-as-a-Service (Active)
+## v5.1.0 — Ghostline (Active)
+
+> Verbindendes interaktives Story-Universum auf der vorhandenen Kampagnen-Engine. v1 = **Akt 1
+> (LPIC-101)**, deadline-priorisiert (Prüfung 03.07.). K3/Topic-103 als Vertical Slice zuerst.
+> Spec: `docs/superpowers/specs/2026-06-30-ghostline-interactive-course-design.md`. Research: `.planning/research/`.
+
+**2 Phasen** | **16 v1-Requirements** | alle gemappt ✓
+
+| # | Phase | Goal | Requirements |
+|---|-------|------|--------------|
+| 158 | Akt 1 — K3 Core (Authoring & Korrektheit) | Spielbarer, content-korrekter K3-Mini-Arc auf der Engine (unfeatured) | STORY-01..04, K3-01..04, TERM-01/02, CONT-01/02 |
+| 159 | Akt 1 — Retention, Material & Go-Live | FSRS-Pool-Brücke + Material-Link + staged FEATURED-Go-Live nach Andrés Durchspielen | RET-01, MAT-01, DEPLOY-01/02 |
+
+### Phase 158: Akt 1 — K3 Core (Authoring & Korrektheit)
+**Depends on**: Nichts (erste Phase v5.1.0). Vorhandene Engine (Spec §3+9).
+**Goal**: Eine solo spielbare, prüfungswirksame K3-Mini-Story (`ghostline_act1.json`) — content-korrekt, gegen Durchspielen-ohne-Lernen gesichert, lokal/devcloud unfeatured lauffähig.
+**Requirements**: STORY-01, STORY-02, STORY-03, STORY-04, K3-01, K3-02, K3-03, K3-04, TERM-01, TERM-02, CONT-01, CONT-02
+**Success criteria:**
+1. `ghostline_act1.json` lädt fehlerfrei im Abenteuer-Modus (3-Node-Smoke grün → voller K3 ≈8 Nodes)
+2. K3 solo end-to-end spielbar: Story-Intro → Terminal → Auflösung → Inline-Quiz → 2. Terminal (faded) → History-Vignette → Ende; `claimed_ghost_box` am Ende gesetzt
+3. ≥2 Terminal-Challenges aus echten Dozenten-grep/sed-Aufgaben; je ≥3 Quote-Varianten + Hint; Outputs auf echter Shell erzeugt (nicht erfunden)
+4. ≥1 Inline-Quiz mit `explanation`, Inhalt LPIC-verifiziert; prüfungskritische 103-Fallen eingebaut (umask, BRE/ERE, Redirect-Reihenfolge …)
+5. Jede Kapitel-Abschluss-Kante hat `conditions.requires_flag` — kein Durchspielen mit Fehleingaben
+
+### Phase 159: Akt 1 — Retention, Material & Go-Live
+**Depends on**: Phase 158 (spielbarer K3-Arc muss existieren).
+**Goal**: Lerneffekt verankern (FSRS-Pool-Brücke), Material verknüpfen, sicher live schalten.
+**Requirements**: RET-01, MAT-01, DEPLOY-01, DEPLOY-02
+**Success criteria:**
+1. K3-Befehle existieren parallel als Pool-Cards (Pool 65 erweitert oder neuer Ghostline-CLI-Pool) → FSRS greift nach dem Durchspielen
+2. NotebookLM-Lernfilm/-Audio als Kurs-Material verlinkt und erreichbar
+3. Staged Deploy: JSON-only unfeatured auf devcloud getestet; FEATURED-Schaltung (AbenteuerMode.vue) erst nach Andrés Durchspielen
+4. Scope-Sentinel eingehalten — kein PHP/Vue-Edit außer FEATURED-Zeile; Gate 1 (ESLint/Vitest) grün beim JS-Edit
+
+## v5.0.0 — Certification-as-a-Service (Shipped)
 
 **Milestone Goal:** Die App bringt verifizierbare Zertifizierung als natives NC-Feature — Kurs-Owner aktiviert "Zertifikat bei Bestehen", definiert das Pass-Kriterium, und die App stellt beim Bestehen ein standardkonformes, signiertes Zertifikat aus. Aussteller = die jeweilige NC-Instanz (kein SaaS). Wallet interop deferred to v6+.
 
