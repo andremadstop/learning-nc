@@ -1,11 +1,11 @@
 {
   "campaign_id": "ghostline_act1",
-  "version": "1.0.0",
-  "title": "Ghostline — Akt 1: Das zerbrochene Journal (Smoke)",
-  "description": "K3 Smoke: grep im Journal des Geists. Unfeatured — Vollversion folgt.",
-  "duration_minutes": 10,
+  "version": "1.1.0",
+  "title": "Ghostline — Akt 1: Das zerbrochene Journal",
+  "description": "Du erbst eine alte Konsole. Ein zerbrochenes Journal wartet auf grep und sed — und am Ende eine Erinnerung, die älter ist als du.",
+  "duration_minutes": 25,
   "difficulty": "beginner",
-  "focus_areas": ["linux", "lpic", "grep", "topic-103"],
+  "focus_areas": ["linux", "lpic", "grep", "sed", "topic-103"],
   "character_recommendations": ["sysadmin"],
   "icon": "👻",
   "graph": {
@@ -14,7 +14,7 @@
         "id": "a1_start",
         "type": "story",
         "title": "Kalter Start",
-        "narrative": "Du erbst eine alte Konsole. Auf dem Bildschirm: ein zerbrochenes Journal — Zeilen in Fragmenten, kein Kontext, kein Name. Nur ein Hinweis: grep.",
+        "narrative": "Du erbst eine alte Konsole. Auf dem Bildschirm: ein zerbrochenes Journal — Zeilen in Fragmenten, kein Kontext, kein Name. Irgendwas in den Daten will gefunden werden.",
         "start": true,
         "act": 1,
         "effects": []
@@ -23,7 +23,7 @@
         "id": "a1_k3_grep1",
         "type": "terminal",
         "title": "Journal-Fragment: grep",
-        "narrative": "Das Journal liegt vor dir. Finde alle Zeilen, die mit dem Buchstaben T beginnen.",
+        "narrative": "Das Journal liegt zerstückelt vor dir. Die Zeilen halten keine Reihenfolge, keinen Kontext — nur Fragmente. Finde alle Einträge, die mit dem Großbuchstaben T beginnen.",
         "act": 1,
         "simulator": {
           "type": "terminal",
@@ -35,17 +35,17 @@
             "valid_commands": [
               {
                 "command": "grep ^T ghost_journal.txt",
-                "output": "[PLACEHOLDER — TERM-02 ersetzt durch echte Shell-Ausgabe]",
+                "output": "[PLACEHOLDER — TERM-02 fills this]",
                 "required": true
               },
               {
                 "command": "grep '^T' ghost_journal.txt",
-                "output": "[PLACEHOLDER — TERM-02 ersetzt durch echte Shell-Ausgabe]",
+                "output": "[PLACEHOLDER — TERM-02 fills this]",
                 "required": false
               },
               {
                 "command": "grep \"^T\" ghost_journal.txt",
-                "output": "[PLACEHOLDER — TERM-02 ersetzt durch echte Shell-Ausgabe]",
+                "output": "[PLACEHOLDER — TERM-02 fills this]",
                 "required": false
               }
             ],
@@ -60,8 +60,96 @@
         "id": "a1_k3_grep1_gate",
         "type": "story",
         "title": "Fragment entschlüsselt",
-        "narrative": "Die Zeilen erscheinen. Unvollständig — aber du weißt jetzt, wie man sucht. Der Geist wartet auf den nächsten Schritt.",
+        "narrative": "Die Zeilen erscheinen — T-Einträge, alle auf einmal. Unvollständig, aber du weißt jetzt, wie man sucht. Etwas in den Daten zieht die Aufmerksamkeit auf sich. Eine Frage formt sich.",
         "act": 1,
+        "effects": []
+      },
+      {
+        "id": "a1_k3_quiz",
+        "type": "story",
+        "title": "Aus der Tiefe der Logs",
+        "narrative": "Bevor es weitergeht — das Journal stellt eine Gegenfrage. Nicht alle Werkzeuge funktionieren, wie man denkt.",
+        "act": 1,
+        "npc_dialog": {
+          "speaker": "VirtuProf",
+          "emotion": "alert",
+          "text": "Frage aus der Tiefe der Logs: Was ist der Unterschied zwischen grep 'a+' und grep -E 'a+'?"
+        },
+        "quiz": {
+          "question": "Was ist der Unterschied zwischen grep 'a+' und grep -E 'a+'?",
+          "options": [
+            {"id": "a", "text": "Mit -E aktiviert + den ERE-Quantifier (1 oder mehr)"},
+            {"id": "b", "text": "Kein Unterschied — beide matchen auf ein oder mehr 'a'-Zeichen"}
+          ],
+          "correct": "a",
+          "explanation": "BRE behandelt + literal; ERE (grep -E oder egrep) interpretiert + als 'ein oder mehr'. Prüfungsfalle: grep 'a+' vs grep -E 'a+' — BRE vs ERE-Quantifier."
+        },
+        "effects": []
+      },
+      {
+        "id": "a1_k3_quiz_wrong",
+        "type": "story",
+        "title": "Nicht ganz",
+        "narrative": "Nicht ganz. BRE — Basic Regular Expressions — behandelt das Pluszeichen als Literal. Kein Quantifier, kein 'ein oder mehr'. Dafür braucht es -E, das Extended Regular Expressions aktiviert. grep 'a+' matcht nur den buchstäblichen String 'a+'. grep -E 'a+' matcht ein oder mehr 'a'-Zeichen. Prüfungsfalle bestätigt — weiter.",
+        "act": 1,
+        "effects": []
+      },
+      {
+        "id": "a1_k3_grep2",
+        "type": "terminal",
+        "title": "Das zweite Fragment: sed",
+        "narrative": "Das zweite Fragment ist verschlüsselter. Roh, unbereinigt — Fehlermeldungen überall. sed ist dein Werkzeug. Ersetze alle ERROR-Einträge durch WARN.",
+        "act": 1,
+        "simulator": {
+          "type": "terminal",
+          "scenario": "ghost_journal_sed1",
+          "pass_flag": "k3_grep2_passed",
+          "scenario_override": {
+            "prompt": "ghost@journal:~$",
+            "objective": "Ersetze in ghost_journal.txt alle Vorkommen von 'ERROR' durch 'WARN' (global, alle Zeilen).",
+            "valid_commands": [
+              {
+                "command": "sed 's/ERROR/WARN/g' ghost_journal.txt",
+                "output": "[PLACEHOLDER — TERM-02 fills this]",
+                "required": true
+              },
+              {
+                "command": "sed \"s/ERROR/WARN/g\" ghost_journal.txt",
+                "output": "[PLACEHOLDER — TERM-02 fills this]",
+                "required": false
+              },
+              {
+                "command": "sed s/ERROR/WARN/g ghost_journal.txt",
+                "output": "[PLACEHOLDER — TERM-02 fills this]",
+                "required": false
+              }
+            ],
+            "success_message": "Die Fehler sind stumm. Das zweite Fragment ist entschlüsselt.",
+            "hint": "Tipp: sed 's/ERROR/WARN/g' ghost_journal.txt — das /g-Flag ersetzt alle Vorkommen pro Zeile.",
+            "max_attempts": 6
+          }
+        },
+        "effects": []
+      },
+      {
+        "id": "a1_k3_grep2_gate",
+        "type": "story",
+        "title": "Muster erkannt",
+        "narrative": "Die Zeilen formen ein Muster. Der Geist hinterließ mehr als Fragmente — er hinterließ Erinnerungen. Etwas Altes wartet dahinter.",
+        "act": 1,
+        "effects": []
+      },
+      {
+        "id": "a1_k3_history",
+        "type": "story",
+        "title": "Geist-Erinnerung: Bell Labs, 1969",
+        "narrative": "Ken Thompson brauchte eine Nacht. Dennis Ritchie brauchte ein Werkzeug — eins, das Muster in Chaos findet. Thompson nahm den g/re/p-Befehl aus dem Editor ed und baute ihn heraus: global, regular expression, print. grep. Nicht Magie — Handwerk, eine Nacht, ein PDP-7. Das Werkzeug überlebte Generationen von Entwicklern, Betriebssystemen, Sprachen. Der Geist im Journal ist kein Gespenst. Er ist ein Werkzeug, das Muster findet, seit 1969.",
+        "act": 1,
+        "npc_dialog": {
+          "speaker": "Der Geist",
+          "emotion": "nostalgic",
+          "text": "1969. Ken Thompson. Eine Nacht. Ein Werkzeug, das Muster im Chaos findet. Es überlebt uns alle."
+        },
         "effects": []
       },
       {
@@ -69,7 +157,7 @@
         "type": "ending",
         "is_ending": true,
         "title": "Akt 1 abgeschlossen",
-        "narrative": "Das Journal ist gesichert. Du hast die erste Lektion des Geists bestanden. Die Box öffnet sich.",
+        "narrative": "Das Journal ist gesichert. Die erste Lektion des Geists ist bestanden. In der Kiste liegt mehr — wenn du bereit bist.",
         "act": 1,
         "effects": [
           {"set_flag": "claimed_ghost_box"}
@@ -90,20 +178,69 @@
         "label": "Auswertung"
       },
       {
-        "id": "e_gate_to_end",
+        "id": "e_gate1_to_quiz",
         "from": "a1_k3_grep1_gate",
-        "to": "a1_k3_end",
-        "label": "Abschluss",
+        "to": "a1_k3_quiz",
+        "label": "Weiter",
         "conditions": {
           "requires_flag": "k3_grep1_passed"
         }
+      },
+      {
+        "id": "e_quiz_correct",
+        "from": "a1_k3_quiz",
+        "to": "a1_k3_grep2",
+        "label": "Mit -E aktiviert + den ERE-Quantifier (ein oder mehr)"
+      },
+      {
+        "id": "e_quiz_wrong",
+        "from": "a1_k3_quiz",
+        "to": "a1_k3_quiz_wrong",
+        "label": "Kein Unterschied — beide matchen auf ein oder mehr 'a'"
+      },
+      {
+        "id": "e_quiz_wrong_to_grep2",
+        "from": "a1_k3_quiz_wrong",
+        "to": "a1_k3_grep2",
+        "label": "Weiter"
+      },
+      {
+        "id": "e_grep2_to_gate",
+        "from": "a1_k3_grep2",
+        "to": "a1_k3_grep2_gate",
+        "label": "Auswertung"
+      },
+      {
+        "id": "e_gate2_to_history",
+        "from": "a1_k3_grep2_gate",
+        "to": "a1_k3_history",
+        "label": "Erinnerung",
+        "conditions": {
+          "requires_flag": "k3_grep2_passed"
+        }
+      },
+      {
+        "id": "e_history_to_end",
+        "from": "a1_k3_history",
+        "to": "a1_k3_end",
+        "label": "Akt abschließen"
       }
     ],
     "acts": [
       {
         "act": 1,
         "title": "Akt 1: Das zerbrochene Journal",
-        "node_ids": ["a1_start", "a1_k3_grep1", "a1_k3_grep1_gate", "a1_k3_end"]
+        "node_ids": [
+          "a1_start",
+          "a1_k3_grep1",
+          "a1_k3_grep1_gate",
+          "a1_k3_quiz",
+          "a1_k3_quiz_wrong",
+          "a1_k3_grep2",
+          "a1_k3_grep2_gate",
+          "a1_k3_history",
+          "a1_k3_end"
+        ]
       }
     ]
   }
