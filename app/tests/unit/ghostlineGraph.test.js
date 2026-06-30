@@ -8,6 +8,7 @@ function readJson(relativePath) {
 }
 
 const campaign = readJson('../../data/campaigns/ghostline_act1.json')
+const schema = readJson('../../data/campaigns/campaign-schema.json')
 
 describe('ghostline_act1.json structure', () => {
 	const { nodes, edges, acts } = campaign.graph
@@ -34,6 +35,15 @@ describe('ghostline_act1.json structure', () => {
 	it('loads and parses without error', () => {
 		expect(campaign).toBeDefined()
 		expect(campaign.campaign_id).toBe('ghostline_act1')
+	})
+
+	// StoryEngineService::validateCampaignAgainstSchema rejects (silently skips
+	// from the campaign list) any campaign whose top-level `version` does not
+	// exactly match the schema's `campaign_version` — error "Kampagne
+	// aktualisiert — bitte neu starten". json_decode alone does NOT catch this,
+	// so the deploy looks fine but the campaign never appears. Guard it here.
+	it('version exactly matches schema campaign_version (else StoryEngine skips it)', () => {
+		expect(campaign.version).toBe(schema.campaign_version)
 	})
 
 	it('has exactly 1 node with start:true', () => {
