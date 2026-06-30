@@ -14,11 +14,22 @@ Verifizierbare Zertifizierung als natives Nextcloud-Feature: Pass-Kriterium pro 
 OB3/VC-Zertifikat (did:web-Issuer), Compliance-Report, öffentliche Verify-Route. 30/30 v1-Requirements.
 Archiv: `milestones/v5.0.0-ROADMAP.md` + `v5.0.0-REQUIREMENTS.md`.
 
-## Next Milestone: v5.1.0 „Ghostline" (in Definition via /gsd:new-milestone)
+## Current Milestone: v5.1.0 „Ghostline"
 
 **Goal:** EIN verbindendes interaktives Story-Universum (Linux→Security→Netzwerk→IT) auf der
-vorhandenen Kampagnen-Engine. Akt 1 = LPIC-101-Mini-Slice (Prüfung 03.07.). Spec:
-`docs/superpowers/specs/2026-06-30-ghostline-interactive-course-design.md`.
+vorhandenen Kampagnen-Engine — Lernen als spannendes Spiel statt trockener Theorie. Akt 1 =
+LPIC-101-Mini-Slice, deadline-priorisiert (Prüfung 03.07.), mit K3/Topic-103 Vertical-Slice zuerst.
+
+**Target features:**
+- Verbindende „Ghostline"-Meta-Kampagne (Noir-Mystery + Homelab-Erdung + History-Journal), modular in Akte
+- Akt 1 „First Contact" (LPIC-101): 4 Kapitel = Themen 101–104, K3/Topic-103 als erster spielbarer Vertical Slice
+- Terminal-Challenges aus echten Dozenten-Aufgaben (PbqCli `scenario_override`)
+- Inline-Quizzes (Fragen-Inhalt aus Linux-Pools 65/70 + History-Pool 44 eingebettet)
+- NotebookLM-Lernfilme/Audios als verlinktes Material („Trainingsbänder")
+- Persistenter `state_bag` (Homelab-Übernahme trägt in Akt 2–4)
+
+**Spec:** `docs/superpowers/specs/2026-06-30-ghostline-interactive-course-design.md` (inkl. verifizierter Schema-Fakten)
+**Brainstorm:** `.planning/brainstorm-interactive-course.md`
 
 <details><summary>Vorheriges Milestone-Ziel (v5.0.0)</summary>
 
