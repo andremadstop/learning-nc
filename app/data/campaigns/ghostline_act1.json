@@ -1,0 +1,110 @@
+{
+  "campaign_id": "ghostline_act1",
+  "version": "1.0.0",
+  "title": "Ghostline — Akt 1: Das zerbrochene Journal (Smoke)",
+  "description": "K3 Smoke: grep im Journal des Geists. Unfeatured — Vollversion folgt.",
+  "duration_minutes": 10,
+  "difficulty": "beginner",
+  "focus_areas": ["linux", "lpic", "grep", "topic-103"],
+  "character_recommendations": ["sysadmin"],
+  "icon": "👻",
+  "graph": {
+    "nodes": [
+      {
+        "id": "a1_start",
+        "type": "story",
+        "title": "Kalter Start",
+        "narrative": "Du erbst eine alte Konsole. Auf dem Bildschirm: ein zerbrochenes Journal — Zeilen in Fragmenten, kein Kontext, kein Name. Nur ein Hinweis: grep.",
+        "start": true,
+        "act": 1,
+        "effects": []
+      },
+      {
+        "id": "a1_k3_grep1",
+        "type": "terminal",
+        "title": "Journal-Fragment: grep",
+        "narrative": "Das Journal liegt vor dir. Finde alle Zeilen, die mit dem Buchstaben T beginnen.",
+        "act": 1,
+        "simulator": {
+          "type": "terminal",
+          "scenario": "ghost_journal_grep1",
+          "pass_flag": "k3_grep1_passed",
+          "scenario_override": {
+            "prompt": "ghost@journal:~$",
+            "objective": "Finde alle Zeilen in ghost_journal.txt, die mit dem Großbuchstaben T beginnen.",
+            "valid_commands": [
+              {
+                "command": "grep ^T ghost_journal.txt",
+                "output": "[PLACEHOLDER — TERM-02 ersetzt durch echte Shell-Ausgabe]",
+                "required": true
+              },
+              {
+                "command": "grep '^T' ghost_journal.txt",
+                "output": "[PLACEHOLDER — TERM-02 ersetzt durch echte Shell-Ausgabe]",
+                "required": false
+              },
+              {
+                "command": "grep \"^T\" ghost_journal.txt",
+                "output": "[PLACEHOLDER — TERM-02 ersetzt durch echte Shell-Ausgabe]",
+                "required": false
+              }
+            ],
+            "success_message": "Fragment gefunden. Die Zeilen des Geists nehmen Form an.",
+            "hint": "Tipp: grep ^T ghost_journal.txt — das Caret ^ verankert am Zeilenanfang.",
+            "max_attempts": 8
+          }
+        },
+        "effects": []
+      },
+      {
+        "id": "a1_k3_grep1_gate",
+        "type": "story",
+        "title": "Fragment entschlüsselt",
+        "narrative": "Die Zeilen erscheinen. Unvollständig — aber du weißt jetzt, wie man sucht. Der Geist wartet auf den nächsten Schritt.",
+        "act": 1,
+        "effects": []
+      },
+      {
+        "id": "a1_k3_end",
+        "type": "ending",
+        "is_ending": true,
+        "title": "Akt 1 abgeschlossen",
+        "narrative": "Das Journal ist gesichert. Du hast die erste Lektion des Geists bestanden. Die Box öffnet sich.",
+        "act": 1,
+        "effects": [
+          {"set_flag": "claimed_ghost_box"}
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "id": "e_start_to_grep1",
+        "from": "a1_start",
+        "to": "a1_k3_grep1",
+        "label": "Untersuche das Journal"
+      },
+      {
+        "id": "e_grep1_to_gate",
+        "from": "a1_k3_grep1",
+        "to": "a1_k3_grep1_gate",
+        "label": "Auswertung"
+      },
+      {
+        "id": "e_gate_to_end",
+        "from": "a1_k3_grep1_gate",
+        "to": "a1_k3_end",
+        "label": "Abschluss",
+        "conditions": {
+          "requires_flag": "k3_grep1_passed"
+        }
+      }
+    ],
+    "acts": [
+      {
+        "act": 1,
+        "title": "Akt 1: Das zerbrochene Journal",
+        "node_ids": ["a1_start", "a1_k3_grep1", "a1_k3_grep1_gate", "a1_k3_end"]
+      }
+    ]
+  }
+}
