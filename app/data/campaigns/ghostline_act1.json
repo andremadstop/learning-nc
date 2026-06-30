@@ -244,8 +244,8 @@
     ],
     "acts": [
       {
+        "name": "Akt 1: Das zerbrochene Journal",
         "act": 1,
-        "title": "Akt 1: Das zerbrochene Journal",
         "node_ids": [
           "a1_start",
           "a1_k3_grep1",

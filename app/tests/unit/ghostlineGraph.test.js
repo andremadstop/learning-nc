@@ -46,6 +46,52 @@ describe('ghostline_act1.json structure', () => {
 		expect(campaign.version).toBe(schema.campaign_version)
 	})
 
+	// Mirror StoryEngineService::validate* required-field + enum rules so a
+	// schema violation is caught at Gate 1 instead of as a silent runtime skip
+	// (json_decode does not catch any of these).
+	it('has all campaign-level required fields (schema.campaign.required)', () => {
+		for (const f of schema.campaign?.required || []) {
+			expect(campaign[f], `campaign missing required field "${f}"`).toBeTruthy()
+		}
+	})
+
+	it('difficulty is within schema enum', () => {
+		const enumVals = schema.campaign?.difficulty_enum || []
+		if (enumVals.length) expect(enumVals).toContain(campaign.difficulty)
+	})
+
+	it('every node has the schema-required node fields', () => {
+		for (const node of nodes) {
+			for (const f of schema.graph?.node_required || []) {
+				expect(node[f], `node "${node.id}" missing required field "${f}"`).toBeTruthy()
+			}
+		}
+	})
+
+	it('every edge has the schema-required edge fields', () => {
+		for (const edge of edges) {
+			for (const f of schema.graph?.edge_required || []) {
+				expect(edge[f], `edge "${edge.id}" missing required field "${f}"`).toBeTruthy()
+			}
+		}
+	})
+
+	it('every act has the schema-required act fields (name, node_ids)', () => {
+		acts.forEach((act, i) => {
+			for (const f of schema.graph?.act_required || []) {
+				expect(act[f], `act #${i} missing required field "${f}"`).toBeTruthy()
+			}
+		})
+	})
+
+	it('every simulator node type is within schema enum', () => {
+		const simEnum = new Set(schema.graph?.simulator_type_enum || [])
+		for (const node of nodes) {
+			const t = node.simulator?.type
+			if (t) expect(simEnum.has(t), `node "${node.id}" simulator type "${t}" not in enum`).toBe(true)
+		}
+	})
+
 	it('has exactly 1 node with start:true', () => {
 		const startNodes = nodes.filter((n) => n.start === true)
 		expect(startNodes).toHaveLength(1)
