@@ -5,8 +5,16 @@
   "description": "Du erbst eine alte Konsole. Ein zerbrochenes Journal wartet auf grep und sed — und am Ende eine Erinnerung, die älter ist als du.",
   "duration_minutes": 25,
   "difficulty": "beginner",
-  "focus_areas": ["linux", "lpic", "grep", "sed", "topic-103"],
-  "character_recommendations": ["sysadmin"],
+  "focus_areas": [
+    "linux",
+    "lpic",
+    "grep",
+    "sed",
+    "topic-103"
+  ],
+  "character_recommendations": [
+    "sysadmin"
+  ],
   "icon": "👻",
   "graph": {
     "nodes": [
@@ -35,17 +43,17 @@
             "valid_commands": [
               {
                 "command": "grep ^T ghost_journal.txt",
-                "output": "[PLACEHOLDER — TERM-02 fills this]",
+                "output": "Tagebuch des Geists — Version 0\nTimestamp: 1969-01-01T00:00:00Z — Initialisierung\nTue Mar 10 03:14:07 UTC 1970 — Systemstart\nTraceroute endet im Nichts. Paket verloren.\nTerminierung ohne Rückmeldung.\nThe pattern persists. The signal remains.\nTue, 14 Apr 1970 — letzter bekannter Eintrag\nTerminal: Keine weiteren Daten verfügbar.",
                 "required": true
               },
               {
                 "command": "grep '^T' ghost_journal.txt",
-                "output": "[PLACEHOLDER — TERM-02 fills this]",
+                "output": "Tagebuch des Geists — Version 0\nTimestamp: 1969-01-01T00:00:00Z — Initialisierung\nTue Mar 10 03:14:07 UTC 1970 — Systemstart\nTraceroute endet im Nichts. Paket verloren.\nTerminierung ohne Rückmeldung.\nThe pattern persists. The signal remains.\nTue, 14 Apr 1970 — letzter bekannter Eintrag\nTerminal: Keine weiteren Daten verfügbar.",
                 "required": false
               },
               {
                 "command": "grep \"^T\" ghost_journal.txt",
-                "output": "[PLACEHOLDER — TERM-02 fills this]",
+                "output": "Tagebuch des Geists — Version 0\nTimestamp: 1969-01-01T00:00:00Z — Initialisierung\nTue Mar 10 03:14:07 UTC 1970 — Systemstart\nTraceroute endet im Nichts. Paket verloren.\nTerminierung ohne Rückmeldung.\nThe pattern persists. The signal remains.\nTue, 14 Apr 1970 — letzter bekannter Eintrag\nTerminal: Keine weiteren Daten verfügbar.",
                 "required": false
               }
             ],
@@ -78,8 +86,14 @@
         "quiz": {
           "question": "Was ist der Unterschied zwischen grep 'a+' und grep -E 'a+'?",
           "options": [
-            {"id": "a", "text": "Mit -E aktiviert + den ERE-Quantifier (1 oder mehr)"},
-            {"id": "b", "text": "Kein Unterschied — beide matchen auf ein oder mehr 'a'-Zeichen"}
+            {
+              "id": "a",
+              "text": "Mit -E aktiviert + den ERE-Quantifier (1 oder mehr)"
+            },
+            {
+              "id": "b",
+              "text": "Kein Unterschied — beide matchen auf ein oder mehr 'a'-Zeichen"
+            }
           ],
           "correct": "a",
           "explanation": "BRE behandelt + literal; ERE (grep -E oder egrep) interpretiert + als 'ein oder mehr'. Prüfungsfalle: grep 'a+' vs grep -E 'a+' — BRE vs ERE-Quantifier."
@@ -110,17 +124,17 @@
             "valid_commands": [
               {
                 "command": "sed 's/ERROR/WARN/g' ghost_journal.txt",
-                "output": "[PLACEHOLDER — TERM-02 fills this]",
+                "output": "Tagebuch des Geists — Version 0\nAlles begann mit einem Signal, das niemand senden wollte.\nTimestamp: 1969-01-01T00:00:00Z — Initialisierung\nTue Mar 10 03:14:07 UTC 1970 — Systemstart\nWARN: Speicher nicht initialisiert — Daten verloren\nDas Netz kennt keine Namen, nur Adressen.\nTraceroute endet im Nichts. Paket verloren.\nWARN: Verbindung unterbrochen — Neustart erforderlich\nSuchmaschinen lügen. grep lügt nicht.\nTerminierung ohne Rückmeldung.\nThe pattern persists. The signal remains.\nWARN: Zeitstempel außerhalb des gültigen Bereichs\nNur Muster bleiben. Texte vergehen.\nTue, 14 Apr 1970 — letzter bekannter Eintrag\nTerminal: Keine weiteren Daten verfügbar.",
                 "required": true
               },
               {
                 "command": "sed \"s/ERROR/WARN/g\" ghost_journal.txt",
-                "output": "[PLACEHOLDER — TERM-02 fills this]",
+                "output": "Tagebuch des Geists — Version 0\nAlles begann mit einem Signal, das niemand senden wollte.\nTimestamp: 1969-01-01T00:00:00Z — Initialisierung\nTue Mar 10 03:14:07 UTC 1970 — Systemstart\nWARN: Speicher nicht initialisiert — Daten verloren\nDas Netz kennt keine Namen, nur Adressen.\nTraceroute endet im Nichts. Paket verloren.\nWARN: Verbindung unterbrochen — Neustart erforderlich\nSuchmaschinen lügen. grep lügt nicht.\nTerminierung ohne Rückmeldung.\nThe pattern persists. The signal remains.\nWARN: Zeitstempel außerhalb des gültigen Bereichs\nNur Muster bleiben. Texte vergehen.\nTue, 14 Apr 1970 — letzter bekannter Eintrag\nTerminal: Keine weiteren Daten verfügbar.",
                 "required": false
               },
               {
                 "command": "sed s/ERROR/WARN/g ghost_journal.txt",
-                "output": "[PLACEHOLDER — TERM-02 fills this]",
+                "output": "Tagebuch des Geists — Version 0\nAlles begann mit einem Signal, das niemand senden wollte.\nTimestamp: 1969-01-01T00:00:00Z — Initialisierung\nTue Mar 10 03:14:07 UTC 1970 — Systemstart\nWARN: Speicher nicht initialisiert — Daten verloren\nDas Netz kennt keine Namen, nur Adressen.\nTraceroute endet im Nichts. Paket verloren.\nWARN: Verbindung unterbrochen — Neustart erforderlich\nSuchmaschinen lügen. grep lügt nicht.\nTerminierung ohne Rückmeldung.\nThe pattern persists. The signal remains.\nWARN: Zeitstempel außerhalb des gültigen Bereichs\nNur Muster bleiben. Texte vergehen.\nTue, 14 Apr 1970 — letzter bekannter Eintrag\nTerminal: Keine weiteren Daten verfügbar.",
                 "required": false
               }
             ],
@@ -160,7 +174,9 @@
         "narrative": "Das Journal ist gesichert. Die erste Lektion des Geists ist bestanden. In der Kiste liegt mehr — wenn du bereit bist.",
         "act": 1,
         "effects": [
-          {"set_flag": "claimed_ghost_box"}
+          {
+            "set_flag": "claimed_ghost_box"
+          }
         ]
       }
     ],
