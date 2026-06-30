@@ -142,3 +142,52 @@ beweist die komplette Schleife auf der Engine.
 ## 8. Nicht im Scope (bewusst, YAGNI)
 Video-Embedding-Feature, WebVM/Server-VM-Terminal (②/③), Multiplayer/Koop in Akt 1, neue
 Fragetypen (Matching/separater Lückentext), Akt 2–4-Inhalte, LPIC-Objective-Feintagging der Pools.
+
+## 9. Verifizierte Schema-Fakten (Code-Scan 2026-06-30) — AUTORITATIV
+
+> Diese Sektion überschreibt frühere Annahmen wo sie abweicht. Quelle: verbatim aus
+> `app/data/campaigns/campaign-schema.json`, `ghostline_quest.json`, `test_graph_campaign.json`,
+> `lib/Service/StoryEngineService.php`, `src/utils/cliStateMachine.ts`, `src/components/AbenteuerMode.vue`.
+
+**Kampagne wird gebaut als EINE JSON-Datei** `app/data/campaigns/<campaign_id>.json` — keine DB,
+kein OCC-Import. `StoryEngineService::listCampaigns()` scannt das Verzeichnis automatisch.
+Damit sie **featured** erscheint: `campaign_id` in `FEATURED_CAMPAIGN_IDS` in `AbenteuerMode.vue`
+(~Z.682) eintragen (= JS-Änderung → Rebuild + ESLint/Vitest-Gate).
+
+**Pflicht-Top-Level-Felder:** `campaign_id`, `version`, `title`, `description`, `duration_minutes`,
+`difficulty`, `focus_areas`, `character_recommendations`, `icon`, `graph{nodes,edges,acts}`.
+StoryEngine-Validierung erzwingt mindestens `campaign_id`+`title` und für Graph-Kampagnen
+`graph.nodes`+`graph.edges`.
+
+**`difficulty` ist ENUM:** nur `beginner` | `intermediate` | `advanced`.
+
+**Node-Typen:** `story` (mit optionalem `npc_dialog`, `quiz`, `effects`), `terminal`, `simulator`
+(types: firewall/dns/routing/nat/portscan/wireshark/authflow/terminal), `bot_correction`,
+Ending via `is_ending: true`. Jeder Node: `id`, `title`, `narrative`, `act`. Genau ein
+`start: true`, mind. ein `is_ending: true`. **Alle Nodes müssen in genau einem Act** (`acts[].node_ids`).
+
+**KORREKTUR Skill-Checks:** Es gibt KEINE Laufzeit-Pool-Referenz. Skill-Checks sind **Inline-`quiz`**
+in einem story-Node:
+```json
+"quiz": { "question": "...", "options": [{"id":"a","text":"..."}], "correct": "b", "explanation": "..." }
+```
+→ Fragen-*Inhalt* aus Pool 65/70/Dozentenmaterial wird in die JSON **eingebettet** (nicht dynamisch gezogen).
+
+**Terminal (= deine Dozenten-Aufgaben):** Inline `scenario_override`:
+```json
+"simulator": { "type":"terminal", "scenario":"<id>", "pass_flag":"<flag>",
+  "scenario_override": { "prompt":"user@host:~$", "objective":"...",
+    "valid_commands":[{"command":"grep ^T datei","output":"...","required":true}],
+    "success_message":"...", "hint":"...", "max_attempts":8 } }
+```
+Validierung = case-insensitive **exakter String-Match** (`cliStateMachine.ts` Z.192). Mehrere
+akzeptierte Lösungen = mehrere `valid_commands`-Einträge mit gleichem Output. `required:true` =
+muss ausgeführt werden für Erfolg.
+
+**Edges:** `{from,to,label, role_filter?, conditions?{requires_flag,requires_item,min_reputation,max_reputation}}`.
+**Effects:** `set_flag`, `add_reputation{role:n}`, `add_item`. → `state_bag claimed_ghost_box` via `set_flag`.
+
+**Material-Link (NotebookLM):** `oc_learning_course_documents` (`CourseDocument`), `file_type:"url"`,
+`file_path:"https://notebooklm…"`. Kein dediziertes OCC-Command für Kampagnen-Material.
+
+**Referenz-Vorlage zum Klonen:** `ghostline_quest.json` (voll) + `test_graph_campaign.json` (minimal).
