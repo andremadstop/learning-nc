@@ -1,114 +1,84 @@
-# Requirements: learning-nc — v5.0.0 Certification-as-a-Service
+# Requirements: learning-nc — v5.1.0 Ghostline
 
-**Defined:** 2026-06-26
-**Core Value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — die App stellt verifizierbare Bestehens-Zertifikate als natives NC-Feature aus (kein externer Dienst).
+**Defined:** 2026-06-30
+**Core Value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — hier: Lernen als spannendes interaktives Spiel, damit ein ungeduldiger Lerner die LPIC-1-101-Prüfung besteht.
 
 ## v1 Requirements
 
-Requirements for v5.0.0. Each maps to a roadmap phase (154–157).
+v1 = **Akt 1 (LPIC-101)**, deadline-priorisiert (Prüfung 03.07.). K3/Topic-103 zuerst (Vertical Slice).
+Auf vorhandener Kampagnen-Engine, kein Neubau. Mappt auf Phasen (Nummerierung ab 158).
 
-### Pass-Definition (PASS) — Phase 154
+### Ghostline-Story (STORY)
 
-- [x] **PASS-01**: Instructor can enable certification for a course
-- [x] **PASS-02**: Instructor can set a pass threshold (minimum score %) per course
-- [x] **PASS-03**: Instructor can designate mandatory pools that must be mastered to pass
-- [x] **PASS-04**: Instructor can set certificate validity duration (expires after N days; 0 = no expiry)
-- [x] **PASS-05**: System evaluates pass as a binary from discrete assessment results, **excluding guessed answers** (`is_guessed`) — FSRS readiness is explicitly NOT the pass criterion
-- [x] **PASS-06**: Student sees their pass status (passed / not yet) for a certifying course
-- [x] **PASS-07**: A pass event is recorded immutably in the audit log when criteria are first met
+- [ ] **STORY-01**: Spielbare Akt-1-Kampagne (`ghostline_act1.json`) lädt im Abenteuer-Modus ohne Fehler (Story-Engine validiert Graph)
+- [ ] **STORY-02**: VirtuProf erzählt durchgängig im Narrator-/Mystery-Ton (kein Bruch in „Lehr-Modus")
+- [ ] **STORY-03**: Nach Kapitel-Abschluss erscheint eine History-„Geist-Erinnerung" (Vignette, Interleaving)
+- [ ] **STORY-04**: Akt-1-Ende setzt `state_bag claimed_ghost_box=true` (Homelab-Anker, Persistenz-Hook für spätere Akte)
 
-### Certificate-Artifact & Issuer (CERT) — Phase 155
+### K3 Vertical Slice — Topic 103 (K3) — der MVP
 
-- [x] **CERT-01**: Admin can initialize the instance issuer identity via OCC command (`learning:cert:init-issuer` — Ed25519 keypair + did:web)
-- [x] **CERT-02**: The instance publishes a resolvable did:web DID document (`did.json`) at a public route
-- [x] **CERT-03**: Issuer private key is stored encrypted at rest (ICrypto) — never plaintext, never in export/snapshot/package
-- [x] **CERT-04**: System supports multiple issuer keys over time with key rotation (`oc_learning_cert_keys`, key-id referenced in each credential) so rotation does not invalidate past certificates
-- [x] **CERT-05**: On pass, the system **automatically** issues a signed Open Badges 3.0 / W3C VC credential
-- [x] **CERT-06**: Each credential is self-contained — course, score, threshold, issue/expiry dates, issuer, verification-id embedded at signing time
-- [ ] **CERT-07**: Student can view and print their certificate (window.print + print stylesheet) — *implemented + Vitest/build-proven; visual print render deferred to demo course (user option A, non-blocking)*
-- [ ] **CERT-08**: Certificate displays a QR code linking to its public verification URL — *implemented + Vitest/build-proven; physical QR scan deferred to demo course (user option A, non-blocking)*
-- [x] **CERT-09**: Student can download the credential as an Open Badges 3.0 JSON-LD file
-- [x] **CERT-10**: Certificate content is multilingual — rendered in the viewer's language (DE/EN at minimum) via existing i18n
-- [x] **CERT-11**: Certificate carries issuer branding (name + logo) pulled from the instance's NC theming settings (generic, zero per-operator config)
-- [x] **CERT-12**: Student receives a Nextcloud notification when a certificate is issued
-- [ ] **CERT-13**: Student can add the credential to LinkedIn via prefilled "Add to Profile" URL — *implemented + Vitest/build-proven; live redirect click deferred to demo course (user option A, non-blocking)*
+- [ ] **K3-01**: K3 ist solo end-to-end spielbar — Spielschleife Story-Intro → Terminal → Auflösung → Inline-Quiz → 2. Terminal (faded) → History → Ende
+- [ ] **K3-02**: ≥2 Terminal-Challenges, abgeleitet aus echten Dozenten-grep/sed-Aufgaben
+- [ ] **K3-03**: ≥1 Inline-Quiz mit `explanation`; Fragen-Inhalt aus einem Linux-Pool (65/70) eingebettet
+- [ ] **K3-04**: Jede Kapitel-Abschluss-Kante hat `conditions.requires_flag` — K3 ist NICHT mit Fehleingaben durchspielbar (Anti-„Chocolate-Broccoli")
 
-### Compliance-Report (REPORT) — Phase 156
+### Terminal-Korrektheit (TERM)
 
-- [x] **REPORT-01**: Instructor can view a compliance report per course (who passed, when, score, expiry, verification-id) — *156-02: instructor compliance table in CourseTabTeilnehmer (Abschluss subtab) from the clean DTO endpoint, no user_id*
-- [x] **REPORT-02**: Instructor can filter the report by date range and expiry window — *156-02: from/to + expiringDays via shared buildCertReportQuery()*
-- [x] **REPORT-03**: Instructor can export the compliance report as CSV (download) — *156-02: Export CSV button, same filter query string as the table*
-- [x] **REPORT-04**: Report exposes display name only — no plaintext email (DSGVO) — *156-01: load-bearing no-leak test green (5-field DTO, no recipient-id/email, email-shaped name → 'Teilnehmer:in')*
+- [ ] **TERM-01**: Jede Terminal-Aufgabe akzeptiert die plausiblen Eingabe-Varianten (≥3: ohne/einfache/doppelte Quotes) + hat einen `hint`
+- [ ] **TERM-02**: Terminal-Outputs sind auf einer echten Shell erzeugt (Copy-Paste), nicht erfunden
 
-### Public-Verification (VERIFY) — Phase 157
+### Content-Korrektheit (CONT)
 
-- [x] **VERIFY-01**: Anyone can verify a certificate via a public URL using its verification-id (no NC login) — *157-04: `publicVerify#verify` GET /verify/{vid} registered outside /api/, `@PublicPage` PHPDoc (attribute 401'd, d05d593). Live logged-out HTTP 200, no /login redirect (fresh Playwright 2026-06-28)*
-- [x] **VERIFY-02**: The verify page shows validity status, issuer, course title, and issue/expiry dates — *157-04: verify.php renders 4-state banner + course + issuer + issued_at/expires_at. LIVE-PROVEN (2026-06-28 demo-course pass): valid DE cert renders #2f9a48 green banner with course/issuer/dates; withdrawn EN cert renders #e69900 ocker banner*
-- [x] **VERIFY-03**: The verify response omits recipient personal data for unauthenticated callers (DSGVO) — *157-02/04: projectDto() reads only 6 non-PII fields, never credentialSubject.name. LIVE-PROVEN (2026-06-28): Playwright DOM whole-body no-leak gate GREEN against the real valid cert 603d914c (recipient "Demo Teilnehmer"/demo-idiottest absent from entire HTML body)*
-- [x] **VERIFY-04**: Verification cryptographically checks the signature against the issuer's published key AND the revocation/expiry status (signature alone ≠ currently valid) — *157-02: explicit AND-chain; 10/10 PHPUnit incl. revoked-key + claim-substitution discriminators. LIVE-PROVEN (2026-06-28): real cert renders valid AND independent Python Ed25519 verifier confirms the signature against did.json's published key (`verify-credential.py` → "signature is valid")*
-- [x] **VERIFY-05**: Instructor can revoke an issued certificate; verification then returns an explicit "withdrawn" status (tombstone, not 404) — *157-03: revoke() owner-gated, idempotent, uniform 404. LIVE-PROVEN (2026-06-28): owner (andre) revoke → {revoked:true} HTTP 200, revoked_at set + UNCHANGED on repeat (idempotent), non-owner → 404; EN verify page then renders #e69900 withdrawn tombstone (HTTP 200, not 404). Version009200 applied live (occ upgrade)*
-- [x] **VERIFY-06**: The verify route is rate-limited and validates input format (anti-enumeration / IDOR) — *157-04: UUID_V4 precheck before any DB call, malformed==not-found no oracle. LIVE-PROVEN (2026-06-28): no-oracle Playwright GREEN AND 429 rate-limit enforced live (curl-loop on unknown branch → HTTP 429 after the AnonRateLimit window; brute-force counter also trips)*
+- [ ] **CONT-01**: Alle Quiz-Inhalte gegen LPIC-1-PDFs / NotebookLM-Lernvault auf Faktenkorrektheit geprüft
+- [ ] **CONT-02**: Mindestens die prüfungskritischen 103-Fallen eingebaut (umask, BRE vs ERE, Redirect-Reihenfolge, `sort|uniq`, vi-Modi, Signal-Nummern)
 
-## v2 Requirements (deferred — v5.1)
+### Retention-Brücke (RET)
 
-### Differentiators (DIFF)
+- [ ] **RET-01**: Die K3-Befehle existieren parallel als Pool-Cards (FSRS-Retention nach dem Durchspielen) — Pool 65 erweitern oder neuer Ghostline-CLI-Pool
 
-- **DIFF-01**: Expiry-approaching notification to student
-- **DIFF-02**: Recipient email-hash ownership check on the credential
-- **DIFF-03**: Bulk issuance / backfill for past passers
-- **DIFF-04**: Verify-event audit trail
-- **DIFF-05**: Bitstring Status List revocation (proportionate only at >10K credentials)
+### Material (MAT)
+
+- [ ] **MAT-01**: NotebookLM-Lernfilm/-Audio ist als Kurs-Material („Trainingsband des Geists") verlinkt und erreichbar
+
+### Deploy & Safety (DEPLOY)
+
+- [ ] **DEPLOY-01**: Staged Deploy — zuerst JSON-only unfeatured (Test auf devcloud), FEATURED-Schaltung (AbenteuerMode.vue) erst nach Andrés Freigabe
+- [ ] **DEPLOY-02**: Scope-Sentinel — kein PHP/Vue-Edit außer der FEATURED-Zeile; bei JS-Edit Gate 1 grün (ESLint/Vitest)
+
+## v2 Requirements (deferred — nach der Prüfung)
+
+### Weitere Akt-1-Kapitel (CHAP)
+- **CHAP-01**: K1 Topic 101 (Systemarchitektur) Kapitel
+- **CHAP-02**: K2 Topic 102 (Installation/Paketverwaltung) Kapitel
+- **CHAP-03**: K4 Topic 104 (Dateisysteme/FHS) Kapitel
+
+### Weitere Akte (ACT)
+- **ACT-02**: Akt 2 Security — bestehende `ghostline_quest.json` als Akt 2 andocken
+- **ACT-03**: Akt 3 Netzwerk (Network+/CCNA/Subnetting-Simulatoren)
+- **ACT-04**: Akt 4 IT/Cloud (Homelab-Skalierung)
+- **ACT-CONT**: state_bag Cross-Act-Kontinuität (Strategie A narrativ / B mergen / C cross-read) — vor Akt-2-Spec entscheiden
+
+### Erweiterungen (EXT)
+- **EXT-01**: Video-Embedding-Feature (NotebookLM-Filme inline statt nur verlinkt)
+- **EXT-02**: WebVM/echter Sandbox-Terminal („freier Spielplatz")
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Multi-tenant credentialing SaaS / org-issuer management | Mandant = the NC instance itself; tenancy via NC groups already exists. App feature, not a platform |
-| eIDAS QEAA via Qualified Trust Service Provider | External contract/cost; overkill for app training certificate; did:web self-issuer suffices |
-| EUDI / Apple / Google Wallet, OpenID4VCI | Requires issuance infrastructure absent in a self-hosted NC app — defer to v6+ |
-| Europass EDC | Separate institutional issuing pipeline, not an OB3 format variant — v6+ |
-| 1EdTech OB 3.0 conformance certification | Requires eddsa-rdfc-2022 (no PHP lib); in-app verify works without it; ADR-documented tradeoff |
-| External verify-portal for non-NC supervisors | In-app public verify route covers the need for v5.0.0; standalone portal possibly later |
-| PHP server-side PDF library | Browser-print (window.print) is the deliberate PDF strategy — NC resource constraint |
-| FSRS readiness as pass criterion | Anti-feature — produces a certificate whose truth value silently decays |
+| Server-VM/Cyber-Range (Option ③) | Security/Ops-Last; eigener Milestone, nicht v5.1.0 |
+| Multiplayer/Koop in Akt 1 | Solo zuerst (User-Entscheidung); Engine kann's später |
+| Neue Fragetypen (Matching, separater Lückentext) | Vorhandene Typen + CLI decken Akt 1 ab |
+| PHP/Vue-Feature-Neubau | „85 % existiert" — v5.1.0 ist Content-Authoring, kein Engine-Bau |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PASS-01 | 154 | Complete |
-| PASS-02 | 154 | Complete |
-| PASS-03 | 154 | Complete |
-| PASS-04 | 154 | Complete |
-| PASS-05 | 154 | Complete |
-| PASS-06 | 154 | Complete |
-| PASS-07 | 154 | Complete |
-| CERT-01 | 155 | Complete |
-| CERT-02 | 155 | Complete |
-| CERT-03 | 155 | Complete |
-| CERT-04 | 155 | Complete |
-| CERT-05 | 155 | Complete |
-| CERT-06 | 155 | Complete |
-| CERT-07 | 155 | Implemented (visual verify deferred) |
-| CERT-08 | 155 | Implemented (visual verify deferred) |
-| CERT-09 | 155 | Complete |
-| CERT-10 | 155 | Complete |
-| CERT-11 | 155 | Complete |
-| CERT-12 | 155 | Complete |
-| CERT-13 | 155 | Implemented (visual verify deferred) |
-| REPORT-01 | 156 | Complete (156-02 UI) |
-| REPORT-02 | 156 | Complete (156-02 UI) |
-| REPORT-03 | 156 | Complete (156-02 UI) |
-| REPORT-04 | 156 | Complete |
-| VERIFY-01 | 157 | Complete (live-proven) |
-| VERIFY-02 | 157 | Complete (live-proven: valid + withdrawn banners) |
-| VERIFY-03 | 157 | Complete (live-proven: DOM no-leak gate green) |
-| VERIFY-04 | 157 | Complete (live-proven: independent Ed25519 verify) |
-| VERIFY-05 | 157 | Complete (live-proven: revoke→withdrawn + idempotent + 404) |
-| VERIFY-06 | 157 | Complete (live-proven: 429 enforced + no-oracle) |
+| (wird beim Roadmap-Schritt gefüllt) | — | Pending |
 
-**Coverage:** 30/30 v1 requirements mapped (PASS 7 → Phase 154, CERT 13 → Phase 155, REPORT 4 → Phase 156, VERIFY 6 → Phase 157)
+**Coverage:** v1 = 14 Requirements (STORY 4, K3 4, TERM 2, CONT 2, RET 1, MAT 1, DEPLOY 2) — Mapping folgt im Roadmap-Schritt.
 
 ---
-*Requirements defined: 2026-06-26*
-*Last updated: 2026-06-28 — Demo-course provisioning pass executed (authorized, user option A): ALL 6 VERIFY now LIVE-PROVEN end-to-end on a real cert minted through the genuine pass pipeline (Version009200 applied via occ upgrade; demo courses 62 DE valid / 63 EN withdrawn; recipient demo-idiottest). VERIFY-03 Playwright DOM gate green, VERIFY-04 independent Ed25519 verified, VERIFY-05 owner-revoke→withdrawn tombstone + idempotent + non-owner 404, VERIFY-06 live 429 enforced. v5.0.0 = 30/30 requirements addressed. Remaining: CERT-07/08/13 (print/QR/LinkedIn visual eyeball) + expired-banner/RTL visual — optional, non-blocking. Release (5.0.0 bump + tag + store) pending final go.*
+*Requirements defined: 2026-06-30*
+*Last updated: 2026-06-30 — v5.1.0 Ghostline, aus Spec + 4-Researcher-Synthese abgeleitet.*
