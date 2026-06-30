@@ -62,6 +62,7 @@ LAUNCH_READINESS_REPORT*.md
 !app/README.md
 !README.md
 !app/CHANGELOG.md
+!app/data/campaigns/fixtures/*.txt
 !app/LICENSE
 net_plus_*.txt
 a_plus*.txt

@@ -1,0 +1,15 @@
+Tagebuch des Geists — Version 0
+Alles begann mit einem Signal, das niemand senden wollte.
+Timestamp: 1969-01-01T00:00:00Z — Initialisierung
+Tue Mar 10 03:14:07 UTC 1970 — Systemstart
+ERROR: Speicher nicht initialisiert — Daten verloren
+Das Netz kennt keine Namen, nur Adressen.
+Traceroute endet im Nichts. Paket verloren.
+ERROR: Verbindung unterbrochen — Neustart erforderlich
+Suchmaschinen lügen. grep lügt nicht.
+Terminierung ohne Rückmeldung.
+The pattern persists. The signal remains.
+ERROR: Zeitstempel außerhalb des gültigen Bereichs
+Nur Muster bleiben. Texte vergehen.
+Tue, 14 Apr 1970 — letzter bekannter Eintrag
+Terminal: Keine weiteren Daten verfügbar.
