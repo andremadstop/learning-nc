@@ -79,6 +79,15 @@ Archive: [v4.4.0-ROADMAP.md](milestones/v4.4.0-ROADMAP.md) · [v4.4.0-REQUIREMEN
 4. ≥1 Inline-Quiz mit `explanation`, Inhalt LPIC-verifiziert; prüfungskritische 103-Fallen eingebaut (umask, BRE/ERE, Redirect-Reihenfolge …)
 5. Jede Kapitel-Abschluss-Kante hat `conditions.requires_flag` — kein Durchspielen mit Fehleingaben
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 158-01-PLAN.md — Graph Validator + 3-Node Smoke (Wave 1: structural validator + Pattern B smoke)
+- [ ] 158-02-PLAN.md — Full K3 Arc Authoring (Wave 2: 9-node story arc, quiz, history vignette, ending)
+- [ ] 158-03-PLAN.md — Terminal Shell Verification (Wave 3: real grep/sed outputs from fixture)
+- [ ] 158-04-PLAN.md — LPIC Content Check (Wave 3: factual cross-check + 6 exam traps, parallel with 158-03)
+- [ ] 158-05-PLAN.md — devcloud Deploy + Playthrough Checkpoint (Wave 4: human K3-01/K3-04 verification)
+
 ### Phase 159: Akt 1 — Retention, Material & Go-Live
 **Depends on**: Phase 158 (spielbarer K3-Arc muss existieren).
 **Goal**: Lerneffekt verankern (FSRS-Pool-Brücke), Material verknüpfen, sicher live schalten.
