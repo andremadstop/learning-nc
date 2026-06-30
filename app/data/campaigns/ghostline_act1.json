@@ -68,7 +68,7 @@
         "id": "a1_k3_grep1_gate",
         "type": "story",
         "title": "Fragment entschlüsselt",
-        "narrative": "Die Zeilen erscheinen — T-Einträge, alle auf einmal. Unvollständig, aber du weißt jetzt, wie man sucht. Etwas in den Daten zieht die Aufmerksamkeit auf sich. Eine Frage formt sich.",
+        "narrative": "Die Zeilen erscheinen — T-Einträge, alle auf einmal. Unvollständig, aber du weißt jetzt, wie man sucht. Etwas in den Daten zieht die Aufmerksamkeit auf sich. Eine Frage formt sich. — Der Geist hinterließ eine Randnotiz: In Unix zählt die Reihenfolge der Umleitungen. cmd > file 2>&1 ist korrekt — erst stdout in die Datei, dann stderr dazu. Umgekehrt, 2>&1 > file, bleibt stderr auf dem Terminal.",
         "act": 1,
         "effects": []
       },
@@ -104,7 +104,7 @@
         "id": "a1_k3_quiz_wrong",
         "type": "story",
         "title": "Nicht ganz",
-        "narrative": "Nicht ganz. BRE — Basic Regular Expressions — behandelt das Pluszeichen als Literal. Kein Quantifier, kein 'ein oder mehr'. Dafür braucht es -E, das Extended Regular Expressions aktiviert. grep 'a+' matcht nur den buchstäblichen String 'a+'. grep -E 'a+' matcht ein oder mehr 'a'-Zeichen. Prüfungsfalle bestätigt — weiter.",
+        "narrative": "Nicht ganz. BRE — Basic Regular Expressions — behandelt das Pluszeichen als Literal. Kein Quantifier, kein 'ein oder mehr'. Dafür braucht es -E, das Extended Regular Expressions aktiviert. grep 'a+' matcht nur den buchstäblichen String 'a+'. grep -E 'a+' matcht ein oder mehr 'a'-Zeichen. Prüfungsfalle bestätigt — weiter. Randnotiz des Geists: Signale haben Nummern. 1=SIGHUP, 2=SIGINT, 9=SIGKILL (nicht abfangbar, kein Entkommen), 15=SIGTERM (Standard für kill ohne Flag). Wer kill sendet, schickt 15 — nicht 9.",
         "act": 1,
         "effects": []
       },
@@ -149,7 +149,7 @@
         "id": "a1_k3_grep2_gate",
         "type": "story",
         "title": "Muster erkannt",
-        "narrative": "Die Zeilen formen ein Muster. Der Geist hinterließ mehr als Fragmente — er hinterließ Erinnerungen. Etwas Altes wartet dahinter.",
+        "narrative": "Die Zeilen formen ein Muster. Der Geist hinterließ mehr als Fragmente — er hinterließ Erinnerungen. Zwischen den Zeilen eine Notiz: umask 022 — neue Dateien erhalten 644, Verzeichnisse 755. Die Maske zieht weg, was andere nicht brauchen. Etwas Altes wartet dahinter.",
         "act": 1,
         "effects": []
       },
@@ -157,7 +157,7 @@
         "id": "a1_k3_history",
         "type": "story",
         "title": "Geist-Erinnerung: Bell Labs, 1969",
-        "narrative": "Ken Thompson brauchte eine Nacht. Bell Labs, frühe 1970er Jahre. Jemand fragte: Kann man Dateien nach Mustern durchsuchen? Thompson nahm den g/re/p-Befehl aus dem Editor ed und baute ihn heraus: global, regular expression, print. grep. Nicht Magie — Handwerk, eine Nacht, ein Terminal. Das Werkzeug überlebte Generationen von Entwicklern, Betriebssystemen, Sprachen. Der Geist im Journal ist kein Gespenst. Er ist ein Werkzeug, das Muster findet, seit Bell Labs.",
+        "narrative": "Ken Thompson brauchte eine Nacht. Bell Labs, frühe 1970er Jahre. Jemand fragte: Kann man Dateien nach Mustern durchsuchen? Thompson nahm den g/re/p-Befehl aus dem Editor ed und baute ihn heraus: global, regular expression, print. grep. Nicht Magie — Handwerk, eine Nacht, ein Terminal. Das Werkzeug überlebte Generationen von Entwicklern, Betriebssystemen, Sprachen. Sein Bruder im Geiste: uniq — aber uniq allein kennt nur benachbarte Zeilen. Erst sort, dann uniq: so zählt man Duplikate wirklich. Der Geist im Journal ist kein Gespenst. Er ist ein Werkzeug, das Muster findet, seit Bell Labs.",
         "act": 1,
         "npc_dialog": {
           "speaker": "Der Geist",
@@ -171,7 +171,7 @@
         "type": "ending",
         "is_ending": true,
         "title": "Akt 1 abgeschlossen",
-        "narrative": "Das Journal ist gesichert. Die erste Lektion des Geists ist bestanden. In der Kiste liegt mehr — wenn du bereit bist.",
+        "narrative": "Das Journal ist gesichert. Die erste Lektion des Geists ist bestanden. Ein letzter Hinweis auf dem Bildschirm: vi öffnet immer im Normal-Modus — wer zu tippen beginnt ohne i, schreibt Befehle statt Text. Esc bringt zurück in den Normal-Modus. :wq speichert und beendet, :q! verwirft ohne Speichern. In der Kiste liegt mehr — wenn du bereit bist.",
         "act": 1,
         "effects": [
           {
