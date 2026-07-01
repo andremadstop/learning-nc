@@ -14,33 +14,27 @@ Verifizierbare Zertifizierung als natives Nextcloud-Feature: Pass-Kriterium pro 
 OB3/VC-Zertifikat (did:web-Issuer), Compliance-Report, öffentliche Verify-Route. 30/30 v1-Requirements.
 Archiv: `milestones/v5.0.0-ROADMAP.md` + `v5.0.0-REQUIREMENTS.md`.
 
-## Current Milestone: v5.1.0 „Ghostline"
+## Current Milestone: v5.2.0 „Pflichtschulung" — AWO-Readiness
 
-**Goal:** EIN verbindendes interaktives Story-Universum (Linux→Security→Netzwerk→IT) auf der
-vorhandenen Kampagnen-Engine — Lernen als spannendes Spiel statt trockener Theorie. Akt 1 =
-LPIC-101-Mini-Slice, deadline-priorisiert (Prüfung 03.07.), mit K3/Topic-103 Vertical-Slice zuerst.
-
-**Target features:**
-- Verbindende „Ghostline"-Meta-Kampagne (Noir-Mystery + Homelab-Erdung + History-Journal), modular in Akte
-- Akt 1 „First Contact" (LPIC-101): 4 Kapitel = Themen 101–104, K3/Topic-103 als erster spielbarer Vertical Slice
-- Terminal-Challenges aus echten Dozenten-Aufgaben (PbqCli `scenario_override`)
-- Inline-Quizzes (Fragen-Inhalt aus Linux-Pools 65/70 + History-Pool 44 eingebettet)
-- NotebookLM-Lernfilme/Audios als verlinktes Material („Trainingsbänder")
-- Persistenter `state_bag` (Homelab-Übernahme trägt in Akt 2–4)
-
-**Spec:** `docs/superpowers/specs/2026-06-30-ghostline-interactive-course-design.md` (inkl. verifizierter Schema-Fakten)
-**Brainstorm:** `.planning/brainstorm-interactive-course.md`
-
-<details><summary>Vorheriges Milestone-Ziel (v5.0.0)</summary>
-
-**Goal:** Die Learning-App bringt verifizierbare Zertifizierung als natives Nextcloud-Feature mit — ein Kurs-Owner aktiviert "Zertifikat bei Bestehen", definiert das Pass-Kriterium, und die App stellt beim Bestehen ein standardkonformes, signiertes Zertifikat aus. KEINE eigene SaaS-Plattform; Aussteller = die jeweilige NC-Instanz.
-</details>
+**Goal:** Pflichtschulungen mit Nachweispflicht sauber abbilden — Video/Material muss vollständig
+gesehen sein bevor das Quiz freischaltet, Teamleiter sehen gruppengefilterte Compliance-Reports,
+Zertifikate laufen jährlich ab und lösen Re-Zertifizierung aus, und User ohne E-Mail-Konto
+funktionieren durchgängig. Ausgelöst vom AWO-Sachsen-Lead (Jan Knizek, Issue #20), der genau
+Zertifikate + Reporting + Video-Sperren als Compliance-Blocker für 2000 Mitarbeiter benannte.
 
 **Target features:**
-- "Bestanden"-Definition: hartes Pass-Kriterium pro Kurs (Score ≥ X %, Pflicht-Pools gemeistert) — Readiness ≠ Bestehen
-- Zertifikat-Artefakt im **Open-Badges-3.0 / W3C-Verifiable-Credential**-Format (Ed25519-signiert, `did:web` der Instanz als Aussteller, Verifikations-ID, Logo/Branding, DSGVO-Schulungsnachweis-Format, druckbar via window.print() + QR-Code)
-- Org-Compliance-Report: "wer hat welche Pflichtschulung wann bestanden", exportierbar für Vorgesetzte
-- In-App Verify-Route (öffentlich, gegen Instanz-Key + `oc_learning_audit_events` tamper-evident)
+- Video-/Material-Gating: Clip muss komplett gesehen sein, bevor das Quiz freischaltet (NC-gehostete MP4 + Vimeo/YouTube-Embed)
+- Teamleiter-RBAC-Reports: Team-Lead-Rolle pro Untergruppe, sieht Compliance-Report nur für die eigene Gruppe
+- Re-Zertifizierung: jährliche Ablauffristen + Erinnerung/Re-Enrollment bei Cert-Ablauf (baut auf vorhandenem `expiry_date`)
+- Username-Politur: User ohne Mailkonto durchgängig unterstützen + CSV-User-Upload-Helfer
+
+## Paused Milestone: v5.1.0 „Ghostline" (⏸ resume nach LPIC-Prüfung 03.07.)
+
+Interaktives Story-Universum auf der Kampagnen-Engine. Phase 158 (Akt 1 K3 Core) gebaut + auf devcloud
+gelistet; nur Andrés Live-Durchspielen (Gate K3-01/K3-04) + Phase 159 offen. Branch
+`feature/v5.1.0-ghostline` (nicht gemergt). Handoff: `.planning/HANDOFF-2026-07-01-ghostline-pause.md`.
+Requirements archiviert: `milestones/v5.1.0-REQUIREMENTS.md`. Neue teach-then-test-Lehr-Schicht-Spec
+(`docs/superpowers/specs/2026-06-30-interactive-lesson-component-design.md`) wartet auf Andrés Review.
 
 ## Requirements
 
@@ -76,14 +70,17 @@ LPIC-101-Mini-Slice, deadline-priorisiert (Prüfung 03.07.), mit K3/Topic-103 Ve
 - ✓ Vue 3 Migration, Vite-Build, Pinia, Vue Router, SSE/Redis/Push — v4.0.0/v3.8.0
 - ✓ Character & Personality (Skin-Picker, 3 Archetypen, Animation-Engine, 5-Sprachen i18n) — v4.4.0
 - ✓ CySA+ Pool-Konsolidierung + PBQ-Subtypes (inkl. ranking) — v4.4.x
+- ✓ Certification-as-a-Service (Pass-Kriterium, OB3/VC-Cert did:web, Compliance-Report, Public-Verify) — v5.0.0
 
 ### Active
 
-**Milestone v5.0.0 — Certification-as-a-Service** (REQ-IDs in REQUIREMENTS.md):
-- [ ] Hartes Pass-Kriterium pro Kurs ("bestanden ab X %", Pflicht-Pools)
-- [ ] Signiertes Zertifikat-Artefakt (Open Badges 3.0 / W3C VC, did:web-Issuer, QR, Print)
-- [ ] Org-Compliance-Report (wer-bestand-was-wann, exportierbar)
-- [ ] In-App Verify-Route (öffentlich, tamper-evident gegen Audit-Log)
+**Milestone v5.2.0 — Pflichtschulung / AWO-Readiness** (REQ-IDs in REQUIREMENTS.md):
+- [ ] Video-/Material-Gating (komplett gesehen → Quiz frei; NC-MP4 + Vimeo/YouTube)
+- [ ] Teamleiter-RBAC-Reports (Team-Lead-Rolle pro Gruppe, gruppengefilterter Compliance-Report)
+- [ ] Re-Zertifizierung (jährliche Ablauffristen + Erinnerung/Re-Enrollment)
+- [ ] Username-Politur (User ohne Mailkonto + CSV-User-Upload-Helfer)
+
+**Paused: Milestone v5.1.0 — Ghostline** (Phase 158 gebaut, resume nach LPIC-Prüfung, siehe Handoff)
 
 ### Out of Scope
 
@@ -133,4 +130,4 @@ LPIC-101-Mini-Slice, deadline-priorisiert (Prüfung 03.07.), mit K3/Topic-103 Ve
 | KEINE eigene Credentialing-Plattform | Feature der App, nicht SaaS-Dienst; NC-Tenancy reicht (Over-Engineering verworfen) | — Pending (v5.0.0) |
 
 ---
-*Last updated: 2026-06-26 after v5.0.0 Certification-as-a-Service milestone started*
+*Last updated: 2026-07-01 — v5.2.0 Pflichtschulung gestartet (AWO-Lead), v5.1.0 Ghostline pausiert*

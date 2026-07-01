@@ -1,15 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v5.1.0
-milestone_name: "v5.1.0 Ghostline"
-current_phase: 158
+milestone: v5.2.0
+milestone_name: "v5.2.0 Pflichtschulung"
+current_phase: null
 current_plan: null
-status: "v5.1.0 Ghostline — ROADMAP ERSTELLT (2026-06-30). 4-Researcher-Phase abgeschlossen (STACK/FEATURES/ARCHITECTURE/PITFALLS + SUMMARY in .planning/research/). 16 v1-Requirements definiert + freigegeben. Roadmap: 2 Phasen — 158 (K3 Core: Authoring & Korrektheit, 12 Reqs) + 159 (Retention/Material/Go-Live, 4 Reqs). NÄCHSTER SCHRITT: /gsd:plan-phase 158 (K3 Vertical Slice; 3-Node-Smoke → voller K3). Engine/Schema-Fakten im Spec §3+9. Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
-stopped_at: "new-milestone Flow KOMPLETT: PROJECT/STATE/REQUIREMENTS/ROADMAP gesetzt + committed (v5.0.0 archiviert 1b20721, milestone-start afabd24, requirements a81beb1, roadmap commit folgt). Research inline-synthetisiert (4. Agent war gehangen → neu gestartet → ok). Als Nächstes: plan-phase 158."
-last_updated: "2026-06-30"
-last_activity: "2026-06-30 — v5.0.0 milestone abgeschlossen + archiviert; v5.1.0 Ghostline gestartet (Brainstorm→Spec→new-milestone). Research-Phase als Nächstes."
+status: "v5.2.0 Pflichtschulung (AWO-Readiness) GESTARTET (2026-07-01). Ausgelöst vom AWO-Sachsen-Lead Jan Knizek (Issue #20). Scope freigegeben: Video-/Material-Gating (NC-MP4 + Vimeo/YouTube), Teamleiter-RBAC-Reports, Re-Zertifizierung, Username-Politur. NÄCHSTER SCHRITT: Research-Gate → Requirements → Roadmap (Phasen ab 160). Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
+stopped_at: "new-milestone Flow läuft: PROJECT.md umgestellt (v5.1.0→pausiert, v5.2.0→current), Ghostline-Requirements ins Archiv kopiert (milestones/v5.1.0-REQUIREMENTS.md). Als Nächstes: Research-Entscheidung + Requirements definieren."
+last_updated: "2026-07-01"
+last_activity: "2026-07-01 — v5.1.0 Ghostline pausiert (Handoff vorhanden), v5.2.0 Pflichtschulung gestartet (Brainstorm inline: Gap-Analyse Code+NLM, Scope via AskUserQuestion freigegeben)."
 progress:
-  total_phases: 2
+  total_phases: 0
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,34 +20,39 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-06-30)
+See: .planning/PROJECT.md (updated 2026-07-01)
 
 **Core value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — fuer Einzellerner und Kursgruppen.
-**Current focus:** v5.1.0 Ghostline — interaktives Story-Universum. Akt 1 LPIC-101 (Prüfung 03.07.).
+**Current focus:** v5.2.0 Pflichtschulung — Video-Gating, Teamleiter-Reports, Re-Zertifizierung, Username-Politur. AWO-Lead (Jan Knizek, #20).
 
 ## Current Position
 
-Phase: 158 (Akt 1 — K3 Core) — geplant, noch nicht gestartet
-Plan: — (nächster Schritt: /gsd:plan-phase 158)
-Status: Roadmap erstellt (2 Phasen, 16 v1-Reqs). Bereit zum Planen von Phase 158.
-Last activity: 2026-06-30 — Milestone v5.1.0 initialisiert (Research → Requirements → Roadmap komplett)
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements (Research-Gate als Nächstes)
+Last activity: 2026-07-01 — Milestone v5.2.0 gestartet
+
+## Paused Milestone (resume nach LPIC-Prüfung 03.07.)
+
+**v5.1.0 Ghostline** — Phase 158 (Akt 1 K3 Core) gebaut + auf devcloud gelistet; offen: Andrés Live-Durchspielen (Gate) + Phase 159 + teach-then-test-Lehr-Schicht (Spec wartet auf Review). Branch `feature/v5.1.0-ghostline` (nicht gemergt). Alles committet, working tree war clean.
+Handoff: `.planning/HANDOFF-2026-07-01-ghostline-pause.md`. Requirements: `milestones/v5.1.0-REQUIREMENTS.md`. Memory: `project_ghostline_v51.md`.
 
 ## Accumulated Context
 
 ### Vorheriger Milestone
-v5.0.0 Certification-as-a-Service — shipped 2026-06-28, Tag v5.0.0, live + verify-release grün.
-30/30 v1-Requirements. Archiv: `.planning/milestones/v5.0.0-ROADMAP.md` + `v5.0.0-REQUIREMENTS.md`.
+v5.0.0 Certification-as-a-Service — shipped 2026-06-28, Tag v5.0.0, live. 30/30 v1-Requirements.
+Archiv: `.planning/milestones/v5.0.0-ROADMAP.md` + `v5.0.0-REQUIREMENTS.md`.
+**Relevant für v5.2.0:** `CertificateReportService.getCourseReport()` (course-instructor-scoped, DSGVO-safe CSV), `RoleService` (global instructor/student), `Certificate` mit `expiry_date`. v5.2.0 erweitert genau diese.
 
 ### Blockers/Concerns (carry-forward — KRITISCH)
 
 - **TOOLING:** `gsd-tools state update-progress` / `record-session` / `roadmap update-plan-progress`
-  korrumpieren das STATE.md/ROADMAP.md-Frontmatter (überschrieben milestone v5.0.0 → v2.3, droppten
-  Spalten). **Für v5.1.0: STATE/ROADMAP manuell editieren oder per plain-git committen; die buggy
-  gsd-tools-State/Roadmap-Mutationen MEIDEN.** (Aus v5.0.0 154-01 + Phase-157-Close gelernt.)
+  korrumpieren STATE.md/ROADMAP.md-Frontmatter (milestone → v2.3, droppen Spalten).
+  **STATE/ROADMAP manuell editieren; buggy gsd-tools-State/Roadmap-Mutationen MEIDEN.**
 
-### Milestone-Kontext
+### Milestone-Kontext v5.2.0
 
-- Spec: `docs/superpowers/specs/2026-06-30-ghostline-interactive-course-design.md`
-- Brainstorm-Verlauf: `.planning/brainstorm-interactive-course.md`
-- Engine-Inventur + Schema-Fakten sind im Spec (Sektion 3 + 9) verbatim festgehalten.
-- Vorhandene Content-Pools (DB devcloud): Linux 65/66/70/35, History 44, + Netz/Security/A+ für Akt 2–4.
+- Auslöser: AWO-Sachsen-Lead Jan Knizek, GitHub Issue #20 (Kommentar 2026-07-01). Antwort gepostet (issuecomment-4851447663).
+- Gap-Analyse (Code + NLM verifiziert): Cert + Compliance-Report existieren (v5.0.0), aber Report ist course-instructor-scoped (nicht teamleiter/gruppengefiltert); Video-Gating fehlt komplett; Re-Zert-Fundament (`expiry_date`) da, aber keine Erinnerung/Re-Enrollment.
+- Video-Enforcement: NC-MP4 (voller Watch-Track, eigener Player) UND Vimeo/YouTube-Embed (Provider-JS-API) — beide, User-Entscheidung.
+- Konkurrenz-Kontext: AWO nimmt für die akute 2000-Mann-Schulung Forma LMS (SCORM, Cert/Reporting nativ). Unser Vorteil = NC-nativ, kein Zweitsystem. Nicht feature-für-feature gegen Forma, sondern NC-native Pflichtschulung rund machen.
