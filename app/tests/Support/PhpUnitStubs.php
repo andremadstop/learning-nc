@@ -456,6 +456,36 @@ namespace OCP\L10N {
     }
 }
 
+// ─── OCP HTTP client stubs ───────────────────────────────────────────────────
+// Phase 161 (AUDIT-06): AuditVerifyCommand injects IClientService for warning-only anchor
+// consistency checks. Guarded so a concurrent 161-04 addition never fatals on redeclare.
+namespace OCP\Http\Client {
+    if (!interface_exists(IResponse::class)) {
+        interface IResponse {
+            public function getBody(): string|resource;
+            public function getStatusCode(): int;
+            /** @return array<string, string> */
+            public function getHeaders(): array;
+            public function getHeader(string $key): string;
+        }
+    }
+
+    if (!interface_exists(IClient::class)) {
+        interface IClient {
+            /** @param array<string, mixed> $options */
+            public function get(string $uri, array $options = []): IResponse;
+            /** @param array<string, mixed> $options */
+            public function post(string $uri, array $options = []): IResponse;
+        }
+    }
+
+    if (!interface_exists(IClientService::class)) {
+        interface IClientService {
+            public function newClient(): IClient;
+        }
+    }
+}
+
 namespace OCP\Activity {
     if (!interface_exists(IManager::class)) {
         interface IManager {

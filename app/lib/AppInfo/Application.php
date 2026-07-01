@@ -9,6 +9,7 @@ use OCA\Learning\BackgroundJob\NotificationJob;
 use OCA\Learning\BackgroundJob\SendRemindersJob;
 use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
 use OCA\Learning\Command\ArchiveCourseCommand;
+use OCA\Learning\Command\AuditVerifyCommand;
 use OCA\Learning\Command\ExportCourseCommand;
 use OCA\Learning\Command\ExportPoolCommand;
 use OCA\Learning\Command\ImportPoolJsonCommand;
@@ -97,6 +98,13 @@ class Application extends App implements IBootstrap {
                 $container->get(IGroupManager::class),
                 $container->get(\OCA\Learning\Service\AuditService::class),
                 $container->get(IJobList::class),
+            );
+        });
+        $context->registerService(AuditVerifyCommand::class, function (ContainerInterface $container): AuditVerifyCommand {
+            return new AuditVerifyCommand(
+                $container->get(\OCP\IDBConnection::class),
+                $container->get(\OCA\Learning\Db\CertKeyMapper::class),
+                $container->get(\OCP\Http\Client\IClientService::class),
             );
         });
     }
