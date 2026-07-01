@@ -11,6 +11,7 @@ use OCA\Learning\Command\ArchiveCourseCommand;
 use OCA\Learning\Command\ExportCourseCommand;
 use OCA\Learning\Command\ExportPoolCommand;
 use OCA\Learning\Command\ImportPoolJsonCommand;
+use OCA\Learning\Command\ImportUsersCommand;
 use OCA\Learning\Command\ImportVaultCommand;
 use OCA\Learning\Command\InitIssuerCommand;
 use OCA\Learning\Command\MergeCourseCommand;
@@ -31,7 +32,9 @@ use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\BackgroundJob\IJobList;
 use OCP\IConfig;
+use OCP\IGroupManager;
 use OCP\IURLGenerator;
+use OCP\IUserManager;
 use OCP\Settings\IManager as SettingsManager;
 use OCP\User\Events\UserDeletedEvent;
 use Psr\Container\ContainerInterface;
@@ -85,6 +88,14 @@ class Application extends App implements IBootstrap {
         $context->registerService(InitIssuerCommand::class, function (ContainerInterface $container): InitIssuerCommand {
             return new InitIssuerCommand(
                 $container->get(\OCA\Learning\Service\KeyService::class)
+            );
+        });
+        $context->registerService(ImportUsersCommand::class, function (ContainerInterface $container): ImportUsersCommand {
+            return new ImportUsersCommand(
+                $container->get(IUserManager::class),
+                $container->get(IGroupManager::class),
+                $container->get(\OCA\Learning\Service\AuditService::class),
+                $container->get(IJobList::class),
             );
         });
     }
