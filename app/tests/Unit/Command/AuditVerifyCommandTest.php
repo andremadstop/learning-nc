@@ -124,15 +124,29 @@ class AuditVerifyCommandTest extends TestCase {
      *
      * @return array<string, mixed>
      */
-    private function signedCheckpoint(int $id, int $toSeq, string $headHash, string $keyId, string $sec, bool $corruptSig = false): array {
+    private function signedCheckpoint(
+        int $id,
+        int $toSeq,
+        string $headHash,
+        string $keyId,
+        string $sec,
+        bool $corruptSig = false,
+        ?string $payloadHeadHash = null,  // F2: signed head_hash diverges from the stored column
+        ?int $eventCount = null,          // F2: overrides BOTH payload + column event_count (arithmetic test)
+        ?int $payloadEventCount = null    // F2: signed event_count diverges from the stored column
+    ): array {
+        $colEventCount = $eventCount ?? $toSeq;
+        $sigEventCount = $payloadEventCount ?? $colEventCount;
+        $sigHeadHash   = $payloadHeadHash ?? $headHash;
+
         $payload = json_encode([
             'typ'           => 'audit_checkpoint',
             'issuer'        => 'did:web:test.example:apps:learning',
             'key_id'        => $keyId,
             'from_event_id' => 1,
             'to_event_id'   => $toSeq,
-            'head_hash'     => $headHash,
-            'event_count'   => $toSeq,
+            'head_hash'     => $sigHeadHash,
+            'event_count'   => $sigEventCount,
             'signed_at'     => 1_700_000_100,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
@@ -145,8 +159,8 @@ class AuditVerifyCommandTest extends TestCase {
             'id'             => $id,
             'from_event_id'  => 1,
             'to_event_id'    => $toSeq,
-            'head_hash'      => $headHash,
-            'event_count'    => $toSeq,
+            'head_hash'      => $headHash,        // COLUMN (may diverge from the signed head_hash)
+            'event_count'    => $colEventCount,   // COLUMN
             'signed_at'      => 1_700_000_100,
             'key_id'         => $keyId,
             'signed_payload' => $payload,
@@ -270,6 +284,72 @@ class AuditVerifyCommandTest extends TestCase {
         $this->assertSame(Command::FAILURE, $code);
         $this->assertStringContainsString('signature invalid', $out);
         $this->assertStringContainsString('Checkpoint 7', $out);
+    }
+
+    public function testCheckpointSignedHeadHashMismatchFails(): void {
+        // F2: signature is valid over the payload, but the payload's head_hash differs from the stored
+        // head_hash COLUMN (a DB-column tamper the signature cannot detect on its own).
+        $events = $this->buildChain([$this->event(1, 'course.passed', 1)]);
+        $head = $events[0]['chain_hash'];
+        $keys = $this->makeKeypair();
+        $checkpoint = $this->signedCheckpoint(3, 1, $head, 'kid-1', $keys['sec'], payloadHeadHash: str_repeat('1', 64));
+
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll($events)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([$checkpoint])),
+            // no head_hash builder — the F2 field check `continue`s before the head query.
+        ]);
+
+        [$code, $out] = $this->invokeCmd($db, $this->mockMapper('kid-1', $keys['pub']));
+
+        $this->assertSame(Command::FAILURE, $code);
+        $this->assertStringContainsString('signed head_hash does not match', $out);
+        $this->assertStringContainsString('Checkpoint 3', $out);
+    }
+
+    public function testCheckpointWrongEventCountFails(): void {
+        // F2: from=1,to=3 → contiguous window size 3, but event_count claims 99 (payload + column agree,
+        // so the field check passes; the arithmetic check catches the impossible count).
+        $events = $this->buildChain([
+            $this->event(1, 'course.passed', 1),
+            $this->event(2, 'cert.issued', 1),
+            $this->event(3, 'cert.revoked', 1),
+        ]);
+        $head = $events[2]['chain_hash'];
+        $keys = $this->makeKeypair();
+        $checkpoint = $this->signedCheckpoint(4, 3, $head, 'kid-1', $keys['sec'], eventCount: 99);
+
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll($events)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([$checkpoint])),
+            // no head_hash builder — the F2 arithmetic check `continue`s before the head query.
+        ]);
+
+        [$code, $out] = $this->invokeCmd($db, $this->mockMapper('kid-1', $keys['pub']));
+
+        $this->assertSame(Command::FAILURE, $code);
+        $this->assertStringContainsString('event_count=99', $out);
+        $this->assertStringContainsString('window size 3', $out);
+    }
+
+    public function testEventsWithoutCheckpointWarns(): void {
+        // F2: an intact chain with zero verified checkpoints → not a FAILURE (in-DB chain is
+        // self-consistent) but a visible WARNING that the trail is unanchored.
+        $events = $this->buildChain([
+            $this->event(1, 'course.passed', 1),
+            $this->event(2, 'cert.issued', 1),
+        ]);
+
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll($events)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])), // zero checkpoints
+        ]);
+
+        [$code, $out] = $this->invokeCmd($db, $this->createMock(CertKeyMapper::class));
+
+        $this->assertSame(Command::SUCCESS, $code, 'an unanchored-but-intact chain is a warning, not a failure');
+        $this->assertStringContainsString('unanchored', $out);
+        $this->assertStringContainsString('Chain intact', $out);
     }
 
     public function testMissingKeyForCheckpointFails(): void {

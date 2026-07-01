@@ -88,9 +88,11 @@ class AuditVerifyCommand extends Command {
         // first stored prev_hash as a trusted boundary (the link to the prior row is out of scope).
         $prevHash = null;
         $eventCount = 0;
+        $maxSeq = 0; // F2: highest compliance seq_num seen — drives the "events exist, unanchored" warn
 
         foreach ($events as $row) {
             $eventCount++;
+            $maxSeq = max($maxSeq, (int)$row['seq_num']);
 
             if ($prevHash === null) {
                 $prevHash = $fromSeq > 1 ? (string)$row['prev_hash'] : self::GENESIS_PREV_HASH;
@@ -153,6 +155,7 @@ class AuditVerifyCommand extends Command {
         /** @var array<int, array<string, mixed>> $checkpoints */
         $checkpoints = $cpQb->executeQuery()->fetchAll();
         $checkpointsVerified = 0;
+        $prevCpTo = null; // F2: previous checkpoint's to_event_id — used for contiguous-window gap detection
 
         foreach ($checkpoints as $checkpoint) {
             $cpId = (int)$checkpoint['id'];
@@ -187,6 +190,73 @@ class AuditVerifyCommand extends Command {
                 continue;
             }
 
+            // F2 (Codex review — bound the signature to the stored columns): the signature only proves
+            // that signed_payload is authentic. An adversary who cannot forge the signature can still
+            // rewrite the surrounding DB COLUMNS (head_hash/from/to/count/…) that dashboards and this
+            // very command read. Re-parse the verified payload and assert every signed field equals the
+            // row column it is supposed to attest. Any mismatch IS a verification FAILURE.
+            $signed = json_decode((string)$checkpoint['signed_payload'], true);
+            if (!is_array($signed)) {
+                $failures[] = sprintf('Checkpoint %d: signed_payload is not decodable JSON', $cpId);
+                continue;
+            }
+
+            $fromId = (int)$checkpoint['from_event_id'];
+            $toId   = (int)$checkpoint['to_event_id'];
+
+            $fieldMismatch = null;
+            if ((int)($signed['from_event_id'] ?? -1) !== $fromId) {
+                $fieldMismatch = 'from_event_id';
+            } elseif ((int)($signed['to_event_id'] ?? -1) !== $toId) {
+                $fieldMismatch = 'to_event_id';
+            } elseif (!hash_equals((string)($signed['head_hash'] ?? ''), (string)$checkpoint['head_hash'])) {
+                $fieldMismatch = 'head_hash';
+            } elseif ((int)($signed['event_count'] ?? -1) !== (int)$checkpoint['event_count']) {
+                $fieldMismatch = 'event_count';
+            } elseif ((int)($signed['signed_at'] ?? -1) !== (int)$checkpoint['signed_at']) {
+                $fieldMismatch = 'signed_at';
+            } elseif ((string)($signed['key_id'] ?? '') !== (string)$checkpoint['key_id']) {
+                $fieldMismatch = 'key_id';
+            }
+            if ($fieldMismatch !== null) {
+                $failures[] = sprintf(
+                    'Checkpoint %d: signed %s does not match the stored column (row tampered)',
+                    $cpId,
+                    $fieldMismatch
+                );
+                continue;
+            }
+
+            // F2: the compliance seq is contiguous, so a well-formed window covers exactly
+            // (to_event_id - from_event_id + 1) events. A wrong event_count is a FAILURE.
+            $expectedCount = $toId - $fromId + 1;
+            if ((int)$checkpoint['event_count'] !== $expectedCount) {
+                $failures[] = sprintf(
+                    'Checkpoint %d: event_count=%d does not match contiguous window size %d (from %d to %d)',
+                    $cpId,
+                    (int)$checkpoint['event_count'],
+                    $expectedCount,
+                    $fromId,
+                    $toId
+                );
+                continue;
+            }
+
+            // F2: consecutive checkpoints (ordered by id) should tile the chain with no gap —
+            // each window's from_event_id == previous window's to_event_id + 1. A gap is a hard-warn
+            // (events between windows are unanchored), never an exit-code flip.
+            if ($prevCpTo !== null && $fromId !== $prevCpTo + 1) {
+                $warnings[] = sprintf(
+                    'Checkpoint %d: window gap — from_event_id=%d but previous checkpoint ended at %d (events %d..%d unanchored)',
+                    $cpId,
+                    $fromId,
+                    $prevCpTo,
+                    $prevCpTo + 1,
+                    $fromId - 1
+                );
+            }
+            $prevCpTo = $toId;
+
             // head_hash consistency: the checkpoint's committed head_hash must equal the chain_hash
             // of the to_event_id row (to_event_id IS a seq_num).
             $headQb = $this->db->getQueryBuilder();
@@ -211,6 +281,18 @@ class AuditVerifyCommand extends Command {
                     $warnings[] = $anchorWarning;
                 }
             }
+        }
+
+        // F2 (Codex review — unanchored chain): compliance events exist (max seq_num > 0) but NOT a
+        // single checkpoint verified. The chain may be intact yet has no external trust anchor — an
+        // adversary with full DB control could rewrite it undetectably. Surface a WARNING line (it does
+        // not flip the exit code — the in-DB chain can still be self-consistent).
+        if ($maxSeq > 0 && $checkpointsVerified === 0) {
+            $warnings[] = sprintf(
+                'No verified checkpoint anchors the chain, yet %d compliance event(s) exist (up to seq_num=%d) — the trail is unanchored',
+                $eventCount,
+                $maxSeq
+            );
         }
 
         // ── OUTPUT ──────────────────────────────────────────────────────────────
