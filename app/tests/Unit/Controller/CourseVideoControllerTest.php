@@ -101,6 +101,23 @@ class CourseVideoControllerTest extends TestCase {
         $this->assertSame('nc-files', $entity->getSourceType());
     }
 
+    public function testUpdateRejectsSettingGatedVideoDurationToZero(): void {
+        // Existing nc-files row; instructor tries to null out the gate by setting duration 0 → 400,
+        // and the row is never persisted. Validates the RESULTING state (plan: "same duration validation").
+        $existing = new CourseVideo();
+        $existing->setCourseId(5);
+        $existing->setSourceType('nc-files');
+        $existing->setVideoRef('Videos/intro.mp4');
+        $existing->setDurationSeconds(120);
+        $this->videoMapper->method('findById')->willReturn($existing);
+        $this->courseService->method('assertInstructorOfCourse')->willReturn($this->createMock(Course::class));
+        $this->videoMapper->expects($this->never())->method('update');
+
+        $resp = $this->makeController()->update(9, null, null, null, 0);
+
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $resp->getStatus());
+    }
+
     public function testCreateRejectsWhenUnauthenticated(): void {
         $controller = new CourseVideoController(
             'learning',
