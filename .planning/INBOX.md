@@ -5,6 +5,9 @@
 
 ## Offen
 
+- [ ] **[2026-07-01] Gemini/fabric-Review VOR dem Bauen** — nach Requirements+Roadmap-Draft eine Runde `fabric --model gemini-2.5-pro` über das Gesamtkonzept (Requirements + Roadmap + Research-Synthese + 3 🔴-Foundations): „haben wir an alles gedacht?" bevor ernsthaft implementiert wird. Danach ggf. grumpy-Codex-Runde (Pre-Live-Gate-Reihenfolge fabric→Gemini→Codex). Andre-Wunsch 2026-07-01.
+- [ ] **[2026-07-01] UG-Geschäftsmodell: Compliance-Schulung-as-a-Service** — App bleibt FOSS, aber Service-Layer drumherum (Hosting / Content-Authoring / Setup / SLA / Sponsored-Features) ist lukrativ. Auslöser: AWO-Lead Jan (viele Admins mit gleichem Bedarf). **Wird in der UG-Session verfolgt, nicht hier.** Brief: `~/ObsidianVaults/Personal/Projekte/Learning-NC/UG-Geschaeftsmodell-Compliance-Schulung.md`.
+
 - [2026-05-18] **CySA+ NLM-Studio: Englisch-Komplettsatz (18 Items) + Hindi-Retry — morgen ab 00:00 UTC** — **TEIL-ERLEDIGT 2026-05-20 07:06**: 6 EN-Audios (Gesamt + D1-D4 + Threat-Hunting) erfolgreich generiert in ~10 min, downgeloadet, auf DevCloud unter `/CySA+/06-Audio-v2/` als `Gesamt-Ueberblick-CS0-003-en.m4a` / `Domain-N-...-en.m4a` / `Spezial-Threat-Hunting-en.m4a` synct (jeweils 38-50 MB), `groupfolders:scan 1` durch. **Hindi-Retry schlug erneut fehl** (Code 8 UserDisplayableError — Backend-Bug bestätigt, vermutlich nicht-Roman-Schrift-Sprachen generell). **OFFEN**: 6 EN-Slides + 6 EN-Infographics (Block-B-RU-Pattern auf EN umschreiben). Tagesquota heute 18.05 abend erreicht nach 25 Jobs (Block A 7 + Block B 18). Erste EN-Audios in Code 8 abgewiesen. Morgen ab 00:00 UTC (≈ 02:00 CEST) sollte Quota wieder offen sein. Bash-Block ready-to-run:
   ```bash
   NB="100a9779-7b3d-4112-9320-373e5535d3a4"

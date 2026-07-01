@@ -1,99 +1,118 @@
-# Requirements: learning-nc — v5.1.0 Ghostline
+# Requirements: learning-nc — v5.2.0 „Pflichtschulung"
 
-**Defined:** 2026-06-30
-**Core Value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — hier: Lernen als spannendes interaktives Spiel, damit ein ungeduldiger Lerner die LPIC-1-101-Prüfung besteht.
+**Defined:** 2026-07-01
+**Core Value:** Effektives Lernen mit Spaced Repetition in einer vertrauten Nextcloud-Umgebung — hier: **verpflichtende Compliance-Schulung mit audit-festem Nachweis, direkt in der Nextcloud der Organisation.**
+**Trigger:** AWO-Sachsen-Lead (Jan Knizek, Issue #20, 2000 MA). **Gates durchlaufen:** 5+1 Research-Agenten → Synthese → Scoping → Gemini-Konzept-Review (10 Funde eingearbeitet).
+
+---
 
 ## v1 Requirements
 
-v1 = **Akt 1 (LPIC-101)**, deadline-priorisiert (Prüfung 03.07.). K3/Topic-103 zuerst (Vertical Slice).
-Auf vorhandener Kampagnen-Engine, kein Neubau. Mappt auf Phasen (Nummerierung ab 158).
+v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausbaustufen). Mappt auf Phasen ab 160. Null neue npm/composer-Deps. PG16 + MariaDB 11.4. PHPStan L5. 5-Sprachen-i18n.
 
-### Ghostline-Story (STORY)
+### AUDIT — Manipulationssicherer Audit-Trail (🔴 Fundament, nicht nachrüstbar)
 
-- [ ] **STORY-01**: Spielbare Akt-1-Kampagne (`ghostline_act1.json`) lädt im Abenteuer-Modus ohne Fehler (Story-Engine validiert Graph)
-- [ ] **STORY-02**: VirtuProf erzählt durchgängig im Narrator-/Mystery-Ton (kein Bruch in „Lehr-Modus")
-- [ ] **STORY-03**: Nach Kapitel-Abschluss erscheint eine History-„Geist-Erinnerung" (Vignette, Interleaving)
-- [ ] **STORY-04**: Akt-1-Ende setzt `state_bag claimed_ghost_box=true` (Homelab-Anker, Persistenz-Hook für spätere Akte)
+- [ ] **AUDIT-01**: Jedes Compliance-Ereignis wird über `AuditService::logComplianceEvent()` in eine **Hash-Chain** geschrieben (`learning_audit_events` + `learning_audit_chain_state`), `chain_hash = sha256(canonical_json(seq, event_key, user_ref, course_id, created_at) || prev_hash)`.
+- [ ] **AUDIT-02**: `logComplianceEvent()` schluckt Exceptions **nicht** (anders als `logEvent()`) — ein still verworfener Compliance-Write sähe für einen Verifier wie Manipulation aus.
+- [ ] **AUDIT-03**: Die drei Compliance-Caller (`PassCriteriaService::emitPassEventIfFirst()`, `IssuanceService`, `CertificateVerifyService`) sind auf `logComplianceEvent()` migriert; das Event-Interface + alle Compliance-Event-Typen (inkl. `course.video.completed`) sind in Phase 1 definiert.
+- [ ] **AUDIT-04**: Wöchentliche **Ed25519-signierte Checkpoints** über die Chain (`learning_audit_checkpoints` + `AuditCheckpointService` + `AuditCheckpointJob`), via `sodium_crypto_sign_detached` (NICHT `SigningService::sign()`, dessen Header auf `vc+jwt` fixiert ist).
+- [ ] **AUDIT-05**: **Externer Forgejo-Anker** — periodischer signierter Digest per HTTP-PUT in ein UG-Forgejo-Audit-Repo (Config-Flag + Token, `anchor_url`-Spalte). Schützt gegen den Admin, der Key UND DB hält, und gegen Timestamp-Backdating (Forgejo-Commit-Zeit ist admin-unabhängig).
+- [ ] **AUDIT-06**: `occ learning:audit:verify` prüft Chain-Integrität + Checkpoint-Signaturen + Anker-Konsistenz und meldet Brüche/Forks/Lücken.
+- [ ] **AUDIT-07**: **Auditor-Export** — ein berechtigter Nutzer (Datenschutzbeauftragter, nicht nur Shell-Admin) erzeugt einen signierten, menschenlesbaren Nachweis-Export (PDF + begleitendes JSONL/Signatur-File) für einen Zeitraum/Kurs.
+- [ ] **AUDIT-08**: **Audit-Liveness** — Admin-Status-Widget (letzter Checkpoint, Events seit letztem Checkpoint, Anker-Status); ausbleibender Checkpoint (> erwartetes Intervall) erzeugt eine Warnung.
+- [ ] **AUDIT-09**: **Fork-Resolution-Runbook** — dokumentierter Admin-Prozess (+ occ-Unterstützung), was bei einem entdeckten Chain-Fork zu tun ist.
 
-### K3 Vertical Slice — Topic 103 (K3) — der MVP
+### ASSIGN — Assignment als First-Class-Objekt (🔴 Substrat)
 
-- [ ] **K3-01**: K3 ist solo end-to-end spielbar — Spielschleife Story-Intro → Terminal → Auflösung → Inline-Quiz → 2. Terminal (faded) → History → Ende
-- [ ] **K3-02**: ≥2 Terminal-Challenges, abgeleitet aus echten Dozenten-grep/sed-Aufgaben
-- [ ] **K3-03**: ≥1 Inline-Quiz mit `explanation`; Fragen-Inhalt aus einem Linux-Pool (65/70) eingebettet
-- [ ] **K3-04**: Jede Kapitel-Abschluss-Kante hat `conditions.requires_flag` — K3 ist NICHT mit Fehleingaben durchspielbar (Anti-„Chocolate-Broccoli")
+- [ ] **ASSIGN-01**: `learning_assignments` — First-Class-Pflicht-Objekt: `course_id`, polymorphes Subjekt (`subject_type` = 'user'|'group', `subject_id`), `due_date`, `recert_interval_days`-Override, `status` (persistiert: assigned/in_progress/passed; abgeleitet: overdue/expired), `active_period_key` (nullable-unique wie `active_idem_key`). Index `(course_id, subject_type, subject_id)` **PLAIN, nicht UNIQUE** (Re-Zert = neue Row pro Periode).
+- [ ] **ASSIGN-02**: Zuweisung an eine **NC-Gruppe** deckt automatisch LDAP/AD/SSO-Mitglieder ab (via `IGroupManager`, keine LDAP-Sonderlogik in der App).
+- [ ] **ASSIGN-03**: Ein Owner/Instructor kann Person ODER Gruppe einem Kurs mit Frist zuweisen; `AssignmentService` expandiert Gruppen zur Report-/Reminder-Zeit.
+- [ ] **ASSIGN-04**: Cert-Ausstellung hängt **NICHT** von einer Assignment-Row ab — Selbstlerner ohne Zuweisung bekommen weiter Zertifikate; das Pass-Event *aktualisiert* Assignment, gated es nicht.
+- [ ] **ASSIGN-05**: **Frist-Verlängerung bei Systemausfall** — Admin kann Fristen für Gruppe/Kurs pauschal verlängern (dokumentierte, audit-geloggte Aktion).
 
-### Terminal-Korrektheit (TERM)
+### VIDEO — Video-/Material-Gating
 
-- [ ] **TERM-01**: Jede Terminal-Aufgabe akzeptiert die plausiblen Eingabe-Varianten (≥3: ohne/einfache/doppelte Quotes) + hat einen `hint`
-- [ ] **TERM-02**: Terminal-Outputs sind auf einer echten Shell erzeugt (Copy-Paste), nicht erfunden
+- [ ] **VIDEO-01**: `VideoStreamController` streamt NC-gehostete MP4 aus dem Dozenten-Namespace mit **Enrollment-Gate** (`IRootFolder->getUserFolder($instructorId)->fopen`) + HTTP-Range (206 Partial Content).
+- [ ] **VIDEO-02**: Server-seitige Watch-Completion — `VideoProgressService` merged Intervalle server-seitig, Entscheidung `covered_pct >= 0.95`; Client-Flags werden nie vertraut.
+- [ ] **VIDEO-03**: Quiz-Gate sitzt server-seitig in `TrainingService::startSession()` — wirft 403/ForbiddenException, wenn Pflicht-Video nicht abgeschlossen.
+- [ ] **VIDEO-04**: **Heartbeat-Plausibilität** — Server verwirft Fortschritts-Pings die schneller-als-Echtzeit / < 5s auseinander sind (Anti-Skript-Fälschung).
+- [ ] **VIDEO-05**: Vimeo- + YouTube-Embeds werden unterstützt (best-effort Tracking, Seek-Prevention ehrlich als unmöglich dokumentiert); YouTube via `youtube-nocookie.com` + `dnt=1`, Vimeo `dnt=1`, hinter Consent-Gate.
+- [ ] **VIDEO-06**: **DSGVO-transiente Segmente** — `learning_video_progress.intervals_json`/`covered_pct` sind Arbeitszustand; bei `completed_at`-Write wird die Segment-Row **gelöscht**. Permanent bleibt nur `(user_id, content_id, completed_at)`.
+- [ ] **VIDEO-07**: **Dokument-„gelesen"-Bestätigung** — Material-Typ mit „Gelesen"-Button als Gate-Bedingung (neben Video).
+- [ ] **VIDEO-08**: **Barrierefreiheit (BITV/WCAG)** — Video-Untertitel (WebVTT-Track), tastaturbedienbarer Player, Screenreader-Labels, ausreichende Kontraste im Gating-UI.
+- [ ] **VIDEO-09**: `learning_course_videos` — Per-Kurs-Video-Registry mit Dauer (Fallback: Admin trägt Dauer manuell ein, falls ffprobe auf Relay fehlt).
 
-### Content-Korrektheit (CONT)
+### RBAC — Teamleiter-Reports (gruppen-gescopt)
 
-- [ ] **CONT-01**: Alle Quiz-Inhalte gegen LPIC-1-PDFs / NotebookLM-Lernvault auf Faktenkorrektheit geprüft
-- [ ] **CONT-02**: Mindestens die prüfungskritischen 103-Fallen eingebaut (umask, BRE vs ERE, Redirect-Reihenfolge, `sort|uniq`, vi-Modi, Signal-Nummern)
+- [ ] **RBAC-01**: `learning_oversight` (course_id, lead_user_id, scope_group_id) — View-Recht getrennt vom Assignment-Objekt (ersetzt die verworfene `learning_team_leads`).
+- [ ] **RBAC-02**: `CertificateReportService::getGroupReport()` — Team-Lead sieht Compliance-Report **nur für die eigene Gruppe**; `assertTeamLeadForGroup()` als erste Zeile (IDOR-safe), Gruppenfilter auf **DB-Ebene** (`WHERE user_id IN (members)`), gleiche DSGVO-Projektion (kein Klartext-Mail/user_id im DTO).
+- [ ] **RBAC-03**: `RoleService`-Erweiterung: `isTeamLeadForGroup()`, `getTeamLeadGroups()` via `learning_oversight`.
+- [ ] **RBAC-04**: **Team-Lead-Dashboard** — „wer fehlt noch" + Ablauf-/Upcoming-Expirations-Panel + Auslösen einer **In-App-Erinnerung** an säumige Gruppenmitglieder.
 
-### Retention-Brücke (RET)
+### RECERT — Re-Zertifizierung
 
-- [ ] **RET-01**: Die K3-Befehle existieren parallel als Pool-Cards (FSRS-Retention nach dem Durchspielen) — Pool 65 erweitern oder neuer Ghostline-CLI-Pool
+- [ ] **RECERT-01**: Cert-Ablauf-Status-Zustände (valid / expiring / overdue / expired), rolling-from-pass; `DateTimeImmutable::modify('+1 year')` (DST-sicher).
+- [ ] **RECERT-02**: **Konfigurierbare Gültigkeit pro Kurs** (`recert_interval_days` / `cert_validity_months`, Default 12 Monate) + optionaler per-Assignment-Override.
+- [ ] **RECERT-03**: **Grace-Period (14 Tage)** nach Ablauf, bevor Status auf „überfällig" kippt.
+- [ ] **RECERT-04**: `RecertPeriodCloseJob` (täglicher TimedJob) schließt abgelaufene Perioden: `revoked_at` setzen + `active_idem_key`/`active_period_key` NULLen + frische Assignment-Row anlegen → gibt Re-Issue frei.
+- [ ] **RECERT-05**: **Guard-Redesign** — `PassCriteriaService::emitPassEventIfFirst()` prüft „aktive Assignment-Periode mit `active_period_key` IS NOT NULL AND status != passed" statt „je bestanden"; `IssuanceService::issueIfPassed()` blockt nach Period-Close nicht mehr. (⚠ Codex-Security-Review Pflicht.)
+- [ ] **RECERT-06**: Erinnerungen 30 + 7 Tage vor Ablauf über `INotificationManager` (**primär, mail-los-sicher**); `IMailer` nur additiv wo `getEMailAddress()` non-null. Idempotenz pro `(certId, threshold_days)` (kein Reminder-Sturm).
+- [ ] **RECERT-07**: **Unveränderliche Cert-Historie** — Re-Zert erzeugt eine NEUE Cert-Row; alte Row immutable; alte `verification_id`-URL bleibt dauerhaft auflösbar.
 
-### Material (MAT)
+### USER — Username-Politur
 
-- [ ] **MAT-01**: NotebookLM-Lernfilm/-Audio ist als Kurs-Material („Trainingsband des Geists") verlinkt und erreichbar
+- [ ] **USER-01**: User ohne E-Mail funktionieren durchgängig — Cert-Ausstellung (verifiziert: `credentialSubject.name` = Displayname, kein Mail), Report-Anzeige, Reminder (NC-Notification). Alle `getEMailAddress()`-Aufrufer null-safe (Audit + Fix in Phase 1).
+- [ ] **USER-02**: `occ learning:import-users <csv> --group=<nc-group>` (CSV: username, display_name, optional password) — Bulk-Enrollment über `IUserManager`/`IGroupManager`, BackgroundJob-tauglich für 2000 User; **keine** In-App-Upload-UI. (Phase 1, hängt am Assignment-Schema.)
 
-### Deploy & Safety (DEPLOY)
+### DSGVO — Datenschutz-Querschnitt (Compliance-Produkt-Pflicht)
 
-- [ ] **DEPLOY-01**: Staged Deploy — zuerst JSON-only unfeatured (Test auf devcloud), FEATURED-Schaltung (AbenteuerMode.vue) erst nach Andrés Freigabe
-- [ ] **DEPLOY-02**: Scope-Sentinel — kein PHP/Vue-Edit außer der FEATURED-Zeile; bei JS-Edit Gate 1 grün (ESLint/Vitest)
+- [ ] **DSGVO-01**: **Art. 17 chain-sichere Anonymisierung** — bei User-Löschung wird die User-Referenz in Audit/Certs pseudonymisiert/anonymisiert, **ohne die Hash-Chain zu brechen** (User-Referenz im Hash ist bereits pseudonymisiert, nicht Klartext-uid).
+- [ ] **DSGVO-02**: **Art. 20 Datenübertragbarkeit** — einzelner Nutzer kann seine Zertifikate + Lernhistorie maschinenlesbar exportieren (bestehenden `DataExportService` erweitern).
+- [ ] **DSGVO-03**: **Retention/Löschkonzept (Art. 5(1)(e))** — konfigurierbare Auto-Anonymisierung von Certs/Audit/Assignments nach X Jahren.
+- [ ] **DSGVO-04**: **Art. 13 Transparenz** — Datenschutzhinweis zu Schulungsbeginn: welche Daten (Abschluss + Zeitstempel), welcher Zweck (Rechtspflicht Art. 6(1)(c), minimiert Art. 5(1)(c)), dass Wiedergabemuster NICHT permanent gespeichert werden.
+- [ ] **DSGVO-05**: Alle neuen UI-Strings in 5 Sprachen (de/en/fr/ru/ar); Nachweis-/Zertifikat-Texte mehrsprachig.
 
-## v2 Requirements (deferred — nach der Prüfung)
+---
 
-### Weitere Akt-1-Kapitel (CHAP)
-- **CHAP-01**: K1 Topic 101 (Systemarchitektur) Kapitel
-- **CHAP-02**: K2 Topic 102 (Installation/Paketverwaltung) Kapitel
-- **CHAP-03**: K4 Topic 104 (Dateisysteme/FHS) Kapitel
+## Future Requirements (deferred)
 
-### Weitere Akte (ACT)
-- **ACT-02**: Akt 2 Security — bestehende `ghostline_quest.json` als Akt 2 andocken
-- **ACT-03**: Akt 3 Netzwerk (Network+/CCNA/Subnetting-Simulatoren)
-- **ACT-04**: Akt 4 IT/Cloud (Homelab-Skalierung)
-- **ACT-CONT**: state_bag Cross-Act-Kontinuität (Strategie A narrativ / B mergen / C cross-read) — vor Akt-2-Spec entscheiden
+### v5.2.x (Fast-Follow nach Validierung)
+- **CSV-Import Dry-Run/Preview**; **Fixed-Calendar-Recert** (alle-erneuern-bis-Datum); Multi-Level-Manager-Hierarchie.
 
-### Erweiterungen (EXT)
-- **EXT-01**: Video-Embedding-Feature (NotebookLM-Filme inline statt nur verlinkt)
-- **EXT-02**: WebVM/echter Sandbox-Terminal („freier Spielplatz")
+### v5.3+
+- **PGP/WKD-Countersignatur** auf dem Audit-Checkpoint (YubiKey-Touch — inkompatibel mit Auto-Cert-Ausstellung, gehört auf den Checkpoint, nicht pro Cert).
+- **Content-Authoring-Stream** (Kurse einmal bauen → bei vielen Kunden deployen) + **portables/versionierbares Content-Format** (Tür in v1 offen halten: Content nicht hart an Instanz-DB koppeln).
+- **Automatisierte E-Mail als primärer Reminder-Kanal** (IMailer schon jetzt als additiv designen).
+
+---
 
 ## Out of Scope
 
-| Feature | Reason |
-|---------|--------|
-| Server-VM/Cyber-Range (Option ③) | Security/Ops-Last; eigener Milestone, nicht v5.1.0 |
-| Multiplayer/Koop in Akt 1 | Solo zuerst (User-Entscheidung); Engine kann's später |
-| Neue Fragetypen (Matching, separater Lückentext) | Vorhandene Typen + CLI decken Akt 1 ab |
-| PHP/Vue-Feature-Neubau | „85 % existiert" — v5.1.0 ist Content-Authoring, kein Engine-Bau |
+| Feature | Grund |
+|---------|-------|
+| SCORM-Runtime / SCORM-Import | Monate Aufwand, nicht AWOs echter Bedarf; bewusste Positionierung NC-nativ. Minimaler SCORM-Import ggf. späterer Türöffner, kein v1-Treiber. |
+| Multi-Tenancy (eine Instanz, mehrere Kunden) | Geschäftsmodell on-prem-first; NC-Gruppen liefern Fachbereichs-Isolation *innerhalb* einer Instanz. |
+| Forward-Seek-Prevention für YouTube/Vimeo | IFrame-API blockt Seeking nicht → falsche Auditor-Sicherheit. Nur NC-MP4 = harte Sperre. |
+| System-Zugangssperre bei Cert-Ablauf | Org-Policy-Entscheidung, nicht LMS-Aufgabe; Status → „überfällig" statt Aussperren. |
+| Per-Frage-Analytics / Minuten-Engagement | DSGVO-Bedenken + außerhalb Scope (Verhaltenskontrolle). |
+| Eigenes Multi-Tenant-Credentialing-SaaS | App = FOSS-Feature, kein Dienst; Aussteller = Instanz (aus v5.0.0). |
+
+---
 
 ## Traceability
 
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| STORY-01 | 158 | Pending |
-| STORY-02 | 158 | Pending |
-| STORY-03 | 158 | Pending |
-| STORY-04 | 158 | Pending |
-| K3-01 | 158 | Pending |
-| K3-02 | 158 | Pending |
-| K3-03 | 158 | Pending |
-| K3-04 | 158 | Pending |
-| TERM-01 | 158 | Pending |
-| TERM-02 | 158 | Pending |
-| CONT-01 | 158 | Pending |
-| CONT-02 | 158 | Pending |
-| RET-01 | 159 | Pending |
-| MAT-01 | 159 | Pending |
-| DEPLOY-01 | 159 | Pending |
-| DEPLOY-02 | 159 | Pending |
+| Kategorie | REQ-IDs | Phase (Roadmap füllt) |
+|-----------|---------|------------------------|
+| AUDIT | 01–09 | — |
+| ASSIGN | 01–05 | — |
+| VIDEO | 01–09 | — |
+| RBAC | 01–04 | — |
+| RECERT | 01–07 | — |
+| USER | 01–02 | — |
+| DSGVO | 01–05 | — |
 
-**Coverage:** v1 = 16 Requirements, alle gemappt (Phase 158 = 12, Phase 159 = 4). Unmapped: 0 ✓
+**Coverage:** v1 = 41 Requirements. Mapping auf Phasen: bei Roadmap-Erstellung (Phasen ab 160). Unmapped: TBD.
 
 ---
-*Requirements defined: 2026-06-30*
-*Last updated: 2026-06-30 — v5.1.0 Ghostline, aus Spec + 4-Researcher-Synthese abgeleitet.*
+*Requirements defined: 2026-07-01 (nach Gemini-Konzept-Review)*
+*Last updated: 2026-07-01*
