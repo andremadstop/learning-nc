@@ -73,7 +73,7 @@ completed: 2026-07-01
 - **Flags:** `--json` (machine-readable result object), `--from-seq N` (partial audit), `--fork-runbook` (prints the runbook path and exits 0).
 - **Exit contract:** `Command::SUCCESS` when `failures === []`, else `Command::FAILURE` with each failure line + `Fork resolution runbook: docs/audit-fork-runbook.md`.
 - **Registration:** `info.xml <commands>` + `Application::register()` DI factory (`IDBConnection`, `CertKeyMapper`, `IClientService`).
-- **Tests (10 cases):** clean chain+checkpoint, tampered event (reports `seq_num=2`), DSGVO-erased row (no false positive), invalid checkpoint signature, unknown key_id, any-failure-carries-runbook, `--fork-runbook` flag, and `--json` clean/tampered. Checkpoint tests use a REAL Ed25519 keypair with a base64url pubkey round-trip so the crypto is exercised end-to-end.
+- **Tests (9 cases — the 6 required plus 3 extras):** clean chain+checkpoint, tampered event (reports `seq_num=2`), DSGVO-erased row (no false positive), invalid checkpoint signature, unknown key_id, any-failure-carries-runbook, `--fork-runbook` flag, and `--json` clean/tampered. Checkpoint tests use a REAL Ed25519 keypair with a base64url pubkey round-trip so the crypto is exercised end-to-end.
 
 ## Task Commits
 
@@ -137,7 +137,7 @@ None beyond the deviations above. Per project override, no PHP/PHPStan/PHPUnit/o
 
 The following central gates are pending (orchestrator runs them in the devcloud container):
 
-1. `./scripts/deploy-prod.sh --test` — PHPStan L5 clean + full PHPUnit suite green (incl. the 10 new AuditVerifyCommand cases).
+1. `./scripts/deploy-prod.sh --test` — PHPStan L5 clean + full PHPUnit suite green (incl. the 9 new AuditVerifyCommand cases).
 2. `ssh relais 'docker exec -u www-data devcloud-app php occ learning:audit:verify'` — exits 0 on the live chain, prints "✓ Chain intact (N events, M checkpoints verified)".
 3. DSGVO-erased row test passes (no false positive); tampered test reports `seq_num`; any failure carries `docs/audit-fork-runbook.md`.
 

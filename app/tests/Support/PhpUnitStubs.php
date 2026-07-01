@@ -215,6 +215,8 @@ namespace OCP {
         interface IGroupManager {
             // Phase 160: AssignmentService uses get() (NC 33 API, not getGroup())
             public function get(string $gid): ?IGroup;
+            // Phase 161: AuditExportController gates the auditor export via isInGroup($uid, $group).
+            public function isInGroup(string $userId, string $group): bool;
         }
     }
 
@@ -462,7 +464,8 @@ namespace OCP\L10N {
 namespace OCP\Http\Client {
     if (!interface_exists(IResponse::class)) {
         interface IResponse {
-            public function getBody(): string|resource;
+            /** @return string|resource */
+            public function getBody();
             public function getStatusCode(): int;
             /** @return array<string, string> */
             public function getHeaders(): array;
@@ -604,6 +607,31 @@ namespace OCP\AppFramework\Http {
                     'Content-Disposition' => 'attachment; filename="' . $this->filename . '"',
                 ];
             }
+        }
+    }
+
+    // Phase 161: AuditExportController::page() returns a TemplateResponse('learning','audit-export-page',
+    // [...], 'user'). Tests read getParams()/getTemplateName()/getStatus(); no NC template engine needed.
+    if (!class_exists(TemplateResponse::class)) {
+        class TemplateResponse extends Response {
+            private string $appName;
+            private string $templateName;
+            /** @var array<string, mixed> */
+            private array $params;
+            private string $renderAs;
+
+            /** @param array<string, mixed> $params */
+            public function __construct(string $appName, string $templateName, array $params = [], string $renderAs = 'user') {
+                $this->appName = $appName;
+                $this->templateName = $templateName;
+                $this->params = $params;
+                $this->renderAs = $renderAs;
+            }
+
+            /** @return array<string, mixed> */
+            public function getParams(): array { return $this->params; }
+            public function getTemplateName(): string { return $this->templateName; }
+            public function getRenderAs(): string { return $this->renderAs; }
         }
     }
 }
