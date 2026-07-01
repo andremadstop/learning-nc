@@ -222,8 +222,11 @@ export default {
 			this.flushHeartbeat(false)
 		},
 		onSeeking() {
-			// close the segment we were playing before the jump
+			// Close AND flush the segment we were playing before the jump — otherwise a
+			// mid-video segment abandoned by another seek inside the throttle window would
+			// never reach the server, under-counting coverage on seek-heavy watch patterns.
 			this.closeOpenSegment()
+			this.flushHeartbeat(true)
 		},
 		onSeeked() {
 			const el = this.$refs.video
