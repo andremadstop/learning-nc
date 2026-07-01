@@ -595,7 +595,14 @@ Plans:
 - RED-3: learning_assignments uses PLAIN composite index (course_id, subject_type, subject_id) — NOT UNIQUE; re-cert creates new rows. active_period_key has UNIQUE index.
 - RBAC-01 (learning_oversight schema) belongs here alongside RED-3 schema work — Phase 163 uses it
 - Migration sequence starts at Version009300
-**Plans**: TBD
+**Plans**: 6 plans (3 waves, Track A + Track B parallel)
+Plans:
+- [ ] 160-01-PLAN.md — Track A W1: Version009300 migration (audit hash-chain schema + genesis seed) + AuditServiceTest stubs
+- [ ] 160-02-PLAN.md — Track A W2: ComplianceEventTypes + logComplianceEvent() CAS + DSGVO-01 UserDeletedListener
+- [ ] 160-03-PLAN.md — Track A W3: Migrate 3 callers to logComplianceEvent (PassCriteria, Issuance, CertController)
+- [ ] 160-04-PLAN.md — Track B W1: Version009400 migration (learning_assignments + learning_oversight) + Track B test stubs
+- [ ] 160-05-PLAN.md — Track B W2: AssignmentService skeleton (5 methods) + USER-01 ClassbookController null-safe email
+- [ ] 160-06-PLAN.md — Track B W3: occ learning:import-users command + ImportUsersJob + Application.php registration
 
 ### Phase 161: Audit Hardening — Checkpoints + Anchor + Export + Liveness
 **Goal**: The audit trail is independently verifiable (Ed25519-signed weekly checkpoints), operable by the Datenschutzbeauftragter (export), and monitored by admins (liveness widget); Forgejo anchor scaffolded for fork-detection
