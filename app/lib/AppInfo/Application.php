@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Learning\AppInfo;
 
+use OCA\Learning\BackgroundJob\AuditCheckpointJob;
 use OCA\Learning\BackgroundJob\ChunkingJob;
 use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
 use OCA\Learning\BackgroundJob\NotificationJob;
@@ -120,6 +121,9 @@ class Application extends App implements IBootstrap {
             }
             if (!$jobList->has(ChunkingJob::class, null)) {
                 $jobList->add(ChunkingJob::class);
+            }
+            if (!$jobList->has(AuditCheckpointJob::class, null)) {
+                $jobList->add(AuditCheckpointJob::class);
             }
         } catch (\Throwable $e) {
             // Duplicate entry is harmless (NC deduplicates), but log unexpected errors (R2 #5)

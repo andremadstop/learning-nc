@@ -434,6 +434,18 @@ namespace OCP\BackgroundJob {
             abstract protected function run(mixed $argument): void;
         }
     }
+
+    // Phase 161: TimedJob base class — AuditCheckpointJob extends it (weekly setInterval).
+    // NC 33 ctor takes ITimeFactory; setInterval() is called from the subclass ctor.
+    if (!class_exists(TimedJob::class)) {
+        abstract class TimedJob {
+            protected int $interval = 0;
+            public function __construct(\OCP\AppFramework\Utility\ITimeFactory $time) {}
+            public function setInterval(int $seconds): void { $this->interval = $seconds; }
+            public function getInterval(): int { return $this->interval; }
+            abstract protected function run(mixed $argument): void;
+        }
+    }
 }
 
 namespace OCP\L10N {
