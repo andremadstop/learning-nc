@@ -647,7 +647,7 @@ Plans:
 - DSGVO transient segments: intervals_json deleted at completed_at write
 - INotificationManager as primary reminder channel (email-null safe); IMailer additive only where email is non-null
 **Plans**: 4 plans in 3 waves
-- [ ] 162-01-PLAN.md — Security core: Migration 009500 (registry + progress + gate column) + VideoProgressService unit-first (VIDEO-02/04/06/07/09)
+- [x] 162-01-PLAN.md — Security core: Migration 009500 (registry + progress + gate column) + VideoProgressService unit-first (VIDEO-02/04/06/07/09)
 - [ ] 162-02-PLAN.md — NC-Files streaming (Range-206 + 416) + registry admin CRUD + VideoSourceAdapter interface (VIDEO-01/09/05)
 - [ ] 162-03-PLAN.md — startSession 403 gate + VideoProgressController (heartbeat/complete/document-read) (VIDEO-03/04/07)
 - [ ] 162-04-PLAN.md — WCAG AA player + third-party consent overlay + Art.13 training-start notice (VIDEO-05/08, DSGVO-04)
@@ -717,6 +717,6 @@ Plans:
 | 157. Public-Verify | v5.0.0 | 5/5 | ✅ Complete (4 waves; gsd-verifier CLOSE 6/6; live-activation rides demo-course provisioning pass) | 157-VERIFICATION.md |
 | 160. Foundation — Audit Hash-Chain + Assignment Schemas | v5.2.0 | 6/6 | ✅ Complete (PHPStan L5 clean, PHPUnit 183/0/0, migrations 009300/009400/009301 applied) | 2026-07-01 |
 | 161. Audit Hardening — Checkpoints + Anchor + Export + Liveness | v5.2.0 | 6/6 | ✓ Complete | 2026-07-01 |
-| 162. Video-/Material-Gating + DSGVO Art.13 | v5.2.0 | 0/TBD | Not started | - |
+| 162. Video-/Material-Gating + DSGVO Art.13 | v5.2.0 | 1/4 | In progress (162-01 security core: schema + VideoProgressService + seams; container verify pending orchestrator wave-gate) | - |
 | 163. Teamleiter-RBAC-Reports + DSGVO Art.20 | v5.2.0 | 0/TBD | Not started | - |
 | 164. Re-Zertifizierung + Retention + i18n Parity | v5.2.0 | 0/TBD | Not started | - |

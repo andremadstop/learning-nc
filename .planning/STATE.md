@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v5.2.0
 milestone_name: "v5.2.0 Pflichtschulung"
 current_phase: 162
-current_plan: null
-status: "v5.2.0 Pflichtschulung. Phase 161 (Audit Hardening — Checkpoints + Anchor + Export + Liveness) COMPLETE + VERIFIED (6/6 must-haves automated, 2026-07-01). 6 Pläne/3 Waves, PHPStan L5 clean, PHPUnit 222/768 grün, Migration 009302 auf PG16 angewandt (info.xml dev-bump 5.2.0.1). Live: occ learning:audit:verify exit 0; Auditor-Export-Gate 403→200; getAdmin 5 audit_*-Keys HTTP 200. Grumpy-Codex-Security-Review: 7 Funde, ALLE gefixt (F1 prev_hash BLOCKER..F7 pubkey-length, commits 730261f..c3c75cd). 3 visuelle/live-daten-Items → Andres Durchlauf. NÄCHSTER SCHRITT: Release-Entscheidung dem User vorgelegt (v5.2.0 hat noch Phasen 162-164 offen) — NICHT autonom releasen. Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
-stopped_at: "Phase 161 complete + verified. Release-Entscheidung dem User vorgelegt. Bei Weiterbau: /gsd:plan-phase 162 (Video-/Material-Gating + DSGVO Art.13)."
+current_plan: "162-01 complete (1/4)"
+status: "v5.2.0 Pflichtschulung. Phase 162 (Video-/Material-Gating) IN ARBEIT — Plan 162-01 (Security Core, Wave 1) FERTIG gebaut + committed (356e4a6/8c70a69/2b509cb), Container-Verify (PHPStan L5 + PHPUnit + occ upgrade Version009500) an Orchestrator-Wave-Gate delegiert (kein lokales PHP). Geliefert: Migration 009500 (learning_course_videos-Registry + learning_video_progress + video_gate_enabled-Spalte), CourseVideo/VideoProgress Entities+Mappers, VideoProgressService (95%-Merge-Engine, <5s-Ping-Discard, DSGVO-transiente Segmente, exactly-once VIDEO_COMPLETED-Emit), CourseService-Seams (assertEnrolledInCourse IDOR-Gate für 162-02, isVideoGateEnabled/setVideoGateEnabled für 162-03), CourseController::setVideoGate, alle 9 Video-Routes (contracts-first). TDD RED(009500)→GREEN. info.xml dev-bump 5.2.0.1→5.2.0.2. DEVIATION: SELECT...FOR UPDATE → CAS auf last_ping_ts (NC IQueryBuilder hat kein forUpdate(), s. Version009300/AuditService) + Unique-Violation-Retry für First-Ping-Race. NÄCHSTER SCHRITT: 162-02 (NC-Files Range-206 Streaming + Registry-CRUD). Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
+stopped_at: "Phase 162 Plan 01 (Security Core) fertig + committed. Container-Gate (PHPStan/PHPUnit/occ upgrade) läuft zentral am Orchestrator-Wave-Merge. Weiter mit 162-02 (VideoStreamController: assertEnrolledInCourse-Gate + fopen-Streaming)."
 last_updated: "2026-07-01"
-last_activity: "2026-07-01 — Phase 161 gebaut+verifiziert: Ed25519-signierte Audit-Checkpoints (Migration 009302 + AuditCheckpointService + wöchentlicher Job) + Forgejo-Anker (off-by-default) + occ learning:audit:verify (6-Feld-Canonical, F1 prev_hash + F2 checkpoint-field-binding hardening) + Auditor-Export (JSONL+sig+HTML, gruppen-gated, PII-strip) + Liveness-Widget + Fork-Runbook. Gates: PHPStan L5 clean, PHPUnit 222/768, PG16 verifiziert, voller Codex-Security-Review (7/7 gefixt)."
+last_activity: "2026-07-01 — Phase 162-01 gebaut: Video-Gating-Security-Core. Migration 009500 + VideoProgressService (server-merged interval completion, 95%-Schwelle, <5s-Plausibilität, transiente DSGVO-Segmente, minimaler audit-payload {course_id,content_id}, exactly-once emit via completed_at-IS-NULL-Guard) + CourseService-Seams + Gate-Toggle. 18-Assertion-Security-Contract-Test (RED→GREEN). Deviation dokumentiert: CAS-Concurrency statt FOR UPDATE. Verify an Orchestrator delegiert."
 progress:
   total_phases: 5
   completed_phases: 2
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-07-01)
 
 ## Current Position
 
-Phase: 161 — Audit Hardening (Checkpoints + Anchor + Export + Liveness) ✓ COMPLETE
-Plan: 6/6 complete (next milestone phase: 162 — Video-/Material-Gating)
-Status: Phase 161 verified (6/6 must-haves automated). Release-Entscheidung dem User vorgelegt (Phasen 162-164 noch offen).
-Last activity: 2026-07-01 — Phase 161 gebaut+verifiziert+security-gehärtet (Codex 7/7)
+Phase: 162 — Video-/Material-Gating + DSGVO Art.13 ⏳ IN ARBEIT
+Plan: 1/4 (162-01 Security Core fertig + committed; Container-Verify am Orchestrator-Wave-Gate)
+Status: 162-01 geliefert (Migration 009500 + VideoProgressService + CourseService-Seams + Gate-Toggle + 9 Routes). Nächster: 162-02 NC-Files-Streaming.
+Last activity: 2026-07-01 — Phase 162-01 gebaut (Video-Gating-Security-Core, TDD RED→GREEN)
 
 Progress: ████░░░░░░ 40% (2/5 phases complete)
 
