@@ -4,30 +4,19 @@ declare(strict_types=1);
 namespace OCA\Learning\Service;
 
 use OCA\Learning\Db\CourseVideo;
-use OCP\Files\File;
-use OCP\Files\IRootFolder;
-use OCP\Files\NotFoundException;
 
 /**
- * NcFilesVideoAdapter — the FIRST-CLASS, fully-built video source (Phase 162, VIDEO-01). It resolves
- * a registry video to an openable file handle in the INSTRUCTOR's Nextcloud namespace and hands the
- * VideoStreamController the descriptor for enrollment-gated Range-206 streaming.
+ * NcFilesVideoAdapter — the FIRST-CLASS, fully-built video source (Phase 162, VIDEO-01). It declares
+ * the nc-files source type and builds the playback DESCRIPTOR the client uses to stream through the
+ * enrollment-gated /api/video-stream/{id} endpoint.
  *
- * SECURITY MODEL (primary grumpy-Codex IDOR/path-traversal target):
- *   - The file path is ALWAYS $video->getVideoRef() from the registry row — NEVER a client-supplied
- *     path or filename. There is no code path here that reads a request parameter.
- *   - The file is opened in the INSTRUCTOR's user folder (getUserFolder($instructorId)), NOT the
- *     requesting student's — a student has no share/read grant on the instructor's private files.
- *   - Enrollment is asserted by the CALLER (VideoStreamController via
- *     CourseService::assertEnrolledInCourse) BEFORE this adapter is ever asked to resolve a file.
+ * The security-critical byte path (instructor-namespace resolution, registry-only path, enrollment
+ * gate, Range-206/416 hardening) lives ENTIRELY in VideoStreamController so the whole IDOR/traversal
+ * surface is one reviewable file. This adapter therefore holds NO file handle and reads NO request
+ * parameter — it only maps a registry row to a self-describing client descriptor.
  */
 class NcFilesVideoAdapter implements VideoSourceAdapter {
     public const SOURCE_TYPE = 'nc-files';
-
-    public function __construct(
-        private IRootFolder $rootFolder,
-    ) {
-    }
 
     public function getSourceType(): string {
         return self::SOURCE_TYPE;
@@ -50,23 +39,5 @@ class NcFilesVideoAdapter implements VideoSourceAdapter {
             'subtitle_ref' => $video->getSubtitleRef(),
             'title' => $video->getTitle(),
         ];
-    }
-
-    /**
-     * Resolve the openable file handle for a registry video, ALWAYS from the instructor namespace and
-     * ALWAYS from the registry path. The $instructorId comes from the course the caller has already
-     * authorized (Course::getInstructorId()), never from the request.
-     *
-     * @throws NotFoundException if the registry-referenced file no longer exists in the instructor folder
-     * @throws \RuntimeException if the referenced node is not a plain file (e.g. a folder)
-     */
-    public function resolveFile(CourseVideo $video, string $instructorId): File {
-        $userFolder = $this->rootFolder->getUserFolder($instructorId);
-        // Path source is the registry row ONLY — $video->getVideoRef() — never a client-supplied path.
-        $node = $userFolder->get($video->getVideoRef());
-        if (!($node instanceof File)) {
-            throw new \RuntimeException('Registry video_ref does not point to a file');
-        }
-        return $node;
     }
 }
