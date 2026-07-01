@@ -250,6 +250,44 @@
         </table>
       </details>
 
+      <div class="section audit-liveness">
+        <h3>{{ t('learning', 'Audit-Trail — Liveness') }}</h3>
+
+        <div v-if="auditIsOverdue" class="audit-overdue-warning" role="alert">
+          ⚠ {{ t('learning', 'Checkpoint überfällig! Der letzte Checkpoint ist mehr als 8 Tage her.') }}
+          {{ t('learning', 'Ausführen: occ learning:audit:verify') }}
+        </div>
+
+        <table class="audit-liveness__table">
+          <tbody>
+            <tr>
+              <td>{{ t('learning', 'Letzter Checkpoint') }}</td>
+              <td>
+                <span v-if="auditLastCheckpointAt > 0">{{ formatTime(auditLastCheckpointAt) }}</span>
+                <span v-else>{{ t('learning', 'Noch kein Checkpoint') }}</span>
+              </td>
+            </tr>
+            <tr>
+              <td>{{ t('learning', 'Ereignisse seit letztem Checkpoint') }}</td>
+              <td>{{ auditEventsSinceCheckpoint }}</td>
+            </tr>
+            <tr>
+              <td>{{ t('learning', 'Forgejo-Anker') }}</td>
+              <td>
+                <span v-if="!auditAnchorEnabled">{{ t('learning', 'Deaktiviert (Standard)') }}</span>
+                <span v-else-if="auditAnchorStatus === 'ok'">✓ {{ t('learning', 'Aktiv — letzter Anker OK') }}</span>
+                <span v-else>✗ {{ t('learning', 'Aktiv — letzter Anker fehlgeschlagen') }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="audit-liveness__hint field-help">
+          {{ t('learning', 'Kettenintegrität prüfen:') }} <code>occ learning:audit:verify</code><br>
+          {{ t('learning', 'Fork-Auflösung:') }} <code>docs/audit-fork-runbook.md</code>
+        </p>
+      </div>
+
       <div class="ticket-section">
         <div class="audit-header">
           <h3>{{ t('learning', 'Support tickets') }}</h3>
@@ -324,6 +362,12 @@ export default {
       error: '',
       saved: false,
       certIssuerReady: true,
+      // AUDIT-08: audit-trail liveness (defaults neutral so the widget renders before load() resolves).
+      auditLastCheckpointAt: 0,
+      auditEventsSinceCheckpoint: 0,
+      auditAnchorEnabled: false,
+      auditAnchorStatus: 'none',
+      auditIsOverdue: false,
       auditLoading: false,
       auditEvents: [],
       ticketLoading: false,
@@ -412,6 +456,12 @@ export default {
         this.form.geminiApiKey = ''
         // Certificates (v5.0.0): banner nudges fresh installs to init the signing key.
         this.certIssuerReady = data.cert_issuer_ready !== false
+        // AUDIT-08: audit-trail liveness (neutral fallbacks for a pre-migration fresh install).
+        this.auditLastCheckpointAt = data.audit_last_checkpoint_at ?? 0
+        this.auditEventsSinceCheckpoint = data.audit_events_since_checkpoint ?? 0
+        this.auditAnchorEnabled = data.audit_anchor_enabled ?? false
+        this.auditAnchorStatus = data.audit_anchor_status ?? 'none'
+        this.auditIsOverdue = data.audit_is_overdue ?? false
       } catch (e) {
         this.error = t('learning', 'Failed to load settings')
       } finally {
@@ -657,6 +707,47 @@ details[open] > .audit-summary::before {
 .audit-summary-title {
   margin: 0;
   display: inline;
+}
+
+.audit-liveness {
+  margin-top: 20px;
+}
+
+.audit-liveness h3 {
+  margin: 0 0 12px;
+  font-size: 1em;
+  font-weight: 700;
+}
+
+.audit-overdue-warning {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-error);
+  background: var(--color-error, #e9322d);
+  color: var(--color-primary-element-text, #fff);
+  font-weight: 600;
+}
+
+.audit-liveness__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.audit-liveness__table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.audit-liveness__table td:first-child {
+  font-weight: 600;
+  width: 55%;
+}
+
+.audit-liveness__hint {
+  margin-top: 10px;
 }
 
 .ticket-section {
