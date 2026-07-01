@@ -293,6 +293,7 @@ final class FakeDbConnection implements IDBConnection {
     public int $beginTransactionCalls = 0;
     public int $commitCalls = 0;
     public int $rollBackCalls = 0;
+    private bool $inTx = false;
 
     public function __construct(array $queuedBuilders = [], array $rawResults = []) {
         $this->queuedBuilders = $queuedBuilders;
@@ -316,18 +317,21 @@ final class FakeDbConnection implements IDBConnection {
 
     public function beginTransaction(): void {
         $this->beginTransactionCalls++;
+        $this->inTx = true;
     }
 
     public function commit(): void {
         $this->commitCalls++;
+        $this->inTx = false;
     }
 
     public function rollBack(): void {
         $this->rollBackCalls++;
+        $this->inTx = false;
     }
 
     public function inTransaction(): bool {
-        return false;
+        return $this->inTx;
     }
 }
 

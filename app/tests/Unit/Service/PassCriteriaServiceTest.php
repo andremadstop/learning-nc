@@ -6,6 +6,7 @@ namespace OCA\Learning\Tests\Unit\Service;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Service\AuditService;
+use OCA\Learning\Service\ComplianceAuditException;
 use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\IssuanceService;
@@ -259,5 +260,23 @@ class PassCriteriaServiceTest extends TestCase {
 
         $this->assertTrue($result->isPassed(), 'evaluate() returns a normal PassResult even when issuance throws');
         $this->assertSame(95, $result->getScore());
+    }
+
+    /**
+     * FIX-3 (non-swallow of compliance failures): a ComplianceAuditException from issuance is NOT a
+     * provisioning error — the tamper-evident audit append failed and the cert was rolled back
+     * (fail-closed). evaluate() MUST re-throw it (→ HTTP 500), never swallow-and-log it.
+     */
+    public function testEvaluatePropagatesComplianceAuditFailure(): void {
+        $audit = $this->createMock(AuditService::class);
+
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->method('issueIfPassed')
+            ->willThrowException(new ComplianceAuditException('chain append failed'));
+
+        $service = $this->makeService($this->makeCourse(true, 80), 95, null, $this->passingBuilders(), $audit, $issuance);
+
+        $this->expectException(ComplianceAuditException::class);
+        $service->evaluate(self::USER, self::COURSE_ID);
     }
 }

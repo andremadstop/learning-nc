@@ -157,18 +157,104 @@ class AuditServiceTest extends TestCase {
         $prevHash = $insertQb->insertValues['prev_hash']['value'];
         $chainHash = $insertQb->insertValues['chain_hash']['value'];
         $createdAt = $insertQb->insertValues['created_at']['value'];
+        $contextJson = $insertQb->insertValues['context_json']['value'];
 
-        // Canonical must have exactly these 5 fields (ksorted)
+        // FIX-4: payload_hash = sha256 of the EXACT context_json string stored in the row.
         $expectedCanonical = [
-            'seq'        => $seqNum,
-            'event_key'  => 'cert.issued',
-            'user_ref'   => $userRef,
-            'course_id'  => 42,
-            'created_at' => $createdAt,
+            'seq'          => $seqNum,
+            'event_key'    => 'cert.issued',
+            'user_ref'     => $userRef,
+            'course_id'    => 42,
+            'created_at'   => $createdAt,
+            'payload_hash' => hash('sha256', $contextJson),
         ];
         $expectedHash = $this->buildChainHash($expectedCanonical, $prevHash);
 
         $this->assertSame($expectedHash, $chainHash, 'chain_hash must match sha256(ksorted_canonical | prevHash)');
+    }
+
+    /**
+     * FIX-4 (payload coverage): the compliance FACTS (context_json) are bound into the chain via
+     * payload_hash. Tampering with context_json (e.g. changing the score) without recomputing
+     * chain_hash must be DETECTABLE — the stored chain_hash no longer matches the canonical.
+     */
+    public function testPayloadHashBindsContextFacts(): void {
+        $config = $this->createMock(\OCP\IConfig::class);
+        $config->method('getAppValue')->willReturn('testpepper');
+        $secureRandom = $this->createMock(\OCP\Security\ISecureRandom::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $selectQb = new FakeQueryBuilder(FakeResult::fromFetch(['last_seq' => 0, 'last_hash' => str_repeat('0', 64)]));
+        $insertQb = new FakeQueryBuilder(null, 1);
+        $updateQb = new FakeQueryBuilder(null, 1);
+        $db = new FakeDbConnection([$selectQb, $insertQb, $updateQb]);
+        $service = new AuditService($db, $logger, $config, $secureRandom);
+
+        $service->logComplianceEvent('course.passed', 'user1', ['course_id' => 42, 'score' => 90, 'threshold' => 80]);
+
+        $seqNum = $insertQb->insertValues['seq_num']['value'];
+        $userRef = $insertQb->insertValues['user_ref']['value'];
+        $prevHash = $insertQb->insertValues['prev_hash']['value'];
+        $chainHash = $insertQb->insertValues['chain_hash']['value'];
+        $createdAt = $insertQb->insertValues['created_at']['value'];
+        $contextJson = $insertQb->insertValues['context_json']['value'];
+
+        // The stored context_json really contains the facts (payload_hash is over this exact string).
+        $this->assertStringContainsString('"score":90', $contextJson);
+
+        // Honest recompute matches.
+        $honest = $this->buildChainHash([
+            'seq'          => $seqNum,
+            'event_key'    => 'course.passed',
+            'user_ref'     => $userRef,
+            'course_id'    => 42,
+            'created_at'   => $createdAt,
+            'payload_hash' => hash('sha256', $contextJson),
+        ], $prevHash);
+        $this->assertSame($honest, $chainHash, 'chain_hash binds payload_hash of the stored context_json');
+
+        // A tampered score (90 -> 50) changes payload_hash, so the recompute no longer matches the
+        // stored chain_hash — the facts are protected, not just stored.
+        $tamperedJson = str_replace('"score":90', '"score":50', $contextJson);
+        $tampered = $this->buildChainHash([
+            'seq'          => $seqNum,
+            'event_key'    => 'course.passed',
+            'user_ref'     => $userRef,
+            'course_id'    => 42,
+            'created_at'   => $createdAt,
+            'payload_hash' => hash('sha256', $tamperedJson),
+        ], $prevHash);
+        $this->assertNotSame($tampered, $chainHash, 'altering a bound fact must break the chain_hash');
+    }
+
+    /**
+     * FIX-5 (pepper out of DB): when NC's instance secret is present, user_ref uses a pepper derived
+     * from it — hash_hmac('sha256', 'learning:audit_user_ref', $secret) — NOT the appconfig value.
+     */
+    public function testUserRefPepperDerivedFromInstanceSecret(): void {
+        $config = $this->createMock(\OCP\IConfig::class);
+        // Instance secret present → this path wins; appconfig must NOT be consulted for the pepper.
+        $config->method('getSystemValue')->willReturnCallback(
+            fn(string $key, $default = '') => $key === 'secret' ? 'INSTANCE_SECRET_XYZ' : $default
+        );
+        $config->method('getAppValue')->willReturn('LEGACY_APPCONFIG_PEPPER');
+        $secureRandom = $this->createMock(\OCP\Security\ISecureRandom::class);
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $selectQb = new FakeQueryBuilder(FakeResult::fromFetch(['last_seq' => 0, 'last_hash' => str_repeat('0', 64)]));
+        $insertQb = new FakeQueryBuilder(null, 1);
+        $updateQb = new FakeQueryBuilder(null, 1);
+        $db = new FakeDbConnection([$selectQb, $insertQb, $updateQb]);
+        $service = new AuditService($db, $logger, $config, $secureRandom);
+
+        $service->logComplianceEvent('cert.issued', 'user1', ['course_id' => 42]);
+
+        $expectedPepper = hash_hmac('sha256', 'learning:audit_user_ref', 'INSTANCE_SECRET_XYZ');
+        $this->assertSame(
+            hash_hmac('sha256', 'user1', $expectedPepper),
+            $insertQb->insertValues['user_ref']['value'],
+            'user_ref must use the instance-secret-derived pepper, not the appconfig fallback'
+        );
     }
 
     /**
@@ -332,14 +418,16 @@ class AuditServiceTest extends TestCase {
         $prevHash = $insertQb->insertValues['prev_hash']['value'];
         $chainHash = $insertQb->insertValues['chain_hash']['value'];
         $createdAt = $insertQb->insertValues['created_at']['value'];
+        $contextJson = $insertQb->insertValues['context_json']['value'];
 
         // Canonical WITHOUT user_id must match stored chain_hash
         $canonicalWithoutPii = [
-            'seq'        => $seqNum,
-            'event_key'  => 'cert.issued',
-            'user_ref'   => $userRef,
-            'course_id'  => 42,
-            'created_at' => $createdAt,
+            'seq'          => $seqNum,
+            'event_key'    => 'cert.issued',
+            'user_ref'     => $userRef,
+            'course_id'    => 42,
+            'created_at'   => $createdAt,
+            'payload_hash' => hash('sha256', $contextJson),
         ];
         $hashWithoutPii = $this->buildChainHash($canonicalWithoutPii, $prevHash);
         $this->assertSame($hashWithoutPii, $chainHash, 'canonical without user_id must match stored chain_hash');

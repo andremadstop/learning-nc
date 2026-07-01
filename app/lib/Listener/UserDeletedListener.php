@@ -38,7 +38,11 @@ class UserDeletedListener implements IEventListener {
 
         // Delete child rows that do not reliably cascade from their parent tables.
         $this->deleteByIds('learning_user_answers', 'session_id', $sessionIds);
-        $this->deleteByIds('learning_audit_events', 'session_id', $sessionIds);
+        // FIX-8 (delete guard): the session_id-based delete on learning_audit_events MUST add
+        // seq_num IS NULL so compliance rows (seq_num IS NOT NULL) can NEVER be removed by this path,
+        // even in the (impossible-by-design) case a compliance row ever carried a session_id.
+        // Belt-and-braces on top of the DSGVO-01 retention handling further below.
+        $this->deleteAuditEventsBySessionIds($sessionIds);
         $this->deleteByIds('learning_duel_answers', 'duel_id', $duelIds);
         $this->deleteByIds('learning_duel_invites', 'duel_session_id', $duelIds);
         $this->deleteByIds('learning_gameshow_answers', 'session_id', $hostedGameshowSessionIds);
@@ -142,6 +146,29 @@ class UserDeletedListener implements IEventListener {
         $qb = $this->db->getQueryBuilder();
         $qb->delete($table)
             ->where($this->buildUserColumnExpression($qb, $columns, $userId));
+        $qb->executeStatement();
+    }
+
+    /**
+     * FIX-8: delete non-compliance audit rows by session_id, guarded with seq_num IS NULL so a
+     * compliance row (seq_num IS NOT NULL) can never be removed through the session-cascade path.
+     *
+     * @param list<int> $ids
+     */
+    private function deleteAuditEventsBySessionIds(array $ids): void {
+        if ($ids === []) {
+            return;
+        }
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete('learning_audit_events')
+            ->where($qb->expr()->andX(
+                $qb->expr()->in(
+                    'session_id',
+                    $qb->createNamedParameter($ids, IQueryBuilder::PARAM_INT_ARRAY)
+                ),
+                $qb->expr()->isNull('seq_num')
+            ));
         $qb->executeStatement();
     }
 

@@ -53,7 +53,8 @@ class CertificateControllerTest extends TestCase {
             $this->createMock(CourseService::class),
             $this->createMock(ITimeFactory::class),
             $userId,
-            $this->createMock(\OCA\Learning\Service\AuditService::class)
+            $this->createMock(\OCA\Learning\Service\AuditService::class),
+            new \OCA\Learning\Tests\Support\FakeDbConnection()
         );
     }
 

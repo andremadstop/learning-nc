@@ -81,12 +81,19 @@ class PassCriteriaService {
 
         if ($passed) {
             // CERT-05: auto-issue the signed credential immediately after the first-pass audit
-            // event. Issuance is a SIDE-EFFECT of this read path (GET /pass-status) — it must
-            // NEVER break it. If the issuer key or the learning_certificates table is not yet
-            // provisioned (live-applied at 155-07), swallow + log instead of 500-ing the caller.
+            // event. Issuance is a SIDE-EFFECT of this read path (GET /pass-status) — an ordinary
+            // PROVISIONING error (e.g. issuer key not yet initialised at 155-07, or the
+            // learning_certificates table missing) must NEVER break it: swallow + log.
+            //
+            // FIX-3 (non-swallow of compliance failures): a ComplianceAuditException is NOT a
+            // provisioning error — it means the tamper-evident audit append failed, so the cert
+            // INSERT was rolled back (fail-closed, IssuanceService FIX-2). That MUST surface (HTTP 500),
+            // never be logged-and-ignored. Re-throw it and only swallow genuinely non-compliance errors.
             // IssuanceService owns its own idempotency guard, so repeated GETs issue exactly once.
             try {
                 $this->issuanceService->issueIfPassed($userId, $courseId, $result);
+            } catch (ComplianceAuditException $e) {
+                throw $e; // compliance-audit failure — fail closed, do not swallow
             } catch (\Throwable $e) {
                 $this->logger->warning(
                     'Certificate issuance failed for user {user} course {course}: {msg}',

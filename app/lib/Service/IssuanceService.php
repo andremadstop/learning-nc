@@ -8,6 +8,7 @@ use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\CourseMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IDBConnection;
 use OCP\IURLGenerator;
 use OCP\IUserManager;
 use OCP\Notification\IManager as INotificationManager;
@@ -48,6 +49,7 @@ class IssuanceService {
     private ITimeFactory $timeFactory;
     private LoggerInterface $logger;
     private AuditService $auditService;
+    private IDBConnection $db;
 
     public function __construct(
         CertificateMapper $certificateMapper,
@@ -60,7 +62,8 @@ class IssuanceService {
         IUserManager $userManager,
         ITimeFactory $timeFactory,
         LoggerInterface $logger,
-        AuditService $auditService
+        AuditService $auditService,
+        IDBConnection $db
     ) {
         $this->certificateMapper = $certificateMapper;
         $this->courseMapper = $courseMapper;
@@ -73,6 +76,7 @@ class IssuanceService {
         $this->timeFactory = $timeFactory;
         $this->logger = $logger;
         $this->auditService = $auditService;
+        $this->db = $db;
     }
 
     /**
@@ -127,9 +131,28 @@ class IssuanceService {
         // the same (user,course) can no longer both produce a valid cert.
         // NOTE: revocation (Phase 156/157) MUST set active_idem_key = NULL to free this slot for re-issue.
         $cert->setActiveIdemKey($userId . ':' . $courseId);
+
+        // FIX-2 (atomicity, fail-closed): the cert INSERT and its CERT_ISSUED compliance-audit append
+        // commit or roll back TOGETHER. If the audit append throws (ComplianceAuditException), the
+        // whole transaction rolls back so no orphan cert (one without a chained audit event) can ever
+        // exist, and the error propagates (HTTP 500). logComplianceEvent opens its own CAS transaction —
+        // NC nests it via a savepoint (Connection::setNestTransactionsWithSavepoints(true)), so this is safe.
+        $this->db->beginTransaction();
         try {
             $stored = $this->certificateMapper->insert($cert);
+
+            // AUDIT-03 compliance event — inside the SAME transaction as the INSERT. On the
+            // unique-constraint loser path the INSERT throws first, so this never runs for the loser.
+            $this->auditService->logComplianceEvent(ComplianceEventTypes::CERT_ISSUED, $userId, [
+                'course_id'       => $courseId,
+                'verification_id' => $verificationId,
+            ]);
+
+            $this->db->commit();
         } catch (\OCP\DB\Exception $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
             if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
                 // A concurrent request won the race and already inserted the active cert. Return the
                 // winner verbatim (no re-issue, no notification) — the loser dedupes onto it.
@@ -139,15 +162,14 @@ class IssuanceService {
                 }
             }
             throw $e;
+        } catch (\Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e; // audit failure or other — roll back so no orphan cert survives (fail-closed)
         }
 
-        // AUDIT-03 compliance event — fires only on the happy path (unique-constraint loser returns
-        // $winner early in the catch, so this line is never reached on the loser path).
-        $this->auditService->logComplianceEvent(ComplianceEventTypes::CERT_ISSUED, $userId, [
-            'course_id'       => $courseId,
-            'verification_id' => $verificationId,
-        ]);
-
+        // Side effects AFTER the atomic commit only — a rolled-back issuance must never notify/log success.
         $this->notify($userId, $verificationId, (string)$course->getTitle());
 
         $this->logger->info('Issued certificate {vid} for user {user} course {course}', [

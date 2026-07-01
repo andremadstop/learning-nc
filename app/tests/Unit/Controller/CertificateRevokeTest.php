@@ -14,12 +14,14 @@ use OCA\Learning\Db\CoursePoolMapper;
 use OCA\Learning\Db\CurriculumScopeMapper;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\BadgeService;
+use OCA\Learning\Service\ComplianceAuditException;
 use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\FeedService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
+use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -123,7 +125,7 @@ class CertificateRevokeTest extends TestCase {
         return $cert;
     }
 
-    private function makeController(CourseService $courseService, ITimeFactory $time, ?string $userId, ?AuditService $audit = null): CertificateController {
+    private function makeController(CourseService $courseService, ITimeFactory $time, ?string $userId, ?AuditService $audit = null, ?FakeDbConnection $db = null): CertificateController {
         return new CertificateController(
             'learning',
             $this->requestMock,
@@ -131,7 +133,8 @@ class CertificateRevokeTest extends TestCase {
             $courseService,
             $time,
             $userId,
-            $audit ?? $this->createMock(AuditService::class)
+            $audit ?? $this->createMock(AuditService::class),
+            $db ?? new FakeDbConnection()
         );
     }
 
@@ -281,5 +284,40 @@ class CertificateRevokeTest extends TestCase {
 
         $this->assertInstanceOf(JSONResponse::class, $resp);
         $this->assertSame(Http::STATUS_UNAUTHORIZED, $resp->getStatus());
+    }
+
+    /**
+     * FIX-2 (atomicity, fail-closed): if the CERT_REVOKED compliance-audit append throws
+     * (ComplianceAuditException), the revoke transaction rolls back and the exception propagates
+     * (NC → HTTP 500). The un-audited tombstone must NOT be committed.
+     */
+    public function testRevokeAuditFailureRollsBack(): void {
+        $cert = $this->makeCert();
+        $this->mapperMock->method('findByVerificationId')->with(self::VID)->willReturn($cert);
+        // update() is attempted inside the transaction, then the audit append fails and rolls it back.
+        $this->mapperMock->expects($this->once())->method('update')->willReturnArgument(0);
+
+        $audit = $this->createMock(AuditService::class);
+        $audit->method('logComplianceEvent')
+            ->willThrowException(new ComplianceAuditException('chain append failed'));
+
+        $db = new FakeDbConnection();
+
+        try {
+            $this->makeController(
+                $this->makeCourseService($this->makeCourse('alice'), null),
+                $this->makeTime(),
+                'alice',
+                $audit,
+                $db
+            )->revoke(self::VID);
+            $this->fail('expected ComplianceAuditException to propagate (fail-closed)');
+        } catch (ComplianceAuditException $e) {
+            // expected
+        }
+
+        $this->assertSame(1, $db->beginTransactionCalls, 'a transaction was opened for the atomic revoke');
+        $this->assertSame(0, $db->commitCalls, 'a failed audit append must NOT commit the tombstone');
+        $this->assertSame(1, $db->rollBackCalls, 'the revoke transaction must roll back on audit failure');
     }
 }

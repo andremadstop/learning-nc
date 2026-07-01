@@ -185,6 +185,14 @@ namespace OCP {
 
             public function getAppValue(string $appName, string $key, string $default = '');
 
+            public function setAppValue(string $appName, string $key, string $value);
+
+            /**
+             * @param mixed $default
+             * @return mixed
+             */
+            public function getSystemValue(string $key, $default = '');
+
             public function setUserValue(string $userId, string $appName, string $key, string $value);
 
             /**

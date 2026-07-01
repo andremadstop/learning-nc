@@ -16,6 +16,7 @@ use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\Response;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IDBConnection;
 use OCP\IRequest;
 
 /**
@@ -35,6 +36,7 @@ class CertificateController extends Controller {
     private ITimeFactory $timeFactory;
     private ?string $userId;
     private AuditService $auditService;
+    private IDBConnection $db;
 
     public function __construct(
         string $appName,
@@ -43,7 +45,8 @@ class CertificateController extends Controller {
         CourseService $courseService,
         ITimeFactory $timeFactory,
         ?string $userId,
-        AuditService $auditService
+        AuditService $auditService,
+        IDBConnection $db
     ) {
         parent::__construct($appName, $request);
         $this->certificateMapper = $certificateMapper;
@@ -51,6 +54,7 @@ class CertificateController extends Controller {
         $this->timeFactory = $timeFactory;
         $this->userId = $userId;
         $this->auditService = $auditService;
+        $this->db = $db;
     }
 
     /**
@@ -195,15 +199,30 @@ class CertificateController extends Controller {
         }
         // R2-2: free the UNIQUE idempotency slot so a re-issue stays possible.
         $cert->setActiveIdemKey(null);
-        $this->certificateMapper->update($cert);
-        // AUDIT-03 compliance event — only on first revoke (repeat calls are idempotent;
-        // a duplicate chain entry for the same cert would be misleading).
-        if ($isFirstRevoke) {
-            $this->auditService->logComplianceEvent(
-                ComplianceEventTypes::CERT_REVOKED,
-                $this->userId ?? '',
-                ['course_id' => $cert->getCourseId(), 'verification_id' => $verificationId]
-            );
+
+        // FIX-2 (atomicity, fail-closed): the revoke mutation and its CERT_REVOKED compliance-audit
+        // append commit or roll back TOGETHER. If the audit append throws (ComplianceAuditException),
+        // the whole transaction rolls back so the tombstone is NOT persisted without a chained audit
+        // event, and the error propagates — NC turns an uncaught controller exception into HTTP 500
+        // (fail-closed). logComplianceEvent's own CAS transaction nests here via a savepoint.
+        $this->db->beginTransaction();
+        try {
+            $this->certificateMapper->update($cert);
+            // AUDIT-03 compliance event — only on first revoke (repeat calls are idempotent;
+            // a duplicate chain entry for the same cert would be misleading).
+            if ($isFirstRevoke) {
+                $this->auditService->logComplianceEvent(
+                    ComplianceEventTypes::CERT_REVOKED,
+                    $this->userId ?? '',
+                    ['course_id' => $cert->getCourseId(), 'verification_id' => $verificationId]
+                );
+            }
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e; // audit failure or other — roll back so no un-audited tombstone survives
         }
 
         return new JSONResponse(['revoked' => true, 'verification_id' => $verificationId]);

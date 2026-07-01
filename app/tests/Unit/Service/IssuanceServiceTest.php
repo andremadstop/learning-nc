@@ -9,11 +9,13 @@ use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Service\AuditService;
+use OCA\Learning\Service\ComplianceAuditException;
 use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\IssuanceService;
 use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\PassResult;
 use OCA\Learning\Service\SigningService;
+use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IURLGenerator;
 use OCP\Notification\IManager;
@@ -91,9 +93,11 @@ class IssuanceServiceTest extends TestCase {
         bool $expectInsert = true,
         bool $expectNotify = true,
         string $displayName = 'Alice Example',
-        ?AuditService $audit = null
+        ?AuditService $audit = null,
+        ?FakeDbConnection $db = null
     ): IssuanceService {
         $audit = $audit ?? $this->createMock(AuditService::class);
+        $db = $db ?? new FakeDbConnection();
         $keyService = $this->createMock(KeyService::class);
         $keyService->method('hostDid')->willReturn(self::HOST_DID);
         $keyService->method('getActiveSigningMaterial')->willReturn([
@@ -164,6 +168,7 @@ class IssuanceServiceTest extends TestCase {
             $time,
             $logger,
             $audit,
+            $db,
         );
     }
 
@@ -272,12 +277,39 @@ class IssuanceServiceTest extends TestCase {
         $service = new IssuanceService(
             $certMapper, $courseMapper, $signingService, $keyService, $manager,
             $theming, $url, $userManager, $time, $this->createMock(LoggerInterface::class),
-            $auditLoser,
+            $auditLoser, new FakeDbConnection(),
         );
 
         $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
 
         $this->assertSame($winner, $cert, 'the concurrent winner is returned, no duplicate issued');
+    }
+
+    /**
+     * FIX-2 (atomicity, fail-closed): if the CERT_ISSUED compliance-audit append throws
+     * (ComplianceAuditException), the whole issue transaction rolls back — the exception propagates,
+     * the student is NOT notified, and no orphan cert (one without a chained audit event) is left behind.
+     */
+    public function testAuditFailureRollsBackIssuance(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->method('logComplianceEvent')
+            ->willThrowException(new ComplianceAuditException('chain append failed'));
+
+        $db = new FakeDbConnection();
+        $captured = null;
+        // expectNotify:false — a rolled-back issuance must never fire the notification.
+        $service = $this->makeService(null, $this->makeCourse(), $captured, expectNotify: false, audit: $audit, db: $db);
+
+        try {
+            $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+            $this->fail('expected ComplianceAuditException to propagate (fail-closed)');
+        } catch (ComplianceAuditException $e) {
+            // expected
+        }
+
+        $this->assertSame(1, $db->beginTransactionCalls, 'a transaction was opened for the atomic issue');
+        $this->assertSame(0, $db->commitCalls, 'a failed audit append must NOT commit');
+        $this->assertSame(1, $db->rollBackCalls, 'the issue transaction must roll back on audit failure');
     }
 
     // AUDIT-03: happy path fires CERT_ISSUED exactly once; unique-constraint loser never fires (see testDedupesOnUniqueConstraintViolation).
