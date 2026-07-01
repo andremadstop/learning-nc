@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v5.2.0
 milestone_name: "v5.2.0 Pflichtschulung"
 current_phase: 162
-current_plan: "162-01 complete (1/4)"
+current_plan: "162-03 built (Wave 2, startSession-Gate + VideoProgressController, commits 950e2cc/3142c83); 162-02 parallel; container-verify + ROADMAP at orchestrator wave-gate"
 status: "v5.2.0 Pflichtschulung. Phase 162 (Video-/Material-Gating) IN ARBEIT — Plan 162-01 (Security Core, Wave 1) FERTIG gebaut + committed (356e4a6/8c70a69/2b509cb), Container-Verify (PHPStan L5 + PHPUnit + occ upgrade Version009500) an Orchestrator-Wave-Gate delegiert (kein lokales PHP). Geliefert: Migration 009500 (learning_course_videos-Registry + learning_video_progress + video_gate_enabled-Spalte), CourseVideo/VideoProgress Entities+Mappers, VideoProgressService (95%-Merge-Engine, <5s-Ping-Discard, DSGVO-transiente Segmente, exactly-once VIDEO_COMPLETED-Emit), CourseService-Seams (assertEnrolledInCourse IDOR-Gate für 162-02, isVideoGateEnabled/setVideoGateEnabled für 162-03), CourseController::setVideoGate, alle 9 Video-Routes (contracts-first). TDD RED(009500)→GREEN. info.xml dev-bump 5.2.0.1→5.2.0.2. DEVIATION: SELECT...FOR UPDATE → CAS auf last_ping_ts (NC IQueryBuilder hat kein forUpdate(), s. Version009300/AuditService) + Unique-Violation-Retry für First-Ping-Race. NÄCHSTER SCHRITT: 162-02 (NC-Files Range-206 Streaming + Registry-CRUD). Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
 stopped_at: "Phase 162 Plan 01 (Security Core) fertig + committed. Container-Gate (PHPStan/PHPUnit/occ upgrade) läuft zentral am Orchestrator-Wave-Merge. Weiter mit 162-02 (VideoStreamController: assertEnrolledInCourse-Gate + fopen-Streaming)."
 last_updated: "2026-07-01"
