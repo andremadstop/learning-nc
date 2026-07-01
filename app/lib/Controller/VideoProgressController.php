@@ -120,6 +120,13 @@ class VideoProgressController extends Controller {
         } catch (DoesNotExistException $e) {
             return new DataResponse(['error' => 'Unknown content'], Http::STATUS_NOT_FOUND);
         }
+        // SECURITY (gate-bypass): the registry holds videos AND documents, and the gate query only
+        // checks completed_at IS NOT NULL. Without this guard a student could POST document-read with a
+        // VIDEO's contentId and unlock the quiz WITHOUT watching. Only genuine document material may be
+        // marked "read"; video sources must be watched. Mirrors isDurationValidForGate's video/doc split.
+        if (in_array($video->getSourceType(), ['nc-files', 'vimeo', 'youtube-nocookie'], true)) {
+            return new DataResponse(['error' => 'Content is a video — it must be watched, not marked read'], Http::STATUS_BAD_REQUEST);
+        }
         $this->service->markDocumentRead($this->userId, $contentId, (int)$video->getCourseId());
         return new DataResponse(['completed' => true, 'covered_pct' => 1.0]);
     }
