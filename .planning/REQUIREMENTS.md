@@ -12,9 +12,9 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 
 ### AUDIT — Manipulationssicherer Audit-Trail (🔴 Fundament, nicht nachrüstbar)
 
-- [ ] **AUDIT-01**: Jedes Compliance-Ereignis wird über `AuditService::logComplianceEvent()` in eine **Hash-Chain** geschrieben (`learning_audit_events` + `learning_audit_chain_state`), `chain_hash = sha256(canonical_json(seq, event_key, user_ref, course_id, created_at) || prev_hash)`.
-- [ ] **AUDIT-02**: `logComplianceEvent()` schluckt Exceptions **nicht** (anders als `logEvent()`) — ein still verworfener Compliance-Write sähe für einen Verifier wie Manipulation aus.
-- [ ] **AUDIT-03**: Die drei Compliance-Caller (`PassCriteriaService::emitPassEventIfFirst()`, `IssuanceService`, `CertificateVerifyService`) sind auf `logComplianceEvent()` migriert; das Event-Interface + alle Compliance-Event-Typen (inkl. `course.video.completed`) sind in Phase 1 definiert.
+- [x] **AUDIT-01**: Jedes Compliance-Ereignis wird über `AuditService::logComplianceEvent()` in eine **Hash-Chain** geschrieben (`learning_audit_events` + `learning_audit_chain_state`), `chain_hash = sha256(canonical_json(seq, event_key, user_ref, course_id, created_at) || prev_hash)`.
+- [x] **AUDIT-02**: `logComplianceEvent()` schluckt Exceptions **nicht** (anders als `logEvent()`) — ein still verworfener Compliance-Write sähe für einen Verifier wie Manipulation aus.
+- [x] **AUDIT-03**: Die drei Compliance-Caller (`PassCriteriaService::emitPassEventIfFirst()`, `IssuanceService`, `CertificateController::revoke()`) sind auf `logComplianceEvent()` migriert; das Event-Interface + alle Compliance-Event-Typen (inkl. `course.video.completed`) sind in Phase 1 definiert.
 - [ ] **AUDIT-04**: Wöchentliche **Ed25519-signierte Checkpoints** über die Chain (`learning_audit_checkpoints` + `AuditCheckpointService` + `AuditCheckpointJob`), via `sodium_crypto_sign_detached` (NICHT `SigningService::sign()`, dessen Header auf `vc+jwt` fixiert ist).
 - [ ] **AUDIT-05**: **Externer Forgejo-Anker** — periodischer signierter Digest per HTTP-PUT in ein UG-Forgejo-Audit-Repo (Config-Flag + Token, `anchor_url`-Spalte). Schützt gegen den Admin, der Key UND DB hält, und gegen Timestamp-Backdating (Forgejo-Commit-Zeit ist admin-unabhängig).
 - [ ] **AUDIT-06**: `occ learning:audit:verify` prüft Chain-Integrität + Checkpoint-Signaturen + Anker-Konsistenz und meldet Brüche/Forks/Lücken.
@@ -24,11 +24,11 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 
 ### ASSIGN — Assignment als First-Class-Objekt (🔴 Substrat)
 
-- [ ] **ASSIGN-01**: `learning_assignments` — First-Class-Pflicht-Objekt: `course_id`, polymorphes Subjekt (`subject_type` = 'user'|'group', `subject_id`), `due_date`, `recert_interval_days`-Override, `status` (persistiert: assigned/in_progress/passed; abgeleitet: overdue/expired), `active_period_key` (nullable-unique wie `active_idem_key`). Index `(course_id, subject_type, subject_id)` **PLAIN, nicht UNIQUE** (Re-Zert = neue Row pro Periode).
-- [ ] **ASSIGN-02**: Zuweisung an eine **NC-Gruppe** deckt automatisch LDAP/AD/SSO-Mitglieder ab (via `IGroupManager`, keine LDAP-Sonderlogik in der App).
-- [ ] **ASSIGN-03**: Ein Owner/Instructor kann Person ODER Gruppe einem Kurs mit Frist zuweisen; `AssignmentService` expandiert Gruppen zur Report-/Reminder-Zeit.
-- [ ] **ASSIGN-04**: Cert-Ausstellung hängt **NICHT** von einer Assignment-Row ab — Selbstlerner ohne Zuweisung bekommen weiter Zertifikate; das Pass-Event *aktualisiert* Assignment, gated es nicht.
-- [ ] **ASSIGN-05**: **Frist-Verlängerung bei Systemausfall** — Admin kann Fristen für Gruppe/Kurs pauschal verlängern (dokumentierte, audit-geloggte Aktion).
+- [x] **ASSIGN-01**: `learning_assignments` — First-Class-Pflicht-Objekt: `course_id`, polymorphes Subjekt (`subject_type` = 'user'|'group', `subject_id`), `due_date`, `recert_interval_days`-Override, `status` (persistiert: assigned/in_progress/passed; abgeleitet: overdue/expired), `active_period_key` (nullable-unique wie `active_idem_key`). Index `(course_id, subject_type, subject_id)` **PLAIN, nicht UNIQUE** (Re-Zert = neue Row pro Periode).
+- [x] **ASSIGN-02**: Zuweisung an eine **NC-Gruppe** deckt automatisch LDAP/AD/SSO-Mitglieder ab (via `IGroupManager`, keine LDAP-Sonderlogik in der App).
+- [x] **ASSIGN-03**: Ein Owner/Instructor kann Person ODER Gruppe einem Kurs mit Frist zuweisen; `AssignmentService` expandiert Gruppen zur Report-/Reminder-Zeit.
+- [x] **ASSIGN-04**: Cert-Ausstellung hängt **NICHT** von einer Assignment-Row ab — Selbstlerner ohne Zuweisung bekommen weiter Zertifikate; das Pass-Event *aktualisiert* Assignment, gated es nicht.
+- [x] **ASSIGN-05**: **Frist-Verlängerung bei Systemausfall** — Admin kann Fristen für Gruppe/Kurs pauschal verlängern (dokumentierte, audit-geloggte Aktion).
 
 ### VIDEO — Video-/Material-Gating
 
@@ -44,7 +44,7 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 
 ### RBAC — Teamleiter-Reports (gruppen-gescopt)
 
-- [ ] **RBAC-01**: `learning_oversight` (course_id, lead_user_id, scope_group_id) — View-Recht getrennt vom Assignment-Objekt (ersetzt die verworfene `learning_team_leads`).
+- [x] **RBAC-01**: `learning_oversight` (course_id, lead_user_id, scope_group_id) — View-Recht getrennt vom Assignment-Objekt (ersetzt die verworfene `learning_team_leads`).
 - [ ] **RBAC-02**: `CertificateReportService::getGroupReport()` — Team-Lead sieht Compliance-Report **nur für die eigene Gruppe**; `assertTeamLeadForGroup()` als erste Zeile (IDOR-safe), Gruppenfilter auf **DB-Ebene** (`WHERE user_id IN (members)`), gleiche DSGVO-Projektion (kein Klartext-Mail/user_id im DTO).
 - [ ] **RBAC-03**: `RoleService`-Erweiterung: `isTeamLeadForGroup()`, `getTeamLeadGroups()` via `learning_oversight`.
 - [ ] **RBAC-04**: **Team-Lead-Dashboard** — „wer fehlt noch" + Ablauf-/Upcoming-Expirations-Panel + Auslösen einer **In-App-Erinnerung** an säumige Gruppenmitglieder.
@@ -61,12 +61,12 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 
 ### USER — Username-Politur
 
-- [ ] **USER-01**: User ohne E-Mail funktionieren durchgängig — Cert-Ausstellung (verifiziert: `credentialSubject.name` = Displayname, kein Mail), Report-Anzeige, Reminder (NC-Notification). Alle `getEMailAddress()`-Aufrufer null-safe (Audit + Fix in Phase 1).
-- [ ] **USER-02**: `occ learning:import-users <csv> --group=<nc-group>` (CSV: username, display_name, optional password) — Bulk-Enrollment über `IUserManager`/`IGroupManager`, BackgroundJob-tauglich für 2000 User; **keine** In-App-Upload-UI. (Phase 1, hängt am Assignment-Schema.)
+- [x] **USER-01**: User ohne E-Mail funktionieren durchgängig — Cert-Ausstellung (verifiziert: `credentialSubject.name` = Displayname, kein Mail), Report-Anzeige, Reminder (NC-Notification). Alle `getEMailAddress()`-Aufrufer null-safe (Audit + Fix in Phase 1).
+- [x] **USER-02**: `occ learning:import-users <csv> --group=<nc-group>` (CSV: username, display_name, optional password) — Bulk-Enrollment über `IUserManager`/`IGroupManager`, BackgroundJob-tauglich für 2000 User; **keine** In-App-Upload-UI. (Phase 1, hängt am Assignment-Schema.)
 
 ### DSGVO — Datenschutz-Querschnitt (Compliance-Produkt-Pflicht)
 
-- [ ] **DSGVO-01**: **Art. 17 chain-sichere Anonymisierung** — bei User-Löschung wird die User-Referenz in Audit/Certs pseudonymisiert/anonymisiert, **ohne die Hash-Chain zu brechen** (User-Referenz im Hash ist bereits pseudonymisiert, nicht Klartext-uid).
+- [x] **DSGVO-01**: **Art. 17 chain-sichere Anonymisierung** — bei User-Löschung wird die User-Referenz in Audit/Certs pseudonymisiert/anonymisiert, **ohne die Hash-Chain zu brechen** (User-Referenz im Hash ist bereits pseudonymisiert, nicht Klartext-uid).
 - [ ] **DSGVO-02**: **Art. 20 Datenübertragbarkeit** — einzelner Nutzer kann seine Zertifikate + Lernhistorie maschinenlesbar exportieren (bestehenden `DataExportService` erweitern).
 - [ ] **DSGVO-03**: **Retention/Löschkonzept (Art. 5(1)(e))** — konfigurierbare Auto-Anonymisierung von Certs/Audit/Assignments nach X Jahren.
 - [ ] **DSGVO-04**: **Art. 13 Transparenz** — Datenschutzhinweis zu Schulungsbeginn: welche Daten (Abschluss + Zeitstempel), welcher Zweck (Rechtspflicht Art. 6(1)(c), minimiert Art. 5(1)(c)), dass Wiedergabemuster NICHT permanent gespeichert werden.

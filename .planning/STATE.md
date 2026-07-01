@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v5.2.0
 milestone_name: "v5.2.0 Pflichtschulung"
-current_phase: 160
+current_phase: 161
 current_plan: null
-status: "v5.2.0 Pflichtschulung (AWO-Readiness) ROADMAP ERSTELLT (2026-07-01). 5 Phasen (160-164), 41 Requirements gemappt. Phase 160 als nächstes: Audit-Hash-Chain + Assignment-Schemas (AUDIT-01..03, ASSIGN-01..05, USER-01/02, DSGVO-01, RBAC-01). Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
-stopped_at: "Roadmap v5.2.0 fertig. Nächster Schritt: /gsd:plan-phase 160"
+status: "v5.2.0 Pflichtschulung. Phase 160 (Foundation — Audit Hash-Chain + Assignment Schemas) COMPLETE + VERIFIED (12/12 Reqs, 2026-07-01). 6 Pläne/3 Waves, PHPStan clean, PHPUnit 183 grün, Migrationen 009300/009400/009301 auf PG16 angewandt + MariaDB-11.4-cross-checked. Codex-Security-Review: 8 Funde, 7 gefixt (Commit 18973dc), #1 (signierte Checkpoints/Anker) → Phase 161. NÄCHSTER SCHRITT: /gsd:plan-phase 161 (Audit Hardening). Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
+stopped_at: "Phase 160 complete + verified. Nächster Schritt: /gsd:plan-phase 161 (Audit Hardening — Checkpoints + Anchor + Export + Liveness)."
 last_updated: "2026-07-01"
-last_activity: "2026-07-01 — Roadmap erstellt (5 Phasen 160-164, 41/41 Requirements gemappt, ROADMAP.md additiv erweitert, REQUIREMENTS.md Traceability gefüllt)."
+last_activity: "2026-07-01 — Phase 160 gebaut+verifiziert: Audit-Hash-Chain (CAS, payload_hash, pepper-from-secret, DSGVO-01 chain-safe erasure) + learning_assignments/oversight + occ import-users + email-null-fix. Gates: PHPStan clean, PHPUnit 183/0/0, PG16+MariaDB verifiziert, Codex-Security-Härtung angewandt."
 progress:
   total_phases: 5
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 6
+  completed_plans: 6
+  percent: 20
 ---
 
 # Project State

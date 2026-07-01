@@ -595,14 +595,15 @@ Plans:
 - RED-3: learning_assignments uses PLAIN composite index (course_id, subject_type, subject_id) — NOT UNIQUE; re-cert creates new rows. active_period_key has UNIQUE index.
 - RBAC-01 (learning_oversight schema) belongs here alongside RED-3 schema work — Phase 163 uses it
 - Migration sequence starts at Version009300
-**Plans**: 6 plans (3 waves, Track A + Track B parallel)
+**Plans**: 6/6 — ✓ **COMPLETE 2026-07-01** (verified 12/12 reqs; PHPStan L5 clean, PHPUnit 183/0/0; migrations 009300/009400/009301 applied on PG16 + MariaDB 11.4 cross-checked; Codex security review commit 18973dc — 7/8 findings fixed, #1 signed-checkpoint/anchor deferred to Phase 161)
 Plans:
-- [ ] 160-01-PLAN.md — Track A W1: Version009300 migration (audit hash-chain schema + genesis seed) + AuditServiceTest stubs
-- [ ] 160-02-PLAN.md — Track A W2: ComplianceEventTypes + logComplianceEvent() CAS + DSGVO-01 UserDeletedListener
-- [ ] 160-03-PLAN.md — Track A W3: Migrate 3 callers to logComplianceEvent (PassCriteria, Issuance, CertController)
-- [ ] 160-04-PLAN.md — Track B W1: Version009400 migration (learning_assignments + learning_oversight) + Track B test stubs
-- [ ] 160-05-PLAN.md — Track B W2: AssignmentService skeleton (5 methods) + USER-01 ClassbookController null-safe email
-- [ ] 160-06-PLAN.md — Track B W3: occ learning:import-users command + ImportUsersJob + Application.php registration
+- [x] 160-01-PLAN.md — Track A W1: Version009300 migration (audit hash-chain schema + genesis seed) + AuditServiceTest stubs
+- [x] 160-02-PLAN.md — Track A W2: ComplianceEventTypes + logComplianceEvent() CAS + DSGVO-01 UserDeletedListener
+- [x] 160-03-PLAN.md — Track A W3: Migrate 3 callers to logComplianceEvent (PassCriteria, Issuance, CertController)
+- [x] 160-04-PLAN.md — Track B W1: Version009400 migration (learning_assignments + learning_oversight) + Track B test stubs
+- [x] 160-05-PLAN.md — Track B W2: AssignmentService skeleton (5 methods) + USER-01 ClassbookController null-safe email
+- [x] 160-06-PLAN.md — Track B W3: occ learning:import-users command + ImportUsersJob + Application.php registration
+- [x] 160-sec (Codex hardening): atomicity/fail-closed, payload_hash, pepper-from-secret, CAS id=1, Version009301 unique seq_num, delete guard (commit 18973dc)
 
 ### Phase 161: Audit Hardening — Checkpoints + Anchor + Export + Liveness
 **Goal**: The audit trail is independently verifiable (Ed25519-signed weekly checkpoints), operable by the Datenschutzbeauftragter (export), and monitored by admins (liveness widget); Forgejo anchor scaffolded for fork-detection
@@ -617,6 +618,7 @@ Plans:
 - AuditCheckpointService MUST use sodium_crypto_sign_detached directly — NOT SigningService (155-ADR-ANCHOR frozen to typ:vc+jwt)
 - Forgejo anchor defeats the admin-holds-both-key-and-DB threat model; design+scaffold now, enable via config
 - anchor_url column on learning_audit_checkpoints is nullable until anchored
+- ⚠ FORWARD-DEP from Phase 160: the shipped chain canonical is **6 fields** (seq, event_key, user_ref, course_id, created_at, **payload_hash**=sha256(context_json), added by Codex FIX-4). `occ learning:audit:verify` MUST reconstruct this exact 6-field ksort'd canonical + `sha256(canonical . '|' . prev_hash)`, else it will report every compliance event as tampered. user_ref = hash_hmac('sha256','learning:audit_user_ref', instance-secret). CAS state row pinned to id=1.
 **Plans**: TBD
 
 ### Phase 162: Video-/Material-Gating + DSGVO Art.13
