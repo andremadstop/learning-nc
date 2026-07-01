@@ -5,6 +5,8 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
+use OCA\Learning\Service\AuditService;
+use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\ForbiddenException;
 use OCP\AppFramework\Controller;
@@ -32,6 +34,7 @@ class CertificateController extends Controller {
     private CourseService $courseService;
     private ITimeFactory $timeFactory;
     private ?string $userId;
+    private AuditService $auditService;
 
     public function __construct(
         string $appName,
@@ -39,13 +42,15 @@ class CertificateController extends Controller {
         CertificateMapper $certificateMapper,
         CourseService $courseService,
         ITimeFactory $timeFactory,
-        ?string $userId
+        ?string $userId,
+        AuditService $auditService
     ) {
         parent::__construct($appName, $request);
         $this->certificateMapper = $certificateMapper;
         $this->courseService = $courseService;
         $this->timeFactory = $timeFactory;
         $this->userId = $userId;
+        $this->auditService = $auditService;
     }
 
     /**
@@ -182,6 +187,8 @@ class CertificateController extends Controller {
         }
 
         $cert->setRevoked(true);
+        // Capture before the guard sets revokedAt — used to fire the compliance event only once.
+        $isFirstRevoke = $cert->getRevokedAt() === null;
         // Idempotent: keep the FIRST revocation time on a repeat revoke.
         if ($cert->getRevokedAt() === null) {
             $cert->setRevokedAt($this->timeFactory->getTime());
@@ -189,6 +196,15 @@ class CertificateController extends Controller {
         // R2-2: free the UNIQUE idempotency slot so a re-issue stays possible.
         $cert->setActiveIdemKey(null);
         $this->certificateMapper->update($cert);
+        // AUDIT-03 compliance event — only on first revoke (repeat calls are idempotent;
+        // a duplicate chain entry for the same cert would be misleading).
+        if ($isFirstRevoke) {
+            $this->auditService->logComplianceEvent(
+                ComplianceEventTypes::CERT_REVOKED,
+                $this->userId ?? '',
+                ['course_id' => $cert->getCourseId(), 'verification_id' => $verificationId]
+            );
+        }
 
         return new JSONResponse(['revoked' => true, 'verification_id' => $verificationId]);
     }

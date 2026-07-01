@@ -12,7 +12,9 @@ use OCA\Learning\Db\CourseMember;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Db\CoursePoolMapper;
 use OCA\Learning\Db\CurriculumScopeMapper;
+use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\BadgeService;
+use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\FeedService;
 use OCA\Learning\Service\RoleService;
@@ -121,20 +123,22 @@ class CertificateRevokeTest extends TestCase {
         return $cert;
     }
 
-    private function makeController(CourseService $courseService, ITimeFactory $time, ?string $userId): CertificateController {
+    private function makeController(CourseService $courseService, ITimeFactory $time, ?string $userId, ?AuditService $audit = null): CertificateController {
         return new CertificateController(
             'learning',
             $this->requestMock,
             $this->mapperMock,
             $courseService,
             $time,
-            $userId
+            $userId,
+            $audit ?? $this->createMock(AuditService::class)
         );
     }
 
     /**
      * The owner revokes: revoked=true, revoked_at=now, active_idem_key=NULL — all set on the SAME
      * entity that is handed to update() exactly once (atomic tombstone write).
+     * AUDIT-03: logComplianceEvent(CERT_REVOKED) fires exactly once on first revoke.
      */
     public function testRevokeSetsTombstoneFields(): void {
         $cert = $this->makeCert();
@@ -148,10 +152,20 @@ class CertificateRevokeTest extends TestCase {
                 return $c;
             });
 
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->once())
+            ->method('logComplianceEvent')
+            ->with(
+                ComplianceEventTypes::CERT_REVOKED,
+                'alice',
+                $this->callback(fn(array $ctx): bool => isset($ctx['course_id'], $ctx['verification_id']))
+            );
+
         $resp = $this->makeController(
             $this->makeCourseService($this->makeCourse('alice'), null),
             $this->makeTime(),
-            'alice'
+            'alice',
+            $audit
         )->revoke(self::VID);
 
         $this->assertInstanceOf(JSONResponse::class, $resp);
@@ -166,6 +180,7 @@ class CertificateRevokeTest extends TestCase {
     /**
      * Idempotent: an already-revoked cert (revoked_at=T0) revoked again at T1 keeps T0 — the FIRST
      * revocation time is NOT overwritten; active_idem_key is still nulled.
+     * AUDIT-03: logComplianceEvent(CERT_REVOKED) must NOT fire on a repeat (idempotent) revoke.
      */
     public function testRevokeIdempotentKeepsFirstDate(): void {
         $firstRevokedAt = 1_650_000_000;
@@ -180,10 +195,14 @@ class CertificateRevokeTest extends TestCase {
                 return $c;
             });
 
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->never())->method('logComplianceEvent');
+
         $this->makeController(
             $this->makeCourseService($this->makeCourse('alice'), null),
             $this->makeTime(self::NOW), // T1 > T0
-            'alice'
+            'alice',
+            $audit
         )->revoke(self::VID);
 
         $this->assertNotNull($updated);

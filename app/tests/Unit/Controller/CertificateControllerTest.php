@@ -52,7 +52,8 @@ class CertificateControllerTest extends TestCase {
             $this->mapperMock,
             $this->createMock(CourseService::class),
             $this->createMock(ITimeFactory::class),
-            $userId
+            $userId,
+            $this->createMock(\OCA\Learning\Service\AuditService::class)
         );
     }
 
