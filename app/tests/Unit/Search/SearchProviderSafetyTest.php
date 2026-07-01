@@ -132,6 +132,10 @@ class SearchProviderSafetyTest extends TestCase {
             public function getDisplayName(): string {
                 return $this->uid;
             }
+
+            // Phase 160 stub additions — search tests do not use these
+            public function getEMailAddress(): ?string { return null; }
+            public function setDisplayName(string $displayName): bool { return true; }
         };
     }
 

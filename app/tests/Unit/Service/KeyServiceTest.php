@@ -112,6 +112,10 @@ class KeyServiceTest extends TestCase {
                 }
             }
 
+            public function inTransaction(): bool {
+                return $this->snapshot !== null;
+            }
+
             // Stub-interface members (unused by KeyService) — present so the anon class is concrete.
             public function getQueryBuilder() {
             }

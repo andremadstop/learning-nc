@@ -73,8 +73,9 @@ class ClassbookControllerTest extends TestCase {
 
         $this->userManagerMock->method('get')->with('alice')->willReturn($userMock);
 
-        // courseService->findById must not throw (simulates access granted)
-        $this->courseServiceMock->method('findById')->willReturn(null);
+        // courseService->findById must not throw (simulates access granted).
+        // Return [] — PHPUnit 10 rejects null for the declared array return type.
+        $this->courseServiceMock->method('findById')->willReturn([]);
 
         // No telos profile → empty bio
         $this->telosMapperMock->method('findByUserIdOrNull')->willReturn(null);
@@ -115,7 +116,7 @@ class ClassbookControllerTest extends TestCase {
         $userMock->method('getEMailAddress')->willReturn('bob@example.com');
 
         $this->userManagerMock->method('get')->with('bob')->willReturn($userMock);
-        $this->courseServiceMock->method('findById')->willReturn(null);
+        $this->courseServiceMock->method('findById')->willReturn([]); // PHPUnit 10: null invalid for array
         $this->telosMapperMock->method('findByUserIdOrNull')->willReturn(null);
 
         $controller = $this->makeController('bob');

@@ -72,6 +72,10 @@ class CoopServiceTest extends TestCase {
                 public function getDisplayName(): string {
                     return 'Alice Admin';
                 }
+
+                // Phase 160 stub additions
+                public function getEMailAddress(): ?string { return null; }
+                public function setDisplayName(string $displayName): bool { return true; }
             });
 
         $service = $this->createService(

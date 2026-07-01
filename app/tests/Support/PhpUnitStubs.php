@@ -2,10 +2,57 @@
 declare(strict_types=1);
 
 namespace OCP\DB\QueryBuilder {
+    // Phase 160: IExpressionBuilder — needed so AssignmentService tests can mock expr()->eq() etc.
+    if (!interface_exists(IExpressionBuilder::class)) {
+        interface IExpressionBuilder {
+            public function eq(mixed $left, mixed $right): mixed;
+            public function neq(mixed $left, mixed $right): mixed;
+            public function lte(mixed $left, mixed $right): mixed;
+            public function gte(mixed $left, mixed $right): mixed;
+            public function gt(mixed $left, mixed $right): mixed;
+            public function in(mixed $left, mixed $right): mixed;
+            public function like(mixed $left, mixed $right): mixed;
+            public function iLike(mixed $left, mixed $right): mixed;
+            public function isNull(string $field): mixed;
+            public function isNotNull(string $field): mixed;
+            public function andX(mixed ...$conditions): mixed;
+            public function orX(mixed ...$conditions): mixed;
+        }
+    }
+
     if (!interface_exists(IQueryBuilder::class)) {
         interface IQueryBuilder {
             public const PARAM_INT = 1;
             public const PARAM_INT_ARRAY = 101;
+            // Phase 160: additional type constants used by AssignmentService/MigrationService
+            public const PARAM_STR = 16;
+            public const PARAM_NULL = 4;
+            public const PARAM_BOOL = 5;
+
+            // Phase 160: full DML/query surface so PHPUnit can mock/configure each method
+            public function expr(): IExpressionBuilder;
+            public function insert(string $table): self;
+            public function update(string $table): self;
+            public function delete(string $table): self;
+            public function select(mixed ...$fields): self;
+            public function addSelect(mixed ...$fields): self;
+            public function from(string $table, ?string $alias = null): self;
+            public function values(array $values): self;
+            public function set(string $field, mixed $value): self;
+            public function where(mixed $condition): self;
+            public function andWhere(mixed $condition): self;
+            public function orWhere(mixed $condition): self;
+            public function orderBy(string $field, ?string $direction = null): self;
+            public function addOrderBy(string $field, ?string $direction = null): self;
+            public function setMaxResults(int $limit): self;
+            public function setFirstResult(int $offset): self;
+            public function createNamedParameter(mixed $value, mixed $type = null): mixed;
+            public function createPositionalParameter(mixed $value, mixed $type = null): mixed;
+            public function createFunction(string $expression): string;
+            public function execute(): mixed;
+            public function executeQuery(): mixed;
+            public function executeStatement(): int;
+            public function getLastInsertId(): int;
         }
     }
 }
@@ -125,6 +172,10 @@ namespace OCP {
         interface IUser {
             public function getUID(): string;
             public function getDisplayName(): string;
+            // Phase 160: ClassbookController uses getEMailAddress() with null-coalescing
+            public function getEMailAddress(): ?string;
+            // Phase 160: ImportUsersCommand/Job call setDisplayName on created users
+            public function setDisplayName(string $displayName): bool;
         }
     }
 
@@ -143,14 +194,28 @@ namespace OCP {
         }
     }
 
+    // Phase 160: IGroup — AssignmentService::expandGroup() calls groupManager->get()->getUsers()
+    if (!interface_exists(IGroup::class)) {
+        interface IGroup {
+            /** @return IUser[] */
+            public function getUsers(): array;
+            public function addUser(IUser $user): void;
+        }
+    }
+
     if (!interface_exists(IGroupManager::class)) {
         interface IGroupManager {
+            // Phase 160: AssignmentService uses get() (NC 33 API, not getGroup())
+            public function get(string $gid): ?IGroup;
         }
     }
 
     if (!interface_exists(IUserManager::class)) {
         interface IUserManager {
             public function get(string $uid): ?IUser;
+            // Phase 160: ImportUsersCommand/Job call createUser()
+            public function createUser(string $uid, string $password): IUser|false;
+            public function userExists(string $uid): bool;
         }
     }
 
@@ -217,6 +282,148 @@ namespace OCP\AppFramework\Utility {
         interface ITimeFactory {
             public function getTime(): int;
             public function getDateTime(string $time = 'now', ?\DateTimeZone $timezone = null): \DateTime;
+        }
+    }
+}
+
+// ─── Symfony Console stubs ───────────────────────────────────────────────────
+// Nextcloud provides symfony/console at runtime but it is not in the app's own
+// vendor/. Unit tests that instantiate OCC commands need these minimal stubs.
+
+namespace Symfony\Component\Console\Input {
+    if (!interface_exists(InputInterface::class)) {
+        interface InputInterface {
+            public function getArgument(string $name): mixed;
+            public function getOption(string $name): mixed;
+            public function hasArgument(string $name): bool;
+            public function hasOption(string $name): bool;
+        }
+    }
+
+    if (!class_exists(InputArgument::class)) {
+        class InputArgument {
+            public const REQUIRED = 1;
+            public const OPTIONAL = 2;
+            public const IS_ARRAY = 4;
+        }
+    }
+
+    if (!class_exists(InputOption::class)) {
+        class InputOption {
+            public const VALUE_NONE = 1;
+            public const VALUE_REQUIRED = 2;
+            public const VALUE_OPTIONAL = 4;
+            public const VALUE_IS_ARRAY = 8;
+        }
+    }
+}
+
+namespace Symfony\Component\Console\Output {
+    if (!interface_exists(OutputInterface::class)) {
+        interface OutputInterface {
+            public function writeln(string|array $messages, int $options = 0): void;
+            public function write(string|array $messages, bool $newline = false, int $options = 0): void;
+        }
+    }
+}
+
+namespace Symfony\Component\Console\Command {
+    if (!class_exists(Command::class)) {
+        abstract class Command {
+            public const SUCCESS = 0;
+            public const FAILURE = 1;
+            public const INVALID = 2;
+
+            public function __construct(?string $name = null) {
+                $this->configure();
+            }
+
+            public function setName(string $name): static { return $this; }
+            public function setDescription(string $description): static { return $this; }
+
+            public function addArgument(
+                string $name,
+                int $mode = 0,
+                string $description = '',
+                mixed $default = null
+            ): static { return $this; }
+
+            public function addOption(
+                string $name,
+                string|array|null $shortcut = null,
+                int $mode = 0,
+                string $description = '',
+                mixed $default = null
+            ): static { return $this; }
+
+            protected function configure(): void {}
+
+            abstract protected function execute(
+                \Symfony\Component\Console\Input\InputInterface $input,
+                \Symfony\Component\Console\Output\OutputInterface $output
+            ): int;
+
+            public function run(
+                \Symfony\Component\Console\Input\InputInterface $input,
+                \Symfony\Component\Console\Output\OutputInterface $output
+            ): int {
+                return $this->execute($input, $output);
+            }
+        }
+    }
+}
+
+namespace Symfony\Component\Console\Tester {
+    // Minimal InputInterface for CommandTester: maps flat array to argument/option access.
+    // Arguments use bare key ('csv_file'); options use '--option-name' prefix.
+    if (!class_exists(StubConsoleInput::class)) {
+        class StubConsoleInput implements \Symfony\Component\Console\Input\InputInterface {
+            public function __construct(private array $data) {}
+            public function getArgument(string $name): mixed { return $this->data[$name] ?? null; }
+            public function getOption(string $name): mixed { return $this->data['--' . $name] ?? null; }
+            public function hasArgument(string $name): bool { return array_key_exists($name, $this->data); }
+            public function hasOption(string $name): bool { return array_key_exists('--' . $name, $this->data); }
+        }
+    }
+
+    // Minimal OutputInterface for CommandTester: discards all output.
+    if (!class_exists(StubConsoleOutput::class)) {
+        class StubConsoleOutput implements \Symfony\Component\Console\Output\OutputInterface {
+            public function writeln(string|array $messages, int $options = 0): void {}
+            public function write(string|array $messages, bool $newline = false, int $options = 0): void {}
+        }
+    }
+
+    if (!class_exists(CommandTester::class)) {
+        class CommandTester {
+            public function __construct(private \Symfony\Component\Console\Command\Command $command) {}
+
+            public function execute(array $input, array $options = []): int {
+                return $this->command->run(new StubConsoleInput($input), new StubConsoleOutput());
+            }
+
+            public function getDisplay(): string { return ''; }
+            public function getStatusCode(): int { return 0; }
+        }
+    }
+}
+
+// ─── OCP BackgroundJob stubs ─────────────────────────────────────────────────
+namespace OCP\BackgroundJob {
+    // Phase 160: IJobList — ImportUsersCommand dispatches bulk import via jobList->add()
+    if (!interface_exists(IJobList::class)) {
+        interface IJobList {
+            public function add(string $job, mixed $argument = null): void;
+            public function has(string $job, mixed $argument = null): bool;
+            public function remove(string $job, mixed $argument = null): void;
+        }
+    }
+
+    // Phase 160: QueuedJob base class — ImportUsersJob extends it; NC 33 requires ITimeFactory
+    if (!class_exists(QueuedJob::class)) {
+        abstract class QueuedJob {
+            public function __construct(\OCP\AppFramework\Utility\ITimeFactory $timeFactory) {}
+            abstract protected function run(mixed $argument): void;
         }
     }
 }

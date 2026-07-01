@@ -78,8 +78,7 @@ deploy_js() {
 run_phpunit() {
   echo "→ Running PHPUnit tests..."
   rsync -az --include='*.php' --exclude='*.js' app/tests/ "$HOST:~/learning-nc/app/tests/"
-  ssh "$HOST" "for f in tests/Support/PhpUnitStubs.php tests/Support/FakeInfrastructure.php tests/bootstrap.php; do \
-    docker cp ~/learning-nc/app/\$f $CONTAINER:$APP_PATH/\$f 2>/dev/null; done && \
+  ssh "$HOST" "docker cp ~/learning-nc/app/tests/. $CONTAINER:$APP_PATH/tests/ 2>/dev/null && \
     docker exec -w $APP_PATH $CONTAINER php vendor/bin/phpunit 2>&1"
   if [ $? -ne 0 ]; then
     echo "✗ PHPUnit tests failed!"
