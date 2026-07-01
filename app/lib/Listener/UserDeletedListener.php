@@ -57,7 +57,10 @@ class UserDeletedListener implements IEventListener {
             'learning_epoch_progress',
             'learning_campaign_state',
             'learning_support_tickets',
-            'learning_audit_events',
+            // NOTE: learning_audit_events is intentionally NOT in this bulk-delete list.
+            // Compliance rows (seq_num IS NOT NULL) have Art.17(3)(b) retention basis
+            // and are pseudonymized below instead of deleted.
+            // Non-compliance rows (seq_num IS NULL) are deleted in the targeted block below.
         ] as $table) {
             $this->deleteByUserColumns($table, ['user_id'], $userId);
         }
@@ -77,6 +80,37 @@ class UserDeletedListener implements IEventListener {
         // Keep shared knowledge but remove the personal reference.
         $this->setColumnToNull('learning_support_tickets', 'answered_by', $userId);
         $this->setColumnToNull('learning_rag_chunks', 'user_id', $userId);
+
+        // DSGVO-01 Art.17: compliance audit rows (seq_num IS NOT NULL) MUST be retained during
+        // the retention period (Art.17(3)(b) — Nachweispflicht, ArbSchG / AGG §12).
+        // Pseudonymize by nulling user_id only. chain_hash and user_ref remain immutable —
+        // chain integrity survives erasure and the chain stays independently verifiable.
+        // Note: compliance events have session_id=NULL so the session-based delete above (line 41)
+        // does NOT touch them. This UPDATE is the only erasure action on those rows.
+        $qbAuditNull = $this->db->getQueryBuilder();
+        $qbAuditNull->update('learning_audit_events')
+            ->set('user_id', $qbAuditNull->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+            ->where($qbAuditNull->expr()->andX(
+                $qbAuditNull->expr()->eq(
+                    'user_id',
+                    $qbAuditNull->createNamedParameter($userId, \PDO::PARAM_STR)
+                ),
+                $qbAuditNull->expr()->isNotNull('seq_num')
+            ));
+        $qbAuditNull->executeStatement();
+
+        // Non-compliance audit events (game/session audits, seq_num IS NULL) carry no
+        // Art.17(3)(b) basis and are safe to delete on user erasure.
+        $qbAuditDel = $this->db->getQueryBuilder();
+        $qbAuditDel->delete('learning_audit_events')
+            ->where($qbAuditDel->expr()->andX(
+                $qbAuditDel->expr()->eq(
+                    'user_id',
+                    $qbAuditDel->createNamedParameter($userId, \PDO::PARAM_STR)
+                ),
+                $qbAuditDel->expr()->isNull('seq_num')
+            ));
+        $qbAuditDel->executeStatement();
     }
 
     /**
