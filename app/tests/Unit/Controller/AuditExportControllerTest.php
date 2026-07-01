@@ -256,11 +256,15 @@ class AuditExportControllerTest extends TestCase {
         $this->assertStringNotContainsString('secret-uid-xyz', $jsonl, 'user_id value must not leak');
         $this->assertStringNotContainsString('leak@example.com', $jsonl, 'email value must not leak');
         $this->assertStringNotContainsString('10.1.2.3', $jsonl, 'ip value must not leak');
-        // Non-PII facts survive.
-        $this->assertStringContainsString('"course_id":99', $jsonl, 'facts must survive the strip');
-        $this->assertStringContainsString('"score":80', $jsonl);
-        // The pseudonymous user_ref (intended) is still present.
+        // Non-PII facts survive inside the sanitized context_json (a nested JSON string field,
+        // so its inner quotes are escaped in the raw JSONL — decode to assert on values).
         $row = json_decode(trim($jsonl), true);
+        $ctx = json_decode($row['context_json'], true);
+        $this->assertSame(99, $ctx['course_id'], 'facts must survive the strip');
+        $this->assertSame(80, $ctx['score']);
+        $this->assertArrayNotHasKey('user_id', $ctx, 'user_id key stripped from context');
+        $this->assertArrayNotHasKey('email', $ctx, 'email key stripped from context');
+        // The pseudonymous user_ref (intended) is still present.
         $this->assertArrayHasKey('user_ref', $row);
     }
 
