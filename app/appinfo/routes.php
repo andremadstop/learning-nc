@@ -357,5 +357,19 @@ return [
         ['name' => 'audit_export#sig',    'url' => '/audit/export/sig',    'verb' => 'GET'],
         ['name' => 'audit_export#report', 'url' => '/audit/export/report', 'verb' => 'GET'],
 
+        // Video-/Material-Gating (Phase 162) — all endpoints registered up-front (contracts-first)
+        // so Wave 2/3 controllers implement them without ever editing routes.php (no parallel conflict).
+        // Routes referencing not-yet-existing controllers are inert until hit (NC resolves controllers
+        // at request time; app boot / occ upgrade does not instantiate them).
+        ['name' => 'videoStream#show',        'url' => '/api/video-stream/{contentId}',       'verb' => 'GET'],
+        ['name' => 'videoProgress#heartbeat', 'url' => '/api/video-progress/heartbeat',       'verb' => 'POST'],
+        ['name' => 'videoProgress#complete',  'url' => '/api/video-progress/complete',        'verb' => 'POST'],
+        ['name' => 'videoProgress#documentRead', 'url' => '/api/video-progress/document-read', 'verb' => 'POST'],
+        ['name' => 'courseVideo#index',       'url' => '/api/courses/{courseId}/videos',      'verb' => 'GET'],
+        ['name' => 'courseVideo#create',      'url' => '/api/courses/{courseId}/videos',      'verb' => 'POST'],
+        ['name' => 'courseVideo#update',      'url' => '/api/course-videos/{id}',             'verb' => 'PUT'],
+        ['name' => 'courseVideo#destroy',     'url' => '/api/course-videos/{id}',             'verb' => 'DELETE'],
+        ['name' => 'course#setVideoGate',     'url' => '/api/courses/{courseId}/video-gate',  'verb' => 'PUT'],
+
     ]
 ];
