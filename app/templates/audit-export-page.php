@@ -55,7 +55,7 @@
 		hidden></div>
 </div>
 
-<script nonce="<?php p(\OCP\Util::getCspNonce()); ?>">
+<script nonce="<?php p(\OC::$server->getContentSecurityPolicyNonceManager()->getNonce()); ?>">
 (function () {
 	var cfg = document.getElementById('audit-export-urls');
 	if (!cfg) { return; }
