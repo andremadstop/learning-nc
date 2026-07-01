@@ -184,7 +184,21 @@ class AuditVerifyCommand extends Command {
                 continue;
             }
 
-            $valid = sodium_crypto_sign_verify_detached($sigRaw, (string)$checkpoint['signed_payload'], $pubKeyRaw);
+            // F7 (Codex review): assert the public key length BEFORE calling sodium. A wrong-length key
+            // makes sodium_crypto_sign_verify_detached throw a fatal SodiumException — record a
+            // reportable checkpoint failure instead of crashing the whole verify run.
+            if (strlen($pubKeyRaw) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
+                $failures[] = sprintf('Checkpoint %d: bad key length for key_id %s', $cpId, (string)$checkpoint['key_id']);
+                continue;
+            }
+
+            try {
+                $valid = sodium_crypto_sign_verify_detached($sigRaw, (string)$checkpoint['signed_payload'], $pubKeyRaw);
+            } catch (\SodiumException $e) {
+                // Defensive: any residual sodium error is a checkpoint failure, never a fatal.
+                $failures[] = sprintf('Checkpoint %d: signature verify error for key_id %s', $cpId, (string)$checkpoint['key_id']);
+                continue;
+            }
             if (!$valid) {
                 $failures[] = sprintf('Checkpoint %d (to_event_id=%s): signature invalid', $cpId, (string)$checkpoint['to_event_id']);
                 continue;

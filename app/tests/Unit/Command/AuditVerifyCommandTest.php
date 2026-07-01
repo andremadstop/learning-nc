@@ -364,6 +364,28 @@ class AuditVerifyCommandTest extends TestCase {
         $this->assertStringContainsString('Chain intact', $out);
     }
 
+    public function testBadPubkeyLengthFailsNotFatal(): void {
+        // F7: the mapper hands back a 16-byte "public key" — it base64-decodes fine but is the wrong
+        // Ed25519 length. The length guard must record a FAILURE (not throw a fatal SodiumException).
+        $events = $this->buildChain([$this->event(1, 'course.passed', 1)]);
+        $head = $events[0]['chain_hash'];
+        $keys = $this->makeKeypair();
+        $checkpoint = $this->signedCheckpoint(5, 1, $head, 'kid-1', $keys['sec']);
+        $shortPub = random_bytes(16); // valid base64url, wrong length
+
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll($events)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([$checkpoint])),
+            // no head builder — the length guard `continue`s before the verify + head query.
+        ]);
+
+        [$code, $out] = $this->invokeCmd($db, $this->mockMapper('kid-1', $shortPub));
+
+        $this->assertSame(Command::FAILURE, $code);
+        $this->assertStringContainsString('bad key length', $out);
+        $this->assertStringContainsString('Checkpoint 5', $out);
+    }
+
     public function testMissingKeyForCheckpointFails(): void {
         $events = $this->buildChain([$this->event(1, 'course.passed', 1)]);
         $keys = $this->makeKeypair();
