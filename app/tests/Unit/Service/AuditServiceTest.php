@@ -38,8 +38,10 @@ class AuditServiceTest extends TestCase {
         $insertBuilder = new FakeQueryBuilder(new FakeResult(), 1);
         $db = new FakeDbConnection([$insertBuilder]);
         $logger = $this->createMock(LoggerInterface::class);
+        $config = $this->createMock(\OCP\IConfig::class);
+        $secureRandom = $this->createMock(\OCP\Security\ISecureRandom::class);
 
-        $service = new AuditService($db, $logger);
+        $service = new AuditService($db, $logger, $config, $secureRandom);
         $service->logEvent('moderation_action', 'user1', ['action' => 'approve']);
 
         $this->assertSame('insert', $insertBuilder->operation);
@@ -62,7 +64,9 @@ class AuditServiceTest extends TestCase {
         $db->method('getQueryBuilder')
             ->willThrowException(new \RuntimeException('DB down'));
 
-        $service = new AuditService($db, $logger);
+        $config = $this->createMock(\OCP\IConfig::class);
+        $secureRandom = $this->createMock(\OCP\Security\ISecureRandom::class);
+        $service = new AuditService($db, $logger, $config, $secureRandom);
         // Should not throw
         $service->logEvent('test', 'user1', []);
     }
@@ -71,8 +75,10 @@ class AuditServiceTest extends TestCase {
         $insertBuilder = new FakeQueryBuilder(new FakeResult(), 1);
         $db = new FakeDbConnection([$insertBuilder]);
         $logger = $this->createMock(LoggerInterface::class);
+        $config = $this->createMock(\OCP\IConfig::class);
+        $secureRandom = $this->createMock(\OCP\Security\ISecureRandom::class);
 
-        $service = new AuditService($db, $logger);
+        $service = new AuditService($db, $logger, $config, $secureRandom);
         $service->logEvent('some_event', 'user2');
 
         $values = $insertBuilder->insertValues;
