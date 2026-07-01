@@ -178,6 +178,20 @@ class AuditCheckpointService {
             $path    = "audit-checkpoints/checkpoint-{$toEventId}.json";
             $apiUrl  = "{$baseUrl}/api/v1/repos/{$owner}/{$repo}/contents/{$path}";
 
+            // F6 (Codex review — minimal SSRF guard): only POST to an https endpoint. Full allowlist
+            // deferred (off-by-default, admin-only config).
+            // TODO(anchor-enablement): full SSRF allowlist (host allowlist + reject private/link-local)
+            // when the Forgejo token is provisioned.
+            if (!str_starts_with($apiUrl, 'https://')) {
+                $this->logger->warning(
+                    "AuditCheckpointService: Forgejo anchor endpoint is not https — skipping anchor for checkpoint {$checkpointId}",
+                    ['app' => 'learning']
+                );
+                $this->config->setAppValue('learning', 'last_anchor_status', 'failed');
+                $this->config->setAppValue('learning', 'last_anchor_attempted_at', (string)time());
+                return null;
+            }
+
             // Always POST (creates a new file) — PUT would require fetching the existing SHA first.
             $body = json_encode([
                 'message' => "audit checkpoint {$toEventId}",

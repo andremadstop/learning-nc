@@ -474,6 +474,30 @@ class AuditCheckpointServiceTest extends TestCase {
         $this->assertSame('failed', $captured['last_anchor_status']);
         $this->assertCount(4, $db->issuedBuilders, 'no UPDATE builder on soft-fail');
     }
+
+    /**
+     * F6 (minimal SSRF guard): a non-https Forgejo base_url is rejected BEFORE any HTTP call — no POST,
+     * last_anchor_status='failed', no UPDATE, no throw.
+     */
+    public function testForgejoAnchorSkipsNonHttpsBaseUrl(): void {
+        $keys = $this->makeKeypair();
+        $captured = [];
+        $config = $this->anchorConfig([
+            'forgejo_anchor_enabled' => 'true',
+            'forgejo_token'          => 'secret-token',
+            'forgejo_base_url'       => 'http://insecure.example',
+        ], $captured);
+        $db = new FakeDbConnection($this->mintQueue());
+
+        $service = new TestableAuditCheckpointService(
+            $this->mockKeyService('kid', $keys['sec']), $db, $config, $this->createMock(LoggerInterface::class)
+        );
+        $service->createCheckpoint();
+
+        $this->assertSame(0, $service->forgejoCalls, 'non-https anchor endpoint must make NO HTTP call');
+        $this->assertSame('failed', $captured['last_anchor_status']);
+        $this->assertCount(4, $db->issuedBuilders, 'no UPDATE builder — anchor skipped before POST');
+    }
 }
 
 /**

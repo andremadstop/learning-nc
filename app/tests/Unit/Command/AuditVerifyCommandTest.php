@@ -445,6 +445,28 @@ class AuditVerifyCommandTest extends TestCase {
         $this->assertStringContainsString('anchor mismatch', $out);
     }
 
+    public function testNonHttpsAnchorSkipped(): void {
+        // F6: a non-https anchor_url must be skipped (never fetched) with a warning — warning-only.
+        $events = $this->buildChain([$this->event(1, 'course.passed', 1)]);
+        $head = $events[0]['chain_hash'];
+        $keys = $this->makeKeypair();
+        $checkpoint = $this->signedCheckpoint(1, 1, $head, 'kid-1', $keys['sec']);
+        $checkpoint['anchor_url'] = 'http://insecure.example/checkpoint-1.json';
+
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll($events)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([$checkpoint])),
+            new FakeQueryBuilder(FakeResult::fromFetchOne($head)),
+        ]);
+        // Even if the client would return matching bytes, the https guard must skip the fetch.
+        $client = $this->mockClient(200, $checkpoint['signed_payload']);
+
+        [$code, $out] = $this->invokeCmd($db, $this->mockMapper('kid-1', $keys['pub']), [], $client);
+
+        $this->assertSame(Command::SUCCESS, $code);
+        $this->assertStringContainsString('non-https', $out);
+    }
+
     public function testForkRunbookFlagPrintsPathAndSucceeds(): void {
         $db = new FakeDbConnection([]); // no queries issued — early return
         [$code, $out] = $this->invokeCmd($db, $this->createMock(CertKeyMapper::class), ['--fork-runbook' => true]);
