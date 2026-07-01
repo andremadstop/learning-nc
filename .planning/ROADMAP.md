@@ -619,7 +619,14 @@ Plans:
 - Forgejo anchor defeats the admin-holds-both-key-and-DB threat model; design+scaffold now, enable via config
 - anchor_url column on learning_audit_checkpoints is nullable until anchored
 - ⚠ FORWARD-DEP from Phase 160: the shipped chain canonical is **6 fields** (seq, event_key, user_ref, course_id, created_at, **payload_hash**=sha256(context_json), added by Codex FIX-4). `occ learning:audit:verify` MUST reconstruct this exact 6-field ksort'd canonical + `sha256(canonical . '|' . prev_hash)`, else it will report every compliance event as tampered. user_ref = hash_hmac('sha256','learning:audit_user_ref', instance-secret). CAS state row pinned to id=1.
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 161-01-PLAN.md — Wave 1: Version009302 migration (learning_audit_checkpoints) + AuditCheckpointService (Ed25519 signing) + AuditCheckpointJob (weekly TimedJob) (AUDIT-04)
+- [ ] 161-02-PLAN.md — Wave 2: Forgejo anchor scaffold in AuditCheckpointService (off by default, soft-fail, anchor_url) (AUDIT-05)
+- [ ] 161-03-PLAN.md — Wave 2: occ learning:audit:verify (6-field canonical reconstruct + checkpoint sig verify + fork-runbook URL) (AUDIT-06)
+- [ ] 161-04-PLAN.md — Wave 2: AuditExportController (@NoAdminRequired, group-gated) + JSONL + sig + HTML-print (AUDIT-07, autonomous:false)
+- [ ] 161-05-PLAN.md — Wave 3: AdminSettings liveness widget + docs/audit-fork-runbook.md (AUDIT-08, AUDIT-09)
 
 ### Phase 162: Video-/Material-Gating + DSGVO Art.13
 **Goal**: Students cannot advance past a locked gate without genuinely completing the required video or document; third-party embeds load only after DSGVO Art.13 consent; all enforcement is server-side
@@ -703,8 +710,8 @@ Plans:
 | 155. Certificate-Artifact & Issuer | v5.0.0 | 7/7 | Complete (CERT-07/08/13 visual verify deferred to demo course) | 2026-06-27 |
 | 156. Compliance-Report | v5.0.0 | 2/2 | Complete (156-01 backend + 156-02 UI; all 4 REPORT reqs done) | - |
 | 157. Public-Verify | v5.0.0 | 5/5 | ✅ Complete (4 waves; gsd-verifier CLOSE 6/6; live-activation rides demo-course provisioning pass) | 157-VERIFICATION.md |
-| 160. Foundation — Audit Hash-Chain + Assignment Schemas | v5.2.0 | 0/TBD | Not started | - |
-| 161. Audit Hardening — Checkpoints + Anchor + Export + Liveness | v5.2.0 | 0/TBD | Not started | - |
+| 160. Foundation — Audit Hash-Chain + Assignment Schemas | v5.2.0 | 6/6 | ✅ Complete (PHPStan L5 clean, PHPUnit 183/0/0, migrations 009300/009400/009301 applied) | 2026-07-01 |
+| 161. Audit Hardening — Checkpoints + Anchor + Export + Liveness | v5.2.0 | 0/5 | Planned | - |
 | 162. Video-/Material-Gating + DSGVO Art.13 | v5.2.0 | 0/TBD | Not started | - |
 | 163. Teamleiter-RBAC-Reports + DSGVO Art.20 | v5.2.0 | 0/TBD | Not started | - |
 | 164. Re-Zertifizierung + Retention + i18n Parity | v5.2.0 | 0/TBD | Not started | - |
