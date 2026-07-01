@@ -47,6 +47,7 @@ class IssuanceService {
     private IUserManager $userManager;
     private ITimeFactory $timeFactory;
     private LoggerInterface $logger;
+    private AuditService $auditService;
 
     public function __construct(
         CertificateMapper $certificateMapper,
@@ -58,7 +59,8 @@ class IssuanceService {
         IURLGenerator $urlGenerator,
         IUserManager $userManager,
         ITimeFactory $timeFactory,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        AuditService $auditService
     ) {
         $this->certificateMapper = $certificateMapper;
         $this->courseMapper = $courseMapper;
@@ -70,6 +72,7 @@ class IssuanceService {
         $this->userManager = $userManager;
         $this->timeFactory = $timeFactory;
         $this->logger = $logger;
+        $this->auditService = $auditService;
     }
 
     /**
@@ -137,6 +140,13 @@ class IssuanceService {
             }
             throw $e;
         }
+
+        // AUDIT-03 compliance event — fires only on the happy path (unique-constraint loser returns
+        // $winner early in the catch, so this line is never reached on the loser path).
+        $this->auditService->logComplianceEvent(ComplianceEventTypes::CERT_ISSUED, $userId, [
+            'course_id'       => $courseId,
+            'verification_id' => $verificationId,
+        ]);
 
         $this->notify($userId, $verificationId, (string)$course->getTitle());
 

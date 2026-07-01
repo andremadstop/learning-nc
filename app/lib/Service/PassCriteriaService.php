@@ -119,7 +119,7 @@ class PassCriteriaService {
             return; // already emitted — idempotency guard
         }
 
-        $this->auditService->logEvent('course.passed', $userId, [
+        $this->auditService->logComplianceEvent(ComplianceEventTypes::COURSE_PASSED, $userId, [
             'course_id' => $courseId,
             'score'     => $score,
             'threshold' => $threshold,

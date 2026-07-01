@@ -6,6 +6,7 @@ namespace OCA\Learning\Tests\Unit\Service;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Service\AuditService;
+use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\IssuanceService;
 use OCA\Learning\Service\PassCriteriaService;
@@ -81,7 +82,7 @@ class PassCriteriaServiceTest extends TestCase {
     // PASS-01: cert_enabled=false → PassResult::notApplicable() returned, no DB writes
     public function testEvaluateReturnsNotApplicableWhenCertDisabled(): void {
         $audit = $this->createMock(AuditService::class);
-        $audit->expects($this->never())->method('logEvent');
+        $audit->expects($this->never())->method('logComplianceEvent');
 
         $service = $this->makeService($this->makeCourse(false), null, null, [], $audit);
         $result = $service->evaluate(self::USER, self::COURSE_ID);
@@ -94,8 +95,8 @@ class PassCriteriaServiceTest extends TestCase {
     // PASS-02 + PASS-05: exam score == threshold → Gate 1 passes, qualifies (no required pools)
     public function testEvaluatePassesWhenExamScoreMeetsThreshold(): void {
         $audit = $this->createMock(AuditService::class);
-        $audit->expects($this->once())->method('logEvent')
-            ->with('course.passed', self::USER, $this->callback(
+        $audit->expects($this->once())->method('logComplianceEvent')
+            ->with(ComplianceEventTypes::COURSE_PASSED, self::USER, $this->callback(
                 fn(array $ctx): bool => ($ctx['course_id'] ?? null) === self::COURSE_ID && ($ctx['score'] ?? null) === 80
             ));
 
@@ -112,7 +113,7 @@ class PassCriteriaServiceTest extends TestCase {
     // PASS-02 + PASS-05: exam score < threshold → Gate 1 fails, passed=false, no audit event
     public function testEvaluateFailsWhenExamScoreBelowThreshold(): void {
         $audit = $this->createMock(AuditService::class);
-        $audit->expects($this->never())->method('logEvent');
+        $audit->expects($this->never())->method('logComplianceEvent');
 
         $service = $this->makeService($this->makeCourse(true, 80), 79, null, [], $audit);
         $result = $service->evaluate(self::USER, self::COURSE_ID);
@@ -126,7 +127,7 @@ class PassCriteriaServiceTest extends TestCase {
     // PASS-03: required_pool_ids=[] → poolsMastered=true (trivially satisfied), qualifies
     public function testEvaluatePoolsMasteredTrueWhenNoRequiredPools(): void {
         $audit = $this->createMock(AuditService::class);
-        $audit->expects($this->once())->method('logEvent');
+        $audit->expects($this->once())->method('logComplianceEvent');
 
         // poolIds null → empty required pools; getMasteryStats must NOT be consulted
         $service = $this->makeService($this->makeCourse(true, 80, null), 85, null, $this->passingBuilders(), $audit);
@@ -140,7 +141,7 @@ class PassCriteriaServiceTest extends TestCase {
     // PASS-03: pool mastery_rate < threshold → Gate 2 fails even though Gate 1 passed
     public function testEvaluateFailsWhenPoolMasteryBelowThreshold(): void {
         $audit = $this->createMock(AuditService::class);
-        $audit->expects($this->never())->method('logEvent');
+        $audit->expects($this->never())->method('logComplianceEvent');
 
         // mastery_rate is already a percentage (0-100); 79.5 < 80 → Gate 2 fails
         $service = $this->makeService(
@@ -169,7 +170,7 @@ class PassCriteriaServiceTest extends TestCase {
     // PASS-07: first qualification writes exactly one audit event; second evaluate() does not duplicate it
     public function testEmitsPassEventOnlyOnFirstQualification(): void {
         $audit = $this->createMock(AuditService::class);
-        $audit->expects($this->once())->method('logEvent');
+        $audit->expects($this->once())->method('logComplianceEvent');
 
         $existingRow = ['context_json' => json_encode(['course_id' => self::COURSE_ID, 'passed_at' => 1700000000])];
         $builders = [
@@ -197,6 +198,23 @@ class PassCriteriaServiceTest extends TestCase {
         $this->assertIsString($source);
         $this->assertStringNotContainsString('validity_days', $source,
             'cert_validity_days must not be read or compared in Phase 154 evaluate() — expiry is Phase 155');
+    }
+
+    // AUDIT-03: evaluate() on a fresh pass fires logComplianceEvent(COURSE_PASSED) exactly once with course_id
+    public function testEmitsComplianceEvent(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->once())
+            ->method('logComplianceEvent')
+            ->with(
+                ComplianceEventTypes::COURSE_PASSED,
+                self::USER,
+                $this->callback(fn(array $ctx): bool => ($ctx['course_id'] ?? null) === self::COURSE_ID)
+            );
+
+        $service = $this->makeService($this->makeCourse(true, 80), 80, null, $this->passingBuilders(), $audit);
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertTrue($result->isPassed());
     }
 
     // CERT-05: a first pass triggers exactly one IssuanceService::issueIfPassed() call, with the PassResult

@@ -8,6 +8,8 @@ use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Db\CertificateMapper;
+use OCA\Learning\Service\AuditService;
+use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\IssuanceService;
 use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\PassResult;
@@ -88,8 +90,10 @@ class IssuanceServiceTest extends TestCase {
         string $issuerName = 'DevCloud Academy',
         bool $expectInsert = true,
         bool $expectNotify = true,
-        string $displayName = 'Alice Example'
+        string $displayName = 'Alice Example',
+        ?AuditService $audit = null
     ): IssuanceService {
+        $audit = $audit ?? $this->createMock(AuditService::class);
         $keyService = $this->createMock(KeyService::class);
         $keyService->method('hostDid')->willReturn(self::HOST_DID);
         $keyService->method('getActiveSigningMaterial')->willReturn([
@@ -159,6 +163,7 @@ class IssuanceServiceTest extends TestCase {
             $userManager,
             $time,
             $logger,
+            $audit,
         );
     }
 
@@ -260,14 +265,37 @@ class IssuanceServiceTest extends TestCase {
         $time->method('getTime')->willReturn(self::ISSUED_AT);
         $time->method('getDateTime')->willReturn(new \DateTime('@' . self::ISSUED_AT));
 
+        // AUDIT-03: the unique-constraint loser must NOT fire CERT_ISSUED (it returns early in catch).
+        $auditLoser = $this->createMock(AuditService::class);
+        $auditLoser->expects($this->never())->method('logComplianceEvent');
+
         $service = new IssuanceService(
             $certMapper, $courseMapper, $signingService, $keyService, $manager,
             $theming, $url, $userManager, $time, $this->createMock(LoggerInterface::class),
+            $auditLoser,
         );
 
         $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
 
         $this->assertSame($winner, $cert, 'the concurrent winner is returned, no duplicate issued');
+    }
+
+    // AUDIT-03: happy path fires CERT_ISSUED exactly once; unique-constraint loser never fires (see testDedupesOnUniqueConstraintViolation).
+    public function testCertIssuedEventFiredOnce(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->once())
+            ->method('logComplianceEvent')
+            ->with(
+                ComplianceEventTypes::CERT_ISSUED,
+                self::USER,
+                $this->callback(fn(array $ctx): bool => ($ctx['course_id'] ?? null) === self::COURSE_ID && isset($ctx['verification_id']))
+            );
+
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(), $captured, audit: $audit);
+        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+
+        $this->assertInstanceOf(Certificate::class, $cert);
     }
 
     public function testReturnsNullWhenNotPassed(): void {
