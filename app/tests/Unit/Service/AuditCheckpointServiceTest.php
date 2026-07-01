@@ -375,8 +375,8 @@ class AuditCheckpointServiceTest extends TestCase {
     }
 
     /**
-     * HTTP 201 success: the returned .content.html_url is written to anchor_url on the checkpoint row
-     * (by id) and last_anchor_status='ok' is recorded.
+     * HTTP 201 success: the returned .content.download_url (the RAW file-bytes endpoint, F4) is written
+     * to anchor_url on the checkpoint row (by id) and last_anchor_status='ok' is recorded.
      */
     public function testForgejoAnchorSuccessSetsUrlAndStatusOk(): void {
         $keys = $this->makeKeypair();
@@ -395,13 +395,17 @@ class AuditCheckpointServiceTest extends TestCase {
         $queue[] = $updateQb;
         $db = new FakeDbConnection($queue);
 
-        $htmlUrl = 'https://git.andrestiebitz.de/andre/audit-anchors/src/branch/main/audit-checkpoints/checkpoint-5.json';
+        $downloadUrl = 'https://git.andrestiebitz.de/andre/audit-anchors/raw/branch/main/audit-checkpoints/checkpoint-5.json';
         $service = new TestableAuditCheckpointService(
             $this->mockKeyService('kid', $keys['sec']), $db, $config, $this->createMock(LoggerInterface::class)
         );
         $service->forgejoReturn = [
             'status' => 201,
-            'body'   => json_encode(['content' => ['html_url' => $htmlUrl]], JSON_THROW_ON_ERROR),
+            // F4: the anchor stores the raw file-bytes endpoint (download_url), never the HTML page url.
+            'body'   => json_encode(['content' => [
+                'html_url'     => 'https://git.andrestiebitz.de/andre/audit-anchors/src/branch/main/audit-checkpoints/checkpoint-5.json',
+                'download_url' => $downloadUrl,
+            ]], JSON_THROW_ON_ERROR),
         ];
 
         $service->createCheckpoint();
@@ -409,7 +413,7 @@ class AuditCheckpointServiceTest extends TestCase {
         $this->assertSame(1, $service->forgejoCalls);
         $this->assertSame('update', $updateQb->operation);
         $this->assertSame('learning_audit_checkpoints', $updateQb->table);
-        $this->assertSame($htmlUrl, $updateQb->setCalls['anchor_url']['value'], 'html_url written to anchor_url');
+        $this->assertSame($downloadUrl, $updateQb->setCalls['anchor_url']['value'], 'download_url (raw bytes) written to anchor_url');
         // Update targets the just-inserted checkpoint id (42).
         $ids = array_column($updateQb->namedParameters, 'value');
         $this->assertContains(42, $ids, 'UPDATE must target the new checkpoint id');

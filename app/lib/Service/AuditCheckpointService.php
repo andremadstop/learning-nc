@@ -162,7 +162,7 @@ class AuditCheckpointService {
      * anchor_url = NULL, last_anchor_status = 'failed' is recorded, and NOTHING is rethrown. The
      * Forgejo token value is NEVER written to a log line.
      *
-     * @return string|null the Forgejo file HTML URL on success, otherwise null.
+     * @return string|null the Forgejo raw file download URL on success, otherwise null.
      */
     private function doForgejoAnchor(int $checkpointId, int $toEventId, string $signedPayload): ?string {
         $enabled = $this->config->getAppValue('learning', 'forgejo_anchor_enabled', 'false') === 'true';
@@ -190,20 +190,24 @@ class AuditCheckpointService {
 
             if ($status === 201 && is_string($response)) {
                 $data = json_decode($response, true);
-                $htmlUrl = is_array($data) ? ($data['content']['html_url'] ?? null) : null;
-                if (is_string($htmlUrl) && $htmlUrl !== '') {
+                // F4 (Codex review — anchor RAW bytes, not an HTML page): store content.download_url
+                // (the raw file-bytes endpoint), NOT content.html_url (a rendered Forgejo web page).
+                // The verifier fetches anchor_url and compares the fetched bytes to signed_payload with
+                // hash_equals — that only works against the raw file, never against HTML chrome.
+                $downloadUrl = is_array($data) ? ($data['content']['download_url'] ?? null) : null;
+                if (is_string($downloadUrl) && $downloadUrl !== '') {
                     $qb = $this->db->getQueryBuilder();
                     $qb->update('learning_audit_checkpoints')
-                        ->set('anchor_url', $qb->createNamedParameter($htmlUrl))
+                        ->set('anchor_url', $qb->createNamedParameter($downloadUrl))
                         ->where($qb->expr()->eq('id', $qb->createNamedParameter($checkpointId, IQueryBuilder::PARAM_INT)))
                         ->executeStatement();
                     $this->config->setAppValue('learning', 'last_anchor_status', 'ok');
                     $this->config->setAppValue('learning', 'last_anchor_attempted_at', (string)time());
-                    return $htmlUrl;
+                    return $downloadUrl;
                 }
             }
 
-            // Non-201 or missing html_url — soft-fail (token deliberately absent from the log line).
+            // Non-201 or missing download_url — soft-fail (token deliberately absent from the log line).
             $this->logger->warning(
                 "AuditCheckpointService: Forgejo anchor failed (HTTP {$status}) for checkpoint {$checkpointId}",
                 ['app' => 'learning']

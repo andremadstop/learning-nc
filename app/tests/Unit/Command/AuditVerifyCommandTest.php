@@ -169,6 +169,18 @@ class AuditVerifyCommandTest extends TestCase {
         ];
     }
 
+    /** An IClientService whose single GET returns the canned status + raw body (for anchor checks). */
+    private function mockClient(int $status, string $body): IClientService {
+        $response = $this->createMock(\OCP\Http\Client\IResponse::class);
+        $response->method('getStatusCode')->willReturn($status);
+        $response->method('getBody')->willReturn($body);
+        $client = $this->createMock(\OCP\Http\Client\IClient::class);
+        $client->method('get')->willReturn($response);
+        $service = $this->createMock(IClientService::class);
+        $service->method('newClient')->willReturn($client);
+        return $service;
+    }
+
     private function invokeCmd(FakeDbConnection $db, CertKeyMapper $mapper, array $inputData = [], ?IClientService $client = null): array {
         $cmd = new AuditVerifyCommand($db, $mapper, $client ?? $this->createMock(IClientService::class));
         $out = new CapturingOutput();
@@ -388,6 +400,49 @@ class AuditVerifyCommandTest extends TestCase {
 
         $this->assertSame(Command::FAILURE, $code);
         $this->assertStringContainsString(self::RUNBOOK, $out);
+    }
+
+    public function testAnchorRawBytesMatchNoWarning(): void {
+        // F4: anchor_url is the RAW file endpoint; the fetched bytes equal signed_payload → clean.
+        $events = $this->buildChain([$this->event(1, 'course.passed', 1)]);
+        $head = $events[0]['chain_hash'];
+        $keys = $this->makeKeypair();
+        $checkpoint = $this->signedCheckpoint(1, 1, $head, 'kid-1', $keys['sec']);
+        $checkpoint['anchor_url'] = 'https://git.andrestiebitz.de/andre/audit-anchors/raw/branch/main/checkpoint-1.json';
+
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll($events)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([$checkpoint])),
+            new FakeQueryBuilder(FakeResult::fromFetchOne($head)), // head_hash consistency
+        ]);
+        $client = $this->mockClient(200, $checkpoint['signed_payload']); // raw bytes == signed_payload
+
+        [$code, $out] = $this->invokeCmd($db, $this->mockMapper('kid-1', $keys['pub']), [], $client);
+
+        $this->assertSame(Command::SUCCESS, $code);
+        $this->assertStringNotContainsString('anchor mismatch', $out);
+        $this->assertStringContainsString('Chain intact', $out);
+    }
+
+    public function testAnchorRawBytesMismatchWarnsButPasses(): void {
+        // F4: fetched anchor bytes differ from signed_payload → WARNING only (never flips the exit code).
+        $events = $this->buildChain([$this->event(1, 'course.passed', 1)]);
+        $head = $events[0]['chain_hash'];
+        $keys = $this->makeKeypair();
+        $checkpoint = $this->signedCheckpoint(1, 1, $head, 'kid-1', $keys['sec']);
+        $checkpoint['anchor_url'] = 'https://git.andrestiebitz.de/andre/audit-anchors/raw/branch/main/checkpoint-1.json';
+
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll($events)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([$checkpoint])),
+            new FakeQueryBuilder(FakeResult::fromFetchOne($head)),
+        ]);
+        $client = $this->mockClient(200, 'tampered anchor bytes that are not the signed payload');
+
+        [$code, $out] = $this->invokeCmd($db, $this->mockMapper('kid-1', $keys['pub']), [], $client);
+
+        $this->assertSame(Command::SUCCESS, $code, 'anchor mismatch is warning-only');
+        $this->assertStringContainsString('anchor mismatch', $out);
     }
 
     public function testForkRunbookFlagPrintsPathAndSucceeds(): void {

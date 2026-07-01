@@ -335,6 +335,14 @@ class AuditVerifyCommand extends Command {
      * or null when the anchored bytes match the signed_payload. NEVER affects the exit code.
      */
     private function checkAnchor(int $cpId, string $anchorUrl, string $signedPayload): ?string {
+        // F6 (Codex review — minimal SSRF guard): only follow https anchors. The full defence
+        // (host allowlist + reject private/link-local) is deferred until the Forgejo token is
+        // provisioned and the anchor is enabled by an admin.
+        // TODO(anchor-enablement): full SSRF allowlist (host allowlist + reject private/link-local)
+        // when the Forgejo token is provisioned.
+        if (!str_starts_with($anchorUrl, 'https://')) {
+            return sprintf('Checkpoint %d: anchor skipped (non-https anchor_url)', $cpId);
+        }
         try {
             $client = $this->clientService->newClient();
             $response = $client->get($anchorUrl, ['timeout' => 5]);
@@ -345,12 +353,10 @@ class AuditVerifyCommand extends Command {
             if (!is_string($body)) {
                 $body = (string)stream_get_contents($body);
             }
-            $decoded = json_decode($body, true);
-            // Forgejo contents API returns the file bytes base64-encoded under `content`.
-            $anchored = is_array($decoded) && isset($decoded['content'])
-                ? base64_decode((string)$decoded['content'], true)
-                : $body;
-            if ($anchored === false || !hash_equals($signedPayload, $anchored)) {
+            // F4 (Codex review): anchor_url is the RAW file endpoint (content.download_url), so the
+            // response body IS the verbatim signed_payload bytes — compare them exactly (hash_equals),
+            // no base64/JSON unwrap.
+            if (!hash_equals($signedPayload, $body)) {
                 return sprintf('Checkpoint %d: anchor mismatch (anchored bytes differ from signed_payload)', $cpId);
             }
             return null;
