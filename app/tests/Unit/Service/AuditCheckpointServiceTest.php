@@ -301,4 +301,196 @@ class AuditCheckpointServiceTest extends TestCase {
         $this->assertSame('none', $status['last_anchor_status']);
         $this->assertFalse($status['is_overdue']);
     }
+
+    // ── AUDIT-05: Forgejo external anchor (Plan 161-02) ──────────────────────────────────────────
+
+    /** A config mock whose getAppValue is driven by $values and whose setAppValue is captured. */
+    private function anchorConfig(array $values, array &$captured): IConfig {
+        $config = $this->createMock(IConfig::class);
+        $config->method('getAppValue')->willReturnCallback(
+            function (string $app, string $key, string $default = '') use ($values) {
+                return $values[$key] ?? $default;
+            }
+        );
+        $config->method('setAppValue')->willReturnCallback(
+            function (string $app, string $key, string $value) use (&$captured) {
+                $captured[$key] = $value;
+                return true;
+            }
+        );
+        return $config;
+    }
+
+    /** Builder queue for a normal mint (no anchor update): [last, tail, count, insert]. */
+    private function mintQueue(int $lastInsertId = 1): array {
+        return [
+            new FakeQueryBuilder(new FakeResult()),                                             // lastToSeq = 0
+            new FakeQueryBuilder(FakeResult::fromFetch(['seq_num' => 5, 'chain_hash' => str_repeat('a', 64)])),
+            new FakeQueryBuilder(FakeResult::fromFetchOne(5)),
+            new FakeQueryBuilder(null, 1, $lastInsertId),                                        // INSERT (lastInsertId)
+        ];
+    }
+
+    /**
+     * OFF by default: when forgejo_anchor_enabled='false' no HTTP call is made and no anchor UPDATE
+     * is issued — anchor_url stays NULL on the freshly inserted checkpoint row.
+     */
+    public function testForgejoAnchorNoOpWhenDisabled(): void {
+        $keys = $this->makeKeypair();
+        $captured = [];
+        $config = $this->anchorConfig(['forgejo_anchor_enabled' => 'false', 'forgejo_token' => 'secret'], $captured);
+        $db = new FakeDbConnection($this->mintQueue());
+
+        $service = new TestableAuditCheckpointService(
+            $this->mockKeyService('kid', $keys['sec']), $db, $config, $this->createMock(LoggerInterface::class)
+        );
+        $service->createCheckpoint();
+
+        $this->assertSame(0, $service->forgejoCalls, 'disabled anchor must make NO HTTP call');
+        $this->assertArrayNotHasKey('last_anchor_status', $captured, 'no anchor status written when OFF');
+        // No extra (UPDATE) builder was consumed — exactly the 4 mint builders were issued.
+        $this->assertCount(4, $db->issuedBuilders);
+        foreach ($db->issuedBuilders as $qb) {
+            $this->assertNotSame('update', $qb->operation);
+        }
+    }
+
+    /**
+     * OFF when enabled but no token configured: still no HTTP call, no state change.
+     */
+    public function testForgejoAnchorNoOpWhenTokenEmpty(): void {
+        $keys = $this->makeKeypair();
+        $captured = [];
+        $config = $this->anchorConfig(['forgejo_anchor_enabled' => 'true', 'forgejo_token' => ''], $captured);
+        $db = new FakeDbConnection($this->mintQueue());
+
+        $service = new TestableAuditCheckpointService(
+            $this->mockKeyService('kid', $keys['sec']), $db, $config, $this->createMock(LoggerInterface::class)
+        );
+        $service->createCheckpoint();
+
+        $this->assertSame(0, $service->forgejoCalls, 'missing token must make NO HTTP call');
+        $this->assertArrayNotHasKey('last_anchor_status', $captured);
+        $this->assertCount(4, $db->issuedBuilders);
+    }
+
+    /**
+     * HTTP 201 success: the returned .content.html_url is written to anchor_url on the checkpoint row
+     * (by id) and last_anchor_status='ok' is recorded.
+     */
+    public function testForgejoAnchorSuccessSetsUrlAndStatusOk(): void {
+        $keys = $this->makeKeypair();
+        $captured = [];
+        $config = $this->anchorConfig([
+            'forgejo_anchor_enabled' => 'true',
+            'forgejo_token'          => 'secret-token',
+            'forgejo_owner'          => 'andre',
+            'forgejo_repo'           => 'audit-anchors',
+            'forgejo_base_url'       => 'https://git.andrestiebitz.de',
+        ], $captured);
+
+        // [last, tail, count, insert(id=42), UPDATE].
+        $queue = $this->mintQueue(42);
+        $updateQb = new FakeQueryBuilder(null, 1);
+        $queue[] = $updateQb;
+        $db = new FakeDbConnection($queue);
+
+        $htmlUrl = 'https://git.andrestiebitz.de/andre/audit-anchors/src/branch/main/audit-checkpoints/checkpoint-5.json';
+        $service = new TestableAuditCheckpointService(
+            $this->mockKeyService('kid', $keys['sec']), $db, $config, $this->createMock(LoggerInterface::class)
+        );
+        $service->forgejoReturn = [
+            'status' => 201,
+            'body'   => json_encode(['content' => ['html_url' => $htmlUrl]], JSON_THROW_ON_ERROR),
+        ];
+
+        $service->createCheckpoint();
+
+        $this->assertSame(1, $service->forgejoCalls);
+        $this->assertSame('update', $updateQb->operation);
+        $this->assertSame('learning_audit_checkpoints', $updateQb->table);
+        $this->assertSame($htmlUrl, $updateQb->setCalls['anchor_url']['value'], 'html_url written to anchor_url');
+        // Update targets the just-inserted checkpoint id (42).
+        $ids = array_column($updateQb->namedParameters, 'value');
+        $this->assertContains(42, $ids, 'UPDATE must target the new checkpoint id');
+        $this->assertSame('ok', $captured['last_anchor_status']);
+        $this->assertArrayHasKey('last_anchor_attempted_at', $captured);
+    }
+
+    /**
+     * Soft-fail on transport exception: the checkpoint row is untouched (no UPDATE), last_anchor_status
+     * becomes 'failed', and NO exception escapes createCheckpoint().
+     */
+    public function testForgejoAnchorSoftFailsOnException(): void {
+        $keys = $this->makeKeypair();
+        $captured = [];
+        $config = $this->anchorConfig([
+            'forgejo_anchor_enabled' => 'true',
+            'forgejo_token'          => 'secret-token',
+        ], $captured);
+        $db = new FakeDbConnection($this->mintQueue(7));
+
+        $service = new TestableAuditCheckpointService(
+            $this->mockKeyService('kid', $keys['sec']), $db, $config, $this->createMock(LoggerInterface::class)
+        );
+        $service->forgejoThrow = new \RuntimeException('connection refused');
+
+        // Must NOT throw.
+        $service->createCheckpoint();
+
+        $this->assertSame(1, $service->forgejoCalls);
+        $this->assertSame('failed', $captured['last_anchor_status']);
+        $this->assertArrayHasKey('last_anchor_attempted_at', $captured);
+        // No UPDATE issued — only the 4 mint builders. anchor_url on the inserted row stays NULL.
+        $this->assertCount(4, $db->issuedBuilders);
+        $insertQb = $db->issuedBuilders[3];
+        $this->assertNull($insertQb->insertValues['anchor_url']['value']);
+    }
+
+    /**
+     * Soft-fail on a non-201 HTTP status (500): last_anchor_status='failed', no UPDATE, no throw.
+     */
+    public function testForgejoAnchorSoftFailsOnHttp500(): void {
+        $keys = $this->makeKeypair();
+        $captured = [];
+        $config = $this->anchorConfig([
+            'forgejo_anchor_enabled' => 'true',
+            'forgejo_token'          => 'secret-token',
+        ], $captured);
+        $db = new FakeDbConnection($this->mintQueue());
+
+        $service = new TestableAuditCheckpointService(
+            $this->mockKeyService('kid', $keys['sec']), $db, $config, $this->createMock(LoggerInterface::class)
+        );
+        $service->forgejoReturn = ['status' => 500, 'body' => 'internal error'];
+
+        $service->createCheckpoint();
+
+        $this->assertSame(1, $service->forgejoCalls);
+        $this->assertSame('failed', $captured['last_anchor_status']);
+        $this->assertCount(4, $db->issuedBuilders, 'no UPDATE builder on soft-fail');
+    }
+}
+
+/**
+ * Test double exposing the protected forgejoPost() seam so anchor behaviour can be exercised without
+ * a live HTTP call. forgejoReturn is the canned {status, body}; forgejoThrow simulates a transport
+ * exception; forgejoCalls counts invocations (0 proves OFF-by-default made no request).
+ */
+final class TestableAuditCheckpointService extends AuditCheckpointService {
+    /** @var array{status: int, body: string|false} */
+    public array $forgejoReturn = ['status' => 0, 'body' => false];
+    public ?\Throwable $forgejoThrow = null;
+    public int $forgejoCalls = 0;
+
+    /**
+     * @return array{status: int, body: string|false}
+     */
+    protected function forgejoPost(string $apiUrl, string $token, string $body): array {
+        $this->forgejoCalls++;
+        if ($this->forgejoThrow !== null) {
+            throw $this->forgejoThrow;
+        }
+        return $this->forgejoReturn;
+    }
 }

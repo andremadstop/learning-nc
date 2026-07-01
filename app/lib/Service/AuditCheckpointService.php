@@ -124,6 +124,9 @@ class AuditCheckpointService {
             ]);
         $insertQb->executeStatement();
 
+        // last insert id from the QueryBuilder (not IDBConnection — its stub has no lastInsertId()).
+        $newCheckpointId = $insertQb->getLastInsertId();
+
         $this->config->setAppValue('learning', 'last_checkpoint_at', (string)$now);
         $this->config->setAppValue('learning', 'last_checkpoint_to_event_id', (string)$toSeq);
 
@@ -131,6 +134,104 @@ class AuditCheckpointService {
             'AuditCheckpointService: checkpoint minted seq={from}..{to} events={count}',
             ['from' => $fromSeq, 'to' => $toSeq, 'count' => $eventCount, 'app' => 'learning']
         );
+
+        // 8. External anchor (AUDIT-05). OFF by default; soft-fail — the checkpoint row above is the
+        //    source of truth, Forgejo is redundancy. Never rolls back, never rethrows.
+        $this->doForgejoAnchor($newCheckpointId, $toSeq, $payload);
+    }
+
+    /**
+     * Anchor a minted checkpoint into an external, admin-independent Forgejo repository (AUDIT-05).
+     *
+     * Purpose: protect against an admin who controls BOTH the DB and the signing key — a Forgejo
+     * commit timestamp is outside that admin's reach and provides an independent existence proof.
+     *
+     * OFF by default: no HTTP call is made unless forgejo_anchor_enabled = 'true' AND a token is set.
+     * Soft-fail: on any non-201 response or exception the checkpoint row is kept intact with
+     * anchor_url = NULL, last_anchor_status = 'failed' is recorded, and NOTHING is rethrown. The
+     * Forgejo token value is NEVER written to a log line.
+     *
+     * @return string|null the Forgejo file HTML URL on success, otherwise null.
+     */
+    private function doForgejoAnchor(int $checkpointId, int $toEventId, string $signedPayload): ?string {
+        $enabled = $this->config->getAppValue('learning', 'forgejo_anchor_enabled', 'false') === 'true';
+        $token   = (string)$this->config->getAppValue('learning', 'forgejo_token', '');
+        if (!$enabled || $token === '') {
+            return null; // OFF by default — no HTTP, no error, no state change.
+        }
+
+        try {
+            $owner   = (string)$this->config->getAppValue('learning', 'forgejo_owner', '');
+            $repo    = (string)$this->config->getAppValue('learning', 'forgejo_repo', '');
+            $baseUrl = rtrim((string)$this->config->getAppValue('learning', 'forgejo_base_url', 'https://git.andrestiebitz.de'), '/');
+            $path    = "audit-checkpoints/checkpoint-{$toEventId}.json";
+            $apiUrl  = "{$baseUrl}/api/v1/repos/{$owner}/{$repo}/contents/{$path}";
+
+            // Always POST (creates a new file) — PUT would require fetching the existing SHA first.
+            $body = json_encode([
+                'message' => "audit checkpoint {$toEventId}",
+                'content' => base64_encode($signedPayload),
+            ], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+            $result   = $this->forgejoPost($apiUrl, $token, $body);
+            $status   = $result['status'];
+            $response = $result['body'];
+
+            if ($status === 201 && is_string($response)) {
+                $data = json_decode($response, true);
+                $htmlUrl = is_array($data) ? ($data['content']['html_url'] ?? null) : null;
+                if (is_string($htmlUrl) && $htmlUrl !== '') {
+                    $qb = $this->db->getQueryBuilder();
+                    $qb->update('learning_audit_checkpoints')
+                        ->set('anchor_url', $qb->createNamedParameter($htmlUrl))
+                        ->where($qb->expr()->eq('id', $qb->createNamedParameter($checkpointId, IQueryBuilder::PARAM_INT)))
+                        ->executeStatement();
+                    $this->config->setAppValue('learning', 'last_anchor_status', 'ok');
+                    $this->config->setAppValue('learning', 'last_anchor_attempted_at', (string)time());
+                    return $htmlUrl;
+                }
+            }
+
+            // Non-201 or missing html_url — soft-fail (token deliberately absent from the log line).
+            $this->logger->warning(
+                "AuditCheckpointService: Forgejo anchor failed (HTTP {$status}) for checkpoint {$checkpointId}",
+                ['app' => 'learning']
+            );
+        } catch (\Throwable $e) {
+            // Never let an anchor failure escape createCheckpoint(); token is not part of getMessage().
+            $this->logger->warning(
+                "AuditCheckpointService: Forgejo anchor exception for checkpoint {$checkpointId}: " . $e->getMessage(),
+                ['app' => 'learning']
+            );
+        }
+
+        $this->config->setAppValue('learning', 'last_anchor_status', 'failed');
+        $this->config->setAppValue('learning', 'last_anchor_attempted_at', (string)time());
+        return null; // anchor_url stays NULL on the checkpoint row — never roll back the checkpoint.
+    }
+
+    /**
+     * Perform the raw Forgejo Contents-API POST. Extracted as a seam so unit tests can inject canned
+     * responses without a live HTTP call (a namespaced file_get_contents override cannot populate the
+     * caller's magic $http_response_header, and a real HTTP-client dep would force editing the DI in
+     * Application.php — out of this plan's file scope). Uses only PHP built-ins — no new deps.
+     *
+     * @return array{status: int, body: string|false}
+     */
+    protected function forgejoPost(string $apiUrl, string $token, string $body): array {
+        $http_response_header = []; // pre-init: the built-in overwrites it; guards "possibly undefined".
+        $ctx = stream_context_create(['http' => [
+            'method'        => 'POST',
+            'header'        => "Authorization: token {$token}\r\nContent-Type: application/json\r\n",
+            'content'       => $body,
+            'timeout'       => 10,
+            'ignore_errors' => true,
+        ]]);
+        $response = @file_get_contents($apiUrl, false, $ctx);
+
+        $statusLine = $http_response_header[0] ?? 'HTTP/1.1 0';
+        preg_match('#HTTP/\S+\s+(\d+)#', $statusLine, $m);
+        return ['status' => (int)($m[1] ?? 0), 'body' => $response];
     }
 
     /**
