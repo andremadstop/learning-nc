@@ -112,6 +112,15 @@ _PhpUnitStubs additions (`IGroupManager::isInGroup`, `OCP\AppFramework\Http\Temp
 - **Fix:** Added `isInGroup(string,string): bool` to the existing IGroupManager block and a guarded `TemplateResponse` class (getParams/getTemplateName/getRenderAs). Additive + guarded, no existing stub changed.
 - **Files:** `app/tests/Support/PhpUnitStubs.php` (landed in sibling `d3e3161`, clean merge).
 
+## Security hardening (Codex review)
+
+An adversarial Codex security review of the built audit-export surface produced verified findings applied post-plan as atomic `fix(161-*-sec)` commits:
+
+- **F5 [MEDIUM/DSGVO] — strip PII from exported context.** `AuditExportController::fetchEvents` now recursively removes a case-insensitive denylist (`user_id, uid, email, mail, e_mail, displayname, display_name, ip, ip_address`) from each event's context before emitting. The exact stored bytes are preserved when nothing is stripped (facts-only common case) so `payload_hash` provenance is untouched. Test: seeded `user_id`/`email`/nested-`ip` context → neither key nor value appears in the JSONL. Commit `9d6391d`.
+- **F3 [HIGH] — zero signing secret on all paths.** `signJsonl` wraps the sign in try/finally and `sodium_memzero`s both the local copy and `material['secret']`, even when the invalid-length guard throws (shared with the `AuditCheckpointService` fix). Commit `c03cb03`.
+
+The `AuditVerifyCommand` / `AuditCheckpointService` findings (F1, F2, F4, F6, F7) are documented in `161-03-SUMMARY.md`. No local PHP/PHPStan/PHPUnit run (project override).
+
 ## Notes for the Orchestrator (central gates)
 
 - **Task-2 done-criterion nuance:** `npm run build` exits 0 and shows no SPA regression, but it does NOT compile `AuditExport.vue` (an unimported `.vue` is skipped by vite tree-shaking). The real validator for the component is **ESLint** (`--ext .vue`, Gate 1) — run locally here with 0 findings, re-run centrally. The LIVE auditor UI is the self-contained PHP form (`audit-export-page.php`), not the Vue island.

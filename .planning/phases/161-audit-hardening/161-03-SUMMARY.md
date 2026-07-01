@@ -129,6 +129,19 @@ _Per project override, TDD test files were written alongside production code (no
 
 **Total deviations:** 3 auto-fixed (2 bugs, 1 blocking) + 1 path-case correction. No scope creep.
 
+## Security hardening (Codex review)
+
+An adversarial Codex security review of the built Phase-161 audit surface produced verified findings that were applied post-plan as atomic `fix(161-03-sec)` commits (write-side hardening on `AuditCheckpointService`, plan 01/02, is folded in here for traceability):
+
+- **F1 [BLOCKER] — prev_hash tamper.** `AuditVerifyCommand` chain walk now also asserts the stored `prev_hash` column equals the expected in-memory previous hash (`hash_equals`). A prev_hash-only edit left the recomputed `chain_hash` self-consistent and slipped through before. Test: `testTamperedPrevHashOnlyDetected`. Commit `730261f`.
+- **F2 [HIGH] — bind signature to columns.** After the Ed25519 signature verifies, the verified `signed_payload` is re-parsed and each signed field (`from/to/head_hash/event_count/signed_at/key_id`) is asserted equal to the stored column (mismatch = FAILURE). Adds `event_count == to−from+1`, cross-checkpoint window-gap warn, and an "events exist but no checkpoint verified → unanchored" warning line. Tests: signed-head_hash mismatch, wrong event_count, events-without-checkpoint. Commit `6509360`.
+- **F3 [HIGH] — zero secret on all paths.** Signing in `createCheckpoint` (and `AuditExportController::signJsonl`) wrapped in try/finally; the raw secret and the `material['secret']` slot are both `sodium_memzero`d even when the invalid-length guard throws. Commit `c03cb03`.
+- **F4 [HIGH] — anchor raw bytes.** Anchor stores Forgejo `content.download_url` (raw file bytes), not `content.html_url`; the verifier fetches it and `hash_equals`-compares the exact bytes to `signed_payload`. 161-02 anchor test updated; verify-side match/mismatch tests added. Commit `411adbe`.
+- **F6 [MEDIUM/SSRF] — https-only anchor.** Store-side POST and verify-side GET both require an `https://` anchor URL (soft-skip + warning otherwise); full host allowlist deferred via `TODO(anchor-enablement)`. Commit `eeb4965`.
+- **F7 [LOW] — pubkey length guard.** `strlen(pubKeyRaw) === SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES` asserted before verify, and the verify wrapped in `try/catch (\SodiumException)` → recorded failure, never fatal. Test: 16-byte pubkey. Commit `c3c75cd`.
+
+No local PHP/PHPStan/PHPUnit run (project override) — the orchestrator runs the central gates.
+
 ## Issues Encountered
 
 None beyond the deviations above. Per project override, no PHP/PHPStan/PHPUnit/occ/deploy executed locally (no local PHP binary).
