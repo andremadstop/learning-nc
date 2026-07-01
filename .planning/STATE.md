@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v5.2.0
 milestone_name: "v5.2.0 Pflichtschulung"
 current_phase: 162
-current_plan: "162-02 + 162-03 built (Wave 2 complete). 162-02: NC-Files Range-206 streaming (IDOR/traversal gate, instructor-namespace, registry-only path, 416-hardening) + instructor registry CRUD (VIDEO-09, null/0-duration reject) + pluggable VideoSourceAdapter (nc-files done, vimeo/youtube-nocookie slots), commits 146c42a/3a84baf. 162-03: startSession-Gate + VideoProgressController, commits 950e2cc/3142c83. Container-verify (PHPStan L5 + PHPUnit) + curl-OQ4 (206/416/403) + ROADMAP at orchestrator wave-gate. Next: Wave-2-merge/verify, then 162-04 (Vimeo/YouTube adapters + WCAG player + DSGVO consent)"
-status: "v5.2.0 Pflichtschulung. Phase 162 (Video-/Material-Gating) IN ARBEIT — Plan 162-01 (Security Core, Wave 1) FERTIG gebaut + committed (356e4a6/8c70a69/2b509cb), Container-Verify (PHPStan L5 + PHPUnit + occ upgrade Version009500) an Orchestrator-Wave-Gate delegiert (kein lokales PHP). Geliefert: Migration 009500 (learning_course_videos-Registry + learning_video_progress + video_gate_enabled-Spalte), CourseVideo/VideoProgress Entities+Mappers, VideoProgressService (95%-Merge-Engine, <5s-Ping-Discard, DSGVO-transiente Segmente, exactly-once VIDEO_COMPLETED-Emit), CourseService-Seams (assertEnrolledInCourse IDOR-Gate für 162-02, isVideoGateEnabled/setVideoGateEnabled für 162-03), CourseController::setVideoGate, alle 9 Video-Routes (contracts-first). TDD RED(009500)→GREEN. info.xml dev-bump 5.2.0.1→5.2.0.2. DEVIATION: SELECT...FOR UPDATE → CAS auf last_ping_ts (NC IQueryBuilder hat kein forUpdate(), s. Version009300/AuditService) + Unique-Violation-Retry für First-Ping-Race. NÄCHSTER SCHRITT: 162-02 (NC-Files Range-206 Streaming + Registry-CRUD). Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
-stopped_at: "Phase 162 Plan 01 (Security Core) fertig + committed. Container-Gate (PHPStan/PHPUnit/occ upgrade) läuft zentral am Orchestrator-Wave-Merge. Weiter mit 162-02 (VideoStreamController: assertEnrolledInCourse-Gate + fopen-Streaming)."
-last_updated: "2026-07-01"
-last_activity: "2026-07-01 — Phase 162-01 gebaut: Video-Gating-Security-Core. Migration 009500 + VideoProgressService (server-merged interval completion, 95%-Schwelle, <5s-Plausibilität, transiente DSGVO-Segmente, minimaler audit-payload {course_id,content_id}, exactly-once emit via completed_at-IS-NULL-Guard) + CourseService-Seams + Gate-Toggle. 18-Assertion-Security-Contract-Test (RED→GREEN). Deviation dokumentiert: CAS-Concurrency statt FOR UPDATE. Verify an Orchestrator delegiert."
+current_plan: "162-04 built (Wave 3, FRONTEND). WCAG 2.1 AA VideoPlayer.vue (keyboard Space/Arrows, persistent aria-live, always-present WebVTT track, no autoplay, throttled heartbeat, never self-asserts completion) + VideoConsentOverlay.vue (DSGVO Art.13, zero third-party template refs, iframe injected only on accept, youtube-nocookie+dnt=1/Vimeo dnt=1) + TrainingPrivacyNotice.vue (Art.13 training-start, 3 facts incl. 'Wiedergabemuster NICHT dauerhaft gespeichert') + videoInterval.js pure helper (25 Vitest) + CourseTabLernraum.vue student 'Pflichtinhalte' gate UI incl. document 'Gelesen' caller (VIDEO-07) + Playwright video-gating.spec.js. Commits f0e9fe3/d4ec1aa/f706e88. Vitest 1146 green, ESLint 0. ⛔ BLOCKER: CourseVideoController::index instructor-gated → students 403; kein student-lesbarer Registry+Progress-Endpoint → Student-Gate-UI live nicht end-to-end nutzbar bis Backend-Follow-up (Rule 4, nicht blind gepatcht — Codex-IDOR-Surface, kein lokales PHP). Human-verify-Checkpoint (SR/Kontrast/Consent-Network/Art.13-Text) auto-approved (auto_advance). NÄCHST: Backend-Follow-up (enrolled-student GET, Codex-reviewed) + Wave-3-deploy/verify durch Orchestrator."
+status: "v5.2.0 Pflichtschulung. Phase 162 (Video-/Material-Gating) — 162-01..03 (Backend, Wave 1+2) gebaut+committed; 162-04 (Frontend, Wave 3) gebaut+committed (f0e9fe3/d4ec1aa/f706e88): WCAG-Player + DSGVO-Consent-Overlay + Art.13-Notice + Student-Gate-UI + 'Gelesen'-Caller + Vitest/ESLint grün + Playwright-Spec. Human-verify-Checkpoint auto-approved (auto_advance=true) — SR/AA-Kontrast/Consent-No-Preload/Art.13-Text bleiben menschliche Sichtprüfung nach Orchestrator --js-only-Deploy. ⛔ BLOCKER (Backend, außerhalb Frontend-Ownership): student-lesbarer Registry-Read fehlt (index 403 für Studenten, kein Progress-GET) → Pflichtinhalte-Tab erscheint live nicht für Studenten (graceful degrade), VIDEO-07/08 + Gate-Status live erst nach Backend-Follow-up prüfbar. Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
+stopped_at: "Phase 162 Plan 04 (Frontend WCAG-Player/Consent/Art.13/Gate-UI) fertig + committed (f0e9fe3/d4ec1aa/f706e88). Human-verify-Checkpoint auto-approved. ⛔ Backend-Follow-up nötig: student-lesbarer GET /api/courses/{id}/videos + per-user covered_pct/completed (CourseService::assertEnrolledInCourse + VideoProgressMapper::findByUserAndContent), PHPStan L5 + Codex-Security-Pass. Danach Wave-3 --js-only-Deploy + Playwright-Live-Run (E2E_VIDEO_COURSE_ID seeden)."
+last_updated: "2026-07-02"
+last_activity: "2026-07-02 — Phase 162-04 gebaut (Frontend, Wave 3): WCAG-2.1-AA-VideoPlayer + DSGVO-Art.13-Consent-Overlay (kein Third-Party-Preload, youtube-nocookie+dnt=1/Vimeo dnt=1) + Art.13-Training-Start-Notice + videoInterval.js Pure-Helper (25 Vitest) + Student-Pflichtinhalte-Gate-UI incl. 'Gelesen'-Caller (VIDEO-07) + Playwright-a11y-Spec. Vitest 1146 grün, ESLint 0. BLOCKER dokumentiert: instructor-gated Registry-Read → Backend-Follow-up nötig (Rule 4, nicht blind gepatcht)."
 progress:
   total_phases: 5
   completed_phases: 2
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-07-01)
 
 ## Current Position
 
-Phase: 162 — Video-/Material-Gating + DSGVO Art.13 ⏳ IN ARBEIT
-Plan: 1/4 (162-01 Security Core fertig + committed; Container-Verify am Orchestrator-Wave-Gate)
-Status: 162-01 geliefert (Migration 009500 + VideoProgressService + CourseService-Seams + Gate-Toggle + 9 Routes). Nächster: 162-02 NC-Files-Streaming.
-Last activity: 2026-07-01 — Phase 162-01 gebaut (Video-Gating-Security-Core, TDD RED→GREEN)
+Phase: 162 — Video-/Material-Gating + DSGVO Art.13 ⏳ IN ARBEIT (alle 4 Pläne gebaut)
+Plan: 4/4 (162-04 Frontend WCAG-Player/Consent/Art.13/Gate-UI fertig + committed; Human-verify auto-approved)
+Status: 162-01..03 (Backend) + 162-04 (Frontend) gebaut + committed. ⛔ Offen: Backend-Follow-up (student-lesbarer Registry-Read) + Wave-3 --js-only-Deploy + Playwright-Live-Run durch Orchestrator.
+Last activity: 2026-07-02 — Phase 162-04 gebaut (WCAG-Player + DSGVO-Consent + Art.13-Notice + Student-Gate-UI + Vitest/ESLint grün)
 
 Progress: ████░░░░░░ 40% (2/5 phases complete)
 
@@ -51,6 +51,17 @@ Archiv: `.planning/milestones/v5.0.0-ROADMAP.md` + `v5.0.0-REQUIREMENTS.md`.
 - **TOOLING:** `gsd-tools state update-progress` / `record-session` / `roadmap update-plan-progress`
   korrumpieren STATE.md/ROADMAP.md-Frontmatter (milestone → v2.3, droppen Spalten).
   **STATE/ROADMAP manuell editieren; buggy gsd-tools-State/Roadmap-Mutationen MEIDEN.**
+- **⛔ 162 BLOCKER (Backend-Follow-up nötig, offen):** `CourseVideoController::index`
+  (`GET /api/courses/{id}/videos`) ist instructor-gated (`assertInstructorOfCourse`) → ein
+  eingeschriebener **Student bekommt 403**, und es gibt **keinen GET für per-user Progress**
+  (VideoProgressController ist POST-only). Folge: das 162-04-Student-Gate-UI („Pflichtinhalte"-Tab)
+  erscheint für Studenten live nicht (graceful degrade), VIDEO-07/08 + Gate-Status sind live erst
+  nach dem Follow-up end-to-end prüfbar. **Empfohlen:** student-facing `GET`, der für einen
+  *enrolled* Studenten die Video-Registry + `covered_pct`/`completed` liefert (reuse
+  `CourseService::assertEnrolledInCourse` + `VideoProgressMapper::findByUserAndContent`),
+  PHPStan L5 + Codex-Security-Pass (IDOR-Surface). Frontend (`normalizeVideo`) ist bereits
+  forward-kompatibel (snake/camel + covered_pct/completed). Nicht in 162-04 gepatcht: Rule 4
+  (out-of-ownership authz, kein lokales PHP, benannte Codex-Review-Surface).
 
 ### Milestone-Kontext v5.2.0
 
