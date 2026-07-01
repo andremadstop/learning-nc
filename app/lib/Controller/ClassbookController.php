@@ -109,7 +109,7 @@ class ClassbookController extends Controller {
 
         $user = $this->userManager->get($this->userId);
         $displayName = $user ? $user->getDisplayName() : $this->userId;
-        $email = $user ? $user->getEMailAddress() : '';
+        $email = $user ? ($user->getEMailAddress() ?? '') : '';
 
         $telos = $this->telosMapper->findByUserIdOrNull($this->userId);
         $bio = $telos ? ($telos->getBio() ?? '') : '';
