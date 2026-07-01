@@ -34,19 +34,24 @@ author: Claude (Opus 4.8 1M) — autonomous run
 - **Container-Test-Teilung:** PHPStan L5 + PHPUnit laufen NUR im devcloud-Container (**lokal KEIN PHP-Binary**). Executor **schreiben+committen nur** (kein deploy/ssh/php-l → keine Parallel-Deploy-Races). **Orchestrator deployt + fährt Gate 1 zentral pro Wave.**
 - **Deploy:** `./scripts/deploy-prod.sh --php-only` = deploy lib/ + PHPStan (deploy_php läuft VOR phpstan → Code ist deployed auch wenn PHPStan abbricht; der „Class OCP\AppFramework\App not found"-Fatal beim Deploy-Verify ist ein Artefakt, IGNORIEREN). `--test` = PHPStan + volle PHPUnit. **run_phpunit wurde diese Session gefixt** (synct jetzt ganzes tests/ in den Container; vorher nur 3 Support-Dateien → stale Tests).
 - **PHPStan scannt nur lib/** (Migrationen + Tests exkludiert) → per-Wave-PHPStan inkrementell clean; RED-Stubs die Zukunfts-Klassen referenzieren brechen PHPStan NICHT. **PHPUnit-GREEN erst am Phasenende.**
-- **Unit-Tests laufen gegen STUBS** (`app/tests/Support/PhpUnitStubs.php` = handgeschriebene OCP-Interfaces), NICHT echtes NC. Neue OCP-Fläche (Klassen/Methoden) MUSS in PhpUnitStubs ergänzt werden, sonst fatalen die Tests (uns getroffen: IJobList, QueuedJob, createUser, getEMailAddress, IGroup, QueryBuilder-Methoden).
-- **Migrationen:** brauchen info.xml `<version>` > installiert um via `occ upgrade` zu laufen (kein `migrations:execute` in dieser NC). **info.xml ist auf 5.2.0** (diese Session gebumpt). Neue Migration → `occ upgrade`. Schema prüfen: `ssh relais 'docker exec devcloud-db psql -U oc_admin -d nextcloud -c "\d oc_learning_..."'`.
+- **Unit-Tests laufen gegen STUBS** (`app/tests/Support/PhpUnitStubs.php` = handgeschriebene OCP-Interfaces), NICHT echtes NC. Neue OCP-Fläche MUSS dort ergänzt werden, sonst fatalen die Tests (bisher ergänzt: IJobList, QueuedJob, TimedJob, ITimeFactory, IClientService/IClient/IResponse, createUser, getEMailAddress, IGroup, diverse QueryBuilder-Methoden). **Tests liegen unter `app/tests/Unit/` (großes U!), Namespace `OCA\Learning\Tests\Unit\...`** — NICHT `tests/unit`.
+- **PHPUnit-Test-Fallen (diese Session getroffen):** Helper NIE `run()` nennen (kollidiert mit finaler `TestCase::run()`); Fixtures mit explizitem `null` brauchen `array_key_exists` statt `?? default` (sonst clobbert der Default das `null`); `context_json` wird als escapter JSON-String emittiert → im JSONL nach `\"key\":val` prüfen oder decoden.
+- **Migrationen:** brauchen info.xml `<version>` > installiert um via `occ upgrade` zu laufen (kein `migrations:execute` in dieser NC). **info.xml ist auf `5.2.0.1`** (Dev-Bump für Migration 009302; **beim Release auf 5.2.0 zurücksetzen**). Neue Migration → info.xml bumpen (`5.2.0.2` etc.) + `occ upgrade`. Schema prüfen: `ssh relais 'docker exec devcloud-db psql -U oc_admin -d nextcloud -c "\d oc_learning_..."'`. **QueryBuilder `from()` UNPREFIXED** (`learning_x` — NC hängt `oc_` an; `oc_learning_x` → `oc_oc_...`-Crash).
 - **gsd-tools state/roadmap Mutations-Commands KORRUMPIEREN Frontmatter** → STATE.md/ROADMAP.md **manuell** editieren. (init / roadmap get-phase / phase-plan-index sind read-only, safe.)
 
-## 🔐 Phase-161-Specifics (locked in 161-RESEARCH.md)
-- **Checkpoint-Signing:** `KeyService::getActiveSigningMaterial()` → `sodium_crypto_sign_detached` (NICHT `SigningService::sign()` — Header frozen typ:vc+jwt, ADR-155). `signed_payload TEXT` für exakt-Bytes-Verify.
-- **`occ learning:audit:verify` (AUDIT-06) MUSS die FROZEN 6-Feld-Canonical rekonstruieren** (aus `AuditService::logComplianceEvent`): `ksort({seq,event_key,user_ref,course_id,created_at,payload_hash})` → `json_encode(UNESCAPED_UNICODE|UNESCAPED_SLASHES)` → `sha256($canonical.'|'.$prevHash)`. Regeln: `user_ref` aus Spalte (NIE neu berechnen — DSGVO-Löschung nullt user_id); `payload_hash`=sha256(RAW context_json); `course_id`=json_decode(context_json)['course_id']. **Sonst meldet verify alles als manipuliert.**
-- **Export (AUDIT-07):** JSONL + detached `.sig` (sodium über exakte JSONL-Bytes) + HTML-`@media print` (window.print, null Deps). Gate: `@NoAdminRequired` + `isInGroup('learning-auditors')` (NICHT admin).
-- **Forgejo-Anker (AUDIT-05):** OFF by default, `anchor_url` nullable, soft-fail (DB-first), **Token kommt LATER vom User** — nur scaffolden. Migration **Version009302**.
+## 🎥 Phase-162-Specifics (NÄCHSTE PHASE — Video-/Material-Gating + DSGVO Art.13)
+**Reqs:** VIDEO-01..09, DSGVO-04. **Security-kritisch → Codex-Review Pflicht.** Zuerst `/gsd:plan-phase 162` (Research existiert evtl. schon in `.planning/phases/`? prüfen; sonst gsd-phase-researcher).
+- **Crux = server-seitiges Streaming:** `VideoStreamController` liefert Instructor-Video via `IRootFolder->getUserFolder(instructorId)->fopen()` + HTTP **Range 206** (partial content). Auth: der Stream-Endpoint MUSS gaten (Enrolment/Assignment prüfen) — kein direkter Files-Link. IDOR/Path-Traversal-Fläche → Codex-Fokus.
+- **Gate server-seitig** in `TrainingService::startSession()` (o.ä.): ohne genügend Video-Progress kein Vorankommen. Client-Heartbeat (throttled) meldet Watch-Progress → `VideoProgressService` emittiert `course.video.completed` Compliance-Event (Event-Type in P160 AUDIT-03 definiert → landet in der Audit-Chain).
+- **DSGVO Art.13 (DSGVO-04):** Vimeo/YouTube-nocookie-Embeds laden ERST nach explizitem Consent (kein Pre-Load, kein Cookie vorher). Consent-UX + Art.13-Transparenz-Text. SDKs via CDN (0 npm-Deps). Reine NC-Files-Videos brauchen keinen Consent.
+- **DSGVO-transiente Segmente**, a11y (Untertitel/Keyboard), Heartbeat-Throttle gegen Progress-Fälschung.
+- **⚠ AWO-Kern-Blocker:** Jan wartet genau auf dieses Feature → nach 162 Rückmeldung an ihn.
+- **Prio-Frage offen an User** (beim Sessionstart stellen, falls nicht geklärt): Vimeo vs. YouTube-nocookie vs. reine NC-Files-Videos als Prio? Konkrete AWO-Video-Quelle? a11y-Muss-Level?
 
 ## 🗺 Restliche Phasen
-- **161** Audit Hardening (AUDIT-04..09) — in Planung
-- **162** Video-/Material-Gating + DSGVO Art.13 (VIDEO-01..09, DSGVO-04) — `VideoStreamController` (`IRootFolder->getUserFolder(instructorId)->fopen` + Range 206) ist der Crux; server-seitiges Gate in `TrainingService::startSession()`; DSGVO-transiente Segmente; Heartbeat-Throttle; a11y; Vimeo/YT-nocookie+Consent. Vimeo/YT SDK via CDN (0 npm-Deps).
+- **160** Foundation (AUDIT-01..03 + ASSIGN) — ✅ COMPLETE (12/12), commit `f71ce32`
+- **161** Audit Hardening (AUDIT-04..09) — ✅ COMPLETE (6/6 automated), commit `d14e193`
+- **162** Video-/Material-Gating + DSGVO Art.13 (VIDEO-01..09, DSGVO-04) — **NÄCHSTE, s.o. „Phase-162-Specifics".**
 - **163** Teamleiter-RBAC-Reports + Art.20 (RBAC-02..04, DSGVO-02) — `CertificateReportService::getGroupReport()` IDOR-safe auf `learning_oversight` (schon in P160 angelegt); assertTeamLeadForGroup FIRST + DB-Level-Filter.
 - **164** Re-Zertifizierung + Retention + i18n (RECERT-01..07, DSGVO-03/05) — **RECERT-05 Guard-Redesign = PFLICHT-Codex-Review** (OP am offenen Cert-Herzen; `PassCriteriaService::emitPassEventIfFirst` prüft active_period_key statt „je bestanden"; `RecertPeriodCloseJob`). DST-safe `DateTimeImmutable::modify('+1 year')`. Betriebsvereinbarungs-Hinweis für AWO.
 
@@ -58,7 +63,8 @@ author: Claude (Opus 4.8 1M) — autonomous run
 - Research: `.planning/research/{STACK,STACK-FOUNDATIONS,FEATURES,ARCHITECTURE,PITFALLS,SUMMARY}.md` (v5.2.0). Ghostline-Research archiviert unter `research/_v5.1.0-ghostline-archive/`.
 - Reviews: `.planning/reviews/2026-07-01-gemini-v52-{concept,roadmap}-review.md`.
 - Phase 160: `.planning/phases/160-foundation-audit-assignment/` (6 PLAN+SUMMARY, VERIFICATION 12/12).
-- REQUIREMENTS.md: 41 Reqs, 12 (Phase 160) abgehakt. ROADMAP.md: Phase 160 ✓, 6-Feld-Canonical-Forward-Dep in Phase-161-Notes.
+- Phase 161: `.planning/phases/161-audit-hardening/` (6 PLAN+SUMMARY, RESEARCH, VALIDATION, VERIFICATION 6/6). Codex-Review: `scratchpad/161-codex-security.md`.
+- REQUIREMENTS.md: 41 Reqs, **18 abgehakt** (Phase 160: 12 + Phase 161: 6). ROADMAP.md: Phase 160+161 ✓.
 
 ## ⓘ Sonstiges
 - GitNexus-Index stale (non-blocking; direkt gereadet/gegreppt statt reindext).
