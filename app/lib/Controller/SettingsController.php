@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Controller;
 
+use OCA\Learning\Service\AuditCheckpointService;
 use OCA\Learning\Service\KeyService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\DataResponse;
@@ -27,12 +28,14 @@ class SettingsController extends Controller {
     private IDBConnection $db;
     private ?string $userId;
     private KeyService $keyService;
+    private AuditCheckpointService $auditCheckpointService;
 
-    public function __construct(string $appName, IRequest $request, IConfig $config, IDBConnection $db, KeyService $keyService, ?string $userId) {
+    public function __construct(string $appName, IRequest $request, IConfig $config, IDBConnection $db, KeyService $keyService, AuditCheckpointService $auditCheckpointService, ?string $userId) {
         parent::__construct($appName, $request);
         $this->config = $config;
         $this->db = $db;
         $this->keyService = $keyService;
+        $this->auditCheckpointService = $auditCheckpointService;
         $this->userId = $userId;
     }
 
@@ -40,6 +43,21 @@ class SettingsController extends Controller {
      * @AdminRequired
      */
     public function getAdmin(): DataResponse {
+        // AUDIT-08 — liveness widget data. Defensive: on a fresh install the audit tables are not yet
+        // migrated and getLivenessStatus() (a COUNT on learning_audit_events) would throw. Never 500 the
+        // admin settings page — fall back to a neutral state.
+        try {
+            $liveness = $this->auditCheckpointService->getLivenessStatus();
+        } catch (\Throwable $e) {
+            $liveness = [
+                'last_checkpoint_at'      => 0,
+                'events_since_checkpoint' => 0,
+                'anchor_enabled'          => false,
+                'last_anchor_status'      => 'none',
+                'is_overdue'              => false,
+            ];
+        }
+
         return new DataResponse([
             'daily_challenge_enabled' => $this->config->getAppValue('learning', 'daily_challenge_enabled', 'yes'),
             'default_language' => $this->config->getAppValue('learning', 'default_language', 'de'),
@@ -56,6 +74,12 @@ class SettingsController extends Controller {
             // Certificates (v5.0.0): false on a fresh install until the admin runs
             // `occ learning:cert:init-issuer`. Drives the admin-settings setup banner.
             'cert_issuer_ready' => $this->keyService->hasActiveKey(),
+            // AUDIT-08 — audit-trail liveness (tamper-evidence health at a glance).
+            'audit_last_checkpoint_at'      => (int)$liveness['last_checkpoint_at'],
+            'audit_events_since_checkpoint' => (int)$liveness['events_since_checkpoint'],
+            'audit_anchor_enabled'          => (bool)$liveness['anchor_enabled'],
+            'audit_anchor_status'           => (string)$liveness['last_anchor_status'],
+            'audit_is_overdue'              => (bool)$liveness['is_overdue'],
         ]);
     }
 
