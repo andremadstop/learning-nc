@@ -289,6 +289,11 @@ final class FakeDbConnection implements IDBConnection {
 
     public array $executedQueries = [];
 
+    // Phase 160: transaction call counters for logComplianceEvent CAS tests.
+    public int $beginTransactionCalls = 0;
+    public int $commitCalls = 0;
+    public int $rollBackCalls = 0;
+
     public function __construct(array $queuedBuilders = [], array $rawResults = []) {
         $this->queuedBuilders = $queuedBuilders;
         $this->rawResults = $rawResults;
@@ -307,6 +312,22 @@ final class FakeDbConnection implements IDBConnection {
 
     public function escapeLikeParameter(string $input): string {
         return addcslashes($input, '\\%_');
+    }
+
+    public function beginTransaction(): void {
+        $this->beginTransactionCalls++;
+    }
+
+    public function commit(): void {
+        $this->commitCalls++;
+    }
+
+    public function rollBack(): void {
+        $this->rollBackCalls++;
+    }
+
+    public function inTransaction(): bool {
+        return false;
     }
 }
 

@@ -66,6 +66,13 @@ namespace OCP\Security {
             public function decrypt(string $encryptedContent, string $secret = ''): string;
         }
     }
+
+    // Phase 160: AuditService uses ISecureRandom for pepper generation (constructor param).
+    if (!interface_exists(ISecureRandom::class)) {
+        interface ISecureRandom {
+            public function generate(int $length, string $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string;
+        }
+    }
 }
 
 namespace OCP {
@@ -76,6 +83,15 @@ namespace OCP {
             public function executeQuery(string $sql, array $params = []);
 
             public function escapeLikeParameter(string $input): string;
+
+            // Phase 160: logComplianceEvent uses transactions for CAS serialization.
+            public function beginTransaction(): void;
+
+            public function commit(): void;
+
+            public function rollBack(): void;
+
+            public function inTransaction(): bool;
         }
     }
 
