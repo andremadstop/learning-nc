@@ -155,7 +155,7 @@ class AuditVerifyCommandTest extends TestCase {
         ];
     }
 
-    private function run(FakeDbConnection $db, CertKeyMapper $mapper, array $inputData = [], ?IClientService $client = null): array {
+    private function invokeCmd(FakeDbConnection $db, CertKeyMapper $mapper, array $inputData = [], ?IClientService $client = null): array {
         $cmd = new AuditVerifyCommand($db, $mapper, $client ?? $this->createMock(IClientService::class));
         $out = new CapturingOutput();
         $code = $cmd->run(new StubConsoleInput($inputData), $out);
@@ -180,7 +180,7 @@ class AuditVerifyCommandTest extends TestCase {
             new FakeQueryBuilder(FakeResult::fromFetchOne($head)),          // head_hash consistency
         ]);
 
-        [$code, $out] = $this->run($db, $this->mockMapper('kid-1', $keys['pub']));
+        [$code, $out] = $this->invokeCmd($db, $this->mockMapper('kid-1', $keys['pub']));
 
         $this->assertSame(Command::SUCCESS, $code);
         $this->assertStringContainsString('Chain intact', $out);
@@ -201,7 +201,7 @@ class AuditVerifyCommandTest extends TestCase {
             new FakeQueryBuilder(FakeResult::fromFetchAll([])), // no checkpoints
         ]);
 
-        [$code, $out] = $this->run($db, $this->createMock(CertKeyMapper::class));
+        [$code, $out] = $this->invokeCmd($db, $this->createMock(CertKeyMapper::class));
 
         $this->assertSame(Command::FAILURE, $code);
         $this->assertStringContainsString('seq_num=2', $out);
@@ -224,7 +224,7 @@ class AuditVerifyCommandTest extends TestCase {
             new FakeQueryBuilder(FakeResult::fromFetchAll([])),
         ]);
 
-        [$code, $out] = $this->run($db, $this->createMock(CertKeyMapper::class));
+        [$code, $out] = $this->invokeCmd($db, $this->createMock(CertKeyMapper::class));
 
         $this->assertSame(Command::SUCCESS, $code, 'erased row must NOT trigger a tampered alert');
         $this->assertStringContainsString('Chain intact', $out);
@@ -242,7 +242,7 @@ class AuditVerifyCommandTest extends TestCase {
             // no head_hash query — the command `continue`s after the signature failure
         ]);
 
-        [$code, $out] = $this->run($db, $this->mockMapper('kid-1', $keys['pub']));
+        [$code, $out] = $this->invokeCmd($db, $this->mockMapper('kid-1', $keys['pub']));
 
         $this->assertSame(Command::FAILURE, $code);
         $this->assertStringContainsString('signature invalid', $out);
@@ -262,7 +262,7 @@ class AuditVerifyCommandTest extends TestCase {
             new FakeQueryBuilder(FakeResult::fromFetchAll([$checkpoint])),
         ]);
 
-        [$code, $out] = $this->run($db, $mapper);
+        [$code, $out] = $this->invokeCmd($db, $mapper);
 
         $this->assertSame(Command::FAILURE, $code);
         $this->assertStringContainsString('no key found for key_id ghost-kid', $out);
@@ -281,7 +281,7 @@ class AuditVerifyCommandTest extends TestCase {
             new FakeQueryBuilder(FakeResult::fromFetchAll([])),
         ]);
 
-        [$code, $out] = $this->run($db, $this->createMock(CertKeyMapper::class));
+        [$code, $out] = $this->invokeCmd($db, $this->createMock(CertKeyMapper::class));
 
         $this->assertSame(Command::FAILURE, $code);
         $this->assertStringContainsString(self::RUNBOOK, $out);
@@ -289,7 +289,7 @@ class AuditVerifyCommandTest extends TestCase {
 
     public function testForkRunbookFlagPrintsPathAndSucceeds(): void {
         $db = new FakeDbConnection([]); // no queries issued — early return
-        [$code, $out] = $this->run($db, $this->createMock(CertKeyMapper::class), ['--fork-runbook' => true]);
+        [$code, $out] = $this->invokeCmd($db, $this->createMock(CertKeyMapper::class), ['--fork-runbook' => true]);
 
         $this->assertSame(Command::SUCCESS, $code);
         $this->assertStringContainsString(self::RUNBOOK, $out);
@@ -302,7 +302,7 @@ class AuditVerifyCommandTest extends TestCase {
             new FakeQueryBuilder(FakeResult::fromFetchAll([])),
         ]);
 
-        [$code, $out] = $this->run($db, $this->createMock(CertKeyMapper::class), ['--json' => true]);
+        [$code, $out] = $this->invokeCmd($db, $this->createMock(CertKeyMapper::class), ['--json' => true]);
 
         $this->assertSame(Command::SUCCESS, $code);
         $decoded = json_decode(trim($out), true, 512, JSON_THROW_ON_ERROR);
@@ -320,7 +320,7 @@ class AuditVerifyCommandTest extends TestCase {
             new FakeQueryBuilder(FakeResult::fromFetchAll([])),
         ]);
 
-        [$code, $out] = $this->run($db, $this->createMock(CertKeyMapper::class), ['--json' => true]);
+        [$code, $out] = $this->invokeCmd($db, $this->createMock(CertKeyMapper::class), ['--json' => true]);
 
         $this->assertSame(Command::FAILURE, $code);
         $decoded = json_decode(trim($out), true, 512, JSON_THROW_ON_ERROR);
