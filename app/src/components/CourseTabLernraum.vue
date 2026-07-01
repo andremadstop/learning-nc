@@ -214,6 +214,65 @@
 				@back="resetLearningPoolSelection" />
 		</div>
 
+		<div v-else-if="currentSubTab === 'videos' && !isInstructor" class="student-videos-section">
+			<TrainingPrivacyNotice />
+
+			<NcNoteCard v-if="!allVideoGatesComplete" type="warning" class="video-gate-note">
+				{{ t('learning', 'Der Kurs-Quiz bleibt gesperrt, bis alle Pflicht-Videos und -Dokumente abgeschlossen sind. Die Sperre wird serverseitig erzwungen — diese Übersicht spiegelt nur deinen Fortschritt.') }}
+			</NcNoteCard>
+			<NcNoteCard v-else type="success" class="video-gate-note">
+				{{ t('learning', 'Alle Pflichtinhalte abgeschlossen. Der Kurs-Quiz ist freigeschaltet.') }}
+			</NcNoteCard>
+
+			<ul class="video-item-list">
+				<li v-for="item in normalizedCourseVideos" :key="'video-' + item.id" class="video-item">
+					<div class="video-item__header">
+						<span class="video-item__title">{{ item.title || defaultVideoTitle(item) }}</span>
+						<span
+							class="video-item__status"
+							:class="isItemComplete(item.id) ? 'video-item__status--done' : 'video-item__status--pending'">
+							{{ isItemComplete(item.id) ? t('learning', '✓ Abgeschlossen') : t('learning', 'Offen') }}
+						</span>
+					</div>
+
+					<VideoPlayer
+						v-if="item.sourceType === 'nc-files'"
+						:content-id="item.id"
+						:duration-seconds="item.durationSeconds"
+						:subtitle-ref="item.subtitleRef"
+						:title="item.title"
+						:initial-completed="isItemComplete(item.id)"
+						@completed="onItemCompleted"
+						@progress="onItemProgress" />
+
+					<VideoConsentOverlay
+						v-else-if="item.sourceType === 'vimeo' || item.sourceType === 'youtube-nocookie'"
+						:source-type="item.sourceType"
+						:embed-id="item.ref"
+						:title="item.title" />
+
+					<div v-else-if="item.sourceType === 'document'" class="video-item__document">
+						<a
+							v-if="item.ref"
+							:href="documentUrl(item)"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="video-item__doc-link">
+							{{ t('learning', 'Dokument öffnen') }}
+						</a>
+						<NcButton
+							type="primary"
+							:disabled="isItemComplete(item.id) || documentPending[item.id]"
+							@click="markDocumentRead(item)">
+							{{ isItemComplete(item.id)
+								? t('learning', 'Als gelesen bestätigt')
+								: (documentPending[item.id] ? t('learning', 'Wird gespeichert…') : t('learning', 'Gelesen')) }}
+						</NcButton>
+					</div>
+				</li>
+			</ul>
+		</div>
+
 		<div v-else-if="currentSubTab === 'tools'" class="course-tools-section">
 			<div class="section-header course-tools-section__header">
 				<div>
@@ -490,6 +549,9 @@ import PortScanner from './PortScanner.vue'
 import RoutingTable from './RoutingTable.vue'
 import SubnetCalculator from './SubnetCalculator.vue'
 import TrainingMode from './TrainingMode.vue'
+import TrainingPrivacyNotice from './TrainingPrivacyNotice.vue'
+import VideoConsentOverlay from './VideoConsentOverlay.vue'
+import VideoPlayer from './VideoPlayer.vue'
 import WiresharkLite from './WiresharkLite.vue'
 import { ALL_TOOL_IDS, TOOL_CATALOG } from '../utils/toolCatalog.js'
 
@@ -516,6 +578,9 @@ export default {
 		RoutingTable,
 		SubnetCalculator,
 		TrainingMode,
+		TrainingPrivacyNotice,
+		VideoConsentOverlay,
+		VideoPlayer,
 		WiresharkLite,
 	},
 
@@ -593,6 +658,10 @@ export default {
 			selectedChapterKeys: [],
 			curriculumAvailableChapters: [],
 			activeToolId: '',
+			courseVideos: [],
+			videoStatus: {},
+			documentPending: {},
+			videosLoaded: false,
 		}
 	},
 
@@ -616,6 +685,9 @@ export default {
 				return tabs
 			}
 			const tabs = []
+			if (this.courseVideos.length > 0) {
+				tabs.push({ id: 'videos', label: t('learning', 'Pflichtinhalte') })
+			}
 			if (this.modeEnabled('training')) {
 				tabs.push({ id: 'training', label: t('learning', 'Training') })
 			}
@@ -681,11 +753,24 @@ export default {
 		isStudentLearningTab() {
 			return !this.isInstructor && ['training', 'leitner', 'exam'].includes(this.currentSubTab)
 		},
+		normalizedCourseVideos() {
+			return this.courseVideos
+				.map((row) => this.normalizeVideo(row))
+				.filter((item) => item.id !== null)
+				.sort((a, b) => a.sortOrder - b.sortOrder)
+		},
+		allVideoGatesComplete() {
+			if (this.normalizedCourseVideos.length === 0) {
+				return true
+			}
+			return this.normalizedCourseVideos.every((item) => this.isItemComplete(item.id))
+		},
 	},
 
 	mounted() {
 		if (!this.isInstructor) {
 			this.fetchQueueCount()
+			this.fetchCourseVideos()
 		}
 		this.ensureActiveToolVisible()
 	},
@@ -733,6 +818,110 @@ export default {
 				// non-fatal
 			} finally {
 				this.loadingQueueCount = false
+			}
+		},
+		async fetchCourseVideos() {
+			// Student-facing gated-content registry. NOTE: the registry read endpoint
+			// (courseVideo#index) is currently instructor-gated server-side, so an
+			// enrolled student receives 403 here and the "Pflichtinhalte" tab simply
+			// does not appear (graceful degrade). A student-readable registry+progress
+			// endpoint is a backend follow-up (see 162-04 SUMMARY deviation/blocker).
+			try {
+				const url = generateUrl('/apps/learning/api/courses/{courseId}/videos', { courseId: this.courseId })
+				const response = await axios.get(url)
+				this.courseVideos = Array.isArray(response.data) ? response.data : []
+				const status = {}
+				for (const row of this.courseVideos) {
+					const item = this.normalizeVideo(row)
+					if (item.id !== null) {
+						status[item.id] = {
+							completed: item.completed === true,
+							coveredPct: typeof item.coveredPct === 'number' ? item.coveredPct : 0,
+						}
+					}
+				}
+				this.videoStatus = status
+			} catch (e) {
+				// 403 (instructor-gated read) / any error → no Pflichtinhalte tab.
+				this.courseVideos = []
+			} finally {
+				this.videosLoaded = true
+			}
+		},
+		normalizeVideo(row) {
+			if (!row || typeof row !== 'object') {
+				return { id: null }
+			}
+			const rawId = row.id ?? row.content_id ?? row.contentId ?? null
+			const id = rawId === null ? null : Number(rawId)
+			return {
+				id: Number.isFinite(id) ? id : null,
+				sourceType: row.source_type ?? row.sourceType ?? 'nc-files',
+				ref: row.video_ref ?? row.videoRef ?? row.embed_id ?? row.embedId ?? '',
+				title: row.title ?? '',
+				durationSeconds: Number(row.duration_seconds ?? row.durationSeconds ?? 0) || 0,
+				subtitleRef: row.subtitle_ref ?? row.subtitleRef ?? '',
+				sortOrder: Number(row.sort_order ?? row.sortOrder ?? 0) || 0,
+				completed: row.completed === true,
+				coveredPct: Number(row.covered_pct ?? row.coveredPct ?? 0) || 0,
+			}
+		},
+		defaultVideoTitle(item) {
+			if (item.sourceType === 'document') {
+				return t('learning', 'Pflichtdokument')
+			}
+			return t('learning', 'Pflichtvideo')
+		},
+		documentUrl(item) {
+			// Documents reference a Nextcloud Files path; open it in the Files app.
+			if (!item.ref) {
+				return '#'
+			}
+			if (/^https?:\/\//.test(item.ref)) {
+				return item.ref
+			}
+			return generateUrl('/apps/files/?dir=/&openfile={ref}', { ref: item.ref })
+		},
+		isItemComplete(id) {
+			return this.videoStatus[id]?.completed === true
+		},
+		setItemStatus(id, patch) {
+			this.videoStatus = {
+				...this.videoStatus,
+				[id]: { ...(this.videoStatus[id] || {}), ...patch },
+			}
+		},
+		onItemCompleted(id) {
+			this.setItemStatus(id, { completed: true, coveredPct: 1 })
+		},
+		onItemProgress(payload) {
+			if (payload && payload.contentId != null) {
+				this.setItemStatus(payload.contentId, {
+					coveredPct: payload.coveredPct,
+					completed: payload.completed === true,
+				})
+			}
+		},
+		async markDocumentRead(item) {
+			if (item.sourceType !== 'document' || this.isItemComplete(item.id)) {
+				return
+			}
+			this.documentPending = { ...this.documentPending, [item.id]: true }
+			try {
+				const response = await axios.post(
+					generateUrl('/apps/learning/api/video-progress/document-read'),
+					{ contentId: item.id },
+				)
+				// Server decides completion; a 200 with completed flips the gate.
+				const completed = response.data?.completed !== false
+				this.setItemStatus(item.id, { completed })
+				if (completed) {
+					this.$emit('gate-updated', { contentId: item.id, completed: true })
+				}
+			} catch (e) {
+				this.$emit('error', t('learning', 'Dokument konnte nicht als gelesen markiert werden.'))
+			} finally {
+				this.documentPending = { ...this.documentPending, [item.id]: false }
 			}
 		},
 		modeEnabled(key) {
@@ -1433,6 +1622,77 @@ export default {
 
 .tab-content {
 	padding: 4px 0 0;
+}
+
+.student-videos-section {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.video-gate-note {
+	margin: 0;
+}
+
+.video-item-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.video-item {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 16px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large, 12px);
+	background: var(--color-main-background);
+}
+
+.video-item__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.video-item__title {
+	font-weight: 600;
+	color: var(--color-main-text);
+}
+
+.video-item__status {
+	font-size: 0.8em;
+	font-weight: 700;
+	padding: 2px 10px;
+	border-radius: 999px;
+	white-space: nowrap;
+}
+
+.video-item__status--done {
+	background: color-mix(in srgb, var(--color-success) 18%, transparent);
+	color: var(--color-success);
+}
+
+.video-item__status--pending {
+	background: color-mix(in srgb, var(--color-warning) 18%, transparent);
+	color: var(--color-warning);
+}
+
+.video-item__document {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.video-item__doc-link {
+	color: var(--color-primary-element);
+	font-weight: 600;
 }
 
 .modal-content {
