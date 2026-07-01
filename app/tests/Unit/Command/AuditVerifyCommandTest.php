@@ -207,6 +207,29 @@ class AuditVerifyCommandTest extends TestCase {
         $this->assertStringContainsString('seq_num=2', $out);
     }
 
+    public function testTamperedPrevHashOnlyDetected(): void {
+        // F1: corrupt ONLY the stored prev_hash column of row seq_num=2. Its chain_hash stays the
+        // (correct) value — so the chain_hash re-derivation from the in-memory prevHash still matches
+        // and would NOT catch it. Only the explicit stored-prev_hash compare flags the tamper.
+        $events = $this->buildChain([
+            $this->event(1, 'course.passed', 10),
+            $this->event(2, 'cert.issued', 10),
+            $this->event(3, 'cert.revoked', 10),
+        ]);
+        $events[1]['prev_hash'] = str_repeat('e', 64); // tamper prev_hash only; chain_hash untouched
+
+        $db = new FakeDbConnection([
+            new FakeQueryBuilder(FakeResult::fromFetchAll($events)),
+            new FakeQueryBuilder(FakeResult::fromFetchAll([])), // no checkpoints
+        ]);
+
+        [$code, $out] = $this->invokeCmd($db, $this->createMock(CertKeyMapper::class));
+
+        $this->assertSame(Command::FAILURE, $code, 'a prev_hash-only tamper must fail verification');
+        $this->assertStringContainsString('prev_hash tampered at seq_num=2', $out);
+        $this->assertStringContainsString(self::RUNBOOK, $out);
+    }
+
     public function testDsgvoErasedRowIsNotFalsePositive(): void {
         // Event 1 was DSGVO-erased: user_id NULL, but user_ref intact — chain_hash was computed
         // at write-time from user_ref (never user_id), so the chain remains valid.

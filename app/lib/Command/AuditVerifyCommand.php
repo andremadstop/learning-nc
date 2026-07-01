@@ -96,6 +96,19 @@ class AuditVerifyCommand extends Command {
                 $prevHash = $fromSeq > 1 ? (string)$row['prev_hash'] : self::GENESIS_PREV_HASH;
             }
 
+            // F1 (Codex review — prev_hash tamper): also assert the STORED prev_hash column equals
+            // the expected previous hash we carry in memory ($prevHash). The chain_hash check alone
+            // misses a prev_hash-only tamper: chain_hash is recomputed from the in-memory $prevHash,
+            // so editing ONLY the stored prev_hash column leaves the recomputed chain_hash matching
+            // and slips through. genesis = 64 zeros; a partial audit (fromSeq > 1) seeds $prevHash
+            // from this very row, so its first-row compare is trivially satisfied (boundary out of scope).
+            if (!hash_equals((string)$row['prev_hash'], $prevHash)) {
+                $failures[] = sprintf(
+                    'Chain prev_hash tampered at seq_num=%d: stored prev_hash does not match the previous event hash',
+                    (int)$row['seq_num']
+                );
+            }
+
             // ========================================================================
             // THE 6-FIELD CANONICAL — FROZEN — DO NOT DEVIATE
             // Verbatim copy of AuditService::logComplianceEvent (Phase 160, commit 18973dc).
