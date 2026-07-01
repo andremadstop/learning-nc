@@ -254,12 +254,22 @@ class AuditExportController extends Controller {
      */
     private function signJsonl(string $jsonlBytes): string {
         $material = $this->keyService->getActiveSigningMaterial();
+        // F3 (Codex review — zero the secret on ALL paths): try/finally so the raw secret is memzeroed
+        // even when the length guard throws, and zero BOTH the local copy and the original array slot.
         $secretKeyRaw = $material['secret'];
-        if (strlen($secretKeyRaw) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
-            throw new \RuntimeException('Invalid Ed25519 key length');
+        try {
+            if (strlen($secretKeyRaw) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
+                throw new \RuntimeException('Invalid Ed25519 key length');
+            }
+            $sigRaw = sodium_crypto_sign_detached($jsonlBytes, $secretKeyRaw);
+        } finally {
+            if (isset($secretKeyRaw) && is_string($secretKeyRaw)) {
+                sodium_memzero($secretKeyRaw);
+            }
+            if (isset($material['secret']) && is_string($material['secret'])) {
+                sodium_memzero($material['secret']);
+            }
         }
-        $sigRaw = sodium_crypto_sign_detached($jsonlBytes, $secretKeyRaw);
-        sodium_memzero($secretKeyRaw);
         return bin2hex($sigRaw);
     }
 

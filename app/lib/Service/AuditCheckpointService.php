@@ -100,12 +100,23 @@ class AuditCheckpointService {
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
         // 6. Sign with sodium DIRECTLY (never SigningService::sign()).
+        // F3 (Codex review — zero the secret on ALL paths): wrap the sign in try/finally so the raw
+        // secret is memzeroed even when the length guard throws, and zero BOTH the local copy and the
+        // original array slot (PHP strings are value-copies — zeroing one does not touch the other).
         $secretKeyRaw = $material['secret'];
-        if (strlen($secretKeyRaw) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
-            throw new \RuntimeException('Invalid Ed25519 secret key length');
+        try {
+            if (strlen($secretKeyRaw) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
+                throw new \RuntimeException('Invalid Ed25519 secret key length');
+            }
+            $sigRaw = sodium_crypto_sign_detached($payload, $secretKeyRaw);
+        } finally {
+            if (isset($secretKeyRaw) && is_string($secretKeyRaw)) {
+                sodium_memzero($secretKeyRaw);
+            }
+            if (isset($material['secret']) && is_string($material['secret'])) {
+                sodium_memzero($material['secret']);
+            }
         }
-        $sigRaw = sodium_crypto_sign_detached($payload, $secretKeyRaw);
-        sodium_memzero($secretKeyRaw);
         $sigHex = bin2hex($sigRaw);
 
         // 7. Persist the checkpoint row (anchor_url NULL — set later by AUDIT-05).
