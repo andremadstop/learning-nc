@@ -512,6 +512,9 @@ namespace OCP\AppFramework {
     if (!class_exists(Http::class)) {
         class Http {
             public const STATUS_OK = 200;
+            public const STATUS_CREATED = 201;
+            public const STATUS_NO_CONTENT = 204;
+            public const STATUS_PARTIAL_CONTENT = 206;
             public const STATUS_BAD_REQUEST = 400;
             public const STATUS_UNAUTHORIZED = 401;
             public const STATUS_FORBIDDEN = 403;

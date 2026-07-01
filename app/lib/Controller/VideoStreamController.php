@@ -105,7 +105,7 @@ class VideoStreamController extends Controller {
         // 4. Parse Range defensively → 416 marker, or [start, end].
         $range = $this->parseRange($this->request->getHeader('Range'), $size);
         if ($range === false) {
-            $resp = new Response(Http::STATUS_REQUESTED_RANGE_NOT_SATISFIABLE);
+            $resp = new Response(416); // Range Not Satisfiable (no OCP constant in this NC version)
             $resp->addHeader('Content-Range', 'bytes */' . $size);
             $resp->addHeader('Accept-Ranges', 'bytes');
             return $resp;
@@ -196,7 +196,7 @@ class VideoStreamController extends Controller {
      * @param array<string,string> $headers
      */
     private function createStreamResponse($stream, int $start, int $length, int $status, array $headers): Response {
-        return new class($stream, $start, $length, $status, $headers, self::CHUNK_SIZE) extends Response implements ICallbackResponse {
+        $response = new class($stream, $start, $length, $headers, self::CHUNK_SIZE) extends Response implements ICallbackResponse {
             /**
              * @param resource             $stream
              * @param array<string,string> $headers
@@ -205,11 +205,10 @@ class VideoStreamController extends Controller {
                 private $stream,
                 private int $start,
                 private int $length,
-                int $status,
                 array $headers,
                 private int $chunkSize,
             ) {
-                parent::__construct($status, $headers);
+                parent::__construct(Http::STATUS_OK, $headers);
             }
 
             public function callback(IOutput $output): void {
@@ -242,5 +241,8 @@ class VideoStreamController extends Controller {
                 fclose($this->stream);
             }
         };
+        // setStatus() accepts a plain int, sidestepping the parent ctor's literal-union type
+        $response->setStatus($status);
+        return $response;
     }
 }

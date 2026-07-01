@@ -67,7 +67,7 @@ class VideoProgressController extends Controller {
             $this->service->recordHeartbeat($this->userId, $contentId, [$start, $end]);
         } catch (DoesNotExistException $e) {
             return new DataResponse(['error' => 'Unknown content'], Http::STATUS_NOT_FOUND);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return new DataResponse(['error' => 'Failed to record progress'], Http::STATUS_BAD_REQUEST);
         }
         return new DataResponse($this->progressState($contentId));
