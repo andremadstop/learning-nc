@@ -81,7 +81,7 @@ class AuditVerifyCommandTest extends TestCase {
         foreach ($partials as $p) {
             $p['prev_hash'] = $prev;
             $p['chain_hash'] = $this->chainHash($p, $prev);
-            $p['user_id'] = $p['user_id'] ?? 'someuser';
+            $p['user_id'] = array_key_exists('user_id', $p) ? $p['user_id'] : 'someuser';
             $rows[] = $p;
             $prev = $p['chain_hash'];
         }
