@@ -1,30 +1,31 @@
 ---
-created: 2026-07-01T18:00:00+02:00
+created: 2026-07-01T20:15:00+02:00
 milestone: v5.2.0 Pflichtschulung
 branch: feature/v5.2.0-pflichtschulung
-resume_at: Phase 161 (planning)
+resume_at: Phase 162 (planning) — Video-/Material-Gating
 author: Claude (Opus 4.8 1M) — autonomous run
 ---
 
-# HANDOFF — v5.2.0 „Pflichtschulung", resume bei Phase 161
+# HANDOFF — v5.2.0 „Pflichtschulung", resume bei Phase 162
 
-> Fresh-context-Übergabe mitten im autonomen Milestone-Lauf. Alles committet, working tree clean bei `f71ce32`.
+> Fresh-context-Übergabe im autonomen Milestone-Lauf. Alles committet, working tree clean bei `d14e193`.
+> **Release-Entscheidung getroffen (2026-07-01): User will „weiter bis v5.2.0 komplett" — 162→163→164 autonom, dann Go für Release-Akt.**
 
 ## 🎛 Autonomie-Vertrag (vom User freigegeben — „YOLO / vollständig autonom bis fertig")
 - **Ohne Rückfrage durchlaufen.** An Phasengrenzen **informieren** (nicht fragen). **Stoppen NUR bei:** (1) Secret/Extern nötig (Forgejo-Anker-Token), (2) Release/Prod/`main`-Merge/Tag/App-Store (bewusste irreversible Akte → am Milestone-Ende dem User vorlegen), (3) echter Blocker.
 - **3-KI-Team-Modell:** Claude orchestriert. **Gemini** (`fabric --model gemini-2.5-pro < input`) = Design/Completeness-Review der Pläne VOR dem Bauen. **Codex** (`codex exec --sandbox read-only "<prompt>" < /dev/null`) = Security-Review des security-kritischen Codes NACH dem Bauen. Gate-Reihenfolge je Phase: fabric→Gemini→Codex.
 
 ## 📍 Stand
-- Milestone v5.2.0, Branch `feature/v5.2.0-pflichtschulung` (off `main`). **1/5 Phasen (20%).**
-- **Phase 160 COMPLETE + verifiziert (12/12)**, commit `f71ce32`. Audit-Hash-Chain + Assignment-Fundament live auf devcloud.
-- **Phase 161 (Audit Hardening) IN PLANUNG:** `161-RESEARCH.md` + `161-VALIDATION.md` fertig. **PLAN.md noch NICHT geschrieben** (Planner-Agent lief beim Session-Ende → evtl. verwaist/partial).
-- devcloud: `learning 5.2.0`, Migrationen 009300/009400/009301 auf PG16 angewandt (+ MariaDB-11.4 cross-checked).
+- Milestone v5.2.0, Branch `feature/v5.2.0-pflichtschulung` (off `main`). **2/5 Phasen (40%).**
+- **Phase 160 COMPLETE + verifiziert (12/12)**, commit `f71ce32`. Audit-Hash-Chain + Assignment-Fundament.
+- **Phase 161 (Audit Hardening) COMPLETE + verifiziert (6/6 automated)**, commit `d14e193`. Ed25519-Checkpoints (Migration 009302) + Forgejo-Anker + `occ audit:verify` + Auditor-Export + Liveness-Widget + Fork-Runbook. **Grumpy-Codex: 7/7 Security-Funde gefixt** (F1 prev_hash-BLOCKER..F7). Gates: PHPStan L5 clean, PHPUnit 222/768, live occ-verify exit 0. **3 human-verify offen** (Andres Durchlauf: Live-Checkpoint-Mint auf non-empty Chain, Overdue-Banner-DOM, Export-UI-Optik).
+- devcloud: `learning 5.2.0.1` (Dev-Bump für Migration 009302; **beim Release auf 5.2.0 zurücksetzen**). PG16. Gruppe `learning-auditors` angelegt.
 - LPIC-1-Prüfung Andre **03.07.** (Ghostline v5.1.0 pausiert, eigener Branch, unangetastet).
 
 ## ▶ RESUME — nächste Schritte
-1. `ls .planning/phases/161-audit-hardening/*-PLAN.md` — **fehlen/partial** → `/gsd:plan-phase 161` neu (Research+Validation existieren → skippt Research). **Vorhanden+vollständig** → weiter mit plan-checker + Gemini-Plan-Review.
-2. Pro Phase die **Pipeline** fahren (s.u.), dann 162, 163, 164.
-3. Milestone-Ende → dem User die **Release-Entscheidung** vorlegen (NICHT auto-releasen/mergen/taggen).
+1. **`/gsd:plan-phase 162`** (Video-/Material-Gating + DSGVO Art.13, VIDEO-01..09 + DSGVO-04). Frischer Kontext empfohlen (`/clear` zuerst) — 162 ist die komplexeste Phase.
+2. Pro Phase die **Pipeline** fahren (s.u.). 162 ist security-kritisch (Streaming-Auth, Gating) → **Codex-Review Pflicht**.
+3. Dann 163 (RBAC-Reports), 164 (Re-Zert). Milestone-Ende → **Release-Akt dem User vorlegen** (info.xml→5.2.0, CHANGELOG, ff `main`, Tag, Codeberg, App-Store) — NICHT autonom.
 
 ## 🔁 Per-Phase-Pipeline (der autonome Loop)
 `plan-phase` (gsd-phase-researcher konsolidiert vorhandene Research → VALIDATION.md manuell → gsd-planner → **parallel** gsd-plan-checker + Gemini-Plan-Review → 1 gezielte Revision) → `execute-phase` (gsd-executor je Plan, Wave-parallel) → **zentraler Gate 1** (deploy + PHPStan + PHPUnit) → **Codex-Security-Review** (bei security-kritischen Phasen) → gsd-verifier → complete (STATE/ROADMAP/REQUIREMENTS **manuell**).
