@@ -246,7 +246,10 @@ class AuditVerifyCommand extends Command {
             if ($response->getStatusCode() !== 200) {
                 return sprintf('Checkpoint %d: anchor unreachable (HTTP %d)', $cpId, $response->getStatusCode());
             }
-            $body = (string)$response->getBody();
+            $body = $response->getBody();
+            if (!is_string($body)) {
+                $body = (string)stream_get_contents($body);
+            }
             $decoded = json_decode($body, true);
             // Forgejo contents API returns the file bytes base64-encoded under `content`.
             $anchored = is_array($decoded) && isset($decoded['content'])
