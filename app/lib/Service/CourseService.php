@@ -569,6 +569,47 @@ class CourseService {
     }
 
     /**
+     * PUBLIC student-membership assertion (Phase 162, B2). Load the course and assert the caller is
+     * an instructor OR an enrolled member of THIS course, returning it. This is the IDOR gate the
+     * Wave-2 VideoStreamController (162-02) calls before serving video bytes — all CourseService
+     * changes for Phase 162 live here so Wave 2 never edits this file. Do NOT reuse the quiz-specific
+     * resolveCoursePoolContext() for byte-serving authorization.
+     *
+     * @throws DoesNotExistException if the course does not exist (controller → 404)
+     * @throws ForbiddenException    if $userId is neither instructor nor member (controller → 403)
+     */
+    public function assertEnrolledInCourse(int $courseId, string $userId): Course {
+        $course = $this->courseMapper->findById($courseId);
+        if (!$this->hasAccess($course, $userId)) {
+            throw new ForbiddenException('Not enrolled in this course');
+        }
+        return $course;
+    }
+
+    /**
+     * Whether the server-side video/material gate is active for a course (Phase 162, B2).
+     * Cheap read, no side effects. Consumed by TrainingService (162-03) before gating the quiz.
+     */
+    public function isVideoGateEnabled(int $courseId): bool {
+        $course = $this->courseMapper->findById($courseId);
+        return $course->getVideoGateEnabled() ?? false;
+    }
+
+    /**
+     * Instructor toggles the video/material gate (Phase 162, B3). Owner-gated via
+     * assertInstructorOfCourse; persists the flag. Called by CourseController::setVideoGate.
+     *
+     * @throws DoesNotExistException if the course does not exist
+     * @throws ForbiddenException    if $userId is not an instructor of this course
+     */
+    public function setVideoGateEnabled(int $courseId, bool $enabled, string $userId): void {
+        $course = $this->assertInstructorOfCourse($courseId, $userId);
+        $course->setVideoGateEnabled($enabled);
+        $course->setUpdatedAt(time());
+        $this->courseMapper->update($course);
+    }
+
+    /**
      * Check if user has any access to course (instructor, co-instructor, or enrolled student)
      */
     private function hasAccess(Course $course, string $userId): bool {

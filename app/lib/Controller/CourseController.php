@@ -120,6 +120,25 @@ class CourseController extends Controller {
     }
 
     /**
+     * Instructor toggles the server-side video/material gate (Phase 162, B3).
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 20, period: 60)]
+    public function setVideoGate(int $courseId, bool $enabled): DataResponse {
+        try {
+            $this->courseService->setVideoGateEnabled($courseId, $enabled, $this->userId);
+            return new DataResponse(['course_id' => $courseId, 'video_gate_enabled' => $enabled]);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            return new DataResponse(['error' => 'Access denied'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Failed to update video gate'], Http::STATUS_BAD_REQUEST);
+        }
+    }
+
+    /**
      * @NoAdminRequired
      */
     #[UserRateLimit(limit: 10, period: 60)]
