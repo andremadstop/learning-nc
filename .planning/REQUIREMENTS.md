@@ -101,18 +101,65 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 
 ## Traceability
 
-| Kategorie | REQ-IDs | Phase (Roadmap füllt) |
-|-----------|---------|------------------------|
-| AUDIT | 01–09 | — |
-| ASSIGN | 01–05 | — |
-| VIDEO | 01–09 | — |
-| RBAC | 01–04 | — |
-| RECERT | 01–07 | — |
-| USER | 01–02 | — |
-| DSGVO | 01–05 | — |
+### Phase-to-Requirements Map
 
-**Coverage:** v1 = 41 Requirements. Mapping auf Phasen: bei Roadmap-Erstellung (Phasen ab 160). Unmapped: TBD.
+| Phase | Name | Requirements |
+|-------|------|--------------|
+| **160** | Foundation — Audit Hash-Chain + Assignment Schemas | AUDIT-01, AUDIT-02, AUDIT-03, ASSIGN-01..05, USER-01, USER-02, DSGVO-01, RBAC-01 |
+| **161** | Audit Hardening — Checkpoints + Anchor + Export + Liveness | AUDIT-04, AUDIT-05, AUDIT-06, AUDIT-07, AUDIT-08, AUDIT-09 |
+| **162** | Video-/Material-Gating + DSGVO Art.13 | VIDEO-01..09, DSGVO-04 |
+| **163** | Teamleiter-RBAC-Reports + DSGVO Art.20 | RBAC-02, RBAC-03, RBAC-04, DSGVO-02 |
+| **164** | Re-Zertifizierung + Retention + i18n Parity | RECERT-01..07, DSGVO-03, DSGVO-05 |
+
+### Requirement-to-Phase Map
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| AUDIT-01 | Phase 160 | Pending |
+| AUDIT-02 | Phase 160 | Pending |
+| AUDIT-03 | Phase 160 | Pending |
+| AUDIT-04 | Phase 161 | Pending |
+| AUDIT-05 | Phase 161 | Pending |
+| AUDIT-06 | Phase 161 | Pending |
+| AUDIT-07 | Phase 161 | Pending |
+| AUDIT-08 | Phase 161 | Pending |
+| AUDIT-09 | Phase 161 | Pending |
+| ASSIGN-01 | Phase 160 | Pending |
+| ASSIGN-02 | Phase 160 | Pending |
+| ASSIGN-03 | Phase 160 | Pending |
+| ASSIGN-04 | Phase 160 | Pending |
+| ASSIGN-05 | Phase 160 | Pending |
+| VIDEO-01 | Phase 162 | Pending |
+| VIDEO-02 | Phase 162 | Pending |
+| VIDEO-03 | Phase 162 | Pending |
+| VIDEO-04 | Phase 162 | Pending |
+| VIDEO-05 | Phase 162 | Pending |
+| VIDEO-06 | Phase 162 | Pending |
+| VIDEO-07 | Phase 162 | Pending |
+| VIDEO-08 | Phase 162 | Pending |
+| VIDEO-09 | Phase 162 | Pending |
+| RBAC-01 | Phase 160 | Pending |
+| RBAC-02 | Phase 163 | Pending |
+| RBAC-03 | Phase 163 | Pending |
+| RBAC-04 | Phase 163 | Pending |
+| RECERT-01 | Phase 164 | Pending |
+| RECERT-02 | Phase 164 | Pending |
+| RECERT-03 | Phase 164 | Pending |
+| RECERT-04 | Phase 164 | Pending |
+| RECERT-05 | Phase 164 | Pending |
+| RECERT-06 | Phase 164 | Pending |
+| RECERT-07 | Phase 164 | Pending |
+| USER-01 | Phase 160 | Pending |
+| USER-02 | Phase 160 | Pending |
+| DSGVO-01 | Phase 160 | Pending |
+| DSGVO-02 | Phase 163 | Pending |
+| DSGVO-03 | Phase 164 | Pending |
+| DSGVO-04 | Phase 162 | Pending |
+| DSGVO-05 | Phase 164 | Pending |
+
+**Coverage:** v1 = 41 Requirements, 5 Phasen (160–164), **41/41 gemappt (100%)**. Migration-Sequenz ab Version009300.
 
 ---
 *Requirements defined: 2026-07-01 (nach Gemini-Konzept-Review)*
+*Traceability filled: 2026-07-01 (Roadmap v5.2.0 created, per-requirement rows added)*
 *Last updated: 2026-07-01*

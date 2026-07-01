@@ -35,6 +35,7 @@
 - ✅ **v4.4.0 Character & Personality** — Phases 149-153 (shipped 2026-04-27)
 - ✅ **v5.0.0 Certification-as-a-Service** — Phases 154-157 (shipped 2026-06-28, tag v5.0.0) — [archive](milestones/v5.0.0-ROADMAP.md)
 - 🚧 **v5.1.0 Ghostline** — Phases 158-159 (interaktives Story-Universum; Akt 1 LPIC-101 / K3-Vertical-Slice, Prüfung 03.07.)
+- 🚧 **v5.2.0 Pflichtschulung** — Phases 160-164 (AWO-Readiness: Audit-Hash-Chain, Video-Gating, Teamleiter-RBAC, Re-Zertifizierung)
 - 📋 **v4.3.0 Onboarding & Content Intelligence** — Phases TBD (deferred — after v5.0.0)
 - 📋 **v6.0.0 Universal Learning Platform (Vision)** — Phases TBD
 
@@ -97,6 +98,23 @@ Plans:
 2. NotebookLM-Lernfilm/-Audio als Kurs-Material verlinkt und erreichbar
 3. Staged Deploy: JSON-only unfeatured auf devcloud getestet; FEATURED-Schaltung (AbenteuerMode.vue) erst nach Andrés Durchspielen
 4. Scope-Sentinel eingehalten — kein PHP/Vue-Edit außer FEATURED-Zeile; Gate 1 (ESLint/Vitest) grün beim JS-Edit
+
+## v5.2.0 — Pflichtschulung (Active)
+
+> Video-/Material-Gating, Teamleiter-RBAC-Reports, Re-Zertifizierung mit manipulationssicherem Audit-Trail.
+> AWO-Sachsen-Lead Jan Knizek (Issue #20). Research: `.planning/research/`.
+> THREE Red Foundations: hash-chained audit trail, first-class assignment objects, learning_oversight schema.
+> Migration sequence starts at Version009300 (live = Version009200 v5.0.0).
+
+**5 Phasen** | **41 v1-Requirements** | alle gemappt ✓
+
+| # | Phase | Goal | Requirements |
+|---|-------|------|--------------|
+| 160 | Foundation — Audit Hash-Chain + Assignment Schemas | Manipulationssichere Audit-Basis + Zuweisungsinfrastruktur | AUDIT-01..03, ASSIGN-01..05, USER-01/02, DSGVO-01, RBAC-01 |
+| 161 | Audit Hardening — Checkpoints + Anchor + Export + Liveness | Unabhängig verifizierbare Ed25519-Checkpoints + Auditor-Export | AUDIT-04..09 |
+| 162 | Video-/Material-Gating + DSGVO Art.13 | Server-seitiges Gating; kein Quiz ohne echtes Durchsehen | VIDEO-01..09, DSGVO-04 |
+| 163 | Teamleiter-RBAC-Reports + DSGVO Art.20 | Gruppengefilterter Report + Datenschutz-Export | RBAC-02..04, DSGVO-02 |
+| 164 | Re-Zertifizierung + Retention + i18n Parity | Kompletter Cert-Lifecycle: Erinnerung, Period-Close, Re-Enrollment | RECERT-01..07, DSGVO-03, DSGVO-05 |
 
 ## v5.0.0 — Certification-as-a-Service (Shipped)
 
@@ -264,7 +282,7 @@ Phases 1-89 shipped across milestones v2.3 through v12.1. See git history for de
 - [ ] **Phase 149: Legal, Art Direction & Copy Guidelines** - Archetype-Naming-Entscheidung dokumentiert, Sensitivity-Reviewer beauftragt, Style-Guide für Chibi-vs-Semi-Realistic, CI-Grep-Check gegen verbotene Eigennamen (LEGAL-01..04, MIGR-04)
 - [ ] **Phase 150: Animation Architecture & A11y Primitive** - character-animations.css + .js, character-reaction-engine.js (generalisiert aus Nova), SVG `<g>`-Sub-Groups mit `transform-box: fill-box`, `prefers-reduced-motion` von Tag 1 gated, A11y-Semantik (ANIM-01..04, A11Y-01..05)
 - [ ] **Phase 151: Skin Picker Framework & Prof. Lern Classic** - SkinRenderer.vue Dispatcher ersetzt NovaDock-Hardcode, SkinPicker.vue in PersonalSettings, Pinia-Store + NC user_config-Persistierung, ProfLernAvatar.vue aus v2.6.1 Git restored + Vue 3 migriert, Meta-Schema-Extension (PICK-01..05, CLASSIC-01..04, META-01..03)
-- [x] **Phase 152: Three Archetype Presets** - SVG-Silhouetten für Theoretiker + Kosmologe + Popularisierer parallel, characters.js-Einträge, je ≥3 Animationen (idle/blink, wave, celebrate), Sensitivity-Sign-off vor Freeze, ANIM-05 Animation-Coverage je Skin (SCHOLAR-01..04, ANIM-05) (completed 2026-04-25)
+- [x] **Phase 152: Three Archetype Presets** - SVG-Silhouetten für Theoretiker + Kosmologe (Power-First Drawing Order) + Astrophysik-Popularisierer + Sensitivity-Sign-off vor Freeze, ANIM-05 Animation-Coverage je Skin (SCHOLAR-01..04, ANIM-05) (completed 2026-04-25)
 - [x] **Phase 153: Migration, Tests, Deploy & App Store** - Zero-Change-Default-Migration, One-time-In-App-Hinweis, Vitest (SkinRenderer + resolveReaction + 4 Avatar-Snapshots), Playwright E2E mit `animations: 'disabled'`, A11y-Audit (structural-pivot), i18n-5-Sprachen-Parität + CI-Key-Check, DevCloud-Test (4-account API smoke), stale-JS-chunk-Cleanup, signature.json re-sign, App-Store-Push (MIGR-01..05, TEST-01..06, I18N-01..03) ✓ 2026-04-27
 
 ## Phase Details
@@ -561,6 +579,88 @@ Plans:
 
 > **Wave structure:** W1 = 157-01 (migration foundation). W2 = 157-02 ‖ 157-03 (parallel — verify service vs revoke controller, no shared files). W3 = 157-04 (depends 157-02 service + 157-03 shared routes.php/i18n). W4 = 157-05 (e2e + phase gate). Live `occ upgrade` apply + credentialed/visual smokes deferred to the authorized demo-course provisioning pass (user option A).
 
+### Phase 160: Foundation — Audit Hash-Chain + Assignment Schemas
+**Goal**: Tamper-evident audit foundation and assignment infrastructure are in place; all callers produce chain-linked compliance events; first-class assignment objects exist in the DB; email-null callers are safe
+**Depends on**: Phase 157 (v5.0.0 complete; AuditService, Certificate, cert chain already exist)
+**Requirements**: AUDIT-01, AUDIT-02, AUDIT-03, ASSIGN-01, ASSIGN-02, ASSIGN-03, ASSIGN-04, ASSIGN-05, USER-01, USER-02, DSGVO-01, RBAC-01
+**Success Criteria** (what must be TRUE):
+  1. `occ learning:audit:verify` reports a clean unbroken hash chain since deploy; manually altering a row in learning_audit_events changes its chain_hash and the next run reports a mismatch at that row
+  2. Instructor assigns a course to a NC group with a due date via the API; a learning_assignments row is created with correct course_id, subject_type='group', subject_id, due_date; LDAP/AD group members are resolved via IGroupManager without any extra config
+  3. A user with no email address completes a course and receives a cert-issued NC notification; no IMailer null-pointer crash; all three migrated callers (PassCriteriaService, IssuanceService, CertificateVerifyService) are email-null safe
+  4. `occ learning:import-users <csv> --group=<nc-group>` creates NC users + assigns them to the group; a 2000-row CSV completes as a background job without HTTP timeout (IJobList-dispatched)
+  5. NC user deletion triggers Art.17 anonymization on audit rows: chain_hash fields are preserved (chain integrity unbroken), PII fields pseudonymized; `occ learning:audit:verify` still reports clean; both learning_assignments and learning_oversight migrations pass on PG16 and MariaDB 11.4
+**Notes**:
+- RED-1: logComplianceEvent() MUST NOT swallow exceptions (unlike logEvent()) — a silently dropped write creates a detectable chain gap
+- Hash formula: chain_hash = sha256(canonical_json(event_type, user_id, course_id, created_at) || prev_hash) — PII excluded from canonical fields
+- RED-3: learning_assignments uses PLAIN composite index (course_id, subject_type, subject_id) — NOT UNIQUE; re-cert creates new rows. active_period_key has UNIQUE index.
+- RBAC-01 (learning_oversight schema) belongs here alongside RED-3 schema work — Phase 163 uses it
+- Migration sequence starts at Version009300
+**Plans**: TBD
+
+### Phase 161: Audit Hardening — Checkpoints + Anchor + Export + Liveness
+**Goal**: The audit trail is independently verifiable (Ed25519-signed weekly checkpoints), operable by the Datenschutzbeauftragter (export), and monitored by admins (liveness widget); Forgejo anchor scaffolded for fork-detection
+**Depends on**: Phase 160 (hash-chain core must exist before checkpoints can be built on top)
+**Requirements**: AUDIT-04, AUDIT-05, AUDIT-06, AUDIT-07, AUDIT-08, AUDIT-09
+**Success Criteria** (what must be TRUE):
+  1. A weekly Ed25519 checkpoint is verifiable by an external party using only the did.json public key and sodium_crypto_sign_verify_detached — no app trust or DB access needed; AuditCheckpointService uses sodium_crypto_sign_detached directly (NOT SigningService::sign(), whose typ:vc+jwt header is frozen by 155-ADR-ANCHOR)
+  2. Datenschutzbeauftragter (not shell admin) generates a signed auditor export via the app UI: selects date range + course → downloads PDF summary + JSONL event log + detached Ed25519 sig file; export does not require admin role
+  3. Admin-settings widget shows: last checkpoint date, event count since last checkpoint, anchor status (anchored/unanchored/overdue); warning indicator if checkpoint has not run within configured interval
+  4. `occ learning:audit:verify` validates chain integrity + checkpoint signatures + anchor_url consistency; fork-runbook URL in output; Forgejo anchor (AUDIT-05) scaffolded with config flag + anchor_url column on learning_audit_checkpoints (off by default; single HTTP PUT to Forgejo contents API when enabled)
+**Notes**:
+- AuditCheckpointService MUST use sodium_crypto_sign_detached directly — NOT SigningService (155-ADR-ANCHOR frozen to typ:vc+jwt)
+- Forgejo anchor defeats the admin-holds-both-key-and-DB threat model; design+scaffold now, enable via config
+- anchor_url column on learning_audit_checkpoints is nullable until anchored
+**Plans**: TBD
+
+### Phase 162: Video-/Material-Gating + DSGVO Art.13
+**Goal**: Students cannot advance past a locked gate without genuinely completing the required video or document; third-party embeds load only after DSGVO Art.13 consent; all enforcement is server-side
+**Depends on**: Phase 160 (VideoProgressService emits compliance events; course.video.completed event type defined in Phase 160 AUDIT-03; assignment schema exists for gated-course concept)
+**Requirements**: VIDEO-01, VIDEO-02, VIDEO-03, VIDEO-04, VIDEO-05, VIDEO-06, VIDEO-07, VIDEO-08, VIDEO-09, DSGVO-04
+**Success Criteria** (what must be TRUE):
+  1. A student who has watched < 95% of a NC-MP4 finds the quiz locked (403 from TrainingService::startSession()); the quiz unlocks immediately after genuine 95% completion — client-side flags are never trusted
+  2. Rapid heartbeat pings (< 5 seconds apart) do not advance covered_pct; the server discards implausible pings silently and VideoProgressService merges intervals server-side
+  3. Clicking the "Gelesen" button on a document material records the read event and unlocks the quiz tab; the gate is enforced at the server (not only in the UI)
+  4. Vimeo and YouTube embeds show a DSGVO Art.13 consent overlay on first view; embeds load only after user accepts; youtube-nocookie.com + dnt=1 parameter used; Vimeo dnt=1; transient interval data in learning_video_progress.intervals_json is deleted at the completed_at write (only user_id, content_id, completed_at persisted)
+  5. Video player is keyboard-navigable (Space=play/pause, arrow=seek); a WebVTT subtitle track is available (empty if no captions provided); WCAG AA contrast passes on controls; screen reader receives play/pause state via aria-live
+**Notes**:
+- Server-side enforcement in TrainingService::startSession() — NEVER trust client flags (critical pitfall)
+- VideoStreamController must use IRootFolder->getUserFolder($instructorId)->fopen() — NOT NC_SHARE_URL; IShareManager not recommended
+- Zero new npm/composer deps: Vimeo + YouTube SDKs loaded lazily from CDN at runtime; native `<video>` for NC-MP4
+- Heartbeat plausibility: server discards pings < 5s apart
+- DSGVO transient segments: intervals_json deleted at completed_at write
+- INotificationManager as primary reminder channel (email-null safe); IMailer additive only where email is non-null
+**Plans**: TBD
+
+### Phase 163: Teamleiter-RBAC-Reports + DSGVO Art.20
+**Goal**: Team leads can view group-scoped compliance status, send reminders, and individuals can export their own data; no cross-group data leaks at any layer
+**Depends on**: Phase 160 (learning_oversight schema must exist), Phase 162 (assignment status with video-gated completions drives the report)
+**Requirements**: RBAC-02, RBAC-03, RBAC-04, DSGVO-02
+**Success Criteria** (what must be TRUE):
+  1. A team lead's report shows only members of their assigned group; manipulating the URL to reference another group_id returns 403; the DB query uses WHERE user_id IN (group members) enforced by assertTeamLeadForGroup() before any data access
+  2. Team lead dashboard shows: members with incomplete/overdue assignments, upcoming cert expirations, and an "Erinnerung senden" button that dispatches an NC notification to the selected member (INotificationManager, email-null safe)
+  3. A user can export their own certificates and learning history as machine-readable JSON (DSGVO Art.20); the export contains only that user's data; requesting another user's data returns 403
+**Notes**:
+- IDOR protection: assertTeamLeadForGroup() as first line of CertificateReportService::getGroupReport(); group filter at DB level
+- INotificationManager primary; IMailer additive (email-null safe per Phase 160 USER-01 fix)
+**Plans**: TBD
+
+### Phase 164: Re-Zertifizierung + Retention + i18n Parity
+**Goal**: The cert validity lifecycle is complete — reminders fire at configured thresholds, old periods close gracefully, students re-enroll and receive new certs, data ages out safely, and all v5.2.0 strings are multilingual
+**Depends on**: Phase 160 (assignment schema with active_period_key), Phase 163 (Teamleiter sees expiry in their dashboard; reminder loop must not storm)
+**Requirements**: RECERT-01, RECERT-02, RECERT-03, RECERT-04, RECERT-05, RECERT-06, RECERT-07, DSGVO-03, DSGVO-05
+**Success Criteria** (what must be TRUE):
+  1. NC notifications fire at T-30 and T-7 per cert per configured threshold; each threshold-cert pair fires exactly once (idempotent reminder tracking — no storms even if job runs multiple times)
+  2. After the grace period expires, RecertPeriodCloseJob sets revoked_at, NULLs active_period_key, and creates a new learning_assignments row; the student can re-enroll and receive a new cert; the old verify URL permanently returns "expired"
+  3. Period-close idempotency: running RecertPeriodCloseJob multiple times creates exactly one new assignment row per period (UNIQUE active_period_key constraint enforced)
+  4. Cert validity is configurable per course (default 12 months) with per-assignment override; retention auto-anonymizes certs and audit rows after configured years; date math uses DateTimeImmutable::modify('+1 year') — NOT +365*86400; unit test covers DST crossing (2026-03-29 → 2027-03-29 = correct)
+  5. i18n parity CI check passes for all 5 languages (DE/EN/FR/RU/AR) across all cert/notification/re-enrollment strings added in v5.2.0; no new string key exists in DE without an entry in all 4 other language files
+**Notes**:
+- RECERT-05 (guard redesign in PassCriteriaService): MANDATORY Codex security review before implementation — checks "active assignment with active_period_key IS NOT NULL AND status != passed" instead of "ever passed"; this is open-heart surgery on the cert flow
+- DST-safe: DateTimeImmutable::modify('+1 year') only; unit test REQUIRED for 2026-03-29 → 2027-03-29
+- RecertPeriodCloseJob is a daily TimedJob
+- AWO Betriebsvereinbarung note: client must be informed that a works-council agreement (BetrVG §87 Abs.1 Nr.6) is required before production rollout — transient segment design (Phase 162) is the technical mitigation
+**Plans**: TBD
+
 
 ## Progress Table
 
@@ -594,3 +694,8 @@ Plans:
 | 155. Certificate-Artifact & Issuer | v5.0.0 | 7/7 | Complete (CERT-07/08/13 visual verify deferred to demo course) | 2026-06-27 |
 | 156. Compliance-Report | v5.0.0 | 2/2 | Complete (156-01 backend + 156-02 UI; all 4 REPORT reqs done) | - |
 | 157. Public-Verify | v5.0.0 | 5/5 | ✅ Complete (4 waves; gsd-verifier CLOSE 6/6; live-activation rides demo-course provisioning pass) | 157-VERIFICATION.md |
+| 160. Foundation — Audit Hash-Chain + Assignment Schemas | v5.2.0 | 0/TBD | Not started | - |
+| 161. Audit Hardening — Checkpoints + Anchor + Export + Liveness | v5.2.0 | 0/TBD | Not started | - |
+| 162. Video-/Material-Gating + DSGVO Art.13 | v5.2.0 | 0/TBD | Not started | - |
+| 163. Teamleiter-RBAC-Reports + DSGVO Art.20 | v5.2.0 | 0/TBD | Not started | - |
+| 164. Re-Zertifizierung + Retention + i18n Parity | v5.2.0 | 0/TBD | Not started | - |
