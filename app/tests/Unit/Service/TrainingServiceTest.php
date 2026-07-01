@@ -11,9 +11,11 @@ use OCA\Learning\Db\Question;
 use OCA\Learning\Db\QuestionMapper;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\TrainingService;
 use OCA\Learning\Service\TranslationService;
+use OCA\Learning\Service\VideoProgressService;
 use OCA\Learning\Service\XpService;
 use OCA\Learning\Service\LernprofilService;
 use OCA\Learning\Service\NoteGeneratorService;
@@ -64,6 +66,121 @@ class TrainingServiceTest extends TestCase {
         $this->assertSame(42, $insertBuilder->insertValues['pool_id']['value']);
         $this->assertSame('training', $insertBuilder->insertValues['mode']['value']);
         $this->assertSame(2, $insertBuilder->insertValues['total_questions']['value']);
+    }
+
+    /**
+     * VIDEO-03: on a gated course whose required video is incomplete, startSession() must throw
+     * ForbiddenException (→ 403) and NEVER reach resolveCoursePoolContext / the session insert.
+     */
+    public function testStartSessionThrowsWhenVideoGateEnabledAndIncomplete(): void {
+        $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch(false));
+        $db = new FakeDbConnection([$activeExamBuilder]);
+
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->expects($this->once())
+            ->method('isVideoGateEnabled')
+            ->with(7)
+            ->willReturn(true);
+        // The gate is BEFORE any session work — resolveCoursePoolContext must never be reached.
+        $courseService->expects($this->never())->method('resolveCoursePoolContext');
+
+        $videoProgressService = $this->createMock(VideoProgressService::class);
+        $videoProgressService->expects($this->once())
+            ->method('assertCourseVideosComplete')
+            ->with(7, 'alice')
+            ->willThrowException(new ForbiddenException('Required video/material not completed'));
+
+        $service = $this->createService(
+            db: $db,
+            poolMapper: $poolMapper,
+            courseService: $courseService,
+            videoProgressService: $videoProgressService
+        );
+
+        $this->expectException(ForbiddenException::class);
+        $service->startSession(42, 'alice', null, 'training', null, null, 7);
+    }
+
+    /**
+     * VIDEO-03: when the course gate is turned OFF, the completion assertion must never be invoked —
+     * the gate engages solely on the instructor-set video_gate_enabled flag — and startSession proceeds.
+     */
+    public function testStartSessionSkipsGateWhenDisabled(): void {
+        $service = $this->buildGatedCourseService(
+            gateEnabled: false,
+            expectAssertion: false,
+            insertBuilder: $insertBuilder
+        );
+
+        $payload = $service->startSession(42, 'alice', null, 'training', null, null, 7);
+
+        $this->assertSame(99, $payload['session_id']);
+        $this->assertSame(7, $insertBuilder->insertValues['course_id']['value']);
+    }
+
+    /**
+     * VIDEO-03: when the gate is enabled AND completion is satisfied (assertCourseVideosComplete does
+     * not throw), startSession proceeds and writes the session row.
+     */
+    public function testStartSessionProceedsWhenGateSatisfied(): void {
+        $service = $this->buildGatedCourseService(
+            gateEnabled: true,
+            expectAssertion: true,
+            insertBuilder: $insertBuilder
+        );
+
+        $payload = $service->startSession(42, 'alice', null, 'training', null, null, 7);
+
+        $this->assertSame(99, $payload['session_id']);
+        $this->assertSame(2, $payload['total_questions']);
+    }
+
+    /**
+     * Shared harness for the gate-disabled and gate-satisfied course paths: a course (id 7) on pool 42
+     * that resolves to two questions and inserts a session with generated id 99.
+     */
+    private function buildGatedCourseService(bool $gateEnabled, bool $expectAssertion, &$insertBuilder): TrainingService {
+        $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch(false));
+        $insertBuilder = new FakeQueryBuilder(new FakeResult(), 0, 99);
+        $db = new FakeDbConnection([$activeExamBuilder, $insertBuilder]);
+
+        $questions = [
+            $this->makeQuestion(10, 42, 'First'),
+            $this->makeQuestion(11, 42, 'Second'),
+        ];
+
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->method('findByIds')->with([10, 11])->willReturn($questions);
+        $questionMapper->method('findByPoolId')->with(42)->willReturn($questions);
+
+        $answerMapper = $this->createMock(AnswerMapper::class);
+        $answerMapper->method('findByQuestion')
+            ->willReturnCallback(fn(int $questionId): array => [$this->makeAnswer($questionId * 10, $questionId, 'Answer')]);
+
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $courseService = $this->createMock(CourseService::class);
+        $courseService->method('isVideoGateEnabled')->with(7)->willReturn($gateEnabled);
+        $courseService->method('resolveCoursePoolContext')
+            ->with(7, 42, 'alice')
+            ->willReturn(['question_ids' => [10, 11]]);
+
+        $videoProgressService = $this->createMock(VideoProgressService::class);
+        $videoProgressService->expects($expectAssertion ? $this->once() : $this->never())
+            ->method('assertCourseVideosComplete');
+
+        return $this->createService(
+            db: $db,
+            questionMapper: $questionMapper,
+            answerMapper: $answerMapper,
+            poolMapper: $poolMapper,
+            courseService: $courseService,
+            videoProgressService: $videoProgressService
+        );
     }
 
     public function testCompleteSessionAwardsXpUpdatesCacheAndMergesBadges(): void {
@@ -161,7 +278,9 @@ class TrainingServiceTest extends TestCase {
         ?BadgeService $badgeService = null,
         ?StreakService $streakService = null,
         ?XpService $xpService = null,
-        ?FakeCacheFactory $cacheFactory = null
+        ?FakeCacheFactory $cacheFactory = null,
+        ?CourseService $courseService = null,
+        ?VideoProgressService $videoProgressService = null
     ): TrainingService {
         $questionMapper ??= $this->createMock(QuestionMapper::class);
         $answerMapper ??= $this->createMock(AnswerMapper::class);
@@ -174,7 +293,8 @@ class TrainingServiceTest extends TestCase {
         $translationService = $this->createMock(TranslationService::class);
         $config = $this->createMock(IConfig::class);
         $logger = $this->createMock(LoggerInterface::class);
-        $courseService = $this->createMock(CourseService::class);
+        $courseService ??= $this->createMock(CourseService::class);
+        $videoProgressService ??= $this->createMock(VideoProgressService::class);
 
         $translationService->method('normalizeLang')
             ->willReturnCallback(static fn(?string $lang): ?string => $lang === '' ? null : $lang);
@@ -201,7 +321,8 @@ class TrainingServiceTest extends TestCase {
             $logger,
             $courseService,
             $lernprofilService,
-            $noteGeneratorService
+            $noteGeneratorService,
+            $videoProgressService
         );
     }
 

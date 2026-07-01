@@ -34,6 +34,7 @@ class TrainingService {
     private CourseService $courseService;
     private LernprofilService $lernprofilService;
     private NoteGeneratorService $noteGeneratorService;
+    private VideoProgressService $videoProgressService;
 
     /** TRIG-01: Exam score threshold below which a weakness note is auto-generated. */
     private const EXAM_LOW_SCORE_THRESHOLD = 70;
@@ -53,7 +54,8 @@ class TrainingService {
         LoggerInterface $logger,
         CourseService $courseService,
         LernprofilService $lernprofilService,
-        NoteGeneratorService $noteGeneratorService
+        NoteGeneratorService $noteGeneratorService,
+        VideoProgressService $videoProgressService
     ) {
         $this->db = $db;
         $this->questionMapper = $questionMapper;
@@ -70,6 +72,7 @@ class TrainingService {
         $this->courseService = $courseService;
         $this->lernprofilService = $lernprofilService;
         $this->noteGeneratorService = $noteGeneratorService;
+        $this->videoProgressService = $videoProgressService;
     }
 
     private function applyNullableCourseFilter($qb, ?int $courseId): void {
@@ -570,6 +573,14 @@ class TrainingService {
         }
 
         if ($courseId !== null) {
+            // VIDEO-03 gate: a course may require its videos/documents to be completed before the quiz
+            // unlocks. Enforcement is server-side ONLY — a client flag can never bypass it. The gate
+            // engages solely when the instructor turned it on (isVideoGateEnabled, 162-01) and throws
+            // ForbiddenException (→ 403) when any required content is incomplete/misconfigured. Placed
+            // BEFORE the learning_sessions insert so an incomplete user never gets a session row.
+            if ($this->courseService->isVideoGateEnabled($courseId)) {
+                $this->videoProgressService->assertCourseVideosComplete($courseId, $userId);
+            }
             $context = $this->courseService->resolveCoursePoolContext($courseId, $poolId, $userId);
             $questionIds = $context['question_ids'];
             $questions = $this->questionMapper->findByIds($questionIds);

@@ -26,6 +26,11 @@ class TrainingController extends Controller {
     public function start(int $poolId, ?int $limit = null, string $mode = 'training', ?int $timeLimitSeconds = null, ?string $lang = null, ?int $courseId = null, ?string $questionType = null): DataResponse {
         try {
             return new DataResponse($this->service->startSession($poolId, $this->userId, $limit, $mode, $timeLimitSeconds, $lang, $courseId, $questionType), 201);
+        } catch (\OCA\Learning\Service\ForbiddenException $e) {
+            // VIDEO-03: the video/material gate is a hard 403, not a generic 400 — the client must
+            // distinguish "watch the video first" from a bad request. Subclass catch MUST precede the
+            // generic \Exception below (which would otherwise swallow it as a 400).
+            return new DataResponse(['error' => $e->getMessage() ?: 'Video or material must be completed first', 'gate' => 'video'], Http::STATUS_FORBIDDEN);
         } catch (\Exception $e) {
             return new DataResponse(['error' => $e->getMessage() ?: 'Failed to start training session'], 400);
         }
