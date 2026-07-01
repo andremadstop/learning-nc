@@ -646,7 +646,11 @@ Plans:
 - Heartbeat plausibility: server discards pings < 5s apart
 - DSGVO transient segments: intervals_json deleted at completed_at write
 - INotificationManager as primary reminder channel (email-null safe); IMailer additive only where email is non-null
-**Plans**: TBD
+**Plans**: 4 plans in 3 waves
+- [ ] 162-01-PLAN.md — Security core: Migration 009500 (registry + progress + gate column) + VideoProgressService unit-first (VIDEO-02/04/06/07/09)
+- [ ] 162-02-PLAN.md — NC-Files streaming (Range-206 + 416) + registry admin CRUD + VideoSourceAdapter interface (VIDEO-01/09/05)
+- [ ] 162-03-PLAN.md — startSession 403 gate + VideoProgressController (heartbeat/complete/document-read) (VIDEO-03/04/07)
+- [ ] 162-04-PLAN.md — WCAG AA player + third-party consent overlay + Art.13 training-start notice (VIDEO-05/08, DSGVO-04)
 
 ### Phase 163: Teamleiter-RBAC-Reports + DSGVO Art.20
 **Goal**: Team leads can view group-scoped compliance status, send reminders, and individuals can export their own data; no cross-group data leaks at any layer
