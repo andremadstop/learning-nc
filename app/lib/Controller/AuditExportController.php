@@ -38,6 +38,16 @@ use OCP\IURLGenerator;
  *         sodium_crypto_sign_verify_detached(hex2bin(trim($sigFile)), $jsonlBytes, $pubKey)
  */
 class AuditExportController extends Controller {
+    /**
+     * F5 (Codex review — DSGVO): keys that MUST never leave the instance in an export, even though a
+     * compliance context_json is supposed to be facts-only. Matched case-insensitively and recursively
+     * so a nested/mislabelled PII key cannot slip through.
+     */
+    private const PII_DENYLIST = [
+        'user_id', 'uid', 'email', 'mail', 'e_mail',
+        'displayname', 'display_name', 'ip', 'ip_address',
+    ];
+
     private KeyService $keyService;
     private IGroupManager $groupManager;
     private IConfig $config;
@@ -220,6 +230,15 @@ class AuditExportController extends Controller {
                 continue;
             }
 
+            // F5 (Codex review — DSGVO): strip any denylisted PII key from the emitted context.
+            // Preserve the EXACT stored bytes when nothing was stripped (the compliance common case:
+            // facts-only context) — re-encoding would otherwise drift bytes (e.g. slash escaping) and
+            // needlessly diverge from the stored payload_hash source string.
+            $sanitizedCtx = $this->stripPii($ctx);
+            $outContextJson = ($sanitizedCtx === $ctx)
+                ? $contextJson
+                : (string)json_encode($sanitizedCtx, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
             $out[] = [
                 'seq_num' => (int)$row['seq_num'],
                 'event_key' => (string)($row['event_key'] ?? ''),
@@ -227,10 +246,32 @@ class AuditExportController extends Controller {
                 'course_id' => $courseId,
                 'created_at' => (int)($row['created_at'] ?? 0),
                 'chain_hash' => isset($row['chain_hash']) ? (string)$row['chain_hash'] : null,
-                'context_json' => $contextJson,
+                'context_json' => $outContextJson,
             ];
         }
 
+        return $out;
+    }
+
+    /**
+     * F5 (Codex review — DSGVO): recursively drop every PII_DENYLIST key (case-insensitive) from a
+     * decoded context structure. Non-array scalars pass through unchanged; nested arrays are cleaned
+     * depth-first so a PII key buried under an inner object is also removed.
+     *
+     * @param mixed $value
+     * @return mixed
+     */
+    private function stripPii(mixed $value): mixed {
+        if (!is_array($value)) {
+            return $value;
+        }
+        $out = [];
+        foreach ($value as $k => $v) {
+            if (is_string($k) && in_array(strtolower($k), self::PII_DENYLIST, true)) {
+                continue; // drop the PII key entirely (key AND value)
+            }
+            $out[$k] = is_array($v) ? $this->stripPii($v) : $v;
+        }
         return $out;
     }
 

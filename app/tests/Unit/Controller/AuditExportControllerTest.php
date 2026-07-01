@@ -229,6 +229,42 @@ class AuditExportControllerTest extends TestCase {
     }
 
     /**
+     * Test 7 (F5 — DSGVO PII strip): a seeded event whose context_json carries denylisted PII keys
+     * (user_id + email, plus a nested ip) must have NEITHER the keys NOR their values in the exported
+     * JSONL. Non-PII facts (course_id, score) survive.
+     */
+    public function testExportedContextStripsPii(): void {
+        $this->groupManager->method('isInGroup')->willReturn(true);
+
+        $rows = [[
+            'seq_num' => 1,
+            'event_key' => 'course.passed',
+            'user_ref' => 'cccccccccccccccc',
+            'context_json' => '{"course_id":99,"score":80,"user_id":"secret-uid-xyz","email":"leak@example.com","meta":{"ip":"10.1.2.3"}}',
+            'created_at' => 1700000200,
+            'chain_hash' => 'abc0abc0abc0abc0abc0abc0abc0abc0abc0abc0abc0abc0abc0abc0abc0abc0a',
+            'user_id' => 'secret-uid-xyz',
+        ]];
+
+        $jsonl = $this->makeController($this->dbWithRows($rows))->events()->render();
+
+        // Keys are gone.
+        $this->assertStringNotContainsString('user_id', $jsonl, 'user_id key must be stripped');
+        $this->assertStringNotContainsString('email', $jsonl, 'email key must be stripped');
+        $this->assertStringNotContainsString('"ip"', $jsonl, 'nested ip key must be stripped');
+        // Values are gone.
+        $this->assertStringNotContainsString('secret-uid-xyz', $jsonl, 'user_id value must not leak');
+        $this->assertStringNotContainsString('leak@example.com', $jsonl, 'email value must not leak');
+        $this->assertStringNotContainsString('10.1.2.3', $jsonl, 'ip value must not leak');
+        // Non-PII facts survive.
+        $this->assertStringContainsString('"course_id":99', $jsonl, 'facts must survive the strip');
+        $this->assertStringContainsString('"score":80', $jsonl);
+        // The pseudonymous user_ref (intended) is still present.
+        $row = json_decode(trim($jsonl), true);
+        $this->assertArrayHasKey('user_ref', $row);
+    }
+
+    /**
      * Test 6 (page gate): an auditor reaches the export page (TemplateResponse for the self-contained UI).
      */
     public function testAuditorReachesPage(): void {
