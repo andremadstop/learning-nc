@@ -619,14 +619,15 @@ Plans:
 - Forgejo anchor defeats the admin-holds-both-key-and-DB threat model; design+scaffold now, enable via config
 - anchor_url column on learning_audit_checkpoints is nullable until anchored
 - ⚠ FORWARD-DEP from Phase 160: the shipped chain canonical is **6 fields** (seq, event_key, user_ref, course_id, created_at, **payload_hash**=sha256(context_json), added by Codex FIX-4). `occ learning:audit:verify` MUST reconstruct this exact 6-field ksort'd canonical + `sha256(canonical . '|' . prev_hash)`, else it will report every compliance event as tampered. user_ref = hash_hmac('sha256','learning:audit_user_ref', instance-secret). CAS state row pinned to id=1.
-**Plans**: 5 plans
+**Plans**: 6/6 — ✓ **COMPLETE 2026-07-01** (verified 6/6 must-haves automated; PHPStan L5 clean, PHPUnit 222/768; migration 009302 applied on PG16; live occ audit:verify exit 0; export gate 403→200; getAdmin 5 audit_* keys HTTP 200; grumpy-Codex security review 7/7 findings fixed [F1 prev_hash BLOCKER, F2 checkpoint field-binding, F3 memzero, F4 anchor raw-url, F5 PII-strip, F6 SSRF-https, F7 pubkey-length], commits 730261f..c3c75cd. 3 visual/live-data items → human run-through: live checkpoint mint on non-empty chain, overdue-banner DOM, export UI/print eye-check.)
 
 Plans:
-- [ ] 161-01-PLAN.md — Wave 1: Version009302 migration (learning_audit_checkpoints) + AuditCheckpointService (Ed25519 signing) + AuditCheckpointJob (weekly TimedJob) (AUDIT-04)
-- [ ] 161-02-PLAN.md — Wave 2: Forgejo anchor scaffold in AuditCheckpointService (off by default, soft-fail, anchor_url) (AUDIT-05)
-- [ ] 161-03-PLAN.md — Wave 2: occ learning:audit:verify (6-field canonical reconstruct + checkpoint sig verify + fork-runbook URL) (AUDIT-06)
-- [ ] 161-04-PLAN.md — Wave 2: AuditExportController (@NoAdminRequired, group-gated) + JSONL + sig + HTML-print (AUDIT-07, autonomous:false)
-- [ ] 161-05-PLAN.md — Wave 3: AdminSettings liveness widget + docs/audit-fork-runbook.md (AUDIT-08, AUDIT-09)
+- [x] 161-01-PLAN.md — Wave 1: Version009302 migration (learning_audit_checkpoints) + AuditCheckpointService (Ed25519 signing) + AuditCheckpointJob (weekly TimedJob) (AUDIT-04)
+- [x] 161-02-PLAN.md — Wave 2: Forgejo anchor scaffold in AuditCheckpointService (off by default, soft-fail, anchor_url) (AUDIT-05)
+- [x] 161-03-PLAN.md — Wave 2: occ learning:audit:verify (6-field canonical reconstruct + checkpoint sig verify + fork-runbook URL) (AUDIT-06)
+- [x] 161-04-PLAN.md — Wave 2: AuditExportController (@NoAdminRequired, group-gated) + JSONL + sig + HTML-print + auditor page (AUDIT-07)
+- [x] 161-05-PLAN.md — Wave 3: SettingsController.getAdmin() + AdminSettings.vue liveness widget (AUDIT-08)
+- [x] 161-06-PLAN.md — Wave 3: docs/audit-fork-runbook.md fork-resolution runbook (AUDIT-09)
 
 ### Phase 162: Video-/Material-Gating + DSGVO Art.13
 **Goal**: Students cannot advance past a locked gate without genuinely completing the required video or document; third-party embeds load only after DSGVO Art.13 consent; all enforcement is server-side
@@ -711,7 +712,7 @@ Plans:
 | 156. Compliance-Report | v5.0.0 | 2/2 | Complete (156-01 backend + 156-02 UI; all 4 REPORT reqs done) | - |
 | 157. Public-Verify | v5.0.0 | 5/5 | ✅ Complete (4 waves; gsd-verifier CLOSE 6/6; live-activation rides demo-course provisioning pass) | 157-VERIFICATION.md |
 | 160. Foundation — Audit Hash-Chain + Assignment Schemas | v5.2.0 | 6/6 | ✅ Complete (PHPStan L5 clean, PHPUnit 183/0/0, migrations 009300/009400/009301 applied) | 2026-07-01 |
-| 161. Audit Hardening — Checkpoints + Anchor + Export + Liveness | v5.2.0 | 0/5 | Planned | - |
+| 161. Audit Hardening — Checkpoints + Anchor + Export + Liveness | v5.2.0 | 6/6 | ✓ Complete | 2026-07-01 |
 | 162. Video-/Material-Gating + DSGVO Art.13 | v5.2.0 | 0/TBD | Not started | - |
 | 163. Teamleiter-RBAC-Reports + DSGVO Art.20 | v5.2.0 | 0/TBD | Not started | - |
 | 164. Re-Zertifizierung + Retention + i18n Parity | v5.2.0 | 0/TBD | Not started | - |

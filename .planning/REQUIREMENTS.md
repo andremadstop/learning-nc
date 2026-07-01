@@ -15,12 +15,12 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 - [x] **AUDIT-01**: Jedes Compliance-Ereignis wird über `AuditService::logComplianceEvent()` in eine **Hash-Chain** geschrieben (`learning_audit_events` + `learning_audit_chain_state`), `chain_hash = sha256(canonical_json(seq, event_key, user_ref, course_id, created_at) || prev_hash)`.
 - [x] **AUDIT-02**: `logComplianceEvent()` schluckt Exceptions **nicht** (anders als `logEvent()`) — ein still verworfener Compliance-Write sähe für einen Verifier wie Manipulation aus.
 - [x] **AUDIT-03**: Die drei Compliance-Caller (`PassCriteriaService::emitPassEventIfFirst()`, `IssuanceService`, `CertificateController::revoke()`) sind auf `logComplianceEvent()` migriert; das Event-Interface + alle Compliance-Event-Typen (inkl. `course.video.completed`) sind in Phase 1 definiert.
-- [ ] **AUDIT-04**: Wöchentliche **Ed25519-signierte Checkpoints** über die Chain (`learning_audit_checkpoints` + `AuditCheckpointService` + `AuditCheckpointJob`), via `sodium_crypto_sign_detached` (NICHT `SigningService::sign()`, dessen Header auf `vc+jwt` fixiert ist).
-- [ ] **AUDIT-05**: **Externer Forgejo-Anker** — periodischer signierter Digest per HTTP-PUT in ein UG-Forgejo-Audit-Repo (Config-Flag + Token, `anchor_url`-Spalte). Schützt gegen den Admin, der Key UND DB hält, und gegen Timestamp-Backdating (Forgejo-Commit-Zeit ist admin-unabhängig).
-- [ ] **AUDIT-06**: `occ learning:audit:verify` prüft Chain-Integrität + Checkpoint-Signaturen + Anker-Konsistenz und meldet Brüche/Forks/Lücken.
-- [ ] **AUDIT-07**: **Auditor-Export** — ein berechtigter Nutzer (Datenschutzbeauftragter, nicht nur Shell-Admin) erzeugt einen signierten, menschenlesbaren Nachweis-Export (PDF + begleitendes JSONL/Signatur-File) für einen Zeitraum/Kurs.
-- [ ] **AUDIT-08**: **Audit-Liveness** — Admin-Status-Widget (letzter Checkpoint, Events seit letztem Checkpoint, Anker-Status); ausbleibender Checkpoint (> erwartetes Intervall) erzeugt eine Warnung.
-- [ ] **AUDIT-09**: **Fork-Resolution-Runbook** — dokumentierter Admin-Prozess (+ occ-Unterstützung), was bei einem entdeckten Chain-Fork zu tun ist.
+- [x] **AUDIT-04**: Wöchentliche **Ed25519-signierte Checkpoints** über die Chain (`learning_audit_checkpoints` + `AuditCheckpointService` + `AuditCheckpointJob`), via `sodium_crypto_sign_detached` (NICHT `SigningService::sign()`, dessen Header auf `vc+jwt` fixiert ist).
+- [x] **AUDIT-05**: **Externer Forgejo-Anker** — periodischer signierter Digest per HTTP-PUT in ein UG-Forgejo-Audit-Repo (Config-Flag + Token, `anchor_url`-Spalte). Schützt gegen den Admin, der Key UND DB hält, und gegen Timestamp-Backdating (Forgejo-Commit-Zeit ist admin-unabhängig).
+- [x] **AUDIT-06**: `occ learning:audit:verify` prüft Chain-Integrität + Checkpoint-Signaturen + Anker-Konsistenz und meldet Brüche/Forks/Lücken.
+- [x] **AUDIT-07**: **Auditor-Export** — ein berechtigter Nutzer (Datenschutzbeauftragter, nicht nur Shell-Admin) erzeugt einen signierten, menschenlesbaren Nachweis-Export (PDF + begleitendes JSONL/Signatur-File) für einen Zeitraum/Kurs.
+- [x] **AUDIT-08**: **Audit-Liveness** — Admin-Status-Widget (letzter Checkpoint, Events seit letztem Checkpoint, Anker-Status); ausbleibender Checkpoint (> erwartetes Intervall) erzeugt eine Warnung.
+- [x] **AUDIT-09**: **Fork-Resolution-Runbook** — dokumentierter Admin-Prozess (+ occ-Unterstützung), was bei einem entdeckten Chain-Fork zu tun ist.
 
 ### ASSIGN — Assignment als First-Class-Objekt (🔴 Substrat)
 
@@ -118,12 +118,12 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 | AUDIT-01 | Phase 160 | Pending |
 | AUDIT-02 | Phase 160 | Pending |
 | AUDIT-03 | Phase 160 | Pending |
-| AUDIT-04 | Phase 161 | Pending |
-| AUDIT-05 | Phase 161 | Pending |
-| AUDIT-06 | Phase 161 | Pending |
-| AUDIT-07 | Phase 161 | Pending |
-| AUDIT-08 | Phase 161 | Pending |
-| AUDIT-09 | Phase 161 | Pending |
+| AUDIT-04 | Phase 161 | Complete (2026-07-01) |
+| AUDIT-05 | Phase 161 | Complete (2026-07-01) |
+| AUDIT-06 | Phase 161 | Complete (2026-07-01) |
+| AUDIT-07 | Phase 161 | Complete (2026-07-01) |
+| AUDIT-08 | Phase 161 | Complete (2026-07-01) |
+| AUDIT-09 | Phase 161 | Complete (2026-07-01) |
 | ASSIGN-01 | Phase 160 | Pending |
 | ASSIGN-02 | Phase 160 | Pending |
 | ASSIGN-03 | Phase 160 | Pending |

@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v5.2.0
 milestone_name: "v5.2.0 Pflichtschulung"
-current_phase: 161
+current_phase: 162
 current_plan: null
-status: "v5.2.0 Pflichtschulung. Phase 160 (Foundation — Audit Hash-Chain + Assignment Schemas) COMPLETE + VERIFIED (12/12 Reqs, 2026-07-01). 6 Pläne/3 Waves, PHPStan clean, PHPUnit 183 grün, Migrationen 009300/009400/009301 auf PG16 angewandt + MariaDB-11.4-cross-checked. Codex-Security-Review: 8 Funde, 7 gefixt (Commit 18973dc), #1 (signierte Checkpoints/Anker) → Phase 161. NÄCHSTER SCHRITT: /gsd:plan-phase 161 (Audit Hardening). Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
-stopped_at: "Phase 160 complete + verified. Nächster Schritt: /gsd:plan-phase 161 (Audit Hardening — Checkpoints + Anchor + Export + Liveness)."
+status: "v5.2.0 Pflichtschulung. Phase 161 (Audit Hardening — Checkpoints + Anchor + Export + Liveness) COMPLETE + VERIFIED (6/6 must-haves automated, 2026-07-01). 6 Pläne/3 Waves, PHPStan L5 clean, PHPUnit 222/768 grün, Migration 009302 auf PG16 angewandt (info.xml dev-bump 5.2.0.1). Live: occ learning:audit:verify exit 0; Auditor-Export-Gate 403→200; getAdmin 5 audit_*-Keys HTTP 200. Grumpy-Codex-Security-Review: 7 Funde, ALLE gefixt (F1 prev_hash BLOCKER..F7 pubkey-length, commits 730261f..c3c75cd). 3 visuelle/live-daten-Items → Andres Durchlauf. NÄCHSTER SCHRITT: Release-Entscheidung dem User vorgelegt (v5.2.0 hat noch Phasen 162-164 offen) — NICHT autonom releasen. Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
+stopped_at: "Phase 161 complete + verified. Release-Entscheidung dem User vorgelegt. Bei Weiterbau: /gsd:plan-phase 162 (Video-/Material-Gating + DSGVO Art.13)."
 last_updated: "2026-07-01"
-last_activity: "2026-07-01 — Phase 160 gebaut+verifiziert: Audit-Hash-Chain (CAS, payload_hash, pepper-from-secret, DSGVO-01 chain-safe erasure) + learning_assignments/oversight + occ import-users + email-null-fix. Gates: PHPStan clean, PHPUnit 183/0/0, PG16+MariaDB verifiziert, Codex-Security-Härtung angewandt."
+last_activity: "2026-07-01 — Phase 161 gebaut+verifiziert: Ed25519-signierte Audit-Checkpoints (Migration 009302 + AuditCheckpointService + wöchentlicher Job) + Forgejo-Anker (off-by-default) + occ learning:audit:verify (6-Feld-Canonical, F1 prev_hash + F2 checkpoint-field-binding hardening) + Auditor-Export (JSONL+sig+HTML, gruppen-gated, PII-strip) + Liveness-Widget + Fork-Runbook. Gates: PHPStan L5 clean, PHPUnit 222/768, PG16 verifiziert, voller Codex-Security-Review (7/7 gefixt)."
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
   completed_plans: 6
-  percent: 20
+  percent: 40
 ---
 
 # Project State
@@ -27,12 +27,12 @@ See: .planning/PROJECT.md (updated 2026-07-01)
 
 ## Current Position
 
-Phase: 160 — Foundation (Audit Hash-Chain + Assignment Schemas)
-Plan: — (not started)
-Status: Roadmap complete, ready to plan Phase 160
-Last activity: 2026-07-01 — Roadmap v5.2.0 erstellt (5 Phasen, 41 Requirements)
+Phase: 161 — Audit Hardening (Checkpoints + Anchor + Export + Liveness) ✓ COMPLETE
+Plan: 6/6 complete (next milestone phase: 162 — Video-/Material-Gating)
+Status: Phase 161 verified (6/6 must-haves automated). Release-Entscheidung dem User vorgelegt (Phasen 162-164 noch offen).
+Last activity: 2026-07-01 — Phase 161 gebaut+verifiziert+security-gehärtet (Codex 7/7)
 
-Progress: ░░░░░░░░░░ 0% (0/5 phases complete)
+Progress: ████░░░░░░ 40% (2/5 phases complete)
 
 ## Paused Milestone (resume nach LPIC-Prüfung 03.07.)
 
