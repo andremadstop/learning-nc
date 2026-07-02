@@ -112,6 +112,14 @@ class ReminderService {
         return $sent;
     }
 
+    /**
+     * Mandatory compliance reminder. Locked decision 2: does NOT gate on notificationsEnabled().
+     * Skeleton Wave 0 — returns false (no dispatch). Implemented in 163-06.
+     */
+    public function sendComplianceReminder(string $targetUserId, int $courseId, array $params): bool {
+        return false;
+    }
+
     public function sendExamReminders(): int {
         $sent = 0;
         $today = new \DateTimeImmutable('today');

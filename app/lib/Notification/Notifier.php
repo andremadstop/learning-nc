@@ -87,6 +87,9 @@ class Notifier implements INotifier {
                 $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
                 break;
 
+            case 'compliance_reminder':
+                throw new UnknownNotificationException('compliance_reminder not yet rendered'); // real l10n render in 163-06
+
             default:
                 throw new UnknownNotificationException('Unknown subject');
         }

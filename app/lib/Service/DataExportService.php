@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\UserTelosMapper;
 use OCP\IDBConnection;
 
@@ -12,19 +13,22 @@ class DataExportService {
     private XpService $xpService;
     private StreakService $streakService;
     private BadgeService $badgeService;
+    private CertificateMapper $certificateMapper;
 
     public function __construct(
         IDBConnection $db,
         UserTelosMapper $userTelosMapper,
         XpService $xpService,
         StreakService $streakService,
-        BadgeService $badgeService
+        BadgeService $badgeService,
+        CertificateMapper $certificateMapper
     ) {
         $this->db = $db;
         $this->userTelosMapper = $userTelosMapper;
         $this->xpService = $xpService;
         $this->streakService = $streakService;
         $this->badgeService = $badgeService;
+        $this->certificateMapper = $certificateMapper;
     }
 
     /**
@@ -60,6 +64,8 @@ class DataExportService {
             'campaign_progress' => $this->exportCampaignProgress($userId),
             'kudos_received' => $this->exportKudos($userId, 'to_user'),
             'kudos_given' => $this->exportKudos($userId, 'from_user'),
+            // Art.20 DSGVO — certificates block. Populated in 163-04; skeleton [] at Wave 0.
+            'certificates' => [],
             'exported_at' => time(),
         ];
     }
