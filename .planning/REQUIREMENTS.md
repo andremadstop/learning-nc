@@ -45,9 +45,9 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 ### RBAC — Teamleiter-Reports (gruppen-gescopt)
 
 - [x] **RBAC-01**: `learning_oversight` (course_id, lead_user_id, scope_group_id) — View-Recht getrennt vom Assignment-Objekt (ersetzt die verworfene `learning_team_leads`).
-- [ ] **RBAC-02**: `CertificateReportService::getGroupReport()` — Team-Lead sieht Compliance-Report **nur für die eigene Gruppe**; `assertTeamLeadForGroup()` als erste Zeile (IDOR-safe), Gruppenfilter auf **DB-Ebene** (`WHERE user_id IN (members)`), gleiche DSGVO-Projektion (kein Klartext-Mail/user_id im DTO).
-- [ ] **RBAC-03**: `RoleService`-Erweiterung: `isTeamLeadForGroup()`, `getTeamLeadGroups()` via `learning_oversight`.
-- [ ] **RBAC-04**: **Team-Lead-Dashboard** — „wer fehlt noch" + Ablauf-/Upcoming-Expirations-Panel + Auslösen einer **In-App-Erinnerung** an säumige Gruppenmitglieder.
+- [x] **RBAC-02**: `CertificateReportService::getGroupReport()` — Team-Lead sieht Compliance-Report **nur für die eigene Gruppe**; `assertTeamLeadForGroup()` als erste Zeile (IDOR-safe), Gruppenfilter auf **DB-Ebene** (`WHERE user_id IN (members)`), gleiche DSGVO-Projektion (kein Klartext-Mail/user_id im DTO).
+- [x] **RBAC-03**: `RoleService`-Erweiterung: `isTeamLeadForGroup()`, `getTeamLeadGroups()` via `learning_oversight`.
+- [x] **RBAC-04**: **Team-Lead-Dashboard** — „wer fehlt noch" + Ablauf-/Upcoming-Expirations-Panel + Auslösen einer **In-App-Erinnerung** an säumige Gruppenmitglieder.
 
 ### RECERT — Re-Zertifizierung
 
@@ -67,7 +67,7 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 ### DSGVO — Datenschutz-Querschnitt (Compliance-Produkt-Pflicht)
 
 - [x] **DSGVO-01**: **Art. 17 chain-sichere Anonymisierung** — bei User-Löschung wird die User-Referenz in Audit/Certs pseudonymisiert/anonymisiert, **ohne die Hash-Chain zu brechen** (User-Referenz im Hash ist bereits pseudonymisiert, nicht Klartext-uid).
-- [ ] **DSGVO-02**: **Art. 20 Datenübertragbarkeit** — einzelner Nutzer kann seine Zertifikate + Lernhistorie maschinenlesbar exportieren (bestehenden `DataExportService` erweitern).
+- [x] **DSGVO-02**: **Art. 20 Datenübertragbarkeit** — einzelner Nutzer kann seine Zertifikate + Lernhistorie maschinenlesbar exportieren (bestehenden `DataExportService` erweitern).
 - [ ] **DSGVO-03**: **Retention/Löschkonzept (Art. 5(1)(e))** — konfigurierbare Auto-Anonymisierung von Certs/Audit/Assignments nach X Jahren.
 - [x] **DSGVO-04**: **Art. 13 Transparenz** — Datenschutzhinweis zu Schulungsbeginn: welche Daten (Abschluss + Zeitstempel), welcher Zweck (Rechtspflicht Art. 6(1)(c), minimiert Art. 5(1)(c)), dass Wiedergabemuster NICHT permanent gespeichert werden.
 - [ ] **DSGVO-05**: Alle neuen UI-Strings in 5 Sprachen (de/en/fr/ru/ar); Nachweis-/Zertifikat-Texte mehrsprachig.
@@ -139,9 +139,9 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 | VIDEO-08 | Phase 162 | Complete |
 | VIDEO-09 | Phase 162 | Complete |
 | RBAC-01 | Phase 160 | Pending |
-| RBAC-02 | Phase 163 | Pending |
-| RBAC-03 | Phase 163 | Pending |
-| RBAC-04 | Phase 163 | Pending |
+| RBAC-02 | Phase 163 | Done 2026-07-02 |
+| RBAC-03 | Phase 163 | Done 2026-07-02 |
+| RBAC-04 | Phase 163 | Done 2026-07-02 |
 | RECERT-01 | Phase 164 | Pending |
 | RECERT-02 | Phase 164 | Pending |
 | RECERT-03 | Phase 164 | Pending |
@@ -152,7 +152,7 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 | USER-01 | Phase 160 | Pending |
 | USER-02 | Phase 160 | Pending |
 | DSGVO-01 | Phase 160 | Pending |
-| DSGVO-02 | Phase 163 | Pending |
+| DSGVO-02 | Phase 163 | Done 2026-07-02 |
 | DSGVO-03 | Phase 164 | Pending |
 | DSGVO-04 | Phase 162 | Complete |
 | DSGVO-05 | Phase 164 | Pending |

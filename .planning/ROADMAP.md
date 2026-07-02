@@ -665,7 +665,16 @@ Plans:
 **Notes**:
 - IDOR protection: assertTeamLeadForGroup() as first line of CertificateReportService::getGroupReport(); group filter at DB level
 - INotificationManager primary; IMailer additive (email-null safe per Phase 160 USER-01 fix)
-**Plans**: TBD
+**Plans**: 7 plans (5 waves) — SECURITY-DEFINED; Wave 0 authors failing tests + compiling skeletons so RED is genuinely observed before impl (per-wave deploy, no local PHP)
+
+Plans:
+- [x] 163-01-PLAN.md — Wave 0: RBAC contracts + RED tests (RoleService/CertificateReportService/CertificateMapper skeletons; RoleServiceTest, CertificateReportServiceTest denial cases, CertificateMapperTest) (RBAC-02, RBAC-03)
+- [x] 163-02-PLAN.md — Wave 0: reminder/notifier/export contracts + RED tests (sendComplianceReminder + Notifier case + certificates skeleton; ReminderServiceTest opt-out-bypass, NotifierTest, DataExportServiceTest) (RBAC-04, DSGVO-02)
+- [x] 163-03-PLAN.md — Wave 1: RBAC-03 impl — Oversight entity + OversightMapper + real RoleService::isTeamLeadForGroup/getTeamLeadGroups (RBAC-03)
+- [x] 163-04-PLAN.md — Wave 1: DSGVO-02 impl — DataExportService certificates block (raw VC-JWT) + test-api session-only assertion (DSGVO-02)
+- [x] 163-05-PLAN.md — Wave 2: RBAC-02 impl — findByCourseIdForUsers (DB-level IN) + getGroupReport set-difference + assertTeamLeadForGroup fail-closed + controller/routes + test-api IDOR 403 (RBAC-02)
+- [x] 163-06-PLAN.md — Wave 3: RBAC-04 reminder impl — sendComplianceReminder (mandatory, no opt-out) + Notifier render + remindMember 2nd-IDOR guard + POST endpoint + test-api foreign-target 403 (RBAC-04)
+- [x] 163-07-PLAN.md — Wave 4: RBAC-04 dashboard — TeamLeadDashboard.vue (conditional) + Vitest + DE/EN i18n + human-verify checkpoint (RBAC-04)
 
 ### Phase 164: Re-Zertifizierung + Retention + i18n Parity
 **Goal**: The cert validity lifecycle is complete — reminders fire at configured thresholds, old periods close gracefully, students re-enroll and receive new certs, data ages out safely, and all v5.2.0 strings are multilingual
@@ -720,5 +729,5 @@ Plans:
 | 160. Foundation — Audit Hash-Chain + Assignment Schemas | v5.2.0 | 6/6 | ✅ Complete (PHPStan L5 clean, PHPUnit 183/0/0, migrations 009300/009400/009301 applied) | 2026-07-01 |
 | 161. Audit Hardening — Checkpoints + Anchor + Export + Liveness | v5.2.0 | 6/6 | ✓ Complete | 2026-07-01 |
 | 162. Video-/Material-Gating + DSGVO Art.13 | v5.2.0 | 4/4 | ✓ Complete 2026-07-02 (27/27 code-verified, 7 human-verify; PHPStan L5 + PHPUnit 256/874 green; 3-pass Codex all fixed; Migration 009500 live) | 2026-07-02 |
-| 163. Teamleiter-RBAC-Reports + DSGVO Art.20 | v5.2.0 | 0/TBD | Not started | - |
+| 163. Teamleiter-RBAC-Reports + DSGVO Art.20 | v5.2.0 | 7/7 | Complete | 2026-07-02 |
 | 164. Re-Zertifizierung + Retention + i18n Parity | v5.2.0 | 0/TBD | Not started | - |

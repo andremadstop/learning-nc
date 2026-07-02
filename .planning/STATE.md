@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v5.2.0
 milestone_name: "v5.2.0 Pflichtschulung"
-current_phase: 163
-current_plan: "Phase 162 ✓ COMPLETE 2026-07-02 (4/4 plans). Next: Phase 163 (Teamleiter-RBAC-Reports + DSGVO Art.20 — RBAC-02/03/04, DSGVO-02). Not yet planned — start with /gsd:plan-phase 163."
-status: "v5.2.0 Pflichtschulung — 3/5 Phasen (60%). Phase 162 (Video-/Material-Gating) ✓ COMPLETE: backend (Migration 009500 live, VideoProgressService anti-fraud completion engine, VideoStreamController Range-206/416 IDOR-gated, startSession pool-derived gate, VideoProgressController heartbeat/complete/document-read/courseStatus) + frontend (WCAG-2.1-AA VideoPlayer, DSGVO-Consent-Overlay, Art.13-Notice, Student-Gate-UI). Verifier 27/27 code-verified, 7 live/visual → human-verify (Andres Durchlauf, kein Blocker). Grumpy-Codex 3 Pässe, ALLE Funde gefixt (2 BLOCKER heartbeat-fraud+gate-bypass, 1 HIGH enrollment, 1 MED ratelimit, 2 PARTIAL, 1 LOW) mit lockenden Regression-Tests. PHPStan L5 clean, PHPUnit 256/874. Scope-Grenze verifiziert (learning_sessions single-insert, Duel/Gameshow/Leitner separat). Backend-BLOCKER (student-read) via courseStatus gelöst. Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
-stopped_at: "Phase 162 COMPLETE + getrackt. Nächster Schritt: Phase 163 planen (/gsd:plan-phase 163). Milestone-Mandat: 162→164 autonom, dann Go für Release-Akt. Offen für Andres 162-Durchlauf: 7 human-verify (curl 206/416, seek-99%-gate, Consent-no-preload, WCAG SR/Kontrast/no-autoplay, Art.13-Text, Gelesen-Flip+Playwright, courseStatus-IDOR live)."
+current_phase: 164
+current_plan: "Phase 163 ✓ COMPLETE 2026-07-02 (7/7 plans). Next: Phase 164 (Re-Zertifizierung) — the last milestone phase. Not yet planned — start with /gsd:plan-phase 164."
+status: "v5.2.0 Pflichtschulung — 4/5 Phasen (80%). Phase 163 (Teamleiter-RBAC-Reports + DSGVO Art.20) ✓ COMPLETE: observed-RED 5-wave build (RBAC-02/03/04 + DSGVO-02). RBAC-03 OversightMapper+RoleService reads learning_oversight; RBAC-02 getGroupReport (assert-first IDOR gate, DB-level WHERE user_id IN(members), set-difference vs IGroupManager names, opaque member_ref DTO — no raw uid/email); RBAC-04 mandatory compliance reminder (bypasses opt-out) + independent 2nd-IDOR guard (remindMember resolves member_ref only within expandGroup); DSGVO-02 own-cert export (raw VC-JWT, session-only) + kudos email masking. TeamLeadDashboard.vue (conditional, camelCase contract). Gates: PHPStan L5 clean, PHPUnit 281/281, Vitest 16/16, ESLint 0. **Grumpy-Codex 4 passes → SHIP** (BLOCKER email-in-uid via member_ref; dead-dashboard param/field contract; MEDIUM kudos third-party email; BLOCKER display_name==uid via safeDisplayName trim/case incl. pre-existing instructor cert-report) — each closed with a locking regression test. Verifier goal-backward → human_needed. Frontmatter manuell (gsd-tools-State-Commands MEIDEN)."
+stopped_at: "Phase 163 COMPLETE + getrackt. Nächster Schritt: Phase 164 planen (/gsd:plan-phase 164) — letzte Milestone-Phase (Re-Zertifizierung), danach Release-Akt v5.2.0 dem User vorlegen. Live Gate 2 (test-api.sh IDOR curls) + UI/Notification-Bell = human-verify für Andres Durchlauf (Secret-Grenze: Vault-Admin-Creds nicht überschritten)."
 last_updated: "2026-07-02"
-last_activity: "2026-07-02 — Phase 162 COMPLETE: full build (4 plans/3 waves) + 3-pass Codex security review (all fixed) + goal-backward verify (27/27 code-verified). PHPStan L5 clean, PHPUnit 256/874, Migration 009500 live (info.xml 5.2.0.2). Tracking updated manually."
+last_activity: "2026-07-02 — Phase 163 COMPLETE: observed-RED 5-wave build (RBAC-02/03/04 + DSGVO-02), 4-pass grumpy-Codex security review → SHIP, goal-backward verify → human_needed. PHPStan L5 clean, PHPUnit 281/281, Vitest 16/16. Tracking manuell."
 progress:
   total_phases: 5
-  completed_phases: 3
-  total_plans: 10
-  completed_plans: 10
-  percent: 60
+  completed_phases: 4
+  total_plans: 17
+  completed_plans: 17
+  percent: 80
 ---
 
 # Project State
@@ -27,12 +27,12 @@ See: .planning/PROJECT.md (updated 2026-07-01)
 
 ## Current Position
 
-Phase: 162 — Video-/Material-Gating + DSGVO Art.13 ⏳ IN ARBEIT (alle 4 Pläne gebaut)
-Plan: 4/4 (162-04 Frontend WCAG-Player/Consent/Art.13/Gate-UI fertig + committed; Human-verify auto-approved)
-Status: 162-01..03 (Backend) + 162-04 (Frontend) gebaut + committed. ⛔ Offen: Backend-Follow-up (student-lesbarer Registry-Read) + Wave-3 --js-only-Deploy + Playwright-Live-Run durch Orchestrator.
-Last activity: 2026-07-02 — Phase 162-04 gebaut (WCAG-Player + DSGVO-Consent + Art.13-Notice + Student-Gate-UI + Vitest/ESLint grün)
+Phase: 163 — Teamleiter-RBAC-Reports + DSGVO Art.20 ✓ COMPLETE (7/7 Pläne, 5 Waves). Next: Phase 164 (Re-Zertifizierung).
+Plan: 7/7 — observed-RED build; grumpy-Codex 4 passes → SHIP; goal-backward verify → human_needed.
+Status: RBAC-02/03/04 + DSGVO-02 gebaut + committed + zentral gate-verifiziert (PHPStan L5 clean, PHPUnit 281/281, Vitest 16/16, ESLint 0). Live Gate 2 (test-api.sh IDOR curls) + UI/Notification-Bell = human-verify (Andres Durchlauf; Secret-Grenze nicht überschritten).
+Last activity: 2026-07-02 — Phase 163 COMPLETE (member_ref DTO, assert-first IDOR, mandatory reminder + 2nd-IDOR guard, DSGVO cert export, TeamLeadDashboard).
 
-Progress: ████░░░░░░ 40% (2/5 phases complete)
+Progress: ████████░░ 80% (4/5 phases complete)
 
 ## Paused Milestone (resume nach LPIC-Prüfung 03.07.)
 
