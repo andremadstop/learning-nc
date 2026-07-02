@@ -18,6 +18,20 @@ class CoursePoolMapper extends QBMapper {
         return $this->findEntities($qb);
     }
 
+    /**
+     * Reverse lookup: every course that includes this pool. Used by the video gate to enforce
+     * completion even when the client omits courseId (gate-bypass fix, Phase 162).
+     *
+     * @return CoursePool[]
+     */
+    public function findByPool(int $poolId): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+            ->from($this->getTableName())
+            ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)));
+        return $this->findEntities($qb);
+    }
+
     public function findByCourseAndPool(int $courseId, int $poolId): CoursePool {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')

@@ -572,15 +572,30 @@ class TrainingService {
             $qb->executeStatement();
         }
 
-        if ($courseId !== null) {
-            // VIDEO-03 gate: a course may require its videos/documents to be completed before the quiz
-            // unlocks. Enforcement is server-side ONLY — a client flag can never bypass it. The gate
-            // engages solely when the instructor turned it on (isVideoGateEnabled, 162-01) and throws
-            // ForbiddenException (→ 403) when any required content is incomplete/misconfigured. Placed
-            // BEFORE the learning_sessions insert so an incomplete user never gets a session row.
-            if ($this->courseService->isVideoGateEnabled($courseId)) {
-                $this->videoProgressService->assertCourseVideosComplete($courseId, $userId);
+        // VIDEO-03 gate: a course may require its videos/documents to be completed before the quiz
+        // unlocks. Enforcement is server-side ONLY — a client flag can never bypass it. It engages only
+        // when the instructor turned it on (isVideoGateEnabled, 162-01) and throws ForbiddenException
+        // (→ 403) when any required content is incomplete/misconfigured. Placed BEFORE the
+        // learning_sessions insert so an incomplete user never gets a session row.
+        //
+        // CODEX BLOCKER (gate bypass): the gate must fire even when the client OMITS courseId and starts
+        // the gated course's pool directly. We therefore gather EVERY gated course this pool belongs to
+        // that the user is enrolled in (getGatedCourseIdsForPool) — not just the explicit courseId — and
+        // assert completion for each. Starting a gated pool by poolId alone can no longer skip training.
+        $gateCourseIds = [];
+        if ($courseId !== null && $this->courseService->isVideoGateEnabled($courseId)) {
+            $gateCourseIds[] = $courseId;
+        }
+        foreach ($this->courseService->getGatedCourseIdsForPool($poolId, $userId) as $gatedCid) {
+            if (!in_array($gatedCid, $gateCourseIds, true)) {
+                $gateCourseIds[] = $gatedCid;
             }
+        }
+        foreach ($gateCourseIds as $gatedCid) {
+            $this->videoProgressService->assertCourseVideosComplete($gatedCid, $userId);
+        }
+
+        if ($courseId !== null) {
             $context = $this->courseService->resolveCoursePoolContext($courseId, $poolId, $userId);
             $questionIds = $context['question_ids'];
             $questions = $this->questionMapper->findByIds($questionIds);

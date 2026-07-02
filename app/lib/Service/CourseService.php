@@ -596,6 +596,29 @@ class CourseService {
     }
 
     /**
+     * All course IDs that (a) include $poolId, (b) have the video/material gate enabled, and (c) the
+     * user is enrolled in. Consumed by TrainingService to close the gate-bypass (Codex BLOCKER):
+     * starting a gated course's pool directly with courseId omitted must STILL require its videos.
+     *
+     * @return int[]
+     */
+    public function getGatedCourseIdsForPool(int $poolId, string $userId): array {
+        $ids = [];
+        foreach ($this->coursePoolMapper->findByPool($poolId) as $cp) {
+            $courseId = (int)$cp->getCourseId();
+            try {
+                $course = $this->courseMapper->findById($courseId);
+            } catch (\Throwable $e) {
+                continue; // dangling course_pool row — skip
+            }
+            if (($course->getVideoGateEnabled() ?? false) && $this->hasAccess($course, $userId)) {
+                $ids[] = $courseId;
+            }
+        }
+        return array_values(array_unique($ids));
+    }
+
+    /**
      * Instructor toggles the video/material gate (Phase 162, B3). Owner-gated via
      * assertInstructorOfCourse; persists the flag. Called by CourseController::setVideoGate.
      *

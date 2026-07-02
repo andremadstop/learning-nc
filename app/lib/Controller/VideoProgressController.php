@@ -66,6 +66,10 @@ class VideoProgressController extends Controller {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
+        $guard = $this->assertEnrolledForContent($contentId);
+        if ($guard !== null) {
+            return $guard;
+        }
         try {
             // Server is the source of truth: recordHeartbeat sanitizes the interval, discards <5s pings,
             // and performs the CAS-serialized merge (162-01). This controller only delegates.
@@ -91,6 +95,10 @@ class VideoProgressController extends Controller {
     public function complete(int $contentId): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        $guard = $this->assertEnrolledForContent($contentId);
+        if ($guard !== null) {
+            return $guard;
         }
         try {
             $video = $this->videoMapper->findById($contentId);
@@ -120,6 +128,10 @@ class VideoProgressController extends Controller {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
         }
+        $guard = $this->assertEnrolledForContent($contentId);
+        if ($guard !== null) {
+            return $guard;
+        }
         try {
             $video = $this->videoMapper->findById($contentId);
         } catch (DoesNotExistException $e) {
@@ -143,6 +155,24 @@ class VideoProgressController extends Controller {
      *
      * @return array{completed: bool, covered_pct: float}
      */
+    /**
+     * IDOR guard (Codex HIGH): resolve the registry row and assert the SESSION user is enrolled in its
+     * course BEFORE any progress read/write — a student must not record/complete progress (and thereby
+     * emit an immutable course.video.completed) for a course they are not in. Returns an error
+     * DataResponse to short-circuit the action, or null to proceed.
+     */
+    private function assertEnrolledForContent(int $contentId): ?DataResponse {
+        try {
+            $video = $this->videoMapper->findById($contentId);
+            $this->courseService->assertEnrolledInCourse((int)$video->getCourseId(), (string)$this->userId);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Unknown content'], Http::STATUS_NOT_FOUND);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'Not enrolled in this course'], Http::STATUS_FORBIDDEN);
+        }
+        return null;
+    }
+
     private function progressState(int $contentId): array {
         $row = $this->progressMapper->findByUserAndContent((string)$this->userId, $contentId);
         if ($row === null) {

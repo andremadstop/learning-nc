@@ -34,6 +34,11 @@ class VideoProgressService {
     private const MIN_PING_GAP_SECONDS = 5;
     private const MAX_RETRIES = 3;
     private const VIDEO_SOURCE_TYPES = ['nc-files', 'vimeo', 'youtube-nocookie'];
+    // Anti-fraud rate cap (Codex BLOCKER): a single heartbeat may credit at most the real wall-clock
+    // elapsed since the last accepted ping, plus a small tolerance for jitter/ping-batching. The very
+    // first ping has no baseline, so it may only seed a small window (and can never complete alone).
+    private const CREDIT_TOLERANCE_SECONDS = 1;
+    private const FIRST_PING_CREDIT_CAP_SECONDS = 15;
 
     public function __construct(
         private VideoProgressMapper $progressMapper,
@@ -178,15 +183,55 @@ class VideoProgressService {
         if (!$this->isPlausiblePing($lastPingTs, $nowTs)) {
             return null;
         }
-        $merged = $this->mergeIntervals($storedIntervals, $newInterval);
+        // ANTI-FRAUD (Codex BLOCKER): the naive path let one ping `[0, 999999999]` complete any video.
+        // Two caps on the newly-reported interval defeat that:
+        //  (a) clamp to [0, duration] — cannot claim watch time beyond the video (coveredPct <= 1.0);
+        //  (b) cap interval LENGTH to real wall-clock elapsed since the last accepted ping (+ tolerance).
+        //      Because pings are >=5s apart (isPlausiblePing), total credited coverage can never outrun
+        //      real elapsed time — a 600s video needs ~600s of genuine presence.
+        // DELIBERATE: this enforces wall-clock ~= video duration; faster-than-1x playback is intentionally
+        // UNDER-credited (no speed-skip past mandatory training). Do NOT "optimise" this away.
+        // The FIRST ping (lastPingTs === null) has no elapsed baseline: it may seed only a small window
+        // and can NEVER complete on its own — completion always needs >=2 pings spanning real time.
+        $isFirstPing = $lastPingTs === null;
+        $maxCredit = ($isFirstPing ? self::FIRST_PING_CREDIT_CAP_SECONDS : max(0, $nowTs - $lastPingTs))
+            + self::CREDIT_TOLERANCE_SECONDS;
+        $capped = $this->capInterval($newInterval, $durationSeconds, (float)$maxCredit);
+
+        $merged = $capped === null ? $storedIntervals : $this->mergeIntervals($storedIntervals, $capped);
         $pct = $this->coveredPct($merged, $durationSeconds);
         return [
             'intervals' => $merged,
             'intervals_json' => json_encode($merged, JSON_THROW_ON_ERROR),
             'covered_pct' => $pct,
             'last_ping_ts' => $nowTs,
-            'complete' => $this->decideComplete($pct),
+            'complete' => !$isFirstPing && $this->decideComplete($pct),
         ];
+    }
+
+    /**
+     * Clamp a client [start,end] interval to [0,duration] and cap its length to $maxCreditSeconds
+     * (the anti-fraud rate limit). Returns null when nothing plausible remains to credit.
+     *
+     * @param array{0?: int|float, 1?: int|float} $interval
+     * @return array{0: float, 1: float}|null
+     */
+    private function capInterval(array $interval, ?int $durationSeconds, float $maxCreditSeconds): ?array {
+        if (!isset($interval[0], $interval[1]) || !is_numeric($interval[0]) || !is_numeric($interval[1])) {
+            return null;
+        }
+        $s = max(0.0, (float)$interval[0]);
+        $e = (float)$interval[1];
+        if ($durationSeconds !== null && $durationSeconds > 0) {
+            $e = min($e, (float)$durationSeconds); // (a) cannot exceed the video length
+        }
+        if ($e <= $s || $maxCreditSeconds <= 0.0) {
+            return null;
+        }
+        if (($e - $s) > $maxCreditSeconds) {
+            $e = $s + $maxCreditSeconds; // (b) cannot credit more than real elapsed time
+        }
+        return [$s, $e];
     }
 
     // ─── DB orchestration ────────────────────────────────────────────────────

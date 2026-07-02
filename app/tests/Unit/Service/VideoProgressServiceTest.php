@@ -159,14 +159,87 @@ class VideoProgressServiceTest extends TestCase {
         $this->assertNull($second, 'implausible <5s ping must be discarded');
     }
 
-    public function testHeartbeatPlausiblePingMergesAndCanComplete(): void {
+    public function testHeartbeatPlausiblePingMergesButIsRateCapped(): void {
+        // A plausible ping merges, but the NEW interval is capped to the real elapsed time since the
+        // last ping (10s here + 1s tolerance = 11s max credit). A claimed [40,100] (60s) is capped to
+        // [40,51], so [[0,50]] + [40,51] = [0,51] → 0.51, NOT the (fraudulent) 1.0/complete.
         $svc = $this->makeService();
         $t = $svc->computeHeartbeatTransition([[0, 50]], 1000, [40, 100], 1010, 100);
         $this->assertNotNull($t);
-        $this->assertEquals([[0, 100]], $t['intervals']);
-        $this->assertEqualsWithDelta(1.0, $t['covered_pct'], 1e-9);
-        $this->assertTrue($t['complete']);
+        $this->assertEquals([[0, 51]], $t['intervals']);
+        $this->assertEqualsWithDelta(0.51, $t['covered_pct'], 1e-9);
+        $this->assertFalse($t['complete'], 'a 60s jump in 10s of real time must not complete');
         $this->assertSame(1010, $t['last_ping_ts']);
+    }
+
+    // ---- ANTI-FRAUD (Codex BLOCKER regression locks) ------------------------
+
+    public function testHeartbeatSingleHugePingCannotComplete(): void {
+        // THE exploit Codex found: contentId + start=0 & end=999999999 in one POST. The interval is
+        // clamped to [0,duration] AND to the first-ping credit cap (15s+1), and a first ping can never
+        // complete. covered_pct stays far below threshold; complete is false.
+        $svc = $this->makeService();
+        $t = $svc->computeHeartbeatTransition([], null, [0, 999999999], 1000, 100);
+        $this->assertNotNull($t);
+        $this->assertLessThanOrEqual(1.0, $t['covered_pct'], 'coverage can never exceed 100%');
+        $this->assertEqualsWithDelta(0.16, $t['covered_pct'], 1e-9, 'first ping seeds only the 16s cap');
+        $this->assertFalse($t['complete'], 'one huge ping must never complete a video');
+    }
+
+    public function testHeartbeatFirstPingCanNeverComplete(): void {
+        // Even a first ping that (after capping) would cross 95% on a tiny video must not complete —
+        // completion always requires >=2 pings spanning real time.
+        $svc = $this->makeService();
+        $t = $svc->computeHeartbeatTransition([], null, [0, 10], 1000, 10); // 10s video, [0,10] → 100%
+        $this->assertNotNull($t);
+        $this->assertFalse($t['complete'], 'the first ping alone must never complete');
+    }
+
+    public function testHeartbeatIntervalClampedToDuration(): void {
+        // A claimed end beyond the video length is clamped so coverage cannot exceed 100%.
+        $svc = $this->makeService();
+        $t = $svc->computeHeartbeatTransition([[0, 90]], 1000, [90, 5000], 1100, 100);
+        $this->assertNotNull($t);
+        $this->assertEquals([[0, 100]], $t['intervals'], 'end clamped to duration=100');
+        $this->assertEqualsWithDelta(1.0, $t['covered_pct'], 1e-9);
+    }
+
+    public function testHeartbeatCannotOutrunRealTimeAcrossManyPings(): void {
+        // Fraud attempt: many pings, each 5s apart (the minimum plausible gap), each claiming a huge
+        // window. The per-ping cap (~6s credit) means total coverage tracks real elapsed time — a 600s
+        // video cannot be completed by a burst of jumps; it stays well under 95%.
+        $svc = $this->makeService();
+        $intervals = [];
+        $lastPing = null;
+        $now = 1000;
+        for ($i = 0; $i < 20; $i++) {
+            $t = $svc->computeHeartbeatTransition($intervals, $lastPing, [$i * 100, $i * 100 + 500], $now, 600);
+            $this->assertNotNull($t);
+            $intervals = $t['intervals'];
+            $lastPing = $now;
+            $now += 5; // minimum plausible gap
+        }
+        $pct = $svc->coveredPct($intervals, 600);
+        $this->assertLessThan(0.95, $pct, '20 rapid jumping pings must not complete a 600s video');
+    }
+
+    public function testHeartbeatGenuineWatchingReachesCompletionOverRealTime(): void {
+        // The gate must still OPEN for honest linear watching: sequential [t, t+10] windows, pings 10s
+        // apart, accumulate to >=95% of a 100s video over ~real time. complete flips true.
+        $svc = $this->makeService();
+        $intervals = [];
+        $lastPing = null;
+        $now = 1000;
+        $completed = false;
+        for ($t = 0; $t < 100; $t += 10) {
+            $tr = $svc->computeHeartbeatTransition($intervals, $lastPing, [$t, $t + 10], $now, 100);
+            $this->assertNotNull($tr);
+            $intervals = $tr['intervals'];
+            $lastPing = $now;
+            $now += 10; // real-time linear watching
+            $completed = $completed || $tr['complete'];
+        }
+        $this->assertTrue($completed, 'genuine real-time watching must eventually complete');
     }
 
     // ---- computeCompletionState (DSGVO transient cleanup, VIDEO-06) ----------

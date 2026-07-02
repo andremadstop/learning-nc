@@ -84,6 +84,7 @@ class TrainingServiceTest extends TestCase {
             ->method('isVideoGateEnabled')
             ->with(7)
             ->willReturn(true);
+        $courseService->method('getGatedCourseIdsForPool')->willReturn([]); // no extra pool-derived gates
         // The gate is BEFORE any session work — resolveCoursePoolContext must never be reached.
         $courseService->expects($this->never())->method('resolveCoursePoolContext');
 
@@ -102,6 +103,41 @@ class TrainingServiceTest extends TestCase {
 
         $this->expectException(ForbiddenException::class);
         $service->startSession(42, 'alice', null, 'training', null, null, 7);
+    }
+
+    /**
+     * CODEX BLOCKER (gate bypass): starting a gated course's pool with courseId OMITTED must STILL
+     * enforce the gate. The pool (42) belongs to gated course 7 (getGatedCourseIdsForPool), so even
+     * though the client passes courseId=null, assertCourseVideosComplete(7) runs and throws.
+     */
+    public function testStartSessionGateCannotBeBypassedByOmittingCourseId(): void {
+        $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch(false));
+        $db = new FakeDbConnection([$activeExamBuilder]);
+
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $courseService = $this->createMock(CourseService::class);
+        // courseId is null, so isVideoGateEnabled is never consulted; the pool→gated-course reverse
+        // lookup is what closes the bypass.
+        $courseService->expects($this->never())->method('isVideoGateEnabled');
+        $courseService->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn([7]);
+
+        $videoProgressService = $this->createMock(VideoProgressService::class);
+        $videoProgressService->expects($this->once())
+            ->method('assertCourseVideosComplete')
+            ->with(7, 'alice')
+            ->willThrowException(new ForbiddenException('Required video/material not completed'));
+
+        $service = $this->createService(
+            db: $db,
+            poolMapper: $poolMapper,
+            courseService: $courseService,
+            videoProgressService: $videoProgressService
+        );
+
+        $this->expectException(ForbiddenException::class);
+        $service->startSession(42, 'alice', null, 'training'); // NOTE: courseId omitted → still gated
     }
 
     /**
@@ -165,6 +201,7 @@ class TrainingServiceTest extends TestCase {
 
         $courseService = $this->createMock(CourseService::class);
         $courseService->method('isVideoGateEnabled')->with(7)->willReturn($gateEnabled);
+        $courseService->method('getGatedCourseIdsForPool')->willReturn([]); // explicit-courseId path
         $courseService->method('resolveCoursePoolContext')
             ->with(7, 42, 'alice')
             ->willReturn(['question_ids' => [10, 11]]);
@@ -293,7 +330,11 @@ class TrainingServiceTest extends TestCase {
         $translationService = $this->createMock(TranslationService::class);
         $config = $this->createMock(IConfig::class);
         $logger = $this->createMock(LoggerInterface::class);
-        $courseService ??= $this->createMock(CourseService::class);
+        if ($courseService === null) {
+            $courseService = $this->createMock(CourseService::class);
+            // Default: the pool belongs to no gated course (the gate-bypass lookup returns empty).
+            $courseService->method('getGatedCourseIdsForPool')->willReturn([]);
+        }
         $videoProgressService ??= $this->createMock(VideoProgressService::class);
 
         $translationService->method('normalizeLang')
