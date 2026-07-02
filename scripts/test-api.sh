@@ -744,6 +744,28 @@ request GET admin "/apps/learning/api/my-team-lead-scopes"
 assert_status "myTeamLeadScopes returns 200 for authenticated user" "200"
 assert_json "myTeamLeadScopes response has scopes array" '.scopes | arrays'
 
+# ── Compliance reminder — RBAC-04 (Phase 163-06) ─────────────────────────────
+# The remind POST is a separate IDOR surface from the group-report GET.
+# It independently re-validates lead role + target membership before dispatching.
+# (a) absent groupId → service fails closed (ForbiddenException before any DB read)
+request POST admin "/apps/learning/api/courses/${COURSE_ID}/group-report/remind" \
+    "$(jq -nc '{groupId:"",targetUserId:"someuser"}')"
+assert_status "remind without groupId fails closed (403)" "403"
+
+# (b) non-authorized group → 403 even for admin (no oversight row ⇒ ForbiddenException)
+request POST admin "/apps/learning/api/courses/${COURSE_ID}/group-report/remind" \
+    "$(jq -nc '{groupId:"no-such-group-idor-test",targetUserId:"someuser"}')"
+assert_status "remind for unauthorized group returns 403 (IDOR gate)" "403"
+
+# (c) second user also blocked
+if [[ -n "${SECOND_USER}" ]]; then
+    request POST second "/apps/learning/api/courses/${COURSE_ID}/group-report/remind" \
+        "$(jq -nc '{groupId:"no-such-group-idor-test",targetUserId:"someuser"}')"
+    assert_status "Non-team-lead blocked from remind (403)" "403"
+fi
+# NOTE: own-group-member → 200 requires a live oversight row provisioned for the test user.
+# Deferred to manual Gate 2 run once RoleService::getTeamLeadGroups returns a real entry.
+
 # Course owner: pass status → 200
 request GET admin "/apps/learning/api/courses/${COURSE_ID}/pass-status"
 assert_status "Course owner can read pass status" "200"

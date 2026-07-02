@@ -204,6 +204,8 @@ return [
         // Phase 163-05: team-lead group compliance report (RBAC-02)
         ['name' => 'certificateReport#groupReport', 'url' => '/api/courses/{courseId}/group-report', 'verb' => 'GET'],
         ['name' => 'certificateReport#myTeamLeadScopes', 'url' => '/api/my-team-lead-scopes', 'verb' => 'GET'],
+        // Phase 163-06: mandatory compliance reminder (RBAC-04) — 2nd IDOR surface, re-validates lead+membership
+        ['name' => 'certificateReport#remindMember', 'url' => '/api/courses/{courseId}/group-report/remind', 'verb' => 'POST'],
         ['name' => 'course#studentDetail', 'url' => '/api/courses/{courseId}/students/{studentId}', 'verb' => 'GET'],
         ['name' => 'course#getCurriculumScope', 'url' => '/api/courses/{courseId}/curriculum-scope', 'verb' => 'GET'],
         ['name' => 'course#updateCurriculumScope', 'url' => '/api/courses/{courseId}/curriculum-scope', 'verb' => 'PUT'],

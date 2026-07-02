@@ -158,6 +158,39 @@ class CertificateReportController extends Controller {
     }
 
     /**
+     * Dispatch a mandatory compliance reminder to one group member (RBAC-04).
+     *
+     * The service independently re-validates BOTH that the caller leads the group
+     * AND that the target uid belongs to that group — this is a separate IDOR surface
+     * from the report GET and must not be trusted to have been gated there.
+     *
+     * groupId + targetUserId are read from the POST body. An absent/empty groupId
+     * lets the service fail closed (ForbiddenException before any DB read).
+     *
+     * Returns a generic 403 on any denial — no membership-oracle detail in the body.
+     *
+     * @NoAdminRequired
+     */
+    public function remindMember(int $courseId): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        $groupId = (string)($this->request->getParam('groupId') ?? '');
+        $targetUserId = (string)($this->request->getParam('targetUserId') ?? '');
+
+        try {
+            $this->reportService->remindMember($courseId, $groupId, $targetUserId, $this->userId);
+            return new DataResponse(['status' => 'ok']);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (\Exception $e) {
+            $this->logger->error('remindMember error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * All (course_id, group_id) scopes this team lead is authorised to view.
      *
      * @NoAdminRequired
