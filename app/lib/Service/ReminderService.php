@@ -114,10 +114,11 @@ class ReminderService {
 
     /**
      * Mandatory compliance reminder. Locked decision 2: does NOT gate on notificationsEnabled().
-     * Skeleton Wave 0 — returns false (no dispatch). Implemented in 163-06.
+     * Delivers even when the user's voluntary notification opt-out is set.
+     * Does NOT call getEMailAddress() — email-null safe by construction (no IUserManager dep).
      */
     public function sendComplianceReminder(string $targetUserId, int $courseId, array $params): bool {
-        return false;
+        return $this->sendNotification($targetUserId, 'compliance_reminder', 'compliance', (string)$courseId, $params);
     }
 
     public function sendExamReminders(): int {

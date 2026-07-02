@@ -88,7 +88,14 @@ class Notifier implements INotifier {
                 break;
 
             case 'compliance_reminder':
-                throw new UnknownNotificationException('compliance_reminder not yet rendered'); // real l10n render in 163-06
+                $params = $notification->getSubjectParameters();
+                $courseTitle = (string)($params['course_title'] ?? '');
+                $notification->setParsedSubject(
+                    $l->t('Compliance reminder: %s', [$courseTitle])
+                );
+                $notification->setLink($appUrl);
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
+                break;
 
             default:
                 throw new UnknownNotificationException('Unknown subject');
