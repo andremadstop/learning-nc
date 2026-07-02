@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\UserTelosMapper;
 use OCP\IDBConnection;
@@ -64,8 +65,22 @@ class DataExportService {
             'campaign_progress' => $this->exportCampaignProgress($userId),
             'kudos_received' => $this->exportKudos($userId, 'to_user'),
             'kudos_given' => $this->exportKudos($userId, 'from_user'),
-            // Art.20 DSGVO — certificates block. Populated in 163-04; skeleton [] at Wave 0.
-            'certificates' => [],
+            // Art.20 DSGVO — own-data export: raw VC-JWT + metadata (163-04).
+            // SESSION-ONLY: $userId comes from the session, no external param exists —
+            // a foreign export is impossible by construction.
+            'certificates' => array_map(
+                static function (Certificate $cert): array {
+                    return [
+                        'verification_id' => $cert->getVerificationId(),
+                        'course_id' => (int)$cert->getCourseId(),
+                        'issued_at' => (int)$cert->getIssuedAt(),
+                        'expires_at' => $cert->getExpiresAt() !== null ? (int)$cert->getExpiresAt() : null,
+                        'revoked' => (bool)$cert->getRevoked(),
+                        'credential_jwt' => $cert->getCredentialJson(),
+                    ];
+                },
+                $this->certificateMapper->findByUserId($userId)
+            ),
             'exported_at' => time(),
         ];
     }
