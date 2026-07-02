@@ -611,7 +611,9 @@ class CourseService {
             } catch (\Throwable $e) {
                 continue; // dangling course_pool row — skip
             }
-            if (($course->getVideoGateEnabled() ?? false) && $this->hasAccess($course, $userId)) {
+            // Access FIRST (short-circuit): never evaluate a course's gate config for a user who is not
+            // enrolled — access is the precondition, the gate flag is only consulted for members.
+            if ($this->hasAccess($course, $userId) && ($course->getVideoGateEnabled() ?? false)) {
                 $ids[] = $courseId;
             }
         }
