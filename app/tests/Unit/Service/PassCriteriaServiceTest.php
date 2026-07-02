@@ -445,39 +445,56 @@ class PassCriteriaServiceTest extends TestCase {
      * skips emitPassEventIfFirst → exactly(1) satisfied.
      */
     public function testConcurrentPassSingleEventAndCert(): void {
-        $audit = $this->createMock(AuditService::class);
-        // Only the WINNER (wasCreated=true) may emit COURSE_PASSED.
-        // RED: current code fires for BOTH concurrent requests → exactly(1) fails.
-        $audit->expects($this->exactly(1))->method('logComplianceEvent');
-
         $cert = new Certificate();
-        $issuance = $this->createMock(IssuanceService::class);
-        // Mock both methods so the test is forward-compatible:
-        // - issueIfPassed: for the current RED path (evaluate() calls it today)
-        // - issueIfPassedResult: for the 164-04 GREEN path (evaluate() switches to this)
-        $issuance->method('issueIfPassed')->willReturn($cert);
-        $issuance->method('issueIfPassedResult')->willReturnOnConsecutiveCalls(
-            new IssueResult($cert, true),   // winner — emit COURSE_PASSED
-            new IssueResult($cert, false)   // loser  — dedupe silently (no emit)
-        );
 
-        // Both concurrent requests find NO existing audit event (they check before either writes).
-        // This is the race window that current emitPassEventIfFirst does not guard against.
+        // Winner-order lock: the LOSER resolves FIRST (wasCreated=false), the WINNER SECOND
+        // (wasCreated=true). A correct impl consults wasCreated and emits COURSE_PASSED ONLY for
+        // the winner. A wrong impl that dedupes on a stateful per-user flag (ignoring wasCreated)
+        // would emit on the FIRST (loser) call → the assertSame([true]) below fails. This makes
+        // "emit only on the insert winner" an EXECUTABLE lock, not a comment.
+        $lastWasCreated = null;
+        $seq = 0;
+        $issuance = $this->createMock(IssuanceService::class);
+        // Legacy single-cert path is FORBIDDEN — the impl MUST route through issueIfPassedResult.
+        $issuance->expects($this->never())->method('issueIfPassed');
+        $issuance->expects($this->exactly(2))
+            ->method('issueIfPassedResult')
+            ->willReturnCallback(function () use (&$lastWasCreated, &$seq, $cert): IssueResult {
+                $lastWasCreated = ($seq++ === 1); // call 0 → loser(false), call 1 → winner(true)
+                return new IssueResult($cert, $lastWasCreated);
+            });
+
+        // COURSE_PASSED must fire exactly once, and only while the most-recent issuance result
+        // was the winner. Capture wasCreated at emit time so the ORDER is asserted, not just the count.
+        $emittedWasCreated = [];
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->exactly(1))
+            ->method('logComplianceEvent')
+            ->willReturnCallback(function () use (&$lastWasCreated, &$emittedWasCreated): void {
+                $emittedWasCreated[] = $lastWasCreated;
+            });
+
+        // Both concurrent requests find NO existing audit event (race window before either writes).
         $builders = [
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // request 1: dedup → fires
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // request 1: getPassedAt
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // request 2: dedup → fires again (RED)
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // request 2: getPassedAt
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),
         ];
 
         $service = $this->makeService($this->makeCourse(true, 80), 90, null, $builders, $audit, $issuance);
 
-        $r1 = $service->evaluate(self::USER, self::COURSE_ID);  // concurrent winner
-        $r2 = $service->evaluate(self::USER, self::COURSE_ID);  // concurrent loser
+        $r1 = $service->evaluate(self::USER, self::COURSE_ID);  // concurrent loser (resolves first)
+        $r2 = $service->evaluate(self::USER, self::COURSE_ID);  // concurrent winner (resolves second)
 
         $this->assertTrue($r1->isPassed());
         $this->assertTrue($r2->isPassed());
-        // $audit->expects(exactly(1)) verified at teardown → RED now
+        // RED now on THREE counts: never(issueIfPassed) violated (current code calls it);
+        // exactly(2) issueIfPassedResult violated (0 calls today); and the single emit does not
+        // coincide with wasCreated=true. GREEN in 164-04: call issueIfPassedResult first, emit
+        // only when wasCreated=true.
+        $this->assertSame([true], $emittedWasCreated,
+            'COURSE_PASSED must be emitted exactly once, only on the wasCreated=true (winner) call');
     }
 
     /**

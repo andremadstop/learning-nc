@@ -150,9 +150,12 @@ class PassCriteriaService {
      * Union-guard seam (RECERT-05) — frozen in Wave 2 (164-02), implemented in Wave 4 (164-04).
      *
      * A pass may emit + issue iff EITHER:
-     *   (a) NO cert has ever been issued for (user, course) [ASSIGN-04: self-learner, no assignment row]
-     *   (b) An assignment row exists with active_period_key IS NOT NULL AND status != 'passed'
-     *       [open obligation period — student has not yet cleared this cycle]
+     *   (a) NO cert has EVER been issued for (user, course) — hasEverIssuedCertificate() via an
+     *       UNFILTERED findByUserAndCourse() === null (a revoked/expired row still counts as
+     *       "ever issued" → no auto-reissue) [ASSIGN-04: self-learner, no assignment row]
+     *   (b) An open per-user period exists: active_period_key IS NOT NULL AND
+     *       status IN ('assigned','in_progress','overdue') — an ALLOW-LIST, NOT `!= passed`
+     *       (terminal states cancelled/withdrawn/closed/expired/passed are non-issuing)
      *
      * SC2: after a punitive revoke (revoked=true, active_idem_key=NULL) with NO open period this
      * MUST return false — do NOT auto-reissue after a punitive revoke.
