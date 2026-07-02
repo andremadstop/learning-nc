@@ -161,6 +161,7 @@ class PassCriteriaService {
      *
      * @throws \LogicException until 164-04 implements the guard
      */
+    // @phpstan-ignore-next-line (unused private: wired in 164-04)
     private function mayIssue(string $userId, int $courseId): bool {
         throw new \LogicException('not implemented — 164-04');
     }

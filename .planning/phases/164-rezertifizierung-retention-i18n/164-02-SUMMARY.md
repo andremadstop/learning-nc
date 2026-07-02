@@ -25,7 +25,7 @@ tech-stack:
   added: []
   patterns:
     - "observed-RED discipline — stubs freeze signatures; tests define contract; impl wave (164-04) flips GREEN"
-    - "private stubs (mayIssue, computeExpiry) at PHPStan L5 — unused-private NOT reported (no dead-code extension)"
+    - "private stubs (mayIssue, computeExpiry) guarded with @phpstan-ignore-next-line — UnusedPrivateMethodRule is a PHPStan CORE rule (baseline already carried CourseService::poolExists); reportUnmatchedIgnoredErrors:false makes this side-effect-free until 164-04 wires the methods"
     - "IssuanceServiceTest::makeService gains optional issuedAt param for clock-pinning"
     - "DST test uses date_default_timezone_set + try/finally restore; explicit DateTimeZone('Europe/Berlin') on all DateTimeImmutable ops"
 
@@ -97,7 +97,7 @@ completed: 2026-07-02
 
 ## Decisions Made
 
-- **PHPStan L5 unused-private safety confirmed.** Checked `app/phpstan.neon`: level 5 without `phpstan-dead-code` extension — unused private methods are NOT reported. The two private stubs (mayIssue, computeExpiry) are safe.
+- **PHPStan L5 unused-private requires suppression.** `UnusedPrivateMethodRule` is a PHPStan CORE rule (not a dead-code extension); `app/phpstan-baseline.neon:224` already carries `CourseService::poolExists() is unused` confirming the rule fires. Fix (Wave 2 correction): added `// @phpstan-ignore-next-line (unused private: wired in 164-04)` above both `mayIssue` and `computeExpiry` stub declarations. `reportUnmatchedIgnoredErrors: false` makes these suppressions side-effect-free when 164-04 wires the methods.
 - **closePeriod SC2 invariant documented in PHPDoc.** The contract "MUST NOT set revoked=true" is in the PHPDoc, not just in test comments — it will survive code review.
 - **IssuanceServiceTest::makeService extended non-breakingly.** Optional `int $issuedAt = self::ISSUED_AT` param added; all 12 existing tests continue to use the default value.
 

@@ -196,6 +196,7 @@ class IssuanceService {
      *
      * @throws \LogicException until 164-04 implements DST-safe date math
      */
+    // @phpstan-ignore-next-line (unused private: wired in 164-04)
     private function computeExpiry(int $issuedAt, int $courseId, ?int $assignmentOverrideMonths): ?int {
         throw new \LogicException('not implemented — 164-04');
     }
