@@ -1,6 +1,7 @@
 <?php
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Db\OversightMapper;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IGroupManager;
@@ -10,17 +11,20 @@ class RoleService {
     private IConfig $config;
     private IDBConnection $db;
     private string $appName;
+    private OversightMapper $oversightMapper;
 
     public function __construct(
         IGroupManager $groupManager,
         IConfig $config,
         IDBConnection $db,
-        string $appName
+        string $appName,
+        OversightMapper $oversightMapper
     ) {
         $this->groupManager = $groupManager;
         $this->config = $config;
         $this->db = $db;
         $this->appName = $appName;
+        $this->oversightMapper = $oversightMapper;
     }
 
     public function getInstructorGroup(): string {
@@ -72,5 +76,26 @@ class RoleService {
 
     public function getRole(string $userId): string {
         return $this->isInstructor($userId) ? 'instructor' : 'student';
+    }
+
+    /**
+     * True when the given lead user holds an oversight row for the exact
+     * (courseId, groupId) combination.
+     *
+     * SKELETON — always false until 163-03 fills the real query.
+     */
+    public function isTeamLeadForGroup(int $courseId, string $leadUserId, string $groupId): bool {
+        // SKELETON — real check in 163-03
+        return false;
+    }
+
+    /**
+     * All (course_id, group_id) scopes this lead is authorised to view.
+     *
+     * @return list<array{course_id: int, group_id: string}>
+     */
+    public function getTeamLeadGroups(string $leadUserId): array {
+        // SKELETON — real mapping in 163-03
+        return [];
     }
 }

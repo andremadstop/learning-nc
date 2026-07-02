@@ -274,6 +274,20 @@ class ReminderService {
         return false;
     }
 
+    /**
+     * Send a compliance reminder notification to a single user for a mandatory course.
+     *
+     * SKELETON — no-op until 163-06 implements the real dispatch logic.
+     * The method signature is frozen here so CertificateReportServiceTest can mock it in Wave 0.
+     *
+     * @param int    $courseId     the compliance course
+     * @param string $targetUserId the user to remind
+     * @param string $leadUserId   the team lead dispatching the reminder (for audit)
+     */
+    public function sendComplianceReminder(int $courseId, string $targetUserId, string $leadUserId): void {
+        // SKELETON — no-op until 163-06
+    }
+
     private function today(): string {
         return (new \DateTimeImmutable('today'))->format('Y-m-d');
     }

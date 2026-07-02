@@ -6,6 +6,7 @@ namespace OCA\Learning\Service;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IGroupManager;
 
 /**
  * DSGVO-safe, owner-scoped compliance report for a certifying course (156-01, REPORT-01..04).
@@ -31,15 +32,77 @@ class CertificateReportService {
     private CourseService $courseService;
     private CertificateMapper $certificateMapper;
     private ITimeFactory $timeFactory;
+    private RoleService $roleService;
+    private AssignmentService $assignmentService;
+    private ReminderService $reminderService;
+    private IGroupManager $groupManager;
 
     public function __construct(
         CourseService $courseService,
         CertificateMapper $certificateMapper,
-        ITimeFactory $timeFactory
+        ITimeFactory $timeFactory,
+        RoleService $roleService,
+        AssignmentService $assignmentService,
+        ReminderService $reminderService,
+        IGroupManager $groupManager
     ) {
         $this->courseService = $courseService;
         $this->certificateMapper = $certificateMapper;
         $this->timeFactory = $timeFactory;
+        $this->roleService = $roleService;
+        $this->assignmentService = $assignmentService;
+        $this->reminderService = $reminderService;
+        $this->groupManager = $groupManager;
+    }
+
+    /**
+     * Team-lead-scoped compliance report for a group within a course.
+     *
+     * Authorization (assertTeamLeadForGroup) runs BEFORE any member or certificate read.
+     * SKELETON — always returns [] until 163-05 fills the real logic.
+     *
+     * @param int      $courseId     the certifying course
+     * @param string   $groupId      the NC group the lead is authorised to view
+     * @param string   $leadUserId   the requesting team lead
+     * @param int|null $expiringDays optional expiry window (days)
+     * @return array<int, array{user_id: string, display_name: string, status: string, passed_at: int|null, expires_at: int|null, due_date: int|null}>
+     */
+    public function getGroupReport(int $courseId, string $groupId, string $leadUserId, ?int $expiringDays): array {
+        // SKELETON — real auth + DB logic in 163-05
+        return [];
+    }
+
+    /**
+     * Assert that $leadUserId holds an oversight row for ($courseId, $groupId).
+     *
+     * NO-OP SKELETON until 163-05. Denial tests are RED against this skeleton: the real
+     * implementation must call isTeamLeadForGroup and throw ForbiddenException before any read.
+     *
+     * @throws ForbiddenException when the real check is implemented (163-05)
+     */
+    private function assertTeamLeadForGroup(int $courseId, string $groupId, string $leadUserId): void {
+        // NO-OP until 163-05 — denial tests go RED against this skeleton
+    }
+
+    /**
+     * Dispatch a compliance reminder to $targetUserId for $courseId, after verifying
+     * that $targetUserId belongs to a group the lead oversees.
+     *
+     * NO-OP SKELETON until 163-06.
+     *
+     * @throws ForbiddenException when the real check is implemented (163-06)
+     */
+    public function remindMember(int $courseId, string $groupId, string $targetUserId, string $leadUserId): void {
+        // NO-OP until 163-06
+    }
+
+    /**
+     * All (course_id, group_id) scopes this lead is authorised to view.
+     *
+     * @return list<array{course_id: int, group_id: string}>
+     */
+    public function myTeamLeadScopes(string $leadUserId): array {
+        return $this->roleService->getTeamLeadGroups($leadUserId);
     }
 
     /**

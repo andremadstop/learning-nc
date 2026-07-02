@@ -103,6 +103,21 @@ class CertificateMapper extends QBMapper {
     }
 
     /**
+     * Certificates for a specific course restricted to the given user IDs, with optional expiry filter.
+     *
+     * SKELETON — always returns [] until 163-05 adds the real IN query.
+     * Callers MUST pass a non-empty $userIds list; an empty list returns [] immediately (no IN ()).
+     *
+     * @param list<string> $userIds
+     * @param int|null     $expiresBefore absolute unix cutoff (same semantics as findByCourseId)
+     * @return Certificate[]
+     */
+    public function findByCourseIdForUsers(int $courseId, array $userIds, ?int $expiresBefore): array {
+        // SKELETON — real IN query in 163-05; empty input fails closed
+        return [];
+    }
+
+    /**
      * All certificates issued to a user, newest first.
      *
      * @return Certificate[]

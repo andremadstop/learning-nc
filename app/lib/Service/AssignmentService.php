@@ -116,6 +116,19 @@ class AssignmentService {
     }
 
     /**
+     * Assignment state for each user in the given list for a course.
+     *
+     * SKELETON — always returns [] until 163-05 adds the real query.
+     *
+     * @param list<string> $userIds
+     * @return array<string, array{status: string, due_date: int|null}> keyed by subject_id (user UID)
+     */
+    public function getStatesForCourseAndUsers(int $courseId, array $userIds): array {
+        // SKELETON — real query in 163-05
+        return [];
+    }
+
+    /**
      * Expand a NC group to its member UIDs (LDAP-transparent via NC IGroupManager).
      *
      * ASSIGN-02: IGroupManager::get($gid)->getUsers() resolves LDAP/AD/SAML/local backends
