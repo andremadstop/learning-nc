@@ -651,7 +651,8 @@ Plans:
 - [x] 162-02-PLAN.md — NC-Files streaming (Range-206 + 416) + registry admin CRUD + VideoSourceAdapter interface (VIDEO-01/09/05)
 - [x] 162-03-PLAN.md — startSession 403 gate + VideoProgressController (heartbeat/complete/document-read) (VIDEO-03/04/07)
 - [x] 162-04-PLAN.md — WCAG AA player + third-party consent overlay + Art.13 training-start notice (VIDEO-05/08, DSGVO-04)
-- **Human-verify (Andre's run-through, not blockers):** curl Range-206/416 over relay; seek-to-99% gate-closed live; third-party consent no-preload (DevTools Network); WCAG SR/contrast/no-autoplay; Art.13 notice text; "Gelesen" flip in browser + Playwright live run (E2E_VIDEO_COURSE_ID seed); courseStatus IDOR 200/403 live.
+- **LIVE-PROVEN 2026-07-02 (throwaway-seed curl smoke, torn down):** ✅ Range **206** (Content-Range bytes 0-1023/4096, Accept-Ranges) — custom ICallbackResponse streams through container/Apache/storage; ✅ malformed Range → **416** (bytes */size); ✅ Stream **IDOR 403** for non-enrolled (assertEnrolledInCourse fires before any byte), 401 for wrong token. VIDEO-01 feature-exists + IDOR proven end-to-end over HTTP.
+- **Human-verify (Andre's run-through, not blockers):** courseStatus + training/start 403 over HTTP (CSRF-protected XHR endpoints — curl-blocked without a session token; share the proven assertEnrolledInCourse mechanism; verify in-browser/Playwright); seek-to-99% gate-closed live; third-party consent no-preload (DevTools Network); WCAG SR/contrast/no-autoplay; Art.13 notice text; "Gelesen" flip in browser + Playwright live run (E2E_VIDEO_COURSE_ID seed).
 
 ### Phase 163: Teamleiter-RBAC-Reports + DSGVO Art.20
 **Goal**: Team leads can view group-scoped compliance status, send reminders, and individuals can export their own data; no cross-group data leaks at any layer

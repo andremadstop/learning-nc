@@ -31,16 +31,20 @@ author: Claude (Opus 4.8 1M) — autonomous run
 - **Frontend:** WCAG-2.1-AA `VideoPlayer.vue`, `VideoConsentOverlay.vue` (Art.13, kein Preload vor Consent, youtube-nocookie+dnt=1/Vimeo dnt=1), `TrainingPrivacyNotice.vue` (Art.13 Schulungsbeginn), `CourseTabLernraum.vue` Student-Gate-UI + „Gelesen". JS **gebaut + deployed**.
 - **Scope-Grenze verifiziert:** `learning_sessions` wird an genau einer Stelle inserted — Duel/Gameshow/Leitner nutzen separate Tabellen → **können das Gate nicht umgehen** (bewusste, belegte Grenze; nur startSession/Training+Exam = Cert-Pfad ist gegatet).
 
-## 🔬 OFFEN — Andres 162-Durchlauf (7 human-verify, KEIN Blocker)
-Nach `--js-only`-Deploy (bereits erfolgt) im Browser/curl:
-1. **curl Range 206 + 416** über Relay-Storage: `curl -I -H "Range: bytes=0-1023" -b "<session>" …/apps/learning/api/video-stream/<contentId>` → 206 + Content-Range; malformed → 416.
+## 🔬 Live-Smoke 2026-07-02 (Wegwerf-Seed via curl, abgeräumt) + OFFEN für Andres Durchlauf
+**✅ LIVE-PROVEN** (Kurs 65/Pool 167/content_id 1 + 2 Wegwerf-User, danach komplett geteardown):
+- Range **206** — `Content-Range: bytes 0-1023/4096`, `Accept-Ranges: bytes` → custom `ICallbackResponse` streamt physisch durch Container/Apache/Storage (die Advisor-Sorge „fseek+manuelles-206 durch Container-Storage" → beantwortet YES).
+- malformed Range → **416** (`bytes */4096`).
+- Stream **IDOR 403** für non-enrolled (assertEnrolledInCourse greift vor jedem Byte), 401 falscher Token. → **VIDEO-01 feature-exists + IDOR end-to-end über HTTP bewiesen.**
+
+**⚠ OFFEN — Andres 162-Durchlauf (KEIN Blocker):**
+1. **courseStatus + training/start 403 über HTTP** — CSRF-geschützte XHR-Endpoints (curl ohne Session-Token blockt mit 412 „CSRF check failed"; axios im Browser sendet den Token). Teilen den bereits bewiesenen `assertEnrolledInCourse`-Mechanismus → im Browser/Playwright prüfen.
 2. **seek-to-99% → Gate bleibt zu** (Quiz 403).
 3. **Consent no-preload:** DevTools-Network — 0 youtube/vimeo-Requests vor Klick; danach youtube-nocookie+dnt=1.
 4. **WCAG:** Screenreader liest play/pause (aria-live), AA-Kontrast, kein Autoplay.
 5. **Art.13-Text** im Schulungsbeginn-Notice korrekt.
 6. **„Gelesen"-Flip** im Browser + Playwright-Live-Run (`E2E_VIDEO_COURSE_ID` + Student-Creds seeden).
-7. **courseStatus IDOR** live: enrolled 200 (leak-frei) / non-member 403.
-> Volle live-Auth braucht Vault-User-Passwörter + Playwright-Login (test-api.sh-Muster). Bewusst deferred — Security ist code-verified (27/27) + unit-gelockt + 3× Codex.
+> Live-Auth für die XHR-Endpoints braucht Session+CSRF (Browser/Playwright) — die reinen curl-testbaren Server-Items (Streaming/IDOR) sind live bewiesen; der Rest ist code-verified (27/27) + unit-gelockt + 3× Codex. **Wegwerf-User-Rezept:** `occ user:add --password-from-env` (OC_PASS=…) + `ocs/v2.php/core/getapppassword` für curl-Basic-Auth.
 
 ## ▶ RESUME — nächste Schritte
 1. **`/gsd:plan-phase 163`** (Teamleiter-RBAC-Reports + Art.20). Frischer Kontext empfohlen (`/clear` zuerst).
