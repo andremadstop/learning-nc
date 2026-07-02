@@ -7,9 +7,9 @@ use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\RetentionService;
+use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
-use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -67,7 +67,7 @@ class RetentionServiceTest extends TestCase {
             });
 
         $auditService = $this->createMock(AuditService::class);
-        $db           = $this->createMock(IDBConnection::class);
+        $fakeDb       = new FakeDbConnection();
 
         $config = $this->createMock(IConfig::class);
         $config->method('getAppValue')
@@ -78,7 +78,7 @@ class RetentionServiceTest extends TestCase {
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $service = new RetentionService($certMapper, $auditService, $db, $config, $time, $logger);
+        $service = new RetentionService($certMapper, $auditService, $fakeDb, $config, $time, $logger);
 
         // RED: anonymizeExpired() throws LogicException('164-07') → test ERRORS → RED.
         // GREEN (164-07): the method is implemented; assertions below then hold.
@@ -100,14 +100,26 @@ class RetentionServiceTest extends TestCase {
         // $this->assertNotNull($updatedCert->getAnonymizedAt(),
         //     'DSGVO-03: anonymized_at must be a non-null unix timestamp after erasure');
 
-        // (2) Audit chain structural invariant:
-        //   RetentionService calls $db->getQueryBuilder()->update('learning_audit_events')
-        //   with SET user_id = NULL WHERE cert chain is affected.
-        //   The chain_hash column MUST NOT appear in the SET clause.
-        //   AuditService::logComplianceEvent hash inputs do NOT include user_id
-        //   (verified in AuditService.php) → nulling user_id is chain-safe.
-        //   Full chain-walk re-verification runs at PHPUnit integration level (orchestrator Gate).
-        $this->assertTrue(true,
-            'structural: audit user_id nulled; chain_hash unchanged by construction');
+        // (2) Audit chain integrity: RetentionService must UPDATE learning_audit_events
+        //   with SET user_id = NULL but MUST NOT touch chain_hash.
+        //   FakeDbConnection::issuedBuilders[] captures every getQueryBuilder() call;
+        //   FakeQueryBuilder::setCalls is keyed by field name.
+        //   → asserting chain_hash absent from any UPDATE SET clause locks the
+        //     "chain-immutable-by-construction" invariant at unit-test level.
+        //   GREEN (164-07): impl calls $db->getQueryBuilder()->update(...)
+        //     ->set('user_id', null)->where(...)—without set('chain_hash', ...).
+        $auditUpdate = null;
+        foreach ($fakeDb->issuedBuilders as $issuedQb) {
+            if ($issuedQb->operation === 'update') {
+                $auditUpdate = $issuedQb;
+                break;
+            }
+        }
+        $this->assertNotNull($auditUpdate,
+            'DSGVO-03: RetentionService must issue an UPDATE via IDBConnection to null audit user_id');
+        $this->assertArrayHasKey('user_id', $auditUpdate->setCalls,
+            'DSGVO-03: user_id must appear in audit UPDATE SET clause');
+        $this->assertArrayNotHasKey('chain_hash', $auditUpdate->setCalls,
+            'DSGVO-03: chain_hash must NOT appear in audit UPDATE — chain-immutability by construction');
     }
 }

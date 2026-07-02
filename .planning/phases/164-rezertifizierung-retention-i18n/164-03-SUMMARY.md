@@ -57,7 +57,7 @@ key-files:
 key-decisions:
   - "testDoubleRunSingleRow uses expects(once()) on closePeriod: first run closes the period, second run finds nothing open → 0 more calls → total 1. RED: no-op body → 0 calls → FAILS. Avoids false GREEN from expects(atMostOnce)."
   - "testOncePerThreshold does NOT wrap in expectException: sendRecertReminders() throws → test ERRORS → RED for free. Wrapping would flip RED→GREEN (same trap as closePeriod in 164-02)."
-  - "testAnonymizeKeepsChain captures cert via update() callback spy; asserts userId=null + credentialJson=empty. getAnonymizedAt() assertion commented out — Certificate.php does not have anonymizedAt entity property yet (164-07 adds it alongside impl)."
+  - "testAnonymizeKeepsChain uses FakeDbConnection to lock the chain-hash invariant: userId=null + credentialJson=empty (cert mock spy) + assertArrayNotHasKey('chain_hash', auditQb.setCalls) + assertArrayHasKey('user_id', auditQb.setCalls) (FakeQueryBuilder captured from issuedBuilders[]). getAnonymizedAt() assertion commented out — Certificate.php does not have anonymizedAt property yet (164-07 adds it alongside impl)."
   - "RecertL10n.test.js checks all 5 langs (de/en/fr/ru/ar) — NOT just de+en like BadgeL10n.test.js (DSGVO-05 requires 5-lang parity). 10 canonical keys enumerated as single source of truth for 164-07."
   - "Application.php registers BOTH RecertPeriodCloseJob + RetentionJob now — 164-05/06/07 are forbidden from touching Application.php (merge-conflict prevention)."
 
@@ -117,7 +117,7 @@ completed: 2026-07-02
 |------|------|---------------|---------------|
 | `testDoubleRunSingleRow` | RecertPeriodCloseJobTest | `closePeriod.expects(once())` — no-op body → 0 calls → FAILS | 164-05: run() queries + closes expired period; 2nd run finds nothing → total 1 call |
 | `testOncePerThreshold` | RecertReminderServiceTest | `sendRecertReminders()` throws LogicException → ERRORS; notify `expects(once())` unsatisfied | 164-06: impl; insertOnce UNIQUE guard prevents 2nd notification |
-| `testAnonymizeKeepsChain` | RetentionServiceTest | `anonymizeExpired()` throws LogicException → ERRORS | 164-07: impl; cert.userId=null + credentialJson=empty + update() called |
+| `testAnonymizeKeepsChain` | RetentionServiceTest | `anonymizeExpired()` throws LogicException → ERRORS | 164-07: impl; cert.userId=null + credentialJson=empty + audit UPDATE: user_id in SET, chain_hash absent (FakeDbConnection) |
 | `RecertL10n parity` | RecertL10n.test.js | 50 FAILURES: 10 keys × 5 langs all absent | 164-07: all 10 keys added to de/en/fr/ru/ar .json + l10n_js_sync.py run |
 
 ## Decisions Made
@@ -125,6 +125,7 @@ completed: 2026-07-02
 - **testDoubleRunSingleRow assertion is `once()` not `exactly(2)`:** First run closes the expired period (active_period_key set → no longer open). Second run finds no expired-open periods → closePeriod not called. Total: 1 call. `exactly(2)` would pass even in a non-idempotent impl if the job always calls it.
 - **No `expectException` in reminder/retention RED tests:** The LogicException propagates → test ERRORS. Wrapping in `expectException` would flip RED→GREEN (established pattern from 164-02 `closePeriod` decision).
 - **Certificate::getAnonymizedAt() commented out in test:** Certificate.php does not have `$anonymizedAt` property yet — added by migration only (Version009600 column). PHPStan L5 would flag a call to an undeclared `@method`. 164-07 must add the entity property alongside the impl. The comment documents the requirement explicitly.
+- **testAnonymizeKeepsChain chain-hash lock via FakeDbConnection:** Switched `$db` from `createMock(IDBConnection::class)` to `new FakeDbConnection()`. FakeDbConnection records all `getQueryBuilder()` returns in `issuedBuilders[]`; FakeQueryBuilder::setCalls is keyed by field name. Post-call assertions: `assertArrayHasKey('user_id', ...)` + `assertArrayNotHasKey('chain_hash', ...)` on the first issued UPDATE builder. This locks the DSGVO-03 chain-immutability invariant at unit level — 164-07 must not include `chain_hash` in any UPDATE SET clause on audit rows.
 - **RecertL10n checks all 5 langs:** DSGVO-05 mandates 5-lang parity. BadgeL10n.test.js only checks de+en — this test does not mirror that limitation.
 - **PhpUnitStubs: no changes needed.** 164-01 confirmed all OCP surface (TimedJob, IJobList, ITimeFactory, IConfig, IManager) already present from phases 160/161.
 
@@ -150,6 +151,8 @@ Wave 2 skeleton contracts are frozen. Impl waves can proceed:
 - **164-07** (retention + i18n): `RetentionService::anonymizeExpired()` + all 10 recert l10n keys in 5 langs — must flip `testAnonymizeKeepsChain` and all 50 RecertL10n assertions GREEN; add Certificate::getAnonymizedAt() entity property
 
 Application.php is LOCKED — no impl wave touches it.
+
+**Note on testDoubleRunSingleRow:** The test name promises "single row" idempotency but only locks the delegation call count (`closePeriod` called once across two runs). The actual UNIQUE-slot row-level idempotency lives inside `AssignmentService::closePeriod` (mocked here). 164-05 must add a dedicated idempotency test at the `closePeriod` level to close this gap.
 
 ---
 *Phase: 164-rezertifizierung-retention-i18n*

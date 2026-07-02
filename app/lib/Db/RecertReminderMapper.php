@@ -33,7 +33,6 @@ class RecertReminderMapper extends QBMapper {
      * @throws \LogicException until implemented in 164-06
      */
     public function insertOnce(int $certId, int $thresholdDays, int $sentAt): bool {
-        // @phpstan-ignore-next-line (unused: wired in 164-06)
         throw new \LogicException('RecertReminderMapper::insertOnce not implemented — impl in 164-06');
     }
 
