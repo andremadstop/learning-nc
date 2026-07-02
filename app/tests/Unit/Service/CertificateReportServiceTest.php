@@ -11,11 +11,13 @@ use OCA\Learning\Db\CourseMember;
 use OCA\Learning\Db\CourseMemberMapper;
 use OCA\Learning\Db\CoursePoolMapper;
 use OCA\Learning\Db\CurriculumScopeMapper;
+use OCA\Learning\Service\AssignmentService;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\CertificateReportService;
 use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\FeedService;
 use OCA\Learning\Service\ForbiddenException;
+use OCA\Learning\Service\ReminderService;
 use OCA\Learning\Service\RoleService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
@@ -90,6 +92,23 @@ class CertificateReportServiceTest extends TestCase {
     }
 
     /**
+     * Return the 4 new constructor mocks as a positional array for spread into
+     * `new CertificateReportService(cs, certMapper, time, ...this->makeNewMocks())`.
+     *
+     * All inert by default — existing getCourseReport tests never exercise these deps.
+     *
+     * @return array{0: RoleService, 1: AssignmentService, 2: ReminderService, 3: \OCP\IGroupManager}
+     */
+    private function makeNewMocks(): array {
+        return [
+            $this->createMock(RoleService::class),
+            $this->createMock(AssignmentService::class),
+            $this->createMock(ReminderService::class),
+            $this->createMock(IGroupManager::class),
+        ];
+    }
+
+    /**
      * A Certificate whose credential_json is a (fake-signed) compact VC-JWT — header.payload.sig
      * with the payload base64url-encoded exactly as the real issuer emits it (no padding).
      */
@@ -138,7 +157,8 @@ class CertificateReportServiceTest extends TestCase {
         $service = new CertificateReportService(
             $this->makeCourseService($this->makeCourse('alice'), null),
             $certMapper,
-            $this->makeTime()
+            $this->makeTime(),
+            ...$this->makeNewMocks()
         );
 
         $result = $service->getCourseReport(self::COURSE_ID, 'alice', null, null, null);
@@ -175,7 +195,8 @@ class CertificateReportServiceTest extends TestCase {
         $service = new CertificateReportService(
             $this->makeCourseService($this->makeCourse('alice'), null),
             $certMapper,
-            $this->makeTime()
+            $this->makeTime(),
+            ...$this->makeNewMocks()
         );
 
         $this->expectException(ForbiddenException::class);
@@ -198,7 +219,8 @@ class CertificateReportServiceTest extends TestCase {
         $service = new CertificateReportService(
             $this->makeCourseService($this->makeCourse('alice'), $member),
             $certMapper,
-            $this->makeTime()
+            $this->makeTime(),
+            ...$this->makeNewMocks()
         );
 
         $this->assertSame(['rows' => []], $service->getCourseReport(self::COURSE_ID, 'bob', null, null, null));
@@ -218,7 +240,8 @@ class CertificateReportServiceTest extends TestCase {
         $service = new CertificateReportService(
             $this->makeCourseService($this->makeCourse('alice'), null),
             $certMapper,
-            $this->makeTime()
+            $this->makeTime(),
+            ...$this->makeNewMocks()
         );
 
         $service->getCourseReport(self::COURSE_ID, 'alice', 100, 200, 30);
@@ -238,7 +261,8 @@ class CertificateReportServiceTest extends TestCase {
         $service = new CertificateReportService(
             $this->makeCourseService($this->makeCourse('alice'), null),
             $certMapper,
-            $this->makeTime()
+            $this->makeTime(),
+            ...$this->makeNewMocks()
         );
 
         $service->getCourseReport(self::COURSE_ID, 'alice', null, null, null);
@@ -256,7 +280,8 @@ class CertificateReportServiceTest extends TestCase {
         $service = new CertificateReportService(
             $this->makeCourseService($this->makeCourse('alice'), null),
             $certMapper,
-            $this->makeTime()
+            $this->makeTime(),
+            ...$this->makeNewMocks()
         );
 
         $rows = $service->getCourseReport(self::COURSE_ID, 'alice', null, null, null)['rows'];
@@ -277,7 +302,8 @@ class CertificateReportServiceTest extends TestCase {
         $service = new CertificateReportService(
             $this->makeCourseService($this->makeCourse('alice'), null),
             $certMapper,
-            $this->makeTime()
+            $this->makeTime(),
+            ...$this->makeNewMocks()
         );
 
         $rows = $service->getCourseReport(self::COURSE_ID, 'alice', null, null, null)['rows'];
@@ -286,5 +312,225 @@ class CertificateReportServiceTest extends TestCase {
         $this->assertSame('', $rows[0]['score']);
         $this->assertSame('Clean Name', $rows[1]['display_name']);
         $this->assertSame('55', $rows[1]['score']);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // Wave-0 denial tests for getGroupReport / remindMember (RBAC-02 / RBAC-04)
+    //
+    // All five tests are RED against the skeleton (Wave 0). They flip GREEN
+    // in 163-05 (getGroupReport + assertTeamLeadForGroup) and 163-06 (remindMember).
+    // The never()-constraints are LOCKED: deny paths must NEVER reach data sources.
+    // ════════════════════════════════════════════════════════════════════════
+
+    /**
+     * RBAC-02 (RED): getGroupReport for a group the caller does NOT lead → ForbiddenException.
+     *
+     * ASSERT-FIRST invariant (Research Pitfall 3): expandGroup and findByCourseIdForUsers
+     * are constrained to never(). The deny path must throw BEFORE any read — not after.
+     * Skeleton no-op returns [] without throwing → RED until 163-05 adds assertTeamLeadForGroup.
+     */
+    public function testGroupReportForeignGroupThrows(): void {
+        $assignmentService = $this->createMock(AssignmentService::class);
+        $assignmentService->expects($this->never())->method('expandGroup');
+
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->expects($this->never())->method('findByCourseIdForUsers');
+
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $certMapper,
+            $this->makeTime(),
+            $this->createMock(RoleService::class),   // isTeamLeadForGroup returns false by default
+            $assignmentService,
+            $this->createMock(ReminderService::class),
+            $this->createMock(IGroupManager::class)
+        );
+
+        $this->expectException(ForbiddenException::class);
+        // bob holds no oversight row for 'dept-a' in course 42 → must throw before any read
+        $service->getGroupReport(42, 'dept-a', 'bob', null);
+    }
+
+    /**
+     * RBAC-02 (RED): empty groupId must fail closed — never treated as "all groups".
+     *
+     * ASSERT-FIRST invariant: same never()-constraints. Skeleton no-op returns [] → RED.
+     * Real impl (163-05) must validate groupId !== '' and throw BEFORE any DB access.
+     */
+    public function testGroupReportEmptyGroupIdFailsClosed(): void {
+        $assignmentService = $this->createMock(AssignmentService::class);
+        $assignmentService->expects($this->never())->method('expandGroup');
+
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->expects($this->never())->method('findByCourseIdForUsers');
+
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $certMapper,
+            $this->makeTime(),
+            $this->createMock(RoleService::class),
+            $assignmentService,
+            $this->createMock(ReminderService::class),
+            $this->createMock(IGroupManager::class)
+        );
+
+        $this->expectException(ForbiddenException::class);
+        // empty groupId must fail closed — not resolved to all-groups
+        $service->getGroupReport(42, '', 'alice', null);
+    }
+
+    /**
+     * RBAC-02 (RED): group report must include ALL members — cert holders (passed),
+     * overdue members (due_date < now, not passed), and missing members (no cert, no overdue).
+     *
+     * Non-cert rows use IGroupManager::get()->getUsers() for display names.
+     * Skeleton returns [] → assertNotEmpty fails → RED until 163-05.
+     */
+    public function testGroupReportIncludesMembersWithoutCert(): void {
+        $now = self::NOW;
+
+        // Bob has a passing cert; carol is overdue; dave has no cert and no overdue assignment.
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByCourseIdForUsers')
+            ->willReturn([
+                $this->makeCert('Robert', 'score:90; threshold:80', $now - 1000, null, 'vid-bob'),
+            ]);
+
+        $assignmentService = $this->createMock(AssignmentService::class);
+        $assignmentService->method('expandGroup')->with('team-x')->willReturn(['bob', 'carol', 'dave']);
+        $assignmentService->method('getStatesForCourseAndUsers')
+            ->willReturn([
+                'carol' => ['status' => 'assigned', 'due_date' => $now - 86400], // overdue
+                'dave'  => ['status' => 'assigned', 'due_date' => null],          // missing
+            ]);
+
+        $roleService = $this->createMock(RoleService::class);
+        $roleService->method('isTeamLeadForGroup')->willReturn(true);
+
+        // IGroupManager provides display names for non-cert members
+        $carolUser = $this->createMock(\OCP\IUser::class);
+        $carolUser->method('getUID')->willReturn('carol');
+        $carolUser->method('getDisplayName')->willReturn('Carol Smith');
+
+        $daveUser = $this->createMock(\OCP\IUser::class);
+        $daveUser->method('getUID')->willReturn('dave');
+        $daveUser->method('getDisplayName')->willReturn('Dave Jones');
+
+        $groupMock = $this->createMock(\OCP\IGroup::class);
+        $groupMock->method('getUsers')->willReturn([$carolUser, $daveUser]);
+
+        $groupManager = $this->createMock(IGroupManager::class);
+        $groupManager->method('get')->with('team-x')->willReturn($groupMock);
+
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $certMapper,
+            $this->makeTime(),
+            $roleService,
+            $assignmentService,
+            $this->createMock(ReminderService::class),
+            $groupManager
+        );
+
+        $rows = $service->getGroupReport(10, 'team-x', 'alice', null);
+
+        // RED: skeleton returns [] — assertNotEmpty fails until 163-05
+        $this->assertNotEmpty($rows, 'getGroupReport must include all group members — RED until 163-05');
+
+        // Status checks (executed once assertNotEmpty passes in 163-05)
+        $byUser = [];
+        foreach ($rows as $row) {
+            $byUser[$row['user_id'] ?? $row['display_name']] = $row;
+        }
+        $this->assertSame('passed',  $byUser['bob']['status'] ?? null);
+        $this->assertSame('overdue', $byUser['carol']['status'] ?? null);
+        $this->assertSame('missing', $byUser['dave']['status'] ?? null);
+    }
+
+    /**
+     * RBAC-02 / DSGVO (GREEN + LOCKED): no row value in the group report may contain an
+     * email-shaped token. Mirrors looksLikeEmail intent for non-cert member rows.
+     *
+     * Skeleton returns [] → no rows → no email found → GREEN trivially.
+     * Real impl (163-05) must sanitise display names from IGroupManager the same way
+     * getCourseReport sanitises frozen names from VC-JWTs. Must stay GREEN post-impl.
+     */
+    public function testGroupReportDtoCarriesNoEmail(): void {
+        $emailUser = $this->createMock(\OCP\IUser::class);
+        $emailUser->method('getUID')->willReturn('email-user');
+        $emailUser->method('getDisplayName')->willReturn('user@example.com'); // email-shaped
+
+        $group = $this->createMock(\OCP\IGroup::class);
+        $group->method('getUsers')->willReturn([$emailUser]);
+
+        $groupManager = $this->createMock(IGroupManager::class);
+        $groupManager->method('get')->willReturn($group);
+
+        $assignmentService = $this->createMock(AssignmentService::class);
+        $assignmentService->method('expandGroup')->willReturn(['email-user']);
+        $assignmentService->method('getStatesForCourseAndUsers')->willReturn([]);
+
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByCourseIdForUsers')->willReturn([]);
+
+        $roleService = $this->createMock(RoleService::class);
+        $roleService->method('isTeamLeadForGroup')->willReturn(true);
+
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $certMapper,
+            $this->makeTime(),
+            $roleService,
+            $assignmentService,
+            $this->createMock(ReminderService::class),
+            $groupManager
+        );
+
+        $rows = $service->getGroupReport(10, 'team-x', 'alice', null);
+
+        // Scan ALL string values in every row for email patterns — none may match
+        foreach ($rows as $row) {
+            foreach ($row as $value) {
+                if (is_string($value)) {
+                    $this->assertDoesNotMatchRegularExpression(
+                        '/[^@\s]+@[^@\s]+\.[^@\s]+/',
+                        $value,
+                        'Group report DTO must not expose any email-shaped value'
+                    );
+                }
+            }
+        }
+        $this->assertIsArray($rows, 'getGroupReport must return an array');
+    }
+
+    /**
+     * RBAC-04 (RED): remindMember with a targetUid that is NOT in the lead's group → ForbiddenException.
+     *
+     * ASSERT-FIRST invariant: sendComplianceReminder must NEVER be dispatched on the deny path.
+     * Skeleton no-op returns void without throwing → RED until 163-06.
+     */
+    public function testRemindMemberForeignTargetThrows(): void {
+        $reminderService = $this->createMock(ReminderService::class);
+        $reminderService->expects($this->never())->method('sendComplianceReminder');
+
+        $assignmentService = $this->createMock(AssignmentService::class);
+        $assignmentService->method('expandGroup')->willReturn(['alice', 'charlie']); // 'dave' not in group
+
+        $roleService = $this->createMock(RoleService::class);
+        $roleService->method('isTeamLeadForGroup')->willReturn(true); // lead is valid, but target is foreign
+
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $this->createMock(CertificateMapper::class),
+            $this->makeTime(),
+            $roleService,
+            $assignmentService,
+            $reminderService,
+            $this->createMock(IGroupManager::class)
+        );
+
+        $this->expectException(ForbiddenException::class);
+        // dave is not in lead bob's group 'dept-a' → ForbiddenException; sendComplianceReminder never called
+        $service->remindMember(42, 'dept-a', 'dave', 'bob');
     }
 }
