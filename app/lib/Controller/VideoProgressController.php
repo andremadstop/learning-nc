@@ -4,6 +4,8 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Db\CourseVideoMapper;
 use OCA\Learning\Db\VideoProgressMapper;
+use OCA\Learning\Service\CourseService;
+use OCA\Learning\Service\ForbiddenException;
 use OCA\Learning\Service\VideoProgressService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Db\DoesNotExistException;
@@ -31,6 +33,7 @@ class VideoProgressController extends Controller {
     private VideoProgressService $service;
     private VideoProgressMapper $progressMapper;
     private CourseVideoMapper $videoMapper;
+    private CourseService $courseService;
     private ?string $userId;
 
     public function __construct(
@@ -39,12 +42,14 @@ class VideoProgressController extends Controller {
         VideoProgressService $service,
         VideoProgressMapper $progressMapper,
         CourseVideoMapper $videoMapper,
+        CourseService $courseService,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
         $this->service = $service;
         $this->progressMapper = $progressMapper;
         $this->videoMapper = $videoMapper;
+        $this->courseService = $courseService;
         $this->userId = $userId;
     }
 
@@ -146,5 +151,49 @@ class VideoProgressController extends Controller {
         $completed = $row->getCompletedAt() !== null;
         $covered = $completed ? 1.0 : (float)($row->getCoveredPct() ?? 0.0);
         return ['completed' => $completed, 'covered_pct' => $covered];
+    }
+
+    /**
+     * VIDEO-07 student-read: the enrolled student's own gate status for a course — the course's video/
+     * document registry annotated with THIS user's covered_pct + completed. Feeds the "Pflichtinhalte"
+     * tab + gate-status UI (162-04). Instructor-only CRUD stays in CourseVideoController; this is the
+     * read-only student mirror.
+     *
+     * SECURITY / IDOR:
+     *  - The user is the session-bound $userId, never the request. Enrollment in $courseId is asserted
+     *    via CourseService::assertEnrolledInCourse BEFORE any registry row is read — a non-member gets
+     *    403, so this endpoint cannot enumerate another course's content.
+     *  - Only the student's OWN progress is annotated (progressState is keyed on $this->userId).
+     *  - DSGVO: the raw video_ref (instructor file path) and intervals_json are NOT returned — only
+     *    id/source_type/title/duration/sort_order + covered_pct (number) + completed (bool).
+     *
+     * @NoAdminRequired
+     */
+    #[UserRateLimit(limit: 60, period: 60)]
+    public function courseStatus(int $courseId): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            $this->courseService->assertEnrolledInCourse($courseId, $this->userId);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'Not enrolled in this course'], Http::STATUS_FORBIDDEN);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Unknown course'], Http::STATUS_NOT_FOUND);
+        }
+        $videos = [];
+        foreach ($this->videoMapper->findByCourse($courseId) as $video) {
+            $state = $this->progressState((int)$video->getId());
+            $videos[] = [
+                'id' => (int)$video->getId(),
+                'source_type' => $video->getSourceType(),
+                'title' => $video->getTitle(),
+                'duration_seconds' => $video->getDurationSeconds() !== null ? (int)$video->getDurationSeconds() : null,
+                'sort_order' => (int)$video->getSortOrder(),
+                'covered_pct' => $state['covered_pct'],
+                'completed' => $state['completed'],
+            ];
+        }
+        return new DataResponse(['videos' => $videos]);
     }
 }

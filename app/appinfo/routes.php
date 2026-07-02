@@ -365,6 +365,7 @@ return [
         ['name' => 'videoProgress#heartbeat', 'url' => '/api/video-progress/heartbeat',       'verb' => 'POST'],
         ['name' => 'videoProgress#complete',  'url' => '/api/video-progress/complete',        'verb' => 'POST'],
         ['name' => 'videoProgress#documentRead', 'url' => '/api/video-progress/document-read', 'verb' => 'POST'],
+        ['name' => 'videoProgress#courseStatus', 'url' => '/api/video-progress/course/{courseId}', 'verb' => 'GET'],
         ['name' => 'courseVideo#index',       'url' => '/api/courses/{courseId}/videos',      'verb' => 'GET'],
         ['name' => 'courseVideo#create',      'url' => '/api/courses/{courseId}/videos',      'verb' => 'POST'],
         ['name' => 'courseVideo#update',      'url' => '/api/course-videos/{id}',             'verb' => 'PUT'],

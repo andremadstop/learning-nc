@@ -821,15 +821,15 @@ export default {
 			}
 		},
 		async fetchCourseVideos() {
-			// Student-facing gated-content registry. NOTE: the registry read endpoint
-			// (courseVideo#index) is currently instructor-gated server-side, so an
-			// enrolled student receives 403 here and the "Pflichtinhalte" tab simply
-			// does not appear (graceful degrade). A student-readable registry+progress
-			// endpoint is a backend follow-up (see 162-04 SUMMARY deviation/blocker).
+			// Student-facing gated-content registry + this user's own progress.
+			// videoProgress#courseStatus asserts enrollment server-side (non-member → 403,
+			// graceful degrade → no "Pflichtinhalte" tab) and returns the registry annotated
+			// with covered_pct/completed — WITHOUT the instructor file path (video_ref), which
+			// is DSGVO/IDOR-sensitive and only ever served by content_id via the stream endpoint.
 			try {
-				const url = generateUrl('/apps/learning/api/courses/{courseId}/videos', { courseId: this.courseId })
+				const url = generateUrl('/apps/learning/api/video-progress/course/{courseId}', { courseId: this.courseId })
 				const response = await axios.get(url)
-				this.courseVideos = Array.isArray(response.data) ? response.data : []
+				this.courseVideos = Array.isArray(response.data?.videos) ? response.data.videos : []
 				const status = {}
 				for (const row of this.courseVideos) {
 					const item = this.normalizeVideo(row)
