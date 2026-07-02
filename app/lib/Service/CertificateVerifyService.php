@@ -131,6 +131,27 @@ class CertificateVerifyService {
     }
 
     /**
+     * Derived lifecycle state seam (RECERT-01/03) — frozen in Wave 2 (164-02), implemented in Wave 4 (164-04).
+     *
+     * Computes a richer lifecycle label layered on top of verifyByVerificationId's base status:
+     *   'valid'     — cert not yet in its recert window
+     *   'expiring'  — within RECERT_GRACE_DAYS_DEFAULT of expiry (reminder window)
+     *   'overdue'   — past due but still in grace period (obligation period overdue)
+     *   'expired'   — past expiry without renewal
+     *
+     * This method is the presentation-layer bridge between the base cryptographic status (verifyByVerificationId)
+     * and the recert-workflow UI states (RECERT-01: "approaching expiry" dashboard banner).
+     *
+     * Do NOT change verifyByVerificationId() to call this — it is a separate concern (immutable verify
+     * status precedence must stay locked).
+     *
+     * @return string always 'valid' at Wave 2 (stub); returns computed state in 164-04
+     */
+    public function deriveLifecycleState(Certificate $cert, int $now): string {
+        return 'valid'; // stub — real lifecycle computation wired in 164-04
+    }
+
+    /**
      * Parse an ISO-8601 UTC timestamp (e.g. "2027-06-28T13:22:33Z") from the signed payload to a unix
      * time. Any non-string / malformed value → null (never throws — a hostile payload must not crash the
      * public route). Mirrors IssuanceService::iso8601() on the write side.

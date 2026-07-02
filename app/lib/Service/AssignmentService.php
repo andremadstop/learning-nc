@@ -116,6 +116,27 @@ class AssignmentService {
     }
 
     /**
+     * Close the active assignment period for a subject, ending the obligation cycle.
+     *
+     * Closes the period by nulling active_period_key and active_idem_key on the assignment row
+     * so that the UNIQUE slot is freed for the NEXT period, without deleting the history row.
+     *
+     * SC2 INVARIANT — MUST NOT set revoked=true or revoked_at:
+     *   The old cert URL (verifyByVerificationId) reads 'expired' AFTER period-close because
+     *   expires_at < now with revoked=false falls through to the 'expired' branch in
+     *   CertificateVerifyService (precedence: invalid → withdrawn → expired → valid).
+     *   If revoked were set to true, the old URL would read 'withdrawn' instead, which breaks
+     *   the immutable-history guarantee. Period-close is NOT a punitive revoke.
+     *
+     * The close is audited via AuditService::logComplianceEvent (NOT via cert.revoked_at).
+     *
+     * @throws \LogicException until 164-04 implements the period-close + audit logic
+     */
+    public function closePeriod(string $subjectType, string $subjectId, int $courseId): void {
+        throw new \LogicException('not implemented — 164-04');
+    }
+
+    /**
      * Assignment state for each user in the given list for a course.
      *
      * Only active periods (active_period_key IS NOT NULL) are returned.

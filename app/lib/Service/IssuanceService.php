@@ -182,6 +182,25 @@ class IssuanceService {
     }
 
     /**
+     * DST-safe expiry seam (RECERT-01/02) — frozen in Wave 2 (164-02), implemented in Wave 4 (164-04).
+     *
+     * Computes the unix expiry timestamp from the issue time, the per-course cert_validity_months
+     * column (from the 164-01 Version009600 migration), and an optional per-assignment override in months.
+     *
+     * Implementation MUST use DateTimeImmutable::modify('+N months') — NEVER +N*86400. The naive
+     * seconds formula diverges by 3600s across a DST boundary (e.g. issuing on 2026-03-29 in
+     * Europe/Berlin yields 2027-03-28T23:00Z via +365*86400 but 2027-03-28T22:00Z via +12 months).
+     *
+     * This private seam replaces the existing `$issuedAt + $validityDays * 86400` line (line ~103).
+     * That line stays intact until 164-04 wires this method in.
+     *
+     * @throws \LogicException until 164-04 implements DST-safe date math
+     */
+    private function computeExpiry(int $issuedAt, int $courseId, ?int $assignmentOverrideMonths): ?int {
+        throw new \LogicException('not implemented — 164-04');
+    }
+
+    /**
      * Build the self-contained OB3/VC 2.0 credential object (CERT-06). Every value here is
      * frozen into the signed payload — the credential never reads back from the DB to verify.
      *

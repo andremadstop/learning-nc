@@ -147,6 +147,25 @@ class PassCriteriaService {
     }
 
     /**
+     * Union-guard seam (RECERT-05) — frozen in Wave 2 (164-02), implemented in Wave 4 (164-04).
+     *
+     * A pass may emit + issue iff EITHER:
+     *   (a) NO cert has ever been issued for (user, course) [ASSIGN-04: self-learner, no assignment row]
+     *   (b) An assignment row exists with active_period_key IS NOT NULL AND status != 'passed'
+     *       [open obligation period — student has not yet cleared this cycle]
+     *
+     * SC2: after a punitive revoke (revoked=true, active_idem_key=NULL) with NO open period this
+     * MUST return false — do NOT auto-reissue after a punitive revoke.
+     *
+     * Not yet called from evaluate()/emitPassEventIfFirst — wired in 164-04.
+     *
+     * @throws \LogicException until 164-04 implements the guard
+     */
+    private function mayIssue(string $userId, int $courseId): bool {
+        throw new \LogicException('not implemented — 164-04');
+    }
+
+    /**
      * Returns the decoded context array of the first course.passed event matching
      * $userId + $courseId, or null if none exists.
      *
