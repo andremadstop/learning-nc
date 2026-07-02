@@ -279,12 +279,21 @@ class DataExportService {
             $rows = $result->fetchAll();
             $result->closeCursor();
 
-            return array_map(static function (array $row): array {
+            // The counterpart column holds a THIRD party's uid. If that uid is email-shaped,
+            // mask it so an own-data (Art.20) export never carries another user's plaintext email.
+            // The session user's own column is their own data and stays as-is.
+            $counterpart = $column === 'to_user' ? 'from_user' : 'to_user';
+
+            return array_map(static function (array $row) use ($counterpart): array {
                 return [
                     'id' => (int)$row['id'],
                     'course_id' => (int)$row['course_id'],
-                    'from_user' => (string)$row['from_user'],
-                    'to_user' => (string)$row['to_user'],
+                    'from_user' => $counterpart === 'from_user'
+                        ? self::maskIfEmail((string)$row['from_user'])
+                        : (string)$row['from_user'],
+                    'to_user' => $counterpart === 'to_user'
+                        ? self::maskIfEmail((string)$row['to_user'])
+                        : (string)$row['to_user'],
                     'message' => (string)($row['message'] ?? ''),
                     'created_at' => (int)$row['created_at'],
                 ];
@@ -292,5 +301,13 @@ class DataExportService {
         } catch (\Throwable $e) {
             return [];
         }
+    }
+
+    /**
+     * Replace an email-shaped counterpart uid with a neutral placeholder so a third party's
+     * plaintext email cannot appear in another user's own-data export (DSGVO-02 minimisation).
+     */
+    private static function maskIfEmail(string $uid): string {
+        return preg_match('/[^@\s]+@[^@\s]+\.[^@\s]+/', trim($uid)) === 1 ? '(hidden)' : $uid;
     }
 }
