@@ -105,16 +105,32 @@ class CertificateMapper extends QBMapper {
     /**
      * Certificates for a specific course restricted to the given user IDs, with optional expiry filter.
      *
-     * SKELETON — always returns [] until 163-05 adds the real IN query.
-     * Callers MUST pass a non-empty $userIds list; an empty list returns [] immediately (no IN ()).
+     * Empty $userIds returns [] immediately — no IN () malformed query.
+     * Chunks to 999 per NC QueryBuilder PARAM_STR_ARRAY limits.
      *
      * @param list<string> $userIds
      * @param int|null     $expiresBefore absolute unix cutoff (same semantics as findByCourseId)
      * @return Certificate[]
      */
     public function findByCourseIdForUsers(int $courseId, array $userIds, ?int $expiresBefore): array {
-        // SKELETON — real IN query in 163-05; empty input fails closed
-        return [];
+        if ($userIds === []) {
+            return [];
+        }
+        $out = [];
+        foreach (array_chunk($userIds, 999) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('*')
+               ->from($this->getTableName())
+               ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+               ->andWhere($qb->expr()->eq('revoked', $qb->createNamedParameter(false, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)))
+               ->andWhere($qb->expr()->in('user_id', $qb->createNamedParameter($chunk, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_STR_ARRAY)));
+            if ($expiresBefore !== null) {
+                $qb->andWhere($qb->expr()->isNotNull('expires_at'))
+                   ->andWhere($qb->expr()->lte('expires_at', $qb->createNamedParameter($expiresBefore, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+            }
+            $out = array_merge($out, $this->findEntities($qb));
+        }
+        return $out;
     }
 
     /**

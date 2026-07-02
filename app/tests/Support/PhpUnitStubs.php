@@ -28,6 +28,8 @@ namespace OCP\DB\QueryBuilder {
             public const PARAM_STR = 16;
             public const PARAM_NULL = 4;
             public const PARAM_BOOL = 5;
+            // Phase 163: PARAM_STR_ARRAY for chunked IN queries (CertificateMapper, AssignmentService)
+            public const PARAM_STR_ARRAY = 102;
 
             // Phase 160: full DML/query surface so PHPUnit can mock/configure each method
             public function expr(): IExpressionBuilder;
@@ -811,7 +813,42 @@ namespace OCP\AppFramework\Db {
     if (!class_exists(QBMapper::class)) {
         abstract class QBMapper {
             protected $db;
-            public function __construct($db) { $this->db = $db; }
+            protected string $tableName = '';
+            protected string $entityClass = '';
+            public function __construct($db, string $tableName = '', string $entityClass = '') {
+                $this->db = $db;
+                $this->tableName = $tableName;
+                $this->entityClass = $entityClass;
+            }
+            public function getTableName(): string { return $this->tableName; }
+            // Phase 163: findEntities — executes QB, iterates fetch(), creates entities via fromRow().
+            // Mirrors real QBMapper semantics so CertificateMapper/OversightMapper unit tests work.
+            protected function findEntities($qb): array {
+                $result = $qb->executeQuery();
+                if ($result === null) {
+                    return [];
+                }
+                $entities = [];
+                $cls = $this->entityClass;
+                while (($row = $result->fetch()) !== false) {
+                    if (!is_array($row)) {
+                        break;
+                    }
+                    $entities[] = $cls !== '' ? $cls::fromRow($row) : $row;
+                }
+                if (method_exists($result, 'closeCursor')) {
+                    $result->closeCursor();
+                }
+                return $entities;
+            }
+            // findEntity — returns first hit or throws DoesNotExistException.
+            protected function findEntity($qb) {
+                $entities = $this->findEntities($qb);
+                if ($entities === []) {
+                    throw new DoesNotExistException('Entity not found');
+                }
+                return $entities[0];
+            }
             public function insert($entity) { return $entity; }
             public function update($entity) { return $entity; }
             public function insertOrUpdate($entity) { return $entity; }

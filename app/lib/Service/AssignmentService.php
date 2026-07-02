@@ -118,14 +118,39 @@ class AssignmentService {
     /**
      * Assignment state for each user in the given list for a course.
      *
-     * SKELETON — always returns [] until 163-05 adds the real query.
+     * Only active periods (active_period_key IS NOT NULL) are returned.
+     * Chunked to 999 per PARAM_STR_ARRAY limits.
      *
      * @param list<string> $userIds
      * @return array<string, array{status: string, due_date: int|null}> keyed by subject_id (user UID)
      */
     public function getStatesForCourseAndUsers(int $courseId, array $userIds): array {
-        // SKELETON — real query in 163-05
-        return [];
+        if ($userIds === []) {
+            return [];
+        }
+        $stateMap = [];
+        foreach (array_chunk($userIds, 999) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('subject_id', 'status', 'due_date')
+               ->from('learning_assignments')
+               ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, IQueryBuilder::PARAM_INT)))
+               ->andWhere($qb->expr()->eq('subject_type', $qb->createNamedParameter('user')))
+               ->andWhere($qb->expr()->isNotNull('active_period_key'))
+               ->andWhere($qb->expr()->in('subject_id', $qb->createNamedParameter($chunk, IQueryBuilder::PARAM_STR_ARRAY)));
+            $result = $qb->executeQuery();
+            while (($row = $result->fetch()) !== false) {
+                if (!is_array($row)) {
+                    break;
+                }
+                $uid = $row['subject_id'];
+                $stateMap[$uid] = [
+                    'status'   => $row['status'],
+                    'due_date' => $row['due_date'] !== null ? (int) $row['due_date'] : null,
+                ];
+            }
+            $result->closeCursor();
+        }
+        return $stateMap;
     }
 
     /**
