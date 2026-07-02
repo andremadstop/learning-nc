@@ -7,11 +7,15 @@ use OCA\Learning\Db\CertKey;
 use OCA\Learning\Db\CertKeyMapper;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
+use OCA\Learning\Service\AssignmentService;
+use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\CertificateVerifyService;
 use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\SigningService;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IDBConnection;
+use OCP\IGroupManager;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -410,6 +414,59 @@ class CertificateVerifyServiceTest extends TestCase {
         );
 
         $this->assertSame('unknown', $service->verifyByVerificationId(self::VID)['status']);
+    }
+
+    // ---- RECERT-04 / SC2 RED locking test (Wave 2, 164-02) --------------------------------
+
+    /**
+     * SC2 lock: after AssignmentService::closePeriod(), the old cert URL must return 'expired'
+     * NOT 'withdrawn'. Period-close MUST NOT set revoked=true on the certificate.
+     *
+     * CertificateVerifyService status precedence (LOCKED):
+     *   not found → 'unknown' | key/sig failures → 'invalid'
+     *   revoked=true  → 'withdrawn'    ← SC2: this must NOT happen after period-close
+     *   expires_at<now → 'expired'     ← this IS the correct post-close state
+     *   else → 'valid'
+     *
+     * The cert is seeded in the EXPECTED post-close state: revoked=false, expires_at<now.
+     * closePeriod must null active_period_key/active_idem_key WITHOUT touching revoked/revoked_at,
+     * so the cert falls through to the 'expired' branch — NOT the 'withdrawn' branch.
+     *
+     * RED at Wave 2: AssignmentService::closePeriod() throws LogicException (stub).
+     * The test ERRORS at the closePeriod() call — the SC2 assertions below are unreachable.
+     * Do NOT use $this->expectException() — that inverts it to GREEN-now / RED-later.
+     * GREEN in 164-04: closePeriod() implemented; cert stays revoked=false → reads 'expired'.
+     */
+    public function testClosedPeriodReadsExpired(): void {
+        // Post-close expected DB state: revoked=false (SC2 lock), expires_at in the past.
+        $pastExpiry = self::NOW - 1_000;
+        $jwt = $this->signJwt($this->payload(self::VID));
+        $cert = $this->certificate(self::VID, $jwt, self::KEY_ID, false, null, $pastExpiry);
+
+        // Instantiate the real AssignmentService — closePeriod is the stub under test.
+        $assignmentService = new AssignmentService(
+            $this->createMock(IDBConnection::class),
+            $this->createMock(IGroupManager::class),
+            $this->createMock(AuditService::class),
+        );
+
+        // RED: throws LogicException('not implemented — 164-04') → test ERRORS here.
+        // Do NOT wrap in $this->expectException() — that makes the test GREEN now (wrong).
+        $assignmentService->closePeriod('user', 'jmueller', 7);
+
+        // UNREACHABLE at Wave 2. After 164-04 implements closePeriod, these SC2 assertions run:
+        $keyService = $this->keyServiceWith();
+        $service = $this->buildService(
+            $this->certMapperFor($cert),
+            $this->keyMapperFor($this->certKey(self::KEY_ID, 'active')),
+            $keyService,
+            $this->timeAt(self::NOW)
+        );
+        $result = $service->verifyByVerificationId(self::VID);
+        $this->assertSame('expired', $result['status'],
+            'SC2: after period-close the old cert must read "expired" (revoked=false, expires_at<now)');
+        $this->assertNotSame('withdrawn', $result['status'],
+            'SC2: closePeriod MUST NOT set revoked=true — that would make the old URL read "withdrawn"');
     }
 
     /**

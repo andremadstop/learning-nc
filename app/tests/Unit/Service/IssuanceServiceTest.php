@@ -94,7 +94,8 @@ class IssuanceServiceTest extends TestCase {
         bool $expectNotify = true,
         string $displayName = 'Alice Example',
         ?AuditService $audit = null,
-        ?FakeDbConnection $db = null
+        ?FakeDbConnection $db = null,
+        int $issuedAt = self::ISSUED_AT
     ): IssuanceService {
         $audit = $audit ?? $this->createMock(AuditService::class);
         $db = $db ?? new FakeDbConnection();
@@ -151,8 +152,8 @@ class IssuanceServiceTest extends TestCase {
         $userManager->method('get')->willReturn($recipient);
 
         $time = $this->createMock(ITimeFactory::class);
-        $time->method('getTime')->willReturn(self::ISSUED_AT);
-        $time->method('getDateTime')->willReturn(new \DateTime('@' . self::ISSUED_AT));
+        $time->method('getTime')->willReturn($issuedAt);
+        $time->method('getDateTime')->willReturn(new \DateTime('@' . $issuedAt));
 
         $logger = $this->createMock(LoggerInterface::class);
 
@@ -451,5 +452,76 @@ class IssuanceServiceTest extends TestCase {
         $this->assertSame('AWO Akademie', $payload['issuer']['name']);
         $this->assertSame('https://cloud.example/themed-logo.png', $payload['issuer']['image']['id']);
         $this->assertSame(self::HOST_DID, $payload['issuer']['id']);
+    }
+
+    // ---- RECERT-01/02 RED locking test (Wave 2, 164-02) ------------------------------------
+
+    /**
+     * RECERT-02 DST-safe expiry: cert validity MUST be computed via
+     * DateTimeImmutable::modify('+N months') — NEVER via +N*86400 (seconds arithmetic).
+     *
+     * Discriminating scenario: issue on 2026-03-29, the spring-forward day in Europe/Berlin
+     * (CET→CEST: clocks jump 01:59→03:00). Under +12 months, the expiry lands on
+     * 2027-03-29 00:00 CEST (UTC+2); under +365*86400, it lands on 2027-03-29 02:00 CEST —
+     * these differ by exactly 3600 s. The test pinpoints this asymmetry.
+     *
+     * RED at Wave 2: IssuanceService::computeExpiry() is a stub that throws, and the existing
+     * code path uses cert_validity_days (=0 here) → expiresAt=null → assertSame fails.
+     * GREEN in 164-04: computeExpiry() is wired using cert_validity_months=12 and
+     * DateTimeImmutable::modify('+12 months') → returns the DST-correct $expectedExpiry.
+     */
+    public function testValidityDstCrossing(): void {
+        $originalTz = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+        try {
+            // Spring-forward day: Europe/Berlin jumps from CET (+1) to CEST (+2) on 2026-03-29.
+            $springFwdAt = (new \DateTimeImmutable('2026-03-29 00:00:00', new \DateTimeZone('Europe/Berlin')))
+                ->getTimestamp();
+
+            // DST-safe expected expiry: calendar months via modify() → 2027-03-29 00:00 CEST (UTC+2).
+            $expectedExpiry = (new \DateTimeImmutable('@' . $springFwdAt))
+                ->setTimezone(new \DateTimeZone('Europe/Berlin'))
+                ->modify('+12 months')
+                ->getTimestamp();
+
+            // Naive arithmetic result (WRONG): +365 days in seconds → 2027-03-29 02:00 CEST.
+            $naiveExpiry = $springFwdAt + 365 * 86400;
+
+            // DST precondition: the two approaches must yield different timestamps under Europe/Berlin.
+            $this->assertNotSame($naiveExpiry, $expectedExpiry,
+                'DST precondition: +12 months and +365*86400 must differ under Europe/Berlin '
+                . '(expected 3600 s gap across spring-forward)');
+
+            // Course: cert_validity_months=12 (the 164-01 Version009600 column — months-based validity).
+            // cert_validity_days=0 so the CURRENT code path produces expiresAt=null (no reuse of days).
+            $course = $this->makeCourse(validityDays: 0);
+            $course->setCertValidityMonths(12); // magic setter via Entity base class
+
+            $captured = null;
+            $service = $this->makeService(
+                null,
+                $course,
+                $captured,
+                issuedAt: $springFwdAt, // pin clock to spring-forward day
+            );
+            $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+
+            $this->assertNotNull($cert, 'cert must be issued');
+            // RED: current code uses cert_validity_days (=0) → expiresAt=null → assertSame fails.
+            // GREEN in 164-04: computeExpiry(springFwdAt, courseId, null) wired with cert_validity_months=12
+            //   → DateTimeImmutable::modify('+12 months') → returns $expectedExpiry (≠ $naiveExpiry).
+            $this->assertSame(
+                $expectedExpiry,
+                $cert->getExpiresAt(),
+                'expires_at must be the DST-safe DateTimeImmutable::modify("+12 months") result'
+            );
+            $this->assertNotSame(
+                $naiveExpiry,
+                $cert->getExpiresAt(),
+                'expires_at must NOT be the naive +365*86400 result (diverges across spring-forward by 3600 s)'
+            );
+        } finally {
+            date_default_timezone_set($originalTz);
+        }
     }
 }
