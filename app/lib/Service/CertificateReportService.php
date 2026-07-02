@@ -225,12 +225,17 @@ class CertificateReportService {
      * likewise be the uid. Applied to both the passed (cert) and missing/overdue branches.
      */
     private function safeDisplayName(?string $candidate, string $memberUid): string {
-        if ($candidate === null || $candidate === ''
-            || $candidate === $memberUid
-            || $this->looksLikeEmail($candidate)) {
+        // Normalise first so a padded/cased variant of the uid (e.g. "jane.doe ") can't slip the
+        // equality check. Case-insensitive compare against the uid. We deliberately do NOT block
+        // mere containment ("Jane Doe (jane.doe)"): that is an admin-authored display name, not the
+        // system leaking an identifier, and containment-blocking would neutralise legitimate names.
+        $trimmed = $candidate === null ? '' : trim($candidate);
+        if ($trimmed === ''
+            || strcasecmp($trimmed, $memberUid) === 0
+            || $this->looksLikeEmail($trimmed)) {
             return self::FALLBACK_RECIPIENT;
         }
-        return $candidate;
+        return $trimmed;
     }
 
     /**
@@ -289,9 +294,9 @@ class CertificateReportService {
     private function projectRow(Certificate $cert): array {
         [$frozenName, $score] = $this->decodePayload($cert->getCredentialJson());
 
-        $displayName = ($frozenName === null || $frozenName === '' || $this->looksLikeEmail($frozenName))
-            ? self::FALLBACK_RECIPIENT
-            : $frozenName;
+        // Same guard as the group report: a frozen name equal to (or empty/email-shaped relative to)
+        // the cert's account uid must fall back to the neutral pseudonym — never leak the raw uid.
+        $displayName = $this->safeDisplayName($frozenName, $cert->getUserId());
 
         return [
             'display_name' => $displayName,

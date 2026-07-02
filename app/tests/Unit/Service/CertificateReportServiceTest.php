@@ -217,6 +217,31 @@ class CertificateReportServiceTest extends TestCase {
     }
 
     /**
+     * REPORT-04 (GREEN + LOCKED): the instructor cert-report must not leak a raw account uid either.
+     * A frozen credentialSubject.name equal to the cert's user_id → neutral fallback (same guard as
+     * the group report). Non-email uid, so not caught by the email check alone.
+     */
+    public function testCourseReportDisplayNameNeverRawUid(): void {
+        $cert = $this->makeCert('jane.doe', 'score:90; threshold:80', 3000, null, 'vid-uid');
+        $cert->setUserId('jane.doe'); // frozen name == account uid
+
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByCourseId')->willReturn([$cert]);
+
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $certMapper,
+            $this->makeTime(),
+            ...$this->makeNewMocks()
+        );
+
+        $rows = $service->getCourseReport(self::COURSE_ID, 'alice', null, null, null)['rows'];
+        $this->assertCount(1, $rows);
+        $this->assertSame('Teilnehmer:in', $rows[0]['display_name'], 'frozen name == uid → neutral fallback');
+        $this->assertNotSame('jane.doe', $rows[0]['display_name']);
+    }
+
+    /**
      * IDOR (load-bearing): course owned by alice, bob is not a member → ForbiddenException, and the
      * cert mapper is NEVER touched (gate runs BEFORE any read), flowing through the REAL ownership check.
      */
@@ -556,7 +581,8 @@ class CertificateReportServiceTest extends TestCase {
     public function testGroupReportDisplayNameNeverRawUid(): void {
         $noNameUser = $this->createMock(\OCP\IUser::class);
         $noNameUser->method('getUID')->willReturn('jane.doe');
-        $noNameUser->method('getDisplayName')->willReturn('jane.doe'); // unset → NC returns the uid
+        // Padded + re-cased variant of the uid must still fall back (trim + case-insensitive).
+        $noNameUser->method('getDisplayName')->willReturn('  Jane.Doe  ');
 
         $group = $this->createMock(\OCP\IGroup::class);
         $group->method('getUsers')->willReturn([$noNameUser]);
