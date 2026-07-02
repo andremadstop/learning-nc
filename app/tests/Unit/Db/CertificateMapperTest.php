@@ -57,13 +57,67 @@ class CertificateMapperTest extends TestCase {
     // ── populated members (RED until 163-05) ────────────────────────────────
 
     /**
-     * RBAC-02 (RED): non-empty $userIds must return only certs whose user_id ∈ $userIds.
-     * QB mock is wired for when 163-05 adds the real IN query. Skeleton returns [] →
-     * assertNotEmpty fails → RED until 163-05.
+     * RBAC-02 (DB-level IN filter): non-empty $userIds must build a query that filters
+     * WHERE user_id IN (:members) via PARAM_STR_ARRAY — this is the security invariant.
+     *
+     * Row-mapping ("returns only matching certs") is genuinely integration-level (a mocked
+     * QueryBuilder cannot produce rows without tautology); that path is covered by Gate 2
+     * test-api.sh IDOR assertions (unauthorized group → 403). What we lock HERE at unit level
+     * is that the mapper issues a query whose IN clause is on user_id with the member chunk —
+     * i.e. the filter is at the DB layer, not applied post-fetch.
      */
     public function testFindByCourseIdForUsersReturnsOnlyMembersInList(): void {
         $expr = $this->createMock(IExpressionBuilder::class);
-        $qb   = $this->createMock(IQueryBuilder::class);
+        // Lock the security-relevant call: IN filter on user_id.
+        $expr->expects($this->once())
+            ->method('in')
+            ->with('user_id', $this->anything())
+            ->willReturn('user_id IN (:members)');
+        $expr->method('eq')->willReturn('eq_expr');
+
+        $qb = $this->createMock(IQueryBuilder::class);
+        $qb->method('expr')->willReturn($expr);
+        $qb->method('select')->willReturnSelf();
+        $qb->method('from')->willReturnSelf();
+        $qb->method('where')->willReturnSelf();
+        $qb->method('andWhere')->willReturnSelf();
+        $qb->method('orderBy')->willReturnSelf();
+        // Capture the PARAM type used for the member list.
+        $capturedType = null;
+        $qb->method('createNamedParameter')
+            ->willReturnCallback(function ($value, $type = null) use (&$capturedType) {
+                if (is_array($value)) {
+                    $capturedType = $type;
+                }
+                return ':p';
+            });
+
+        $db = $this->createMock(IDBConnection::class);
+        // Query MUST be built for a non-empty roster (no short-circuit).
+        $db->expects($this->atLeastOnce())->method('getQueryBuilder')->willReturn($qb);
+
+        $mapper = new CertificateMapper($db);
+        $mapper->findByCourseIdForUsers(7, ['alice', 'bob'], null);
+
+        $this->assertSame(
+            IQueryBuilder::PARAM_STR_ARRAY,
+            $capturedType,
+            'member list must be bound as PARAM_STR_ARRAY for a DB-level IN () filter'
+        );
+    }
+
+    /**
+     * RBAC-02 (DB-level IN filter + expiry): with an $expiresBefore cutoff and non-empty
+     * $userIds, the IN(user_id) filter is still built AND the expiry predicates are added.
+     */
+    public function testFindByCourseIdForUsersWithExpiryAndUsers(): void {
+        $expr = $this->createMock(IExpressionBuilder::class);
+        $expr->expects($this->once())->method('in')->with('user_id', $this->anything())->willReturn('in_expr');
+        $expr->method('eq')->willReturn('eq_expr');
+        $expr->expects($this->once())->method('isNotNull')->with('expires_at')->willReturn('nn_expr');
+        $expr->expects($this->once())->method('lte')->with('expires_at', $this->anything())->willReturn('lte_expr');
+
+        $qb = $this->createMock(IQueryBuilder::class);
         $qb->method('expr')->willReturn($expr);
         $qb->method('select')->willReturnSelf();
         $qb->method('from')->willReturnSelf();
@@ -73,43 +127,10 @@ class CertificateMapperTest extends TestCase {
         $qb->method('createNamedParameter')->willReturnArgument(0);
 
         $db = $this->createMock(IDBConnection::class);
-        $db->method('getQueryBuilder')->willReturn($qb);
+        $db->expects($this->atLeastOnce())->method('getQueryBuilder')->willReturn($qb);
 
         $mapper = new CertificateMapper($db);
-
-        // RED: skeleton returns [] regardless of input
-        $result = $mapper->findByCourseIdForUsers(7, ['alice', 'bob'], null);
-
-        $this->assertNotEmpty(
-            $result,
-            'findByCourseIdForUsers with non-empty userIds must return matching certs — RED until 163-05'
-        );
-    }
-
-    /**
-     * RBAC-02 (RED): with an $expiresBefore cutoff and non-empty $userIds.
-     * Skeleton returns [] → RED until 163-05.
-     */
-    public function testFindByCourseIdForUsersWithExpiryAndUsers(): void {
-        $db = $this->createMock(IDBConnection::class);
-        $qb = $this->createMock(IQueryBuilder::class);
-        $qb->method('expr')->willReturn($this->createMock(IExpressionBuilder::class));
-        $qb->method('select')->willReturnSelf();
-        $qb->method('from')->willReturnSelf();
-        $qb->method('where')->willReturnSelf();
-        $qb->method('andWhere')->willReturnSelf();
-        $qb->method('orderBy')->willReturnSelf();
-        $qb->method('createNamedParameter')->willReturnArgument(0);
-        $db->method('getQueryBuilder')->willReturn($qb);
-
-        $mapper = new CertificateMapper($db);
-
-        // RED: skeleton returns []
-        $result = $mapper->findByCourseIdForUsers(7, ['carol'], 1_760_000_000);
-
-        $this->assertNotEmpty(
-            $result,
-            'findByCourseIdForUsers with expiry + userIds must return matching certs — RED until 163-05'
-        );
+        // Expectations above assert the IN-filter + expiry predicates are built.
+        $mapper->findByCourseIdForUsers(7, ['carol'], 1_760_000_000);
     }
 }
