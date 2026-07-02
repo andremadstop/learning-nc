@@ -548,6 +548,50 @@ class CertificateReportServiceTest extends TestCase {
     }
 
     /**
+     * RBAC-02 / DSGVO (GREEN + LOCKED): when NC has no display name set, getDisplayName() returns
+     * the raw uid. The report must NOT surface that account identifier — display_name falls back
+     * to the neutral recipient label when the candidate equals the uid (common for bulk-created
+     * compliance accounts). Non-email uid, so this is NOT caught by the email guard alone.
+     */
+    public function testGroupReportDisplayNameNeverRawUid(): void {
+        $noNameUser = $this->createMock(\OCP\IUser::class);
+        $noNameUser->method('getUID')->willReturn('jane.doe');
+        $noNameUser->method('getDisplayName')->willReturn('jane.doe'); // unset → NC returns the uid
+
+        $group = $this->createMock(\OCP\IGroup::class);
+        $group->method('getUsers')->willReturn([$noNameUser]);
+        $groupManager = $this->createMock(IGroupManager::class);
+        $groupManager->method('get')->willReturn($group);
+
+        $assignmentService = $this->createMock(AssignmentService::class);
+        $assignmentService->method('expandGroup')->willReturn(['jane.doe']);
+        $assignmentService->method('getStatesForCourseAndUsers')->willReturn([]);
+
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByCourseIdForUsers')->willReturn([]);
+
+        $roleService = $this->createMock(RoleService::class);
+        $roleService->method('isTeamLeadForGroup')->willReturn(true);
+
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $certMapper,
+            $this->makeTime(),
+            $roleService,
+            $assignmentService,
+            $this->createMock(ReminderService::class),
+            $groupManager
+        );
+
+        $rows = $service->getGroupReport(10, 'team-x', 'alice', null);
+
+        $this->assertNotEmpty($rows);
+        $this->assertSame('Teilnehmer:in', $rows[0]['display_name'],
+            'display_name equal to the uid must fall back to the neutral recipient label');
+        $this->assertNotSame('jane.doe', $rows[0]['display_name'], 'raw uid must never be the display name');
+    }
+
+    /**
      * RBAC-04 (RED): remindMember with a targetUid that is NOT in the lead's group → ForbiddenException.
      *
      * ASSERT-FIRST invariant: sendComplianceReminder must NEVER be dispatched on the deny path.

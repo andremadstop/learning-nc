@@ -108,9 +108,7 @@ class CertificateReportService {
                 // Passed: cert was earned (revoked already filtered in mapper)
                 $cert = $certsByUserId[$memberUid];
                 [$frozenName, ] = $this->decodePayload($cert->getCredentialJson());
-                $displayName = ($frozenName === null || $frozenName === '' || $this->looksLikeEmail($frozenName))
-                    ? self::FALLBACK_RECIPIENT
-                    : $frozenName;
+                $displayName = $this->safeDisplayName($frozenName, $memberUid);
                 $rows[] = [
                     'member_ref'   => $this->memberRef($memberUid),
                     'display_name' => $displayName,
@@ -129,8 +127,8 @@ class CertificateReportService {
                 $status    = $isOverdue ? 'overdue' : 'missing';
 
                 $user       = $groupUsers[$memberUid] ?? null;
-                $rawName    = $user !== null ? $user->getDisplayName() : $memberUid;
-                $displayName = $this->looksLikeEmail($rawName) ? self::FALLBACK_RECIPIENT : $rawName;
+                $rawName    = $user !== null ? $user->getDisplayName() : null;
+                $displayName = $this->safeDisplayName($rawName, $memberUid);
 
                 $rows[] = [
                     'member_ref'   => $this->memberRef($memberUid),
@@ -217,6 +215,22 @@ class CertificateReportService {
      */
     private function memberRef(string $uid): string {
         return substr(hash('sha256', 'learning:group_member_ref:v1:' . $uid), 0, 24);
+    }
+
+    /**
+     * A human display name that never leaks a raw account identifier. Falls back to the neutral
+     * recipient label when the candidate is missing, email-shaped, or exactly equals the uid —
+     * the last case matters because NC's getDisplayName() returns the uid itself when no display
+     * name is set (common for bulk-provisioned compliance accounts), and a frozen cert name may
+     * likewise be the uid. Applied to both the passed (cert) and missing/overdue branches.
+     */
+    private function safeDisplayName(?string $candidate, string $memberUid): string {
+        if ($candidate === null || $candidate === ''
+            || $candidate === $memberUid
+            || $this->looksLikeEmail($candidate)) {
+            return self::FALLBACK_RECIPIENT;
+        }
+        return $candidate;
     }
 
     /**
