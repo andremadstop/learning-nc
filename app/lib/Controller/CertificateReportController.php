@@ -126,6 +126,57 @@ class CertificateReportController extends Controller {
     }
 
     /**
+     * Group compliance report for a team lead (RBAC-02): all members of the group for a course,
+     * with status 'passed' | 'overdue' | 'missing'. The groupId is read from the request so
+     * an absent/empty groupId fails closed inside the service (no "all-groups" fallback).
+     *
+     * @NoAdminRequired
+     */
+    public function groupReport(int $courseId): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        $groupId = (string)($this->request->getParam('groupId') ?? '');
+
+        try {
+            $rows = $this->reportService->getGroupReport(
+                $courseId,
+                $groupId,
+                $this->userId,
+                $this->toIntOrNull($this->request->getParam('expiringDays'))
+            );
+            return new DataResponse(['rows' => $rows]);
+        } catch (ForbiddenException $e) {
+            return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);
+        } catch (DoesNotExistException $e) {
+            return new DataResponse(['error' => 'Group or course not found'], Http::STATUS_NOT_FOUND);
+        } catch (\Exception $e) {
+            $this->logger->error('groupReport error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * All (course_id, group_id) scopes this team lead is authorised to view.
+     *
+     * @NoAdminRequired
+     */
+    public function myTeamLeadScopes(): DataResponse {
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+
+        try {
+            $scopes = $this->reportService->myTeamLeadScopes($this->userId);
+            return new DataResponse(['scopes' => $scopes]);
+        } catch (\Exception $e) {
+            $this->logger->error('myTeamLeadScopes error: ' . $e->getMessage(), ['app' => 'learning']);
+            return new DataResponse(['error' => 'Internal error'], Http::STATUS_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * A numeric query param as int, otherwise null (so absent/garbage filters disable the filter).
      */
     private function toIntOrNull(mixed $value): ?int {

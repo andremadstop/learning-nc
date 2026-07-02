@@ -723,6 +723,27 @@ else
     pass "cert-report CSV body has no @ email token and no recipient-id column"
 fi
 
+# ── Group compliance report — team-lead RBAC-02 (Phase 163-05) ────────────────
+# IDOR gate must reject before reading any data source.
+# (a) absent groupId (empty string) → fails closed; service throws before any DB read
+request GET admin "/apps/learning/api/courses/${COURSE_ID}/group-report"
+assert_status "group-report without groupId fails closed (403)" "403"
+
+# (b) non-authorized group → 403 even for admin (no oversight row ⇒ ForbiddenException)
+request GET admin "/apps/learning/api/courses/${COURSE_ID}/group-report?groupId=no-such-group-idor-test"
+assert_status "group-report for unauthorized group returns 403 (IDOR gate)" "403"
+
+# (c) second user also blocked
+if [[ -n "${SECOND_USER}" ]]; then
+    request GET second "/apps/learning/api/courses/${COURSE_ID}/group-report?groupId=no-such-group-idor-test"
+    assert_status "Non-team-lead blocked from group-report (403)" "403"
+fi
+
+# (d) myTeamLeadScopes: always 200 for authenticated user; returns empty scopes when no oversight rows
+request GET admin "/apps/learning/api/my-team-lead-scopes"
+assert_status "myTeamLeadScopes returns 200 for authenticated user" "200"
+assert_json "myTeamLeadScopes response has scopes array" '.scopes | arrays'
+
 # Course owner: pass status → 200
 request GET admin "/apps/learning/api/courses/${COURSE_ID}/pass-status"
 assert_status "Course owner can read pass status" "200"

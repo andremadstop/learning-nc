@@ -201,6 +201,9 @@ return [
         ['name' => 'course#exportAtRiskCsv', 'url' => '/api/courses/{courseId}/at-risk/export/csv', 'verb' => 'GET'],
         ['name' => 'certificateReport#certReport', 'url' => '/api/courses/{courseId}/cert-report', 'verb' => 'GET'],
         ['name' => 'certificateReport#exportCertReportCsv', 'url' => '/api/courses/{courseId}/cert-report/export/csv', 'verb' => 'GET'],
+        // Phase 163-05: team-lead group compliance report (RBAC-02)
+        ['name' => 'certificateReport#groupReport', 'url' => '/api/courses/{courseId}/group-report', 'verb' => 'GET'],
+        ['name' => 'certificateReport#myTeamLeadScopes', 'url' => '/api/my-team-lead-scopes', 'verb' => 'GET'],
         ['name' => 'course#studentDetail', 'url' => '/api/courses/{courseId}/students/{studentId}', 'verb' => 'GET'],
         ['name' => 'course#getCurriculumScope', 'url' => '/api/courses/{courseId}/curriculum-scope', 'verb' => 'GET'],
         ['name' => 'course#updateCurriculumScope', 'url' => '/api/courses/{courseId}/curriculum-scope', 'verb' => 'PUT'],
