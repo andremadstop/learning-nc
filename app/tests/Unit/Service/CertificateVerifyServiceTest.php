@@ -438,10 +438,23 @@ class CertificateVerifyServiceTest extends TestCase {
      * GREEN in 164-04: closePeriod() implemented; cert stays revoked=false → reads 'expired'.
      */
     public function testClosedPeriodReadsExpired(): void {
-        // Post-close expected DB state: revoked=false (SC2 lock), expires_at in the past.
-        $pastExpiry = self::NOW - 1_000;
         $jwt = $this->signJwt($this->payload(self::VID));
-        $cert = $this->certificate(self::VID, $jwt, self::KEY_ID, false, null, $pastExpiry);
+
+        // PRE-CLOSE: cert with FUTURE expires_at — the old URL must read 'valid' while the
+        // period is still open. (payload has no validUntil, so only $dbExp is checked.)
+        $futureExpiry = self::NOW + 86_400;
+        $certPreClose = $this->certificate(self::VID, $jwt, self::KEY_ID, false, null, $futureExpiry);
+
+        $keyService = $this->keyServiceWith();
+        $servicePre = $this->buildService(
+            $this->certMapperFor($certPreClose),
+            $this->keyMapperFor($this->certKey(self::KEY_ID, 'active')),
+            $keyService,
+            $this->timeAt(self::NOW)
+        );
+        $preCl = $servicePre->verifyByVerificationId(self::VID);
+        $this->assertSame('valid', $preCl['status'],
+            'PRE-close: cert with future expires_at must read "valid" before period is closed');
 
         // Instantiate the real AssignmentService — closePeriod is the stub under test.
         $assignmentService = new AssignmentService(
@@ -454,15 +467,17 @@ class CertificateVerifyServiceTest extends TestCase {
         // Do NOT wrap in $this->expectException() — that makes the test GREEN now (wrong).
         $assignmentService->closePeriod('user', 'jmueller', 7);
 
-        // UNREACHABLE at Wave 2. After 164-04 implements closePeriod, these SC2 assertions run:
-        $keyService = $this->keyServiceWith();
-        $service = $this->buildService(
-            $this->certMapperFor($cert),
+        // UNREACHABLE at Wave 2. After 164-04 implements closePeriod, these SC2 assertions run.
+        // closePeriod must move expires_at into the past WITHOUT touching revoked/revoked_at —
+        // so the old URL falls through to 'expired', not 'withdrawn'.
+        $certPost = $this->certificate(self::VID, $jwt, self::KEY_ID, false, null, self::NOW - 1);
+        $servicePost = $this->buildService(
+            $this->certMapperFor($certPost),
             $this->keyMapperFor($this->certKey(self::KEY_ID, 'active')),
-            $keyService,
+            $this->keyServiceWith(),
             $this->timeAt(self::NOW)
         );
-        $result = $service->verifyByVerificationId(self::VID);
+        $result = $servicePost->verifyByVerificationId(self::VID);
         $this->assertSame('expired', $result['status'],
             'SC2: after period-close the old cert must read "expired" (revoked=false, expires_at<now)');
         $this->assertNotSame('withdrawn', $result['status'],

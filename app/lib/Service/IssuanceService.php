@@ -182,6 +182,28 @@ class IssuanceService {
     }
 
     /**
+     * Like issueIfPassed() but returns an IssueResult that exposes WHETHER this call created
+     * the certificate row (wasCreated=true) or deduped onto a concurrent winner (wasCreated=false).
+     *
+     * PassCriteriaService uses wasCreated in 164-04 to decide whether to emit COURSE_PASSED:
+     * only the WINNER emits; the UNIQUE-loser dedupes silently so no duplicate audit row appears.
+     *
+     * SKELETON (164-02): always returns wasCreated=true — does NOT yet distinguish the UNIQUE-loser
+     * path. The concurrency locking test (testConcurrentPassSingleEventAndCert) is genuinely RED
+     * against this skeleton. The loser path in issueIfPassed() (lines ~156-162) returns the winner
+     * cert verbatim but cannot set wasCreated=false here; that wiring happens in 164-04.
+     */
+    public function issueIfPassedResult(string $userId, int $courseId, PassResult $result): ?IssueResult {
+        $cert = $this->issueIfPassed($userId, $courseId, $result);
+        if ($cert === null) {
+            return null;
+        }
+        // Skeleton: wasCreated=true unconditionally — does NOT distinguish the UNIQUE-loser.
+        // The concurrent-pass test is RED against this (test expects the loser to return false).
+        return new IssueResult($cert, true);
+    }
+
+    /**
      * DST-safe expiry seam (RECERT-01/02) — frozen in Wave 2 (164-02), implemented in Wave 4 (164-04).
      *
      * Computes the unix expiry timestamp from the issue time, the per-course cert_validity_months
@@ -355,4 +377,28 @@ class IssuanceService {
         $chunks = str_split(bin2hex($b), 4);
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', $chunks);
     }
+}
+
+/**
+ * Return type of IssuanceService::issueIfPassedResult().
+ *
+ * certificate — the issued (or deduped-winner) Certificate row.
+ * wasCreated  — true when THIS call was the row creator; false when the DB UNIQUE constraint
+ *               (active_idem_key) fired and this call deduped onto a concurrent winner.
+ *
+ * PassCriteriaService inspects wasCreated in 164-04 to decide whether to emit COURSE_PASSED.
+ * Only the WINNER (wasCreated=true) emits; the loser path dedupes silently.
+ *
+ * SKELETON note (164-02): IssuanceService::issueIfPassedResult() always sets wasCreated=true
+ * at this wave. The concurrency test (testConcurrentPassSingleEventAndCert) is genuinely RED
+ * against this skeleton and will stay RED until 164-04 wires the winner/loser distinction.
+ *
+ * Placement: defined in IssuanceService.php so it is always loaded when IssuanceService is
+ * referenced, without requiring a separate PSR-4 file at Wave 2.
+ */
+final class IssueResult {
+    public function __construct(
+        public readonly Certificate $certificate,
+        public readonly bool $wasCreated,
+    ) {}
 }

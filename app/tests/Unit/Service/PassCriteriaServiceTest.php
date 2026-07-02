@@ -11,6 +11,7 @@ use OCA\Learning\Service\ComplianceAuditException;
 use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Service\CourseSummaryService;
 use OCA\Learning\Service\IssuanceService;
+use OCA\Learning\Service\IssueResult;
 use OCA\Learning\Service\PassCriteriaService;
 use OCA\Learning\Service\PassResult;
 use OCA\Learning\Tests\Support\FakeDbConnection;
@@ -276,11 +277,17 @@ class PassCriteriaServiceTest extends TestCase {
      *   call 1 (initial pass)  — no prior event  → fires COURSE_PASSED + issues cert.
      *   call 2 (new period)    — old event exists → current audit dedup blocks the re-emit.
      * Expected: logComplianceEvent(COURSE_PASSED) fires TWICE (once per period).
+     *          issueIfPassedResult() called TWICE (once per period) — 164-04 contract.
      *
-     * RED at Wave 2: emitPassEventIfFirst deduplicates on audit history, so call 2 fires
-     * 0× → expects(exactly(2)) fails with "expected 2, got 1".
-     * GREEN in 164-04: mayIssue() checks assignment.status (period-aware), not audit history
-     * → fires COURSE_PASSED for the new period → both calls count toward the expected 2.
+     * Status allow-list (locked here, enforced in 164-04):
+     *   ISSUE allowed  — status IN ('assigned', 'in_progress', 'overdue')   [open obligation]
+     *   ISSUE blocked  — status IN ('passed', 'cancelled', 'withdrawn', 'closed', 'expired') [terminal]
+     * Per-status enforcement requires AssignmentService injection — deferred to 164-04.
+     *
+     * RED at Wave 2 (two separate failures):
+     *   1. emitPassEventIfFirst deduplicates on audit history → call 2 fires 0× → exactly(2) fails.
+     *   2. evaluate() calls issueIfPassed (not issueIfPassedResult) → exactly(2) on issueIfPassedResult fails.
+     * GREEN in 164-04: period-aware mayIssue() + issueIfPassedResult switch → both expectations met.
      */
     public function testReCertPeriodGuard(): void {
         $audit = $this->createMock(AuditService::class);
@@ -289,6 +296,11 @@ class PassCriteriaServiceTest extends TestCase {
         $audit->expects($this->exactly(2))->method('logComplianceEvent');
 
         $issuance = $this->createMock(IssuanceService::class);
+        // 164-04 contract: each period pass routes through issueIfPassedResult, not issueIfPassed.
+        // RED: current evaluate() calls issueIfPassed → issueIfPassedResult called 0 times → fails.
+        $issuance->expects($this->exactly(2))
+            ->method('issueIfPassedResult')
+            ->willReturn(new IssueResult(new Certificate(), true));
 
         $oldEventRow = ['context_json' => json_encode(['course_id' => self::COURSE_ID, 'passed_at' => 1700000000])];
         $builders = [
@@ -309,7 +321,7 @@ class PassCriteriaServiceTest extends TestCase {
 
         $this->assertTrue($first->isPassed());
         $this->assertTrue($second->isPassed());
-        // $audit->expects(exactly(2)) is verified by PHPUnit at teardown → RED now
+        // Both expects() verified by PHPUnit at teardown → RED now on two counts
     }
 
     /**
@@ -408,6 +420,111 @@ class PassCriteriaServiceTest extends TestCase {
         $this->assertTrue($result->isPassed());
         // $audit->expects(once())->logComplianceEvent verified at teardown → RED now
         // When GREEN: the new cert (distinct vid) proves a new Certificate row was created (RECERT-07)
+    }
+
+    /**
+     * RECERT-06 concurrency lock: two concurrent GET /pass-status calls that BOTH receive a
+     * passing score for the same (user, course) in the same open period race on the DB UNIQUE
+     * constraint (active_idem_key). Only the WINNER creates the cert row (wasCreated=true);
+     * the LOSER dedupes onto it (wasCreated=false) WITHOUT emitting a duplicate COURSE_PASSED.
+     *
+     * Scenario: both requests check for an existing audit event at the SAME INSTANT and find
+     * nothing (concurrent race window). Current code emits COURSE_PASSED for BOTH. 164-04 gates
+     * emit on issueIfPassedResult.wasCreated so only the winner emits.
+     *
+     * Expected across both evaluate() calls:
+     *   - logComplianceEvent(COURSE_PASSED) fires exactly ONCE (winner only)
+     *   - issueIfPassedResult() called twice (once per request)
+     *
+     * Note: markPassed (AssignmentService) is not yet injectable into PassCriteriaService;
+     * the "markPassed $this->never() on loser" contract lock is deferred to 164-04 wiring.
+     *
+     * RED at Wave 2: both dedup queries find nothing (concurrent) → emitPassEventIfFirst fires
+     * twice → exactly(1) for logComplianceEvent fails with "expected 1, got 2".
+     * GREEN in 164-04: evaluate() checks issueIfPassedResult.wasCreated; loser (wasCreated=false)
+     * skips emitPassEventIfFirst → exactly(1) satisfied.
+     */
+    public function testConcurrentPassSingleEventAndCert(): void {
+        $audit = $this->createMock(AuditService::class);
+        // Only the WINNER (wasCreated=true) may emit COURSE_PASSED.
+        // RED: current code fires for BOTH concurrent requests → exactly(1) fails.
+        $audit->expects($this->exactly(1))->method('logComplianceEvent');
+
+        $cert = new Certificate();
+        $issuance = $this->createMock(IssuanceService::class);
+        // Mock both methods so the test is forward-compatible:
+        // - issueIfPassed: for the current RED path (evaluate() calls it today)
+        // - issueIfPassedResult: for the 164-04 GREEN path (evaluate() switches to this)
+        $issuance->method('issueIfPassed')->willReturn($cert);
+        $issuance->method('issueIfPassedResult')->willReturnOnConsecutiveCalls(
+            new IssueResult($cert, true),   // winner — emit COURSE_PASSED
+            new IssueResult($cert, false)   // loser  — dedupe silently (no emit)
+        );
+
+        // Both concurrent requests find NO existing audit event (they check before either writes).
+        // This is the race window that current emitPassEventIfFirst does not guard against.
+        $builders = [
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // request 1: dedup → fires
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // request 1: getPassedAt
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // request 2: dedup → fires again (RED)
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // request 2: getPassedAt
+        ];
+
+        $service = $this->makeService($this->makeCourse(true, 80), 90, null, $builders, $audit, $issuance);
+
+        $r1 = $service->evaluate(self::USER, self::COURSE_ID);  // concurrent winner
+        $r2 = $service->evaluate(self::USER, self::COURSE_ID);  // concurrent loser
+
+        $this->assertTrue($r1->isPassed());
+        $this->assertTrue($r2->isPassed());
+        // $audit->expects(exactly(1)) verified at teardown → RED now
+    }
+
+    /**
+     * ASSIGN-03 per-user isolation: a group assignment is per-user. Alice passing the course
+     * must NOT prevent Bob from independently qualifying, nor mark Bob's assignment period.
+     *
+     * Expected: issueIfPassedResult() called once per user (exactly 2 total) — 164-04 contract.
+     *           logComplianceEvent(COURSE_PASSED) fired once per user (exactly 2 total).
+     *
+     * Note: group membership is not resolved here (expandGroup lives in AssignmentService);
+     * this test drives evaluate() for two distinct userIds on the same service instance to
+     * confirm they are treated independently. The per-period-state seam (mayIssue per user)
+     * is deferred to 164-04 wiring.
+     *
+     * RED at Wave 2: evaluate() calls issueIfPassed (not issueIfPassedResult) →
+     * exactly(2) on issueIfPassedResult fails with "expected 2, got 0".
+     * GREEN in 164-04: switched to issueIfPassedResult, one call per user → exactly(2) satisfied.
+     */
+    public function testGroupPeriodIsPerUser(): void {
+        $audit = $this->createMock(AuditService::class);
+        // Each user earns their own COURSE_PASSED event — independent of each other.
+        // This part is CURRENTLY SATISFIED (audit dedup is per-user); it locks the invariant.
+        $audit->expects($this->exactly(2))->method('logComplianceEvent');
+
+        $cert = new Certificate();
+        $issuance = $this->createMock(IssuanceService::class);
+        // RED: current evaluate() calls issueIfPassed → issueIfPassedResult never called → fails.
+        $issuance->expects($this->exactly(2))
+            ->method('issueIfPassedResult')
+            ->willReturn(new IssueResult($cert, true));
+
+        // Alice and Bob both find no existing pass event — independent histories.
+        $builders = [
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // alice dedup: no event → fires
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // alice getPassedAt
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // bob dedup: no event → fires
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // bob getPassedAt
+        ];
+
+        $service = $this->makeService($this->makeCourse(true, 80), 90, null, $builders, $audit, $issuance);
+
+        $alice = $service->evaluate('alice', self::COURSE_ID);
+        $bob   = $service->evaluate('bob',   self::COURSE_ID);
+
+        $this->assertTrue($alice->isPassed(), 'alice must independently pass');
+        $this->assertTrue($bob->isPassed(),   'bob must independently pass');
+        // $issuance->expects(exactly(2)) verified at teardown → RED now
     }
 
     /**
