@@ -297,6 +297,9 @@
               @clearPresetDuel="clearVirtuProfDuel"
               @selectStudent="selectStudent"
             />
+
+            <!-- Team-lead compliance dashboard: self-hides via myTeamLeadScopes when user leads no group -->
+            <TeamLeadDashboard v-if="!selectedCourse && !selectedStudent" />
           </template>
 
           <!-- ==================== WERKZEUGE VIEW ==================== -->
@@ -398,6 +401,7 @@ import OnboardingIntro from './components/OnboardingIntro.vue';
 import OnboardingRedesign from './components/OnboardingRedesign.vue';
 import SkillMap from './components/SkillMap.vue';
 import StudentDashboard from './components/StudentDashboard.vue';
+import TeamLeadDashboard from './components/TeamLeadDashboard.vue';
 import { ALL_TOOL_IDS, TOOL_CATALOG } from './utils/toolCatalog.js';
 import axios from '@nextcloud/axios';
 import { generateUrl } from '@nextcloud/router';
@@ -443,6 +447,7 @@ export default {
     OnboardingRedesign,
     SkillMap,
     StudentDashboard,
+    TeamLeadDashboard,
   },
   data() {
     return {
