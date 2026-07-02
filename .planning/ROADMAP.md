@@ -691,7 +691,14 @@ Plans:
 - DST-safe: DateTimeImmutable::modify('+1 year') only; unit test REQUIRED for 2026-03-29 → 2027-03-29
 - RecertPeriodCloseJob is a daily TimedJob
 - AWO Betriebsvereinbarung note: client must be informed that a works-council agreement (BetrVG §87 Abs.1 Nr.6) is required before production rollout — transient segment design (Phase 162) is the technical mitigation
-**Plans**: TBD
+**Plans**: 7 plans (4 waves)
+- [ ] 164-01-PLAN.md — Schema, config & PhpUnitStubs (Version009600: cert_validity_months, anonymized_at, learning_recert_reminders)
+- [ ] 164-02-PLAN.md — Guard/issuance/verify skeletons + RED tests (RECERT-05 union guard, DST)
+- [ ] 164-03-PLAN.md — Lifecycle skeletons + RED tests + job registration + i18n RED
+- [ ] 164-04-PLAN.md — Codex-gated RECERT-05 issuance core (union guard, DST date-math, closePeriod)
+- [ ] 164-05-PLAN.md — RecertPeriodCloseJob body (daily period-close, idempotent)
+- [ ] 164-06-PLAN.md — Verify lifecycle-states + T-30/T-7 reminders
+- [ ] 164-07-PLAN.md — Retention (DSGVO-03) + i18n parity (DSGVO-05) + docs
 
 
 ## Progress Table
@@ -730,4 +737,4 @@ Plans:
 | 161. Audit Hardening — Checkpoints + Anchor + Export + Liveness | v5.2.0 | 6/6 | ✓ Complete | 2026-07-01 |
 | 162. Video-/Material-Gating + DSGVO Art.13 | v5.2.0 | 4/4 | ✓ Complete 2026-07-02 (27/27 code-verified, 7 human-verify; PHPStan L5 + PHPUnit 256/874 green; 3-pass Codex all fixed; Migration 009500 live) | 2026-07-02 |
 | 163. Teamleiter-RBAC-Reports + DSGVO Art.20 | v5.2.0 | 7/7 | Complete | 2026-07-02 |
-| 164. Re-Zertifizierung + Retention + i18n Parity | v5.2.0 | 0/TBD | Not started | - |
+| 164. Re-Zertifizierung + Retention + i18n Parity | v5.2.0 | 0/7 | Planned | - |
