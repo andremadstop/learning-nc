@@ -161,15 +161,36 @@ class CertificateReportService {
     }
 
     /**
-     * Dispatch a compliance reminder to $targetUserId for $courseId, after verifying
-     * that $targetUserId belongs to a group the lead oversees.
+     * Dispatch a mandatory compliance reminder to $targetUserId for $courseId.
      *
-     * NO-OP SKELETON until 163-06.
+     * SECURITY: two independent IDOR guards run before any notification is dispatched.
+     * (1) assertTeamLeadForGroup — verifies $leadUserId holds an oversight row for
+     *     ($courseId, $groupId). Fails closed on empty groupId.
+     * (2) target ∈ expandGroup — verifies $targetUserId is actually a member of that group.
+     *     Do NOT trust the report GET gated this; the remind POST is a separate attack surface.
      *
-     * @throws ForbiddenException when the real check is implemented (163-06)
+     * A foreign target or a group the lead does not oversee both map to ForbiddenException
+     * with a generic message (avoids a membership-oracle response body).
+     *
+     * @throws ForbiddenException when caller has no oversight or target is not in the group
      */
     public function remindMember(int $courseId, string $groupId, string $targetUserId, string $leadUserId): void {
-        // NO-OP until 163-06
+        // SECURITY GATE 1 — asserts lead role; also rejects empty groupId (fail-closed).
+        $this->assertTeamLeadForGroup($courseId, $groupId, $leadUserId);
+
+        // SECURITY GATE 2 — asserts target is a member of the group the lead oversees.
+        // Generic 403 body on denial to avoid leaking membership information.
+        $members = $this->assignmentService->expandGroup($groupId);
+        if (!in_array($targetUserId, $members, true)) {
+            throw new ForbiddenException(
+                "Not authorised for group '$groupId' in course $courseId"
+            );
+        }
+
+        // Both guards passed — dispatch mandatory compliance reminder (no opt-out gate).
+        $this->reminderService->sendComplianceReminder($targetUserId, $courseId, [
+            'lead_user_id' => $leadUserId,
+        ]);
     }
 
     /**
