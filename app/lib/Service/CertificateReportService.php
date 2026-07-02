@@ -58,30 +58,106 @@ class CertificateReportService {
     /**
      * Team-lead-scoped compliance report for a group within a course.
      *
-     * Authorization (assertTeamLeadForGroup) runs BEFORE any member or certificate read.
-     * SKELETON — always returns [] until 163-05 fills the real logic.
+     * SECURITY: assertTeamLeadForGroup is the FIRST statement — before any member read,
+     * cert read, or state read. Denial tests lock this with never()-expectations on all
+     * data sources (RBAC-02 / assert-first invariant).
+     *
+     * Row shape: {user_id, display_name, status, passed_at, expires_at, due_date}
+     * Status: 'passed' | 'overdue' | 'missing'
+     * Display names (both cert-derived and IGroupManager-derived) are guarded by looksLikeEmail.
      *
      * @param int      $courseId     the certifying course
      * @param string   $groupId      the NC group the lead is authorised to view
      * @param string   $leadUserId   the requesting team lead
      * @param int|null $expiringDays optional expiry window (days)
      * @return array<int, array{user_id: string, display_name: string, status: string, passed_at: int|null, expires_at: int|null, due_date: int|null}>
+     * @throws ForbiddenException if groupId is empty, or caller holds no oversight for the group/course
      */
     public function getGroupReport(int $courseId, string $groupId, string $leadUserId, ?int $expiringDays): array {
-        // SKELETON — real auth + DB logic in 163-05
-        return [];
+        // SECURITY GATE — MUST be first; all data reads are after this line.
+        $this->assertTeamLeadForGroup($courseId, $groupId, $leadUserId);
+
+        $expiresBefore = $expiringDays !== null
+            ? $this->timeFactory->getTime() + $expiringDays * self::SECONDS_PER_DAY
+            : null;
+
+        $members = $this->assignmentService->expandGroup($groupId);
+        $certs   = $this->certificateMapper->findByCourseIdForUsers($courseId, $members, $expiresBefore);
+        $states  = $this->assignmentService->getStatesForCourseAndUsers($courseId, $members);
+
+        // Build cert lookup by userId (real DB guarantees these are members; mocks may differ in tests)
+        $certsByUserId = [];
+        foreach ($certs as $cert) {
+            $certsByUserId[$cert->getUserId()] = $cert;
+        }
+
+        // Build uid→IUser map from the group for non-cert member display names (one call, lazy)
+        $groupUsers = [];
+        $group = $this->groupManager->get($groupId);
+        if ($group !== null) {
+            foreach ($group->getUsers() as $user) {
+                $groupUsers[$user->getUID()] = $user;
+            }
+        }
+
+        $now  = $this->timeFactory->getTime();
+        $rows = [];
+        foreach ($members as $memberUid) {
+            if (isset($certsByUserId[$memberUid])) {
+                // Passed: cert was earned (revoked already filtered in mapper)
+                $cert = $certsByUserId[$memberUid];
+                [$frozenName, ] = $this->decodePayload($cert->getCredentialJson());
+                $displayName = ($frozenName === null || $frozenName === '' || $this->looksLikeEmail($frozenName))
+                    ? self::FALLBACK_RECIPIENT
+                    : $frozenName;
+                $rows[] = [
+                    'user_id'      => $memberUid,
+                    'display_name' => $displayName,
+                    'status'       => 'passed',
+                    'passed_at'    => $cert->getIssuedAt(),
+                    'expires_at'   => $cert->getExpiresAt(),
+                    'due_date'     => $states[$memberUid]['due_date'] ?? null,
+                ];
+            } else {
+                // No cert — overdue when due_date is in the past and not already passed
+                $state     = $states[$memberUid] ?? null;
+                $isOverdue = $state !== null
+                    && $state['due_date'] !== null
+                    && $state['due_date'] < $now
+                    && $state['status'] !== 'passed';
+                $status    = $isOverdue ? 'overdue' : 'missing';
+
+                $user       = $groupUsers[$memberUid] ?? null;
+                $rawName    = $user !== null ? $user->getDisplayName() : $memberUid;
+                $displayName = $this->looksLikeEmail($rawName) ? self::FALLBACK_RECIPIENT : $rawName;
+
+                $rows[] = [
+                    'user_id'      => $memberUid,
+                    'display_name' => $displayName,
+                    'status'       => $status,
+                    'passed_at'    => null,
+                    'expires_at'   => null,
+                    'due_date'     => $state['due_date'] ?? null,
+                ];
+            }
+        }
+        return $rows;
     }
 
     /**
      * Assert that $leadUserId holds an oversight row for ($courseId, $groupId).
      *
-     * NO-OP SKELETON until 163-05. Denial tests are RED against this skeleton: the real
-     * implementation must call isTeamLeadForGroup and throw ForbiddenException before any read.
+     * Fails CLOSED on empty groupId — never widens to all-groups.
+     * Calls RoleService exactly once on the non-empty path; zero times on the empty path.
      *
-     * @throws ForbiddenException when the real check is implemented (163-05)
+     * @throws ForbiddenException when groupId is empty or no oversight row exists
      */
     private function assertTeamLeadForGroup(int $courseId, string $groupId, string $leadUserId): void {
-        // NO-OP until 163-05 — denial tests go RED against this skeleton
+        if ($groupId === '' || !$this->roleService->isTeamLeadForGroup($courseId, $leadUserId, $groupId)) {
+            throw new ForbiddenException(
+                "Not authorised for group '$groupId' in course $courseId"
+            );
+        }
     }
 
     /**

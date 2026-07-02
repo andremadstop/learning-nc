@@ -143,6 +143,38 @@ class CertificateReportServiceTest extends TestCase {
     }
 
     /**
+     * Like makeCert but with an explicit userId — needed for group-report tests where the cert's
+     * user_id must match an actual member UID in the roster (certWithJwt hardcodes 'bob@evil.com'
+     * which intentionally doesn't match any member in those tests).
+     */
+    private function makeGroupCert(
+        string $userId,
+        ?string $name,
+        string $resultDescription,
+        int $issuedAt,
+        ?int $expiresAt,
+        string $vid
+    ): Certificate {
+        $payload = [
+            'credentialSubject' => [
+                'name' => $name,
+                'result' => [['resultDescription' => $resultDescription]],
+            ],
+        ];
+        $json = (string)json_encode($payload, JSON_UNESCAPED_SLASHES);
+        $b64u = rtrim(strtr(base64_encode($json), '+/', '-_'), '=');
+        $cert = new Certificate();
+        $cert->setVerificationId($vid);
+        $cert->setUserId($userId);
+        $cert->setCourseId(self::COURSE_ID);
+        $cert->setCredentialJson('header.' . $b64u . '.sig');
+        $cert->setIssuedAt($issuedAt);
+        $cert->setExpiresAt($expiresAt);
+        $cert->setRevoked(false);
+        return $cert;
+    }
+
+    /**
      * REPORT-04 (load-bearing): an email-shaped frozen name AND an email-shaped account id must both
      * be unreachable in the output. Exactly 5 DTO keys, none named user_id/email, email name → neutral
      * pseudonym; a clean UTF-8 name passes through unchanged.
@@ -390,10 +422,13 @@ class CertificateReportServiceTest extends TestCase {
         $now = self::NOW;
 
         // Bob has a passing cert; carol is overdue; dave has no cert and no overdue assignment.
+        // Rule-1 fix: certWithJwt hardcodes userId='bob@evil.com'; for group-report tests the
+        // cert's userId must match the member UID 'bob' so the service can build the certsByUserId
+        // lookup correctly. makeGroupCert accepts an explicit userId.
         $certMapper = $this->createMock(CertificateMapper::class);
         $certMapper->method('findByCourseIdForUsers')
             ->willReturn([
-                $this->makeCert('Robert', 'score:90; threshold:80', $now - 1000, null, 'vid-bob'),
+                $this->makeGroupCert('bob', 'Robert', 'score:90; threshold:80', $now - 1000, null, 'vid-bob'),
             ]);
 
         $assignmentService = $this->createMock(AssignmentService::class);
