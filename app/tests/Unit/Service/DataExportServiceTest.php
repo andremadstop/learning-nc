@@ -58,12 +58,9 @@ class DataExportServiceTest extends TestCase {
         $certMapper = $this->createMock(CertificateMapper::class);
         $certMapper->method('findByUserId')->willReturn($certs);
 
-        // PhpUnitStubs BadgeService lacks getUserBadges — add as virtual method.
-        // Note for 163-01: consider adding getUserBadges(): array to the stub.
-        $badgeService = $this->getMockBuilder(BadgeService::class)
-            ->disableOriginalConstructor()
-            ->addMethods(['getUserBadges'])
-            ->getMock();
+        // BadgeService::getUserBadges exists on the real (deployed) class, so mock the whole
+        // class with createMock (auto-doubles all public methods) and stub the return.
+        $badgeService = $this->createMock(BadgeService::class);
         $badgeService->method('getUserBadges')->willReturn([]);
 
         $userTelosMapper = $this->createMock(UserTelosMapper::class);
