@@ -963,6 +963,29 @@ else
     fi
 fi
 
+# ── DSGVO Art.20 — self-service data export: certificates block (Phase 163-04) ──────
+# SESSION-ONLY endpoint: GET /apps/learning/api/export/my-data returns the caller's own
+# data. There is NO userId query/path param — a foreign export is structurally impossible.
+# Bruteforce-reset is a precondition (done above at test start).
+# Gate 2 deferred: runs after Wave-1 deploy via orchestrator's central API-integration run.
+request GET admin "/apps/learning/api/export/my-data"
+assert_status "DSGVO my-data export: admin gets 200" "200"
+# Structural assertion: 'certificates' key always present; value is always an array.
+assert_json "DSGVO my-data export: certificates is an array" '.certificates | arrays'
+# credential_jwt check: conditional — admin may not hold a cert in all environments.
+export_cert_jwt="$(jq -r '.certificates[0].credential_jwt // empty' "$LAST_BODY" 2>/dev/null)"
+if [[ -z "$export_cert_jwt" ]]; then
+    skip "DSGVO my-data export: credential_jwt present in certificates[0]" \
+        "admin has no issued certificate yet — run qualifying pass first (post-deploy Gate 2)"
+else
+    if [[ "$export_cert_jwt" =~ ^eyJ ]]; then
+        pass "DSGVO my-data export: credential_jwt present and is a JWT (Art.20 portable artifact)"
+    else
+        fail "DSGVO my-data export: credential_jwt present and is a JWT (Art.20 portable artifact)" \
+            "got: $(printf '%s' "$export_cert_jwt" | head -c 40)"
+    fi
+fi
+
 # ── Cleanup ───────────────────────────────────────────────────────
 
 request DELETE admin "/apps/learning/api/courses/${COURSE_ID}"
