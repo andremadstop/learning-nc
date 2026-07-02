@@ -182,7 +182,7 @@ class VideoProgressServiceTest extends TestCase {
         $t = $svc->computeHeartbeatTransition([], null, [0, 999999999], 1000, 100);
         $this->assertNotNull($t);
         $this->assertLessThanOrEqual(1.0, $t['covered_pct'], 'coverage can never exceed 100%');
-        $this->assertEqualsWithDelta(0.16, $t['covered_pct'], 1e-9, 'first ping seeds only the 16s cap');
+        $this->assertEqualsWithDelta(0.15, $t['covered_pct'], 1e-9, 'first ping seeds only the 15s cap');
         $this->assertFalse($t['complete'], 'one huge ping must never complete a video');
     }
 
@@ -240,6 +240,23 @@ class VideoProgressServiceTest extends TestCase {
             $completed = $completed || $tr['complete'];
         }
         $this->assertTrue($completed, 'genuine real-time watching must eventually complete');
+    }
+
+    public function testCoveredPctIsHardCappedToOne(): void {
+        // Even if intervals somehow sum beyond the duration, coverage is capped at 1.0 (defence in depth).
+        $svc = $this->makeService();
+        $this->assertEqualsWithDelta(1.0, $svc->coveredPct([[0, 200]], 100), 1e-9);
+    }
+
+    public function testFirstPingCannotStoreCompletableCoverage(): void {
+        // Codex re-review: a single heartbeat must not store >=95% that the separate complete() endpoint
+        // could then finalize. The first ping is capped to a fraction (<threshold) of the duration.
+        $svc = $this->makeService();
+        // short video: [0,10] on a 10s video would be 100% without the fraction cap.
+        $t = $svc->computeHeartbeatTransition([], null, [0, 10], 1000, 10);
+        $this->assertNotNull($t);
+        $this->assertLessThan(0.95, $t['covered_pct'], 'one ping can never store completable coverage');
+        $this->assertFalse($svc->decideComplete($t['covered_pct']), 'complete() could not finalize it');
     }
 
     // ---- computeCompletionState (DSGVO transient cleanup, VIDEO-06) ----------

@@ -80,11 +80,8 @@ class TrainingServiceTest extends TestCase {
         $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $courseService = $this->createMock(CourseService::class);
-        $courseService->expects($this->once())
-            ->method('isVideoGateEnabled')
-            ->with(7)
-            ->willReturn(true);
-        $courseService->method('getGatedCourseIdsForPool')->willReturn([]); // no extra pool-derived gates
+        // Unified gate: derived from the pool→enrolled-gated-course lookup (course 7 gates pool 42).
+        $courseService->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn([7]);
         // The gate is BEFORE any session work — resolveCoursePoolContext must never be reached.
         $courseService->expects($this->never())->method('resolveCoursePoolContext');
 
@@ -200,8 +197,9 @@ class TrainingServiceTest extends TestCase {
         $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
 
         $courseService = $this->createMock(CourseService::class);
-        $courseService->method('isVideoGateEnabled')->with(7)->willReturn($gateEnabled);
-        $courseService->method('getGatedCourseIdsForPool')->willReturn([]); // explicit-courseId path
+        // The gate is derived purely from the pool→enrolled-gated-course lookup (unified after Codex
+        // re-review): a gated pool returns [7], an ungated one returns [].
+        $courseService->method('getGatedCourseIdsForPool')->with(42, 'alice')->willReturn($gateEnabled ? [7] : []);
         $courseService->method('resolveCoursePoolContext')
             ->with(7, 42, 'alice')
             ->willReturn(['question_ids' => [10, 11]]);

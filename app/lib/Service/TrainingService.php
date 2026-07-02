@@ -527,6 +527,21 @@ class TrainingService {
             throw new \Exception('Pool not found or no access');
         }
 
+        // VIDEO-03 gate: a course may require its videos/documents to be completed before the quiz
+        // unlocks. Enforcement is server-side ONLY — a client flag can never bypass it. Placed here,
+        // BEFORE the active-exam resume AND the session insert, so an incomplete user can neither start
+        // NOR resume a gated quiz (Codex re-review PARTIAL: the resume path previously skipped the gate).
+        //
+        // Gate scope is derived purely from getGatedCourseIdsForPool($poolId, $userId): EVERY gated
+        // course this pool belongs to that the user is ENROLLED in — regardless of whether the client
+        // passed courseId (closes the omitted-courseId bypass) and without touching a foreign course's
+        // state before access is checked (getGatedCourseIdsForPool asserts enrolment; closes the LOW
+        // pre-access leak). Throws ForbiddenException (→ 403) when any required content is
+        // incomplete/misconfigured.
+        foreach ($this->courseService->getGatedCourseIdsForPool($poolId, $userId) as $gatedCid) {
+            $this->videoProgressService->assertCourseVideosComplete($gatedCid, $userId);
+        }
+
         // Resume existing active exam first.
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
@@ -570,29 +585,6 @@ class TrainingService {
                ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
                ->andWhere($qb->expr()->isNull('completed_at'));
             $qb->executeStatement();
-        }
-
-        // VIDEO-03 gate: a course may require its videos/documents to be completed before the quiz
-        // unlocks. Enforcement is server-side ONLY — a client flag can never bypass it. It engages only
-        // when the instructor turned it on (isVideoGateEnabled, 162-01) and throws ForbiddenException
-        // (→ 403) when any required content is incomplete/misconfigured. Placed BEFORE the
-        // learning_sessions insert so an incomplete user never gets a session row.
-        //
-        // CODEX BLOCKER (gate bypass): the gate must fire even when the client OMITS courseId and starts
-        // the gated course's pool directly. We therefore gather EVERY gated course this pool belongs to
-        // that the user is enrolled in (getGatedCourseIdsForPool) — not just the explicit courseId — and
-        // assert completion for each. Starting a gated pool by poolId alone can no longer skip training.
-        $gateCourseIds = [];
-        if ($courseId !== null && $this->courseService->isVideoGateEnabled($courseId)) {
-            $gateCourseIds[] = $courseId;
-        }
-        foreach ($this->courseService->getGatedCourseIdsForPool($poolId, $userId) as $gatedCid) {
-            if (!in_array($gatedCid, $gateCourseIds, true)) {
-                $gateCourseIds[] = $gatedCid;
-            }
-        }
-        foreach ($gateCourseIds as $gatedCid) {
-            $this->videoProgressService->assertCourseVideosComplete($gatedCid, $userId);
         }
 
         if ($courseId !== null) {

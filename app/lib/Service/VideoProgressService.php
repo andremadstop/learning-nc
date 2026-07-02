@@ -39,6 +39,9 @@ class VideoProgressService {
     // first ping has no baseline, so it may only seed a small window (and can never complete alone).
     private const CREDIT_TOLERANCE_SECONDS = 1;
     private const FIRST_PING_CREDIT_CAP_SECONDS = 15;
+    // The first ping also may not credit more than this FRACTION of the duration — so a single ping can
+    // never store completable (>=95%) coverage that complete() could then finalize (Codex re-review).
+    private const FIRST_PING_MAX_FRACTION = 0.5;
 
     public function __construct(
         private VideoProgressMapper $progressMapper,
@@ -117,7 +120,8 @@ class VideoProgressService {
             }
             $covered += max(0.0, (float)$iv[1] - (float)$iv[0]);
         }
-        return $covered / $durationSeconds;
+        // Hard-cap at 1.0: coverage can never exceed the video (defence in depth beyond capInterval).
+        return min(1.0, $covered / $durationSeconds);
     }
 
     /**
@@ -194,9 +198,19 @@ class VideoProgressService {
         // The FIRST ping (lastPingTs === null) has no elapsed baseline: it may seed only a small window
         // and can NEVER complete on its own — completion always needs >=2 pings spanning real time.
         $isFirstPing = $lastPingTs === null;
-        $maxCredit = ($isFirstPing ? self::FIRST_PING_CREDIT_CAP_SECONDS : max(0, $nowTs - $lastPingTs))
-            + self::CREDIT_TOLERANCE_SECONDS;
-        $capped = $this->capInterval($newInterval, $durationSeconds, (float)$maxCredit);
+        if ($isFirstPing) {
+            // First ping has no elapsed baseline: cap to a small absolute seed AND to a fraction of the
+            // duration strictly below the 95% threshold — so ONE ping can never store completable
+            // coverage (closing the "heartbeat once, then complete()" bypass on short videos).
+            $maxCredit = (float)self::FIRST_PING_CREDIT_CAP_SECONDS;
+            if ($durationSeconds !== null && $durationSeconds > 0) {
+                $maxCredit = min($maxCredit, $durationSeconds * self::FIRST_PING_MAX_FRACTION);
+            }
+        } else {
+            // Later pings: credit at most the real wall-clock elapsed since the last ping (+ small tol).
+            $maxCredit = (float)(max(0, $nowTs - $lastPingTs) + self::CREDIT_TOLERANCE_SECONDS);
+        }
+        $capped = $this->capInterval($newInterval, $durationSeconds, $maxCredit);
 
         $merged = $capped === null ? $storedIntervals : $this->mergeIntervals($storedIntervals, $capped);
         $pct = $this->coveredPct($merged, $durationSeconds);
