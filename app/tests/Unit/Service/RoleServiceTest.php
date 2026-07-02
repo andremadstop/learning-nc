@@ -79,13 +79,14 @@ class RoleServiceTest extends TestCase {
      * RED until 163-03.
      */
     public function testIsTeamLeadForGroupFalseForWrongCourse(): void {
+        // RoleService delegates to the mapper; course-scoping (exact triple incl. course_id)
+        // is enforced in OversightMapper's WHERE clause. Here we verify RoleService returns
+        // the mapper's false for the queried (wrong-course) triple. A single stub is correct —
+        // stacking two ->with() matchers on one mocked method is a PHPUnit anti-pattern.
         $oversight = $this->createMock(OversightMapper::class);
         $oversight->method('existsForLeadGroupCourse')
             ->with(self::COURSE_ID, 'lead1', 'dept-x')
-            ->willReturn(false); // wrong course_id
-        $oversight->method('existsForLeadGroupCourse')
-            ->with(99, 'lead1', 'dept-x')
-            ->willReturn(true); // row exists for course 99, not for COURSE_ID
+            ->willReturn(false); // mapper finds no row for this exact triple (wrong course_id)
 
         $service = $this->makeService($oversight);
 
