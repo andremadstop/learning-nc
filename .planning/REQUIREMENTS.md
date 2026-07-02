@@ -32,15 +32,15 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 
 ### VIDEO — Video-/Material-Gating
 
-- [ ] **VIDEO-01**: `VideoStreamController` streamt NC-gehostete MP4 aus dem Dozenten-Namespace mit **Enrollment-Gate** (`IRootFolder->getUserFolder($instructorId)->fopen`) + HTTP-Range (206 Partial Content).
-- [ ] **VIDEO-02**: Server-seitige Watch-Completion — `VideoProgressService` merged Intervalle server-seitig, Entscheidung `covered_pct >= 0.95`; Client-Flags werden nie vertraut.
-- [ ] **VIDEO-03**: Quiz-Gate sitzt server-seitig in `TrainingService::startSession()` — wirft 403/ForbiddenException, wenn Pflicht-Video nicht abgeschlossen.
-- [ ] **VIDEO-04**: **Heartbeat-Plausibilität** — Server verwirft Fortschritts-Pings die schneller-als-Echtzeit / < 5s auseinander sind (Anti-Skript-Fälschung).
-- [ ] **VIDEO-05**: Vimeo- + YouTube-Embeds werden unterstützt (best-effort Tracking, Seek-Prevention ehrlich als unmöglich dokumentiert); YouTube via `youtube-nocookie.com` + `dnt=1`, Vimeo `dnt=1`, hinter Consent-Gate.
-- [ ] **VIDEO-06**: **DSGVO-transiente Segmente** — `learning_video_progress.intervals_json`/`covered_pct` sind Arbeitszustand; bei `completed_at`-Write wird die Segment-Row **gelöscht**. Permanent bleibt nur `(user_id, content_id, completed_at)`.
-- [ ] **VIDEO-07**: **Dokument-„gelesen"-Bestätigung** — Material-Typ mit „Gelesen"-Button als Gate-Bedingung (neben Video).
-- [ ] **VIDEO-08**: **Barrierefreiheit (BITV/WCAG)** — Video-Untertitel (WebVTT-Track), tastaturbedienbarer Player, Screenreader-Labels, ausreichende Kontraste im Gating-UI.
-- [ ] **VIDEO-09**: `learning_course_videos` — Per-Kurs-Video-Registry mit Dauer (Fallback: Admin trägt Dauer manuell ein, falls ffprobe auf Relay fehlt).
+- [x] **VIDEO-01**: `VideoStreamController` streamt NC-gehostete MP4 aus dem Dozenten-Namespace mit **Enrollment-Gate** (`IRootFolder->getUserFolder($instructorId)->fopen`) + HTTP-Range (206 Partial Content).
+- [x] **VIDEO-02**: Server-seitige Watch-Completion — `VideoProgressService` merged Intervalle server-seitig, Entscheidung `covered_pct >= 0.95`; Client-Flags werden nie vertraut.
+- [x] **VIDEO-03**: Quiz-Gate sitzt server-seitig in `TrainingService::startSession()` — wirft 403/ForbiddenException, wenn Pflicht-Video nicht abgeschlossen.
+- [x] **VIDEO-04**: **Heartbeat-Plausibilität** — Server verwirft Fortschritts-Pings die schneller-als-Echtzeit / < 5s auseinander sind (Anti-Skript-Fälschung).
+- [x] **VIDEO-05**: Vimeo- + YouTube-Embeds werden unterstützt (best-effort Tracking, Seek-Prevention ehrlich als unmöglich dokumentiert); YouTube via `youtube-nocookie.com` + `dnt=1`, Vimeo `dnt=1`, hinter Consent-Gate.
+- [x] **VIDEO-06**: **DSGVO-transiente Segmente** — `learning_video_progress.intervals_json`/`covered_pct` sind Arbeitszustand; bei `completed_at`-Write wird die Segment-Row **gelöscht**. Permanent bleibt nur `(user_id, content_id, completed_at)`.
+- [x] **VIDEO-07**: **Dokument-„gelesen"-Bestätigung** — Material-Typ mit „Gelesen"-Button als Gate-Bedingung (neben Video).
+- [x] **VIDEO-08**: **Barrierefreiheit (BITV/WCAG)** — Video-Untertitel (WebVTT-Track), tastaturbedienbarer Player, Screenreader-Labels, ausreichende Kontraste im Gating-UI.
+- [x] **VIDEO-09**: `learning_course_videos` — Per-Kurs-Video-Registry mit Dauer (Fallback: Admin trägt Dauer manuell ein, falls ffprobe auf Relay fehlt).
 
 ### RBAC — Teamleiter-Reports (gruppen-gescopt)
 
@@ -69,7 +69,7 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 - [x] **DSGVO-01**: **Art. 17 chain-sichere Anonymisierung** — bei User-Löschung wird die User-Referenz in Audit/Certs pseudonymisiert/anonymisiert, **ohne die Hash-Chain zu brechen** (User-Referenz im Hash ist bereits pseudonymisiert, nicht Klartext-uid).
 - [ ] **DSGVO-02**: **Art. 20 Datenübertragbarkeit** — einzelner Nutzer kann seine Zertifikate + Lernhistorie maschinenlesbar exportieren (bestehenden `DataExportService` erweitern).
 - [ ] **DSGVO-03**: **Retention/Löschkonzept (Art. 5(1)(e))** — konfigurierbare Auto-Anonymisierung von Certs/Audit/Assignments nach X Jahren.
-- [ ] **DSGVO-04**: **Art. 13 Transparenz** — Datenschutzhinweis zu Schulungsbeginn: welche Daten (Abschluss + Zeitstempel), welcher Zweck (Rechtspflicht Art. 6(1)(c), minimiert Art. 5(1)(c)), dass Wiedergabemuster NICHT permanent gespeichert werden.
+- [x] **DSGVO-04**: **Art. 13 Transparenz** — Datenschutzhinweis zu Schulungsbeginn: welche Daten (Abschluss + Zeitstempel), welcher Zweck (Rechtspflicht Art. 6(1)(c), minimiert Art. 5(1)(c)), dass Wiedergabemuster NICHT permanent gespeichert werden.
 - [ ] **DSGVO-05**: Alle neuen UI-Strings in 5 Sprachen (de/en/fr/ru/ar); Nachweis-/Zertifikat-Texte mehrsprachig.
 
 ---
@@ -129,15 +129,15 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 | ASSIGN-03 | Phase 160 | Pending |
 | ASSIGN-04 | Phase 160 | Pending |
 | ASSIGN-05 | Phase 160 | Pending |
-| VIDEO-01 | Phase 162 | Pending |
-| VIDEO-02 | Phase 162 | Pending |
-| VIDEO-03 | Phase 162 | Pending |
-| VIDEO-04 | Phase 162 | Pending |
-| VIDEO-05 | Phase 162 | Pending |
-| VIDEO-06 | Phase 162 | Pending |
-| VIDEO-07 | Phase 162 | Pending |
-| VIDEO-08 | Phase 162 | Pending |
-| VIDEO-09 | Phase 162 | Pending |
+| VIDEO-01 | Phase 162 | Complete |
+| VIDEO-02 | Phase 162 | Complete |
+| VIDEO-03 | Phase 162 | Complete |
+| VIDEO-04 | Phase 162 | Complete |
+| VIDEO-05 | Phase 162 | Complete |
+| VIDEO-06 | Phase 162 | Complete |
+| VIDEO-07 | Phase 162 | Complete |
+| VIDEO-08 | Phase 162 | Complete |
+| VIDEO-09 | Phase 162 | Complete |
 | RBAC-01 | Phase 160 | Pending |
 | RBAC-02 | Phase 163 | Pending |
 | RBAC-03 | Phase 163 | Pending |
@@ -154,7 +154,7 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 | DSGVO-01 | Phase 160 | Pending |
 | DSGVO-02 | Phase 163 | Pending |
 | DSGVO-03 | Phase 164 | Pending |
-| DSGVO-04 | Phase 162 | Pending |
+| DSGVO-04 | Phase 162 | Complete |
 | DSGVO-05 | Phase 164 | Pending |
 
 **Coverage:** v1 = 41 Requirements, 5 Phasen (160–164), **41/41 gemappt (100%)**. Migration-Sequenz ab Version009300.

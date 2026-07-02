@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v5.2.0
 milestone_name: "v5.2.0 Pflichtschulung"
-current_phase: 162
-current_plan: "162-04 built (Wave 3, FRONTEND). WCAG 2.1 AA VideoPlayer.vue (keyboard Space/Arrows, persistent aria-live, always-present WebVTT track, no autoplay, throttled heartbeat, never self-asserts completion) + VideoConsentOverlay.vue (DSGVO Art.13, zero third-party template refs, iframe injected only on accept, youtube-nocookie+dnt=1/Vimeo dnt=1) + TrainingPrivacyNotice.vue (Art.13 training-start, 3 facts incl. 'Wiedergabemuster NICHT dauerhaft gespeichert') + videoInterval.js pure helper (25 Vitest) + CourseTabLernraum.vue student 'Pflichtinhalte' gate UI incl. document 'Gelesen' caller (VIDEO-07) + Playwright video-gating.spec.js. Commits f0e9fe3/d4ec1aa/f706e88. Vitest 1146 green, ESLint 0. ⛔ BLOCKER: CourseVideoController::index instructor-gated → students 403; kein student-lesbarer Registry+Progress-Endpoint → Student-Gate-UI live nicht end-to-end nutzbar bis Backend-Follow-up (Rule 4, nicht blind gepatcht — Codex-IDOR-Surface, kein lokales PHP). Human-verify-Checkpoint (SR/Kontrast/Consent-Network/Art.13-Text) auto-approved (auto_advance). NÄCHST: Backend-Follow-up (enrolled-student GET, Codex-reviewed) + Wave-3-deploy/verify durch Orchestrator."
-status: "v5.2.0 Pflichtschulung. Phase 162 (Video-/Material-Gating) — 162-01..03 (Backend, Wave 1+2) gebaut+committed; 162-04 (Frontend, Wave 3) gebaut+committed (f0e9fe3/d4ec1aa/f706e88): WCAG-Player + DSGVO-Consent-Overlay + Art.13-Notice + Student-Gate-UI + 'Gelesen'-Caller + Vitest/ESLint grün + Playwright-Spec. Human-verify-Checkpoint auto-approved (auto_advance=true) — SR/AA-Kontrast/Consent-No-Preload/Art.13-Text bleiben menschliche Sichtprüfung nach Orchestrator --js-only-Deploy. ⛔ BLOCKER (Backend, außerhalb Frontend-Ownership): student-lesbarer Registry-Read fehlt (index 403 für Studenten, kein Progress-GET) → Pflichtinhalte-Tab erscheint live nicht für Studenten (graceful degrade), VIDEO-07/08 + Gate-Status live erst nach Backend-Follow-up prüfbar. Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
-stopped_at: "Phase 162 Plan 04 (Frontend WCAG-Player/Consent/Art.13/Gate-UI) fertig + committed (f0e9fe3/d4ec1aa/f706e88). Human-verify-Checkpoint auto-approved. ⛔ Backend-Follow-up nötig: student-lesbarer GET /api/courses/{id}/videos + per-user covered_pct/completed (CourseService::assertEnrolledInCourse + VideoProgressMapper::findByUserAndContent), PHPStan L5 + Codex-Security-Pass. Danach Wave-3 --js-only-Deploy + Playwright-Live-Run (E2E_VIDEO_COURSE_ID seeden)."
+current_phase: 163
+current_plan: "Phase 162 ✓ COMPLETE 2026-07-02 (4/4 plans). Next: Phase 163 (Teamleiter-RBAC-Reports + DSGVO Art.20 — RBAC-02/03/04, DSGVO-02). Not yet planned — start with /gsd:plan-phase 163."
+status: "v5.2.0 Pflichtschulung — 3/5 Phasen (60%). Phase 162 (Video-/Material-Gating) ✓ COMPLETE: backend (Migration 009500 live, VideoProgressService anti-fraud completion engine, VideoStreamController Range-206/416 IDOR-gated, startSession pool-derived gate, VideoProgressController heartbeat/complete/document-read/courseStatus) + frontend (WCAG-2.1-AA VideoPlayer, DSGVO-Consent-Overlay, Art.13-Notice, Student-Gate-UI). Verifier 27/27 code-verified, 7 live/visual → human-verify (Andres Durchlauf, kein Blocker). Grumpy-Codex 3 Pässe, ALLE Funde gefixt (2 BLOCKER heartbeat-fraud+gate-bypass, 1 HIGH enrollment, 1 MED ratelimit, 2 PARTIAL, 1 LOW) mit lockenden Regression-Tests. PHPStan L5 clean, PHPUnit 256/874. Scope-Grenze verifiziert (learning_sessions single-insert, Duel/Gameshow/Leitner separat). Backend-BLOCKER (student-read) via courseStatus gelöst. Frontmatter manuell gepflegt (gsd-tools-State-Commands MEIDEN)."
+stopped_at: "Phase 162 COMPLETE + getrackt. Nächster Schritt: Phase 163 planen (/gsd:plan-phase 163). Milestone-Mandat: 162→164 autonom, dann Go für Release-Akt. Offen für Andres 162-Durchlauf: 7 human-verify (curl 206/416, seek-99%-gate, Consent-no-preload, WCAG SR/Kontrast/no-autoplay, Art.13-Text, Gelesen-Flip+Playwright, courseStatus-IDOR live)."
 last_updated: "2026-07-02"
-last_activity: "2026-07-02 — Phase 162-04 gebaut (Frontend, Wave 3): WCAG-2.1-AA-VideoPlayer + DSGVO-Art.13-Consent-Overlay (kein Third-Party-Preload, youtube-nocookie+dnt=1/Vimeo dnt=1) + Art.13-Training-Start-Notice + videoInterval.js Pure-Helper (25 Vitest) + Student-Pflichtinhalte-Gate-UI incl. 'Gelesen'-Caller (VIDEO-07) + Playwright-a11y-Spec. Vitest 1146 grün, ESLint 0. BLOCKER dokumentiert: instructor-gated Registry-Read → Backend-Follow-up nötig (Rule 4, nicht blind gepatcht)."
+last_activity: "2026-07-02 — Phase 162 COMPLETE: full build (4 plans/3 waves) + 3-pass Codex security review (all fixed) + goal-backward verify (27/27 code-verified). PHPStan L5 clean, PHPUnit 256/874, Migration 009500 live (info.xml 5.2.0.2). Tracking updated manually."
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
-  percent: 40
+  completed_phases: 3
+  total_plans: 10
+  completed_plans: 10
+  percent: 60
 ---
 
 # Project State

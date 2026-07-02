@@ -646,11 +646,12 @@ Plans:
 - Heartbeat plausibility: server discards pings < 5s apart
 - DSGVO transient segments: intervals_json deleted at completed_at write
 - INotificationManager as primary reminder channel (email-null safe); IMailer additive only where email is non-null
-**Plans**: 4 plans in 3 waves
+**Plans**: 4/4 — ✓ **COMPLETE 2026-07-02** (verifier: 27/27 observable truths code-verified, 7 live/visual behaviors → human-verify; PHPStan L5 clean, PHPUnit 256/874, Migration 009500 live on PG16 info.xml 5.2.0.2. Grumpy-Codex 3 passes: 2 BLOCKER heartbeat-fraud + gate-bypass, 1 HIGH missing-enrollment, 1 MED ratelimit, 2 PARTIAL resume+short-video, 1 LOW access-order — ALL fixed with locking tests, commits 356e4a6/8c70a69/2b509cb/146c42a/3a84baf/950e2cc/3142c83/d4ec1aa/f0e9fe3/9f9c688/7f30ea7/9bd8b33/3650a76. Backend blocker resolved: VideoProgressController::courseStatus student-read endpoint. Scope boundary VERIFIED: learning_sessions inserted at exactly one site — Duel/Gameshow/Leitner use separate tables, cannot bypass the gate.)
 - [x] 162-01-PLAN.md — Security core: Migration 009500 (registry + progress + gate column) + VideoProgressService unit-first (VIDEO-02/04/06/07/09)
-- [ ] 162-02-PLAN.md — NC-Files streaming (Range-206 + 416) + registry admin CRUD + VideoSourceAdapter interface (VIDEO-01/09/05)
-- [ ] 162-03-PLAN.md — startSession 403 gate + VideoProgressController (heartbeat/complete/document-read) (VIDEO-03/04/07)
-- [ ] 162-04-PLAN.md — WCAG AA player + third-party consent overlay + Art.13 training-start notice (VIDEO-05/08, DSGVO-04)
+- [x] 162-02-PLAN.md — NC-Files streaming (Range-206 + 416) + registry admin CRUD + VideoSourceAdapter interface (VIDEO-01/09/05)
+- [x] 162-03-PLAN.md — startSession 403 gate + VideoProgressController (heartbeat/complete/document-read) (VIDEO-03/04/07)
+- [x] 162-04-PLAN.md — WCAG AA player + third-party consent overlay + Art.13 training-start notice (VIDEO-05/08, DSGVO-04)
+- **Human-verify (Andre's run-through, not blockers):** curl Range-206/416 over relay; seek-to-99% gate-closed live; third-party consent no-preload (DevTools Network); WCAG SR/contrast/no-autoplay; Art.13 notice text; "Gelesen" flip in browser + Playwright live run (E2E_VIDEO_COURSE_ID seed); courseStatus IDOR 200/403 live.
 
 ### Phase 163: Teamleiter-RBAC-Reports + DSGVO Art.20
 **Goal**: Team leads can view group-scoped compliance status, send reminders, and individuals can export their own data; no cross-group data leaks at any layer
@@ -717,6 +718,6 @@ Plans:
 | 157. Public-Verify | v5.0.0 | 5/5 | ✅ Complete (4 waves; gsd-verifier CLOSE 6/6; live-activation rides demo-course provisioning pass) | 157-VERIFICATION.md |
 | 160. Foundation — Audit Hash-Chain + Assignment Schemas | v5.2.0 | 6/6 | ✅ Complete (PHPStan L5 clean, PHPUnit 183/0/0, migrations 009300/009400/009301 applied) | 2026-07-01 |
 | 161. Audit Hardening — Checkpoints + Anchor + Export + Liveness | v5.2.0 | 6/6 | ✓ Complete | 2026-07-01 |
-| 162. Video-/Material-Gating + DSGVO Art.13 | v5.2.0 | 1/4 | In progress (162-01 security core: schema + VideoProgressService + seams; container verify pending orchestrator wave-gate) | - |
+| 162. Video-/Material-Gating + DSGVO Art.13 | v5.2.0 | 4/4 | ✓ Complete 2026-07-02 (27/27 code-verified, 7 human-verify; PHPStan L5 + PHPUnit 256/874 green; 3-pass Codex all fixed; Migration 009500 live) | 2026-07-02 |
 | 163. Teamleiter-RBAC-Reports + DSGVO Art.20 | v5.2.0 | 0/TBD | Not started | - |
 | 164. Re-Zertifizierung + Retention + i18n Parity | v5.2.0 | 0/TBD | Not started | - |
