@@ -49,8 +49,8 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="row in overdueOrMissing" :key="row.uid" class="teamlead-dashboard__row">
-							<td class="teamlead-dashboard__cell">{{ row.displayName }}</td>
+						<tr v-for="row in overdueOrMissing" :key="row.member_ref" class="teamlead-dashboard__row">
+							<td class="teamlead-dashboard__cell">{{ row.display_name }}</td>
 							<td class="teamlead-dashboard__cell">
 								<span class="teamlead-dashboard__status-badge"
 									:class="'teamlead-dashboard__status-badge--' + row.status">
@@ -63,9 +63,9 @@
 							<td class="teamlead-dashboard__cell">
 								<button
 									class="teamlead-dashboard__remind-btn"
-									:disabled="reminderStates[row.uid] === 'sending' || reminderStates[row.uid] === 'sent'"
+									:disabled="reminderStates[row.member_ref] === 'sending' || reminderStates[row.member_ref] === 'sent'"
 									@click="sendReminder(row)">
-									<span v-if="reminderStates[row.uid] === 'sent'" class="teamlead-dashboard__remind-sent">
+									<span v-if="reminderStates[row.member_ref] === 'sent'" class="teamlead-dashboard__remind-sent">
 										{{ t('learning', 'Erinnerung gesendet') }}
 									</span>
 									<span v-else>{{ t('learning', 'Erinnerung senden') }}</span>
@@ -96,8 +96,8 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="row in upcomingExpirations" :key="'exp-' + row.uid" class="teamlead-dashboard__row">
-							<td class="teamlead-dashboard__cell">{{ row.displayName }}</td>
+						<tr v-for="row in upcomingExpirations" :key="'exp-' + row.member_ref" class="teamlead-dashboard__row">
+							<td class="teamlead-dashboard__cell">{{ row.display_name }}</td>
 							<td class="teamlead-dashboard__cell teamlead-dashboard__cell--date">{{ row.expires_at }}</td>
 						</tr>
 					</tbody>
@@ -184,8 +184,8 @@ export default {
 				})
 				const response = await axios.get(url, {
 					params: {
-						group_id: this.currentGroupId,
-						expiring_days: 30,
+						groupId: this.currentGroupId,
+						expiringDays: 30,
 					},
 				})
 				this.reportRows = (response.data && response.data.rows) ? response.data.rows : []
@@ -203,21 +203,21 @@ export default {
 		},
 
 		async sendReminder(row) {
-			const uid = row.uid
+			const ref = row.member_ref
 			this.reminderError = null
-			this.reminderStates = { ...this.reminderStates, [uid]: 'sending' }
+			this.reminderStates = { ...this.reminderStates, [ref]: 'sending' }
 			try {
 				const url = generateUrl('/apps/learning/api/courses/{courseId}/group-report/remind', {
 					courseId: this.currentCourseId,
 				})
 				await axios.post(url, {
-					group_id: this.currentGroupId,
-					target_user_id: uid,
+					groupId: this.currentGroupId,
+					memberRef: ref,
 				})
-				this.reminderStates = { ...this.reminderStates, [uid]: 'sent' }
+				this.reminderStates = { ...this.reminderStates, [ref]: 'sent' }
 			} catch (err) {
 				console.error('TeamLeadDashboard: failed to send reminder', err)
-				this.reminderStates = { ...this.reminderStates, [uid]: 'error' }
+				this.reminderStates = { ...this.reminderStates, [ref]: 'error' }
 				// Generic error — never leak membership detail from the 403 body
 				this.reminderError = t('learning', 'Erinnerung konnte nicht gesendet werden.')
 			}

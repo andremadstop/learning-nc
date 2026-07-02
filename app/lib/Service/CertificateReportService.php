@@ -62,7 +62,8 @@ class CertificateReportService {
      * cert read, or state read. Denial tests lock this with never()-expectations on all
      * data sources (RBAC-02 / assert-first invariant).
      *
-     * Row shape: {user_id, display_name, status, passed_at, expires_at, due_date}
+     * Row shape: {member_ref, display_name, status, passed_at, expires_at, due_date}
+     * member_ref is an opaque handle (never a raw uid/email); the reminder POST echoes it back.
      * Status: 'passed' | 'overdue' | 'missing'
      * Display names (both cert-derived and IGroupManager-derived) are guarded by looksLikeEmail.
      *
@@ -70,7 +71,7 @@ class CertificateReportService {
      * @param string   $groupId      the NC group the lead is authorised to view
      * @param string   $leadUserId   the requesting team lead
      * @param int|null $expiringDays optional expiry window (days)
-     * @return array<int, array{user_id: string, display_name: string, status: string, passed_at: int|null, expires_at: int|null, due_date: int|null}>
+     * @return array<int, array{member_ref: string, display_name: string, status: string, passed_at: int|null, expires_at: int|null, due_date: int|null}>
      * @throws ForbiddenException if groupId is empty, or caller holds no oversight for the group/course
      */
     public function getGroupReport(int $courseId, string $groupId, string $leadUserId, ?int $expiringDays): array {
@@ -111,7 +112,7 @@ class CertificateReportService {
                     ? self::FALLBACK_RECIPIENT
                     : $frozenName;
                 $rows[] = [
-                    'user_id'      => $memberUid,
+                    'member_ref'   => $this->memberRef($memberUid),
                     'display_name' => $displayName,
                     'status'       => 'passed',
                     'passed_at'    => $cert->getIssuedAt(),
@@ -132,7 +133,7 @@ class CertificateReportService {
                 $displayName = $this->looksLikeEmail($rawName) ? self::FALLBACK_RECIPIENT : $rawName;
 
                 $rows[] = [
-                    'user_id'      => $memberUid,
+                    'member_ref'   => $this->memberRef($memberUid),
                     'display_name' => $displayName,
                     'status'       => $status,
                     'passed_at'    => null,
@@ -174,14 +175,23 @@ class CertificateReportService {
      *
      * @throws ForbiddenException when caller has no oversight or target is not in the group
      */
-    public function remindMember(int $courseId, string $groupId, string $targetUserId, string $leadUserId): void {
+    public function remindMember(int $courseId, string $groupId, string $memberRef, string $leadUserId): void {
         // SECURITY GATE 1 — asserts lead role; also rejects empty groupId (fail-closed).
         $this->assertTeamLeadForGroup($courseId, $groupId, $leadUserId);
 
-        // SECURITY GATE 2 — asserts target is a member of the group the lead oversees.
-        // Generic 403 body on denial to avoid leaking membership information.
-        $members = $this->assignmentService->expandGroup($groupId);
-        if (!in_array($targetUserId, $members, true)) {
+        // SECURITY GATE 2 — resolve the opaque member_ref ONLY against members of the group the
+        // lead oversees. The client never sends a raw uid (which may be an email); it echoes the
+        // member_ref from the report. Resolution is confined to expandGroup, so a ref that matches
+        // no member fails closed. hash_equals for timing-safe comparison.
+        $targetUserId = null;
+        foreach ($this->assignmentService->expandGroup($groupId) as $memberUid) {
+            if (hash_equals($this->memberRef($memberUid), $memberRef)) {
+                $targetUserId = $memberUid;
+                break;
+            }
+        }
+        if ($targetUserId === null) {
+            // Generic 403 on denial to avoid leaking membership information.
             throw new ForbiddenException(
                 "Not authorised for group '$groupId' in course $courseId"
             );
@@ -191,6 +201,22 @@ class CertificateReportService {
         $this->reminderService->sendComplianceReminder($targetUserId, $courseId, [
             'lead_user_id' => $leadUserId,
         ]);
+    }
+
+    /**
+     * Opaque, deterministic handle for a group member used in the report DTO and echoed back by
+     * the reminder POST. Replaces the raw uid so a member whose NC uid IS an email
+     * (e.g. "alice@example.com") can never leak a plaintext email into the report — the same
+     * class of leak the display_name looksLikeEmail guard prevents.
+     *
+     * A keyless domain-separated hash is deliberate: the ref only ever reaches the authorised
+     * team lead, who is already entitled to know the group's membership, so no server secret is
+     * needed for oracle-resistance; the distinct label keeps it uncorrelated with the audit chain.
+     * remindMember() resolves it back to a uid ONLY among expandGroup() members, so the ref is a
+     * capability scoped to a group the caller provably leads — not a global identifier.
+     */
+    private function memberRef(string $uid): string {
+        return substr(hash('sha256', 'learning:group_member_ref:v1:' . $uid), 0, 24);
     }
 
     /**

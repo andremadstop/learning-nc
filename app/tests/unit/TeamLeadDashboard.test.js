@@ -43,8 +43,8 @@ function makeScope(overrides = {}) {
 
 function makeRow(overrides = {}) {
 	return {
-		displayName: 'Erika Mustermann',
-		uid: 'erika',
+		display_name: 'Erika Mustermann',
+		member_ref: 'erika',
 		status: 'overdue',
 		due_date: '2026-06-01',
 		expires_at: null,
@@ -158,9 +158,9 @@ describe('TeamLeadDashboard.fetchReport', () => {
 
 	it('populates reportRows from API', async () => {
 		const rows = [
-			makeRow({ uid: 'alice', status: 'overdue' }),
-			makeRow({ uid: 'bob', status: 'missing' }),
-			makeRow({ uid: 'carol', status: 'passed', expires_at: '2026-08-01' }),
+			makeRow({ member_ref: 'alice', status: 'overdue' }),
+			makeRow({ member_ref: 'bob', status: 'missing' }),
+			makeRow({ member_ref: 'carol', status: 'passed', expires_at: '2026-08-01' }),
 		]
 		axios.get.mockResolvedValueOnce({ data: { rows } })
 
@@ -170,34 +170,39 @@ describe('TeamLeadDashboard.fetchReport', () => {
 		await instance.fetchReport()
 
 		expect(instance.reportRows).toEqual(rows)
+		// Contract with CertificateReportController::groupReport — camelCase query params.
+		const [, config] = axios.get.mock.calls[0]
+		expect(config.params.groupId).toBe('g1')
+		expect(config.params.expiringDays).toBe(30)
+		expect(config.params.group_id).toBeUndefined()
 	})
 
 	it('overdueOrMissing computed filters to overdue + missing only', async () => {
 		const instance = createInstance()
 		instance.reportRows = [
-			makeRow({ uid: 'alice', status: 'overdue' }),
-			makeRow({ uid: 'bob', status: 'missing' }),
-			makeRow({ uid: 'carol', status: 'passed', expires_at: '2026-08-01' }),
+			makeRow({ member_ref: 'alice', status: 'overdue' }),
+			makeRow({ member_ref: 'bob', status: 'missing' }),
+			makeRow({ member_ref: 'carol', status: 'passed', expires_at: '2026-08-01' }),
 		]
 
 		expect(instance.overdueOrMissing.length).toBe(2)
-		expect(instance.overdueOrMissing.map((r) => r.uid)).toEqual(['alice', 'bob'])
+		expect(instance.overdueOrMissing.map((r) => r.member_ref)).toEqual(['alice', 'bob'])
 	})
 
 	it('upcomingExpirations computed includes only passed rows with expires_at', () => {
 		const instance = createInstance()
 		instance.reportRows = [
-			makeRow({ uid: 'alice', status: 'overdue', expires_at: null }),
-			makeRow({ uid: 'carol', status: 'passed', expires_at: '2026-08-01' }),
-			makeRow({ uid: 'dave', status: 'passed', expires_at: null }),
+			makeRow({ member_ref: 'alice', status: 'overdue', expires_at: null }),
+			makeRow({ member_ref: 'carol', status: 'passed', expires_at: '2026-08-01' }),
+			makeRow({ member_ref: 'dave', status: 'passed', expires_at: null }),
 		]
 
 		expect(instance.upcomingExpirations.length).toBe(1)
-		expect(instance.upcomingExpirations[0].uid).toBe('carol')
+		expect(instance.upcomingExpirations[0].member_ref).toBe('carol')
 	})
 
 	it('reportRows carry no email field', async () => {
-		const rows = [makeRow({ uid: 'alice', status: 'overdue' })]
+		const rows = [makeRow({ member_ref: 'alice', status: 'overdue' })]
 		axios.get.mockResolvedValueOnce({ data: { rows } })
 
 		const instance = createInstance()
@@ -215,13 +220,13 @@ describe('TeamLeadDashboard.sendReminder', () => {
 		vi.clearAllMocks()
 	})
 
-	it('POSTs to the correct URL with group_id and target_user_id', async () => {
+	it('POSTs to the remind URL with the backend contract (groupId + memberRef)', async () => {
 		axios.post.mockResolvedValueOnce({ status: 200, data: {} })
 
 		const instance = createInstance()
 		instance.scopes = [makeScope({ course_id: 7, group_id: 'awo-group' })]
 		instance.selectedScopeIndex = 0
-		const row = makeRow({ uid: 'erika', status: 'overdue' })
+		const row = makeRow({ member_ref: 'ref-erika-abc', status: 'overdue' })
 		await instance.sendReminder(row)
 
 		expect(axios.post).toHaveBeenCalledTimes(1)
@@ -229,8 +234,12 @@ describe('TeamLeadDashboard.sendReminder', () => {
 		expect(url).toContain('courses')
 		expect(url).toContain('7')
 		expect(url).toContain('remind')
-		expect(body.group_id).toBe('awo-group')
-		expect(body.target_user_id).toBe('erika')
+		// Contract with CertificateReportController::remindMember — camelCase param names.
+		expect(body.groupId).toBe('awo-group')
+		expect(body.memberRef).toBe('ref-erika-abc')
+		// The raw-uid-shaped keys the controller does NOT read must be absent.
+		expect(body.group_id).toBeUndefined()
+		expect(body.target_user_id).toBeUndefined()
 	})
 
 	it('sets success state on 200', async () => {
@@ -239,7 +248,7 @@ describe('TeamLeadDashboard.sendReminder', () => {
 		const instance = createInstance()
 		instance.scopes = [makeScope({ course_id: 7, group_id: 'awo-group' })]
 		instance.selectedScopeIndex = 0
-		const row = makeRow({ uid: 'erika', status: 'overdue' })
+		const row = makeRow({ member_ref: 'erika', status: 'overdue' })
 		await instance.sendReminder(row)
 
 		expect(instance.reminderStates['erika']).toBe('sent')
@@ -253,7 +262,7 @@ describe('TeamLeadDashboard.sendReminder', () => {
 		const instance = createInstance()
 		instance.scopes = [makeScope({ course_id: 7, group_id: 'awo-group' })]
 		instance.selectedScopeIndex = 0
-		const row = makeRow({ uid: 'hans', status: 'overdue' })
+		const row = makeRow({ member_ref: 'hans', status: 'overdue' })
 		await instance.sendReminder(row)
 
 		expect(instance.reminderStates['hans']).toBe('error')

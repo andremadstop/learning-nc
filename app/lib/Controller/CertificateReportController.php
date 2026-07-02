@@ -164,8 +164,9 @@ class CertificateReportController extends Controller {
      * AND that the target uid belongs to that group — this is a separate IDOR surface
      * from the report GET and must not be trusted to have been gated there.
      *
-     * groupId + targetUserId are read from the POST body. An absent/empty groupId
-     * lets the service fail closed (ForbiddenException before any DB read).
+     * groupId + memberRef are read from the POST body. memberRef is the opaque member
+     * handle from the report DTO (never a raw uid). An absent/empty groupId lets the
+     * service fail closed (ForbiddenException before any DB read).
      *
      * Returns a generic 403 on any denial — no membership-oracle detail in the body.
      *
@@ -177,10 +178,10 @@ class CertificateReportController extends Controller {
         }
 
         $groupId = (string)($this->request->getParam('groupId') ?? '');
-        $targetUserId = (string)($this->request->getParam('targetUserId') ?? '');
+        $memberRef = (string)($this->request->getParam('memberRef') ?? '');
 
         try {
-            $this->reportService->remindMember($courseId, $groupId, $targetUserId, $this->userId);
+            $this->reportService->remindMember($courseId, $groupId, $memberRef, $this->userId);
             return new DataResponse(['status' => 'ok']);
         } catch (ForbiddenException $e) {
             return new DataResponse(['error' => 'No permission'], Http::STATUS_FORBIDDEN);

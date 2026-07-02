@@ -469,17 +469,20 @@ class CertificateReportServiceTest extends TestCase {
 
         $rows = $service->getGroupReport(10, 'team-x', 'alice', null);
 
-        // RED: skeleton returns [] — assertNotEmpty fails until 163-05
-        $this->assertNotEmpty($rows, 'getGroupReport must include all group members — RED until 163-05');
+        $this->assertNotEmpty($rows, 'getGroupReport must include all group members');
 
-        // Status checks (executed once assertNotEmpty passes in 163-05)
-        $byUser = [];
+        // Rows are keyed by the opaque member_ref (raw uid is never exposed). Recompute the ref
+        // with the SAME algorithm the service uses to look up each member's status.
+        $ref = static fn (string $u): string => substr(hash('sha256', 'learning:group_member_ref:v1:' . $u), 0, 24);
+        $byRef = [];
         foreach ($rows as $row) {
-            $byUser[$row['user_id'] ?? $row['display_name']] = $row;
+            $this->assertArrayNotHasKey('user_id', $row, 'raw uid must never appear in a report row');
+            $this->assertArrayHasKey('member_ref', $row);
+            $byRef[$row['member_ref']] = $row;
         }
-        $this->assertSame('passed',  $byUser['bob']['status'] ?? null);
-        $this->assertSame('overdue', $byUser['carol']['status'] ?? null);
-        $this->assertSame('missing', $byUser['dave']['status'] ?? null);
+        $this->assertSame('passed',  $byRef[$ref('bob')]['status'] ?? null);
+        $this->assertSame('overdue', $byRef[$ref('carol')]['status'] ?? null);
+        $this->assertSame('missing', $byRef[$ref('dave')]['status'] ?? null);
     }
 
     /**
@@ -491,9 +494,11 @@ class CertificateReportServiceTest extends TestCase {
      * getCourseReport sanitises frozen names from VC-JWTs. Must stay GREEN post-impl.
      */
     public function testGroupReportDtoCarriesNoEmail(): void {
+        // Worst case: the member's NC uid IS an email AND their display name is email-shaped.
+        // Both must be unreachable in the DTO (uid → opaque member_ref; name → neutral fallback).
         $emailUser = $this->createMock(\OCP\IUser::class);
-        $emailUser->method('getUID')->willReturn('email-user');
-        $emailUser->method('getDisplayName')->willReturn('user@example.com'); // email-shaped
+        $emailUser->method('getUID')->willReturn('attacker@example.com'); // email-shaped UID
+        $emailUser->method('getDisplayName')->willReturn('victim@example.com'); // email-shaped name
 
         $group = $this->createMock(\OCP\IGroup::class);
         $group->method('getUsers')->willReturn([$emailUser]);
@@ -502,7 +507,7 @@ class CertificateReportServiceTest extends TestCase {
         $groupManager->method('get')->willReturn($group);
 
         $assignmentService = $this->createMock(AssignmentService::class);
-        $assignmentService->method('expandGroup')->willReturn(['email-user']);
+        $assignmentService->method('expandGroup')->willReturn(['attacker@example.com']);
         $assignmentService->method('getStatesForCourseAndUsers')->willReturn([]);
 
         $certMapper = $this->createMock(CertificateMapper::class);
@@ -523,6 +528,11 @@ class CertificateReportServiceTest extends TestCase {
 
         $rows = $service->getGroupReport(10, 'team-x', 'alice', null);
 
+        // Must actually produce the member row (not vacuously empty) so the scan is meaningful.
+        $this->assertNotEmpty($rows, 'the email-uid member must appear in the report');
+        $this->assertArrayHasKey('member_ref', $rows[0]);
+        $this->assertArrayNotHasKey('user_id', $rows[0], 'raw email-shaped uid must not be exposed');
+
         // Scan ALL string values in every row for email patterns — none may match
         foreach ($rows as $row) {
             foreach ($row as $value) {
@@ -535,7 +545,6 @@ class CertificateReportServiceTest extends TestCase {
                 }
             }
         }
-        $this->assertIsArray($rows, 'getGroupReport must return an array');
     }
 
     /**
@@ -565,7 +574,42 @@ class CertificateReportServiceTest extends TestCase {
         );
 
         $this->expectException(ForbiddenException::class);
-        // dave is not in lead bob's group 'dept-a' → ForbiddenException; sendComplianceReminder never called
-        $service->remindMember(42, 'dept-a', 'dave', 'bob');
+        // A bogus member_ref that resolves to NO member of 'dept-a' → ForbiddenException;
+        // sendComplianceReminder never called (assert-first, no membership oracle).
+        $service->remindMember(42, 'dept-a', 'bogus-ref-not-a-member', 'bob');
+    }
+
+    /**
+     * RBAC-04 (GREEN + LOCKED): a valid member_ref (the one the report DTO emits for a member)
+     * resolves back to that member's uid and dispatches. This locks the emit/resolve symmetry —
+     * if getGroupReport and remindMember ever compute the ref differently, reminders silently
+     * no-op and this test fails.
+     */
+    public function testRemindMemberResolvesValidMemberRef(): void {
+        $ref = static fn (string $u): string => substr(hash('sha256', 'learning:group_member_ref:v1:' . $u), 0, 24);
+
+        $reminderService = $this->createMock(ReminderService::class);
+        $reminderService->expects($this->once())
+            ->method('sendComplianceReminder')
+            ->with('charlie', 42, $this->anything());
+
+        $assignmentService = $this->createMock(AssignmentService::class);
+        $assignmentService->method('expandGroup')->willReturn(['alice', 'charlie']);
+
+        $roleService = $this->createMock(RoleService::class);
+        $roleService->method('isTeamLeadForGroup')->willReturn(true);
+
+        $service = new CertificateReportService(
+            $this->makeCourseService($this->makeCourse('alice'), null),
+            $this->createMock(CertificateMapper::class),
+            $this->makeTime(),
+            $roleService,
+            $assignmentService,
+            $reminderService,
+            $this->createMock(IGroupManager::class)
+        );
+
+        // The ref for 'charlie' must resolve to 'charlie' and dispatch exactly once.
+        $service->remindMember(42, 'dept-a', $ref('charlie'), 'bob');
     }
 }
