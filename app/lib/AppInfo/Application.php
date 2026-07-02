@@ -6,6 +6,8 @@ use OCA\Learning\BackgroundJob\AuditCheckpointJob;
 use OCA\Learning\BackgroundJob\ChunkingJob;
 use OCA\Learning\BackgroundJob\ConsistencyCheckJob;
 use OCA\Learning\BackgroundJob\NotificationJob;
+use OCA\Learning\BackgroundJob\RecertPeriodCloseJob;
+use OCA\Learning\BackgroundJob\RetentionJob;
 use OCA\Learning\BackgroundJob\SendRemindersJob;
 use OCA\Learning\BackgroundJob\WeeklyLernplanJob;
 use OCA\Learning\Command\ArchiveCourseCommand;
@@ -132,6 +134,12 @@ class Application extends App implements IBootstrap {
             }
             if (!$jobList->has(AuditCheckpointJob::class, null)) {
                 $jobList->add(AuditCheckpointJob::class);
+            }
+            if (!$jobList->has(RecertPeriodCloseJob::class, null)) {
+                $jobList->add(RecertPeriodCloseJob::class);
+            }
+            if (!$jobList->has(RetentionJob::class, null)) {
+                $jobList->add(RetentionJob::class);
             }
         } catch (\Throwable $e) {
             // Duplicate entry is harmless (NC deduplicates), but log unexpected errors (R2 #5)
