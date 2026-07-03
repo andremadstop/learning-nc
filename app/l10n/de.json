@@ -2284,6 +2284,16 @@
         "← Zurück": "← Zurück",
         "← Zurück zu Kursen": "← Zurück zu Kursen",
         "← Zurück zu Pools": "← Zurück zu Pools",
-        "← Zurück zum Kurs": "← Zurück zum Kurs"
+        "← Zurück zum Kurs": "← Zurück zum Kurs",
+        "recert_reminder_subject": "Ihr Zertifikat „%2$s\" läuft in %1$s Tagen ab",
+        "recert_reminder_body": "Bitte erneuern Sie Ihre Zertifizierung für „%1$s\" bis zum %2$s, um Ihren Nachweis gültig zu halten.",
+        "cert_status_valid": "Gültig",
+        "cert_status_expiring": "Läuft bald ab",
+        "cert_status_expired": "Abgelaufen",
+        "cert_status_overdue": "Überfällig",
+        "recert_reenroll_cta": "Jetzt rezertifizieren",
+        "recert_reenroll_info": "Ihre Zertifizierung ist abgelaufen. Schließen Sie den Kurs erneut ab, um ein neues Zertifikat zu erhalten.",
+        "recert_validity_months_label": "Gültigkeit des Zertifikats (Monate, 0 = unbegrenzt)",
+        "recert_retention_years_label": "Aufbewahrungsfrist (Jahre)"
     }
 }

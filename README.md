@@ -119,6 +119,24 @@ The admin settings page shows a reminder until the key exists. Rotate later with
 
 When AI is enabled, data is processed by Google Gemini API. For GDPR compliance, review Google's [Data Processing Addendum](https://cloud.google.com/terms/data-processing-addendum).
 
+### Cert lifecycle & compliance (v5.2.0)
+
+**Verify-URL permanence & retention.** Every issued certificate gets a public verify URL. This
+URL is *permanent only within the data-retention window*: after `retention_years` (app config,
+default **3** — this default is flagged for confirmation with your data-protection officer /
+works agreement; statutory duties such as ArbSchG/AGG evidence may require a longer window),
+the record is crypto-erased (recipient identity removed, signed credential scrubbed, tombstone
+set). From then on the verify URL returns a defined **"record no longer available"** state —
+never an error page. Only superseded, closed, or revoked certificates age out; a user's current
+active certificate is exempt until it is replaced.
+
+**Works-council prerequisite (Germany).** Recertification reminders and compliance monitoring
+are technical monitoring features in the sense of **BetrVG §87 Abs. 1 Nr. 6**. Organizations
+with a works council must conclude a **Betriebsvereinbarung** *before* rolling these features
+out in production. This is an organizational/legal prerequisite — the app does not and cannot
+enforce it. Technically, video-progress tracking uses transient segments (no permanent
+fine-grained watch log) as the data-minimizing mitigation.
+
 ## Technical
 
 - **Frontend:** Vue 3.5, Vite, Pinia, @nextcloud/vue 9

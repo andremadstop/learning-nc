@@ -5,7 +5,6 @@ namespace OCA\Learning\Tests\Unit\Service;
 
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
-use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\RetentionService;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -60,13 +59,15 @@ class RetentionServiceTest extends TestCase {
         /** @var Certificate|null $updatedCert captured by mapper mock */
         $updatedCert = null;
         $certMapper  = $this->createMock(CertificateMapper::class);
+        // 164-07 harness: the retention sweep reads its candidates via findAnonymizableBefore
+        // (anonymized_at IS NULL AND active_idem_key IS NULL AND issued_at < cutoff).
+        $certMapper->method('findAnonymizableBefore')->willReturn([$cert]);
         $certMapper->method('update')
             ->willReturnCallback(static function (Certificate $c) use (&$updatedCert): Certificate {
                 $updatedCert = $c;
                 return $c;
             });
 
-        $auditService = $this->createMock(AuditService::class);
         $fakeDb       = new FakeDbConnection();
 
         $config = $this->createMock(IConfig::class);
@@ -78,7 +79,7 @@ class RetentionServiceTest extends TestCase {
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $service = new RetentionService($certMapper, $auditService, $fakeDb, $config, $time, $logger);
+        $service = new RetentionService($certMapper, $fakeDb, $config, $time, $logger);
 
         // RED: anonymizeExpired() throws LogicException('164-07') → test ERRORS → RED.
         // GREEN (164-07): the method is implemented; assertions below then hold.
@@ -94,11 +95,9 @@ class RetentionServiceTest extends TestCase {
         $this->assertEmpty($updatedCert->getCredentialJson(),
             'DSGVO-03: credential_json must be empty string after crypto-erasure');
 
-        // (1c) anonymized_at tombstone — 164-07 must add the entity property to Certificate.php
-        // (DB column exists since 164-01 migration Version009600).
-        // Enable when Certificate.php gains getAnonymizedAt() in 164-07:
-        // $this->assertNotNull($updatedCert->getAnonymizedAt(),
-        //     'DSGVO-03: anonymized_at must be a non-null unix timestamp after erasure');
+        // (1c) anonymized_at tombstone (entity property added in 164-06; column since 164-01)
+        $this->assertSame($now, $updatedCert->getAnonymizedAt(),
+            'DSGVO-03: anonymized_at must be the erasure timestamp (tombstone)');
 
         // (2) Audit chain integrity: RetentionService must UPDATE learning_audit_events
         //   with SET user_id = NULL but MUST NOT touch chain_hash.

@@ -68,6 +68,25 @@ class CertificateMapper extends QBMapper {
     }
 
     /**
+     * Retention sweep query (DSGVO-03, 164-07): certs eligible for crypto-erasure — issued
+     * before the retention cutoff, not yet anonymized, and NOT the subject's current active
+     * cert (active_idem_key IS NULL = superseded by a later period, closed, or revoked).
+     * An ACTIVE cert is still serving its purpose (Art. 6 basis persists) — it ages out only
+     * after a period-close/revoke frees its idem slot.
+     *
+     * @return Certificate[]
+     */
+    public function findAnonymizableBefore(int $issuedBefore): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->isNull('anonymized_at'))
+           ->andWhere($qb->expr()->isNull('active_idem_key'))
+           ->andWhere($qb->expr()->lt('issued_at', $qb->createNamedParameter($issuedBefore, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        return $this->findEntities($qb);
+    }
+
+    /**
      * Reminder-window query (RECERT-06, 164-06): the ACTIVE certs (still own their idem slot,
      * not revoked, not anonymized) whose expiry falls inside (after, before] — i.e. certs that
      * are approaching expiry but not yet expired. user-facing reminders only ever target the

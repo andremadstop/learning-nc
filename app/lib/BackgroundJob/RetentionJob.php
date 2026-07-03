@@ -19,7 +19,6 @@ use Psr\Log\LoggerInterface;
  * ⚠ RETENTION_YEARS_DEFAULT = '3' is FLAGGED for AWO/DSGVO confirmation.
  * ⚠ BetrVG §87 Abs.1 Nr.6 Betriebsvereinbarung required before production rollout.
  *
- * Implementation: 164-07 (run() body is a no-op until then).
  * Registered in Application::boot() alongside existing jobs.
  */
 class RetentionJob extends TimedJob {
@@ -34,7 +33,13 @@ class RetentionJob extends TimedJob {
 
     protected function run($argument): void {
         try {
-            // impl in 164-07: $this->svc->anonymizeExpired()
+            $erased = $this->svc->anonymizeExpired();
+            if ($erased > 0) {
+                $this->logger->info(
+                    'RetentionJob: crypto-erased ' . $erased . ' record(s) past the retention window',
+                    ['app' => 'learning']
+                );
+            }
         } catch (\Throwable $e) {
             $this->logger->warning(
                 'RetentionJob: ' . $e->getMessage(),

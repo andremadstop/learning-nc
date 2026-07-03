@@ -1,33 +1,48 @@
 #!/bin/bash
 # scripts/check-i18n-parity.sh
 # Asserts all 5 supported language JSONs have the same key-set as de.json.
+#
+# 164-07: comparison moved from line-based `comm` into python set arithmetic —
+# a translation KEY containing an embedded newline (the VirtuProf intro) broke
+# comm's sorted-line model, and locale collation made the sort order
+# non-deterministic. Sets are newline- and locale-safe.
 set -eo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 L10N="$ROOT_DIR/app/l10n"
-CANONICAL="de"
-LANGS=("en" "fr" "ru" "ar")
 
-DE_KEYS=$(python3 -c "import json; print('\n'.join(sorted(json.load(open('$L10N/$CANONICAL.json'))['translations'].keys())))")
+python3 - "$L10N" <<'PYEOF'
+import json, sys
 
-FAIL=0
-for L in "${LANGS[@]}"; do
-  L_KEYS=$(python3 -c "import json; print('\n'.join(sorted(json.load(open('$L10N/$L.json'))['translations'].keys())))")
-  MISSING=$(comm -23 <(echo "$DE_KEYS") <(echo "$L_KEYS"))
-  EXTRA=$(comm -13 <(echo "$DE_KEYS") <(echo "$L_KEYS"))
-  if [ -n "$MISSING" ] || [ -n "$EXTRA" ]; then
-    echo "FAIL: $L.json has parity drift vs $CANONICAL.json"
-    [ -n "$MISSING" ] && echo "  Missing keys ($(echo "$MISSING" | wc -l)):" && echo "$MISSING" | head -5 | sed 's/^/    /'
-    [ -n "$EXTRA" ] && echo "  Extra keys ($(echo "$EXTRA" | wc -l)):" && echo "$EXTRA" | head -5 | sed 's/^/    /'
-    FAIL=1
-  fi
-done
+l10n = sys.argv[1]
+canonical = 'de'
+langs = ['en', 'fr', 'ru', 'ar']
 
-if [ "$FAIL" -eq 1 ]; then
-  echo ""
-  echo "Fix: add missing keys (or remove extras) so all 5 langs share the same key-set."
-  exit 1
-fi
-echo "i18n key-parity OK across DE/EN/FR/RU/AR ($(echo "$DE_KEYS" | wc -l | tr -d ' ') keys each)"
+de_keys = set(json.load(open(f'{l10n}/{canonical}.json', encoding='utf-8'))['translations'])
+
+fail = False
+for lang in langs:
+    keys = set(json.load(open(f'{l10n}/{lang}.json', encoding='utf-8'))['translations'])
+    missing = sorted(de_keys - keys)
+    extra = sorted(keys - de_keys)
+    if missing or extra:
+        fail = True
+        print(f'FAIL: {lang}.json has parity drift vs {canonical}.json')
+        if missing:
+            print(f'  Missing keys ({len(missing)}):')
+            for k in missing[:5]:
+                print(f'    {k!r}')
+        if extra:
+            print(f'  Extra keys ({len(extra)}):')
+            for k in extra[:5]:
+                print(f'    {k!r}')
+
+if fail:
+    print('')
+    print('Fix: add missing keys (or remove extras) so all 5 langs share the same key-set.')
+    sys.exit(1)
+
+print(f'i18n key-parity OK across DE/EN/FR/RU/AR ({len(de_keys)} keys each)')
+PYEOF
 
 # Gate 2: .js<->.json value-sync.
 # Key-parity above only compares .json key-SETS. The frontend reads l10n/<lang>.js,

@@ -2284,6 +2284,16 @@
         "← Zurück": "← Back",
         "← Zurück zu Kursen": "← Back to courses",
         "← Zurück zu Pools": "← Back to pools",
-        "← Zurück zum Kurs": "← Back to course"
+        "← Zurück zum Kurs": "← Back to course",
+        "recert_reminder_subject": "Your certificate \"%2$s\" expires in %1$s days",
+        "recert_reminder_body": "Please renew your certification for \"%1$s\" by %2$s to keep your credential valid.",
+        "cert_status_valid": "Valid",
+        "cert_status_expiring": "Expiring soon",
+        "cert_status_expired": "Expired",
+        "cert_status_overdue": "Overdue",
+        "recert_reenroll_cta": "Recertify now",
+        "recert_reenroll_info": "Your certification has expired. Complete the course again to receive a new certificate.",
+        "recert_validity_months_label": "Certificate validity (months, 0 = no expiry)",
+        "recert_retention_years_label": "Retention period (years)"
     }
 }

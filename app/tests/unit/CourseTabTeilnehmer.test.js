@@ -18,6 +18,13 @@ vi.mock('@nextcloud/auth', () => ({
 	getCurrentUser: vi.fn(() => ({ uid: 'alice' })),
 }))
 
+// Mock @nextcloud/dialogs (avoids CSS import from NcDialog — Node 22's native ESM
+// loader rejects the dist .css asset; same pattern as StudentDashboard.test.js)
+vi.mock('@nextcloud/dialogs', () => ({
+	showSuccess: vi.fn(),
+	showError: vi.fn(),
+}))
+
 vi.mock('@nextcloud/vue/components/NcButton', () => ({ default: { name: 'NcButton', template: '<button><slot /></button>' } }))
 vi.mock('@nextcloud/vue/components/NcEmptyContent', () => ({ default: { name: 'NcEmptyContent', template: '<div><slot /></div>' } }))
 vi.mock('@nextcloud/vue/components/NcModal', () => ({ default: { name: 'NcModal', template: '<div><slot /></div>' } }))

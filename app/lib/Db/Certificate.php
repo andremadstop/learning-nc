@@ -13,8 +13,8 @@ use OCP\AppFramework\Db\Entity;
  *
  * @method string getVerificationId()
  * @method void setVerificationId(string $verificationId)
- * @method string getUserId()
- * @method void setUserId(string $userId)
+ * @method string|null getUserId()
+ * @method void setUserId(?string $userId)
  * @method int getCourseId()
  * @method void setCourseId(int $courseId)
  * @method string getKeyId()
@@ -36,6 +36,7 @@ use OCP\AppFramework\Db\Entity;
  */
 class Certificate extends Entity implements \JsonSerializable {
     protected $verificationId;
+    // string|null — DSGVO-03 crypto-erasure nulls it (RetentionService); live rows always set it
     protected $userId;
     protected $courseId;
     protected $keyId;
