@@ -50,3 +50,13 @@ Live-IDOR-curls/test-api.sh (Vault-Creds) · Notification-Bell (recert_reminder)
 - `.planning/STATE.md` (100%, Release-Akt offen) · ROADMAP (164-Zeile komplett) · REQUIREMENTS (alle 41 ✓)
 - Codex-Protokolle: `scratchpad/codex-164-*-OUTPUT.txt` (session-flüchtig)
 - Memory: `project_v52_pflichtschulung.md`
+
+---
+
+## ⚠ NACHTRAG 2026-07-03 ~15:00 — Ganzheitlicher App-Audit angestoßen, ABGEBROCHEN
+Andre (nach Fable-5-Umstellung mitten im Bau): gesamte App + Hilfsfiles vom besten Modell prüfen lassen.
+7 Review-Agents gestartet → **ALLE 7 sofort ins accountweite Session-Limit (Reset 19:00), 0 Ergebnisse.**
+**→ In frischer Session ≥19:00 neu starten. Vollständiger Auftrag + 8 Agent-Prompts + Triage-Regeln:
+`.planning/AUDIT-2026-07-03-PLAN.md`.** (8. Agent = Doku/Hilfsfiles war noch nicht gestartet.)
+CLAUDE.md Header-Zeile Vue2.7→3.5.32 bereits gefixt. v5.2.0 selbst = fertig+getaggt (nichts offen dadurch).
+Build-Artefakte im Stash `stash@{0}` (regenerierbar, kein Verlust).
