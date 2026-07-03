@@ -76,7 +76,8 @@ class PublicVerifyControllerTest extends TestCase {
             $this->createMock(CertKeyMapper::class),
             $this->createMock(SigningService::class),
             $this->createMock(KeyService::class),
-            $this->createMock(ITimeFactory::class)
+            $this->createMock(ITimeFactory::class),
+            $this->createMock(\OCP\IConfig::class)
         );
 
         $resp = $this->makeController($service)->verify(self::MALFORMED);

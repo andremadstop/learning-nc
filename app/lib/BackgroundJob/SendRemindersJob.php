@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\BackgroundJob;
 
+use OCA\Learning\Service\RecertReminderService;
 use OCA\Learning\Service\ReminderService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
@@ -10,16 +11,19 @@ use Psr\Log\LoggerInterface;
 
 class SendRemindersJob extends TimedJob {
     private ReminderService $reminderService;
+    private RecertReminderService $recertReminderService;
     private LoggerInterface $logger;
 
     public function __construct(
         ITimeFactory $time,
         ReminderService $reminderService,
+        RecertReminderService $recertReminderService,
         LoggerInterface $logger
     ) {
         parent::__construct($time);
         $this->setInterval(3600);
         $this->reminderService = $reminderService;
+        $this->recertReminderService = $recertReminderService;
         $this->logger = $logger;
     }
 
@@ -28,6 +32,7 @@ class SendRemindersJob extends TimedJob {
         $dueSent = 0;
         $streakSent = 0;
         $examSent = 0;
+        $recertSent = 0;
 
         try {
             $examSent = $this->reminderService->sendExamReminders();
@@ -47,6 +52,17 @@ class SendRemindersJob extends TimedJob {
                     'app' => 'learning',
                 ]);
             }
+
+            // RECERT-06: T-30/T-7 cert-expiry reminders — daily alongside the due reminders.
+            // Idempotent via UNIQUE(cert_id, threshold_days), so re-runs/crash-retries are safe.
+            try {
+                $recertSent = $this->recertReminderService->sendRecertReminders();
+            } catch (\Throwable $e) {
+                $this->logger->warning('SendRemindersJob: recert reminders failed: {error}', [
+                    'error' => $e->getMessage(),
+                    'app' => 'learning',
+                ]);
+            }
         }
 
         if ($hour === 20) {
@@ -60,11 +76,12 @@ class SendRemindersJob extends TimedJob {
             }
         }
 
-        $this->logger->info('SendRemindersJob: hour={hour} due={due} streak={streak} exam={exam}', [
+        $this->logger->info('SendRemindersJob: hour={hour} due={due} streak={streak} exam={exam} recert={recert}', [
             'hour' => $hour,
             'due' => $dueSent,
             'streak' => $streakSent,
             'exam' => $examSent,
+            'recert' => $recertSent,
             'app' => 'learning',
         ]);
     }

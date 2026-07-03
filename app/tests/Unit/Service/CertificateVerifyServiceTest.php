@@ -166,12 +166,19 @@ class CertificateVerifyServiceTest extends TestCase {
         KeyService $keyService,
         ITimeFactory $time
     ): CertificateVerifyService {
+        // getAppValue echoes the passed-in default so deriveLifecycleState computes with the
+        // shipped ConfigDefaults (grace 14d) — an unstubbed mock would return '' → grace 0.
+        $config = $this->createMock(\OCP\IConfig::class);
+        $config->method('getAppValue')->willReturnCallback(
+            static fn (string $app, string $key, string $default = ''): string => $default
+        );
         return new CertificateVerifyService(
             $certMapper,
             $keyMapper,
             new SigningService($keyService),
             $keyService,
-            $time
+            $time,
+            $config
         );
     }
 
@@ -530,5 +537,81 @@ class CertificateVerifyServiceTest extends TestCase {
             array_keys($result),
             'valid DTO exposes ONLY the allow-listed public fields'
         );
+    }
+
+    // ---- RECERT-01/03 lifecycle states + DSGVO-03 anonymized branch (164-06) ---------------
+
+    /**
+     * RECERT-01/03: deriveLifecycleState classifies against a pinned clock with the shipped
+     * grace (14d) and reminder window (30d):
+     *   valid    — expiry far away (or never expires)
+     *   expiring — within 30d before expiry, not yet expired (dashboard banner window)
+     *   expired  — past expiry, still inside the 14d grace window
+     *   overdue  — past expiry AND past grace (RECERT-03; the daily job closes these periods)
+     * NOTE: plan interfaces block is authoritative — 'overdue' is the POST-grace state
+     * (ConfigDefaults: "grace period ... before status flips to overdue"); the stale comment in
+     * RecertL10n.test.js has the two labels swapped.
+     */
+    public function testDeriveLifecycleStates(): void {
+        $service = $this->buildService(
+            $this->createMock(CertificateMapper::class),
+            $this->createMock(CertKeyMapper::class),
+            $this->keyServiceWith(),
+            $this->timeAt(self::NOW)
+        );
+        $now = self::NOW;
+
+        $mk = function (?int $expiresAt, ?int $anonymizedAt = null): Certificate {
+            $cert = new Certificate();
+            $cert->setExpiresAt($expiresAt);
+            $cert->setAnonymizedAt($anonymizedAt);
+            return $cert;
+        };
+
+        $this->assertSame('valid', $service->deriveLifecycleState($mk(null), $now),
+            'no expiry → no recert lifecycle → valid');
+        $this->assertSame('valid', $service->deriveLifecycleState($mk($now + 60 * 86400), $now),
+            'expiry beyond the 30d reminder window → valid');
+        $this->assertSame('expiring', $service->deriveLifecycleState($mk($now + 20 * 86400), $now),
+            '20d before expiry = inside the 30d reminder window → expiring');
+        $this->assertSame('expiring', $service->deriveLifecycleState($mk($now + 5 * 86400), $now),
+            '5d before expiry (inside T-7) → still expiring, not expired');
+        $this->assertSame('expired', $service->deriveLifecycleState($mk($now - 5 * 86400), $now),
+            '5d past expiry = inside the 14d grace → expired');
+        $this->assertSame('overdue', $service->deriveLifecycleState($mk($now - 20 * 86400), $now),
+            '20d past expiry = beyond the 14d grace → overdue (RECERT-03)');
+        $this->assertSame('anonymized', $service->deriveLifecycleState($mk(null, $now - 100), $now),
+            'tombstone wins over any date math');
+    }
+
+    /**
+     * DSGVO-03 (load-bearing): an anonymized cert (anonymized_at set, credential_json SCRUBBED)
+     * must return the defined 'anonymized' status from verifyByVerificationId — decided BEFORE
+     * any key/signature work, so the scrubbed (non-JWT) credential can never 500 the public
+     * route. No DTO fields: everything payload-derived is gone by design.
+     */
+    public function testAnonymizedReadsDefinedState(): void {
+        // Deliberately NOT a JWT — the RetentionJob scrubs credential_json.
+        $cert = $this->certificate(self::VID, 'SCRUBBED', self::KEY_ID, false, null, self::NOW - 90 * 86400);
+        $cert->setAnonymizedAt(self::NOW - 86400);
+
+        // Key mapper mock stays unstubbed-strict: if the anonymized branch leaked past the
+        // tombstone check into key resolution, findByKeyId would return null → TypeError.
+        $keyMapper = $this->createMock(CertKeyMapper::class);
+        $keyMapper->expects($this->never())->method('findByKeyId');
+
+        $service = $this->buildService(
+            $this->certMapperFor($cert),
+            $keyMapper,
+            $this->keyServiceWith(),
+            $this->timeAt(self::NOW)
+        );
+
+        $result = $service->verifyByVerificationId(self::VID);
+
+        $this->assertSame('anonymized', $result['status'],
+            'tombstone must read a DEFINED status — never invalid, never a 500');
+        $this->assertSame(['status'], array_keys($result),
+            'anonymized result carries NO DTO fields (payload is scrubbed by design)');
     }
 }

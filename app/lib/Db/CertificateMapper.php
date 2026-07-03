@@ -68,6 +68,27 @@ class CertificateMapper extends QBMapper {
     }
 
     /**
+     * Reminder-window query (RECERT-06, 164-06): the ACTIVE certs (still own their idem slot,
+     * not revoked, not anonymized) whose expiry falls inside (after, before] — i.e. certs that
+     * are approaching expiry but not yet expired. user-facing reminders only ever target the
+     * CURRENT period's cert; closed/superseded certs (active_idem_key NULL) never remind.
+     *
+     * @return Certificate[]
+     */
+    public function findActiveExpiringBetween(int $after, int $before): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('*')
+           ->from($this->getTableName())
+           ->where($qb->expr()->eq('revoked', $qb->createNamedParameter(false, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)))
+           ->andWhere($qb->expr()->isNotNull('active_idem_key'))
+           ->andWhere($qb->expr()->isNull('anonymized_at'))
+           ->andWhere($qb->expr()->isNotNull('expires_at'))
+           ->andWhere($qb->expr()->gt('expires_at', $qb->createNamedParameter($after, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
+           ->andWhere($qb->expr()->lte('expires_at', $qb->createNamedParameter($before, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));
+        return $this->findEntities($qb);
+    }
+
+    /**
      * Owner-scoped compliance-report query (156-01): the non-revoked certificates of one course,
      * newest first, with optional server-side filtering. TIME-FREE by design — the caller (service)
      * owns the clock and passes an ABSOLUTE unix cutoff for the expiry window, so this mapper stays

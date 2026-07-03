@@ -97,6 +97,26 @@ class Notifier implements INotifier {
                 $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
                 break;
 
+            case 'recert_reminder':
+                // RECERT-06: T-30/T-7 cert-expiry reminder. msgids are the canonical l10n keys
+                // from RecertL10n.test.js — 164-07 fills all 5 languages (incl. en).
+                // recert_reminder_subject params: %1$s = days left, %2$s = course title.
+                // recert_reminder_body    params: %1$s = course title, %2$s = expiry date.
+                $params = $notification->getSubjectParameters();
+                $courseTitle = (string)($params['course_title'] ?? '');
+                $daysLeft = (string)(int)($params['days_left'] ?? 0);
+                $expiresAt = $params['expires_at'] ?? null;
+                $expiresDate = is_numeric($expiresAt) ? date('Y-m-d', (int)$expiresAt) : '';
+                $notification->setParsedSubject(
+                    $l->t('recert_reminder_subject', [$daysLeft, $courseTitle])
+                );
+                $notification->setParsedMessage(
+                    $l->t('recert_reminder_body', [$courseTitle, $expiresDate])
+                );
+                $notification->setLink($appUrl);
+                $notification->setIcon($this->urlGenerator->getAbsoluteURL($this->urlGenerator->imagePath('learning', 'app.svg')));
+                break;
+
             default:
                 throw new UnknownNotificationException('Unknown subject');
         }

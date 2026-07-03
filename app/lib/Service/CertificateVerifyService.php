@@ -3,11 +3,13 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\AppInfo\ConfigDefaults;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertKeyMapper;
 use OCA\Learning\Db\CertificateMapper;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
 
 /**
  * CertificateVerifyService — the cryptographic verification core of the public verify route
@@ -45,19 +47,22 @@ class CertificateVerifyService {
     private SigningService $signingService;
     private KeyService $keyService;
     private ITimeFactory $timeFactory;
+    private IConfig $config;
 
     public function __construct(
         CertificateMapper $certificateMapper,
         CertKeyMapper $certKeyMapper,
         SigningService $signingService,
         KeyService $keyService,
-        ITimeFactory $timeFactory
+        ITimeFactory $timeFactory,
+        IConfig $config
     ) {
         $this->certificateMapper = $certificateMapper;
         $this->certKeyMapper = $certKeyMapper;
         $this->signingService = $signingService;
         $this->keyService = $keyService;
         $this->timeFactory = $timeFactory;
+        $this->config = $config;
     }
 
     /**
@@ -65,6 +70,7 @@ class CertificateVerifyService {
      *
      * Status precedence (LOCKED):
      *   not found                                              → 'unknown'
+     *   anonymized_at !== null (DSGVO tombstone)               → 'anonymized' (BEFORE sig work)
      *   key unresolved | key revoked | wrong key length | sig fail | claim mismatch | bad payload
      *                                                          → 'invalid'
      *   revoked                                                → 'withdrawn' (+ revoked_at)
@@ -78,6 +84,15 @@ class CertificateVerifyService {
             $cert = $this->certificateMapper->findByVerificationId($vid);
         } catch (DoesNotExistException $e) {
             return ['status' => 'unknown'];
+        }
+
+        // DSGVO-03 tombstone (RECERT/164-06): a crypto-erased cert has its credential_json
+        // scrubbed and user_id nulled — signature verification would inevitably fail on garbage.
+        // Return the defined 'anonymized' status BEFORE any key/signature work; the public route
+        // renders a neutral "record no longer available" banner. NO DTO: every payload-derived
+        // field is gone by design, and nothing PII-adjacent may be reconstructed here.
+        if ($cert->getAnonymizedAt() !== null) {
+            return ['status' => 'anonymized'];
         }
 
         // Resolve the key that SIGNED this cert (rotation correctness: NOT the active key).
@@ -131,24 +146,46 @@ class CertificateVerifyService {
     }
 
     /**
-     * Derived lifecycle state seam (RECERT-01/03) — frozen in Wave 2 (164-02), implemented in Wave 4 (164-04).
+     * Derived lifecycle state (RECERT-01/03) — implemented in 164-06.
      *
      * Computes a richer lifecycle label layered on top of verifyByVerificationId's base status:
-     *   'valid'     — cert not yet in its recert window
-     *   'expiring'  — within RECERT_GRACE_DAYS_DEFAULT of expiry (reminder window)
-     *   'overdue'   — past due but still in grace period (obligation period overdue)
-     *   'expired'   — past expiry without renewal
+     *   'anonymized' — DSGVO tombstone (anonymized_at set); checked first, no date math
+     *   'valid'      — cert not yet in its recert window (or never expires)
+     *   'expiring'   — within the reminder window (max(RECERT_REMINDER_THRESHOLDS) = 30 days)
+     *                  before expiry, not yet expired (RECERT-01 dashboard banner)
+     *   'expired'    — past expiry, still inside the recert_grace_days window
+     *   'overdue'    — past expiry AND past the grace window (RECERT-03: the obligation is
+     *                  overdue; the daily RecertPeriodCloseJob closes exactly these periods)
      *
-     * This method is the presentation-layer bridge between the base cryptographic status (verifyByVerificationId)
-     * and the recert-workflow UI states (RECERT-01: "approaching expiry" dashboard banner).
+     * This method is the presentation-layer bridge between the base cryptographic status
+     * (verifyByVerificationId) and the recert-workflow UI states.
      *
-     * Do NOT change verifyByVerificationId() to call this — it is a separate concern (immutable verify
-     * status precedence must stay locked).
-     *
-     * @return string always 'valid' at Wave 2 (stub); returns computed state in 164-04
+     * Do NOT change verifyByVerificationId() to call this — it is a separate concern (immutable
+     * verify status precedence must stay locked; only the anonymized tombstone short-circuits
+     * there, independently of this method).
      */
     public function deriveLifecycleState(Certificate $cert, int $now): string {
-        return 'valid'; // stub — real lifecycle computation wired in 164-04
+        if ($cert->getAnonymizedAt() !== null) {
+            return 'anonymized';
+        }
+        $exp = $cert->getExpiresAt();
+        if ($exp === null) {
+            return 'valid'; // never expires — no recert lifecycle
+        }
+        $graceDays = (int)$this->config->getAppValue(
+            'learning', 'recert_grace_days', ConfigDefaults::RECERT_GRACE_DAYS_DEFAULT
+        );
+        if ($now > $exp + $graceDays * 86400) {
+            return 'overdue';
+        }
+        if ($now > $exp) {
+            return 'expired';
+        }
+        $windowDays = max(ConfigDefaults::RECERT_REMINDER_THRESHOLDS);
+        if ($now >= $exp - $windowDays * 86400) {
+            return 'expiring';
+        }
+        return 'valid';
     }
 
     /**

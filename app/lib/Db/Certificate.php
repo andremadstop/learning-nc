@@ -31,6 +31,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setActiveIdemKey(?string $activeIdemKey)
  * @method int|null getRevokedAt()
  * @method void setRevokedAt(?int $revokedAt)
+ * @method int|null getAnonymizedAt()
+ * @method void setAnonymizedAt(?int $anonymizedAt)
  */
 class Certificate extends Entity implements \JsonSerializable {
     protected $verificationId;
@@ -53,6 +55,13 @@ class Certificate extends Entity implements \JsonSerializable {
      * DTO is projected server-side in 157-02, never via this serializer.
      */
     protected $revokedAt;
+    /**
+     * DSGVO-03 retention tombstone (Version009600). NULL = live record; unix seconds = crypto-
+     * erased (credential_json scrubbed, user_id nulled by the RetentionJob). Verify returns a
+     * defined 'anonymized' status for tombstones BEFORE any signature work — the scrubbed
+     * credential must never 500 the public route. Not exposed in jsonSerialize().
+     */
+    protected $anonymizedAt;
 
     public function __construct() {
         $this->addType('id', 'integer');
@@ -66,6 +75,7 @@ class Certificate extends Entity implements \JsonSerializable {
         $this->addType('expiresAt', 'integer');
         $this->addType('activeIdemKey', 'string');
         $this->addType('revokedAt', 'integer');
+        $this->addType('anonymizedAt', 'integer');
     }
 
     /**
