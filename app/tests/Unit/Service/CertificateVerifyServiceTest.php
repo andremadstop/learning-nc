@@ -12,6 +12,8 @@ use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\CertificateVerifyService;
 use OCA\Learning\Service\KeyService;
 use OCA\Learning\Service\SigningService;
+use OCA\Learning\Tests\Support\FakeDbConnection;
+use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IDBConnection;
@@ -456,15 +458,20 @@ class CertificateVerifyServiceTest extends TestCase {
         $this->assertSame('valid', $preCl['status'],
             'PRE-close: cert with future expires_at must read "valid" before period is closed');
 
-        // Instantiate the real AssignmentService — closePeriod is the stub under test.
+        // Instantiate the real AssignmentService — closePeriod is the code under test (164-04).
+        // FakeDbConnection with 3 builders: one per DB write in closePeriod() —
+        //   builder 0: UPDATE learning_certificates (expires_at + active_idem_key)
+        //   builder 1: UPDATE learning_assignments (active_period_key → NULL)
+        //   builder 2: INSERT learning_assignments (fresh period row)
+        // FakeQueryBuilder.executeStatement() returns 0 (no UNIQUE throw) for all three.
         $assignmentService = new AssignmentService(
-            $this->createMock(IDBConnection::class),
+            new FakeDbConnection([new FakeQueryBuilder(), new FakeQueryBuilder(), new FakeQueryBuilder()]),
             $this->createMock(IGroupManager::class),
             $this->createMock(AuditService::class),
         );
 
-        // RED: throws LogicException('not implemented — 164-04') → test ERRORS here.
-        // Do NOT wrap in $this->expectException() — that makes the test GREEN now (wrong).
+        // GREEN in 164-04: closePeriod() executes the 3 writes without throwing.
+        // The SC2 assertions below become reachable.
         $assignmentService->closePeriod('user', 'jmueller', 7);
 
         // UNREACHABLE at Wave 2. After 164-04 implements closePeriod, these SC2 assertions run.

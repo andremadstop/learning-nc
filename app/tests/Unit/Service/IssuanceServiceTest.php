@@ -68,11 +68,13 @@ class IssuanceServiceTest extends TestCase {
         $this->key->setCreatedAt(1700000000);
     }
 
-    private function makeCourse(int $validityDays = 0): Course {
+    private function makeCourse(int $validityDays = 0, ?int $validityMonths = null): Course {
         $course = new Course();
         $course->setTitle('Security+ Kurs');
         $course->setDescription('Compliance-Grundlagen');
         $course->setCertValidityDays($validityDays);
+        // cert_validity_months drives computeExpiry() (164-04). Pass null to use the default (12).
+        $course->setCertValidityMonths($validityMonths);
         return $course;
     }
 
@@ -342,7 +344,9 @@ class IssuanceServiceTest extends TestCase {
 
     public function testCredentialIsSelfContainedWithValidUntilWhenExpiring(): void {
         $captured = null;
-        $service = $this->makeService(null, $this->makeCourse(validityDays: 365), $captured);
+        // 164-04: validity is now months-based via computeExpiry(). cert_validity_months=12 triggers
+        // a +12 months expiry; cert_validity_days is no longer the expiry driver.
+        $service = $this->makeService(null, $this->makeCourse(validityDays: 0, validityMonths: 12), $captured);
 
         $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult(score: 92, threshold: 80));
         $this->assertNotNull($captured);
@@ -354,24 +358,31 @@ class IssuanceServiceTest extends TestCase {
         $this->assertSame('Security+ Kurs', $payload['credentialSubject']['achievement']['name']);
         $this->assertStringContainsString('80', $payload['credentialSubject']['achievement']['criteria']['narrative']);
         $this->assertArrayHasKey('validFrom', $payload);
-        $this->assertArrayHasKey('validUntil', $payload, 'validUntil present when cert_validity_days>0');
+        $this->assertArrayHasKey('validUntil', $payload, 'validUntil present when cert_validity_months>0');
+        // DST-safe expected expiry: same DateTimeImmutable::modify() the service uses (RECERT-01/02).
+        $expectedExpiry = (new \DateTimeImmutable('@' . self::ISSUED_AT))
+            ->setTimezone(new \DateTimeZone(date_default_timezone_get()))
+            ->modify('+12 months')
+            ->getTimestamp();
         $this->assertSame(
-            self::ISSUED_AT + 365 * 86400,
+            $expectedExpiry,
             $cert->getExpiresAt(),
-            'expires_at = issued_at + cert_validity_days*86400',
+            'expires_at = issued_at + 12 months (DST-safe, via DateTimeImmutable::modify)',
         );
         $this->assertStringContainsString('92', json_encode($payload['credentialSubject']['result']));
     }
 
     public function testValidUntilOmittedWhenNoExpiry(): void {
         $captured = null;
-        $service = $this->makeService(null, $this->makeCourse(validityDays: 0), $captured);
+        // 164-04: cert_validity_months=0 → computeExpiry() returns null → no validUntil.
+        // cert_validity_days is no longer the no-expiry signal.
+        $service = $this->makeService(null, $this->makeCourse(validityDays: 0, validityMonths: 0), $captured);
 
         $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
         $this->assertNotNull($captured);
         $payload = $this->payloadOf($captured);
 
-        $this->assertArrayNotHasKey('validUntil', $payload, 'validUntil ABSENT when cert_validity_days=0');
+        $this->assertArrayNotHasKey('validUntil', $payload, 'validUntil ABSENT when cert_validity_months=0');
         $this->assertNull($cert->getExpiresAt());
     }
 

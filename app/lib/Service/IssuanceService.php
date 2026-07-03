@@ -6,6 +6,7 @@ namespace OCA\Learning\Service;
 use OCA\Learning\Db\CertKey;
 use OCA\Learning\Db\Certificate;
 use OCA\Learning\Db\CertificateMapper;
+use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IDBConnection;
@@ -99,8 +100,10 @@ class IssuanceService {
         $course = $this->courseMapper->findById($courseId);
 
         $issuedAt = $this->timeFactory->getTime();
-        $validityDays = $course->getCertValidityDays() ?? 0;
-        $expiresAt = $validityDays > 0 ? $issuedAt + $validityDays * 86400 : null;
+        // DST-safe expiry via cert_validity_months (RECERT-01, 164-04). Replaces the old
+        // +validityDays*86400 formula. Override arg is null here (override is per-assignment;
+        // issueIfPassed is the self-enrolled / direct path).
+        $expiresAt = $this->computeExpiry($issuedAt, $course, null);
         $verificationId = $this->uuidv4();
         $recipientName = $this->resolveDisplayName($userId);
 
@@ -205,10 +208,10 @@ class IssuanceService {
         $course = $this->courseMapper->findById($courseId);
 
         $issuedAt = $this->timeFactory->getTime();
-        $validityDays = $course->getCertValidityDays() ?? 0;
-        // NOTE (164-04 Task 2): expiry uses cert_validity_days temporarily.
-        // Task 3 replaces this with computeExpiry() (DST-safe months-based arithmetic).
-        $expiresAt = $validityDays > 0 ? $issuedAt + $validityDays * 86400 : null;
+        // DST-safe expiry via cert_validity_months (RECERT-01, 164-04). Override arg is null
+        // here; recertification override months live in the assignment row and are wired via
+        // AssignmentService when closePeriod triggers a fresh issuance.
+        $expiresAt = $this->computeExpiry($issuedAt, $course, null);
         $verificationId = $this->uuidv4();
         $recipientName = $this->resolveDisplayName($userId);
 
@@ -276,23 +279,28 @@ class IssuanceService {
     }
 
     /**
-     * DST-safe expiry seam (RECERT-01/02) — frozen in Wave 2 (164-02), implemented in Wave 4 (164-04).
+     * DST-safe expiry computation (RECERT-01/02) — implemented in Wave 4 (164-04).
      *
-     * Computes the unix expiry timestamp from the issue time, the per-course cert_validity_months
-     * column (from the 164-01 Version009600 migration), and an optional per-assignment override in months.
+     * Validity in months = per-assignment override ?? course.cert_validity_months ?? 12.
+     * months <= 0 → null (no expiry).
      *
-     * Implementation MUST use DateTimeImmutable::modify('+N months') — NEVER +N*86400. The naive
+     * MUST use DateTimeImmutable::modify('+N months') — NEVER +N*86400. The naive
      * seconds formula diverges by 3600s across a DST boundary (e.g. issuing on 2026-03-29 in
-     * Europe/Berlin yields 2027-03-28T23:00Z via +365*86400 but 2027-03-28T22:00Z via +12 months).
+     * Europe/Berlin yields a different timestamp via +365*86400 vs +12 months).
      *
-     * This private seam replaces the existing `$issuedAt + $validityDays * 86400` line (line ~103).
-     * That line stays intact until 164-04 wires this method in.
-     *
-     * @throws \LogicException until 164-04 implements DST-safe date math
+     * Uses the server's configured timezone (date_default_timezone_get()) so that the expiry
+     * wall-clock time is stable across DST transitions for the server locale.
      */
-    // @phpstan-ignore-next-line (unused private: wired in 164-04)
-    private function computeExpiry(int $issuedAt, int $courseId, ?int $assignmentOverrideMonths): ?int {
-        throw new \LogicException('not implemented — 164-04');
+    private function computeExpiry(int $issuedAt, Course $course, ?int $assignmentOverrideMonths): ?int {
+        $months = $assignmentOverrideMonths ?? $course->getCertValidityMonths() ?? 12;
+        if ($months <= 0) {
+            return null;
+        }
+        $tz = new \DateTimeZone(date_default_timezone_get());
+        return (new \DateTimeImmutable('@' . $issuedAt))
+            ->setTimezone($tz)
+            ->modify('+' . $months . ' months')
+            ->getTimestamp();
     }
 
     /**

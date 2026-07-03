@@ -50,6 +50,8 @@ use OCP\AppFramework\Db\Entity;
  * @method void setCertRequiredPoolIds(?string $certRequiredPoolIds)
  * @method int|null getCertValidityDays()
  * @method void setCertValidityDays(int $certValidityDays)
+ * @method int|null getCertValidityMonths()
+ * @method void setCertValidityMonths(?int $certValidityMonths)
  * @method bool|null getVideoGateEnabled()
  * @method void setVideoGateEnabled(bool $videoGateEnabled)
  */
@@ -76,6 +78,7 @@ class Course extends Entity {
     protected $certPassPercent;
     protected $certRequiredPoolIds;
     protected $certValidityDays;
+    protected $certValidityMonths;
     protected $videoGateEnabled;
 
     public function __construct() {
@@ -91,6 +94,7 @@ class Course extends Entity {
         $this->addType('certPassPercent', 'integer');
         $this->addType('certRequiredPoolIds', 'text');
         $this->addType('certValidityDays', 'integer');
+        $this->addType('certValidityMonths', 'integer');
         $this->addType('videoGateEnabled', 'boolean');
     }
 

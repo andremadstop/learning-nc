@@ -118,22 +118,93 @@ class AssignmentService {
     /**
      * Close the active assignment period for a subject, ending the obligation cycle.
      *
-     * Closes the period by nulling active_period_key and active_idem_key on the assignment row
-     * so that the UNIQUE slot is freed for the NEXT period, without deleting the history row.
+     * Write-set (RECERT-04, 164-04 corrected design — 4 logical writes, 3 DB round-trips):
+     *   1+2 (single UPDATE on learning_certificates): set expires_at = now-1 so the old
+     *        verify URL reads 'expired' (revoked=false, expires_at<now → 'expired' per
+     *        CertificateVerifyService precedence: invalid→withdrawn→expired→valid), AND set
+     *        active_idem_key = NULL to free the cert-level UNIQUE slot for the next-period cert
+     *        insert. WHERE active_idem_key = "{subjectId}:{courseId}" (matches IssuanceService).
+     *        NOTE: active_idem_key lives on learning_CERTIFICATES, NOT learning_assignments.
+     *   3.   UPDATE learning_assignments SET active_period_key = NULL WHERE active_period_key =
+     *        "{courseId}:{subjectType}:{subjectId}" — frees the assignment UNIQUE slot.
+     *   4.   INSERT a fresh assignment row (same period key, status='assigned') — opens the new
+     *        recertification period. A second closePeriod() call hits the assignment UNIQUE
+     *        constraint on this INSERT → caught → idempotent return (SC3).
      *
-     * SC2 INVARIANT — MUST NOT set revoked=true or revoked_at:
-     *   The old cert URL (verifyByVerificationId) reads 'expired' AFTER period-close because
-     *   expires_at < now with revoked=false falls through to the 'expired' branch in
-     *   CertificateVerifyService (precedence: invalid → withdrawn → expired → valid).
-     *   If revoked were set to true, the old URL would read 'withdrawn' instead, which breaks
-     *   the immutable-history guarantee. Period-close is NOT a punitive revoke.
+     * SC2 INVARIANT — MUST NOT set revoked=true or revoked_at: revoked=true would make the old
+     * verify URL read 'withdrawn' (punitive-revoke status) instead of 'expired'. Period-close is
+     * a structural lifecycle event, NOT a punitive administrative action.
      *
-     * The close is audited via AuditService::logComplianceEvent (NOT via cert.revoked_at).
+     * GROUP ASSIGNMENTS: markPassed/Branch-B/getStates operate on subject_type='user' rows only.
+     * For group-originated obligations the RecertPeriodCloseJob calls closePeriod per-member
+     * (expandGroup → one call per member uid with subjectType='user'), so one member's period
+     * state is isolated from all other members.
      *
-     * @throws \LogicException until 164-04 implements the period-close + audit logic
+     * Audit: logComplianceEvent(PERIOD_CLOSED) — facts only (course_id, subject_type,
+     * period_key, closed_at); NO PII in context_json.
      */
     public function closePeriod(string $subjectType, string $subjectId, int $courseId): void {
-        throw new \LogicException('not implemented — 164-04');
+        // The cert's UNIQUE slot value (mirrors IssuanceService::issueIfPassed/issueIfPassedResult)
+        $idemKey   = "{$subjectId}:{$courseId}";
+        // The assignment's UNIQUE slot value (mirrors createAssignment)
+        $periodKey = "{$courseId}:{$subjectType}:{$subjectId}";
+        $now       = time();
+
+        // Write 1+2: expire the cert AND free the cert-level UNIQUE slot (single UPDATE).
+        // expires_at = now-1 → CertificateVerifyService reads 'expired' (revoked=false,
+        // expires_at < now). active_idem_key = NULL → slot freed for next-period cert INSERT.
+        $qb = $this->db->getQueryBuilder();
+        $qb->update('learning_certificates')
+            ->set('expires_at',     $qb->createNamedParameter($now - 1, IQueryBuilder::PARAM_INT))
+            ->set('active_idem_key', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+            ->where($qb->expr()->eq(
+                'active_idem_key',
+                $qb->createNamedParameter($idemKey)
+            ));
+        $qb->executeStatement();
+
+        // Write 3: free the assignment-level UNIQUE slot so the INSERT below can use the same key.
+        $qb2 = $this->db->getQueryBuilder();
+        $qb2->update('learning_assignments')
+            ->set('active_period_key', $qb2->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+            ->where($qb2->expr()->eq(
+                'active_period_key',
+                $qb2->createNamedParameter($periodKey)
+            ));
+        $qb2->executeStatement();
+
+        // Write 4: open a fresh obligation period with the same key so the subject can be
+        // recertified. Idempotency: a second closePeriod() call (writes 1-3 are no-ops for
+        // NULLed rows) hits the assignment UNIQUE constraint here → caught → clean return.
+        $qb3 = $this->db->getQueryBuilder();
+        $qb3->insert('learning_assignments')
+            ->values([
+                'course_id'         => $qb3->createNamedParameter($courseId, IQueryBuilder::PARAM_INT),
+                'subject_type'      => $qb3->createNamedParameter($subjectType),
+                'subject_id'        => $qb3->createNamedParameter($subjectId),
+                'assigned_by'       => $qb3->createNamedParameter('system'),
+                'assigned_at'       => $qb3->createNamedParameter($now, IQueryBuilder::PARAM_INT),
+                'due_date'          => $qb3->createNamedParameter(null, IQueryBuilder::PARAM_NULL),
+                'status'            => $qb3->createNamedParameter('assigned'),
+                'active_period_key' => $qb3->createNamedParameter($periodKey),
+            ]);
+        try {
+            $qb3->executeStatement();
+        } catch (\OCP\DB\Exception $e) {
+            if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+                return; // period already re-opened by a concurrent or repeated call — idempotent
+            }
+            throw $e;
+        }
+
+        // Audit: compliance event after all writes succeed.
+        // Subject = subjectId (the NC user UID or group GID — not PII when it's a UID).
+        $this->auditService->logComplianceEvent(ComplianceEventTypes::PERIOD_CLOSED, $subjectId, [
+            'course_id'    => $courseId,
+            'subject_type' => $subjectType,
+            'period_key'   => $periodKey,
+            'closed_at'    => $now,
+        ]);
     }
 
     /**

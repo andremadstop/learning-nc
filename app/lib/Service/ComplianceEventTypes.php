@@ -18,6 +18,8 @@ final class ComplianceEventTypes {
     public const COURSE_PASSED   = 'course.passed';
     public const CERT_ISSUED     = 'cert.issued';
     public const CERT_REVOKED    = 'cert.revoked';
+    // Phase 164 (AssignmentService::closePeriod emits this event)
+    public const PERIOD_CLOSED   = 'cert.period.closed';
     // Defined here for Phase 162 (VideoProgressService emits this event)
     public const VIDEO_COMPLETED = 'course.video.completed';
 
