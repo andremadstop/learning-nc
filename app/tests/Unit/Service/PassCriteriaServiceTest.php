@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace OCA\Learning\Tests\Unit\Service;
 
 use OCA\Learning\Db\Certificate;
+use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\Course;
 use OCA\Learning\Db\CourseMapper;
+use OCA\Learning\Service\AssignmentService;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\ComplianceAuditException;
 use OCA\Learning\Service\ComplianceEventTypes;
@@ -56,7 +58,9 @@ class PassCriteriaServiceTest extends TestCase {
         ?array $masteryStats,
         array $builders,
         AuditService $audit,
-        ?IssuanceService $issuance = null
+        ?IssuanceService $issuance = null,
+        ?CertificateMapper $certMapper = null,
+        ?AssignmentService $assignmentService = null,
     ): PassCriteriaService {
         $courseMapper = $this->createMock(CourseMapper::class);
         $courseMapper->method('findById')->willReturn($course);
@@ -68,17 +72,39 @@ class PassCriteriaServiceTest extends TestCase {
         }
 
         $db = new FakeDbConnection($builders);
-        $issuance = $issuance ?? $this->createMock(IssuanceService::class);
+
+        // Default certMapper: no cert ever issued → Branch A → mayIssue=true.
+        if ($certMapper === null) {
+            $certMapper = $this->createMock(CertificateMapper::class);
+            $certMapper->method('findByUserAndCourse')->willReturn(null);
+        }
+
+        // Default assignmentService: no open period → Branch B false (Branch A covers it anyway).
+        if ($assignmentService === null) {
+            $assignmentService = $this->createMock(AssignmentService::class);
+            $assignmentService->method('getStatesForCourseAndUsers')->willReturn([]);
+        }
+
+        // Default issuance: returns IssueResult(cert, wasCreated=true) so emit fires in passing tests.
+        if ($issuance === null) {
+            $issuance = $this->createMock(IssuanceService::class);
+            $issuance->method('issueIfPassedResult')
+                ->willReturn(new IssueResult(new Certificate(), true));
+        }
+
         $logger = $this->createMock(LoggerInterface::class);
-        return new PassCriteriaService($courseMapper, $summary, $audit, $db, $issuance, $logger);
+        return new PassCriteriaService($courseMapper, $summary, $audit, $db, $issuance, $logger, $certMapper, $assignmentService);
     }
 
-    /** Builds the two SELECT result builders a single passing evaluate() consumes. */
+    /**
+     * Builds the single SELECT result builder a passing evaluate() consumes.
+     * 164-04: emit is gated on issueIfPassedResult.wasCreated, NOT on findPassEvent dedup.
+     * Only getPassedAt() queries the DB now — one builder per passing evaluate() call.
+     */
     private function passingBuilders(int $passedAt = 1700000000): array {
         $existingRow = ['context_json' => json_encode(['course_id' => self::COURSE_ID, 'passed_at' => $passedAt])];
         return [
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),          // emitPassEventIfFirst dedup: none → fires
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [$existingRow])), // getPassedAt: returns the row
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [$existingRow])), // getPassedAt
         ];
     }
 
@@ -170,22 +196,32 @@ class PassCriteriaServiceTest extends TestCase {
             'PassCriteriaService must not reference ReadinessService — FSRS readiness is orthogonal to pass evaluation');
     }
 
-    // PASS-07: first qualification writes exactly one audit event; second evaluate() does not duplicate it
+    // PASS-07: first qualification emits exactly one audit event; second evaluate() does not duplicate it
     public function testEmitsPassEventOnlyOnFirstQualification(): void {
         $audit = $this->createMock(AuditService::class);
         $audit->expects($this->once())->method('logComplianceEvent');
 
         $existingRow = ['context_json' => json_encode(['course_id' => self::COURSE_ID, 'passed_at' => 1700000000])];
         $builders = [
-            // call 1: dedup empty → fires; getPassedAt returns the row
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),
+            // call 1: getPassedAt returns the existing row (emit written by issuance)
             new FakeQueryBuilder(new FakeResult(fetchQueue: [$existingRow])),
-            // call 2: dedup finds the existing row → no second logEvent; getPassedAt returns the row
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [$existingRow])),
+            // call 2: getPassedAt returns the existing row (mayIssue=false, no emit)
             new FakeQueryBuilder(new FakeResult(fetchQueue: [$existingRow])),
         ];
 
-        $service = $this->makeService($this->makeCourse(true, 80), 90, null, $builders, $audit);
+        // 164-04 dedup mechanism: certMapper-based mayIssue.
+        // call 1: certMapper returns null → hasEverIssuedCertificate=false → mayIssue=true → emit fires
+        // call 2: certMapper returns cert → hasEverIssuedCertificate=true + no open period → mayIssue=false → no emit
+        $cert = new Certificate();
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->expects($this->exactly(2))->method('findByUserAndCourse')
+            ->willReturnOnConsecutiveCalls(null, $cert);
+
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->expects($this->once())->method('issueIfPassedResult')
+            ->willReturn(new IssueResult($cert, true));
+
+        $service = $this->makeService($this->makeCourse(true, 80), 90, null, $builders, $audit, $issuance, $certMapper);
 
         $first = $service->evaluate(self::USER, self::COURSE_ID);
         $second = $service->evaluate(self::USER, self::COURSE_ID);
@@ -220,15 +256,17 @@ class PassCriteriaServiceTest extends TestCase {
         $this->assertTrue($result->isPassed());
     }
 
-    // CERT-05: a first pass triggers exactly one IssuanceService::issueIfPassed() call, with the PassResult
+    // CERT-05: a first pass triggers exactly one IssuanceService::issueIfPassedResult() call, with the PassResult
     public function testEvaluateIssuesCredentialExactlyOnceOnPass(): void {
         $audit = $this->createMock(AuditService::class);
 
         $issuance = $this->createMock(IssuanceService::class);
-        $issuance->expects($this->once())->method('issueIfPassed')
+        // 164-04: evaluate() routes through issueIfPassedResult (not issueIfPassed)
+        $issuance->expects($this->once())->method('issueIfPassedResult')
             ->with(self::USER, self::COURSE_ID, $this->callback(
                 fn(PassResult $r): bool => $r->isPassed() && $r->getScore() === 88
-            ));
+            ))
+            ->willReturn(new IssueResult(new Certificate(), true));
 
         $service = $this->makeService($this->makeCourse(true, 80), 88, null, $this->passingBuilders(), $audit, $issuance);
         $result = $service->evaluate(self::USER, self::COURSE_ID);
@@ -241,7 +279,8 @@ class PassCriteriaServiceTest extends TestCase {
         $audit = $this->createMock(AuditService::class);
 
         $issuance = $this->createMock(IssuanceService::class);
-        $issuance->expects($this->never())->method('issueIfPassed');
+        // 164-04: evaluate() routes through issueIfPassedResult
+        $issuance->expects($this->never())->method('issueIfPassedResult');
 
         $service = $this->makeService($this->makeCourse(true, 80), 50, null, [], $audit, $issuance);
         $result = $service->evaluate(self::USER, self::COURSE_ID);
@@ -254,7 +293,8 @@ class PassCriteriaServiceTest extends TestCase {
         $audit = $this->createMock(AuditService::class);
 
         $issuance = $this->createMock(IssuanceService::class);
-        $issuance->method('issueIfPassed')
+        // 164-04: evaluate() routes through issueIfPassedResult
+        $issuance->method('issueIfPassedResult')
             ->willThrowException(new \RuntimeException('No active signing key'));
 
         $service = $this->makeService($this->makeCourse(true, 80), 95, null, $this->passingBuilders(), $audit, $issuance);
@@ -339,31 +379,34 @@ class PassCriteriaServiceTest extends TestCase {
     public function testRevokeNoAutoReissue(): void {
         $audit = $this->createMock(AuditService::class);
         // Student passed before (cert was issued), cert was then punitively revoked.
-        // The old COURSE_PASSED event deduplicates — no re-emit of the compliance event.
-        // That is expected; what is NOT expected is a new cert being issued.
+        // No new cert must be issued and no COURSE_PASSED must be emitted.
         $audit->expects($this->never())->method('logComplianceEvent');
 
         $issuance = $this->createMock(IssuanceService::class);
-        // RED: current evaluate() reaches this call unconditionally when passed=true.
-        // GREEN in 164-04: mayIssue() returns false (revoked cert, no active period) → skip.
-        $issuance->expects($this->never())->method('issueIfPassed');
+        // 164-04: mayIssue() returns false (revoked cert exists, no active period) → skip.
+        // GREEN: issueIfPassedResult is never called because mayIssue guards the entry.
+        $issuance->expects($this->never())->method('issueIfPassedResult');
 
-        // Existing COURSE_PASSED event → emitPassEventIfFirst deduplicates (no re-emit, expected).
-        // The student's score meets the threshold so $passed=true — the guard must decide, not the score.
+        // certMapper returns a punitively-revoked cert → hasEverIssuedCertificate=true → Branch A false.
+        // Default assignmentService returns no open period → Branch B false → mayIssue=false.
+        $revokedCert = new Certificate();
+        $revokedCert->setRevoked(true);
+        $certMapper = $this->createMock(CertificateMapper::class);
+        $certMapper->method('findByUserAndCourse')->willReturn($revokedCert);
+
+        // getPassedAt uses the first (and only) builder — returns passedAt from the existing event.
         $existingEvent = ['context_json' => json_encode(['course_id' => self::COURSE_ID, 'passed_at' => 1700000000])];
         $builders = [
-            // emitPassEventIfFirst: finds existing event → dedup → no logComplianceEvent
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [$existingEvent])),
-            // getPassedAt: returns the existing event
+            // getPassedAt: returns the existing event so passedAt is set
             new FakeQueryBuilder(new FakeResult(fetchQueue: [$existingEvent])),
         ];
 
-        $service = $this->makeService($this->makeCourse(true, 80), 92, null, $builders, $audit, $issuance);
+        $service = $this->makeService($this->makeCourse(true, 80), 92, null, $builders, $audit, $issuance, $certMapper);
         $result = $service->evaluate(self::USER, self::COURSE_ID);
 
-        // Score gate still passes — the guard (not the score) should block issuance.
+        // Score gate still passes — the union guard (not the score) blocks issuance.
         $this->assertTrue($result->isPassed());
-        // $issuance->expects(never()) is verified at teardown → RED now
+        // Both expects(never()) verified at teardown → GREEN in 164-04
     }
 
     /**
@@ -382,8 +425,8 @@ class PassCriteriaServiceTest extends TestCase {
      */
     public function testReCertNewRowOldUrlResolves(): void {
         $audit = $this->createMock(AuditService::class);
-        // New period MUST emit a fresh COURSE_PASSED event to trigger issuance.
-        // RED: current audit dedup blocks this (finds old event → 0 actual calls → fails).
+        // New period emits a fresh COURSE_PASSED event — gated on wasCreated=true.
+        // GREEN in 164-04: mayIssue=true (no cert) → issueIfPassedResult(wasCreated=true) → emit fires.
         $audit->expects($this->once())
             ->method('logComplianceEvent')
             ->with(
@@ -392,8 +435,8 @@ class PassCriteriaServiceTest extends TestCase {
                 $this->callback(fn(array $ctx): bool => ($ctx['course_id'] ?? null) === self::COURSE_ID)
             );
 
-        // Set up a new cert with a fresh verification_id (what IssuanceService would create
-        // in a new period after closePeriod nulled the old active_idem_key).
+        // New cert with a fresh verification_id — what IssuanceService creates in a new period
+        // after closePeriod nulled the old active_idem_key.
         $newCert = new Certificate();
         $newCert->setVerificationId('new-period-vid-00000001');
         $newCert->setUserId(self::USER);
@@ -401,15 +444,13 @@ class PassCriteriaServiceTest extends TestCase {
         $newCert->setRevoked(false);
 
         $issuance = $this->createMock(IssuanceService::class);
-        $issuance->expects($this->once())->method('issueIfPassed')->willReturn($newCert);
-        // Note: $issuance->expects(once()) IS satisfied by current code (always calls it).
-        // The audit->expects(once()) IS NOT satisfied (dedup → 0 calls) → RED.
+        // 164-04: route through issueIfPassedResult; wasCreated=true triggers the emit.
+        $issuance->expects($this->once())->method('issueIfPassedResult')
+            ->willReturn(new IssueResult($newCert, true));
 
-        // State: old COURSE_PASSED event exists from previous period.
+        // getPassedAt builder: returns old passed_at timestamp.
         $oldEventRow = ['context_json' => json_encode(['course_id' => self::COURSE_ID, 'passed_at' => 1700000000])];
         $builders = [
-            // emitPassEventIfFirst: finds old event → dedup → no COURSE_PASSED re-emit (RED)
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [$oldEventRow])),
             // getPassedAt: returns old event's timestamp
             new FakeQueryBuilder(new FakeResult(fetchQueue: [$oldEventRow])),
         ];
@@ -418,8 +459,8 @@ class PassCriteriaServiceTest extends TestCase {
         $result = $service->evaluate(self::USER, self::COURSE_ID);
 
         $this->assertTrue($result->isPassed());
-        // $audit->expects(once())->logComplianceEvent verified at teardown → RED now
-        // When GREEN: the new cert (distinct vid) proves a new Certificate row was created (RECERT-07)
+        // $audit->expects(once()) verified at teardown → GREEN in 164-04
+        // The new cert (distinct vid) proves a new Certificate row was created (RECERT-07)
     }
 
     /**
@@ -474,25 +515,26 @@ class PassCriteriaServiceTest extends TestCase {
                 $emittedWasCreated[] = $lastWasCreated;
             });
 
-        // Both concurrent requests find NO existing audit event (race window before either writes).
+        // markPassed is called exactly once — only by the wasCreated=true winner (r2).
+        $assignmentService = $this->createMock(AssignmentService::class);
+        $assignmentService->method('getStatesForCourseAndUsers')->willReturn([]);
+        $assignmentService->expects($this->once())->method('markPassed');
+
+        // Both concurrent requests find NO existing cert (both enter mayIssue=true via Branch A).
+        // After r1 (loser), the cert exists; r2 (winner) also passes Branch A (same certMapper mock).
         $builders = [
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),
-            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // r1: getPassedAt
+            new FakeQueryBuilder(new FakeResult(fetchQueue: [])),  // r2: getPassedAt
         ];
 
-        $service = $this->makeService($this->makeCourse(true, 80), 90, null, $builders, $audit, $issuance);
+        $service = $this->makeService($this->makeCourse(true, 80), 90, null, $builders, $audit, $issuance, null, $assignmentService);
 
         $r1 = $service->evaluate(self::USER, self::COURSE_ID);  // concurrent loser (resolves first)
         $r2 = $service->evaluate(self::USER, self::COURSE_ID);  // concurrent winner (resolves second)
 
         $this->assertTrue($r1->isPassed());
         $this->assertTrue($r2->isPassed());
-        // RED now on THREE counts: never(issueIfPassed) violated (current code calls it);
-        // exactly(2) issueIfPassedResult violated (0 calls today); and the single emit does not
-        // coincide with wasCreated=true. GREEN in 164-04: call issueIfPassedResult first, emit
-        // only when wasCreated=true.
+        // GREEN in 164-04: issueIfPassedResult(loser→false, winner→true); emit+markPassed only on winner.
         $this->assertSame([true], $emittedWasCreated,
             'COURSE_PASSED must be emitted exactly once, only on the wasCreated=true (winner) call');
     }
@@ -553,7 +595,8 @@ class PassCriteriaServiceTest extends TestCase {
         $audit = $this->createMock(AuditService::class);
 
         $issuance = $this->createMock(IssuanceService::class);
-        $issuance->method('issueIfPassed')
+        // 164-04: evaluate() routes through issueIfPassedResult
+        $issuance->method('issueIfPassedResult')
             ->willThrowException(new ComplianceAuditException('chain append failed'));
 
         $service = $this->makeService($this->makeCourse(true, 80), 95, null, $this->passingBuilders(), $audit, $issuance);

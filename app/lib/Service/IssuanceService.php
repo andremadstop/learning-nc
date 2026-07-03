@@ -185,22 +185,94 @@ class IssuanceService {
      * Like issueIfPassed() but returns an IssueResult that exposes WHETHER this call created
      * the certificate row (wasCreated=true) or deduped onto a concurrent winner (wasCreated=false).
      *
+     * Key differences from issueIfPassed():
+     *   1. NO !revoked pre-check: closePeriod() nulls active_idem_key to free the slot for a
+     *      new period. The UNIQUE constraint (active_idem_key) is the ONLY idempotency guard.
+     *   2. UNIQUE-constraint loser path returns wasCreated=false — the caller (PassCriteriaService)
+     *      uses this to skip the COURSE_PASSED emit (RECERT-06 concurrency guarantee).
+     *
      * PassCriteriaService uses wasCreated in 164-04 to decide whether to emit COURSE_PASSED:
      * only the WINNER emits; the UNIQUE-loser dedupes silently so no duplicate audit row appears.
-     *
-     * SKELETON (164-02): always returns wasCreated=true — does NOT yet distinguish the UNIQUE-loser
-     * path. The concurrency locking test (testConcurrentPassSingleEventAndCert) is genuinely RED
-     * against this skeleton. The loser path in issueIfPassed() (lines ~156-162) returns the winner
-     * cert verbatim but cannot set wasCreated=false here; that wiring happens in 164-04.
      */
     public function issueIfPassedResult(string $userId, int $courseId, PassResult $result): ?IssueResult {
-        $cert = $this->issueIfPassed($userId, $courseId, $result);
-        if ($cert === null) {
+        if (!$result->isPassed()) {
             return null;
         }
-        // Skeleton: wasCreated=true unconditionally — does NOT distinguish the UNIQUE-loser.
-        // The concurrent-pass test is RED against this (test expects the loser to return false).
-        return new IssueResult($cert, true);
+        // NO !revoked guard here (RECERT-05): closePeriod() nulls active_idem_key, freeing
+        // the UNIQUE slot. The INSERT below is the CAS gate — the winner inserts, the loser
+        // catches REASON_UNIQUE_CONSTRAINT_VIOLATION and returns wasCreated=false.
+
+        $course = $this->courseMapper->findById($courseId);
+
+        $issuedAt = $this->timeFactory->getTime();
+        $validityDays = $course->getCertValidityDays() ?? 0;
+        // NOTE (164-04 Task 2): expiry uses cert_validity_days temporarily.
+        // Task 3 replaces this with computeExpiry() (DST-safe months-based arithmetic).
+        $expiresAt = $validityDays > 0 ? $issuedAt + $validityDays * 86400 : null;
+        $verificationId = $this->uuidv4();
+        $recipientName = $this->resolveDisplayName($userId);
+
+        $credential = $this->buildCredential($verificationId, $courseId, $course, $result, $recipientName, $issuedAt, $expiresAt);
+
+        $material = $this->keyService->getActiveSigningMaterial();
+        /** @var CertKey $key */
+        $key = $material['key'];
+        try {
+            $jwt = $this->signingService->sign($credential, $key, $material['secret']);
+        } finally {
+            sodium_memzero($material['secret']);
+        }
+
+        $cert = new Certificate();
+        $cert->setVerificationId($verificationId);
+        $cert->setUserId($userId);
+        $cert->setCourseId($courseId);
+        $cert->setKeyId($key->getKeyId());
+        $cert->setCredentialJson($jwt);
+        $cert->setRevoked(false);
+        $cert->setIssuedAt($issuedAt);
+        $cert->setExpiresAt($expiresAt);
+        // CAS slot: the UNIQUE active_idem_key means only the first concurrent INSERT wins.
+        // closePeriod() nulls this field to open the slot for the next recertification period.
+        $cert->setActiveIdemKey($userId . ':' . $courseId);
+
+        $this->db->beginTransaction();
+        try {
+            $stored = $this->certificateMapper->insert($cert);
+            $this->auditService->logComplianceEvent(ComplianceEventTypes::CERT_ISSUED, $userId, [
+                'course_id'       => $courseId,
+                'verification_id' => $verificationId,
+            ]);
+            $this->db->commit();
+        } catch (\OCP\DB\Exception $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+                // UNIQUE-constraint loser: a concurrent winner already inserted the active cert.
+                // Re-fetch the winner and return wasCreated=false so the caller skips the emit.
+                $winner = $this->certificateMapper->findByUserAndCourse($userId, $courseId);
+                if ($winner !== null) {
+                    return new IssueResult($winner, false);
+                }
+            }
+            throw $e;
+        } catch (\Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e;
+        }
+
+        // Side effects after the atomic commit only — a rolled-back issuance must never notify.
+        $this->notify($userId, $verificationId, (string)$course->getTitle());
+        $this->logger->info('Issued certificate {vid} for user {user} course {course}', [
+            'vid'    => $verificationId,
+            'user'   => $userId,
+            'course' => $courseId,
+        ]);
+
+        return new IssueResult($stored, true);
     }
 
     /**

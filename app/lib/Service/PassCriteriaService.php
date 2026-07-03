@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Learning\Service;
 
+use OCA\Learning\Db\CertificateMapper;
 use OCA\Learning\Db\CourseMapper;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
@@ -30,6 +31,8 @@ class PassCriteriaService {
         private readonly IDBConnection $db,
         private readonly IssuanceService $issuanceService,
         private readonly LoggerInterface $logger,
+        private readonly CertificateMapper $certificateMapper,
+        private readonly AssignmentService $assignmentService,
     ) {}
 
     public function evaluate(string $userId, int $courseId): PassResult {
@@ -69,69 +72,50 @@ class PassCriteriaService {
         }
 
         $passed = $scoreMet && $poolsMastered;
-
         $passedAt = null;
+
         if ($passed) {
-            // PASS-07: emit on first qualification only (idempotency guard inside).
-            $this->emitPassEventIfFirst($userId, $courseId, (int)$score, $threshold);
+            // RECERT-05 union guard: only attempt issuance when the student is eligible.
+            // Branch A: never issued before (ASSIGN-04: self-learner path, no assignment row).
+            // Branch B: open per-user recertification period with an issuable status.
+            if ($this->mayIssue($userId, $courseId)) {
+                try {
+                    // CERT-05: issue via issueIfPassedResult so the CAS winner/loser is known.
+                    // Emit COURSE_PASSED and advance assignment status ONLY on the DB-insert winner
+                    // (wasCreated=true). The concurrent loser dedupes silently to prevent duplicate
+                    // audit rows (RECERT-06 concurrency guarantee).
+                    $preResult = new PassResult($passed, $score, $threshold, $poolsMastered, null);
+                    $issueResult = $this->issuanceService->issueIfPassedResult($userId, $courseId, $preResult);
+
+                    if ($issueResult !== null && $issueResult->wasCreated) {
+                        // FIX-3: ComplianceAuditException is NOT a provisioning error — it means the
+                        // tamper-evident audit append failed and the cert was rolled back. Re-throw so
+                        // the caller gets HTTP 500 (fail-closed). Only logComplianceEvent throws this.
+                        $this->auditService->logComplianceEvent(ComplianceEventTypes::COURSE_PASSED, $userId, [
+                            'course_id' => $courseId,
+                            'score'     => (int)$score,
+                            'threshold' => $threshold,
+                            'passed_at' => time(),
+                        ]);
+                        // Advance assignment status to 'passed' for the active period (no-op for
+                        // self-enrolled learners who have no assignment row).
+                        $this->assignmentService->markPassed($userId, $courseId);
+                    }
+                } catch (ComplianceAuditException $e) {
+                    throw $e; // compliance-audit failure — fail closed, do not swallow
+                } catch (\Throwable $e) {
+                    $this->logger->warning(
+                        'Certificate issuance failed for user {user} course {course}: {msg}',
+                        ['user' => $userId, 'course' => $courseId, 'msg' => $e->getMessage()]
+                    );
+                }
+            }
+            // PASS-07: read the first-qualification timestamp from the audit log, independent of
+            // whether issuance ran this call (idempotent — always returns the earliest event).
             $passedAt = $this->getPassedAt($userId, $courseId);
         }
 
-        $result = new PassResult($passed, $score, $threshold, $poolsMastered, $passedAt);
-
-        if ($passed) {
-            // CERT-05: auto-issue the signed credential immediately after the first-pass audit
-            // event. Issuance is a SIDE-EFFECT of this read path (GET /pass-status) — an ordinary
-            // PROVISIONING error (e.g. issuer key not yet initialised at 155-07, or the
-            // learning_certificates table missing) must NEVER break it: swallow + log.
-            //
-            // FIX-3 (non-swallow of compliance failures): a ComplianceAuditException is NOT a
-            // provisioning error — it means the tamper-evident audit append failed, so the cert
-            // INSERT was rolled back (fail-closed, IssuanceService FIX-2). That MUST surface (HTTP 500),
-            // never be logged-and-ignored. Re-throw it and only swallow genuinely non-compliance errors.
-            // IssuanceService owns its own idempotency guard, so repeated GETs issue exactly once.
-            try {
-                $this->issuanceService->issueIfPassed($userId, $courseId, $result);
-            } catch (ComplianceAuditException $e) {
-                throw $e; // compliance-audit failure — fail closed, do not swallow
-            } catch (\Throwable $e) {
-                $this->logger->warning(
-                    'Certificate issuance failed for user {user} course {course}: {msg}',
-                    ['user' => $userId, 'course' => $courseId, 'msg' => $e->getMessage()]
-                );
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Writes a course.passed audit event ONLY if no prior event exists for this user+course.
-     * Dedup: query event_key='course.passed' AND user_id; PHP-decode context_json to match
-     * course_id. NO LIKE pattern (brittle). NO DB UNIQUE constraint (audit table is
-     * append-only by design).
-     *
-     * O(N) scan note: loads all 'course.passed' events for this user. In practice N equals
-     * the number of distinct courses this user has passed — typically < 10, not a concern.
-     *
-     * Race condition (SELECT->INSERT is not atomic): two concurrent GET /pass-status requests
-     * that both find no existing event may both INSERT, producing a duplicate course.passed
-     * row. Probability is low (requires two simultaneous qualifying GETs in the same window).
-     * The proper fix — a course_id column on the audit table with a UNIQUE(event_key, user_id,
-     * course_id) index — is deferred to a future migration. The audit table is append-only;
-     * worst case is a minor data-quality issue, not a functional or security problem.
-     */
-    private function emitPassEventIfFirst(string $userId, int $courseId, int $score, int $threshold): void {
-        if ($this->findPassEvent($userId, $courseId) !== null) {
-            return; // already emitted — idempotency guard
-        }
-
-        $this->auditService->logComplianceEvent(ComplianceEventTypes::COURSE_PASSED, $userId, [
-            'course_id' => $courseId,
-            'score'     => $score,
-            'threshold' => $threshold,
-            'passed_at' => time(),
-        ]);
+        return new PassResult($passed, $score, $threshold, $poolsMastered, $passedAt);
     }
 
     /**
@@ -147,26 +131,37 @@ class PassCriteriaService {
     }
 
     /**
-     * Union-guard seam (RECERT-05) — frozen in Wave 2 (164-02), implemented in Wave 4 (164-04).
+     * Union-guard (RECERT-05) — implemented in Wave 4 (164-04).
      *
      * A pass may emit + issue iff EITHER:
-     *   (a) NO cert has EVER been issued for (user, course) — hasEverIssuedCertificate() via an
-     *       UNFILTERED findByUserAndCourse() === null (a revoked/expired row still counts as
-     *       "ever issued" → no auto-reissue) [ASSIGN-04: self-learner, no assignment row]
+     *   (a) NO cert has EVER been issued for (user, course) — UNFILTERED findByUserAndCourse()
+     *       returns null. A revoked or expired row still counts as "ever issued" → no auto-reissue.
+     *       Covers self-enrolled learners (ASSIGN-04: no assignment row) automatically.
      *   (b) An open per-user period exists: active_period_key IS NOT NULL AND
-     *       status IN ('assigned','in_progress','overdue') — an ALLOW-LIST, NOT `!= passed`
-     *       (terminal states cancelled/withdrawn/closed/expired/passed are non-issuing)
+     *       status IN ('assigned','in_progress','overdue') — ALLOW-LIST (not != passed).
+     *       Terminal states (cancelled/withdrawn/closed/expired/passed) block issuance.
      *
-     * SC2: after a punitive revoke (revoked=true, active_idem_key=NULL) with NO open period this
-     * MUST return false — do NOT auto-reissue after a punitive revoke.
-     *
-     * Not yet called from evaluate()/emitPassEventIfFirst — wired in 164-04.
-     *
-     * @throws \LogicException until 164-04 implements the guard
+     * SC2: after a punitive revoke (revoked=true, active_idem_key=NULL) with NO open period
+     * this returns false — do NOT auto-reissue after a punitive revoke.
      */
-    // @phpstan-ignore-next-line (unused private: wired in 164-04)
     private function mayIssue(string $userId, int $courseId): bool {
-        throw new \LogicException('not implemented — 164-04');
+        // Branch A: student has no certificate history at all — always allow
+        if (!$this->hasEverIssuedCertificate($userId, $courseId)) {
+            return true;
+        }
+        // Branch B: cert exists, but there is an open recertification period
+        $states = $this->assignmentService->getStatesForCourseAndUsers($courseId, [$userId]);
+        $state = $states[$userId] ?? null;
+        return $state !== null
+            && in_array($state['status'], ['assigned', 'in_progress', 'overdue'], true);
+    }
+
+    /**
+     * Returns true when a certificate row exists for (user, course) — revoked, expired, or valid.
+     * UNFILTERED: a punitively-revoked cert still counts as "ever issued".
+     */
+    private function hasEverIssuedCertificate(string $userId, int $courseId): bool {
+        return $this->certificateMapper->findByUserAndCourse($userId, $courseId) !== null;
     }
 
     /**
