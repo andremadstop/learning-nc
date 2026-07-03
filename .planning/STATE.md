@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v5.2.0
 milestone_name: "v5.2.0 Pflichtschulung"
 current_phase: 164
-current_plan: "Phase 164 Plan 05 ✓ COMPLETE 2026-07-03 (5/7 plans). Next: 164-06 (T-30/T-7 Reminders + Verify-Lifecycle)."
-status: "v5.2.0 Pflichtschulung — Phase 164 aktiv (5/7 Pläne). 164-04 + Post-Impl-Review FERTIG: Codex Pass 1 fand 2 BLOCKER (closePeriod nicht idempotent + non-atomic strand) + 3 HIGH (cert-ohne-COURSE_PASSED, days/months-Disconnect→stilles 12-Monats-Default, PERIOD_CLOSED PII) + 2 MED (EOM-Overflow, alter Pfad ohne Guard). Alle 7 gefixt (closePeriod CAS-Gate auf certId + EINE Transaktion; evaluate() outer TX um issue+emit+markPassed; notify best-effort; computeExpiry legacy-days-Fallback KEIN implizites 12M-Default; EOM-Clamp; @deprecated issueIfPassed). Pass 2: VERDICT SHIP, alle FIX-CONFIRMED. Gate 1: PHPUnit 302 Tests, nur 3 erwartete Wave-RED (164-05/06/07). ⚠ closePeriod-SIGNATUR GEÄNDERT: + int $certId (Job muss certId aus seiner Expiry-Query liefern)."
-stopped_at: "164-05 COMPLETE (Commit 226240a): closeExpiredPeriods + Job verdrahtet, testDoubleRunSingleRow GREEN; closePeriod Write-Split (CAS vs. konditionaler Expiry-Clamp — historisches expires_at bleibt erhalten). Nächster Schritt: 164-06 Reminders."
+current_plan: "Phase 164 Plan 06 ✓ COMPLETE 2026-07-03 (6/7 plans). Next: 164-07 (Retention crypto-erasure + i18n 5 Sprachen + Docs) — LETZTE Wave."
+status: "v5.2.0 Pflichtschulung — Phase 164 aktiv (6/7 Pläne). 164-04 + Post-Impl-Review FERTIG: Codex Pass 1 fand 2 BLOCKER (closePeriod nicht idempotent + non-atomic strand) + 3 HIGH (cert-ohne-COURSE_PASSED, days/months-Disconnect→stilles 12-Monats-Default, PERIOD_CLOSED PII) + 2 MED (EOM-Overflow, alter Pfad ohne Guard). Alle 7 gefixt (closePeriod CAS-Gate auf certId + EINE Transaktion; evaluate() outer TX um issue+emit+markPassed; notify best-effort; computeExpiry legacy-days-Fallback KEIN implizites 12M-Default; EOM-Clamp; @deprecated issueIfPassed). Pass 2: VERDICT SHIP, alle FIX-CONFIRMED. Gate 1: PHPUnit 302 Tests, nur 3 erwartete Wave-RED (164-05/06/07). ⚠ closePeriod-SIGNATUR GEÄNDERT: + int $certId (Job muss certId aus seiner Expiry-Query liefern)."
+stopped_at: "164-06 COMPLETE (Commit 2b2cf88): Lifecycle-States (overdue=NACH Grace, Plan autoritativ!), anonymized-Tombstone-Branch, T-30/T-7-Reminders (insertOnce-CAS), Notifier recert_reminder (msgids=Frontend-Keys). Nächster Schritt: 164-07 Retention+i18n (letzte Wave), dann Phase-Abschluss + Release-Akt (USER-STOPP)."
 last_updated: "2026-07-03"
 last_activity: "2026-07-03 — 164-04 Post-Impl-Codex-Review: 2 Pässe → SHIP. 11 neue Locking-Tests. cert_validity_months durch updateCertConfig-API + jsonSerialize verdrahtet (Months-UI-Feld → 164-07 mit i18n; Footgun: UI kann months nicht auf NULL zurücksetzen — bei UI-Bau Clear-Option vorsehen)."
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
   percent: 80
 ---
 
@@ -27,9 +27,9 @@ See: .planning/PROJECT.md (updated 2026-07-01)
 
 ## Current Position
 
-Phase: 164 — Re-Zertifizierung + Retention + i18n Parity (in progress, 5/7 Pläne).
-Plan: 164-05 ✓ COMPLETE (226240a) — RecertPeriodCloseJob daily sweep, per-row-isoliert, cert-driven Query. Davor: 164-04 Post-Impl-Review SHIP (7 Findings gefixt). Next: 164-06 (Reminders).
-Status: Gate 1 grün — PHPUnit 304 Tests / 1037 Assertions, nur noch 2 erwartete Wave-RED (testOncePerThreshold→164-06, testAnonymizeKeepsChain→164-07). PHPStan: nur Skeleton-Transienten.
+Phase: 164 — Re-Zertifizierung + Retention + i18n Parity (in progress, 6/7 Pläne).
+Plan: 164-06 ✓ COMPLETE (2b2cf88) — Lifecycle-States + anonymized-Branch + Reminders. Next: 164-07 (Retention + i18n, letzte Wave).
+Status: Gate 1 grün — PHPUnit 306 Tests / 1051 Assertions, nur noch 1 erwarteter RED (testAnonymizeKeepsChain→164-07). PHPStan: nur Retention-Skeleton-Transienten.
 Last activity: 2026-07-03 — Post-Impl-Review-Härtung: closePeriod(+certId) CAS+TX, evaluate() outer TX (cert⟺COURSE_PASSED atomar), notify best-effort, computeExpiry ohne implizites 12M-Default (legacy days-Fallback), EOM-Clamp, issueIfPassed @deprecated.
 
 Progress: ████████░░ 80% (4/5 phases complete)
