@@ -122,7 +122,12 @@ class RecertReminderService {
                 if ($now - (int)$existing->getSentAt() < self::PENDING_RETRY_AFTER_SECONDS) {
                     continue; // fresh claim — most likely a concurrent runner mid-delivery
                 }
-                // stale pending claim (earlier delivery failed/crashed) → retry below
+                // Stale pending claim (earlier delivery failed/crashed) → atomic RE-CLAIM
+                // (pass-3 fix): the CAS UPDATE lets exactly ONE of two concurrent retry
+                // runners proceed; the loser sees 0 affected rows and skips (no double-bell).
+                if (!$this->reminderMapper->reclaimStale($certId, $days, $now, $now - self::PENDING_RETRY_AFTER_SECONDS)) {
+                    continue; // another runner re-claimed this stale row first
+                }
             } elseif (!$this->reminderMapper->insertOnce($certId, $days, $now)) {
                 continue; // lost the claim race to a concurrent runner — leave it to them
             }

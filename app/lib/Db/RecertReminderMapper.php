@@ -58,6 +58,25 @@ class RecertReminderMapper extends QBMapper {
     }
 
     /**
+     * Atomically RE-CLAIM a stale pending row (164-07 review pass 3): two concurrent runners
+     * can both observe the same stale claim — only the one whose CAS UPDATE matches (affected
+     * rows === 1) may deliver. Bumping sent_at to $now makes the row read as a FRESH pending
+     * claim for everyone else (loser skips; if the winner's delivery fails too, the row goes
+     * stale again and is retried on a later run).
+     */
+    public function reclaimStale(int $certId, int $thresholdDays, int $now, int $staleBefore): bool {
+        $qb = $this->db->getQueryBuilder();
+        $affected = $qb->update($this->getTableName())
+            ->set('sent_at', $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT))
+            ->where($qb->expr()->eq('cert_id', $qb->createNamedParameter($certId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('threshold_days', $qb->createNamedParameter($thresholdDays, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->isNull('delivered_at'))
+            ->andWhere($qb->expr()->lte('sent_at', $qb->createNamedParameter($staleBefore, IQueryBuilder::PARAM_INT)))
+            ->executeStatement();
+        return $affected === 1;
+    }
+
+    /**
      * Confirm delivery: flips the claim row into the permanent "delivered" state. Guarded on
      * delivered_at IS NULL so a late duplicate confirm never overwrites the first timestamp.
      */

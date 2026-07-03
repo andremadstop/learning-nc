@@ -132,6 +132,10 @@ class RecertReminderServiceTest extends TestCase {
         $m['reminderMapper']->method('findByCertAndThreshold')
             ->willReturnOnConsecutiveCalls(null, $this->reminderRow(self::NOW, null));
         $m['reminderMapper']->expects($this->once())->method('insertOnce')->willReturn(true);
+        // Pass-3 lock: the stale retry MUST go through the atomic re-claim CAS (winner).
+        $m['reminderMapper']->expects($this->once())->method('reclaimStale')
+            ->with(42, 30, self::NOW + 86400, self::NOW + 86400 - 3600)
+            ->willReturn(true);
         // Delivery proof only on the successful retry (run 2's clock).
         $m['reminderMapper']->expects($this->once())->method('markDelivered')
             ->with(42, 30, self::NOW + 86400);
@@ -170,5 +174,28 @@ class RecertReminderServiceTest extends TestCase {
 
         $this->assertSame(0, $service->sendRecertReminders(),
             'a fresh pending claim is left to its owning runner');
+    }
+
+    /**
+     * Pass-3 lock (stale-retry race): when a concurrent runner wins the atomic re-claim of the
+     * SAME stale pending row (reclaimStale returns false), this runner must NOT deliver —
+     * without the CAS both runners would notify() and double-bell.
+     */
+    public function testStaleReclaimLoserNeverNotifies(): void {
+        [$service, $m] = $this->makeService(self::NOW);
+        $m['certMapper']->method('findActiveExpiringBetween')->willReturn([$this->expiringCert(self::NOW)]);
+
+        // Stale pending claim (2h old, not delivered) — both runners see it; WE lose the CAS.
+        $m['reminderMapper']->method('findByCertAndThreshold')
+            ->willReturn($this->reminderRow(self::NOW - 7200, null));
+        $m['reminderMapper']->expects($this->once())->method('reclaimStale')
+            ->with(42, 30, self::NOW, self::NOW - 3600)
+            ->willReturn(false); // concurrent runner re-claimed first
+        $m['reminderMapper']->expects($this->never())->method('insertOnce');
+        $m['reminderMapper']->expects($this->never())->method('markDelivered');
+        $m['notifManager']->expects($this->never())->method('notify');
+
+        $this->assertSame(0, $service->sendRecertReminders(),
+            'the re-claim CAS loser must skip — exactly one runner delivers');
     }
 }
