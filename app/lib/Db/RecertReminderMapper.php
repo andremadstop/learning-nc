@@ -25,11 +25,17 @@ class RecertReminderMapper extends QBMapper {
     }
 
     /**
-     * Attempt to record a reminder send. Returns true if the row was inserted (first send),
-     * false if a UNIQUE(cert_id, threshold_days) violation occurred ("already sent").
+     * CLAIM a (cert, threshold) reminder slot (outbox pattern, 164-07 review pass 2).
+     * Returns true if this call inserted the row (claim won — caller must deliver + call
+     * markDelivered), false on the UNIQUE(cert_id, threshold_days) violation (claimed earlier —
+     * either delivered, or a pending row another/earlier run will retry).
+     *
+     * The row is a delivery PROOF only once delivered_at is set; a bare claim row with
+     * delivered_at NULL is retryable. This survives the failure mode where compensation
+     * (deleting the row after a failed notify) itself fails.
      *
      * DST note: the threshold window (T-30 / T-7) is computed from expires_at in the SERVICE;
-     * this mapper only stores the fact that the reminder fired.
+     * this mapper only stores claim/delivery state.
      */
     public function insertOnce(int $certId, int $thresholdDays, int $sentAt): bool {
         $qb = $this->db->getQueryBuilder();
@@ -38,28 +44,30 @@ class RecertReminderMapper extends QBMapper {
                 'cert_id'        => $qb->createNamedParameter($certId, IQueryBuilder::PARAM_INT),
                 'threshold_days' => $qb->createNamedParameter($thresholdDays, IQueryBuilder::PARAM_INT),
                 'sent_at'        => $qb->createNamedParameter($sentAt, IQueryBuilder::PARAM_INT),
+                'delivered_at'   => $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL),
             ]);
         try {
             $qb->executeStatement();
             return true;
         } catch (DBException $e) {
             if ($e->getReason() === DBException::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
-                return false; // already sent — the UNIQUE slot is the idempotency guarantee
+                return false; // already claimed — delivered or pending-retry elsewhere
             }
             throw $e;
         }
     }
 
     /**
-     * Compensation for a failed delivery (164-07 review HIGH 3): insertOnce committed the
-     * idempotency row but IManager::notify() threw — delete the row so the next job run
-     * retries the send instead of silently skipping the threshold forever.
+     * Confirm delivery: flips the claim row into the permanent "delivered" state. Guarded on
+     * delivered_at IS NULL so a late duplicate confirm never overwrites the first timestamp.
      */
-    public function deleteByCertAndThreshold(int $certId, int $thresholdDays): void {
+    public function markDelivered(int $certId, int $thresholdDays, int $deliveredAt): void {
         $qb = $this->db->getQueryBuilder();
-        $qb->delete($this->getTableName())
+        $qb->update($this->getTableName())
+            ->set('delivered_at', $qb->createNamedParameter($deliveredAt, IQueryBuilder::PARAM_INT))
             ->where($qb->expr()->eq('cert_id', $qb->createNamedParameter($certId, IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->eq('threshold_days', $qb->createNamedParameter($thresholdDays, IQueryBuilder::PARAM_INT)));
+            ->andWhere($qb->expr()->eq('threshold_days', $qb->createNamedParameter($thresholdDays, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->isNull('delivered_at'));
         $qb->executeStatement();
     }
 

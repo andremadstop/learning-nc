@@ -80,8 +80,19 @@ class RecertReminderService {
     }
 
     /**
-     * Fire every threshold that `now` has reached for this cert; insertOnce dedupes per
-     * (cert, threshold) so each boundary sends exactly once across all future runs.
+     * A pending claim (delivered_at NULL) older than this is considered failed/crashed and is
+     * retried. Well above any realistic notify() latency, well below the daily job cadence —
+     * a same-instant concurrent runner is never double-delivered, a failed delivery is
+     * retried on the next daily run.
+     */
+    private const PENDING_RETRY_AFTER_SECONDS = 3600;
+
+    /**
+     * Fire every threshold that `now` has reached for this cert. Outbox semantics (164-07
+     * review pass 2): insertOnce = CLAIM, markDelivered = PROOF. A claim whose delivery failed
+     * (or whose runner crashed) leaves delivered_at NULL and is retried once stale — the row
+     * is never treated as "sent" just because it exists. This survives even the failure mode
+     * where compensation itself would fail (the old delete-on-error approach did not).
      *
      * @param int[] $thresholds days-before-expiry values, e.g. [30, 7]
      */
@@ -91,6 +102,7 @@ class RecertReminderService {
             return 0;
         }
         $tz = new \DateTimeZone(date_default_timezone_get());
+        $certId = (int)$cert->getId();
         $sent = 0;
         foreach ($thresholds as $days) {
             // DST-safe boundary: expires_at − N calendar days in the server timezone.
@@ -101,19 +113,24 @@ class RecertReminderService {
             if ($now < $fireAt) {
                 continue; // boundary not reached yet
             }
-            if (!$this->reminderMapper->insertOnce((int)$cert->getId(), $days, $now)) {
-                continue; // already sent for this (cert, threshold) — idempotent skip
+
+            $existing = $this->reminderMapper->findByCertAndThreshold($certId, $days);
+            if ($existing !== null) {
+                if ($existing->getDeliveredAt() !== null) {
+                    continue; // delivered — permanent skip
+                }
+                if ($now - (int)$existing->getSentAt() < self::PENDING_RETRY_AFTER_SECONDS) {
+                    continue; // fresh claim — most likely a concurrent runner mid-delivery
+                }
+                // stale pending claim (earlier delivery failed/crashed) → retry below
+            } elseif (!$this->reminderMapper->insertOnce($certId, $days, $now)) {
+                continue; // lost the claim race to a concurrent runner — leave it to them
             }
-            try {
-                $this->notify($cert, $days);
-            } catch (\Throwable $e) {
-                // 164-07 review HIGH 3: the idempotency row committed but delivery failed —
-                // without compensation every future run would skip this threshold and the
-                // reminder would silently never be delivered. Re-open the slot and rethrow
-                // (per-cert isolation in sendRecertReminders logs it; next run retries).
-                $this->reminderMapper->deleteByCertAndThreshold((int)$cert->getId(), $days);
-                throw $e;
-            }
+
+            // notify() is NC-level deduped (getCount on the identical notification), so even
+            // the markDelivered-throws-after-successful-notify edge cannot double-bell.
+            $this->notify($cert, $days);
+            $this->reminderMapper->markDelivered($certId, $days, $now);
             $sent++;
         }
         return $sent;
@@ -133,8 +150,7 @@ class RecertReminderService {
 
         $notification = $this->notificationManager->createNotification();
         $notification->setApp(self::APP_ID)
-            ->setUser($cert->getUserId())
-            ->setDateTime($this->timeFactory->getDateTime())
+            ->setUser((string)$cert->getUserId())
             // objectId carries cert + threshold so T-30 and T-7 are distinct notifications
             ->setObject('recert_reminder', $cert->getVerificationId() . ':' . $thresholdDays)
             ->setSubject('recert_reminder', [
@@ -142,7 +158,14 @@ class RecertReminderService {
                 'days_left'    => $thresholdDays,
                 'expires_at'   => $cert->getExpiresAt(),
             ]);
-        $this->notificationManager->notify($notification);
+
+        // NC-level dedupe (mirrors IssuanceService::notify): the identical notification already
+        // in the bell means an earlier delivery DID succeed but markDelivered failed/crashed —
+        // do not double-bell on the retry.
+        if ($this->notificationManager->getCount($notification) === 0) {
+            $notification->setDateTime($this->timeFactory->getDateTime());
+            $this->notificationManager->notify($notification);
+        }
     }
 
     /**
