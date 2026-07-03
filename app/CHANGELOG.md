@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.2.0] - 2026-07-03 — Pflichtschulung (Mandatory Compliance Training)
+
+> Versions 5.2.0.1–5.2.0.5 were internal migration-vehicle bumps and were never released; this entry covers everything since 5.0.0. Built for organizations running recurring mandatory trainings (works safety, data protection, …) — triggered by a real-world AWO deployment scenario (#20).
+
+### Added
+- **Tamper-evident audit trail.** Compliance-critical events (course passed, certificate issued/revoked, period closed, video completed) are chained via SHA-256 hash links with weekly Ed25519-signed checkpoints and an `occ learning:audit:verify` integrity command. Manipulation of any historical record is detectable.
+- **Assignments.** Instructors/admins assign courses to users or NC groups with due dates; per-user obligation periods track assigned → in progress → passed/overdue. Deadline extensions are audit-logged.
+- **Video gating.** Courses can require watching course videos before the exam unlocks. Native NC-MP4 playback is tracked via transient watch segments (data-minimizing: no permanent fine-grained watch log), Vimeo/YouTube embeds best-effort. Server-side enforcement.
+- **Team-lead dashboard (RBAC).** Team leads see their groups' compliance status (who is due, overdue, missing) without exposing member emails (opaque member refs), can send mandatory reminders, and export DSGVO Art. 20 data. Double IDOR-guarded.
+- **Recertification.** Certificates now expire on a per-course schedule (`cert_validity_months`, months-based, DST-safe calendar math with end-of-month clamping; legacy `cert_validity_days` still honored). T-30/T-7 expiry reminders fire exactly once per threshold (outbox-pattern delivery guarantee, storm-proof). A daily job closes expired periods (grace window) and opens the next obligation period — students re-certify and receive a NEW certificate while the old verify URL keeps resolving as "expired" (never "withdrawn").
+- **Retention / crypto-erasure (DSGVO Art. 5(1)(e)).** After a configurable retention window (default 3 years) superseded certificates are anonymized: recipient identity removed, signed credential scrubbed, audit rows pseudonymized — while the audit hash-chain stays verifiable. The public verify page shows a defined neutral "record no longer available" state for erased records.
+- **Username hygiene.** `occ learning:import-users` CSV command; email-shaped user ids never leak into certificates, reports or notifications.
+
+### Changed
+- Certificate issuance is now atomic end-to-end: the certificate row, its audit event, the COURSE_PASSED compliance event and the assignment status advance commit or roll back together (no orphan states under concurrency or crashes).
+- The public verify page adds a fifth status banner (`anonymized`) alongside valid/withdrawn/expired/unknown.
+- All new UI strings ship in all five languages (de/en/fr/ru/ar; 2298 keys each, parity-gated).
+
+### Compliance notes
+- The verify URL is permanent only within the retention window (documented in README → *Cert lifecycle & compliance*).
+- Organizations with a works council must conclude a **Betriebsvereinbarung (BetrVG §87 Abs. 1 Nr. 6)** before rolling out reminders/monitoring in production. The retention default (3 years) is flagged for confirmation with your DPO.
+
+### Database
+- `Version009300`–`Version009800`: audit chain state + checkpoints, assignments, video progress, reminder outbox, `cert_validity_months`/`anonymized_at`/`delivered_at` columns, nullable `user_id`/`subject_id` for crypto-erasure. Verified on PostgreSQL 16.
+
 ## [5.0.0] - 2026-06-28 — Certification-as-a-Service
 
 > Versions 4.4.8 and 4.4.9 were internal migration-vehicle bumps and were never released; this entry covers everything since 4.4.7.
