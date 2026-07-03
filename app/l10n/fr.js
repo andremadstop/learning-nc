@@ -2295,5 +2295,9 @@ OC.L10N.register(
     "Status" : "Statut",
     "Teamleiter-Dashboard" : "Tableau de bord du chef d'équipe",
     "Überfällig" : "En retard",
+    "Nachweis nicht mehr verfügbar" : "Justificatif plus disponible",
+    "Dieser Zertifikatsdatensatz wurde nach Ablauf der Aufbewahrungsfrist gelöscht (DSGVO)." : "Cet enregistrement de certificat a été supprimé après l'expiration de la durée de conservation (RGPD).",
+    "Hinweis zur Aufbewahrung" : "Information sur la conservation",
+    "Der Datensatz zu diesem Zertifikat wurde nach Ablauf der Aufbewahrungsfrist datenschutzkonform gelöscht. Eine inhaltliche Prüfung ist nicht mehr möglich; das Zertifikat war zum Zeitpunkt der Löschung bereits nicht mehr aktiv." : "L'enregistrement de ce certificat a été supprimé conformément à la protection des données après l'expiration de la durée de conservation. Une vérification du contenu n'est plus possible ; le certificat n'était déjà plus actif au moment de la suppression.",
 },
 "nplurals=2; plural=(n > 1);");

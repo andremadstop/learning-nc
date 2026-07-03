@@ -125,7 +125,11 @@ class CertificateMapper extends QBMapper {
         $qb->select('*')
            ->from($this->getTableName())
            ->where($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)))
-           ->andWhere($qb->expr()->eq('revoked', $qb->createNamedParameter(false, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)));
+           ->andWhere($qb->expr()->eq('revoked', $qb->createNamedParameter(false, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_BOOL)))
+           // DSGVO-03 (164-07 review HIGH 2): erased tombstones never enter reports — their
+           // credential_json is scrubbed (undecodable) and user_id is NULL (safeDisplayName
+           // expects a string). An anonymized row has no reportable subject by definition.
+           ->andWhere($qb->expr()->isNull('anonymized_at'));
 
         if ($from !== null) {
             $qb->andWhere($qb->expr()->gte('issued_at', $qb->createNamedParameter($from, \OCP\DB\QueryBuilder\IQueryBuilder::PARAM_INT)));

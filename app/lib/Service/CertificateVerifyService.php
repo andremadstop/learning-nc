@@ -172,16 +172,17 @@ class CertificateVerifyService {
         if ($exp === null) {
             return 'valid'; // never expires — no recert lifecycle
         }
-        $graceDays = (int)$this->config->getAppValue(
-            'learning', 'recert_grace_days', ConfigDefaults::RECERT_GRACE_DAYS_DEFAULT
-        );
+        // Shared validated parsers (164-07 review HIGH 4 + MED 5): grace can never be negative,
+        // and the 'expiring' window uses the SAME threshold source as the reminder service —
+        // a cert must never get a reminder while the UI still reads 'valid'.
+        $graceDays = ConfigDefaults::graceDays($this->config);
         if ($now > $exp + $graceDays * 86400) {
             return 'overdue';
         }
         if ($now > $exp) {
             return 'expired';
         }
-        $windowDays = max(ConfigDefaults::RECERT_REMINDER_THRESHOLDS);
+        $windowDays = max(ConfigDefaults::reminderThresholds($this->config));
         if ($now >= $exp - $windowDays * 86400) {
             return 'expiring';
         }

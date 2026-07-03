@@ -2295,5 +2295,9 @@ OC.L10N.register(
     "recert_reenroll_info" : "Your certification has expired. Complete the course again to receive a new certificate.",
     "recert_validity_months_label" : "Certificate validity (months, 0 = no expiry)",
     "recert_retention_years_label" : "Retention period (years)",
+    "Nachweis nicht mehr verfügbar" : "Record no longer available",
+    "Dieser Zertifikatsdatensatz wurde nach Ablauf der Aufbewahrungsfrist gelöscht (DSGVO)." : "This certificate record was deleted after the retention period expired (GDPR).",
+    "Hinweis zur Aufbewahrung" : "Retention notice",
+    "Der Datensatz zu diesem Zertifikat wurde nach Ablauf der Aufbewahrungsfrist datenschutzkonform gelöscht. Eine inhaltliche Prüfung ist nicht mehr möglich; das Zertifikat war zum Zeitpunkt der Löschung bereits nicht mehr aktiv." : "The record for this certificate was deleted in compliance with data protection rules after the retention period expired. Verification of its contents is no longer possible; the certificate was already inactive at the time of deletion.",
 },
 "nplurals=2; plural=(n != 1);");

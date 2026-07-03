@@ -5,7 +5,8 @@
  * interpolated value is HTML-escaped via p(). The params come from PublicVerifyController::buildParams,
  * which carries ONLY the DSGVO display fields — the recipient name is never passed here and never rendered.
  *
- * Four status banners: valid (green), withdrawn (ocker tombstone), expired (grey), unknown|invalid (red).
+ * Five status banners: valid (green), withdrawn (ocker tombstone), expired (grey),
+ * anonymized (neutral grey DSGVO tombstone, 164-07), unknown|invalid (red).
  * For unknown/invalid only the red banner + safe-decision guidance render (no cert exists → nothing leaks,
  * no enumeration oracle). Banner colours are WCAG-AA against the white text; the trust badge is
  * status-aware (only a currently-valid cert gets the green "verified" badge). Info order: banner →
@@ -66,6 +67,13 @@ if ($status === 'valid') {
 	$color = '#6c757d';
 	$bannerTitle = $l->t('Zertifikat abgelaufen');
 	$bannerSub = $l->t('Die Gültigkeit endete am %s.', [$fmtDate($_['expires_at'] ?? null)]);
+} elseif ($status === 'anonymized') {
+	// DSGVO-03 tombstone (164-07): the record EXISTED and was erased after the retention
+	// window — a defined neutral state, NOT the red "could be forged" unknown branch.
+	$glyph = '∅';
+	$color = '#5c636a';
+	$bannerTitle = $l->t('Nachweis nicht mehr verfügbar');
+	$bannerSub = $l->t('Dieser Zertifikatsdatensatz wurde nach Ablauf der Aufbewahrungsfrist gelöscht (DSGVO).');
 }
 ?>
 <style>
@@ -162,6 +170,11 @@ if ($status === 'valid') {
 		<span class="lrn-verify__badge" style="color:<?php p($badgeColor); ?>;">
 			<span aria-hidden="true"><?php p($badgeGlyph); ?></span> <?php p($badgeText); ?>
 		</span>
+	<?php } elseif ($status === 'anonymized') { ?>
+		<div class="lrn-verify__info">
+			<strong><?php p($l->t('Hinweis zur Aufbewahrung')); ?></strong>
+			<?php p($l->t('Der Datensatz zu diesem Zertifikat wurde nach Ablauf der Aufbewahrungsfrist datenschutzkonform gelöscht. Eine inhaltliche Prüfung ist nicht mehr möglich; das Zertifikat war zum Zeitpunkt der Löschung bereits nicht mehr aktiv.')); ?>
+		</div>
 	<?php } else { ?>
 		<div class="lrn-verify__warn">
 			<strong><?php p($l->t('Was Sie jetzt tun sollten')); ?></strong>

@@ -2295,5 +2295,9 @@ OC.L10N.register(
     "Status" : "الحالة",
     "Teamleiter-Dashboard" : "لوحة قائد الفريق",
     "Überfällig" : "متأخر",
+    "Nachweis nicht mehr verfügbar" : "السجل لم يعد متاحًا",
+    "Dieser Zertifikatsdatensatz wurde nach Ablauf der Aufbewahrungsfrist gelöscht (DSGVO)." : "تم حذف سجل الشهادة هذا بعد انتهاء مدة الاحتفاظ (اللائحة العامة لحماية البيانات).",
+    "Hinweis zur Aufbewahrung" : "ملاحظة حول الاحتفاظ",
+    "Der Datensatz zu diesem Zertifikat wurde nach Ablauf der Aufbewahrungsfrist datenschutzkonform gelöscht. Eine inhaltliche Prüfung ist nicht mehr möglich; das Zertifikat war zum Zeitpunkt der Löschung bereits nicht mehr aktiv." : "تم حذف سجل هذه الشهادة وفقًا لقواعد حماية البيانات بعد انتهاء مدة الاحتفاظ. لم يعد التحقق من محتواها ممكنًا؛ وكانت الشهادة غير نشطة بالفعل وقت الحذف.",
 },
 "nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);");

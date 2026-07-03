@@ -53,4 +53,41 @@ final class ConfigDefaults {
      * @var int[]
      */
     public const RECERT_REMINDER_THRESHOLDS = [30, 7];
+
+    /**
+     * SINGLE parser for the reminder thresholds (164-07 review MED 5): RecertReminderService
+     * (send decision) and CertificateVerifyService::deriveLifecycleState ('expiring' window)
+     * MUST agree — a cert that gets a reminder while the UI still reads 'valid' is a
+     * contradiction. Config key 'recert_reminder_thresholds' (CSV of positive days);
+     * empty/garbage values fall back to the shipped defaults. Descending order.
+     *
+     * @return int[] never empty
+     */
+    public static function reminderThresholds(\OCP\IConfig $config): array {
+        $raw = $config->getAppValue(
+            'learning', 'recert_reminder_thresholds', implode(',', self::RECERT_REMINDER_THRESHOLDS)
+        );
+        $days = array_values(array_filter(
+            array_map('intval', explode(',', $raw)),
+            static fn (int $d): bool => $d > 0
+        ));
+        if ($days === []) {
+            $days = self::RECERT_REMINDER_THRESHOLDS; // empty/garbage config → shipped defaults
+        }
+        rsort($days);
+        return $days;
+    }
+
+    /**
+     * SINGLE parser for the recert grace window (164-07 review HIGH 4): a NEGATIVE
+     * 'recert_grace_days' would flip the cutoff into the future — closeExpiredPeriods would
+     * close still-valid certs and deriveLifecycleState would mark unexpired certs 'overdue'.
+     * Negatives fall back to the shipped default.
+     */
+    public static function graceDays(\OCP\IConfig $config): int {
+        $days = (int)$config->getAppValue(
+            'learning', 'recert_grace_days', self::RECERT_GRACE_DAYS_DEFAULT
+        );
+        return $days >= 0 ? $days : (int)self::RECERT_GRACE_DAYS_DEFAULT;
+    }
 }

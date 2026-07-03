@@ -281,9 +281,9 @@ class AssignmentService {
      * @return int number of periods closed this run
      */
     public function closeExpiredPeriods(int $now): int {
-        $graceDays = (int)$this->config->getAppValue(
-            'learning', 'recert_grace_days', ConfigDefaults::RECERT_GRACE_DAYS_DEFAULT
-        );
+        // Shared validated parser (164-07 review HIGH 4): a negative config value would move
+        // the cutoff into the FUTURE and close still-valid certs.
+        $graceDays = ConfigDefaults::graceDays($this->config);
         $cutoff = $now - $graceDays * 86400;
 
         $qb = $this->db->getQueryBuilder();

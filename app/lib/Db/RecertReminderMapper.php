@@ -51,6 +51,19 @@ class RecertReminderMapper extends QBMapper {
     }
 
     /**
+     * Compensation for a failed delivery (164-07 review HIGH 3): insertOnce committed the
+     * idempotency row but IManager::notify() threw — delete the row so the next job run
+     * retries the send instead of silently skipping the threshold forever.
+     */
+    public function deleteByCertAndThreshold(int $certId, int $thresholdDays): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete($this->getTableName())
+            ->where($qb->expr()->eq('cert_id', $qb->createNamedParameter($certId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('threshold_days', $qb->createNamedParameter($thresholdDays, IQueryBuilder::PARAM_INT)));
+        $qb->executeStatement();
+    }
+
+    /**
      * Find the reminder record for a specific cert and threshold, or null if not yet sent.
      */
     public function findByCertAndThreshold(int $certId, int $thresholdDays): ?RecertReminder {

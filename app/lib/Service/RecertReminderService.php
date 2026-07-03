@@ -104,7 +104,16 @@ class RecertReminderService {
             if (!$this->reminderMapper->insertOnce((int)$cert->getId(), $days, $now)) {
                 continue; // already sent for this (cert, threshold) — idempotent skip
             }
-            $this->notify($cert, $days);
+            try {
+                $this->notify($cert, $days);
+            } catch (\Throwable $e) {
+                // 164-07 review HIGH 3: the idempotency row committed but delivery failed —
+                // without compensation every future run would skip this threshold and the
+                // reminder would silently never be delivered. Re-open the slot and rethrow
+                // (per-cert isolation in sendRecertReminders logs it; next run retries).
+                $this->reminderMapper->deleteByCertAndThreshold((int)$cert->getId(), $days);
+                throw $e;
+            }
             $sent++;
         }
         return $sent;
@@ -137,26 +146,13 @@ class RecertReminderService {
     }
 
     /**
-     * Reminder thresholds in days-before-expiry, descending. IConfig app value
-     * 'recert_reminder_thresholds' (CSV) with the ConfigDefaults constant as default.
+     * Reminder thresholds in days-before-expiry, descending — the SHARED parser
+     * (ConfigDefaults::reminderThresholds) so the send decision and the lifecycle
+     * 'expiring' window can never diverge (164-07 review MED 5).
      *
      * @return int[]
      */
     private function thresholds(): array {
-        $raw = $this->config->getAppValue(
-            self::APP_ID,
-            'recert_reminder_thresholds',
-            implode(',', ConfigDefaults::RECERT_REMINDER_THRESHOLDS)
-        );
-        if (trim($raw) === '') {
-            // empty app value (misconfiguration) → fall back to the shipped defaults
-            $raw = implode(',', ConfigDefaults::RECERT_REMINDER_THRESHOLDS);
-        }
-        $days = array_values(array_filter(
-            array_map('intval', explode(',', $raw)),
-            static fn (int $d): bool => $d > 0
-        ));
-        rsort($days);
-        return $days;
+        return ConfigDefaults::reminderThresholds($this->config);
     }
 }

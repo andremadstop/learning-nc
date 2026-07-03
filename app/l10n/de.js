@@ -2295,5 +2295,9 @@ OC.L10N.register(
     "recert_reenroll_info" : "Ihre Zertifizierung ist abgelaufen. Schließen Sie den Kurs erneut ab, um ein neues Zertifikat zu erhalten.",
     "recert_validity_months_label" : "Gültigkeit des Zertifikats (Monate, 0 = unbegrenzt)",
     "recert_retention_years_label" : "Aufbewahrungsfrist (Jahre)",
+    "Nachweis nicht mehr verfügbar" : "Nachweis nicht mehr verfügbar",
+    "Dieser Zertifikatsdatensatz wurde nach Ablauf der Aufbewahrungsfrist gelöscht (DSGVO)." : "Dieser Zertifikatsdatensatz wurde nach Ablauf der Aufbewahrungsfrist gelöscht (DSGVO).",
+    "Hinweis zur Aufbewahrung" : "Hinweis zur Aufbewahrung",
+    "Der Datensatz zu diesem Zertifikat wurde nach Ablauf der Aufbewahrungsfrist datenschutzkonform gelöscht. Eine inhaltliche Prüfung ist nicht mehr möglich; das Zertifikat war zum Zeitpunkt der Löschung bereits nicht mehr aktiv." : "Der Datensatz zu diesem Zertifikat wurde nach Ablauf der Aufbewahrungsfrist datenschutzkonform gelöscht. Eine inhaltliche Prüfung ist nicht mehr möglich; das Zertifikat war zum Zeitpunkt der Löschung bereits nicht mehr aktiv.",
 },
 "nplurals=2; plural=(n != 1);");

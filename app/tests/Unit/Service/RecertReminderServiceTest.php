@@ -100,4 +100,65 @@ class RecertReminderServiceTest extends TestCase {
         $this->assertSame([[42, 30], [42, 30]], $insertOnceCalls,
             'only the due T-30 threshold is attempted (T-7 not yet reached), once per run');
     }
+
+    /**
+     * 164-07 post-impl review HIGH 3 (delivery compensation): when insertOnce commits the
+     * idempotency row but IManager::notify() throws, the slot MUST be re-opened
+     * (deleteByCertAndThreshold) — otherwise every future run skips the threshold and the
+     * compliance reminder is silently never delivered. The next run then retries and succeeds.
+     */
+    public function testNotifyFailureReopensSlotForRetry(): void {
+        $certMapper     = $this->createMock(CertificateMapper::class);
+        $reminderMapper = $this->createMock(RecertReminderMapper::class);
+        $notifManager   = $this->createMock(IManager::class);
+        $time           = $this->createMock(ITimeFactory::class);
+        $config         = $this->createMock(IConfig::class);
+        $logger         = $this->createMock(LoggerInterface::class);
+        $courseMapper   = $this->createMock(CourseMapper::class);
+
+        $now = 1750000000;
+        $time->method('getTime')->willReturn($now);
+        $config->method('getAppValue')->willReturnCallback(
+            static fn (string $app, string $key, string $default = ''): string => $default
+        );
+
+        $cert = new Certificate();
+        $cert->setId(42);
+        $cert->setVerificationId('vid-recert-0001');
+        $cert->setUserId('jmueller');
+        $cert->setCourseId(7);
+        $cert->setExpiresAt($now + 20 * 86400); // only T-30 due
+        $certMapper->method('findActiveExpiringBetween')->willReturn([$cert]);
+
+        // The slot re-opens after the failed delivery, so BOTH runs insert successfully.
+        $reminderMapper->method('insertOnce')->willReturn(true);
+        // Compensation lock: the failed run must delete exactly its own (cert, threshold) row.
+        $reminderMapper->expects($this->once())
+            ->method('deleteByCertAndThreshold')
+            ->with(42, 30);
+
+        $notif = $this->createMock(\OCP\Notification\INotification::class);
+        foreach (['setApp', 'setUser', 'setDateTime', 'setObject', 'setSubject'] as $m) {
+            $notif->method($m)->willReturnSelf();
+        }
+        $notifManager->method('createNotification')->willReturn($notif);
+        // Run 1: delivery fails. Run 2 (retry): delivery succeeds.
+        $notifyCalls = 0;
+        $notifManager->expects($this->exactly(2))->method('notify')
+            ->willReturnCallback(function () use (&$notifyCalls): void {
+                if (++$notifyCalls === 1) {
+                    throw new \RuntimeException('notification backend down');
+                }
+            });
+
+        $service = new RecertReminderService(
+            $certMapper, $reminderMapper, $notifManager, $time, $config, $logger, $courseMapper
+        );
+
+        $sent1 = $service->sendRecertReminders(); // failed delivery → slot re-opened, 0 sent
+        $sent2 = $service->sendRecertReminders(); // retry → delivered
+
+        $this->assertSame(0, $sent1, 'a failed delivery must not count as sent');
+        $this->assertSame(1, $sent2, 'the re-opened slot is retried and delivered on the next run');
+    }
 }

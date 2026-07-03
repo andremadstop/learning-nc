@@ -2295,5 +2295,9 @@ OC.L10N.register(
     "Status" : "Статус",
     "Teamleiter-Dashboard" : "Панель руководителя группы",
     "Überfällig" : "Просрочено",
+    "Nachweis nicht mehr verfügbar" : "Запись больше недоступна",
+    "Dieser Zertifikatsdatensatz wurde nach Ablauf der Aufbewahrungsfrist gelöscht (DSGVO)." : "Эта запись сертификата была удалена по истечении срока хранения (GDPR).",
+    "Hinweis zur Aufbewahrung" : "Примечание о сроке хранения",
+    "Der Datensatz zu diesem Zertifikat wurde nach Ablauf der Aufbewahrungsfrist datenschutzkonform gelöscht. Eine inhaltliche Prüfung ist nicht mehr möglich; das Zertifikat war zum Zeitpunkt der Löschung bereits nicht mehr aktiv." : "Запись этого сертификата была удалена в соответствии с правилами защиты данных по истечении срока хранения. Проверка содержания больше невозможна; на момент удаления сертификат уже был неактивен.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");
