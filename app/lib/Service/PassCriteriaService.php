@@ -84,22 +84,40 @@ class PassCriteriaService {
                     // Emit COURSE_PASSED and advance assignment status ONLY on the DB-insert winner
                     // (wasCreated=true). The concurrent loser dedupes silently to prevent duplicate
                     // audit rows (RECERT-06 concurrency guarantee).
+                    //
+                    // POST-IMPL-REVIEW HIGH 3 (atomicity): the cert INSERT (inside
+                    // issueIfPassedResult), the COURSE_PASSED append, and markPassed() commit or
+                    // roll back TOGETHER via this OUTER transaction. issueIfPassedResult's own
+                    // begin/commit nests as a savepoint (Connection::setNestTransactionsWithSavepoints,
+                    // same pattern as the CERT_ISSUED append inside IssuanceService). Without this,
+                    // a crash after the cert commit but before the emit would leave a cert whose
+                    // COURSE_PASSED event can NEVER be written — every later evaluate() hits the
+                    // UNIQUE loser path (wasCreated=false) and skips the emit forever.
                     $preResult = new PassResult($passed, $score, $threshold, $poolsMastered, null);
-                    $issueResult = $this->issuanceService->issueIfPassedResult($userId, $courseId, $preResult);
+                    $this->db->beginTransaction();
+                    try {
+                        $issueResult = $this->issuanceService->issueIfPassedResult($userId, $courseId, $preResult);
 
-                    if ($issueResult !== null && $issueResult->wasCreated) {
-                        // FIX-3: ComplianceAuditException is NOT a provisioning error — it means the
-                        // tamper-evident audit append failed and the cert was rolled back. Re-throw so
-                        // the caller gets HTTP 500 (fail-closed). Only logComplianceEvent throws this.
-                        $this->auditService->logComplianceEvent(ComplianceEventTypes::COURSE_PASSED, $userId, [
-                            'course_id' => $courseId,
-                            'score'     => (int)$score,
-                            'threshold' => $threshold,
-                            'passed_at' => time(),
-                        ]);
-                        // Advance assignment status to 'passed' for the active period (no-op for
-                        // self-enrolled learners who have no assignment row).
-                        $this->assignmentService->markPassed($userId, $courseId);
+                        if ($issueResult !== null && $issueResult->wasCreated) {
+                            // FIX-3: ComplianceAuditException is NOT a provisioning error — it means the
+                            // tamper-evident audit append failed; the outer rollback below also undoes
+                            // the cert INSERT (fail-closed, no orphan cert). Re-throw → HTTP 500.
+                            $this->auditService->logComplianceEvent(ComplianceEventTypes::COURSE_PASSED, $userId, [
+                                'course_id' => $courseId,
+                                'score'     => (int)$score,
+                                'threshold' => $threshold,
+                                'passed_at' => time(),
+                            ]);
+                            // Advance assignment status to 'passed' for the active period (no-op for
+                            // self-enrolled learners who have no assignment row).
+                            $this->assignmentService->markPassed($userId, $courseId);
+                        }
+                        $this->db->commit();
+                    } catch (\Throwable $e) {
+                        if ($this->db->inTransaction()) {
+                            $this->db->rollBack();
+                        }
+                        throw $e;
                     }
                 } catch (ComplianceAuditException $e) {
                     throw $e; // compliance-audit failure — fail closed, do not swallow

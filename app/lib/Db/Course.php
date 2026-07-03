@@ -125,6 +125,8 @@ class Course extends Entity {
                 ? (json_decode($this->getCertRequiredPoolIds(), true) ?: [])
                 : [],
             'cert_validity_days' => $this->getCertValidityDays() ?? 0,
+            // NULL = unset → legacy days fallback governs expiry; 0 = explicit no-expiry; >0 = months
+            'cert_validity_months' => $this->getCertValidityMonths(),
             'video_gate_enabled' => $this->getVideoGateEnabled() ?? false,
         ];
     }

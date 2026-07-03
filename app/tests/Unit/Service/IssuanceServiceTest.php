@@ -73,7 +73,9 @@ class IssuanceServiceTest extends TestCase {
         $course->setTitle('Security+ Kurs');
         $course->setDescription('Compliance-Grundlagen');
         $course->setCertValidityDays($validityDays);
-        // cert_validity_months drives computeExpiry() (164-04). Pass null to use the default (12).
+        // cert_validity_months drives computeExpiry() when set (164-04). null = unset → the
+        // LEGACY cert_validity_days fallback governs (post-impl HIGH 4: no implicit 12-month
+        // default — days=0 + months=null must stay a no-expiry cert).
         $course->setCertValidityMonths($validityMonths);
         return $course;
     }
@@ -97,7 +99,8 @@ class IssuanceServiceTest extends TestCase {
         string $displayName = 'Alice Example',
         ?AuditService $audit = null,
         ?FakeDbConnection $db = null,
-        int $issuedAt = self::ISSUED_AT
+        int $issuedAt = self::ISSUED_AT,
+        ?\Throwable $notifyThrows = null
     ): IssuanceService {
         $audit = $audit ?? $this->createMock(AuditService::class);
         $db = $db ?? new FakeDbConnection();
@@ -135,7 +138,10 @@ class IssuanceServiceTest extends TestCase {
         $manager->method('createNotification')->willReturn($notif);
         $manager->method('getCount')->willReturn(0);
         if ($expectNotify) {
-            $manager->expects($this->once())->method('notify');
+            $expectation = $manager->expects($this->once())->method('notify');
+            if ($notifyThrows !== null) {
+                $expectation->willThrowException($notifyThrows);
+            }
         } else {
             $manager->expects($this->never())->method('notify');
         }
@@ -531,6 +537,103 @@ class IssuanceServiceTest extends TestCase {
                 $cert->getExpiresAt(),
                 'expires_at must NOT be the naive +365*86400 result (diverges across spring-forward by 3600 s)'
             );
+        } finally {
+            date_default_timezone_set($originalTz);
+        }
+    }
+
+    // ---- 164-04 post-impl Codex review locks (HIGH 3 / HIGH 4 / MED 6) ---------------------
+
+    /**
+     * HIGH 3 (notify best-effort): a throwing notification backend must NOT turn a committed
+     * issuance into an apparent failure. issueIfPassedResult() must still return
+     * IssueResult(wasCreated=true) — otherwise PassCriteriaService would swallow the throw and
+     * skip COURSE_PASSED + markPassed for a cert that exists, unrepairable (UNIQUE loser path).
+     */
+    public function testNotifyFailureDoesNotBreakIssuanceResult(): void {
+        $captured = null;
+        $service = $this->makeService(
+            null,
+            $this->makeCourse(),
+            $captured,
+            notifyThrows: new \RuntimeException('notification backend down'),
+        );
+
+        $result = $service->issueIfPassedResult(self::USER, self::COURSE_ID, $this->passResult());
+
+        $this->assertNotNull($result, 'a notify failure must never surface as an issuance failure');
+        $this->assertTrue($result->wasCreated, 'the committed insert still reports wasCreated=true');
+        $this->assertNotNull($captured, 'the cert row was inserted despite the notify throw');
+    }
+
+    /**
+     * HIGH 4 (legacy fallback): cert_validity_months UNSET (null) + cert_validity_days=365 →
+     * the pre-164 days contract governs: expiry = issued_at + 365 calendar days (DST-safe
+     * modify(), not *86400). Locks that legacy-configured courses keep their behavior.
+     */
+    public function testLegacyValidityDaysFallbackWhenMonthsUnset(): void {
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(validityDays: 365, validityMonths: null), $captured);
+
+        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+
+        $expected = (new \DateTimeImmutable('@' . self::ISSUED_AT))
+            ->setTimezone(new \DateTimeZone(date_default_timezone_get()))
+            ->modify('+365 days')
+            ->getTimestamp();
+        $this->assertSame($expected, $cert->getExpiresAt(),
+            'months unset → legacy cert_validity_days drives expiry (calendar days, DST-safe)');
+    }
+
+    /**
+     * HIGH 4 (no silent 12-month default): months UNSET (null) + days=0 was a NO-EXPIRY course
+     * before 164 — it must STAY no-expiry. The reviewed bug: `?? 12` silently converted every
+     * legacy no-expiry course into a 12-month expiring cert.
+     */
+    public function testNoExpiryWhenMonthsUnsetAndDaysZero(): void {
+        $captured = null;
+        $service = $this->makeService(null, $this->makeCourse(validityDays: 0, validityMonths: null), $captured);
+
+        $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+
+        $this->assertNull($cert->getExpiresAt(),
+            'months=null + days=0 must remain a no-expiry cert — NO implicit 12-month default');
+        $this->assertNotNull($captured);
+        $payload = $this->payloadOf($captured);
+        $this->assertArrayNotHasKey('validUntil', $payload);
+    }
+
+    /**
+     * MED 6 (end-of-month clamp): issuing on Jan 31 with 1-month validity must expire on the
+     * LAST day of February (28th here), same wall-clock time — never overflow into Mar 2/3
+     * (PHP's raw '+1 months' behavior), which would grant ~3 days of extra validity.
+     */
+    public function testEndOfMonthClampJanuary31(): void {
+        $originalTz = date_default_timezone_get();
+        date_default_timezone_set('Europe/Berlin');
+        try {
+            $issuedAt = (new \DateTimeImmutable('2026-01-31 10:00:00', new \DateTimeZone('Europe/Berlin')))
+                ->getTimestamp();
+
+            $captured = null;
+            $service = $this->makeService(
+                null,
+                $this->makeCourse(validityDays: 0, validityMonths: 1),
+                $captured,
+                issuedAt: $issuedAt,
+            );
+            $cert = $service->issueIfPassed(self::USER, self::COURSE_ID, $this->passResult());
+
+            $expected = (new \DateTimeImmutable('2026-02-28 10:00:00', new \DateTimeZone('Europe/Berlin')))
+                ->getTimestamp();
+            $overflow = (new \DateTimeImmutable('2026-01-31 10:00:00', new \DateTimeZone('Europe/Berlin')))
+                ->modify('+1 months')
+                ->getTimestamp(); // PHP raw: 2026-03-03 — the bug this clamp prevents
+
+            $this->assertSame($expected, $cert->getExpiresAt(),
+                'Jan 31 + 1 month must clamp to Feb 28 (last day), same wall-clock time');
+            $this->assertNotSame($overflow, $cert->getExpiresAt(),
+                'expiry must NOT be the raw +1 months overflow (Mar 3)');
         } finally {
             date_default_timezone_set($originalTz);
         }

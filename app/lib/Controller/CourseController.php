@@ -681,6 +681,7 @@ class CourseController extends Controller {
         ?int $certPassPercent = null,
         ?array $certRequiredPoolIds = null,
         ?int $certValidityDays = null,
+        ?int $certValidityMonths = null,
     ): DataResponse {
         try {
             if ($this->userId === null) {
@@ -743,6 +744,15 @@ class CourseController extends Controller {
                 }
                 $course->setCertValidityDays($certValidityDays);
             }
+            // RECERT-02 (164-04 post-impl HIGH 4): months-based validity is the authoritative
+            // expiry driver when set; 0 = explicit no-expiry. Unset (never provided) leaves the
+            // column NULL → IssuanceService::computeExpiry falls back to legacy cert_validity_days.
+            if ($certValidityMonths !== null) {
+                if ($certValidityMonths < 0) {
+                    return new DataResponse(['error' => 'cert_validity_months must be >= 0'], Http::STATUS_BAD_REQUEST);
+                }
+                $course->setCertValidityMonths($certValidityMonths);
+            }
 
             $course->setUpdatedAt(time());
             $this->courseMapper->update($course);
@@ -754,6 +764,7 @@ class CourseController extends Controller {
                     ? json_decode($course->getCertRequiredPoolIds(), true) ?? []
                     : [],
                 'certValidityDays'    => $course->getCertValidityDays() ?? 0,
+                'certValidityMonths'  => $course->getCertValidityMonths(),
             ]);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
             return new DataResponse(['error' => 'Course not found'], Http::STATUS_NOT_FOUND);

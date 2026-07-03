@@ -61,6 +61,7 @@ class PassCriteriaServiceTest extends TestCase {
         ?IssuanceService $issuance = null,
         ?CertificateMapper $certMapper = null,
         ?AssignmentService $assignmentService = null,
+        ?FakeDbConnection $db = null,
     ): PassCriteriaService {
         $courseMapper = $this->createMock(CourseMapper::class);
         $courseMapper->method('findById')->willReturn($course);
@@ -71,7 +72,7 @@ class PassCriteriaServiceTest extends TestCase {
             $summary->method('getMasteryStats')->willReturn($masteryStats);
         }
 
-        $db = new FakeDbConnection($builders);
+        $db = $db ?? new FakeDbConnection($builders);
 
         // Default certMapper: no cert ever issued → Branch A → mayIssue=true.
         if ($certMapper === null) {
@@ -603,5 +604,68 @@ class PassCriteriaServiceTest extends TestCase {
 
         $this->expectException(ComplianceAuditException::class);
         $service->evaluate(self::USER, self::COURSE_ID);
+    }
+
+    // ---- 164-04 post-impl Codex review locks (HIGH 3: issue+emit atomicity) ----------------
+
+    /**
+     * HIGH 3: the winner path wraps issueIfPassedResult + COURSE_PASSED emit + markPassed in
+     * ONE outer transaction (issuance's own begin/commit nests as a savepoint). Without it, a
+     * crash after the cert commit but before the emit leaves a cert whose COURSE_PASSED event
+     * can never be written — every later evaluate() takes the UNIQUE-loser path (wasCreated=
+     * false) and skips the emit forever.
+     */
+    public function testEvaluateWrapsIssueEmitAndMarkPassedInOneTransaction(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->expects($this->once())->method('logComplianceEvent');
+
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->method('issueIfPassedResult')
+            ->willReturn(new IssueResult(new Certificate(), true));
+
+        $db = new FakeDbConnection($this->passingBuilders());
+        $service = $this->makeService($this->makeCourse(true, 80), 90, null, [], $audit, $issuance, null, null, $db);
+
+        $result = $service->evaluate(self::USER, self::COURSE_ID);
+
+        $this->assertTrue($result->isPassed());
+        $this->assertSame(1, $db->beginTransactionCalls, 'issue+emit+markPassed open ONE outer transaction');
+        $this->assertSame(1, $db->commitCalls, 'the winner path commits exactly once');
+        $this->assertSame(0, $db->rollBackCalls, 'happy path never rolls back');
+    }
+
+    /**
+     * HIGH 3 (rollback): when the COURSE_PASSED append fails AFTER issuance returned
+     * wasCreated=true, the outer transaction must roll back — undoing the nested cert INSERT —
+     * and the ComplianceAuditException propagates (fail-closed). No cert-without-event state
+     * can ever commit.
+     */
+    public function testEvaluateRollsBackIssuanceWhenEmitFails(): void {
+        $audit = $this->createMock(AuditService::class);
+        $audit->method('logComplianceEvent')
+            ->willThrowException(new ComplianceAuditException('chain append failed'));
+
+        $issuance = $this->createMock(IssuanceService::class);
+        $issuance->method('issueIfPassedResult')
+            ->willReturn(new IssueResult(new Certificate(), true));
+
+        // markPassed must never run when the emit failed.
+        $assignmentService = $this->createMock(AssignmentService::class);
+        $assignmentService->method('getStatesForCourseAndUsers')->willReturn([]);
+        $assignmentService->expects($this->never())->method('markPassed');
+
+        $db = new FakeDbConnection([]);
+        $service = $this->makeService($this->makeCourse(true, 80), 90, null, [], $audit, $issuance, null, $assignmentService, $db);
+
+        try {
+            $service->evaluate(self::USER, self::COURSE_ID);
+            $this->fail('ComplianceAuditException must propagate (fail-closed)');
+        } catch (ComplianceAuditException $e) {
+            // expected
+        }
+
+        $this->assertSame(1, $db->rollBackCalls,
+            'a failed COURSE_PASSED emit must roll back the outer transaction (incl. the nested cert INSERT)');
+        $this->assertSame(0, $db->commitCalls, 'nothing commits when the emit fails');
     }
 }

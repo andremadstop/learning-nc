@@ -83,6 +83,13 @@ class IssuanceService {
     /**
      * Issue (once) a signed credential for a passing student, or return the existing one.
      *
+     * @deprecated 164-04 post-impl review (MED 7): this legacy path has NO RECERT-05 union
+     *   guard — called directly with a punitively-revoked cert it would happily re-issue
+     *   (the !revoked pre-check lets a revoked newest cert fall through). ALL issuance must
+     *   route through PassCriteriaService::evaluate() → issueIfPassedResult(), where
+     *   mayIssue() enforces the guard. No production caller remains (tests only); kept for
+     *   one release for API stability, remove in 164-07 cleanup or v5.3.
+     *
      * @return Certificate|null The issued/existing certificate, or null when not passed.
      */
     public function issueIfPassed(string $userId, int $courseId, PassResult $result): ?Certificate {
@@ -279,27 +286,64 @@ class IssuanceService {
     }
 
     /**
-     * DST-safe expiry computation (RECERT-01/02) — implemented in Wave 4 (164-04).
+     * DST-safe expiry computation (RECERT-01/02) — implemented in Wave 4 (164-04),
+     * hardened in the post-impl review (HIGH 4 + MED 6).
      *
-     * Validity in months = per-assignment override ?? course.cert_validity_months ?? 12.
-     * months <= 0 → null (no expiry).
+     * Precedence:
+     *   1. per-assignment override months (recertification path)
+     *   2. course.cert_validity_months — EXPLICIT config: > 0 → that many calendar months,
+     *      <= 0 → null (no expiry)
+     *   3. LEGACY fallback when cert_validity_months is NULL (unset): honor the pre-164
+     *      cert_validity_days contract — days > 0 → calendar days, days 0/NULL → no expiry.
+     *      HIGH 4: without this fallback every legacy course (months=NULL, days=0 = "no
+     *      expiry") silently became a 12-month expiring cert. There is NO implicit 12-month
+     *      default — expiring validity is always an explicit per-course/per-assignment choice.
      *
-     * MUST use DateTimeImmutable::modify('+N months') — NEVER +N*86400. The naive
-     * seconds formula diverges by 3600s across a DST boundary (e.g. issuing on 2026-03-29 in
-     * Europe/Berlin yields a different timestamp via +365*86400 vs +12 months).
+     * MUST use DateTimeImmutable::modify() — NEVER +N*86400. The naive seconds formula
+     * diverges by 3600s across a DST boundary (e.g. issuing on 2026-03-29 in Europe/Berlin).
+     *
+     * MED 6 (end-of-month clamp): '+N months' on Jan 31 would overflow into Mar 2/3 and grant
+     * extra validity. addCalendarMonths() anchors on the 1st, adds months, then clamps the day
+     * to the target month's last day (Jan 31 + 1 month → Feb 28/29).
      *
      * Uses the server's configured timezone (date_default_timezone_get()) so that the expiry
      * wall-clock time is stable across DST transitions for the server locale.
      */
     private function computeExpiry(int $issuedAt, Course $course, ?int $assignmentOverrideMonths): ?int {
-        $months = $assignmentOverrideMonths ?? $course->getCertValidityMonths() ?? 12;
-        if ($months <= 0) {
+        $months = $assignmentOverrideMonths ?? $course->getCertValidityMonths();
+        if ($months !== null) {
+            if ($months <= 0) {
+                return null; // explicit "no expiry"
+            }
+            return $this->addCalendarMonths($issuedAt, $months);
+        }
+
+        // Legacy fallback: cert_validity_months unset → pre-164 days semantics (0 = no expiry).
+        $days = $course->getCertValidityDays() ?? 0;
+        if ($days <= 0) {
             return null;
         }
         $tz = new \DateTimeZone(date_default_timezone_get());
         return (new \DateTimeImmutable('@' . $issuedAt))
             ->setTimezone($tz)
-            ->modify('+' . $months . ' months')
+            ->modify('+' . $days . ' days')
+            ->getTimestamp();
+    }
+
+    /**
+     * Add N calendar months to a unix timestamp, DST-safe and end-of-month clamped.
+     *
+     * Anchor-on-the-1st avoids PHP's month overflow: 2026-01-31 '+1 months' would yield
+     * Mar 3; here it yields 2026-02-28 (same wall-clock time). For non-EOM dates the result
+     * is identical to a plain modify('+N months').
+     */
+    private function addCalendarMonths(int $ts, int $months): int {
+        $tz = new \DateTimeZone(date_default_timezone_get());
+        $base = (new \DateTimeImmutable('@' . $ts))->setTimezone($tz);
+        $anchor = $base->modify('first day of this month')->modify('+' . $months . ' months');
+        $day = min((int)$base->format('j'), (int)$anchor->format('t'));
+        return $anchor
+            ->setDate((int)$anchor->format('Y'), (int)$anchor->format('n'), $day)
             ->getTimestamp();
     }
 
@@ -378,17 +422,30 @@ class IssuanceService {
     /**
      * Fire exactly one NC notification for the freshly issued certificate (CERT-12).
      * Deduped via getCount() (mirrors NotificationJob::sendNotification).
+     *
+     * BEST-EFFORT (post-impl-review HIGH 3): a throwing notification backend must NEVER turn a
+     * committed issuance into an apparent failure — the caller (PassCriteriaService) would then
+     * swallow the throw and skip the COURSE_PASSED emit + markPassed for a cert that EXISTS,
+     * and no later call could repair it (UNIQUE loser path never emits). Notification failure
+     * is logged and dropped; the compliance write-set always wins over the convenience ping.
      */
     private function notify(string $userId, string $verificationId, string $courseTitle): void {
-        $notification = $this->notificationManager->createNotification();
-        $notification->setApp('learning')
-            ->setUser($userId)
-            ->setObject('certificate', $verificationId)
-            ->setSubject('certificate_issued', ['course_title' => $courseTitle]);
+        try {
+            $notification = $this->notificationManager->createNotification();
+            $notification->setApp('learning')
+                ->setUser($userId)
+                ->setObject('certificate', $verificationId)
+                ->setSubject('certificate_issued', ['course_title' => $courseTitle]);
 
-        if ($this->notificationManager->getCount($notification) === 0) {
-            $notification->setDateTime($this->timeFactory->getDateTime());
-            $this->notificationManager->notify($notification);
+            if ($this->notificationManager->getCount($notification) === 0) {
+                $notification->setDateTime($this->timeFactory->getDateTime());
+                $this->notificationManager->notify($notification);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->warning('Certificate notification failed for {vid}: {msg}', [
+                'vid' => $verificationId,
+                'msg' => $e->getMessage(),
+            ]);
         }
     }
 
