@@ -2,53 +2,51 @@
 created: 2026-07-03
 milestone: v5.2.0 Pflichtschulung
 branch: feature/v5.2.0-pflichtschulung
-resume_at: Phase 164 Wave 3 done — NEXT = Post-Impl-Codex-Review von RECERT-05 (164-04), dann Waves 164-05/06/07
+resume_at: MEILENSTEIN INHALTLICH FERTIG (5/5 Phasen, 164 = 7/7 + 4 Codex-Pässe SHIP) — NEXT = Release-Akt v5.2.0, NUR MIT ANDRES FREIGABE
 ---
 
-# HANDOFF — v5.2.0 Pflichtschulung — Resume 2026-07-03
+# HANDOFF — v5.2.0 Pflichtschulung — Stand 2026-07-03 abends
 
-> Working tree clean (nur regenerierbare Build-Artefakte `app/css/learning.css`, `app/js/learning.{css,js}` uncommitted — beim nächsten Build/Deploy neu).
-> Mandat: **vollständig autonom bauen bis v5.2.0 komplett**, stoppen nur bei Secret/Release/Blocker.
-> Der finale **Release-Akt** wird dem User zur Freigabe vorgelegt (einziger Stopp).
+> Working tree: nur regenerierbare Build-Artefakte (`app/css/learning.css`, `app/js/learning.{css,js}`) + lokale gitignorte `.planning/phases`-Docs uncommitted.
+> **Mandat war: autonom bis v5.2.0 komplett, Stopp nur bei Secret/Release/Blocker → Release-Stopp ERREICHT.**
 
-## Meilenstein-Stand: 4/5 Phasen (80%)
-- **160** ✓ · **161** ✓ · **162** ✓ · **163 Teamleiter-RBAC-Reports** ✓ (2026-07-02, 4-pass Codex SHIP)
-- **164 Re-Zertifizierung + Retention + i18n** — IN ARBEIT, **4/7 Pläne** committed.
+## Meilenstein-Stand: 5/5 Phasen (100% inhaltlich)
+160 ✓ · 161 ✓ · 162 ✓ · 163 ✓ · **164 ✓ COMPLETE 2026-07-03** (7/7 Pläne).
 
-## ⏭ UNMITTELBAR NÄCHSTER SCHRITT: Post-Impl-Codex-Review von RECERT-05 (164-04)
-- **NICHT übersprungen — nur wegen Rechner-Neustart vertagt.** Prompt-Vorlage: `scratchpad/codex-164-postimpl.txt` (scratchpad session-flüchtig → ggf. neu schreiben aus dieser HANDOFF + 164-04-Punkten unten).
-- Befehl: `bash -c 'codex exec --sandbox read-only "$(cat <promptfile>)" < /dev/null'` (**bash, NICHT fish** — fish `(...)`-Substitution schlägt fehl).
-- Reviewt den **echten implementierten Code**: wasCreated-Korrektheit, emit-only-on-winner, mayIssue-Union, closePeriod (expires_at=past + null cert active_idem_key, idempotent, per-user), DST computeExpiry, Atomicity, Regressionen.
-- Findings → fixen mit lockendem Test, mehrere Pässe bis **VERDICT: SHIP** (163 brauchte 4).
+## Phase 164 — was heute passierte (Session 2026-07-03)
+1. **Post-Impl-Codex-Review 164-04** (RECERT-05-Surgery): Pass 1 = 7 Findings (2 BLOCKER: closePeriod nicht idempotent + non-atomic strand; 3 HIGH: cert-ohne-COURSE_PASSED, stilles 12-Monats-Default, PERIOD_CLOSED-PII; 2 MED) → alle gefixt (closePeriod CAS auf certId + EINE TX; evaluate() outer TX; notify best-effort; computeExpiry legacy-days-Fallback; EOM-Clamp; @deprecated issueIfPassed) → Pass 2 **SHIP**.
+2. **Wave 164-05**: RecertPeriodCloseJob + closeExpiredPeriods (cert-driven Query, per-row-isoliert; Write-Split CAS/Expiry-Clamp — historisches expires_at bleibt).
+3. **Wave 164-06**: deriveLifecycleState (anonymized/valid/expiring/expired/overdue — overdue=NACH Grace, Plan autoritativ), anonymized-Tombstone-Branch im Verify, T-30/T-7-Reminders, Notifier recert_reminder (msgids = RecertL10n-Keys).
+4. **Wave 164-07**: Retention crypto-erasure (Scope-Guard: nur active_idem_key IS NULL altert aus), 10+17+4 i18n-Keys × 5 Sprachen (Parität 2298), README-Compliance-Sektion (RECERT-07-Permanenz + BetrVG §87).
+5. **Codex-Review Waves 05-07, 4 Pässe → SHIP**: P1 = 6 Findings, darunter **NOT-NULL-Schema-BLOCKER** (user_id/subject_id) → **Migration 009700**; P2 = Outbox-Pattern (delivered_at, **Migration 009800**) statt Delete-Kompensation; P3 = atomarer **reclaimStale-CAS** gegen Doppel-Bell-Race; P4 = FIX-CONFIRMED, SHIP.
 
-## Phase 164 — Wave-Struktur
-W1 164-01 (Schema/Migration 009600) ✓ · W2 164-02/03 (RED-Scaffolding) ✓ · W3 164-04 (RECERT-05, Codex-gated) ✓ IMPL · **W4 164-05/06/07 OFFEN.**
+## Gates (final)
+- PHPUnit **317/317** · PHPStan **clean (0)** · Vitest **1220/1220** (86 Suiten) · ESLint 0 Errors · i18n-Parität 2298×5 + js-sync.
+- Migrationen **009600/009700/009800 live** auf devcloud, info.xml **5.2.0.5**, alle 7 Learning-Jobs in oc_jobs registriert, Public-Verify 200.
+- Gate 2 (test-api.sh, 92 Assertions) = **Human-verify**: braucht Vault ADMIN_PASS (DevCloud-Zugangsdaten.md — auf Workstation aktuell nicht gefunden, evtl. LiveSync/cockpit).
 
-### 164-04 (RECERT-05 „open-heart surgery" — Design 3× Codex-bestätigt, IMPL fertig, Gate1 grün)
-- **Guard** `PassCriteriaService::mayIssue()`: Branch A `hasEverIssuedCertificate()` (findByUserAndCourse UNFILTERED — revoked/expired zählt → kein Auto-Reissue nach punitivem Revoke) OR Branch B (offene per-user Period: `active_period_key IS NOT NULL AND status IN ('assigned','in_progress','overdue')` — Allow-List, NICHT `!= passed`).
-- **evaluate() reordered:** gate mayIssue → issueIfPassedResult ZUERST → COURSE_PASSED + markPassed NUR bei `wasCreated=true` (CAS-Winner = active_idem_key UNIQUE-Insert). Loser emittiert nichts.
-- **issueIfPassedResult()** → `IssueResult{cert, wasCreated}`. **computeExpiry()** DST-safe `modify('+N months')` (N = override ?? course.cert_validity_months ?? 12; ≤0 → null).
-- **closePeriod()** 3 writes: cert `expires_at=now-1` + `active_idem_key=NULL` (revoked UNBERÜHRT → verify „expired" nicht „withdrawn"); assignment `active_period_key=NULL`; INSERT fresh row (catch UNIQUE = idempotent). `logComplianceEvent(PERIOD_CLOSED)`.
-- **Gate 1:** PHPStan 20 benigne Transiente (alle in 164-05/06/07-Skeletons; kein neuer echter Fehler). PHPUnit: **alle 7 RECERT-05-Locking-Tests GRÜN**; nur 3 RED = spätere Waves.
+## ⏭ RELEASE-AKT v5.2.0 (NUR MIT FREIGABE — hier gestoppt)
+info.xml `5.2.0.5`→**`5.2.0`** · CHANGELOG · ff `main` · Tag `v5.2.0` · Codeberg-Release (Forgejo-API, Token `~/.config/codeberg/token`) · App-Store-POST (Token `.env`) · `./scripts/verify-release.sh 5.2.0` · Key-Hygiene · danach `/gsd:complete-milestone`.
 
-### OFFENE Waves (jede: Impl → Gate1 → ggf. Codex)
-- **164-05** RecertPeriodCloseJob (daily TimedJob, ruft closePeriod) → flippt `testDoubleRunSingleRow`. Registrierung schon in Application::boot() (164-03).
-- **164-06** T-30/T-7 Reminders (RecertReminderService, insert-on-fire `learning_recert_reminders` UNIQUE(cert_id,threshold_days)) + Verify-Lifecycle-States → flippt `testOncePerThreshold`.
-- **164-07** Retention crypto-erasure (null user_id + scrub credential_json + `anonymized_at`, audit-chain bleibt verifizierbar) + 5-Sprachen-i18n (`RecertL10n.test.js` + `l10n_js_sync.py`) + Betriebsvereinbarung/Permanence-Docs → flippt `testAnonymizeKeepsChain` + i18n-Parität.
-- **Danach:** STATE/ROADMAP/REQUIREMENTS **manuell** (gsd-tools korrumpiert Frontmatter) → Phase 164 complete → Meilenstein inhaltlich fertig.
+## Human-verify (Andres Durchlauf, kein Release-Blocker)
+Live-IDOR-curls/test-api.sh (Vault-Creds) · Notification-Bell (recert_reminder) · Video-Gate live · Re-Cert-Loop end-to-end · Dashboard-Optik · Jan/AWO (#20) · Betriebsvereinbarung (organisatorisch, README dokumentiert).
 
-## Release-Akt v5.2.0 (USER-FREIGABE — hier stoppen)
-info.xml `5.2.0.3`→**`5.2.0`** · CHANGELOG · ff `main` · Tag `v5.2.0` · Codeberg-Release (Forgejo-API, Token `~/.config/codeberg/token`) · App-Store-POST (Token in `.env`) · `./scripts/verify-release.sh 5.2.0` · Key-Hygiene.
-**Human-verify (Andres Durchlauf, kein Blocker):** Live-IDOR-curls (test-api.sh braucht Vault ADMIN_PASS/SECOND_PASS), Notification-Bell, Video-Gate live, Re-Cert-Loop, Dashboard-Optik. Jan (AWO #20). AWO-Betriebsvereinbarung BetrVG §87 (organisatorisch).
+## Follow-ups (nach Release, INBOX)
+- cert_validity_months **UI-Feld** (API fertig; Clear-auf-NULL vorsehen). Per-Assignment-Override = Signatur-Seam ohne Datenpfad.
+- retention_years=3 mit AWO/DSB bestätigen (FLAGGED in Code+README).
+- devcloud Ops: oc_jobs aufgebläht (5168× NC-Core UpdateSingleMetadata) — Cron-Rückstau prüfen.
+- RecertL10n.test.js-Kommentar hat overdue/expired-Labels vertauscht (nur Kommentar; Übersetzungen folgen Plan-Semantik).
 
-## Gotchas (diese Session)
-- **API-Stalls häufig** (mid-stream, ~13 Tool-Uses = Lesephase): Executor committet nichts → deterministischer Retry (meist 2.–3. Versuch); bei delikatem bounded Work ggf. selbst inline.
-- **Commit-Race** bei parallelen Executors (geteilter Worktree) → Waves **sequenziell**; Prompt: „NEVER git add -A".
-- **Kein lokales PHP** → Deploy+Gate1 zentral. `--php-only`=deploy+PHPStan, `--test`=PHPStan+PHPUnit (deployt NICHT). PHPUnit direkt: `rsync tests → docker cp → docker exec phpunit`. Migration: info.xml-Bump + `occ upgrade`.
-- **observed-RED:** transiente PHPStan-„never read" bis impl-Wave; beim Gate auf **Nicht-„never read"** filtern.
-- **Codex via bash -c** (nicht fish). Pre-Impl-Design-Gate lohnt bei open-heart surgery (fing 6 Löcher vor Code).
+## Gotchas (Session-Learnings)
+- Codex-Review-Kaskade lohnt MASSIV: 14 echte Findings über 6 Pässe, davon 1 Schema-BLOCKER den Unit-Tests (Mocks!) nie sehen konnten. Muster: mock-basierte Tests + Live-Constraint-Checks gehören zusammen.
+- deploy-prod.sh `--test` bricht bei PHPStan-Transienten ab BEVOR PHPUnit läuft → PHPUnit direkt (rsync tests → docker cp → docker exec phpunit).
+- occ `background-job:list` paginiert (500) — oc_jobs direkt in PG prüfen (User `oc_admin`, DB `nextcloud`).
+- Node 22 (Reboot-Update) brach 1 Vitest-Suite via NcDialog-dist-CSS → @nextcloud/dialogs-Mock (Muster StudentDashboard.test.js).
+- check-i18n-parity.sh war an Newline-Key kaputt → python-set-diff; dabei 17 vorbestehende 163er-Lücken in fr/ru/ar gefunden+gefüllt.
+- NC Job-Basisklasse exponiert `$time` NICHT an Subklassen → eigene Property.
 
 ## Kontext-Dateien
-- Pläne/Research/Validation/SUMMARYs: `.planning/phases/164-rezertifizierung-retention-i18n/` (gitignored — nur lokal!)
-- `.planning/STATE.md` (current_phase 164, 4/7) · `.planning/ROADMAP.md`
+- SUMMARYs/Pläne: `.planning/phases/164-rezertifizierung-retention-i18n/` (gitignored, nur lokal!)
+- `.planning/STATE.md` (100%, Release-Akt offen) · ROADMAP (164-Zeile komplett) · REQUIREMENTS (alle 41 ✓)
+- Codex-Protokolle: `scratchpad/codex-164-*-OUTPUT.txt` (session-flüchtig)
 - Memory: `project_v52_pflichtschulung.md`
