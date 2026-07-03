@@ -118,18 +118,29 @@ class AssignmentService {
     /**
      * Close the active assignment period for a subject, ending the obligation cycle.
      *
-     * Write-set (RECERT-04, 164-04 corrected design — 4 logical writes, 3 DB round-trips):
-     *   1+2 (single UPDATE on learning_certificates): set expires_at = now-1 so the old
-     *        verify URL reads 'expired' (revoked=false, expires_at<now → 'expired' per
+     * Write-set (RECERT-04, 164-04 post-impl-review hardened — one transaction, CAS-gated):
+     *   1+2 (single UPDATE on learning_certificates, THE CAS GATE): set expires_at = now-1 so
+     *        the old verify URL reads 'expired' (revoked=false, expires_at<now → 'expired' per
      *        CertificateVerifyService precedence: invalid→withdrawn→expired→valid), AND set
      *        active_idem_key = NULL to free the cert-level UNIQUE slot for the next-period cert
-     *        insert. WHERE active_idem_key = "{subjectId}:{courseId}" (matches IssuanceService).
+     *        insert. WHERE id = $certId AND active_idem_key = "{subjectId}:{courseId}" — pinned
+     *        to the SPECIFIC cert being closed. 0 affected rows = that cert is already closed
+     *        (repeat/stale call) OR certId does not match the subject/course → clean no-op
+     *        return. This makes closePeriod idempotent AND immune to the stale-call corruption
+     *        where a reused period key would expire the NEXT period's fresh cert.
      *        NOTE: active_idem_key lives on learning_CERTIFICATES, NOT learning_assignments.
      *   3.   UPDATE learning_assignments SET active_period_key = NULL WHERE active_period_key =
      *        "{courseId}:{subjectType}:{subjectId}" — frees the assignment UNIQUE slot.
      *   4.   INSERT a fresh assignment row (same period key, status='assigned') — opens the new
-     *        recertification period. A second closePeriod() call hits the assignment UNIQUE
-     *        constraint on this INSERT → caught → idempotent return (SC3).
+     *        recertification period. Under the CAS gate this can only run once per cert close;
+     *        a UNIQUE violation here means a genuinely concurrent writer → whole transaction
+     *        rolls back and the exception propagates (the daily job simply retries next run).
+     *
+     * ATOMICITY: writes 1–4 + the PERIOD_CLOSED audit append run in ONE transaction. A crash
+     * mid-close can therefore never strand a subject in the "no active period, no cert slot,
+     * mayIssue=false forever" state — either the period closes fully or not at all.
+     * logComplianceEvent opens its own transaction; NC nests it via a savepoint
+     * (Connection::setNestTransactionsWithSavepoints(true)), same pattern as IssuanceService.
      *
      * SC2 INVARIANT — MUST NOT set revoked=true or revoked_at: revoked=true would make the old
      * verify URL read 'withdrawn' (punitive-revoke status) instead of 'expired'. Period-close is
@@ -137,74 +148,89 @@ class AssignmentService {
      *
      * GROUP ASSIGNMENTS: markPassed/Branch-B/getStates operate on subject_type='user' rows only.
      * For group-originated obligations the RecertPeriodCloseJob calls closePeriod per-member
-     * (expandGroup → one call per member uid with subjectType='user'), so one member's period
-     * state is isolated from all other members.
+     * (expandGroup → one call per member uid with subjectType='user' + that member's certId),
+     * so one member's period state is isolated from all other members.
      *
-     * Audit: logComplianceEvent(PERIOD_CLOSED) — facts only (course_id, subject_type,
-     * period_key, closed_at); NO PII in context_json.
+     * Audit: logComplianceEvent(PERIOD_CLOSED) — facts only (course_id, subject_type, closed_at).
+     * period_key is deliberately NOT in context_json: it embeds the raw subject uid (NC uids can
+     * be email-shaped PII) and context_json is bound into the tamper-evident chain via
+     * payload_hash — PII there would survive DSGVO erasure and break the chain invariant.
+     *
+     * @param int $certId the learning_certificates row whose period is being closed — the
+     *                    caller (RecertPeriodCloseJob) selects it via its expiry query.
      */
-    public function closePeriod(string $subjectType, string $subjectId, int $courseId): void {
+    public function closePeriod(string $subjectType, string $subjectId, int $courseId, int $certId): void {
         // The cert's UNIQUE slot value (mirrors IssuanceService::issueIfPassed/issueIfPassedResult)
         $idemKey   = "{$subjectId}:{$courseId}";
         // The assignment's UNIQUE slot value (mirrors createAssignment)
         $periodKey = "{$courseId}:{$subjectType}:{$subjectId}";
         $now       = time();
 
-        // Write 1+2: expire the cert AND free the cert-level UNIQUE slot (single UPDATE).
-        // expires_at = now-1 → CertificateVerifyService reads 'expired' (revoked=false,
-        // expires_at < now). active_idem_key = NULL → slot freed for next-period cert INSERT.
-        $qb = $this->db->getQueryBuilder();
-        $qb->update('learning_certificates')
-            ->set('expires_at',     $qb->createNamedParameter($now - 1, IQueryBuilder::PARAM_INT))
-            ->set('active_idem_key', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
-            ->where($qb->expr()->eq(
-                'active_idem_key',
-                $qb->createNamedParameter($idemKey)
-            ));
-        $qb->executeStatement();
-
-        // Write 3: free the assignment-level UNIQUE slot so the INSERT below can use the same key.
-        $qb2 = $this->db->getQueryBuilder();
-        $qb2->update('learning_assignments')
-            ->set('active_period_key', $qb2->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
-            ->where($qb2->expr()->eq(
-                'active_period_key',
-                $qb2->createNamedParameter($periodKey)
-            ));
-        $qb2->executeStatement();
-
-        // Write 4: open a fresh obligation period with the same key so the subject can be
-        // recertified. Idempotency: a second closePeriod() call (writes 1-3 are no-ops for
-        // NULLed rows) hits the assignment UNIQUE constraint here → caught → clean return.
-        $qb3 = $this->db->getQueryBuilder();
-        $qb3->insert('learning_assignments')
-            ->values([
-                'course_id'         => $qb3->createNamedParameter($courseId, IQueryBuilder::PARAM_INT),
-                'subject_type'      => $qb3->createNamedParameter($subjectType),
-                'subject_id'        => $qb3->createNamedParameter($subjectId),
-                'assigned_by'       => $qb3->createNamedParameter('system'),
-                'assigned_at'       => $qb3->createNamedParameter($now, IQueryBuilder::PARAM_INT),
-                'due_date'          => $qb3->createNamedParameter(null, IQueryBuilder::PARAM_NULL),
-                'status'            => $qb3->createNamedParameter('assigned'),
-                'active_period_key' => $qb3->createNamedParameter($periodKey),
-            ]);
+        $this->db->beginTransaction();
         try {
-            $qb3->executeStatement();
-        } catch (\OCP\DB\Exception $e) {
-            if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
-                return; // period already re-opened by a concurrent or repeated call — idempotent
-            }
-            throw $e;
-        }
+            // Write 1+2 (CAS gate): expire THE GIVEN cert AND free the cert-level UNIQUE slot.
+            // Pinned to id = $certId AND active_idem_key = $idemKey so a repeat/stale call
+            // (cert already closed, or a NEWER cert now owns the idem slot) matches 0 rows.
+            $qb = $this->db->getQueryBuilder();
+            $qb->update('learning_certificates')
+                ->set('expires_at',     $qb->createNamedParameter($now - 1, IQueryBuilder::PARAM_INT))
+                ->set('active_idem_key', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+                ->where($qb->expr()->andX(
+                    $qb->expr()->eq('id', $qb->createNamedParameter($certId, IQueryBuilder::PARAM_INT)),
+                    $qb->expr()->eq('active_idem_key', $qb->createNamedParameter($idemKey))
+                ));
+            $affected = $qb->executeStatement();
 
-        // Audit: compliance event after all writes succeed.
-        // Subject = subjectId (the NC user UID or group GID — not PII when it's a UID).
-        $this->auditService->logComplianceEvent(ComplianceEventTypes::PERIOD_CLOSED, $subjectId, [
-            'course_id'    => $courseId,
-            'subject_type' => $subjectType,
-            'period_key'   => $periodKey,
-            'closed_at'    => $now,
-        ]);
+            if ($affected === 0) {
+                // Already closed (idempotent repeat) or stale/mismatched certId — touch NOTHING
+                // else. Without this gate a stale call would null the fresh period row and
+                // expire the next period's cert (data corruption).
+                $this->db->commit();
+                return;
+            }
+
+            // Write 3: free the assignment-level UNIQUE slot so the INSERT below can use the same key.
+            $qb2 = $this->db->getQueryBuilder();
+            $qb2->update('learning_assignments')
+                ->set('active_period_key', $qb2->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+                ->where($qb2->expr()->eq(
+                    'active_period_key',
+                    $qb2->createNamedParameter($periodKey)
+                ));
+            $qb2->executeStatement();
+
+            // Write 4: open a fresh obligation period with the same key so the subject can be
+            // recertified. The CAS gate above guarantees this runs at most once per cert close;
+            // a UNIQUE violation = concurrent writer → rollback + propagate (job retries).
+            $qb3 = $this->db->getQueryBuilder();
+            $qb3->insert('learning_assignments')
+                ->values([
+                    'course_id'         => $qb3->createNamedParameter($courseId, IQueryBuilder::PARAM_INT),
+                    'subject_type'      => $qb3->createNamedParameter($subjectType),
+                    'subject_id'        => $qb3->createNamedParameter($subjectId),
+                    'assigned_by'       => $qb3->createNamedParameter('system'),
+                    'assigned_at'       => $qb3->createNamedParameter($now, IQueryBuilder::PARAM_INT),
+                    'due_date'          => $qb3->createNamedParameter(null, IQueryBuilder::PARAM_NULL),
+                    'status'            => $qb3->createNamedParameter('assigned'),
+                    'active_period_key' => $qb3->createNamedParameter($periodKey),
+                ]);
+            $qb3->executeStatement();
+
+            // Audit INSIDE the transaction (savepoint-nested): a close without its PERIOD_CLOSED
+            // event can never commit. Context is facts-only — NO period_key (contains raw uid).
+            $this->auditService->logComplianceEvent(ComplianceEventTypes::PERIOD_CLOSED, $subjectId, [
+                'course_id'    => $courseId,
+                'subject_type' => $subjectType,
+                'closed_at'    => $now,
+            ]);
+
+            $this->db->commit();
+        } catch (\Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            throw $e; // partial close must never survive — fail loud, job retries next run
+        }
     }
 
     /**

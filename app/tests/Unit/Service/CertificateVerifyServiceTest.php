@@ -460,19 +460,20 @@ class CertificateVerifyServiceTest extends TestCase {
 
         // Instantiate the real AssignmentService — closePeriod is the code under test (164-04).
         // FakeDbConnection with 3 builders: one per DB write in closePeriod() —
-        //   builder 0: UPDATE learning_certificates (expires_at + active_idem_key)
+        //   builder 0: UPDATE learning_certificates (expires_at + active_idem_key) — the CAS
+        //              gate; executeStatementResult=1 means "this call closed the cert"
         //   builder 1: UPDATE learning_assignments (active_period_key → NULL)
         //   builder 2: INSERT learning_assignments (fresh period row)
-        // FakeQueryBuilder.executeStatement() returns 0 (no UNIQUE throw) for all three.
         $assignmentService = new AssignmentService(
-            new FakeDbConnection([new FakeQueryBuilder(), new FakeQueryBuilder(), new FakeQueryBuilder()]),
+            new FakeDbConnection([new FakeQueryBuilder(null, 1), new FakeQueryBuilder(), new FakeQueryBuilder()]),
             $this->createMock(IGroupManager::class),
             $this->createMock(AuditService::class),
         );
 
         // GREEN in 164-04: closePeriod() executes the 3 writes without throwing.
+        // certId=42 pins the close to the specific cert (post-impl-review CAS hardening).
         // The SC2 assertions below become reachable.
-        $assignmentService->closePeriod('user', 'jmueller', 7);
+        $assignmentService->closePeriod('user', 'jmueller', 7, 42);
 
         // UNREACHABLE at Wave 2. After 164-04 implements closePeriod, these SC2 assertions run.
         // closePeriod must move expires_at into the past WITHOUT touching revoked/revoked_at —

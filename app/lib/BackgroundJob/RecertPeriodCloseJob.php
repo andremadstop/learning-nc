@@ -12,10 +12,13 @@ use Psr\Log\LoggerInterface;
  * RecertPeriodCloseJob — daily job that closes expired recertification periods (RECERT-04).
  *
  * Fires daily (86400 s). For each assignment with an open period whose associated cert has
- * expires_at < (now - grace_days), calls AssignmentService::closePeriod():
+ * expires_at < (now - grace_days), calls AssignmentService::closePeriod(type, id, courseId, certId):
+ *   - certId = the specific expired cert row from the job's own expiry query — closePeriod's
+ *     CAS gate (UPDATE ... WHERE id = certId AND active_idem_key = idemKey) makes repeat and
+ *     stale calls a clean no-op instead of corrupting the next period
  *   - Nulls active_period_key (frees the re-issue slot for the next period)
- *   - Inserts a new assignment row with a fresh active_period_key (UNIQUE guard prevents
- *     double-close via the UNIQUE active_period_key constraint — CAS idempotency)
+ *   - Inserts a new assignment row with a fresh active_period_key — all writes + audit in ONE
+ *     transaction (a crash mid-close can never strand the subject)
  *
  * SC2 invariant: period-close MUST NOT set revoked=true — that makes the old verify URL
  * return "withdrawn" instead of "expired". Expiry is derived from expires_at < now.
