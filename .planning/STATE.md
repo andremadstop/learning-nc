@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v5.2.0
 milestone_name: "v5.2.0 Pflichtschulung"
 current_phase: 164
-current_plan: "Phase 164 Plan 04 ✓ COMPLETE 2026-07-03 (4/7 plans). Next: 164-05 (Wave merge — PHPStan L5 + full PHPUnit + deploy + live smoke)."
-status: "v5.2.0 Pflichtschulung — Phase 164 aktiv (4/7 Pläne). Wave 3 (164-04) fertig: RECERT-05 union guard + CAS-gated emit + DST-safe computeExpiry + closePeriod 3-write. 7 Locking-Tests GREEN. PHPStan L5 + full PHPUnit pending (164-05 wave merge). 164-04 Codex-GO: Branch-A unfiltered, Branch-B allow-list, closePeriod never sets revoked."
-stopped_at: "164-04 COMPLETE — RECERT-05 union guard + DST-safe expiry + closePeriod implementiert, committed (42efec1 + e32edf8). Nächster Schritt: 164-05 (Wave merge: PHPStan L5, full PHPUnit, deploy, live smoke)."
+current_plan: "Phase 164 Plan 04 ✓ COMPLETE + post-impl Codex review SHIP (2 Pässe, 7 Findings → 3 Fix-Commits) 2026-07-03 (4/7 plans). Next: 164-05 (RecertPeriodCloseJob impl)."
+status: "v5.2.0 Pflichtschulung — Phase 164 aktiv (4/7 Pläne). 164-04 + Post-Impl-Review FERTIG: Codex Pass 1 fand 2 BLOCKER (closePeriod nicht idempotent + non-atomic strand) + 3 HIGH (cert-ohne-COURSE_PASSED, days/months-Disconnect→stilles 12-Monats-Default, PERIOD_CLOSED PII) + 2 MED (EOM-Overflow, alter Pfad ohne Guard). Alle 7 gefixt (closePeriod CAS-Gate auf certId + EINE Transaktion; evaluate() outer TX um issue+emit+markPassed; notify best-effort; computeExpiry legacy-days-Fallback KEIN implizites 12M-Default; EOM-Clamp; @deprecated issueIfPassed). Pass 2: VERDICT SHIP, alle FIX-CONFIRMED. Gate 1: PHPUnit 302 Tests, nur 3 erwartete Wave-RED (164-05/06/07). ⚠ closePeriod-SIGNATUR GEÄNDERT: + int $certId (Job muss certId aus seiner Expiry-Query liefern)."
+stopped_at: "Post-Impl-Review SHIP (Commits 4b5994e, 27c06a7, 0563f04). Nächster Schritt: 164-05 RecertPeriodCloseJob (closeExpiredPeriods: Query auf learning_certificates WHERE active_idem_key IS NOT NULL AND expires_at < now-grace — user_id/course_id direkt von Cert-Row, KEIN idemKey-Parsing; dann closePeriod(type,id,courseId,certId))."
 last_updated: "2026-07-03"
-last_activity: "2026-07-03 — 164-04 COMPLETE: computeExpiry DST-safe, closePeriod 3-write (expires cert + nulls both UNIQUE slots + inserts fresh row), union guard, CAS-emit. Course::certValidityMonths entity property Rule-2-autofix. 7 RED tests flipped GREEN."
+last_activity: "2026-07-03 — 164-04 Post-Impl-Codex-Review: 2 Pässe → SHIP. 11 neue Locking-Tests. cert_validity_months durch updateCertConfig-API + jsonSerialize verdrahtet (Months-UI-Feld → 164-07 mit i18n; Footgun: UI kann months nicht auf NULL zurücksetzen — bei UI-Bau Clear-Option vorsehen)."
 progress:
   total_phases: 5
   completed_phases: 4
@@ -28,9 +28,9 @@ See: .planning/PROJECT.md (updated 2026-07-01)
 ## Current Position
 
 Phase: 164 — Re-Zertifizierung + Retention + i18n Parity (in progress, 4/7 Pläne).
-Plan: 164-04 ✓ COMPLETE — RECERT-05 union guard (unfiltered Branch A, allow-list Branch B), CAS-gated emit, DST-safe computeExpiry, closePeriod 3-write. Wave merge (164-05) next.
-Status: 7 locking tests GREEN locally. PHPStan L5 + full PHPUnit pending at 164-05 wave merge.
-Last activity: 2026-07-03 — 164-04: computeExpiry DateTimeImmutable::modify('+N months'), closePeriod expires cert + frees UNIQUE slots + inserts fresh period row, hasEverIssuedCertificate (unfiltered), CAS on active_idem_key. Course::certValidityMonths entity property autofix.
+Plan: 164-04 ✓ COMPLETE inkl. Post-Impl-Codex-Review (2 Pässe → SHIP; 7 Findings gefixt: 4b5994e, 27c06a7, 0563f04). Next: 164-05 (RecertPeriodCloseJob).
+Status: Gate 1 grün — PHPUnit 302 Tests / 1023 Assertions, nur die 3 erwarteten Wave-RED (testDoubleRunSingleRow→164-05, testOncePerThreshold→164-06, testAnonymizeKeepsChain→164-07). PHPStan: nur bekannte Skeleton-Transienten.
+Last activity: 2026-07-03 — Post-Impl-Review-Härtung: closePeriod(+certId) CAS+TX, evaluate() outer TX (cert⟺COURSE_PASSED atomar), notify best-effort, computeExpiry ohne implizites 12M-Default (legacy days-Fallback), EOM-Clamp, issueIfPassed @deprecated.
 
 Progress: ████████░░ 80% (4/5 phases complete)
 

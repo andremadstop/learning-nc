@@ -130,6 +130,26 @@ completed: 2026-07-03
 - Wave 3 (164-04) complete; 164-05 (wave merge + PHPStan + full PHPUnit + deploy) is next
 - Outstanding: i18n parity for `recert_retention_years_label` in ar/fr/ru/de — likely 164-03 scope, should be picked up before release
 
+## Post-Impl Codex Review (2026-07-03, 2 Pässe → SHIP)
+
+Pass 1 (grumpy Codex, read-only, gegen den echten Code): **7 Findings — VERDICT: FIX 5 blockers/highs.**
+
+| # | Sev | Finding | Fix (Commit) |
+|---|-----|---------|--------------|
+| 1 | BLOCKER | closePeriod nicht idempotent: stale/repeat Call expirte den Cert der NÄCHSTEN Periode + nullte die frische Row | CAS-Gate: UPDATE WHERE **id=certId** AND active_idem_key=idemKey; 0 rows → clean no-op. **Signatur: + int $certId** (4b5994e) |
+| 2 | BLOCKER | non-atomic close strandet User (Crash zw. Write 2 und 4 → mayIssue=false forever) | Alle Writes + PERIOD_CLOSED-Audit in EINER Transaktion (4b5994e) |
+| 3 | HIGH | Cert committed ohne COURSE_PASSED/markPassed (notify-Throw geswallowed; UNIQUE-Loser emittiert nie nach) | notify() best-effort + evaluate() outer TX um issue+emit+markPassed (Savepoint-Nesting) (27c06a7) |
+| 4 | HIGH | cert_validity_months nicht durch API/UI verdrahtet; `?? 12` machte JEDEN Legacy-no-expiry-Kurs still zu 12 Monaten | computeExpiry: months explizit ?? **legacy days-Fallback** (0=no expiry), KEIN implizites Default; months in updateCertConfig+jsonSerialize (27c06a7) |
+| 5 | HIGH | PERIOD_CLOSED context_json leakte period_key (raw uid, chain-bound → bricht DSGVO-Erasure) | period_key aus Context entfernt; facts-only allow-list (4b5994e) |
+| 6 | MED | Monats-Overflow: 31.1.+1M → 3.3. (Extra-Gültigkeit) | addCalendarMonths() mit EOM-Clamp (27c06a7) |
+| 7 | MED | alter issueIfPassed()-Pfad umgeht RECERT-05-Guard | @deprecated, kein Prod-Caller, Removal 164-07/v5.3 (27c06a7) |
+
+Pass 2: **alle 7 FIX-CONFIRMED, VERDICT: SHIP.** Nicht-blockierende Notizen: (a) Months-UI-Footgun — UI kann months nicht auf NULL zurücksetzen, bei 164-07-UI-Bau Clear-Option vorsehen; (b) ConfigDefaults-Doku gefixt (0563f04): CERT_VALIDITY_MONTHS_DEFAULT ist UI-Prefill, KEIN Runtime-Fallback; (c) Unit-Tests mock-heavy (locken Call-Struktur, nicht DB-Verhalten) — akzeptiert, echte DB-Semantik hängt am NC-Savepoint-Pattern das seit v5.0.0 live läuft.
+
+**11 neue Locking-Tests** (5 closePeriod, 2 evaluate-TX, 4 IssuanceService). Gate 1: 302 Tests/1023 Assertions, nur die 3 erwarteten Wave-RED (164-05/06/07).
+
+**⚠ Für 164-05:** closePeriod braucht jetzt certId → closeExpiredPeriods MUSS die Query auf learning_certificates fahren (active_idem_key IS NOT NULL AND expires_at < now-grace; user_id/course_id direkt von der Cert-Row — NIEMALS idemKey parsen, uids können ':' enthalten).
+
 ---
 *Phase: 164-rezertifizierung-retention-i18n*
-*Completed: 2026-07-03*
+*Completed: 2026-07-03 (inkl. Post-Impl-Review SHIP)*
