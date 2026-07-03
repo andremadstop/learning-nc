@@ -51,13 +51,14 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 
 ### RECERT — Re-Zertifizierung
 
-- [ ] **RECERT-01**: Cert-Ablauf-Status-Zustände (valid / expiring / overdue / expired), rolling-from-pass; `DateTimeImmutable::modify('+1 year')` (DST-sicher).
-- [ ] **RECERT-02**: **Konfigurierbare Gültigkeit pro Kurs** (`recert_interval_days` / `cert_validity_months`, Default 12 Monate) + optionaler per-Assignment-Override.
-- [ ] **RECERT-03**: **Grace-Period (14 Tage)** nach Ablauf, bevor Status auf „überfällig" kippt.
-- [ ] **RECERT-04**: `RecertPeriodCloseJob` (täglicher TimedJob) schließt abgelaufene Perioden: `revoked_at` setzen + `active_idem_key`/`active_period_key` NULLen + frische Assignment-Row anlegen → gibt Re-Issue frei.
-- [ ] **RECERT-05**: **Guard-Redesign** — `PassCriteriaService::emitPassEventIfFirst()` prüft „aktive Assignment-Periode mit `active_period_key` IS NOT NULL AND status != passed" statt „je bestanden"; `IssuanceService::issueIfPassed()` blockt nach Period-Close nicht mehr. (⚠ Codex-Security-Review Pflicht.)
-- [ ] **RECERT-06**: Erinnerungen 30 + 7 Tage vor Ablauf über `INotificationManager` (**primär, mail-los-sicher**); `IMailer` nur additiv wo `getEMailAddress()` non-null. Idempotenz pro `(certId, threshold_days)` (kein Reminder-Sturm).
-- [ ] **RECERT-07**: **Unveränderliche Cert-Historie** — Re-Zert erzeugt eine NEUE Cert-Row; alte Row immutable; alte `verification_id`-URL bleibt dauerhaft auflösbar.
+- [x] **RECERT-01**: Cert-Ablauf-Status-Zustände (valid / expiring / overdue / expired), rolling-from-pass; `DateTimeImmutable::modify('+1 year')` (DST-sicher).
+- [x] **RECERT-02**: **Konfigurierbare Gültigkeit pro Kurs** (`recert_interval_days` / `cert_validity_months`, Default 12 Monate) + optionaler per-Assignment-Override.
+- [x] **RECERT-03**: **Grace-Period (14 Tage)** nach Ablauf, bevor Status auf „überfällig" kippt.
+- [x] **RECERT-04**: `RecertPeriodCloseJob` (täglicher TimedJob) schließt abgelaufene Perioden: `revoked_at` setzen + `active_idem_key`/`active_period_key` NULLen + frische Assignment-Row anlegen → gibt Re-Issue frei.
+- [x] **RECERT-05**: **Guard-Redesign** — `PassCriteriaService::emitPassEventIfFirst()` prüft „aktive Assignment-Periode mit `active_period_key` IS NOT NULL AND status != passed" statt „je bestanden"; `IssuanceService::issueIfPassed()` blockt nach Period-Close nicht mehr. (⚠ Codex-Security-Review Pflicht.)
+- [x] **RECERT-06**: Erinnerungen 30 + 7 Tage vor Ablauf über `INotificationManager` (**primär, mail-los-sicher**); `IMailer` nur additiv wo `getEMailAddress()` non-null. Idempotenz pro `(certId, threshold_days)` (kein Reminder-Sturm).
+- [x] **RECERT-07**: **Unveränderliche Cert-Historie** — Re-Zert erzeugt eine NEUE Cert-Row; alte Row immutable; alte `verification_id`-URL bleibt dauerhaft auflösbar.
+  - *Reconciliations 164 (2026-07-03):* RECERT-04 setzt bewusst KEIN `revoked_at` (SC2/Locked Decision #2: alte URL liest "expired", nie "withdrawn"; Audit via PERIOD_CLOSED-Event). RECERT-02: KEIN implizites 12-Monats-Default (Codex H4; months explizit via API, Legacy-`cert_validity_days`-Fallback; per-Assignment-Override = Signatur-Seam, Datenpfad + Months-UI-Feld = Follow-up). RECERT-05 implementiert als `mayIssue()`-Union-Guard (Branch A unfiltered ever-issued OR Branch B Allow-List-Periode). RECERT-07-Permanenz begrenzt durch DSGVO-03-Retention (README; Tombstone statt 500). RECERT-06: Outbox-Pattern (claim/delivered, Migration 009800) statt bare Idempotenz-Row.
 
 ### USER — Username-Politur
 
@@ -68,9 +69,9 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 
 - [x] **DSGVO-01**: **Art. 17 chain-sichere Anonymisierung** — bei User-Löschung wird die User-Referenz in Audit/Certs pseudonymisiert/anonymisiert, **ohne die Hash-Chain zu brechen** (User-Referenz im Hash ist bereits pseudonymisiert, nicht Klartext-uid).
 - [x] **DSGVO-02**: **Art. 20 Datenübertragbarkeit** — einzelner Nutzer kann seine Zertifikate + Lernhistorie maschinenlesbar exportieren (bestehenden `DataExportService` erweitern).
-- [ ] **DSGVO-03**: **Retention/Löschkonzept (Art. 5(1)(e))** — konfigurierbare Auto-Anonymisierung von Certs/Audit/Assignments nach X Jahren.
+- [x] **DSGVO-03**: **Retention/Löschkonzept (Art. 5(1)(e))** — konfigurierbare Auto-Anonymisierung von Certs/Audit/Assignments nach X Jahren.
 - [x] **DSGVO-04**: **Art. 13 Transparenz** — Datenschutzhinweis zu Schulungsbeginn: welche Daten (Abschluss + Zeitstempel), welcher Zweck (Rechtspflicht Art. 6(1)(c), minimiert Art. 5(1)(c)), dass Wiedergabemuster NICHT permanent gespeichert werden.
-- [ ] **DSGVO-05**: Alle neuen UI-Strings in 5 Sprachen (de/en/fr/ru/ar); Nachweis-/Zertifikat-Texte mehrsprachig.
+- [x] **DSGVO-05**: Alle neuen UI-Strings in 5 Sprachen (de/en/fr/ru/ar); Nachweis-/Zertifikat-Texte mehrsprachig.
 
 ---
 
@@ -142,20 +143,20 @@ v1 = das **„Gerüst"** (Content-Authoring / Hosting / SCORM sind spätere Ausb
 | RBAC-02 | Phase 163 | Done 2026-07-02 |
 | RBAC-03 | Phase 163 | Done 2026-07-02 |
 | RBAC-04 | Phase 163 | Done 2026-07-02 |
-| RECERT-01 | Phase 164 | Pending |
-| RECERT-02 | Phase 164 | Pending |
-| RECERT-03 | Phase 164 | Pending |
-| RECERT-04 | Phase 164 | Pending |
-| RECERT-05 | Phase 164 | Pending |
-| RECERT-06 | Phase 164 | Pending |
-| RECERT-07 | Phase 164 | Pending |
+| RECERT-01 | Phase 164 | Complete (2026-07-03) |
+| RECERT-02 | Phase 164 | Complete (2026-07-03) |
+| RECERT-03 | Phase 164 | Complete (2026-07-03) |
+| RECERT-04 | Phase 164 | Complete (2026-07-03) |
+| RECERT-05 | Phase 164 | Complete (2026-07-03) |
+| RECERT-06 | Phase 164 | Complete (2026-07-03) |
+| RECERT-07 | Phase 164 | Complete (2026-07-03) |
 | USER-01 | Phase 160 | Pending |
 | USER-02 | Phase 160 | Pending |
 | DSGVO-01 | Phase 160 | Pending |
 | DSGVO-02 | Phase 163 | Done 2026-07-02 |
-| DSGVO-03 | Phase 164 | Pending |
+| DSGVO-03 | Phase 164 | Complete (2026-07-03) |
 | DSGVO-04 | Phase 162 | Complete |
-| DSGVO-05 | Phase 164 | Pending |
+| DSGVO-05 | Phase 164 | Complete (2026-07-03) |
 
 **Coverage:** v1 = 41 Requirements, 5 Phasen (160–164), **41/41 gemappt (100%)**. Migration-Sequenz ab Version009300.
 
