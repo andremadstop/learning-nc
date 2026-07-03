@@ -33,9 +33,15 @@ final class ConfigDefaults {
     public const RECERT_GRACE_DAYS_DEFAULT = '14';
 
     /**
-     * Default cert validity in months when learning_courses.cert_validity_months is NULL (RECERT-02).
+     * Suggested cert validity in months for the admin UI (RECERT-02) — a FORM PREFILL, not a
+     * runtime fallback.
      *
-     * Applied in code (IssuanceService); 0 = no expiry.
+     * ⚠ Post-impl review HIGH 4: IssuanceService::computeExpiry() deliberately has NO implicit
+     * months default. cert_validity_months = NULL means "unset" → the legacy cert_validity_days
+     * contract governs (0/NULL = no expiry). An automatic 12-month fallback would silently turn
+     * every legacy no-expiry course into an expiring one. Expiring validity is ALWAYS an
+     * explicit per-course (or per-assignment override) choice; this constant may only ever be
+     * used to prefill the months field in the course settings UI (164-07).
      */
     public const CERT_VALIDITY_MONTHS_DEFAULT = 12;
 
