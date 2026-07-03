@@ -3,16 +3,16 @@ gsd_state_version: 1.0
 milestone: v5.2.0
 milestone_name: "v5.2.0 Pflichtschulung"
 current_phase: 164
-current_plan: "Phase 163 ✓ COMPLETE 2026-07-02 (7/7 plans). Next: Phase 164 (Re-Zertifizierung) — the last milestone phase. Not yet planned — start with /gsd:plan-phase 164."
-status: "v5.2.0 Pflichtschulung — 4/5 Phasen (80%). Phase 163 (Teamleiter-RBAC-Reports + DSGVO Art.20) ✓ COMPLETE: observed-RED 5-wave build (RBAC-02/03/04 + DSGVO-02). RBAC-03 OversightMapper+RoleService reads learning_oversight; RBAC-02 getGroupReport (assert-first IDOR gate, DB-level WHERE user_id IN(members), set-difference vs IGroupManager names, opaque member_ref DTO — no raw uid/email); RBAC-04 mandatory compliance reminder (bypasses opt-out) + independent 2nd-IDOR guard (remindMember resolves member_ref only within expandGroup); DSGVO-02 own-cert export (raw VC-JWT, session-only) + kudos email masking. TeamLeadDashboard.vue (conditional, camelCase contract). Gates: PHPStan L5 clean, PHPUnit 281/281, Vitest 16/16, ESLint 0. **Grumpy-Codex 4 passes → SHIP** (BLOCKER email-in-uid via member_ref; dead-dashboard param/field contract; MEDIUM kudos third-party email; BLOCKER display_name==uid via safeDisplayName trim/case incl. pre-existing instructor cert-report) — each closed with a locking regression test. Verifier goal-backward → human_needed. Frontmatter manuell (gsd-tools-State-Commands MEIDEN)."
-stopped_at: "Phase 163 COMPLETE + getrackt. Nächster Schritt: Phase 164 planen (/gsd:plan-phase 164) — letzte Milestone-Phase (Re-Zertifizierung), danach Release-Akt v5.2.0 dem User vorlegen. Live Gate 2 (test-api.sh IDOR curls) + UI/Notification-Bell = human-verify für Andres Durchlauf (Secret-Grenze: Vault-Admin-Creds nicht überschritten)."
-last_updated: "2026-07-02"
-last_activity: "2026-07-02 — Phase 163 COMPLETE: observed-RED 5-wave build (RBAC-02/03/04 + DSGVO-02), 4-pass grumpy-Codex security review → SHIP, goal-backward verify → human_needed. PHPStan L5 clean, PHPUnit 281/281, Vitest 16/16. Tracking manuell."
+current_plan: "Phase 164 Plan 04 ✓ COMPLETE 2026-07-03 (4/7 plans). Next: 164-05 (Wave merge — PHPStan L5 + full PHPUnit + deploy + live smoke)."
+status: "v5.2.0 Pflichtschulung — Phase 164 aktiv (4/7 Pläne). Wave 3 (164-04) fertig: RECERT-05 union guard + CAS-gated emit + DST-safe computeExpiry + closePeriod 3-write. 7 Locking-Tests GREEN. PHPStan L5 + full PHPUnit pending (164-05 wave merge). 164-04 Codex-GO: Branch-A unfiltered, Branch-B allow-list, closePeriod never sets revoked."
+stopped_at: "164-04 COMPLETE — RECERT-05 union guard + DST-safe expiry + closePeriod implementiert, committed (42efec1 + e32edf8). Nächster Schritt: 164-05 (Wave merge: PHPStan L5, full PHPUnit, deploy, live smoke)."
+last_updated: "2026-07-03"
+last_activity: "2026-07-03 — 164-04 COMPLETE: computeExpiry DST-safe, closePeriod 3-write (expires cert + nulls both UNIQUE slots + inserts fresh row), union guard, CAS-emit. Course::certValidityMonths entity property Rule-2-autofix. 7 RED tests flipped GREEN."
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 17
-  completed_plans: 17
+  total_plans: 24
+  completed_plans: 21
   percent: 80
 ---
 
@@ -27,10 +27,10 @@ See: .planning/PROJECT.md (updated 2026-07-01)
 
 ## Current Position
 
-Phase: 163 — Teamleiter-RBAC-Reports + DSGVO Art.20 ✓ COMPLETE (7/7 Pläne, 5 Waves). Next: Phase 164 (Re-Zertifizierung).
-Plan: 7/7 — observed-RED build; grumpy-Codex 4 passes → SHIP; goal-backward verify → human_needed.
-Status: RBAC-02/03/04 + DSGVO-02 gebaut + committed + zentral gate-verifiziert (PHPStan L5 clean, PHPUnit 281/281, Vitest 16/16, ESLint 0). Live Gate 2 (test-api.sh IDOR curls) + UI/Notification-Bell = human-verify (Andres Durchlauf; Secret-Grenze nicht überschritten).
-Last activity: 2026-07-02 — Phase 163 COMPLETE (member_ref DTO, assert-first IDOR, mandatory reminder + 2nd-IDOR guard, DSGVO cert export, TeamLeadDashboard).
+Phase: 164 — Re-Zertifizierung + Retention + i18n Parity (in progress, 4/7 Pläne).
+Plan: 164-04 ✓ COMPLETE — RECERT-05 union guard (unfiltered Branch A, allow-list Branch B), CAS-gated emit, DST-safe computeExpiry, closePeriod 3-write. Wave merge (164-05) next.
+Status: 7 locking tests GREEN locally. PHPStan L5 + full PHPUnit pending at 164-05 wave merge.
+Last activity: 2026-07-03 — 164-04: computeExpiry DateTimeImmutable::modify('+N months'), closePeriod expires cert + frees UNIQUE slots + inserts fresh period row, hasEverIssuedCertificate (unfiltered), CAS on active_idem_key. Course::certValidityMonths entity property autofix.
 
 Progress: ████████░░ 80% (4/5 phases complete)
 
@@ -99,3 +99,9 @@ Archiv: `.planning/milestones/v5.0.0-ROADMAP.md` + `v5.0.0-REQUIREMENTS.md`.
 - AssignmentService does NOT gate cert issuance (self-learners have no assignment row)
 - DST-safe: DateTimeImmutable::modify('+1 year') ONLY
 - AWO: Betriebsvereinbarung (BetrVG §87) required before production rollout
+
+**164-04 decisions (RECERT-05, 2026-07-03):**
+- Branch A UNFILTERED: findByUserAndCourse() returns newest cert regardless of revoked/expires_at — revoked cert still blocks auto-reissue (Codex GO). NEVER filter by active status.
+- Branch B allow-list: ['assigned','in_progress','overdue'] — terminal states block by positive enumeration, NOT != 'passed'
+- closePeriod raw SQL: UPDATE certificates WHERE active_idem_key=idemKey (expires_at=now-1 + active_idem_key=NULL) + UPDATE assignments + INSERT fresh row; no CertificateMapper in AssignmentService
+- SC2: closePeriod MUST NOT set revoked=true; old URL reads 'expired' not 'withdrawn'
