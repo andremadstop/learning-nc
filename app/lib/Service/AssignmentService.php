@@ -2,9 +2,12 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
+use OCA\Learning\AppInfo\ConfigDefaults;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\DB\QueryBuilder\IQueryBuilder;
+use Psr\Log\LoggerInterface;
 
 /**
  * Manages course assignments to NC users and groups.
@@ -15,9 +18,11 @@ use OCP\DB\QueryBuilder\IQueryBuilder;
  */
 class AssignmentService {
     public function __construct(
-        private readonly IDBConnection $db,
-        private readonly IGroupManager $groupManager,
-        private readonly AuditService  $auditService,
+        private readonly IDBConnection   $db,
+        private readonly IGroupManager   $groupManager,
+        private readonly AuditService    $auditService,
+        private readonly IConfig         $config,
+        private readonly LoggerInterface $logger,
     ) {}
 
     /**
@@ -119,16 +124,20 @@ class AssignmentService {
      * Close the active assignment period for a subject, ending the obligation cycle.
      *
      * Write-set (RECERT-04, 164-04 post-impl-review hardened — one transaction, CAS-gated):
-     *   1+2 (single UPDATE on learning_certificates, THE CAS GATE): set expires_at = now-1 so
-     *        the old verify URL reads 'expired' (revoked=false, expires_at<now → 'expired' per
-     *        CertificateVerifyService precedence: invalid→withdrawn→expired→valid), AND set
-     *        active_idem_key = NULL to free the cert-level UNIQUE slot for the next-period cert
-     *        insert. WHERE id = $certId AND active_idem_key = "{subjectId}:{courseId}" — pinned
-     *        to the SPECIFIC cert being closed. 0 affected rows = that cert is already closed
-     *        (repeat/stale call) OR certId does not match the subject/course → clean no-op
-     *        return. This makes closePeriod idempotent AND immune to the stale-call corruption
-     *        where a reused period key would expire the NEXT period's fresh cert.
+     *   1. (CAS GATE, UPDATE learning_certificates) set active_idem_key = NULL to free the
+     *        cert-level UNIQUE slot for the next-period cert insert. WHERE id = $certId AND
+     *        active_idem_key = "{subjectId}:{courseId}" — pinned to the SPECIFIC cert being
+     *        closed. 0 affected rows = that cert is already closed (repeat/stale call) OR
+     *        certId does not match the subject/course → clean no-op return. This makes
+     *        closePeriod idempotent AND immune to the stale-call corruption where a reused
+     *        period key would expire the NEXT period's fresh cert.
      *        NOTE: active_idem_key lives on learning_CERTIFICATES, NOT learning_assignments.
+     *   2.   (conditional expiry clamp) set expires_at = now-1 ONLY where expires_at IS NULL or
+     *        still in the future, so the old verify URL reads 'expired' (revoked=false,
+     *        expires_at<now per CertificateVerifyService precedence: invalid→withdrawn→
+     *        expired→valid). An ALREADY-expired cert keeps its historical expires_at — the
+     *        daily job closes certs past the grace window, and overwriting would falsify the
+     *        public verify page's expiry date (signed validUntil stays authoritative anyway).
      *   3.   UPDATE learning_assignments SET active_period_key = NULL WHERE active_period_key =
      *        "{courseId}:{subjectType}:{subjectId}" — frees the assignment UNIQUE slot.
      *   4.   INSERT a fresh assignment row (same period key, status='assigned') — opens the new
@@ -168,12 +177,11 @@ class AssignmentService {
 
         $this->db->beginTransaction();
         try {
-            // Write 1+2 (CAS gate): expire THE GIVEN cert AND free the cert-level UNIQUE slot.
-            // Pinned to id = $certId AND active_idem_key = $idemKey so a repeat/stale call
-            // (cert already closed, or a NEWER cert now owns the idem slot) matches 0 rows.
+            // Write 1 (CAS gate): free the cert-level UNIQUE slot. Pinned to id = $certId AND
+            // active_idem_key = $idemKey so a repeat/stale call (cert already closed, or a
+            // NEWER cert now owns the idem slot) matches 0 rows.
             $qb = $this->db->getQueryBuilder();
             $qb->update('learning_certificates')
-                ->set('expires_at',     $qb->createNamedParameter($now - 1, IQueryBuilder::PARAM_INT))
                 ->set('active_idem_key', $qb->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
                 ->where($qb->expr()->andX(
                     $qb->expr()->eq('id', $qb->createNamedParameter($certId, IQueryBuilder::PARAM_INT)),
@@ -188,6 +196,23 @@ class AssignmentService {
                 $this->db->commit();
                 return;
             }
+
+            // Write 2 (conditional expiry clamp): force 'expired' ONLY for certs that are not
+            // yet expired (future expires_at) or never-expiring (NULL). An ALREADY-expired cert
+            // keeps its historical expires_at — the daily job closes certs long past expiry,
+            // and overwriting would falsify the publicly shown expiry date on the verify page
+            // (the signed validUntil stays authoritative either way, status reads 'expired').
+            $qbClamp = $this->db->getQueryBuilder();
+            $qbClamp->update('learning_certificates')
+                ->set('expires_at', $qbClamp->createNamedParameter($now - 1, IQueryBuilder::PARAM_INT))
+                ->where($qbClamp->expr()->andX(
+                    $qbClamp->expr()->eq('id', $qbClamp->createNamedParameter($certId, IQueryBuilder::PARAM_INT)),
+                    $qbClamp->expr()->orX(
+                        $qbClamp->expr()->isNull('expires_at'),
+                        $qbClamp->expr()->gt('expires_at', $qbClamp->createNamedParameter($now - 1, IQueryBuilder::PARAM_INT))
+                    )
+                ));
+            $qbClamp->executeStatement();
 
             // Write 3: free the assignment-level UNIQUE slot so the INSERT below can use the same key.
             $qb2 = $this->db->getQueryBuilder();
@@ -231,6 +256,68 @@ class AssignmentService {
             }
             throw $e; // partial close must never survive — fail loud, job retries next run
         }
+    }
+
+    /**
+     * Close every recertification period whose cert expired past the grace window (RECERT-04).
+     *
+     * Called daily by RecertPeriodCloseJob. Source of truth is learning_CERTIFICATES, not the
+     * assignment table: an "open period with an expired cert" is exactly a cert row that still
+     * OWNS its idem slot (active_idem_key IS NOT NULL) and whose expires_at is past the cutoff.
+     * user_id/course_id are read directly from the cert row — the idem key is NEVER parsed
+     * (NC uids may contain ':').
+     *
+     * cutoff = $now - recert_grace_days * 86400 (IConfig app value, default
+     * ConfigDefaults::RECERT_GRACE_DAYS_DEFAULT). Plain second arithmetic is fine here — the
+     * grace window is a coarse operational buffer, not a calendar-exact validity (research note).
+     *
+     * Idempotency/self-cleaning: closePeriod() NULLs active_idem_key (CAS write 1), so a closed
+     * cert drops out of this query on the next run — no re-selection, no double close.
+     *
+     * Per-row isolation: one failing close (rolled back + logged) must not block the remaining
+     * periods — a poisoned row would otherwise stall the whole compliance loop forever. Failed
+     * rows are retried on the next daily run.
+     *
+     * @return int number of periods closed this run
+     */
+    public function closeExpiredPeriods(int $now): int {
+        $graceDays = (int)$this->config->getAppValue(
+            'learning', 'recert_grace_days', ConfigDefaults::RECERT_GRACE_DAYS_DEFAULT
+        );
+        $cutoff = $now - $graceDays * 86400;
+
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('id', 'user_id', 'course_id')
+           ->from('learning_certificates')
+           ->where($qb->expr()->isNotNull('active_idem_key'))
+           ->andWhere($qb->expr()->isNotNull('expires_at'))
+           ->andWhere($qb->expr()->lt('expires_at', $qb->createNamedParameter($cutoff, IQueryBuilder::PARAM_INT)));
+        $result = $qb->executeQuery();
+        $rows = [];
+        while (($row = $result->fetch()) !== false) {
+            if (!is_array($row)) {
+                break;
+            }
+            $rows[] = $row;
+        }
+        $result->closeCursor();
+
+        $closed = 0;
+        foreach ($rows as $row) {
+            try {
+                // Certs are per-user rows → subject_type is always 'user' here. Group-originated
+                // obligations resolve to per-member user periods exactly this way (see closePeriod
+                // GROUP ASSIGNMENTS note).
+                $this->closePeriod('user', (string)$row['user_id'], (int)$row['course_id'], (int)$row['id']);
+                $closed++;
+            } catch (\Throwable $e) {
+                $this->logger->warning(
+                    'closeExpiredPeriods: closing cert {cert} failed, retrying next run: {msg}',
+                    ['cert' => (int)$row['id'], 'msg' => $e->getMessage()]
+                );
+            }
+        }
+        return $closed;
     }
 
     /**

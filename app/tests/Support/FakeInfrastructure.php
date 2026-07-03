@@ -71,6 +71,10 @@ final class FakeExpressionBuilder {
         return ['type' => 'neq', 'left' => $left, 'right' => $right];
     }
 
+    public function lt(mixed $left, mixed $right): array {
+        return ['type' => 'lt', 'left' => $left, 'right' => $right];
+    }
+
     public function lte(mixed $left, mixed $right): array {
         return ['type' => 'lte', 'left' => $left, 'right' => $right];
     }

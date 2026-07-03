@@ -7,6 +7,7 @@ use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\ComplianceEventTypes;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
+use OCA\Learning\Tests\Support\FakeResult;
 use OCP\IGroup;
 use OCP\IGroupManager;
 use OCP\IUser;
@@ -26,7 +27,7 @@ class AssignmentServiceTest extends TestCase {
         $audit = $this->createMock(AuditService::class);
         $db = $this->createMock(\OCP\IDBConnection::class);
 
-        $service = new AssignmentService($db, $gm, $audit);
+        $service = new AssignmentService($db, $gm, $audit, $this->createMock(\OCP\IConfig::class), $this->createMock(\Psr\Log\LoggerInterface::class));
         $result = $service->expandGroup('testgroup');
         $this->assertSame(['user1'], $result);
     }
@@ -43,7 +44,7 @@ class AssignmentServiceTest extends TestCase {
         $qb->method('executeStatement')->willReturn(1);
         $db->method('getQueryBuilder')->willReturn($qb);
 
-        $service = new AssignmentService($db, $gm, $audit);
+        $service = new AssignmentService($db, $gm, $audit, $this->createMock(\OCP\IConfig::class), $this->createMock(\Psr\Log\LoggerInterface::class));
         $service->createAssignment(5, 'user', 'alice', 'admin', null);
         // Verify via mock: the 'active_period_key' passed to values() equals '5:user:alice'
         // (Use argument capture or test the constant format via string assertion if needed)
@@ -65,7 +66,7 @@ class AssignmentServiceTest extends TestCase {
         $qb->method('executeStatement')->willReturn(1);
         $db->method('getQueryBuilder')->willReturn($qb);
 
-        $service = new AssignmentService($db, $gm, $audit);
+        $service = new AssignmentService($db, $gm, $audit, $this->createMock(\OCP\IConfig::class), $this->createMock(\Psr\Log\LoggerInterface::class));
         $service->extendDeadline(5, 'user', 'alice', time() + 86400, 'admin');
     }
 
@@ -93,7 +94,13 @@ class AssignmentServiceTest extends TestCase {
     private function makeClosePeriodService(array $builders): array {
         $db = new FakeDbConnection($builders);
         $audit = $this->createMock(AuditService::class);
-        $svc = new AssignmentService($db, $this->createMock(IGroupManager::class), $audit);
+        $svc = new AssignmentService(
+            $db,
+            $this->createMock(IGroupManager::class),
+            $audit,
+            $this->createMock(\OCP\IConfig::class),
+            $this->createMock(\Psr\Log\LoggerInterface::class),
+        );
         return [$svc, $db, $audit];
     }
 
@@ -121,7 +128,8 @@ class AssignmentServiceTest extends TestCase {
      */
     public function testClosePeriodPinsUpdateToCertId(): void {
         $certUpdate = new FakeQueryBuilder(null, 1);
-        [$svc, , ] = $this->makeClosePeriodService([$certUpdate, new FakeQueryBuilder(), new FakeQueryBuilder()]);
+        $clamp = new FakeQueryBuilder();
+        [$svc, , ] = $this->makeClosePeriodService([$certUpdate, $clamp, new FakeQueryBuilder(), new FakeQueryBuilder()]);
 
         $svc->closePeriod('user', self::CP_USER, self::CP_COURSE, self::CP_CERT);
 
@@ -134,12 +142,43 @@ class AssignmentServiceTest extends TestCase {
     }
 
     /**
-     * BLOCKER 2 (atomicity): the successful close wraps all three writes + the audit append
+     * Write-split lock (164-05 refinement): the CAS write (write 1) frees ONLY the idem slot;
+     * the expiry clamp (write 2) is a SEPARATE conditional UPDATE that must not touch
+     * already-expired certs — the daily job closes certs long past expiry, and overwriting
+     * their historical expires_at would falsify the public verify page's expiry date.
+     */
+    public function testClosePeriodSplitsCasFromExpiryClamp(): void {
+        $cas = new FakeQueryBuilder(null, 1);
+        $clamp = new FakeQueryBuilder();
+        [$svc, , ] = $this->makeClosePeriodService([$cas, $clamp, new FakeQueryBuilder(), new FakeQueryBuilder()]);
+
+        $svc->closePeriod('user', self::CP_USER, self::CP_COURSE, self::CP_CERT);
+
+        // Write 1 (CAS): idem slot only — never the expiry.
+        $this->assertArrayHasKey('active_idem_key', $cas->setCalls);
+        $this->assertArrayNotHasKey('expires_at', $cas->setCalls,
+            'CAS write must not touch expires_at — historical expiry is preserved for already-expired certs');
+        // Write 2 (clamp): expiry only, guarded by isNull-or-future condition.
+        $this->assertSame('update', $clamp->operation);
+        $this->assertSame('learning_certificates', $clamp->table);
+        $this->assertArrayHasKey('expires_at', $clamp->setCalls);
+        $this->assertArrayNotHasKey('active_idem_key', $clamp->setCalls);
+        $where = json_encode($clamp->whereCalls);
+        $this->assertIsString($where);
+        $this->assertStringContainsString('isNull', $where,
+            'clamp must only fire for NULL (never-expiring) …');
+        $this->assertStringContainsString('"gt"', $where,
+            '… or still-future expires_at — an already-expired cert keeps its historical date');
+    }
+
+    /**
+     * BLOCKER 2 (atomicity): the successful close wraps all four writes + the audit append
      * in exactly one transaction — begin/commit, no rollback.
      */
     public function testClosePeriodRunsInOneTransaction(): void {
         [$svc, $db, $audit] = $this->makeClosePeriodService([
-            new FakeQueryBuilder(null, 1), // cert UPDATE (CAS wins)
+            new FakeQueryBuilder(null, 1), // cert UPDATE (CAS wins, idem slot)
+            new FakeQueryBuilder(),        // expiry clamp
             new FakeQueryBuilder(),        // assignment UPDATE
             new FakeQueryBuilder(),        // fresh-row INSERT
         ]);
@@ -152,7 +191,7 @@ class AssignmentServiceTest extends TestCase {
         $this->assertSame(1, $db->beginTransactionCalls, 'close opens exactly one transaction');
         $this->assertSame(1, $db->commitCalls, 'close commits exactly once');
         $this->assertSame(0, $db->rollBackCalls, 'happy path never rolls back');
-        $this->assertCount(3, $db->issuedBuilders, 'all three writes ran inside the transaction');
+        $this->assertCount(4, $db->issuedBuilders, 'all four writes ran inside the transaction');
     }
 
     /**
@@ -163,6 +202,7 @@ class AssignmentServiceTest extends TestCase {
     public function testClosePeriodRollsBackWhenAuditFails(): void {
         [$svc, $db, $audit] = $this->makeClosePeriodService([
             new FakeQueryBuilder(null, 1),
+            new FakeQueryBuilder(),
             new FakeQueryBuilder(),
             new FakeQueryBuilder(),
         ]);
@@ -192,6 +232,7 @@ class AssignmentServiceTest extends TestCase {
             new FakeQueryBuilder(null, 1),
             new FakeQueryBuilder(),
             new FakeQueryBuilder(),
+            new FakeQueryBuilder(),
         ]);
 
         $emailUid = 'alice@example.com';
@@ -213,5 +254,62 @@ class AssignmentServiceTest extends TestCase {
             array_keys($capturedContext),
             'context carries ONLY the facts allow-list'
         );
+    }
+
+    // ---- closeExpiredPeriods() (164-05, RECERT-04) ----------------------------------------
+
+    /**
+     * RECERT-04: the daily sweep selects certs that still OWN their idem slot and expired past
+     * the grace cutoff (now - grace*86400), reads user_id/course_id straight off the cert row
+     * (NEVER parses the idem key — uids may contain ':'), and closes each period. A poisoned
+     * row (closePeriod throws → rolled back) is logged and skipped so it can never stall the
+     * whole compliance loop; only successful closes count.
+     */
+    public function testCloseExpiredPeriodsClosesEachRowAndIsolatesFailures(): void {
+        $now = 1750000000;
+        $rows = [
+            ['id' => 42, 'user_id' => 'alice:with:colons', 'course_id' => 7],
+            ['id' => 43, 'user_id' => 'bob',               'course_id' => 9],
+        ];
+        $finder = new FakeQueryBuilder(new FakeResult(fetchQueue: $rows));
+        $db = new FakeDbConnection([$finder]);
+
+        $config = $this->createMock(\OCP\IConfig::class);
+        $config->method('getAppValue')->willReturn('14'); // grace days
+
+        $svc = $this->getMockBuilder(AssignmentService::class)
+            ->setConstructorArgs([
+                $db,
+                $this->createMock(IGroupManager::class),
+                $this->createMock(AuditService::class),
+                $config,
+                $this->createMock(\Psr\Log\LoggerInterface::class),
+            ])
+            ->onlyMethods(['closePeriod'])
+            ->getMock();
+
+        // Row 1 (alice) fails mid-close; row 2 (bob) MUST still be processed.
+        $calls = [];
+        $svc->expects($this->exactly(2))->method('closePeriod')
+            ->willReturnCallback(function (string $type, string $uid, int $courseId, int $certId) use (&$calls): void {
+                $calls[] = [$type, $uid, $courseId, $certId];
+                if ($uid === 'alice:with:colons') {
+                    throw new \RuntimeException('poisoned row');
+                }
+            });
+
+        $closed = $svc->closeExpiredPeriods($now);
+
+        $this->assertSame(1, $closed, 'failed row is logged + skipped; only successful closes count');
+        $this->assertSame([
+            ['user', 'alice:with:colons', 7, 42],
+            ['user', 'bob', 9, 43],
+        ], $calls, 'user_id/course_id/certId come straight from the cert row — no idem-key parsing');
+
+        // Query shape: cutoff = now - grace*86400 as a named parameter on the finder.
+        $this->assertSame('learning_certificates', $finder->from['table'] ?? null);
+        $paramValues = array_column($finder->namedParameters, 'value');
+        $this->assertContains($now - 14 * 86400, $paramValues,
+            'expires_at cutoff must honor the recert_grace_days config window');
     }
 }
