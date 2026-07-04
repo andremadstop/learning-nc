@@ -1,62 +1,45 @@
 ---
-created: 2026-07-03
-milestone: v5.2.0 Pflichtschulung
-branch: feature/v5.2.0-pflichtschulung
-resume_at: MEILENSTEIN INHALTLICH FERTIG (5/5 Phasen, 164 = 7/7 + 4 Codex-Pässe SHIP) — NEXT = Release-Akt v5.2.0, NUR MIT ANDRES FREIGABE
+created: 2026-07-04
+updated: 2026-07-04
+branch: main
+status: audit-fix in progress — all HIGH done, MED batch done, rest documented
 ---
 
-# HANDOFF — v5.2.0 Pflichtschulung — Stand 2026-07-03 abends
+# HANDOFF — Learning-NC post-v5.2.0 whole-app audit
 
-> Working tree: nur regenerierbare Build-Artefakte (`app/css/learning.css`, `app/js/learning.{css,js}`) + lokale gitignorte `.planning/phases`-Docs uncommitted.
-> **Mandat war: autonom bis v5.2.0 komplett, Stopp nur bei Secret/Release/Blocker → Release-Stopp ERREICHT.**
+## TL;DR
+- v5.2.0 shipped (tag `v5.2.0` on main, forgejo+codeberg). App-Store publication withheld (Andre: main+tag only).
+- A whole-app audit (8 review lanes) produced **12 HIGH, 22 MED, 11 LOW** — triage in `.planning/AUDIT-2026-07-03-FINDINGS.md`.
+- **All 12 HIGH fixed & committed. 8 MED fixed & committed.** Each through Gate 1 (PHPStan 0, PHPUnit green, live boot).
+- The rest is deliberately deferred with reasons (product decisions, speculative changes, infra refactors, low-impact LOWs) — see the Fix Status section of the findings file.
 
-## Meilenstein-Stand: 5/5 Phasen (100% inhaltlich)
-160 ✓ · 161 ✓ · 162 ✓ · 163 ✓ · **164 ✓ COMPLETE 2026-07-03** (7/7 Pläne).
+## What's fixed (on `main`, 6 audit commits since the tag)
+- HIGH-01/04/05/07–12 (Codex batch, verified + committed by Claude): exam-oracle strips, export/document/feed IDOR gates, three table-name-drift repairs (Migration 009900), PBQ scoring, exam-resume integrity.
+- HIGH-02 RAG cross-course IDOR + HIGH-03 missing AI consent gate (VirtuProfController).
+- HIGH-06 docs drift (README/info.xml/DEVELOPMENT).
+- MED-02/03/04/05/06/11/12/13/14 (RagImport authz, Gameshow order, translation oracle, prefix, entity, cert DTO, docs).
 
-## Phase 164 — was heute passierte (Session 2026-07-03)
-1. **Post-Impl-Codex-Review 164-04** (RECERT-05-Surgery): Pass 1 = 7 Findings (2 BLOCKER: closePeriod nicht idempotent + non-atomic strand; 3 HIGH: cert-ohne-COURSE_PASSED, stilles 12-Monats-Default, PERIOD_CLOSED-PII; 2 MED) → alle gefixt (closePeriod CAS auf certId + EINE TX; evaluate() outer TX; notify best-effort; computeExpiry legacy-days-Fallback; EOM-Clamp; @deprecated issueIfPassed) → Pass 2 **SHIP**.
-2. **Wave 164-05**: RecertPeriodCloseJob + closeExpiredPeriods (cert-driven Query, per-row-isoliert; Write-Split CAS/Expiry-Clamp — historisches expires_at bleibt).
-3. **Wave 164-06**: deriveLifecycleState (anonymized/valid/expiring/expired/overdue — overdue=NACH Grace, Plan autoritativ), anonymized-Tombstone-Branch im Verify, T-30/T-7-Reminders, Notifier recert_reminder (msgids = RecertL10n-Keys).
-4. **Wave 164-07**: Retention crypto-erasure (Scope-Guard: nur active_idem_key IS NULL altert aus), 10+17+4 i18n-Keys × 5 Sprachen (Parität 2298), README-Compliance-Sektion (RECERT-07-Permanenz + BetrVG §87).
-5. **Codex-Review Waves 05-07, 4 Pässe → SHIP**: P1 = 6 Findings, darunter **NOT-NULL-Schema-BLOCKER** (user_id/subject_id) → **Migration 009700**; P2 = Outbox-Pattern (delivered_at, **Migration 009800**) statt Delete-Kompensation; P3 = atomarer **reclaimStale-CAS** gegen Doppel-Bell-Race; P4 = FIX-CONFIRMED, SHIP.
+## Environment gotchas learned this session (IMPORTANT)
+- **DO NOT run `deploy-prod.sh` for audit fixes.** It ships git's info.xml (5.2.0) which mismatches devcloud's appconfig (5.2.0.5) → NC "needs upgrade" → whole instance 503. It happened once and was fixed by setting the CONTAINER info.xml back to 5.2.0.5. For fixes, deploy single files manually: `scp app/lib/... relais:~/learning-nc/app/lib/... && ssh relais 'docker cp ... && docker exec devcloud-app apache2ctl graceful'`. info.xml stays untouched.
+- PHPStan/PHPUnit run in the container: `ssh relais "docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/{phpstan analyse --no-progress|phpunit}"`. Deploy tests via `rsync app/tests → docker cp`.
+- No local PHP on the workstation.
+- Safety hook blocks `rm -rf` — use `rm -r --`.
 
-## Gates (final)
-- PHPUnit **317/317** · PHPStan **clean (0)** · Vitest **1220/1220** (86 Suiten) · ESLint 0 Errors · i18n-Parität 2298×5 + js-sync.
-- Migrationen **009600/009700/009800 live** auf devcloud, info.xml **5.2.0.5**, alle 7 Learning-Jobs in oc_jobs registriert, Public-Verify 200.
-- Gate 2 (test-api.sh, 92 Assertions) = **Human-verify**: braucht Vault ADMIN_PASS (DevCloud-Zugangsdaten.md — auf Workstation aktuell nicht gefunden, evtl. LiveSync/cockpit).
+## Next (if continuing the audit)
+Safe-to-fix next, frontend/AI context still warm:
+1. MED-08 multi-turn injection — store SANITIZED chat memory (or re-filter on load) in AiChatMemoryService/GeminiService.
+2. MED-09 AI rate-limit bypass — attach generateNote/generateStructured to the shared minute/day counter.
+3. MED-10 VirtuProf exam oracle — suppress RAG answer context when an active exam exists on the pool (HIGH-02's filter already narrows this).
+4. LOW batch — rate-limits (LOW-02/03/05), reviewerId spoofing (LOW-01), 404 (LOW-06), join-membership (LOW-04).
 
-## ⏭ RELEASE-AKT v5.2.0 (NUR MIT FREIGABE — hier gestoppt)
-info.xml `5.2.0.5`→**`5.2.0`** · CHANGELOG · ff `main` · Tag `v5.2.0` · Codeberg-Release (Forgejo-API, Token `~/.config/codeberg/token`) · App-Store-POST (Token `.env`) · `./scripts/verify-release.sh 5.2.0` · Key-Hygiene · danach `/gsd:complete-milestone`.
+Needs a decision / own session (do NOT blind-fix): MED-01 (owner-flow risk), MED-07 (product: names to Gemini), MED-16/20 (FSRS — verify vs model version first), MED-17/18/19 (test-infra refactors), MED-21/22 (PBQ frontend DTO split).
 
-## Human-verify (Andres Durchlauf, kein Release-Blocker)
-Live-IDOR-curls/test-api.sh (Vault-Creds) · Notification-Bell (recert_reminder) · Video-Gate live · Re-Cert-Loop end-to-end · Dashboard-Optik · Jan/AWO (#20) · Betriebsvereinbarung (organisatorisch, README dokumentiert).
+## Also still open from v5.2.0 itself
+- Human-verify (Andre's run-through): recert loop, notification bell, video gate, dashboard. test-api.sh needs Vault ADMIN_PASS (not found on workstation).
+- `/gsd:complete-milestone` for v5.2.0.
+- devcloud ops: oc_jobs bloated (5168× NC-core UpdateSingleMetadata) — cron backlog.
 
-## Follow-ups (nach Release, INBOX)
-- cert_validity_months **UI-Feld** (API fertig; Clear-auf-NULL vorsehen). Per-Assignment-Override = Signatur-Seam ohne Datenpfad.
-- retention_years=3 mit AWO/DSB bestätigen (FLAGGED in Code+README).
-- devcloud Ops: oc_jobs aufgebläht (5168× NC-Core UpdateSingleMetadata) — Cron-Rückstau prüfen.
-- RecertL10n.test.js-Kommentar hat overdue/expired-Labels vertauscht (nur Kommentar; Übersetzungen folgen Plan-Semantik).
-
-## Gotchas (Session-Learnings)
-- Codex-Review-Kaskade lohnt MASSIV: 14 echte Findings über 6 Pässe, davon 1 Schema-BLOCKER den Unit-Tests (Mocks!) nie sehen konnten. Muster: mock-basierte Tests + Live-Constraint-Checks gehören zusammen.
-- deploy-prod.sh `--test` bricht bei PHPStan-Transienten ab BEVOR PHPUnit läuft → PHPUnit direkt (rsync tests → docker cp → docker exec phpunit).
-- occ `background-job:list` paginiert (500) — oc_jobs direkt in PG prüfen (User `oc_admin`, DB `nextcloud`).
-- Node 22 (Reboot-Update) brach 1 Vitest-Suite via NcDialog-dist-CSS → @nextcloud/dialogs-Mock (Muster StudentDashboard.test.js).
-- check-i18n-parity.sh war an Newline-Key kaputt → python-set-diff; dabei 17 vorbestehende 163er-Lücken in fr/ru/ar gefunden+gefüllt.
-- NC Job-Basisklasse exponiert `$time` NICHT an Subklassen → eigene Property.
-
-## Kontext-Dateien
-- SUMMARYs/Pläne: `.planning/phases/164-rezertifizierung-retention-i18n/` (gitignored, nur lokal!)
-- `.planning/STATE.md` (100%, Release-Akt offen) · ROADMAP (164-Zeile komplett) · REQUIREMENTS (alle 41 ✓)
-- Codex-Protokolle: `scratchpad/codex-164-*-OUTPUT.txt` (session-flüchtig)
-- Memory: `project_v52_pflichtschulung.md`
-
----
-
-## ⚠ NACHTRAG 2026-07-03 ~15:00 — Ganzheitlicher App-Audit angestoßen, ABGEBROCHEN
-Andre (nach Fable-5-Umstellung mitten im Bau): gesamte App + Hilfsfiles vom besten Modell prüfen lassen.
-7 Review-Agents gestartet → **ALLE 7 sofort ins accountweite Session-Limit (Reset 19:00), 0 Ergebnisse.**
-**→ In frischer Session ≥19:00 neu starten. Vollständiger Auftrag + 8 Agent-Prompts + Triage-Regeln:
-`.planning/AUDIT-2026-07-03-PLAN.md`.** (8. Agent = Doku/Hilfsfiles war noch nicht gestartet.)
-CLAUDE.md Header-Zeile Vue2.7→3.5.32 bereits gefixt. v5.2.0 selbst = fertig+getaggt (nichts offen dadurch).
-Build-Artefakte im Stash `stash@{0}` (regenerierbar, kein Verlust).
+## Files
+- Audit triage + full fix ledger: `.planning/AUDIT-2026-07-03-FINDINGS.md`
+- Audit re-run brief (if lanes need re-running): `.planning/AUDIT-2026-07-03-PLAN.md`
+- Codex's working notes: `HANDOFF_LOG.md`, `RESUME_PROMPT.md` (superseded by this file)
