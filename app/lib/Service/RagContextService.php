@@ -72,12 +72,19 @@ class RagContextService {
      *   token_estimate: int,
      * }
      */
+    /**
+     * @param bool $suppressAnswers AUDIT MED-10: when the user has an active exam on the pool,
+     *   withhold answer-bearing context (pool questions' answers + the last-wrong correct answer)
+     *   so VirtuProf cannot be used as an exam oracle. The caller passes
+     *   QuestionService::isExamActiveOnPool().
+     */
     public function buildContext(
         string $userId,
         ?int $poolId,
         ?int $courseId,
         ?int $lastWrongQuestionId,
-        ?string $userMessage = null
+        ?string $userMessage = null,
+        bool $suppressAnswers = false
     ): array {
         $context = [
             'pool_name'        => null,
@@ -115,8 +122,8 @@ class RagContextService {
                 }
             }
 
-            // Priority 2: Pool questions (existing)
-            if ($poolId !== null) {
+            // Priority 2: Pool questions (existing) — answer keys withheld during an active exam.
+            if ($poolId !== null && !$suppressAnswers) {
                 $context['pool_questions'] = $this->loadPoolQuestions($poolId);
             }
 
@@ -125,8 +132,8 @@ class RagContextService {
                 $context['user_weaknesses'] = $this->loadUserWeaknesses($userId, $poolId);
             }
 
-            // Priority 4: Last wrong question
-            if ($lastWrongQuestionId !== null) {
+            // Priority 4: Last wrong question — its correct answer is withheld during an active exam.
+            if ($lastWrongQuestionId !== null && !$suppressAnswers) {
                 $context['last_wrong'] = $this->loadLastWrongQuestion($lastWrongQuestionId);
             }
         } catch (\Throwable $e) {

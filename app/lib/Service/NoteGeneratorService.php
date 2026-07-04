@@ -97,7 +97,8 @@ class NoteGeneratorService {
         $systemPrompt = $this->buildSystemPrompt($poolName, $chapterRef, $languageName);
         $userPrompt = $this->buildUserPrompt($poolName, $errorRate, $wrongQuestions, $language);
 
-        $generatedContent = $this->geminiService->generateNote($systemPrompt, $userPrompt);
+        // MED-09: file-intent note generation counts against the shared AI rate limit.
+        $generatedContent = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId);
 
         // 7. Ensure content has valid Obsidian frontmatter; add/fix if missing
         $bodyMarkdown = $this->stripGeminiFrontmatter($generatedContent);

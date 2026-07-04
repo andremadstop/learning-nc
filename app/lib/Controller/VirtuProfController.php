@@ -689,12 +689,17 @@ class VirtuProfController extends Controller {
         // Build RAG context when the frontend provides learning context params
         $ragContext = [];
         if ($poolId !== null || $courseId !== null || $lastWrongQuestionId !== null) {
+            // MED-10: during an active exam on the pool, withhold answer-bearing RAG context so
+            // VirtuProf cannot be turned into an exam oracle (mirrors AIController::explain).
+            $suppressAnswers = $poolId !== null
+                && $this->questionService->isExamActiveOnPool($poolId, $this->userId);
             $ragContext = $this->ragContextService->buildContext(
                 $this->userId,
                 $poolId,
                 $courseId,
                 $lastWrongQuestionId,
-                $message
+                $message,
+                $suppressAnswers
             );
         }
 

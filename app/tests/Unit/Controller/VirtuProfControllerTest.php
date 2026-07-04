@@ -286,9 +286,11 @@ class VirtuProfControllerTest extends TestCase {
         $this->courseMock->method('findById')->willReturn(['id' => 7]);
         $this->poolMock->method('findByIdWithShareAccess')->willReturn(['id' => 5]);
         $this->questionMock->method('find')->willReturn(['id' => 3]);
+        $this->questionMock->method('isExamActiveOnPool')->willReturn(false); // no active exam
 
+        // MED-10: 6th arg suppressAnswers=false when no exam is active.
         $this->ragMock->expects($this->once())->method('buildContext')
-            ->with('user-A', 5, 7, 3, 'was ist ein vlan')
+            ->with('user-A', 5, 7, 3, 'was ist ein vlan', false)
             ->willReturn(['chunks' => []]);
 
         $this->chatMemoryMock->method('loadMemory')->willReturn([]);
@@ -298,6 +300,32 @@ class VirtuProfControllerTest extends TestCase {
             ->willReturn(['answer' => 'ok', 'fallback' => false, 'reason' => '']);
 
         $resp = $this->makeController('user-A')->chat('was ist ein vlan', 5, 7, 3);
+
+        $this->assertSame(200, $resp->getStatus());
+    }
+
+    /**
+     * MED-10: during an active exam on the pool, buildContext is called with
+     * suppressAnswers=true so pool answer keys and the last-wrong correct answer are withheld
+     * (VirtuProf cannot be used as an exam oracle).
+     */
+    public function testChatSuppressesAnswerContextDuringActiveExam(): void {
+        $this->enableAi();
+        $this->telosMock->method('getAiConsentVersion')->willReturn('v1');
+        $this->poolMock->method('findByIdWithShareAccess')->willReturn(['id' => 5]);
+        $this->questionMock->method('isExamActiveOnPool')->with(5, 'user-A')->willReturn(true);
+
+        $this->ragMock->expects($this->once())->method('buildContext')
+            ->with('user-A', 5, null, null, 'was ist ein vlan', true) // suppressAnswers=true
+            ->willReturn(['chunks' => []]);
+
+        $this->chatMemoryMock->method('loadMemory')->willReturn([]);
+        $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
+        $this->userManagerMock->method('get')->willReturn(null);
+        $this->geminiMock->method('chat')
+            ->willReturn(['answer' => 'ok', 'fallback' => false, 'reason' => '']);
+
+        $resp = $this->makeController('user-A')->chat('was ist ein vlan', 5);
 
         $this->assertSame(200, $resp->getStatus());
     }

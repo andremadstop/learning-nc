@@ -285,7 +285,17 @@ class GeminiService {
      *
      * @throws \RuntimeException  On API error or empty response
      */
-    public function generateNote(string $systemPrompt, string $userPrompt): string {
+    /**
+     * @param ?string $userId AUDIT MED-09: when provided, this note generation counts against the
+     *   shared per-user/-minute/-day AI rate limit (same counters as chat). The file-intent path
+     *   and chat-memory compression pass it so they can no longer bypass the documented limits;
+     *   endpoints with their own UserRateLimit (Lernplan, course summary, story) may omit it.
+     * @throws \RuntimeException 'rate_limit' when the shared AI budget is exhausted.
+     */
+    public function generateNote(string $systemPrompt, string $userPrompt, ?string $userId = null): string {
+        if ($userId !== null && $this->checkRateLimit($userId) !== null) {
+            throw new \RuntimeException('rate_limit');
+        }
         try {
             $text = $this->llmService->generateText($userPrompt, [
                 'system_prompt' => $systemPrompt,
@@ -838,6 +848,14 @@ PROMPT;
             if ($message === '') {
                 continue;
             }
+
+            // AUDIT MED-08: stored chat memory is re-injected into the PRIVILEGED system prompt
+            // here. The live-input filter (sanitizeInput) never ran on these stored strings, so an
+            // injection payload that was stripped on turn 1 would otherwise reappear verbatim on
+            // turn 2. Re-apply NFKC + the injection-pattern strip to every remembered message
+            // (also cleans rows stored before this fix).
+            $normalized = \Normalizer::normalize($message, \Normalizer::NFKC);
+            $message = self::stripInjectionPatterns($normalized !== false ? $normalized : $message);
 
             if ($role === 'summary') {
                 $lines[] = '[Earlier Summary]: ' . $message;

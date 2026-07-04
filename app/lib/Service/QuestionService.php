@@ -353,6 +353,14 @@ class QuestionService {
     }
 
     /**
+     * AUDIT MED-10: public pool-level exam-oracle check for the VirtuProf/RAG path, which must
+     * withhold pool answer keys while the user has an active exam on that pool.
+     */
+    public function isExamActiveOnPool(int $poolId, string $userId): bool {
+        return $this->hasActiveExamOnPool($poolId, $userId);
+    }
+
+    /**
      * SEC-MED-2: Public wrapper for canEditPool, used by TranslationController
      */
     public function verifyEditAccess(int $poolId, string $userId): void {

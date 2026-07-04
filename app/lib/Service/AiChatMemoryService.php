@@ -108,7 +108,7 @@ class AiChatMemoryService {
             return;
         }
 
-        $summary = $this->compressEntries($oldest);
+        $summary = $this->compressEntries($oldest, $userId);
         $oldIds = array_map(static fn(AiChatMemory $e) => $e->getId(), $oldest);
 
         // Delete the originals, then insert the summary
@@ -129,7 +129,7 @@ class AiChatMemoryService {
      *
      * @param AiChatMemory[] $entries
      */
-    private function compressEntries(array $entries): string {
+    private function compressEntries(array $entries, string $userId): string {
         $lines = [];
         foreach ($entries as $entry) {
             $prefix = $entry->getRole() === 'user' ? '[User]' : '[VirtuProf]';
@@ -147,7 +147,8 @@ class AiChatMemoryService {
         $userPrompt = "Chat excerpt to summarize:\n\n{$conversationText}";
 
         try {
-            $summary = $this->geminiService->generateNote($systemPrompt, $userPrompt);
+            // MED-09: memory compression counts against the shared AI rate limit.
+            $summary = $this->geminiService->generateNote($systemPrompt, $userPrompt, $userId);
             return mb_substr(trim($summary), 0, 1000);
         } catch (\Throwable $e) {
             $this->logger->info(
