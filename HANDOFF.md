@@ -1,45 +1,46 @@
 ---
 created: 2026-07-04
-updated: 2026-07-04
+updated: 2026-07-04 (post-audit, pre-store-release)
 branch: main
-status: audit-fix in progress — all HIGH done, MED batch done, rest documented
+goal: ship v5.2.x to the Nextcloud App Store
 ---
 
-# HANDOFF — Learning-NC post-v5.2.0 whole-app audit
+# HANDOFF — Learning-NC → App-Store-Release
 
-## TL;DR
-- v5.2.0 shipped (tag `v5.2.0` on main, forgejo+codeberg). App-Store publication withheld (Andre: main+tag only).
-- A whole-app audit (8 review lanes) produced **12 HIGH, 22 MED, 11 LOW** — triage in `.planning/AUDIT-2026-07-03-FINDINGS.md`.
-- **All 12 HIGH fixed & committed. 8 MED fixed & committed.** Each through Gate 1 (PHPStan 0, PHPUnit green, live boot).
-- The rest is deliberately deferred with reasons (product decisions, speculative changes, infra refactors, low-impact LOWs) — see the Fix Status section of the findings file.
+## Wo wir stehen
+- **v5.2.0 ist getaggt** (`v5.2.0` auf main, gepusht forgejo+codeberg) — aber der Tag zeigt auf einen Commit VOR dem Audit. **Nie im App Store veröffentlicht** (Andre hielt bewusst zurück).
+- Danach: **Whole-App-Audit** (8 Lanes) → 12 HIGH, 22 MED, 11 LOW (Triage: `.planning/AUDIT-2026-07-03-FINDINGS.md`).
+- **Gefixt & committed (13 Audit-Commits seit dem Tag, jeder Gate-1-grün): ALLE 12 HIGH + 11 MED + 2 LOW.** HEAD ist ~13 Commits vor `v5.2.0`.
+- Working tree clean. Fixes sind als EINZELNE Files auf devcloud deployt (nicht als Release-Build).
 
-## What's fixed (on `main`, 6 audit commits since the tag)
-- HIGH-01/04/05/07–12 (Codex batch, verified + committed by Claude): exam-oracle strips, export/document/feed IDOR gates, three table-name-drift repairs (Migration 009900), PBQ scoring, exam-resume integrity.
-- HIGH-02 RAG cross-course IDOR + HIGH-03 missing AI consent gate (VirtuProfController).
-- HIGH-06 docs drift (README/info.xml/DEVELOPMENT).
-- MED-02/03/04/05/06/11/12/13/14 (RagImport authz, Gameshow order, translation oracle, prefix, entity, cert DTO, docs).
+## ⏭ ZIEL: App-Store-Release (Andre: „direkt weiter bis Release")
+Der v5.2.0-Tag ist verbrannt (pre-audit, öffentlich gepusht) → **sauberer Weg = v5.2.1** (Patch = Security-Hardening).
+**Wichtiger Nebeneffekt:** info.xml 5.2.1 > devcloud-appconfig 5.2.0.5 → `occ upgrade` läuft als echtes UPGRADE, KEIN 503-Downgrade (die info.xml-503-Falle löst sich mit 5.2.1 von selbst).
 
-## Environment gotchas learned this session (IMPORTANT)
-- **DO NOT run `deploy-prod.sh` for audit fixes.** It ships git's info.xml (5.2.0) which mismatches devcloud's appconfig (5.2.0.5) → NC "needs upgrade" → whole instance 503. It happened once and was fixed by setting the CONTAINER info.xml back to 5.2.0.5. For fixes, deploy single files manually: `scp app/lib/... relais:~/learning-nc/app/lib/... && ssh relais 'docker cp ... && docker exec devcloud-app apache2ctl graceful'`. info.xml stays untouched.
-- PHPStan/PHPUnit run in the container: `ssh relais "docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/{phpstan analyse --no-progress|phpunit}"`. Deploy tests via `rsync app/tests → docker cp`.
-- No local PHP on the workstation.
-- Safety hook blocks `rm -rf` — use `rm -r --`.
+**Release-Schritte (Reihenfolge, aus MEMORY release-history + verify-release.sh):**
+1. `app/appinfo/info.xml` <version> → **5.2.1**. CHANGELOG.md v5.2.1-Eintrag (Security-Hardening: 12 HIGH + 11 MED + 2 LOW aus dem Audit — IDOR-Gates, RAG-Cross-Course-IDOR, KI-Consent-Gate, Exam-Oracle-Strips, Tabellennamen-Drift-Repair, AI-Prompt-Injection/Rate-Limit).
+2. `./scripts/deploy-prod.sh --full` (baut JS lokal, deployt PHP+l10n+JS, PHPStan). Danach `ssh relais 'docker exec -u www-data devcloud-app php occ upgrade'` (Migration 009900 läuft, appconfig → 5.2.1). Verify: `occ maintenance:mode` = off, Base-URL 200.
+3. **Gate 4 vor Release:** volle PHPUnit (`--test`), Vitest (`cd app && npm run test`), ESLint, i18n-Parität (`bash scripts/check-i18n-parity.sh`). Alle müssen grün.
+4. **Signieren** (MEMORY signing): Key aus `~/.nextcloud/certificates/` → scp→docker cp→chmod 644→`occ integrity:sign-app`→`signature.json` ZURÜCK ins Repo (MUSS committed werden, sonst Store-Validierung fail)→Key aus Container löschen.
+5. **ff main + Tag `v5.2.1`** → push forgejo+codeberg.
+6. **Codeberg-Release** (Forgejo-API, Token `~/.config/codeberg/token`, NON-draft — #26-Lehre) + **App-Store-POST** (Token in `.env`).
+7. `./scripts/verify-release.sh 5.2.1` bis grün (Feed-Propagation kann dauern).
 
-## Next (if continuing the audit)
-Safe-to-fix next, frontend/AI context still warm:
-1. MED-08 multi-turn injection — store SANITIZED chat memory (or re-filter on load) in AiChatMemoryService/GeminiService.
-2. MED-09 AI rate-limit bypass — attach generateNote/generateStructured to the shared minute/day counter.
-3. MED-10 VirtuProf exam oracle — suppress RAG answer context when an active exam exists on the pool (HIGH-02's filter already narrows this).
-4. LOW batch — rate-limits (LOW-02/03/05), reviewerId spoofing (LOW-01), 404 (LOW-06), join-membership (LOW-04).
+## ⚠ Gotchas (diese Session gelernt — NICHT wiederholen)
+- **`deploy-prod.sh` schiebt info.xml mit.** Solange info.xml (git) ≠ appconfig (devcloud) → NC „needs upgrade" → GANZE Instanz 503. Passierte 1× (2 Min), gefixt durch Container-info.xml zurück auf appconfig-Version. **Mit dem 5.2.1-Bump + occ upgrade ist das gelöst** (Upgrade statt Downgrade). Für Zwischen-Fixes: Einzelfile-Deploy (`scp … && docker cp … && apache2ctl graceful`), info.xml unberührt.
+- **Kein lokales PHP.** Gates im Container: `ssh relais "docker exec -w /var/www/html/custom_apps/learning devcloud-app php vendor/bin/{phpstan analyse --no-progress|phpunit}"`. Tests deployen: `rsync app/tests → docker cp`.
+- **Safety-Hook blockt `rm -rf`** → `rm -r --`.
+- devcloud oc_jobs aufgebläht (5168× NC-core UpdateSingleMetadata — Cron-Rückstau, kein App-Bug).
 
-Needs a decision / own session (do NOT blind-fix): MED-01 (owner-flow risk), MED-07 (product: names to Gemini), MED-16/20 (FSRS — verify vs model version first), MED-17/18/19 (test-infra refactors), MED-21/22 (PBQ frontend DTO split).
+## Offen NACH dem Release (dokumentierte Follow-ups, kein Release-Blocker)
+Restliche MED/LOW brauchen Urteil/Entscheidung (in `.planning/AUDIT-2026-07-03-FINDINGS.md` „STILL OPEN" mit Fix-Vorschlägen):
+- MED-01 (instructor_note owner-flow-risk), MED-07 (Namen an Gemini — Produktentscheidung), MED-15 (Forgejo-SSRF, off-by-default), MED-16/20 (FSRS-Scale — spekulativ, gegen Modell-Version verifizieren), MED-17/18/19 (Test-Infra-Refactoring), MED-21/22 (PBQ-Frontend-DTO-Split), LOWs (rate-limit-Attribute LOW-02/03/05, join-membership LOW-04, key-encryption LOW-08).
 
-## Also still open from v5.2.0 itself
-- Human-verify (Andre's run-through): recert loop, notification bell, video gate, dashboard. test-api.sh needs Vault ADMIN_PASS (not found on workstation).
-- `/gsd:complete-milestone` for v5.2.0.
-- devcloud ops: oc_jobs bloated (5168× NC-core UpdateSingleMetadata) — cron backlog.
+## Auch offen aus v5.2.0 selbst
+- Human-verify (Andres Durchlauf): Recert-Loop, Bell, Video-Gate, Dashboard. test-api.sh braucht Vault ADMIN_PASS.
+- `/gsd:complete-milestone` für v5.2.0/v5.2.1.
 
-## Files
-- Audit triage + full fix ledger: `.planning/AUDIT-2026-07-03-FINDINGS.md`
-- Audit re-run brief (if lanes need re-running): `.planning/AUDIT-2026-07-03-PLAN.md`
-- Codex's working notes: `HANDOFF_LOG.md`, `RESUME_PROMPT.md` (superseded by this file)
+## Dateien
+- Audit-Triage + Fix-Ledger: `.planning/AUDIT-2026-07-03-FINDINGS.md`
+- Audit-Re-Run-Brief: `.planning/AUDIT-2026-07-03-PLAN.md`
+- Release-Details/History: MEMORY `release-history.md` + `feedback_release_process.md`
