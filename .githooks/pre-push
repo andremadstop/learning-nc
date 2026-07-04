@@ -94,6 +94,21 @@ else
     FAILED=1
 fi
 
+# 8. Repo-Hygiene — interne Arbeitsdocs dürfen nicht getrackt sein (nur die Whitelist
+#    LEGAL/STATE/ROADMAP/REQUIREMENTS/PROJECT + sensitivity-review). Verhindert, dass
+#    HANDOFF.md oder .planning/-Phasenplans (mit lokalen Pfaden/Notizen) ins Public-Repo geraten.
+echo -n "Repo-Hygiene... "
+BAD_TRACKED=$(git ls-files 'HANDOFF.md' '.planning/*' 2>/dev/null \
+    | grep -vE '^\.planning/(LEGAL|STATE|ROADMAP|REQUIREMENTS|PROJECT)\.md$|^\.planning/sensitivity-review/')
+if [ -n "$BAD_TRACKED" ]; then
+    echo -e "${RED}FAIL — interne Arbeitsdocs getrackt (gehören nicht ins Public-Repo):${NC}"
+    echo "$BAD_TRACKED" | head -10
+    echo -e "${YELLOW}  → 'git rm --cached <datei>' (bleibt lokal). Whitelist: LEGAL/STATE/ROADMAP/REQUIREMENTS/PROJECT + sensitivity-review/${NC}"
+    FAILED=1
+else
+    echo -e "${GREEN}OK${NC}"
+fi
+
 # Ergebnis
 echo ""
 if [ $FAILED -ne 0 ]; then
