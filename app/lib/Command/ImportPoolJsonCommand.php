@@ -155,7 +155,15 @@ class ImportPoolJsonCommand extends Command {
                     ];
                 }
 
-                if (count($answers) < 2) {
+                // 'open' (fill-in / free-text) questions carry exactly ONE model answer;
+                // MCQ (single/multi) need at least two options. QuestionService::create enforces
+                // the same rule — mirror it here so the pre-check does not drop valid open questions.
+                if ($questionType === 'open') {
+                    if (count($answers) !== 1) {
+                        $errors[] = "Pool $poolId Q$originalNumber: open question needs exactly 1 model answer — skipped";
+                        continue;
+                    }
+                } elseif (count($answers) < 2) {
                     $errors[] = "Pool $poolId Q$originalNumber: needs at least 2 answers — skipped";
                     continue;
                 }
