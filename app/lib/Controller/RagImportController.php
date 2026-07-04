@@ -7,7 +7,7 @@ use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\RagImportService;
 use OCA\Learning\Service\AuditService;
 use OCA\Learning\Service\BadgeService;
-use OCA\Learning\Service\RoleService;
+use OCA\Learning\Service\CourseService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
@@ -17,11 +17,11 @@ use Psr\Log\LoggerInterface;
 class RagImportController extends Controller {
     private RagImportService $importService;
     private RagChunkMapper $chunkMapper;
-    private RoleService $roleService;
     private AuditService $auditService;
     private BadgeService $badgeService;
     private LoggerInterface $logger;
     private ?string $userId;
+    private CourseService $courseService;
 
     private const MAX_STUDENT_CHUNKS_PER_COURSE = 50;
 
@@ -30,20 +30,31 @@ class RagImportController extends Controller {
         IRequest $request,
         RagImportService $importService,
         RagChunkMapper $chunkMapper,
-        RoleService $roleService,
         AuditService $auditService,
         BadgeService $badgeService,
         LoggerInterface $logger,
-        ?string $userId
+        ?string $userId,
+        CourseService $courseService
     ) {
         parent::__construct($appName, $request);
         $this->importService = $importService;
         $this->chunkMapper = $chunkMapper;
-        $this->roleService = $roleService;
         $this->auditService = $auditService;
         $this->badgeService = $badgeService;
         $this->logger = $logger;
         $this->userId = $userId;
+        $this->courseService = $courseService;
+    }
+
+    /**
+     * AUDIT MED-03: instructor endpoints must be scoped to THIS course, not the global
+     * instructor role (an instructor of course A could otherwise import/list/delete/moderate
+     * RAG content of course B). canManageCourse() is the course owner/instructor check used
+     * elsewhere (e.g. updateCertConfig).
+     */
+    private function canManageCourse(int $courseId): bool {
+        return $this->userId !== null
+            && $this->courseService->canManageCourse($courseId, $this->userId);
     }
 
     /**
@@ -53,7 +64,7 @@ class RagImportController extends Controller {
      */
     public function importText(int $courseId): DataResponse {
         try {
-            if (!$this->roleService->isInstructor($this->userId)) {
+            if (!$this->canManageCourse($courseId)) {
                 return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
             }
 
@@ -87,7 +98,7 @@ class RagImportController extends Controller {
      */
     public function importFile(int $courseId): DataResponse {
         try {
-            if (!$this->roleService->isInstructor($this->userId)) {
+            if (!$this->canManageCourse($courseId)) {
                 return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
             }
 
@@ -129,7 +140,7 @@ class RagImportController extends Controller {
      */
     public function listImported(int $courseId): DataResponse {
         try {
-            if (!$this->roleService->isInstructor($this->userId)) {
+            if (!$this->canManageCourse($courseId)) {
                 return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
             }
 
@@ -147,7 +158,7 @@ class RagImportController extends Controller {
      */
     public function deleteImported(int $courseId, string $title): DataResponse {
         try {
-            if (!$this->roleService->isInstructor($this->userId)) {
+            if (!$this->canManageCourse($courseId)) {
                 return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
             }
 
@@ -165,6 +176,15 @@ class RagImportController extends Controller {
      * @NoAdminRequired
      */
     public function contributeNote(int $courseId): DataResponse {
+        // AUDIT MED-02: only course members may contribute to a course's shared RAG pool.
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            $this->courseService->findById($courseId, $this->userId);
+        } catch (\Throwable $e) {
+            return new DataResponse(['error' => 'Course not found or no access'], Http::STATUS_FORBIDDEN);
+        }
         try {
             $title = $this->request->getParam('title');
             $text = $this->request->getParam('text');
@@ -232,7 +252,7 @@ class RagImportController extends Controller {
      */
     public function listPending(int $courseId): DataResponse {
         try {
-            if (!$this->roleService->isInstructor($this->userId)) {
+            if (!$this->canManageCourse($courseId)) {
                 return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
             }
 
@@ -259,7 +279,7 @@ class RagImportController extends Controller {
      */
     public function moderate(int $courseId, int $chunkId): DataResponse {
         try {
-            if (!$this->roleService->isInstructor($this->userId)) {
+            if (!$this->canManageCourse($courseId)) {
                 return new DataResponse(['error' => 'Forbidden'], Http::STATUS_FORBIDDEN);
             }
 

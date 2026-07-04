@@ -274,28 +274,15 @@ class GameshowService {
         $session = $this->sessionMapper->findByCode($code);
         $players = $this->playerMapper->findBySession($session->getId());
 
-        // Check for completely abandoned session (all players inactive for 5+ minutes)
-        $session = $this->checkStaleSession($session, $players);
-        if ($session->getStatus() === 'expired') {
-            // Re-fetch players for accurate state
-            $players = $this->playerMapper->findBySession($session->getId());
-            // Update current user's last_poll even for expired (graceful state build)
-            foreach ($players as $p) {
-                if ($p->getUserId() === $userId) {
-                    $p->setLastPoll(time());
-                    $this->playerMapper->update($p);
-                    break;
-                }
-            }
-            return $this->buildState($session, $userId, $lang);
-        }
-
-        // Verify current user is a participant
+        // AUDIT MED-05: verify participation BEFORE any stale/expired handling. Previously the
+        // expired-session early return ran first and leaked buildState() (player ids, display
+        // names, scores) to non-participants — and let an outsider force-expire a stale session.
+        // Mirror DuelService::getState, which asserts participation first.
         $isParticipant = false;
         foreach ($players as $p) {
             if ($p->getUserId() === $userId) {
                 $isParticipant = true;
-                // Update lastPoll for current user
+                // Update lastPoll for the current user (also keeps the session alive).
                 $p->setLastPoll(time());
                 $this->playerMapper->update($p);
                 break;
@@ -303,6 +290,14 @@ class GameshowService {
         }
         if (!$isParticipant) {
             throw new \RuntimeException('You are not a participant in this session');
+        }
+
+        // Check for completely abandoned session (all players inactive for 5+ minutes)
+        $session = $this->checkStaleSession($session, $players);
+        if ($session->getStatus() === 'expired') {
+            // Re-fetch players for accurate state (participation already confirmed above).
+            $players = $this->playerMapper->findBySession($session->getId());
+            return $this->buildState($session, $userId, $lang);
         }
 
         // Check for timed-out players
