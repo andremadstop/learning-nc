@@ -76,6 +76,9 @@ class SupportTicketController extends Controller {
             return new DataResponse(['ticket' => $this->service->answer($id, $answerText, $this->userId, $isAdmin, $managedCourseId)]);
         } catch (\OCA\Learning\Service\ForbiddenException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_FORBIDDEN);
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e) {
+            // AUDIT LOW-06: unknown ticket id is a 404, not a 500 (mirrors approveDraft).
+            return new DataResponse(['error' => 'Ticket not found'], Http::STATUS_NOT_FOUND);
         } catch (\InvalidArgumentException $e) {
             return new DataResponse(['error' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         }

@@ -125,7 +125,9 @@ class PoolController extends Controller {
     #[UserRateLimit(limit: 20, period: 60)]
     public function review(int $id, string $reviewStatus, ?string $reviewerId = null): DataResponse {
         try {
-            $reviewer = $reviewerId ?: (string)$this->userId;
+            // AUDIT LOW-01: never trust a client-supplied reviewer identity (attestation spoofing);
+            // the review is always attributed to the authenticated user. $reviewerId is ignored.
+            $reviewer = (string)$this->userId;
             $pool = $this->service->setReviewStatus($id, $reviewStatus, $reviewer, (string)$this->userId);
             return new DataResponse($pool);
         } catch (\Exception $e) {

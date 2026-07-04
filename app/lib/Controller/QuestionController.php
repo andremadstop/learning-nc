@@ -148,7 +148,9 @@ class QuestionController extends Controller {
     #[UserRateLimit(limit: 20, period: 60)]
     public function review(int $id, string $reviewStatus, ?string $reviewerId = null): DataResponse {
         try {
-            $reviewer = $reviewerId ?: (string)$this->userId;
+            // AUDIT LOW-01: never trust a client-supplied reviewer identity (attestation spoofing);
+            // always attribute the review to the authenticated user. $reviewerId is ignored.
+            $reviewer = (string)$this->userId;
             return new DataResponse($this->service->setReviewStatus($id, $reviewStatus, $reviewer, (string)$this->userId));
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Failed to update review status'], Http::STATUS_BAD_REQUEST);
