@@ -75,14 +75,6 @@ class TrainingService {
         $this->videoProgressService = $videoProgressService;
     }
 
-    private function applyNullableCourseFilter($qb, ?int $courseId): void {
-        if ($courseId === null) {
-            $qb->andWhere($qb->expr()->isNull('course_id'));
-            return;
-        }
-        $qb->andWhere($qb->expr()->eq('course_id', $qb->createNamedParameter($courseId)));
-    }
-
     private function logSecurityEvent(string $event, array $context = []): void {
         $this->logger->info('learning.training.security.' . $event, array_merge(['app' => 'learning'], $context));
     }
@@ -254,9 +246,52 @@ class TrainingService {
         );
     }
 
+    private function sanitizePbqConfigForAttempt(mixed $value): mixed {
+        if (!is_array($value)) {
+            return $value;
+        }
+
+        $solutionKeys = [
+            'correct',
+            'correct_position',
+            'correct_problem',
+            'correct_solution',
+            'expected',
+            'expected_value',
+            'answer_key',
+        ];
+        $sanitized = [];
+        foreach ($value as $key => $child) {
+            if (is_string($key) && in_array($key, $solutionKeys, true)) {
+                continue;
+            }
+            $sanitized[$key] = $this->sanitizePbqConfigForAttempt($child);
+        }
+        return $sanitized;
+    }
+
+    private function sanitizeQuestionForAttempt(array $question): array {
+        unset(
+            $question['explanation'],
+            $question['instructor_note'],
+            $question['note_visible'],
+            $question['reviewer_id'],
+            $question['exam_key']
+        );
+
+        if (array_key_exists('pbq_config', $question)) {
+            $question['pbq_config'] = $this->sanitizePbqConfigForAttempt($question['pbq_config']);
+        }
+
+        return $question;
+    }
+
     private function getSessionQuestionsWithAnswers(array $session, ?string $lang = null): array {
         $poolId = (int)$session['pool_id'];
         $sessionId = (int)$session['id'];
+        $userId = (string)($session['user_id'] ?? '');
+        $suppressAnswerMetadata = (($session['mode'] ?? 'training') === 'exam')
+            || ($userId !== '' && $this->hasActiveExamOnPool($poolId, $userId));
         $questionIds = $this->getSessionQuestionIds($session);
         $byId = [];
         foreach ($this->questionMapper->findByPoolId($poolId) as $q) {
@@ -279,6 +314,9 @@ class TrainingService {
             $q = $byId[$qid];
             $qData = $q->jsonSerialize();
             $qData['pool_position'] = ($poolPositions[$qid] ?? 0) + 1;
+            if ($suppressAnswerMetadata) {
+                $qData = $this->sanitizeQuestionForAttempt($qData);
+            }
             $answers = $this->answerMapper->findByQuestion($q->getId());
             $answers = $this->shuffleAnswersForSession($answers, $sessionId, (int)$q->getId());
             $qData['answers'] = array_map(static function ($a) {
@@ -289,7 +327,11 @@ class TrainingService {
             $questionsWithAnswers[] = $qData;
         }
 
-        return $this->translationService->translateQuestions($questionsWithAnswers, $lang);
+        $translatedQuestions = $this->translationService->translateQuestions($questionsWithAnswers, $lang);
+        if ($suppressAnswerMetadata) {
+            return array_map(fn(array $question): array => $this->sanitizeQuestionForAttempt($question), $translatedQuestions);
+        }
+        return $translatedQuestions;
     }
 
     private function getSessionUserAnswersMap(int $sessionId): array {
@@ -550,9 +592,7 @@ class TrainingService {
             ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
             ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('exam')))
             ->andWhere($qb->expr()->isNull('completed_at'));
-        $this->applyNullableCourseFilter($qb, $courseId);
-        $qb
-            ->orderBy('started_at', 'DESC')
+        $qb->orderBy('started_at', 'DESC')
             ->setMaxResults(1);
         $activeExamResult = $qb->executeQuery();
         $activeExam = $activeExamResult->fetch();
@@ -583,6 +623,7 @@ class TrainingService {
                ->set('completed_at', $qb->createNamedParameter(time()))
                ->where($qb->expr()->eq('pool_id', $qb->createNamedParameter($poolId)))
                ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+               ->andWhere($qb->expr()->eq('mode', $qb->createNamedParameter('training')))
                ->andWhere($qb->expr()->isNull('completed_at'));
             $qb->executeStatement();
         }
@@ -1213,9 +1254,11 @@ class TrainingService {
                 ]);
                 $qb->executeStatement();
 
-                if ($pbqIsCorrect && !$suppressAnswers) {
+                if ($pbqIsCorrect) {
                     $this->incrementSessionCorrectAnswers($sessionId);
-                    $batchXpEarned += $xpPerCorrect;
+                    if ($awardImmediateXp) {
+                        $batchXpEarned += $xpPerCorrect;
+                    }
                 }
 
                 if ($suppressAnswers) {

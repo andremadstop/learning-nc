@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\DocumentService;
+use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\RoleService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -13,6 +14,7 @@ use Psr\Log\LoggerInterface;
 
 class DocumentController extends Controller {
     private DocumentService $documentService;
+    private CourseService $courseService;
     private RoleService $roleService;
     private LoggerInterface $logger;
     private ?string $userId;
@@ -21,12 +23,14 @@ class DocumentController extends Controller {
         string $appName,
         IRequest $request,
         DocumentService $documentService,
+        CourseService $courseService,
         RoleService $roleService,
         LoggerInterface $logger,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
         $this->documentService = $documentService;
+        $this->courseService = $courseService;
         $this->roleService = $roleService;
         $this->logger = $logger;
         $this->userId = $userId;
@@ -68,6 +72,7 @@ class DocumentController extends Controller {
      */
     public function getFolder(int $courseId): DataResponse {
         try {
+            $this->courseService->findById($courseId, $this->userId);
             $folder = $this->documentService->getMaterialFolder($courseId);
             return new DataResponse(['folder' => $folder]);
         } catch (\Exception $e) {
@@ -103,9 +108,10 @@ class DocumentController extends Controller {
      */
     public function index(int $courseId): DataResponse {
         try {
+            $this->courseService->findById($courseId, $this->userId);
             return new DataResponse($this->documentService->listDocuments($courseId));
         } catch (\Exception $e) {
-            return new DataResponse(['error' => 'Failed to list documents'], Http::STATUS_INTERNAL_SERVER_ERROR);
+            return new DataResponse(['error' => 'Course not found or no access'], Http::STATUS_FORBIDDEN);
         }
     }
 

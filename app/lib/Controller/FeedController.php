@@ -5,13 +5,16 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Db\CourseMapper;
 use OCA\Learning\Service\FeedService;
+use OCA\Learning\Service\CourseService;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
 
 class FeedController extends Controller {
     private FeedService $feedService;
     private CourseMapper $courseMapper;
+    private CourseService $courseService;
     private ?string $userId;
 
     public function __construct(
@@ -19,11 +22,13 @@ class FeedController extends Controller {
         IRequest $request,
         FeedService $feedService,
         CourseMapper $courseMapper,
+        CourseService $courseService,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
         $this->feedService = $feedService;
         $this->courseMapper = $courseMapper;
+        $this->courseService = $courseService;
         $this->userId = $userId;
     }
 
@@ -63,6 +68,12 @@ class FeedController extends Controller {
      * @NoAdminRequired
      */
     public function courseFeed(int $courseId): DataResponse {
+        try {
+            $this->courseService->findById($courseId, $this->userId);
+        } catch (\Exception $e) {
+            return new DataResponse(['error' => 'Course not found or no access'], Http::STATUS_FORBIDDEN);
+        }
+
         $items = $this->feedService->getCourseFeed($courseId);
         return new DataResponse([
             'items' => array_map(fn($item) => $item->jsonSerialize(), $items),

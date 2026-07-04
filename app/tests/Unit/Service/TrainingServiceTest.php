@@ -68,6 +68,163 @@ class TrainingServiceTest extends TestCase {
         $this->assertSame(2, $insertBuilder->insertValues['total_questions']['value']);
     }
 
+    public function testExamStartPayloadStripsExplanationsAndPbqSolutionConfig(): void {
+        $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch(false));
+        $closeTrainingBuilder = new FakeQueryBuilder(new FakeResult(), 1);
+        $attemptLimitBuilder = new FakeQueryBuilder(FakeResult::fromFetchOne(0));
+        $insertBuilder = new FakeQueryBuilder(new FakeResult(), 0, 99);
+        $db = new FakeDbConnection([$activeExamBuilder, $closeTrainingBuilder, $attemptLimitBuilder, $insertBuilder]);
+
+        $question = $this->makeQuestion(10, 42, 'PBQ');
+        $question->setQuestionType('pbq');
+        $question->setPbqSubtype('placement');
+        $question->setPbqConfig(json_encode([
+            'instructions' => ['Place the devices'],
+            'positions' => [
+                ['id' => 'edge', 'label' => 'Edge', 'correct' => 'Firewall'],
+            ],
+            'device_options' => ['Firewall', 'Switch'],
+        ]));
+        $question->setExplanation('Never reveal during exam');
+        $question->setInstructorNote('Instructor-only note');
+        $question->setNoteVisible(true);
+        $question->setExamKey('SY0-701');
+
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->expects($this->exactly(2))
+            ->method('findByPoolId')
+            ->with(42)
+            ->willReturn([$question]);
+
+        $answerMapper = $this->createMock(AnswerMapper::class);
+        $answerMapper->method('findByQuestion')
+            ->with(10)
+            ->willReturn([$this->makeAnswer(100, 10, 'Answer')]);
+
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $questionMapper,
+            answerMapper: $answerMapper,
+            poolMapper: $poolMapper
+        );
+
+        $payload = $service->startSession(42, 'alice', null, 'exam');
+        $questionPayload = $payload['questions'][0];
+
+        $this->assertArrayNotHasKey('explanation', $questionPayload);
+        $this->assertArrayNotHasKey('instructor_note', $questionPayload);
+        $this->assertArrayNotHasKey('note_visible', $questionPayload);
+        $this->assertArrayNotHasKey('exam_key', $questionPayload);
+        $this->assertArrayNotHasKey('is_correct', $questionPayload['answers'][0]);
+        $this->assertSame(['Place the devices'], $questionPayload['pbq_config']['instructions']);
+        $this->assertSame('Edge', $questionPayload['pbq_config']['positions'][0]['label']);
+        $this->assertArrayNotHasKey('correct', $questionPayload['pbq_config']['positions'][0]);
+    }
+
+    public function testExamStartResumesActiveExamAcrossCourseContextMismatch(): void {
+        $activeExamBuilder = new FakeQueryBuilder(FakeResult::fromFetch([
+            'id' => 77,
+            'pool_id' => 42,
+            'course_id' => 7,
+            'user_id' => 'alice',
+            'started_at' => time(),
+            'total_questions' => 1,
+            'correct_answers' => 0,
+            'mode' => 'exam',
+            'completed_at' => null,
+            'time_limit_seconds' => 600,
+            'attempt_no' => 1,
+            'question_order_json' => '[10]',
+        ]));
+        $db = new FakeDbConnection([$activeExamBuilder]);
+
+        $questionMapper = $this->createMock(QuestionMapper::class);
+        $questionMapper->expects($this->once())
+            ->method('findByPoolId')
+            ->with(42)
+            ->willReturn([$this->makeQuestion(10, 42, 'Existing')]);
+
+        $answerMapper = $this->createMock(AnswerMapper::class);
+        $answerMapper->method('findByQuestion')
+            ->with(10)
+            ->willReturn([$this->makeAnswer(100, 10, 'Answer')]);
+
+        $poolMapper = $this->createMock(PoolMapper::class);
+        $poolMapper->method('find')->with(42, 'alice')->willReturn(new \OCA\Learning\Db\Pool());
+
+        $service = $this->createService(
+            db: $db,
+            questionMapper: $questionMapper,
+            answerMapper: $answerMapper,
+            poolMapper: $poolMapper
+        );
+
+        $payload = $service->startSession(42, 'alice', null, 'exam', null, null, null);
+
+        $this->assertSame(77, $payload['session_id']);
+        $this->assertTrue($payload['resumed']);
+        $this->assertCount(1, $payload['questions']);
+        foreach ($db->issuedBuilders as $builder) {
+            $this->assertFalse(
+                $builder->table === 'learning_sessions' && in_array($builder->operation, ['insert', 'update'], true),
+                'No broad auto-complete or new session insert should run when an active exam is resumed.'
+            );
+        }
+    }
+
+    public function testExamBatchPbqCorrectAnswerIncrementsScoreWhileSuppressingFeedback(): void {
+        $sessionBuilder = new FakeQueryBuilder(FakeResult::fromFetch([
+            'id' => 9,
+            'pool_id' => 42,
+            'user_id' => 'alice',
+            'started_at' => time(),
+            'total_questions' => 1,
+            'correct_answers' => 0,
+            'mode' => 'exam',
+            'completed_at' => null,
+            'question_order_json' => '[10]',
+        ]));
+        $questionInPoolBuilder = new FakeQueryBuilder(FakeResult::fromFetch(['id' => 10]));
+        $duplicateBuilder = new FakeQueryBuilder(FakeResult::fromFetch(false));
+        $questionTypeBuilder = new FakeQueryBuilder(FakeResult::fromFetch(['question_type' => 'pbq']));
+        $pbqConfigBuilder = new FakeQueryBuilder(FakeResult::fromFetch([
+            'pbq_subtype' => 'dropdown',
+            'pbq_config' => json_encode([
+                'questions' => [
+                    ['id' => 'q1', 'label' => 'Port', 'correct' => '443'],
+                ],
+            ]),
+        ]));
+        $answerInsertBuilder = new FakeQueryBuilder(new FakeResult(), 1);
+        $db = new FakeDbConnection([
+            $sessionBuilder,
+            $questionInPoolBuilder,
+            $duplicateBuilder,
+            $questionTypeBuilder,
+            $pbqConfigBuilder,
+            $answerInsertBuilder,
+        ]);
+
+        $service = $this->createService(db: $db);
+
+        $result = $service->submitBatch(9, [[
+            'questionId' => 10,
+            'pbqAnswers' => ['q1' => '443'],
+        ]], 'alice');
+
+        $this->assertSame([[
+            'questionId' => 10,
+            'recorded' => true,
+            'suppressed' => true,
+        ]], $result);
+        $this->assertCount(1, $db->executedStatements);
+        $this->assertStringContainsString('correct_answers = correct_answers + 1', $db->executedStatements[0]['sql']);
+        $this->assertSame(['id' => 9], $db->executedStatements[0]['params']);
+    }
+
     /**
      * VIDEO-03: on a gated course whose required video is incomplete, startSession() must throw
      * ForbiddenException (→ 403) and NEVER reach resolveCoursePoolContext / the session insert.
