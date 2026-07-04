@@ -338,6 +338,21 @@ class QuestionService {
     }
 
     /**
+     * AUDIT MED-06: public exam-oracle check for callers (e.g. TranslationController) that
+     * emit question-derived data through paths other than find()/findByPool(). Returns true
+     * when the user has an active, incomplete exam on the question's pool — in which case
+     * answer keys and explanations (including translated ones) must be withheld.
+     */
+    public function isExamActiveForQuestion(int $questionId, string $userId): bool {
+        try {
+            $question = $this->questionMapper->findById($questionId);
+        } catch (DoesNotExistException | MultipleObjectsReturnedException $e) {
+            return false;
+        }
+        return $this->hasActiveExamOnPool($question->getPoolId(), $userId);
+    }
+
+    /**
      * SEC-MED-2: Public wrapper for canEditPool, used by TranslationController
      */
     public function verifyEditAccess(int $poolId, string $userId): void {

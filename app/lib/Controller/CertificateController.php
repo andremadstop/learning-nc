@@ -70,9 +70,23 @@ class CertificateController extends Controller {
         $certs = $this->certificateMapper->findByUserId($this->userId);
 
         return new JSONResponse(array_map(
-            static fn (Certificate $cert): array => $cert->jsonSerialize(),
+            fn (Certificate $cert): array => $this->projectOwnedCert($cert),
             $certs
         ));
+    }
+
+    /**
+     * AUDIT MED-14: the owner-facing list/show DTO drops user_id and key_id — the client never
+     * reads them (it decodes credential_json locally, see certificate-credential.js), so keeping
+     * them only widened accidental exposure in API logs / browser caches. credential_json stays
+     * because the frontend requires it; the raw artifact is still also served by /download.
+     *
+     * @return array<string, mixed>
+     */
+    private function projectOwnedCert(Certificate $cert): array {
+        $data = $cert->jsonSerialize();
+        unset($data['user_id'], $data['key_id']);
+        return $data;
     }
 
     /**
@@ -98,7 +112,7 @@ class CertificateController extends Controller {
             return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
         }
 
-        return new JSONResponse($cert->jsonSerialize());
+        return new JSONResponse($this->projectOwnedCert($cert));
     }
 
     /**

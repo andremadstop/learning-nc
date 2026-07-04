@@ -14,15 +14,20 @@ use OCP\AppFramework\Db\Entity;
  * @method void   setCourseId(int $courseId)
  * @method string getLeadUserId()
  * @method void   setLeadUserId(string $leadUserId)
- * @method string getScopeGroupId()
- * @method void   setScopeGroupId(string $scopeGroupId)
+ * @method string   getScopeGroupId()
+ * @method void      setScopeGroupId(string $scopeGroupId)
+ * @method int|null  getCreatedAt()
+ * @method void      setCreatedAt(?int $createdAt)
  */
 class Oversight extends Entity {
     protected $courseId;
     protected $leadUserId;
     protected $scopeGroupId;
+    // AUDIT MED-13: Version009400 creates created_at; the entity was missing the mapped field.
+    protected $createdAt;
 
     public function __construct() {
         $this->addType('courseId', 'integer');
+        $this->addType('createdAt', 'integer');
     }
 }

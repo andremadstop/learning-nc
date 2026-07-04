@@ -2796,7 +2796,9 @@ class CourseService {
                 'status' => $qb->createNamedParameter('active'),
             ]);
         $qb->executeStatement();
-        $newId = $this->db->lastInsertId('oc_learning_course_exam_slots');
+        // AUDIT MED-12: use the QueryBuilder's insert id (prefix-agnostic) instead of a
+        // hardcoded 'oc_' sequence name, which breaks on non-default Nextcloud table prefixes.
+        $newId = $qb->getLastInsertId();
 
         return [
             'id' => (int)$newId,

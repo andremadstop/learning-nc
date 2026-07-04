@@ -126,8 +126,21 @@ class TranslationService {
         }
     }
 
-    public function getQuestionTranslations(int $questionId): array {
-        return $this->questionTransMapper->findByQuestion($questionId);
+    /**
+     * @param bool $suppressExplanation AUDIT MED-06: withhold translated explanations during an
+     *   active exam (the base find() strips the source explanation; the translation table must
+     *   not re-leak it). The caller passes QuestionService::isExamActiveForQuestion().
+     */
+    public function getQuestionTranslations(int $questionId, bool $suppressExplanation = false): array {
+        $rows = $this->questionTransMapper->findByQuestion($questionId);
+        if (!$suppressExplanation) {
+            return $rows;
+        }
+        return array_map(static function ($t): array {
+            $data = $t->jsonSerialize();
+            unset($data['explanation']);
+            return $data;
+        }, $rows);
     }
 
     public function setQuestionTranslation(int $questionId, string $lang, string $text, ?string $explanation = null): QuestionTranslation {

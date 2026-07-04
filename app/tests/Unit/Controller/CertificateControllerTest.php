@@ -88,7 +88,12 @@ class CertificateControllerTest extends TestCase {
         $data = $resp->getData();
         $this->assertCount(1, $data);
         $this->assertSame('vid-A', $data[0]['verification_id']);
-        $this->assertSame('alice', $data[0]['user_id']);
+        // AUDIT MED-14: the owner DTO drops user_id + key_id (client never reads them); the row
+        // was fetched via the authenticated uid, so ownership is already enforced by the query.
+        $this->assertArrayNotHasKey('user_id', $data[0]);
+        $this->assertArrayNotHasKey('key_id', $data[0]);
+        // credential_json stays — the frontend decodes it locally (certificate-credential.js).
+        $this->assertArrayHasKey('credential_json', $data[0]);
     }
 
     /**
