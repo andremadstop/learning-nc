@@ -4,9 +4,12 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\AiChatMemoryService;
+use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\LernplanService;
 use OCA\Learning\Service\NoteGeneratorService;
+use OCA\Learning\Service\PoolService;
+use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\RagContextService;
 use OCA\Learning\Service\SupportTicketService;
 use OCA\Learning\Service\TelosService;
@@ -81,6 +84,9 @@ class VirtuProfController extends Controller {
     private SupportTicketService $ticketService;
     private TelosService $telosService;
     private IUserManager $userManager;
+    private CourseService $courseService;
+    private PoolService $poolService;
+    private QuestionService $questionService;
 
     public function __construct(
         string $appName,
@@ -94,7 +100,10 @@ class VirtuProfController extends Controller {
         LernplanService $lernplanService,
         SupportTicketService $ticketService,
         TelosService $telosService,
-        IUserManager $userManager
+        IUserManager $userManager,
+        CourseService $courseService,
+        PoolService $poolService,
+        QuestionService $questionService
     ) {
         parent::__construct($appName, $request);
         $this->config = $config;
@@ -107,6 +116,59 @@ class VirtuProfController extends Controller {
         $this->ticketService = $ticketService;
         $this->telosService = $telosService;
         $this->userManager = $userManager;
+        $this->courseService = $courseService;
+        $this->poolService = $poolService;
+        $this->questionService = $questionService;
+    }
+
+    /**
+     * AUDIT HIGH-03 (DSGVO): every user-triggered LLM path must confirm the per-user AI
+     * consent BEFORE any data reaches Gemini — the admin ai_enabled toggle alone is NOT
+     * sufficient (mirrors SummaryController's consent gate). Returns true when consent is
+     * absent, in which case the caller returns a `consent_required` response.
+     */
+    private function aiConsentMissing(): bool {
+        return $this->userId === null
+            || empty($this->telosService->getAiConsentVersion($this->userId));
+    }
+
+    /**
+     * AUDIT HIGH-02 (IDOR): the frontend supplies poolId/courseId/lastWrongQuestionId as raw
+     * learning-context hints. RagContextService loads pool questions (with answers), course
+     * material chunks and the last-wrong correct answer WITHOUT an access check, so a crafted
+     * request could pull foreign course content and answer keys. We drop (null out) any context
+     * id the user cannot access BEFORE it reaches RAG/file-intent — the chat still answers
+     * generically, and dropping (vs. 403) avoids leaking which ids exist. userId-scoped context
+     * (Leitner stats, weaknesses) stays safe by construction.
+     *
+     * @return array{0: ?int, 1: ?int, 2: ?int} filtered [poolId, courseId, lastWrongQuestionId]
+     */
+    private function filterAccessibleContext(?int $poolId, ?int $courseId, ?int $lastWrongQuestionId): array {
+        $userId = (string)$this->userId;
+
+        if ($courseId !== null) {
+            try {
+                $this->courseService->findById($courseId, $userId);
+            } catch (\Throwable $e) {
+                $courseId = null;
+            }
+        }
+        if ($poolId !== null) {
+            try {
+                $this->poolService->findByIdWithShareAccess($poolId, $userId);
+            } catch (\Throwable $e) {
+                $poolId = null;
+            }
+        }
+        if ($lastWrongQuestionId !== null) {
+            try {
+                $this->questionService->find($lastWrongQuestionId, $userId);
+            } catch (\Throwable $e) {
+                $lastWrongQuestionId = null;
+            }
+        }
+
+        return [$poolId, $courseId, $lastWrongQuestionId];
     }
 
     /**
@@ -449,6 +511,11 @@ class VirtuProfController extends Controller {
             return new DataResponse(['error' => 'AI feature disabled'], Http::STATUS_SERVICE_UNAVAILABLE);
         }
 
+        // HIGH-03: interview answers are free text sent to Gemini — require per-user consent.
+        if ($this->aiConsentMissing()) {
+            return new DataResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+        }
+
         $sanitizedHistory = $this->sanitizeInterviewHistory($history);
         if ($sanitizedHistory === []) {
             return new DataResponse(['error' => 'Interview history is required'], Http::STATUS_BAD_REQUEST);
@@ -542,6 +609,14 @@ class VirtuProfController extends Controller {
         if (!$this->isAiFeatureAvailable()) {
             return new DataResponse(['error' => 'AI feature disabled'], Http::STATUS_SERVICE_UNAVAILABLE);
         }
+
+        // HIGH-03: per-user AI consent gate — covers this call AND the file/ticket intents below.
+        if ($this->aiConsentMissing()) {
+            return new DataResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+        }
+
+        // HIGH-02: drop learning-context ids the user cannot access before RAG/file-intent see them.
+        [$poolId, $courseId, $lastWrongQuestionId] = $this->filterAccessibleContext($poolId, $courseId, $lastWrongQuestionId);
 
         // FILE-INTENT: detect file-creation intents before the AI call
         $lowerMessage = mb_strtolower($message);

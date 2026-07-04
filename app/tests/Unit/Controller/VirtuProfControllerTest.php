@@ -5,9 +5,12 @@ namespace OCA\Learning\Tests\Unit\Controller;
 
 use OCA\Learning\Controller\VirtuProfController;
 use OCA\Learning\Service\AiChatMemoryService;
+use OCA\Learning\Service\CourseService;
 use OCA\Learning\Service\GeminiService;
 use OCA\Learning\Service\LernplanService;
 use OCA\Learning\Service\NoteGeneratorService;
+use OCA\Learning\Service\PoolService;
+use OCA\Learning\Service\QuestionService;
 use OCA\Learning\Service\RagContextService;
 use OCA\Learning\Service\SupportTicketService;
 use OCA\Learning\Service\TelosService;
@@ -59,6 +62,12 @@ class VirtuProfControllerTest extends TestCase {
     private $telosMock;
     /** @var IUserManager&\PHPUnit\Framework\MockObject\MockObject */
     private $userManagerMock;
+    /** @var CourseService&\PHPUnit\Framework\MockObject\MockObject */
+    private $courseMock;
+    /** @var PoolService&\PHPUnit\Framework\MockObject\MockObject */
+    private $poolMock;
+    /** @var QuestionService&\PHPUnit\Framework\MockObject\MockObject */
+    private $questionMock;
 
     protected function setUp(): void {
         $this->configMock = $this->createMock(IConfig::class);
@@ -71,6 +80,9 @@ class VirtuProfControllerTest extends TestCase {
         $this->ticketMock = $this->createMock(SupportTicketService::class);
         $this->telosMock = $this->createMock(TelosService::class);
         $this->userManagerMock = $this->createMock(IUserManager::class);
+        $this->courseMock = $this->createMock(CourseService::class);
+        $this->poolMock = $this->createMock(PoolService::class);
+        $this->questionMock = $this->createMock(QuestionService::class);
     }
 
     /**
@@ -90,7 +102,10 @@ class VirtuProfControllerTest extends TestCase {
             $this->lernplanMock,
             $this->ticketMock,
             $this->telosMock,
-            $this->userManagerMock
+            $this->userManagerMock,
+            $this->courseMock,
+            $this->poolMock,
+            $this->questionMock
         );
     }
 
@@ -196,5 +211,107 @@ class VirtuProfControllerTest extends TestCase {
         $payload = $controller->getState()->getData();
 
         $this->assertSame('nova', $payload['skin']);
+    }
+
+    // ---- AUDIT HIGH-03 (consent) + HIGH-02 (RAG IDOR) ------------------------------------
+
+    /** Enable the AI feature (admin toggle + provider available) for the chat-path tests. */
+    private function enableAi(): void {
+        $this->configMock->method('getAppValue')
+            ->willReturnCallback(fn(string $app, string $key, string $default = ''): string
+                => $key === 'ai_enabled' ? 'yes' : $default);
+        $this->geminiMock->method('isAvailable')->willReturn(true);
+        // getUserValue is read for language/skin etc. — return the default everywhere.
+        $this->configMock->method('getUserValue')
+            ->willReturnCallback(fn(string $u, string $a, string $k, string $d = ''): string => $d);
+    }
+
+    /**
+     * HIGH-03: with the AI feature enabled but NO per-user consent, chat() must return
+     * consent_required and never reach the LLM or RAG (no data leaves for Gemini).
+     */
+    public function testChatWithoutConsentIsBlocked(): void {
+        $this->enableAi();
+        $this->telosMock->method('getAiConsentVersion')->with('user-A')->willReturn(null);
+
+        $this->geminiMock->expects($this->never())->method('chat');
+        $this->ragMock->expects($this->never())->method('buildContext');
+
+        $resp = $this->makeController('user-A')->chat('was ist ein vlan', 5, 5, 5);
+
+        $this->assertSame(403, $resp->getStatus());
+        $this->assertTrue($resp->getData()['consent_required'] ?? false);
+    }
+
+    /**
+     * HIGH-02: a consenting user who supplies pool/course/lastWrong ids they cannot access
+     * must have that context DROPPED — buildContext is never called with foreign ids, so no
+     * foreign pool questions / answer keys / course chunks are loaded. Access checks throw for
+     * every id here, so all three are nulled and buildContext is skipped entirely.
+     */
+    public function testChatDropsInaccessibleLearningContext(): void {
+        $this->enableAi();
+        $this->telosMock->method('getAiConsentVersion')->willReturn('v1');
+
+        // No access to ANY of the supplied context ids.
+        $this->courseMock->method('findById')->willThrowException(new \RuntimeException('no access'));
+        $this->poolMock->method('findByIdWithShareAccess')->willThrowException(new \RuntimeException('no access'));
+        $this->questionMock->method('find')->willThrowException(new \RuntimeException('no access'));
+
+        // All context dropped → buildContext must never run (it is only called when at least
+        // one id is non-null after filtering).
+        $this->ragMock->expects($this->never())->method('buildContext');
+
+        // The chat still answers generically.
+        $this->chatMemoryMock->method('loadMemory')->willReturn([]);
+        $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
+        $this->userManagerMock->method('get')->willReturn(null);
+        $this->geminiMock->expects($this->once())->method('chat')
+            ->willReturn(['answer' => 'generic', 'fallback' => false, 'reason' => '']);
+
+        $resp = $this->makeController('user-A')->chat('was ist ein vlan', 99, 99, 99);
+
+        $this->assertSame(200, $resp->getStatus());
+    }
+
+    /**
+     * HIGH-02 happy path: for context the user CAN access, buildContext receives the real ids
+     * — the drop only removes foreign context, never legitimate learning context.
+     */
+    public function testChatKeepsAccessibleLearningContext(): void {
+        $this->enableAi();
+        $this->telosMock->method('getAiConsentVersion')->willReturn('v1');
+
+        // Access granted for all ids (methods return without throwing).
+        $this->courseMock->method('findById')->willReturn(['id' => 7]);
+        $this->poolMock->method('findByIdWithShareAccess')->willReturn(['id' => 5]);
+        $this->questionMock->method('find')->willReturn(['id' => 3]);
+
+        $this->ragMock->expects($this->once())->method('buildContext')
+            ->with('user-A', 5, 7, 3, 'was ist ein vlan')
+            ->willReturn(['chunks' => []]);
+
+        $this->chatMemoryMock->method('loadMemory')->willReturn([]);
+        $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
+        $this->userManagerMock->method('get')->willReturn(null);
+        $this->geminiMock->method('chat')
+            ->willReturn(['answer' => 'ok', 'fallback' => false, 'reason' => '']);
+
+        $resp = $this->makeController('user-A')->chat('was ist ein vlan', 5, 7, 3);
+
+        $this->assertSame(200, $resp->getStatus());
+    }
+
+    /** HIGH-03: interviewTurn (free text to Gemini) is consent-gated too. */
+    public function testInterviewTurnWithoutConsentIsBlocked(): void {
+        $this->enableAi();
+        $this->telosMock->method('getAiConsentVersion')->willReturn('');
+
+        $this->geminiMock->expects($this->never())->method('generateInterviewTurn');
+
+        $resp = $this->makeController('user-A')->interviewTurn([['question' => 'q', 'answer' => 'a']], 2);
+
+        $this->assertSame(403, $resp->getStatus());
+        $this->assertTrue($resp->getData()['consent_required'] ?? false);
     }
 }
