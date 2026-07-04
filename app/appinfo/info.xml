@@ -51,13 +51,13 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 ## Technical
 
 - Vue 3, Vite, Pinia — modern frontend stack
-- 961 unit tests, PHPStan Level 5, 4-gate CI pipeline
+- 1220 unit tests, PHPStan Level 5, pre-push quality gates
 - Native Nextcloud integration: Dashboard widgets, Notifications, Talk, Files
 - AGPL-3.0 — fully open source
 
 ## Requirements
 
-- Nextcloud 29–33
+- Nextcloud 33–35
 - PHP 8.1+
 - PostgreSQL 13+ or MySQL 8+
 

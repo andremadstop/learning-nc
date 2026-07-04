@@ -2,11 +2,11 @@
 
 A self-hosted learning platform for Nextcloud. Flashcards with spaced repetition, interactive IT simulators, AI tutor, and instructor analytics. Your data never leaves your server.
 
-![Nextcloud](https://img.shields.io/badge/Nextcloud-29--33-blue)
+![Nextcloud](https://img.shields.io/badge/Nextcloud-33--35-blue)
 ![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
-![Tests](https://img.shields.io/badge/Tests-961%20passed-brightgreen)
-![Version](https://img.shields.io/badge/Version-4.2.0-orange)
+![Tests](https://img.shields.io/badge/Tests-1220%20passed-brightgreen)
+![Version](https://img.shields.io/badge/Version-5.2.0-orange)
 
 Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject — from vocabulary drilling to exam preparation.
 
@@ -75,11 +75,10 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 ### Manual Installation
 
 ```bash
-cd /path/to/nextcloud/custom_apps/
-git clone https://codeberg.org/andremadstop/learning-nc.git learning
-cd learning/app
-npm install
-npm run build
+# The Nextcloud app lives in the repo's app/ subdirectory — clone outside, then copy app/ in.
+git clone https://codeberg.org/andremadstop/learning-nc.git /tmp/learning-nc
+cd /tmp/learning-nc/app && npm install && npm run build
+cp -r /tmp/learning-nc/app /path/to/nextcloud/custom_apps/learning
 php /path/to/nextcloud/occ app:enable learning
 ```
 
@@ -141,13 +140,13 @@ fine-grained watch log) as the data-minimizing mitigation.
 
 - **Frontend:** Vue 3.5, Vite, Pinia, @nextcloud/vue 9
 - **Backend:** PHP 8.1+, Nextcloud App Framework, QBMapper
-- **Tests:** 961 unit tests (Vitest), PHPStan Level 5, ESLint, 4-gate CI pipeline
+- **Tests:** 1220 unit tests (Vitest), PHPStan Level 5, ESLint — enforced via pre-push quality gates
 - **Real-time:** Server-Sent Events for multiplayer modes
 - **Caching:** Redis support for leaderboard and session data
 
 ## Requirements
 
-- Nextcloud 29–33
+- Nextcloud 33–35
 - PHP 8.1+
 - PostgreSQL 13+ or MySQL 8+
 
