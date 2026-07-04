@@ -59,6 +59,7 @@ import OnbRoleSelect from './onboarding/OnbRoleSelect.vue'
 import OnbTour from './onboarding/OnbTour.vue'
 import OnbPrivacy from './onboarding/OnbPrivacy.vue'
 import OnbProfileTiles from './onboarding/OnbProfileTiles.vue'
+import consentData from '../../data/ai-consent.json'
 import OnbJumpstart from './onboarding/OnbJumpstart.vue'
 import OnbHook from './onboarding/OnbHook.vue'
 
@@ -235,8 +236,16 @@ export default {
 
     async saveAiConsent() {
       const aiEnabled = this.store.profileChoices.aiConsent === 'yes'
+      // AUDIT v5.2.1 (pre-live review R2, finding #2): the backend consent endpoint stores a
+      // version string (same as VirtuProf's consent dialog) — it ignores `ai_explanations` and
+      // rejects a missing version with 400. The old payload was a silent no-op; with the new
+      // universal AI-consent gate that no-op locked opted-in onboarding users out of AI features.
+      // Only persist consent when the user actually opted in; "no" simply leaves consent unset.
+      if (!aiEnabled) {
+        return
+      }
       await axios.post(generateUrl('/apps/learning/api/profile/telos/consent'), {
-        ai_explanations: aiEnabled,
+        version: consentData.version,
       })
     },
 

@@ -563,6 +563,9 @@ export default {
         this.explainTaskId = r.data.taskId;
         this.pollExplain();
       } catch (e) {
+        if (e.response?.data?.consent_required) {
+          this.explainText = t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.');
+        }
         this.explainLoading = false;
       }
     },
@@ -675,7 +678,9 @@ export default {
         });
         this.summaryPath = r.data.path || null;
       } catch (e) {
-        const msg = e.response?.data?.error || t('learning', 'Summary generation failed');
+        const msg = e.response?.data?.consent_required
+          ? t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.')
+          : (e.response?.data?.error || t('learning', 'Summary generation failed'));
         this.summaryError = msg;
       } finally {
         this.summaryGenerating = false;

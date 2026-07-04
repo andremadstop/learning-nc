@@ -2299,5 +2299,6 @@ OC.L10N.register(
     "Dieser Zertifikatsdatensatz wurde nach Ablauf der Aufbewahrungsfrist gelöscht (DSGVO)." : "This certificate record was deleted after the retention period expired (GDPR).",
     "Hinweis zur Aufbewahrung" : "Retention notice",
     "Der Datensatz zu diesem Zertifikat wurde nach Ablauf der Aufbewahrungsfrist datenschutzkonform gelöscht. Eine inhaltliche Prüfung ist nicht mehr möglich; das Zertifikat war zum Zeitpunkt der Löschung bereits nicht mehr aktiv." : "The record for this certificate was deleted in compliance with data protection rules after the retention period expired. Verification of its contents is no longer possible; the certificate was already inactive at the time of deletion.",
+    "AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again." : "AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.",
 },
 "nplurals=2; plural=(n != 1);");

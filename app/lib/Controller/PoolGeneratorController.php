@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\PoolGeneratorService;
+use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -15,18 +16,32 @@ class PoolGeneratorController extends Controller {
     private PoolGeneratorService $service;
     private LoggerInterface $logger;
     private ?string $userId;
+    private TelosService $telosService;
 
     public function __construct(
         string $appName,
         IRequest $request,
         PoolGeneratorService $service,
         LoggerInterface $logger,
+        TelosService $telosService,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
         $this->service = $service;
         $this->logger = $logger;
+        $this->telosService = $telosService;
         $this->userId = $userId;
+    }
+
+    /**
+     * AUDIT v5.2.1 (HIGH-03 consistency): per-user GDPR consent gate. Returns a consent_required
+     * response when consent is missing (frontend routes the user to the global VirtuProf dialog).
+     */
+    private function aiConsentResponse(): ?JSONResponse {
+        if ($this->userId === null || !$this->telosService->hasAiConsent($this->userId)) {
+            return new JSONResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+        }
+        return null;
     }
 
     /**
@@ -47,6 +62,9 @@ class PoolGeneratorController extends Controller {
     public function fromText(string $text, int $questionCount = 20): JSONResponse {
         if ($this->userId === null) {
             return new JSONResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        if (($consent = $this->aiConsentResponse()) !== null) {
+            return $consent;
         }
 
         try {
@@ -69,6 +87,9 @@ class PoolGeneratorController extends Controller {
     public function fromFile(string $filePath, int $questionCount = 20): JSONResponse {
         if ($this->userId === null) {
             return new JSONResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        if (($consent = $this->aiConsentResponse()) !== null) {
+            return $consent;
         }
 
         try {

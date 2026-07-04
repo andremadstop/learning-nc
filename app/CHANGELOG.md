@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.2.1] - 2026-07-04 — Security Hardening
+
+> A whole-app security audit (8 review lanes) followed by an adversarial multi-model pre-live review. Every finding was verified against the actual code before fixing; fixes shipping to the public App Store were themselves re-reviewed. No functional/feature changes — hardening only.
+
+### Security — Access control (IDOR)
+- Course-scoped authorization on RAG import/list/delete/moderate endpoints (an instructor of course A could previously touch course B's shared RAG pool); course-membership gates on RAG contribution and on listing one's own contributions.
+- Answer-key exports (CSV/JSON) require export-level access (owner, edit-share, or the instructor of a course the pool is attached to) — not plain read access; enrolled students can no longer pull answer keys.
+- Course-access gates on document index/material-folder and course feed endpoints (previously cross-course content/PII could leak).
+
+### Security — Exam integrity (oracle prevention)
+- During an active exam, explanations, correct answers, PBQ solution config and translated explanations are withheld across all surfaces that emit question-derived data (training/exam payloads, translation endpoints, the spaced-repetition due-queue, and VirtuProf's RAG + client-supplied question context).
+- Starting an exam no longer auto-completes an existing exam by switching course context; correct PBQ answers now increment the exam score even when per-question feedback is suppressed.
+
+### Security — AI / GDPR
+- **Per-user AI consent is now enforced on every user-triggered LLM path** (VirtuProf chat/interview, course summary, AI question generation, note generation, AI explanations) — the admin `ai_enabled` toggle alone is no longer sufficient. The frontend catches the consent-required response and points the user to the in-app consent dialog.
+- Stored chat memory is NFKC-normalized and injection-filtered before re-entering the system prompt (a payload stripped on turn 1 could previously reappear on turn 2); the injection sanitizer now covers the same role-change / prompt-leak / jailbreak markers as the detector.
+- File-intent note generation and chat-memory compression now count against the shared AI rate limit.
+
+### Security — Data-layer robustness
+- Repair migration for course-feature table-name drift (curriculum scopes, question overrides, announcements) — cross-DB safe (PostgreSQL 16 / MariaDB / SQLite), identifier-quoted, fail-fast on platform-detection error, and it aborts rather than orphaning legacy data if a rename fails.
+- Prefix-agnostic insert ids (exam slots, announcements) instead of a hardcoded `oc_` sequence name; entity model aligned with the shipped schema.
+
+### Database
+- `Version009900`: idempotent, data-preserving repair of legacy `learning_curriculum_scopes` / `learning_q_overrides` / `learning_announcements` → `learning_course_*`. Verified on PostgreSQL 16.
+
 ## [5.2.0] - 2026-07-03 — Pflichtschulung (Mandatory Compliance Training)
 
 > Versions 5.2.0.1–5.2.0.5 were internal migration-vehicle bumps and were never released; this entry covers everything since 5.0.0. Built for organizations running recurring mandatory trainings (works safety, data protection, …) — triggered by a real-world AWO deployment scenario (#20).

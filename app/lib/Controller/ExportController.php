@@ -42,7 +42,7 @@ class ExportController extends Controller {
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportCsv(int $poolId): Http\Response {
         try {
-            $this->questionService->verifyEditAccess($poolId, $this->userId);
+            $this->questionService->verifyExportAccess($poolId, $this->userId);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Pool not found or no export access'], Http::STATUS_FORBIDDEN);
         }
@@ -57,7 +57,7 @@ class ExportController extends Controller {
     #[UserRateLimit(limit: 10, period: 60)]
     public function exportJson(int $poolId): Http\Response {
         try {
-            $this->questionService->verifyEditAccess($poolId, $this->userId);
+            $this->questionService->verifyExportAccess($poolId, $this->userId);
         } catch (\Exception $e) {
             return new DataResponse(['error' => 'Pool not found or no export access'], Http::STATUS_FORBIDDEN);
         }

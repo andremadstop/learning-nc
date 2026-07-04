@@ -248,7 +248,9 @@ export default {
         });
         this.handleGenerationResult(r.data);
       } catch (e) {
-        this.error = e.response?.data?.error || t('learning', 'Generation failed');
+        this.error = e.response?.data?.consent_required
+          ? t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.')
+          : (e.response?.data?.error || t('learning', 'Generation failed'));
         this.step = 'input';
       } finally {
         this.generating = false;
@@ -266,7 +268,9 @@ export default {
         });
         this.handleGenerationResult(r.data);
       } catch (e) {
-        this.error = e.response?.data?.error || t('learning', 'Generation failed');
+        this.error = e.response?.data?.consent_required
+          ? t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.')
+          : (e.response?.data?.error || t('learning', 'Generation failed'));
         this.step = 'input';
       } finally {
         this.generating = false;

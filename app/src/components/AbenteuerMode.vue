@@ -2339,7 +2339,9 @@ export default {
 					this.freetextError = data.narrative || t('learning', 'Aktion nicht möglich')
 				}
 			} catch (err) {
-				this.freetextError = err.response?.data?.error || t('learning', 'Fehler bei der Verarbeitung')
+				this.freetextError = err.response?.data?.consent_required
+					? t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.')
+					: (err.response?.data?.error || t('learning', 'Fehler bei der Verarbeitung'))
 			} finally {
 				this.freetextLoading = false
 			}

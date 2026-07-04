@@ -45,6 +45,7 @@ class StoryEngineService {
     private IConfig $config;
     private ICacheFactory $cacheFactory;
     private CampaignGraphService $graphService;
+    private TelosService $telosService;
 
     public function __construct(
         StoryProgressMapper $progressMapper,
@@ -53,7 +54,8 @@ class StoryEngineService {
         GeminiService $geminiService,
         IConfig $config,
         ICacheFactory $cacheFactory,
-        CampaignGraphService $graphService
+        CampaignGraphService $graphService,
+        TelosService $telosService
     ) {
         $this->progressMapper = $progressMapper;
         $this->db = $db;
@@ -62,6 +64,7 @@ class StoryEngineService {
         $this->config = $config;
         $this->cacheFactory = $cacheFactory;
         $this->graphService = $graphService;
+        $this->telosService = $telosService;
         // Resolve campaign directory relative to this file's location:
         // app/lib/Service/ → ../../../data/campaigns/
         $this->campaignDir = realpath(__DIR__ . '/../../../app/data/campaigns')
@@ -2088,6 +2091,14 @@ class StoryEngineService {
         string $userId,
         int    $maxTokens = 250
     ): string {
+        // AUDIT v5.2.1 (HIGH-03 consistency, pre-live review R4): EVERY AI-narrated story path
+        // (scene narrative, dynamic choices, NPC dialog, free-text) funnels through here. Without
+        // per-user AI consent we must send nothing to Gemini — return '' so callers fall back to
+        // their static (scripted) content. The campaign stays fully playable, just non-AI-narrated;
+        // the free-text endpoint additionally returns an explicit consent_required (StoryController).
+        if (!$this->telosService->hasAiConsent($userId)) {
+            return '';
+        }
         // Delegate to GeminiService.generateNote() which does direct API call + audit log.
         // We build a combined system+user prompt because generateNote() takes both.
         // For story calls, input sanitization is done upstream (no user-controlled free text

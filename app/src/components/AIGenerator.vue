@@ -164,7 +164,9 @@ export default {
         this.step = 'generating';
         this.pollStatus();
       } catch (e) {
-        this.error = e.response?.data?.error || t('learning', 'Failed to start generation');
+        this.error = e.response?.data?.consent_required
+          ? t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.')
+          : (e.response?.data?.error || t('learning', 'Failed to start generation'));
         this.generating = false;
       }
     },

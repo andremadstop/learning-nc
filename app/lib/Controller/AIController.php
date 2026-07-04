@@ -4,6 +4,7 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\AIService;
 use OCA\Learning\Service\QuestionService;
+use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http;
@@ -18,6 +19,7 @@ class AIController extends Controller {
     private IDBConnection $db;
     private LoggerInterface $logger;
     private ?string $userId;
+    private TelosService $telosService;
 
     public function __construct(
         string $appName,
@@ -26,6 +28,7 @@ class AIController extends Controller {
         QuestionService $questionService,
         IDBConnection $db,
         LoggerInterface $logger,
+        TelosService $telosService,
         ?string $userId
     ) {
         parent::__construct($appName, $request);
@@ -33,7 +36,21 @@ class AIController extends Controller {
         $this->questionService = $questionService;
         $this->db = $db;
         $this->logger = $logger;
+        $this->telosService = $telosService;
         $this->userId = $userId;
+    }
+
+    /**
+     * AUDIT v5.2.1 (HIGH-03 consistency): per-user GDPR consent gate for user-triggered LLM paths.
+     * Returns a consent_required JSONResponse when consent is missing, else null (caller proceeds).
+     * The frontend catches consent_required and points the user at the global VirtuProf consent
+     * dialog (a plain 403 would otherwise dead-end users who never opened VirtuProf).
+     */
+    private function aiConsentResponse(): ?JSONResponse {
+        if ($this->userId === null || !$this->telosService->hasAiConsent($this->userId)) {
+            return new JSONResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+        }
+        return null;
     }
 
     /**
@@ -49,6 +66,9 @@ class AIController extends Controller {
      */
     #[UserRateLimit(limit: 5, period: 60)]
     public function generate(int $poolId, string $text, int $count = 10, string $lang = 'de'): JSONResponse {
+        if (($consent = $this->aiConsentResponse()) !== null) {
+            return $consent;
+        }
         try {
             $this->questionService->verifyEditAccess($poolId, $this->userId);
         } catch (\Exception $e) {
@@ -91,6 +111,9 @@ class AIController extends Controller {
     public function explain(int $questionId, ?int $selectedAnswerId = null, ?array $selectedAnswerIds = null, ?string $answerText = null): JSONResponse {
         if ($this->userId === null) {
             return new JSONResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        if (($consent = $this->aiConsentResponse()) !== null) {
+            return $consent;
         }
 
         try {

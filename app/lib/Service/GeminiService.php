@@ -532,12 +532,33 @@ PROMPT;
 
     /**
      * Strip injection patterns from text, keeping the rest intact.
+     *
+     * AUDIT v5.2.1 (pre-live review): the detector containsInjectionPattern() flags ~26 patterns
+     * but strip previously removed only 7, so a flagged payload ("act as", "role:", "reveal the
+     * system prompt", "DAN"/"jailbreak", "enable debug mode", …) passed through verbatim after the
+     * strip. This list now mirrors the detector's role-change / prompt-leak / jailbreak markers.
+     * The multi-".*" detector patterns (base64-decode, leetspeak, print key) are intentionally
+     * omitted here because greedy removal would also eat legitimate surrounding text — for those
+     * the <user_message> context isolation in buildSystemPrompt() remains the guard.
      */
     private static function stripInjectionPatterns(string $text): string {
         $patterns = [
             '/\bignore\s+(all\s+)?(previous|above|prior|earlier)\s+(instructions?|prompts?|rules?)/i',
             '/\byou\s+are\s+now\b/i',
             '/\bsystem\s*:\s*/i',
+            '/\b(new\s+)?role\s*:\s*/i',
+            '/\bact\s+as\b/i',
+            '/\bpretend\s+(you\s+are|to\s+be)\b/i',
+            '/\bdo\s+not\s+follow\s+(your|the)\s+(rules|instructions)\b/i',
+            '/\boverride\s+(system|prompt|instructions?)\b/i',
+            '/\brepeat\s+(your|the)\s+(system\s+)?(prompt|instructions?)\b/i',
+            '/\btranslate\s+(your|the)\s+(system\s+)?(prompt|instructions?)\b/i',
+            '/\bforget\s+(all\s+)?(your\s+)?(rules|instructions|training)\b/i',
+            '/\b(?:im|i\s+am)\s+(?:your|the)\s+(?:developer|admin|creator|owner)\b/i',
+            '/\b(?:enable|activate|enter)\s+(?:debug|dev|test|admin)\s+mode\b/i',
+            '/\b(?:what|show|reveal|display|tell)\s+(?:me\s+)?(?:your|the)\s+(?:system\s+)?(?:prompt|instructions|rules)\b/i',
+            '/\brespond\s+(?:only\s+)?(?:with|in)\s+(?:json|xml|code|raw)\b/i',
+            '/\bDAN\b|\bjailbreak\b|\bdo\s+anything\s+now\b/i',
             '/```(system|instruction|prompt)[^`]*```/si',
             '/<\/?system>/i',
             '/\[\s*INST\s*\]/i',

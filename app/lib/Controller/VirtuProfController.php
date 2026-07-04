@@ -686,6 +686,27 @@ class VirtuProfController extends Controller {
             $hintLevel = null;
         }
 
+        // AUDIT v5.2.1 (pre-live review, finding E): the MED-10 RAG-answer suppression does NOT cover
+        // the client-supplied questionContext. A tampered client could smuggle explanation /
+        // correctAnswerIndex / pbqConfig (solution) straight into the system prompt and defeat the
+        // exam-oracle guard. During an active exam on the question's pool, drop those answer-bearing
+        // fields and cap the hint level so VirtuProf cannot be used as an oracle.
+        if ($questionContext !== null) {
+            $examActive = false;
+            if (!empty($questionContext['questionId'])) {
+                $examActive = $this->questionService->isExamActiveForQuestion((int)$questionContext['questionId'], (string)$this->userId);
+            } elseif ($poolId !== null) {
+                $examActive = $this->questionService->isExamActiveOnPool($poolId, $this->userId);
+            }
+            if ($examActive) {
+                unset($questionContext['explanation'], $questionContext['correctAnswerIndex']);
+                $questionContext['pbqConfig'] = null;
+                if ($hintLevel !== null) {
+                    $hintLevel = min($hintLevel, 2);
+                }
+            }
+        }
+
         // Build RAG context when the frontend provides learning context params
         $ragContext = [];
         if ($poolId !== null || $courseId !== null || $lastWrongQuestionId !== null) {

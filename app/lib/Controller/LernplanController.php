@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\LernplanService;
+use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
@@ -30,16 +31,19 @@ use OCP\IRequest;
 class LernplanController extends Controller {
     private ?string $userId;
     private LernplanService $lernplanService;
+    private TelosService $telosService;
 
     public function __construct(
         string $appName,
         IRequest $request,
         ?string $userId,
-        LernplanService $lernplanService
+        LernplanService $lernplanService,
+        TelosService $telosService
     ) {
         parent::__construct($appName, $request);
         $this->userId          = $userId;
         $this->lernplanService = $lernplanService;
+        $this->telosService    = $telosService;
     }
 
     /**
@@ -53,6 +57,12 @@ class LernplanController extends Controller {
     public function generatePlan(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        // AUDIT v5.2.1 (HIGH-03 consistency, pre-live review R3): the weekly plan sends the user's
+        // learning profile/weaknesses to Gemini — consent-gate it. (generateFortschritt below is
+        // data-driven / no AI and needs no gate.)
+        if (!$this->telosService->hasAiConsent($this->userId)) {
+            return new DataResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
         }
 
         $courseId = $this->request->getParam('course_id', null);

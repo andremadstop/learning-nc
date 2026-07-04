@@ -215,13 +215,17 @@ class Version009900Date20260703180000 extends SimpleMigrationStep {
         }
 
         if ($this->tableExists($legacyFull)) {
-            try {
-                $this->db->executeStatement("ALTER TABLE {$legacyFull} RENAME TO {$targetFull}");
-                $output->info("Renamed {$legacyName} -> {$targetName}");
-                return;
-            } catch (\Throwable $e) {
-                $output->warning("Rename {$legacyName} -> {$targetName} failed: " . $e->getMessage() . " — attempting create-from-scratch");
-            }
+            // AUDIT v5.2.1 (pre-live review): quote both identifiers. On PostgreSQL unquoted
+            // identifiers are case-folded to lowercase, so a mixed-case table prefix would make
+            // RENAME fail to find the table (the CREATE branches already quote consistently).
+            $q = $this->platformName() === 'mysql' ? '`' : '"';
+            $this->db->executeStatement("ALTER TABLE {$q}{$legacyFull}{$q} RENAME TO {$q}{$targetFull}{$q}");
+            $output->info("Renamed {$legacyName} -> {$targetName}");
+            return;
+            // Note: we deliberately do NOT fall through to create-from-scratch on a rename failure.
+            // If the legacy table exists but the rename throws, creating an empty target table would
+            // orphan the legacy data (the app would read the empty table) — a silent data-loss trap
+            // (Codex #6). Letting the exception abort the migration lets an admin intervene.
         }
 
         $createTable($targetFull, $this->platformName());
@@ -248,10 +252,10 @@ class Version009900Date20260703180000 extends SimpleMigrationStep {
     }
 
     private function platformName(): string {
-        try {
-            return $this->db->getDatabasePlatform()->getName();
-        } catch (\Throwable $e) {
-            return 'mysql';
-        }
+        // AUDIT v5.2.1 (pre-live review): no 'mysql' fallback. If platform detection ever fails,
+        // defaulting to mysql would run MySQL-specific DDL (BIGINT UNSIGNED, backticks) against a
+        // PostgreSQL/SQLite instance — a confusing downstream crash. Failing fast here aborts the
+        // upgrade with the real cause instead. (Verified getName() works on the NC33 PG target.)
+        return $this->db->getDatabasePlatform()->getName();
     }
 }

@@ -14,17 +14,20 @@ class SupportTicketService {
     private CourseService $courseService;
     private GeminiService $geminiService;
     private IConfig $config;
+    private TelosService $telosService;
 
     public function __construct(
         SupportTicketMapper $ticketMapper,
         CourseService $courseService,
         GeminiService $geminiService,
-        IConfig $config
+        IConfig $config,
+        TelosService $telosService
     ) {
         $this->ticketMapper = $ticketMapper;
         $this->courseService = $courseService;
         $this->geminiService = $geminiService;
         $this->config = $config;
+        $this->telosService = $telosService;
     }
 
     public function create(string $userId, ?string $subject, string $message, array $context = [], ?string $category = null): SupportTicket {
@@ -69,8 +72,13 @@ class SupportTicketService {
         /** @var SupportTicket $ticket */
         $ticket = $this->ticketMapper->insert($ticket);
 
-        // AI Triage: classify ticket if AI is enabled
-        if ($this->config->getAppValue('learning', 'ai_enabled', 'no') === 'yes') {
+        // AI Triage: classify ticket if AI is enabled AND the user consented to AI use.
+        // AUDIT v5.2.1 (HIGH-03 consistency, pre-live review R4): the ticket free-text is sent to
+        // Gemini for triage. Unlike the other LLM paths this must NOT block ticket creation (the
+        // user needs help) — we simply skip the AI triage when consent is absent; the ticket is
+        // still filed and handled by a human.
+        if ($this->config->getAppValue('learning', 'ai_enabled', 'no') === 'yes'
+            && $this->telosService->hasAiConsent($userId)) {
             $this->applyAiTriage($ticket, $subject, $message);
         }
 

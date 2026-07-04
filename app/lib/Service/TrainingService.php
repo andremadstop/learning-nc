@@ -9,6 +9,7 @@ use OCA\Learning\Db\PoolShareMapper;
 use OCA\Learning\Service\BadgeService;
 use OCA\Learning\Service\LernprofilService;
 use OCA\Learning\Service\NoteGeneratorService;
+use OCA\Learning\Service\TelosService;
 use OCA\Learning\Service\StreakService;
 use OCA\Learning\Service\XpService;
 use OCP\AppFramework\Db\DoesNotExistException;
@@ -35,6 +36,7 @@ class TrainingService {
     private LernprofilService $lernprofilService;
     private NoteGeneratorService $noteGeneratorService;
     private VideoProgressService $videoProgressService;
+    private TelosService $telosService;
 
     /** TRIG-01: Exam score threshold below which a weakness note is auto-generated. */
     private const EXAM_LOW_SCORE_THRESHOLD = 70;
@@ -55,7 +57,8 @@ class TrainingService {
         CourseService $courseService,
         LernprofilService $lernprofilService,
         NoteGeneratorService $noteGeneratorService,
-        VideoProgressService $videoProgressService
+        VideoProgressService $videoProgressService,
+        TelosService $telosService
     ) {
         $this->db = $db;
         $this->questionMapper = $questionMapper;
@@ -73,6 +76,7 @@ class TrainingService {
         $this->lernprofilService = $lernprofilService;
         $this->noteGeneratorService = $noteGeneratorService;
         $this->videoProgressService = $videoProgressService;
+        $this->telosService = $telosService;
     }
 
     private function logSecurityEvent(string $event, array $context = []): void {
@@ -1760,6 +1764,12 @@ class TrainingService {
      * @return array{generated: bool, path: string|null}
      */
     private function tryAutoGenerateExamNote(string $userId, int $poolId): array {
+        // AUDIT v5.2.1 (HIGH-03 consistency, pre-live review R3): this best-effort auto-note sends
+        // the user's wrong answers to Gemini. Skip it entirely when the user has not granted AI
+        // consent — a background trigger must not send data to the LLM without consent.
+        if (!$this->telosService->hasAiConsent($userId)) {
+            return ['generated' => false, 'path' => null];
+        }
         try {
             $result = $this->noteGeneratorService->generateSummary($userId, $poolId, null);
             $this->logger->info('TRIG-01: auto-generated exam weakness note for user {user} pool {pool}', [

@@ -2299,5 +2299,6 @@ OC.L10N.register(
     "Dieser Zertifikatsdatensatz wurde nach Ablauf der Aufbewahrungsfrist gelöscht (DSGVO)." : "Эта запись сертификата была удалена по истечении срока хранения (GDPR).",
     "Hinweis zur Aufbewahrung" : "Примечание о сроке хранения",
     "Der Datensatz zu diesem Zertifikat wurde nach Ablauf der Aufbewahrungsfrist datenschutzkonform gelöscht. Eine inhaltliche Prüfung ist nicht mehr möglich; das Zertifikat war zum Zeitpunkt der Löschung bereits nicht mehr aktiv." : "Запись этого сертификата была удалена в соответствии с правилами защиты данных по истечении срока хранения. Проверка содержания больше невозможна; на момент удаления сертификат уже был неактивен.",
+    "AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again." : "Требуется согласие на использование ИИ. Откройте помощника VirtuProf (справа внизу), примите условия использования ИИ и повторите попытку.",
 },
 "nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);");

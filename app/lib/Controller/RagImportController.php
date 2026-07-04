@@ -328,6 +328,16 @@ class RagImportController extends Controller {
      * @NoAdminRequired
      */
     public function myContributions(int $courseId): DataResponse {
+        // AUDIT v5.2.1 (pre-live review): mirror contributeNote()'s membership gate — after a user
+        // is removed from a course they must not keep reading their old contributions by course id.
+        if ($this->userId === null) {
+            return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        try {
+            $this->courseService->findById($courseId, $this->userId);
+        } catch (\Throwable $e) {
+            return new DataResponse(['error' => 'Course not found or no access'], Http::STATUS_FORBIDDEN);
+        }
         try {
             $chunks = $this->chunkMapper->findByUserIdAndCourseId($this->userId, $courseId);
             return new DataResponse(array_map(fn($c) => $c->jsonSerialize(), $chunks));

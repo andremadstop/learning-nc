@@ -4,6 +4,7 @@ namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\NoteGeneratorService;
 use OCA\Learning\Service\PoolService;
+use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attributes\UserRateLimit;
@@ -32,18 +33,21 @@ class NoteGeneratorController extends Controller {
     private ?string $userId;
     private NoteGeneratorService $noteGeneratorService;
     private IDBConnection $db;
+    private TelosService $telosService;
 
     public function __construct(
         string $appName,
         IRequest $request,
         ?string $userId,
         NoteGeneratorService $noteGeneratorService,
-        IDBConnection $db
+        IDBConnection $db,
+        TelosService $telosService
     ) {
         parent::__construct($appName, $request);
         $this->userId = $userId;
         $this->noteGeneratorService = $noteGeneratorService;
         $this->db = $db;
+        $this->telosService = $telosService;
     }
 
     /**
@@ -57,6 +61,10 @@ class NoteGeneratorController extends Controller {
     public function generate(): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        // AUDIT v5.2.1 (HIGH-03 consistency): per-user GDPR consent gate before any LLM call.
+        if (!$this->telosService->hasAiConsent($this->userId)) {
+            return new DataResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
         }
 
         $poolId  = (int)($this->request->getParam('pool_id', 0) ?? 0);

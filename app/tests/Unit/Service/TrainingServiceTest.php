@@ -19,6 +19,7 @@ use OCA\Learning\Service\VideoProgressService;
 use OCA\Learning\Service\XpService;
 use OCA\Learning\Service\LernprofilService;
 use OCA\Learning\Service\NoteGeneratorService;
+use OCA\Learning\Service\TelosService;
 use OCA\Learning\Tests\Support\FakeCacheFactory;
 use OCA\Learning\Tests\Support\FakeDbConnection;
 use OCA\Learning\Tests\Support\FakeQueryBuilder;
@@ -501,6 +502,9 @@ class TrainingServiceTest extends TestCase {
 
         $lernprofilService = $this->createMock(LernprofilService::class);
         $noteGeneratorService = $this->createMock(NoteGeneratorService::class);
+        $telosService = $this->createMock(TelosService::class);
+        // Default: consent granted, so the existing auto-note (TRIG-01) path behaves as before.
+        $telosService->method('hasAiConsent')->willReturn(true);
 
         return new TrainingService(
             $db,
@@ -518,7 +522,8 @@ class TrainingServiceTest extends TestCase {
             $courseService,
             $lernprofilService,
             $noteGeneratorService,
-            $videoProgressService
+            $videoProgressService,
+            $telosService
         );
     }
 

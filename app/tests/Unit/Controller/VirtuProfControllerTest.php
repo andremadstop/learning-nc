@@ -342,4 +342,105 @@ class VirtuProfControllerTest extends TestCase {
         $this->assertSame(403, $resp->getStatus());
         $this->assertTrue($resp->getData()['consent_required'] ?? false);
     }
+
+    // ---- AUDIT v5.2.1 (pre-live review, finding E) — client questionContext exam-oracle guard ----
+
+    /**
+     * Build the questionContext payload shared by both finding-E tests below. When $questionId is
+     * null, the key is omitted entirely (matches a real "no specific question" chat, not a
+     * client-sent null) so the question-level vs. pool-level exam-check branches stay unambiguous.
+     */
+    private function tamperedQuestionContext(?int $questionId): array {
+        $ctx = [
+            'questionText' => 'Which VLAN is correct?',
+            'answers' => ['10', '20'],
+            'explanation' => 'VLAN 10 because...',
+            'correctAnswerIndex' => 0,
+            'pbqConfig' => ['correct' => ['vlan' => 10]],
+        ];
+        if ($questionId !== null) {
+            $ctx['questionId'] = $questionId;
+        }
+        return $ctx;
+    }
+
+    /**
+     * Assert that the questionContext GeminiService::chat() actually received (5th positional arg)
+     * has the answer-bearing fields stripped, and that the hint level (6th arg) was capped to <=2.
+     */
+    private function expectSanitizedContextReachesGemini(): void {
+        $this->geminiMock->expects($this->once())->method('chat')
+            ->with(
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+                $this->callback(function ($ctx): bool {
+                    $this->assertIsArray($ctx);
+                    $this->assertArrayNotHasKey('explanation', $ctx, 'explanation must not reach Gemini during an active exam');
+                    $this->assertArrayNotHasKey('correctAnswerIndex', $ctx, 'correctAnswerIndex must not reach Gemini during an active exam');
+                    $this->assertNull($ctx['pbqConfig'], 'pbqConfig solution must be nulled during an active exam');
+                    return true;
+                }),
+                $this->callback(function ($hintLevel): bool {
+                    $this->assertLessThanOrEqual(2, $hintLevel, 'hintLevel must be capped to 2 during an active exam');
+                    return true;
+                })
+            )
+            ->willReturn(['answer' => 'ok', 'fallback' => false, 'reason' => '']);
+
+        $this->chatMemoryMock->method('loadMemory')->willReturn([]);
+        $this->telosMock->method('getTelos')->willReturn(['telos' => null]);
+        $this->userManagerMock->method('get')->willReturn(null);
+    }
+
+    /**
+     * Question-level exam check: questionContext carries a questionId with an active exam on its
+     * pool (isExamActiveForQuestion=true) → explanation/correctAnswerIndex/pbqConfig are stripped
+     * from what reaches Gemini, and hintLevel is capped, even though no poolId was supplied.
+     */
+    public function testChatStripsAnswerBearingContextWhenExamActiveOnQuestion(): void {
+        $this->enableAi();
+        $this->telosMock->method('getAiConsentVersion')->willReturn('v1');
+        $this->questionMock->method('isExamActiveForQuestion')->with(3, 'user-A')->willReturn(true);
+        $this->ragMock->expects($this->never())->method('buildContext'); // no poolId/courseId/lastWrong → no RAG context
+
+        $this->expectSanitizedContextReachesGemini();
+
+        $resp = $this->makeController('user-A')->chat(
+            'was ist ein vlan',
+            null,
+            null,
+            null,
+            $this->tamperedQuestionContext(3),
+            3
+        );
+
+        $this->assertSame(200, $resp->getStatus());
+    }
+
+    /**
+     * Pool-level exam check: questionContext carries no questionId, but poolId has an active exam
+     * (isExamActiveOnPool=true) → same stripping/capping applies via the elseif branch.
+     */
+    public function testChatStripsAnswerBearingContextWhenExamActiveOnPoolWithoutQuestionId(): void {
+        $this->enableAi();
+        $this->telosMock->method('getAiConsentVersion')->willReturn('v1');
+        $this->poolMock->method('findByIdWithShareAccess')->willReturn(['id' => 5]);
+        $this->questionMock->method('isExamActiveOnPool')->with(5, 'user-A')->willReturn(true);
+        $this->ragMock->method('buildContext')->willReturn(['chunks' => []]);
+
+        $this->expectSanitizedContextReachesGemini();
+
+        $resp = $this->makeController('user-A')->chat(
+            'was ist ein vlan',
+            5,
+            null,
+            null,
+            $this->tamperedQuestionContext(null),
+            3
+        );
+
+        $this->assertSame(200, $resp->getStatus());
+    }
 }

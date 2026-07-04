@@ -234,6 +234,13 @@ class TelosController extends Controller {
             return new DataResponse(['error' => 'Conversation is required'], Http::STATUS_BAD_REQUEST);
         }
 
+        // AUDIT v5.2.1 (HIGH-03 consistency, pre-live review R2): the Telos interview sends free-text
+        // conversation to Gemini — it is a user-triggered LLM path and must be consent-gated like the
+        // others (this endpoint previously reached Gemini with no per-user consent check at all).
+        if (!$this->telosService->hasAiConsent($this->userId)) {
+            return new DataResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
+        }
+
         $conversation = trim($conversation);
 
         if (strlen($conversation) < 20) {

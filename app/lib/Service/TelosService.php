@@ -179,6 +179,16 @@ class TelosService {
     }
 
     /**
+     * AUDIT v5.2.1 (HIGH-03 consistency): true when the user has granted AI consent at all.
+     * Every user-triggered LLM path (VirtuProf chat, course summary, AI question generation, note
+     * generation, AI explanations) must confirm this before any data reaches the LLM — the admin
+     * `ai_enabled` toggle alone is not sufficient under GDPR.
+     */
+    public function hasAiConsent(string $userId): bool {
+        return !empty($this->getAiConsentVersion($userId));
+    }
+
+    /**
      * Save AI consent version for a user. Creates UserTelos row if needed.
      */
     public function saveAiConsent(string $userId, string $version): void {

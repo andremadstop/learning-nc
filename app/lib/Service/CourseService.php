@@ -2681,7 +2681,9 @@ class CourseService {
                 'expires_at' => $qb->createNamedParameter($expiresAt),
             ]);
         $qb->executeStatement();
-        $newId = $this->db->lastInsertId('oc_learning_course_announcements');
+        // AUDIT v5.2.1 (review follow-up to MED-12): use the prefix-agnostic insert id instead
+        // of a hardcoded 'oc_' sequence name, which breaks on non-default Nextcloud table prefixes.
+        $newId = $qb->getLastInsertId();
 
         // Auto-create feed item for the announcement
         $this->feedService->createAutoItem($courseId, 'announcement', $title, $body, $userId);

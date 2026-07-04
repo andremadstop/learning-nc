@@ -2299,5 +2299,6 @@ OC.L10N.register(
     "Dieser Zertifikatsdatensatz wurde nach Ablauf der Aufbewahrungsfrist gelöscht (DSGVO)." : "Dieser Zertifikatsdatensatz wurde nach Ablauf der Aufbewahrungsfrist gelöscht (DSGVO).",
     "Hinweis zur Aufbewahrung" : "Hinweis zur Aufbewahrung",
     "Der Datensatz zu diesem Zertifikat wurde nach Ablauf der Aufbewahrungsfrist datenschutzkonform gelöscht. Eine inhaltliche Prüfung ist nicht mehr möglich; das Zertifikat war zum Zeitpunkt der Löschung bereits nicht mehr aktiv." : "Der Datensatz zu diesem Zertifikat wurde nach Ablauf der Aufbewahrungsfrist datenschutzkonform gelöscht. Eine inhaltliche Prüfung ist nicht mehr möglich; das Zertifikat war zum Zeitpunkt der Löschung bereits nicht mehr aktiv.",
+    "AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again." : "KI-Zustimmung erforderlich. Öffne den VirtuProf-Assistenten (unten rechts) und stimme der KI-Nutzung zu, dann versuche es erneut.",
 },
 "nplurals=2; plural=(n != 1);");

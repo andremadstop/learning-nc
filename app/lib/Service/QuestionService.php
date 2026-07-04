@@ -369,6 +369,47 @@ class QuestionService {
         }
     }
 
+    /**
+     * AUDIT v5.2.1 (pre-live review, finding H): export access is broader than edit but narrower
+     * than read. The HIGH-01 fix switched pool export from read-access to verifyEditAccess(), which
+     * only allows the pool owner / an edit-share — that locked out course instructors who manage a
+     * course's pool without owning it. Export must therefore also allow the instructor of a course
+     * this pool is attached to, but must still NOT allow enrolled students or plain read-shares
+     * (they would otherwise pull answer keys via CSV/JSON).
+     */
+    private function isCourseInstructorForPool(int $poolId, string $userId): bool {
+        // Mirror CourseService::isInstructorOfCourse: a course instructor is either the course
+        // creator (learning_courses.instructor_id) OR a member with role 'instructor' (co-instructor).
+        // AUDIT v5.2.1 (pre-live review R2, finding #3): the first version only checked instructor_id,
+        // which locked co-instructors out of answer-key export.
+        $qb = $this->db->getQueryBuilder();
+        $expr = $qb->expr();
+        $qb->select('cp.id')
+           ->from('learning_course_pools', 'cp')
+           ->innerJoin('cp', 'learning_courses', 'c', $expr->eq('cp.course_id', 'c.id'))
+           ->leftJoin('c', 'learning_course_members', 'cm', $expr->andX(
+               $expr->eq('cm.course_id', 'c.id'),
+               $expr->eq('cm.user_id', $qb->createNamedParameter($userId)),
+               $expr->eq('cm.role', $qb->createNamedParameter('instructor'))
+           ))
+           ->where($expr->eq('cp.pool_id', $qb->createNamedParameter($poolId)))
+           ->andWhere($expr->orX(
+               $expr->eq('c.instructor_id', $qb->createNamedParameter($userId)),
+               $expr->isNotNull('cm.id')
+           ))
+           ->setMaxResults(1);
+        $result = $qb->executeQuery();
+        $row = $result->fetch();
+        $result->closeCursor();
+        return $row !== false;
+    }
+
+    public function verifyExportAccess(int $poolId, string $userId): void {
+        if (!$this->canEditPool($poolId, $userId) && !$this->isCourseInstructorForPool($poolId, $userId)) {
+            throw new Exception('No export access to this pool');
+        }
+    }
+
     public function setImagePath(int $questionId, ?string $imagePath, string $userId): Question {
         $question = $this->questionMapper->findById($questionId);
         if (!$this->canEditPool($question->getPoolId(), $userId)) {

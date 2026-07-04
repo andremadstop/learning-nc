@@ -791,6 +791,9 @@ export default {
         this.explainTaskId = r.data.taskId;
         this.pollExplain();
       } catch (e) {
+        if (e.response?.data?.consent_required) {
+          this.explainText = t('learning', 'AI consent required. Open the VirtuProf assistant (bottom right) and agree to AI use, then try again.');
+        }
         this.explainLoading = false;
       }
     },

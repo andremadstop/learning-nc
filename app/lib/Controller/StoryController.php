@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace OCA\Learning\Controller;
 
 use OCA\Learning\Service\StoryEngineService;
+use OCA\Learning\Service\TelosService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
@@ -33,15 +34,18 @@ class StoryController extends Controller {
 
     private StoryEngineService $service;
     private ?string $userId;
+    private TelosService $telosService;
 
     public function __construct(
         string            $appName,
         IRequest          $request,
         StoryEngineService $service,
+        TelosService      $telosService,
         ?string           $userId
     ) {
         parent::__construct($appName, $request);
         $this->service = $service;
+        $this->telosService = $telosService;
         $this->userId  = $userId;
     }
 
@@ -408,6 +412,11 @@ class StoryController extends Controller {
     public function submitFreetext(string $campaignId, string $text = ''): DataResponse {
         if ($this->userId === null) {
             return new DataResponse(['error' => 'Not authenticated'], Http::STATUS_UNAUTHORIZED);
+        }
+        // AUDIT v5.2.1 (HIGH-03 consistency, pre-live review R3): free-text story input is sent to
+        // Gemini — consent-gate it like every other user-triggered LLM path.
+        if (!$this->telosService->hasAiConsent($this->userId)) {
+            return new DataResponse(['error' => 'AI consent required', 'consent_required' => true], Http::STATUS_FORBIDDEN);
         }
 
         $text = trim($text);
