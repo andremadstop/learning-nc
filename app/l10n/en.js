@@ -1,6 +1,12 @@
 OC.L10N.register(
     "learning",
     {
+    "Tage" : "days",
+    "Freeze-Token: {n}" : "Freeze token: {n}",
+    "Laengste: {n} Tage" : "Longest: {n} days",
+    "Tagesfortschritt" : "Today's progress",
+    "Meine Pools" : "My pools",
+    "Aktiv" : "Active",
     "\"{name}\" aus diesem Kurs entfernen?" : "Remove \"{name}\" from this course?",
     "%n day streak" : "%n day streak",
     "%n day until exam" : "%n day until exam",

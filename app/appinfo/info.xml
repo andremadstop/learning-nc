@@ -14,6 +14,7 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 - **FSRS adaptive scheduling** — cards are prioritized by memory strength, not rigid intervals
 - **9 interactive IT simulators** — CLI terminals, firewall builders, DNS resolvers, subnet calculators, network topology placement
 - **AI tutor (optional)** — answers questions by citing your uploaded course materials
+- **Verifiable certificates** — issue cryptographically signed, publicly verifiable completion credentials
 
 ## For Instructors
 
@@ -23,6 +24,14 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 - **Curriculum timeline** — plan course schedule with milestones
 - **Admin dashboard** — CSV export, course archiving, cohort merging
 - Campaign selection — choose which story scenarios are available per course
+
+## Certification &amp; Compliance
+
+- **Signed completion certificates** — every passing learner receives a cryptographically signed (Ed25519) certificate, minted automatically
+- **Public verification portal** — anyone can verify a certificate's authenticity via its permanent URL, no login required
+- **Compliance reports** — organization-wide completion overview for audits and works agreements
+- **Mandatory training &amp; recertification** — assign required courses, track certificate expiry, and automate recertification reminders
+- **Tamper-proof audit trail** — every issuance, revocation, and completion is logged
 
 ## For Learners
 
@@ -90,13 +99,9 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
         </privacyPolicies>
     </privacy>
 
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/01-courses-overview.png</screenshot>
     <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/02-student-dashboard.png</screenshot>
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/03-training-virtuprof.png</screenshot>
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/04-onboarding-tour.png</screenshot>
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/05-course-materials.png</screenshot>
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/06-course-tools.png</screenshot>
     <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/07-certificate-verify.png</screenshot>
+    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/06-course-tools.png</screenshot>
 
     <dependencies>
         <nextcloud min-version="33" max-version="35"/>

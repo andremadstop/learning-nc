@@ -6,13 +6,13 @@ A self-hosted learning platform for Nextcloud. Flashcards with spaced repetition
 ![PHP](https://img.shields.io/badge/PHP-8.1%2B-purple)
 ![License](https://img.shields.io/badge/License-AGPL--3.0-green)
 ![Tests](https://img.shields.io/badge/Tests-1220%20passed-brightgreen)
-![Version](https://img.shields.io/badge/Version-5.2.0-orange)
+![Version](https://img.shields.io/badge/Version-5.2.1-orange)
 
-Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject — from vocabulary drilling to exam preparation.
+Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any subject — from vocabulary drilling to exam preparation. When a learner passes, the app issues a **cryptographically signed, publicly verifiable completion certificate** — turning any course into a real credential.
 
 > **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. Demo accounts available. [Open an issue](https://codeberg.org/andremadstop/learning-nc/issues) or email me.
 
-![Training with VirtuProf](app/img/screenshots/09-training-virtuprof.png)
+![Student dashboard](screenshots/02-student-dashboard.png)
 
 ## Features
 
@@ -23,11 +23,20 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 - **Exam Simulator** — timed exams with configurable presets, passing thresholds, and scaled scoring
 - **Story Campaigns** — learn through real IT incident scenarios (WannaCry, SolarWinds, Log4Shell)
 
+### Certification & Compliance
+- **Signed completion certificates** — every passing learner automatically receives a cryptographically signed (Ed25519) certificate
+- **Public verification portal** — anyone can confirm a certificate's authenticity from its permanent URL, no login required
+- **Compliance reports** — organization-wide completion overview for audits and works agreements
+- **Mandatory training & recertification** — assign required courses, track certificate expiry, and automate recertification reminders
+- **Tamper-proof audit trail** — every issuance, revocation, and completion is logged
+
+![Certificate verification](screenshots/07-certificate-verify.png)
+
 ### Interactive Simulators (9)
 - CLI Terminal, Subnet Calculator, DNS Resolver, Firewall Builder
 - Port Scanner, Routing Table, NAT Table, Wireshark Lite, Network Topology Placement
 
-![Course Tools](app/img/screenshots/06-course-tools.png)
+![Course tools & simulators](screenshots/06-course-tools.png)
 
 ### Multiplayer & Gamification
 - **Live Duels** — real-time 1v1 quiz battles via Server-Sent Events
@@ -59,8 +68,6 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
 - Free Text with fuzzy matching
 - Performance-Based Questions (PBQ) — interactive CLI, drag-and-drop, wiring tasks
 - CSV/JSON import & export, pool sharing, multi-language translations
-
-![Courses Overview](app/img/screenshots/04-courses-overview.png)
 
 ## Installation
 
@@ -152,15 +159,7 @@ fine-grained watch log) as the data-minimizing mitigation.
 
 ## Try It
 
-A public demo is available at **devcloud.andrestiebitz.de** with pre-configured accounts:
-
-| Account | Role | What you'll see |
-|---------|------|-----------------|
-| `demo-student` | Student | 50 flashcards across Leitner boxes, Level 7, 14-day streak, badges, due cards in Smart Queue |
-| `demo-dozent` | Instructor | Course dashboard, student progress, curriculum timeline |
-| `demo-admin` | Admin | Admin dashboard, CSV export, all courses |
-
-Demo data resets nightly. [Request passwords via Codeberg issue](https://codeberg.org/andremadstop/learning-nc/issues).
+A live demo instance runs at **devcloud.andrestiebitz.de** (demo data resets nightly). [Open a Codeberg issue](https://codeberg.org/andremadstop/learning-nc/issues) to request a demo login and I'll set you up — happy to walk you through the instructor and certification views.
 
 ## Contributing
 
