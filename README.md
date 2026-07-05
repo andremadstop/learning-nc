@@ -12,7 +12,7 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 
 > **Looking for pilot partners!** If you run Nextcloud at a school, university, training provider, or public institution — I'd love your feedback. Demo accounts available. [Open an issue](https://codeberg.org/andremadstop/learning-nc/issues) or email me.
 
-![Student dashboard](screenshots/02-student-dashboard.png)
+![Student dashboard](screenshots/08-en-dashboard.png)
 
 ## Features
 
@@ -30,13 +30,13 @@ Built for IT certification bootcamps (CompTIA, Cisco, AWS) but works for any sub
 - **Mandatory training & recertification** — assign required courses, track certificate expiry, and automate recertification reminders
 - **Tamper-proof audit trail** — every issuance, revocation, and completion is logged
 
-![Certificate verification](screenshots/07-certificate-verify.png)
+![Certificate verification](screenshots/09-en-certificate.png)
 
 ### Interactive Simulators (9)
 - CLI Terminal, Subnet Calculator, DNS Resolver, Firewall Builder
 - Port Scanner, Routing Table, NAT Table, Wireshark Lite, Network Topology Placement
 
-![Course tools & simulators](screenshots/06-course-tools.png)
+![Course tools & simulators](screenshots/10-en-simulators.png)
 
 ### Multiplayer & Gamification
 - **Live Duels** — real-time 1v1 quiz battles via Server-Sent Events

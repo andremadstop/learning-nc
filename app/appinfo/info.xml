@@ -99,9 +99,10 @@ Requires a Google Gemini API key. Without it, the app is fully functional — AI
         </privacyPolicies>
     </privacy>
 
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/02-student-dashboard.png</screenshot>
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/07-certificate-verify.png</screenshot>
-    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/06-course-tools.png</screenshot>
+    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/08-en-dashboard.png</screenshot>
+    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/09-en-certificate.png</screenshot>
+    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/10-en-simulators.png</screenshot>
+    <screenshot>https://codeberg.org/andremadstop/learning-nc/raw/branch/main/screenshots/11-en-pools.png</screenshot>
 
     <dependencies>
         <nextcloud min-version="33" max-version="35"/>
