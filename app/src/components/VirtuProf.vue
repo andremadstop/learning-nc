@@ -99,6 +99,7 @@ import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
 import { isHintRequest } from '../utils/virtuprof-chat-classify.js'
 import { VOICE_LANGUAGE_OPTIONS, getBrowserVoiceLanguage } from '../utils/virtuprof-voice.js'
 import { mapInviteCard } from '../utils/virtuprof-invites.js'
+import { recommendedFaqCategoryId, contextHelpEntry } from '../utils/virtuprof-context-help.js'
 import {
   detectVirtuProfLanguage,
   translateVirtuProf,
@@ -387,7 +388,7 @@ export default {
     },
     orderedFaqCategoryIds() {
       const ids = Object.keys(FAQ_CATEGORIES)
-      const recommendedId = this.recommendedFaqCategoryId()
+      const recommendedId = recommendedFaqCategoryId(this.currentContext?.area)
       if (!recommendedId || !FAQ_CATEGORIES[recommendedId]) {
         return ids
       }
@@ -1489,7 +1490,7 @@ export default {
           ...profileAction,
           ...inviteActions,
           { label: this.vt('What can I do here?'), type: 'open-context-help' },
-          { label: this.vt('Top questions for this area'), type: 'open-faq-category', categoryId: this.recommendedFaqCategoryId() },
+          { label: this.vt('Top questions for this area'), type: 'open-faq-category', categoryId: recommendedFaqCategoryId(this.currentContext?.area) },
           { label: this.vt('Browse all topics'), type: 'open-faq-list' },
           { label: this.vt('Send a question'), type: 'open-ticket-form' },
           { label: this.vt('My requests'), type: 'open-ticket-list' },
@@ -1549,12 +1550,12 @@ export default {
       }
     },
     buildContextStep() {
-      const entry = this.contextHelpEntry()
+      const entry = contextHelpEntry(this.currentContext?.area, this.currentContext?.poolName, this.currentContext?.courseTitle, this.vt)
       return {
         title: entry.title,
         text: entry.text,
         actions: [
-          { label: this.vt('Top questions for this area'), type: 'open-faq-category', categoryId: this.recommendedFaqCategoryId() },
+          { label: this.vt('Top questions for this area'), type: 'open-faq-category', categoryId: recommendedFaqCategoryId(this.currentContext?.area) },
           { label: this.vt('Browse all topics'), type: 'open-faq-list' },
           { label: this.vt('Send a question'), type: 'open-ticket-form' },
           { label: this.vt('Back'), type: 'open-help-home' },
@@ -1907,137 +1908,6 @@ export default {
         : this.vt('Explain this question: {question}', { question: questionText })
 
       this.handleChatSend(message)
-    },
-    recommendedFaqCategoryId() {
-      const area = String(this.currentContext?.area || '')
-      if (area.includes('leitner')) {
-        return 'leitner'
-      }
-      if (area.includes('exam')) {
-        return 'exam'
-      }
-      if (area.includes('duel') || area.includes('arena') || area.includes('gameshow') || area.includes('sprint') || area.includes('elimination')) {
-        return 'arena'
-      }
-      if (area.includes('league')) {
-        return 'league'
-      }
-      if (area.includes('progress') || area.includes('leaderboard')) {
-        return 'progress'
-      }
-      if (area.includes('settings')) {
-        return 'settings'
-      }
-      if (area.includes('required') || area.includes('pool-select') || area.includes('courses')) {
-        return 'gettingStarted'
-      }
-      return 'training'
-    },
-    contextHelpEntry() {
-      const area = String(this.currentContext?.area || 'courses')
-      const poolName = this.currentContext?.poolName || ''
-      const courseTitle = this.currentContext?.courseTitle || ''
-
-      if (area === 'courses') {
-        return {
-          title: this.vt('Courses'),
-          text: this.vt('Choose a course to open its learning modes, leaderboard, league and duels. Each course can have its own assigned pools and rules.'),
-        }
-      }
-      if (area === 'course-training-pool-select') {
-        return {
-          title: this.vt('Training in {course}', { course: courseTitle || this.vt('this course') }),
-          text: this.vt('Pick a pool to start Training. You will get direct feedback after each answer, and required enforced pools may lock the optional ones until you finish them once.'),
-        }
-      }
-      if (area === 'course-leitner-pool-select') {
-        return {
-          title: this.vt('Leitner in {course}', { course: courseTitle || this.vt('this course') }),
-          text: this.vt('Pick a pool to review cards with spaced repetition. The system will show difficult cards more often and mastered cards less often.'),
-        }
-      }
-      if (area === 'course-exam-pool-select') {
-        return {
-          title: this.vt('Exam in {course}', { course: courseTitle || this.vt('this course') }),
-          text: this.vt('Pick a pool to simulate an exam. You will finish the whole session first and only then see the full review.'),
-        }
-      }
-      if (area === 'course-training-active') {
-        return {
-          title: this.vt('Training: {pool}', { pool: poolName || this.vt('selected pool') }),
-          text: this.vt('You are inside an active training pool. Start the session to answer mixed questions with direct feedback after every answer.'),
-        }
-      }
-      if (area === 'course-leitner-active') {
-        return {
-          title: this.vt('Leitner: {pool}', { pool: poolName || this.vt('selected pool') }),
-          text: this.vt('You are inside an active Leitner pool. Review the due cards first; new or difficult questions will come back sooner than mastered ones.'),
-        }
-      }
-      if (area === 'course-exam-active') {
-        return {
-          title: this.vt('Exam: {pool}', { pool: poolName || this.vt('selected pool') }),
-          text: this.vt('You are inside an exam pool. Work through the whole run first; explanations and correct answers are shown at the end.'),
-        }
-      }
-      if (area === 'course-my-progress') {
-        return {
-          title: this.vt('My Progress'),
-          text: this.vt('This area shows your own progress in the course, including mastery and answered questions. Use it to see where you still have gaps.'),
-        }
-      }
-      if (area === 'course-leaderboard') {
-        return {
-          title: this.vt('Leaderboard'),
-          text: this.vt('The leaderboard compares learners in the same course. XP, mastery and other activity indicators show who is currently ahead.'),
-        }
-      }
-      if (area === 'course-league') {
-        return {
-          title: this.vt('Liga'),
-          text: this.vt('The league is course-specific. Challenge classmates, collect points and watch the standings change after each finished duel.'),
-        }
-      }
-      if (area === 'course-duel' || area === 'course-arena' || area === 'arena' || area === 'pool-arena') {
-        return {
-          title: this.vt('Arena'),
-          text: this.vt('Hier kannst du Duelle annehmen oder starten sowie Sprint- und Elimination-Runden beitreten. Die Arena bietet drei Modi: Duell (1 gegen 1), Sprint (2–5 Spieler) und Elimination (2–5 Spieler, 3 Leben).'),
-        }
-      }
-      if (area === 'course-arena-sprint' || area === 'arena-sprint') {
-        return {
-          title: this.vt('Sprint'),
-          text: this.vt('Im Sprint treten 2 bis 5 Spieler gleichzeitig an. Schnellste richtige Antwort gewinnt die meisten Punkte. Nach jeder der 15 Fragen siehst du die aktuelle Live-Rangliste.'),
-        }
-      }
-      if (area === 'course-arena-elimination' || area === 'arena-elimination') {
-        return {
-          title: this.vt('Elimination'),
-          text: this.vt('Starte mit 3 Leben. Jede falsche Antwort kostet ein Leben. Bei 2 verbleibenden Spielern beginnt der Sudden Death — wer zuerst falsch antwortet, scheidet aus.'),
-        }
-      }
-      if (area === 'pool-training') {
-        return {
-          title: this.vt('Training'),
-          text: this.vt('You are viewing a regular pool in Training mode. This is the fastest way to practice the pool with immediate feedback.'),
-        }
-      }
-      if (area === 'pool-leitner') {
-        return {
-          title: this.vt('Leitner'),
-          text: this.vt('You are viewing a regular pool in Leitner mode. Use it to keep difficult questions coming back until they stick.'),
-        }
-      }
-      if (area === 'pool-exam') {
-        return {
-          title: this.vt('Exam'),
-          text: this.vt('You are viewing a regular pool in exam mode. Treat it like a test run without instant correction.'),
-        }
-      }
-      return {
-        title: this.vt('This area'),
-        text: this.vt('You can keep learning here, and I can explain the most important modes and rules whenever you need a quick reminder.'),
-      }
     },
     defaultTicketSubject() {
       const faq = this.activeFaqId && FAQS[this.activeFaqId] ? FAQS[this.activeFaqId] : null
