@@ -100,6 +100,8 @@ import { isHintRequest } from '../utils/virtuprof-chat-classify.js'
 import { VOICE_LANGUAGE_OPTIONS, getBrowserVoiceLanguage } from '../utils/virtuprof-voice.js'
 import { mapInviteCard } from '../utils/virtuprof-invites.js'
 import { recommendedFaqCategoryId, contextHelpEntry } from '../utils/virtuprof-context-help.js'
+import { formatTelosSummaryValue, formatTelosHours } from '../utils/virtuprof-telos-format.js'
+import { todayStamp, storageKey } from '../utils/virtuprof-storage.js'
 import {
   detectVirtuProfLanguage,
   translateVirtuProf,
@@ -854,26 +856,17 @@ export default {
     },
     wasShownToday(triggerId) {
       try {
-        return window.localStorage.getItem(this.storageKey(triggerId)) === this.todayStamp()
+        return window.localStorage.getItem(storageKey(triggerId)) === todayStamp()
       } catch (e) {
         return false
       }
     },
     markShownToday(triggerId) {
       try {
-        window.localStorage.setItem(this.storageKey(triggerId), this.todayStamp())
+        window.localStorage.setItem(storageKey(triggerId), todayStamp())
       } catch (e) {
         // Ignore storage failures.
       }
-    },
-    todayStamp() {
-      return new Date().toISOString().slice(0, 10)
-    },
-    storageKey(triggerId) {
-      const uid = (typeof OC !== 'undefined' && typeof OC.getCurrentUser === 'function' && OC.getCurrentUser())
-        ? (OC.getCurrentUser().uid || 'user')
-        : 'user'
-      return `learning:virtuprof:daily:${uid}:${triggerId}`
     },
     processNext() {
       if (!this.enabled || this.queue.length === 0 || this.isHelpOpen) {
@@ -1421,35 +1414,18 @@ export default {
         kind: 'telos-form',
       }
     },
-    formatTelosSummaryValue(value, fallback) {
-      const normalized = Array.isArray(value)
-        ? value.map(entry => String(entry || '').trim()).filter(Boolean)
-        : String(value || '').trim()
-      if (Array.isArray(normalized)) {
-        return normalized.length > 0 ? normalized.join(', ') : fallback
-      }
-      return normalized || fallback
-    },
-    formatTelosHours(value) {
-      const hours = Number(value)
-      if (!Number.isFinite(hours) || hours <= 0) {
-        return this.vt('Flexible')
-      }
-      const display = Number.isInteger(hours) ? String(hours) : hours.toFixed(1).replace(/\.0$/, '')
-      return `${display}h/Woche`
-    },
     buildTelosCompleteStep() {
       const profile = this.telosCompletionProfile || buildTelosPayload(this.telosForm)
       const telos = profile?.telos || {}
-      const targetCert = this.formatTelosSummaryValue(telos.target_cert, this.vt('Open goal'))
-      const targetDate = this.formatTelosSummaryValue(telos.target_date, this.vt('without fixed date'))
-      const role = this.formatTelosSummaryValue(telos.role, this.vt('Learner'))
-      const strengths = this.formatTelosSummaryValue(telos.strengths, this.vt('still building up'))
-      const weaknesses = this.formatTelosSummaryValue(telos.weaknesses, this.vt('no focus topic yet'))
-      const learningStyle = this.formatTelosSummaryValue(telos.learning_style, this.vt('Mixed'))
+      const targetCert = formatTelosSummaryValue(telos.target_cert, this.vt('Open goal'))
+      const targetDate = formatTelosSummaryValue(telos.target_date, this.vt('without fixed date'))
+      const role = formatTelosSummaryValue(telos.role, this.vt('Learner'))
+      const strengths = formatTelosSummaryValue(telos.strengths, this.vt('still building up'))
+      const weaknesses = formatTelosSummaryValue(telos.weaknesses, this.vt('no focus topic yet'))
+      const learningStyle = formatTelosSummaryValue(telos.learning_style, this.vt('Mixed'))
       return {
         title: this.vt('Profile saved'),
-        text: this.vt('Your learning profile is set up.') + `\n\n${role}\n` + this.vt('Goal') + `: ${targetCert} ` + this.vt('by') + ` ${targetDate}\n` + this.vt('Strong') + `: ${strengths}\n` + this.vt('Practice') + `: ${weaknesses}\n${this.formatTelosHours(telos.hours_per_week)}\n${learningStyle}\n\n` + this.vt('My tips are now tailored to you. Want a tour of the app, or start learning right away?'),
+        text: this.vt('Your learning profile is set up.') + `\n\n${role}\n` + this.vt('Goal') + `: ${targetCert} ` + this.vt('by') + ` ${targetDate}\n` + this.vt('Strong') + `: ${strengths}\n` + this.vt('Practice') + `: ${weaknesses}\n${formatTelosHours(telos.hours_per_week, this.vt)}\n${learningStyle}\n\n` + this.vt('My tips are now tailored to you. Want a tour of the app, or start learning right away?'),
         hideMoreOptions: true,
         showIntroInline: true,
         renderActionsInline: true,
