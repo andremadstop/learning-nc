@@ -98,6 +98,7 @@ import OnboardingIntro from './OnboardingIntro.vue'
 import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
 import { isHintRequest } from '../utils/virtuprof-chat-classify.js'
 import { VOICE_LANGUAGE_OPTIONS, getBrowserVoiceLanguage } from '../utils/virtuprof-voice.js'
+import { mapInviteCard } from '../utils/virtuprof-invites.js'
 import {
   detectVirtuProfLanguage,
   translateVirtuProf,
@@ -1611,65 +1612,17 @@ export default {
         groups.push({
           id: 'incoming',
           title: this.vt('Incoming duel invites'),
-          invites: this.duelInvites.incoming.map(invite => this.mapInviteCard(invite)),
+          invites: this.duelInvites.incoming.map(invite => mapInviteCard(invite, this.vt)),
         })
       }
       if (includeOutgoing) {
         groups.push({
           id: 'outgoing',
           title: this.vt('Outgoing duel invites'),
-          invites: this.duelInvites.outgoing.map(invite => this.mapInviteCard(invite)),
+          invites: this.duelInvites.outgoing.map(invite => mapInviteCard(invite, this.vt)),
         })
       }
       return groups.filter(group => group.invites.length > 0)
-    },
-    mapInviteCard(invite) {
-      const isIncoming = invite.direction === 'incoming'
-      const partnerUid = isIncoming ? invite.inviter_uid : invite.invitee_uid
-      const itemActions = []
-
-      if (invite.can_accept) {
-        itemActions.push({ label: this.vt('Accept'), type: 'accept-invite', inviteId: invite.id })
-      }
-      if (invite.can_decline) {
-        itemActions.push({ label: this.vt('Decline'), type: 'decline-invite', inviteId: invite.id })
-      }
-      if (invite.can_cancel) {
-        itemActions.push({ label: this.vt('Cancel invite'), type: 'cancel-invite', inviteId: invite.id })
-      }
-      if (invite.can_open_duel) {
-        itemActions.push({
-          label: this.vt('Open duel'),
-          type: 'open-duel',
-          courseId: invite.course_id,
-          duelCode: invite.duel_code,
-        })
-      }
-
-      return {
-        id: invite.id,
-        direction: isIncoming ? 'incoming' : 'outgoing',
-        status: invite.status,
-        statusLabel: this.vt(this.inviteStatusLabel(invite)),
-        title: isIncoming
-          ? this.vt('Challenge from {user}', { user: partnerUid })
-          : this.vt('Challenge to {user}', { user: partnerUid }),
-        subtitle: this.vt('Pool: {pool}', { pool: invite.pool_name || ('#' + invite.pool_id) }),
-        updatedAt: invite.updated_at || invite.created_at,
-        message: invite.can_open_duel
-          ? this.vt('This duel is ready. Open it from here and play it inside the course duel tab.')
-          : isIncoming
-            ? this.vt('A classmate challenged you to a duel. Accept it to jump straight into the duel lobby.')
-            : this.vt('Your duel invite is waiting for a response from the opponent.'),
-        itemActions,
-      }
-    },
-    inviteStatusLabel(invite) {
-      if (invite.can_open_duel) {
-        return 'Ready'
-      }
-      return String(invite.status || 'open')
-        .charAt(0).toUpperCase() + String(invite.status || 'open').slice(1)
     },
     handleInviteRefreshRequest() {
       this.refreshDuelInvites(false)
