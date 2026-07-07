@@ -97,6 +97,7 @@ import { novaReactions } from '../utils/nova-reaction-engine.js'
 import OnboardingIntro from './OnboardingIntro.vue'
 import { FAQ_CATEGORIES, FAQS, SCRIPTS } from '../utils/virtuprof-scripts.js'
 import { isHintRequest } from '../utils/virtuprof-chat-classify.js'
+import { VOICE_LANGUAGE_OPTIONS, getBrowserVoiceLanguage } from '../utils/virtuprof-voice.js'
 import {
   detectVirtuProfLanguage,
   translateVirtuProf,
@@ -196,24 +197,6 @@ const JOURNEY_STEPS = [
     fields: ['telos.motivation', 'telos.notes'],
     optional: true,
   },
-]
-
-const VOICE_LANGUAGE_OPTIONS = [
-  { value: 'de-DE', label: 'Deutsch' },
-  { value: 'en-US', label: 'English' },
-  { value: 'ru-RU', label: 'Russkii' },
-  { value: 'ar-SA', label: 'al arabiyya' },
-  { value: 'tr-TR', label: 'Turkce' },
-  { value: 'fr-FR', label: 'Francais' },
-  { value: 'es-ES', label: 'Espanol' },
-  { value: 'zh-CN', label: 'Zhongwen' },
-  { value: 'ja-JP', label: 'Nihongo' },
-  { value: 'ko-KR', label: 'Hanguk-eo' },
-  { value: 'pt-BR', label: 'Portugues (Brasil)' },
-  { value: 'it-IT', label: 'Italiano' },
-  { value: 'pl-PL', label: 'Polski' },
-  { value: 'nl-NL', label: 'Nederlands' },
-  { value: 'uk-UA', label: 'Ukrainska' },
 ]
 
 export default {
@@ -571,7 +554,7 @@ export default {
         this.aiEnabled = false
         this.ttsEnabled = false
         this.sttEnabled = false
-        this.voiceLang = this.getBrowserVoiceLanguage()
+        this.voiceLang = getBrowserVoiceLanguage()
         this.onboardingReminderCount = 0
       }
     },
@@ -615,25 +598,13 @@ export default {
       this.sttEnabled = data.stt_enabled === true
       this.voiceLang = VOICE_LANGUAGE_OPTIONS.some(option => option.value === data.voice_lang)
         ? data.voice_lang
-        : this.getBrowserVoiceLanguage()
+        : getBrowserVoiceLanguage()
       this.onboardingReminderCount = Number.isFinite(Number(data.onboarding_reminder_count))
         ? Math.max(0, Math.min(3, Number(data.onboarding_reminder_count)))
         : 0
       if (data.onboarding_declined === true) {
         this.onboardingDeclined = true
       }
-    },
-    getBrowserVoiceLanguage() {
-      if (typeof navigator === 'undefined') {
-        return 'de-DE'
-      }
-      const browserLanguage = String(navigator.language || '').trim()
-      const matchedOption = VOICE_LANGUAGE_OPTIONS.find((option) => option.value === browserLanguage)
-      if (matchedOption) {
-        return matchedOption.value
-      }
-      const baseLanguage = browserLanguage.slice(0, 2).toLowerCase()
-      return VOICE_LANGUAGE_OPTIONS.find((option) => option.value.toLowerCase().startsWith(baseLanguage + '-'))?.value || 'de-DE'
     },
     async saveVirtuProfPreferences(payload) {
       const response = await axios.put(generateUrl('/apps/learning/api/virtuprof/preferences'), payload)
