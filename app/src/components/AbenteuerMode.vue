@@ -568,77 +568,18 @@ import {
 	submitVote,
 } from '../utils/coopEngine.js'
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js'
-
-const STATIC_CAMPAIGNS = [
-	{
-		id: 'grosser_ausfall',
-		icon: '📡',
-		title: 'Der große Ausfall',
-		description: 'Montag morgen: nichts geht. Alle Systeme von NovaTech sind down. Du bist das Notfall-Team.',
-		difficulty: 'intermediate',
-		focus_areas: ['Network+'],
-		duration_minutes: 60,
-		progress: 'not_started',
-		current_scene: null,
-		is_graph: true,
-	},
-	{
-		id: 'einbruch_im_netz',
-		icon: '🔐',
-		title: 'Einbruch im Netz',
-		description: 'Dienstag, 03:47 Uhr. 847 fehlgeschlagene Logins in 12 Minuten. Das ist kein normaler Dienstag.',
-		difficulty: 'advanced',
-		focus_areas: ['Security+'],
-		duration_minutes: 60,
-		progress: 'not_started',
-		current_scene: null,
-	},
-	{
-		id: 'der_neue_standort',
-		icon: '🏢',
-		title: 'Der neue Standort',
-		description: 'NovaTech expandiert. Neues Büro, 40 Arbeitsplätze, 4 Wochen Deadline. Kein Fehler erlaubt.',
-		difficulty: 'intermediate',
-		focus_areas: ['Network+', 'Security+'],
-		duration_minutes: 75,
-		progress: 'not_started',
-		current_scene: null,
-	},
-	{
-		id: 'ransomware',
-		icon: '💀',
-		title: 'Ransomware',
-		description: 'Freitag 16:30 Uhr: "YOUR FILES HAVE BEEN ENCRYPTED." 48 Stunden bis zur Deadline.',
-		difficulty: 'advanced',
-		focus_areas: ['Security+'],
-		duration_minutes: 60,
-		progress: 'not_started',
-		current_scene: null,
-	},
-	{
-		id: 'das_erbe',
-		icon: '💾',
-		title: 'Das Erbe',
-		description: 'NovaTech übernimmt Oldstyle GmbH. Windows Server 2012, ein Hub (kein Switch!) und admin123.',
-		difficulty: 'beginner',
-		focus_areas: ['A+', 'Network+', 'Linux+'],
-		duration_minutes: 75,
-		progress: 'not_started',
-		current_scene: null,
-	},
-	{
-		id: 'test_graph_campaign',
-		icon: '🧪',
-		title: 'Test Graph Kampagne',
-		description: 'Interne Test-Kampagne für den Graph-Modus mit Simulator-Challenges.',
-		difficulty: 'intermediate',
-		focus_areas: ['Network+'],
-		duration_minutes: 30,
-		progress: 'not_started',
-		current_scene: null,
-		is_graph: true,
-	},
-]
+import {
+	makeStubScene as makeStubSceneUtil,
+	makeStubQuestion as makeStubQuestionUtil,
+	buildPlacementSimulationConfig as buildPlacementSimulationConfigUtil,
+	buildSimQuestion as buildSimQuestionUtil,
+	calcSimTotal as calcSimTotalUtil,
+} from '../utils/simulationEngine.js'
+import {
+	STATIC_CAMPAIGNS,
+	normalizeCampaignList as normalizeCampaignListUtil,
+	difficultyLabel as difficultyLabelUtil,
+} from '../utils/campaignEngine.js'
 
 const CHARACTERS = [
 	{
@@ -677,13 +618,6 @@ const CHARACTERS = [
 		strength: 'Troubleshooting, Hardware, A+',
 		weakness: 'Tiefes Netzwerk-Wissen fehlt manchmal',
 	},
-]
-
-const FEATURED_CAMPAIGN_IDS = [
-	'der_grosse_ausfall',
-	'phishing_friday',
-	'zero_day_rechenzentrum',
-	'ghostline_quest',
 ]
 
 const NPC_PORTRAITS = {
@@ -1011,24 +945,7 @@ export default {
 		},
 
 		normalizeCampaignList(rawCampaigns = []) {
-			return (Array.isArray(rawCampaigns) ? rawCampaigns : [])
-				.filter(campaign => campaign.is_graph || campaign.graph || campaign.graph_mode)
-				.map((campaign) => {
-					const id = campaign.id || campaign.campaign_id
-					return {
-						...campaign,
-						id,
-						is_graph: campaign.is_graph || campaign.graph_mode || false,
-						is_featured: FEATURED_CAMPAIGN_IDS.includes(id),
-					}
-				})
-				.sort((left, right) => {
-					const featuredDelta = Number(right.is_featured) - Number(left.is_featured)
-					if (featuredDelta !== 0) {
-						return featuredDelta
-					}
-					return String(left.title || '').localeCompare(String(right.title || ''))
-				})
+			return normalizeCampaignListUtil(rawCampaigns)
 		},
 
 		selectCampaign(campaign) {
@@ -1037,12 +954,7 @@ export default {
 		},
 
 		difficultyLabel(d) {
-			const map = {
-				beginner: t('learning', 'Einsteiger'),
-				intermediate: t('learning', 'Fortgeschritten'),
-				advanced: t('learning', 'Experte'),
-			}
-			return map[d] || d
+			return difficultyLabelUtil(d)
 		},
 
 		// ===== CHARACTER SELECTION =====
@@ -1333,20 +1245,7 @@ export default {
 		},
 
 		makeStubScene() {
-			return {
-				id: 's1_ankunft',
-				title: t('learning', 'Ankunft'),
-				narrative: t('learning', 'Du betrittst das Gebäude. Die Rezeption ist chaotisch — Telefone klingeln, niemand hat Internet. Dr. Weber steht am Aufzug: "Mein Meeting um 8 ist per Video. Schaffen Sie das?"'),
-				npc_dialog: {
-					speaker: 'dr_weber',
-					text: t('learning', 'Mein Meeting um 8 ist per Video. Schaffen Sie das?'),
-				},
-				choices: [
-					{ id: 'c1_serverraum', icon: '🖥', text: t('learning', 'Ich gehe direkt in den Serverraum') },
-					{ id: 'c1_befragung', icon: '🗣', text: t('learning', 'Erst befrage ich die Mitarbeiter') },
-					{ id: 'c1_schraenke', icon: '📦', text: t('learning', 'Ich prüfe die Netzwerkschränke auf dieser Etage') },
-				],
-			}
+			return makeStubSceneUtil()
 		},
 
 		startTypewriter(text) {
@@ -1482,17 +1381,7 @@ export default {
 		},
 
 		makeStubQuestion() {
-			return {
-				id: 'stub_q1',
-				text: t('learning', 'Was ist der erste Schritt bei der CompTIA 7-Step Troubleshooting-Methodik?'),
-				answers: [
-					{ id: 'a1', text: t('learning', 'Problem identifizieren'), is_correct: true },
-					{ id: 'a2', text: t('learning', 'Theorie aufstellen'), is_correct: false },
-					{ id: 'a3', text: t('learning', 'Plan erstellen'), is_correct: false },
-					{ id: 'a4', text: t('learning', 'Theorie testen'), is_correct: false },
-				],
-				explanation: t('learning', 'Der erste Schritt ist immer die Problemidentifikation — Symptome sammeln und das Problem genau beschreiben.'),
-			}
+			return makeStubQuestionUtil()
 		},
 
 		async submitSkillAnswer(answer) {
@@ -1597,95 +1486,11 @@ export default {
 		 * Falls back to a diagnostic subtype when type is unknown.
 		 */
 		buildPlacementSimulationConfig(simulation) {
-			const fallbackPositions = [
-				{ id: 'firewall', label: t('learning', 'Perimeter'), correct: 'Firewall', x_pct: 20, y_pct: 50 },
-				{ id: 'core_switch', label: t('learning', 'Core'), correct: 'Core Switch', x_pct: 50, y_pct: 50 },
-				{ id: 'access_layer', label: t('learning', 'Access'), correct: 'Access Switch', x_pct: 80, y_pct: 50 },
-			]
-			const rawPositions = Array.isArray(simulation.positions) && simulation.positions.length
-				? simulation.positions
-				: fallbackPositions
-			const positions = rawPositions.map((position, index) => ({
-				id: position.id || `slot_${index + 1}`,
-				label: position.label || position.id || t('learning', 'Position {n}', { n: index + 1 }),
-				correct: position.correct || position.correctInput || '',
-				x_pct: Number.isFinite(Number(position.x_pct)) ? Number(position.x_pct) : undefined,
-				y_pct: Number.isFinite(Number(position.y_pct)) ? Number(position.y_pct) : undefined,
-			}))
-			const fallbackOptions = positions
-				.map((position) => position.correct)
-				.filter((value) => typeof value === 'string' && value.trim().length)
-			const deviceOptions = Array.isArray(simulation.device_options) && simulation.device_options.length
-				? simulation.device_options
-				: fallbackOptions
-
-			return {
-				instructions: [simulation.description || t('learning', 'Platziere die Netzwerkgeräte korrekt.')],
-				positions,
-				device_options: [...new Set(deviceOptions)],
-				scoring_mode: simulation.scoring_mode || 'strict',
-				background_image: simulation.background_image || null,
-				scenario_image: simulation.scenario_image || simulation.background_image || null,
-				topology: simulation.topology || null,
-			}
+			return buildPlacementSimulationConfigUtil(simulation)
 		},
 
 		buildSimQuestion(simulation) {
-			const typeMap = {
-				cli: {
-					pbq_subtype: 'cli',
-					pbq_config: {
-						hint: simulation.description || t('learning', 'Nutze die Kommandozeile, um das Problem zu lösen.'),
-						domain: simulation.domain || 'cisco_ios',
-						terminals: simulation.terminals || [
-							{ name: 'SW1' },
-						],
-						command_outputs: simulation.command_outputs || {},
-						evaluation: simulation.evaluation || { required_commands: [] },
-					},
-				},
-				switch_config: {
-					pbq_subtype: 'switch_config',
-					pbq_config: {
-						instructions: [simulation.description || t('learning', 'Konfiguriere die Netzwerkgeräte korrekt.')],
-						switches: [
-							{
-								name: 'SW-CORE',
-								ports: [
-									{ id: 'Gi0/1', label: 'Gi0/1 (Trunk)', correct: 'trunk' },
-									{ id: 'Gi0/2', label: 'Gi0/2 (Access VLAN 10)', correct: 'access_vlan10' },
-								],
-							},
-						],
-					},
-				},
-				network_device_placement: {
-					pbq_subtype: 'placement',
-					pbq_config: this.buildPlacementSimulationConfig(simulation),
-				},
-				diagnostic: {
-					pbq_subtype: 'diagnostic',
-					pbq_config: {
-						instructions: [simulation.description || t('learning', 'Analysiere die Netzwerkprobleme.')],
-						findings: [
-							{ id: 'f1', description: t('learning', 'Routing Loop erkannt'), correct_action: 'fix_route' },
-							{ id: 'f2', description: t('learning', 'Falsche VLAN-Konfiguration'), correct_action: 'fix_vlan' },
-						],
-						actions: [
-							{ id: 'fix_route', label: t('learning', 'Route korrigieren') },
-							{ id: 'fix_vlan',  label: t('learning', 'VLAN anpassen') },
-							{ id: 'ignore',    label: t('learning', 'Ignorieren') },
-						],
-					},
-				},
-			}
-
-			const template = typeMap[simulation.type] || typeMap.diagnostic
-			return {
-				id: 'sim_' + (simulation.type || 'generic'),
-				text: simulation.description || t('learning', 'Netzwerk-Simulation'),
-				...template,
-			}
+			return buildSimQuestionUtil(simulation)
 		},
 
 		onSimChange(answer) {
@@ -1714,20 +1519,7 @@ export default {
 		},
 
 		calcSimTotal(question) {
-			const cfg = question.pbq_config || {}
-			switch (question.pbq_subtype) {
-				case 'switch_config':
-					return (cfg.switches || []).reduce(
-						(sum, sw) => sum + (sw.ports || []).filter(p => !!p.correct).length,
-						0,
-					)
-				case 'placement':
-					return (cfg.positions || []).length
-				case 'diagnostic':
-					return (cfg.findings || []).length
-				default:
-					return 1
-			}
+			return calcSimTotalUtil(question)
 		},
 
 		finishSimulation() {
