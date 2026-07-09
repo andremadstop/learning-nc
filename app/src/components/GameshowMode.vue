@@ -495,6 +495,12 @@ import QuestionLanguageSwitcher from './QuestionLanguageSwitcher.vue';
 import { botChooseAnswer, botResponseDelay, botPhrase as getBotPhrase } from '../utils/botPlayer.js';
 import { createSseClient } from '../utils/sse-client.js';
 import { useOptionalVirtuProfStore } from '../stores/virtuProfStore.js';
+import {
+  formatDate as formatDateUtil,
+  barWidth as barWidthUtil,
+  buildStandingsCommentary as buildStandingsCommentaryUtil,
+  buildAnswerMessage as buildAnswerMessageUtil,
+} from '../utils/gameshowDisplay.js';
 
 export default {
   name: 'GameshowMode',
@@ -1214,9 +1220,7 @@ export default {
     },
 
     formatDate(ts) {
-      if (!ts) return '';
-      const d = new Date(ts * 1000);
-      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return formatDateUtil(ts);
     },
 
     async refreshDisplayedQuestionLanguage() {
@@ -1439,7 +1443,7 @@ export default {
     },
 
     barWidth(score) {
-      return Math.max(5, (score / this.maxScore) * 100) + '%';
+      return barWidthUtil(score, this.maxScore);
     },
 
     enterLeaderboard() {
@@ -1539,43 +1543,16 @@ export default {
     // ---------- VirtuProf helpers ----------
 
     buildStandingsCommentary() {
-      if (!this.sortedPlayers || this.sortedPlayers.length === 0) return '';
-      if (this.isEliminationMode) {
-        const leader = this.sortedPlayers[0];
-        const name1 = leader.display_name || leader.user_id;
-        if (this.remainingPlayerCount <= 1) {
-          return name1 + ' ist der letzte Überlebende!';
-        }
-        if (this.remainingPlayerCount === 2 && this.sortedPlayers.length >= 2) {
-          const rival = this.sortedPlayers[1];
-          const name2 = rival.display_name || rival.user_id;
-          return 'Sudden Death zwischen ' + name1 + ' und ' + name2 + '!';
-        }
-        if (this.recentlyEliminatedPlayers.length > 0) {
-          const eliminated = this.recentlyEliminatedPlayers[0];
-          const eliminatedName = eliminated.display_name || eliminated.user_id;
-          return eliminatedName + ' ist raus. Noch ' + this.remainingPlayerCount + ' Spieler im Spiel.';
-        }
-        return name1 + ' fuehrt mit ' + (leader.lives || 0) + ' Leben.';
-      }
-      const leader = this.sortedPlayers[0];
-      const name1 = leader.display_name || leader.user_id;
-      if (this.sortedPlayers.length >= 2) {
-        const runner = this.sortedPlayers[1];
-        const name2 = runner.display_name || runner.user_id;
-        const gap = leader.score - runner.score;
-        if (gap <= 50) return name2 + ' ist dicht dran an ' + name1 + '!';
-        if (gap > 200) return name1 + ' dominiert!';
-        return name1 + ' fuehrt mit ' + gap + ' Punkten Vorsprung!';
-      }
-      return name1 + ' fuehrt!';
+      return buildStandingsCommentaryUtil({
+        sortedPlayers: this.sortedPlayers,
+        isEliminationMode: this.isEliminationMode,
+        remainingPlayerCount: this.remainingPlayerCount,
+        recentlyEliminatedPlayers: this.recentlyEliminatedPlayers,
+      });
     },
 
     buildAnswerMessage(correct) {
-      const positives = ['Richtig! Weiter so!', 'Perfekt!', 'Genau richtig!', 'Stark!'];
-      const negatives = ['Knapp daneben!', 'Leider falsch!', 'Das war nichts!', 'Nicht ganz!'];
-      const arr = correct ? positives : negatives;
-      return arr[Math.floor(Math.random() * arr.length)];
+      return buildAnswerMessageUtil(correct);
     },
 
     buildSseUrl() {
