@@ -5,6 +5,7 @@ namespace OCA\Learning\Tests\Unit\Command;
 
 use OCA\Learning\Command\UninstallCommand;
 use OCA\Learning\Tests\Support\FakeDbConnection;
+use OCA\Learning\Tests\Support\FakeQueryBuilder;
 use OCA\Learning\Tests\Support\FakeResult;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
@@ -20,6 +21,61 @@ use Symfony\Component\Console\Tester\StubConsoleInput;
  * The test derives the expected set from the migration sources, so adding a migration
  * without extending APP_TABLES fails here rather than on a stranger's server.
  */
+/**
+ * A connection where nominated tables do not exist.
+ *
+ * FakeDbConnection never throws, so it cannot reach the command's catch-blocks — and those
+ * blocks are exactly where a query failure gets mapped to a benign-looking default ("0 rows",
+ * "absent"). Every instance without the activity app takes that path.
+ */
+final class PartialDbConnection implements \OCP\IDBConnection {
+    public array $executedStatements = [];
+    public array $executedQueries = [];
+
+    /** @var list<FakeResult> */
+    private array $rawResults;
+
+    /** @param list<string> $missingTables */
+    public function __construct(private array $missingTables, array $rawResults = []) {
+        $this->rawResults = $rawResults;
+    }
+
+    private function guard(string $sql): void {
+        foreach ($this->missingTables as $table) {
+            if (str_contains($sql, $table)) {
+                throw new \RuntimeException('relation "' . $table . '" does not exist');
+            }
+        }
+    }
+
+    public function getQueryBuilder(): FakeQueryBuilder {
+        return new FakeQueryBuilder();
+    }
+
+    public function executeQuery(string $sql, array $params = []): FakeResult {
+        $this->guard($sql);
+        $this->executedQueries[] = ['sql' => $sql, 'params' => $params];
+        return array_shift($this->rawResults) ?? new FakeResult();
+    }
+
+    public function executeStatement(string $sql, array $params = []): int {
+        $this->guard($sql);
+        $this->executedStatements[] = ['sql' => $sql, 'params' => $params];
+        return 1;
+    }
+
+    public function escapeLikeParameter(string $input): string {
+        return addcslashes($input, '\\%_');
+    }
+
+    public function beginTransaction(): void {}
+    public function commit(): void {}
+    public function rollBack(): void {}
+    public function inTransaction(): bool {
+        return false;
+    }
+}
+
 class UninstallCommandTest extends TestCase {
 
     private const MIGRATION_DIR = __DIR__ . '/../../../lib/Migration';
@@ -201,6 +257,51 @@ class UninstallCommandTest extends TestCase {
 
         $this->assertStringNotContainsString('`', $sql, 'backticks are not valid on PostgreSQL');
         $this->assertStringContainsString('"oc_learning_courses"', $sql);
+    }
+
+    /**
+     * @param list<string> $missingTables
+     */
+    private function makePartialCommand(array $existingTables, array $missingTables): array {
+        $results = [FakeResult::fromFetchAll(array_map(static fn ($t) => ['table_name' => $t], $existingTables))];
+        foreach (range(1, count($existingTables) + 7) as $ignored) {
+            $results[] = FakeResult::fromFetchOne(0);
+        }
+        $db = new PartialDbConnection($missingTables, $results);
+
+        $config = $this->createMock(IConfig::class);
+        $config->method('getSystemValue')->willReturnCallback(
+            static fn (string $key, $default = '') => match ($key) {
+                'dbtableprefix' => 'oc_',
+                'dbtype' => 'pgsql',
+                default => $default,
+            }
+        );
+
+        return [new UninstallCommand($db, $config), $db];
+    }
+
+    public function testReportsAMissingMetadataTableAsAbsentRatherThanEmpty(): void {
+        // No activity app installed — the common case the devcloud dry run could not exercise.
+        [$command, $db] = $this->makePartialCommand(['oc_learning_courses'], ['oc_activity']);
+
+        $command->run(new StubConsoleInput([]), $output = new CapturingOutput());
+
+        $this->assertMatchesRegularExpression('/oc_activity \(activity stream\)\s+absent/', $output->buffer);
+        $this->assertMatchesRegularExpression('/oc_migrations \(migration bookkeeping\)\s+0 rows/', $output->buffer);
+    }
+
+    public function testSkipsAMissingMetadataTableAndStillDropsTheRest(): void {
+        [$command, $db] = $this->makePartialCommand(['oc_learning_courses'], ['oc_activity']);
+
+        $exit = $command->run(new StubConsoleInput(['--execute' => true]), new CapturingOutput());
+
+        $this->assertSame(Command::SUCCESS, $exit);
+
+        $sql = array_column($db->executedStatements, 'sql');
+        $this->assertNotEmpty(array_filter($sql, static fn (string $s) => str_contains($s, 'oc_migrations')));
+        $this->assertSame([], array_values(array_filter($sql, static fn (string $s) => str_contains($s, 'oc_activity'))));
+        $this->assertNotEmpty(array_filter($sql, static fn (string $s) => stripos($s, 'DROP') === 0));
     }
 
     public function testAppJobsCoversEveryBackgroundJobClass(): void {
