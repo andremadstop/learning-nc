@@ -217,9 +217,11 @@ php occ app:remove learning                              # then remove the app i
   certificate ever issued permanently unverifiable
 - Refuses to run at all if any table cannot be read: an unreadable table must never be mistaken
   for an empty one, since every guess here is destructive
-- Also removes the `theming` privacy/imprint URLs — but only while they still point at this
-  app's own routes, so an admin's own URL is left alone. The Dashboard layout row is reported
-  and not edited: it belongs to another app and holds the user's other widgets
+- Reports — but does not delete — the `theming` privacy/imprint URLs this app redirected at
+  itself, and prints the statement to run after `app:remove`. Deleting them earlier is
+  pointless: `Application::boot()` rewrites them on the next request, and `app:remove` boots
+  the app before disabling it. The Dashboard layout row is likewise reported and not edited:
+  it belongs to another app and holds the user's other widgets
 - **No files are touched.** Uploaded course material stays, and so do the files this app created
   under `/Learning/` in each user's home — they belong to the user
 - Runs while the app is still enabled (Nextcloud offers an app's commands only then), so it

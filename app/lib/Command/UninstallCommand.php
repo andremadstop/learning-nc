@@ -176,8 +176,13 @@ class UninstallCommand extends Command {
      * after removal, Impressum and Privacy 404 for every user on the server — a foreign app's
      * setting, broken by ours, so cleaning it up is our job.
      *
-     * The value guard matters: an admin may have set their own URL since, and that one is not
-     * ours to delete.
+     * Reported, never deleted by this command: Application::boot() rewrites them on every
+     * request while the app is enabled, and the command necessarily runs while it is. A DELETE
+     * here would be undone by the very next page load — including by `occ app:remove`, which
+     * boots the app before disabling it. So the command prints the statement to run afterwards.
+     *
+     * The value guard in that statement matters: an admin may have set their own URL since, and
+     * that one is not ours to delete.
      */
     private const FOREIGN_APPCONFIG = [
         ['app' => 'theming', 'keys' => ['privacyUrl', 'imprintUrl'], 'valueLike' => '%/apps/learning/%'],
@@ -300,20 +305,32 @@ class UninstallCommand extends Command {
                 continue;
             }
             if ($probe['state'] === 'ok' && $probe['count'] > 0) {
-                $foreign[] = $entry;
-                $output->writeln('');
-                $output->writeln(sprintf(
-                    '  Also removing %s rows from %sappconfig (%s: %s) — this app redirected them at itself.',
-                    number_format($probe['count']),
-                    $prefix,
-                    $entry['app'],
-                    implode(', ', $entry['keys'])
-                ));
+                $foreign[] = ['entry' => $entry, 'count' => $probe['count']];
             }
         }
 
         $output->writeln('');
-        $output->writeln('  <comment>Left for you — foreign rows this command will not edit:</comment>');
+        $output->writeln('  <comment>Left for you — this command cannot do these:</comment>');
+        foreach ($foreign as $item) {
+            $keys = implode("', '", $item['entry']['keys']);
+            $output->writeln(sprintf(
+                '    %sappconfig holds %s rows for "%s" (%s) that this app pointed at its own routes.',
+                $prefix,
+                number_format($item['count']),
+                $item['entry']['app'],
+                str_replace("', '", ', ', $keys)
+            ));
+            $output->writeln('    Deleting them here would be pointless: Application::boot() rewrites them on the next');
+            $output->writeln('    request, and app:remove boots the app before disabling it. Run this AFTER app:remove:');
+            $output->writeln(sprintf(
+                "      DELETE FROM %s WHERE appid = '%s' AND configkey IN ('%s') AND configvalue LIKE '%s';",
+                $prefix . 'appconfig',
+                $item['entry']['app'],
+                $keys,
+                $item['entry']['valueLike']
+            ));
+            $output->writeln('    Otherwise the instance-wide Imprint and Privacy links stay pointing at a removed app.');
+        }
         $output->writeln('    ' . $prefix . 'preferences (dashboard/layout) may still list the "learning" widget.');
         $output->writeln('    That row holds your other widgets too, so remove the token by hand rather than the row.');
         $output->writeln('    Files the app created in users\' homes under /Learning/ stay as ordinary user files.');
@@ -363,7 +380,7 @@ class UninstallCommand extends Command {
             return self::INVALID;
         }
 
-        return $this->applyPlan($output, $prefix, $tables, $presentScopes, $foreign);
+        return $this->applyPlan($output, $tables, $presentScopes);
     }
 
     /**
@@ -380,9 +397,8 @@ class UninstallCommand extends Command {
      *
      * @param list<string>                                                                    $tables
      * @param list<array{label: string, table: string, column: string, values: list<string>}> $scopes
-     * @param list<array{app: string, keys: list<string>, valueLike: string}>                 $foreign
      */
-    private function applyPlan(OutputInterface $output, string $prefix, array $tables, array $scopes, array $foreign): int {
+    private function applyPlan(OutputInterface $output, array $tables, array $scopes): int {
         $output->writeln('');
         $output->writeln('  Deleting metadata rows...');
         $this->db->beginTransaction();
@@ -392,12 +408,6 @@ class UninstallCommand extends Command {
                 $this->db->executeStatement(
                     sprintf('DELETE FROM %s WHERE %s IN (%s)', $this->quote($scope['table']), $this->quote($scope['column']), $placeholders),
                     $scope['values']
-                );
-            }
-            foreach ($foreign as $entry) {
-                $this->db->executeStatement(
-                    $this->foreignAppConfigSql($prefix, $entry, 'DELETE FROM %s'),
-                    $this->foreignAppConfigParams($entry)
                 );
             }
             $this->db->commit();

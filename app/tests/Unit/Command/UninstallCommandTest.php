@@ -567,30 +567,28 @@ class UninstallCommandTest extends TestCase {
     }
 
     /**
-     * The app rewrites the instance-wide legal links to point at its own routes
-     * (Application.php). Left behind, Impressum and Privacy 404 for every user on the server —
-     * a visible breakage in a foreign app's settings, caused by ours.
+     * The theming links must be REPORTED, not deleted.
      *
-     * Only rows still pointing at /apps/learning/ may go: if the admin has since set their own
-     * URL, that is their setting and not ours to delete.
+     * Application::boot() rewrites theming's privacyUrl/imprintUrl at this app's own routes on
+     * every single request, and this command necessarily runs while the app is still enabled.
+     * A DELETE here is undone by the next page load — and by `occ app:remove` itself, which
+     * boots the app before disabling it. Deleting and announcing it would be a promise the
+     * command cannot keep, so it prints the statement to run once the app is gone instead.
      */
-    public function testRemovesTheThemingLinksItSetButOnlyWhenTheyStillPointAtThisApp(): void {
+    public function testReportsTheThemingLinksWithoutDeletingThemWhileTheAppCanRestoreThem(): void {
         [$command, $db] = $this->makeCommand(['oc_learning_courses']);
 
-        $command->run(new StubConsoleInput(['--execute' => true]), new CapturingOutput());
+        $command->run(new StubConsoleInput(['--execute' => true]), $output = new CapturingOutput());
 
-        // The app name is a bound parameter, not part of the statement text.
-        $theming = array_values(array_filter(
+        $touchedTheming = array_values(array_filter(
             $db->executedStatements,
-            static fn (array $s) => stripos($s['sql'], 'DELETE') === 0
-                && str_contains($s['sql'], 'appconfig')
-                && in_array('theming', $s['params'], true)
+            static fn (array $s) => in_array('theming', $s['params'], true)
         ));
+        $this->assertSame([], $touchedTheming, 'deleting these is undone by the next boot()');
 
-        $this->assertCount(1, $theming, 'the theming links must be cleaned up');
-        $this->assertContains('privacyUrl', $theming[0]['params']);
-        $this->assertContains('imprintUrl', $theming[0]['params']);
-        $this->assertContains('%/apps/learning/%', $theming[0]['params'], 'must be scoped to our own URLs');
+        $this->assertStringContainsString('privacyUrl', $output->buffer);
+        $this->assertStringContainsString('AFTER app:remove', $output->buffer, 'must say when the statement is safe to run');
+        $this->assertStringContainsString('DELETE FROM oc_appconfig', $output->buffer, 'hand the admin the statement, not homework');
     }
 
     /**

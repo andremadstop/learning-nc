@@ -310,9 +310,16 @@ $check('foreign migration rows intact', (int)$pdo->query('SELECT COUNT(*) FROM '
 $check('learning appconfig gone', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_appconfig') . " WHERE appid='learning'")->fetchColumn() === 0);
 // (replaced by the three targeted theming checks below)
 $check('learning job gone', (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_jobs') . " WHERE class LIKE '%Learning%'")->fetchColumn() === 0);
+// NOT deleted on purpose: Application::boot() rewrites these on the very next request, and
+// app:remove boots the app before disabling it. The command prints the statement to run
+// afterwards instead of making a promise it cannot keep.
 $check(
-    'theming link pointing at this app removed',
-    (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_appconfig') . " WHERE appid='theming' AND configkey='privacyUrl'")->fetchColumn() === 0
+    'theming link left in place (boot() would rewrite it anyway)',
+    (int)$pdo->query('SELECT COUNT(*) FROM ' . $q('oc_appconfig') . " WHERE appid='theming' AND configkey='privacyUrl'")->fetchColumn() === 1
+);
+$check(
+    'the follow-up statement is printed for the admin',
+    str_contains($out3->buffer, 'AFTER app:remove') && str_contains($out3->buffer, 'DELETE FROM oc_appconfig')
 );
 $check(
     "the admin's own imprint URL left alone",
