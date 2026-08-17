@@ -215,7 +215,15 @@ php occ app:remove learning                              # then remove the app i
 - Refuses to run when issuer/certificate data exists unless you choose `--keep-certificates` or
   `--drop-certificates`: the Ed25519 issuer key is unrecoverable, and losing it makes every
   certificate ever issued permanently unverifiable
-- Course documents, videos and images live in the users' own files and are never touched
+- Refuses to run at all if any table cannot be read: an unreadable table must never be mistaken
+  for an empty one, since every guess here is destructive
+- Also removes the `theming` privacy/imprint URLs — but only while they still point at this
+  app's own routes, so an admin's own URL is left alone. The Dashboard layout row is reported
+  and not edited: it belongs to another app and holds the user's other widgets
+- **No files are touched.** Uploaded course material stays, and so do the files this app created
+  under `/Learning/` in each user's home — they belong to the user
+- Runs while the app is still enabled (Nextcloud offers an app's commands only then), so it
+  re-checks the metadata scopes afterwards and clears rows written during the run
 
 ## Requirements
 
