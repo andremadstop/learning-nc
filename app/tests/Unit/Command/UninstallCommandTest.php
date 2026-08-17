@@ -610,6 +610,52 @@ class UninstallCommandTest extends TestCase {
         )));
     }
 
+    /**
+     * The app is still enabled while this command runs — Nextcloud only loads an app's commands
+     * for enabled apps, and in maintenance mode it loads none but app_api's, so there is no way
+     * to run this with the instance quiesced. A request or cron job that was already in flight
+     * can therefore write a notification, job or activity row after the deletes committed.
+     *
+     * So the command counts the scopes again after dropping the tables and clears whatever
+     * reappeared. It cannot close the window completely — a write landing after the recheck is
+     * still possible — but it turns "orphans for as long as the run took" into "orphans from the
+     * last few milliseconds", and it says so rather than reporting a clean sweep.
+     */
+    public function testClearsMetadataThatReappearedWhileItWasRunning(): void {
+        $results = [FakeResult::fromFetchAll([['table_name' => 'oc_learning_courses']])];
+        $results[] = FakeResult::fromFetchOne(0);          // table row count
+        foreach (range(1, 7) as $ignored) {                // metadata scopes, first pass
+            $results[] = FakeResult::fromFetchOne(0);
+        }
+        $results[] = FakeResult::fromFetchOne(0);          // foreign appconfig
+        $results[] = FakeResult::fromFetchOne(3);          // recheck: something wrote back
+        foreach (range(1, 6) as $ignored) {
+            $results[] = FakeResult::fromFetchOne(0);
+        }
+        $db = new FakeDbConnection([], $results);
+
+        $config = $this->createMock(IConfig::class);
+        $config->method('getSystemValue')->willReturnCallback(
+            static fn (string $key, $default = '') => match ($key) {
+                'dbtableprefix' => 'oc_',
+                'dbtype' => 'pgsql',
+                default => $default,
+            }
+        );
+
+        $command = new UninstallCommand($db, $config);
+        $exit = $command->run(new StubConsoleInput(['--execute' => true]), $output = new CapturingOutput());
+
+        $this->assertSame(Command::SUCCESS, $exit);
+
+        $deletes = array_values(array_filter(
+            array_column($db->executedStatements, 'sql'),
+            static fn (string $s) => stripos($s, 'DELETE') === 0 && str_contains($s, 'oc_migrations')
+        ));
+        $this->assertCount(2, $deletes, 'the reappeared rows must be cleared in a second pass');
+        $this->assertStringContainsString('reappeared', $output->buffer);
+    }
+
     public function testAppJobsCoversEveryBackgroundJobClass(): void {
         $files = glob(__DIR__ . '/../../../lib/BackgroundJob/*.php') ?: [];
         $this->assertNotEmpty($files);

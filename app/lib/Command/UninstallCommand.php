@@ -28,6 +28,16 @@ use Symfony\Component\Console\Output\OutputInterface;
  * TABLE there would let one stray click destroy every course, pool and certificate on the
  * instance. Hence: explicit, opt-in, dry-run by default.
  *
+ * The refinement worth recording, because it will be proposed again: a repair step *armed* by a
+ * marker this command sets, so a plain disable stays a no-op. It has a real advantage — running
+ * inside disableApp() is the only genuinely quiesced moment available, since Nextcloud loads an
+ * app's commands only while the app is enabled, and in maintenance mode loads none but
+ * app_api's. It is still rejected. It puts a live delete path on the disable hook, and every way
+ * the marker check can go wrong (a stale value, a cached read, a database restore, an inverted
+ * comparison) ends in total data loss from a mis-click. What it buys is a handful of orphaned
+ * notification/job/activity rows — recoverable, and largely handled by clearReappearedRows().
+ * Small recoverable problem, rare irreversible one: not a trade worth making.
+ *
  * ORDER OF OPERATIONS
  *
  * Metadata rows are deleted BEFORE the tables are dropped, and that order is load-bearing.
@@ -408,10 +418,67 @@ class UninstallCommand extends Command {
             }
         }
 
+        $this->clearReappearedRows($output, $scopes);
+
         $output->writeln('<info>Learning data removed.</info>');
         $output->writeln('Now run <info>occ app:remove learning</info> to remove the app itself.');
         $output->writeln('');
         return self::SUCCESS;
+    }
+
+    /**
+     * Clear metadata rows written while this command was running.
+     *
+     * The app is necessarily still enabled during the run: Nextcloud loads an app's commands
+     * only for enabled apps, and in maintenance mode it loads none but app_api's
+     * (Console\Application), so there is no quiesced state from which to run this. A request or
+     * cron job already in flight can therefore write a notification, job or activity row after
+     * the deletes committed.
+     *
+     * A second pass after the tables are gone catches those. It does not close the window — a
+     * write landing after this recheck is still possible — so when it finds something, it says
+     * so instead of reporting a clean sweep.
+     *
+     * The alternative would be an uninstall repair step armed by a marker, which runs inside
+     * disableApp() and would genuinely quiesce. It is deliberately not used: it puts a live
+     * delete path on the disable hook, where a stale marker, a cached read or an inverted
+     * comparison turns a mis-click into total data loss. Trading a small recoverable problem
+     * (a few orphaned rows) for a rare irreversible one is a bad exchange.
+     *
+     * @param list<array{label: string, table: string, column: string, values: list<string>}> $scopes
+     */
+    private function clearReappearedRows(OutputInterface $output, array $scopes): void {
+        $cleared = [];
+        foreach ($scopes as $scope) {
+            $probe = $this->probeScope($scope);
+            if ($probe['state'] !== 'ok' || $probe['count'] === 0) {
+                continue;
+            }
+            $placeholders = implode(', ', array_fill(0, count($scope['values']), '?'));
+            try {
+                $this->db->executeStatement(
+                    sprintf(
+                        'DELETE FROM %s WHERE %s IN (%s)',
+                        $this->quote($scope['table']),
+                        $this->quote($scope['column']),
+                        $placeholders
+                    ),
+                    $scope['values']
+                );
+                $cleared[] = $scope['table'] . ' (' . number_format($probe['count']) . ')';
+            } catch (\Throwable $e) {
+                $cleared[] = $scope['table'] . ' (FAILED: ' . $e->getMessage() . ')';
+            }
+        }
+
+        if ($cleared === []) {
+            return;
+        }
+
+        $output->writeln('');
+        $output->writeln('  <comment>Rows reappeared while this ran and were cleared: ' . implode(', ', $cleared) . '</comment>');
+        $output->writeln('  The app stays enabled until you run app:remove, so a request in flight can still write');
+        $output->writeln('  one more row after this check. Re-run the dry run afterwards if you want certainty.');
     }
 
     /**
