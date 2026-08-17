@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **`occ learning:uninstall`** — removes everything this app leaves in the database, so the app can be uninstalled cleanly ([#1](https://codeberg.org/andremadstop/learning-nc/issues/1)). Dry run by default; `--execute` is required to change anything.
+  - Drops all `learning_*` tables, including the legacy names from both historical rename waves, and clears the rows left in `migrations`, `appconfig`, `preferences`, `jobs`, `notifications`, `activity` and `activity_mq`.
+  - Deletes the metadata rows **before** dropping the tables. Leaving the `oc_migrations` rows behind makes a later reinstall skip every migration and boot broken, so if a run dies between the two phases, this order leaves the recoverable state.
+  - Refuses to run when issuer/certificate data exists unless `--keep-certificates` or `--drop-certificates` is chosen: the Ed25519 issuer key is unrecoverable, and losing it makes every certificate ever issued permanently unverifiable.
+  - Refuses to run when any table cannot be read. An unreadable table is never mistaken for an empty one — every guess here is destructive.
+  - Reports rather than touches what it cannot safely change: the `theming` legal links (rewritten by `Application::boot()` on every request, so they can only be cleared after `app:remove` — the command prints the statement), the Dashboard layout row, and the files the app created under `/Learning/` in users' homes.
+  - Tables carrying the `learning_` prefix that this version does not know about are reported, not dropped.
+- **`scripts/db-uninstall-probe.php`** — runs the real command against a throwaway MariaDB and PostgreSQL, covering platform behaviour no unit test or PostgreSQL-only dev instance can reach.
+
+### Notes
+- No repair step is used for uninstall. Nextcloud executes `<repair-steps><uninstall>` from `AppManager::disableApp()`, so it also fires when an admin merely disables the app — a drop there would let one mis-click destroy every course, pool and certificate. The reasoning, including why a marker-armed variant was rejected, is recorded in `UninstallCommand`'s class docblock.
+
 ## [5.2.1] - 2026-07-04 — Security Hardening
 
 > A whole-app security audit (8 review lanes) followed by an adversarial multi-model pre-live review. Every finding was verified against the actual code before fixing; fixes shipping to the public App Store were themselves re-reviewed. No functional/feature changes — hardening only.
