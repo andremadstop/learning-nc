@@ -207,7 +207,8 @@ php occ app:remove learning                              # then remove the app i
 
 - Dry run by default; `--execute` is required to change anything
 - Drops all `learning_*` tables (including legacy names from earlier renames) and clears the rows
-  this app leaves in `migrations`, `appconfig`, `preferences`, `jobs`, `notifications` and `activity`
+  this app leaves in `migrations`, `appconfig`, `preferences`, `jobs`, `notifications`, `activity`
+  and `activity_mq`
 - Deletes the `migrations` rows **before** dropping tables — leaving them behind makes a later
   reinstall skip every migration and boot broken
 - Tables carrying the `learning_` prefix that this version does not know about are reported, not touched

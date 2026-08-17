@@ -67,7 +67,7 @@ class UninstallCommandTest extends TestCase {
     /**
      * @param list<string> $existingTables table names as the catalogue returns them (with prefix)
      */
-    private function makeCommand(array $existingTables, int $certRows = 0): array {
+    private function makeCommand(array $existingTables, int $certRows = 0, string $dbType = 'pgsql'): array {
         // One catalogue query returns every learning_* table, then one COUNT per table.
         // The command sorts the catalogue result, so the COUNT queue must follow that order.
         $results = [FakeResult::fromFetchAll(array_map(static fn ($t) => ['table_name' => $t], $existingTables))];
@@ -76,8 +76,8 @@ class UninstallCommandTest extends TestCase {
             $isCert = str_contains($table, 'cert');
             $results[] = FakeResult::fromFetchOne($isCert ? $certRows : 0);
         }
-        // Row counts for the six metadata scopes.
-        foreach (range(1, 6) as $ignored) {
+        // Row counts for the metadata scopes.
+        foreach (range(1, 7) as $ignored) {
             $results[] = FakeResult::fromFetchOne(0);
         }
         $db = new FakeDbConnection([], $results);
@@ -86,7 +86,7 @@ class UninstallCommandTest extends TestCase {
         $config->method('getSystemValue')->willReturnCallback(
             static fn (string $key, $default = '') => match ($key) {
                 'dbtableprefix' => 'oc_',
-                'dbtype' => 'pgsql',
+                'dbtype' => $dbType,
                 default => $default,
             }
         );
@@ -170,6 +170,37 @@ class UninstallCommandTest extends TestCase {
         $dropped = implode(' ', array_filter($this->destructiveStatements($db), static fn (string $s) => stripos($s, 'DROP') === 0));
         $this->assertStringContainsString('oc_learning_courses', $dropped);
         $this->assertStringNotContainsString('oc_learning_cert_keys', $dropped);
+    }
+
+    /**
+     * MySQL/MariaDB reads "..." as a string literal, not an identifier — Nextcloud does not set
+     * ANSI_QUOTES. Emitting ANSI quotes there turns every statement into a syntax error, which the
+     * catch-blocks would render as "0 rows" and "absent": a broken query looking like a clean instance.
+     */
+    public function testQuotesIdentifiersForTheActualDatabasePlatform(): void {
+        [$command, $db] = $this->makeCommand(['oc_learning_courses'], dbType: 'mysql');
+
+        $command->run(new StubConsoleInput(['--execute' => true]), new CapturingOutput());
+
+        $sql = implode(' ', array_merge(
+            array_column($db->executedStatements, 'sql'),
+            array_column($db->executedQueries, 'sql')
+        ));
+
+        $this->assertStringNotContainsString('"', $sql, 'ANSI quotes are string literals on MySQL/MariaDB');
+        $this->assertStringContainsString('`oc_learning_courses`', $sql);
+        $this->assertStringContainsString('`oc_migrations`', $sql);
+    }
+
+    public function testQuotesIdentifiersWithAnsiQuotesOnPostgres(): void {
+        [$command, $db] = $this->makeCommand(['oc_learning_courses'], dbType: 'pgsql');
+
+        $command->run(new StubConsoleInput(['--execute' => true]), new CapturingOutput());
+
+        $sql = implode(' ', array_column($db->executedStatements, 'sql'));
+
+        $this->assertStringNotContainsString('`', $sql, 'backticks are not valid on PostgreSQL');
+        $this->assertStringContainsString('"oc_learning_courses"', $sql);
     }
 
     public function testAppJobsCoversEveryBackgroundJobClass(): void {

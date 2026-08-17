@@ -297,7 +297,7 @@ class UninstallCommand extends Command {
                 }
                 $placeholders = implode(', ', array_fill(0, count($scope['values']), '?'));
                 $this->db->executeStatement(
-                    sprintf('DELETE FROM "%s" WHERE "%s" IN (%s)', $scope['table'], $scope['column'], $placeholders),
+                    sprintf('DELETE FROM %s WHERE %s IN (%s)', $this->quote($scope['table']), $this->quote($scope['column']), $placeholders),
                     $scope['values']
                 );
             }
@@ -315,7 +315,7 @@ class UninstallCommand extends Command {
                 // CASCADE on PostgreSQL also removes dependent constraints; MySQL/SQLite ignore
                 // the keyword, so it is appended only where it parses.
                 $cascade = $this->platform() === 'pgsql' ? ' CASCADE' : '';
-                $this->db->executeStatement(sprintf('DROP TABLE IF EXISTS "%s"%s', $table, $cascade));
+                $this->db->executeStatement(sprintf('DROP TABLE IF EXISTS %s%s', $this->quote($table), $cascade));
             } catch (\Throwable $e) {
                 $failed[] = $table . ' (' . $e->getMessage() . ')';
             }
@@ -346,11 +346,15 @@ class UninstallCommand extends Command {
      * @return list<string>
      */
     private function discoverTables(string $prefix): array {
-        $pattern = $prefix . 'learning\_%';
+        // '!' rather than a backslash as LIKE escape: a backslash inside a SQL string literal
+        // means one thing on PostgreSQL and another on MySQL, and this is the one branch that
+        // cannot be exercised on the PostgreSQL dev instance.
+        $literal = $prefix . 'learning_';
+        $pattern = preg_replace('/([!%_])/', '!$1', $literal) . '%';
         $sql = match ($this->platform()) {
-            'sqlite3' => "SELECT name AS table_name FROM sqlite_master WHERE type = 'table' AND name LIKE ? ESCAPE '\\'",
-            'pgsql' => "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name LIKE ? ESCAPE '\\'",
-            default => "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name LIKE ? ESCAPE '\\\\'",
+            'sqlite3' => "SELECT name AS table_name FROM sqlite_master WHERE type = 'table' AND name LIKE ? ESCAPE '!'",
+            'pgsql' => "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name LIKE ? ESCAPE '!'",
+            default => "SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name LIKE ? ESCAPE '!'",
         };
 
         try {
@@ -374,7 +378,7 @@ class UninstallCommand extends Command {
 
     private function countRows(string $table): int {
         try {
-            $result = $this->db->executeQuery(sprintf('SELECT COUNT(*) FROM "%s"', $table));
+            $result = $this->db->executeQuery(sprintf('SELECT COUNT(*) FROM %s', $this->quote($table)));
             $count = (int)$result->fetchOne();
             $result->closeCursor();
             return $count;
@@ -399,6 +403,7 @@ class UninstallCommand extends Command {
             ['label' => 'background jobs', 'table' => $prefix . 'jobs', 'column' => 'class', 'values' => self::APP_JOBS],
             ['label' => 'notifications', 'table' => $prefix . 'notifications', 'column' => 'app', 'values' => [self::APP_ID]],
             ['label' => 'activity stream', 'table' => $prefix . 'activity', 'column' => 'app', 'values' => [self::APP_ID]],
+            ['label' => 'activity mail queue', 'table' => $prefix . 'activity_mq', 'column' => 'amq_appid', 'values' => [self::APP_ID]],
         ];
     }
 
@@ -410,7 +415,7 @@ class UninstallCommand extends Command {
         $placeholders = implode(', ', array_fill(0, count($scope['values']), '?'));
         try {
             $result = $this->db->executeQuery(
-                sprintf('SELECT COUNT(*) FROM "%s" WHERE "%s" IN (%s)', $scope['table'], $scope['column'], $placeholders),
+                sprintf('SELECT COUNT(*) FROM %s WHERE %s IN (%s)', $this->quote($scope['table']), $this->quote($scope['column']), $placeholders),
                 $scope['values']
             );
             $count = (int)$result->fetchOne();
@@ -423,12 +428,29 @@ class UninstallCommand extends Command {
 
     private function tableExists(string $table): bool {
         try {
-            $result = $this->db->executeQuery(sprintf('SELECT 1 FROM "%s" WHERE 1 = 0', $table));
+            $result = $this->db->executeQuery(sprintf('SELECT 1 FROM %s WHERE 1 = 0', $this->quote($table)));
             $result->closeCursor();
             return true;
         } catch (\Throwable $e) {
             return false;
         }
+    }
+
+    /**
+     * Quote an identifier the way THIS database expects it.
+     *
+     * MySQL/MariaDB reads "..." as a string literal unless ANSI_QUOTES is set, which Nextcloud
+     * does not set — so ANSI quoting there turns every statement into a syntax error. Because
+     * the callers below swallow query errors to stay robust on partial installs, that failure
+     * would surface as "0 rows" and "absent" rather than as an error: a broken run looking
+     * exactly like a clean instance.
+     *
+     * Only constants and the prefix-validated dbtableprefix reach this method.
+     */
+    private function quote(string $identifier): string {
+        return $this->platform() === 'mysql'
+            ? '`' . $identifier . '`'
+            : '"' . $identifier . '"';
     }
 
     private function platform(): string {
